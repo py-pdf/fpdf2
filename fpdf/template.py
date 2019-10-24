@@ -17,11 +17,14 @@ def rgb(col):
 
 class Template:
     def __init__(self, infile=None, elements=None, format='A4', orientation='portrait',
-                 title='', author='', subject='', creator='', keywords=''):
+                 title='', author='', subject='', creator='', keywords='', unicode_encoding='latin1',
+                 unicode_encoding_mode='ignore'):
         if elements:
             self.load_elements(elements)
         self.handlers = {'T': self.text, 'L': self.line, 'I': self.image, 
                          'B': self.rect, 'BC': self.barcode, 'W': self.write, }
+        self.unicode_encoding = unicode_encoding
+        self.unicode_encoding_mode = unicode_encoding_mode
         self.texts = {}
         pdf = self.pdf = FPDF(format=format,orientation=orientation, unit="mm")
         pdf.set_title(title)
@@ -40,7 +43,7 @@ class Template:
         "Parse template format csv file and create elements dict"
         keys = ('name','type','x1','y1','x2','y2','font','size',
             'bold','italic','underline','foreground','background',
-            'align','text','priority', 'multiline')
+            'align','text','priority', 'multiline', 'multiline_max_cells', 'multiline_split_word')
         self.elements = []
         self.pg_no = 0
         if not PY3K:
@@ -70,7 +73,7 @@ class Template:
     def __setitem__(self, name, value):
         if name.lower() in self.keys:
             if not PY3K and isinstance(value, unicode):
-                value = value.encode("latin1","ignore")
+                value = value.encode(self.unicode_encoding, self.unicode_encoding_mode)
             elif value is None:
                 value = ""
             else:
@@ -108,7 +111,7 @@ class Template:
         pdf.set_font(element['font'],style,element['size'])
         align = {'L':'L','R':'R','I':'L','D':'R','C':'C','':''}.get(element['align']) # D/I in spanish
         if isinstance(text, unicode) and not PY3K:
-            text = text.encode("latin1","ignore")
+            text = text.encode(self.unicode_encoding, self.unicode_encoding_mode)
         else:
             text = str(text)
         return pdf.multi_cell(w=element['x2']-element['x1'],
@@ -123,7 +126,6 @@ class Template:
             pdf.set_auto_page_break(False,margin=0)
 
             for element in sorted(self.elements,key=lambda x: x['priority']):
-                #print "dib",element['type'], element['name'], element['x1'], element['y1'], element['x2'], element['y2']
                 element = element.copy()
                 element['text'] = self.texts[pg].get(element['name'].lower(), element['text'])
                 if 'rotate' in element:
@@ -137,7 +139,7 @@ class Template:
         
     def text(self, pdf, x1=0, y1=0, x2=0, y2=0, text='', font="arial", size=10, 
              bold=False, italic=False, underline=False, align="", 
-             foreground=0, backgroud=65535, multiline=None,
+             foreground=0, backgroud=65535, multiline=None, multiline_max_cells=None, multiline_split_word=False,
              *args, **kwargs):
         if text:
             if pdf.text_color!=rgb(foreground):
@@ -158,29 +160,22 @@ class Template:
             if underline: style += "U"
             align = {'L':'L','R':'R','I':'L','D':'R','C':'C','':''}.get(align) # D/I in spanish
             pdf.set_font(font,style,size)
-            ##m_k = 72 / 2.54
-            ##h = (size/m_k)
             pdf.set_xy(x1,y1)
             if multiline is None:
                 # multiline==None: write without wrapping/trimming (default)
                 pdf.cell(w=x2-x1,h=y2-y1,txt=text,border=0,ln=0,align=align)
             elif multiline:
                 # multiline==True: automatic word - warp
-                pdf.multi_cell(w=x2-x1,h=y2-y1,txt=text,border=0,align=align)
+                pdf.multi_cell(w=x2-x1,h=y2-y1,txt=text,border=0,align=align,max_cells=multiline_max_cells)
             else:
                 # multiline==False: trim to fit exactly the space defined
                 text = pdf.multi_cell(w=x2-x1, h=y2-y1,
-                             txt=text, align=align, split_only=True)[0]
-                print("trimming: *%s*" % text)
+                             txt=text, align=align, split_only=True, split_word=multiline_split_word)[0]
                 pdf.cell(w=x2-x1,h=y2-y1,txt=text,border=0,ln=0,align=align)
-
-            #pdf.Text(x=x1,y=y1,txt=text)
 
     def line(self, pdf, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, *args, **kwargs):
         if pdf.draw_color!=rgb(foreground):
-            #print "SetDrawColor", hex(foreground)
             pdf.set_draw_color(*rgb(foreground))
-        #print "SetLineWidth", size
         pdf.set_line_width(size)
         pdf.line(x1, y1, x2, y2)
 

@@ -927,7 +927,7 @@ class FPDF(object):
 
     @check_page
     def multi_cell(self, w, h, txt = '', border = 0, align = 'J',
-                   fill = 0, split_only = False, link = '', ln = 0):
+                   fill = 0, split_only = False, link = '', ln = 0, max_cells=None, split_word=False):
         """Output text with automatic or explicit line breaks, returns
         boolean if page break triggered in output mode
         """
@@ -973,6 +973,7 @@ class FPDF(object):
         l   = 0
         ns  = 0
         nl  = 1
+        num_cells = 0
         while(i < normalized_string_length):
             # Get next character
             c = s[i]
@@ -986,6 +987,7 @@ class FPDF(object):
                 new_page = self.cell(w, h = h, txt = substr(s, j, i - j),
                                      border = b, ln = 2, align = align,
                                      fill = fill, link = link)
+                num_cells += 1
                 page_break_triggered = page_break_triggered or new_page
                 text_cells.append(substr(s, j, i - j))
 
@@ -997,6 +999,8 @@ class FPDF(object):
                 nl  += 1
                 if (border and nl == 2):
                     b = b2
+                if max_cells is not None and num_cells >= max_cells:
+                    break
                 continue
 
             if (c == ' '):
@@ -1010,7 +1014,7 @@ class FPDF(object):
 
             # Automatic line break
             if (l > wmax):
-                if (sep == -1):
+                if split_word or sep == -1:
                     if (i == j):
                         i += 1
                     if (self.ws > 0):
@@ -1020,9 +1024,9 @@ class FPDF(object):
                     new_page = self.cell(w, h = h, txt = substr(s, j, i - j),
                                          border = b, ln = 2, align = align,
                                          fill = fill, link = link)
+                    num_cells += 1
                     page_break_triggered = page_break_triggered or new_page
                     text_cells.append(substr(s, j, i - j))
-
                 else:
                     if (align == 'J'):
                         if ns > 1:
@@ -1035,6 +1039,7 @@ class FPDF(object):
                     new_page = self.cell(w, h = h, txt = substr(s, j, sep - j),
                               border = b, ln = 2, align = align,
                               fill = fill, link = link)
+                    num_cells += 1
                     page_break_triggered = page_break_triggered or new_page
                     text_cells.append(substr(s, j, sep - j))
 
@@ -1046,21 +1051,24 @@ class FPDF(object):
                 nl  += 1
                 if (border and nl == 2):
                     b = b2
+                if max_cells is not None and num_cells >= max_cells:
+                    break
             else:
                 i += 1
 
-        # Last chunk
-        if (self.ws > 0):
-            self.ws = 0
-            self._out('0 Tw')
-        if (border and 'B' in border):
-            b += 'B'
+        if max_cells is None or num_cells < max_cells:
+            # Last chunk
+            if (self.ws > 0):
+                self.ws = 0
+                self._out('0 Tw')
+            if (border and 'B' in border):
+                b += 'B'
 
-        new_page = self.cell(w, h = h, txt = substr(s, j, i - j),
-                             border = b, ln = 2, align = align,
-                             fill = fill, link = link)
-        page_break_triggered = page_break_triggered or new_page
-        text_cells.append(substr(s, j, i - j))
+            new_page = self.cell(w, h = h, txt = substr(s, j, i - j),
+                                 border = b, ln = 2, align = align,
+                                 fill = fill, link = link)
+            page_break_triggered = page_break_triggered or new_page
+            text_cells.append(substr(s, j, i - j))
 
         location_options = {
             0: lambda : self.set_xy(location[0] + w, location[1]),
