@@ -1627,6 +1627,7 @@ class FPDF(object):
 
         # for each character
         subset = set(font['subset'])
+        print('startcid {} cwlen {}'.format(startcid, cwlen))
         for cid in range(startcid, cwlen):
             if cid == 128 and cw127fname and not os.path.exists(cw127fname):
                 try:
@@ -1643,9 +1644,15 @@ class FPDF(object):
                     if not e.errno == errno.EACCES:
                         raise  # Not a permission error.
 
-            if (cid > 255 and (cid not in subset)) or (cid not in font['cw']):
+            if cid > 255 and (cid not in subset):
                 continue
-            width = font['cw'][cid]
+            try:
+                width = font['cw'][cid]
+            except IndexError:
+                print('cid {} not found'.format(cid))
+                print(font['cw'].__class__.__name__)
+                print(len(font['cw']))
+                width = 0
             if (width == 0): continue
             if (width == 65535): width = 0
 
