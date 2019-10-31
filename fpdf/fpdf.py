@@ -1643,7 +1643,8 @@ class FPDF(object):
                     if not e.errno == errno.EACCES:
                         raise  # Not a permission error.
 
-            if cid > 255 and (cid not in subset): continue
+            if (cid > 255 and (cid not in subset)) or (cid not in font['cw']):
+                continue
             width = font['cw'][cid]
             if (width == 0): continue
             if (width == 65535): width = 0
