@@ -1074,7 +1074,7 @@ class FPDF(object):
         text_cells.append(substr(s, j, i - j))
 
         location_options = {
-            0: lambda : self.set_xy(location[0] + w, location[1]),
+            0: lambda : self.set_xy(self.x + w, self.y),
             1: lambda : self.set_x(self.l_margin),  # could control y
             2: lambda : None
         }
