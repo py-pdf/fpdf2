@@ -16,7 +16,9 @@ def read(path):
 
 
 if __name__ == "__main__":
-    version = re.findall(r'FPDF_VERSION = "(\d+.\d+.\d+[^"]*)"', read("./fpdf/fpdf.py"))[0]
+    version = re.findall(
+        r'FPDF_VERSION = "(\d+.\d+.\d+[^"]*)"', read("./fpdf/fpdf.py")
+    )[0]
     setup(
         name="fpdf2",
         version=version,
