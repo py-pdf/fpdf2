@@ -10,10 +10,9 @@ sys.path.insert(
 )
 
 import fpdf
-import test
 from test.utilities import relative_path_to, set_doc_date_0, calculate_hash_of_file
 
-known_good_hash = "d49bb2b7c9b3504ef45309a4a155cfc2"
+# python -m unittest test.cell_multi_cell_refactor.cell.CRefactorTest
 
 
 class CRefactorTest(unittest.TestCase):
@@ -59,6 +58,7 @@ class CRefactorTest(unittest.TestCase):
 
         outfile = relative_path_to("output.pdf")
         doc.output(outfile)
+        known_good_hash = "d49bb2b7c9b3504ef45309a4a155cfc2"
         self.assertEqual(calculate_hash_of_file(outfile), known_good_hash)
         os.unlink(outfile)
 

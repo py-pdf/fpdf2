@@ -56,7 +56,7 @@ from .util.syntax import (
 LOGGER = logging.getLogger(__name__)
 
 # Global variables
-FPDF_VERSION = "2.1.0"
+FPDF_VERSION = "2.2.0"
 FPDF_FONT_DIR = os.path.join(os.path.dirname(__file__), "font")
 FPDF_CACHE_MODE = 0  # 0 - in same folder, 1 - none, 2 - hash
 FPDF_CACHE_DIR = None
@@ -821,6 +821,10 @@ class FPDF:
 
     @check_page
     def rotate(self, angle, x=None, y=None):
+        """
+        .. deprecated:: 2.1.0
+          Use `rotation` instead.
+        """
         warnings.warn(
             "rotate() can produces malformed PDFs and is deprecated. Use the rotation() context manager instead.",
             PendingDeprecationWarning,
@@ -855,6 +859,18 @@ class FPDF:
     @check_page
     @contextmanager
     def rotation(self, angle, x=None, y=None):
+        """
+        This method allows to perform a rotation around a given center.
+
+        The rotation affects all elements which are printed inside the indented context
+        (with the exception of clickable areas).
+
+        Notes
+        -----
+
+        Only the rendering is altered. The `get_x()` and `get_y()` methods are not affected,
+        nor the automatic page break mechanism.
+        """
         if x is None:
             x = self.x
         if y is None:
@@ -1047,8 +1063,16 @@ class FPDF:
     def multi_cell(
         self, w, h, txt="", border=0, align="J", fill=0, split_only=False, link="", ln=0
     ):
-        """Output text with automatic or explicit line breaks,
-        returns boolean if page break triggered in output mode
+        """
+        Output text with automatic or explicit line breaks,
+        returns boolean if page break triggered in output mode.
+
+        Args:
+            ln (int): controls cell positioning:
+
+              - 0: stack cells horizontally, with respect to `.x` & `.y`
+              - 1: one cell per line, aligned on the left with respect to `.l_margin`
+              - 2: one cell per line
         """
         page_break_triggered = False
         if split_only:
@@ -1307,7 +1331,12 @@ class FPDF:
         link="",
     ):
         # def image(self, name, x = None, y = None, w = 0, h = 0, type = '', link = ''):  # noqa: E501
-        "Put an image on the page"
+        """
+        Put an image on the page
+
+        Args:
+            type (str): [**DEPRECATED**] unused, will be removed in a later version
+        """
         if type:
             warnings.warn(
                 '"type" is unused and will soon be deprecated',

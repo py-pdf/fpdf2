@@ -14,7 +14,7 @@ The rotation affects all elements which are printed inside the indented context
 
 Remarks:
 
-Only the rendering is altered. The get_x() and get_y() methods are not affected,
+Only the rendering is altered. The `get_x()` and `get_y()` methods are not affected,
 nor the automatic page break mechanism.
 
 ### Parameters ###

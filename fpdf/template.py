@@ -29,6 +29,10 @@ class Template:
         creator="",
         keywords="",
     ):
+        """
+        Args:
+            infile (str): [**DEPRECATED**] unused, will be removed in a later version
+        """
         if infile:
             warnings.warn(
                 '"infile" is unused and will soon be deprecated',
