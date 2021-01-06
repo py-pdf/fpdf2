@@ -663,7 +663,7 @@ class FPDF:
                 "up": font_dict["up"],
                 "ut": font_dict["ut"],
                 "cw": font_dict["cw"],
-                "ttffile": font_dict["ttffile"],
+                "ttffile": ttffilename,
                 "fontkey": fontkey,
                 "subset": sbarr,
                 "unifilename": unifilename,

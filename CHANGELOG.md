@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - new unit tests, a code formatter (`black`) and a linter (`pylint`) to improve code quality
 ### Changed
 - the documentation URL is now simply https://alexanderankin.github.io/pyfpdf/
+### Fixed
+- user defined path to font was ignored in `add_font` when `uni=True` - thanks @xitrushiy!
 ### Removed
 - dropped support for external font definitions in `.font` Python files, that relied on a call to `exec`
 ### Deprecated
@@ -24,7 +26,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Modified
 * [Making FPDF.output() x100 time faster by using a bytearray buffer](https://github.com/reingart/pyfpdf/pull/164)
 * [Deprecating .rotate() and introducing .rotation() context manager](https://github.com/reingart/pyfpdf/pull/161)
-* Fix user's font path ([issue](https://github.com/reingart/pyfpdf/issues/166) [pr](https://github.com/alexanderankin/pyfpdf/pull/14))
 ### Fixed
 * [Fixing #159 issue with set_link + adding GitHub Actions pipeline & badges](https://github.com/reingart/pyfpdf/pull/160)
 * `User defined path to font is ignored`
