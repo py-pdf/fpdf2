@@ -1,4 +1,4 @@
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 
 """PDF Syntax Helpers
 
@@ -73,21 +73,27 @@ As of this writing, I am not sure how length is actually calculated, so this
 remains something to be looked into.
 
 """
-import sys
-from collections import OrderedDict as o_d
+from collections import OrderedDict
 
-py3k = sys.version_info >= (3, 0)
 
 def create_name(name):
-    if name.startswith('/'):
+    if name.startswith("/"):
         name = name[1:]
-    return ''.join(['/', name[0].upper(), name[1:]])
+    return "".join(["/", name[0].upper(), name[1:]])
+
 
 def clear_empty_fields(d):
-    return o_d((k, v) for k, v in d.items() if v)
+    return OrderedDict((k, v) for k, v in d.items() if v)
 
-def create_dictionary_string(dict_, open_dict='<<', close_dict='>>',
-    field_join='\n', key_value_join=' ', has_empty_fields=False):
+
+def create_dictionary_string(
+    dict_,
+    open_dict="<<",
+    close_dict=">>",
+    field_join="\n",
+    key_value_join=" ",
+    has_empty_fields=False,
+):
     """format ordered dictionary as PDF dictionary
 
     @param dict_: dictionary of values to render
@@ -100,26 +106,32 @@ def create_dictionary_string(dict_, open_dict='<<', close_dict='>>',
     if has_empty_fields:
         dict_ = clear_empty_fields(dict_)
 
-    return ''.join([
-        open_dict,
-        field_join.join([key_value_join.join(f) for f in dict_.items()]),
-        close_dict
-    ])
+    return "".join(
+        [
+            open_dict,
+            field_join.join([key_value_join.join(f) for f in dict_.items()]),
+            close_dict,
+        ]
+    )
+
 
 def create_list_string(list_):
     """format list of strings as PDF array"""
-    return '[' + ' '.join(list_) + ']'
+    return "[" + " ".join(list_) + "]"
+
 
 def iobj_ref(n):
     """format an indirect PDF Object reference from its id number"""
-    return str(n) + ' 0 R'
+    return str(n) + " 0 R"
+
 
 def create_stream(stream):
-    if py3k and bytes == type(stream):
-        stream = str(stream, 'latin-1')
-    return '\n'.join(['stream', stream, 'endstream'])
+    if type(stream) in (bytearray, bytes):
+        stream = str(stream, "latin-1")
+    return "\n".join(["stream", stream, "endstream"])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     print(create_name("/ok"))
     print(create_name("ok"))
     print(create_name("Ok"))

@@ -5,6 +5,7 @@
 coverage.xml
 
 htmlcov
+public
 
 *.py[cod]
 *.pkl

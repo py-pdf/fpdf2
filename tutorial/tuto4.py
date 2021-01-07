@@ -1,23 +1,22 @@
-from __future__ import with_statement
-
 from fpdf import *
+
 
 class PDF(FPDF):
     # Current column
     col = 0
     # Ordinate of column start
     y0 = 0
-    
+
     def header(self):
         # Page header
-        self.set_font('Arial', 'B', 15)
+        self.set_font("Arial", "B", 15)
         w = self.get_string_width(title) + 6
         self.set_x((210 - w) / 2.0)
         self.set_draw_color(0, 80, 180)
         self.set_fill_color(230, 230, 0)
         self.set_text_color(220, 50, 50)
         self.set_line_width(1)
-        self.cell(w, 9, title, 1, 1, 'C', 1)
+        self.cell(w, 9, title, 1, 1, "C", 1)
         self.ln(10)
         # Save ordinate
         self.y0 = self.get_y()
@@ -25,14 +24,14 @@ class PDF(FPDF):
     def footer(self):
         # Page footer
         self.set_y(-15)
-        self.set_font('Arial', 'I', 8)
+        self.set_font("Arial", "I", 8)
         self.set_text_color(128)
-        self.cell(0, 10, 'Page ' + str(self.page_no()), 0, 0, 'C')
+        self.cell(0, 10, "Page " + str(self.page_no()), 0, 0, "C")
 
     def set_col(self, col):
         # Set position at a given column
         self.col = col
-        x=10 + col * 65.0
+        x = 10 + col * 65.0
         self.set_left_margin(x)
         self.set_x(x)
 
@@ -53,25 +52,25 @@ class PDF(FPDF):
 
     def chapter_title(self, num, label):
         # Title
-        self.set_font('Arial', '', 12)
+        self.set_font("Arial", "", 12)
         self.set_fill_color(200, 220, 255)
-        self.cell(0, 6, 'Chapter %d : %s' % (num, label), 0, 1, 'L', 1)
+        self.cell(0, 6, "Chapter %d : %s" % (num, label), 0, 1, "L", 1)
         self.ln(4)
         # Save ordinate
         self.y0 = self.get_y()
 
     def chapter_body(self, name):
         # Read text file
-        with open(name, 'rb') as fh:
-            txt = fh.read().decode('latin-1')
+        with open(name, "rb") as fh:
+            txt = fh.read().decode("latin-1")
         # Font
-        self.set_font('Times', '', 12)
+        self.set_font("Times", "", 12)
         # Output text in a 6 cm width column
         self.multi_cell(60, 5, txt)
         self.ln()
         # Mention
-        self.set_font('', 'I')
-        self.cell(0, 5, '(end of excerpt)')
+        self.set_font("", "I")
+        self.cell(0, 5, "(end of excerpt)")
         # Go back to first column
         self.set_col(0)
 
@@ -81,11 +80,11 @@ class PDF(FPDF):
         self.chapter_title(num, title)
         self.chapter_body(name)
 
-pdf = PDF()
-title = '20000 Leagues Under the Seas'
-pdf.set_title(title)
-pdf.set_author('Jules Verne')
-pdf.print_chapter(1, 'A RUNAWAY REEF','20k_c1.txt')
-pdf.print_chapter(2, 'THE PROS AND CONS','20k_c2.txt')
-pdf.output('tuto4.pdf', 'F')
 
+pdf = PDF()
+title = "20000 Leagues Under the Seas"
+pdf.set_title(title)
+pdf.set_author("Jules Verne")
+pdf.print_chapter(1, "A RUNAWAY REEF", "20k_c1.txt")
+pdf.print_chapter(2, "THE PROS AND CONS", "20k_c2.txt")
+pdf.output("tuto4.pdf", "F")

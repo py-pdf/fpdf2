@@ -35,6 +35,14 @@ EOF
   fi
 fi
 
+read -p "Has FPDF_VERSION been updated in fpdf/fpdf.py? (y/n) " -n 1 -r
+echo
+if ! [[ $REPLY =~ ^[Yy]$ ]]; then echo 'Aborting'; exit 1; fi
+
+read -p "Has the latest version been updated in docs/index.md? (y/n) " -n 1 -r
+echo
+if ! [[ $REPLY =~ ^[Yy]$ ]]; then echo 'Aborting'; exit 1; fi
+
 # build
 python setup.py bdist_wheel
 python setup.py sdist

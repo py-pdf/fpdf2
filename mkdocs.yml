@@ -10,22 +10,24 @@ site_name: PyFPDF
 site_url: https://alexanderankin.github.io/pyfpdf/
 repo_url: https://github.com/alexanderankin/pyfpdf
 site_description: Simple PDF generation for Python (FPDF PHP port) [FORK]
-docs_dir: mkdocs_docs
-site_dir: docs/mkdocs_docs
+docs_dir: docs
+site_dir: public/
 use_directory_urls: false
-edit_uri: edit/master/mkdocs_docs
+edit_uri: edit/master/docs
 theme: material
 # markdown_extensions: [toc, fenced_code, markdown_i18n]
 markdown_extensions: [toc, fenced_code]
-pages:
+nav:
 - 'Project Home': 'index.md'
 - 'Tutorial':     'Tutorial.md'
 - 'Tutorial Translations':
   - 'Tutorial (Spanish translation)': 'Tutorial-es.md'
+- 'API':          'https://alexanderankin.github.io/pyfpdf/fpdf/'
 - 'FAQ':          'FAQ.md'
 - 'Development':  'Development.md'
 - 'Templates':    'Templates.md'
 - 'Unicode':      'Unicode.md'
+- 'Web2Py':       'Web2Py.md'
 - 'ReferenceManual':
   - 'Reference Manual':    'ReferenceManual.md'
   - 'accept_page_break':   'reference/accept_page_break.md'
@@ -55,6 +57,8 @@ pages:
   - 'page_no':             'reference/page_no.md'
   - 'rect':                'reference/rect.md'
   - 'set_author':          'reference/set_author.md'
+  - 'rotate':              'reference/rotate.md'
+  - 'rotation':            'reference/rotation.md'
   - 'set_auto_page_break': 'reference/set_auto_page_break.md'
   - 'set_compression':     'reference/set_compression.md'
   - 'set_creator':         'reference/set_creator.md'

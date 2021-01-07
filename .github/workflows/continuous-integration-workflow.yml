@@ -1,0 +1,49 @@
+name: build
+
+on: [pull_request, push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }} 🔧
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies ⚙️
+        run: |
+          sudo apt-get install qpdf
+          python -m pip install --upgrade pip
+          pip install tox tox-gh-actions
+      - name: Statically checking code 🔎
+        run: |
+          pip install . pylint
+          pylint fpdf
+      - name: Ensure code has been autoformatted with black 🔎
+        run: |
+          pip install black
+          black --check .
+      - name: Test with tox ☑
+        run: tox
+      - name: Preparing deploy 🏗️
+        run: |
+          mkdir -p public/
+          tox -e docs
+          for dir in pdocs/ mkdocs_docs/ mkdocs_docs/FAQ/ mkdocs_docs/Tutorial/ mkdocs_docs/ReferenceManual/; do
+            mkdir public/$dir
+            cp docs/redirect.html public/$dir/index.html
+          done
+      - name: Deploy 🚀
+        # GitHub Pages deployment should not be done for all Python versions,
+        # otherwise commits will conflict on the gh-pages branch:
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.9'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: public/

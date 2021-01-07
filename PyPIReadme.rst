@@ -47,17 +47,16 @@ installers. For example, using pip:
 Documentation:
 --------------
 
--  `Read the Docs <https://alexanderankin.github.io/pyfpdf/mkdocs_docs/>`__
--  `FAQ <https://alexanderankin.github.io/pyfpdf/mkdocs_docs/FAQ/index.html>`__
--  `Tutorial <https://alexanderankin.github.io/pyfpdf/mkdocs_docs/Tutorial/index.html>`__ (Spanish translation available)
--  `Reference Manual <https://alexanderankin.github.io/pyfpdf/mkdocs_docs/ReferenceManual/index.html>`__
+-  `Read the Docs <https://alexanderankin.github.io/pyfpdf/>`__
+-  `FAQ <https://alexanderankin.github.io/pyfpdf/FAQ/index.html>`__
+-  `Tutorial <https://alexanderankin.github.io/pyfpdf/Tutorial/index.html>`__ (Spanish translation available)
+-  `Reference Manual <https://alexanderankin.github.io/pyfpdf/ReferenceManual/index.html>`__
 
 For further information, see:
 
 -  `documentation home <https://alexanderankin.github.io/pyfpdf/>`__
--  `epydocs documentation home <https://alexanderankin.github.io/pyfpdf/epydocs>`__
--  `pdoc documentation home <https://alexanderankin.github.io/pyfpdf/pdocs/fpdf>`__
--  `mkdocs documentation home <https://alexanderankin.github.io/pyfpdf/mkdocs_docs>`__
+-  `pdoc documentation home <https://alexanderankin.github.io/pyfpdf/fpdf>`__
+-  `documentation home <https://alexanderankin.github.io/pyfpdf/>`__
 -  `fpdf library <https://github.com/reingart/pyfpdf>`__ (fpdf v1.x.x).
 -  `fpdf library docs <https://pyfpdf.readthedocs.org/en/latest/>`__ (fpdf v1.x.x).
 -  `pyfpdf google code archive page <https://code.google.com/archive/redirect/a/code.google.com/p/pyfpdf?movedTo=http:%2F%2Fwww.github.com%2Freingart%2Fpyfpdf>`__ 
