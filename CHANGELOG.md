@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Deprecated
 - the `type` parameter of `FPDF.image` method
 - the `infile` parameter of `Template` constructor
+- the `dest` parameter of `Template.render` method
 
 ## [2.1.0] - 2020-12-07
 ### Added

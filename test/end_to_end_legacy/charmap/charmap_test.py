@@ -12,6 +12,7 @@ and this seems to be okay.
 import os
 import sys
 import unittest
+from glob import glob
 
 sys.path.insert(
     0,
@@ -22,9 +23,9 @@ sys.path.insert(
 
 import fpdf
 from fpdf.ttfonts import TTFontFile
-from test.utilities import relative_path_to, calculate_hash_of_file, set_doc_date_0
+from test.utilities import assert_pdf_equal, relative_path_to
 
-# python -m unittest test.end_to_end_legacy.charmap.charmap_test.CharmapTest
+# python -m unittest test.end_to_end_legacy.charmap.charmap_test
 
 
 class MyTTFontFile(TTFontFile):
@@ -48,11 +49,11 @@ class MyTTFontFile(TTFontFile):
 
 class CharmapTest(unittest.TestCase):
     def test_first_999_chars(self):
-        for fontpath, known_output_hash in (
-            ("DejaVuSans.ttf", "22069d93f0f6cef7f5da8f828c9f067c"),
-            ("DroidSansFallback.ttf", "ef03734fa0c3ed09d9260ec1ed3c5dce"),
-            ("Roboto-Regular.ttf", "5c5f18aaf8afac13261b277b1c9bd9cf"),
-            ("cmss12.ttf", "7cc4db652e8ad297be9413926b832707"),
+        for fontpath in (
+            "DejaVuSans.ttf",
+            "DroidSansFallback.ttf",
+            "Roboto-Regular.ttf",
+            "cmss12.ttf",
         ):
             with self.subTest(fontpath=fontpath):
                 fontname = os.path.splitext(fontpath)[0]
@@ -73,45 +74,12 @@ class CharmapTest(unittest.TestCase):
                     if counter >= 999:
                         break
 
-                testing_output = relative_path_to("charmap_test_output.pdf")
-                set_doc_date_0(pdf)
-                pdf.output(testing_output)
+                assert_pdf_equal(self, pdf, "test_first_999_chars-" + fontname + ".pdf")
 
-                output_hash = calculate_hash_of_file(testing_output)
-                self.assertEqual(known_output_hash, output_hash)
-                os.unlink(testing_output)
-
-                # clear out all the pkl files
-                pklList = [f for f in relative_path_to(".") if f.endswith(".pkl")]
-                for f in pklList:
-                    os.remove(relative_path_to(f))
+    def tearDown(self):
+        for pkl_filepath in glob(relative_path_to("*") + "*.pkl"):
+            os.remove(pkl_filepath)
 
 
 if __name__ == "__main__":
     unittest.main()
-
-## Code used to create test:
-# fontpath = relative_path_to('DejaVuSans.ttf')
-
-# pdf = fpdf.FPDF()
-# pdf.compression = True
-# pdf.add_page()
-# pdf.add_font('font', '', fontpath, uni = True)
-# pdf.set_font('font', '', 10)
-
-# ttf = MyTTFontFile()
-# ttf.getMetrics(fontpath)
-
-# for counter, character in enumerate(ttf.saveChar, 0):
-#   # print (counter, character)
-#   pdf.write(8, u"%03d) %06x - %c" % (counter, character, character))
-#   pdf.ln()
-
-#   if counter >= 999: break
-
-# output = relative_path_to('charmap_test_output.pdf')
-
-# set_doc_date_0(pdf)
-# pdf.output(output)
-# print calculate_hash_of_file(output)
-# os.unlink(output)

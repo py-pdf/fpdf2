@@ -2,7 +2,7 @@ import fpdf
 import os
 import unittest
 from fpdf.html import px2mm
-from test.utilities import calculate_hash_of_file, set_doc_date_0
+from test.utilities import assert_pdf_equal
 
 # python -m unittest test.html_test.HTMLTest
 # python -m unittest test.html_test.HTMLAllFeaturesTest
@@ -17,7 +17,6 @@ class HTMLTest(unittest.TestCase):
 
     def test_html_images(self):
         pdf = MyFPDF()
-        set_doc_date_0(pdf)
         pdf.add_page()
         rel = os.path.dirname(os.path.abspath(__file__))
         img_path = rel + "/image/png_images/c636287a4d7cb1a36362f7f236564cef.png"
@@ -41,11 +40,8 @@ class HTMLTest(unittest.TestCase):
             places=2,
             msg="Image height has moved down the page",
         )
-        pdf.output("test/test.pdf", "F")
 
-        known_good_hash = "663ecbb2c23d55d4589629039d394911"
-        self.assertEqual(calculate_hash_of_file("test/test.pdf"), known_good_hash)
-        os.unlink("test/test.pdf")  # comment to see view output after test
+        assert_pdf_equal(self, pdf, "test_html_images.pdf")
 
 
 class HTMLAllFeaturesTest(unittest.TestCase):
@@ -53,7 +49,6 @@ class HTMLAllFeaturesTest(unittest.TestCase):
 
     def test_html_features(self):
         pdf = MyFPDF()
-        set_doc_date_0(pdf)
         pdf.add_page()
         pdf.write_html("<p><b>hello</b> world. i am <i>tired</i>.</p>")
         pdf.write_html("<p><u><b>hello</b> world. i am <i>tired</i>.</u></p>")
@@ -192,9 +187,7 @@ class HTMLAllFeaturesTest(unittest.TestCase):
         pdf.add_page()
         pdf.write_html("<img src=\"%s\" height='300' width='300'>" % img_path)
 
-        # pdf.output('test/test.pdf', "F")
-        # os.system('evince test/test.pdf')
-        # os.unlink('test/test.pdf')
+        assert_pdf_equal(self, pdf, "test_html_features.pdf")
 
 
 if __name__ == "__main__":
