@@ -64,21 +64,29 @@ in `.git/hooks/pre-commit` in order to always invoke `black` & `pylint`
 before every commit:
 
 ```shell
-#!/bin/sh
-modified_py_files=$(git diff --cached --name-only --diff-filter=ACM | grep '.py$')
+#!/bin/bash
+git_cached_names() { git diff --cached --name-only --diff-filter=ACM; }
+modified_py_files=$(git_cached_names | grep '.py$')
+modified_fpdf_files=$(git_cached_names | grep ^fpdf | grep '.py$')
+# if python files modified, format
 if [ -n "$modified_py_files" ]; then
     if ! black --check $modified_py_files; then
         black $modified_py_files
         exit 1
     fi
-    pylint $modified_py_files
+    # if core files modified, lint
+    [[ $modified_fpdf_files == "" ]] || pylint $modified_fpdf_files
 fi
+unset git_cached_names
 ```
 
 It will abort the commit if `pylint` found issues
 or `black` detect non-properly formatted code.
 In the later case though, it will auto-format your code
 and you will just have to run `git commit -a` again.
+
+Be sure to check on what actions will actually be run in the CI workflow in
+`.github/workflows/continuous-integration-workflow.yml`.
 
 ## Testing ##
 

@@ -68,5 +68,6 @@ class MCRefactorTest(unittest.TestCase):
             self, doc, "test_ln_positioning_and_page_breaking_for_multicell.pdf"
         )
 
+
 if __name__ == "__main__":
     unittest.main()
