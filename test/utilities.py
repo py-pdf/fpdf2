@@ -28,10 +28,13 @@ class TempFile:
         self.handle = handle
 
     def read_whole_file(self):
+        ret = []
         while True:
-            if not self.handle.read(10):
+            rval = self.handle.read(10_000)
+            if not rval or rval == b'':
                 break
-        return self.handle.read()
+            ret.append(rval)
+        return b''.join(ret)
 
     def rwf(self):
         return self.read_whole_file()
