@@ -1,81 +1,22 @@
 import hashlib
 import inspect
 import os
-import pathlib
 import shutil
 import sys
-import tempfile
 import warnings
+from binascii import hexlify
+from contextlib import contextmanager
 from datetime import datetime
 from subprocess import check_call, check_output
+from tempfile import NamedTemporaryFile
 
 from fpdf.template import Template
-
 
 QPDF_AVAILABLE = bool(shutil.which("qpdf"))
 if not QPDF_AVAILABLE:
     warnings.warn(
         "qpdf command not available on the $PATH, falling back to hash-based comparisons in tests"
     )
-
-
-class TempFile:
-    """docstring for TempFile"""
-
-    def __init__(self, name, handle):
-        super(TempFile, self).__init__()
-        self.name = name
-        self.handle = handle
-
-    def read_whole_file(self):
-        ret = []
-        while True:
-            rval = self.handle.read(10_000)
-            ret.append(rval)
-            if not rval or rval == b"" or rval == "":
-                break
-        return ret.pop().join(ret)
-
-    def rwf(self):
-        return self.read_whole_file()
-
-    def close(self):
-        self.handle.close()
-
-
-class TempFileCtx:
-    """docstring for TempFileCtxs"""
-
-    def __init__(self, prefix, delete, suffix):
-        super(TempFileCtx, self).__init__()
-        self.prefix = prefix
-        self.delete = delete
-        self.suffix = suffix
-
-    def random(self):
-        return os.urandom(24).hex()
-
-    def get_os_tmp(self):
-        return tempfile.gettempdir()
-
-    def get_tmp_file_name_base(self):
-        return self.prefix + self.random() + self.suffix
-
-    def get_tmp_file_name(self):
-        name = self.get_tmp_file_name_base()
-        return os.path.join(self.get_os_tmp(), name)
-
-    def __enter__(self):
-        self.abs_name = self.get_tmp_file_name()
-        pathlib.Path(self.abs_name).touch()
-        tmp_file = TempFile(self.abs_name, open(self.abs_name, "rb"))
-        self.tmp_file = tmp_file
-        return tmp_file
-
-    def __exit__(self, type, value, traceback):
-        self.tmp_file.close()
-        if self.delete:
-            os.remove(self.abs_name)
 
 
 def assert_pdf_equal(test, pdf_or_tmpl, rel_expected_pdf_filepath, delete=True):
@@ -99,18 +40,18 @@ def assert_pdf_equal(test, pdf_or_tmpl, rel_expected_pdf_filepath, delete=True):
         pdf = pdf_or_tmpl.pdf
     else:
         pdf = pdf_or_tmpl
-    set_doc_date_0(pdf)  # Ensure PDFs CreationDate is always the same
+    set_doc_date_0(pdf)
     expected_pdf_filepath = relative_path_to(rel_expected_pdf_filepath, depth=2)
-    with TempFileCtx(
+    with tmp_file(
         prefix="pyfpdf-test-", delete=delete, suffix="-actual.pdf"
     ) as actual_pdf_file:
         pdf.output(actual_pdf_file.name, "F")
         if not delete:
             print("Temporary file will not be deleted:", actual_pdf_file.name)
         if QPDF_AVAILABLE:  # Favor qpdf-based comparison, as it helps a lot debugging:
-            with TempFileCtx(
+            with tmp_file(
                 prefix="pyfpdf-test-", delete=delete, suffix="-actual-qpdf.pdf"
-            ) as actual_qpdf_file, TempFileCtx(
+            ) as actual_qpdf_file, tmp_file(
                 prefix="pyfpdf-test-", delete=delete, suffix="-expected-qpdf.pdf"
             ) as expected_qpdf_file:
                 _qpdf(actual_pdf_file.name, actual_qpdf_file.name)
@@ -121,20 +62,61 @@ def assert_pdf_equal(test, pdf_or_tmpl, rel_expected_pdf_filepath, delete=True):
                         actual_qpdf_file.name,
                         expected_qpdf_file.name,
                     )
-
-                actual_wf = actual_qpdf_file.rwf()
-                expected_wf = expected_qpdf_file.rwf()
-
-                test.assertEqual(len(actual_wf), len(expected_wf))
-                for i in range(len(actual_wf)):
-                    test.assertEqual(actual_wf[i], expected_wf[i])
-                # test.assertSequenceEqual(
-                #     actual_qpdf_file.rwf(), expected_qpdf_file.rwf()
-                # )
+                expected_lines = expected_qpdf_file.read().splitlines()
+                actual_lines = actual_qpdf_file.read().splitlines()
+                if actual_lines != expected_lines:
+                    # It is very important to reduce the size of both list of bytes here,
+                    # or the call to .assertEqual will take forever to finish.
+                    # Under the hood it calls .assertSequenceEqual, that itself calls difflib.ndiff,
+                    # that has cubic complexity from this comment by Tim Peters: https://bugs.python.org/issue6931#msg223459
+                    expected_lines = subst_streams_with_hashes(expected_lines)
+                    actual_lines = subst_streams_with_hashes(actual_lines)
+                test.assertEqual(actual_lines, expected_lines)
         else:  # Fallback to hash comparison
             actual_hash = calculate_hash_of_file(actual_pdf_file.name)
             expected_hash = calculate_hash_of_file(expected_pdf_filepath)
             test.assertEqual(actual_hash, expected_hash)
+
+
+def subst_streams_with_hashes(in_lines):
+    """
+    This utility function reduce the length of `in_lines`, a list of bytes,
+    by replacing multi-lines streams looking like this:
+
+        stream
+        {non-printable-binary-data}endstream
+
+    by a single line with this format:
+
+        <stream with MD5 hash: abcdef0123456789>
+    """
+    out_lines, stream = [], None
+    for line in in_lines:
+        if line == b"stream":
+            assert stream is None
+            stream = bytearray()
+        if stream is None:
+            out_lines.append(line)
+        else:
+            stream += line
+        if line.endswith(b"endstream"):
+            assert stream is not None
+            stream_hash = hashlib.md5(stream).digest()
+            out_lines.append(b"<stream with MD5 hash: " + hexlify(stream_hash) + b">\n")
+            stream = None
+    return out_lines
+
+
+@contextmanager
+def tmp_file(*args, delete=True, **kwargs):
+    # Always passing delete=False to NamedTemporaryFile in order to avoid permission errors on Windows:
+    with NamedTemporaryFile(*args, delete=False, **kwargs) as ntf:
+        try:
+            yield ntf
+        finally:
+            if delete:
+                ntf.close()
+                os.remove(ntf.name)
 
 
 def _qpdf(input_pdf_filepath, output_pdf_filepath):
