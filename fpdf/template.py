@@ -158,7 +158,18 @@ class Template:
             split_only=True,
         )
 
-    def render(self, outfile, dest="F"):
+    def render(self, outfile=None, dest=None):
+        """
+        Args:
+            outfile (str): optional output PDF file path.
+                If ommited, the `.pdf.output(...)` method can be manuallyy called afterwise.
+            dest (str): [**DEPRECATED**] unused, will be removed in a later version
+        """
+        if dest:
+            warnings.warn(
+                '"dest" is unused and will soon be deprecated',
+                PendingDeprecationWarning,
+            )
         pdf = self.pdf
         for pg in range(1, self.pg_no + 1):
             pdf.add_page()
@@ -177,9 +188,8 @@ class Template:
                         self.handlers[handler_name](pdf, **element)
                 else:
                     self.handlers[handler_name](pdf, **element)
-        if dest:
-            return pdf.output(outfile, dest)
-        return None
+        if outfile:
+            pdf.output(outfile, dest="F")
 
     @staticmethod
     def text(

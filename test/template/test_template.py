@@ -1,10 +1,10 @@
-import os, unittest
+import unittest
 
 from fpdf.template import Template
 
-from test.utilities import calculate_hash_of_file, relative_path_to, set_doc_date_0
+from test.utilities import assert_pdf_equal, relative_path_to
 
-# python -m unittest test.template.test_template.TemplateTest
+# python -m unittest test.template.test_template
 
 
 class TemplateTest(unittest.TestCase):
@@ -121,25 +121,15 @@ class TemplateTest(unittest.TestCase):
             },
         ]
         tmpl = Template(format="A4", elements=elements, title="Sample Invoice")
-        set_doc_date_0(tmpl.pdf)
         tmpl.add_page()
         tmpl["company_name"] = "Sample Company"
         tmpl["company_logo"] = relative_path_to("../../tutorial/logo.png")
-        tmpl.render("./template.pdf")
-
-        known_good_hash = "dfee12811f88870c9c8d21647d66c0a1"
-        self.assertEqual(calculate_hash_of_file("./template.pdf"), known_good_hash)
-        os.unlink("./template.pdf")  # comment to see view output after test
+        assert_pdf_equal(self, tmpl, "test_nominal_hardcoded.pdf")
 
     def test_nominal_csv(self):
         "Taken from docs/Templates.md"
         tmpl = Template(format="A4", title="Sample Invoice")
-        set_doc_date_0(tmpl.pdf)
         tmpl.parse_csv(relative_path_to("mycsvfile.csv"), delimiter=";")
         tmpl.add_page()
         tmpl["company_name"] = "Sample Company"
-        tmpl.render("./template.pdf")
-
-        known_good_hash = "43f71452717dddcce6ca5660dc70cde6"
-        self.assertEqual(calculate_hash_of_file("./template.pdf"), known_good_hash)
-        os.unlink("./template.pdf")  # comment to see view output after test
+        assert_pdf_equal(self, tmpl, "test_nominal_csv.pdf")

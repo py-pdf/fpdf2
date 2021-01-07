@@ -9,7 +9,6 @@ sys.path.insert(
 )
 
 import fpdf
-import test
 from test.utilities import relative_path_to, calculate_hash_of_file
 
 import datetime

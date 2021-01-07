@@ -35,7 +35,7 @@ if __name__ == "__main__":
         package_dir={"fpdf": "fpdf"},
         test_suite="setup.run_test_suite",
         install_requires=[
-            "Pillow>=4,<=8",
+            "Pillow",
         ],
         classifiers=[
             "Development Status :: 5 - Production/Stable",

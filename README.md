@@ -62,7 +62,7 @@ Features:
  * Cell/Multi-cell/Plaintext writing, Automatic page breaks
  * Basic html2pdf (Templates with a visual designer in the works)
  * Exceptions support, other minor fixes, improvements and PEP8 code cleanups
- * Tox tests
+ * Unit tests with `qpdf`-based PDF diffing
 
 Release notes: [CHANGELOG.md](https://github.com/alexanderankin/pyfpdf/blob/master/CHANGELOG.md)
 
@@ -76,19 +76,7 @@ Also read the design-spec/tests, they're great.
 Developers:
 -----------
 
-To get development environment going, on Linux/Ubuntu:
-
-```bash
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt-get update
-sudo apt-get install python3.6 python3.7 python3.8 python3.9 \
-  libpython3.6-dev libpython3.7-dev libpython3.8-dev \
-  libpython3.9-dev
-sudo apt-get install python3-distutils
-wget 'https://bootstrap.pypa.io/get-pip.py'
-python get-pip.py
-sudo pip install tox
-```
+Please check [the docs page dedicated to developpement](https://alexanderankin.github.io/pyfpdf/Development.html).
 
 Lets try to improve the Code Coverage statistic so that we can safely
 transition to external font and image libraries, and more...

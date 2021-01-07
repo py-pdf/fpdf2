@@ -9,12 +9,12 @@ sys.path.insert(
 )
 
 import fpdf
-import test
-from test.utilities import relative_path_to, calculate_hash_of_file, set_doc_date_0
+from test.utilities import assert_pdf_equal
+
+# python -m unittest test.info_test
 
 
 def document_operations(doc):
-    set_doc_date_0(doc)
     doc.add_page()
     doc.set_font("Arial", size=12)
     doc.cell(w=72, h=0, border=1, ln=2, txt="hello world", fill=0, link="")
@@ -31,14 +31,7 @@ class CatalogDisplayModeTest(unittest.TestCase):
         doc.set_author("sample author")
         doc.set_keywords("sample keywords")
         doc.set_creator("sample creator")
-        # doc.set_creation_date()
-
-        output = relative_path_to("put_info_test.pdf")
-        doc.output(output)
-        # print(calculate_hash_of_file(output))
-        known_good_hash = "64d87472bd5e369441dac2b092a249d8"
-        self.assertEqual(calculate_hash_of_file(output), known_good_hash)
-        os.unlink(output)
+        assert_pdf_equal(self, doc, "test_put_info_all.pdf")
 
     def test_put_info_some(self):
         doc = fpdf.FPDF()
@@ -48,17 +41,8 @@ class CatalogDisplayModeTest(unittest.TestCase):
         # doc.set_author('sample author')
         doc.set_keywords("sample keywords")
         doc.set_creator("sample creator")
-        # doc.set_creation_date()
-
-        output = relative_path_to("put_info_test.pdf")
-        doc.output(output)
-        # print(calculate_hash_of_file(output))
-        known_good_hash = "bcc272f353be1acb76c5caf3f662b9af"
-        self.assertEqual(calculate_hash_of_file(output), known_good_hash)
-        os.unlink(output)
+        assert_pdf_equal(self, doc, "test_put_info_some.pdf")
 
 
 if __name__ == "__main__":
     unittest.main()
-
-## test was written in place

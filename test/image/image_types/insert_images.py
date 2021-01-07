@@ -10,10 +10,9 @@ sys.path.insert(
 )
 
 import fpdf
-import test
-from test.utilities import relative_path_to, set_doc_date_0, calculate_hash_of_file
+from test.utilities import assert_pdf_equal, relative_path_to
 
-# python -m unittest test.image.image_types.insert_images.InsertImagesTest
+# python -m unittest test.image.image_types.insert_images
 
 
 class InsertImagesTest(unittest.TestCase):
@@ -23,14 +22,7 @@ class InsertImagesTest(unittest.TestCase):
         pdf.add_page()
         imagename = relative_path_to("insert_images_insert_jpg.jpg")
         pdf.image(imagename, x=15, y=15, h=140)
-
-        set_doc_date_0(pdf)
-        output_file = relative_path_to("insert_images_jpg_test.pdf")
-        pdf.output(output_file, "F")
-
-        test_hash = calculate_hash_of_file(output_file)
-        self.assertEqual(test_hash, "98e21803d01d686504238cb17a636c32")
-        os.unlink(output_file)
+        assert_pdf_equal(self, pdf, "test_insert_jpg.pdf")
 
     def test_insert_png(self):
         pdf = fpdf.FPDF()
@@ -38,14 +30,7 @@ class InsertImagesTest(unittest.TestCase):
         pdf.add_page()
         imagename = relative_path_to("insert_images_insert_png.png")
         pdf.image(imagename, x=15, y=15, h=140)
-
-        set_doc_date_0(pdf)
-        test = relative_path_to("insert_images_png_test.pdf")
-        pdf.output(test, "F")
-
-        test_hash = calculate_hash_of_file(test)
-        self.assertEqual(test_hash, "17c98e10f5c0d95ae17cd31b0f6a0919")
-        os.unlink(test)
+        assert_pdf_equal(self, pdf, "test_insert_png.pdf")
 
     def test_insert_bmp(self):
         pdf = fpdf.FPDF()
@@ -53,14 +38,7 @@ class InsertImagesTest(unittest.TestCase):
         pdf.add_page()
         imagename = relative_path_to("circle.bmp")
         pdf.image(imagename, x=15, y=15, h=140)
-
-        set_doc_date_0(pdf)
-        test = relative_path_to("insert_images_bmp_test.pdf")
-        pdf.output(test, "F")
-
-        test_hash = calculate_hash_of_file(test)
-        self.assertEqual(test_hash, "49e5800162c7b019ac25354ce4708e35")
-        os.unlink(test)
+        assert_pdf_equal(self, pdf, "test_insert_bmp.pdf")
 
     def test_insert_gif(self):
         pdf = fpdf.FPDF()
@@ -68,36 +46,8 @@ class InsertImagesTest(unittest.TestCase):
         pdf.add_page()
         imagename = relative_path_to("circle.gif")
         pdf.image(imagename, x=15, y=15)
-
-        set_doc_date_0(pdf)
-        test = relative_path_to("insert_images_gif_test.pdf")
-        pdf.output(test, "F")
-
-        test_hash = calculate_hash_of_file(test)
-        self.assertEqual(test_hash, "be9994a5fadccca9d316c39d302f6248")
-        os.unlink(test)
+        assert_pdf_equal(self, pdf, "test_insert_gif.pdf")
 
 
 if __name__ == "__main__":
     unittest.main()
-
-## Code used to create test:
-# doc = fpdf.FPDF()
-# doc.compress = False
-# doc.add_page()
-# imagename = relative_path_to('insert_images_insert_jpg.jpg')
-# doc.image(imagename, x = 15, y = 15, h = 140) #, w = 30, h = 25)
-# set_doc_date_0(doc)
-# output_name = relative_path_to('insert_images_jpg_good.pdf')
-# doc.output(output_name)
-# print calculate_hash_of_file(output_name)
-
-# doc = fpdf.FPDF()
-# doc.compress = False
-# doc.add_page()
-# imagename = relative_path_to('insert_images_insert_png.png')
-# doc.image(imagename, x = 15, y = 15, h = 140) #, w = 30, h = 25)
-# set_doc_date_0(doc)
-# output_name = relative_path_to('insert_images_png_good.pdf')
-# doc.output(output_name)
-# print calculate_hash_of_file(output_name)

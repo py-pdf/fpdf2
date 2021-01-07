@@ -12,8 +12,9 @@ sys.path.insert(
 )
 
 import fpdf
-import test
-from test.utilities import relative_path_to, set_doc_date_0, calculate_hash_of_file
+from test.utilities import assert_pdf_equal, relative_path_to
+
+# python -m unittest test.image.png_images.png_file_test
 
 
 class InsertPNGSuiteFilesTest(unittest.TestCase):
@@ -44,17 +45,7 @@ class InsertPNGSuiteFilesTest(unittest.TestCase):
                 pdf.add_page()
                 pdf.image(image, x=0, y=0, w=0, h=0, link=None)
 
-        set_doc_date_0(pdf)
-        outfile = relative_path_to("insert_images_png_test_files.pdf")
-        pdf.output(outfile, "F")
-        # print(calculate_hash_of_file(outfile))
-
-        test_hash = calculate_hash_of_file(outfile)
-        # ordered the images for reproduceability
-        self.assertEqual(test_hash, "0085260bea512b9394ce1502b196240a")
-
-        # self.assertEqual(test_hash, "4f65582566414202a12ed86134de10a7")
-        os.unlink(outfile)
+        assert_pdf_equal(self, pdf, "test_insert_png_files.pdf")
 
 
 if __name__ == "__main__":
@@ -69,11 +60,10 @@ if __name__ == "__main__":
     @classmethod
     def tearDownClass(cls):
         t = time.time()
+        # pylint: disable=no-member
         print("\n%s.%s: %.3f" % (cls.__module__, cls.__name__, t - cls.start_))
 
     unittest.TestCase.setUpClass = setUpClass
     unittest.TestCase.tearDownClass = tearDownClass
 
     unittest.main()
-
-## Code used to create test: Test created in place
