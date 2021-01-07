@@ -40,6 +40,7 @@ More on pyfpdf:
   * `LICENSE` - license information
   * `setup.cfg`, `setup.py`, `MANIFEST.in` - setup configuration
   * `mkdocs.yml` - config for [MkDocs](https://www.mkdocs.org/)
+  * `tox.ini` - config for [Tox](https://tox.readthedocs.io/en/latest/)
 
 ## Code auto-formatting ##
 
@@ -81,9 +82,13 @@ and you will just have to run `git commit -a` again.
 
 ## Testing ##
 
-To run tests, `cd` into the repository and run `python setup.py test`.
+To run tests, `cd` into the repository and run `python setup.py test` or `pytest`.
 
-To only run tests for your version of Python, run `python setup.py test`.
+Alternatively, you can use [Tox](https://tox.readthedocs.io/en/latest/).
+It is self-documented in the `tox.ini` file in the repository.
+To run tests for all versions of Python, simply run `tox`.
+If you do not want to run tests for all versions of python, run `tox -e py39`
+(or your version of Python).
 
 When a unit test generates a PDF, it is recommended to use the `assert_pdf_equal`
 utility function in order to validate the output.

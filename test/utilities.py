@@ -4,22 +4,30 @@ import os
 import shutil
 import sys
 import warnings
+from contextlib import contextmanager
 from datetime import datetime
 from subprocess import check_call, check_output
 from tempfile import NamedTemporaryFile
 
 from fpdf.template import Template
 
-
 QPDF_AVAILABLE = bool(shutil.which("qpdf"))
 if not QPDF_AVAILABLE:
     warnings.warn(
-        "qpdf command not available on the $PATH, falling-back to hash-based comparisons in tests"
+        "qpdf command not available on the $PATH, falling back to hash-based comparisons in tests"
     )
 
 
 def assert_pdf_equal(test, pdf_or_tmpl, rel_expected_pdf_filepath, delete=True):
     """
+    This compare the output of a `FPDF` instance (or `Template` instance),
+    with the provided PDF file.
+
+    The `CreationDate` of the newly generated PDF is fixed, so that it never triggers a diff.
+
+    If the `qpdf` command is available on the `$PATH`, it will be used to perform the comparison,
+    as it greatly helps debugging diffs. Otherwise, a hash-based comparison logic is used as a fallback.
+
     Args:
         test (unittest.TestCase)
         pdf_or_tmpl: instance of `FPDF` or `Template`. The `output` or `render` method will be called on it.
@@ -31,18 +39,18 @@ def assert_pdf_equal(test, pdf_or_tmpl, rel_expected_pdf_filepath, delete=True):
         pdf = pdf_or_tmpl.pdf
     else:
         pdf = pdf_or_tmpl
-    set_doc_date_0(pdf)  # Ensure PDFs CreationDate is always the same
+    set_doc_date_0(pdf)
     expected_pdf_filepath = relative_path_to(rel_expected_pdf_filepath, depth=2)
-    with NamedTemporaryFile(
+    with _named_temporary_file(
         prefix="pyfpdf-test-", delete=delete, suffix="-actual.pdf"
     ) as actual_pdf_file:
         pdf.output(actual_pdf_file.name, "F")
         if not delete:
             print("Temporary file will not be deleted:", actual_pdf_file.name)
         if QPDF_AVAILABLE:  # Favor qpdf-based comparison, as it helps a lot debugging:
-            with NamedTemporaryFile(
+            with _named_temporary_file(
                 prefix="pyfpdf-test-", delete=delete, suffix="-actual-qpdf.pdf"
-            ) as actual_qpdf_file, NamedTemporaryFile(
+            ) as actual_qpdf_file, _named_temporary_file(
                 prefix="pyfpdf-test-", delete=delete, suffix="-expected-qpdf.pdf"
             ) as expected_qpdf_file:
                 _qpdf(actual_pdf_file.name, actual_qpdf_file.name)
@@ -60,6 +68,18 @@ def assert_pdf_equal(test, pdf_or_tmpl, rel_expected_pdf_filepath, delete=True):
             actual_hash = calculate_hash_of_file(actual_pdf_file.name)
             expected_hash = calculate_hash_of_file(expected_pdf_filepath)
             test.assertEqual(actual_hash, expected_hash)
+
+
+@contextmanager
+def _named_temporary_file(*args, delete=True, **kwargs):
+    # Recipe from: https://stackoverflow.com/a/54768241
+    with NamedTemporaryFile(*args, delete=False, **kwargs) as ntf:
+        try:
+            yield ntf
+        finally:
+            if delete:
+                ntf.close()
+                os.remove(ntf.name)
 
 
 def _qpdf(input_pdf_filepath, output_pdf_filepath):

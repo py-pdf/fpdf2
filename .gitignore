@@ -39,6 +39,7 @@ pip-selfcheck.json
 
 # Unit test / coverage reports
 .coverage
+.tox
 nosetests.xml
 
 # Translations

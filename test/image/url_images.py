@@ -39,3 +39,33 @@ class UrlImagesTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+## Code used to create test:
+# pdf = fpdf.FPDF()
+# pdf.compress = False
+# pdf.add_page()
+# png = "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+# pdf.image(png, x = 15, y = 15, w = 30, h = 25)
+
+# test = relative_path_to('output.pdf')
+
+# set_doc_date_0(pdf)
+# pdf.output(test, 'F')
+
+# print(calculate_hash_of_file(test))
+# os.unlink(test)
+
+# pdf = fpdf.FPDF()
+# pdf.compress = False
+# pdf.add_page()
+# jpg = ("https://upload.wikimedia.org/wikipedia/commons/8/8c/"
+#        "JPEG_example_JPG_RIP_025.jpg")
+# pdf.image(jpg, x = 15, y = 15)
+
+# test = relative_path_to('output.pdf')
+
+# set_doc_date_0(pdf)
+# pdf.output(test, 'F')
+
+# print(calculate_hash_of_file(test))
+# os.unlink(test)

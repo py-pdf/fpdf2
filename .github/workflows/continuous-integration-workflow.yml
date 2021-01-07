@@ -1,6 +1,6 @@
 name: build
 
-on:
+on:  # cf. https://github.community/t/how-to-trigger-an-action-on-push-or-pull-request-but-not-both/16662
   push:
     branches:
     - master

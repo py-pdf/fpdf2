@@ -83,3 +83,29 @@ class CharmapTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+## Code used to create test:
+# fontpath = relative_path_to('DejaVuSans.ttf')
+
+# pdf = fpdf.FPDF()
+# pdf.compression = True
+# pdf.add_page()
+# pdf.add_font('font', '', fontpath, uni = True)
+# pdf.set_font('font', '', 10)
+
+# ttf = MyTTFontFile()
+# ttf.getMetrics(fontpath)
+
+# for counter, character in enumerate(ttf.saveChar, 0):
+#   # print (counter, character)
+#   pdf.write(8, u"%03d) %06x - %c" % (counter, character, character))
+#   pdf.ln()
+
+#   if counter >= 999: break
+
+# output = relative_path_to('charmap_test_output.pdf')
+
+# set_doc_date_0(pdf)
+# pdf.output(output)
+# print calculate_hash_of_file(output)
+# os.unlink(output)

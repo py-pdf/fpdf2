@@ -51,3 +51,24 @@ class InsertImagesTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+## Code used to create test:
+# doc = fpdf.FPDF()
+# doc.compress = False
+# doc.add_page()
+# imagename = relative_path_to('insert_images_insert_jpg.jpg')
+# doc.image(imagename, x = 15, y = 15, h = 140) #, w = 30, h = 25)
+# set_doc_date_0(doc)
+# output_name = relative_path_to('insert_images_jpg_good.pdf')
+# doc.output(output_name)
+# print calculate_hash_of_file(output_name)
+
+# doc = fpdf.FPDF()
+# doc.compress = False
+# doc.add_page()
+# imagename = relative_path_to('insert_images_insert_png.png')
+# doc.image(imagename, x = 15, y = 15, h = 140) #, w = 30, h = 25)
+# set_doc_date_0(doc)
+# output_name = relative_path_to('insert_images_png_good.pdf')
+# doc.output(output_name)
+# print calculate_hash_of_file(output_name)
