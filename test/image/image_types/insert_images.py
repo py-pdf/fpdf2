@@ -22,7 +22,12 @@ class InsertImagesTest(unittest.TestCase):
         pdf.add_page()
         imagename = relative_path_to("insert_images_insert_jpg.jpg")
         pdf.image(imagename, x=15, y=15, h=140)
-        assert_pdf_equal(self, pdf, "test_insert_jpg.pdf")
+        if sys.platform in ("cygwin", "win32"):
+            # Pillow uses libjpeg-turbo on Windows and libjpeg elsewhere,
+            # leading to a slightly different image being parsed and included in the PDF:
+            assert_pdf_equal(self, pdf, "test_insert_jpg_windows.pdf")
+        else:
+            assert_pdf_equal(self, pdf, "test_insert_jpg.pdf")
 
     def test_insert_png(self):
         pdf = fpdf.FPDF()

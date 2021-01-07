@@ -35,7 +35,7 @@ from hashlib import md5
 
 from .errors import FPDFException, FPDFPageFormatException
 from .fonts import fpdf_charwidths
-from .image_parsing import get_img_info, load_resource as image_parsing_load_resource
+from .image_parsing import get_img_info, load_resource
 from .ttfonts import TTFontFile
 from .util import (
     substr,
@@ -1343,7 +1343,7 @@ class FPDF:
                 PendingDeprecationWarning,
             )
         if name not in self.images:
-            info = get_img_info(image_parsing_load_resource(name))
+            info = get_img_info(load_resource(name))
             info["i"] = len(self.images) + 1
             self.images[name] = info
         else:
