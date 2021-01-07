@@ -9,4 +9,3 @@ recursive-exclude tutorial *
 exclude *.md
 exclude *.yml
 include LICENSE
-exclude tox.ini

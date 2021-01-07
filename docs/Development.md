@@ -85,16 +85,15 @@ or `black` detect non-properly formatted code.
 In the later case though, it will auto-format your code
 and you will just have to run `git commit -a` again.
 
-Be sure to check on what actions will actually be run in the CI workflow in
-`.github/workflows/continuous-integration-workflow.yml`.
-
 ## Testing ##
 
-Testing is done with [Tox](https://tox.readthedocs.io/en/latest/), and is
-self-documented in the `tox.ini` file in the repository. To run tests,
-`cd` into the repository and run `tox`.
+To run tests, `cd` into the repository and run `python setup.py test` or `pytest`.
 
-To only run tests for your version of Python, run `python setup.py test`.
+Alternatively, you can use [Tox](https://tox.readthedocs.io/en/latest/).
+It is self-documented in the `tox.ini` file in the repository.
+To run tests for all versions of Python, simply run `tox`.
+If you do not want to run tests for all versions of python, run `tox -e py39`
+(or your version of Python).
 
 When a unit test generates a PDF, it is recommended to use the `assert_pdf_equal`
 utility function in order to validate the output.
@@ -121,12 +120,10 @@ Ask maintainers through comments if some errors in the pipeline seem obscure to 
 
 ## Documentation ##
 
-To build docs, cd into repository and `tox -e docs`.
-
-This Standalone documentation is in the `docs` subfolder in 
-[Markdown](https://daringfireball.net/projects/markdown/) format. Building
-instructions are contained in the configuration file `mkdocs.yml` and also in
-the docs script in the `tox.ini` file.
+The standalone documentation is in the `docs` subfolder,
+written in [Markdown](https://daringfireball.net/projects/markdown/).
+Building instructions are contained in the configuration file `mkdocs.yml`
+and also in `.github/workflows/continuous-integration-workflow.yml`.
 
 Additional documentation is generated from inline comments, and is available
 in the project [home page](https://alexanderankin.github.io/pyfpdf/fpdf/).
