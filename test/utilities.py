@@ -15,7 +15,7 @@ from fpdf.template import Template
 QPDF_AVAILABLE = bool(shutil.which("qpdf"))
 if not QPDF_AVAILABLE:
     warnings.warn(
-        "qpdf command not available on the $PATH, falling-back to hash-based comparisons in tests"
+        "qpdf command not available on the $PATH, falling back to hash-based comparisons in tests"
     )
 
 
@@ -30,11 +30,11 @@ class TempFile:
     def read_whole_file(self):
         ret = []
         while True:
-            rval = self.handle.read(100)
+            rval = self.handle.read(10_000)
+            ret.append(rval)
             if not rval or rval == b"" or rval == "":
                 break
-            ret.append(rval)
-        return b""
+        return ret.pop().join(ret)
 
     def rwf(self):
         return self.read_whole_file()
@@ -80,6 +80,14 @@ class TempFileCtx:
 
 def assert_pdf_equal(test, pdf_or_tmpl, rel_expected_pdf_filepath, delete=True):
     """
+    This compare the output of a `FPDF` instance (or `Template` instance),
+    with the provided PDF file.
+
+    The `CreationDate` of the newly generated PDF is fixed, so that it never triggers a diff.
+
+    If the `qpdf` command is available on the `$PATH`, it will be used to perform the comparison,
+    as it greatly helps debugging diffs. Otherwise, a hash-based comparison logic is used as a fallback.
+
     Args:
         test (unittest.TestCase)
         pdf_or_tmpl: instance of `FPDF` or `Template`. The `output` or `render` method will be called on it.
@@ -113,9 +121,16 @@ def assert_pdf_equal(test, pdf_or_tmpl, rel_expected_pdf_filepath, delete=True):
                         actual_qpdf_file.name,
                         expected_qpdf_file.name,
                     )
-                test.assertSequenceEqual(
-                    actual_qpdf_file.rwf(), expected_qpdf_file.rwf()
-                )
+
+                actual_wf = actual_qpdf_file.rwf()
+                expected_wf = expected_qpdf_file.rwf()
+
+                test.assertEqual(len(actual_wf), len(expected_wf))
+                for i in range(len(actual_wf)):
+                    test.assertEqual(actual_wf[i], expected_wf[i])
+                # test.assertSequenceEqual(
+                #     actual_qpdf_file.rwf(), expected_qpdf_file.rwf()
+                # )
         else:  # Fallback to hash comparison
             actual_hash = calculate_hash_of_file(actual_pdf_file.name)
             expected_hash = calculate_hash_of_file(expected_pdf_filepath)
