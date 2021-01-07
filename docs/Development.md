@@ -77,7 +77,6 @@ if [ -n "$modified_py_files" ]; then
     # if core files modified, lint
     [[ $modified_fpdf_files == "" ]] || pylint $modified_fpdf_files
 fi
-unset git_cached_names
 ```
 
 It will abort the commit if `pylint` found issues
