@@ -4,7 +4,7 @@
 
 _PyFPDF_ is a library for PDF document generation under Python, ported from PHP (see [FPDF](http://www.fpdf.org/): "Free"-PDF, a well-known PDFlib-extension replacement with many examples, scripts and derivatives).
 
-**Latest Released Version: fpdf2==2.0.6 (October 26th, 2020)*  *  -**Current Development Version: 2.2.0**
+**Latest Released Version: fpdf2==2.0.6 (October 26th, 2020)*  *  -**Current Development Version: 2.2.0rc2**
 
 ## Main features ##
   * Easy to use (and easy to extend)
