@@ -1239,7 +1239,7 @@ class FPDF:
         location_options = {
             0: lambda: self.set_xy(self.x + w, self.y),
             1: lambda: self.set_x(self.l_margin),  # could control y
-            2: lambda: None
+            2: lambda: None,
         }
         location_options.get(ln, lambda: None)()
 
