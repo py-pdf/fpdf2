@@ -156,6 +156,7 @@ class FPDF:
         self.font_style = ""  # current font style
         self.font_size_pt = 12  # current font size in points
         self.font_stretching = 100  # current font stretching
+        self.unifontsubset = False
         self.underline = 0  # underlining flag
         self.draw_color = "0 G"
         self.fill_color = "0 g"
@@ -705,7 +706,6 @@ class FPDF:
 
     def set_font(self, family, style="", size=0):
         "Select a font; size given in points"
-        family = family.lower()
         if family == "":
             family = self.font_family
         if family == "arial":
@@ -752,7 +752,7 @@ class FPDF:
         self.font_size_pt = size
         self.font_size = size / self.k
         self.current_font = self.fonts[fontkey]
-        self.unifontsubset = self.fonts[fontkey]["type"] == "TTF"
+        self.unifontsubset = self.current_font["type"] == "TTF"
         if self.page > 0:
             self._out(
                 sprintf("BT /F%d %.2f Tf ET", self.current_font["i"], self.font_size_pt)
@@ -803,6 +803,8 @@ class FPDF:
     @check_page
     def text(self, x, y, txt=""):
         "Output a string"
+        if not self.font_family:
+            raise FPDFException("No font set, you need to call set_font() beforehand")
         txt = self.normalize_text(txt)
         if self.unifontsubset:
             txt2 = UTF8ToUTF16BE(escape_parens(txt), False).decode("latin-1")
@@ -902,6 +904,8 @@ class FPDF:
     @check_page
     def cell(self, w, h=0, txt="", border=0, ln=0, align="", fill=0, link=""):
         "Output a cell, return boolean if triggered auto page break"
+        if not self.font_family:
+            raise FPDFException("No font set, you need to call set_font() beforehand")
         page_break_triggered = False
         txt = self.normalize_text(txt)
         k = self.k
@@ -1254,6 +1258,8 @@ class FPDF:
     @check_page
     def write(self, h, txt="", link=""):
         "Output text in flowing mode"
+        if not self.font_family:
+            raise FPDFException("No font set, you need to call set_font() beforehand")
         txt = self.normalize_text(txt)
         cw = self.current_font["cw"]
         w = self.w - self.r_margin - self.x

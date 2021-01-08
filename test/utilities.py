@@ -19,7 +19,9 @@ if not QPDF_AVAILABLE:
     )
 
 
-def assert_pdf_equal(test, pdf_or_tmpl, rel_expected_pdf_filepath, delete=True):
+def assert_pdf_equal(
+    test, pdf_or_tmpl, rel_expected_pdf_filepath, delete=True, generate=False
+):
     """
     This compare the output of a `FPDF` instance (or `Template` instance),
     with the provided PDF file.
@@ -34,6 +36,7 @@ def assert_pdf_equal(test, pdf_or_tmpl, rel_expected_pdf_filepath, delete=True):
         pdf_or_tmpl: instance of `FPDF` or `Template`. The `output` or `render` method will be called on it.
         rel_expected_pdf_filepath (str): relative file path to a PDF file matching the expected output
         delete (bool): clean up temporary PDF files after performing test
+        generate (bool): only generate `pdf` output to `rel_expected_pdf_filepath` and return. Useful to create new tests.
     """
     if isinstance(pdf_or_tmpl, Template):
         pdf_or_tmpl.render()
@@ -42,6 +45,9 @@ def assert_pdf_equal(test, pdf_or_tmpl, rel_expected_pdf_filepath, delete=True):
         pdf = pdf_or_tmpl
     set_doc_date_0(pdf)
     expected_pdf_filepath = relative_path_to(rel_expected_pdf_filepath, depth=2)
+    if generate:
+        pdf.output(expected_pdf_filepath, "F")
+        return
     with tmp_file(
         prefix="pyfpdf-test-", delete=delete, suffix="-actual.pdf"
     ) as actual_pdf_file:
@@ -130,7 +136,13 @@ def _qpdf(input_pdf_filepath, output_pdf_filepath):
             check_output(["cygpath", "-w", output_pdf_filepath]).decode().strip()
         )
     check_call(
-        ["qpdf", "--deterministic-id", input_pdf_filepath, output_pdf_filepath],
+        [
+            "qpdf",
+            "--deterministic-id",
+            "--qdf",
+            input_pdf_filepath,
+            output_pdf_filepath,
+        ],
         stderr=sys.stderr,
         stdout=sys.stdout,
     )

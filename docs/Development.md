@@ -101,8 +101,7 @@ to generate a PDF that is easy to compare: annotated, strictly formatted,
 whith uncompressed internal streams.
 You will need to have its binary in your `$PATH`,
 otherwise `assert_pdf_equal` will fall back to hash-based comparison.
-In order to generate a "reference" PDF file, simply call `assert_pdf_equal` once
-with `delete=False`, and retrieve the generated `/tmp/pyfpdf-test-*-actual.pdf` file.
+In order to generate a "reference" PDF file, simply call `assert_pdf_equal` once with `generate=True`.
 
 Be sure to see the example tests in the `test/` folder in general.
 
