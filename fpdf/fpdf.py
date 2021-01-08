@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 # ****************************************************************************
 # * Software: FPDF for python                                                *
-# * Date:     2010-09-10                                                     *
-# * Last update: 2020-01-05                                                  *
 # * License:  LGPL v3.0                                                      *
 # *                                                                          *
 # * Original Author (PHP):  Olivier PLATHEY 2004-12-31                       *
