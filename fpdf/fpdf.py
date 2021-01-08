@@ -577,11 +577,11 @@ class FPDF:
 
     def add_font(self, family, style="", fname=None, uni=False):
         "Add a TrueType or Type1 font"
-        family = family.lower()
         if not fname:
             fname = family.replace(" ", "") + style.lower() + ".pkl"
 
-        if family == "arial":
+        if family.lower() == "arial":
+            warnings.warn("Substitutting Arial by core font Helvetica")
             family = "helvetica"
         style = style.upper()
         if style == "IB":
@@ -708,7 +708,8 @@ class FPDF:
         "Select a font; size given in points"
         if family == "":
             family = self.font_family
-        if family == "arial":
+        if family.lower() == "arial":
+            warnings.warn("Substitutting Arial by core font Helvetica")
             family = "helvetica"
         elif family in ("symbol", "zapfdingbats"):
             style = ""
