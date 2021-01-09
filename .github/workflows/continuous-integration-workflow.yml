@@ -36,6 +36,8 @@ jobs:
           black --check .
       - name: Running tests ☑
         run: |
+          # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
+          grep -IRF generate=True test/ && exit 1
           pip install pytest pytest-cov
           pytest
           bash <(curl -s https://codecov.io/bash)
