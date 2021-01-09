@@ -36,8 +36,9 @@ jobs:
           black --check .
       - name: Running tests ☑
         run: |
-          pip install pytest
+          pip install pytest pytest-cov
           pytest
+          bash <(curl -s https://codecov.io/bash)
       - name: Generating HTML documentation 🏗️
         run: |
           mkdir -p public/
