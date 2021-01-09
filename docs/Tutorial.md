@@ -18,7 +18,7 @@ pdf.cell(40, 10, 'Hello World!')
 pdf.output('tuto1.pdf', 'F')
 ```
 
-[Demo](https://github.com/reingart/pyfpdf/raw/master/tutorial/tuto1.pdf)
+[Demo](https://github.com/alexanderankin/pyfpdf/raw/master/tutorial/tuto1.pdf)
 
 After including the library file, we create an FPDF object. The 
 [FPDF](reference/FPDF.md) constructor is used here with the default values: 
@@ -119,7 +119,7 @@ for i in range(1, 41):
 pdf.output('tuto2.pdf', 'F')
 ```
 
-[Demo](https://github.com/reingart/pyfpdf/raw/master/tutorial/tuto2.pdf)
+[Demo](https://github.com/alexanderankin/pyfpdf/raw/master/tutorial/tuto2.pdf)
 
 This example makes use of the [header](reference/header.md) and 
 [footer](reference/footer.md) methods to process page headers and footers. They
@@ -225,7 +225,7 @@ pdf.print_chapter(2, 'THE PROS AND CONS', '20k_c2.txt')
 pdf.output('tuto3.pdf', 'F')
 ```
 
-[Demo](https://github.com/reingart/pyfpdf/raw/master/tutorial/tuto3.pdf)
+[Demo](https://github.com/alexanderankin/pyfpdf/raw/master/tutorial/tuto3.pdf)
 
 The [get_string_width](reference/get_string_width.md) method allows determining
 the length of a string in the current font, which is used here to calculate the
@@ -248,17 +248,3 @@ Two document properties are defined: the title
 First is to open the document directly with Acrobat Reader, go to the File menu
 and choose the Document Properties option. The second, also available from the
 plug-in, is to right-click and select Document Properties.
-
-## Installation Notes ##
-
-Previously, to import the object you should use the pyfpdf package:
-
-```python
-from pyfpdf import FPDF
-```
-
-After version 1.7, to import it you should use the fpdf package:
-
-```python
-from fpdf import FPDF
-```

@@ -2,9 +2,9 @@
 
 <a href='https://github.com/alexanderankin/pyfpdf'><img src='https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png' alt='Fork me on GitHub' border='0' align='right' /></a>
 
-_PyFPDF_ is a library for PDF document generation under Python, ported from PHP (see [FPDF](http://www.fpdf.org/): "Free"-PDF, a well-known PDFlib-extension replacement with many examples, scripts and derivatives).
+`fpdf2` is a library for PDF document generation in Python, forked from the unmaintained [pyfpdf](https://github.com/reingart/pyfpdf), itself ported from the PHP [FPDF](http://www.fpdf.org/) library.
 
-**Latest Released Version: fpdf2==2.0.6 (October 26th, 2020)*  *  -**Current Development Version: 2.2.0**
+**Latest Released Version:** [![Pypi latest version](https://img.shields.io/pypi/v/fpdf2.svg)](https://pypi.python.org/pypi/fpdf2)
 
 ## Main features ##
   * Easy to use (and easy to extend)
@@ -46,4 +46,4 @@ FPDF original features:
 
 ## Support ##
 
-For community support, please feel free to file an [issue](https://github.com/reingart/pyfpdf/issues). Please be sure to tag recently active maintainers from other issues, as the [repository of this library](https://github.com/alexanderankin/pyfpdf/pulls) as of this writing is a fork and does not accept issues (only pull requests).
+For community support, please feel free to file an [issue](https://github.com/alexanderankin/pyfpdf/issues).

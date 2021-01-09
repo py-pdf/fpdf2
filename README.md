@@ -4,10 +4,10 @@
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 [![codecov](https://codecov.io/gh/alexanderankin/pyfpdf/branch/master/graph/badge.svg)](https://codecov.io/gh/alexanderankin/pyfpdf)
 
-pyfpdf: FPDF for Python
+fpdf2: FPDF for Python
 =======================
 
-Minimalist PDF creation library for Python
+`fpdf2` is a minimalist PDF creation library for Python:
 
 ```python
 from fpdf import FPDF
@@ -19,11 +19,7 @@ document.cell(w=0, txt="hello world")
 document.output("hello_world.pdf")
 ```
 
-PyFPDF is a library for PDF document generation under Python, ported from PHP
-(see [FPDF](http://www.fpdf.org/): "Free"-PDF, a well-known PDFlib-extension
-replacement with many examples, scripts and derivatives).
-
-Compared with other PDF libraries, PyFPDF is simple, small and versatile, with
+Compared with other PDF libraries, `fpdf2` is simple, small and versatile, with
 advanced capabilities, and is easy to learn, extend and maintain.
 
 Looking for Developer Help!
@@ -31,7 +27,7 @@ Looking for Developer Help!
 Installation Instructions:
 --------------------------
 
-You can [install PyFPDF from PyPI][1], with easyinstall or from Windows 
+You can [install fpdf2 from PyPI][1], with easyinstall or from Windows 
 installers. For example, using pip:
 
 ```bash
