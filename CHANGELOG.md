@@ -10,6 +10,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 ## [2.2.0] - not released yet
 ### Added
 - new unit tests, a code formatter (`black`) and a linter (`pylint`) to improve code quality
+- new boolean parameter `table_line_separators` for `HTMLMixin.write_html` & underlying `HTML2FPDF` constructor
 ### Changed
 - the documentation URL is now simply https://alexanderankin.github.io/pyfpdf/
 ### Removed
