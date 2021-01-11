@@ -48,8 +48,11 @@ if __name__ == "__main__":
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
             "Operating System :: OS Independent",
+            "Printing",
+            "Text Processing :: Markup",
             "Topic :: Software Development :: Libraries :: Python Modules",
             "Topic :: Multimedia :: Graphics",
+            "Topic :: Multimedia :: Graphics :: Presentation",
         ],
         keywords=["pdf", "unicode", "png", "jpg", "ttf"],
     )

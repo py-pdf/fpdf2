@@ -1,10 +1,12 @@
-# FPDF for Python #
+# fpdf2 #
 
 <a href='https://github.com/PyFPDF/fpdf2'><img src='https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png' alt='Fork me on GitHub' border='0' align='right' /></a>
 
 `fpdf2` is a library for PDF document generation in Python, forked from the unmaintained [pyfpdf](https://github.com/reingart/pyfpdf), itself ported from the PHP [FPDF](http://www.fpdf.org/) library.
 
 **Latest Released Version:** [![Pypi latest version](https://img.shields.io/pypi/v/fpdf2.svg)](https://pypi.python.org/pypi/fpdf2)
+
+![fpdf2 logo](fpdf2-logo.png)
 
 ## Main features ##
   * Easy to use (and easy to extend)

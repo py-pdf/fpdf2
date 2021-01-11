@@ -52,7 +52,7 @@ jobs:
             mkdir public/$dir
             cp docs/redirect.html public/$dir/index.html
           done
-      - name: Deploy 🚀
+      - name: Deploy documentation 🚀
         # GitHub Pages deployment should not be done for all Python versions,
         # otherwise commits will conflict on the gh-pages branch:
         if: github.ref == 'refs/heads/master' && matrix.python-version == '3.9'
@@ -60,3 +60,18 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: public/
+      - name: Publish on Pypi 🚀
+        # Similarly, we only publish a new version on Pypi once per pipeline running on master:
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.9'
+        run: |
+          apt update && apt install -y curl jq
+          echo Versions already released on Pypi: $(curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]')
+          echo Current code version: $(python setup.py -V)
+          # Checking if current code version has already been released:
+          curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]' | grep "^$(python setup.py -V)\$" && exit 0
+          # No? Then performing a release on Pypi now:
+          python setup.py sdist bdist_wheel
+          twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.FPDF2_GITHUB_ACTION_PUBLISH }}
