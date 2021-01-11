@@ -22,7 +22,7 @@ class CoreFontsTest(unittest.TestCase):
         for i, font_name in enumerate(pdf.core_fonts.keys()):
             pdf.set_font(font_name, "", 36)
             pdf.text(10, 10 + 10 * i, "Hello World!")
-        assert_pdf_equal(self, pdf, "test_set_core_font.pdf", generate=True)
+        assert_pdf_equal(self, pdf, "test_set_core_font.pdf")
 
 
 if __name__ == "__main__":

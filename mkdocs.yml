@@ -7,23 +7,23 @@
 # Alternatively, there is a script in the `scripts` folder for convenience.
 ### 
 site_name: PyFPDF
-site_url: https://alexanderankin.github.io/pyfpdf/
-repo_url: https://github.com/alexanderankin/pyfpdf
+site_url: https://pyfpdf.github.io/fpdf2/
+repo_url: https://github.com/PyFPDF/fpdf2
 site_description: Simple PDF generation for Python (FPDF PHP port) [FORK]
 docs_dir: docs
 site_dir: public/
 use_directory_urls: false
 edit_uri: edit/master/docs
 theme: material
-# markdown_extensions: [toc, fenced_code, markdown_i18n]
-markdown_extensions: [toc, fenced_code]
+markdown_extensions: [toc, pymdownx.highlight, pymdownx.superfences]
 nav:
 - 'Project Home': 'index.md'
 - 'Tutorial':     'Tutorial.md'
 - 'Tutorial Translations':
   - 'Tutorial (Spanish translation)': 'Tutorial-es.md'
-- 'API':          'https://alexanderankin.github.io/pyfpdf/fpdf/'
+- 'API':          'https://pyfpdf.github.io/fpdf2/fpdf/'
 - 'FAQ':          'FAQ.md'
+- 'Logging':      'Logging.md'
 - 'Development':  'Development.md'
 - 'Templates':    'Templates.md'
 - 'Unicode':      'Unicode.md'

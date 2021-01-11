@@ -10,8 +10,9 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 ## [2.2.0] - not released yet
 ### Added
 - new unit tests, a code formatter (`black`) and a linter (`pylint`) to improve code quality
+- new boolean parameter `table_line_separators` for `HTMLMixin.write_html` & underlying `HTML2FPDF` constructor
 ### Changed
-- the documentation URL is now simply https://alexanderankin.github.io/pyfpdf/
+- the documentation URL is now simply https://pyfpdf.github.io/fpdf2/
 ### Removed
 - dropped support for external font definitions in `.font` Python files, that relied on a call to `exec`
 ### Deprecated
@@ -25,7 +26,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 * [Adding support for Contents alt text on Links](https://github.com/reingart/pyfpdf/pull/163)
 ### Modified
 * [Making FPDF.output() x100 time faster by using a bytearray buffer](https://github.com/reingart/pyfpdf/pull/164)
-* Fix user's font path ([issue](https://github.com/reingart/pyfpdf/issues/166) [pr](https://github.com/alexanderankin/pyfpdf/pull/14))
+* Fix user's font path ([issue](https://github.com/reingart/pyfpdf/issues/166) [PR](https://github.com/PyFPDF/fpdf2/pull/14))
 ### Deprecated
 * [Deprecating .rotate() and introducing .rotation() context manager](https://github.com/reingart/pyfpdf/pull/161)
 ### Fixed

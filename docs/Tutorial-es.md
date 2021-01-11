@@ -18,7 +18,7 @@ pdf.cell(40, 10, 'Hola Mundo!')
 pdf.output('tuto1.pdf', 'F')
 ```
 
-[Demo](https://github.com/reingart/pyfpdf/raw/master/tutorial/tuto1.pdf)
+[Demo](https://github.com/alexanderankin/pyfpdf/raw/master/tutorial/tuto1.pdf)
 
 Luego de incluir la biblioteca, creamos un objeto FPDF. El constructor [FPDF](reference/FPDF.md) es usado aquí con los valores predeterminados: páginas en A4 portrait -vertical- y la unidad de medida en milímetros. Podría haberlos especificado explícitamente: 
 
@@ -95,7 +95,7 @@ for i in range(1, 41):
     pdf.cell(0, 10, 'Printing line number ' + str(i), 0, 1)
 pdf.output('tuto2.pdf', 'F')
 ```
-[Demo](https://github.com/reingart/pyfpdf/raw/master/tutorial/tuto2.pdf)
+[Demo](https://github.com/alexanderankin/pyfpdf/raw/master/tutorial/tuto2.pdf)
 
 Este ejemplo hace uso de métodos  [header](reference/header.md) y  [footer](reference/footer.md) para procesar el encabezado y pie de página. Son llamados automáticamente. Ya existen en la clase FPDF pero no hacen nada por sí solos, por lo tanto tenemos que extender la clase y sobreescribirlos. 
 
@@ -179,7 +179,7 @@ pdf.print_chapter(1, 'A RUNAWAY REEF', '20k_c1.txt')
 pdf.print_chapter(2, 'THE PROS AND CONS', '20k_c2.txt')
 pdf.output('tuto3.pdf', 'F')
 ```
-[Demo](https://github.com/reingart/pyfpdf/raw/master/tutorial/tuto3.pdf)
+[Demo](https://github.com/alexanderankin/pyfpdf/raw/master/tutorial/tuto3.pdf)
 
 El método [get_string_width](reference/get_string_width.md) permite determinar la longitud de una cadena en la fuente actual, usado aquí para calcular la posición y el ancho del marco que rodea al título. Los colores son establecidos (vía [set_draw_color](reference/set_draw_color.md), [set_fill_color](reference/set_fill_color.md) y [set_text_color](reference/set_text_color.md)) y el grosor de la línea es establecido a 1 mm (contra 0.2 por defecto) con [set_line_width](reference/set_line_width.md). Finalmente, emitimos la celda (el último parámetro es True para indicar que el fondo debe ser rellenado). 
 

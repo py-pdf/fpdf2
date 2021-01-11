@@ -129,7 +129,7 @@ These features are not available in the original FPDF and were implemented after
 
   * [dashed_line](reference/dashed_line.md) - draw a dashed line
   * [ellipse](reference/ellipse.md) - draw an ellipse
-  * [rotate](reference/rotate.md) - rotation around a given center
+  * [rotation](reference/rotation.md) - rotation around a given center
   * [set_doc_option](reference/set_doc_option.md) - set document options
   * [set_stretching](reference/set_stretching.md) - set horizontal font stretching
   * [write_html](reference/write_html.md) - print text with HTML markup ***Obsolete, under review.***

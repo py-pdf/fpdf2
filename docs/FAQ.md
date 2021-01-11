@@ -1,7 +1,6 @@
 # FAQ #
 
-See [Project Home](https://github.com/reingart/pyfpdf) for an overall 
-introduction.
+See [Project Home](index.md) for an overall introduction.
 
 [TOC]
 

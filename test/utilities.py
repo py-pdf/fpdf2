@@ -101,12 +101,19 @@ def subst_streams_with_hashes(in_lines):
         if line == b"stream":
             assert stream is None
             stream = bytearray()
+        elif stream == b"stream":
+            # First line of stream, we check if it is binary or not:
+            try:
+                line.decode("latin-1")
+                # It's text! No need to compact stream
+                stream = None
+            except UnicodeDecodeError:
+                pass
         if stream is None:
             out_lines.append(line)
         else:
             stream += line
-        if line.endswith(b"endstream"):
-            assert stream is not None
+        if line.endswith(b"endstream") and stream:
             stream_hash = hashlib.md5(stream).digest()
             out_lines.append(b"<stream with MD5 hash: " + hexlify(stream_hash) + b">\n")
             stream = None
@@ -173,4 +180,4 @@ def relative_path_to(place, depth=1):
     """
     # pylint: disable=protected-access
     caller_file = inspect.getfile(sys._getframe(depth))
-    return os.path.join(os.path.dirname(os.path.abspath(caller_file)), place)
+    return os.path.abspath(os.path.join(os.path.dirname(caller_file), place))

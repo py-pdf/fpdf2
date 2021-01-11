@@ -905,6 +905,11 @@ class FPDF:
         "Output a cell, return boolean if triggered auto page break"
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
+        if isinstance(border, int) and border not in (0, 1):
+            warnings.warn(
+                'Integer values for "border" parameter other than 1 are currently ignored'
+            )
+            border = 1
         page_break_triggered = False
         txt = self.normalize_text(txt)
         k = self.k
@@ -2053,7 +2058,7 @@ class FPDF:
     def _putinfo(self):
         info_d = o_dict()
         # info_d[pdf_name('producer')] = ts('PyFPDF ' + FPDF_VERSION + \
-        #     ' https://github.com/alexanderankin/pyfpdf')
+        #     ' https://github.com/PyFPDF/fpdf2')
         info_d[pdf_name("title")] = enclose_in_parens(getattr(self, "title", None))
         info_d[pdf_name("subject")] = enclose_in_parens(getattr(self, "subject", None))
         info_d[pdf_name("author")] = enclose_in_parens(getattr(self, "author", None))
@@ -2226,7 +2231,7 @@ class FPDF:
 
     @check_page
     def interleaved2of5(self, txt, x, y, w=1.0, h=10.0):
-        "Barcode I2of5 (numeric), adds a 0 if odd lenght"
+        "Barcode I2of5 (numeric), adds a 0 if odd length"
         narrow = w / 3.0
         wide = w
 

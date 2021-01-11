@@ -1,5 +1,8 @@
-# -*- coding: iso-8859-1 -*-
-import sys, os
+"""
+An example of script that generates a one page invoice with barcode,
+with data coming from a CSV file.
+"""
+import os
 from fpdf import FPDF
 
 
@@ -29,14 +32,12 @@ class Form:
             for linea in file.readlines():
                 kargs = {}
                 for i, v in enumerate(linea.split(";")):
-                    if not v.startswith("'"):
-                        v = v.replace(",", ".")
-                    else:
-                        v = v  # .decode('latin1')
-                    if v == "":
+                    if v in ("", "None"):
                         v = None
+                    elif v.startswith("'"):
+                        v = v.strip()[1:-1]
                     else:
-                        v = eval(v.strip())
+                        v = float(v.replace(",", "."))
                     kargs[keys[i]] = v
                 self.fields[kargs["name"].lower()] = kargs
         self.handlers = {
@@ -61,9 +62,10 @@ class Form:
 
         pdf.output(outfile, "F")
 
+    @staticmethod
     def text(
-        self,
         pdf,
+        *_,
         x1=0,
         y1=0,
         x2=0,
@@ -75,8 +77,7 @@ class Form:
         italic=False,
         underline=False,
         align="",
-        *args,
-        **kwargs
+        **__
     ):
         if text:
             font = font.strip().lower()
@@ -97,41 +98,30 @@ class Form:
             pdf.cell(w=x2 - x1, h=y2 - y1, txt=text, border=0, ln=0, align=align)
             # pdf.Text(x=x1,y=y1,txt=text)
 
-    def line(self, pdf, x1=0, y1=0, x2=0, y2=0, size=0, *args, **kwargs):
+    @staticmethod
+    def line(pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, **__):
         pdf.set_line_width(size)
         pdf.line(x1, y1, x2, y2)
 
-    def rect(self, pdf, x1=0, y1=0, x2=0, y2=0, size=0, *args, **kwargs):
+    @staticmethod
+    def rect(pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, **__):
         pdf.set_line_width(size)
         pdf.rect(x1, y1, x2 - x1, y2 - y1)
 
-    def image(self, pdf, x1=0, y1=0, x2=0, y2=0, text="", *args, **kwargs):
+    @staticmethod
+    def image(pdf, *_, x1=0, y1=0, x2=0, y2=0, text="", **__):
         pdf.image(text, x1, y1, w=x2 - x1, h=y2 - y1, type="", link="")
 
-    def barcode(
-        self,
-        pdf,
-        x1=0,
-        y1=0,
-        x2=0,
-        y2=0,
-        text="",
-        font="arial",
-        size=1,
-        *args,
-        **kwargs
-    ):
+    @staticmethod
+    def barcode(pdf, *_, x1=0, y1=0, text="", font="arial", size=1, **__):
         font = font.lower().strip()
         if font == "interleaved 2of5 nt":
             pdf.interleaved2of5(text, x1, y1, w=size)
 
 
 if __name__ == "__main__":
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
     f = Form("invoice.csv")
     f.set("EMPRESA", "Saraza")
     f.set("logo", "logo.png")
     f.render("./invoice.pdf")
-    if sys.platform.startswith("linux"):
-        os.system("xdg-open ./invoice.pdf")
-    else:
-        os.system("./invoice.pdf")
