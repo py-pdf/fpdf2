@@ -192,7 +192,7 @@ class HTMLTest(unittest.TestCase):
         pdf.add_page()
         pdf.write_html(
             """<table><thead><tr>
-            <th width="250">left</th><th width="500">center</th><th width="250">right</th>
+            <th width="25%">left</th><th width="50%">center</th><th width="25%">right</th>
         </tr></thead><tbody><tr>
             <td>1</td><td>2</td><td>3</td>
         </tr><tr>
@@ -207,7 +207,7 @@ class HTMLTest(unittest.TestCase):
         pdf.add_page()
         pdf.write_html(
             """<table><thead><tr>
-            <th width="250">left</th><th width="500">center</th><th width="250">right</th>
+            <th width="25%">left</th><th width="50%">center</th><th width="25%">right</th>
         </tr></thead><tbody><tr>
             <td>1</td><td>2</td><td>3</td>
         </tr><tr>
@@ -223,7 +223,7 @@ class HTMLTest(unittest.TestCase):
         pdf.add_page()
         pdf.write_html(
             """<table border="1"><thead><tr>
-            <th width="250">left</th><th width="500">center</th><th width="250">right</th>
+            <th width="25%">left</th><th width="50%">center</th><th width="25%">right</th>
         </tr></thead><tbody><tr>
             <td>1</td><td>2</td><td>3</td>
         </tr><tr>
