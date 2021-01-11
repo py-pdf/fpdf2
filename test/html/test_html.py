@@ -1,5 +1,4 @@
 import fpdf
-import os
 import unittest
 from fpdf.html import px2mm
 from test.utilities import assert_pdf_equal, relative_path_to
@@ -24,7 +23,9 @@ class HTMLTest(unittest.TestCase):
         self.assertEqual(round(pdf.get_y()), 10, "Initial y margin is not expected")
         self.assertEqual(round(pdf.w), 210, "Page width is not expected")
 
-        img_path = relative_path_to("../image/png_images/c636287a4d7cb1a36362f7f236564cef.png")
+        img_path = relative_path_to(
+            "../image/png_images/c636287a4d7cb1a36362f7f236564cef.png"
+        )
         pdf.write_html(
             "<center><img src=\"%s\" height='300' width='300'></center>" % img_path
         )
@@ -41,7 +42,6 @@ class HTMLTest(unittest.TestCase):
         )
 
         assert_pdf_equal(self, pdf, "test_html_images.pdf")
-
 
     def test_html_features(self):
         pdf = MyFPDF()
@@ -179,51 +179,57 @@ class HTMLTest(unittest.TestCase):
         )
 
         pdf.add_page()
-        img_path = relative_path_to("../image/png_images/c636287a4d7cb1a36362f7f236564cef.png")
+        img_path = relative_path_to(
+            "../image/png_images/c636287a4d7cb1a36362f7f236564cef.png"
+        )
         pdf.write_html("<img src=\"%s\" height='300' width='300'>" % img_path)
 
         assert_pdf_equal(self, pdf, "test_html_features.pdf")
-
 
     def test_html_simple_table(self):
         pdf = MyFPDF()
         pdf.set_font_size(30)
         pdf.add_page()
-        pdf.write_html("""<table><thead><tr>
+        pdf.write_html(
+            """<table><thead><tr>
             <th width="250">left</th><th width="500">center</th><th width="250">right</th>
         </tr></thead><tbody><tr>
             <td>1</td><td>2</td><td>3</td>
         </tr><tr>
             <td>4</td><td>5</td><td>6</td>
-        </tr></tbody></table>""")
+        </tr></tbody></table>"""
+        )
         assert_pdf_equal(self, pdf, "test_html_simple_table.pdf")
-
 
     def test_html_table_line_separators(self):
         pdf = MyFPDF()
         pdf.set_font_size(30)
         pdf.add_page()
-        pdf.write_html("""<table><thead><tr>
+        pdf.write_html(
+            """<table><thead><tr>
             <th width="250">left</th><th width="500">center</th><th width="250">right</th>
         </tr></thead><tbody><tr>
             <td>1</td><td>2</td><td>3</td>
         </tr><tr>
             <td>4</td><td>5</td><td>6</td>
-        </tr></tbody></table>""", table_line_separators=True)
+        </tr></tbody></table>""",
+            table_line_separators=True,
+        )
         assert_pdf_equal(self, pdf, "test_html_table_line_separators.pdf")
-
 
     def test_html_table_with_border(self):
         pdf = MyFPDF()
         pdf.set_font_size(30)
         pdf.add_page()
-        pdf.write_html("""<table border="1"><thead><tr>
+        pdf.write_html(
+            """<table border="1"><thead><tr>
             <th width="250">left</th><th width="500">center</th><th width="250">right</th>
         </tr></thead><tbody><tr>
             <td>1</td><td>2</td><td>3</td>
         </tr><tr>
             <td>4</td><td>5</td><td>6</td>
-        </tr></tbody></table>""")
+        </tr></tbody></table>"""
+        )
         assert_pdf_equal(self, pdf, "test_html_table_with_border.pdf")
 
 
