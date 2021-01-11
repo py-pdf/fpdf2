@@ -26,16 +26,11 @@ Looking for Developer Help!
 
 Installation Instructions:
 --------------------------
-
-You can [install fpdf2 from PyPI][1], with easyinstall or from Windows 
-installers. For example, using pip:
-
 ```bash
 pip install fpdf2
 ```
 
-To get the latest development version you can download the source code
-running, you will need Pillow (`pip install pillow`)
+To get the latest development version:
 
 ```bash
 # Linux only:
@@ -58,6 +53,7 @@ Features:
  * Cell/Multi-cell/Plaintext writing, Automatic page breaks
  * Basic html2pdf (Templates with a visual designer in the works)
  * Exceptions support, other minor fixes, improvements and PEP8 code cleanups
+ * Only **one** dependency so far: [Pillow](https://pillow.readthedocs.io/en/stable/)
  * Unit tests with `qpdf`-based PDF diffing
 
 Release notes: [CHANGELOG.md](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)
@@ -79,7 +75,3 @@ Please check [the docs page dedicated to developpement](https://pyfpdf.github.io
 
 Lets try to improve the Code Coverage statistic so that we can safely
 transition to external font and image libraries, and more...
-
-[1]: https://pypi.org/project/fpdf2/
-[2]: https://pypi.org/project/fpdf2/2.0.2/
-[3]: https://pypi.org/project/fpdf2/2.1.0rc1/

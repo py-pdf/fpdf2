@@ -2228,7 +2228,7 @@ class FPDF:
 
     @check_page
     def interleaved2of5(self, txt, x, y, w=1.0, h=10.0):
-        "Barcode I2of5 (numeric), adds a 0 if odd lenght"
+        "Barcode I2of5 (numeric), adds a 0 if odd length"
         narrow = w / 3.0
         wide = w
 
