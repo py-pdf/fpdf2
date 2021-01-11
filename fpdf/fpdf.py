@@ -907,6 +907,11 @@ class FPDF:
         "Output a cell, return boolean if triggered auto page break"
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
+        if isinstance(border, int) and border not in (0, 1):
+            warnings.warn(
+                'Integer values for "border" parameter other than 1 are currently ignored'
+            )
+            border = 1
         page_break_triggered = False
         txt = self.normalize_text(txt)
         k = self.k

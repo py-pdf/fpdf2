@@ -30,31 +30,39 @@ def hex2dec(color="#000000"):
 class HTML2FPDF(HTMLParser):
     "Render basic HTML to FPDF"
 
-    def __init__(self, pdf, image_map=None):
-        HTMLParser.__init__(self)
+    def __init__(self, pdf, image_map=None, table_line_separators=False):
+        """
+        Args:
+            pdf (FPDF): an instance of `fpdf.FPDF`
+            image_map (function): an optional one-argument function that map <img> "src" to new image URLs
+            table_line_separators (bool): enable horizontal line separators in <table>
+        """
+        super().__init__()
+        self.pdf = pdf
+        self.image_map = image_map or (lambda src: src)
+        self.table_line_separators = table_line_separators
         self.style = dict(b=False, i=False, u=False)
         self.href = ""
         self.align = ""
         self.page_links = {}
         self.font_stack = []
-        self.pdf = pdf
-        self.image_map = image_map or (lambda src: src)
         self.indent = 0
         self.bullet = []
-        self.font_size = 12  # initialize font size
+        self.font_size = pdf.font_size_pt
         self.font_face = "times"  # initialize font face
-        self.set_font("times", 12)
+        self.set_font("times", self.font_size)
         self.font_color = 0, 0, 0  # initialize font color, r,g,b format
         self.table = None  # table attributes
         self.table_col_width = None  # column (header) widths
         self.table_col_index = None  # current column index
-        self.td = None  # cell attributes
-        self.th = False  # header enabled
-        self.tr = None
+        self.td = None  # inside a <td>, attributes dict
+        self.th = None  # inside a <th>, attributes dict
+        self.tr = None  # inside a <tr>, attributes dict
+        self.thead = None  # inside a <thead>, attributes dict
+        self.tfoot = None  # inside a <tfoot>, attributes dict
+        self.tr_index = None  # row index
         self.theader = None  # table header cells
         self.tfooter = None  # table footer cells
-        self.thead = None
-        self.tfoot = None
         self.theader_out = self.tfooter_out = False
         self.hsize = dict(h1=2, h2=1.5, h3=1.17, h4=1, h5=0.83, h6=0.67)
 
@@ -144,7 +152,7 @@ class HTML2FPDF(HTMLParser):
             self.set_style("b", True)
             for cell, bgcolor in self.theader:
                 self.box_shadow(cell[0], cell[1], bgcolor)
-                self.pdf.cell(*cell)
+                self.pdf.cell(*cell)  # includes the border
             self.set_style("b", b)
             self.pdf.ln(self.theader[0][0][1])
             self.pdf.set_x(self.table_offset)
@@ -155,22 +163,20 @@ class HTML2FPDF(HTMLParser):
         if self.tfooter:
             x = self.pdf.x
             self.pdf.set_x(self.table_offset)
-            # TODO: self.output_table_sep()
             for cell, bgcolor in self.tfooter:
                 self.box_shadow(cell[0], cell[1], bgcolor)
                 self.pdf.cell(*cell)
             self.pdf.ln(self.tfooter[0][0][1])
             self.pdf.set_x(x)
-        if int(self.table.get("border", 0)):
+        if self.table.get("border"):
             self.output_table_sep()
         self.tfooter_out = True
 
     def output_table_sep(self):
-        self.pdf.set_x(self.table_offset)
         x1 = self.pdf.x
         y1 = self.pdf.y
-        w = sum([self.width2mm(lenght) for lenght in self.table_col_width])
-        self.pdf.line(x1, y1, x1 + w, y1)
+        width = sum([self.width2mm(length) for length in self.table_col_width])
+        self.pdf.line(x1, y1, x1 + width, y1)
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
@@ -233,8 +239,7 @@ class HTML2FPDF(HTMLParser):
                 except RuntimeError:
                     pass  # font not found, ignore
             if "size" in attrs:
-                size = int(attrs.get("size"))
-                self.font_size = size
+                self.font_size = int(attrs.get("size"))
             self.set_font()
             self.set_text_color()
         if tag == "table":
@@ -254,9 +259,13 @@ class HTML2FPDF(HTMLParser):
             self.table_h = 0
             self.pdf.ln()
         if tag == "tr":
+            self.tr_index = 0 if self.tr_index is None else (self.tr_index + 1)
             self.tr = {k.lower(): v for k, v in attrs.items()}
             self.table_col_index = 0
             self.pdf.set_x(self.table_offset)
+            # Adding an horizontal line separator between rows:
+            if self.table_line_separators and self.tr_index > 0:
+                self.output_table_sep()
         if tag == "td":
             self.td = {k.lower(): v for k, v in attrs.items()}
         if tag == "th":
@@ -290,7 +299,7 @@ class HTML2FPDF(HTMLParser):
         # Closing tag
         if DEBUG:
             print("ENDTAG", tag)
-        if tag in ("h1", "h2", "h3", "h4"):
+        if tag in ("h1", "h2", "h3", "h4", "h5", "h6"):
             self.pdf.ln(self.h)
             self.set_font()
             self.set_text_color()
@@ -325,18 +334,19 @@ class HTML2FPDF(HTMLParser):
             self.theader = None
             self.tfooter = None
             self.pdf.ln(self.h)
+            self.tr_index = None
         if tag == "thead":
             self.thead = None
+            self.tr_index = None
         if tag == "tfoot":
             self.tfoot = None
+            self.tr_index = None
         if tag == "tbody":
-            # draw a line separator between table bodies
-            self.pdf.set_x(self.table_offset)
-            self.output_table_sep()
+            self.tbody = None
+            self.tr_index = None
         if tag == "tr":
-            h = self.table_h
             if self.tfoot is None:
-                self.pdf.ln(h)
+                self.pdf.ln(self.table_h)
             self.tr = None
         if tag in ("td", "th"):
             if self.th:
@@ -402,8 +412,8 @@ class HTML2FPDF(HTMLParser):
 
 
 class HTMLMixin:
-    def write_html(self, text, image_map=None):
+    def write_html(self, text, *args, **kwargs):
         "Parse HTML and convert it to PDF"
-        h2p = HTML2FPDF(self, image_map)
+        h2p = HTML2FPDF(self, *args, **kwargs)
         text = html.unescape(text)  # To deal with HTML entities
         h2p.feed(text)

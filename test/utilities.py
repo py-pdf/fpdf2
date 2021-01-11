@@ -173,4 +173,4 @@ def relative_path_to(place, depth=1):
     """
     # pylint: disable=protected-access
     caller_file = inspect.getfile(sys._getframe(depth))
-    return os.path.join(os.path.dirname(os.path.abspath(caller_file)), place)
+    return os.path.abspath(os.path.join(os.path.dirname(caller_file), place))
