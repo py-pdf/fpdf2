@@ -1,15 +1,5 @@
-"""png_image_test.py"""
-
 import unittest
-import sys
 import os
-
-sys.path.insert(
-    0,
-    os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), os.path.join("..", "..", "..")
-    ),
-)
 
 import fpdf
 from test.utilities import assert_pdf_equal, relative_path_to

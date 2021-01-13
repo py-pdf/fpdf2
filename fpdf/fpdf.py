@@ -1356,12 +1356,12 @@ class FPDF:
                 '"type" is unused and will soon be deprecated',
                 PendingDeprecationWarning,
             )
-        if not isinstance(name, str):
-            info = get_img_info(name)
-            info["i"] = len(self.images) + 1
-            self.images[uuid4()] = info
-        elif name not in self.images:
-            info = get_img_info(load_resource(name))
+        if isinstance(name, str):
+            img = load_resource(name)
+        else:
+            name, img = uuid4(), name
+        if name not in self.images:
+            info = get_img_info(img)
             info["i"] = len(self.images) + 1
             self.images[name] = info
         else:
