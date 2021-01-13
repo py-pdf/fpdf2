@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
+## [2.2.1] - Not released yet
+### Added
+- `FPDF.image` now accept also a `Pillow.Image` as input
+
 ## [2.2.0] - 2021-01-11
 ### Added
 - new unit tests, a code formatter (`black`) and a linter (`pylint`) to improve code quality

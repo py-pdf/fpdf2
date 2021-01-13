@@ -20,6 +20,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from collections import OrderedDict
 from functools import wraps
+from uuid import uuid4
 import errno
 import logging
 import math
@@ -1338,19 +1339,28 @@ class FPDF:
         type="",
         link="",
     ):
-        # def image(self, name, x = None, y = None, w = 0, h = 0, type = '', link = ''):  # noqa: E501
         """
         Put an image on the page
 
         Args:
+            name: either a string representing a file path to an image, or a instance of `PIL.Image.Image`
+            x (int): optional horizontal position where to put the image on the page
+            y (int): optional vertical position where to put the image on the page
+            w (int): optional width of the image
+            h (int): optional height of the image
             type (str): [**DEPRECATED**] unused, will be removed in a later version
+            link (str): optional link, internal or external, to add on the image
         """
         if type:
             warnings.warn(
                 '"type" is unused and will soon be deprecated',
                 PendingDeprecationWarning,
             )
-        if name not in self.images:
+        if not isinstance(name, str):
+            info = get_img_info(name)
+            info["i"] = len(self.images) + 1
+            self.images[uuid4()] = info
+        elif name not in self.images:
             info = get_img_info(load_resource(name))
             info["i"] = len(self.images) + 1
             self.images[name] = info

@@ -25,8 +25,13 @@ def load_resource(filename, reason="image"):
     raise FPDFException('Unknown resource loading reason "%s"' % reason)
 
 
-def get_img_info(bytesio):
-    img = Image.open(bytesio)
+def get_img_info(img):
+    """
+    Args:
+        input_img: `BytesIO` or `PIL.Image.Image` instance
+    """
+    if not isinstance(img, Image.Image):
+        img = Image.open(img)
     if img.mode not in ["L", "LA", "RGBA"]:
         img = img.convert("RGBA")
     w, h = img.size
