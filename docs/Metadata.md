@@ -18,6 +18,7 @@ In order to be fully compliant with the recent PDF specs,
 we recommend using `pikepdf` that will set both XMP & `DocumentInformation` metadata:
 
 ```python
+import os
 from datetime import datetime
 from fpdf import FPDF_VERSION
 import pikepdf
