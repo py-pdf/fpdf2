@@ -242,9 +242,7 @@ class HTMLTest(unittest.TestCase):
                <U>underlined</U>
                <B><I><U>all at once!</U></I></B>"""
         )
-        assert_pdf_equal(
-            self, pdf, "test_html_bold_italic_underline.pdf", generate=True
-        )
+        assert_pdf_equal(self, pdf, "test_html_bold_italic_underline.pdf")
 
 
 if __name__ == "__main__":
