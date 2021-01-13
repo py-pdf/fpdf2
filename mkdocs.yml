@@ -24,6 +24,7 @@ nav:
 - 'API':          'https://pyfpdf.github.io/fpdf2/fpdf/'
 - 'FAQ':          'FAQ.md'
 - 'Barcodes':     'Barcodes.md'
+- 'Metadata':     'Metadata.md'
 - 'Logging':      'Logging.md'
 - 'Development':  'Development.md'
 - 'Templates':    'Templates.md'
