@@ -1,5 +1,4 @@
 
-
 # Introduction #
 
 If you use [web2py](http://www.web2py.com), you can make complex reports that can be viewed in a browser, or downloaded as PDF (taking advantage of web2py HTML helper objects to easily diagram a report). See [write_html](reference/write_html.md) for more information, supported tags and attributes, etc.
@@ -52,7 +51,7 @@ def report():
                 "hook to draw custom page header (logo and title)"
                 logo = os.path.join(request.env.web2py_path, "gluon", "contrib", "pyfpdf", "tutorial", "logo_pb.png")
                 self.image(logo, 10, 8, 33)
-                self.set_font('Arial', 'B', 15)
+                self.set_font('helvetica', 'B', 15)
                 self.cell(65) # padding
                 self.cell(60, 10, response.title, 1, 0, 'C')
                 self.ln(20)
@@ -60,7 +59,7 @@ def report():
             def footer(self):
                 "hook to draw custom page footer (printing page numbers)"
                 self.set_y(-15)
-                self.set_font('Arial', 'I', 8)
+                self.set_font('helvetica', 'I', 8)
                 txt = 'Page %s of %s' % (self.page_no(), self.alias_nb_pages())
                 self.cell(0, 10, txt, 0, 0, 'C')
                     
@@ -71,7 +70,7 @@ def report():
         pdf.write_html(str(XML(CENTER(chart), sanitize=False)))
         # prepare PDF to download:
         response.headers['Content-Type'] = 'application/pdf'
-        return pdf.output(dest='S')
+        return pdf.output()
     else:
         # normal html view:
         return dict(chart=chart, table=table)
@@ -123,13 +122,13 @@ def listing():
         # define our FPDF class (move to modules if it is reused frequently)
         class MyFPDF(FPDF, HTMLMixin):
             def header(self):
-                self.set_font('Arial', 'B', 15)
+                self.set_font('helvetica', 'B', 15)
                 self.cell(0, 10, response.title, 1, 0, 'C')
                 self.ln(20)
                 
             def footer(self):
                 self.set_y(-15)
-                self.set_font('Arial', 'I', 8)
+                self.set_font('helvetica', 'I', 8)
                 txt = 'Page %s of %s' % (self.page_no(), self.alias_nb_pages())
                 self.cell(0, 10, txt, 0, 0, 'C')
                     
@@ -138,7 +137,7 @@ def listing():
         pdf.add_page()
         pdf.write_html(str(XML(table, sanitize=False)))
         response.headers['Content-Type'] = 'application/pdf'
-        return pdf.output(dest='S')
+        return pdf.output()
     else:
         # normal html view:
         return dict(table=table)}}}
@@ -180,7 +179,7 @@ db.define_table("pdf_element",
     Field("y1", "double", requires=IS_NOT_EMPTY()),
     Field("x2", "double", requires=IS_NOT_EMPTY()),
     Field("y2", "double", requires=IS_NOT_EMPTY()),
-    Field("font", default="Arial", requires=IS_IN_SET(['Courier', 'Arial', 'Times', 'Symbol', 'Zapfdingbats'])),
+    Field("font", default="helvetica", requires=IS_IN_SET(['Courier', 'helvetica', 'Times', 'Symbol', 'Zapfdingbats'])),
     Field("size", "double", default="10", requires=IS_NOT_EMPTY()),
     Field("bold", "boolean"),
     Field("italic", "boolean"),
@@ -343,7 +342,7 @@ def invoice():
         f['total'] = "%0.2f" % total
 
     response.headers['Content-Type'] = 'application/pdf'
-    return f.render('invoice.pdf', dest='S')
+    return f.render('invoice.pdf')
 ```
 
 Of course, this is a hardcoded example. You can use the database to store invoices or any other data; there is no rigid class hierachy to follow, just fill your template like a dict!

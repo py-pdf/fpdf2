@@ -13,9 +13,9 @@ from fpdf import FPDF
 
 pdf = FPDF()
 pdf.add_page()
-pdf.set_font('Arial', 'B', 16)
+pdf.set_font('helvetica', 'B', 16)
 pdf.cell(40, 10, 'Hola Mundo!')
-pdf.output('tuto1.pdf', 'F')
+pdf.output('tuto1.pdf')
 ```
 
 [Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
@@ -30,10 +30,10 @@ Es posible usar landscape -horizontal- (L), otros formatos de página (como Lett
 
 Por el momento no hay una página, entonces tenemos que agregar una con [add_page](reference/add_page.md). El origen es la esquina superior-izquierda y la posición actual está ubicada a 1 cm de los bordes; los márgenes pueden ser cambiados con [set_margins](reference/set_margins.md). 
 
-Antes de que podamos imprimir texto, es obligatorio seleccionar una fuente con [set_font](reference/set_font.md), de lo contrario, el documento será inválido. Elegimos Arial bold 16: 
+Antes de que podamos imprimir texto, es obligatorio seleccionar una fuente con [set_font](reference/set_font.md), de lo contrario, el documento será inválido. Elegimos helvetica bold 16: 
 
 ```python
-pdf.set_font('Arial', 'B', 16)
+pdf.set_font('helvetica', 'B', 16)
 ```
 
 Podríamos haber especificado italic -cursiva- con I, underline -subrayado- con U o fuente regular con string vacío (o cualquier combinación). Notar que el tamaño de la fuente es dado en puntos, no milímetros (u otra unidad de medida del usuario); ésta es la única excepción. Las otras fuentes estándar son Times, Courier, Symbol y ZapfDingbats. 
@@ -68,8 +68,8 @@ class PDF(FPDF):
     def header(self):
         # Logo
         self.image('logo_pb.png', 10, 8, 33)
-        # Arial bold 15
-        self.set_font('Arial', 'B', 15)
+        # helvetica bold 15
+        self.set_font('helvetica', 'B', 15)
         # Moverse a la derecha
         self.cell(80)
         # Título
@@ -81,8 +81,8 @@ class PDF(FPDF):
     def footer(self):
         # Posicionamiento a 1.5 cm desde el fin de página
         self.set_y(-15)
-        # Arial italic 8
-        self.set_font('Arial', 'I', 8)
+        # helvetica italic 8
+        self.set_font('helvetica', 'I', 8)
         # Número de página
         self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
 
@@ -93,7 +93,7 @@ pdf.add_page()
 pdf.set_font('Times', '', 12)
 for i in range(1, 41):
     pdf.cell(0, 10, 'Printing line number ' + str(i), 0, 1)
-pdf.output('tuto2.pdf', 'F')
+pdf.output('tuto2.pdf')
 ```
 [Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
 
@@ -104,7 +104,7 @@ El logo es impreso con el método [image](reference/image.md) especificando su e
 Para imprimir el número de página, un valor nulo es pasado como ancho de celda. Significa que la celda deberá ser extendida hasta el margen derecho de la página; es útil centrar texto. El número de página actual es devuelto por el método [page_no](reference/page_no.md); y para el número total de páginas, éste será obtenido mediante el valor especial {nb} que será sustituido al cerrar el documento (si de antemano se llamó [alias_nb_pages](reference/alias_nb_pages.md)). 
 Notar el uso del método [set_y](reference/set_y.md) que permite establecer la posición en una ubicación absoluta en la página, empezando desde arriba hacia abajo. 
 
-Otra característica interesante es usada aquí: el salto de página automático. Tan pronto una celda cruza el límite de una página (por defecto a 2 centímetros desde abajo), un salto es realizado y la fuente es restaurada. Aunque el encabezado y pie de página tienen su propia fuente (Arial), el cuerpo continúa en Times. Este mecanismo de restauración automática también se aplica a los colores y el ancho de la línea. El límite que dispara los saltos de página puede establecerse con [set_auto_page_break](reference/set_auto_page_break.md).
+Otra característica interesante es usada aquí: el salto de página automático. Tan pronto una celda cruza el límite de una página (por defecto a 2 centímetros desde abajo), un salto es realizado y la fuente es restaurada. Aunque el encabezado y pie de página tienen su propia fuente (helvetica), el cuerpo continúa en Times. Este mecanismo de restauración automática también se aplica a los colores y el ancho de la línea. El límite que dispara los saltos de página puede establecerse con [set_auto_page_break](reference/set_auto_page_break.md).
 
 
 ## Saltos de línea y colores ##
@@ -117,8 +117,8 @@ title = '20000 Leagues Under the Seas'
 
 class PDF(FPDF):
     def header(self):
-        # Arial bold 15
-        self.set_font('Arial', 'B', 15)
+        # helvetica bold 15
+        self.set_font('helvetica', 'B', 15)
         # Calcular ancho del texto (title) y establecer posición
         w = self.get_string_width(title) + 6
         self.set_x((210 - w) / 2)
@@ -136,16 +136,16 @@ class PDF(FPDF):
     def footer(self):
         # Posición a 1.5 cm desde abajo
         self.set_y(-15)
-        # Arial italic 8
-        self.set_font('Arial', 'I', 8)
+        # helvetica italic 8
+        self.set_font('helvetica', 'I', 8)
         # Color de texto en gris
         self.set_text_color(128)
         # Número de pagina
         self.cell(0, 10, 'Page ' + str(self.page_no()), 0, 0, 'C')
 
     def chapter_title(self, num, label):
-        # Arial 12
-        self.set_font('Arial', '', 12)
+        # helvetica 12
+        self.set_font('helvetica', '', 12)
         # Color de fondo
         self.set_fill_color(200, 220, 255)
         # Título
@@ -177,7 +177,7 @@ pdf.set_title(title)
 pdf.set_author('Jules Verne')
 pdf.print_chapter(1, 'A RUNAWAY REEF', '20k_c1.txt')
 pdf.print_chapter(2, 'THE PROS AND CONS', '20k_c2.txt')
-pdf.output('tuto3.pdf', 'F')
+pdf.output('tuto3.pdf')
 ```
 [Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)
 

@@ -79,7 +79,7 @@ pdf = MyFPDF()
 #First page
 pdf.add_page()
 pdf.write_html(html)
-pdf.output('html.pdf', 'F')
+pdf.output('html.pdf')
 ```
 See html.py or [Web2Py] (../Web2Py.md) for a complete example. `# TODO fix links`
 

@@ -4,7 +4,7 @@ Español: [Tutorial-es](Tutorial-es.md)
 
 [TOC]
 
-## Minimal Example ##
+## Tuto 1 - Minimal Example ##
 
 Let's start with the classic example:
 
@@ -13,24 +13,24 @@ from fpdf import FPDF
 
 pdf = FPDF()
 pdf.add_page()
-pdf.set_font('Arial', 'B', 16)
+pdf.set_font('helvetica', 'B', 16)
 pdf.cell(40, 10, 'Hello World!')
-pdf.output('tuto1.pdf', 'F')
+pdf.output('tuto1.pdf')
 ```
 
 [Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
 
-After including the library file, we create an FPDF object. The 
+After including the library file, we create an `FPDF` object. The 
 [FPDF](reference/FPDF.md) constructor is used here with the default values: 
-pages are in A4 portrait and the measure unit is millimeter. It could have been
-specified explicitly with:
+pages are in A4 portrait and the measure unit is millimeter.
+It could have been specified explicitly with:
 
 ```python
-pdf = FPDF('P', 'mm', 'A4')
+pdf = FPDF(orientation="P", unit="mm", format="A4")
 ```
 
-It is possible to use landscape (`L`), other page formats (such as `Letter` and
- `Legal`) and measure units (`pt`, `cm`, `in`).
+It is possible to set the PDF in landscape mode (`L`) or to use other page formats
+(such as `Letter` and `Legal`) and measure units (`pt`, `cm`, `in`).
 
 There is no page for the moment, so we have to add one with 
 [add_page](reference/add_page.md). The origin is at the upper-left corner and the
@@ -38,20 +38,20 @@ current position is by default placed at 1 cm from the borders; the margins can
 be changed with [set_margins](reference/set_margins.md).
 
 Before we can print text, it is mandatory to select a font with 
-[set_font](reference/set_font.md), otherwise the document would be invalid. We
-choose Arial bold 16:
+[set_font](reference/set_font.md), otherwise the document would be invalid.
+We choose Helvetica bold 16:
 
 ```python
-pdf.set_font('Arial', 'B', 16)
+pdf.set_font('helvetica', 'B', 16)
 ```
 
 We could have specified italics with `I`, underlined with `U` or a regular font
 with an empty string (or any combination). Note that the font size is given in
-points, not millimeters (or another user unit); it is the only exception. The
-other standard fonts are `Times`, `Courier`, `Symbol` and `ZapfDingbats`.
+points, not millimeters (or another user unit); it is the only exception.
+The other built-in fonts are `Times`, `Courier`, `Symbol` and `ZapfDingbats`.
 
 We can now print a cell with [cell](reference/cell.md). A cell is a rectangular
-area, possibly framed, which contains some text. It is output at the current
+area, possibly framed, which contains some text. It is rendered at the current
 position. We specify its dimensions, its text (centered or aligned), if borders
 should be drawn, and where the current position moves after it (to the right,
 below or to the beginning of the next line). To add a frame, we would do this:
@@ -64,23 +64,17 @@ To add a new cell next to it with centered text and go to the next line, we
 would do:
 
 ```python
-pdf.cell(60, 10, 'Powered by FPDF.', 0, 1, 'C')
+pdf.cell(60, 10, 'Powered by FPDF.', ln=1, align='C')
 ```
 
 **Remark**: the line break can also be done with [ln](reference/ln.md). This
 method allows to specify in addition the height of the break.
 
-Finally, the document is closed and sent to the browser with
-[output](reference/output.md). We could have saved it in a file by passing the
-desired file name.
+Finally, the document is closed and saved under the provided file path using
+[output](reference/output.md). Without any parameter provided, `output()`
+returns the PDF `bytearray` buffer.
 
-**Caution**: in case when the PDF is sent to the browser, nothing else must be
-output, not before nor after (the least space or carriage return matters).
-If you send some data before, you will get the error message: "Some data has
-already been output to browser, can't send PDF file". If you send after, your
-browser may display a blank page.
-
-## Header, footer, page break and image ##
+## Tuto 2 - Header, footer, page break and image ##
 
 Here is a two page example with header, footer and logo:
 
@@ -91,8 +85,8 @@ class PDF(FPDF):
     def header(self):
         # Logo
         self.image('logo_pb.png', 10, 8, 33)
-        # Arial bold 15
-        self.set_font('Arial', 'B', 15)
+        # helvetica bold 15
+        self.set_font('helvetica', 'B', 15)
         # Move to the right
         self.cell(80)
         # Title
@@ -104,8 +98,8 @@ class PDF(FPDF):
     def footer(self):
         # Position at 1.5 cm from bottom
         self.set_y(-15)
-        # Arial italic 8
-        self.set_font('Arial', 'I', 8)
+        # helvetica italic 8
+        self.set_font('helvetica', 'I', 8)
         # Page number
         self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
 
@@ -116,7 +110,7 @@ pdf.add_page()
 pdf.set_font('Times', '', 12)
 for i in range(1, 41):
     pdf.cell(0, 10, 'Printing line number ' + str(i), 0, 1)
-pdf.output('tuto2.pdf', 'F')
+pdf.output('tuto2.pdf')
 ```
 
 [Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
@@ -144,13 +138,13 @@ bottom.
 Another interesting feature is used here: the automatic page breaking. As soon
 as a cell would cross a limit in the page (at 2 centimeters from the bottom by
 default), a break is performed and the font restored. Although the header and
-footer select their own font (`Arial`), the body continues with `Times`. This
-mechanism of automatic restoration also applies to colors and line width. The
-limit which triggers page breaks can be set with 
+footer select their own font (`helvetica`), the body continues with `Times`.
+This mechanism of automatic restoration also applies to colors and line width.
+The limit which triggers page breaks can be set with 
 [set_auto_page_break](reference/set_auto_page_break.md).
 
 
-## Line breaks and colors ##
+## Tuto 3 - Line breaks and colors ##
 
 Let's continue with an example which prints justified paragraphs. It also
 illustrates the use of colors.
@@ -162,8 +156,8 @@ title = '20000 Leagues Under the Seas'
 
 class PDF(FPDF):
     def header(self):
-        # Arial bold 15
-        self.set_font('Arial', 'B', 15)
+        # helvetica bold 15
+        self.set_font('helvetica', 'B', 15)
         # Calculate width of title and position
         w = self.get_string_width(title) + 6
         self.set_x((210 - w) / 2)
@@ -181,16 +175,16 @@ class PDF(FPDF):
     def footer(self):
         # Position at 1.5 cm from bottom
         self.set_y(-15)
-        # Arial italic 8
-        self.set_font('Arial', 'I', 8)
+        # helvetica italic 8
+        self.set_font('helvetica', 'I', 8)
         # Text color in gray
         self.set_text_color(128)
         # Page number
         self.cell(0, 10, 'Page ' + str(self.page_no()), 0, 0, 'C')
 
     def chapter_title(self, num, label):
-        # Arial 12
-        self.set_font('Arial', '', 12)
+        # helvetica 12
+        self.set_font('helvetica', '', 12)
         # Background color
         self.set_fill_color(200, 220, 255)
         # Title
@@ -222,7 +216,7 @@ pdf.set_title(title)
 pdf.set_author('Jules Verne')
 pdf.print_chapter(1, 'A RUNAWAY REEF', '20k_c1.txt')
 pdf.print_chapter(2, 'THE PROS AND CONS', '20k_c2.txt')
-pdf.output('tuto3.pdf', 'F')
+pdf.output('tuto3.pdf')
 ```
 
 [Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)

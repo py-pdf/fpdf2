@@ -27,7 +27,7 @@ link:
 ### Example ###
 ```python
 # Begin with regular font
-pdf.set_font('Arial', '', 14)
+pdf.set_font('helvetica', '', 14)
 pdf.write(5, 'Visit ')
 # Then put a blue underlined link
 pdf.set_text_color(0, 0, 255)

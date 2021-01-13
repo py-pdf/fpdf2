@@ -48,7 +48,7 @@ family:
 > Font family. It can be either a name defined by [add_font](add_font.md) or 
   one of the standard families (case insensitive):
 >>  * Courier (fixed-width)
->>  * Helvetica or Arial (synonymous; sans serif)
+>>  * Helvetica or helvetica (synonymous; sans serif)
 >>  * Times (serif)
 >>  * Symbol (symbolic)
 >>  * ZapfDingbats (symbolic)
@@ -76,8 +76,8 @@ size:
 ```python
 # Times regular 12
 pdf.set_font('Times')
-# Arial bold 14
-pdf.set_font('Arial', 'B', 14)
+# helvetica bold 14
+pdf.set_font('helvetica', 'B', 14)
 # Removes bold
 pdf.set_font('')
 # Times bold, italic and underlined 14

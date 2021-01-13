@@ -55,7 +55,7 @@ Calling this method with uni=False is discouraged as legacy font support is comp
 pdf.add_font('DejaVu', '', 'DejaVuSansCondensed.ttf', uni=True)
 
 # Add a Unicode system font (using full path)
-pdf.add_font('sysfont', '', r"c:\WINDOWS\Fonts\arial.ttf", uni=True)
+pdf.add_font('sysfont', '', r"c:\WINDOWS\Fonts\helvetica.ttf", uni=True)
 ```
 
 ### See also ###

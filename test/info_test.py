@@ -1,12 +1,4 @@
-"""put_info_test.py"""
-
 import unittest
-import sys
-import os
-
-sys.path.insert(
-    0, os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.join(".."))
-)
 
 import fpdf
 from test.utilities import assert_pdf_equal
@@ -16,7 +8,7 @@ from test.utilities import assert_pdf_equal
 
 def document_operations(doc):
     doc.add_page()
-    doc.set_font("Arial", size=12)
+    doc.set_font("helvetica", size=12)
     doc.cell(w=72, h=0, border=1, ln=2, txt="hello world", fill=0, link="")
 
 

@@ -55,12 +55,12 @@ class Form:
     def render(self, outfile):
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font("Arial", "B", 16)
+        pdf.set_font("helvetica", "B", 16)
 
         for field in self.fields.values():
             self.handlers[field["type"].upper()](pdf, **field)
 
-        pdf.output(outfile, "F")
+        pdf.output(outfile)
 
     @staticmethod
     def text(
@@ -71,7 +71,7 @@ class Form:
         x2=0,
         y2=0,
         text="",
-        font="arial",
+        font="helvetica",
         size=10,
         bold=False,
         italic=False,
@@ -81,8 +81,8 @@ class Form:
     ):
         if text:
             font = font.strip().lower()
-            if font == "arial black":
-                font = "arial"
+            if font == "helvetica black":
+                font = "helvetica"
             style = ""
             if bold:
                 style += "B"
@@ -110,10 +110,10 @@ class Form:
 
     @staticmethod
     def image(pdf, *_, x1=0, y1=0, x2=0, y2=0, text="", **__):
-        pdf.image(text, x1, y1, w=x2 - x1, h=y2 - y1, type="", link="")
+        pdf.image(text, x1, y1, w=x2 - x1, h=y2 - y1)
 
     @staticmethod
-    def barcode(pdf, *_, x1=0, y1=0, text="", font="arial", size=1, **__):
+    def barcode(pdf, *_, x1=0, y1=0, text="", font="helvetica", size=1, **__):
         font = font.lower().strip()
         if font == "interleaved 2of5 nt":
             pdf.interleaved2of5(text, x1, y1, w=size)

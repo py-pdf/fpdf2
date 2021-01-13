@@ -9,7 +9,7 @@ class PDF(FPDF):
 
     def header(self):
         # Page header
-        self.set_font("Arial", "B", 15)
+        self.set_font("helvetica", "B", 15)
         w = self.get_string_width(title) + 6
         self.set_x((210 - w) / 2.0)
         self.set_draw_color(0, 80, 180)
@@ -24,7 +24,7 @@ class PDF(FPDF):
     def footer(self):
         # Page footer
         self.set_y(-15)
-        self.set_font("Arial", "I", 8)
+        self.set_font("helvetica", "I", 8)
         self.set_text_color(128)
         self.cell(0, 10, "Page " + str(self.page_no()), 0, 0, "C")
 
@@ -52,7 +52,7 @@ class PDF(FPDF):
 
     def chapter_title(self, num, label):
         # Title
-        self.set_font("Arial", "", 12)
+        self.set_font("helvetica", "", 12)
         self.set_fill_color(200, 220, 255)
         self.cell(0, 6, "Chapter %d : %s" % (num, label), 0, 1, "L", 1)
         self.ln(4)
@@ -86,5 +86,5 @@ title = "20000 Leagues Under the Seas"
 pdf.set_title(title)
 pdf.set_author("Jules Verne")
 pdf.print_chapter(1, "A RUNAWAY REEF", "20k_c1.txt")
-pdf.print_chapter(2, "THE PROS AND CONS", "20k_c2.txt")
-pdf.output("tuto4.pdf", "F")
+pdf.print_chapter(2, "THE PROS AND CONS", "20k_c1.txt")
+pdf.output("tuto4.pdf")

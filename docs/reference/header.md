@@ -13,8 +13,8 @@ This method is used to render the page header. It is automatically called by [ad
 ```python
 class PDF(FPDF):
     def header(self):
-        # Select Arial bold 15
-        self.set_font('Arial', 'B', 15)
+        # Select helvetica bold 15
+        self.set_font('helvetica', 'B', 15)
         # Move to the right
         self.cell(80)
         # Framed title

@@ -20,7 +20,8 @@ class CoreFontsTest(unittest.TestCase):
         pdf = FPDF()
         pdf.add_page()
         for i, font_name in enumerate(pdf.core_fonts.keys()):
-            pdf.set_font(font_name, "", 36)
+            pdf.set_font(font_name.capitalize(), "", 36)
+            pdf.set_font(font_name.lower(), "", 36)
             pdf.text(10, 10 + 10 * i, "Hello World!")
         assert_pdf_equal(self, pdf, "test_set_core_font.pdf")
 

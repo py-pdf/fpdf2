@@ -1,11 +1,4 @@
 import unittest
-import sys
-import os
-
-sys.path.insert(
-    0,
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.join("..", "..")),
-)
 
 import fpdf
 from test.utilities import assert_pdf_equal
@@ -21,7 +14,7 @@ class MCRefactorTest(unittest.TestCase):
         my_text_size = 36
         spacing = 1.15
         line_height = my_text_size * spacing
-        doc.set_font("Arial", size=my_text_size)
+        doc.set_font("helvetica", size=my_text_size)
         text = (
             "Lorem ipsum Ut nostrud irure reprehenderit anim nostrud dolore sed "
             "ut Excepteur dolore ut sunt irure consectetur tempor eu tempor "
@@ -80,7 +73,7 @@ if __name__ == "__main__":
 # my_text_size = 36
 # spacing = 1.15
 # line_height = my_text_size * spacing
-# doc.set_font('Arial', size=my_text_size)
+# doc.set_font('helvetica', size=my_text_size)
 # text = ('Lorem ipsum Ut nostrud irure reprehenderit anim nostrud dolore sed '
 #         'ut Excepteur dolore ut sunt irure consectetur tempor eu tempor '
 #         'nostrud dolore sint exercitation aliquip velit ullamco esse dolore '

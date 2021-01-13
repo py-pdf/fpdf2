@@ -68,7 +68,7 @@ link:
 
 ```python
 # Set font
-pdf.set_font('Arial', 'B', 16)
+pdf.set_font('helvetica', 'B', 16)
 # Move to 8 cm to the right
 pdf.cell(80)
 # Centered text in a framed 20*10 mm cell and line break

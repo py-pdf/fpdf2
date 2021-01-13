@@ -232,6 +232,20 @@ class HTMLTest(unittest.TestCase):
         )
         assert_pdf_equal(self, pdf, "test_html_table_with_border.pdf")
 
+    def test_html_bold_italic_underline(self):
+        pdf = MyFPDF()
+        pdf.set_font_size(30)
+        pdf.add_page()
+        pdf.write_html(
+            """<B>bold</B>
+               <I>italic</I>
+               <U>underlined</U>
+               <B><I><U>all at once!</U></I></B>"""
+        )
+        assert_pdf_equal(
+            self, pdf, "test_html_bold_italic_underline.pdf", generate=True
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

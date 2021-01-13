@@ -20,8 +20,8 @@ stretching:
 ### Example ###
 
 ```python
-# Arial regular 14
-pdf.set_font('Arial')
+# helvetica regular 14
+pdf.set_font('helvetica')
 # Set stretching to 50%, narrow text
 pdf.set_stretching(50.0)
 ```

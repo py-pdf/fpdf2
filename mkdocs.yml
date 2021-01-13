@@ -21,8 +21,6 @@ markdown_extensions: [toc, pymdownx.highlight, pymdownx.superfences]
 nav:
 - 'Project Home': 'index.md'
 - 'Tutorial':     'Tutorial.md'
-- 'Tutorial Translations':
-  - 'Tutorial (Spanish translation)': 'Tutorial-es.md'
 - 'API':          'https://pyfpdf.github.io/fpdf2/fpdf/'
 - 'FAQ':          'FAQ.md'
 - 'Barcodes':     'Barcodes.md'

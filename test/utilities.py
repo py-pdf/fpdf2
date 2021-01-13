@@ -46,12 +46,12 @@ def assert_pdf_equal(
     set_doc_date_0(pdf)
     expected_pdf_filepath = relative_path_to(rel_expected_pdf_filepath, depth=2)
     if generate:
-        pdf.output(expected_pdf_filepath, "F")
+        pdf.output(expected_pdf_filepath)
         return
     with tmp_file(
         prefix="pyfpdf-test-", delete=delete, suffix="-actual.pdf"
     ) as actual_pdf_file:
-        pdf.output(actual_pdf_file.name, "F")
+        pdf.output(actual_pdf_file.name)
         if not delete:
             print("Temporary file will not be deleted:", actual_pdf_file.name)
         if QPDF_AVAILABLE:  # Favor qpdf-based comparison, as it helps a lot debugging:

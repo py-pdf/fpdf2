@@ -74,12 +74,12 @@ pdf = PDF()
 # Column titles
 header = ["Country", "Capital", "Area (sq km)", "Pop. (thousands)"]
 # Data loading
-data = pdf.load_data("countries.txt")
-pdf.set_font("Arial", "", 14)
+data = pdf.load_data("countries.txt")  # TODO: fill this file with more & real data
+pdf.set_font("helvetica", "", 14)
 pdf.add_page()
 pdf.basic_table(header, data)
 pdf.add_page()
 pdf.improved_table(header, data)
 pdf.add_page()
 pdf.fancy_table(header, data)
-pdf.output("tuto5.pdf", "F")
+pdf.output("tuto5.pdf")

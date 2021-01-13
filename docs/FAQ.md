@@ -77,7 +77,7 @@ def get_me_a_pdf():
     pdf.set_font('Times', '', 12)
     pdf.multi_cell(w=0, h=5, txt=text)
     response.headers['Content-Type'] = 'application/pdf'
-    return pdf.output(dest='S')
+    return pdf.output()
 ```
 
 With Reportlab:

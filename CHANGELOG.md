@@ -9,7 +9,9 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.2.1] - Not released yet
 ### Added
-- `FPDF.image` now accept also a `Pillow.Image` as input
+- `FPDF.image` now accept also a `Pillow.Image.Image` as input
+### Deprecated
+- the `dest` parameter of `FPDF.output` method
 
 ## [2.2.0] - 2021-01-11
 ### Added

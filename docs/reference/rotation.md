@@ -30,7 +30,7 @@ y:
 
 ### Example ###
 ```python
-pdf.set_font('Arial', '', 14)
+pdf.set_font('helvetica', '', 14)
 pdf.add_page()
 # Rotate all consequenced operations
 with rotation(-30):

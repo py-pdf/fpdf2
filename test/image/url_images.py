@@ -50,7 +50,7 @@ if __name__ == "__main__":
 # test = relative_path_to('output.pdf')
 
 # set_doc_date_0(pdf)
-# pdf.output(test, 'F')
+# pdf.output(test)
 
 # print(calculate_hash_of_file(test))
 # os.unlink(test)
@@ -65,7 +65,7 @@ if __name__ == "__main__":
 # test = relative_path_to('output.pdf')
 
 # set_doc_date_0(pdf)
-# pdf.output(test, 'F')
+# pdf.output(test)
 
 # print(calculate_hash_of_file(test))
 # os.unlink(test)

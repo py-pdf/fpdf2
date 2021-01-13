@@ -109,11 +109,11 @@ pdf.write(8, u'Thai: สวัสดีชาวโลก')
 pdf.ln(20)
 
 # Select a standard font (uses windows-1252)
-pdf.set_font('Arial', '', 14)
+pdf.set_font('helvetica', '', 14)
 pdf.ln(10)
 pdf.write(5, 'This is standard built-in font')
 
-pdf.output("unicode.pdf", 'F')
+pdf.output("unicode.pdf")
 ```
 
 

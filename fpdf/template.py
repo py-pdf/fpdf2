@@ -173,7 +173,7 @@ class Template:
         pdf = self.pdf
         for pg in range(1, self.pg_no + 1):
             pdf.add_page()
-            pdf.set_font("Arial", "B", 16)
+            pdf.set_font("helvetica", "B", 16)
             pdf.set_auto_page_break(False, margin=0)
 
             for element in sorted(self.elements, key=lambda x: x["priority"]):
@@ -189,7 +189,7 @@ class Template:
                 else:
                     self.handlers[handler_name](pdf, **element)
         if outfile:
-            pdf.output(outfile, dest="F")
+            pdf.output(outfile)
 
     @staticmethod
     def text(
@@ -200,7 +200,7 @@ class Template:
         x2=0,
         y2=0,
         text="",
-        font="arial",
+        font="helvetica",
         size=10,
         bold=False,
         italic=False,
@@ -218,8 +218,8 @@ class Template:
                 pdf.set_fill_color(*rgb(backgroud))
 
             font = font.strip().lower()
-            if font == "arial black":
-                font = "arial"
+            if font == "helvetica black":
+                font = "helvetica"
             style = ""
             for tag in "B", "I", "U":
                 if text.startswith("<%s>" % tag) and text.endswith("</%s>" % tag):
@@ -288,7 +288,7 @@ class Template:
         x2=0,
         y2=0,
         text="",
-        font="arial",
+        font="helvetica",
         size=1,
         foreground=0,
         **__
@@ -310,7 +310,7 @@ class Template:
         x2=0,
         y2=0,
         text="",
-        font="arial",
+        font="helvetica",
         size=1,
         bold=False,
         italic=False,
@@ -324,8 +324,8 @@ class Template:
         if pdf.text_color != rgb(foreground):
             pdf.set_text_color(*rgb(foreground))
         font = font.strip().lower()
-        if font == "arial black":
-            font = "arial"
+        if font == "helvetica black":
+            font = "helvetica"
         style = ""
         for tag in "B", "I", "U":
             if text.startswith("<%s>" % tag) and text.endswith("</%s>" % tag):

@@ -27,7 +27,6 @@ import math
 import os
 import pickle
 import re
-import sys
 import warnings
 import zlib
 from hashlib import md5
@@ -576,10 +575,6 @@ class FPDF:
         "Add a TrueType or Type1 font"
         if not fname:
             fname = family.replace(" ", "") + style.lower() + ".pkl"
-
-        if family.lower() == "arial":
-            warnings.warn("Substitutting Arial by core font Helvetica")
-            family = "helvetica"
         style = style.upper()
         if style == "IB":
             style = "BI"
@@ -703,12 +698,15 @@ class FPDF:
 
     def set_font(self, family, style="", size=0):
         "Select a font; size given in points"
-        if family == "":
+        if not family:
             family = self.font_family
-        if family.lower() == "arial":
+        if family.lower() == "arial" and (family + style) not in self.fonts:
             warnings.warn("Substitutting Arial by core font Helvetica")
             family = "helvetica"
-        elif family in ("symbol", "zapfdingbats"):
+        elif family.lower() in ("symbol", "zapfdingbats") and style:
+            warnings.warn(
+                'Built-in fonts Symbol & Zapfdingbats only have a single "style"'
+            )
             style = ""
         style = style.upper()
         if "U" in style:
@@ -733,7 +731,9 @@ class FPDF:
         fontkey = family + style
         if fontkey not in self.fonts:
             if fontkey not in self.core_fonts or fontkey not in fpdf_charwidths:
-                raise FPDFException("Undefined font: " + fontkey)
+                fontkey = family.lower() + style
+                if fontkey not in self.core_fonts or fontkey not in fpdf_charwidths:
+                    raise FPDFException("Undefined font: " + fontkey)
             i = len(self.fonts) + 1
             self.fonts[fontkey] = {
                 "i": i,
@@ -1446,32 +1446,32 @@ class FPDF:
         self.set_x(x)
 
     def output(self, name="", dest=""):
-        """Output PDF to some destination
+        """
+        Output PDF to some destination.
 
-        By default the PDF is written to sys.stdout. If a name is given, the
-        PDF is written to a new file. If dest='S' is given, the PDF data is
-        returned as a byte string."""
-        # pylint: disable=inconsistent-return-statements
-        # Finish document if necessary
+        By default the bytearray buffer is returned.
+        If a `name` is given, the PDF is written to a new file.
+
+        Args:
+            name (str): optional File object or file path where to save the PDF under
+            dest (str): [**DEPRECATED**] unused, will be removed in a later version
+        """
+        if dest:
+            warnings.warn(
+                '"dest" is unused and will soon be deprecated',
+                PendingDeprecationWarning,
+            )
+        # Finish document if necessary:
         if self.state < 3:
             self.close()
-        dest = dest.upper()
-        if dest == "":
-            dest = "I" if name == "" else "F"
-        if dest in ("I", "D"):
-            # Python < 3 writes byte data transparently without "buffer"
-            stdout = getattr(sys.stdout, "buffer", sys.stdout)
-            stdout.write(self.buffer)
+        if name:
+            if isinstance(name, str):
+                with open(name, "wb") as f:
+                    f.write(self.buffer)
+            else:
+                name.write(self.buffer)
             return None
-        if dest == "F":
-            # Save to local file
-            with open(name, "wb") as f:
-                f.write(self.buffer)
-            return None
-        # Return as a byte string
-        if dest == "S":
-            return self.buffer
-        raise FPDFException("Incorrect output destination: " + dest)
+        return self.buffer
 
     def normalize_text(self, txt):
         "Check that text input is in the correct format/encoding"
