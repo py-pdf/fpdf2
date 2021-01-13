@@ -2065,7 +2065,6 @@ class FPDF:
 
     def _putinfo(self):
         info_d = OrderedDict()
-        # info_d[pdf_name("producer")] = enclose_in_parens("fpdf{} https://github.com/PyFPDF/fpdf2".format(FPDF_VERSION))
         info_d[pdf_name("title")] = enclose_in_parens(getattr(self, "title", None))
         info_d[pdf_name("subject")] = enclose_in_parens(getattr(self, "subject", None))
         info_d[pdf_name("author")] = enclose_in_parens(getattr(self, "author", None))
