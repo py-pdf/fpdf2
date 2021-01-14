@@ -6,7 +6,7 @@
 'company_footer2';'T';115.30;50.30;175.30;55.30;'helvetica';10.00;0;0;0;0;0;'I';'Company footer 2';2
 'company_header1';'T';17.30;40.30;85.30;45.30;'helvetica';10.00;0;0;0;0;0;'I';'Company header 1';2
 'company_header2';'T';17.30;45.30;85.30;50.30;'helvetica';10.00;0;0;0;0;0;'I';'Company header 2';2
-'company_logo';'I';20.30;17.30;55.70;30.30;None;0.00;0;0;0;0;0;'I';'../tutorial/logo.png';2
+'company_logo';'I';20.30;17.30;55.70;30.30;None;0.00;0;0;0;0;0;'I';'../docs/fpdf2-logo.png';2
 'company_name';'T';17.30;32.80;98.30;37.80;'helvetica';12.00;1;0;0;0;0;'I';'Company name';2
 'currency';'T';42.30;90.30;67.30;94.30;'helvetica';10.00;0;0;0;0;65535;'I';'U.S.D.';0
 'currency_l';'T';17.30;90.30;65.30;94.30;'helvetica';10.00;0;0;0;0;0;'I';'Currency:';0

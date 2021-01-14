@@ -32,7 +32,7 @@ pdf.write(5, 'Visit ')
 # Then put a blue underlined link
 pdf.set_text_color(0, 0, 255)
 pdf.set_font('', 'U')
-pdf.write(5, 'www.fpdf.org', 'http://www.fpdf.org')
+pdf.write(5, 'pyfpdf.github.io/fpdf2/', 'https://pyfpdf.github.io/fpdf2/')
 ```
 
 ### See also ###

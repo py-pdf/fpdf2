@@ -123,7 +123,7 @@ class TemplateTest(unittest.TestCase):
         tmpl = Template(format="A4", elements=elements, title="Sample Invoice")
         tmpl.add_page()
         tmpl["company_name"] = "Sample Company"
-        tmpl["company_logo"] = relative_path_to("../../tutorial/logo.png")
+        tmpl["company_logo"] = relative_path_to("../../docs/fpdf2-logo.png")
         assert_pdf_equal(self, tmpl, "test_nominal_hardcoded.pdf")
 
     def test_nominal_csv(self):

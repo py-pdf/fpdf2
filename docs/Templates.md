@@ -63,7 +63,7 @@ f.add_page()
 #we FILL some of the fields of the template with the information we want
 #note we access the elements treating the template instance as a "dict"
 f["company_name"] = "Sample Company"
-f["company_logo"] = "pyfpdf/tutorial/logo.png"
+f["company_logo"] = "docs/fpdf2-logo.png"
 
 #and now we render the page
 f.render("./template.pdf")

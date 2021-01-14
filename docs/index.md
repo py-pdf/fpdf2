@@ -36,7 +36,6 @@ FPDF original features:
 * Automatic page break, line break and text justification
 * Image, colors and links support
 * Page compression
-* Extensive [Tutorial](http://www.fpdf.org/en/tutorial/index.php) and complete online [documentation](http://www.fpdf.org/en/doc/index.php)
 
 ## Installation ##
 

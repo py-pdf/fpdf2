@@ -77,6 +77,11 @@ def assert_pdf_equal(
                     # that has cubic complexity from this comment by Tim Peters: https://bugs.python.org/issue6931#msg223459
                     expected_lines = subst_streams_with_hashes(expected_lines)
                     actual_lines = subst_streams_with_hashes(actual_lines)
+                # Failsafe before calling assertEqual:
+                max_actual_lines_length = max(len(l) for l in actual_lines)
+                assert (
+                    max_actual_lines_length < 100000
+                ), f"Aborting: subst_streams_with_hashes failed to reduce actual #lines enough: {max_actual_lines_length}"
                 test.assertEqual(actual_lines, expected_lines)
         else:  # Fallback to hash comparison
             actual_hash = calculate_hash_of_file(actual_pdf_file.name)
@@ -105,8 +110,9 @@ def subst_streams_with_hashes(in_lines):
             # First line of stream, we check if it is binary or not:
             try:
                 line.decode("latin-1")
-                # It's text! No need to compact stream
-                stream = None
+                if b"\0" not in line:
+                    # It's text! No need to compact stream
+                    stream = None
             except UnicodeDecodeError:
                 pass
         if stream is None:

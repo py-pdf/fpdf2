@@ -1466,8 +1466,8 @@ class FPDF:
             self.close()
         if name:
             if isinstance(name, str):
-                with open(name, "wb") as f:
-                    f.write(self.buffer)
+                with open(name, "wb") as file:
+                    file.write(self.buffer)
             else:
                 name.write(self.buffer)
             return None

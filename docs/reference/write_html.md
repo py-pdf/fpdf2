@@ -51,10 +51,10 @@ html = """
 <p>You can now easily print text mixing different
 styles : <B>bold</B>, <I>italic</I>, <U>underlined</U>, or
 <B><I><U>all at once</U></I></B>!<BR>You can also insert links
-on text, such as <A HREF="http://www.fpdf.org">www.fpdf.org</A>,
+on text, such as <A HREF="https://pyfpdf.github.io/fpdf2/">pyfpdf.github.io/fpdf2/</A>,
 or on an image: click on the logo.<br>
 <center>
-<A HREF="http://www.fpdf.org"><img src="tutorial/logo.png" width="104" height="71"></A>
+<A HREF="https://pyfpdf.github.io/fpdf2/"><img src="docs/fpdf2-logo.png" width="104" height="71"></A>
 </center>
 <h3>Sample List</h3>
 <ul><li>option 1</li>
