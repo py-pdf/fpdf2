@@ -70,18 +70,15 @@ def assert_pdf_equal(
                     )
                 expected_lines = expected_qpdf_file.read().splitlines()
                 actual_lines = actual_qpdf_file.read().splitlines()
-                if actual_lines != expected_lines:
-                    # It is very important to reduce the size of both list of bytes here,
-                    # or the call to .assertEqual will take forever to finish.
-                    # Under the hood it calls .assertSequenceEqual, that itself calls difflib.ndiff,
-                    # that has cubic complexity from this comment by Tim Peters: https://bugs.python.org/issue6931#msg223459
-                    expected_lines = subst_streams_with_hashes(expected_lines)
-                    actual_lines = subst_streams_with_hashes(actual_lines)
-                # Failsafe before calling assertEqual:
-                max_actual_lines_length = max(len(l) for l in actual_lines)
-                assert (
-                    max_actual_lines_length < 500000
-                ), f"Aborting: subst_streams_with_hashes failed to reduce actual #lines enough: {max_actual_lines_length}"
+                if actual_lines == expected_lines:
+                    test.assertTrue(actual_lines == expected_lines)
+                    return
+                # It is very important to reduce the size of both list of bytes here,
+                # or the call to .assertEqual will take forever to finish.
+                # Under the hood it calls .assertSequenceEqual, that itself calls difflib.ndiff,
+                # that has cubic complexity from this comment by Tim Peters: https://bugs.python.org/issue6931#msg223459
+                expected_lines = subst_streams_with_hashes(expected_lines)
+                actual_lines = subst_streams_with_hashes(actual_lines)
                 test.assertEqual(actual_lines, expected_lines)
         else:  # Fallback to hash comparison
             actual_hash = calculate_hash_of_file(actual_pdf_file.name)

@@ -177,7 +177,6 @@ class Template:
             pdf.set_auto_page_break(False, margin=0)
 
             for element in sorted(self.elements, key=lambda x: x["priority"]):
-                # print "dib",element['type'], element['name'], element['x1'], element['y1'], element['x2'], element['y2']
                 element = element.copy()
                 element["text"] = self.texts[pg].get(
                     element["name"].lower(), element["text"]
