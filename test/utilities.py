@@ -80,7 +80,7 @@ def assert_pdf_equal(
                 # Failsafe before calling assertEqual:
                 max_actual_lines_length = max(len(l) for l in actual_lines)
                 assert (
-                    max_actual_lines_length < 100000
+                    max_actual_lines_length < 500000
                 ), f"Aborting: subst_streams_with_hashes failed to reduce actual #lines enough: {max_actual_lines_length}"
                 test.assertEqual(actual_lines, expected_lines)
         else:  # Fallback to hash comparison

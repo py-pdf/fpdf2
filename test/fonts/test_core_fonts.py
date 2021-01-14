@@ -34,7 +34,7 @@ class CoreFontsTest(unittest.TestCase):
                 pdf.set_font(font_name.capitalize(), style, 36)
                 pdf.set_font(font_name.lower(), style, 36)
                 pdf.text(0, 10 + 40 * i + 10 * j, "Hello World!")
-        assert_pdf_equal(self, pdf, "test_set_builtin_font.pdf", generate=True)
+        assert_pdf_equal(self, pdf, "test_set_builtin_font.pdf")
 
 
 if __name__ == "__main__":
