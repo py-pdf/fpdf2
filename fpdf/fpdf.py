@@ -731,9 +731,14 @@ class FPDF:
         fontkey = family + style
         if fontkey not in self.fonts:
             if fontkey not in self.core_fonts or fontkey not in fpdf_charwidths:
+                # Being flexible: try a fontkey with lowercase family:
                 fontkey = family.lower() + style
                 if fontkey not in self.core_fonts or fontkey not in fpdf_charwidths:
-                    raise FPDFException("Undefined font: " + fontkey)
+                    raise FPDFException(
+                        "Undefined font: "
+                        + fontkey
+                        + " - Use built-in fonts or FPDF.add_font() beforehand"
+                    )
             i = len(self.fonts) + 1
             self.fonts[fontkey] = {
                 "i": i,
