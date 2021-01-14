@@ -8,12 +8,12 @@ class MyFPDF(fpdf.FPDF, fpdf.HTMLMixin):
 pdf = MyFPDF()
 # First page
 pdf.add_page()
-pdf.set_font("helvetica", "", 20)
+pdf.set_font("helvetica", size=20)
 pdf.write(5, "To find out what's new in self tutorial, click ")
-pdf.set_font("", "U")
+pdf.set_font(style="U")
 link = pdf.add_link()
 pdf.write(5, "here", link)
-pdf.set_font("")
+pdf.set_font()
 # Second page
 pdf.add_page()
 pdf.set_link(link)

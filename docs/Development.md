@@ -28,7 +28,11 @@ More on `PyFPDF`:
 > [old issues](https://github.com/reingart/pyfpdf_googlecode/issues), and 
 > [old wiki](https://github.com/reingart/pyfpdf_googlecode/tree/wiki).
 
-[PyPI download stats](https://pypistats.org/packages/fpdf2)
+
+## Usage ##
+
+- [PyPI download stats](https://pypistats.org/packages/fpdf2)
+- packages using `fpdf2` can be listed using [Watchman Pypi](http://www.watchman-pypi.com)
 
 
 ## Repository structure ##

@@ -48,7 +48,7 @@ class PDF(FPDF):
         self.set_text_color(255)
         self.set_draw_color(128, 0, 0)
         self.set_line_width(0.3)
-        self.set_font("", "B")
+        self.set_font(style="B")
         # Header
         w = [40, 35, 40, 45]
         for i in range(0, len(header)):
@@ -57,7 +57,7 @@ class PDF(FPDF):
         # Color and font restoration
         self.set_fill_color(224, 235, 255)
         self.set_text_color(0)
-        self.set_font("")
+        self.set_font()
         # Data
         fill = 0
         for row in data:
@@ -75,7 +75,7 @@ pdf = PDF()
 header = ["Country", "Capital", "Area (sq km)", "Pop. (thousands)"]
 # Data loading
 data = pdf.load_data("countries.txt")  # TODO: fill this file with more & real data
-pdf.set_font("helvetica", "", 14)
+pdf.set_font("helvetica", size=14)
 pdf.add_page()
 pdf.basic_table(header, data)
 pdf.add_page()

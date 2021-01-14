@@ -18,15 +18,14 @@ In order to be fully compliant with the recent PDF specs,
 we recommend using `pikepdf` that will set both XMP & `DocumentInformation` metadata:
 
 ```python
-import os
+import os, sys
 from datetime import datetime
 from fpdf import FPDF_VERSION
 import pikepdf
 
-start_size = os.stat(filepath).st_size
-with pikepdf.open(filepath, allow_overwriting_input=True) as pdf:
+with pikepdf.open(sys.argv[1], allow_overwriting_input=True) as pdf:
     with pdf.open_metadata(set_pikepdf_as_editor=False) as meta:
-        meta['dc:title'] = "Title"
+        meta["dc:title"] = "Title"
         meta["dc:description"] = "Description"
         meta["dc:creator"] = "Author"
         meta["pdf:Keywords"] = "keyword1 keyword2 keyword3"
@@ -34,6 +33,4 @@ with pikepdf.open(filepath, allow_overwriting_input=True) as pdf:
         meta["xmp:CreatorTool"] = __file__
         meta["xmp:MetadataDate"] = datetime.now(datetime.utcnow().astimezone().tzinfo).isoformat()
     pdf.save()
-end_size = os.stat(filepath).st_size
-print(f"Final file size: {end_size / 1024**2:.0f}Mb (metada addition added {(end_size - start_size) / 1024**2:.0f}Mb)")
 ```

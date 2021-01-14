@@ -390,7 +390,7 @@ class HTML2FPDF(HTMLParser):
                 style += s
         if DEBUG:
             print("SET_FONT_STYLE", style)
-        self.pdf.set_font("", style)
+        self.pdf.set_font(style=style)
 
     def set_text_color(self, r=None, g=0, b=0):
         if r is None:

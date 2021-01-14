@@ -64,12 +64,12 @@ class PDF(FPDF):
         with open(name, "rb") as fh:
             txt = fh.read().decode("latin-1")
         # Font
-        self.set_font("Times", "", 12)
+        self.set_font("Times", size=12)
         # Output text in a 6 cm width column
         self.multi_cell(60, 5, txt)
         self.ln()
         # Mention
-        self.set_font("", "I")
+        self.set_font(style="I")
         self.cell(0, 5, "(end of excerpt)")
         # Go back to first column
         self.set_col(0)

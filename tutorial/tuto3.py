@@ -46,13 +46,13 @@ class PDF(FPDF):
         with open(name, "rb") as fh:
             txt = fh.read().decode("latin-1")
         # Times 12
-        self.set_font("Times", "", 12)
+        self.set_font("Times", size=12)
         # Output justified text
         self.multi_cell(0, 5, txt)
         # Line break
         self.ln()
         # Mention in italics
-        self.set_font("", "I")
+        self.set_font(style="I")
         self.cell(0, 5, "(end of excerpt)")
 
     def print_chapter(self, num, title, name):

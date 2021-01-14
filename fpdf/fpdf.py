@@ -696,7 +696,7 @@ class FPDF:
                         "length2": font_dict["size2"],
                     }
 
-    def set_font(self, family, style="", size=0):
+    def set_font(self, family=None, style="", size=0):
         "Select a font; size given in points"
         if not family:
             family = self.font_family
@@ -2042,6 +2042,11 @@ class FPDF:
             self._out("/I" + str(idx) + " " + str(n) + " 0 R")
 
     def _putresourcedict(self):
+        # From section 10.1, "Procedure Sets", of PDF 1.7 spec:
+        # > Beginning with PDF 1.4, this feature is considered obsolete.
+        # > For compatibility with existing consumer applications,
+        # > PDF producer applications should continue to specify procedure sets
+        # > (preferably, all of those listed in Table 10.1).
         self._out("/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]")
         self._out("/Font <<")
         f = [(x["i"], x["n"]) for x in self.fonts.values()]

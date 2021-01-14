@@ -10,16 +10,8 @@ the range of the C 'short' data type (2 bytes, 0 - 65535):
 and this seems to be okay.
 """
 import os
-import sys
 import unittest
 from glob import glob
-
-sys.path.insert(
-    0,
-    os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), os.path.join("..", "..", "..")
-    ),
-)
 
 import fpdf
 from fpdf.ttfonts import TTFontFile
@@ -61,8 +53,8 @@ class CharmapTest(unittest.TestCase):
 
                 pdf = fpdf.FPDF()
                 pdf.add_page()
-                pdf.add_font(fontname, "", fontpath, uni=True)
-                pdf.set_font(fontname, "", 10)
+                pdf.add_font(fontname, fname=fontpath, uni=True)
+                pdf.set_font(fontname, size=10)
 
                 ttf = MyTTFontFile()
                 ttf.getMetrics(fontpath)
