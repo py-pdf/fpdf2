@@ -8,6 +8,7 @@ On [fpdf2](https://github.com/pyfpdf/fpdf2/graphs/contributors):
 - Christopher Frost
 - Abishek Goda
 - xitrushiy
+- Miroslav Šedivý
 
 On the original [PyFPDF](https://github.com/reingart/pyfpdf/graphs/contributors):
 
