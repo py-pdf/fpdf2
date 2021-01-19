@@ -10,3 +10,5 @@ exclude *.md
 exclude *.yml
 include LICENSE
 exclude tox.ini
+
+include README.md
