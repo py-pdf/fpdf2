@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """PDF Syntax Helpers
 
 Functions in this module take variable input and produce PDF Syntax features

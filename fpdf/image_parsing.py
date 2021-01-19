@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import zlib
 from io import BytesIO
 from urllib.request import urlopen

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 "HTML Renderer for FPDF.py"
 
 __author__ = "Mariano Reingart <reingart@gmail.com>"

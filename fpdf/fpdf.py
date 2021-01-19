@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # ****************************************************************************
 # * Software: FPDF for python                                                *
 # * License:  LGPL v3.0                                                      *

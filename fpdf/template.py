@@ -1,5 +1,3 @@
-# -*- coding: iso-8859-1 -*-
-
 "PDF Template Helper for FPDF.py"
 
 __author__ = "Mariano Reingart <reingart@gmail.com>"
