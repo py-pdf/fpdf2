@@ -168,7 +168,7 @@ class LineTest(unittest.TestCase):
         pdf.add_page()
 
         def draw_diagonal_line(pdf, x, y):
-            pdf.line(x, y, x + size, y + (size / 2.0))
+            pdf.line(x, y, x + size, y + size / 2)
 
         for width in [0.71, 1, 2]:
             pdf.set_line_width(width)
@@ -189,17 +189,17 @@ class LineTest(unittest.TestCase):
         pdf.add_page()
 
         def draw_diagonal_dash(pdf, x, y, *a, **k):
-            pdf.dashed_line(x, y, x + size, y + (size / 2.0), *a, **k)
+            pdf.dashed_line(x, y, x + size, y + size / 2, *a, **k)
 
         for width in [0.71, 1, 2]:
             pdf.set_line_width(width)
-            draw_diagonal_dash(pdf, pdf.get_x(), pdf.get_y(), margin, margin / 2.0)
+            draw_diagonal_dash(pdf, pdf.get_x(), pdf.get_y(), margin, margin / 2)
             pdf.set_x(pdf.get_x() + size + margin)
         next_row(pdf)
 
         for color in [70, 140, 200]:
             pdf.set_draw_color(color)
-            draw_diagonal_dash(pdf, pdf.get_x(), pdf.get_y(), margin, margin / 2.0)
+            draw_diagonal_dash(pdf, pdf.get_x(), pdf.get_y(), margin, margin / 2)
             pdf.set_x(pdf.get_x() + size + margin)
         next_row(pdf)
 
@@ -208,7 +208,7 @@ class LineTest(unittest.TestCase):
         draw_diagonal_dash(pdf, pdf.get_x(), pdf.get_y(), margin, margin)
 
         pdf.set_x(pdf.get_x() + size + margin)
-        draw_diagonal_dash(pdf, pdf.get_x(), pdf.get_y(), margin / 2.0, margin)
+        draw_diagonal_dash(pdf, pdf.get_x(), pdf.get_y(), margin / 2, margin)
 
         next_row(pdf)
         pdf.set_line_width(1)

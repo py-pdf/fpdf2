@@ -11,7 +11,7 @@ class PDF(FPDF):
         # Page header
         self.set_font("helvetica", "B", 15)
         w = self.get_string_width(title) + 6
-        self.set_x((210 - w) / 2.0)
+        self.set_x((210 - w) / 2)
         self.set_draw_color(0, 80, 180)
         self.set_fill_color(230, 230, 0)
         self.set_text_color(220, 50, 50)
@@ -31,7 +31,7 @@ class PDF(FPDF):
     def set_col(self, col):
         # Set position at a given column
         self.col = col
-        x = 10 + col * 65.0
+        x = 10 + col * 65
         self.set_left_margin(x)
         self.set_x(x)
 

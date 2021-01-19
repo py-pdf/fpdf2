@@ -15,7 +15,7 @@ DEBUG = False
 
 
 def px2mm(px):
-    return int(px) * 25.4 / 72.0
+    return int(px) * 25.4 / 72
 
 
 def hex2dec(color="#000000"):
@@ -70,9 +70,9 @@ class HTML2FPDF(HTMLParser):
         if length[-1] == "%":
             total = self.pdf.w - self.pdf.r_margin - self.pdf.l_margin
             if self.table["width"][-1] == "%":
-                total *= int(self.table["width"][:-1]) / 100.0
-            return int(length[:-1]) * total / 101.0
-        return int(length) / 6.0
+                total *= int(self.table["width"][:-1]) / 100
+            return int(length[:-1]) * total / 101
+        return int(length) / 6
 
     def handle_data(self, data):
         if self.td is not None:  # drawing a table?
@@ -248,8 +248,8 @@ class HTML2FPDF(HTMLParser):
                 self.table["width"] = "100%"
             if self.table["width"][-1] == "%":
                 w = self.pdf.w - self.pdf.r_margin - self.pdf.l_margin
-                w *= int(self.table["width"][:-1]) / 100.0
-                self.table_offset = (self.pdf.w - w) / 2.0
+                w *= int(self.table["width"][:-1]) / 100
+                self.table_offset = (self.pdf.w - w) / 2
             self.table_col_width = []
             self.theader_out = self.tfooter_out = False
             self.theader = []
@@ -286,7 +286,7 @@ class HTML2FPDF(HTMLParser):
                 x = self.pdf.get_x()
                 y = self.pdf.get_y()
                 if self.align and self.align[0].upper() == "C":
-                    x = self.pdf.w / 2.0 - w / 2.0
+                    x = self.pdf.w / 2 - w / 2
                 self.pdf.image(self.image_map(attrs["src"]), x, y, w, h, link=self.href)
                 self.pdf.set_x(x + w)
                 self.pdf.set_y(y + h)
@@ -370,7 +370,7 @@ class HTML2FPDF(HTMLParser):
             self.font_face = face
         if size:
             self.font_size = size
-            self.h = size / 72.0 * 25.4
+            self.h = size / 72 * 25.4
             if DEBUG:
                 print("H", self.h)
         style = ""

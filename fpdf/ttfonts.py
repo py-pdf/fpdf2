@@ -285,7 +285,7 @@ class TTFontFile:
         self.seek_table("head")
         self.skip(18)
         self.unitsPerEm = unitsPerEm = self.read_ushort()
-        scale = 1000 / float(unitsPerEm)
+        scale = 1000 / unitsPerEm
         self.skip(16)
         xMin = self.read_short()
         yMin = self.read_short()
@@ -356,14 +356,14 @@ class TTFontFile:
                 self.descent = yMin * scale
             self.capHeight = self.ascent
 
-        self.stemV = 50 + int(pow((usWeightClass / 65.0), 2))
+        self.stemV = 50 + int(pow((usWeightClass / 65), 2))
 
         #################/
         # post - PostScript table
         #################/
         self.seek_table("post")
         self.skip(4)
-        self.italicAngle = self.read_short() + self.read_ushort() / 65536.0
+        self.italicAngle = self.read_short() + self.read_ushort() / 65536
         self.underlinePosition = self.read_short() * scale
         self.underlineThickness = self.read_short() * scale
         isFixedPitch = self.read_ulong()
@@ -899,7 +899,7 @@ class TTFontFile:
 
                 for char in glyphToChar[glyph]:
                     if char not in (0, 65535):
-                        w = int(round(scale * aw + 0.001))  # ROUND_HALF_UP
+                        w = round(scale * aw + 0.001)  # ROUND_HALF_UP
                         if w == 0:
                             w = 65535
                         if char < 196608:
@@ -916,7 +916,7 @@ class TTFontFile:
             if glyph in glyphToChar:
                 for char in glyphToChar[glyph]:
                     if char not in (0, 65535):
-                        w = int(round(scale * aw + 0.001))  # ROUND_HALF_UP
+                        w = round(scale * aw + 0.001)  # ROUND_HALF_UP
                         if w == 0:
                             w = 65535
                         if char < 196608:

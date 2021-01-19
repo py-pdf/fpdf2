@@ -455,8 +455,8 @@ class FPDF:
             for i in range(0, l):
                 w += cw.get(s[i], 0)
         if self.font_stretching != 100:
-            w = w * self.font_stretching / 100.0
-        return w * self.font_size / 1000.0
+            w = w * self.font_stretching / 100
+        return w * self.font_size / 1000
 
     def set_line_width(self, width):
         "Set line width"
@@ -515,13 +515,13 @@ class FPDF:
         style_to_operators = {"F": "f", "FD": "B", "DF": "B"}
         op = style_to_operators.get(style, "S")
 
-        cx = x + w / 2.0
-        cy = y + h / 2.0
-        rx = w / 2.0
-        ry = h / 2.0
+        cx = x + w / 2
+        cy = y + h / 2
+        rx = w / 2
+        ry = h / 2
 
-        lx = 4.0 / 3.0 * (math.sqrt(2) - 1) * rx
-        ly = 4.0 / 3.0 * (math.sqrt(2) - 1) * ry
+        lx = 4 / 3 * (math.sqrt(2) - 1) * rx
+        ly = 4 / 3 * (math.sqrt(2) - 1) * ry
 
         self._out(
             sprintf(
@@ -606,20 +606,20 @@ class FPDF:
                 ttf = TTFontFile()
                 ttf.getMetrics(ttffilename)
                 desc = {
-                    "Ascent": int(round(ttf.ascent, 0)),
-                    "Descent": int(round(ttf.descent, 0)),
-                    "CapHeight": int(round(ttf.capHeight, 0)),
+                    "Ascent": round(ttf.ascent),
+                    "Descent": round(ttf.descent),
+                    "CapHeight": round(ttf.capHeight),
                     "Flags": ttf.flags,
                     "FontBBox": "[%s %s %s %s]"
                     % (
-                        int(round(ttf.bbox[0], 0)),
-                        int(round(ttf.bbox[1], 0)),
-                        int(round(ttf.bbox[2], 0)),
-                        int(round(ttf.bbox[3], 0)),
+                        round(ttf.bbox[0]),
+                        round(ttf.bbox[1]),
+                        round(ttf.bbox[2]),
+                        round(ttf.bbox[3]),
                     ),
                     "ItalicAngle": int(ttf.italicAngle),
-                    "StemV": int(round(ttf.stemV, 0)),
-                    "MissingWidth": int(round(ttf.defaultWidth, 0)),
+                    "StemV": round(ttf.stemV),
+                    "MissingWidth": round(ttf.defaultWidth),
                 }
 
                 # Generate metrics .pkl file
@@ -1024,7 +1024,7 @@ class FPDF:
             if align == "R":
                 dx = w - self.c_margin - self.get_string_width(txt, True)
             elif align == "C":
-                dx = (w - self.get_string_width(txt, True)) / 2.0
+                dx = (w - self.get_string_width(txt, True)) / 2
             else:
                 dx = self.c_margin
             if self.color_flag:
@@ -1140,7 +1140,7 @@ class FPDF:
         # If width is 0, set width to available width between margins
         if w == 0:
             w = self.w - self.r_margin - self.x
-        wmax = (w - 2 * self.c_margin) * 1000.0 / self.font_size
+        wmax = (w - 2 * self.c_margin) * 1000 / self.font_size
 
         # Calculate text length
         txt = self.normalize_text(txt)
@@ -1212,7 +1212,7 @@ class FPDF:
                 ls = l
                 ns += 1
             if self.unifontsubset:
-                l += self.get_string_width(c, True) / self.font_size * 1000.0
+                l += self.get_string_width(c, True) / self.font_size * 1000
             else:
                 l += character_widths.get(c, 0)
 
@@ -1241,7 +1241,7 @@ class FPDF:
                 else:
                     if align == "J":
                         if ns > 1:
-                            self.ws = (wmax - ls) / 1000.0 * self.font_size / (ns - 1)
+                            self.ws = (wmax - ls) / 1000 * self.font_size / (ns - 1)
                         else:
                             self.ws = 0
                         self._out(sprintf("%.3f Tw", self.ws * self.k))
@@ -1313,7 +1313,7 @@ class FPDF:
         txt = self.normalize_text(txt)
         cw = self.current_font["cw"]
         w = self.w - self.r_margin - self.x
-        wmax = (w - 2 * self.c_margin) * 1000.0 / self.font_size
+        wmax = (w - 2 * self.c_margin) * 1000 / self.font_size
         s = txt.replace("\r", "")
         nb = len(s)
         sep = -1
@@ -1334,13 +1334,13 @@ class FPDF:
                 if nl == 1:
                     self.x = self.l_margin
                     w = self.w - self.r_margin - self.x
-                    wmax = (w - 2 * self.c_margin) * 1000.0 / self.font_size
+                    wmax = (w - 2 * self.c_margin) * 1000 / self.font_size
                 nl += 1
                 continue
             if c == " ":
                 sep = i
             if self.unifontsubset:
-                l += self.get_string_width(c, True) / self.font_size * 1000.0
+                l += self.get_string_width(c, True) / self.font_size * 1000
             else:
                 l += cw.get(c, 0)
             if l > wmax:
@@ -1351,7 +1351,7 @@ class FPDF:
                         self.x = self.l_margin
                         self.y += h
                         w = self.w - self.r_margin - self.x
-                        wmax = (w - 2 * self.c_margin) * 1000.0 / self.font_size
+                        wmax = (w - 2 * self.c_margin) * 1000 / self.font_size
                         i += 1
                         nl += 1
                         continue
@@ -1367,13 +1367,13 @@ class FPDF:
                 if nl == 1:
                     self.x = self.l_margin
                     w = self.w - self.r_margin - self.x
-                    wmax = (w - 2 * self.c_margin) * 1000.0 / self.font_size
+                    wmax = (w - 2 * self.c_margin) * 1000 / self.font_size
                 nl += 1
             else:
                 i += 1
         # Last chunk
         if i != j:
-            self.cell(l / 1000.0 * self.font_size, h, substr(s, j), 0, 0, "", 0, link)
+            self.cell(l / 1000 * self.font_size, h, substr(s, j), 0, 0, "", 0, link)
 
     @check_page
     def image(
@@ -2278,9 +2278,9 @@ class FPDF:
         return sprintf(
             "%.2f %.2f %.2f %.2f re f",
             x * self.k,
-            (self.h - (y - up / 1000.0 * self.font_size)) * self.k,
+            (self.h - (y - up / 1000 * self.font_size)) * self.k,
             w * self.k,
-            -ut / 1000.0 * self.font_size_pt,
+            -ut / 1000 * self.font_size_pt,
         )
 
     def _out(self, s):
@@ -2295,9 +2295,9 @@ class FPDF:
             self.buffer += s + b"\n"
 
     @check_page
-    def interleaved2of5(self, txt, x, y, w=1.0, h=10.0):
+    def interleaved2of5(self, txt, x, y, w=1, h=10):
         "Barcode I2of5 (numeric), adds a 0 if odd length"
-        narrow = w / 3.0
+        narrow = w / 3
         wide = w
 
         # wide/narrow codes for the digits
@@ -2351,9 +2351,9 @@ class FPDF:
                 x += line_width
 
     @check_page
-    def code39(self, txt, x, y, w=1.5, h=5.0):
+    def code39(self, txt, x, y, w=1.5, h=5):
         """Barcode 3of9"""
-        dim = {"w": w, "n": w / 3.0}
+        dim = {"w": w, "n": w / 3}
         chars = {
             "0": "nnnwwnwnn",
             "1": "wnnwnnnnw",
@@ -2441,9 +2441,9 @@ def _hashpath(fn):
 def _sizeof_fmt(num, suffix="B"):
     # Recipe from: https://stackoverflow.com/a/1094933/636849
     for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
-        if abs(num) < 1024.0:
+        if abs(num) < 1024:
             return "%3.1f%s%s" % (num, unit, suffix)
-        num /= 1024.0
+        num /= 1024
     return "%.1f%s%s" % (num, "Yi", suffix)
 
 

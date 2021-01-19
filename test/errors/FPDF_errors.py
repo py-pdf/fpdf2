@@ -57,7 +57,7 @@ class UnitTest(unittest.TestCase):
         self.assertAlmostEqual(fpdf.FPDF(unit="pt").k, 1)
         self.assertAlmostEqual(fpdf.FPDF(unit="mm").k, 2.83464566929)
         self.assertAlmostEqual(fpdf.FPDF(unit="cm").k, 28.3464566929)
-        self.assertAlmostEqual(fpdf.FPDF(unit="in").k, 72.0)
+        self.assertAlmostEqual(fpdf.FPDF(unit="in").k, 72)
 
 
 class DocOptionTest(unittest.TestCase):
