@@ -12,7 +12,7 @@ pdf.add_page()
 pdf.add_font("DejaVu", fname="DejaVuSansCondensed.ttf", uni=True)
 pdf.set_font("DejaVu", size=14)
 
-text = u"""
+text = """
 English: Hello World
 Greek: Γειά σου κόσμος
 Polish: Witaj świecie
@@ -33,15 +33,15 @@ for txt in text.split("\n"):
 #           Kannada, Malayalam, Oriya, Tamil, Telugu, Tibetan
 pdf.add_font("gargi", fname="gargi.ttf", uni=True)
 pdf.set_font("gargi", size=14)
-pdf.write(8, u"Hindi: नमस्ते दुनिया")
+pdf.write(8, "Hindi: नमस्ते दुनिया")
 pdf.ln(20)
 
 # Add a AR PL New Sung Unicode font (uses UTF-8)
 # The Open Source Chinese Font (also supports other east Asian languages)
 pdf.add_font("fireflysung", fname="fireflysung.ttf", uni=True)
 pdf.set_font("fireflysung", size=14)
-pdf.write(8, u"Chinese: 你好世界\n")
-pdf.write(8, u"Japanese: こんにちは世界\n")
+pdf.write(8, "Chinese: 你好世界\n")
+pdf.write(8, "Japanese: こんにちは世界\n")
 pdf.ln(10)
 
 # Add a Alee Unicode font (uses UTF-8)
@@ -49,13 +49,13 @@ pdf.ln(10)
 # and Latin9 (iso8859-15) characters.
 pdf.add_font("eunjin", fname="Eunjin.ttf", uni=True)
 pdf.set_font("eunjin", size=14)
-pdf.write(8, u"Korean: 안녕하세요")
+pdf.write(8, "Korean: 안녕하세요")
 pdf.ln(20)
 
 # Add a Fonts-TLWG (formerly ThaiFonts-Scalable) (uses UTF-8)
 pdf.add_font("waree", fname="Waree.ttf", uni=True)
 pdf.set_font("waree", size=14)
-pdf.write(8, u"Thai: สวัสดีชาวโลก")
+pdf.write(8, "Thai: สวัสดีชาวโลก")
 pdf.ln(20)
 
 # Select a standard font (uses windows-1252)
