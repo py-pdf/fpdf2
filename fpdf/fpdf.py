@@ -112,7 +112,7 @@ def load_cache(filename):
         with open(filename, "rb") as fh:
             return pickle.load(fh)
     # File missing, unsupported pickle, etc
-    except (IOError, ValueError):
+    except (OSError, ValueError):
         return None
 
 
@@ -638,7 +638,7 @@ class FPDF:
                     try:
                         with open(unifilename, "wb") as fh:
                             pickle.dump(font_dict, fh)
-                    except IOError as e:
+                    except OSError as e:
                         if e.errno != errno.EACCES:
                             raise  # Not a permission error.
                 del ttf
@@ -1886,7 +1886,7 @@ class FPDF:
                         font_dict["range_interval"] = range_interval
                         font_dict["range"] = range_
                         pickle.dump(font_dict, fh)
-                except IOError as e:
+                except OSError as e:
                     if e.errno != errno.EACCES:
                         raise  # Not a permission error.
 
