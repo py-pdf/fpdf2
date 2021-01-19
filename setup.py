@@ -11,7 +11,7 @@ def run_test_suite():
 
 def read(path):
     """Read a file's contents."""
-    with open(path, "r") as f:
+    with open(path) as f:
         return f.read()
 
 
