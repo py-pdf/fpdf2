@@ -1,8 +1,5 @@
-"""page_format.py"""
-
 import unittest
-import sys
-import os
+
 import fpdf
 
 # python -m unittest test.errors.page_format.PageFormatErrors
@@ -39,9 +36,3 @@ class PageFormatErrorsTest(unittest.TestCase):
 
         self.assertTrue("FPDFPageFormatException" in str(e.exception))
         self.assertTrue("Arguments must be numbers: " in str(e.exception))
-
-        pdf = fpdf.FPDF()
-        a = "ali"
-        b = pdf.alias_nb_pages(a)
-        self.assertEqual(b, a)
-        self.assertEqual(pdf.str_alias_nb_pages, a)

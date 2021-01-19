@@ -151,6 +151,7 @@ class FPDF:
         self.font_style = ""  # current font style
         self.font_size_pt = 12  # current font size in points
         self.font_stretching = 100  # current font stretching
+        self.str_alias_nb_pages = "{nb}"
         self.unifontsubset = False
         self.underline = 0  # underlining flag
         self.draw_color = "0 G"
@@ -303,10 +304,9 @@ class FPDF:
         else:
             raise FPDFException('Unknown document option "%s"' % str(opt))
 
-    def alias_nb_pages(self, alias="{nb}"):
+    def alias_nb_pages(self, alias):
         "Define an alias for total number of pages"
         self.str_alias_nb_pages = alias
-        return alias
 
     def open(self):
         "Begin document"
@@ -644,8 +644,7 @@ class FPDF:
                 del ttf
 
             # include numbers in the subset! (if alias present)
-            have_page_alias = lambda: hasattr(self, "str_alias_nb_pages")
-            sbarr = list(range(0, 57 if have_page_alias() else 32))
+            sbarr = list(range(0, 57 if self.str_alias_nb_pages else 32))
 
             self.fonts[fontkey] = {
                 "i": len(self.fonts) + 1,
@@ -1536,16 +1535,20 @@ class FPDF:
 
     def _putpages(self):
         nb = self.page
-        if hasattr(self, "str_alias_nb_pages"):
+        if self.str_alias_nb_pages:
             # Replace number of pages in fonts using subsets (unicode)
             alias = self.str_alias_nb_pages.encode("UTF-16BE")
-            r = str(nb).encode("UTF-16BE")
+            encoded_nb = str(nb).encode("UTF-16BE")
             for n in range(1, nb + 1):
-                self.pages[n]["content"] = self.pages[n]["content"].replace(alias, r)
+                self.pages[n]["content"] = self.pages[n]["content"].replace(
+                    alias, encoded_nb
+                )
             # Now repeat for no pages in non-subset fonts
+            alias = self.str_alias_nb_pages.encode("latin-1")
+            encoded_nb = str(nb).encode("latin-1")
             for n in range(1, nb + 1):
-                self.pages[n]["content"].replace(
-                    self.str_alias_nb_pages.encode("latin-1"), str(nb).encode("latin-1")
+                self.pages[n]["content"] = self.pages[n]["content"].replace(
+                    alias, encoded_nb
                 )
         if self.def_orientation == "P":
             dw_pt = self.dw_pt

@@ -12,6 +12,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - `FPDF.image` now accept also a `Pillow.Image.Image` as input
 - documentation on how to add content to existing PDFs
 ### Fixed
+- `alias_nb_pages`: fixed this feature that was broken, probably since v2.0.6
 - `set_font`: fixed a bug where calling it several times, with & without the same parameters,
 prevented strings passed first to the text-rendering methods to be displayed.
 ### Deprecated
