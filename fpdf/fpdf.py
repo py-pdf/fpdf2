@@ -490,7 +490,7 @@ class FPDF:
         style_to_operators = {"F": "f", "FD": "B", "DF": "B"}
         op = style_to_operators.get(style, "S")
         self._out(
-            "{:.2f} {:.2f} {:.2f} {:.2f} re {:s}".format(
+            "{:.2f} {:.2f} {:.2f} {:.2f} re {}".format(
                 x * self.k,
                 (self.h - y) * self.k,
                 w * self.k,
@@ -546,7 +546,7 @@ class FPDF:
             )
         )
         self._out(
-            "{:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} c {:s}".format(
+            "{:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} c {}".format(
                 (cx + lx) * self.k,
                 (self.h - (cy + ry)) * self.k,
                 (cx + rx) * self.k,
@@ -1009,7 +1009,7 @@ class FPDF:
                 else:
                     txt2 = escape_parens(txt)
 
-                s += "BT {:.2f} {:.2f} Td ({:s}) Tj ET".format(
+                s += "BT {:.2f} {:.2f} Td ({}) Tj ET".format(
                     (self.x + dx) * k,
                     (self.h - (self.y + (0.5 * h) + (0.3 * self.font_size))) * k,
                     txt2,
@@ -1385,7 +1385,7 @@ class FPDF:
         if x is None:
             x = self.x
         self._out(
-            "q {:.2f} 0 0 {:.2f} {:.2f} {:.2f} cm /I{:d} Do Q".format(
+            "q {:.2f} 0 0 {:.2f} {:.2f} {:.2f} cm /I{} Do Q".format(
                 w * self.k,
                 h * self.k,
                 x * self.k,
@@ -2138,7 +2138,7 @@ class FPDF:
             self._out(f"0 {self.n + 1}")
             self._out("0000000000 65535 f ")
             for i in range(1, self.n + 1):
-                self._out(f"{self.offsets[i]:010d} 00000 n ")
+                self._out(f"{self.offsets[i]:010} 00000 n ")
         # Trailer
         with self._trace_size("trailer"):
             self._out("trailer")

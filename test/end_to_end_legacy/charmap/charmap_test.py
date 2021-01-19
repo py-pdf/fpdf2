@@ -61,7 +61,7 @@ class CharmapTest(unittest.TestCase):
 
                 # Create a PDF with the first 999 charters defined in the font:
                 for counter, character in enumerate(ttf.saveChar, 0):
-                    pdf.write(8, f"{counter:03d}) {character:03x} - {character:c}")
+                    pdf.write(8, f"{counter:03}) {character:03x} - {character:c}")
                     pdf.ln()
                     if counter >= 999:
                         break
