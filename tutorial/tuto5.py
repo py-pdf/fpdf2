@@ -28,8 +28,8 @@ class PDF(FPDF):
         # Column widths
         w = [40, 35, 40, 45]
         # Header
-        for i in range(0, len(header)):
-            self.cell(w[i], 7, header[i], 1, 0, "C")
+        for width, header_text in zip(w, header):
+            self.cell(width, 7, header_text, 1, 0, "C")
         self.ln()
         # Data
         for row in data:
@@ -51,8 +51,8 @@ class PDF(FPDF):
         self.set_font(style="B")
         # Header
         w = [40, 35, 40, 45]
-        for i in range(0, len(header)):
-            self.cell(w[i], 7, header[i], 1, 0, "C", 1)
+        for width, header_text in zip(w, header):
+            self.cell(width, 7, header_text, 1, 0, "C", 1)
         self.ln()
         # Color and font restoration
         self.set_fill_color(224, 235, 255)

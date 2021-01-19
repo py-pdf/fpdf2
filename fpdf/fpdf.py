@@ -433,7 +433,6 @@ class FPDF:
         s = s if normalized else self.normalize_text(s)
         cw = self.current_font["cw"]
         w = 0
-        l = len(s)
         if self.unifontsubset:
             for char in s:
                 char = ord(char)
@@ -444,8 +443,7 @@ class FPDF:
                 else:
                     w += 500
         else:
-            for i in range(0, l):
-                w += cw.get(s[i], 0)
+            w += sum(cw.get(char, 0) for char in s)
         if self.font_stretching != 100:
             w = w * self.font_stretching / 100
         return w * self.font_size / 1000
@@ -628,7 +626,7 @@ class FPDF:
                 del ttf
 
             # include numbers in the subset! (if alias present)
-            sbarr = list(range(0, 57 if self.str_alias_nb_pages else 32))
+            sbarr = list(range(57 if self.str_alias_nb_pages else 32))
 
             self.fonts[fontkey] = {
                 "i": len(self.fonts) + 1,
@@ -663,7 +661,7 @@ class FPDF:
                     if self.diffs[i] == diff:
                         d = i
                         break
-                if d == 0:
+                else:
                     d = nb + 1
                     self.diffs[d] = diff
                 self.fonts[fontkey]["diff"] = d
@@ -1575,7 +1573,7 @@ class FPDF:
         self._out("1 0 obj")
         self._out("<</Type /Pages")
         kids = "/Kids ["
-        for i in range(0, nb):
+        for i in range(nb):
             kids += f"{3 + 2 * i} 0 R "
         self._out(kids + "]")
         self._out(f"/Count {nb}")
@@ -1971,9 +1969,7 @@ class FPDF:
                 self._out(f"/DecodeParms <<{info['dp']}>>")
 
             if "trns" in info and isinstance(info["trns"], list):
-                trns = ""
-                for i in range(0, len(info["trns"])):
-                    trns += f"{info['trns'][i]} {info['trns'][i]} "
+                trns = " ".join(f"{x} {x}" for x in info["trns"])
                 self._out(f"/Mask [{trns}]")
 
             if "smask" in info:
@@ -2263,9 +2259,9 @@ class FPDF:
                 raise RuntimeError(f'Char "{char_space}" invalid for I25: ')
 
             # create a wide/narrow-seq (first digit=bars, second digit=spaces)
-            seq = ""
-            for s in range(0, len(bar_char[char_bar])):
-                seq += bar_char[char_bar][s] + bar_char[char_space][s]
+            seq = "".join(
+                f"{cb}{cs}" for cb, cs in zip(bar_char[char_bar], bar_char[char_space])
+            )
 
             for bar, char in enumerate(seq):
                 # set line_width depending on value
