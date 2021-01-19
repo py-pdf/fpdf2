@@ -205,7 +205,7 @@ class TTFontFile:
         numRecords = self.read_ushort()
         string_data_offset = name_offset + self.read_ushort()
         names = {1: "", 2: "", 3: "", 4: "", 6: ""}
-        K = list(names.keys())
+        K = list(names)
         nameCount = len(names)
         for _ in range(numRecords):
             platformId = self.read_ushort()

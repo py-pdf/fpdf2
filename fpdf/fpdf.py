@@ -2257,9 +2257,9 @@ class FPDF:
             char_bar = code[i]
             char_space = code[i + 1]
             # check whether it is a valid digit
-            if char_bar not in bar_char.keys():
+            if char_bar not in bar_char:
                 raise RuntimeError(f'Char "{char_bar}" invalid for I25:')
-            if not char_space in bar_char.keys():
+            if char_space not in bar_char:
                 raise RuntimeError(f'Char "{char_space}" invalid for I25: ')
 
             # create a wide/narrow-seq (first digit=bars, second digit=spaces)
