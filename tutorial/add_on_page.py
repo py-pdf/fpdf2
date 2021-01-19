@@ -9,7 +9,7 @@ from pdfrw import PageMerge, PdfReader, PdfWriter
 
 IN_FILEPATH = sys.argv[1]
 OUT_FILEPATH = sys.argv[2]
-ON_PAGE_INDEX = 1  # set to None to append at the end
+ON_PAGE_INDEX = 1
 UNDERNEATH = (
     False  # if True, new content will be placed underneath page (painted first)
 )

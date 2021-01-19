@@ -10,6 +10,10 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 ## [2.2.1] - Not released yet
 ### Added
 - `FPDF.image` now accept also a `Pillow.Image.Image` as input
+- documentation on how to add content to existing PDFs
+### Fixed
+- `set_font`: fixed a bug where calling it several times, with & without the same parameters,
+prevented strings passed first to the text-rendering methods to be displayed.
 ### Deprecated
 - the `dest` parameter of `FPDF.output` method
 

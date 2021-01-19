@@ -70,11 +70,10 @@ Documentation:
 --------------
 
 - [Documentation Home](https://pyfpdf.github.io/fpdf2/)
-- [FAQ](https://pyfpdf.github.io/fpdf2/FAQ/index.html)
 - [Tutorial](https://pyfpdf.github.io/fpdf2/Tutorial.html) (Spanish translation available)
 - [Reference Manual](https://pyfpdf.github.io/fpdf2/ReferenceManual.html)
 
-Also read the design-spec/tests, they're great.
+You can also have a look at the `tests/`, they're great usage examples!
 
 Developers:
 -----------

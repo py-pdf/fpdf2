@@ -32,7 +32,8 @@ More on `PyFPDF`:
 ## Usage ##
 
 - [PyPI download stats](https://pypistats.org/packages/fpdf2)
-- packages using `fpdf2` can be listed using [Watchman Pypi](http://www.watchman-pypi.com)
+- packages using `fpdf2` can be listed using [Watchman Pypi](http://www.watchman-pypi.com).
+Some are also listed on [its libraries.io page](https://libraries.io/pypi/fpdf2).
 
 
 ## Repository structure ##

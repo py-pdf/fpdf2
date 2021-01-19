@@ -6,7 +6,7 @@ from test.utilities import assert_pdf_equal
 # python -m unittest test.cell_multi_cell_refactor.multi_cell
 
 
-class MCRefactorTest(unittest.TestCase):
+class MultiCellTest(unittest.TestCase):
     def test_ln_positioning_and_page_breaking_for_multicell(self):
         doc = fpdf.FPDF(format="letter", unit="pt")
         doc.add_page()
@@ -36,24 +36,16 @@ class MCRefactorTest(unittest.TestCase):
             "dolore Ut in sint sunt exercitation aliquip elit velit dolor nisi "
         )
 
-        doc.multi_cell(
-            w=144, h=line_height, border=1, txt=text[:29], fill=0, link="", ln=0
-        )
-        doc.multi_cell(
-            w=180, h=line_height, border=1, txt=text[29:60], fill=0, link="", ln=2
-        )
-        doc.multi_cell(
-            w=144, h=line_height, border=1, txt=text[60:90], fill=0, link="", ln=1
-        )
+        doc.multi_cell(w=144, h=line_height, border=1, txt=text[:29], ln=0)
+        doc.multi_cell(w=180, h=line_height, border=1, txt=text[29:60], ln=2)
+        doc.multi_cell(w=144, h=line_height, border=1, txt=text[60:90], ln=1)
         doc.cell(w=72 * 5, h=line_height, border=1, ln=1, txt=text[0:30])
         doc.cell(w=72 * 5, h=line_height, border=1, ln=1, txt=text[31:60])
         doc.cell(w=72 * 5, h=line_height, border=1, ln=1, txt=text[61:90])
         doc.cell(w=72 * 5, h=line_height, border=1, ln=1, txt=text[91:120])
-        doc.cell(w=72 * 5, h=line_height, border=1, txt="")
-        doc.cell(w=1, h=line_height, border=0, ln=2, txt="")
-        doc.multi_cell(
-            w=144, h=line_height, border=1, txt=text[30:90], fill=0, link="", ln=2
-        )
+        doc.cell(w=72 * 5, h=line_height, border=1)
+        doc.cell(w=1, h=line_height, ln=2)
+        doc.multi_cell(w=144, h=line_height, border=1, txt=text[30:90], ln=2)
         doc.cell(w=72 * 2, h=line_height, border=1, ln=2, txt="Lorem ipsum")
         doc.cell(w=72 * 2, h=line_height, border=1, ln=2, txt="Lorem ipsum")
 

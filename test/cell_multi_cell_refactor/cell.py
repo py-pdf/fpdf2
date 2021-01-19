@@ -6,7 +6,7 @@ from test.utilities import assert_pdf_equal
 # python -m unittest test.cell_multi_cell_refactor.cell
 
 
-class CRefactorTest(unittest.TestCase):
+class CellTest(unittest.TestCase):
     def test_ln_positioning_and_page_breaking_for_cell(self):
         doc = fpdf.FPDF(format="letter", unit="pt")
         doc.add_page()
@@ -42,8 +42,6 @@ class CRefactorTest(unittest.TestCase):
                 border=1,
                 ln=2,
                 txt=text[i * 100 : i * 100 + 99],
-                fill=0,
-                link="",
             )
 
         assert_pdf_equal(

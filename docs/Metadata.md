@@ -15,7 +15,7 @@ in the `DocumentInformation` dictionary:
 - `set_creation_date`
 
 In order to be fully compliant with the recent PDF specs,
-we recommend using `pikepdf` that will set both XMP & `DocumentInformation` metadata:
+we recommend using [`pikepdf`](https://github.com/pikepdf/pikepdf/) that will set both XMP & `DocumentInformation` metadata:
 
 ```python
 import sys

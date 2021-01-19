@@ -35,7 +35,7 @@ Output preview:
 ## PDF-417 ##
 
 Here is an example on how to generate a [PDF-417](https://fr.wikipedia.org/wiki/PDF-417) barcode
-using the `pdf417` lib:
+using the [`pdf417`](https://github.com/mosquito/pdf417) lib:
 
 ```python
 from pdf417 import encode, render_image
@@ -54,7 +54,7 @@ Output preview:
 ## QRCode ##
 
 Here is an example on how to generate a [QR Code](https://en.wikipedia.org/wiki/QR_code)
-using the `python-qrcode` lib:
+using the [`python-qrcode`](https://github.com/lincolnloop/python-qrcode) lib:
 
 ```python
 import qrcode
