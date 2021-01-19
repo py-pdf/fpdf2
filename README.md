@@ -79,7 +79,7 @@ Also read the design-spec/tests, they're great.
 Developers:
 -----------
 
-Please check [the docs page dedicated to developpement](https://pyfpdf.github.io/fpdf2/Development.html).
+Please check [the docs page dedicated to development](https://pyfpdf.github.io/fpdf2/Development.html).
 
 This library was only possible thanks to the dedication of the following people: [CONTRIBUTORS.md](CONTRIBUTORS.md).
 
