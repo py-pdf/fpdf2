@@ -115,12 +115,12 @@ def create_dictionary_string(
 
 def create_list_string(list_):
     """format list of strings as PDF array"""
-    return "[" + " ".join(list_) + "]"
+    return f"[{' '.join(list_)}]"
 
 
 def iobj_ref(n):
     """format an indirect PDF Object reference from its id number"""
-    return str(n) + " 0 R"
+    return f"{n} 0 R"
 
 
 def create_stream(stream):

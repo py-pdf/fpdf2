@@ -8,15 +8,11 @@ def substr(s, start, length=-1):
     return s[start : start + length]
 
 
-def sprintf(fmt, *args):
-    return fmt % args
-
-
 def enclose_in_parens(s):
     "Format a text string"
     if s:
         assert isinstance(s, str)
-        return "(" + escape_parens(s) + ")"
+        return f"({escape_parens(s)})"
     return ""
 
 
@@ -43,7 +39,7 @@ def b(s):
         return s.encode("latin1")
     if isinstance(s, int):
         return bytes([s])  # http://bugs.python.org/issue4588
-    raise ValueError("Invalid input: {}".format(s))
+    raise ValueError(f"Invalid input: {s}")
 
 
 def dochecks():
@@ -51,7 +47,7 @@ def dochecks():
     # if (1.1==1):
     #     raise FPDFException("Don\'t alter the locale before including class file")
     # Check for decimal separator
-    if sprintf("%.1f", 1.0) != "1.0":
+    if f"{1.0:.1f}" != "1.0":
         locale.setlocale(locale.LC_NUMERIC, "C")
 
 

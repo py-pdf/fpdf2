@@ -70,4 +70,4 @@ import os
 try:
     os.startfile(fn)
 except:
-    os.system('xdg-open "%s"' % fn)
+    os.system(f'xdg-open "{fn}"')

@@ -220,8 +220,8 @@ class HTML2FPDF(HTMLParser):
             if not isinstance(bullet, str):
                 bullet += 1
                 self.bullet[self.indent - 1] = bullet
-                bullet = "%s. " % bullet
-            self.pdf.write(self.h, "%s%s " % (" " * 5 * self.indent, bullet))
+                bullet = f"{bullet}. "
+            self.pdf.write(self.h, f"{' ' * 5 * self.indent}{bullet} ")
             self.set_text_color()
         if tag == "font":
             # save previous font state:

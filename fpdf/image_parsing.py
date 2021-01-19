@@ -20,7 +20,7 @@ def load_resource(filename, reason="image"):
             with open(filename, "rb") as fl:
                 f = BytesIO(fl.read())
         return f
-    raise FPDFException('Unknown resource loading reason "%s"' % reason)
+    raise FPDFException(f'Unknown resource loading reason "{reason}"')
 
 
 def get_img_info(img):
@@ -48,15 +48,7 @@ def get_img_info(img):
         info["data"] = to_zdata(img, remove_slice=alpha_channel)
         info["smask"] = to_zdata(img, select_slice=alpha_channel)
 
-    dp = (
-        "/Predictor 15 /Colors "
-        + str(dpn)
-        + " /BitsPerComponent "
-        + str(bpc)
-        + " /Columns "
-        + str(w)
-        + ""
-    )
+    dp = f"/Predictor 15 /Colors {dpn} /BitsPerComponent {bpc} /Columns {w}"
 
     info.update(
         {

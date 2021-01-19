@@ -31,7 +31,7 @@ if __name__ == "__main__":
         maintainer_email="daveankin@gmail.com",
         url="https://pyfpdf.github.io/fpdf2/",
         license="LGPLv3+",
-        download_url="https://github.com/PyFPDF/fpdf2/tarball/%s" % version,
+        download_url=f"https://github.com/PyFPDF/fpdf2/tarball/{version}",
         packages=find_packages(),
         package_dir={"fpdf": "fpdf"},
         test_suite="setup.run_test_suite",

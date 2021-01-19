@@ -21,7 +21,7 @@ class CatalogDisplayModeTest(unittest.TestCase):
                 doc = fpdf.FPDF()
                 document_operations(doc)
                 doc.set_display_mode(zoom=zoom_input, layout="continuous")
-                assert_pdf_equal(self, doc, "catalog-zoom-" + zoom_input + ".pdf")
+                assert_pdf_equal(self, doc, f"catalog-zoom-{zoom_input}.pdf")
 
     def test_setting_all_layout(self):
         for layout_input in ["single", "continuous", "two", "default"]:
@@ -29,7 +29,7 @@ class CatalogDisplayModeTest(unittest.TestCase):
                 doc = fpdf.FPDF()
                 document_operations(doc)
                 doc.set_display_mode(zoom="default", layout=layout_input)
-                assert_pdf_equal(self, doc, "catalog-layout-" + layout_input + ".pdf")
+                assert_pdf_equal(self, doc, f"catalog-layout-{layout_input}.pdf")
 
 
 if __name__ == "__main__":

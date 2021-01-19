@@ -206,7 +206,7 @@ class Template:
         foreground=0,
         backgroud=65535,
         multiline=None,
-        **__
+        **__,
     ):
         if text:
             if pdf.text_color != rgb(foreground):
@@ -219,7 +219,7 @@ class Template:
                 font = "helvetica"
             style = ""
             for tag in "B", "I", "U":
-                if text.startswith("<%s>" % tag) and text.endswith("</%s>" % tag):
+                if text.startswith(f"<{tag}>") and text.endswith(f"</{tag}>"):
                     text = text[3:-4]
                     style += tag
             if bold:
@@ -246,7 +246,7 @@ class Template:
                 text = pdf.multi_cell(
                     w=x2 - x1, h=y2 - y1, txt=text, align=align, split_only=True
                 )[0]
-                print("trimming: *%s*" % text)
+                print(f"trimming: *{text}*")
                 pdf.cell(w=x2 - x1, h=y2 - y1, txt=text, border=0, ln=0, align=align)
 
             # pdf.Text(x=x1,y=y1,txt=text)
@@ -288,7 +288,7 @@ class Template:
         font="helvetica",
         size=1,
         foreground=0,
-        **__
+        **__,
     ):
         # pylint: disable=unused-argument
         if pdf.draw_color != rgb(foreground):
@@ -315,7 +315,7 @@ class Template:
         align="",
         link="http://example.com",
         foreground=0,
-        **__
+        **__,
     ):
         # pylint: disable=unused-argument
         if pdf.text_color != rgb(foreground):
@@ -325,7 +325,7 @@ class Template:
             font = "helvetica"
         style = ""
         for tag in "B", "I", "U":
-            if text.startswith("<%s>" % tag) and text.endswith("</%s>" % tag):
+            if text.startswith(f"<{tag}>") and text.endswith(f"</{tag}>"):
                 text = text[3:-4]
                 style += tag
         if bold:

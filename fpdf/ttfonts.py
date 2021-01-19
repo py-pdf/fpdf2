@@ -89,7 +89,7 @@ class TTFontFile:
             if version == 0x74746366:
                 raise RuntimeError("ERROR - TrueType Fonts Collections not supported")
             if version not in (0x00010000, 0x74727565):
-                raise RuntimeError("Not a TrueType font: version=0x%x" % version)
+                raise RuntimeError(f"Not a TrueType font: version=0x{version:x}")
             self.readTableDirectory()
             self.extractInfo()
 
@@ -176,7 +176,7 @@ class TTFontFile:
         (pos, length) = self.get_table_pos(tag)
         if length == 0:
             raise RuntimeError(
-                "Truetype font (" + self.filename + "): error reading table: " + tag
+                f"Truetype font ({self.filename}): error reading table: {tag}"
             )
         self.fh.seek(pos)
         return self.fh.read(length)
@@ -201,7 +201,7 @@ class TTFontFile:
         name_offset = self.seek_table("name")
         fmt = self.read_ushort()
         if fmt != 0:
-            raise RuntimeError("Unknown name table format " + fmt)
+            raise RuntimeError(f"Unknown name table format {fmt}")
         numRecords = self.read_ushort()
         string_data_offset = name_offset + self.read_ushort()
         names = {1: "", 2: "", 3: "", 4: "", 6: ""}
@@ -297,7 +297,7 @@ class TTFontFile:
         indexToLocFormat = self.read_ushort()
         glyphDataFormat = self.read_ushort()
         if glyphDataFormat != 0:
-            raise RuntimeError("Unknown glyph data format " + glyphDataFormat)
+            raise RuntimeError(f"Unknown glyph data format {glyphDataFormat}")
 
         #################/
         # hhea metrics table
@@ -385,7 +385,7 @@ class TTFontFile:
         metricDataFormat = self.read_ushort()
         if metricDataFormat != 0:
             raise RuntimeError(
-                "Unknown horizontal metric data format: " + metricDataFormat
+                f"Unknown horizontal metric data format: {metricDataFormat}"
             )
         numberOfHMetrics = self.read_ushort()
         if numberOfHMetrics == 0:
@@ -718,7 +718,7 @@ class TTFontFile:
                     glyphPos = self.glyphPos[originalGlyphIdx]
                     glyphLen = self.glyphPos[originalGlyphIdx + 1] - glyphPos
                 except IndexError:
-                    warnings.warn("Missing glyph %s in %s" % (originalGlyphIdx, file))
+                    warnings.warn(f"Missing glyph {originalGlyphIdx} in {file}")
                     glyphLen = 0
 
                 if glyfLength < self.maxStrLenRead:
@@ -754,9 +754,7 @@ class TTFontFile:
                             )
                         except KeyError:
                             data = 0
-                            warnings.warn(
-                                "Missing glyph data %s in %s" % (glyphIdx, file)
-                            )
+                            warnings.warn(f"Missing glyph data {glyphIdx} in {file}")
                         pos_in_glyph += 4
                         if flags & GF_WORDS:
                             pos_in_glyph += 4
@@ -878,7 +876,7 @@ class TTFontFile:
         nCharWidths = 0
         if (numberOfHMetrics * 4) < self.maxStrLenRead:
             data = self.get_chunk(start, (numberOfHMetrics * 4))
-            arr = unpack(">%dH" % (len(data) // 2), data)
+            arr = unpack(f">{len(data) // 2}H", data)
         else:
             self.seek(start)
         for glyph in range(numberOfHMetrics):
@@ -909,7 +907,7 @@ class TTFontFile:
                             nCharWidths += 1
 
         data = self.get_chunk((start + numberOfHMetrics * 4), (numGlyphs * 2))
-        arr = unpack(">%dH" % (len(data) // 2), data)
+        arr = unpack(f">{len(data) // 2}H", data)
         diff = numGlyphs - numberOfHMetrics
         for pos in range(diff):
             glyph = pos + numberOfHMetrics
@@ -946,16 +944,16 @@ class TTFontFile:
         self.glyphPos = []
         if indexToLocFormat == 0:
             data = self.get_chunk(start, (numGlyphs * 2) + 2)
-            arr = unpack(">%dH" % (len(data) // 2), data)
+            arr = unpack(f">{len(data) // 2}H", data)
             for n in range(numGlyphs):
-                self.glyphPos.append((arr[n] * 2))  # n+1 !?
+                self.glyphPos.append(arr[n] * 2)  # n+1 !?
         elif indexToLocFormat == 1:
             data = self.get_chunk(start, (numGlyphs * 4) + 4)
-            arr = unpack(">%dL" % (len(data) // 4), data)
+            arr = unpack(f">{len(data) // 4}L", data)
             for n in range(numGlyphs):
-                self.glyphPos.append((arr[n]))  # n+1 !?
+                self.glyphPos.append(arr[n])  # n+1 !?
         else:
-            raise RuntimeError("Unknown location table format " + indexToLocFormat)
+            raise RuntimeError(f"Unknown location table format {indexToLocFormat}")
 
     # CMAP Format 4
     def getCMAP4(self, unicode_cmap_offset, glyphToChar, charToGlyph):

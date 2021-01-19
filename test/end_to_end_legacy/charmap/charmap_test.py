@@ -61,12 +61,12 @@ class CharmapTest(unittest.TestCase):
 
                 # Create a PDF with the first 999 charters defined in the font:
                 for counter, character in enumerate(ttf.saveChar, 0):
-                    pdf.write(8, "%03d) %03x - %c" % (counter, character, character))
+                    pdf.write(8, f"{counter:03d}) {character:03x} - {character:c}")
                     pdf.ln()
                     if counter >= 999:
                         break
 
-                assert_pdf_equal(self, pdf, "test_first_999_chars-" + fontname + ".pdf")
+                assert_pdf_equal(self, pdf, f"test_first_999_chars-{fontname}.pdf")
 
     def tearDown(self):
         for pkl_filepath in glob(relative_path_to("*") + "*.pkl"):

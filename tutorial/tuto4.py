@@ -26,7 +26,7 @@ class PDF(FPDF):
         self.set_y(-15)
         self.set_font("helvetica", "I", 8)
         self.set_text_color(128)
-        self.cell(0, 10, "Page " + str(self.page_no()), 0, 0, "C")
+        self.cell(0, 10, f"Page {self.page_no()}", 0, 0, "C")
 
     def set_col(self, col):
         # Set position at a given column
@@ -54,7 +54,7 @@ class PDF(FPDF):
         # Title
         self.set_font("helvetica", "", 12)
         self.set_fill_color(200, 220, 255)
-        self.cell(0, 6, "Chapter %d : %s" % (num, label), 0, 1, "L", 1)
+        self.cell(0, 6, f"Chapter {num} : {label}", 0, 1, "L", 1)
         self.ln(4)
         # Save ordinate
         self.y0 = self.get_y()

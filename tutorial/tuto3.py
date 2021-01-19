@@ -29,7 +29,7 @@ class PDF(FPDF):
         # Text color in gray
         self.set_text_color(128)
         # Page number
-        self.cell(0, 10, "Page " + str(self.page_no()), 0, 0, "C")
+        self.cell(0, 10, f"Page {self.page_no()}", 0, 0, "C")
 
     def chapter_title(self, num, label):
         # helvetica 12
@@ -37,7 +37,7 @@ class PDF(FPDF):
         # Background color
         self.set_fill_color(200, 220, 255)
         # Title
-        self.cell(0, 6, "Chapter %d : %s" % (num, label), 0, 1, "L", 1)
+        self.cell(0, 6, f"Chapter {num} : {label}", 0, 1, "L", 1)
         # Line break
         self.ln(4)
 

@@ -21,7 +21,7 @@ class PDF(FPDF):
         # helvetica italic 8
         self.set_font("helvetica", "I", 8)
         # Page number
-        self.cell(0, 10, "Page " + str(self.page_no()) + "/{nb}", 0, 0, "C")
+        self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", 0, 0, "C")
 
 
 # Instantiation of inherited class
@@ -30,5 +30,5 @@ pdf.alias_nb_pages()
 pdf.add_page()
 pdf.set_font("Times", size=12)
 for i in range(1, 41):
-    pdf.cell(0, 10, "Printing line number " + str(i), 0, 1)
+    pdf.cell(0, 10, f"Printing line number {i}", 0, 1)
 pdf.output("tuto2.pdf")

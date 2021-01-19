@@ -27,7 +27,7 @@ class HTMLTest(unittest.TestCase):
             "../image/png_images/c636287a4d7cb1a36362f7f236564cef.png"
         )
         pdf.write_html(
-            "<center><img src=\"%s\" height='300' width='300'></center>" % img_path
+            f"<center><img src=\"{img_path}\" height='300' width='300'></center>"
         )
         # Unable to text position of the image as write html moves to a new line after
         # adding the image but it can be seen in the produce test.pdf file.
@@ -158,7 +158,7 @@ class HTMLTest(unittest.TestCase):
         ]
 
         def getrow(i):
-            return "<tr><td>" + str(i) + "</td><td>" + name[i] + "</td></tr>"
+            return f"<tr><td>{i}</td><td>{name[i]}</td></tr>"
 
         pdf.write_html(
             (
@@ -182,7 +182,7 @@ class HTMLTest(unittest.TestCase):
         img_path = relative_path_to(
             "../image/png_images/c636287a4d7cb1a36362f7f236564cef.png"
         )
-        pdf.write_html("<img src=\"%s\" height='300' width='300'>" % img_path)
+        pdf.write_html(f"<img src=\"{img_path}\" height='300' width='300'>")
 
         assert_pdf_equal(self, pdf, "test_html_features.pdf")
 

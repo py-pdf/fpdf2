@@ -17,16 +17,16 @@ class FPDFPageFormatException(FPDFException):
         self.one = one
 
     def __repr__(self):
-        inputs = [self.argument, self.unknown, self.one]
-        arguments = ", ".join(list(map(repr, inputs)))
-        return "".join([self.__class__.__name__, "(", arguments, ")"])
+        return (
+            f"{self.__class__.__name__}"
+            f"({self.argument!r}, {self.unknown!r}, {self.one!r})"
+        )
 
     def __str__(self):
-        out = self.__class__.__name__ + ": "
         if self.unknown:
-            return out + "Unknown page format: " + self.argument
-        if self.one:
-            return (
-                out + "Only one argument given: %s. Need (height,width)" % self.argument
-            )
-        return out + self.argument
+            res = f"Unknown page format: {self.argument}"
+        elif self.one:
+            res = f"Only one argument given: {self.argument}. Need (height,width)"
+        else:
+            res = self.argument
+        return f"{self.__class__.__name__ }: {res}"

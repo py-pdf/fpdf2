@@ -51,7 +51,7 @@ if __name__ == "__main__":
     def tearDownClass(cls):
         t = time.time()
         # pylint: disable=no-member
-        print("\n%s.%s: %.3f" % (cls.__module__, cls.__name__, t - cls.start_))
+        print(f"\n{cls.__module__}.{cls.__name__}: {t - cls.start_:.3f}")
 
     unittest.TestCase.setUpClass = setUpClass
     unittest.TestCase.tearDownClass = tearDownClass
