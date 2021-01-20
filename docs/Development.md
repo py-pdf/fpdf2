@@ -94,7 +94,7 @@ and you will just have to run `git commit -a` again.
 
 ## Testing ##
 
-To run tests, `cd` into the repository and run `python setup.py test` or `pytest`.
+To run tests, `cd` into the repository and run `python -m pytest`.
 
 Alternatively, you can use [Tox](https://tox.readthedocs.io/en/latest/).
 It is self-documented in the `tox.ini` file in the repository.
@@ -111,7 +111,7 @@ You will need to have its binary in your `$PATH`,
 otherwise `assert_pdf_equal` will fall back to hash-based comparison.
 In order to generate a "reference" PDF file, simply call `assert_pdf_equal` once with `generate=True`.
 
-Be sure to see the example tests in the `test/` folder in general.
+Be sure to see the example tests in the `tests/` folder in general.
 
 ## GitHub pipeline ##
 

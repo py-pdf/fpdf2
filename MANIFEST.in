@@ -2,7 +2,7 @@ include           PyPIReadme.rst
 recursive-include fpdf     *
 recursive-exclude fpdf     *.pyc
 recursive-exclude scripts  *
-recursive-exclude test     *
+recursive-exclude tests    *
 recursive-exclude tutorial *
 
 # added by check_manifest.py

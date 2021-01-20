@@ -2,11 +2,7 @@
 
 from setuptools import setup, find_packages
 
-import unittest, re
-
-
-def run_test_suite():
-    return unittest.TestLoader().discover("test", pattern="*.py")
+import re
 
 
 def read(path):
@@ -34,7 +30,6 @@ if __name__ == "__main__":
         download_url=f"https://github.com/PyFPDF/fpdf2/tarball/{version}",
         packages=find_packages(),
         package_dir={"fpdf": "fpdf"},
-        test_suite="setup.run_test_suite",
         install_requires=[
             "Pillow",
         ],
