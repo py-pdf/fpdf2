@@ -46,10 +46,6 @@ third_obj = {
   pdf_name('Contents'): iobj_ref(4),
 }
 
-`collections.OrderedDict` is used because ultimately to test the accuracy of
-the documents created, order of the fields matters even though it probably
-doesn't in the Adobe Specification.
-
 Some additional notes:
 
 Streams are of the form:
@@ -69,9 +65,7 @@ that string.
 
 As of this writing, I am not sure how length is actually calculated, so this
 remains something to be looked into.
-
 """
-from collections import OrderedDict
 
 
 def create_name(name):
@@ -81,7 +75,7 @@ def create_name(name):
 
 
 def clear_empty_fields(d):
-    return OrderedDict((k, v) for k, v in d.items() if v)
+    return {k: v for k, v in d.items() if v}
 
 
 def create_dictionary_string(
@@ -92,7 +86,7 @@ def create_dictionary_string(
     key_value_join=" ",
     has_empty_fields=False,
 ):
-    """format ordered dictionary as PDF dictionary
+    """format dictionary as PDF dictionary
 
     @param dict_: dictionary of values to render
     @param open: string to open PDF dictionary
