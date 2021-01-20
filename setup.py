@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-from setuptools import setup, find_packages
+import re
+import unittest
 
-import unittest, re
+from setuptools import find_packages, setup
 
 
 def run_test_suite():

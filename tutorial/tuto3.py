@@ -17,7 +17,7 @@ class PDF(FPDF):
         # Thickness of frame (1 mm)
         self.set_line_width(1)
         # Title
-        self.cell(w, 9, title, 1, 1, "C", 1)
+        self.cell(w, 9, title, 1, 1, "C", True)
         # Line break
         self.ln(10)
 
@@ -37,7 +37,7 @@ class PDF(FPDF):
         # Background color
         self.set_fill_color(200, 220, 255)
         # Title
-        self.cell(0, 6, f"Chapter {num} : {label}", 0, 1, "L", 1)
+        self.cell(0, 6, f"Chapter {num} : {label}", 0, 1, "L", True)
         # Line break
         self.ln(4)
 

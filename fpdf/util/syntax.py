@@ -95,8 +95,8 @@ def create_dictionary_string(
     """format ordered dictionary as PDF dictionary
 
     @param dict_: dictionary of values to render
-    @param open: string to open PDF dictionary
-    @param close: string to close PDF dictionary
+    @param open_dict: string to open PDF dictionary
+    @param close_dict: string to close PDF dictionary
     @param field_join: string to join fields with
     @param key_value_join: string to join key to value with
     @param has_empty_fields: whether or not to clear_empty_fields first.
@@ -124,7 +124,7 @@ def iobj_ref(n):
 
 
 def create_stream(stream):
-    if type(stream) in (bytearray, bytes):
+    if isinstance(stream, (bytearray, bytes)):
         stream = str(stream, "latin-1")
     return "\n".join(["stream", stream, "endstream"])
 

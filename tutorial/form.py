@@ -3,6 +3,7 @@ An example of script that generates a one page invoice with barcode,
 with data coming from a CSV file.
 """
 import os
+
 from fpdf import FPDF
 
 
@@ -92,8 +93,8 @@ class Form:
                 style += "U"
             align = {"I": "L", "D": "R", "C": "C", "": "", None: None}[align]
             pdf.set_font(font, style, size)
-            ##m_k = 72 / 2.54
-            ##h = (size/m_k)
+            # m_k = 72 / 2.54
+            # h = (size/m_k)
             pdf.set_xy(x1, y1)
             pdf.cell(w=x2 - x1, h=y2 - y1, txt=text, border=0, ln=0, align=align)
             # pdf.Text(x=x1,y=y1,txt=text)

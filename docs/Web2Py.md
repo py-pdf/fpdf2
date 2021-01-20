@@ -48,7 +48,7 @@ def report():
         # create a custom class with the required functionality 
         class MyFPDF(FPDF, HTMLMixin):
             def header(self): 
-                "hook to draw custom page header (logo and title)"
+                """hook to draw custom page header (logo and title)"""
                 logo = os.path.join(request.env.web2py_path, "gluon", "contrib", "pyfpdf", "tutorial", "logo_pb.png")
                 self.image(logo, 10, 8, 33)
                 self.set_font('helvetica', 'B', 15)
@@ -57,10 +57,10 @@ def report():
                 self.ln(20)
                 
             def footer(self):
-                "hook to draw custom page footer (printing page numbers)"
+                """hook to draw custom page footer (printing page numbers)"""
                 self.set_y(-15)
                 self.set_font('helvetica', 'I', 8)
-                txt = 'Page %s of %s' % (self.page_no(), self.alias_nb_pages())
+                txt = f'Page {self.page_no()} of {self.alias_nb_pages()}'
                 self.cell(0, 10, txt, 0, 0, 'C')
                     
         pdf = MyFPDF()

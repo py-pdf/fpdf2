@@ -26,7 +26,7 @@ def load_resource(filename, reason="image"):
 def get_img_info(img):
     """
     Args:
-        input_img: `BytesIO` or `PIL.Image.Image` instance
+        img: `BytesIO` or `PIL.Image.Image` instance
     """
     if not isinstance(img, Image.Image):
         img = Image.open(img)

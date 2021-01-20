@@ -30,7 +30,7 @@ class PDF(FPDF):
         # Select helvetica italic 8
         self.set_font('helvetica', 'I', 8)
         # Print current and total page numbers
-        self.cell(0, 10, 'Page %s' % self.page_no() + '/{nb}', 0, 0, 'C')
+        self.cell(0, 10, f"Page {self.page_no() + '/{nb}'}", 0, 0, 'C')
 
 pdf = PDF()
 pdf.alias_nb_pages()

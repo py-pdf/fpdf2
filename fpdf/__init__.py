@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 from .fpdf import (
     FPDF,
-    FPDF_VERSION as _FPDF_VERSION,
+    FPDF_CACHE_DIR as _FPDF_CACHE_DIR,
     FPDF_CACHE_MODE as _FPDF_CACHE_MODE,
     FPDF_FONT_DIR as _FPDF_FONT_DIR,
-    FPDF_CACHE_DIR as _FPDF_CACHE_DIR,
+    FPDF_VERSION as _FPDF_VERSION,
     SYSTEM_TTFONTS as _SYSTEM_TTFONTS,
 )
 from .html import HTMLMixin

@@ -4,6 +4,7 @@
 # Inspired by https://github.com/pmaupin/pdfrw/blob/master/examples/watermark.py
 
 import sys
+
 from fpdf import FPDF
 from pdfrw import PageMerge, PdfReader, PdfWriter
 

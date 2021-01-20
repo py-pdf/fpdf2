@@ -3,6 +3,7 @@
 # USAGE: ./add_new_page.py $in_filepath $out_filepath
 
 import sys
+
 from fpdf import FPDF
 from pdfrw import PdfReader, PdfWriter
 

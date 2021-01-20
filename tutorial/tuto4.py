@@ -1,4 +1,4 @@
-from fpdf import *
+from fpdf import FPDF
 
 
 class PDF(FPDF):
@@ -16,7 +16,7 @@ class PDF(FPDF):
         self.set_fill_color(230, 230, 0)
         self.set_text_color(220, 50, 50)
         self.set_line_width(1)
-        self.cell(w, 9, title, 1, 1, "C", 1)
+        self.cell(w, 9, title, 1, 1, "C", True)
         self.ln(10)
         # Save ordinate
         self.y0 = self.get_y()
@@ -44,17 +44,17 @@ class PDF(FPDF):
             self.set_y(self.y0)
             # Keep on page
             return 0
-        else:
-            # Go back to first column
-            self.set_col(0)
-            # Page break
-            return 1
+
+        # Go back to first column
+        self.set_col(0)
+        # Page break
+        return 1
 
     def chapter_title(self, num, label):
         # Title
         self.set_font("helvetica", "", 12)
         self.set_fill_color(200, 220, 255)
-        self.cell(0, 6, f"Chapter {num} : {label}", 0, 1, "L", 1)
+        self.cell(0, 6, f"Chapter {num} : {label}", 0, 1, "L", True)
         self.ln(4)
         # Save ordinate
         self.y0 = self.get_y()

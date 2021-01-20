@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import sys
 from datetime import datetime
-from fpdf import FPDF_VERSION
+
 import pikepdf
+from fpdf import FPDF_VERSION
 
 with pikepdf.open(sys.argv[1], allow_overwriting_input=True) as pdf:
     with pdf.open_metadata(set_pikepdf_as_editor=False) as meta:

@@ -129,7 +129,7 @@ class PDF(FPDF):
         # Grosor del marco (1 mm)
         self.set_line_width(1)
         # Título
-        self.cell(w, 9, title, 1, 1, 'C', 1)
+        self.cell(w, 9, title, 1, 1, 'C', True)
         # Salto de línea
         self.ln(10)
 
@@ -149,7 +149,7 @@ class PDF(FPDF):
         # Color de fondo
         self.set_fill_color(200, 220, 255)
         # Título
-        self.cell(0, 6, 'Chapter %d : %s' % (num, label), 0, 1, 'L', 1)
+        self.cell(0, 6, f'Chapter {num} : {label}', 0, 1, 'L', True)
         # Salto de línea
         self.ln(4)
 

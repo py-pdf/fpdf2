@@ -1,4 +1,4 @@
-"Utility Functions"
+"""Utility Functions"""
 import locale
 
 
@@ -9,7 +9,7 @@ def substr(s, start, length=-1):
 
 
 def enclose_in_parens(s):
-    "Format a text string"
+    """Format a text string"""
     if s:
         assert isinstance(s, str)
         return f"({escape_parens(s)})"
@@ -17,7 +17,7 @@ def enclose_in_parens(s):
 
 
 def escape_parens(s):
-    "Add a backslash character before , ( and )"
+    """Add a backslash character before , ( and )"""
     if isinstance(s, str):
         return (
             s.replace("\\", "\\\\")

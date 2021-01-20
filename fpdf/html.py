@@ -1,4 +1,4 @@
-"HTML Renderer for FPDF.py"
+"""HTML Renderer for FPDF.py"""
 
 __author__ = "Mariano Reingart <reingart@gmail.com>"
 __copyright__ = "Copyright (C) 2010 Mariano Reingart"
@@ -26,7 +26,7 @@ def hex2dec(color="#000000"):
 
 
 class HTML2FPDF(HTMLParser):
-    "Render basic HTML to FPDF"
+    """Render basic HTML to FPDF"""
 
     def __init__(self, pdf, image_map=None, table_line_separators=False):
         """
@@ -88,7 +88,7 @@ class HTML2FPDF(HTMLParser):
                 l = self.table_col_width[i : i + colspan]
             else:
                 l = [self.td.get("width", "240")]
-            w = sum([self.width2mm(length) for length in l])
+            w = sum(self.width2mm(length) for length in l)
             h = int(self.td.get("height", 0)) // 4 or self.h * 1.30
             self.table_h = h
             border = int(self.table.get("border", 0))
@@ -173,7 +173,7 @@ class HTML2FPDF(HTMLParser):
     def output_table_sep(self):
         x1 = self.pdf.x
         y1 = self.pdf.y
-        width = sum([self.width2mm(length) for length in self.table_col_width])
+        width = sum(self.width2mm(length) for length in self.table_col_width)
         self.pdf.line(x1, y1, x1 + width, y1)
 
     def handle_starttag(self, tag, attrs):
@@ -189,8 +189,7 @@ class HTML2FPDF(HTMLParser):
         if tag == "p":
             self.pdf.ln(self.h)
             if attrs:
-                if attrs:
-                    self.align = attrs.get("align")
+                self.align = attrs.get("align")
         if tag in self.hsize:
             k = self.hsize[tag]
             self.pdf.ln(5 * k)
@@ -275,19 +274,18 @@ class HTML2FPDF(HTMLParser):
             self.thead = {}
         if tag == "tfoot":
             self.tfoot = {}
-        if tag == "img":
-            if "src" in attrs:
-                w = px2mm(attrs.get("width", 0))
-                h = px2mm(attrs.get("height", 0))
-                if self.pdf.y + h > self.pdf.page_break_trigger:
-                    self.pdf.add_page(same=True)
-                x = self.pdf.get_x()
-                y = self.pdf.get_y()
-                if self.align and self.align[0].upper() == "C":
-                    x = self.pdf.w / 2 - w / 2
-                self.pdf.image(self.image_map(attrs["src"]), x, y, w, h, link=self.href)
-                self.pdf.set_x(x + w)
-                self.pdf.set_y(y + h)
+        if tag == "img" and "src" in attrs:
+            w = px2mm(attrs.get("width", 0))
+            h = px2mm(attrs.get("height", 0))
+            if self.pdf.y + h > self.pdf.page_break_trigger:
+                self.pdf.add_page(same=True)
+            x = self.pdf.get_x()
+            y = self.pdf.get_y()
+            if self.align and self.align[0].upper() == "C":
+                x = self.pdf.w / 2 - w / 2
+            self.pdf.image(self.image_map(attrs["src"]), x, y, w, h, link=self.href)
+            self.pdf.set_x(x + w)
+            self.pdf.set_y(y + h)
         if tag in ("b", "i", "u"):
             self.set_style(tag, True)
         if tag == "center":
@@ -371,10 +369,7 @@ class HTML2FPDF(HTMLParser):
             self.h = size / 72 * 25.4
             if DEBUG:
                 print("H", self.h)
-        style = ""
-        for s in ("b", "i", "u"):
-            if self.style.get(s):
-                style += s
+        style = "".join(s for s in ("b", "i", "u") if self.style.get(s))
         self.pdf.set_font(self.font_face or "times", style, self.font_size or 12)
         self.pdf.set_font_size(self.font_size or 12)
 
@@ -382,10 +377,7 @@ class HTML2FPDF(HTMLParser):
         # Modify style and select corresponding font
         if tag:
             self.style[tag.lower()] = enable
-        style = ""
-        for s in ("b", "i", "u"):
-            if self.style.get(s):
-                style += s
+        style = "".join(s for s in ("b", "i", "u") if self.style.get(s))
         if DEBUG:
             print("SET_FONT_STYLE", style)
         self.pdf.set_font(style=style)
@@ -411,7 +403,7 @@ class HTML2FPDF(HTMLParser):
 
 class HTMLMixin:
     def write_html(self, text, *args, **kwargs):
-        "Parse HTML and convert it to PDF"
+        """Parse HTML and convert it to PDF"""
         h2p = HTML2FPDF(self, *args, **kwargs)
         text = html.unescape(text)  # To deal with HTML entities
         h2p.feed(text)

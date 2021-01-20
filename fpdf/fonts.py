@@ -2,9 +2,7 @@
 
 # Fonts:
 
-fpdf_charwidths = {}
-
-fpdf_charwidths["courier"] = {}
+fpdf_charwidths = {"courier": {}}
 
 for i in range(256):
     fpdf_charwidths["courier"][chr(i)] = 600

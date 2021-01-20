@@ -9,7 +9,7 @@ from test.utilities import assert_pdf_equal
 def document_operations(doc):
     doc.add_page()
     doc.set_font("helvetica", size=12)
-    doc.cell(w=72, h=0, border=1, ln=2, txt="hello world", fill=0, link="")
+    doc.cell(w=72, h=0, border=1, ln=2, txt="hello world", fill=False, link="")
 
 
 class CatalogDisplayModeTest(unittest.TestCase):

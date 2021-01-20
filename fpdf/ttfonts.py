@@ -16,11 +16,11 @@
 #
 # ******************************************************************************
 
-from struct import error as StructError, pack, unpack
 import re
 import warnings
-from .util import b, substr
+from struct import error as StructError, pack, unpack
 
+from .util import b, substr
 
 # Define the value used in the "head" table of a created TTF file
 # 0x74727565 "true" for Mac
@@ -28,7 +28,6 @@ from .util import b, substr
 # Either seems to work for a font embedded in a PDF file
 # when read by Adobe Reader on a Windows PC(!)
 _TTF_MAC_HEADER = False
-
 
 # TrueType Font Glyph operators
 GF_WORDS = 1 << 0
@@ -51,7 +50,7 @@ def sub32(x, y):
         xhi += 1 << 16
     reshi = xhi - yhi
     reshi = reshi & 0xFFFF
-    return (reshi, reslo)
+    return reshi, reslo
 
 
 def calcChecksum(data):
@@ -63,9 +62,9 @@ def calcChecksum(data):
         hi += (data[i] << 8) + data[i + 1]
         lo += (data[i + 2] << 8) + data[i + 3]
         hi += lo >> 16
-        lo = lo & 0xFFFF
-        hi = hi & 0xFFFF
-    return (hi, lo)
+        lo &= 0xFFFF
+        hi &= 0xFFFF
+    return hi, lo
 
 
 class TTFontFile:
@@ -102,17 +101,18 @@ class TTFontFile:
         self.rangeShift = self.read_ushort()
         self.tables = {}
         for _ in range(self.numTables):
-            record = {}
-            record["tag"] = self.read_tag()
-            record["checksum"] = (self.read_ushort(), self.read_ushort())
-            record["offset"] = self.read_ulong()
-            record["length"] = self.read_ulong()
+            record = {
+                "tag": self.read_tag(),
+                "checksum": (self.read_ushort(), self.read_ushort()),
+                "offset": self.read_ulong(),
+                "length": self.read_ulong(),
+            }
             self.tables[record["tag"]] = record
 
     def get_table_pos(self, tag):
         offset = self.tables[tag]["offset"]
         length = self.tables[tag]["length"]
-        return (offset, length)
+        return offset, length
 
     def seek(self, pos):
         self._pos = pos
@@ -149,9 +149,7 @@ class TTFontFile:
         self._pos += 4
         s = self.fh.read(4)
         # if large uInt32 as an integer, PHP converts it to -ve
-        return (
-            s[0] * 16777216 + (s[1] << 16) + (s[2] << 8) + s[3]
-        )  #     16777216  = 1<<24
+        return s[0] * 16777216 + (s[1] << 16) + (s[2] << 8) + s[3]  # 16777216  = 1<<24
 
     def get_ushort(self, pos):
         self.fh.seek(pos)
@@ -186,15 +184,8 @@ class TTFontFile:
             data = self.splice(data, 8, b("\0\0\0\0"))
         self.otables[tag] = data
 
-    ############################################/
-    ############################################/
-
-    ############################################/
-
     def extractInfo(self):
-        #################/
         # name - Naming table
-        #################/
         self.sFamilyClass = 0
         self.sFamilySubClass = 0
 
@@ -260,28 +251,14 @@ class TTFontFile:
         if not psName:
             raise RuntimeError("Could not find PostScript font name")
         self.name = psName
-        if names[1]:
-            self.familyName = names[1]
-        else:
-            self.familyName = psName
-        if names[2]:
-            self.styleName = names[2]
-        else:
-            self.styleName = "Regular"
-        if names[4]:
-            self.fullName = names[4]
-        else:
-            self.fullName = psName
-        if names[3]:
-            self.uniqueFontID = names[3]
-        else:
-            self.uniqueFontID = psName
+        self.familyName = names[1] or psName
+        self.styleName = names[2] or "Regular"
+        self.fullName = names[4] or psName
+        self.uniqueFontID = names[3] or psName
         if names[6]:
             self.fullName = names[6]
 
-        #################/
         # head - Font header table
-        #################/
         self.seek_table("head")
         self.skip(18)
         self.unitsPerEm = unitsPerEm = self.read_ushort()
@@ -299,9 +276,7 @@ class TTFontFile:
         if glyphDataFormat != 0:
             raise RuntimeError(f"Unknown glyph data format {glyphDataFormat}")
 
-        #################/
         # hhea metrics table
-        #################/
         # ttf2t1 seems to use this value rather than the one in OS/2 - so put in for compatibility
         if "hhea" in self.tables:
             self.seek_table("hhea")
@@ -311,9 +286,7 @@ class TTFontFile:
             self.ascent = hheaAscender * scale
             self.descent = hheaDescender * scale
 
-        #################/
         # OS/2 - OS/2 and Windows metrics table
-        #################/
         if "OS/2" in self.tables:
             self.seek_table("OS/2")
             version = self.read_ushort()
@@ -358,9 +331,7 @@ class TTFontFile:
 
         self.stemV = 50 + int(pow((usWeightClass / 65), 2))
 
-        #################/
         # post - PostScript table
-        #################/
         self.seek_table("post")
         self.skip(4)
         self.italicAngle = self.read_short() + self.read_ushort() / 65536
@@ -371,15 +342,13 @@ class TTFontFile:
         self.flags = 4
 
         if self.italicAngle != 0:
-            self.flags = self.flags | 64
+            self.flags |= 64
         if usWeightClass >= 600:
-            self.flags = self.flags | 262144
+            self.flags |= 262144
         if isFixedPitch:
-            self.flags = self.flags | 1
+            self.flags |= 1
 
-        #################/
         # hhea - Horizontal header table
-        #################/
         self.seek_table("hhea")
         self.skip(32)
         metricDataFormat = self.read_ushort()
@@ -391,16 +360,12 @@ class TTFontFile:
         if numberOfHMetrics == 0:
             raise RuntimeError("Number of horizontal metrics is 0")
 
-        #################/
         # maxp - Maximum profile table
-        #################/
         self.seek_table("maxp")
         self.skip(4)
         numGlyphs = self.read_ushort()
 
-        #################/
         # cmap - Character to glyph index mapping table
-        #################/
         cmap_offset = self.seek_table("cmap")
         self.skip(2)
         cmapTableCount = self.read_ushort()
@@ -443,13 +408,8 @@ class TTFontFile:
         else:
             self.getCMAP4(unicode_cmap_offset, glyphToChar, charToGlyph)
 
-        #################/
         # hmtx - Horizontal metrics table
-        #################/
         self.getHMTX(numberOfHMetrics, numGlyphs, glyphToChar, scale)
-
-    ############################################/
-    ############################################/
 
     def makeSubset(self, file, subset):
         self.filename = file
@@ -466,33 +426,25 @@ class TTFontFile:
             self.maxUni = 0
             self.readTableDirectory()
 
-            #################/
             # head - Font header table
-            #################/
             self.seek_table("head")
             self.skip(50)
             indexToLocFormat = self.read_ushort()
             # pylint: disable=unused-variable
             glyphDataFormat = self.read_ushort()
 
-            #################/
             # hhea - Horizontal header table
-            #################/
             self.seek_table("hhea")
             self.skip(32)
             metricDataFormat = self.read_ushort()
             orignHmetrics = numberOfHMetrics = self.read_ushort()
 
-            #################/
             # maxp - Maximum profile table
-            #################/
             self.seek_table("maxp")
             self.skip(4)
             numGlyphs = self.read_ushort()
 
-            #################/
             # cmap - Character to glyph index mapping table
-            #################/
             cmap_offset = self.seek_table("cmap")
             self.skip(2)
             cmapTableCount = self.read_ushort()
@@ -535,15 +487,11 @@ class TTFontFile:
 
             self.charToGlyph = charToGlyph
 
-            #################/
             # hmtx - Horizontal metrics table
-            #################/
             scale = 1  # not used
             self.getHMTX(numberOfHMetrics, numGlyphs, glyphToChar, scale)
 
-            #################/
             # loca - Index to location
-            #################/
             self.getLOCA(indexToLocFormat, numGlyphs)
 
             subsetglyphs = [(0, 0)]  # special "sorted dict"!
@@ -818,7 +766,6 @@ class TTFontFile:
         stm = self.endTTFile("")
         return stm
 
-    #########################################
     # Recursively get composite glyphs
     def getGlyphs(self, originalGlyphIdx, nonlocals):
         # &start, &glyphSet, &subsetglyphs)
@@ -859,8 +806,6 @@ class TTFontFile:
                     self.skip(4)
                 elif flags & GF_TWOBYTWO:
                     self.skip(8)
-
-    #########################################
 
     def getHMTX(self, numberOfHMetrics, numGlyphs, glyphToChar, scale):
         start = self.seek_table("hmtx")
@@ -1034,10 +979,10 @@ class TTFontFile:
         searchRange = 1
         entrySelector = 0
         while searchRange * 2 <= numTables:
-            searchRange = searchRange * 2
-            entrySelector = entrySelector + 1
+            searchRange *= 2
+            entrySelector += 1
 
-        searchRange = searchRange * 16
+        searchRange *= 16
         rangeShift = numTables * 16 - searchRange
 
         # Header

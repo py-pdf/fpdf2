@@ -1,4 +1,4 @@
-from fpdf import *
+from fpdf import FPDF
 
 
 class PDF(FPDF):
@@ -52,14 +52,14 @@ class PDF(FPDF):
         # Header
         w = [40, 35, 40, 45]
         for width, header_text in zip(w, header):
-            self.cell(width, 7, header_text, 1, 0, "C", 1)
+            self.cell(width, 7, header_text, 1, 0, "C", True)
         self.ln()
         # Color and font restoration
         self.set_fill_color(224, 235, 255)
         self.set_text_color(0)
         self.set_font()
         # Data
-        fill = 0
+        fill = False
         for row in data:
             self.cell(w[0], 6, row[0], "LR", 0, "L", fill)
             self.cell(w[1], 6, row[1], "LR", 0, "L", fill)
