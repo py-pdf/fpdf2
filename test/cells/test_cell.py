@@ -1,14 +1,16 @@
 import fpdf
 from test.utilities import assert_pdf_equal
 
+TEXT_SIZE, SPACING = 36, 1.15
+LINE_HEIGHT = TEXT_SIZE * SPACING
+
 
 class TestCell:
     def test_ln_positioning_and_page_breaking_for_cell(self, tmp_path):
         doc = fpdf.FPDF(format="letter", unit="pt")
         doc.add_page()
 
-        my_text_size = 36
-        doc.set_font("helvetica", size=my_text_size)
+        doc.set_font("helvetica", size=TEXT_SIZE)
         text = (
             "Lorem ipsum Ut nostrud irure reprehenderit anim nostrud dolore sed "
             "ut Excepteur dolore ut sunt irure consectetur tempor eu tempor "
@@ -34,15 +36,42 @@ class TestCell:
         for i in range(20):
             doc.cell(
                 w=72,
-                h=my_text_size * 1.5,
+                h=TEXT_SIZE * 1.5,
                 border=1,
                 ln=2,
                 txt=text[i * 100 : i * 100 + 99],
             )
 
-        assert_pdf_equal(
-            doc, "cell_ln_positioning_and_page_breaking_for_cell.pdf", tmp_path
-        )
+        assert_pdf_equal(doc, "ln_positioning_and_page_breaking_for_cell.pdf", tmp_path)
+
+    def test_cell_ln_0(self, tmp_path):
+        doc = fpdf.FPDF()
+        doc.add_page()
+        doc.set_font("helvetica", size=TEXT_SIZE)
+        doc.cell(w=45, h=LINE_HEIGHT, border=1, txt="Lorem")
+        doc.cell(w=45, h=LINE_HEIGHT, border=1, txt="ipsum")
+        doc.cell(w=45, h=LINE_HEIGHT, border=1, txt="Ut")
+        doc.cell(w=45, h=LINE_HEIGHT, border=1, txt="nostrud")
+        assert_pdf_equal(doc, "ln_0.pdf", tmp_path)
+
+    def test_cell_ln_1(self, tmp_path):
+        """
+        Validating that: "Using ln=1 is equivalent to using ln=0 and calling the `ln` method just after."
+        """
+        doc = fpdf.FPDF()
+        doc.add_page()
+        doc.set_font("helvetica", size=TEXT_SIZE)
+        doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Lorem ipsum", ln=1)
+        doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Ut nostrud irure")
+        assert_pdf_equal(doc, "ln_1.pdf", tmp_path)
+
+        doc = fpdf.FPDF()
+        doc.add_page()
+        doc.set_font("helvetica", size=TEXT_SIZE)
+        doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Lorem ipsum")
+        doc.ln()
+        doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Ut nostrud irure")
+        assert_pdf_equal(doc, "ln_1.pdf", tmp_path)
 
 
 ## Code used to create this test
@@ -50,8 +79,7 @@ class TestCell:
 # set_doc_date_0(doc)
 # doc.add_page()
 
-# my_text_size = 36
-# doc.set_font('helvetica', size=my_text_size)
+# doc.set_font('helvetica', size=TEXT_SIZE)
 # text = ('Lorem ipsum Ut nostrud irure reprehenderit anim nostrud dolore sed '
 #         'ut Excepteur dolore ut sunt irure consectetur tempor eu tempor '
 #         'nostrud dolore sint exercitation aliquip velit ullamco esse dolore '

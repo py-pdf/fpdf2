@@ -907,12 +907,10 @@ class FPDF:
                 f"{self.x * k:.2f} {(self.h - self.y) * k:.2f} "
                 f"{w * k:.2f} {-h * k:.2f} re {op} "
             )
-
         elif border == 1:
-            op = "S"
             s = (
                 f"{self.x * k:.2f} {(self.h - self.y) * k:.2f} "
-                f"{w * k:.2f} {-h * k:.2f} re {op} "
+                f"{w * k:.2f} {-h * k:.2f} re S "
             )
 
         if isinstance(border, str):
@@ -958,7 +956,7 @@ class FPDF:
 
                 s += (
                     f"BT 0 Tw {(self.x + dx) * k:.2F} "
-                    f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k,:.2F} "
+                    f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2F} "
                     f"Td ["
                 )
 
@@ -1028,6 +1026,7 @@ class FPDF:
         split_only=False,
         link="",
         ln=0,
+        max_line_height=None,
     ):
         """
         Output text with line breaks, cf. https://pyfpdf.github.io/fpdf2/reference/multi_cell.html
@@ -1049,9 +1048,12 @@ class FPDF:
                 and return the resulting multi-lines array of strings.
             link (str): optional link to add
             ln (int): Indicates where the current position should go after the call.
-                Possible values are: `0`: to the right ; `1`: to the beginning of the next line ;
-                `2`: below. Putting 1 is equivalent to putting 0 and calling `ln` just after.
+                Possible values are: `0`: to the bottom right ; `1`: to the beginning of the next line ;
+                `2`: below with the same horizontal offset ; `3`: to the right with the same vertical offset.
                 Default value: 0.
+            max_line_height (int): optional maximum height of each sub-cell generated
+
+        Using `ln=3` and `maximum height=pdf.font_size` is useful to build tables with multiline text in cells.
 
         Returns: a boolean indicating if page break was triggered.
         """
@@ -1097,6 +1099,7 @@ class FPDF:
         l = 0
         ns = 0
         nl = 1
+        prev_x, prev_y = self.x, self.y
         while i < normalized_string_length:
             # Get next character
             c = s[i]
@@ -1107,9 +1110,14 @@ class FPDF:
                     self.ws = 0
                     self._out("0 Tw")
 
+                if max_line_height and h > max_line_height:
+                    height = max_line_height
+                    h -= height
+                else:
+                    height = h
                 new_page = self.cell(
                     w,
-                    h=h,
+                    h=height,
                     txt=substr(s, j, i - j),
                     border=b,
                     ln=2,
@@ -1148,9 +1156,14 @@ class FPDF:
                         self.ws = 0
                         self._out("0 Tw")
 
+                    if max_line_height and h > max_line_height:
+                        height = max_line_height
+                        h -= height
+                    else:
+                        height = h
                     new_page = self.cell(
                         w,
-                        h=h,
+                        h=height,
                         txt=substr(s, j, i - j),
                         border=b,
                         ln=2,
@@ -1170,9 +1183,14 @@ class FPDF:
                         )
                         self._out(f"{self.ws * self.k:.3f} Tw")
 
+                    if max_line_height and h > max_line_height:
+                        height = max_line_height
+                        h -= height
+                    else:
+                        height = h
                     new_page = self.cell(
                         w,
-                        h=h,
+                        h=height,
                         txt=substr(s, j, sep - j),
                         border=b,
                         ln=2,
@@ -1206,7 +1224,7 @@ class FPDF:
             h=h,
             txt=substr(s, j, i - j),
             border=b,
-            ln=2,
+            ln=0 if ln == 3 else ln,
             align=align,
             fill=fill,
             link=link,
@@ -1214,12 +1232,13 @@ class FPDF:
         page_break_triggered = page_break_triggered or new_page
         text_cells.append(substr(s, j, i - j))
 
-        location_options = {
-            0: lambda: self.set_xy(self.x + w, self.y),
-            1: lambda: self.set_x(self.l_margin),  # could control y
-            2: lambda: None,
-        }
-        location_options.get(ln, lambda: None)()
+        new_x, new_y = {
+            0: (self.x, self.y + h),
+            1: (self.l_margin, self.y),
+            2: (prev_x, self.y),
+            3: (self.x, prev_y),
+        }[ln]
+        self.set_xy(new_x, new_y)
 
         if split_only:
             # restore writing functions
@@ -1449,19 +1468,25 @@ class FPDF:
     def _putpages(self):
         nb = self.page
         if self.str_alias_nb_pages:
+            substituted = False
             # Replace number of pages in fonts using subsets (unicode)
             alias = self.str_alias_nb_pages.encode("UTF-16BE")
             encoded_nb = str(nb).encode("UTF-16BE")
             for n in range(1, nb + 1):
-                self.pages[n]["content"] = self.pages[n]["content"].replace(
-                    alias, encoded_nb
-                )
+                new_content = self.pages[n]["content"].replace(alias, encoded_nb)
+                substituted |= self.pages[n]["content"] != new_content
+                self.pages[n]["content"] = new_content
             # Now repeat for no pages in non-subset fonts
             alias = self.str_alias_nb_pages.encode("latin-1")
             encoded_nb = str(nb).encode("latin-1")
             for n in range(1, nb + 1):
-                self.pages[n]["content"] = self.pages[n]["content"].replace(
-                    alias, encoded_nb
+                new_content = self.pages[n]["content"].replace(alias, encoded_nb)
+                substituted |= self.pages[n]["content"] != new_content
+                self.pages[n]["content"] = new_content
+            if substituted:
+                LOGGER.info(
+                    "Substitution of '%s' was performed in the document",
+                    self.str_alias_nb_pages,
                 )
         if self.def_orientation == "P":
             dw_pt = self.dw_pt

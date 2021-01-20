@@ -12,6 +12,8 @@ This is useful if you have a "dynamic" number of pages,
 and do not know the exact final number of pages of the document you are creating
 at the time you are generating the pages.
 
+This substitution can be disabled for performances reasons, by caling `alias_nb_pages(None)`.
+
 **Note**: when using this feature with the `cell` / `multicell` methods, or the `underline` attribute of `FPDF` class,
 the width of the text rendered will take into account the alias length, not the length of the "actual number of pages" string,
 which can causes slight positioning differences.
