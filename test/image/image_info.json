@@ -1,0 +1,1612 @@
+{
+  "g25n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "bgbn4a08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "f03n0g08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "s09n3p02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 9,
+    "w": 9,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 9"
+  },
+  "cs3n2c16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s40n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 40,
+    "w": 40,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 40"
+  },
+  "cdhn2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 8,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "bgan6a16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basi3p01.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "cs8n3p08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "ct1n0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "cdun2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basi3p02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "ps1n0g08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "s04n3p01.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 4,
+    "w": 4,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 4"
+  },
+  "s33n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 33,
+    "w": 33,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 33"
+  },
+  "z03n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "f02n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basi0g08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "oi1n0g16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s03n3p01.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 3,
+    "w": 3,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 3"
+  },
+  "oi4n2c16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "f99n0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "basi0g16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "g07n0g16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s32i3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "tm3n3p02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "ccwn2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "tbwn3p08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "cdfn2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 8,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 8"
+  },
+  "ps2n2c16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s35n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 35,
+    "w": 35,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 35"
+  },
+  "s39i3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 39,
+    "w": 39,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 39"
+  },
+  "s05n3p02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 5,
+    "w": 5,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 5"
+  },
+  "cdsn2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 8,
+    "w": 8,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 8"
+  },
+  "tbgn3p08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "tbrn2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "f01n0g08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "f03n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s36n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 36,
+    "w": 36,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 36"
+  },
+  "s06i3p02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 6,
+    "w": 6,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 6"
+  },
+  "bgai4a16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "g05n0g16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "z00n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "g04n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s01n3p01.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 1,
+    "w": 1,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 1"
+  },
+  "oi9n0g16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "tbgn2c16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "cten0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "tp0n0g08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "exif2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "tbbn2c16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s36i3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 36,
+    "w": 36,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 36"
+  },
+  "cs8n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "ps2n0g08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "f04n0g08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "s33i3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 33,
+    "w": 33,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 33"
+  },
+  "s35i3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 35,
+    "w": 35,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 35"
+  },
+  "oi2n2c16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "cs5n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "bggn4a16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s38i3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 38,
+    "w": 38,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 38"
+  },
+  "ps1n2c16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "cthn0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "oi1n2c16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "ch2n3p08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "g03n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s34i3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 34,
+    "w": 34,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 34"
+  },
+  "tp0n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "tp0n3p08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "cm9n0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "s39n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 39,
+    "w": 39,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 39"
+  },
+  "basi3p08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basi2c16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basn0g02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "pp0n2c16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "f01n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "ctgn0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "tp1n3p08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s05i3p02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 5,
+    "w": 5,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 5"
+  },
+  "g10n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "g03n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basn0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "s08i3p02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 8,
+    "w": 8,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 8"
+  },
+  "basn6a08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "f04n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "cs3n3p08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "tbbn0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "s02n3p01.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 2,
+    "w": 2,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 2"
+  },
+  "s06n3p02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 6,
+    "w": 6,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 6"
+  },
+  "bgwn6a08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basi0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "basi4a08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "ctzn0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "oi2n0g16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s03i3p01.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 3,
+    "w": 3,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 3"
+  },
+  "f00n0g08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "ch1n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "bgai4a08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "basn0g16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basi3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s40i3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 40,
+    "w": 40,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 40"
+  },
+  "tbyn3p08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basi0g02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "basn2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "f00n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s04i3p01.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 4,
+    "w": 4,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 4"
+  },
+  "basn0g08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "bgan6a08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s38n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 38,
+    "w": 38,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 38"
+  },
+  "s09i3p02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 9,
+    "w": 9,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 9"
+  },
+  "tbwn0g16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "g07n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basn0g01.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "g05n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "g05n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s34n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 34,
+    "w": 34,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 34"
+  },
+  "basn3p02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basi6a08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basn3p01.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "oi9n2c16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basn4a16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "g10n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "bgyn6a16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "f02n0g08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "basn3p08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "ctjn0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "pp0n6a08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basi0g01.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s02i3p01.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 2,
+    "w": 2,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 2"
+  },
+  "ct0n0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "s08n3p02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 8,
+    "w": 8,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 8"
+  },
+  "basi6a16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "cm7n0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "ccwn3p08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "z06n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basi4a16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "z09n2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s01i3p01.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 1,
+    "w": 1,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 1"
+  },
+  "g25n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s07i3p02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 7,
+    "w": 7,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 7"
+  },
+  "oi4n0g16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "g03n0g16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "g04n0g16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "g25n0g16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basi2c08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s37i3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 37,
+    "w": 37,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 37"
+  },
+  "s32n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "cm0n0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "basn3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basn2c16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s37n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 37,
+    "w": 37,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 37"
+  },
+  "g07n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "cs5n3p08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "tbbn3p08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basn4a08.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "g10n0g16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "basn6a16.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  },
+  "s07n3p02.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 7,
+    "w": 7,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 7"
+  },
+  "ctfn0g04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceGray",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns 32"
+  },
+  "g04n3p04.png": {
+    "bpc": 8,
+    "f": "FlateDecode",
+    "h": 32,
+    "w": 32,
+    "cs": "DeviceRGB",
+    "trns": "",
+    "pal": "",
+    "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32"
+  }
+}
