@@ -5,6 +5,7 @@ from io import BytesIO
 import pytest
 
 import fpdf
+from fpdf.errors import FPDFException
 
 from test.utilities import relative_path_to
 
@@ -16,7 +17,7 @@ class TestLoadResource:
         assert a == s
 
     def test_error_wrong_reason(self):
-        with pytest.raises(Exception) as e:
+        with pytest.raises(FPDFException) as e:
             fpdf.image_parsing.load_resource(None, reason="not image")
 
         msg = 'Unknown resource loading reason "not image"'

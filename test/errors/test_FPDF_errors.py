@@ -1,11 +1,12 @@
 import pytest
 import fpdf
+from fpdf.errors import FPDFException
 
 
 class TestAddPage:
     def test_throws_without_page(self):
         pdf = fpdf.FPDF()
-        with pytest.raises(Exception) as e:
+        with pytest.raises(FPDFException) as e:
             pdf.text(1, 2, "ok")
 
         msg = "No page open, you need to call add_page() first"
@@ -31,7 +32,7 @@ class TestOrientation:
         assert landscape.h_pt == portrait.w_pt
 
     def test_incorrect_orientation(self):
-        with pytest.raises(Exception) as e:
+        with pytest.raises(FPDFException) as e:
             fpdf.FPDF(orientation="hello")
 
         msg = "Incorrect orientation: hello"
@@ -40,7 +41,7 @@ class TestOrientation:
 
 class TestUnit:
     def test_constructor(self):
-        with pytest.raises(Exception) as e:
+        with pytest.raises(FPDFException) as e:
             fpdf.FPDF(unit="smiles")
 
         assert str(e.value) == "Incorrect unit: smiles"
@@ -57,7 +58,7 @@ class TestDocOption:
         pdf.set_doc_option("core_fonts_encoding", 4)
         assert pdf.core_fonts_encoding == 4
 
-        with pytest.raises(Exception) as e:
+        with pytest.raises(FPDFException) as e:
             pdf.set_doc_option("not core_fonts_encoding", None)
 
         msg = 'Unknown document option "not core_fonts_encoding"'

@@ -3,6 +3,7 @@ from datetime import datetime
 import pytest
 
 import fpdf
+from fpdf.errors import FPDFException
 from test.utilities import assert_pdf_equal
 
 
@@ -10,7 +11,7 @@ class TestCreationDate:
     def test_setting_bad_date(self):
         doc = fpdf.FPDF()
         doc.set_creation_date("i am not a date")
-        with pytest.raises(BaseException):
+        with pytest.raises(FPDFException):
             doc.output("output.pdf")
 
     def test_setting_old_date(self, tmp_path):

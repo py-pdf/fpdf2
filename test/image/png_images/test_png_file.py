@@ -3,6 +3,7 @@ import os
 import pytest
 
 import fpdf
+from fpdf.errors import FPDFException
 from test.utilities import assert_pdf_equal, relative_path_to
 
 
@@ -29,7 +30,7 @@ class TestInsertPNGSuiteFiles:
 
         for image in images:
             if os.path.basename(image) in not_supported:
-                with pytest.raises(Exception):
+                with pytest.raises(FPDFException):
                     pdf.image(x=0, y=0, w=0, h=0, link=None)
             else:
                 pdf.add_page()
