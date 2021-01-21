@@ -11,7 +11,7 @@
 fpdf2
 =====
 
-![fpdf2 logo](docs/fpdf2-logo.png)
+![fpdf2 logo](https://pyfpdf.github.io/fpdf2/fpdf2-logo.png)
 
 `fpdf2` is a minimalist PDF creation library for Python:
 
