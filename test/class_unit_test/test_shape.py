@@ -1,6 +1,5 @@
 """issue65_test.py"""
 
-import unittest
 import sys
 import os
 
@@ -12,8 +11,6 @@ sys.path.insert(
 import fpdf
 from test.utilities import assert_pdf_equal
 
-# python -m unittest test.class_unit_test.shape_tests
-
 
 def next_row(pdf):
     pdf.ln()
@@ -24,7 +21,7 @@ size = 50
 margin = 10
 
 
-class TestEllipse(unittest.TestCase):
+class TestEllipse:
     def test_ellipse_not_circle(self):
         pdf = fpdf.FPDF(unit="mm")
         pdf.add_page()
@@ -92,7 +89,7 @@ class TestEllipse(unittest.TestCase):
         assert_pdf_equal(self, pdf, "class_ellipse_fill_color.pdf")
 
 
-class TestRectangle(unittest.TestCase):
+class TestRectangle:
     def test_rect_not_square(self):
         pdf = fpdf.FPDF(unit="mm")
         pdf.add_page()
@@ -162,7 +159,7 @@ class TestRectangle(unittest.TestCase):
         assert_pdf_equal(self, pdf, "class_rect_fill_color.pdf")
 
 
-class TestLine(unittest.TestCase):
+class TestLine:
     def test_line(self):
         pdf = fpdf.FPDF(unit="mm")
         pdf.add_page()
@@ -222,7 +219,3 @@ class TestLine(unittest.TestCase):
         pdf.dashed_line(x, y, x + 100, y + 80, 6, 17)
 
         assert_pdf_equal(self, pdf, "class_dash.pdf")
-
-
-if __name__ == "__main__":
-    unittest.main()

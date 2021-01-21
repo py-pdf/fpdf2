@@ -10,14 +10,13 @@ the range of the C 'short' data type (2 bytes, 0 - 65535):
 and this seems to be okay.
 """
 import os
-import unittest
 from glob import glob
+
+import pytest
 
 import fpdf
 from fpdf.ttfonts import TTFontFile
 from test.utilities import assert_pdf_equal, relative_path_to
-
-# python -m unittest test.end_to_end_legacy.charmap.charmap_test
 
 
 class MyTTFontFile(TTFontFile):
@@ -39,39 +38,32 @@ class MyTTFontFile(TTFontFile):
         self.saveChar = charToGlyph
 
 
-class TestCharmap(unittest.TestCase):
-    def test_first_999_chars(self):
-        for fontpath in (
-            "DejaVuSans.ttf",
-            "DroidSansFallback.ttf",
-            "Roboto-Regular.ttf",
-            "cmss12.ttf",
-        ):
-            with self.subTest(fontpath=fontpath):
-                fontname = os.path.splitext(fontpath)[0]
-                fontpath = relative_path_to(fontpath)
+class TestCharmap:
+    @pytest.mark.parametrize(
+        "fontpath",
+        ["DejaVuSans.ttf", "DroidSansFallback.ttf", "Roboto-Regular.ttf", "cmss12.ttf"],
+    )
+    def test_first_999_chars(self, fontpath):
+        fontname = os.path.splitext(fontpath)[0]
+        fontpath = relative_path_to(fontpath)
 
-                pdf = fpdf.FPDF()
-                pdf.add_page()
-                pdf.add_font(fontname, fname=fontpath, uni=True)
-                pdf.set_font(fontname, size=10)
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        pdf.add_font(fontname, fname=fontpath, uni=True)
+        pdf.set_font(fontname, size=10)
 
-                ttf = MyTTFontFile()
-                ttf.getMetrics(fontpath)
+        ttf = MyTTFontFile()
+        ttf.getMetrics(fontpath)
 
-                # Create a PDF with the first 999 charters defined in the font:
-                for counter, character in enumerate(ttf.saveChar, 0):
-                    pdf.write(8, f"{counter:03}) {character:03x} - {character:c}")
-                    pdf.ln()
-                    if counter >= 999:
-                        break
+        # Create a PDF with the first 999 charters defined in the font:
+        for counter, character in enumerate(ttf.saveChar, 0):
+            pdf.write(8, f"{counter:03}) {character:03x} - {character:c}")
+            pdf.ln()
+            if counter >= 999:
+                break
 
-                assert_pdf_equal(self, pdf, f"charmap_first_999_chars-{fontname}.pdf")
+        assert_pdf_equal(self, pdf, f"charmap_first_999_chars-{fontname}.pdf")
 
     def tearDown(self):
         for pkl_filepath in glob(relative_path_to("*") + "*.pkl"):
             os.remove(pkl_filepath)
-
-
-if __name__ == "__main__":
-    unittest.main()

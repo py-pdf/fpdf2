@@ -1,6 +1,7 @@
-import unittest
 import sys
 import os
+
+import pytest
 
 sys.path.insert(
     0,
@@ -15,8 +16,8 @@ from test.utilities import assert_pdf_equal
 # python -m unittest test.image.url_images
 
 
-@unittest.skip("skip network tests by default")
-class UrlImagesTest(unittest.TestCase):
+@pytest.mark.skip("skip network tests by default")
+class TestUrlImages:
     def test_png_url(self):
         pdf = fpdf.FPDF()
         pdf.compress = False
@@ -36,9 +37,6 @@ class UrlImagesTest(unittest.TestCase):
         pdf.image(jpg, x=15, y=15)
         assert_pdf_equal(self, pdf, "image_jpg_url.pdf")
 
-
-if __name__ == "__main__":
-    unittest.main()
 
 ## Code used to create test:
 # pdf = fpdf.FPDF()

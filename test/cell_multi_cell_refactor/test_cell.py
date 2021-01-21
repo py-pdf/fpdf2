@@ -1,12 +1,8 @@
-import unittest
-
 import fpdf
 from test.utilities import assert_pdf_equal
 
-# python -m unittest test.cell_multi_cell_refactor.cell
 
-
-class TestCell(unittest.TestCase):
+class TestCell:
     def test_ln_positioning_and_page_breaking_for_cell(self):
         doc = fpdf.FPDF(format="letter", unit="pt")
         doc.add_page()
@@ -49,9 +45,6 @@ class TestCell(unittest.TestCase):
         )
 
 
-if __name__ == "__main__":
-    unittest.main()
-
 ## Code used to create this test
 # doc = fpdf.FPDF(format = 'letter', unit = 'pt')
 # set_doc_date_0(doc)
@@ -78,7 +71,3 @@ if __name__ == "__main__":
 #         'cupidatat do Ut aliqua irure sunt sunt proident sit aliqua in '
 #         'dolore Ut in sint sunt exercitation aliquip elit velit dolor nisi '
 #         '')*100
-
-
-if __name__ == "__main__":
-    unittest.main()

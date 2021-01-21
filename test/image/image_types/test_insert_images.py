@@ -1,14 +1,11 @@
-import unittest
 import sys
 
 import fpdf
 from PIL import Image
 from test.utilities import assert_pdf_equal, relative_path_to
 
-# python -m unittest test.image.image_types.insert_images
 
-
-class InsertImagesTest(unittest.TestCase):
+class TestInsertImages:
     def test_insert_jpg(self):
         pdf = fpdf.FPDF()
         pdf.compress = False
@@ -53,7 +50,3 @@ class InsertImagesTest(unittest.TestCase):
         img = Image.open(file_path)
         pdf.image(img, x=15, y=15)
         assert_pdf_equal(self, pdf, "image_types_insert_pillow.pdf")
-
-
-if __name__ == "__main__":
-    unittest.main()

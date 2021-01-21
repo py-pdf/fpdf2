@@ -1,13 +1,9 @@
-import unittest
-
 from fpdf.template import Template
 
 from test.utilities import assert_pdf_equal, relative_path_to
 
-# python -m unittest test.template.test_template
 
-
-class TemplateTest(unittest.TestCase):
+class TestTemplate:
     def test_nominal_hardcoded(self):
         "Taken from docs/Templates.md"
         elements = [

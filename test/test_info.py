@@ -1,9 +1,5 @@
-import unittest
-
 import fpdf
 from test.utilities import assert_pdf_equal
-
-# python -m unittest test.info_test
 
 
 def document_operations(doc):
@@ -12,7 +8,7 @@ def document_operations(doc):
     doc.cell(w=72, h=0, border=1, ln=2, txt="hello world", fill=False, link="")
 
 
-class CatalogDisplayModeTest(unittest.TestCase):
+class TestCatalogDisplayMode:
     """This test tests some possible inputs to FPDF#_put_info."""
 
     def test_put_info_all(self):
@@ -34,7 +30,3 @@ class CatalogDisplayModeTest(unittest.TestCase):
         doc.set_keywords("sample keywords")
         doc.set_creator("sample creator")
         assert_pdf_equal(self, doc, "put_info_some.pdf")
-
-
-if __name__ == "__main__":
-    unittest.main()

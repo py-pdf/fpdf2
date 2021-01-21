@@ -1,11 +1,8 @@
 from fpdf import FPDF
-import unittest
 from test.utilities import assert_pdf_equal, relative_path_to
 
-# python -m unittest test.test_rotation
 
-
-class RotateTest(unittest.TestCase):
+class TestRotate:
     def test_rotation(self):
         pdf = FPDF()
         pdf.add_page()
@@ -17,7 +14,3 @@ class RotateTest(unittest.TestCase):
             pdf.image(img_filepath, x=x, y=y)
         pdf.image(img_filepath, x=150, y=150)
         assert_pdf_equal(self, pdf, "rotation.pdf")
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -1,29 +1,26 @@
 """load_resource.py"""
 
-import unittest
-import sys
-import os
-import fpdf
 from io import BytesIO
 
+import pytest
 
-# python -m unittest test.image.load_resource.LoadResourceTest
+import fpdf
 
 from test.utilities import relative_path_to
 
 
-class LoadResourceTest(unittest.TestCase):
+class TestLoadResource:
     def test_recognize_bytesIO(self):
         s = BytesIO()
         a = fpdf.image_parsing.load_resource(s)
-        self.assertEqual(a, s)
+        assert a == s
 
     def test_error_wrong_reason(self):
-        with self.assertRaises(Exception) as e:
+        with pytest.raises(Exception) as e:
             fpdf.image_parsing.load_resource(None, reason="not image")
 
         msg = 'Unknown resource loading reason "not image"'
-        self.assertEqual(msg, str(e.exception))
+        assert msg == str(e.value)
 
     def test_load_text_file(self):
         file = relative_path_to("__init__.py")
@@ -31,6 +28,6 @@ class LoadResourceTest(unittest.TestCase):
         bc = contents.encode("utf-8")
 
         resource = fpdf.image_parsing.load_resource(file).getvalue()
-        self.assertEqual(bytes(resource), bc)
+        assert bytes(resource) == bc
         # print(bytes(resource))
         # print(bc)

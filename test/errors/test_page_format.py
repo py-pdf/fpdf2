@@ -1,37 +1,34 @@
-import unittest
+import pytest
 
 import fpdf
 
-# python -m unittest test.errors.page_format.PageFormatErrors
-# python -m unittest test.errors.page_format.PageFormatErrorClass
 
-class TestPageFormatErrorClass(unittest.TestCase):
+class TestPageFormatErrorClass:
     def test_constructor(self):
-        with self.assertRaises(TypeError) as e:
+        with pytest.raises(TypeError) as e:
             fpdf.errors.FPDFPageFormatException(None, unknown=True, one=True)
 
         expected = "FPDF Page Format Exception cannot be both"
-        contains = expected in str(e.exception)
-        self.assertTrue(contains)
+        assert expected in str(e.value)
 
 
-class TestPageFormatErrors(unittest.TestCase):
+class TestPageFormatErrors:
     def test_error(self):
-        with self.assertRaises(fpdf.errors.FPDFPageFormatException) as e:
+        with pytest.raises(fpdf.errors.FPDFPageFormatException) as e:
             fpdf.fpdf.get_page_format("letter1")
 
-        self.assertTrue("FPDFPageFormatException" in str(e.exception))
-        self.assertTrue("Unknown page format" in str(e.exception))
-        self.assertTrue("letter1" in str(e.exception))
+        assert "FPDFPageFormatException" in str(e.value)
+        assert "Unknown page format" in str(e.value)
+        assert "letter1" in str(e.value)
 
-        with self.assertRaises(fpdf.errors.FPDFPageFormatException) as e:
+        with pytest.raises(fpdf.errors.FPDFPageFormatException) as e:
             fpdf.fpdf.get_page_format(3)
 
-        self.assertTrue("FPDFPageFormatException" in str(e.exception))
-        self.assertTrue("Only one argument given" in str(e.exception))
+        assert "FPDFPageFormatException" in str(e.value)
+        assert "Only one argument given" in str(e.value)
 
-        with self.assertRaises(fpdf.errors.FPDFPageFormatException) as e:
+        with pytest.raises(fpdf.errors.FPDFPageFormatException) as e:
             fpdf.fpdf.get_page_format(4, "a")
 
-        self.assertTrue("FPDFPageFormatException" in str(e.exception))
-        self.assertTrue("Arguments must be numbers: " in str(e.exception))
+        assert "FPDFPageFormatException" in str(e.value)
+        assert "Arguments must be numbers: " in str(e.value)

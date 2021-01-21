@@ -1,16 +1,15 @@
+import pytest
+
 import fpdf
-import unittest
 from fpdf.html import px2mm
 from test.utilities import assert_pdf_equal, relative_path_to
-
-# python -m unittest test.html.test_html
 
 
 class MyFPDF(fpdf.FPDF, fpdf.HTMLMixin):
     pass
 
 
-class TestHTML(unittest.TestCase):
+class TestHTML:
     "Test possible inputs to fpdf.HTMLMixin"
 
     def test_html_images(self):
@@ -19,9 +18,9 @@ class TestHTML(unittest.TestCase):
 
         initial = 10
         mm_after_image = initial + px2mm(300)
-        self.assertEqual(round(pdf.get_x()), 10, "Initial x margin is not expected")
-        self.assertEqual(round(pdf.get_y()), 10, "Initial y margin is not expected")
-        self.assertEqual(round(pdf.w), 210, "Page width is not expected")
+        assert round(pdf.get_x()) == 10
+        assert round(pdf.get_y()) == 10
+        assert round(pdf.w) == 210
 
         img_path = relative_path_to(
             "../image/png_images/c636287a4d7cb1a36362f7f236564cef.png"
@@ -31,15 +30,8 @@ class TestHTML(unittest.TestCase):
         )
         # Unable to text position of the image as write html moves to a new line after
         # adding the image but it can be seen in the produce test.pdf file.
-        self.assertEqual(
-            round(pdf.get_x()), 10, "Have not moved to beginning of new line"
-        )
-        self.assertAlmostEqual(
-            pdf.get_y(),
-            mm_after_image,
-            places=2,
-            msg="Image height has moved down the page",
-        )
+        assert round(pdf.get_x()) == 10
+        assert pdf.get_y() == pytest.approx(mm_after_image, abs=0.01)
 
         assert_pdf_equal(self, pdf, "html_images.pdf")
 
@@ -175,7 +167,8 @@ class TestHTML(unittest.TestCase):
                 "    </tr>"
             )
             + "".join([getrow(i) for i in range(26)])
-            + ("  </tbody>" "</table>")
+            + "  </tbody>"
+            + "</table>"
         )
 
         pdf.add_page()
@@ -243,7 +236,3 @@ class TestHTML(unittest.TestCase):
                <B><I><U>all at once!</U></I></B>"""
         )
         assert_pdf_equal(self, pdf, "html_bold_italic_underline.pdf")
-
-
-if __name__ == "__main__":
-    unittest.main()
