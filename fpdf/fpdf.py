@@ -457,7 +457,8 @@ class FPDF:
     def line(self, x1, y1, x2, y2):
         """Draw a line"""
         self._out(
-            f"{x1 * self.k:.2f} {(self.h - y1) * self.k:.2f} m {x2 * self.k:.2f} {(self.h - y2) * self.k:.2f} l S"
+            f"{x1 * self.k:.2f} {(self.h - y1) * self.k:.2f} m {x2 * self.k:.2f} "
+            f"{(self.h - y2) * self.k:.2f} l S"
         )
 
     def _set_dash(self, dash_length=False, space_length=False):
@@ -482,7 +483,8 @@ class FPDF:
         style_to_operators = {"F": "f", "FD": "B", "DF": "B"}
         op = style_to_operators.get(style, "S")
         self._out(
-            f"{x * self.k:.2f} {(self.h - y) * self.k:.2f} {w * self.k:.2f} {-h * self.k:.2f} re {op}"
+            f"{x * self.k:.2f} {(self.h - y) * self.k:.2f} {w * self.k:.2f} "
+            f"{-h * self.k:.2f} re {op}"
         )
 
     @check_page
