@@ -35,7 +35,7 @@ class InsertPNGSuiteFilesTest(unittest.TestCase):
                 pdf.add_page()
                 pdf.image(image, x=0, y=0, w=0, h=0, link=None)
 
-        assert_pdf_equal(self, pdf, "test_insert_png_files.pdf")
+        assert_pdf_equal(self, pdf, "image_png_insert_png_files.pdf")
 
 
 if __name__ == "__main__":

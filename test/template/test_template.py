@@ -124,7 +124,7 @@ class TemplateTest(unittest.TestCase):
         tmpl.add_page()
         tmpl["company_name"] = "Sample Company"
         tmpl["company_logo"] = relative_path_to("../../docs/fpdf2-logo.png")
-        assert_pdf_equal(self, tmpl, "test_nominal_hardcoded.pdf")
+        assert_pdf_equal(self, tmpl, "template_nominal_hardcoded.pdf")
 
     def test_nominal_csv(self):
         "Taken from docs/Templates.md"
@@ -132,4 +132,4 @@ class TemplateTest(unittest.TestCase):
         tmpl.parse_csv(relative_path_to("mycsvfile.csv"), delimiter=";")
         tmpl.add_page()
         tmpl["company_name"] = "Sample Company"
-        assert_pdf_equal(self, tmpl, "test_nominal_csv.pdf")
+        assert_pdf_equal(self, tmpl, "template_nominal_csv.pdf")

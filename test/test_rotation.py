@@ -16,7 +16,7 @@ class RotateTest(unittest.TestCase):
         with pdf.rotation(45, x=x, y=y):
             pdf.image(img_filepath, x=x, y=y)
         pdf.image(img_filepath, x=150, y=150)
-        assert_pdf_equal(self, pdf, "test_rotation.pdf")
+        assert_pdf_equal(self, pdf, "rotation.pdf")
 
 
 if __name__ == "__main__":

@@ -23,7 +23,6 @@ import pickle
 import re
 import warnings
 import zlib
-from collections import OrderedDict
 from contextlib import contextmanager
 from datetime import datetime
 from functools import wraps
@@ -2009,14 +2008,13 @@ class FPDF:
             self._out("endobj")
 
     def _putinfo(self):
-        info_d = OrderedDict()
-        info_d[pdf_name("title")] = enclose_in_parens(getattr(self, "title", None))
-        info_d[pdf_name("subject")] = enclose_in_parens(getattr(self, "subject", None))
-        info_d[pdf_name("author")] = enclose_in_parens(getattr(self, "author", None))
-        info_d[pdf_name("keywords")] = enclose_in_parens(
-            getattr(self, "keywords", None)
-        )
-        info_d[pdf_name("creator")] = enclose_in_parens(getattr(self, "creator", None))
+        info_d = {
+            pdf_name("title"): enclose_in_parens(getattr(self, "title", None)),
+            pdf_name("subject"): enclose_in_parens(getattr(self, "subject", None)),
+            pdf_name("author"): enclose_in_parens(getattr(self, "author", None)),
+            pdf_name("keywords"): enclose_in_parens(getattr(self, "keywords", None)),
+            pdf_name("creator"): enclose_in_parens(getattr(self, "creator", None)),
+        }
 
         if hasattr(self, "creation_date"):
             try:
@@ -2033,9 +2031,10 @@ class FPDF:
         self._out(pdf_d(info_d, open_dict="", close_dict="", has_empty_fields=True))
 
     def _putcatalog(self):
-        catalog_d = OrderedDict()
-        catalog_d[pdf_name("type")] = pdf_name("catalog")
-        catalog_d[pdf_name("pages")] = pdf_ref(1)
+        catalog_d = {
+            pdf_name("type"): pdf_name("catalog"),
+            pdf_name("pages"): pdf_ref(1),
+        }
 
         zoom_configs = {
             "default": ["/Fit"],  # TODO FIXME

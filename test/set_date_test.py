@@ -19,7 +19,7 @@ class CreationDateTest(unittest.TestCase):
         # 2017, April 18th, almost 7:09a
         date = datetime(2017, 4, 18, 7, 8, 55)
         doc.set_creation_date(date)
-        assert_pdf_equal(self, doc, "test_setting_old_date.pdf")
+        assert_pdf_equal(self, doc, "setting_old_date.pdf")
 
 
 if __name__ == "__main__":

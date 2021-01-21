@@ -1020,14 +1020,3 @@ class TTFontFile:
         chk = pack(">HH", checksum[0], checksum[1])
         stm = self.splice(stm, (head_start + 8), chk)
         return stm
-
-
-def str_pad(s, pad_length=0, pad_char=" ", pad_type=+1):
-    # pad left
-    if pad_type < 0:
-        return s.rjust(pad_length, pad_char)
-    # pad right
-    if pad_type > 0:
-        return s.ljust(pad_length, pad_char)
-    # pad both
-    return s.center(pad_length, pad_char)

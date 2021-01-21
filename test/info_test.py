@@ -23,7 +23,7 @@ class CatalogDisplayModeTest(unittest.TestCase):
         doc.set_author("sample author")
         doc.set_keywords("sample keywords")
         doc.set_creator("sample creator")
-        assert_pdf_equal(self, doc, "test_put_info_all.pdf")
+        assert_pdf_equal(self, doc, "put_info_all.pdf")
 
     def test_put_info_some(self):
         doc = fpdf.FPDF()
@@ -33,7 +33,7 @@ class CatalogDisplayModeTest(unittest.TestCase):
         # doc.set_author('sample author')
         doc.set_keywords("sample keywords")
         doc.set_creator("sample creator")
-        assert_pdf_equal(self, doc, "test_put_info_some.pdf")
+        assert_pdf_equal(self, doc, "put_info_some.pdf")
 
 
 if __name__ == "__main__":
