@@ -94,7 +94,8 @@ and you will just have to run `git commit -a` again.
 
 ## Testing ##
 
-To run tests, `cd` into the repository and run `python setup.py test` or `pytest`.
+To run tests, ``cd`` into the repository, install the dependencies using
+``pip install -r test/requirements.txt``,  and run `pytest`.
 
 Alternatively, you can use [Tox](https://tox.readthedocs.io/en/latest/).
 It is self-documented in the `tox.ini` file in the repository.

@@ -1,5 +1,3 @@
-"""image_info.py"""
-
 import unittest
 import sys
 import os

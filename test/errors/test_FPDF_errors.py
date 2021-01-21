@@ -1,5 +1,3 @@
-"""FPDF_errors.py"""
-
 import unittest
 import sys
 import os
