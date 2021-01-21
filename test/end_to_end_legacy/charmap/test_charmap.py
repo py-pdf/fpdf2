@@ -62,7 +62,7 @@ class TestCharmap:
             if counter >= 999:
                 break
 
-        assert_pdf_equal(self, pdf, f"charmap_first_999_chars-{fontname}.pdf")
+        assert_pdf_equal(pdf, f"charmap_first_999_chars-{fontname}.pdf")
 
     def tearDown(self):
         for pkl_filepath in glob(relative_path_to("*") + "*.pkl"):

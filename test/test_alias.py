@@ -10,7 +10,7 @@ class TestAlias:
         pdf.cell(0, 10, f"Page {pdf.page_no()}/{{nb}}", align="C")
         pdf.add_page()
         pdf.cell(0, 10, f"Page {pdf.page_no()}/{{nb}}", align="C")
-        assert_pdf_equal(self, pdf, "alias_nb_pages.pdf")
+        assert_pdf_equal(pdf, "alias_nb_pages.pdf")
 
     def test_custom_alias_nb_pages(self):
         pdf = fpdf.FPDF()
@@ -26,4 +26,4 @@ class TestAlias:
         pdf.cell(0, 10, f"Page {pdf.page_no()}/{alias}", align="C")
         pdf.add_page()
         pdf.cell(0, 10, f"Page {pdf.page_no()}/{alias}", align="C")
-        assert_pdf_equal(self, pdf, "alias_nb_pages.pdf")
+        assert_pdf_equal(pdf, "alias_nb_pages.pdf")

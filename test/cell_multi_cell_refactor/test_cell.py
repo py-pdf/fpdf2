@@ -40,9 +40,7 @@ class TestCell:
                 txt=text[i * 100 : i * 100 + 99],
             )
 
-        assert_pdf_equal(
-            self, doc, "cell_ln_positioning_and_page_breaking_for_cell.pdf"
-        )
+        assert_pdf_equal(doc, "cell_ln_positioning_and_page_breaking_for_cell.pdf")
 
 
 ## Code used to create this test

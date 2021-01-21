@@ -45,9 +45,7 @@ class TestMultiCell:
         doc.cell(w=72 * 2, h=line_height, border=1, ln=2, txt="Lorem ipsum")
         doc.cell(w=72 * 2, h=line_height, border=1, ln=2, txt="Lorem ipsum")
 
-        assert_pdf_equal(
-            self, doc, "cell_ln_positioning_and_page_breaking_for_multicell.pdf"
-        )
+        assert_pdf_equal(doc, "cell_ln_positioning_and_page_breaking_for_multicell.pdf")
 
 
 ## Code used to create test

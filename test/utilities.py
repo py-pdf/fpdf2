@@ -20,7 +20,7 @@ if not QPDF_AVAILABLE:
 
 
 def assert_pdf_equal(
-    test, pdf_or_tmpl, rel_expected_pdf_filepath, delete=True, generate=False
+    pdf_or_tmpl, rel_expected_pdf_filepath, delete=True, generate=False
 ):
     """
     This compare the output of a `FPDF` instance (or `Template` instance),
