@@ -23,7 +23,7 @@ class UrlImagesTest(unittest.TestCase):
         pdf.add_page()
         png = "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
         pdf.image(png, x=15, y=15, w=30, h=25)
-        assert_pdf_equal(self, pdf, "test_png_url.pdf")
+        assert_pdf_equal(self, pdf, "image_png_url.pdf")
 
     def test_jpg_url(self):
         pdf = fpdf.FPDF()
@@ -34,7 +34,7 @@ class UrlImagesTest(unittest.TestCase):
             "JPEG_example_JPG_RIP_025.jpg"
         )
         pdf.image(jpg, x=15, y=15)
-        assert_pdf_equal(self, pdf, "test_jpg_url.pdf")
+        assert_pdf_equal(self, pdf, "image_jpg_url.pdf")
 
 
 if __name__ == "__main__":

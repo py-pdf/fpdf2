@@ -43,7 +43,7 @@ class FontsTest(unittest.TestCase):
                 pdf.set_font(font_name.capitalize(), style, 36)
                 pdf.set_font(font_name.lower(), style, 36)
                 pdf.text(0, 10 + 40 * i + 10 * j, "Hello World!")
-        assert_pdf_equal(self, pdf, "test_set_builtin_font.pdf")
+        assert_pdf_equal(self, pdf, "fonts_set_builtin_font.pdf")
 
     def test_issue_66(self):
         pdf = FPDF()
@@ -54,7 +54,7 @@ class FontsTest(unittest.TestCase):
         pdf.cell(50, 0, "DEF")
         # Setting the font to an already used one used to remove the text!
         pdf.set_font("Times", "B", 14)
-        assert_pdf_equal(self, pdf, "test_issue_66.pdf")
+        assert_pdf_equal(self, pdf, "fonts_issue_66.pdf")
 
 
 if __name__ == "__main__":

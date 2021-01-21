@@ -45,7 +45,7 @@ class CellTest(unittest.TestCase):
             )
 
         assert_pdf_equal(
-            self, doc, "test_ln_positioning_and_page_breaking_for_cell.pdf"
+            self, doc, "cell_ln_positioning_and_page_breaking_for_cell.pdf"
         )
 
 

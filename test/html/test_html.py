@@ -41,7 +41,7 @@ class HTMLTest(unittest.TestCase):
             msg="Image height has moved down the page",
         )
 
-        assert_pdf_equal(self, pdf, "test_html_images.pdf")
+        assert_pdf_equal(self, pdf, "html_images.pdf")
 
     def test_html_features(self):
         pdf = MyFPDF()
@@ -184,7 +184,7 @@ class HTMLTest(unittest.TestCase):
         )
         pdf.write_html(f"<img src=\"{img_path}\" height='300' width='300'>")
 
-        assert_pdf_equal(self, pdf, "test_html_features.pdf")
+        assert_pdf_equal(self, pdf, "html_features.pdf")
 
     def test_html_simple_table(self):
         pdf = MyFPDF()
@@ -199,7 +199,7 @@ class HTMLTest(unittest.TestCase):
             <td>4</td><td>5</td><td>6</td>
         </tr></tbody></table>"""
         )
-        assert_pdf_equal(self, pdf, "test_html_simple_table.pdf")
+        assert_pdf_equal(self, pdf, "html_simple_table.pdf")
 
     def test_html_table_line_separators(self):
         pdf = MyFPDF()
@@ -215,7 +215,7 @@ class HTMLTest(unittest.TestCase):
         </tr></tbody></table>""",
             table_line_separators=True,
         )
-        assert_pdf_equal(self, pdf, "test_html_table_line_separators.pdf")
+        assert_pdf_equal(self, pdf, "html_table_line_separators.pdf")
 
     def test_html_table_with_border(self):
         pdf = MyFPDF()
@@ -230,7 +230,7 @@ class HTMLTest(unittest.TestCase):
             <td>4</td><td>5</td><td>6</td>
         </tr></tbody></table>"""
         )
-        assert_pdf_equal(self, pdf, "test_html_table_with_border.pdf")
+        assert_pdf_equal(self, pdf, "html_table_with_border.pdf")
 
     def test_html_bold_italic_underline(self):
         pdf = MyFPDF()
@@ -242,7 +242,7 @@ class HTMLTest(unittest.TestCase):
                <U>underlined</U>
                <B><I><U>all at once!</U></I></B>"""
         )
-        assert_pdf_equal(self, pdf, "test_html_bold_italic_underline.pdf")
+        assert_pdf_equal(self, pdf, "html_bold_italic_underline.pdf")
 
 
 if __name__ == "__main__":
