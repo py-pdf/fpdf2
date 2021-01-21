@@ -10,7 +10,7 @@ class MyFPDF(fpdf.FPDF, fpdf.HTMLMixin):
     pass
 
 
-class HTMLTest(unittest.TestCase):
+class TestHTML(unittest.TestCase):
     "Test possible inputs to fpdf.HTMLMixin"
 
     def test_html_images(self):

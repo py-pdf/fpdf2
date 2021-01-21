@@ -4,8 +4,7 @@ from test.utilities import assert_pdf_equal
 
 # python -m unittest test.test_barcodes
 
-
-class BarcodesTest(unittest.TestCase):
+class TestBarcodes(unittest.TestCase):
     def test_code39(self):
         pdf = FPDF()
         pdf.add_page()

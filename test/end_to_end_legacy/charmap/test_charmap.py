@@ -39,7 +39,7 @@ class MyTTFontFile(TTFontFile):
         self.saveChar = charToGlyph
 
 
-class CharmapTest(unittest.TestCase):
+class TestCharmap(unittest.TestCase):
     def test_first_999_chars(self):
         for fontpath in (
             "DejaVuSans.ttf",

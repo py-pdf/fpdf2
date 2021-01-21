@@ -6,7 +6,7 @@ from test.utilities import assert_pdf_equal
 # python -m unittest test.fonts.test_fonts
 
 
-class FontsTest(unittest.TestCase):
+class TestFonts(unittest.TestCase):
     def test_no_set_font(self):
         pdf = FPDF()
         pdf.add_page()

@@ -24,7 +24,7 @@ size = 50
 margin = 10
 
 
-class EllipseTest(unittest.TestCase):
+class TestEllipse(unittest.TestCase):
     def test_ellipse_not_circle(self):
         pdf = fpdf.FPDF(unit="mm")
         pdf.add_page()
@@ -92,7 +92,7 @@ class EllipseTest(unittest.TestCase):
         assert_pdf_equal(self, pdf, "class_ellipse_fill_color.pdf")
 
 
-class RectangleTest(unittest.TestCase):
+class TestRectangle(unittest.TestCase):
     def test_rect_not_square(self):
         pdf = fpdf.FPDF(unit="mm")
         pdf.add_page()
@@ -162,7 +162,7 @@ class RectangleTest(unittest.TestCase):
         assert_pdf_equal(self, pdf, "class_rect_fill_color.pdf")
 
 
-class LineTest(unittest.TestCase):
+class TestLine(unittest.TestCase):
     def test_line(self):
         pdf = fpdf.FPDF(unit="mm")
         pdf.add_page()
