@@ -3,7 +3,7 @@ from test.utilities import assert_pdf_equal
 
 
 class TestMultiCell:
-    def test_ln_positioning_and_page_breaking_for_multicell(self):
+    def test_ln_positioning_and_page_breaking_for_multicell(self, tmp_path):
         doc = fpdf.FPDF(format="letter", unit="pt")
         doc.add_page()
 
@@ -45,7 +45,9 @@ class TestMultiCell:
         doc.cell(w=72 * 2, h=line_height, border=1, ln=2, txt="Lorem ipsum")
         doc.cell(w=72 * 2, h=line_height, border=1, ln=2, txt="Lorem ipsum")
 
-        assert_pdf_equal(doc, "cell_ln_positioning_and_page_breaking_for_multicell.pdf")
+        assert_pdf_equal(
+            doc, "cell_ln_positioning_and_page_breaking_for_multicell.pdf", tmp_path
+        )
 
 
 ## Code used to create test

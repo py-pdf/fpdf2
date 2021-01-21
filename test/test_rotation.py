@@ -3,7 +3,7 @@ from test.utilities import assert_pdf_equal, relative_path_to
 
 
 class TestRotate:
-    def test_rotation(self):
+    def test_rotation(self, tmp_path):
         pdf = FPDF()
         pdf.add_page()
         x, y = 60, 60
@@ -13,4 +13,4 @@ class TestRotate:
         with pdf.rotation(45, x=x, y=y):
             pdf.image(img_filepath, x=x, y=y)
         pdf.image(img_filepath, x=150, y=150)
-        assert_pdf_equal(pdf, "rotation.pdf")
+        assert_pdf_equal(pdf, "rotation.pdf", tmp_path)

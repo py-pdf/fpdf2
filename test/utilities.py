@@ -28,9 +28,9 @@ def assert_pdf_equal(pdf_or_tmpl, rel_expected_pdf_filepath, tmp_path, generate=
     as it greatly helps debugging diffs. Otherwise, a hash-based comparison logic is used as a fallback.
 
     Args:
-        test (unittest.TestCase)
         pdf_or_tmpl: instance of `FPDF` or `Template`. The `output` or `render` method will be called on it.
         rel_expected_pdf_filepath (str): relative file path to a PDF file matching the expected output
+        tmp_path (Path): temporary directory provided by pytest individually to the caller test function
         generate (bool): only generate `pdf` output to `rel_expected_pdf_filepath` and return. Useful to create new tests.
     """
     if isinstance(pdf_or_tmpl, Template):

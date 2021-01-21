@@ -11,7 +11,7 @@ def document_operations(doc):
 class TestCatalogDisplayMode:
     """This test tests some possible inputs to FPDF#_put_info."""
 
-    def test_put_info_all(self):
+    def test_put_info_all(self, tmp_path):
         doc = fpdf.FPDF()
         document_operations(doc)
         doc.set_title("sample title")
@@ -19,9 +19,9 @@ class TestCatalogDisplayMode:
         doc.set_author("sample author")
         doc.set_keywords("sample keywords")
         doc.set_creator("sample creator")
-        assert_pdf_equal(doc, "put_info_all.pdf")
+        assert_pdf_equal(doc, "put_info_all.pdf", tmp_path)
 
-    def test_put_info_some(self):
+    def test_put_info_some(self, tmp_path):
         doc = fpdf.FPDF()
         document_operations(doc)
         doc.set_title("sample title")
@@ -29,4 +29,4 @@ class TestCatalogDisplayMode:
         # doc.set_author('sample author')
         doc.set_keywords("sample keywords")
         doc.set_creator("sample creator")
-        assert_pdf_equal(doc, "put_info_some.pdf")
+        assert_pdf_equal(doc, "put_info_some.pdf", tmp_path)

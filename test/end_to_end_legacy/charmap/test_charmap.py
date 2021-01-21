@@ -43,7 +43,7 @@ class TestCharmap:
         "fontpath",
         ["DejaVuSans.ttf", "DroidSansFallback.ttf", "Roboto-Regular.ttf", "cmss12.ttf"],
     )
-    def test_first_999_chars(self, fontpath):
+    def test_first_999_chars(self, fontpath, tmp_path):
         fontname = os.path.splitext(fontpath)[0]
         fontpath = relative_path_to(fontpath)
 
@@ -62,7 +62,7 @@ class TestCharmap:
             if counter >= 999:
                 break
 
-        assert_pdf_equal(pdf, f"charmap_first_999_chars-{fontname}.pdf")
+        assert_pdf_equal(pdf, f"charmap_first_999_chars-{fontname}.pdf", tmp_path)
 
     def tearDown(self):
         for pkl_filepath in glob(relative_path_to("*") + "*.pkl"):

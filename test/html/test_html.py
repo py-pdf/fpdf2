@@ -12,7 +12,7 @@ class MyFPDF(fpdf.FPDF, fpdf.HTMLMixin):
 class TestHTML:
     "Test possible inputs to fpdf.HTMLMixin"
 
-    def test_html_images(self):
+    def test_html_images(self, tmp_path):
         pdf = MyFPDF()
         pdf.add_page()
 
@@ -33,9 +33,9 @@ class TestHTML:
         assert round(pdf.get_x()) == 10
         assert pdf.get_y() == pytest.approx(mm_after_image, abs=0.01)
 
-        assert_pdf_equal(pdf, "html_images.pdf")
+        assert_pdf_equal(pdf, "html_images.pdf", tmp_path)
 
-    def test_html_features(self):
+    def test_html_features(self, tmp_path):
         pdf = MyFPDF()
         pdf.add_page()
         pdf.write_html("<p><b>hello</b> world. i am <i>tired</i>.</p>")
@@ -177,9 +177,9 @@ class TestHTML:
         )
         pdf.write_html(f"<img src=\"{img_path}\" height='300' width='300'>")
 
-        assert_pdf_equal(pdf, "html_features.pdf")
+        assert_pdf_equal(pdf, "html_features.pdf", tmp_path)
 
-    def test_html_simple_table(self):
+    def test_html_simple_table(self, tmp_path):
         pdf = MyFPDF()
         pdf.set_font_size(30)
         pdf.add_page()
@@ -192,9 +192,9 @@ class TestHTML:
             <td>4</td><td>5</td><td>6</td>
         </tr></tbody></table>"""
         )
-        assert_pdf_equal(pdf, "html_simple_table.pdf")
+        assert_pdf_equal(pdf, "html_simple_table.pdf", tmp_path)
 
-    def test_html_table_line_separators(self):
+    def test_html_table_line_separators(self, tmp_path):
         pdf = MyFPDF()
         pdf.set_font_size(30)
         pdf.add_page()
@@ -208,9 +208,9 @@ class TestHTML:
         </tr></tbody></table>""",
             table_line_separators=True,
         )
-        assert_pdf_equal(pdf, "html_table_line_separators.pdf")
+        assert_pdf_equal(pdf, "html_table_line_separators.pdf", tmp_path)
 
-    def test_html_table_with_border(self):
+    def test_html_table_with_border(self, tmp_path):
         pdf = MyFPDF()
         pdf.set_font_size(30)
         pdf.add_page()
@@ -223,9 +223,9 @@ class TestHTML:
             <td>4</td><td>5</td><td>6</td>
         </tr></tbody></table>"""
         )
-        assert_pdf_equal(pdf, "html_table_with_border.pdf")
+        assert_pdf_equal(pdf, "html_table_with_border.pdf", tmp_path)
 
-    def test_html_bold_italic_underline(self):
+    def test_html_bold_italic_underline(self, tmp_path):
         pdf = MyFPDF()
         pdf.set_font_size(30)
         pdf.add_page()
@@ -235,4 +235,4 @@ class TestHTML:
                <U>underlined</U>
                <B><I><U>all at once!</U></I></B>"""
         )
-        assert_pdf_equal(pdf, "html_bold_italic_underline.pdf")
+        assert_pdf_equal(pdf, "html_bold_italic_underline.pdf", tmp_path)

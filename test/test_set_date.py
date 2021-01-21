@@ -13,10 +13,10 @@ class TestCreationDate:
         with pytest.raises(BaseException):
             doc.output("output.pdf")
 
-    def test_setting_old_date(self):
+    def test_setting_old_date(self, tmp_path):
         doc = fpdf.FPDF()
         doc.add_page()
         # 2017, April 18th, almost 7:09a
         date = datetime(2017, 4, 18, 7, 8, 55)
         doc.set_creation_date(date)
-        assert_pdf_equal(doc, "setting_old_date.pdf")
+        assert_pdf_equal(doc, "setting_old_date.pdf", tmp_path)

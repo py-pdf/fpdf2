@@ -18,15 +18,15 @@ from test.utilities import assert_pdf_equal
 
 @pytest.mark.skip("skip network tests by default")
 class TestUrlImages:
-    def test_png_url(self):
+    def test_png_url(self, tmp_path):
         pdf = fpdf.FPDF()
         pdf.compress = False
         pdf.add_page()
         png = "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
         pdf.image(png, x=15, y=15, w=30, h=25)
-        assert_pdf_equal(pdf, "image_png_url.pdf")
+        assert_pdf_equal(pdf, "image_png_url.pdf", tmp_path)
 
-    def test_jpg_url(self):
+    def test_jpg_url(self, tmp_path):
         pdf = fpdf.FPDF()
         pdf.compress = False
         pdf.add_page()
@@ -35,7 +35,7 @@ class TestUrlImages:
             "JPEG_example_JPG_RIP_025.jpg"
         )
         pdf.image(jpg, x=15, y=15)
-        assert_pdf_equal(pdf, "image_jpg_url.pdf")
+        assert_pdf_equal(pdf, "image_jpg_url.pdf", tmp_path)
 
 
 ## Code used to create test:

@@ -3,16 +3,16 @@ from test.utilities import assert_pdf_equal
 
 
 class TestAlias:
-    def test_alias_nb_pages(self):
+    def test_alias_nb_pages(self, tmp_path):
         pdf = fpdf.FPDF()
         pdf.set_font("Times")
         pdf.add_page()
         pdf.cell(0, 10, f"Page {pdf.page_no()}/{{nb}}", align="C")
         pdf.add_page()
         pdf.cell(0, 10, f"Page {pdf.page_no()}/{{nb}}", align="C")
-        assert_pdf_equal(pdf, "alias_nb_pages.pdf")
+        assert_pdf_equal(pdf, "alias_nb_pages.pdf", tmp_path)
 
-    def test_custom_alias_nb_pages(self):
+    def test_custom_alias_nb_pages(self, tmp_path):
         pdf = fpdf.FPDF()
         pdf.set_font("Times")
         alias = "n{}b"
@@ -26,4 +26,4 @@ class TestAlias:
         pdf.cell(0, 10, f"Page {pdf.page_no()}/{alias}", align="C")
         pdf.add_page()
         pdf.cell(0, 10, f"Page {pdf.page_no()}/{alias}", align="C")
-        assert_pdf_equal(pdf, "alias_nb_pages.pdf")
+        assert_pdf_equal(pdf, "alias_nb_pages.pdf", tmp_path)

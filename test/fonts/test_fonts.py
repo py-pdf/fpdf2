@@ -24,7 +24,7 @@ class TestFonts:
             == "Undefined font: dummy - Use built-in fonts or FPDF.add_font() beforehand"
         )
 
-    def test_set_builtin_font(self):
+    def test_set_builtin_font(self, tmp_path):
         pdf = FPDF()
         pdf.add_page()
         builtin_fonts = sorted(
@@ -42,9 +42,9 @@ class TestFonts:
                 pdf.set_font(font_name.capitalize(), style, 36)
                 pdf.set_font(font_name.lower(), style, 36)
                 pdf.text(0, 10 + 40 * i + 10 * j, "Hello World!")
-        assert_pdf_equal(pdf, "fonts_set_builtin_font.pdf")
+        assert_pdf_equal(pdf, "fonts_set_builtin_font.pdf", tmp_path)
 
-    def test_issue_66(self):
+    def test_issue_66(self, tmp_path):
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Times", "B", 14)
@@ -53,4 +53,4 @@ class TestFonts:
         pdf.cell(50, 0, "DEF")
         # Setting the font to an already used one used to remove the text!
         pdf.set_font("Times", "B", 14)
-        assert_pdf_equal(pdf, "fonts_issue_66.pdf")
+        assert_pdf_equal(pdf, "fonts_issue_66.pdf", tmp_path)

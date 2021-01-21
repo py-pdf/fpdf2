@@ -3,7 +3,7 @@ from test.utilities import assert_pdf_equal
 
 
 class TestCell:
-    def test_ln_positioning_and_page_breaking_for_cell(self):
+    def test_ln_positioning_and_page_breaking_for_cell(self, tmp_path):
         doc = fpdf.FPDF(format="letter", unit="pt")
         doc.add_page()
 
@@ -40,7 +40,9 @@ class TestCell:
                 txt=text[i * 100 : i * 100 + 99],
             )
 
-        assert_pdf_equal(doc, "cell_ln_positioning_and_page_breaking_for_cell.pdf")
+        assert_pdf_equal(
+            doc, "cell_ln_positioning_and_page_breaking_for_cell.pdf", tmp_path
+        )
 
 
 ## Code used to create this test
