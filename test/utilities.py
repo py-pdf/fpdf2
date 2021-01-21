@@ -1,14 +1,12 @@
+import datetime as dt
 import hashlib
 import inspect
 import os
+import subprocess
 import shutil
 import sys
 import warnings
-from binascii import hexlify
-from contextlib import contextmanager
-from datetime import datetime
-from subprocess import check_call, check_output
-from tempfile import NamedTemporaryFile
+from pathlib import Path
 
 from fpdf.template import Template
 
@@ -19,9 +17,7 @@ if not QPDF_AVAILABLE:
     )
 
 
-def assert_pdf_equal(
-    pdf_or_tmpl, rel_expected_pdf_filepath, delete=True, generate=False
-):
+def assert_pdf_equal(pdf_or_tmpl, rel_expected_pdf_filepath, tmp_path, generate=False):
     """
     This compare the output of a `FPDF` instance (or `Template` instance),
     with the provided PDF file.
@@ -35,7 +31,6 @@ def assert_pdf_equal(
         test (unittest.TestCase)
         pdf_or_tmpl: instance of `FPDF` or `Template`. The `output` or `render` method will be called on it.
         rel_expected_pdf_filepath (str): relative file path to a PDF file matching the expected output
-        delete (bool): clean up temporary PDF files after performing test
         generate (bool): only generate `pdf` output to `rel_expected_pdf_filepath` and return. Useful to create new tests.
     """
     if isinstance(pdf_or_tmpl, Template):
@@ -43,47 +38,24 @@ def assert_pdf_equal(
         pdf = pdf_or_tmpl.pdf
     else:
         pdf = pdf_or_tmpl
-    set_doc_date_0(pdf)
-    expected_pdf_filepath = relative_path_to(rel_expected_pdf_filepath, depth=2)
+    pdf.set_creation_date(dt.datetime.fromtimestamp(0, dt.timezone.utc))
+    expected_pdf_path = Path(relative_path_to(rel_expected_pdf_filepath, depth=2))
     if generate:
-        pdf.output(expected_pdf_filepath)
+        pdf.output(expected_pdf_path.open("wb"))
         return
-    with tmp_file(
-        prefix="pyfpdf-test-", delete=delete, suffix="-actual.pdf"
-    ) as actual_pdf_file:
-        pdf.output(actual_pdf_file.name)
-        if not delete:
-            print("Temporary file will not be deleted:", actual_pdf_file.name)
-        if QPDF_AVAILABLE:  # Favor qpdf-based comparison, as it helps a lot debugging:
-            with tmp_file(
-                prefix="pyfpdf-test-", delete=delete, suffix="-actual-qpdf.pdf"
-            ) as actual_qpdf_file, tmp_file(
-                prefix="pyfpdf-test-", delete=delete, suffix="-expected-qpdf.pdf"
-            ) as expected_qpdf_file:
-                _qpdf(actual_pdf_file.name, actual_qpdf_file.name)
-                _qpdf(expected_pdf_filepath, expected_qpdf_file.name)
-                if not delete:
-                    print(
-                        "Temporary files will not be deleted:",
-                        actual_qpdf_file.name,
-                        expected_qpdf_file.name,
-                    )
-                expected_lines = expected_qpdf_file.read().splitlines()
-                actual_lines = actual_qpdf_file.read().splitlines()
-                if actual_lines == expected_lines:
-                    assert actual_lines == expected_lines
-                    return
-                # It is very important to reduce the size of both list of bytes here,
-                # or the call to .assertEqual will take forever to finish.
-                # Under the hood it calls .assertSequenceEqual, that itself calls difflib.ndiff,
-                # that has cubic complexity from this comment by Tim Peters: https://bugs.python.org/issue6931#msg223459
-                expected_lines = subst_streams_with_hashes(expected_lines)
-                actual_lines = subst_streams_with_hashes(actual_lines)
-                assert actual_lines == expected_lines
-        else:  # Fallback to hash comparison
-            actual_hash = calculate_hash_of_file(actual_pdf_file.name)
-            expected_hash = calculate_hash_of_file(expected_pdf_filepath)
-            assert actual_hash == expected_hash
+    actual_pdf_path = tmp_path / f"actual.pdf"
+    pdf.output(actual_pdf_path.open("wb"))
+    if QPDF_AVAILABLE:  # Favor qpdf-based comparison, as it helps a lot debugging:
+        actual_lines = _qpdf(actual_pdf_path.read_bytes()).splitlines()
+        expected_lines = _qpdf(expected_pdf_path.read_bytes()).splitlines()
+        if actual_lines != expected_lines:
+            expected_lines = subst_streams_with_hashes(expected_lines)
+            actual_lines = subst_streams_with_hashes(actual_lines)
+        assert actual_lines == expected_lines
+    else:  # Fallback to hash comparison
+        actual_hash = hashlib.md5(actual_pdf_path.read_bytes()).hexdigest()
+        expected_hash = hashlib.md5(expected_pdf_path.read_bytes()).hexdigest()
+        assert actual_hash == expected_hash
 
 
 def subst_streams_with_hashes(in_lines):
@@ -117,62 +89,24 @@ def subst_streams_with_hashes(in_lines):
         else:
             stream += line
         if line.endswith(b"endstream") and stream:
-            stream_hash = hashlib.md5(stream).digest()
-            out_lines.append(b"<stream with MD5 hash: " + hexlify(stream_hash) + b">\n")
+            stream_hash = hashlib.md5(stream).hexdigest()
+            out_lines.append(f"<stream with MD5 hash: {stream_hash}>\n".encode())
             stream = None
     return out_lines
 
 
-@contextmanager
-def tmp_file(*args, delete=True, **kwargs):
-    # Always passing delete=False to NamedTemporaryFile in order to avoid permission errors on Windows:
-    with NamedTemporaryFile(*args, delete=False, **kwargs) as ntf:
-        try:
-            yield ntf
-        finally:
-            if delete:
-                ntf.close()
-                os.remove(ntf.name)
-
-
-def _qpdf(input_pdf_filepath, output_pdf_filepath):
-    if sys.platform == "cygwin":
-        # Lucas (2020/01/06) : this conversion of UNIX file paths to Windows ones is only needed
-        # for my development environment: Cygwin, a UNIX system, with a qpdf Windows binary. Sorry for the kludge!
-        input_pdf_filepath = (
-            check_output(["cygpath", "-w", input_pdf_filepath]).decode().strip()
-        )
-        output_pdf_filepath = (
-            check_output(["cygpath", "-w", output_pdf_filepath]).decode().strip()
-        )
-    check_call(
-        [
-            "qpdf",
-            "--deterministic-id",
-            "--qdf",
-            input_pdf_filepath,
-            output_pdf_filepath,
-        ],
-        stderr=sys.stderr,
-        stdout=sys.stdout,
+def _qpdf(pdf_data):
+    """
+    Processes the input pdf_data and returns the output.
+    No files are written on disk.
+    """
+    proc = subprocess.Popen(
+        ["qpdf", "--deterministic-id", "--qdf", "-", "-"],
+        stdout=subprocess.PIPE,
+        stdin=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
-
-
-def set_doc_date_0(doc):
-    """
-    Sets the document date to unix epoch start.
-    Useful so that the generated PDFs CreationDate is always identical.
-    """
-    # 1969-12-31 19:00:00
-    time_tuple = (1969, 12, 31, 19, 00, 00)
-    doc.set_creation_date(datetime(*time_tuple))
-
-
-def calculate_hash_of_file(full_path):
-    """Finds md5 hash of a file given an abs path, reading in whole file."""
-    with open(full_path, "rb") as file:
-        data = file.read()
-    return hashlib.md5(data).hexdigest()
+    return proc.communicate(input=pdf_data)[0]
 
 
 def relative_path_to(place, depth=1):
