@@ -1,15 +1,10 @@
-"""issue65_test.py"""
-
-import sys
-import os
-
-sys.path.insert(
-    0,
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.join("..", "..")),
-)
+from pathlib import Path
 
 import fpdf
 from test.utilities import assert_pdf_equal
+
+
+HERE = Path(__file__).resolve().parent
 
 
 def next_row(pdf):
@@ -32,7 +27,7 @@ class TestEllipse:
             if counter % 3 == 0:
                 next_row(pdf)
 
-        assert_pdf_equal(pdf, "class_ellipse_not_circle.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "class_ellipse_not_circle.pdf", tmp_path)
 
     def test_ellipse_style(self, tmp_path):
         pdf = fpdf.FPDF(unit="mm")
@@ -44,7 +39,7 @@ class TestEllipse:
             if counter % 3 == 0:
                 next_row(pdf)
 
-        assert_pdf_equal(pdf, "class_ellipse_style.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "class_ellipse_style.pdf", tmp_path)
 
     def test_ellipse_line_width(self, tmp_path):
         pdf = fpdf.FPDF(unit="mm")
@@ -61,7 +56,7 @@ class TestEllipse:
             pdf.set_x(pdf.get_x() + size + margin)
         pdf.set_line_width(0.2)  # reset
 
-        assert_pdf_equal(pdf, "class_ellipse_line_width.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "class_ellipse_line_width.pdf", tmp_path)
 
     def test_ellipse_draw_color(self, tmp_path):
         pdf = fpdf.FPDF(unit="mm")
@@ -73,7 +68,7 @@ class TestEllipse:
             pdf.ellipse(x=pdf.get_x(), y=pdf.get_y(), w=size, h=size, style=None)
             pdf.set_x(pdf.get_x() + size + margin)
 
-        assert_pdf_equal(pdf, "class_ellipse_draw_color.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "class_ellipse_draw_color.pdf", tmp_path)
 
     def test_ellipse_fill_color(self, tmp_path):
         pdf = fpdf.FPDF(unit="mm")
@@ -86,7 +81,7 @@ class TestEllipse:
             pdf.set_x(pdf.get_x() + size + margin)
         next_row(pdf)
 
-        assert_pdf_equal(pdf, "class_ellipse_fill_color.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "class_ellipse_fill_color.pdf", tmp_path)
 
 
 class TestRectangle:
@@ -100,7 +95,7 @@ class TestRectangle:
             if counter % 3 == 0:
                 next_row(pdf)
 
-        assert_pdf_equal(pdf, "class_rect_not_square.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "class_rect_not_square.pdf", tmp_path)
 
     def test_rect_style(self, tmp_path):
         pdf = fpdf.FPDF(unit="mm")
@@ -112,7 +107,7 @@ class TestRectangle:
             if counter % 3 == 0:
                 next_row(pdf)
 
-        assert_pdf_equal(pdf, "class_rect_style.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "class_rect_style.pdf", tmp_path)
 
     def test_rect_line_width(self, tmp_path):
         pdf = fpdf.FPDF(unit="mm")
@@ -129,7 +124,7 @@ class TestRectangle:
             pdf.set_x(pdf.get_x() + size + margin)
         pdf.set_line_width(0.2)  # reset
 
-        assert_pdf_equal(pdf, "class_rect_line_width.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "class_rect_line_width.pdf", tmp_path)
 
     def test_rect_draw_color(self, tmp_path):
         pdf = fpdf.FPDF(unit="mm")
@@ -142,7 +137,7 @@ class TestRectangle:
             pdf.rect(x=pdf.get_x(), y=pdf.get_y(), w=size, h=size, style=None)
             pdf.set_x(pdf.get_x() + size + margin)
 
-        assert_pdf_equal(pdf, "class_rect_draw_color.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "class_rect_draw_color.pdf", tmp_path)
 
     def test_rect_fill_color(self, tmp_path):
         pdf = fpdf.FPDF(unit="mm")
@@ -156,7 +151,7 @@ class TestRectangle:
 
         next_row(pdf)
 
-        assert_pdf_equal(pdf, "class_rect_fill_color.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "class_rect_fill_color.pdf", tmp_path)
 
 
 class TestLine:
@@ -179,7 +174,7 @@ class TestLine:
             pdf.set_x(pdf.get_x() + size + margin)
         next_row(pdf)
 
-        assert_pdf_equal(pdf, "class_line.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "class_line.pdf", tmp_path)
 
     def test_dash(self, tmp_path):
         pdf = fpdf.FPDF(unit="mm")
@@ -218,4 +213,4 @@ class TestLine:
         x, y = pdf.get_x(), pdf.get_y()
         pdf.dashed_line(x, y, x + 100, y + 80, 6, 17)
 
-        assert_pdf_equal(pdf, "class_dash.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "class_dash.pdf", tmp_path)

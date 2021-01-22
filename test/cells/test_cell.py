@@ -1,8 +1,13 @@
+from pathlib import Path
+
 import fpdf
 from test.utilities import assert_pdf_equal
 
 TEXT_SIZE, SPACING = 36, 1.15
 LINE_HEIGHT = TEXT_SIZE * SPACING
+
+
+HERE = Path(__file__).resolve().parent
 
 
 class TestCell:
@@ -42,7 +47,9 @@ class TestCell:
                 txt=text[i * 100 : i * 100 + 99],
             )
 
-        assert_pdf_equal(doc, "ln_positioning_and_page_breaking_for_cell.pdf", tmp_path)
+        assert_pdf_equal(
+            doc, HERE / "ln_positioning_and_page_breaking_for_cell.pdf", tmp_path
+        )
 
     def test_cell_ln_0(self, tmp_path):
         doc = fpdf.FPDF()
@@ -52,7 +59,7 @@ class TestCell:
         doc.cell(w=45, h=LINE_HEIGHT, border=1, txt="ipsum")
         doc.cell(w=45, h=LINE_HEIGHT, border=1, txt="Ut")
         doc.cell(w=45, h=LINE_HEIGHT, border=1, txt="nostrud")
-        assert_pdf_equal(doc, "ln_0.pdf", tmp_path)
+        assert_pdf_equal(doc, HERE / "ln_0.pdf", tmp_path)
 
     def test_cell_ln_1(self, tmp_path):
         """
@@ -63,7 +70,7 @@ class TestCell:
         doc.set_font("helvetica", size=TEXT_SIZE)
         doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Lorem ipsum", ln=1)
         doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Ut nostrud irure")
-        assert_pdf_equal(doc, "ln_1.pdf", tmp_path)
+        assert_pdf_equal(doc, HERE / "ln_1.pdf", tmp_path)
 
         doc = fpdf.FPDF()
         doc.add_page()
@@ -71,7 +78,7 @@ class TestCell:
         doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Lorem ipsum")
         doc.ln()
         doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Ut nostrud irure")
-        assert_pdf_equal(doc, "ln_1.pdf", tmp_path)
+        assert_pdf_equal(doc, HERE / "ln_1.pdf", tmp_path)
 
 
 ## Code used to create this test

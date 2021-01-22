@@ -1,13 +1,15 @@
 """load_resource.py"""
 
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
 import fpdf
 from fpdf.errors import FPDFException
 
-from test.utilities import relative_path_to
+
+HERE = Path(__file__).resolve().parent
 
 
 class TestLoadResource:
@@ -24,11 +26,9 @@ class TestLoadResource:
         assert msg == str(e.value)
 
     def test_load_text_file(self):
-        file = relative_path_to("__init__.py")
+        file = HERE / "__init__.py"
         contents = '"""This package contains image tests"""\n'
-        bc = contents.encode("utf-8")
+        bc = contents.encode()
 
-        resource = fpdf.image_parsing.load_resource(file).getvalue()
+        resource = fpdf.image_parsing.load_resource(str(file)).getvalue()
         assert bytes(resource) == bc
-        # print(bytes(resource))
-        # print(bc)

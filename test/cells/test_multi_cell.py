@@ -1,8 +1,13 @@
+from pathlib import Path
+
 import fpdf
 from test.utilities import assert_pdf_equal
 
 TEXT_SIZE, SPACING = 36, 1.15
 LINE_HEIGHT = TEXT_SIZE * SPACING
+
+
+HERE = Path(__file__).resolve().parent
 
 
 class TestMultiCell:
@@ -46,7 +51,7 @@ class TestMultiCell:
         doc.cell(w=72 * 2, h=LINE_HEIGHT, border=1, ln=2, txt="Lorem ipsum")
 
         assert_pdf_equal(
-            doc, "ln_positioning_and_page_breaking_for_multicell.pdf", tmp_path
+            doc, HERE / "ln_positioning_and_page_breaking_for_multicell.pdf", tmp_path
         )
 
     def test_multi_cell_ln_0(self, tmp_path):
@@ -57,7 +62,7 @@ class TestMultiCell:
         doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="ipsum")
         doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="Ut")
         doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="nostrud")
-        assert_pdf_equal(doc, "multi_cell_ln_0.pdf", tmp_path)
+        assert_pdf_equal(doc, HERE / "multi_cell_ln_0.pdf", tmp_path)
 
     def test_multi_cell_ln_1(self, tmp_path):
         doc = fpdf.FPDF()
@@ -65,7 +70,7 @@ class TestMultiCell:
         doc.set_font("helvetica", size=TEXT_SIZE)
         doc.multi_cell(w=100, h=LINE_HEIGHT, border=1, txt="Lorem ipsum", ln=1)
         doc.multi_cell(w=100, h=LINE_HEIGHT, border=1, txt="Ut nostrud irure")
-        assert_pdf_equal(doc, "multi_cell_ln_1.pdf", tmp_path)
+        assert_pdf_equal(doc, HERE / "multi_cell_ln_1.pdf", tmp_path)
 
     def test_multi_cell_ln_3(self, tmp_path):
         doc = fpdf.FPDF()
@@ -75,7 +80,7 @@ class TestMultiCell:
         doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="ipsum")
         doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="Ut")
         doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="nostrud")
-        assert_pdf_equal(doc, "multi_cell_ln_3.pdf", tmp_path)
+        assert_pdf_equal(doc, HERE / "multi_cell_ln_3.pdf", tmp_path)
 
     def test_multi_cell_ln_3_table(self, tmp_path):
         """
@@ -108,7 +113,7 @@ class TestMultiCell:
                     max_line_height=pdf.font_size,
                 )
             pdf.ln(line_height)
-        assert_pdf_equal(pdf, "multi_cell_ln_3_table.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "multi_cell_ln_3_table.pdf", tmp_path)
 
 
 ## Code used to create test

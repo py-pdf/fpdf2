@@ -1,5 +1,9 @@
+from pathlib import Path
+
 import fpdf
 from test.utilities import assert_pdf_equal
+
+HERE = Path(__file__).resolve().parent
 
 
 def document_operations(doc):
@@ -19,7 +23,7 @@ class TestCatalogDisplayMode:
         doc.set_author("sample author")
         doc.set_keywords("sample keywords")
         doc.set_creator("sample creator")
-        assert_pdf_equal(doc, "put_info_all.pdf", tmp_path)
+        assert_pdf_equal(doc, HERE / "put_info_all.pdf", tmp_path)
 
     def test_put_info_some(self, tmp_path):
         doc = fpdf.FPDF()
@@ -29,4 +33,4 @@ class TestCatalogDisplayMode:
         # doc.set_author('sample author')
         doc.set_keywords("sample keywords")
         doc.set_creator("sample creator")
-        assert_pdf_equal(doc, "put_info_some.pdf", tmp_path)
+        assert_pdf_equal(doc, HERE / "put_info_some.pdf", tmp_path)

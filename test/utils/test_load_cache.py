@@ -1,15 +1,6 @@
-# """load_cache.py"""
-
-import os
 import pickle
 
 import fpdf
-
-
-# with open('filename.pickle', 'rb') as handle:
-#     b = pickle.load(handle)
-
-# print a == b
 
 
 class TestLoadCache:
@@ -17,12 +8,11 @@ class TestLoadCache:
         result = fpdf.fpdf.load_cache(None)
         assert result is None
 
-    def test_load_cache_pickle(self):
+    def test_load_cache_pickle(self, tmp_path):
+        path = tmp_path / "filename.pickle"
         a = {"hello": "world"}
-        with open("filename.pickle", "wb") as handle:
+        with path.open("wb") as handle:
             pickle.dump(a, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        assert fpdf.fpdf.load_cache("filename.pickle") == a
-        assert fpdf.fpdf.load_cache("filename1.pickle") is None
-
-        os.unlink("filename.pickle")
+        assert fpdf.fpdf.load_cache(path) == a
+        assert fpdf.fpdf.load_cache(path.with_name("filename1.pickle")) is None

@@ -9,14 +9,15 @@ the range of the C 'short' data type (2 bytes, 0 - 65535):
   fpdf/ttfonts.py:671: UserWarning: cmap value too big/small:
 and this seems to be okay.
 """
-import os
-from glob import glob
+from pathlib import Path
 
 import pytest
 
 import fpdf
 from fpdf.ttfonts import TTFontFile
-from test.utilities import assert_pdf_equal, relative_path_to
+from test.utilities import assert_pdf_equal
+
+HERE = Path(__file__).resolve().parent
 
 
 class MyTTFontFile(TTFontFile):
@@ -44,8 +45,8 @@ class TestCharmap:
         ["DejaVuSans.ttf", "DroidSansFallback.ttf", "Roboto-Regular.ttf", "cmss12.ttf"],
     )
     def test_first_999_chars(self, fontpath, tmp_path):
-        fontname = os.path.splitext(fontpath)[0]
-        fontpath = relative_path_to(fontpath)
+        fontpath = HERE / fontpath
+        fontname = fontpath.stem
 
         pdf = fpdf.FPDF()
         pdf.add_page()
@@ -62,8 +63,9 @@ class TestCharmap:
             if counter >= 999:
                 break
 
-        assert_pdf_equal(pdf, f"charmap_first_999_chars-{fontname}.pdf", tmp_path)
+        assert_pdf_equal(
+            pdf, HERE / f"charmap_first_999_chars-{fontname}.pdf", tmp_path
+        )
 
-    def tearDown(self):
-        for pkl_filepath in glob(relative_path_to("*") + "*.pkl"):
-            os.remove(pkl_filepath)
+        for pkl_path in HERE.glob("*.pkl"):
+            pkl_path.unlink()

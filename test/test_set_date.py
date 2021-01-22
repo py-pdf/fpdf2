@@ -1,10 +1,14 @@
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
 import fpdf
 from fpdf.errors import FPDFException
 from test.utilities import assert_pdf_equal
+
+
+HERE = Path(__file__).resolve().parent
 
 
 class TestCreationDate:
@@ -20,4 +24,4 @@ class TestCreationDate:
         # 2017, April 18th, almost 7:09a
         date = datetime(2017, 4, 18, 7, 8, 55)
         doc.set_creation_date(date)
-        assert_pdf_equal(doc, "setting_old_date.pdf", tmp_path)
+        assert_pdf_equal(doc, HERE / "setting_old_date.pdf", tmp_path)

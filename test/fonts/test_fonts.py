@@ -1,8 +1,12 @@
+from pathlib import Path
+
 import pytest
 
 from fpdf import FPDF
 from fpdf.errors import FPDFException
 from test.utilities import assert_pdf_equal
+
+HERE = Path(__file__).resolve().parent
 
 
 class TestFonts:
@@ -42,7 +46,7 @@ class TestFonts:
                 pdf.set_font(font_name.capitalize(), style, 36)
                 pdf.set_font(font_name.lower(), style, 36)
                 pdf.text(0, 10 + 40 * i + 10 * j, "Hello World!")
-        assert_pdf_equal(pdf, "fonts_set_builtin_font.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "fonts_set_builtin_font.pdf", tmp_path)
 
     def test_issue_66(self, tmp_path):
         pdf = FPDF()
@@ -53,4 +57,4 @@ class TestFonts:
         pdf.cell(50, 0, "DEF")
         # Setting the font to an already used one used to remove the text!
         pdf.set_font("Times", "B", 14)
-        assert_pdf_equal(pdf, "fonts_issue_66.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "fonts_issue_66.pdf", tmp_path)

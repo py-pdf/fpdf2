@@ -1,12 +1,8 @@
 import datetime as dt
 import hashlib
-import inspect
-import os
 import subprocess
 import shutil
-import sys
 import warnings
-from pathlib import Path
 
 from fpdf.template import Template
 
@@ -17,7 +13,7 @@ if not QPDF_AVAILABLE:
     )
 
 
-def assert_pdf_equal(pdf_or_tmpl, rel_expected_pdf_filepath, tmp_path, generate=False):
+def assert_pdf_equal(pdf_or_tmpl, expected_pdf_path, tmp_path, generate=False):
     """
     This compare the output of a `FPDF` instance (or `Template` instance),
     with the provided PDF file.
@@ -29,7 +25,7 @@ def assert_pdf_equal(pdf_or_tmpl, rel_expected_pdf_filepath, tmp_path, generate=
 
     Args:
         pdf_or_tmpl: instance of `FPDF` or `Template`. The `output` or `render` method will be called on it.
-        rel_expected_pdf_filepath (str): relative file path to a PDF file matching the expected output
+        expected_pdf_path (str): file path to a PDF file matching the expected output
         tmp_path (Path): temporary directory provided by pytest individually to the caller test function
         generate (bool): only generate `pdf` output to `rel_expected_pdf_filepath` and return. Useful to create new tests.
     """
@@ -39,11 +35,10 @@ def assert_pdf_equal(pdf_or_tmpl, rel_expected_pdf_filepath, tmp_path, generate=
     else:
         pdf = pdf_or_tmpl
     pdf.set_creation_date(dt.datetime.fromtimestamp(0, dt.timezone.utc))
-    expected_pdf_path = Path(relative_path_to(rel_expected_pdf_filepath, depth=2))
     if generate:
         pdf.output(expected_pdf_path.open("wb"))
         return
-    actual_pdf_path = tmp_path / f"actual.pdf"
+    actual_pdf_path = tmp_path / "actual.pdf"
     pdf.output(actual_pdf_path.open("wb"))
     if QPDF_AVAILABLE:  # Favor qpdf-based comparison, as it helps a lot debugging:
         actual_lines = _qpdf(actual_pdf_path.read_bytes()).splitlines()
@@ -107,14 +102,3 @@ def _qpdf(pdf_data):
         stderr=subprocess.PIPE,
     )
     return proc.communicate(input=pdf_data)[0]
-
-
-def relative_path_to(place, depth=1):
-    """Finds Relative Path to a place
-
-    Works by getting the file of the caller module, then joining the directory
-    of that absolute path and the place in the argument.
-    """
-    # pylint: disable=protected-access
-    caller_file = inspect.getfile(sys._getframe(depth))
-    return os.path.abspath(os.path.join(os.path.dirname(caller_file), place))
