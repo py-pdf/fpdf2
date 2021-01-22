@@ -107,10 +107,17 @@ When a unit test generates a PDF, it is recommended to use the `assert_pdf_equal
 utility function in order to validate the output.
 It relies on the very handy [qpdf](https://github.com/qpdf/qpdf) CLI program
 to generate a PDF that is easy to compare: annotated, strictly formatted,
-whith uncompressed internal streams.
+with uncompressed internal streams.
 You will need to have its binary in your `$PATH`,
 otherwise `assert_pdf_equal` will fall back to hash-based comparison.
-In order to generate a "reference" PDF file, simply call `assert_pdf_equal` once with `generate=True`.
+
+All generated PDF files (including those processed by `qpdf`) will be stored in
+`/tmp/pytest-of-USERNAME/pytest-current/NAME_OF_TEST/`. By default, three
+last test runs will be saved and then automatically deleted, so you can
+check the output in case of a failed test.
+
+In order to generate a "reference" PDF file, simply call `assert_pdf_equal`
+once with `generate=True`.
 
 Be sure to see the example tests in the `test/` folder in general.
 

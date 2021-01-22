@@ -46,8 +46,12 @@ def assert_pdf_equal(pdf_or_tmpl, rel_expected_pdf_filepath, tmp_path, generate=
     actual_pdf_path = tmp_path / f"actual.pdf"
     pdf.output(actual_pdf_path.open("wb"))
     if QPDF_AVAILABLE:  # Favor qpdf-based comparison, as it helps a lot debugging:
-        actual_lines = _qpdf(actual_pdf_path.read_bytes()).splitlines()
-        expected_lines = _qpdf(expected_pdf_path.read_bytes()).splitlines()
+        actual_qpdf = _qpdf(actual_pdf_path.read_bytes())
+        expected_qpdf = _qpdf(expected_pdf_path.read_bytes())
+        (tmp_path / "actual_qpdf.pdf").write_bytes(actual_qpdf)
+        (tmp_path / "expected_qpdf.pdf").write_bytes(expected_qpdf)
+        actual_lines = actual_qpdf.splitlines()
+        expected_lines = expected_qpdf.splitlines()
         if actual_lines != expected_lines:
             expected_lines = subst_streams_with_hashes(expected_lines)
             actual_lines = subst_streams_with_hashes(actual_lines)
