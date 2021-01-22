@@ -27,6 +27,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from functools import wraps
 from hashlib import md5
+from pathlib import Path
 from uuid import uuid4
 
 from .errors import FPDFException, FPDFPageFormatException
@@ -47,10 +48,11 @@ from .util.syntax import (
 )
 
 LOGGER = logging.getLogger(__name__)
+HERE = Path(__file__).resolve().parent
 
 # Global variables
 FPDF_VERSION = "2.2.0"
-FPDF_FONT_DIR = os.path.join(os.path.dirname(__file__), "font")
+FPDF_FONT_DIR = HERE / "font"
 FPDF_CACHE_MODE = 0  # 0 - in same folder, 1 - none, 2 - hash
 FPDF_CACHE_DIR = None
 SYSTEM_TTFONTS = None
@@ -106,9 +108,10 @@ def load_cache(filename):
     """Return unpickled object, or None if cache unavailable"""
     if not filename:
         return None
+    if isinstance(filename, str):
+        filename = Path(filename)
     try:
-        with open(filename, "rb") as fh:
-            return pickle.load(fh)
+        return pickle.loads(filename.read_bytes())
     # File missing, unsupported pickle, etc
     except (OSError, ValueError):
         return None
@@ -544,20 +547,16 @@ class FPDF:
         if fontkey in self.fonts:
             return
         if uni:
-            if os.path.exists(fname):
-                ttffilename = fname
-            elif FPDF_FONT_DIR and os.path.exists(os.path.join(FPDF_FONT_DIR, fname)):
-                ttffilename = os.path.join(FPDF_FONT_DIR, fname)
-            elif SYSTEM_TTFONTS and os.path.exists(os.path.join(SYSTEM_TTFONTS, fname)):
-                ttffilename = os.path.join(SYSTEM_TTFONTS, fname)
+            for parent in (".", FPDF_FONT_DIR, SYSTEM_TTFONTS):
+                if (Path(parent) / fname).exists():
+                    ttffilename = Path(parent) / fname
+                    break
             else:
                 raise RuntimeError(f"TTF Font file not found: {fname}")
             if FPDF_CACHE_MODE == 0:
-                unifilename = f"{os.path.splitext(ttffilename)[0]}.pkl"
+                unifilename = Path() / f"{ttffilename.stem}.pkl"
             elif FPDF_CACHE_MODE == 2:
-                unifilename = os.path.join(
-                    FPDF_CACHE_DIR, f"{_hashpath(ttffilename)}.pkl"
-                )
+                unifilename = FPDF_CACHE_DIR / f"{_hashpath(ttffilename)}.pkl"
             else:
                 unifilename = None
 
@@ -594,8 +593,7 @@ class FPDF:
 
                 if unifilename:
                     try:
-                        with open(unifilename, "wb") as fh:
-                            pickle.dump(font_dict, fh)
+                        unifilename.write_bytes(pickle.dumps(font_dict))
                     except OSError as e:
                         if e.errno != errno.EACCES:
                             raise  # Not a permission error.
@@ -624,8 +622,7 @@ class FPDF:
             }
             self.font_files[fname] = {"type": "TTF"}
         else:
-            with open(fname, "rb") as fontfile:
-                font_dict = pickle.load(fontfile)
+            font_dict = pickle.loads(fname.read_bytes())
             self.fonts[fontkey] = {"i": len(self.fonts) + 1}
             self.fonts[fontkey].update(font_dict)
             diff = font_dict.get("diff")
@@ -1430,9 +1427,10 @@ class FPDF:
         if self.state < 3:
             self.close()
         if name:
-            if isinstance(name, str):
-                with open(name, "wb") as file:
-                    file.write(self.buffer)
+            if isinstance(name, os.PathLike):
+                name.write_bytes(self.buffer)
+            elif isinstance(name, str):
+                Path(name).write_bytes(self.buffer)
             else:
                 name.write(self.buffer)
             return None
@@ -1564,8 +1562,7 @@ class FPDF:
                 # Font file embedding
                 self._newobj()
                 self.font_files[name]["n"] = self.n
-                with open(os.path.join(FPDF_FONT_DIR, name), "rb", 1) as f:
-                    font = f.read()
+                font = (FPDF_FONT_DIR / name).read_bytes()
                 compressed = substr(name, -2) == ".z"
                 if not compressed and "length2" in info:
                     header = ord(font[0]) == 128
@@ -1793,8 +1790,7 @@ class FPDF:
 
     def _putTTfontwidths(self, font, maxUni):
         if font["unifilename"]:
-            ops = os.path.splitext
-            cw127fname = f"{ops(font['unifilename'])[0]}.cw127.pkl"
+            cw127fname = Path(font["unifilename"]).with_suffix(".cw127.pkl")
         else:
             cw127fname = None
         font_dict = load_cache(cw127fname)
@@ -1819,17 +1815,17 @@ class FPDF:
         # for each character
         subset = set(font["subset"])
         for cid in range(startcid, cwlen):
-            if cid == 128 and cw127fname and not os.path.exists(cw127fname):
+            if cid == 128 and cw127fname and not cw127fname.exists():
                 try:
-                    with open(cw127fname, "wb") as fh:
-                        font_dict = {
-                            "rangeid": rangeid,
-                            "prevcid": prevcid,
-                            "prevwidth": prevwidth,
-                            "interval": interval,
-                            "range_interval": range_interval,
-                            "range": range_,
-                        }
+                    font_dict = {
+                        "rangeid": rangeid,
+                        "prevcid": prevcid,
+                        "prevwidth": prevwidth,
+                        "interval": interval,
+                        "range_interval": range_interval,
+                        "range": range_,
+                    }
+                    with cw127fname.open("wb") as fh:
                         pickle.dump(font_dict, fh)
                 except OSError as e:
                     if e.errno != errno.EACCES:

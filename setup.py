@@ -1,24 +1,20 @@
 #!/usr/bin/env python
 
 import re
+from pathlib import Path
+
 from setuptools import find_packages, setup
-
-
-def read(path):
-    """Read a file's contents."""
-    with open(path) as f:
-        return f.read()
 
 
 if __name__ == "__main__":
     version = re.findall(
-        r'FPDF_VERSION = "(\d+.\d+.\d+[^"]*)"', read("./fpdf/fpdf.py")
+        r'FPDF_VERSION = "(\d+.\d+.\d+[^"]*)"', Path("fpdf/fpdf.py").read_text()
     )[0]
     setup(
         name="fpdf2",
         version=version,
         description="Simple PDF generation for Python",
-        long_description=read("./README.md"),
+        long_description=Path("README.md").read_text(),
         long_description_content_type="text/markdown",
         author="Olivier PLATHEY ported by Max",
         author_email="maxpat78@yahoo.it",
