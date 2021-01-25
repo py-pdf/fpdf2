@@ -1,8 +1,8 @@
 """PDF Syntax Helpers
 
 Functions in this module take variable input and produce PDF Syntax features
-as they are described in the Adobe PDF Reference Manual, found
-[here](http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf).
+as they are described in the Adobe PDF Reference Manual, found here:
+http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf
 
 Most of what happens in a PDF happens in objects, which are formatted like so:
 <pre>

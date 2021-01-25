@@ -32,7 +32,8 @@ class HTML2FPDF(HTMLParser):
         """
         Args:
             pdf (FPDF): an instance of `fpdf.FPDF`
-            image_map (function): an optional one-argument function that map <img> "src" to new image URLs
+            image_map (function): an optional one-argument function that map <img> "src"
+                to new image URLs
             table_line_separators (bool): enable horizontal line separators in <table>
         """
         super().__init__()

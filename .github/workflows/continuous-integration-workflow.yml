@@ -28,7 +28,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install . -r test/requirements.txt -r docs/requirements.txt
       - name: Statically checking code 🔎
-        run: pylint fpdf
+        run: pylint fpdf test
       - name: Ensure code has been autoformatted with black 🖌️
         run: black --check .
       - name: Running tests ☑

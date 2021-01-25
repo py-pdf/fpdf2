@@ -781,7 +781,8 @@ class FPDF:
           Use `rotation` instead.
         """
         warnings.warn(
-            "rotate() can produces malformed PDFs and is deprecated. Use the rotation() context manager instead.",
+            "rotate() can produces malformed PDFs and is deprecated. "
+            "Use the rotation() context manager instead.",
             PendingDeprecationWarning,
         )
         if x is None:
@@ -816,8 +817,8 @@ class FPDF:
         Notes
         -----
 
-        Only the rendering is altered. The `get_x()` and `get_y()` methods are not affected,
-        nor the automatic page break mechanism.
+        Only the rendering is altered. The `get_x()` and `get_y()` methods are not
+        affected, nor the automatic page break mechanism.
         """
         if x is None:
             x = self.x
@@ -850,12 +851,13 @@ class FPDF:
             txt (str): String to print. Default value: empty string.
             border: Indicates if borders must be drawn around the cell.
                 The value can be either a number (`0`: no border ; `1`: frame)
-                or a string containing some or all of the following characters (in any order):
+                or a string containing some or all of the following characters
+                (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
             ln (int): Indicates where the current position should go after the call.
-                Possible values are: `0`: to the right ; `1`: to the beginning of the next line ;
-                `2`: below. Putting 1 is equivalent to putting 0 and calling `ln` just after.
-                Default value: 0.
+                Possible values are: `0`: to the right ; `1`: to the beginning of the
+                next line ; `2`: below. Putting 1 is equivalent to putting 0 and calling
+                `ln` just after. Default value: 0.
             align (str): Allows to center or align the text. Possible values are:
                 `L` or empty string: left align (default value) ; `C`: center ;
                 `R`: right align
@@ -869,7 +871,8 @@ class FPDF:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
-                'Integer values for "border" parameter other than 1 are currently ignored'
+                'Integer values for "border" parameter other than 1 are currently '
+                "ignored"
             )
             border = 1
         page_break_triggered = False
@@ -1026,7 +1029,8 @@ class FPDF:
         max_line_height=None,
     ):
         """
-        Output text with line breaks, cf. https://pyfpdf.github.io/fpdf2/reference/multi_cell.html
+        Output text with line breaks, cf.
+        https://pyfpdf.github.io/fpdf2/reference/multi_cell.html
 
         Args:
             w (int): cells width. If 0, they extend up to the right margin of the page.
@@ -1034,23 +1038,25 @@ class FPDF:
             txt (str): strign to print.
             border: Indicates if borders must be drawn around the cell.
                 The value can be either a number (`0`: no border ; `1`: frame)
-                or a string containing some or all of the following characters (in any order):
+                or a string containing some or all of the following characters
+                (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
             align (str): Allows to center or align the text. Possible values are:
                 `L` or empty string: left align (default value) ; `C`: center ;
                 `R`: right align
             fill (bool): Indicates if the cell background must be painted (`True`)
                 or transparent (`False`). Default value: False.
-            split_only (bool): if `True`, does not output anything, only perform word-wrapping
-                and return the resulting multi-lines array of strings.
+            split_only (bool): if `True`, does not output anything, only perform
+                word-wrapping and return the resulting multi-lines array of strings.
             link (str): optional link to add
             ln (int): Indicates where the current position should go after the call.
-                Possible values are: `0`: to the bottom right ; `1`: to the beginning of the next line ;
-                `2`: below with the same horizontal offset ; `3`: to the right with the same vertical offset.
-                Default value: 0.
+                Possible values are: `0`: to the bottom right ; `1`: to the beginning
+                of the next line ; `2`: below with the same horizontal offset ;
+                `3`: to the right with the same vertical offset. Default value: 0.
             max_line_height (int): optional maximum height of each sub-cell generated
 
-        Using `ln=3` and `maximum height=pdf.font_size` is useful to build tables with multiline text in cells.
+        Using `ln=3` and `maximum height=pdf.font_size` is useful to build tables
+        with multiline text in cells.
 
         Returns: a boolean indicating if page break was triggered.
         """
@@ -1330,7 +1336,8 @@ class FPDF:
         Put an image on the page
 
         Args:
-            name: either a string representing a file path to an image, or a instance of `PIL.Image.Image`
+            name: either a string representing a file path to an image, or a instance of
+            `PIL.Image.Image`
             x (int): optional horizontal position where to put the image on the page
             y (int): optional vertical position where to put the image on the page
             w (int): optional width of the image
@@ -1395,7 +1402,8 @@ class FPDF:
     def ln(self, h=None):
         """
         Line Feed.
-        The current abscissa goes back to the left margin and the ordinate increases by the amount passed as parameter.
+        The current abscissa goes back to the left margin and the ordinate increases by
+        the amount passed as parameter.
 
         Args:
             h (int): The height of the break.

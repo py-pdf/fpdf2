@@ -1,6 +1,5 @@
 [MESSAGES CONTROL]
-disable = attribute-defined-outside-init, blacklisted-name, fixme, invalid-name, method-hidden, missing-docstring, multiple-imports, too-few-public-methods, too-many-arguments, too-many-instance-attributes, too-many-nested-blocks, too-many-branches, too-many-lines, too-many-locals, too-many-public-methods, too-many-statements, wrong-import-order, wrong-import-position
-max-line-length = 180
+disable = attribute-defined-outside-init, blacklisted-name, fixme, invalid-name, method-hidden, missing-docstring, too-few-public-methods, too-many-arguments, too-many-instance-attributes, too-many-nested-blocks, too-many-branches, too-many-lines, too-many-locals, too-many-public-methods, too-many-statements, wrong-import-order
 
 [SIMILARITIES]
 # Restricting duplicate-code check:

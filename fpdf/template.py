@@ -155,8 +155,8 @@ class Template:
     def render(self, outfile=None, dest=None):
         """
         Args:
-            outfile (str): optional output PDF file path.
-                If ommited, the `.pdf.output(...)` method can be manuallyy called afterwise.
+            outfile (str): optional output PDF file path. If ommited, the
+                `.pdf.output(...)` method can be manuallyy called afterwise.
             dest (str): [**DEPRECATED**] unused, will be removed in a later version
         """
         if dest:
@@ -294,7 +294,8 @@ class Template:
         if font == "interleaved 2of5 nt":
             pdf.interleaved2of5(text, x1, y1, w=size, h=y2 - y1)
 
-    # Added by Derek Schwalenberg Schwalenberg1013@gmail.com to allow (url) links in templates (using write method) 2014-02-22
+    # Added by Derek Schwalenberg Schwalenberg1013@gmail.com to allow (url) links in
+    # templates (using write method) 2014-02-22
     @staticmethod
     def write(
         pdf,

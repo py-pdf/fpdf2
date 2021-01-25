@@ -27,7 +27,6 @@ class MyTTFontFile(TTFontFile):
     even a little bit better documented, so that it would be clearer what this
     test is testing, otherwise this test isn't clearly testing one class or the
     other.
-
     """
 
     def getCMAP4(self, unicode_cmap_offset, glyphToChar, charToGlyph):
@@ -39,33 +38,30 @@ class MyTTFontFile(TTFontFile):
         self.saveChar = charToGlyph
 
 
-class TestCharmap:
-    @pytest.mark.parametrize(
-        "fontpath",
-        ["DejaVuSans.ttf", "DroidSansFallback.ttf", "Roboto-Regular.ttf", "cmss12.ttf"],
-    )
-    def test_first_999_chars(self, fontpath, tmp_path):
-        fontpath = HERE / fontpath
-        fontname = fontpath.stem
+@pytest.mark.parametrize(
+    "fontpath",
+    ["DejaVuSans.ttf", "DroidSansFallback.ttf", "Roboto-Regular.ttf", "cmss12.ttf"],
+)
+def test_first_999_chars(fontpath, tmp_path):
+    fontpath = HERE / fontpath
+    fontname = fontpath.stem
 
-        pdf = fpdf.FPDF()
-        pdf.add_page()
-        pdf.add_font(fontname, fname=fontpath, uni=True)
-        pdf.set_font(fontname, size=10)
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.add_font(fontname, fname=fontpath, uni=True)
+    pdf.set_font(fontname, size=10)
 
-        ttf = MyTTFontFile()
-        ttf.getMetrics(fontpath)
+    ttf = MyTTFontFile()
+    ttf.getMetrics(fontpath)
 
-        # Create a PDF with the first 999 charters defined in the font:
-        for counter, character in enumerate(ttf.saveChar, 0):
-            pdf.write(8, f"{counter:03}) {character:03x} - {character:c}")
-            pdf.ln()
-            if counter >= 999:
-                break
+    # Create a PDF with the first 999 charters defined in the font:
+    for counter, character in enumerate(ttf.saveChar, 0):
+        pdf.write(8, f"{counter:03}) {character:03x} - {character:c}")
+        pdf.ln()
+        if counter >= 999:
+            break
 
-        assert_pdf_equal(
-            pdf, HERE / f"charmap_first_999_chars-{fontname}.pdf", tmp_path
-        )
+    assert_pdf_equal(pdf, HERE / f"charmap_first_999_chars-{fontname}.pdf", tmp_path)
 
-        for pkl_path in HERE.glob("*.pkl"):
-            pkl_path.unlink()
+    for pkl_path in HERE.glob("*.pkl"):
+        pkl_path.unlink()

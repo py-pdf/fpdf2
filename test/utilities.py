@@ -9,7 +9,8 @@ from fpdf.template import Template
 QPDF_AVAILABLE = bool(shutil.which("qpdf"))
 if not QPDF_AVAILABLE:
     warnings.warn(
-        "qpdf command not available on the $PATH, falling back to hash-based comparisons in tests"
+        "qpdf command not available on the $PATH, falling back to hash-based "
+        "comparisons in tests"
     )
 
 
@@ -18,16 +19,21 @@ def assert_pdf_equal(pdf_or_tmpl, expected_pdf_path, tmp_path, generate=False):
     This compare the output of a `FPDF` instance (or `Template` instance),
     with the provided PDF file.
 
-    The `CreationDate` of the newly generated PDF is fixed, so that it never triggers a diff.
+    The `CreationDate` of the newly generated PDF is fixed, so that it never triggers
+    a diff.
 
-    If the `qpdf` command is available on the `$PATH`, it will be used to perform the comparison,
-    as it greatly helps debugging diffs. Otherwise, a hash-based comparison logic is used as a fallback.
+    If the `qpdf` command is available on the `$PATH`, it will be used to perform the
+    comparison, as it greatly helps debugging diffs. Otherwise, a hash-based comparison
+    logic is used as a fallback.
 
     Args:
-        pdf_or_tmpl: instance of `FPDF` or `Template`. The `output` or `render` method will be called on it.
+        pdf_or_tmpl: instance of `FPDF` or `Template`. The `output` or `render` method
+        will be called on it.
         expected_pdf_path (str): file path to a PDF file matching the expected output
-        tmp_path (Path): temporary directory provided by pytest individually to the caller test function
-        generate (bool): only generate `pdf` output to `rel_expected_pdf_filepath` and return. Useful to create new tests.
+        tmp_path (Path): temporary directory provided by pytest individually to the
+        caller test function
+        generate (bool): only generate `pdf` output to `rel_expected_pdf_filepath` and
+        return. Useful to create new tests.
     """
     if isinstance(pdf_or_tmpl, Template):
         pdf_or_tmpl.render()
