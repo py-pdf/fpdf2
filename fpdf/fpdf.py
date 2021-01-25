@@ -148,6 +148,7 @@ class FPDF:
         self.links = {}  # array of internal links
         self.in_footer = 0  # flag set when processing footer
         self.lasth = 0  # height of last cell printed
+        self.current_font = {}  # current font
         self.font_family = ""  # current font family
         self.font_style = ""  # current font style
         self.font_size_pt = 12  # current font size in points
@@ -181,7 +182,12 @@ class FPDF:
             "zapfdingbats": "ZapfDingbats",
         }
         self.core_fonts_encoding = "latin-1"
-
+        # Replace these fonts with these core fonts
+        self.font_aliases = {
+            "arial": "helvetica",
+            "couriernew": "courier",
+            "timesnewroman": "times",
+        }
         # Scale factor
         if unit == "pt":
             self.k = 1
@@ -193,6 +199,8 @@ class FPDF:
             self.k = 72.0
         else:
             raise FPDFException(f"Incorrect unit: {unit}")
+
+        self.font_size = self.font_size_pt / self.k  # current font size
 
         # Page format
         self.dw_pt, self.dh_pt = get_page_format(format, self.k)
@@ -534,17 +542,17 @@ class FPDF:
             )
         )
 
-    def add_font(self, family, style="", fname=None, uni=False):
+    def add_font(self, family, style="", fname=None, uni=True):
         """Add a TrueType or Type1 font"""
         if not fname:
             fname = family.replace(" ", "") + f"{style.lower()}.pkl"
         style = style.upper()
         if style == "IB":
             style = "BI"
-        fontkey = f"{family}{style}"
+        fontkey = f"{family.lower()}{style}"
 
-        # Font already added!
-        if fontkey in self.fonts:
+        # Check if font already added or one of the core fonts
+        if fontkey in self.fonts or fontkey in self.core_fonts:
             return
         if uni:
             for parent in (".", FPDF_FONT_DIR, SYSTEM_TTFONTS):
@@ -597,7 +605,6 @@ class FPDF:
                     except OSError as e:
                         if e.errno != errno.EACCES:
                             raise  # Not a permission error.
-                del ttf
 
             # include numbers in the subset! (if alias present)
             sbarr = list(range(57 if self.str_alias_nb_pages else 32))
@@ -649,18 +656,15 @@ class FPDF:
                     }
 
     def set_font(self, family=None, style="", size=0):
-        """Select a font; size given in points"""
+        """Set a font; style "B", "I", "U" or a combination of "BIU";
+        size given in points"""
         if not family:
             family = self.font_family
-        if family.lower() == "arial" and (family + style) not in self.fonts:
-            warnings.warn("Substitutting Arial by core font Helvetica")
-            family = "helvetica"
-        elif family.lower() in ("symbol", "zapfdingbats") and style:
-            warnings.warn(
-                'Built-in fonts Symbol & Zapfdingbats only have a single "style"'
-            )
-            style = ""
+
+        # Normalize input
+        family = family.lower()
         style = style.upper()
+
         if "U" in style:
             self.underline = 1
             style = style.replace("U", "")
@@ -668,6 +672,20 @@ class FPDF:
             self.underline = 0
         if style == "IB":
             style = "BI"
+
+        if family in self.font_aliases and family + style not in self.fonts:
+            warnings.warn(
+                f"Substitutting font {family} by core font "
+                f"{self.font_aliases[family]}"
+            )
+            family = self.font_aliases[family]
+        elif family in ("symbol", "zapfdingbats") and style:
+            warnings.warn(
+                f"Built-in font {family} only has a single 'style' and can't be bold "
+                f"or italic"
+            )
+            style = ""
+
         if size == 0:
             size = self.font_size_pt
 
@@ -682,28 +700,20 @@ class FPDF:
         # Test if used for the first time
         fontkey = family + style
         if fontkey not in self.fonts:
-            # Being flexible: try a fontkey with lowercase family:
-            fontkey_alt = family.lower() + style
-            if fontkey_alt in self.fonts:
-                fontkey = fontkey_alt
-            else:
-                if fontkey not in self.core_fonts or fontkey not in fpdf_charwidths:
-                    fontkey = fontkey_alt
-                    if fontkey not in self.core_fonts or fontkey not in fpdf_charwidths:
-                        raise FPDFException(
-                            "Undefined font: "
-                            + fontkey
-                            + " - Use built-in fonts or FPDF.add_font() beforehand"
-                        )
-                i = len(self.fonts) + 1
-                self.fonts[fontkey] = {
-                    "i": i,
-                    "type": "core",
-                    "name": self.core_fonts[fontkey],
-                    "up": -100,
-                    "ut": 50,
-                    "cw": fpdf_charwidths[fontkey],
-                }
+            if fontkey not in self.core_fonts:
+                raise FPDFException(
+                    f"Undefined font: {fontkey} - "
+                    f"Use built-in fonts or FPDF.add_font() beforehand"
+                )
+            # If it's one of the core fonts, add it to self.fonts
+            self.fonts[fontkey] = {
+                "i": len(self.fonts) + 1,
+                "type": "core",
+                "name": self.core_fonts[fontkey],
+                "up": -100,
+                "ut": 50,
+                "cw": fpdf_charwidths[fontkey],
+            }
 
         # Select it
         self.font_family = family
