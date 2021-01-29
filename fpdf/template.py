@@ -117,21 +117,19 @@ class Template:
                 # text for this page:
                 return self.texts[self.pg_no][key]
             # find first element for default text:
-            elements = [
-                element for element in self.elements if element["name"].lower() == key
-            ]
-            if elements:
-                return elements[0]["text"]
+            return next(
+                (x["text"] for x in self.elements if x["name"].lower() == key), None
+            )
         return None
 
     def split_multicell(self, text, element_name):
         """Divide (\n) a string using a given element width"""
         pdf = self.pdf
-        element = [
+        element = next(
             element
             for element in self.elements
             if element["name"].lower() == element_name.lower()
-        ][0]
+        )
         style = ""
         if element["bold"]:
             style += "B"
