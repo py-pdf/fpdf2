@@ -43,7 +43,7 @@ def test_set_builtin_font(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     builtin_fonts = sorted(
-        f for f in pdf.core_fonts if not any(f.endswith(s) for s in ("B", "I", "BI"))
+        f for f in pdf.core_fonts if not f.endswith(("B", "I", "BI"))
     )
     for i, font_name in enumerate(builtin_fonts):
         styles = (

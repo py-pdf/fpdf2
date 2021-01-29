@@ -14,7 +14,7 @@ def load_resource(filename, reason="image"):
         return filename
     # by default loading from network is allowed for all images
     if reason == "image":
-        if filename.startswith("http://") or filename.startswith("https://"):
+        if filename.startswith(("http://", "https://")):
             f = BytesIO(urlopen(filename).read())
         else:
             with open(filename, "rb") as fl:
