@@ -165,7 +165,7 @@ def test_html_features(tmp_path):
             '      <td colspan="2">Alice</td>'
             "    </tr>"
         )
-        + "".join([getrow(i) for i in range(26)])
+        + "".join(getrow(i) for i in range(26))
         + "  </tbody>"
         + "</table>"
     )

@@ -1607,10 +1607,7 @@ class FPDF:
         self.offsets[1] = len(self.buffer)
         self._out("1 0 obj")
         self._out("<</Type /Pages")
-        kids = "/Kids ["
-        for i in range(nb):
-            kids += f"{3 + 2 * i} 0 R "
-        self._out(kids + "]")
+        self._out("/Kids [" + " ".join(f"{3 + 2 * i} 0 R" for i in range(nb)) + "]")
         self._out(f"/Count {nb}")
         self._out(f"/MediaBox [0 0 {dw_pt:.2f} {dh_pt:.2f}]")
         self._out(">>")
@@ -1695,12 +1692,9 @@ class FPDF:
                 # Widths
                 self._newobj()
                 cw = font["cw"]
-                s = "["
-                for i in range(32, 256):
-                    # Get doesn't raise exception;
-                    # returns 0 instead of None if not set
-                    s += f"{cw.get(chr(i), 0)} "
-                self._out(f"{s}]")
+                self._out(
+                    "[" + " ".join(cw.get(chr(i), 0) for i in range(32, 256)) + "]"
+                )
                 self._out("endobj")
 
                 # Descriptor

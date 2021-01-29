@@ -71,7 +71,7 @@ remains something to be looked into.
 def create_name(name):
     if name.startswith("/"):
         name = name[1:]
-    return "".join(["/", name[0].upper(), name[1:]])
+    return f"/{name[0].upper()}{name[1:]}"
 
 
 def clear_empty_fields(d):
@@ -101,7 +101,7 @@ def create_dictionary_string(
     return "".join(
         [
             open_dict,
-            field_join.join([key_value_join.join(f) for f in dict_.items()]),
+            field_join.join(key_value_join.join(f) for f in dict_.items()),
             close_dict,
         ]
     )
