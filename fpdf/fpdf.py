@@ -26,7 +26,6 @@ from contextlib import contextmanager
 from datetime import datetime
 from enum import IntEnum
 from functools import wraps
-from hashlib import md5
 from pathlib import Path
 from uuid import uuid4
 
@@ -54,8 +53,6 @@ HERE = Path(__file__).resolve().parent
 # Global variables
 FPDF_VERSION = "2.3.0"
 FPDF_FONT_DIR = HERE / "font"
-FPDF_CACHE_MODE = 0  # 0 - in same folder, 1 - none, 2 - hash
-FPDF_CACHE_DIR = None
 SYSTEM_TTFONTS = None
 
 PAGE_FORMATS = {
@@ -138,7 +135,20 @@ def check_page(fn):
 class FPDF:
     """PDF Generation class"""
 
-    def __init__(self, orientation="P", unit="mm", format="A4"):
+    def __init__(
+        self, orientation="portrait", unit="mm", format="A4", font_cache_dir=True
+    ):
+        """
+        Args:
+            orientation (str): "portrait" ("P") or "landscape" ("L").
+                Default to "portrait".
+            unit (str): "pt", "mm", "cm" or "in". Default to "mm".
+            format (str): "a3", "a4", "a5", "letter" or "legal".
+                Default to "a4".
+            font_cache_dir (Path or str): directory where pickle files
+                for TTF font files are kept.
+                The default is `True`, meaning the current folder.
+        """
         # Initialization of properties
         self.offsets = {}  # array of object offsets
         self.page = 0  # current page number
@@ -166,6 +176,7 @@ class FPDF:
         self.text_color = "0 g"
         self.ws = 0  # word spacing
         self.angle = 0  # used by deprecated method: rotate()
+        self.font_cache_dir = font_cache_dir
 
         # Standard fonts
         self.core_fonts = {
@@ -664,12 +675,11 @@ class FPDF:
                     break
             else:
                 raise FileNotFoundError(f"TTF Font file not found: {fname}")
-            if FPDF_CACHE_MODE == 0:
-                unifilename = Path() / f"{ttffilename.stem}.pkl"
-            elif FPDF_CACHE_MODE == 2:
-                unifilename = FPDF_CACHE_DIR / f"{_hashpath(ttffilename)}.pkl"
-            else:
-                unifilename = None
+
+            cache_dir = (
+                Path() if self.font_cache_dir is True else Path(self.font_cache_dir)
+            )
+            unifilename = cache_dir / f"{ttffilename.stem}.pkl"
 
             # include numbers in the subset! (if alias present)
             sbarr = list(range(57 if self.str_alias_nb_pages else 32))
@@ -2512,12 +2522,6 @@ class FPDF:
             recorder.rewind()
             assert recorder.perform_page_break_if_need_be(y_scroll)
             recorder.replay()
-
-
-def _hashpath(fn):
-    h = md5()
-    h.update(fn.encode("UTF-8"))
-    return h.hexdigest()
 
 
 def _sizeof_fmt(num, suffix="B"):

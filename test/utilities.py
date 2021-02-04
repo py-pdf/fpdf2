@@ -74,7 +74,7 @@ def assert_pdf_equal(actual, expected, tmp_path, generate=False):
     else:  # Fallback to hash comparison
         actual_hash = hashlib.md5(actual_pdf_path.read_bytes()).hexdigest()
         expected_hash = hashlib.md5(expected_pdf_path.read_bytes()).hexdigest()
-        assert actual_hash == expected_hash
+        assert actual_hash == expected_hash, f"{actual_hash} != {expected_hash}"
 
 
 def subst_streams_with_hashes(in_lines):

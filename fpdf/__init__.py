@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 from .fpdf import (
     FPDF,
-    FPDF_CACHE_DIR as _FPDF_CACHE_DIR,
-    FPDF_CACHE_MODE as _FPDF_CACHE_MODE,
     FPDF_FONT_DIR as _FPDF_FONT_DIR,
     FPDF_VERSION as _FPDF_VERSION,
     SYSTEM_TTFONTS as _SYSTEM_TTFONTS,
@@ -18,13 +16,6 @@ FPDF_VERSION = _FPDF_VERSION
 >>> fpdf.__version__
 '2.2.0'
 </pre>
-"""
-
-FPDF_CACHE_MODE = _FPDF_CACHE_MODE
-
-FPDF_CACHE_DIR = _FPDF_CACHE_DIR
-"""This is the directory where pickle files for TTF font files are kept
-containing meta-data and stuffs.
 """
 
 FPDF_FONT_DIR = _FPDF_FONT_DIR
@@ -49,8 +40,6 @@ __all__ = [
     "HTMLMixin",
     # FPDF Constants
     "FPDF_VERSION",
-    "FPDF_CACHE_MODE",
-    "FPDF_CACHE_DIR",
     "FPDF_FONT_DIR",
     "SYSTEM_TTFONTS",
 ]
