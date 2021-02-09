@@ -26,6 +26,31 @@ def test_add_font_non_existing_file_unicode():
     assert str(error.value) == expected_msg
 
 
+def test_deprecation_warning_for_FPDF_CACHE_DIR():
+    # pylint: disable=import-outside-toplevel,pointless-statement,reimported
+    from fpdf import fpdf
+
+    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+        fpdf.FPDF_CACHE_DIR
+    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+        fpdf.FPDF_CACHE_DIR = "/tmp"
+    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+        fpdf.FPDF_CACHE_MODE
+    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+        fpdf.FPDF_CACHE_MODE = 1
+
+    import fpdf
+
+    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+        fpdf.FPDF_CACHE_DIR
+    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+        fpdf.FPDF_CACHE_DIR = "/tmp"
+    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+        fpdf.FPDF_CACHE_MODE
+    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+        fpdf.FPDF_CACHE_MODE = 1
+
+
 def test_add_font_unicode_with_path_fname_ok(tmp_path):
     for font_cache_dir in (True, tmp_path):
         pdf = FPDF(font_cache_dir=font_cache_dir)

@@ -20,6 +20,7 @@ import math
 import os
 import pickle
 import re
+import sys
 import warnings
 import zlib
 from contextlib import contextmanager
@@ -39,6 +40,7 @@ from .util import (
     escape_parens,
     substr,
 )
+from .util.deprecation import WarnOnDeprecatedModuleAttributes
 from .util.syntax import (
     create_dictionary_string as pdf_d,
     create_list_string as pdf_l,
@@ -2531,6 +2533,9 @@ def _sizeof_fmt(num, suffix="B"):
             return f"{num:3.1f}{unit}{suffix}"
         num /= 1024
     return f"{num:.1f}Yi{suffix}"
+
+
+sys.modules[__name__].__class__ = WarnOnDeprecatedModuleAttributes
 
 
 __all__ = ["FPDF", "load_cache", "get_page_format", "PAGE_FORMATS"]
