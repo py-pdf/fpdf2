@@ -32,7 +32,8 @@ class HTML2FPDF(HTMLParser):
         """
         Args:
             pdf (FPDF): an instance of `fpdf.FPDF`
-            image_map (function): an optional one-argument function that map <img> "src" to new image URLs
+            image_map (function): an optional one-argument function that map <img> "src"
+                to new image URLs
             table_line_separators (bool): enable horizontal line separators in <table>
         """
         super().__init__()
@@ -47,7 +48,6 @@ class HTML2FPDF(HTMLParser):
         self.indent = 0
         self.bullet = []
         self.font_size = pdf.font_size_pt
-        self.font_face = "times"  # initialize font face
         self.set_font("times", self.font_size)
         self.font_color = 0, 0, 0  # initialize font color, r,g,b format
         self.table = None  # table attributes
@@ -80,7 +80,8 @@ class HTML2FPDF(HTMLParser):
                     l = [self.table_col_width[self.table_col_index]]
                 except IndexError:
                     raise ValueError(
-                        "Table column/cell width not specified, unable to continue"
+                        f"Width not specified for table column {self.table_col_index},"
+                        " unable to continue"
                     )
             elif "colspan" in self.td:
                 i = self.table_col_index
@@ -117,14 +118,22 @@ class HTML2FPDF(HTMLParser):
                 self.box_shadow(w, h, bgcolor)
                 if DEBUG:
                     print("td cell", self.pdf.x, w, data, "*")
-                self.pdf.cell(w, h, data, border, 0, align)
+                self.pdf.cell(w, h, data, border=border, ln=0, align=align)
         elif self.table is not None:
             # ignore anything else than td inside a table
             pass
         elif self.align:
             if DEBUG:
                 print("cell", data, "*")
-            self.pdf.cell(0, self.h, data, 0, 1, self.align[0].upper(), self.href)
+            self.pdf.cell(
+                0,
+                self.h,
+                data,
+                border=0,
+                ln=1,
+                align=self.align[0].upper(),
+                link=self.href,
+            )
         else:
             data = data.replace("\n", " ")
             if self.href:

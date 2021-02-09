@@ -120,7 +120,7 @@ browser, or downloaded as PDF.
 Also, using web2py DAL, you can easily set up a templating engine for PDF 
 documents.
 
-Look at [Web2Py] (Web2Py.md) for examples. `# TODO fix link`
+Look at [Web2Py](Web2Py.html) for examples.
 
 ## What is the development status of this library? ##
 

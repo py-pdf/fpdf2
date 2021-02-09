@@ -2,3 +2,5 @@ black
 pylint
 pytest
 pytest-cov
+pytest-icdiff
+pytest-timeout

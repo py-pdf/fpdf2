@@ -7,6 +7,10 @@ coverage.xml
 htmlcov
 public
 tutorial/invoice.pdf
+PDF_Checker/
+verapdf/
+pdfchecker-aggregated.json
+verapdf-aggregated.json
 
 *.py[cod]
 *.pkl

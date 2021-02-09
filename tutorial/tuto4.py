@@ -35,20 +35,19 @@ class PDF(FPDF):
         self.set_left_margin(x)
         self.set_x(x)
 
+    @property
     def accept_page_break(self):
-        # Method accepting or not automatic page break
         if self.col < 2:
-            # Go to next column
+            # Go to next column:
             self.set_col(self.col + 1)
-            # Set ordinate to top
+            # Set ordinate to top:
             self.set_y(self.y0)
-            # Keep on page
-            return 0
-
-        # Go back to first column
+            # Stay on the same page:
+            return False
+        # Go back to first column:
         self.set_col(0)
-        # Page break
-        return 1
+        # Trigger a page break:
+        return True
 
     def chapter_title(self, num, label):
         # Title

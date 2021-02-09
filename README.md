@@ -64,26 +64,27 @@ Features:
  * Only **one** dependency so far: [Pillow](https://pillow.readthedocs.io/en/stable/)
  * Unit tests with `qpdf`-based PDF diffing
 
-Release notes: [CHANGELOG.md](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)
+We validate all our PDF samples using 3 different checkers:
+
+[![QPDF logo](docs/qpdf-logo.svg)](https://github.com/qpdf/qpdf)
+[![PDF Checker logo](docs/pdfchecker-logo.png)](https://www.datalogics.com/products/pdf-tools/pdf-checker/)
+[![VeraPDF logo](docs/vera-logo.jpg)](https://verapdf.org)
 
 Documentation:
 --------------
 
 - [Documentation Home](https://pyfpdf.github.io/fpdf2/)
 - [Tutorial](https://pyfpdf.github.io/fpdf2/Tutorial.html) (Spanish translation available)
-- [Reference Manual](https://pyfpdf.github.io/fpdf2/ReferenceManual.html)
+- Release notes: [CHANGELOG.md](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)
 
 You can also have a look at the `tests/`, they're great usage examples!
 
 Developers:
 -----------
 
-Please check [the docs page dedicated to development](https://pyfpdf.github.io/fpdf2/Development.html).
+Please check [the documentation page dedicated to development](https://pyfpdf.github.io/fpdf2/Development.html).
 
 This library was only possible thanks to the dedication of the following people: [CONTRIBUTORS.md](CONTRIBUTORS.md).
-
-Lets try to improve the Code Coverage statistic so that we can safely
-transition to external font and image libraries, and more...
 
 Other libraries
 ---------------

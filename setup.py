@@ -21,8 +21,13 @@ if __name__ == "__main__":
         maintainer="David Ankin",
         maintainer_email="daveankin@gmail.com",
         url="https://pyfpdf.github.io/fpdf2/",
-        license="LGPLv3+",
         download_url=f"https://github.com/PyFPDF/fpdf2/tarball/{version}",
+        project_urls={
+            "Documentation": "https://pyfpdf.github.io/fpdf2/",
+            "Code": "https://github.com/PyFPDF/fpdf2",
+            "Issue tracker": "https://github.com/PyFPDF/fpdf2/issues",
+        },
+        license="LGPLv3+",
         packages=find_packages(),
         package_dir={"fpdf": "fpdf"},
         install_requires=[

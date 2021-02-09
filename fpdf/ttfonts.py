@@ -69,7 +69,9 @@ def calcChecksum(data):
 
 class TTFontFile:
     def __init__(self):
-        self.maxStrLenRead = 200000  # Maximum size of glyf table to read in as string (otherwise reads each glyph from file)
+        # Maximum size of glyph table to read in as string
+        # (otherwise reads each glyph from file)
+        self.maxStrLenRead = 200000
 
     def getMetrics(self, file):
         self.filename = file
@@ -277,7 +279,8 @@ class TTFontFile:
             raise RuntimeError(f"Unknown glyph data format {glyphDataFormat}")
 
         # hhea metrics table
-        # ttf2t1 seems to use this value rather than the one in OS/2 - so put in for compatibility
+        # ttf2t1 seems to use this value rather than the one in OS/2 - so put in for
+        # compatibility
         if "hhea" in self.tables:
             self.seek_table("hhea")
             self.skip(4)
@@ -396,9 +399,9 @@ class TTFontFile:
 
         if not unicode_cmap_offset and not unicode_cmap_offset12:
             raise RuntimeError(
-                "Font ("
-                + self.filename
-                + ") does not have cmap for Unicode (platform 3, encoding 1, format 4, or platform 3, encoding 10, format 12, or platform 0, any encoding, format 4)"
+                f"Font ({self.filename}) does not have cmap for Unicode (platform 3, "
+                f"encoding 1, format 4, or platform 3, encoding 10, format 12, or "
+                f"platform 0, any encoding, format 4)"
             )
 
         glyphToChar = {}
@@ -473,9 +476,9 @@ class TTFontFile:
 
             if not unicode_cmap_offset and not unicode_cmap_offset12:
                 raise RuntimeError(
-                    "Font ("
-                    + self.filename
-                    + ") does not have cmap for Unicode (platform 3, encoding 1, format 4, or platform 3, encoding 10, format 12, or platform 0, any encoding, format 4)"
+                    f"Font ({self.filename}) does not have cmap for Unicode "
+                    f"(platform 3, encoding 1, format 4, or platform 3, encoding 10, "
+                    f"format 12, or platform 0, any encoding, format 4)"
                 )
 
             glyphToChar = {}
@@ -511,7 +514,9 @@ class TTFontFile:
             subsetglyphs.sort()
             glyphSet = {}
             n = 0
-            fsLastCharIndex = 0  # maximum Unicode index (character code) in this font, according to the cmap subtable for platform ID 3 and platform- specific encoding ID 0 or 1.
+            # maximum Unicode index (character code) in this font, according to the cmap
+            # subtable for platform ID 3 and platform- specific encoding ID 0 or 1.
+            fsLastCharIndex = 0
             for originalGlyphIdx, uni in subsetglyphs:
                 fsLastCharIndex = max(fsLastCharIndex, uni)
                 glyphSet[originalGlyphIdx] = n  # old glyphID to new glyphID
@@ -624,7 +629,7 @@ class TTFontFile:
             for subrange in range_:
                 cmap.append(
                     0
-                )  # idRangeOffset[segCount]      Offset in bytes to glyph indexArray, or 0
+                )  # idRangeOffset[segCount]   Offset in bytes to glyph indexArray, or 0
 
             cmap.append(0)  # idRangeOffset of last Segment
             for subrange, glidx in range_:
@@ -639,7 +644,8 @@ class TTFontFile:
                     try:
                         cmapstr += pack(">h", cm)
                     except StructError:
-                        # cmap value too big to fit in a short (h), putting it in an unsigned short (H):
+                        # cmap value too big to fit in a short (h),
+                        # putting it in an unsigned short (H):
                         cmapstr += pack(">H", -cm)
             self.add("cmap", cmapstr)
 
@@ -835,7 +841,8 @@ class TTFontFile:
             if glyph in glyphToChar or glyph == 0:
                 if aw >= (1 << 15):
                     aw = 0  # 1.03 Some (arabic) fonts have -ve values for width
-                    # although should be unsigned value - comes out as e.g. 65108 (intended -50)
+                    # although should be unsigned value
+                    # - comes out as e.g. 65108 (intended -50)
                 if glyph == 0:
                     self.defaultWidth = scale * aw
                     continue

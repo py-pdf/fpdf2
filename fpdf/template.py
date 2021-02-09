@@ -7,6 +7,7 @@ __license__ = "LGPL 3.0"
 import csv
 import warnings
 
+from .errors import FPDFException
 from .fpdf import FPDF
 
 
@@ -100,9 +101,12 @@ class Template:
         self.texts[self.pg_no] = {}
 
     def __setitem__(self, name, value):
-        if name.lower() in self.keys:
-            value = "" if value is None else str(value)
-            self.texts[self.pg_no][name.lower()] = value
+        if name.lower() not in self.keys:
+            raise FPDFException(f"Element not loaded, cannot set item: {name}")
+        if not self.pg_no:
+            raise FPDFException("No page open, you need to call add_page() first")
+        value = "" if value is None else str(value)
+        self.texts[self.pg_no][name.lower()] = value
 
     # setitem shortcut (may be further extended)
     set = __setitem__
@@ -111,27 +115,27 @@ class Template:
         return name.lower() in self.keys
 
     def __getitem__(self, name):
-        if name in self.keys:
-            key = name.lower()
-            if key in self.texts:
-                # text for this page:
-                return self.texts[self.pg_no][key]
-            # find first element for default text:
-            elements = [
-                element for element in self.elements if element["name"].lower() == key
-            ]
-            if elements:
-                return elements[0]["text"]
-        return None
+        if not self.pg_no:
+            raise FPDFException("No page open, you need to call add_page() first")
+        if name not in self.keys:
+            return None
+        key = name.lower()
+        if key in self.texts[self.pg_no]:
+            # text for this page:
+            return self.texts[self.pg_no][key]
+        # find first element for default text:
+        return next(
+            (x["text"] for x in self.elements if x["name"].lower() == key), None
+        )
 
     def split_multicell(self, text, element_name):
         """Divide (\n) a string using a given element width"""
         pdf = self.pdf
-        element = [
+        element = next(
             element
             for element in self.elements
             if element["name"].lower() == element_name.lower()
-        ][0]
+        )
         style = ""
         if element["bold"]:
             style += "B"
@@ -155,8 +159,8 @@ class Template:
     def render(self, outfile=None, dest=None):
         """
         Args:
-            outfile (str): optional output PDF file path.
-                If ommited, the `.pdf.output(...)` method can be manuallyy called afterwise.
+            outfile (str): optional output PDF file path. If ommited, the
+                `.pdf.output(...)` method can be manuallyy called afterwise.
             dest (str): [**DEPRECATED**] unused, will be removed in a later version
         """
         if dest:
@@ -294,7 +298,8 @@ class Template:
         if font == "interleaved 2of5 nt":
             pdf.interleaved2of5(text, x1, y1, w=size, h=y2 - y1)
 
-    # Added by Derek Schwalenberg Schwalenberg1013@gmail.com to allow (url) links in templates (using write method) 2014-02-22
+    # Added by Derek Schwalenberg Schwalenberg1013@gmail.com to allow (url) links in
+    # templates (using write method) 2014-02-22
     @staticmethod
     def write(
         pdf,

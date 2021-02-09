@@ -32,8 +32,8 @@ More on `PyFPDF`:
 ## Usage ##
 
 - [PyPI download stats](https://pypistats.org/packages/fpdf2)
-- packages using `fpdf2` can be listed using [Watchman Pypi](http://www.watchman-pypi.com).
-Some are also listed on [its libraries.io page](https://libraries.io/pypi/fpdf2).
+- packages using `fpdf2` can be listed using [GitHub Dependency graph: Dependents](https://github.com/PyFPDF/fpdf2/network/dependents)
+or [Watchman Pypi](http://www.watchman-pypi.com). Some are also listed on [its libraries.io page](https://libraries.io/pypi/fpdf2).
 
 
 ## Repository structure ##
@@ -44,11 +44,15 @@ Some are also listed on [its libraries.io page](https://libraries.io/pypi/fpdf2)
   * `[scripts]` - manipulate this repository
   * `[test]` - tests
   * `[tutorial]` - tutorials (see also [Tutorial](Tutorial.md))
-  * `README.md`, `PyPIReadme.rst` - Github and PyPI Readme's.
-  * `LICENSE` - license information
-  * `setup.cfg`, `setup.py`, `MANIFEST.in` - setup configuration
-  * `mkdocs.yml` - config for [MkDocs](https://www.mkdocs.org/)
-  * `tox.ini` - config for [Tox](https://tox.readthedocs.io/en/latest/)
+  * `README.md` - Github and PyPI ReadMe
+  * `CHANGELOG.md` - details of each release content
+  * `LICENSE` - code license information
+  * `CODEOWNERS` - define individuals or teams responsible for code in this repository
+  * `CONTRIBUTORS.md` - the people who helped build this library ❤️
+  * `setup.cfg`, `setup.py`, `MANIFEST.in` - packaging configuration to publish [a package on Pypi](https://pypi.org/project/fpdf2/)
+  * `mkdocs.yml` - configuration for [MkDocs](https://www.mkdocs.org/)
+  * `tox.ini` - configuration for [Tox](https://tox.readthedocs.io/en/latest/)
+  * `.pylintrc` - configuration for [Pylint](http://pylint.pycqa.org/en/latest/)
 
 ## Code auto-formatting ##
 
@@ -131,6 +135,15 @@ It performs all validation steps detailed above: code checking with `black`,
 linting with `pylint`, unit tests...
 _Pull Requests_ submitted must pass all those checks in order to be approved.
 Ask maintainers through comments if some errors in the pipeline seem obscure to you.
+
+### Release checklist ###
+
+1. complete `CHANGELOG.md` and add the version & date of the new release
+2. bump `FPDF_VERSION` in `fpdf/fpdf.py`
+3. `git commit` & `git push`
+4. check that [the GitHub Actions succeed](https://github.com/PyFPDF/fpdf2/actions), and that [a new release appears on Pypi](https://pypi.org/project/fpdf2/#history)
+5. perform a [GitHub release](https://github.com/PyFPDF/fpdf2/releases), taking the description from the `CHANGELOG.md`.
+It will create a new `git` tag.
 
 ## Documentation ##
 

@@ -10,7 +10,7 @@ The following examples are packaged in a ready to run application:
 
 PyFPDF is included in [web2py](http://www.web2py.com/) since release [1.85.2](http://www.web2py.com/examples/default/download).
 
-Also, you can download the latest version of [pyfpdf](http://pyfpdf.googlecode.com/files/pyfpdf-1.54b.zip) and uncompress it in the `web2py, gluon, contrib` folder.
+Also, you can put the content of the `fpdf/` directory in this repository into the `web2py/gluon/contrib` folder.
 
 **Note about images**: these sample images are small so they may look like low quality ones. For better results, use bigger images: more DPI (screen is often 72/96DPI, printers are often 300/600DPI). As a rule of thumb, use at least half of the image size when rendering to PDF, ie. if an image is 500x200px, use 250x100px as width and height attributes of the IMG tag.
 
@@ -43,7 +43,7 @@ def report():
     table = TABLE(*rows, _border="0", _align="center", _width="50%")
 
     if request.extension == "pdf":
-        from gluon.contrib.pyfpdf import FPDF, HTMLMixin
+        from gluon.contrib.fpdf import FPDF, HTMLMixin
 
         # create a custom class with the required functionality 
         class MyFPDF(FPDF, HTMLMixin):
@@ -117,7 +117,7 @@ def listing():
                   _border="1", _align="center", _width="100%")
 
     if request.extension == "pdf":
-        from gluon.contrib.pyfpdf import FPDF, HTMLMixin
+        from gluon.contrib.fpdf import FPDF, HTMLMixin
 
         # define our FPDF class (move to modules if it is reused frequently)
         class MyFPDF(FPDF, HTMLMixin):
@@ -229,7 +229,7 @@ After defining and filling your database, you can use PyFPDF [Templates](Templat
 For example, for an invoice, in a controller you could write:
 ```python
 def invoice():
-    from gluon.contrib.pyfpdf import Template
+    from gluon.contrib.fpdf import Template
     import os.path
     
     # generate sample invoice (according Argentina's regulations)

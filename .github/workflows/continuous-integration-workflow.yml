@@ -28,9 +28,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install . -r test/requirements.txt -r docs/requirements.txt
       - name: Statically checking code 🔎
-        run: pylint fpdf
+        run: pylint fpdf test
       - name: Ensure code has been autoformatted with black 🖌️
         run: black --check .
+      - name: Checking all PDF samples ☑
+        if: matrix.python-version == '3.9'
+        run: |
+          # Using qpdf
+          find . -name '*.pdf' | xargs -n 1 qpdf --check
+          # Using Datalogics PDF Checker:
+          scripts/install-pdfchecker.sh
+          find . -name '*.pdf' | xargs -n 1 scripts/pdfchecker.py
+          scripts/pdfchecker.py  # printing aggregated report
+          # Using VeraPDF:
+          scripts/install-verapdf.sh
+          find . -name '*.pdf' | xargs -n 1 scripts/verapdf.py
+          scripts/verapdf.py  # printing aggregated report
       - name: Running tests ☑
         run: |
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:

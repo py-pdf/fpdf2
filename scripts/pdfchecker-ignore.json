@@ -1,0 +1,5 @@
+{
+    "errors": {
+        "Uses Base 14 fonts not embedded in document:": "REASON: still allows using the PostScript standard 14 fonts. Quoting PDF 1.7 spec from 2006: Beginning with PDF 1.5, the special treatment given to the standard 14 fonts is deprecated. All fonts used in a PDF document should be represented using a com- plete font descriptor. For backwards capability, viewer applications must still provide the special treatment identified for the standard 14 fonts."
+    }
+}

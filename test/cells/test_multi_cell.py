@@ -10,110 +10,111 @@ LINE_HEIGHT = TEXT_SIZE * SPACING
 HERE = Path(__file__).resolve().parent
 
 
-class TestMultiCell:
-    def test_ln_positioning_and_page_breaking_for_multicell(self, tmp_path):
-        doc = fpdf.FPDF(format="letter", unit="pt")
-        doc.add_page()
+def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
+    doc = fpdf.FPDF(format="letter", unit="pt")
+    doc.add_page()
 
-        doc.set_font("helvetica", size=TEXT_SIZE)
-        text = (
-            "Lorem ipsum Ut nostrud irure reprehenderit anim nostrud dolore sed "
-            "ut Excepteur dolore ut sunt irure consectetur tempor eu tempor "
-            "nostrud dolore sint exercitation aliquip velit ullamco esse dolore "
-            "mollit ea sed voluptate commodo amet eiusmod incididunt Excepteur "
-            "Excepteur officia est ea dolore sed id in cillum incididunt quis ex "
-            "id aliqua ullamco reprehenderit cupidatat in quis pariatur ex et "
-            "veniam consectetur et minim minim nulla ea in quis Ut in "
-            "consectetur cillum aliquip pariatur qui quis sint reprehenderit "
-            "anim incididunt laborum dolor dolor est dolor fugiat ut officia do "
-            "dolore deserunt nulla voluptate officia mollit elit consequat ad "
-            "aliquip non nulla dolor nisi magna consectetur anim sint officia "
-            "sit tempor anim do laboris ea culpa eu veniam sed cupidatat in anim "
-            "fugiat culpa enim Ut cillum in exercitation magna nostrud aute "
-            "proident laboris est ullamco nulla occaecat nulla proident "
-            "consequat in ut labore non sit id cillum ut ea quis est ut dolore "
-            "nisi aliquip aute pariatur ullamco ut cillum Duis nisi elit sit "
-            "cupidatat do Ut aliqua irure sunt sunt proident sit aliqua in "
-            "dolore Ut in sint sunt exercitation aliquip elit velit dolor nisi "
-        )
+    doc.set_font("helvetica", size=TEXT_SIZE)
+    text = (
+        "Lorem ipsum Ut nostrud irure reprehenderit anim nostrud dolore sed "
+        "ut Excepteur dolore ut sunt irure consectetur tempor eu tempor "
+        "nostrud dolore sint exercitation aliquip velit ullamco esse dolore "
+        "mollit ea sed voluptate commodo amet eiusmod incididunt Excepteur "
+        "Excepteur officia est ea dolore sed id in cillum incididunt quis ex "
+        "id aliqua ullamco reprehenderit cupidatat in quis pariatur ex et "
+        "veniam consectetur et minim minim nulla ea in quis Ut in "
+        "consectetur cillum aliquip pariatur qui quis sint reprehenderit "
+        "anim incididunt laborum dolor dolor est dolor fugiat ut officia do "
+        "dolore deserunt nulla voluptate officia mollit elit consequat ad "
+        "aliquip non nulla dolor nisi magna consectetur anim sint officia "
+        "sit tempor anim do laboris ea culpa eu veniam sed cupidatat in anim "
+        "fugiat culpa enim Ut cillum in exercitation magna nostrud aute "
+        "proident laboris est ullamco nulla occaecat nulla proident "
+        "consequat in ut labore non sit id cillum ut ea quis est ut dolore "
+        "nisi aliquip aute pariatur ullamco ut cillum Duis nisi elit sit "
+        "cupidatat do Ut aliqua irure sunt sunt proident sit aliqua in "
+        "dolore Ut in sint sunt exercitation aliquip elit velit dolor nisi "
+    )
 
-        doc.multi_cell(w=144, h=LINE_HEIGHT, border=1, txt=text[:29], ln=0)
-        doc.multi_cell(w=180, h=LINE_HEIGHT, border=1, txt=text[29:60], ln=2)
-        doc.multi_cell(w=144, h=LINE_HEIGHT, border=1, txt=text[60:90], ln=1)
-        doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1, ln=1, txt=text[0:30])
-        doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1, ln=1, txt=text[31:60])
-        doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1, ln=1, txt=text[61:90])
-        doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1, ln=1, txt=text[91:120])
-        doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1)
-        doc.cell(w=1, h=LINE_HEIGHT, ln=2)
-        doc.multi_cell(w=144, h=LINE_HEIGHT, border=1, txt=text[30:90], ln=2)
-        doc.cell(w=72 * 2, h=LINE_HEIGHT, border=1, ln=2, txt="Lorem ipsum")
-        doc.cell(w=72 * 2, h=LINE_HEIGHT, border=1, ln=2, txt="Lorem ipsum")
+    doc.multi_cell(w=144, h=LINE_HEIGHT, border=1, txt=text[:29], ln=0)
+    doc.multi_cell(w=180, h=LINE_HEIGHT, border=1, txt=text[29:60], ln=2)
+    doc.multi_cell(w=144, h=LINE_HEIGHT, border=1, txt=text[60:90], ln=1)
+    doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1, ln=1, txt=text[0:30])
+    doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1, ln=1, txt=text[31:60])
+    doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1, ln=1, txt=text[61:90])
+    doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1, ln=1, txt=text[91:120])
+    doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1)
+    doc.cell(w=1, h=LINE_HEIGHT, ln=2)
+    doc.multi_cell(w=144, h=LINE_HEIGHT, border=1, txt=text[30:90], ln=2)
+    doc.cell(w=72 * 2, h=LINE_HEIGHT, border=1, ln=2, txt="Lorem ipsum")
+    doc.cell(w=72 * 2, h=LINE_HEIGHT, border=1, ln=2, txt="Lorem ipsum")
 
-        assert_pdf_equal(
-            doc, HERE / "ln_positioning_and_page_breaking_for_multicell.pdf", tmp_path
-        )
+    assert_pdf_equal(
+        doc, HERE / "ln_positioning_and_page_breaking_for_multicell.pdf", tmp_path
+    )
 
-    def test_multi_cell_ln_0(self, tmp_path):
-        doc = fpdf.FPDF()
-        doc.add_page()
-        doc.set_font("helvetica", size=TEXT_SIZE)
-        doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="Lorem")
-        doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="ipsum")
-        doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="Ut")
-        doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="nostrud")
-        assert_pdf_equal(doc, HERE / "multi_cell_ln_0.pdf", tmp_path)
 
-    def test_multi_cell_ln_1(self, tmp_path):
-        doc = fpdf.FPDF()
-        doc.add_page()
-        doc.set_font("helvetica", size=TEXT_SIZE)
-        doc.multi_cell(w=100, h=LINE_HEIGHT, border=1, txt="Lorem ipsum", ln=1)
-        doc.multi_cell(w=100, h=LINE_HEIGHT, border=1, txt="Ut nostrud irure")
-        assert_pdf_equal(doc, HERE / "multi_cell_ln_1.pdf", tmp_path)
+def test_multi_cell_ln_0(tmp_path):
+    doc = fpdf.FPDF()
+    doc.add_page()
+    doc.set_font("helvetica", size=TEXT_SIZE)
+    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="Lorem")
+    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="ipsum")
+    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="Ut")
+    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="nostrud")
+    assert_pdf_equal(doc, HERE / "multi_cell_ln_0.pdf", tmp_path)
 
-    def test_multi_cell_ln_3(self, tmp_path):
-        doc = fpdf.FPDF()
-        doc.add_page()
-        doc.set_font("helvetica", size=TEXT_SIZE)
-        doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="Lorem")
-        doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="ipsum")
-        doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="Ut")
-        doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="nostrud")
-        assert_pdf_equal(doc, HERE / "multi_cell_ln_3.pdf", tmp_path)
 
-    def test_multi_cell_ln_3_table(self, tmp_path):
-        """
-        Test rendering of a table with multi-lines cell contents
-        cf. https://github.com/PyFPDF/fpdf2/issues/63
-        """
-        pdf = fpdf.FPDF()
-        pdf.add_page()
-        pdf.set_font("Times", size=10)
-        data = (
-            ("First name", "Last name", "Age", "City"),
-            ("Juleskfgjhfdkgfdhkghfdghfd;grdfgdfhghf", "Smith", 34, "San Juan"),
-            ("Marydgfsfsfgdgvfdggfd", "Ramos", 45, "Orlando"),
-            ("Carlsonfdgfdgsfdxhfggjdfgfgu", "Banks", 19, "Los Angeles"),
-        )
-        # Effective page width, or just epw
-        epw = pdf.w - 2 * pdf.l_margin
-        line_height = pdf.font_size * 2.5
-        # Set column width to 1/4 of effective page width to distribute content
-        # evenly across table and page
-        col_width = epw / 4
-        for row in data:
-            for datum in row:
-                pdf.multi_cell(
-                    col_width,
-                    line_height,
-                    str(datum),
-                    border=1,
-                    ln=3,
-                    max_line_height=pdf.font_size,
-                )
-            pdf.ln(line_height)
-        assert_pdf_equal(pdf, HERE / "multi_cell_ln_3_table.pdf", tmp_path)
+def test_multi_cell_ln_1(tmp_path):
+    doc = fpdf.FPDF()
+    doc.add_page()
+    doc.set_font("helvetica", size=TEXT_SIZE)
+    doc.multi_cell(w=100, h=LINE_HEIGHT, border=1, txt="Lorem ipsum", ln=1)
+    doc.multi_cell(w=100, h=LINE_HEIGHT, border=1, txt="Ut nostrud irure")
+    assert_pdf_equal(doc, HERE / "multi_cell_ln_1.pdf", tmp_path)
+
+
+def test_multi_cell_ln_3(tmp_path):
+    doc = fpdf.FPDF()
+    doc.add_page()
+    doc.set_font("helvetica", size=TEXT_SIZE)
+    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="Lorem")
+    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="ipsum")
+    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="Ut")
+    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="nostrud")
+    assert_pdf_equal(doc, HERE / "multi_cell_ln_3.pdf", tmp_path)
+
+
+def test_multi_cell_ln_3_table(tmp_path):
+    """
+    Test rendering of a table with multi-lines cell contents
+    cf. https://github.com/PyFPDF/fpdf2/issues/63
+    """
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=10)
+    data = (
+        ("First name", "Last name", "Age", "City"),
+        ("Juleskfgjhfdkgfdhkghfdghfd;grdfgdfhghf", "Smith", 34, "San Juan"),
+        ("Marydgfsfsfgdgvfdggfd", "Ramos", 45, "Orlando"),
+        ("Carlsonfdgfdgsfdxhfggjdfgfgu", "Banks", 19, "Los Angeles"),
+    )
+    line_height = pdf.font_size * 2.5
+    # Set column width to 1/4 of effective page width to distribute content
+    # evenly across table and page
+    col_width = pdf.epw / 4
+    for row in data:
+        for datum in row:
+            pdf.multi_cell(
+                col_width,
+                line_height,
+                str(datum),
+                border=1,
+                ln=3,
+                max_line_height=pdf.font_size,
+            )
+        pdf.ln(line_height)
+    assert_pdf_equal(pdf, HERE / "multi_cell_ln_3_table.pdf", tmp_path)
 
 
 ## Code used to create test

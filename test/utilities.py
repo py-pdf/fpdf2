@@ -1,5 +1,6 @@
 import datetime as dt
 import hashlib
+import pathlib
 import subprocess
 import shutil
 import warnings
@@ -9,40 +10,59 @@ from fpdf.template import Template
 QPDF_AVAILABLE = bool(shutil.which("qpdf"))
 if not QPDF_AVAILABLE:
     warnings.warn(
-        "qpdf command not available on the $PATH, falling back to hash-based comparisons in tests"
+        "qpdf command not available on the $PATH, falling back to hash-based "
+        "comparisons in tests"
     )
 
 
-def assert_pdf_equal(pdf_or_tmpl, expected_pdf_path, tmp_path, generate=False):
+def assert_pdf_equal(actual, expected, tmp_path, generate=False):
     """
     This compare the output of a `FPDF` instance (or `Template` instance),
     with the provided PDF file.
 
-    The `CreationDate` of the newly generated PDF is fixed, so that it never triggers a diff.
+    The `CreationDate` of the newly generated PDF is fixed, so that it never triggers
+    a diff.
 
-    If the `qpdf` command is available on the `$PATH`, it will be used to perform the comparison,
-    as it greatly helps debugging diffs. Otherwise, a hash-based comparison logic is used as a fallback.
+    If the `qpdf` command is available on the `$PATH`, it will be used to perform the
+    comparison, as it greatly helps debugging diffs. Otherwise, a hash-based comparison
+    logic is used as a fallback.
 
     Args:
-        pdf_or_tmpl: instance of `FPDF` or `Template`. The `output` or `render` method will be called on it.
-        expected_pdf_path (str): file path to a PDF file matching the expected output
-        tmp_path (Path): temporary directory provided by pytest individually to the caller test function
-        generate (bool): only generate `pdf` output to `rel_expected_pdf_filepath` and return. Useful to create new tests.
+        actual: instance of `FPDF` or `Template`. The `output` or `render` method
+          will be called on it.
+        expected: instance of `FPDF`, `bytearray` or file path to a PDF file
+          matching the expected output
+        tmp_path (Path): temporary directory provided by pytest individually to the
+          caller test function
+        generate (bool): only generate `pdf` output to `rel_expected_pdf_filepath`
+          and return. Useful to create new tests.
     """
-    if isinstance(pdf_or_tmpl, Template):
-        pdf_or_tmpl.render()
-        pdf = pdf_or_tmpl.pdf
+    if isinstance(actual, Template):
+        actual.render()
+        actual_pdf = actual.pdf
     else:
-        pdf = pdf_or_tmpl
-    pdf.set_creation_date(dt.datetime.fromtimestamp(0, dt.timezone.utc))
+        actual_pdf = actual
+    actual_pdf.set_creation_date(dt.datetime.fromtimestamp(0, dt.timezone.utc))
     if generate:
-        pdf.output(expected_pdf_path.open("wb"))
+        assert isinstance(expected, pathlib.Path), (
+            "When passing `True` to `generate`"
+            "a pathlib.Path must be provided as the `expected` parameter"
+        )
+        actual_pdf.output(expected.open("wb"))
         return
+    if not isinstance(expected, (bytes, bytearray)):
+        # Convert FPDF instance or file path to bytes:
+        if isinstance(expected, pathlib.Path):
+            expected_pdf_path = expected
+        else:
+            expected_pdf_path = tmp_path / "expected.pdf"
+            expected.output(expected_pdf_path.open("wb"))
+        expected = expected_pdf_path.read_bytes()
     actual_pdf_path = tmp_path / "actual.pdf"
-    pdf.output(actual_pdf_path.open("wb"))
+    actual_pdf.output(actual_pdf_path.open("wb"))
     if QPDF_AVAILABLE:  # Favor qpdf-based comparison, as it helps a lot debugging:
         actual_qpdf = _qpdf(actual_pdf_path.read_bytes())
-        expected_qpdf = _qpdf(expected_pdf_path.read_bytes())
+        expected_qpdf = _qpdf(expected)
         (tmp_path / "actual_qpdf.pdf").write_bytes(actual_qpdf)
         (tmp_path / "expected_qpdf.pdf").write_bytes(expected_qpdf)
         actual_lines = actual_qpdf.splitlines()
