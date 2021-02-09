@@ -53,7 +53,7 @@ LOGGER = logging.getLogger(__name__)
 HERE = Path(__file__).resolve().parent
 
 # Global variables
-FPDF_VERSION = "2.3.0"
+FPDF_VERSION = "2.3.1"
 FPDF_FONT_DIR = HERE / "font"
 SYSTEM_TTFONTS = None
 
@@ -593,6 +593,42 @@ class FPDF:
             f"{x1 * self.k:.2f} {(self.h - y1) * self.k:.2f} m {x2 * self.k:.2f} "
             f"{(self.h - y2) * self.k:.2f} l S"
         )
+
+    @check_page
+    def polyline(self, point_list, fill=False, polygon=False):
+        """
+        Draws lines between two or more points.
+
+        Args:
+            point_list (list of tuples): List of Abscissa and Ordinate of
+                                        segments that should be drawn
+            fill (bool): If true then polyline should be filled
+            polygon (bool): If true, close path before stroking
+        """
+        operator = "m"
+        for point in point_list:
+            self._out(
+                f"{point[0] * self.k:.2f} {(self.h - point[1]) * self.k:.2f} {operator}"
+            )
+            operator = "l"
+        if polygon:
+            self._out(" h ")
+        if fill:
+            self._out(" B ")
+        else:
+            self._out(" S ")
+
+    @check_page
+    def polygon(self, point_list, fill=False):
+        """
+        Outputs a polygon defined by three or more points.
+
+        Args:
+            point_list (list of tuples): List of Abscissa and Ordinate of
+                                        polygon that should be drawn
+            fill (bool): If true polygon will be filled
+        """
+        self.polyline(point_list, fill=fill, polygon=True)
 
     def _set_dash(self, dash_length=None, space_length=None):
         dash = ""
