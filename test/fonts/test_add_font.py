@@ -30,24 +30,24 @@ def test_deprecation_warning_for_FPDF_CACHE_DIR():
     # pylint: disable=import-outside-toplevel,pointless-statement,reimported
     from fpdf import fpdf
 
-    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+    with pytest.warns(DeprecationWarning):
         fpdf.FPDF_CACHE_DIR
-    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+    with pytest.warns(DeprecationWarning):
         fpdf.FPDF_CACHE_DIR = "/tmp"
-    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+    with pytest.warns(DeprecationWarning):
         fpdf.FPDF_CACHE_MODE
-    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+    with pytest.warns(DeprecationWarning):
         fpdf.FPDF_CACHE_MODE = 1
 
     import fpdf
 
-    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+    with pytest.warns(DeprecationWarning):
         fpdf.FPDF_CACHE_DIR
-    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+    with pytest.warns(DeprecationWarning):
         fpdf.FPDF_CACHE_DIR = "/tmp"
-    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+    with pytest.warns(DeprecationWarning):
         fpdf.FPDF_CACHE_MODE
-    with pytest.warns(DeprecationWarning), pytest.raises(AttributeError):
+    with pytest.warns(DeprecationWarning):
         fpdf.FPDF_CACHE_MODE = 1
 
 
