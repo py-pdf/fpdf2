@@ -649,7 +649,7 @@ class FPDF:
             )
         )
 
-    def add_font(self, family, style="", fname=None, uni=True):
+    def add_font(self, family, style="", fname=None, uni=False):
         """Add a TrueType or Type1 font"""
         if not fname:
             fname = family.replace(" ", "") + f"{style.lower()}.pkl"
