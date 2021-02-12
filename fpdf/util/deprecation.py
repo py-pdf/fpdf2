@@ -26,4 +26,4 @@ class WarnOnDeprecatedModuleAttributes(ModuleType):
                 stacklevel=2,
             )
             return
-        return super().__setattr__(self, name, value)
+        super().__setattr__(self, name, value)
