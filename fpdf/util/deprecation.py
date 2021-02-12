@@ -12,7 +12,7 @@ class WarnOnDeprecatedModuleAttributes(ModuleType):
                 DeprecationWarning,
                 stacklevel=2,
             )
-            raise AttributeError(f"module {self.__name__} has no attribute {name}")
+            return None
         # pylint: disable=no-member
         return super().__getattr__(self, name)
 
@@ -25,5 +25,5 @@ class WarnOnDeprecatedModuleAttributes(ModuleType):
                 DeprecationWarning,
                 stacklevel=2,
             )
-            raise AttributeError(f"module {self.__name__} has no attribute {name}")
+            return
         return super().__setattr__(self, name, value)
