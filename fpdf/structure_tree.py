@@ -25,7 +25,7 @@ class PDFObject:
     @property
     def id(self):
         if self._id is None:
-            raise RuntimeError(
+            raise AttributeError(
                 f"{self.__class__.__name__} has not been assigned an ID yet"
             )
         return self._id
@@ -110,7 +110,7 @@ class NumberTree(PDFObject):
             f"{struct_parent_id} {struct_elem.ref}"
             for struct_parent_id, struct_elem in enumerate(self.Nums)
         )
-        return super().serialize(fpdf, {"Nums": f"[{serialized_nums}]"})
+        return super().serialize(fpdf, {"/Nums": f"[{serialized_nums}]"})
 
 
 class StructTreeRoot(PDFObject):
@@ -150,7 +150,7 @@ class StructureTreeBuilder:
                 where page_object_id refers to the first page displaying this image
         """
         self.struct_tree_root = StructTreeRoot()
-        self.doc_struct_elem = StructElem(S="Document", P=self.struct_tree_root, K=[])
+        self.doc_struct_elem = StructElem(S="/Document", P=self.struct_tree_root, K=[])
         self.struct_tree_root.K.append(self.doc_struct_elem)
         for struct_parent_id, (page_object_id, image_object_id, alt_text) in enumerate(
             images_alt_texts
@@ -165,7 +165,7 @@ class StructureTreeBuilder:
         page = PDFObject(page_object_id)
         kids = ObjectReferenceDictionary(Pg=page, Obj=PDFObject(image_object_id))
         struct_elem = StructElem(
-            S="Figure", P=self.doc_struct_elem, K=kids, Pg=page, Alt=alt_text
+            S="/Figure", P=self.doc_struct_elem, K=kids, Pg=page, Alt=alt_text
         )
         self.doc_struct_elem.K.append(struct_elem)
         struct_parent_id = len(self.struct_tree_root.ParentTree.Nums)

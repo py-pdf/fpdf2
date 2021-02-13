@@ -1558,13 +1558,11 @@ class FPDF:
             info = get_img_info(img or load_resource(name))
             info["i"] = len(self.images) + 1
             if alt_text:
-                info[
-                    "Alt"
-                ] = alt_text  # used to detect differing alt texts for the same image
+                # Used to detect differing alt texts for the same image:
+                info["Alt"] = alt_text
                 info["StructParent"] = len(self._images_alt_texts)
-                page_object_id = (
-                    self.page + 2
-                )  # predictable given _putpages is invoked first in _enddoc
+                # Predictable given _putpages is invoked first in _enddoc:
+                page_object_id = self.page + 2
                 self._images_alt_texts.append((page_object_id, info, alt_text))
                 # Later on, _putimages will add a "n" entry to `info`,
                 # allowing to retrieve the image object ID.
@@ -1575,7 +1573,7 @@ class FPDF:
             if prev_alt_text != alt_text:
                 raise FPDFException(
                     "Different image alternative descriptions were provided"
-                    f"for the same image: {prev_alt_text} ! {alt_text}"
+                    f" for the same image: {prev_alt_text} ! {alt_text}"
                 )
 
         # Automatic width and height calculation if needed
@@ -2165,9 +2163,9 @@ class FPDF:
         if "smask" in info:
             self._out(f"/SMask {self.n + 1} 0 R")
 
-        self._out(f"/Length {len(info['data'])}>>")
         if "StructParent" in info:
             self._out(f"/StructParent {info['StructParent']}")
+        self._out(f"/Length {len(info['data'])}>>")
         self._out(pdf_stream(info["data"]))
         self._out("endobj")
 
@@ -2236,20 +2234,15 @@ class FPDF:
             self._out("endobj")
 
     def _put_structure_tree(self):
-        """
-        Builds a Structure Hierarchy according to the PDF spec,
-        including image alternate descriptions,
-        and dump it to the internal buffer.
-        """
+        "Builds a Structure Hierarchy, including image alternate descriptions"
         images_alt_texts = (
             (page_object_id, img_info["n"], alt_text)
             for (page_object_id, img_info, alt_text) in self._images_alt_texts
         )
-        builder = StructureTreeBuilder(images_alt_texts)
-        self._struct_tree_root_ref = pdf_ref(
-            self.n + 1
-        )  # this property is later used by _putcatalog
-        builder.serialize(first_object_id=self.n + 1, fpdf=self)
+        struct_builder = StructureTreeBuilder(images_alt_texts)
+        # This property is later used by _putcatalog:
+        self._struct_tree_root_ref = pdf_ref(self.n + 1)
+        struct_builder.serialize(first_object_id=self.n + 1, fpdf=self)
 
     def _putinfo(self):
         info_d = {
@@ -2292,9 +2285,9 @@ class FPDF:
         catalog_d["/OpenAction"] = pdf_l(zoom_config)
 
         if self.layout_mode in LAYOUT_NAMES:
-            catalog_d["PageLayout"] = LAYOUT_NAMES[self.layout_mode]
+            catalog_d["/PageLayout"] = LAYOUT_NAMES[self.layout_mode]
         if self._struct_tree_root_ref:
-            catalog_d["/MarkInfo"] = pdf_d({"/Marked": True})
+            catalog_d["/MarkInfo"] = pdf_d({"/Marked": "true"})
             catalog_d["/StructTreeRoot"] = self._struct_tree_root_ref
 
         self._out(pdf_d(catalog_d, open_dict="", close_dict=""))

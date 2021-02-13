@@ -45,9 +45,9 @@ endobj"""
 
 
 def test_empty_structure_tree():
-    builder = StructureTreeBuilder()
+    struct_builder = StructureTreeBuilder()
     assert (
-        builder.serialize()
+        struct_builder.serialize()
         == """\
 1 0 obj
 <<
@@ -59,14 +59,14 @@ endobj
 2 0 obj
 <<
 /Type /StructElem
-/S Document
+/S /Document
 /P 1 0 R
 /K []
 >>
 endobj
 3 0 obj
 <<
-Nums []
+/Nums []
 >>
 endobj"""
     )
@@ -74,9 +74,9 @@ endobj"""
 
 def test_single_image_structure_tree():
     images_alt_texts = ((1, 2, "Image description"),)
-    builder = StructureTreeBuilder(images_alt_texts)
+    struct_builder = StructureTreeBuilder(images_alt_texts)
     assert (
-        builder.serialize(first_object_id=3)
+        struct_builder.serialize(first_object_id=3)
         == """\
 3 0 obj
 <<
@@ -88,20 +88,20 @@ endobj
 4 0 obj
 <<
 /Type /StructElem
-/S Document
+/S /Document
 /P 3 0 R
 /K [6 0 R]
 >>
 endobj
 5 0 obj
 <<
-Nums [0 6 0 R]
+/Nums [0 6 0 R]
 >>
 endobj
 6 0 obj
 <<
 /Type /StructElem
-/S Figure
+/S /Figure
 /P 4 0 R
 /K <</Type /OBJR
 /Pg 1 0 R
