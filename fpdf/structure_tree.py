@@ -63,7 +63,7 @@ class PDFObject:
                         value = f"[{serialized_elems}]"
                     elif hasattr(value, "serialize"):  # e.g. ObjectReferenceDictionary
                         value = value.serialize()
-                    elif key == "Alt":
+                    elif key in ("T", "Alt"):
                         value = f"({value})"
                     obj_dict[f"/{key}"] = value
         appender(pdf_d(obj_dict, open_dict="", close_dict=""))
@@ -130,6 +130,7 @@ class StructElem(PDFObject):
         P: PDFObject,
         K: ObjectReferenceDictionary,
         Pg: PDFObject = None,
+        T: str = None,
         Alt: str = None,
         **kwargs,
     ):
@@ -139,6 +140,7 @@ class StructElem(PDFObject):
         self.P = P  # The structure element that is the immediate parent of this one in the structure hierarchy
         self.K = K  # The children of this structure element
         self.Pg = Pg  # A page object on which some or all of the content items designated by the K entry are rendered.
+        self.T = T  # The title of the structure element, a text string representing it in human-readable form
         self.Alt = Alt  # An alternate description of the structure element and its children in human-readable form
 
 
@@ -146,26 +148,34 @@ class StructureTreeBuilder:
     def __init__(self, images_alt_texts=()):
         """
         Args:
-            images_alt_texts (tuple): list of (page_object_id, image_object_id, alt_text)
-                where page_object_id refers to the first page displaying this image
+            images_alt_texts (tuple): list of (page_object_id, image_object_id, title, alt_text) where:
+                * page_object_id refers to the first page displaying this image
+                * alt_text & title are optional
         """
         self.struct_tree_root = StructTreeRoot()
         self.doc_struct_elem = StructElem(S="/Document", P=self.struct_tree_root, K=[])
         self.struct_tree_root.K.append(self.doc_struct_elem)
-        for struct_parent_id, (page_object_id, image_object_id, alt_text) in enumerate(
-            images_alt_texts
-        ):
+        for struct_parent_id, (
+            page_object_id,
+            image_object_id,
+            title,
+            alt_text,
+        ) in enumerate(images_alt_texts):
             # Ensure StructElem position matches its expected index:
             assert (
-                self.add_image_alt_text(page_object_id, image_object_id, alt_text)
+                self.add_image_title_and_alt_text(
+                    page_object_id, image_object_id, title, alt_text
+                )
                 == struct_parent_id
             )
 
-    def add_image_alt_text(self, page_object_id, image_object_id, alt_text):
+    def add_image_title_and_alt_text(
+        self, page_object_id, image_object_id, title=None, alt_text=None
+    ):
         page = PDFObject(page_object_id)
         kids = ObjectReferenceDictionary(Pg=page, Obj=PDFObject(image_object_id))
         struct_elem = StructElem(
-            S="/Figure", P=self.doc_struct_elem, K=kids, Pg=page, Alt=alt_text
+            S="/Figure", P=self.doc_struct_elem, K=kids, Pg=page, T=title, Alt=alt_text
         )
         self.doc_struct_elem.K.append(struct_elem)
         struct_parent_id = len(self.struct_tree_root.ParentTree.Nums)

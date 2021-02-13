@@ -27,7 +27,7 @@ def test_different_alt_text_for_same_image():
     with pytest.raises(FPDFException) as error:
         pdf.image(IMG_FILE_PATH, alt_text="Some Logo")
     assert str(error.value).startswith(
-        "Different image alternative descriptions were provided for the same image"
+        "Different image titles and/or alternative descriptions were provided for the same image"
     )
 
 

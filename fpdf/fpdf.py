@@ -189,7 +189,7 @@ class FPDF:
         self.ws = 0  # word spacing
         self.angle = 0  # used by deprecated method: rotate()
         self.font_cache_dir = font_cache_dir
-        self._images_alt_texts = []  # (page_object_id, image_info, alt_text)
+        self._images_alt_texts = []  # (page_object_id, image_info, title, alt_text)
         self._struct_tree_root_ref = None
 
         # Standard fonts
@@ -1512,6 +1512,7 @@ class FPDF:
         h=0,
         type="",
         link="",
+        title=None,
         alt_text=None,
     ):
         """
@@ -1542,6 +1543,7 @@ class FPDF:
             type (str): [**DEPRECATED**] unused, will be removed in a later version.
             link (str): optional link to add on the image, internal
                 (identifier returned by `add_link`) or external URL.
+            title (str): optional
             alt_text (str): optional alternative text describing the image,
                 for accessibility purposes
         """
@@ -1557,23 +1559,23 @@ class FPDF:
         if name not in self.images:
             info = get_img_info(img or load_resource(name))
             info["i"] = len(self.images) + 1
-            if alt_text:
+            if title or alt_text:
                 # Used to detect differing alt texts for the same image:
-                info["Alt"] = alt_text
+                info["TitleAndAlt"] = (title, alt_text)
                 info["StructParent"] = len(self._images_alt_texts)
                 # Predictable given _putpages is invoked first in _enddoc:
                 page_object_id = self.page + 2
-                self._images_alt_texts.append((page_object_id, info, alt_text))
+                self._images_alt_texts.append((page_object_id, info, title, alt_text))
                 # Later on, _putimages will add a "n" entry to `info`,
                 # allowing to retrieve the image object ID.
             self.images[name] = info
         else:
             info = self.images[name]
-            prev_alt_text = info.get("Alt")
-            if prev_alt_text != alt_text:
+            prev_title_and_alt = info.get("TitleAndAlt")
+            if (title or alt_text) and prev_title_and_alt != (title, alt_text):
                 raise FPDFException(
-                    "Different image alternative descriptions were provided"
-                    f" for the same image: {prev_alt_text} ! {alt_text}"
+                    "Different image titles and/or alternative descriptions were provided"
+                    f" for the same image: {name} -> {prev_title_and_alt} != {(title, alt_text)}"
                 )
 
         # Automatic width and height calculation if needed
@@ -2236,8 +2238,8 @@ class FPDF:
     def _put_structure_tree(self):
         "Builds a Structure Hierarchy, including image alternate descriptions"
         images_alt_texts = (
-            (page_object_id, img_info["n"], alt_text)
-            for (page_object_id, img_info, alt_text) in self._images_alt_texts
+            (page_object_id, img_info["n"], title, alt_text)
+            for (page_object_id, img_info, title, alt_text) in self._images_alt_texts
         )
         struct_builder = StructureTreeBuilder(images_alt_texts)
         # This property is later used by _putcatalog:

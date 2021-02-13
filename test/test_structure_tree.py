@@ -73,7 +73,7 @@ endobj"""
 
 
 def test_single_image_structure_tree():
-    images_alt_texts = ((1, 2, "Image description"),)
+    images_alt_texts = ((1, 2, "Image title", "Image description"),)
     struct_builder = StructureTreeBuilder(images_alt_texts)
     assert (
         struct_builder.serialize(first_object_id=3)
@@ -107,6 +107,7 @@ endobj
 /Pg 1 0 R
 /Obj 2 0 R>>
 /Pg 1 0 R
+/T (Image title)
 /Alt (Image description)
 >>
 endobj"""

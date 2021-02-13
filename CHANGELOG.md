@@ -10,8 +10,8 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 ## [2.3.1] - not released yet
 ### Added
 - `FPDF.set_margin` : new method to set the document right, left, top & bottom margins to the same value
-- `FPDF.image` now accepts a new optional `alt_text` parameter defining the alternative text describing the image,
-  for accessibility purposes
+- `FPDF.image` now accepts new optional `title` & `alt_text` parameters defining the image title
+  and alternative text describing it, for accessibility purposes
 ### Deprecated
 - `fpdf.FPDF_CACHE_MODE` & `fpdf.FPDF_CACHE_DIR` in favor of a configurable new `font_cache_dir` optional argument of the `fpdf.FPDF` constructor
 
