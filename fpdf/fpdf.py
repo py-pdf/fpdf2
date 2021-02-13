@@ -28,12 +28,12 @@ from datetime import datetime
 from enum import IntEnum
 from functools import wraps
 from pathlib import Path
-from uuid import uuid4
 
 from .errors import FPDFException, FPDFPageFormatException
 from .fonts import fpdf_charwidths
 from .image_parsing import get_img_info, load_resource
 from .recorder import FPDFRecorder
+from .structure_tree import StructureTreeBuilder
 from .ttfonts import TTFontFile
 from .util import (
     enclose_in_parens,
@@ -44,7 +44,6 @@ from .util.deprecation import WarnOnDeprecatedModuleAttributes
 from .util.syntax import (
     create_dictionary_string as pdf_d,
     create_list_string as pdf_l,
-    create_name as pdf_name,
     create_stream as pdf_stream,
     iobj_ref as pdf_ref,
 )
@@ -63,6 +62,17 @@ PAGE_FORMATS = {
     "a5": (420.94, 595.28),
     "letter": (612, 792),
     "legal": (612, 1008),
+}
+LAYOUT_NAMES = {
+    "single": "/SinglePage",
+    "continuous": "/OneColumn",
+    "two": "/TwoColumnLeft",
+}
+ZOOM_CONFIGS = {
+    "default": ("/Fit",),  # TODO FIXME
+    "fullpage": ("/Fit",),
+    "fullwidth": ("/FitH", "null"),
+    "real": ("/XYZ", "null", "null", "1"),
 }
 
 
@@ -179,6 +189,8 @@ class FPDF:
         self.ws = 0  # word spacing
         self.angle = 0  # used by deprecated method: rotate()
         self.font_cache_dir = font_cache_dir
+        self._images_alt_texts = []  # (page_object_id, image_info, alt_text)
+        self._struct_tree_root_ref = None
 
         # Standard fonts
         self.core_fonts = {
@@ -333,19 +345,20 @@ class FPDF:
         self.page_break_trigger = self.h - margin
 
     def set_display_mode(self, zoom, layout="continuous"):
-        """Set display mode in viewer
-
-        The "zoom" argument may be 'fullpage', 'fullwidth', 'real',
-        'default', or a number, interpreted as a percentage.
         """
-        if zoom in ["fullpage", "fullwidth", "real", "default"] or not isinstance(
-            zoom, str
-        ):
+        Set display mode in viewer
+
+        Args:
+            zoom: either 'fullpage', 'fullwidth', 'real', 'default',
+                or a number, interpreted as a percentage.
+            layout (str): either "single", "continuous" or "two".
+        """
+        if zoom in ZOOM_CONFIGS or not isinstance(zoom, str):
             self.zoom_mode = zoom
         else:
             raise FPDFException(f"Incorrect zoom display mode: {zoom}")
 
-        if layout in ["single", "continuous", "two", "default"]:
+        if layout in LAYOUT_NAMES:
             self.layout_mode = layout
         else:
             raise FPDFException(f"Incorrect layout display mode: {layout}")
@@ -1499,6 +1512,7 @@ class FPDF:
         h=0,
         type="",
         link="",
+        alt_text=None,
     ):
         """
         Put an image on the page.
@@ -1528,6 +1542,8 @@ class FPDF:
             type (str): [**DEPRECATED**] unused, will be removed in a later version.
             link (str): optional link to add on the image, internal
                 (identifier returned by `add_link`) or external URL.
+            alt_text (str): optional alternative text describing the image,
+                for accessibility purposes
         """
         if type:
             warnings.warn(
@@ -1537,13 +1553,30 @@ class FPDF:
         if isinstance(name, str):
             img = None
         else:
-            name, img = uuid4(), name
+            name, img = str(name), name
         if name not in self.images:
             info = get_img_info(img or load_resource(name))
             info["i"] = len(self.images) + 1
+            if alt_text:
+                info[
+                    "Alt"
+                ] = alt_text  # used to detect differing alt texts for the same image
+                info["StructParent"] = len(self._images_alt_texts)
+                page_object_id = (
+                    self.page + 2
+                )  # predictable given _putpages is invoked first in _enddoc
+                self._images_alt_texts.append((page_object_id, info, alt_text))
+                # Later on, _putimages will add a "n" entry to `info`,
+                # allowing to retrieve the image object ID.
             self.images[name] = info
         else:
             info = self.images[name]
+            prev_alt_text = info.get("Alt")
+            if prev_alt_text != alt_text:
+                raise FPDFException(
+                    "Different image alternative descriptions were provided"
+                    f"for the same image: {prev_alt_text} ! {alt_text}"
+                )
 
         # Automatic width and height calculation if needed
         if w == 0 and h == 0:
@@ -1649,7 +1682,7 @@ class FPDF:
         return txt
 
     def _putpages(self):
-        nb = self.page
+        nb = self.page  # total number of pages
         if self.str_alias_nb_pages:
             substituted = False
             # Replace number of pages in fonts using subsets (unicode)
@@ -2092,9 +2125,7 @@ class FPDF:
         self._out(f"/W [{''.join(w)}]")
 
     def _putimages(self):
-        i = [(x[1]["i"], x[1]) for x in self.images.items()]
-        i.sort()
-        for _, info in i:
+        for info in sorted(self.images.values(), key=lambda info: info["i"]):
             self._putimage(info)
             del info["data"]
             if "smask" in info:
@@ -2135,6 +2166,8 @@ class FPDF:
             self._out(f"/SMask {self.n + 1} 0 R")
 
         self._out(f"/Length {len(info['data'])}>>")
+        if "StructParent" in info:
+            self._out(f"/StructParent {info['StructParent']}")
         self._out(pdf_stream(info["data"]))
         self._out("endobj")
 
@@ -2202,13 +2235,29 @@ class FPDF:
             self._out(">>")
             self._out("endobj")
 
+    def _put_structure_tree(self):
+        """
+        Builds a Structure Hierarchy according to the PDF spec,
+        including image alternate descriptions,
+        and dump it to the internal buffer.
+        """
+        images_alt_texts = (
+            (page_object_id, img_info["n"], alt_text)
+            for (page_object_id, img_info, alt_text) in self._images_alt_texts
+        )
+        builder = StructureTreeBuilder(images_alt_texts)
+        self._struct_tree_root_ref = pdf_ref(
+            self.n + 1
+        )  # this property is later used by _putcatalog
+        builder.serialize(first_object_id=self.n + 1, fpdf=self)
+
     def _putinfo(self):
         info_d = {
-            pdf_name("title"): enclose_in_parens(getattr(self, "title", None)),
-            pdf_name("subject"): enclose_in_parens(getattr(self, "subject", None)),
-            pdf_name("author"): enclose_in_parens(getattr(self, "author", None)),
-            pdf_name("keywords"): enclose_in_parens(getattr(self, "keywords", None)),
-            pdf_name("creator"): enclose_in_parens(getattr(self, "creator", None)),
+            "/Title": enclose_in_parens(getattr(self, "title", None)),
+            "/Subject": enclose_in_parens(getattr(self, "subject", None)),
+            "/Author": enclose_in_parens(getattr(self, "author", None)),
+            "/Keywords": enclose_in_parens(getattr(self, "keywords", None)),
+            "/Creator": enclose_in_parens(getattr(self, "creator", None)),
         }
 
         if hasattr(self, "creation_date"):
@@ -2221,37 +2270,32 @@ class FPDF:
                 ) from error
         else:
             date_string = f"{datetime.now():%Y%m%d%H%M%S}"
-        info_d[pdf_name("CreationDate")] = enclose_in_parens(f"D:{date_string}")
+        info_d["/CreationDate"] = enclose_in_parens(f"D:{date_string}")
 
         self._out(pdf_d(info_d, open_dict="", close_dict="", has_empty_fields=True))
 
     def _putcatalog(self):
         catalog_d = {
-            pdf_name("type"): pdf_name("catalog"),
-            pdf_name("pages"): pdf_ref(1),
+            "/Type": "/Catalog",
+            "/Pages": pdf_ref(
+                1
+            ),  # always the 1st object of the document, set in _putpages
         }
 
-        zoom_configs = {
-            "default": ["/Fit"],  # TODO FIXME
-            "fullpage": ["/Fit"],
-            "fullwidth": ["/FitH", "null"],
-            "real": ["/XYZ", "null", "null", "1"],
-        }
-        zoom_config = [pdf_ref(3), *zoom_configs.get(self.zoom_mode, [])]
-        # zoom_config is a number, not one of the allowed strings
-        if not zoom_config:
+        if self.zoom_mode in ZOOM_CONFIGS:
+            zoom_config = [
+                pdf_ref(3),  # reference to object ID of the 1st page
+                *ZOOM_CONFIGS[self.zoom_mode],
+            ]
+        else:  # zoom_mode is a number, not one of the allowed strings:
             zoom_config = ["/XYZ", "null", "null", str(self.zoom_mode / 100)]
+        catalog_d["/OpenAction"] = pdf_l(zoom_config)
 
-        catalog_d[pdf_name("OpenAction")] = pdf_l(zoom_config)
-
-        layout_names = {
-            "single": pdf_name("SinglePage"),
-            "continuous": pdf_name("OneColumn"),
-            "two": pdf_name("TwoColumnLeft"),
-        }
-
-        if self.layout_mode in layout_names:
-            catalog_d[pdf_name("PageLayout")] = layout_names[self.layout_mode]
+        if self.layout_mode in LAYOUT_NAMES:
+            catalog_d["PageLayout"] = LAYOUT_NAMES[self.layout_mode]
+        if self._struct_tree_root_ref:
+            catalog_d["/MarkInfo"] = pdf_d({"/Marked": True})
+            catalog_d["/StructTreeRoot"] = self._struct_tree_root_ref
 
         self._out(pdf_d(catalog_d, open_dict="", close_dict=""))
 
@@ -2260,8 +2304,8 @@ class FPDF:
 
     def _puttrailer(self):
         self._out(f"/Size {self.n + 1}")
-        self._out(f"/Root {pdf_ref(self.n)}")
-        self._out(f"/Info {pdf_ref(self.n - 1)}")
+        self._out(f"/Root {pdf_ref(self.n)}")  # Catalog object index
+        self._out(f"/Info {pdf_ref(self.n - 1)}")  # Info object index
 
     def _enddoc(self):
         LOGGER.debug("Final doc sections size summary:")
@@ -2270,6 +2314,8 @@ class FPDF:
         with self._trace_size("pages"):
             self._putpages()
         self._putresources()  # trace_size is performed inside
+        if self._images_alt_texts:
+            self._put_structure_tree()
         # Info
         with self._trace_size("info"):
             self._newobj()
@@ -2346,6 +2392,7 @@ class FPDF:
         self.n += 1
         self.offsets[self.n] = len(self.buffer)
         self._out(f"{self.n} 0 obj")
+        return self.n
 
     def _dounderline(self, x, y, txt):
         # Underline text

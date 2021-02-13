@@ -24,7 +24,7 @@ def test_setting_all_zoom(zoom_input, tmp_path):
     assert_pdf_equal(doc, HERE / f"catalog-zoom-{zoom_input}.pdf", tmp_path)
 
 
-@pytest.mark.parametrize("layout_input", ["single", "continuous", "two", "default"])
+@pytest.mark.parametrize("layout_input", ["single", "continuous", "two"])
 def test_setting_all_layout(layout_input, tmp_path):
     """This test executes some possible inputs to FPDF#set_display_mode."""
     doc = fpdf.FPDF()

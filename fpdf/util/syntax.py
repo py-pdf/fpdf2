@@ -40,10 +40,10 @@ escape non-printable ascii characters, described on page 57.
 
 The structure of this data, in python/dict form, is thus:
 third_obj = {
-  pdf_name('Type'): pdf_name('Page'),
-  pdf_name('Parent'): iobj_ref(1),
-  pdf_name('Resources'): iobj_ref(2),
-  pdf_name('Contents'): iobj_ref(4),
+  '/Type': '/Page'),
+  '/Parent': iobj_ref(1),
+  '/Resources': iobj_ref(2),
+  '/Contents': iobj_ref(4),
 }
 
 Some additional notes:
@@ -66,12 +66,6 @@ that string.
 As of this writing, I am not sure how length is actually calculated, so this
 remains something to be looked into.
 """
-
-
-def create_name(name):
-    if name.startswith("/"):
-        name = name[1:]
-    return f"/{name[0].upper()}{name[1:]}"
 
 
 def clear_empty_fields(d):
@@ -101,7 +95,7 @@ def create_dictionary_string(
     return "".join(
         [
             open_dict,
-            field_join.join(key_value_join.join(f) for f in dict_.items()),
+            field_join.join(key_value_join.join(map(str, f)) for f in dict_.items()),
             close_dict,
         ]
     )
@@ -121,10 +115,3 @@ def create_stream(stream):
     if isinstance(stream, (bytearray, bytes)):
         stream = str(stream, "latin-1")
     return "\n".join(["stream", stream, "endstream"])
-
-
-if __name__ == "__main__":
-    print(create_name("/ok"))
-    print(create_name("ok"))
-    print(create_name("Ok"))
-    print(create_name("/Ok"))
