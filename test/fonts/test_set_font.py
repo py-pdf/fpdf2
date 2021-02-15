@@ -57,6 +57,7 @@ def test_set_builtin_font(tmp_path):
             pdf.text(0, 10 + 40 * i + 10 * j, "Hello World!")
     assert_pdf_equal(pdf, HERE / "fonts_set_builtin_font.pdf", tmp_path)
 
+
 def test_issue_66(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -79,8 +80,7 @@ def test_set_font_aliases_as_font():
         # Test if warning get's emitted
         with pytest.warns(
             UserWarning,
-            match=f"Substitutting font {alias.lower()} "
-            f"by core font {alternative}",
+            match=f"Substitutting font {alias.lower()} by core font {alternative}",
         ):
             pdf.set_font(alias)
 
@@ -125,9 +125,7 @@ def test_set_font_styles():
     # Generate all possible combinations of "B", "I" and "U" -> "B", "BI", "BUI" ...
     # including "" (no style)
     styles = [
-        "".join(style)
-        for i in range(4)
-        for style in itertools.permutations("BUI", i)
+        "".join(style) for i in range(4) for style in itertools.permutations("BUI", i)
     ]
 
     for style in styles:
