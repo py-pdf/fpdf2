@@ -33,7 +33,7 @@ from .errors import FPDFException, FPDFPageFormatException
 from .fonts import fpdf_charwidths
 from .image_parsing import get_img_info, load_resource
 from .recorder import FPDFRecorder
-from .structure_tree import StructureTreeBuilder
+from .structure_tree import MarkedContent, StructureTreeBuilder
 from .ttfonts import TTFontFile
 from .util import (
     enclose_in_parens,
@@ -189,8 +189,10 @@ class FPDF:
         self.ws = 0  # word spacing
         self.angle = 0  # used by deprecated method: rotate()
         self.font_cache_dir = font_cache_dir
-        self._images_alt_texts = []  # (page_object_id, image_info, title, alt_text)
-        self._struct_tree_root_ref = None
+        self._images_alt_texts = []  # list of (page_object_id, mcid, title, alt_text)
+        self._struct_parents_id_per_page = {}  # {page_object_id -> StructParents ID}
+        # Only set if a Structure Tree is added to the document:
+        self._struct_tree_root_obj_id = None
 
         # Standard fonts
         self.core_fonts = {
@@ -1559,24 +1561,9 @@ class FPDF:
         if name not in self.images:
             info = get_img_info(img or load_resource(name))
             info["i"] = len(self.images) + 1
-            if title or alt_text:
-                # Used to detect differing alt texts for the same image:
-                info["TitleAndAlt"] = (title, alt_text)
-                info["StructParent"] = len(self._images_alt_texts)
-                # Predictable given _putpages is invoked first in _enddoc:
-                page_object_id = self.page + 2
-                self._images_alt_texts.append((page_object_id, info, title, alt_text))
-                # Later on, _putimages will add a "n" entry to `info`,
-                # allowing to retrieve the image object ID.
             self.images[name] = info
         else:
             info = self.images[name]
-            prev_title_and_alt = info.get("TitleAndAlt")
-            if (title or alt_text) and prev_title_and_alt != (title, alt_text):
-                raise FPDFException(
-                    "Different image titles and/or alternative descriptions were provided"
-                    f" for the same image: {name} -> {prev_title_and_alt} != {(title, alt_text)}"
-                )
 
         # Automatic width and height calculation if needed
         if w == 0 and h == 0:
@@ -1596,16 +1583,38 @@ class FPDF:
 
         if x is None:
             x = self.x
-        self._out(
-            (
-                f"q {w * self.k:.2f} 0 0 {h * self.k:.2f} {x * self.k:.2f} "
-                f"{(self.h - y - h) * self.k:.2f} cm /I{info['i']} Do Q"
-            )
+
+        stream_content = (
+            f"q {w * self.k:.2f} 0 0 {h * self.k:.2f} {x * self.k:.2f} "
+            f"{(self.h - y - h) * self.k:.2f} cm /I{info['i']} Do Q"
         )
+        if title or alt_text:
+            # Predictable given _putpages is invoked first in _enddoc:
+            page_object_id = 2 * self.page + 1
+            if page_object_id not in self._struct_parents_id_per_page:
+                self._struct_parents_id_per_page[page_object_id] = len(
+                    self._struct_parents_id_per_page
+                )
+            mcid = sum(
+                1
+                for page_id, _, _, _ in self._images_alt_texts
+                if page_id == page_object_id
+            )
+            self._images_alt_texts.append((page_object_id, mcid, title, alt_text))
+            with self._marked_sequence(mcid):
+                self._out(stream_content)
+        else:
+            self._out(stream_content)
         if link:
             self.link(x, y, w, h, link)
 
         return info
+
+    @contextmanager
+    def _marked_sequence(self, mcid):
+        self._out(f"/P <</MCID {mcid}>> BDC")
+        yield
+        self._out("EMC")
 
     @check_page
     def ln(self, h=None):
@@ -1768,6 +1777,9 @@ class FPDF:
                 self._out(f"{annots}]")
             if self.pdf_version > "1.3":
                 self._out("/Group <</Type /Group /S /Transparency" "/CS /DeviceRGB>>")
+            spid = self._struct_parents_id_per_page.get(self.n)
+            if spid is not None:
+                self._out(f"/StructParents {spid}")
             self._out(f"/Contents {self.n + 1} 0 R>>")
             self._out("endobj")
 
@@ -2165,8 +2177,6 @@ class FPDF:
         if "smask" in info:
             self._out(f"/SMask {self.n + 1} 0 R")
 
-        if "StructParent" in info:
-            self._out(f"/StructParent {info['StructParent']}")
         self._out(f"/Length {len(info['data'])}>>")
         self._out(pdf_stream(info["data"]))
         self._out("endobj")
@@ -2237,14 +2247,22 @@ class FPDF:
 
     def _put_structure_tree(self):
         "Builds a Structure Hierarchy, including image alternate descriptions"
-        images_alt_texts = (
-            (page_object_id, img_info["n"], title, alt_text)
-            for (page_object_id, img_info, title, alt_text) in self._images_alt_texts
+        marked_contents = tuple(
+            MarkedContent(
+                page_object_id,
+                self._struct_parents_id_per_page[page_object_id],
+                mcid,
+                title,
+                alt_text,
+            )
+            for (page_object_id, mcid, title, alt_text) in self._images_alt_texts
         )
-        struct_builder = StructureTreeBuilder(images_alt_texts)
-        # This property is later used by _putcatalog:
-        self._struct_tree_root_ref = pdf_ref(self.n + 1)
-        struct_builder.serialize(first_object_id=self.n + 1, fpdf=self)
+        struct_builder = StructureTreeBuilder(marked_contents)
+        # This property is later used by _putcatalog to insert a reference to the StructTreeRoot:
+        self._struct_tree_root_obj_id = self.n + 1
+        struct_builder.serialize(
+            first_object_id=self._struct_tree_root_obj_id, fpdf=self
+        )
 
     def _putinfo(self):
         info_d = {
@@ -2272,9 +2290,8 @@ class FPDF:
     def _putcatalog(self):
         catalog_d = {
             "/Type": "/Catalog",
-            "/Pages": pdf_ref(
-                1
-            ),  # always the 1st object of the document, set in _putpages
+            # Pages is always the 1st object of the document, cf. the end of _putpages:
+            "/Pages": pdf_ref(1),
         }
 
         if self.zoom_mode in ZOOM_CONFIGS:
@@ -2288,9 +2305,9 @@ class FPDF:
 
         if self.layout_mode in LAYOUT_NAMES:
             catalog_d["/PageLayout"] = LAYOUT_NAMES[self.layout_mode]
-        if self._struct_tree_root_ref:
+        if self._struct_tree_root_obj_id:
             catalog_d["/MarkInfo"] = pdf_d({"/Marked": "true"})
-            catalog_d["/StructTreeRoot"] = self._struct_tree_root_ref
+            catalog_d["/StructTreeRoot"] = pdf_ref(self._struct_tree_root_obj_id)
 
         self._out(pdf_d(catalog_d, open_dict="", close_dict=""))
 
