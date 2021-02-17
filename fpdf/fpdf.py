@@ -189,7 +189,7 @@ class FPDF:
         self.ws = 0  # word spacing
         self.angle = 0  # used by deprecated method: rotate()
         self.font_cache_dir = font_cache_dir
-        self._images_alt_texts = []  # list of (page_object_id, mcid, title, alt_text)
+        self._marked_contents = []  # list of MarkedContent
         self._struct_parents_id_per_page = {}  # {page_object_id -> StructParents ID}
         # Only set if a Structure Tree is added to the document:
         self._struct_tree_root_obj_id = None
@@ -1589,19 +1589,7 @@ class FPDF:
             f"{(self.h - y - h) * self.k:.2f} cm /I{info['i']} Do Q"
         )
         if title or alt_text:
-            # Predictable given _putpages is invoked first in _enddoc:
-            page_object_id = 2 * self.page + 1
-            if page_object_id not in self._struct_parents_id_per_page:
-                self._struct_parents_id_per_page[page_object_id] = len(
-                    self._struct_parents_id_per_page
-                )
-            mcid = sum(
-                1
-                for page_id, _, _, _ in self._images_alt_texts
-                if page_id == page_object_id
-            )
-            self._images_alt_texts.append((page_object_id, mcid, title, alt_text))
-            with self._marked_sequence(mcid):
+            with self._marked_sequence(title=title, alt_text=alt_text):
                 self._out(stream_content)
         else:
             self._out(stream_content)
@@ -1611,10 +1599,25 @@ class FPDF:
         return info
 
     @contextmanager
-    def _marked_sequence(self, mcid):
+    def _marked_sequence(self, **kwargs):
+        page_object_id = self._current_page_object_id()
+        struct_parents_id = self._struct_parents_id_per_page.get(page_object_id)
+        if struct_parents_id is None:
+            struct_parents_id = len(self._struct_parents_id_per_page)
+            self._struct_parents_id_per_page[page_object_id] = struct_parents_id
+        mcid = sum(
+            1 for mc in self._marked_contents if mc.page_object_id == page_object_id
+        )
+        self._marked_contents.append(
+            MarkedContent(page_object_id, struct_parents_id, mcid, **kwargs)
+        )
         self._out(f"/P <</MCID {mcid}>> BDC")
         yield
         self._out("EMC")
+
+    def _current_page_object_id(self):
+        # Predictable given that _putpages is invoked first in _enddoc:
+        return 2 * self.page + 1
 
     @check_page
     def ln(self, h=None):
@@ -2247,17 +2250,7 @@ class FPDF:
 
     def _put_structure_tree(self):
         "Builds a Structure Hierarchy, including image alternate descriptions"
-        marked_contents = tuple(
-            MarkedContent(
-                page_object_id,
-                self._struct_parents_id_per_page[page_object_id],
-                mcid,
-                title,
-                alt_text,
-            )
-            for (page_object_id, mcid, title, alt_text) in self._images_alt_texts
-        )
-        struct_builder = StructureTreeBuilder(marked_contents)
+        struct_builder = StructureTreeBuilder(self._marked_contents)
         # This property is later used by _putcatalog to insert a reference to the StructTreeRoot:
         self._struct_tree_root_obj_id = self.n + 1
         struct_builder.serialize(
@@ -2326,7 +2319,7 @@ class FPDF:
         with self._trace_size("pages"):
             self._putpages()
         self._putresources()  # trace_size is performed inside
-        if self._images_alt_texts:
+        if self._marked_contents:
             self._put_structure_tree()
         # Info
         with self._trace_size("info"):
