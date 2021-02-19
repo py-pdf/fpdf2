@@ -9,7 +9,7 @@ Quoting the PDF spec:
 > located by means of the **StructTreeRoot** entry in the document catalog.
 """
 from collections import defaultdict
-from typing import NamedTuple, List, Optional
+from typing import NamedTuple, List, Optional, Union
 
 from .util.syntax import create_dictionary_string as pdf_d, iobj_ref as pdf_ref
 
@@ -28,6 +28,9 @@ class PDFObject:
     Main features of this class:
     * delay ID assignement
     * implement serializing
+
+    To ensure consistency on how the serialize() method operates,
+    child classes must define a __slots__ attribute.
     """
 
     # pylint: disable=redefined-builtin
@@ -63,47 +66,55 @@ class PDFObject:
             appender(f"{self.id} 0 obj")
         appender("<<")
         if not obj_dict:
-            obj_dict = {}
-            for key, value in self.__dict__.items():
-                if not key.startswith("_") and value is not None:
-                    if isinstance(value, PDFObject):  # indirect object reference
-                        value = value.ref
-                    elif isinstance(value, list):  # e.g. K (children/kids)
-                        if all(
-                            isinstance(elem, PDFObject) for elem in value
-                        ):  # e.g. List[ObjectReferenceDictionary]
-                            serialized_elems = "\n".join(elem.ref for elem in value)
-                        elif all(
-                            isinstance(elem, int) for elem in value
-                        ):  # e.g. List[int]
-                            serialized_elems = " ".join(map(str, value))
-                        else:
-                            raise NotImplementedError
-                        value = f"[{serialized_elems}]"
-                    elif hasattr(value, "serialize"):  # e.g. ObjectReferenceDictionary
-                        value = value.serialize()
-                    elif key in ("T", "Alt"):
-                        value = f"({value})"
-                    obj_dict[f"/{key}"] = value
+            obj_dict = self._build_obj_dict()
         appender(pdf_d(obj_dict, open_dict="", close_dict=""))
         appender(">>")
         appender("endobj")
         return "\n".join(output)
 
+    def _build_obj_dict(self):
+        """
+        Build the PDF Object associative map to serialize,
+        based on this class instance properties.
+        The property names are converted to CamelCase,
+        and prefixed with a slash character "/".
+        """
+        obj_dict = {}
+        for key in dir(self):
+            value = getattr(self, key)
+            if (
+                callable(value)
+                or key.startswith("_")
+                or key in ("id", "ref")
+                or value is None
+            ):
+                continue
+            if isinstance(value, PDFObject):  # indirect object reference
+                value = value.ref
+            elif hasattr(value, "serialize"):  # e.g. PDFArray & PDFString
+                value = value.serialize()
+            obj_dict[f"/{camel_case(key)}"] = value
+        return obj_dict
 
-class ObjectReferenceDictionary:
-    def __init__(self, Pg: PDFObject, Obj: PDFObject):
-        self.Pg = Pg  # page on which the object is rendered
-        self.Obj = Obj  # the referenced object
 
+def camel_case(property_name):
+    return "".join(x for x in property_name.title() if x != "_")
+
+
+class PDFString(str):
     def serialize(self):
-        return pdf_d(
-            {
-                "/Type": "/OBJR",
-                "/Pg": self.Pg.ref,
-                "/Obj": self.Obj.ref,
-            }
-        )
+        return f"({self})"
+
+
+class PDFArray(list):
+    def serialize(self):
+        if all(isinstance(elem, PDFObject) for elem in self):
+            serialized_elems = "\n".join(elem.ref for elem in self)
+        elif all(isinstance(elem, int) for elem in self):
+            serialized_elems = " ".join(map(str, self))
+        else:
+            raise NotImplementedError
+        return f"[{serialized_elems}]"
 
 
 class NumberTree(PDFObject):
@@ -120,48 +131,62 @@ class NumberTree(PDFObject):
     and names) be specified as direct objects
     """
 
+    __slots__ = ("_id", "nums")
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.Nums = defaultdict(list)  # {struct_parent_id -> struct_elems}
+        self.nums = defaultdict(list)  # {struct_parent_id -> struct_elems}
 
     def serialize(self, fpdf=None, obj_dict=None):
         newline = "\n"
         serialized_nums = "\n".join(
             f"{struct_parent_id} [{newline.join(struct_elem.ref for struct_elem in struct_elems)}]"
-            for struct_parent_id, struct_elems in self.Nums.items()
+            for struct_parent_id, struct_elems in self.nums.items()
         )
         return super().serialize(fpdf, {"/Nums": f"[{serialized_nums}]"})
 
 
 class StructTreeRoot(PDFObject):
+    __slots__ = ("_id", "type", "parent_tree", "k")
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.Type = "/StructTreeRoot"
+        self.type = "/StructTreeRoot"
         # A number tree used in finding the structure elements to which content items belong:
-        self.ParentTree = NumberTree()
+        self.parent_tree = NumberTree()
         # The immediate child or children of the structure tree root in the structure hierarchy:
-        self.K = []
+        self.k = PDFArray()
 
 
 class StructElem(PDFObject):
+    # The main reason to use __slots__ in PDFObject child classes is to save up some memory
+    # when very many instances of this class are created.
+    __slots__ = ("_id", "type", "s", "p", "k", "pg", "t", "alt")
+
     def __init__(
         self,
-        S: str,
-        P: PDFObject,
-        K: List[int],
-        Pg: PDFObject = None,
-        T: str = None,
-        Alt: str = None,
+        struct_type: str,
+        parent: PDFObject,
+        kids: Union[List[int], List["StructElem"]],
+        page: PDFObject = None,
+        title: str = None,
+        alt: str = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.Type = "/StructElem"
-        self.S = S  # The structure type, a name object identifying the nature of the structure element
-        self.P = P  # The structure element that is the immediate parent of this one in the structure hierarchy
-        self.K = K  # The children of this structure element
-        self.Pg = Pg  # A page object on which some or all of the content items designated by the K entry are rendered.
-        self.T = T  # The title of the structure element, a text string representing it in human-readable form
-        self.Alt = Alt  # An alternate description of the structure element and its children in human-readable form
+        self.type = "/StructElem"
+        self.s = (
+            struct_type  # a name object identifying the nature of the structure element
+        )
+        self.p = parent  # The structure element that is the immediate parent of this one in the structure hierarchy
+        self.k = PDFArray(kids)  # The children of this structure element
+        self.pg = page  # A page object on which some or all of the content items designated by the K entry are rendered
+        self.t = (
+            None if title is None else PDFString(title)
+        )  # a text string representing it in human-readable form
+        self.alt = (
+            None if alt is None else PDFString(alt)
+        )  # An alternate description of the structure element in human-readable form
 
 
 class StructureTreeBuilder:
@@ -171,23 +196,25 @@ class StructureTreeBuilder:
             marked_contents (tuple): list of MarkedContent
         """
         self.struct_tree_root = StructTreeRoot()
-        self.doc_struct_elem = StructElem(S="/Document", P=self.struct_tree_root, K=[])
-        self.struct_tree_root.K.append(self.doc_struct_elem)
+        self.doc_struct_elem = StructElem(
+            struct_type="/Document", parent=self.struct_tree_root, kids=[]
+        )
+        self.struct_tree_root.k.append(self.doc_struct_elem)
         for marked_content in marked_contents:
             self.add_marked_content(marked_content)
 
     def add_marked_content(self, marked_content):
         page = PDFObject(marked_content.page_object_id)
         struct_elem = StructElem(
-            S="/Figure",
-            P=self.doc_struct_elem,
-            K=[marked_content.mcid],
-            Pg=page,
-            T=marked_content.title,
-            Alt=marked_content.alt_text,
+            struct_type="/Figure",
+            parent=self.doc_struct_elem,
+            kids=[marked_content.mcid],
+            page=page,
+            title=marked_content.title,
+            alt=marked_content.alt_text,
         )
-        self.doc_struct_elem.K.append(struct_elem)
-        self.struct_tree_root.ParentTree.Nums[marked_content.struct_parents_id].append(
+        self.doc_struct_elem.k.append(struct_elem)
+        self.struct_tree_root.parent_tree.nums[marked_content.struct_parents_id].append(
             struct_elem
         )
 
@@ -209,8 +236,8 @@ class StructureTreeBuilder:
         output = []
         output.append(self.struct_tree_root.serialize(fpdf))
         output.append(self.doc_struct_elem.serialize(fpdf))
-        output.append(self.struct_tree_root.ParentTree.serialize(fpdf))
-        for struct_elem in self.doc_struct_elem.K:
+        output.append(self.struct_tree_root.parent_tree.serialize(fpdf))
+        for struct_elem in self.doc_struct_elem.k:
             output.append(struct_elem.serialize(fpdf))
         return "\n".join(output)
 
@@ -219,9 +246,9 @@ class StructureTreeBuilder:
         n += 1
         self.doc_struct_elem.id = n
         n += 1
-        self.struct_tree_root.ParentTree.id = n
+        self.struct_tree_root.parent_tree.id = n
         n += 1
-        for struct_elem in self.doc_struct_elem.K:
+        for struct_elem in self.doc_struct_elem.k:
             struct_elem.id = n
             n += 1
         return n

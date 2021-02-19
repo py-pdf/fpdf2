@@ -3,20 +3,24 @@ from fpdf.structure_tree import MarkedContent, PDFObject, StructureTreeBuilder
 
 def test_pdf_object_serialize():
     class Point(PDFObject):
-        def __init__(self, X=0, Y=0, **kwargs):
+        __slots__ = ("_id", "x", "y")
+
+        def __init__(self, x=0, y=0, **kwargs):
             super().__init__(**kwargs)
-            self.X = X
-            self.Y = Y
+            self.x = x
+            self.y = y
 
     class Square(PDFObject):
-        def __init__(self, TopLeft, BottomRight, **kwargs):
+        __slots__ = ("_id", "top_left", "bottom_right")
+
+        def __init__(self, top_left, bottom_right, **kwargs):
             super().__init__(**kwargs)
-            self.TopLeft = TopLeft
-            self.BottomRight = BottomRight
+            self.top_left = top_left
+            self.bottom_right = bottom_right
 
     point_a = Point(id=1)
-    point_b = Point(X=10, Y=10, id=2)
-    square = Square(TopLeft=point_a, BottomRight=point_b, id=3)
+    point_b = Point(x=10, y=10, id=2)
+    square = Square(top_left=point_a, bottom_right=point_b, id=3)
     pdf_content = (
         point_a.serialize() + "\n" + point_b.serialize() + "\n" + square.serialize()
     )
@@ -37,8 +41,8 @@ endobj
 endobj
 3 0 obj
 <<
-/TopLeft 1 0 R
 /BottomRight 2 0 R
+/TopLeft 1 0 R
 >>
 endobj"""
     )
@@ -51,17 +55,17 @@ def test_empty_structure_tree():
         == """\
 1 0 obj
 <<
-/Type /StructTreeRoot
-/ParentTree 3 0 R
 /K [2 0 R]
+/ParentTree 3 0 R
+/Type /StructTreeRoot
 >>
 endobj
 2 0 obj
 <<
-/Type /StructElem
-/S /Document
-/P 1 0 R
 /K []
+/P 1 0 R
+/S /Document
+/Type /StructElem
 >>
 endobj
 3 0 obj
@@ -80,17 +84,17 @@ def test_single_image_structure_tree():
         == """\
 3 0 obj
 <<
-/Type /StructTreeRoot
-/ParentTree 5 0 R
 /K [4 0 R]
+/ParentTree 5 0 R
+/Type /StructTreeRoot
 >>
 endobj
 4 0 obj
 <<
-/Type /StructElem
-/S /Document
-/P 3 0 R
 /K [6 0 R]
+/P 3 0 R
+/S /Document
+/Type /StructElem
 >>
 endobj
 5 0 obj
@@ -100,13 +104,13 @@ endobj
 endobj
 6 0 obj
 <<
-/Type /StructElem
-/S /Figure
-/P 4 0 R
-/K [0]
-/Pg 1 0 R
-/T (Image title)
 /Alt (Image description)
+/K [0]
+/P 4 0 R
+/Pg 1 0 R
+/S /Figure
+/T (Image title)
+/Type /StructElem
 >>
 endobj"""
     )
