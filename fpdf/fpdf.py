@@ -823,7 +823,7 @@ class FPDF:
 
         if family in self.font_aliases and family + style not in self.fonts:
             warnings.warn(
-                f"Substitutting font {family} by core font "
+                f"Substituting font {family} by core font "
                 f"{self.font_aliases[family]}"
             )
             family = self.font_aliases[family]

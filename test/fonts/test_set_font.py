@@ -80,7 +80,7 @@ def test_set_font_aliases_as_font():
         # Test if warning get's emitted
         with pytest.warns(
             UserWarning,
-            match=f"Substitutting font {alias.lower()} by core font {alternative}",
+            match=f"Substituting font {alias.lower()} by core font {alternative}",
         ):
             pdf.set_font(alias)
 
