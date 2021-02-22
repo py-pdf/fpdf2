@@ -32,7 +32,13 @@ def test_links(tmp_path):
     text = "Text link"
     pdf.text(x=80, y=150, txt=text)
     width = pdf.get_string_width(text)
-    pdf.link(x=0, y=0, w=width, h=line_height, link="https://github.com/PyFPDF/fpdf2")
+    pdf.link(
+        x=80,
+        y=150 - line_height,
+        w=width,
+        h=line_height,
+        link="https://github.com/PyFPDF/fpdf2",
+    )
 
     pdf.add_page()
     link = pdf.add_link()
@@ -43,3 +49,27 @@ def test_links(tmp_path):
     )
 
     assert_pdf_equal(pdf, HERE / "links.pdf", tmp_path)
+
+
+def test_link_alt_text(tmp_path):
+    """
+    It can be tested that the reference file for this test
+    has the link description read out loud by the NVDA screen reader
+    when opened with Adobe Acrobat Reader.
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica", size=24)
+    text = "PyFPDF/fpdf2"
+    pdf.text(x=80, y=150, txt=text)
+    width = pdf.get_string_width(text)
+    line_height = 10
+    pdf.link(
+        x=80,
+        y=150 - line_height,
+        w=width,
+        h=line_height,
+        link="https://github.com/PyFPDF/fpdf2",
+        alt_text="GitHub repository of the fpdf2 library",
+    )
+    assert_pdf_equal(pdf, HERE / "link_alt_text.pdf", tmp_path)

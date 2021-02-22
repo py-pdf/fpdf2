@@ -18,7 +18,8 @@ from .util.syntax import create_dictionary_string as pdf_d, iobj_ref as pdf_ref
 class MarkedContent(NamedTuple):
     page_object_id: int  # refers to the first page displaying this marked content
     struct_parents_id: int
-    mcid: int
+    struct_type: str
+    mcid: Optional[int] = None
     title: Optional[str] = None
     alt_text: Optional[str] = None
 
@@ -206,9 +207,9 @@ class StructureTreeBuilder:
     def add_marked_content(self, marked_content):
         page = PDFObject(marked_content.page_object_id)
         struct_elem = StructElem(
-            struct_type="/Figure",
+            struct_type=marked_content.struct_type,
             parent=self.doc_struct_elem,
-            kids=[marked_content.mcid],
+            kids=[marked_content.mcid] if marked_content.mcid else [],
             page=page,
             title=marked_content.title,
             alt=marked_content.alt_text,

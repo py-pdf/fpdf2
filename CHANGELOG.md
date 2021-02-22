@@ -12,6 +12,8 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - `FPDF.set_margin` : new method to set the document right, left, top & bottom margins to the same value
 - `FPDF.image` now accepts new optional `title` & `alt_text` parameters defining the image title
   and alternative text describing it, for accessibility purposes
+- `FPDF.link` now honor its `alt_text` optional parameter and this alternative text describing links
+  is now properly included in the resulting PDF document
 - the document language can be set using `FPDF.set_lang`
 ### Deprecated
 - `fpdf.FPDF_CACHE_MODE` & `fpdf.FPDF_CACHE_DIR` in favor of a configurable new `font_cache_dir` optional argument of the `fpdf.FPDF` constructor
