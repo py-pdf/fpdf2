@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from fpdf.template import Template
-from ..utilities import assert_pdf_equal
+from ..conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
 

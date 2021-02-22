@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import fpdf
-from test.utilities import assert_pdf_equal
+from test.conftest import assert_pdf_equal
 
 TEXT_SIZE, SPACING = 36, 1.15
 LINE_HEIGHT = TEXT_SIZE * SPACING

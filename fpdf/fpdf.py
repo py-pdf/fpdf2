@@ -954,7 +954,7 @@ class FPDF:
         """
         if self.page not in self.page_links:
             self.page_links[self.page] = []
-        self.page_links[self.page] += [
+        self.page_links[self.page].append(
             PageLink(
                 x * self.k,
                 self.h_pt - y * self.k,
@@ -963,7 +963,7 @@ class FPDF:
                 link,
                 alt_text,
             )
-        ]
+        )
 
     @check_page
     def text(self, x, y, txt=""):
@@ -1589,9 +1589,9 @@ class FPDF:
             type (str): [**DEPRECATED**] unused, will be removed in a later version.
             link (str): optional link to add on the image, internal
                 (identifier returned by `add_link`) or external URL.
-            title (str): optional
+            title (str): optional. Currently, never seem rendered by PDF readers.
             alt_text (str): optional alternative text describing the image,
-                for accessibility purposes
+                for accessibility purposes. Displayed by some PDF readers on hover.
         """
         if type:
             warnings.warn(

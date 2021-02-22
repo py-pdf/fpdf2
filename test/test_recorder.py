@@ -1,11 +1,12 @@
 from fpdf import FPDF
 from fpdf.recorder import FPDFRecorder
 
-from test.utilities import assert_pdf_equal
+from test.conftest import assert_pdf_equal, EPOCH
 
 
 def init_pdf():
     pdf = FPDF()
+    pdf.set_creation_date(EPOCH)
     pdf.set_font("helvetica", size=24)
     pdf.add_page()
     pdf.cell(w=pdf.epw, h=10, txt="Hello fpdf2!", align="C")
@@ -39,18 +40,6 @@ def test_recorder_replay_ok(tmp_path):
     recorder.add_page()
     recorder.cell(w=recorder.epw, h=10, txt="Hello again!", align="C")
     expected = recorder.output()
-    recorder.rewind()
-    recorder.replay()
-    assert_pdf_equal(recorder, expected, tmp_path)
-
-
-def test_recorder_rewind_replay_rewind_ok(tmp_path):
-    recorder = FPDFRecorder(init_pdf())
-    recorder.add_page()
-    recorder.cell(w=recorder.epw, h=10, txt="Hello again!", align="C")
-    expected = recorder.output()
-    recorder.rewind()
-    recorder.replay()
     recorder.rewind()
     recorder.replay()
     assert_pdf_equal(recorder, expected, tmp_path)

@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF
-from test.utilities import assert_pdf_equal
+from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
 

@@ -114,7 +114,7 @@ class PDFArray(list):
         elif all(isinstance(elem, int) for elem in self):
             serialized_elems = " ".join(map(str, self))
         else:
-            raise NotImplementedError
+            raise NotImplementedError(f"PDFArray.serialize with self={self}")
         return f"[{serialized_elems}]"
 
 
@@ -209,7 +209,7 @@ class StructureTreeBuilder:
         struct_elem = StructElem(
             struct_type=marked_content.struct_type,
             parent=self.doc_struct_elem,
-            kids=[marked_content.mcid] if marked_content.mcid else [],
+            kids=[] if marked_content.mcid is None else [marked_content.mcid],
             page=page,
             title=marked_content.title,
             alt=marked_content.alt_text,

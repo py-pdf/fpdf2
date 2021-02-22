@@ -2,6 +2,7 @@ import datetime as dt
 import hashlib
 import pathlib
 import shutil
+import sys
 import warnings
 from subprocess import check_output, CalledProcessError, PIPE
 
@@ -13,6 +14,8 @@ if not QPDF_AVAILABLE:
         "qpdf command not available on the $PATH, falling back to hash-based "
         "comparisons in tests"
     )
+
+EPOCH = dt.datetime(1969, 12, 31, 19, 00, 00)
 
 
 def assert_pdf_equal(actual, expected, tmp_path, generate=False):
@@ -42,7 +45,7 @@ def assert_pdf_equal(actual, expected, tmp_path, generate=False):
         actual_pdf = actual.pdf
     else:
         actual_pdf = actual
-    actual_pdf.set_creation_date(dt.datetime.fromtimestamp(0, dt.timezone.utc))
+    actual_pdf.set_creation_date(EPOCH)
     if generate:
         assert isinstance(expected, pathlib.Path), (
             "When passing `True` to `generate`"
@@ -50,28 +53,31 @@ def assert_pdf_equal(actual, expected, tmp_path, generate=False):
         )
         actual_pdf.output(expected.open("wb"))
         return
-    if not isinstance(expected, (bytes, bytearray)):
-        # Convert FPDF instance or file path to bytes:
-        if isinstance(expected, pathlib.Path):
-            expected_pdf_path = expected
-        else:
-            expected_pdf_path = tmp_path / "expected.pdf"
-            expected.output(expected_pdf_path.open("wb"))
-        expected = expected_pdf_path.read_bytes()
+    if isinstance(expected, pathlib.Path):
+        expected_pdf_path = expected
+    else:
+        expected_pdf_path = tmp_path / "expected.pdf"
+        with expected_pdf_path.open("wb") as pdf_file:
+            if isinstance(expected, (bytes, bytearray)):
+                pdf_file.write(expected)
+            else:
+                expected.output(pdf_file)
     actual_pdf_path = tmp_path / "actual.pdf"
-    actual_pdf.output(actual_pdf_path.open("wb"))
+    with actual_pdf_path.open("wb") as pdf_file:
+        actual_pdf.output(pdf_file)
     if QPDF_AVAILABLE:  # Favor qpdf-based comparison, as it helps a lot debugging:
-        actual_qpdf = _qpdf(actual_pdf_path.read_bytes())
-        assert actual_qpdf
-        expected_qpdf = _qpdf(expected)
-        assert expected_qpdf
+        actual_qpdf = _qpdf(actual_pdf_path)
+        expected_qpdf = _qpdf(expected_pdf_path)
         (tmp_path / "actual_qpdf.pdf").write_bytes(actual_qpdf)
         (tmp_path / "expected_qpdf.pdf").write_bytes(expected_qpdf)
         actual_lines = actual_qpdf.splitlines()
         expected_lines = expected_qpdf.splitlines()
         if actual_lines != expected_lines:
-            expected_lines = subst_streams_with_hashes(expected_lines)
+            # It is important to reduce the size of both list of bytes here,
+            # to avoid .assertSequenceEqual to take forever to finish, that itself calls difflib.ndiff,
+            # that has cubic complexity from this comment by Tim Peters: https://bugs.python.org/issue6931#msg223459
             actual_lines = subst_streams_with_hashes(actual_lines)
+            expected_lines = subst_streams_with_hashes(expected_lines)
         assert actual_lines == expected_lines
     else:  # Fallback to hash comparison
         actual_hash = hashlib.md5(actual_pdf_path.read_bytes()).hexdigest()
@@ -116,15 +122,16 @@ def subst_streams_with_hashes(in_lines):
     return out_lines
 
 
-def _qpdf(pdf_data):
-    """
-    Processes the input pdf_data and returns the output.
-    No files are written on disk.
-    """
+def _qpdf(input_pdf_filepath):
+    if sys.platform == "cygwin":
+        # Lucas (2021/01/06) : this conversion of UNIX file paths to Windows ones is only needed
+        # for my development environment: Cygwin, a UNIX system, with a qpdf Windows binary. Sorry for the kludge!
+        input_pdf_filepath = (
+            check_output(["cygpath", "-w", input_pdf_filepath]).decode().strip()
+        )
     try:
         return check_output(
-            ["qpdf", "--deterministic-id", "--qdf", "-", "-"],
-            input=pdf_data,
+            ["qpdf", "--deterministic-id", "--qdf", input_pdf_filepath, "-"],
             stderr=PIPE,
         )
     except CalledProcessError as error:
