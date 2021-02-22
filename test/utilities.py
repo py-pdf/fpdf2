@@ -1,9 +1,9 @@
 import datetime as dt
 import hashlib
 import pathlib
-import subprocess
 import shutil
 import warnings
+from subprocess import check_output, CalledProcessError, PIPE
 
 from fpdf.template import Template
 
@@ -62,7 +62,9 @@ def assert_pdf_equal(actual, expected, tmp_path, generate=False):
     actual_pdf.output(actual_pdf_path.open("wb"))
     if QPDF_AVAILABLE:  # Favor qpdf-based comparison, as it helps a lot debugging:
         actual_qpdf = _qpdf(actual_pdf_path.read_bytes())
+        assert actual_qpdf
         expected_qpdf = _qpdf(expected)
+        assert expected_qpdf
         (tmp_path / "actual_qpdf.pdf").write_bytes(actual_qpdf)
         (tmp_path / "expected_qpdf.pdf").write_bytes(expected_qpdf)
         actual_lines = actual_qpdf.splitlines()
@@ -119,10 +121,12 @@ def _qpdf(pdf_data):
     Processes the input pdf_data and returns the output.
     No files are written on disk.
     """
-    proc = subprocess.Popen(
-        ["qpdf", "--deterministic-id", "--qdf", "-", "-"],
-        stdout=subprocess.PIPE,
-        stdin=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    return proc.communicate(input=pdf_data)[0]
+    try:
+        return check_output(
+            ["qpdf", "--deterministic-id", "--qdf", "-", "-"],
+            input=pdf_data,
+            stderr=PIPE,
+        )
+    except CalledProcessError as error:
+        print(f"\nqpdf STDERR: {error.stderr.decode().strip()}")
+        raise

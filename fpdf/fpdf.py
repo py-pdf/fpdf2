@@ -939,7 +939,11 @@ class FPDF:
 
     def link(self, x, y, w, h, link, alt_text=None):
         """
-        Put a link on the page, defined as a rectangular clickable zone.
+        Puts a link on a rectangular area of the page.
+        Text or image links are generally put via [cell](#fpdf.FPDF.cell),
+        [write](#fpdf.FPDF.write) or [image](#fpdf.FPDF.image),
+        but this method can be useful for instance to define a clickable area inside an image.
+
         Args:
             x (int): horizontal position (from the left) to the left side of the link rectangle
             y (int): vertical position (from the top) to the bottom side of the link rectangle
