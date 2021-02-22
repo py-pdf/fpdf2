@@ -1804,6 +1804,9 @@ class FPDF:
                     )
 
                     if pl.alt_text is not None:
+                        # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
+                        # but tests with Adobe Acrobat Reader reveal that the page /StructParents inserted below
+                        # is enough to link the marked content in the hierarchy tree with this annotation link.
                         self._add_marked_content(
                             self.n, struct_type="/Link", alt_text=pl.alt_text
                         )
