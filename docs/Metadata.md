@@ -8,6 +8,7 @@ Currently, the following methods on `fpdf.FPDF` allow to set metadata informatio
 in the `DocumentInformation` dictionary:
 
 - `set_title`
+- `set_lang`
 - `set_subject`
 - `set_author`
 - `set_keywords`

@@ -379,6 +379,15 @@ class FPDF:
         """Title of document"""
         self.title = title
 
+    def set_lang(self, lang):
+        """
+        A language identifier specifying the natural language for all text in the document
+        except where overridden by language specifications for structure elements or marked content.
+        A language identifier can either be the empty text string, to indicate that the language is unknown,
+        or a Language-Tag as defined in RFC 3066, "Tags for the Identification of Languages".
+        """
+        self.lang = lang
+
     def set_subject(self, subject):
         """Subject of document"""
         self.subject = subject
@@ -2291,6 +2300,9 @@ class FPDF:
             # Pages is always the 1st object of the document, cf. the end of _putpages:
             "/Pages": pdf_ref(1),
         }
+        lang = enclose_in_parens(getattr(self, "lang", None))
+        if lang:
+            catalog_d["/Lang"] = lang
 
         if self.zoom_mode in ZOOM_CONFIGS:
             zoom_config = [
