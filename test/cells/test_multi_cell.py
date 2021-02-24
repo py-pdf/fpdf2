@@ -3,11 +3,19 @@ from pathlib import Path
 import fpdf
 from test.conftest import assert_pdf_equal
 
+
+HERE = Path(__file__).resolve().parent
+
 TEXT_SIZE, SPACING = 36, 1.15
 LINE_HEIGHT = TEXT_SIZE * SPACING
 
-
-HERE = Path(__file__).resolve().parent
+TABLE_DATA = (
+    ("First name", "Last name", "Age", "City"),
+    ("Jules", "Smith", "34", "San Juan"),
+    ("Mary", "Ramos", "45", "Orlando"),
+    ("Carlson", "Banks", "19", "Los Angeles"),
+    ("Lucas", "Cimon", "31", "Angers"),
+)
 
 
 def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
@@ -93,17 +101,11 @@ def test_multi_cell_ln_3_table(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=10)
-    data = (
-        ("First name", "Last name", "Age", "City"),
-        ("Juleskfgjhfdkgfdhkghfdghfd;grdfgdfhghf", "Smith", 34, "San Juan"),
-        ("Marydgfsfsfgdgvfdggfd", "Ramos", 45, "Orlando"),
-        ("Carlsonfdgfdgsfdxhfggjdfgfgu", "Banks", 19, "Los Angeles"),
-    )
     line_height = pdf.font_size * 2.5
     # Set column width to 1/4 of effective page width to distribute content
     # evenly across table and page
     col_width = pdf.epw / 4
-    for row in data:
+    for row in TABLE_DATA:
         for datum in row:
             pdf.multi_cell(
                 col_width,
@@ -115,6 +117,24 @@ def test_multi_cell_ln_3_table(tmp_path):
             )
         pdf.ln(line_height)
     assert_pdf_equal(pdf, HERE / "multi_cell_ln_3_table.pdf", tmp_path)
+
+
+def test_multi_cell_table_unbreakable(tmp_path):  # issue 111
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    line_height = pdf.font_size * 2
+    col_width = pdf.epw / 4  # distribute content evenly
+    for i in range(5):  # repeat table 5 times
+        with pdf.unbreakable() as pdf:
+            for row in TABLE_DATA:
+                for datum in row:
+                    pdf.multi_cell(
+                        col_width, line_height, f"{datum} ({i})", border=1, ln=3
+                    )
+                pdf.ln(line_height)
+        pdf.ln(line_height * 2)
+    assert_pdf_equal(pdf, HERE / "multi_cell_table_unbreakable.pdf", tmp_path)
 
 
 ## Code used to create test

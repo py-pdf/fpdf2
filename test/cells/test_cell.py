@@ -118,7 +118,7 @@ def test_cell_table_unbreakable(tmp_path):
     pdf.set_font("Times", size=16)
     line_height = pdf.font_size * 2
     col_width = pdf.epw / 4  # distribute content evenly
-    for i in range(4):  # repeat table 4 times
+    for i in range(5):  # repeat table 5 times
         with pdf.unbreakable() as pdf:
             for row in TABLE_DATA:
                 for datum in row:

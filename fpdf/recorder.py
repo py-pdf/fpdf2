@@ -16,26 +16,29 @@ class FPDFRecorder:
       * allow to **replay** again all the methods calls performed
         on the recorder instance between its creation and the last call to rewind()
 
+    Note that method can be called on a FPDFRecorder instance using its .pdf attribute
+    so that they are not recorded & replayed later, on a call to .replay().
+
     Note that using this class means to duplicate the FPDF `bytearray` buffer:
     when generating large PDFs, doubling memory usage may be troublesome.
     """
 
     def __init__(self, pdf, accept_page_break=True):
-        self._pdf = pdf
-        self._initial = deepcopy(self._pdf.__dict__)
+        self.pdf = pdf
+        self._initial = deepcopy(self.pdf.__dict__)
         self._calls = []
         if not accept_page_break:
             self.accept_page_break = False
 
     def __getattr__(self, name):
-        attr = getattr(self._pdf, name)
+        attr = getattr(self.pdf, name)
         if callable(attr):
             return CallRecorder(attr, self._calls)
         return attr
 
     def rewind(self):
-        self._pdf.__dict__ = self._initial
-        self._initial = deepcopy(self._pdf.__dict__)
+        self.pdf.__dict__ = self._initial
+        self._initial = deepcopy(self.pdf.__dict__)
 
     def replay(self):
         for call in self._calls:

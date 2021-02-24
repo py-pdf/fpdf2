@@ -1219,7 +1219,7 @@ class FPDF:
             and not self.in_footer
             and self.accept_page_break
         ):
-            LOGGER.info(
+            LOGGER.debug(
                 "Page break on page %d at y=%d for element of height %d",
                 self.page,
                 self.y,
@@ -2629,13 +2629,16 @@ class FPDF:
         """
         prev_page, prev_y = self.page, self.y
         recorder = FPDFRecorder(self, accept_page_break=False)
+        LOGGER.debug("Starting unbreakable block")
         yield recorder
         y_scroll = recorder.y - prev_y + (recorder.page - prev_page) * self.eph
         if prev_y + y_scroll > self.page_break_trigger:
             LOGGER.debug("Performing page jump due to unbreakable height")
             recorder.rewind()
-            assert recorder.perform_page_break_if_need_be(y_scroll)
+            # Peforming this call through .pdf so that it does not get recorded & replayed:
+            assert recorder.pdf.perform_page_break_if_need_be(y_scroll)
             recorder.replay()
+        LOGGER.debug("Ending unbreakable block")
 
 
 def _sizeof_fmt(num, suffix="B"):
