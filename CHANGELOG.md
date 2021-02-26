@@ -9,6 +9,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.3.1] - not released yet
 ### Added
+- `FPDF.polyline` & `FPDF.polygon` : new methods added by @uovodikiwi - thanks!
 - `FPDF.set_margin` : new method to set the document right, left, top & bottom margins to the same value at once
 - `FPDF.image` now accepts new optional `title` & `alt_text` parameters defining the image title
   and alternative text describing it, for accessibility purposes

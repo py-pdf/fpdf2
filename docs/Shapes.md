@@ -56,3 +56,17 @@ for i in range(15):
     pdf.rect(x=5+5*i, y=5+5*i, w=200-10*i, h=200-10*i, style="FD")
 pdf.output("squares.pdf")
 ```
+
+## Polygon ##
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_line_width(2)
+pdf.set_fill_color(r=255, g=0, b=0)
+coords = ((100, 0), (5, 69), (41, 181), (159, 181), (195, 69))
+pdf.polygon(coords, fill=True)
+pdf.output("polygon.pdf")
+```
