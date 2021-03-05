@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
+## [2.3.2] - not released yet
+### Added
+- `FPDF.set_xmp_metadata`
+
 ## [2.3.1] - 2021-02-28
 ### Added
 - `FPDF.polyline` & `FPDF.polygon` : new methods added by @uovodikiwi - thanks!

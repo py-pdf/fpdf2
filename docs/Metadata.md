@@ -12,10 +12,12 @@ in the `DocumentInformation` dictionary:
 - `set_subject`
 - `set_author`
 - `set_keywords`
+- `set_producer`
 - `set_creator`
 - `set_creation_date`
+- `set_xmp_metadata`, that requires you to craft the necessary XML string
 
-In order to be fully compliant with the recent PDF specs,
+For a more user-friendly API to set metadata,
 we recommend using [`pikepdf`](https://github.com/pikepdf/pikepdf/) that will set both XMP & `DocumentInformation` metadata:
 
 ```python

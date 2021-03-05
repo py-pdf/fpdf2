@@ -199,6 +199,9 @@ class FPDF:
         self.ws = 0  # word spacing
         self.angle = 0  # used by deprecated method: rotate()
         self.font_cache_dir = font_cache_dir
+        self.xmp_metadata = None
+        # Only set if XMP metadata is added to the document:
+        self._xmp_metadata_obj_id = None
         self._marked_contents = []  # list of MarkedContent
         self._struct_parents_id_per_page = {}  # {page_object_id -> StructParent(s) ID}
         # Only set if a Structure Tree is added to the document:
@@ -417,9 +420,16 @@ class FPDF:
         """Creator of document"""
         self.creator = creator
 
+    def set_producer(self, producer):
+        """Producer of document"""
+        self.producer = producer
+
     def set_creation_date(self, date=None):
         """Sets Creation of Date time, or current time if None given."""
         self.creation_date = datetime.now() if date is None else date
+
+    def set_xmp_metadata(self, xmp_metadata):
+        self.xmp_metadata = xmp_metadata
 
     def set_doc_option(self, opt, value):
         """Set document option"""
@@ -2358,6 +2368,14 @@ class FPDF:
             first_object_id=self._struct_tree_root_obj_id, fpdf=self
         )
 
+    def _put_xmp_metadata(self):
+        xpacket = f'<?xpacket begin="ï»¿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n{self.xmp_metadata}\n<?xpacket end="w"?>\n'
+        self._newobj()
+        self._out(f"<</Type /Metadata /Subtype /XML /Length {len(xpacket)}>>")
+        self._out(pdf_stream(xpacket))
+        self._out("endobj")
+        self._xmp_metadata_obj_id = self.n
+
     def _putinfo(self):
         info_d = {
             "/Title": enclose_in_parens(getattr(self, "title", None)),
@@ -2365,6 +2383,7 @@ class FPDF:
             "/Author": enclose_in_parens(getattr(self, "author", None)),
             "/Keywords": enclose_in_parens(getattr(self, "keywords", None)),
             "/Creator": enclose_in_parens(getattr(self, "creator", None)),
+            "/Producer": enclose_in_parens(getattr(self, "producer", None)),
         }
 
         if hasattr(self, "creation_date"):
@@ -2402,6 +2421,8 @@ class FPDF:
 
         if self.layout_mode in LAYOUT_NAMES:
             catalog_d["/PageLayout"] = LAYOUT_NAMES[self.layout_mode]
+        if self._xmp_metadata_obj_id:
+            catalog_d["/Metadata"] = pdf_ref(self._xmp_metadata_obj_id)
         if self._struct_tree_root_obj_id:
             catalog_d["/MarkInfo"] = pdf_d({"/Marked": "true"})
             catalog_d["/StructTreeRoot"] = pdf_ref(self._struct_tree_root_obj_id)
@@ -2425,6 +2446,8 @@ class FPDF:
         self._putresources()  # trace_size is performed inside
         if self._marked_contents:
             self._put_structure_tree()
+        if self.xmp_metadata:
+            self._put_xmp_metadata()
         # Info
         with self._trace_size("info"):
             self._newobj()
