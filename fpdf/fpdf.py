@@ -429,6 +429,10 @@ class FPDF:
         self.creation_date = datetime.now() if date is None else date
 
     def set_xmp_metadata(self, xmp_metadata):
+        if "<?xpacket" in xmp_metadata[:50]:
+            raise ValueError(
+                "fpdf2 already performs XMP metadata wrapping in a <?xpacket> tag"
+            )
         self.xmp_metadata = xmp_metadata
 
     def set_doc_option(self, opt, value):
