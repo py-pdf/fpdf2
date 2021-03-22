@@ -137,6 +137,20 @@ def test_multi_cell_table_unbreakable(tmp_path):  # issue 111
     assert_pdf_equal(pdf, HERE / "multi_cell_table_unbreakable.pdf", tmp_path)
 
 
+def test_multi_cell_justified_with_unicode_font(tmp_path):  # issue 118
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.add_font(
+        "DejaVu", "", HERE / "../end_to_end_legacy/charmap/DejaVuSans.ttf", uni=True
+    )
+    pdf.set_font("DejaVu", "", 14)
+    text = 'Justified line containing "()" that is long enough to trigger wrapping and a line jump'
+    pdf.multi_cell(w=0, h=8, txt=text, ln=1)
+    assert_pdf_equal(
+        pdf, HERE / "test_multi_cell_justified_with_unicode_font.pdf", tmp_path
+    )
+
+
 ## Code used to create test
 # doc = fpdf.FPDF(format = 'letter', unit = 'pt')
 # set_doc_date_0(doc)

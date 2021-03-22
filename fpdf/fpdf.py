@@ -760,7 +760,7 @@ class FPDF:
 
         # Check if font already added or one of the core fonts
         if fontkey in self.fonts or fontkey in self.core_fonts:
-            warnings.warn("Core font or font already added: doing nothing")
+            warnings.warn(f"Core font or font already added '{fontkey}': doing nothing")
             return
         if uni:
             for parent in (".", FPDF_FONT_DIR, SYSTEM_TTFONTS):
@@ -1082,6 +1082,11 @@ class FPDF:
         The rotation affects all elements which are printed inside the indented context
         (with the exception of clickable areas).
 
+        Args:
+            angle (float): angle in degrees
+            x (float): abscissa of the center of the rotation
+            y (float): ordinate of the center of the rotation
+
         Notes
         -----
 
@@ -1214,18 +1219,15 @@ class FPDF:
                 s += (
                     f"BT 0 Tw {(self.x + dx) * k:.2F} "
                     f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2F} "
-                    f"Td ["
+                    "Td ["
                 )
 
-                t = txt.split(" ")
-                numt = len(t)
-                for i in range(numt):
-                    tx = t[i]
-                    tx = enclose_in_parens(
-                        escape_parens(tx.encode("UTF-16BE").decode("latin-1"))
-                    )
-                    s += f"{tx} "
-                    if (i + 1) < numt:
+                words = txt.split(" ")
+                for i, word in enumerate(words):
+                    word = escape_parens(word.encode("UTF-16BE").decode("latin-1"))
+                    s += f"({word}) "
+                    is_last_word = (i + 1) == len(words)
+                    if not is_last_word:
                         adj = -(self.ws * self.k) * 1000 / self.font_size_pt
                         s += f"{adj}({space}) "
                 s += "] TJ"
@@ -1326,8 +1328,8 @@ class FPDF:
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
             align (str): Allows to center or align the text. Possible values are:
-                `L` or empty string: left align (default value) ; `C`: center ;
-                `R`: right align
+                `J`: justify (default value); `L` or empty string: left align ;
+                `C`: center ; `R`: right align
             fill (bool): Indicates if the cell background must be painted (`True`)
                 or transparent (`False`). Default value: False.
             split_only (bool): if `True`, does not output anything, only perform
