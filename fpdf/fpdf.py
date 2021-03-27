@@ -1519,6 +1519,11 @@ class FPDF:
             fill=fill,
             link=link,
         )
+        if new_page:
+            # When a page jump is performed and ln=3,
+            # we stick to that new vertical offset.
+            # cf. test_multi_cell_table_with_automatic_page_break
+            prev_y = self.y
         page_break_triggered = page_break_triggered or new_page
         text_cells.append(substr(s, j, i - j))
 

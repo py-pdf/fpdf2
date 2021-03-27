@@ -119,6 +119,29 @@ def test_multi_cell_ln_3_table(tmp_path):
     assert_pdf_equal(pdf, HERE / "multi_cell_ln_3_table.pdf", tmp_path)
 
 
+def test_multi_cell_table_with_automatic_page_break(tmp_path):  # issue 120
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    line_height = pdf.font_size * 2
+    col_width = pdf.epw / 4  # distribute content evenly
+    for _ in range(5):  # repeat table 5 times
+        for row in TABLE_DATA:
+            for datum in row:
+                pdf.multi_cell(
+                    col_width,
+                    line_height,
+                    datum,
+                    border=1,
+                    ln=3,
+                    max_line_height=pdf.font_size,
+                )
+            pdf.ln(line_height)
+    assert_pdf_equal(
+        pdf, HERE / "test_multi_cell_table_with_automatic_page_break.pdf", tmp_path
+    )
+
+
 def test_multi_cell_table_unbreakable(tmp_path):  # issue 111
     pdf = fpdf.FPDF()
     pdf.add_page()
