@@ -2456,7 +2456,8 @@ class FPDF:
             self._putpages()
         self._putresources()  # trace_size is performed inside
         if self._marked_contents:
-            self._put_structure_tree()
+            with self._trace_size("structure_tree"):
+                self._put_structure_tree()
         if self.xmp_metadata:
             self._put_xmp_metadata()
         # Info
