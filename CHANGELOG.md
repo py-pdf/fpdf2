@@ -9,7 +9,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.3.3] - not released yet
 ### Fixed
-- `HTMLMixin` / `HTML2FPDF`: properly handling `<img>` inside `<td>`
+- `HTMLMixin` / `HTML2FPDF`: properly handling `<img>` inside `<td>` & allowing to center them horizontally
 
 ## [2.3.2] - 2021-03-27
 ### Added

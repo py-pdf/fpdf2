@@ -80,19 +80,21 @@ class HTML2FPDF(HTMLParser):
         self.table_row_height = 0
         self.hsize = dict(h1=2, h2=1.5, h3=1.17, h4=1, h5=0.83, h6=0.67)
 
-    def width2mm(self, length):
+    def width2unit(self, length):
+        "Handle conversion of % measures into the measurement unit used"
         if length[-1] == "%":
             total = self.pdf.w - self.pdf.r_margin - self.pdf.l_margin
             if self.table["width"][-1] == "%":
                 total *= int(self.table["width"][:-1]) / 100
-            return int(length[:-1]) * total / 101
-        return int(length) / 6
+            return int(length[:-1]) * total / 100
+        return int(length)
 
     def handle_data(self, data):
         if self.td is not None:  # drawing a table?
             width = self._td_width()
             height = int(self.td.get("height", 0)) // 4 or self.h * 1.30
-            self.table_row_height = height
+            if not self.table_row_height and height:
+                self.table_row_height = height
             border = int(self.table.get("border", 0))
             if not self.th:
                 align = self.td.get("align", "L")[0].upper()
@@ -118,7 +120,15 @@ class HTML2FPDF(HTMLParser):
                 if not self.theader_out:
                     self.output_table_header()
                 self.box_shadow(width, self.table_row_height, bgcolor)
-                LOGGER.debug("td cell %s %s '%s' *", self.pdf.x, width, data)
+                self.pdf.set_x(
+                    self._td_x()
+                )  # self.pdf.x may have shifted due to <img> inside <td>
+                LOGGER.debug(
+                    "td cell x=%d width=%d '%s'",
+                    self.pdf.x,
+                    width,
+                    data.replace("\n", "\\n"),
+                )
                 self.pdf.cell(
                     width, self.table_row_height, data, border=border, ln=0, align=align
                 )
@@ -126,7 +136,7 @@ class HTML2FPDF(HTMLParser):
             # ignore anything else than td inside a table
             pass
         elif self.align:
-            LOGGER.debug("cell '%s' *", data)
+            LOGGER.debug("cell '%s'", data.replace("\n", "\\n"))
             self.pdf.cell(
                 0,
                 self.h,
@@ -141,10 +151,19 @@ class HTML2FPDF(HTMLParser):
             if self.href:
                 self.put_link(self.href, data)
             else:
-                LOGGER.debug("write '%s' *", data)
+                LOGGER.debug("write '%s'", data.replace("\n", "\\n"))
                 self.pdf.write(self.h, data)
 
+    def _td_x(self):
+        "Return the current table cell left side horizontal position"
+        prev_cells_total_width = sum(
+            self.width2unit(width)
+            for width in self.table_col_width[: self.table_col_index]
+        )
+        return self.table_offset + prev_cells_total_width
+
     def _td_width(self):
+        "Return the current table cell width"
         # pylint: disable=raise-missing-from
         if "width" in self.td:
             column_widths = [self.td["width"]]
@@ -160,10 +179,10 @@ class HTML2FPDF(HTMLParser):
                     f"Width not specified for table column {self.table_col_index},"
                     " unable to continue"
                 )
-        return sum(self.width2mm(width) for width in column_widths)
+        return sum(self.width2unit(width) for width in column_widths)
 
     def box_shadow(self, w, h, bgcolor):
-        LOGGER.debug("box_shadow %s %s %s", w, h, bgcolor)
+        LOGGER.debug("box_shadow w=%d h=%d bgcolor=%s", w, h, bgcolor)
         if bgcolor:
             fill_color = self.pdf.fill_color
             self.pdf.set_fill_color(*bgcolor)
@@ -200,7 +219,7 @@ class HTML2FPDF(HTMLParser):
     def output_table_sep(self):
         x1 = self.pdf.x
         y1 = self.pdf.y
-        width = sum(self.width2mm(length) for length in self.table_col_width)
+        width = sum(self.width2unit(length) for length in self.table_col_width)
         self.pdf.line(x1, y1, x1 + width, y1)
 
     def handle_starttag(self, tag, attrs):
@@ -291,17 +310,11 @@ class HTML2FPDF(HTMLParser):
                 self.output_table_sep()
         if tag == "td":
             self.td = {k.lower(): v for k, v in attrs.items()}
-            if "width" in self.td:
-                existing_col_width = (
-                    self.table_col_width[self.table_col_index]
-                    if self.table_col_index < len(self.table_col_width)
-                    else None
-                )
-                if existing_col_width is None:
-                    assert self.table_col_index == len(
-                        self.table_col_width
-                    ), f"table_col_index={self.table_col_index} #table_col_width={len(self.table_col_width)}"
-                    self.table_col_width.append(self.td["width"])
+            if "width" in self.td and self.table_col_index >= len(self.table_col_width):
+                assert self.table_col_index == len(
+                    self.table_col_width
+                ), f"table_col_index={self.table_col_index} #table_col_width={len(self.table_col_width)}"
+                self.table_col_width.append(self.td["width"])
         if tag == "th":
             self.td = {k.lower(): v for k, v in attrs.items()}
             self.th = True
@@ -318,20 +331,25 @@ class HTML2FPDF(HTMLParser):
                 self.pdf.add_page(same=True)
             y = self.pdf.get_y()
             if self.table_col_index is not None:
-                # <img> in a <td>: we compute its horizontal position:
-                prev_cells_total_width = sum(
-                    self.width2mm(width)
-                    for width in self.table_col_width[: self.table_col_index]
-                )
-                x = self.pdf.l_margin + prev_cells_total_width
-                # Image width must not exceed cell width:
+                # <img> in a <td>: its width must not exceed the cell width:
                 td_width = self._td_width()
                 if not width or width > td_width:
                     width = td_width
+                x = self._td_x()
+                if self.align and self.align[0].upper() == "C":
+                    x += (td_width - width) / 2
             else:
                 x = self.pdf.get_x()
                 if self.align and self.align[0].upper() == "C":
                     x = self.pdf.w / 2 - width / 2
+            LOGGER.debug(
+                'image "%s" x=%d y=%d width=%d height=%d',
+                attrs["src"],
+                x,
+                y,
+                width,
+                height,
+            )
             self.pdf.image(
                 self.image_map(attrs["src"]), x, y, width, height, link=self.href
             )

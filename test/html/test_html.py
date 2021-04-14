@@ -304,3 +304,21 @@ def test_img_inside_html_table_without_explicit_dimensions(tmp_path):
         HERE / "test_img_inside_html_table_without_explicit_dimensions.pdf",
         tmp_path,
     )
+
+
+def test_img_inside_html_table_centered(tmp_path):
+    pdf = MyFPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<table>
+        <tr>
+            <td width="50%"><center>
+                <img src="test/image/png_images/6c853ed9dacd5716bc54eb59cec30889.png" height="256" width="181"/>
+            </center></td>
+            <td width="50%"><center>
+                <img src="test/image/image_types/insert_images_insert_png.png" height="162" width="154"/>
+            </center></td>
+        </tr>
+    </table>"""
+    )
+    assert_pdf_equal(pdf, HERE / "test_img_inside_html_table_centered.pdf", tmp_path)
