@@ -3,13 +3,14 @@ import sys
 
 from .fpdf import (
     FPDF,
+    TitleStyle,
     FPDF_FONT_DIR as _FPDF_FONT_DIR,
     FPDF_VERSION as _FPDF_VERSION,
     SYSTEM_TTFONTS as _SYSTEM_TTFONTS,
 )
 from .html import HTMLMixin
 from .template import Template
-from .util.deprecation import WarnOnDeprecatedModuleAttributes
+from .deprecation import WarnOnDeprecatedModuleAttributes
 
 FPDF_VERSION = _FPDF_VERSION
 """Current FPDF Version, also available via `__version__` (which is read by `setup.py`):
@@ -42,6 +43,7 @@ __all__ = [
     # Classes
     "FPDF",
     "Template",
+    "TitleStyle",
     "HTMLMixin",
     # FPDF Constants
     "FPDF_VERSION",

@@ -77,10 +77,10 @@ endobj"""
 
 
 def test_single_image_structure_tree():
-    images_alt_texts = (
-        MarkedContent(1, 0, "/Figure", 0, "Image title", "Image description"),
+    struct_builder = StructureTreeBuilder()
+    struct_builder.add_marked_content(
+        MarkedContent(1, 0, "/Figure", 0, "Image title", "Image description")
     )
-    struct_builder = StructureTreeBuilder(images_alt_texts)
     assert (
         struct_builder.serialize(first_object_id=3)
         == """\

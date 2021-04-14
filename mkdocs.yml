@@ -26,9 +26,10 @@ nav:
 - 'Links':                          'Links.md'
 - 'Tables':                         'Tables.md'
 - 'Layout':
-  - 'Page format and orientation':  'PageFormatAndOrientation.md'
-  - 'Margins':                      'Margins.md'
-  - 'Page breaks':                  'PageBreaks.md'
+  - 'Page format and orientation':          'PageFormatAndOrientation.md'
+  - 'Margins':                              'Margins.md'
+  - 'Page breaks':                          'PageBreaks.md'
+  - 'Document outline & table of contents': 'DocumentOutlineAndTableOfContents.md'
 - 'Text styling':                   'TextStyling.md'
 - 'Shapes':                         'Shapes.md'
 - 'Barcodes':                       'Barcodes.md'

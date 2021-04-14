@@ -1,4 +1,3 @@
-"""Utility Functions"""
 import locale
 
 

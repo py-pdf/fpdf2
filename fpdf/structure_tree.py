@@ -11,7 +11,7 @@ Quoting the PDF spec:
 from collections import defaultdict
 from typing import NamedTuple, List, Optional, Union
 
-from .util.syntax import create_dictionary_string as pdf_d, iobj_ref as pdf_ref
+from .syntax import PDFObject, PDFString, PDFArray
 
 
 # pylint: disable=inherit-non-class,unsubscriptable-object
@@ -22,100 +22,6 @@ class MarkedContent(NamedTuple):
     mcid: Optional[int] = None
     title: Optional[str] = None
     alt_text: Optional[str] = None
-
-
-class PDFObject:
-    """
-    Main features of this class:
-    * delay ID assignement
-    * implement serializing
-
-    To ensure consistency on how the serialize() method operates,
-    child classes must define a __slots__ attribute.
-    """
-
-    # pylint: disable=redefined-builtin
-    def __init__(self, id=None):
-        self._id = id
-
-    @property
-    def id(self):
-        if self._id is None:
-            raise AttributeError(
-                f"{self.__class__.__name__} has not been assigned an ID yet"
-            )
-        return self._id
-
-    @id.setter
-    def id(self, n):
-        self._id = n
-
-    @property
-    def ref(self):
-        return pdf_ref(self.id)
-
-    def serialize(self, fpdf=None, obj_dict=None):
-        output = []
-        if fpdf:
-            # pylint: disable=protected-access
-            appender = fpdf._out
-            assert (
-                fpdf._newobj() == self.id
-            ), "Something went wrong in StructTree object IDs assignement"
-        else:
-            appender = output.append
-            appender(f"{self.id} 0 obj")
-        appender("<<")
-        if not obj_dict:
-            obj_dict = self._build_obj_dict()
-        appender(pdf_d(obj_dict, open_dict="", close_dict=""))
-        appender(">>")
-        appender("endobj")
-        return "\n".join(output)
-
-    def _build_obj_dict(self):
-        """
-        Build the PDF Object associative map to serialize,
-        based on this class instance properties.
-        The property names are converted to CamelCase,
-        and prefixed with a slash character "/".
-        """
-        obj_dict = {}
-        for key in dir(self):
-            value = getattr(self, key)
-            if (
-                callable(value)
-                or key.startswith("_")
-                or key in ("id", "ref")
-                or value is None
-            ):
-                continue
-            if isinstance(value, PDFObject):  # indirect object reference
-                value = value.ref
-            elif hasattr(value, "serialize"):  # e.g. PDFArray & PDFString
-                value = value.serialize()
-            obj_dict[f"/{camel_case(key)}"] = value
-        return obj_dict
-
-
-def camel_case(property_name):
-    return "".join(x for x in property_name.title() if x != "_")
-
-
-class PDFString(str):
-    def serialize(self):
-        return f"({self})"
-
-
-class PDFArray(list):
-    def serialize(self):
-        if all(isinstance(elem, PDFObject) for elem in self):
-            serialized_elems = "\n".join(elem.ref for elem in self)
-        elif all(isinstance(elem, int) for elem in self):
-            serialized_elems = " ".join(map(str, self))
-        else:
-            raise NotImplementedError(f"PDFArray.serialize with self={self}")
-        return f"[{serialized_elems}]"
 
 
 class NumberTree(PDFObject):
@@ -191,7 +97,7 @@ class StructElem(PDFObject):
 
 
 class StructureTreeBuilder:
-    def __init__(self, marked_contents=()):
+    def __init__(self):
         """
         Args:
             marked_contents (tuple): list of MarkedContent
@@ -201,8 +107,7 @@ class StructureTreeBuilder:
             struct_type="/Document", parent=self.struct_tree_root, kids=[]
         )
         self.struct_tree_root.k.append(self.doc_struct_elem)
-        for marked_content in marked_contents:
-            self.add_marked_content(marked_content)
+        self.struct_elem_per_mc = {}
 
     def add_marked_content(self, marked_content):
         page = PDFObject(marked_content.page_object_id)
@@ -214,10 +119,19 @@ class StructureTreeBuilder:
             title=marked_content.title,
             alt=marked_content.alt_text,
         )
+        self.struct_elem_per_mc[marked_content] = struct_elem
         self.doc_struct_elem.k.append(struct_elem)
         self.struct_tree_root.parent_tree.nums[marked_content.struct_parents_id].append(
             struct_elem
         )
+
+    def next_mcid_for_page(self, page_object_id):
+        return sum(
+            1 for mc in self.struct_elem_per_mc if mc.page_object_id == page_object_id
+        )
+
+    def empty(self):
+        return not self.struct_elem_per_mc
 
     def serialize(self, first_object_id=1, fpdf=None):
         """

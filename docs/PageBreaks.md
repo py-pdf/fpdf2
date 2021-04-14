@@ -10,6 +10,11 @@ and
 methods.
 
 
+## Manually trigger a page break ##
+
+Simply call `.add_page()`.
+
+
 ## Unbreakable sections ##
 
 In order to render content, like [tables](Tables.html),

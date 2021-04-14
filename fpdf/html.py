@@ -78,6 +78,7 @@ class HTML2FPDF(HTMLParser):
         self.tfooter = None  # table footer cells
         self.theader_out = self.tfooter_out = False
         self.table_row_height = 0
+        self.heading_level = None
         self.hsize = dict(h1=2, h2=1.5, h3=1.17, h4=1, h5=0.83, h6=0.67)
         self._only_imgs_in_td = False
 
@@ -112,6 +113,8 @@ class HTML2FPDF(HTMLParser):
             if self.href:
                 self.put_link(self.href, data)
             else:
+                if self.heading_level:
+                    self.pdf.start_section(data, self.heading_level - 1)
                 LOGGER.debug("write '%s'", data.replace("\n", "\\n"))
                 self.pdf.write(self.h, data)
 
@@ -243,6 +246,7 @@ class HTML2FPDF(HTMLParser):
             if attrs:
                 self.align = attrs.get("align")
         if tag in self.hsize:
+            self.heading_level = int(tag[1:])
             k = self.hsize[tag]
             self.pdf.ln(5 * k)
             self.pdf.set_text_color(150, 0, 0)
@@ -377,11 +381,14 @@ class HTML2FPDF(HTMLParser):
             self.set_style(tag, True)
         if tag == "center":
             self.align = "Center"
+        if tag == "toc":
+            self.pdf.insert_toc_placeholder(self.render_toc)
 
     def handle_endtag(self, tag):
         # Closing tag
         LOGGER.debug("ENDTAG %s", tag)
-        if tag in ("h1", "h2", "h3", "h4", "h5", "h6"):
+        if tag in self.hsize:
+            self.heading_level = None
             self.pdf.ln(self.h)
             self.set_font()
             self.set_text_color()
@@ -483,6 +490,17 @@ class HTML2FPDF(HTMLParser):
         self.pdf.write(self.h, txt, url)
         self.set_style("u", False)
         self.set_text_color()
+
+    # pylint: disable=no-self-use
+    def render_toc(self, pdf, outline):
+        "This method can be overriden by subclasses to customize the Table of Contents style."
+        pdf.ln()
+        for section in outline[1:]:  # skipping top-level h1
+            link = pdf.add_link()
+            pdf.set_link(link, page=section.page_number)
+            text = f'{" " * section.level * 2} {section.name}'
+            text += f' {"." * (60 - section.level*2 - len(section.name))} {section.page_number}'
+            pdf.multi_cell(w=pdf.epw, h=pdf.font_size, txt=text, ln=1, link=link)
 
     # Subclasses of _markupbase.ParserBase must implement this:
     def error(self, message):

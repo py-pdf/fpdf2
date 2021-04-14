@@ -9,6 +9,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.3.3] - not released yet
 ### Added
+- new features: **document outline & table of contents**! Check out the new dedicated [documentation page](https://pyfpdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html) for more information
 - `FPDF.image` now also accepts an `io.BytesIO` as input
 ### Fixed
 - `HTMLMixin` / `HTML2FPDF`: properly handling `<img>` inside `<td>` & allowing to center them horizontally
