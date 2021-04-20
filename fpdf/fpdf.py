@@ -15,6 +15,8 @@ The version number is updated here (above and below in variable).
 """
 
 import errno
+import hashlib
+import io
 import logging
 import math
 import os
@@ -1640,8 +1642,8 @@ class FPDF:
         * when using an animated GIF, only the first frame is used.
 
         Args:
-            name: either a string representing a file path to an image, or a instance of
-            `PIL.Image.Image`
+            name: either a string representing a file path to an image, an io.BytesIO,
+                or a instance of `PIL.Image.Image`
             x (int): optional horizontal position where to put the image on the page.
                 If not specified or equal to None, the current abscissa is used.
             y (int): optional vertical position where to put the image on the page.
@@ -1667,6 +1669,8 @@ class FPDF:
             )
         if isinstance(name, str):
             img = None
+        elif isinstance(name, io.BytesIO):
+            name, img = hashlib.md5(name.getvalue()).hexdigest(), name
         else:
             name, img = str(name), name
         if name not in self.images:

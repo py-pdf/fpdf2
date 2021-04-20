@@ -1,3 +1,4 @@
+import io
 import sys
 from pathlib import Path
 
@@ -55,5 +56,16 @@ def test_insert_pillow(tmp_path):
     pdf.add_page()
     file_path = HERE / "insert_images_insert_png.png"
     img = Image.open(file_path)
-    pdf.image(img, x=15, y=15)
-    assert_pdf_equal(pdf, HERE / "image_types_insert_pillow.pdf", tmp_path)
+    pdf.image(img, x=15, y=15, h=140)
+    assert_pdf_equal(pdf, HERE / "image_types_insert_png.pdf", tmp_path)
+
+
+def test_insert_bytesio(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    file_path = HERE / "insert_images_insert_png.png"
+    img = Image.open(file_path)
+    img_bytes = io.BytesIO()
+    img.save(img_bytes, "PNG")
+    pdf.image(img_bytes, x=15, y=15, h=140)
+    assert_pdf_equal(pdf, HERE / "image_types_insert_png.pdf", tmp_path)

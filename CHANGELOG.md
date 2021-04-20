@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.3.3] - not released yet
+### Added
+- `FPDF.image` now also accepts an `io.BytesIO` as input
 ### Fixed
 - `HTMLMixin` / `HTML2FPDF`: properly handling `<img>` inside `<td>` & allowing to center them horizontally
 
