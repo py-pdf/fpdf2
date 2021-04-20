@@ -42,7 +42,7 @@ pdf.output("hyperlink.pdf")
 
 ## Hyperlink with write_html ##
 
-An alternative method using [`fpdf.HTMLMixin`](HTML.html):
+An alternative method using [`fpdf.HTMLMixin`](HTML.md):
 
 ```python
 from fpdf import FPDF, HTMLMixin

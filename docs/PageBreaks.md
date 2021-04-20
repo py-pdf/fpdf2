@@ -17,7 +17,7 @@ Simply call `.add_page()`.
 
 ## Unbreakable sections ##
 
-In order to render content, like [tables](Tables.html),
+In order to render content, like [tables](Tables.md),
 with the insurance that no page break will be performed in it,
 on the can use the `FPDF.unbreakable()` context-manager:
 

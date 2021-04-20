@@ -1,7 +1,7 @@
 # Tables #
 
 Tables can be built either using **cells**
-or with [`write_html`](HTML.html).
+or with [`write_html`](HTML.md).
 
 
 ## Using cells ##
@@ -34,7 +34,7 @@ pdf.output('table_with_cells.pdf')
 
 ## Using write_html ##
 
-An alternative method using [`fpdf.HTMLMixin`](HTML.html),
+An alternative method using [`fpdf.HTMLMixin`](HTML.md),
 with the same `data` as above, and column widths defined as percent of the effective width:
 
 ```python

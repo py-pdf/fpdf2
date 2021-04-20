@@ -2782,12 +2782,17 @@ class FPDF:
 
         Args:
             render_toc_function (function): a function that will be invoked to render the ToC.
-                This function will receive 2 parameters: `pdf`, an instance of FPDF, and an `outline`,
+                This function will receive 2 parameters: `pdf`, an instance of FPDF, and `outline`,
                 a list of `OutlineSection`.
             pages (int): the number of pages that the Table of Contents will span,
                 including the current one that will. As many page breaks as the value of this argument
-                will occur right now.
+                will occur immediately after calling this method.
         """
+        if self._toc_placeholder:
+            raise FPDFException(
+                "A placeholder for the table of contents has already been defined"
+                f" on page {self._toc_placeholder.start_page}"
+            )
         self._toc_placeholder = ToCPlaceholder(
             render_toc_function, self.page, self.y, pages
         )

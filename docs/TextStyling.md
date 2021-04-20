@@ -32,7 +32,7 @@ pdf.output("style.pdf")
 
 ## write_html ##
 
-[`write_html`](HTML.html) allows to set emphasis on text through the `<b>`, `<i>` and `<u>` tags:
+[`write_html`](HTML.md) allows to set emphasis on text through the `<b>`, `<i>` and `<u>` tags:
 
 ```python
 pdf.write_html("""<B>bold</B>
