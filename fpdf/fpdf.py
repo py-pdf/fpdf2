@@ -2788,6 +2788,10 @@ class FPDF:
                 including the current one that will. As many page breaks as the value of this argument
                 will occur immediately after calling this method.
         """
+        if not callable(render_toc_function):
+            raise TypeError(
+                f"The first argument must be a callable, got: {type(render_toc_function)}"
+            )
         if self._toc_placeholder:
             raise FPDFException(
                 "A placeholder for the table of contents has already been defined"
@@ -2822,6 +2826,11 @@ class FPDF:
             level5 (TitleStyle): optional style for the level 5 section titles
             level6 (TitleStyle): optional style for the level 6 section titles
         """
+        for level in (level0, level1, level2, level3, level4, level5, level6):
+            if level and not isinstance(level, TitleStyle):
+                raise TypeError(
+                    f"Arguments must all be TitleStyle instances, got: {type(level)}"
+                )
         self.section_title_styles = {
             0: level0,
             1: level1,
@@ -2843,6 +2852,8 @@ class FPDF:
             name (str): section name
             level (int): section level in the document outline. 0 means top-level.
         """
+        if level < 0:
+            raise ValueError('"level" mut be equal or greater than zero')
         if self._outline:
             if level > self._outline[-1].level + 1:
                 raise ValueError(

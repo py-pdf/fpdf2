@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from fpdf import FPDF, TitleStyle
+import pytest
+
+from fpdf import FPDF, TitleStyle, errors
 from test.conftest import assert_pdf_equal
 
 
@@ -91,3 +93,34 @@ def render_toc(pdf, outline):
             f' {"." * (60 - section.level*2 - len(section.name))} {section.page_number}'
         )
         pdf.multi_cell(w=pdf.epw, h=pdf.font_size, txt=text, ln=1, align="C", link=link)
+
+
+def test_insert_toc_placeholder_with_invalid_arg_type():
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(TypeError):
+        pdf.insert_toc_placeholder("render_toc")
+
+
+def test_insert_toc_placeholder_twice():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.insert_toc_placeholder(render_toc)
+    with pytest.raises(errors.FPDFException):
+        pdf.insert_toc_placeholder(render_toc)
+
+
+def test_incoherent_start_section_hierarchy():
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(ValueError):
+        pdf.start_section("Title", level=-1)
+    pdf.start_section("Title", level=0)
+    with pytest.raises(ValueError):
+        pdf.start_section("Subtitle", level=2)
+
+
+def test_set_section_title_styles_with_invalid_arg_type():
+    pdf = FPDF()
+    with pytest.raises(TypeError):
+        pdf.set_section_title_styles("Times")
