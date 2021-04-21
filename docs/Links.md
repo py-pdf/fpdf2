@@ -78,5 +78,15 @@ pdf.cell(w=100, h=10, txt="Internal link to first page", border=1, align="C", li
 pdf.output("internal_link.pdf")
 ```
 
-Similarly, `FPDF.link` can be instead of `FPDF.cell`,
+Similarly, `FPDF.link` can be used instead of `FPDF.cell`,
 however `write_html` does not allow to define internal links.
+
+
+## Alternative description ##
+
+An optional textual description of the link can be provided, for accessibility purposes:
+
+```python
+pdf.link(x=0, y=0, w=width, h=line_height, link="https://github.com/PyFPDF/fpdf2",
+         alt_text="GitHub page for fpdf2")
+```

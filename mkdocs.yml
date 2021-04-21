@@ -23,6 +23,7 @@ nav:
 - 'Tutorial':                       'Tutorial.md'
 - 'Existing PDFs':                  'ExistingPDFs.md'
 - 'HTML':                           'HTML.md'
+- 'Images':                         'Images.md'
 - 'Links':                          'Links.md'
 - 'Tables':                         'Tables.md'
 - 'Layout':

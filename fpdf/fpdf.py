@@ -25,6 +25,7 @@ import re
 import sys
 import warnings
 import zlib
+from collections import defaultdict
 from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import datetime
@@ -89,12 +90,14 @@ class DocumentState(IntEnum):
     CLOSED = 3  # EOF printed
 
 
-class PageLink(NamedTuple):
+class Annotation(NamedTuple):
+    type: str
     x: int
     y: int
     width: int
     height: int
-    link: str
+    contents: str = None
+    link: Union[str, int] = None
     alt_text: Optional[str] = None
 
 
@@ -205,7 +208,7 @@ class FPDF:
         self.font_files = {}  # array of font files
         self.diffs = {}  # array of encoding differences
         self.images = {}  # array of used images
-        self.page_links = {}  # array of PageLink
+        self.annots = defaultdict(list)  # map page numbers to arrays of Annotations
         self.links = {}  # array of InternalLink
         self.in_footer = 0  # flag set when processing footer
         self.lasth = 0  # height of last cell printed
@@ -1025,7 +1028,7 @@ class FPDF:
 
     def link(self, x, y, w, h, link, alt_text=None):
         """
-        Puts a link on a rectangular area of the page.
+        Puts a link annotation on a rectangular area of the page.
         Text or image links are generally put via [cell](#fpdf.FPDF.cell),
         [write](#fpdf.FPDF.write) or [image](#fpdf.FPDF.image),
         but this method can be useful for instance to define a clickable area inside an image.
@@ -1035,19 +1038,40 @@ class FPDF:
             y (int): vertical position (from the top) to the bottom side of the link rectangle
             w (int): width of the link rectangle
             h (int): width of the link rectangle
-            link (str): either an URL or a integer returned by `add_link`, defining an internal link to a page
+            link: either an URL or a integer returned by `add_link`, defining an internal link to a page
             alt_text (str): optional textual description of the link, for accessibility purposes
         """
-        if self.page not in self.page_links:
-            self.page_links[self.page] = []
-        self.page_links[self.page].append(
-            PageLink(
+        self.annots[self.page].append(
+            Annotation(
+                "Link",
                 x * self.k,
                 self.h_pt - y * self.k,
                 w * self.k,
                 h * self.k,
-                link,
-                alt_text,
+                link=link,
+                alt_text=alt_text,
+            )
+        )
+
+    def text_annotation(self, x, y, w, h, text):
+        """
+        Puts a text annotation on a rectangular area of the page.
+
+        Args:
+            x (int): horizontal position (from the left) to the left side of the link rectangle
+            y (int): vertical position (from the top) to the bottom side of the link rectangle
+            w (int): width of the link rectangle
+            h (int): width of the link rectangle
+            text (str): text to display
+        """
+        self.annots[self.page].append(
+            Annotation(
+                "Text",
+                x * self.k,
+                self.h_pt - y * self.k,
+                w * self.k,
+                h * self.k,
+                contents=text,
             )
         )
 
@@ -1171,7 +1195,7 @@ class FPDF:
                 `R`: right align
             fill (bool): Indicates if the cell background must be painted (`True`)
                 or transparent (`False`). Default value: False.
-            link (str): optional link to add on the image, internal
+            link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
 
         Returns: a boolean indicating if page break was triggered
@@ -1362,7 +1386,7 @@ class FPDF:
                 or transparent (`False`). Default value: False.
             split_only (bool): if `True`, does not output anything, only perform
                 word-wrapping and return the resulting multi-lines array of strings.
-            link (str): optional link to add on the image, internal
+            link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
             ln (int): Indicates where the current position should go after the call.
                 Possible values are: `0`: to the bottom right ; `1`: to the beginning
@@ -1668,8 +1692,8 @@ class FPDF:
         * when using an animated GIF, only the first frame is used.
 
         Args:
-            name: either a string representing a file path to an image, an io.BytesIO,
-                or a instance of `PIL.Image.Image`
+            name: either a string representing a file path to an image, an URL to an image,
+                an io.BytesIO, or a instance of `PIL.Image.Image`
             x (int): optional horizontal position where to put the image on the page.
                 If not specified or equal to None, the current abscissa is used.
             y (int): optional vertical position where to put the image on the page.
@@ -1851,10 +1875,6 @@ class FPDF:
             dh_pt = self.dw_pt
         filter = "/Filter /FlateDecode " if self.compress else ""
         for n in range(1, nb + 1):
-            # page object from pages[n]
-            # page object from pages[n]#w_pt
-            # page object from pages[n]#h_pt
-            # page object from page_links[n] if page_links and page_links[n]
             # Page
             self._newobj()
             self._out("<</Type /Page")
@@ -1865,19 +1885,19 @@ class FPDF:
                 self._out(f"/MediaBox [0 0 {w_pt:.2f} {h_pt:.2f}]")
             self._out("/Resources 2 0 R")
 
-            if self.page_links and n in self.page_links:
-                # Links
-                annots = "/Annots ["
-                for pl in self.page_links[n]:
+            page_annots = self.annots[n]
+            if page_annots:  # Annotations, e.g. links:
+                annots = ""
+                for annot in page_annots:
                     # first four things in 'link' list are coordinates?
                     rect = (
-                        f"{pl.x:.2f} {pl.y:.2f} "
-                        f"{pl.x + pl.width:.2f} {pl.y - pl.height:.2f}"
+                        f"{annot.x:.2f} {annot.y:.2f} "
+                        f"{annot.x + annot.width:.2f} {annot.y - annot.height:.2f}"
                     )
 
                     # start the annotation entry
                     annots += (
-                        f"<</Type /Annot /Subtype /Link "
+                        f"<</Type /Annot /Subtype /{annot.type} "
                         f"/Rect [{rect}] /Border [0 0 0] "
                         # Flag "Print" (bit position 3) specifies to print
                         # the annotation when the page is printed.
@@ -1885,27 +1905,32 @@ class FPDF:
                         f"/F 4"
                     )
 
-                    if pl.alt_text is not None:
+                    if annot.contents:
+                        annots += f"/Contents {enclose_in_parens(annot.contents)}"
+
+                    if annot.alt_text is not None:
                         # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
                         # but tests with Adobe Acrobat Reader reveal that the page /StructParents inserted below
                         # is enough to link the marked content in the hierarchy tree with this annotation link.
                         self._add_marked_content(
-                            self.n, struct_type="/Link", alt_text=pl.alt_text
+                            self.n, struct_type="/Link", alt_text=annot.alt_text
                         )
 
-                    # HTML ending of annotation entry
-                    if isinstance(pl.link, str):
-                        annots += f"/A <</S /URI /URI {enclose_in_parens(pl.link)}>>"
-                    else:  # Dest type ending of annotation entry
-                        assert pl.link in self.links, (
-                            f"Page {n} has a link with an invalid index: "
-                            f"{pl.link} (doc #links={len(self.links)})"
-                        )
-                        link = self.links[pl.link]
-                        annots += f"/Dest {link.dest(self)}"
+                    if annot.link:
+                        if isinstance(annot.link, str):
+                            annots += (
+                                f"/A <</S /URI /URI {enclose_in_parens(annot.link)}>>"
+                            )
+                        else:  # Dest type ending of annotation entry
+                            assert annot.link in self.links, (
+                                f"Page {n} has a link with an invalid index: "
+                                f"{annot.link} (doc #links={len(self.links)})"
+                            )
+                            link = self.links[annot.link]
+                            annots += f"/Dest {link.dest(self)}"
                     annots += ">>"
                 # End links list
-                self._out(f"{annots}]")
+                self._out(f"/Annots [{annots}]")
             if self.pdf_version > "1.3":
                 self._out("/Group <</Type /Group /S /Transparency" "/CS /DeviceRGB>>")
             spid = self._struct_parents_id_per_page.get(self.n)

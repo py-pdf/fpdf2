@@ -23,8 +23,10 @@ This repository is a fork of the library's [original port by Max Pat](http://www
 * PNG, GIF and JPG support (including transparency and alpha channel)
 * Shape, Line Drawing
 * Generate [Code 39](https://fr.wikipedia.org/wiki/Code_39) & [Interleaved 2 of 5](https://en.wikipedia.org/wiki/Interleaved_2_of_5) barcodes
-* Cell/Multi-cell/Plaintext writing, Automatic page breaks
+* Cell / multi-cell / plaintext writing, automatic page breaks
 * Basic conversion from HTML to PDF
+* Images & links alternative descriptions
+* Table of contents & [document outline](https://pyfpdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html)
 * Clean error handling through exceptions
 * Only **one** dependency so far: [Pillow](https://pillow.readthedocs.io/en/stable/)
 * Unit tests with `qpdf`-based PDF diffing

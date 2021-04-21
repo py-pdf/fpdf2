@@ -49,7 +49,7 @@ jobs:
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
           # Executing all tests:
-          pytest -vv
+          RUN_NETWORK_TESTS=1 pytest -vv
           # Uploading coverage report to codecov.io
           bash <(curl -s https://codecov.io/bash)
       - name: Generating HTML documentation 🏗️
