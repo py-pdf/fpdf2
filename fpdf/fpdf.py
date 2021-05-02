@@ -475,7 +475,7 @@ class FPDF:
         else:
             raise FPDFException(f'Unknown document option "{opt}"')
 
-    def alias_nb_pages(self, alias):
+    def alias_nb_pages(self, alias="{nb}"):
         """Define an alias for total number of pages"""
         self.str_alias_nb_pages = alias
 
