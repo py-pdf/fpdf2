@@ -39,6 +39,9 @@ def test_deprecation_warning_for_FPDF_CACHE_DIR():
     with pytest.warns(DeprecationWarning):
         fpdf.FPDF_CACHE_MODE = 1
 
+    fpdf.SOME = 1
+    assert fpdf.SOME == 1
+
     import fpdf
 
     with pytest.warns(DeprecationWarning):
@@ -49,6 +52,9 @@ def test_deprecation_warning_for_FPDF_CACHE_DIR():
         fpdf.FPDF_CACHE_MODE
     with pytest.warns(DeprecationWarning):
         fpdf.FPDF_CACHE_MODE = 1
+
+    fpdf.SOME = 1
+    assert fpdf.SOME == 1
 
 
 def test_add_font_unicode_with_path_fname_ok(tmp_path):
