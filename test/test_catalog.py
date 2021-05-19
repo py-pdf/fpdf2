@@ -31,3 +31,14 @@ def test_setting_all_layout(layout_input, tmp_path):
     document_operations(doc)
     doc.set_display_mode(zoom="default", layout=layout_input)
     assert_pdf_equal(doc, HERE / f"catalog-layout-{layout_input}.pdf", tmp_path)
+
+
+def test_add_page_format(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    for i in range(9):
+        pdf.add_page(format=(210 * (1 - i / 10), 297 * (1 - i / 10)))
+        pdf.cell(w=10, h=10, txt=str(i))
+    pdf.add_page(same=True)
+    pdf.cell(w=10, h=10, txt="9")
+    assert_pdf_equal(pdf, HERE / "add_page_format.pdf", tmp_path)

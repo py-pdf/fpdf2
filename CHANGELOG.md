@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
+## [2.3.6] - not released yet
+### Added
+- extra documentation on [how to configure different page formats for specific pages](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html)
+
 ## [2.3.5] - 2021-05-12
 ### Fixed
 - a bug in the `deprecation` module that prevented to configure `fpdf2` constants at the module level

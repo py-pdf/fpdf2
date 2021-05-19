@@ -190,11 +190,11 @@ class FPDF:
     ):
         """
         Args:
-            orientation (str): "portrait" ("P") or "landscape" ("L").
-                Default to "portrait".
+            orientation (str): "portrait" (can be abbreviated "P")
+                or "landscape" (can be abbreviated "L"). Default to "portrait".
             unit (str): "pt", "mm", "cm" or "in". Default to "mm".
-            format (str): "a3", "a4", "a5", "letter" or "legal".
-                Default to "a4".
+            format (str): "a3", "a4", "a5", "letter", "legal" or a tuple
+                (width, height). Default to "a4".
             font_cache_dir (Path or str): directory where pickle files
                 for TTF font files are kept.
                 The default is `True`, meaning the current folder.
@@ -276,24 +276,9 @@ class FPDF:
         else:
             raise FPDFException(f"Incorrect unit: {unit}")
 
-        # Page format
         self.dw_pt, self.dh_pt = get_page_format(format, self.k)
-
-        # Page orientation
-        orientation = orientation.lower()
-        if orientation in ("p", "portrait"):
-            self.def_orientation = "P"
-            self.w_pt = self.dw_pt
-            self.h_pt = self.dh_pt
-        elif orientation in ("l", "landscape"):
-            self.def_orientation = "L"
-            self.w_pt = self.dh_pt
-            self.h_pt = self.dw_pt
-        else:
-            raise FPDFException(f"Incorrect orientation: {orientation}")
-        self.cur_orientation = self.def_orientation
-        self.w = self.w_pt / self.k
-        self.h = self.h_pt / self.k
+        self._set_orientation(orientation, self.dw_pt, self.dh_pt)
+        self.def_orientation = self.cur_orientation
         self.font_size = self.font_size_pt / self.k
 
         # Page spacing
@@ -401,6 +386,21 @@ class FPDF:
         self.b_margin = margin
         self.page_break_trigger = self.h - margin
 
+    def _set_orientation(self, orientation, page_width_pt, page_height_pt):
+        orientation = orientation.lower()
+        if orientation in ("p", "portrait"):
+            self.cur_orientation = "P"
+            self.w_pt = page_width_pt
+            self.h_pt = page_height_pt
+        elif orientation in ("l", "landscape"):
+            self.cur_orientation = "L"
+            self.w_pt = page_height_pt
+            self.h_pt = page_width_pt
+        else:
+            raise FPDFException(f"Incorrect orientation: {orientation}")
+        self.w = self.w_pt / self.k
+        self.h = self.h_pt / self.k
+
     def set_display_mode(self, zoom, layout="continuous"):
         """
         Set display mode in viewer
@@ -499,7 +499,20 @@ class FPDF:
         self._enddoc()  # close document
 
     def add_page(self, orientation="", format="", same=False):
-        """Start a new page, if same page format will be same as previous"""
+        """
+        Adds a new page to the document.
+        If a page is already present, the `footer()` method is called first.
+        Then the page  is added, the current position is set to the top-left corner,
+        with respect to the left and top margins, and the `header()` method is called.
+
+        Args:
+            orientation (str): "portrait" (can be abbreviated "P")
+                or "landscape" (can be abbreviated "L"). Default to "portrait".
+            format (str): "a3", "a4", "a5", "letter", "legal" or a tuple
+                (width, height). Default to "a4".
+            same (bool): indicates to use the same page format as the previous page.
+                Default to False.
+        """
         if self.state == DocumentState.CLOSED:
             raise FPDFException(
                 "A page cannot be added on a closed document, after calling output()"
@@ -2587,29 +2600,20 @@ class FPDF:
         self.y = self.t_margin
         self.font_family = ""
         self.font_stretching = 100
-        if not same:
-            # Page format
-            if format:
-                # Change page format
-                fw_pt, fh_pt = get_page_format(format, self.k)
-            else:
-                # Set to default format
-                fw_pt = self.dw_pt
-                fh_pt = self.dh_pt
-            # Page orientation
-            orientation = (
-                orientation[0].upper() if orientation else self.def_orientation
+        if same:
+            if orientation or format:
+                raise ValueError(
+                    f"Inconsistent parameters: same={same} but orientation={orientation} format={format}"
+                )
+        else:
+            # Set page format if provided, else use default value:
+            page_width_pt, page_height_pt = (
+                get_page_format(format, self.k) if format else (self.dw_pt, self.dh_pt)
             )
-            if orientation == "P":
-                self.w_pt = fw_pt
-                self.h_pt = fh_pt
-            else:
-                self.w_pt = fh_pt
-                self.h_pt = fw_pt
-            self.w = self.w_pt / self.k
-            self.h = self.h_pt / self.k
+            self._set_orientation(
+                orientation or self.def_orientation, page_width_pt, page_height_pt
+            )
             self.page_break_trigger = self.h - self.b_margin
-            self.cur_orientation = orientation
         self.pages[self.page]["w_pt"] = self.w_pt
         self.pages[self.page]["h_pt"] = self.h_pt
 
