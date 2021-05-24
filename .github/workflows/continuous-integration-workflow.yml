@@ -24,7 +24,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies ⚙️
         run: |
-          sudo apt-get install qpdf
+          sudo apt-get install qpdf libjpeg-dev
           python -m pip install --upgrade pip
           pip install . -r test/requirements.txt -r docs/requirements.txt
       - name: Statically checking code 🔎

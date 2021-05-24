@@ -7,7 +7,7 @@ from PIL import Image
 from .errors import FPDFException
 
 
-SUPPORTED_IMAGE_FILTERS = ("AUTO", "FlateDecode", "DCTDecode")
+SUPPORTED_IMAGE_FILTERS = ("AUTO", "FlateDecode", "DCTDecode", "JPXDecode")
 
 
 def load_resource(filename, reason="image"):
@@ -82,6 +82,10 @@ def _to_data(img, image_filter, **kwargs):
     if image_filter == "DCTDecode":
         compressed_bytes = BytesIO()
         img.save(compressed_bytes, format="JPEG")
+        return compressed_bytes.getvalue()
+    if image_filter == "JPXDecode":
+        compressed_bytes = BytesIO()
+        img.save(compressed_bytes, format="JPEG2000")
         return compressed_bytes.getvalue()
     raise FPDFException(f'Unsupported image filter: "{image_filter}"')
 

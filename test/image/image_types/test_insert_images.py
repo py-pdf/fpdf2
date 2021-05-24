@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
+import pytest
 
 import fpdf
 from test.conftest import assert_pdf_equal
@@ -22,6 +23,20 @@ def test_insert_jpg(tmp_path):
         assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_windows.pdf", tmp_path)
     else:
         assert_pdf_equal(pdf, HERE / "image_types_insert_jpg.pdf", tmp_path)
+
+
+@pytest.mark.skipif(
+    sys.platform in ("cygwin", "win32"),
+    reason="Required system libraries to generate JPEG2000 images are a PITA to install under Windows",
+)
+def test_insert_jpg_jpxdecode(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.set_image_filter("JPXDecode")
+    pdf.add_page()
+    file_path = HERE / "insert_images_insert_jpg.jpg"
+    pdf.image(file_path, x=15, y=15, h=140)
+    assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_jpxdecode.pdf", tmp_path)
 
 
 def test_insert_jpg_flatedecode(tmp_path):
