@@ -76,21 +76,23 @@ def test_insert_png_alpha(tmp_path):
     assert_pdf_equal(pdf, HERE / "image_types_insert_png_alpha.pdf", tmp_path)
 
 
-def test_insert_png_dctdecode(tmp_path):
+def test_insert_png_alpha_dctdecode(tmp_path):
     pdf = fpdf.FPDF()
     pdf.compress = False
     pdf.set_image_filter("DCTDecode")
     pdf.add_page()
-    file_path = HERE / "insert_images_insert_png.png"
+    file_path = HERE / "../png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png"
     pdf.image(file_path, x=15, y=15, h=140)
     if sys.platform in ("cygwin", "win32"):
         # Pillow uses libjpeg-turbo on Windows and libjpeg elsewhere,
         # leading to a slightly different image being included in the PDF:
         assert_pdf_equal(
-            pdf, HERE / "image_types_insert_png_dctdecode_windows.pdf", tmp_path
+            pdf, HERE / "image_types_insert_png_alpha_dctdecode_windows.pdf", tmp_path
         )
     else:
-        assert_pdf_equal(pdf, HERE / "image_types_insert_png_dctdecode.pdf", tmp_path)
+        assert_pdf_equal(
+            pdf, HERE / "image_types_insert_png_alpha_dctdecode.pdf", tmp_path
+        )
 
 
 def test_insert_bmp(tmp_path):

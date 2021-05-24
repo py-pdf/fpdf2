@@ -48,7 +48,8 @@ def get_img_info(img, image_filter="AUTO"):
         dpn, bpc, colspace = 1, 8, "DeviceGray"
         alpha_channel = slice(1, None, 2)
         info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
-        info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
+        if image_filter not in ("DCTDecode", "JPXDecode"):
+            info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
     elif img.mode == "RGB":
         dpn, bpc, colspace = 3, 8, "DeviceRGB"
         info["data"] = _to_data(img, image_filter)
@@ -56,7 +57,8 @@ def get_img_info(img, image_filter="AUTO"):
         dpn, bpc, colspace = 3, 8, "DeviceRGB"
         alpha_channel = slice(3, None, 4)
         info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
-        info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
+        if image_filter not in ("DCTDecode", "JPXDecode"):
+            info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
 
     dp = f"/Predictor 15 /Colors {dpn} /BitsPerComponent {bpc} /Columns {w}"
 
@@ -79,6 +81,10 @@ def get_img_info(img, image_filter="AUTO"):
 def _to_data(img, image_filter, **kwargs):
     if image_filter == "FlateDecode":
         return _to_zdata(img, **kwargs)
+    if img.mode == "LA":
+        img = img.convert("L")
+    if img.mode == "RGBA":
+        img = img.convert("RGB")
     if image_filter == "DCTDecode":
         compressed_bytes = BytesIO()
         img.save(compressed_bytes, format="JPEG")

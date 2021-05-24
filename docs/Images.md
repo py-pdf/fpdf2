@@ -14,7 +14,7 @@ Note that if an image is displayed several times, only one copy is embedded in t
 ```python
 from fpdf import FPDF
 
-pdf = fpdf.FPDF()
+pdf = FPDF()
 pdf.add_page()
 pdf.image("docs/fpdf2-logo.png", x=20, y=60)
 pdf.output("pdf-with-image.pdf")
@@ -39,7 +39,7 @@ and easily embed the result:
 from fpdf import FPDF
 from PIL import Image
 
-pdf = fpdf.FPDF()
+pdf = FPDF()
 pdf.add_page()
 img = Image.open("docs/fpdf2-logo.png")
 img = img.crop((10, 10, 490, 490)).resize((96, 96), resample=Image.NEAREST)
@@ -55,3 +55,23 @@ URLs to images can be directly passed to the [`image`](fpdf/fpdf.html#fpdf.fpdf.
 ```python
 pdf.image("https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png")
 ```
+
+
+## Image compression ##
+
+By default, `fpdf2` will avoid altering your images :
+no image conversion from / to PNG / JPEG is performed.
+
+However, you can easily tell `fpdf2` to convert and embed all images as JPEGs in order to reduce your PDF size:
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.set_image_filter("DCTDecode")
+pdf.add_page()
+pdf.image("docs/fpdf2-logo.png", x=20, y=60)
+pdf.output("pdf-with-image.pdf")
+```
+
+Beware that "flattening" images this way will convert alpha channels to black.
