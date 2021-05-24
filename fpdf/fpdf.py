@@ -38,7 +38,7 @@ from PIL import Image
 
 from .errors import FPDFException, FPDFPageFormatException
 from .fonts import fpdf_charwidths
-from .image_parsing import get_img_info, load_resource
+from .image_parsing import get_img_info, load_resource, SUPPORTED_IMAGE_FILTERS
 from .outline import serialize_outline, OutlineSection
 from .recorder import FPDFRecorder
 from .structure_tree import MarkedContent, StructureTreeBuilder
@@ -229,6 +229,7 @@ class FPDF:
         self.angle = 0  # used by deprecated method: rotate()
         self.font_cache_dir = font_cache_dir
         self.xmp_metadata = None
+        self.image_filter = "AUTO"
         # Only set if XMP metadata is added to the document:
         self._xmp_metadata_obj_id = None
         self.struct_builder = StructureTreeBuilder()
@@ -421,7 +422,12 @@ class FPDF:
             raise FPDFException(f"Incorrect layout display mode: {layout}")
 
     def set_compression(self, compress):
-        """Set page compression"""
+        """
+        Set page compression using the zlib/deflate method (FlateDecode)
+
+        Args:
+            compress (bool): enable page compression or not
+        """
         self.compress = compress
 
     def set_title(self, title):
@@ -474,6 +480,18 @@ class FPDF:
             self.core_fonts_encoding = value
         else:
             raise FPDFException(f'Unknown document option "{opt}"')
+
+    def set_image_filter(self, image_filter):
+        """
+        Args:
+            image_filter (str): name of a support image filter or "AUTO",
+                meaning to use the best image filter given the images provided.
+        """
+        if image_filter not in SUPPORTED_IMAGE_FILTERS:
+            raise ValueError(
+                f"'{image_filter}' is not a supported image filter: {''.join(SUPPORTED_IMAGE_FILTERS)}"
+            )
+        self.image_filter = image_filter
 
     def alias_nb_pages(self, alias="{nb}"):
         """Define an alias for total number of pages"""
@@ -1016,6 +1034,10 @@ class FPDF:
         self.font_size_pt = size
         self.font_size = size / self.k
         if self.page > 0:
+            if not self.current_font:
+                raise FPDFException(
+                    "Cannot set font size: a font must be selected first"
+                )
             self._out(f"BT /F{self.current_font['i']} {self.font_size_pt:.2f} Tf ET")
 
     def set_stretching(self, factor):
@@ -1742,7 +1764,7 @@ class FPDF:
         else:
             name, img = str(name), name
         if name not in self.images:
-            info = get_img_info(img or load_resource(name))
+            info = get_img_info(img or load_resource(name), self.image_filter)
             info["i"] = len(self.images) + 1
             self.images[name] = info
         else:

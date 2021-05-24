@@ -7,8 +7,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
-## [2.3.6] - not released yet
+## [2.4.0] - not released yet
+### Changed
+- now `fpdf2` uses the newly supported `DCTDecode` image filter for JPEG images,
+  instead of `FlateDecode` before, in order to improve the compression ratio without any image quality loss.
+  On test images, this reduced the size of embeded JPEG images by 90%.
 ### Added
+- new method `FPDF.image_filter` to control the image filters used for images
 - extra documentation on [how to configure different page formats for specific pages](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html)
 
 ## [2.3.5] - 2021-05-12
@@ -22,7 +27,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 ## [2.3.3] - 2021-04-21
 ### Added
 - new features: **document outline & table of contents**! Check out the new dedicated [documentation page](https://pyfpdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html) for more information
-- new method `text_annotation` to insert... Text Annotations
+- new method `FPDF.text_annotation` to insert... Text Annotations
 - `FPDF.image` now also accepts an `io.BytesIO` as input
 ### Fixed
 - `HTMLMixin` / `HTML2FPDF`: properly handling `<img>` inside `<td>` & allowing to center them horizontally

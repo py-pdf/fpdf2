@@ -7,6 +7,9 @@ from PIL import Image
 from .errors import FPDFException
 
 
+SUPPORTED_IMAGE_FILTERS = ("AUTO", "FlateDecode", "DCTDecode")
+
+
 def load_resource(filename, reason="image"):
     """Load external file"""
     # if a bytesio instance is passed in, use it as is.
@@ -23,30 +26,37 @@ def load_resource(filename, reason="image"):
     raise FPDFException(f'Unknown resource loading reason "{reason}"')
 
 
-def get_img_info(img):
+def get_img_info(img, image_filter="AUTO"):
     """
     Args:
         img: `BytesIO` or `PIL.Image.Image` instance
+        image_filter (str): one of the SUPPORTED_IMAGE_FILTERS
     """
     if not isinstance(img, Image.Image):
         img = Image.open(img)
-    if img.mode not in ["L", "LA", "RGBA"]:
+    if image_filter == "AUTO":
+        # Very simple logic for now:
+        image_filter = "DCTDecode" if img.format == "JPEG" else "FlateDecode"
+    if img.mode not in ["L", "LA", "RGB", "RGBA"]:
         img = img.convert("RGBA")
     w, h = img.size
     info = {}
     if img.mode == "L":
         dpn, bpc, colspace = 1, 8, "DeviceGray"
-        info["data"] = to_zdata(img)
+        info["data"] = _to_data(img, image_filter)
     elif img.mode == "LA":
         dpn, bpc, colspace = 1, 8, "DeviceGray"
         alpha_channel = slice(1, None, 2)
-        info["data"] = to_zdata(img, remove_slice=alpha_channel)
-        info["smask"] = to_zdata(img, select_slice=alpha_channel)
+        info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
+        info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
+    elif img.mode == "RGB":
+        dpn, bpc, colspace = 3, 8, "DeviceRGB"
+        info["data"] = _to_data(img, image_filter)
     else:  # RGBA image
         dpn, bpc, colspace = 3, 8, "DeviceRGB"
         alpha_channel = slice(3, None, 4)
-        info["data"] = to_zdata(img, remove_slice=alpha_channel)
-        info["smask"] = to_zdata(img, select_slice=alpha_channel)
+        info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
+        info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
 
     dp = f"/Predictor 15 /Colors {dpn} /BitsPerComponent {bpc} /Columns {w}"
 
@@ -56,7 +66,7 @@ def get_img_info(img):
             "h": h,
             "cs": colspace,
             "bpc": bpc,
-            "f": "FlateDecode",
+            "f": image_filter,
             "dp": dp,
             "pal": "",
             "trns": "",
@@ -66,7 +76,17 @@ def get_img_info(img):
     return info
 
 
-def to_zdata(img, remove_slice=None, select_slice=None):
+def _to_data(img, image_filter, **kwargs):
+    if image_filter == "FlateDecode":
+        return _to_zdata(img, **kwargs)
+    if image_filter == "DCTDecode":
+        compressed_bytes = BytesIO()
+        img.save(compressed_bytes, format="JPEG")
+        return compressed_bytes.getvalue()
+    raise FPDFException(f'Unsupported image filter: "{image_filter}"')
+
+
+def _to_zdata(img, remove_slice=None, select_slice=None):
     data = bytearray(img.tobytes())
     if remove_slice:
         del data[remove_slice]
