@@ -16,6 +16,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - the `h` (height) parameter of the `cell`, `multi_cell` & `write` methods gets a default value change, `None`, meaning to use the current font size
 - removed the useless `w` & `h` parameters of the `FPDF.text_annotation()` method
 ### Added
+- Support setting HTML font colors by name and short hex codes
 - new `FPDF.add_action()` method, documented in the [Annotations section](https://pyfpdf.github.io/fpdf2/Annotations.html)
 - `FPDF.cell`: new optional `markdown=True` parameter that enables basic Markdown-like styling: `**bold**, __italics__, --underlined--`
 - `FPDF.cell`: new optional boolean `center` parameter that positions the cell horizontally

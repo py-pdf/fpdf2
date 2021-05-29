@@ -414,3 +414,17 @@ def test_issue_156(tmp_path):
     pdf.add_font("Roboto", fname="test/fonts/Roboto-Regular.ttf", uni=True)
     pdf.write_html("Regular text<br><b>Bold text</b>")
     assert_pdf_equal(pdf, HERE / "issue_156.pdf", tmp_path)
+
+
+def test_html_font_color_name(tmp_path):
+    pdf = MyFPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<font color="crimson"><p>hello in crimson</p></font>'
+        '<font color="#f60"><p>hello in orange</p></font>'
+        '<font color="LIGHTBLUE"><p><b>bold hello in light blue</b></p></font>'
+        '<font color="royalBlue"><p>hello in royal blue</p></font>'
+        '<font color="#000"><p>hello in black</p></font>'
+        '<font color="beige"><p><i>italic hello in beige</i></p></font>'
+    )
+    assert_pdf_equal(pdf, HERE / "html_font_color_name.pdf", tmp_path)
