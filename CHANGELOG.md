@@ -13,6 +13,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
   instead of `FlateDecode` before, in order to improve the compression ratio without any image quality loss.
   On test images, this reduced the size of embeded JPEG images by 90%.
 ### Added
+- `HTMLMixin` / `HTML2FPDF`: now support `align="justify"`
 - new method `FPDF.image_filter` to control the image filters used for images
 - extra documentation on [how to configure different page formats for specific pages](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html)
 

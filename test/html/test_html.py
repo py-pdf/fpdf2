@@ -383,3 +383,17 @@ def test_img_inside_html_table_centered_with_caption(tmp_path):
     assert_pdf_equal(
         pdf, HERE / "test_img_inside_html_table_centered_with_caption.pdf", tmp_path
     )
+
+
+def test_html_justify_paragraph(tmp_path):
+    pdf = MyFPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<p align="justify">'
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        " Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+        " Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+        " Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+        "</p>"
+    )
+    assert_pdf_equal(pdf, HERE / "html_justify_paragraph.pdf", tmp_path)

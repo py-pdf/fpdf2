@@ -99,7 +99,7 @@ class HTML2FPDF(HTMLParser):
             pass
         elif self.align:
             LOGGER.debug("align '%s'", data.replace("\n", "\\n"))
-            self.pdf.cell(
+            self.pdf.multi_cell(
                 0,
                 self.h,
                 data,
