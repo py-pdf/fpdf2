@@ -14,10 +14,10 @@ HERE = Path(__file__).resolve().parent
 def test_no_set_font():
     pdf = FPDF()
     pdf.add_page()
-    with pytest.raises(FPDFException) as e:
+    with pytest.raises(FPDFException) as error:
         pdf.text(10, 10, "Hello World!")
     expected_msg = "No font set, you need to call set_font() beforehand"
-    assert str(e.value) == expected_msg
+    assert str(error.value) == expected_msg
 
 
 def test_set_unknown_font():
@@ -62,9 +62,9 @@ def test_issue_66(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", "B", 14)
-    pdf.cell(50, 0, "ABC")
+    pdf.cell(txt="ABC")
     pdf.set_font("Times", size=10)
-    pdf.cell(50, 0, "DEF")
+    pdf.cell(txt="DEF")
     # Setting the font to an already used one used to remove the text!
     pdf.set_font("Times", "B", 14)
     assert_pdf_equal(pdf, HERE / "fonts_issue_66.pdf", tmp_path)

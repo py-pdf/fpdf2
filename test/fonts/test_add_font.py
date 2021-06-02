@@ -64,7 +64,7 @@ def test_add_font_unicode_with_path_fname_ok(tmp_path):
         pdf.add_font("Roboto-Regular", fname=font_file_path, uni=True)
         pdf.set_font("Roboto-Regular", size=64)
         pdf.add_page()
-        pdf.cell(pdf.epw, 20, "Hello World!")
+        pdf.cell(txt="Hello World!")
         assert_pdf_equal(pdf, HERE / "add_font_unicode.pdf", tmp_path)
 
 
@@ -75,7 +75,7 @@ def test_add_font_unicode_with_str_fname_ok(tmp_path):
         pdf.add_font("Roboto-Regular", fname=str(font_file_path), uni=True)
         pdf.set_font("Roboto-Regular", size=64)
         pdf.add_page()
-        pdf.cell(pdf.epw, 20, "Hello World!")
+        pdf.cell(txt="Hello World!")
         assert_pdf_equal(pdf, HERE / "add_font_unicode.pdf", tmp_path)
 
 
@@ -88,7 +88,7 @@ def test_add_font_from_pkl(tmp_path):
     pdf.add_font("Roboto-Regular")
     pdf.set_font("Roboto-Regular", size=64)
     pdf.add_page()
-    pdf.cell(pdf.epw, 20, "Hello World!")
+    pdf.cell(txt="Hello World!")
     assert_pdf_equal(pdf, HERE / "add_font_from_pkl.pdf", tmp_path)
 
 

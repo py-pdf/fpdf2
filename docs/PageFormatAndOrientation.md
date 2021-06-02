@@ -22,9 +22,9 @@ pdf = FPDF()
 pdf.set_font("Helvetica")
 for i in range(9):
     pdf.add_page(format=(210 * (1 - i/10), 297 * (1 - i/10)))
-    pdf.cell(w=10, h=10, txt=str(i))
+    pdf.cell(txt=str(i))
 pdf.add_page(same=True)
-pdf.cell(w=10, h=10, txt="9")
+pdf.cell(txt="9")
 pdf.output("varying_format.pdf")
 ```
 

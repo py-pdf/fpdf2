@@ -14,7 +14,7 @@ class WarnOnDeprecatedModuleAttributes(ModuleType):
             )
             return None
         # pylint: disable=no-member
-        return super().__getattr__(name)
+        return super().__getattribute__(name)
 
     def __setattr__(self, name, value):
         if name in ("FPDF_CACHE_DIR", "FPDF_CACHE_MODE"):

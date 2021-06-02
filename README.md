@@ -21,7 +21,7 @@ from fpdf import FPDF
 document = FPDF()
 document.add_page()
 document.set_font('helvetica', size=12)
-document.cell(w=0, txt="hello world")
+document.cell(txt="hello world")
 document.output("hello_world.pdf")
 ```
 

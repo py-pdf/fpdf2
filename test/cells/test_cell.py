@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 import fpdf
 from test.conftest import assert_pdf_equal
 
@@ -126,6 +128,42 @@ def test_cell_table_unbreakable(tmp_path):
                 pdf.ln(line_height)
         pdf.ln(line_height * 2)
     assert_pdf_equal(pdf, HERE / "cell_table_unbreakable.pdf", tmp_path)
+
+
+def test_cell_without_font_set():
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    with pytest.raises(fpdf.FPDFException) as error:
+        pdf.cell(txt="Hello World!")
+    expected_msg = "No font set, you need to call set_font() beforehand"
+    assert str(error.value) == expected_msg
+
+
+def test_cell_without_w_nor_h(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    pdf.cell(txt="Lorem ipsum", border=1)
+    pdf.set_font_size(80)
+    pdf.cell(txt="Lorem ipsum", border=1)
+    assert_pdf_equal(pdf, HERE / "cell_without_w_nor_h.pdf", tmp_path)
+
+
+def test_cell_missing_text_or_width(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pytest.raises(ValueError) as error:
+        pdf.cell()
+    assert str(error.value) == "A 'txt' parameter must be provided if 'w' is None"
+
+
+def test_cell_centering(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=60)
+    pdf.cell(txt="Lorem ipsum", border=1, center=True)
+    assert_pdf_equal(pdf, HERE / "cell_centering.pdf", tmp_path)
 
 
 ## Code used to create this test

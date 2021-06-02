@@ -111,7 +111,7 @@ class HTML2FPDF(HTMLParser):
         else:
             data = data.replace("\n", " ")
             if self.href:
-                self.put_link(self.href, data)
+                self.put_link(data)
             else:
                 if self.heading_level:
                     self.pdf.start_section(data, self.heading_level - 1)
@@ -488,11 +488,11 @@ class HTML2FPDF(HTMLParser):
         else:
             self.pdf.set_text_color(r, g, b)
 
-    def put_link(self, url, txt):
+    def put_link(self, txt):
         # Put a hyperlink
         self.set_text_color(0, 0, 255)
         self.set_style("u", True)
-        self.pdf.write(self.h, txt, url)
+        self.pdf.write(self.h, txt, self.href)
         self.set_style("u", False)
         self.set_text_color()
 

@@ -385,7 +385,7 @@ class FPDF:
         """
         self.auto_page_break = auto
         self.b_margin = margin
-        self.page_break_trigger = self.h - margin
+        self.page_break_trigger = self.h - self.b_margin
 
     def _set_orientation(self, orientation, page_width_pt, page_height_pt):
         orientation = orientation.lower()
@@ -1190,11 +1190,10 @@ class FPDF:
         angle *= math.pi / 180
         c, s = math.cos(angle), math.sin(angle)
         cx, cy = x * self.k, (self.h - y) * self.k
-        s = (
+        self._out(
             f"q {c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm "
             f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm\n"
         )
-        self._out(s)
         yield
         self._out("Q\n")
 
@@ -1204,7 +1203,18 @@ class FPDF:
         return self.auto_page_break
 
     @check_page
-    def cell(self, w, h=0, txt="", border=0, ln=0, align="", fill=False, link=""):
+    def cell(
+        self,
+        w=None,
+        h=None,
+        txt="",
+        border=0,
+        ln=0,
+        align="",
+        fill=False,
+        link="",
+        center=False,
+    ):
         """
         Prints a cell (rectangular area) with optional borders, background color and
         character string. The upper-left corner of the cell corresponds to the current
@@ -1216,8 +1226,10 @@ class FPDF:
         page break is performed before outputting.
 
         Args:
-            w (int): Cell width. If 0, the cell extends up to the right margin.
-            h (int): Cell height. Default value: 0.
+            w (int): Cell width. Default value: None, meaning to fit text width.
+                If 0, the cell extends up to the right margin.
+            h (int): Cell height. Default value: None, meaning an height equal
+                to the current font size.
             txt (str): String to print. Default value: empty string.
             border: Indicates if borders must be drawn around the cell.
                 The value can be either a number (`0`: no border ; `1`: frame)
@@ -1228,13 +1240,14 @@ class FPDF:
                 Possible values are: `0`: to the right ; `1`: to the beginning of the
                 next line ; `2`: below. Putting 1 is equivalent to putting 0 and calling
                 `ln` just after. Default value: 0.
-            align (str): Allows to center or align the text. Possible values are:
-                `L` or empty string: left align (default value) ; `C`: center ;
-                `R`: right align
+            align (str): Allows to center or align the text inside the cell.
+                Possible values are: `L` or empty string: left align (default value) ;
+                `C`: center ; `R`: right align
             fill (bool): Indicates if the cell background must be painted (`True`)
                 or transparent (`False`). Default value: False.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
+            center (bool): center the cell horizontally in the page
 
         Returns: a boolean indicating if page break was triggered
         """
@@ -1246,11 +1259,19 @@ class FPDF:
                 "ignored"
             )
             border = 1
-        page_break_triggered = self._perform_page_break_if_need_be(h)
         if w == 0:
             w = self.w - self.r_margin - self.x
+        elif w is None:
+            if not txt:
+                raise ValueError("A 'txt' parameter must be provided if 'w' is None")
+            w = self.get_string_width(txt, True) + 2
+        if h is None:
+            h = self.font_size
+        # pylint: disable=invalid-unary-operand-type
+        if center:
+            self.x = self.l_margin + (self.epw - w) / 2
+        page_break_triggered = self._perform_page_break_if_need_be(h)
         s = ""
-
         k = self.k
         if fill:
             op = "B" if border == 1 else "f"
@@ -1654,7 +1675,7 @@ class FPDF:
             c = s[i]
             if c == "\n":
                 # Explicit line break
-                self.cell(w, h, substr(s, j, i - j), 0, 2, "", False, link)
+                self.cell(w, h, substr(s, j, i - j), ln=2, link=link)
                 i += 1
                 sep = -1
                 j = i
@@ -1685,9 +1706,9 @@ class FPDF:
                         continue
                     if i == j:
                         i += 1
-                    self.cell(w, h, substr(s, j, i - j), 0, 2, "", False, link)
+                    self.cell(w, h, substr(s, j, i - j), ln=2, link=link)
                 else:
-                    self.cell(w, h, substr(s, j, sep - j), 0, 2, "", False, link)
+                    self.cell(w, h, substr(s, j, sep - j), ln=2, link=link)
                     i = sep + 1
                 sep = -1
                 j = i
@@ -1701,7 +1722,7 @@ class FPDF:
                 i += 1
         # Last chunk
         if i != j:
-            self.cell(l / 1000 * self.font_size, h, substr(s, j), 0, 0, "", False, link)
+            self.cell(l / 1000 * self.font_size, h, substr(s, j), link=link)
 
     @check_page
     def image(

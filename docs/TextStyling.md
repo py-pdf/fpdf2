@@ -19,13 +19,13 @@ from fpdf import FPDF
 pdf = FPDF()
 pdf.add_page()
 pdf.set_font("Times", size=36)
-pdf.cell(w=50, txt="This")
+pdf.cell(txt="This")
 pdf.set_font(style="B")
-pdf.cell(w=50, txt="is")
+pdf.cell(txt="is")
 pdf.set_font(style="I")
-pdf.cell(w=50, txt="a")
+pdf.cell(txt="a")
 pdf.set_font(style="U")
-pdf.cell(w=50, txt="PDF")
+pdf.cell(txt="PDF")
 pdf.output("style.pdf")
 ```
 

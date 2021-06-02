@@ -70,11 +70,11 @@ from fpdf import FPDF
 pdf = FPDF()
 pdf.set_font("helvetica", size=24)
 pdf.add_page()
-pdf.cell(w=pdf.epw, h=10, txt="Welcome on first page!", align="C")
+pdf.cell(w=pdf.epw, txt="Welcome on first page!", align="C")
 pdf.add_page()
 link = pdf.add_link()
 pdf.set_link(link, page=1)
-pdf.cell(w=100, h=10, txt="Internal link to first page", border=1, align="C", link=link)
+pdf.cell(txt="Internal link to first page", border=1, link=link)
 pdf.output("internal_link.pdf")
 ```
 

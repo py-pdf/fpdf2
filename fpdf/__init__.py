@@ -3,6 +3,7 @@ import sys
 
 from .fpdf import (
     FPDF,
+    FPDFException,
     TitleStyle,
     FPDF_FONT_DIR as _FPDF_FONT_DIR,
     FPDF_VERSION as _FPDF_VERSION,
