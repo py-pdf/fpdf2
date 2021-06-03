@@ -41,3 +41,19 @@ pdf.write_html("""<B>bold</B>
                   <B><I><U>all at once!</U></I></B>"""
 )
 ```
+
+
+## markdown=True ##
+
+An optional `markdown=True` parameter can be passed to the `cell`, `multi_cell` & `write` methods
+in order to enable basic Markdown-like styling: `**bold**, __italics__, --underlined--`
+
+```python
+from fpdf import FPDF
+
+pdf = fpdf.FPDF()
+pdf.add_page()
+pdf.set_font("Times", size=60)
+pdf.cell(txt="**Lorem** __Ipsum__ --dolor--", markdown=True)
+pdf.output("markdown-styled.pdf")
+```

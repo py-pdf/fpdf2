@@ -12,8 +12,11 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - now `fpdf2` uses the newly supported `DCTDecode` image filter for JPEG images,
   instead of `FlateDecode` before, in order to improve the compression ratio without any image quality loss.
   On test images, this reduced the size of embeded JPEG images by 90%.
-- `FPDF.cell`: the `w` parameter becomes optional, with a default value of `None`, meaning to generate a cell with the size of the text content provided, and the `h` default value changes, becoming `None`, meaning to get its value from the current font size
+- `FPDF.cell`: the `w` (width) parameter becomes optional, with a default value of `None`, meaning to generate a cell with the size of the text content provided
+- the `h` (height) parameter of the `cell`, `multi_cell` & `write` methods gets a default value change, `None`, meaning to use the current font size
 ### Added
+- a new optional `markdown=True` parameter can be passed to the `cell`, `multi_cell` & `write` methods
+  in order to enable basic Markdown-like styling: `**bold**, __italics__, --underlined--`
 - `FPDF.cell`: new optional `center` parameter to position the cell horizontally
 - `HTMLMixin` / `HTML2FPDF`: now support `align="justify"`
 - new method `FPDF.image_filter` to control the image filters used for images

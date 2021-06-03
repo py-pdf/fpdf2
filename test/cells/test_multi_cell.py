@@ -221,6 +221,18 @@ def test_multi_cell_table_unbreakable2(tmp_path):  # issue 120 - 2nd snippet
     assert_pdf_equal(pdf, HERE / "multi_cell_table_unbreakable2.pdf", tmp_path)
 
 
+def test_multi_cell_markdown(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", "", 32)
+    text = (  # Some text where styling occur over line breaks:
+        "Lorem ipsum dolor amet, **consectetur adipiscing** elit,"
+        " sed do eiusmod __tempor incididunt__ ut labore et dolore magna aliqua."
+    )
+    pdf.multi_cell(w=pdf.epw, txt=text, markdown=True)
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown.pdf", tmp_path)
+
+
 ## Code used to create test
 # doc = fpdf.FPDF(format = 'letter', unit = 'pt')
 # set_doc_date_0(doc)

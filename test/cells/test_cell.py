@@ -166,6 +166,14 @@ def test_cell_centering(tmp_path):
     assert_pdf_equal(pdf, HERE / "cell_centering.pdf", tmp_path)
 
 
+def test_cell_markdown(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=60)
+    pdf.cell(txt="**Lorem** __Ipsum__ --dolor--", markdown=True)
+    assert_pdf_equal(pdf, HERE / "cell_markdown.pdf", tmp_path)
+
+
 ## Code used to create this test
 # doc = fpdf.FPDF(format = 'letter', unit = 'pt')
 # set_doc_date_0(doc)
