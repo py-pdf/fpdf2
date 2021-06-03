@@ -1386,7 +1386,7 @@ class FPDF:
 
     def _perform_page_break_if_need_be(self, h):
         if (
-            self.y + h > self.page_break_trigger
+            self.y + h >= self.page_break_trigger
             and not self.in_footer
             and self.accept_page_break
         ):
@@ -2844,7 +2844,7 @@ class FPDF:
         LOGGER.debug("Starting unbreakable block")
         yield recorder
         y_scroll = recorder.y - prev_y + (recorder.page - prev_page) * self.eph
-        if prev_y + y_scroll > self.page_break_trigger:
+        if prev_y + y_scroll >= self.page_break_trigger:
             LOGGER.debug("Performing page jump due to unbreakable height")
             recorder.rewind()
             # pylint: disable=protected-access
