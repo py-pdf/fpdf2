@@ -648,14 +648,12 @@ class FPDF:
                     char = ord(char)
                     if len(cw) > char:
                         w += cw[char]
-                    elif self.current_font["desc"]["MissingWidth"]:
-                        w += self.current_font["desc"]["MissingWidth"]
                     else:
-                        w += 500
+                        w += self.current_font["desc"].get("MissingWidth") or 500
             else:
                 w += sum(cw.get(char, 0) for char in txt_frag)
         if self.font_stretching != 100:
-            w = w * self.font_stretching / 100
+            w *= self.font_stretching / 100
         return w * self.font_size / 1000
 
     def set_line_width(self, width):
@@ -1064,8 +1062,6 @@ class FPDF:
 
     def set_link(self, link, y=0, page=-1):
         """Set destination of internal link"""
-        if y == -1:
-            y = self.y
         if page == -1:
             page_object_id = self._current_page_object_id()
         else:
@@ -1271,6 +1267,7 @@ class FPDF:
             )
             border = 1
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
+        txt = self.normalize_text(txt)
         styled_txt_frags = self._preload_font_styles(txt, markdown)
         if w == 0:
             w = self.w - self.r_margin - self.x
@@ -1322,7 +1319,6 @@ class FPDF:
                     f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S "
                 )
 
-        txt = self.normalize_text(txt)
         if txt:
             if align == "R":
                 dx = w - self.c_margin - self.get_string_width(txt, True, markdown)
@@ -1330,28 +1326,29 @@ class FPDF:
                 dx = (w - self.get_string_width(txt, True, markdown)) / 2
             else:
                 dx = self.c_margin
+
             if self.fill_color != self.text_color:
                 s += f"q {self.text_color} "
+
+            s += (
+                f"BT {(self.x + dx) * k:.2f} "
+                f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2f} Td"
+            )
 
             s_width, underlines = 0, []
 
             # If multibyte, Tw has no effect - do word spacing using an
             # adjustment before each space
             if self.ws and self.unifontsubset:
-                for char in txt:
-                    self.current_font["subset"].append(ord(char))
                 space = escape_parens(" ".encode("UTF-16BE").decode("latin-1"))
-
-                s += (
-                    f"BT 0 Tw {(self.x + dx) * k:.2F} "
-                    f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2F} Td"
-                )
-
+                s += " 0 Tw"
                 for txt_frag, style, underline in styled_txt_frags:
                     if markdown and self.font_style != style:
-                        s += f"BT /F{self.fonts[self.font_family + style]['i']} {self.font_size_pt:.2f} Tf ET"
+                        s += f" /F{self.fonts[self.font_family + style]['i']} {self.font_size_pt:.2f} Tf"
                     self.font_style = style
                     self.current_font = self.fonts[self.font_family + self.font_style]
+                    for char in txt_frag:
+                        self.current_font["subset"].append(ord(char))
                     words = txt_frag.split(" ")
                     s += " ["
                     for i, word in enumerate(words):
@@ -1366,37 +1363,35 @@ class FPDF:
                     self.underline = underline
                     s_width += self.get_string_width(txt_frag, True)
                     s += "] TJ"
-                s += " ET"
             else:
-                s += (
-                    f"BT {(self.x + dx) * k:.2f} "
-                    f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2f} Td"
-                )
                 for txt_frag, style, underline in styled_txt_frags:
                     if markdown and self.font_style != style:
                         s += f" /F{self.fonts[self.font_family + style]['i']} {self.font_size_pt:.2f} Tf"
                     self.font_style = style
                     self.current_font = self.fonts[self.font_family + self.font_style]
                     if self.unifontsubset:
-                        txt_frag = escape_parens(
+                        txt_frag_escaped = escape_parens(
                             txt_frag.encode("UTF-16BE").decode("latin-1")
                         )
-                        for char in txt_frag:
+                        for char in txt_frag_escaped:
                             self.current_font["subset"].append(ord(char))
                     else:
-                        txt_frag = escape_parens(txt_frag)
-                    s += f" ({txt_frag}) Tj"
+                        txt_frag_escaped = escape_parens(txt_frag)
+                    s += f" ({txt_frag_escaped}) Tj"
                     if underline:
                         underlines.append((self.x + dx + s_width, txt_frag))
                     self.underline = underline
                     s_width += self.get_string_width(txt_frag, True)
-                s += " ET"
+            s += " ET"
+
             for start_x, txt_frag in underlines:
                 s += " " + self._do_underline(
                     start_x, self.y + (0.5 * h) + (0.3 * self.font_size), txt_frag
                 )
+
             if self.fill_color != self.text_color:
                 s += " Q"
+
             if link:
                 self.link(
                     self.x + dx,
@@ -1528,7 +1523,6 @@ class FPDF:
         link="",
         ln=0,
         max_line_height=None,
-        markdown=False,
     ):
         """
         This method allows printing text with line breaks. They can be automatic (as
@@ -1560,8 +1554,6 @@ class FPDF:
                 of the next line ; `2`: below with the same horizontal offset ;
                 `3`: to the right with the same vertical offset. Default value: 0.
             max_line_height (int): optional maximum height of each sub-cell generated
-            markdown (bool): enable minimal markdown-like markup to render part
-                of text as bold / italics / underlined. Default to False.
 
         Using `ln=3` and `maximum height=pdf.font_size` is useful to build tables
         with multiline text in cells.
@@ -1637,7 +1629,6 @@ class FPDF:
                     align=align,
                     fill=fill,
                     link=link,
-                    markdown=markdown,
                 )
                 page_break_triggered = page_break_triggered or new_page
                 text_cells.append(substr(s, j, i - j))
@@ -1684,18 +1675,19 @@ class FPDF:
                         align=align,
                         fill=fill,
                         link=link,
-                        markdown=markdown,
                     )
                     page_break_triggered = page_break_triggered or new_page
                     text_cells.append(substr(s, j, i - j))
 
                 else:
                     if align == "J":
+                        print(f"wmax={wmax} ls={ls} ns={ns}")
                         self.ws = (
                             (wmax - ls) / 1000 * self.font_size / (ns - 1)
                             if ns > 1
                             else 0
                         )
+                        print(self.ws, f"{self.ws * self.k:.3f} Tw")
                         self._out(f"{self.ws * self.k:.3f} Tw")
 
                     if max_line_height and h > max_line_height:
@@ -1712,7 +1704,6 @@ class FPDF:
                         align=align,
                         fill=fill,
                         link=link,
-                        markdown=markdown,
                     )
                     page_break_triggered = page_break_triggered or new_page
                     text_cells.append(substr(s, j, sep - j))
@@ -1744,7 +1735,6 @@ class FPDF:
             align=align,
             fill=fill,
             link=link,
-            markdown=markdown,
         )
         if new_page:
             # When a page jump is performed and ln=3,
@@ -1771,7 +1761,7 @@ class FPDF:
         return page_break_triggered
 
     @check_page
-    def write(self, h=None, txt="", link="", markdown=False):
+    def write(self, h=None, txt="", link=""):
         """
         Prints text from the current position.
         When the right margin is reached (or the \n character is met),
@@ -1783,8 +1773,6 @@ class FPDF:
             txt (str): text content
             link (str): optional link to add on the text, internal
                 (identifier returned by `add_link`) or external URL.
-            markdown (bool): enable minimal markdown-like markup to render part
-                of text as bold / italics / underlined. Default to False.
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
@@ -1806,7 +1794,7 @@ class FPDF:
             c = s[i]
             if c == "\n":
                 # Explicit line break
-                self.cell(w, h, substr(s, j, i - j), ln=2, link=link, markdown=markdown)
+                self.cell(w, h, substr(s, j, i - j), ln=2, link=link)
                 i += 1
                 sep = -1
                 j = i
@@ -1837,13 +1825,9 @@ class FPDF:
                         continue
                     if i == j:
                         i += 1
-                    self.cell(
-                        w, h, substr(s, j, i - j), ln=2, link=link, markdown=markdown
-                    )
+                    self.cell(w, h, substr(s, j, i - j), ln=2, link=link)
                 else:
-                    self.cell(
-                        w, h, substr(s, j, sep - j), ln=2, link=link, markdown=markdown
-                    )
+                    self.cell(w, h, substr(s, j, sep - j), ln=2, link=link)
                     i = sep + 1
                 sep = -1
                 j = i
@@ -1857,9 +1841,7 @@ class FPDF:
                 i += 1
         # Last chunk
         if i != j:
-            self.cell(
-                l / 1000 * self.font_size, h, substr(s, j), link=link, markdown=markdown
-            )
+            self.cell(l / 1000 * self.font_size, h, substr(s, j), link=link)
 
     @check_page
     def image(

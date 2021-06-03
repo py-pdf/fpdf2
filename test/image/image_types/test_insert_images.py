@@ -125,9 +125,7 @@ def test_insert_pillow(tmp_path):
 def test_insert_pillow_issue_139(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
-    font = ImageFont.truetype(
-        f"{HERE}/../../end_to_end_legacy/charmap/DejaVuSans.ttf", 40
-    )
+    font = ImageFont.truetype(f"{HERE}/../../fonts/DejaVuSans.ttf", 40)
     for y in range(5):
         for x in range(4):
             img = Image.new(mode="RGB", size=(100, 100), color=(60, 255, 10))

@@ -39,20 +39,20 @@ class MyTTFontFile(TTFontFile):
 
 
 @pytest.mark.parametrize(
-    "fontpath",
+    "font_filename",
     ["DejaVuSans.ttf", "DroidSansFallback.ttf", "Roboto-Regular.ttf", "cmss12.ttf"],
 )
-def test_first_999_chars(fontpath, tmp_path):
-    fontpath = HERE / fontpath
-    fontname = fontpath.stem
+def test_first_999_chars(font_filename, tmp_path):
+    font_path = HERE / ".." / ".." / "fonts" / font_filename
+    font_name = font_path.stem
 
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.add_font(fontname, fname=fontpath, uni=True)
-    pdf.set_font(fontname, size=10)
+    pdf.add_font(font_name, fname=font_path, uni=True)
+    pdf.set_font(font_name, size=10)
 
     ttf = MyTTFontFile()
-    ttf.getMetrics(fontpath)
+    ttf.getMetrics(font_path)
 
     # Create a PDF with the first 999 charters defined in the font:
     for counter, character in enumerate(ttf.saveChar, 0):
@@ -61,7 +61,7 @@ def test_first_999_chars(fontpath, tmp_path):
         if counter >= 999:
             break
 
-    assert_pdf_equal(pdf, HERE / f"charmap_first_999_chars-{fontname}.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / f"charmap_first_999_chars-{font_name}.pdf", tmp_path)
 
     for pkl_path in HERE.glob("*.pkl"):
         pkl_path.unlink()

@@ -62,6 +62,7 @@ Features:
  * Basic conversion from HTML to PDF
  * Images & links alternative descriptions
  * Table of contents & [document outline](https://pyfpdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html)
+ * Optional basic Markdown-like styling: `**bold**, __italics__, --underlined--`
  * Clean error handling through exceptions
  * Only **one** dependency so far: [Pillow](https://pillow.readthedocs.io/en/stable/)
  * Unit tests with `qpdf`-based PDF diffing

@@ -174,6 +174,30 @@ def test_cell_markdown(tmp_path):
     assert_pdf_equal(pdf, HERE / "cell_markdown.pdf", tmp_path)
 
 
+def test_cell_markdown_with_ttf_fonts(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf", uni=True)
+    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf", uni=True)
+    pdf.add_font("Roboto", "I", HERE / "../fonts/Roboto-Italic.ttf", uni=True)
+    pdf.set_font("Roboto", size=60)
+    pdf.cell(txt="**Lorem** __Ipsum__ --dolor--", markdown=True)
+    assert_pdf_equal(pdf, HERE / "cell_markdown_with_ttf_fonts.pdf", tmp_path)
+
+
+def test_cell_markdown_missing_ttf_font(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf", uni=True)
+    pdf.set_font("Roboto", size=60)
+    with pytest.raises(fpdf.FPDFException) as error:
+        pdf.cell(txt="**Lorem Ipsum**", markdown=True)
+    expected_msg = (
+        "Undefined font: robotoB - Use built-in fonts or FPDF.add_font() beforehand"
+    )
+    assert str(error.value) == expected_msg
+
+
 ## Code used to create this test
 # doc = fpdf.FPDF(format = 'letter', unit = 'pt')
 # set_doc_date_0(doc)

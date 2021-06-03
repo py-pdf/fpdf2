@@ -45,7 +45,7 @@ pdf.write_html("""<B>bold</B>
 
 ## markdown=True ##
 
-An optional `markdown=True` parameter can be passed to the `cell`, `multi_cell` & `write` methods
+An optional `markdown=True` parameter can be passed to the [`cell`](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) method
 in order to enable basic Markdown-like styling: `**bold**, __italics__, --underlined--`
 
 ```python

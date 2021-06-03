@@ -15,9 +15,8 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - `FPDF.cell`: the `w` (width) parameter becomes optional, with a default value of `None`, meaning to generate a cell with the size of the text content provided
 - the `h` (height) parameter of the `cell`, `multi_cell` & `write` methods gets a default value change, `None`, meaning to use the current font size
 ### Added
-- a new optional `markdown=True` parameter can be passed to the `cell`, `multi_cell` & `write` methods
-  in order to enable basic Markdown-like styling: `**bold**, __italics__, --underlined--`
-- `FPDF.cell`: new optional `center` parameter to position the cell horizontally
+- `FPDF.cell`: new optional `markdown=True` parameter that enables basic Markdown-like styling: `**bold**, __italics__, --underlined--`
+- `FPDF.cell`: new optional boolean `center` parameter that positions the cell horizontally
 - `HTMLMixin` / `HTML2FPDF`: now support `align="justify"`
 - new method `FPDF.image_filter` to control the image filters used for images
 - extra documentation on [how to configure different page formats for specific pages](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html)

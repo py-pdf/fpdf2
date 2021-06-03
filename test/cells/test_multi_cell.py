@@ -163,9 +163,7 @@ def test_multi_cell_table_unbreakable(tmp_path):  # issue 111
 def test_multi_cell_justified_with_unicode_font(tmp_path):  # issue 118
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.add_font(
-        "DejaVu", "", HERE / "../end_to_end_legacy/charmap/DejaVuSans.ttf", uni=True
-    )
+    pdf.add_font("DejaVu", "", HERE / "../fonts/DejaVuSans.ttf", uni=True)
     pdf.set_font("DejaVu", "", 14)
     text = 'Justified line containing "()" that is long enough to trigger wrapping and a line jump'
     pdf.multi_cell(w=0, h=8, txt=text, ln=1)
@@ -219,18 +217,6 @@ def test_multi_cell_table_unbreakable2(tmp_path):  # issue 120 - 2nd snippet
                 )
         pdf.ln(line_height)
     assert_pdf_equal(pdf, HERE / "multi_cell_table_unbreakable2.pdf", tmp_path)
-
-
-def test_multi_cell_markdown(tmp_path):
-    pdf = fpdf.FPDF()
-    pdf.add_page()
-    pdf.set_font("Times", "", 32)
-    text = (  # Some text where styling occur over line breaks:
-        "Lorem ipsum dolor amet, **consectetur adipiscing** elit,"
-        " sed do eiusmod __tempor incididunt__ ut labore et dolore magna aliqua."
-    )
-    pdf.multi_cell(w=pdf.epw, txt=text, markdown=True)
-    assert_pdf_equal(pdf, HERE / "multi_cell_markdown.pdf", tmp_path)
 
 
 ## Code used to create test

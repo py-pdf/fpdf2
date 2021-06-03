@@ -79,15 +79,19 @@ before every commit:
 ```shell
 #!/bin/bash
 git_cached_names() { git diff --cached --name-only --diff-filter=ACM; }
-modified_py_files=$(git_cached_names | grep '.py$')
-modified_fpdf_files=$(git_cached_names | grep ^fpdf | grep '.py$')
-# if python files modified, format
+if grep -IRF generate=True $(git_cached_names | grep 'test.*\.py$'); then
+    echo '`generate=True` left remaining in a call to assert_pdf_equal'
+    exit 1
+fi
+modified_py_files=$(git_cached_names | grep '\.py$')
+modified_fpdf_files=$(git_cached_names | grep '^fpdf.*\.py$')
+# If any Python files were modified, format them:
 if [ -n "$modified_py_files" ]; then
     if ! black --check $modified_py_files; then
         black $modified_py_files
         exit 1
     fi
-    # if core files modified, lint
+    # If fpdf/ files were modified, lint them:
     [[ $modified_fpdf_files == "" ]] || pylint $modified_fpdf_files
 fi
 ```
