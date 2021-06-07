@@ -62,8 +62,7 @@ class HTML2FPDF(HTMLParser):
         self.indent = 0
         self.bullet = []
         self.font_size = pdf.font_size_pt
-        self.font_face = None  # must be initialized before calling HTML.set_font:
-        self.set_font(size=self.font_size)
+        self.set_font(pdf.font_family or "times", size=self.font_size)
         self.font_color = 0, 0, 0  # initialize font color, r,g,b format
         self.table = None  # table attributes
         self.table_col_width = None  # column (header) widths
@@ -464,15 +463,15 @@ class HTML2FPDF(HTMLParser):
     def set_font(self, face=None, size=None):
         if face:
             self.font_face = face
-        if not self.font_face:
-            self.font_face = self.pdf.current_font.get("fontkey")
         if size:
             self.font_size = size
             self.h = size / 72 * 25.4
             LOGGER.debug("H %s", self.h)
-        style = "".join(s for s in ("b", "i", "u") if self.style.get(s))
-        self.pdf.set_font(self.font_face or "times", style, self.font_size or 12)
-        self.pdf.set_font_size(self.font_size or 12)
+        style = "".join(s for s in ("b", "i", "u") if self.style.get(s)).upper()
+        if (self.font_face, style) != (self.pdf.font_family, self.pdf.font_style):
+            self.pdf.set_font(self.font_face, style, self.font_size)
+        if self.font_size != self.pdf.font_size:
+            self.pdf.set_font_size(self.font_size)
 
     def set_style(self, tag=None, enable=False):
         # Modify style and select corresponding font

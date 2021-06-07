@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 import fpdf
+from fpdf.errors import FPDFException
 from fpdf.html import px2mm
 from test.conftest import assert_pdf_equal
 
@@ -397,3 +398,19 @@ def test_html_justify_paragraph(tmp_path):
         "</p>"
     )
     assert_pdf_equal(pdf, HERE / "html_justify_paragraph.pdf", tmp_path)
+
+
+def test_issue_156(tmp_path):
+    pdf = MyFPDF()
+    pdf.add_font("Roboto", style="B", fname="test/fonts/Roboto-Bold.ttf", uni=True)
+    pdf.set_font("Roboto", style="B")
+    pdf.add_page()
+    with pytest.raises(FPDFException) as error:
+        pdf.write_html("Regular text<br><b>Bold text</b>")
+    assert (
+        str(error.value)
+        == "Undefined font: roboto - Use built-in fonts or FPDF.add_font() beforehand"
+    )
+    pdf.add_font("Roboto", fname="test/fonts/Roboto-Regular.ttf", uni=True)
+    pdf.write_html("Regular text<br><b>Bold text</b>")
+    assert_pdf_equal(pdf, HERE / "issue_156.pdf", tmp_path)
