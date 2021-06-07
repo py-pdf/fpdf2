@@ -36,6 +36,7 @@ from typing import Callable, NamedTuple, Optional, Union
 
 from PIL import Image
 
+from .actions import Action
 from .errors import FPDFException, FPDFPageFormatException
 from .fonts import fpdf_charwidths
 from .image_parsing import get_img_info, load_resource, SUPPORTED_IMAGE_FILTERS
@@ -54,7 +55,7 @@ from .syntax import (
     create_list_string as pdf_l,
     create_stream as pdf_stream,
     iobj_ref as pdf_ref,
-    InternalLink,
+    DestinationXYZ,
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -101,6 +102,7 @@ class Annotation(NamedTuple):
     contents: str = None
     link: Union[str, int] = None
     alt_text: Optional[str] = None
+    action: Optional[Action] = None
 
 
 class TitleStyle(NamedTuple):
@@ -215,7 +217,7 @@ class FPDF:
         self.diffs = {}  # array of encoding differences
         self.images = {}  # array of used images
         self.annots = defaultdict(list)  # map page numbers to arrays of Annotations
-        self.links = {}  # array of InternalLink
+        self.links = {}  # array of Destination
         self.in_footer = 0  # flag set when processing footer
         self.lasth = 0  # height of last cell printed
         self.current_font = {}  # current font
@@ -1057,17 +1059,14 @@ class FPDF:
     def add_link(self):
         """Create a new internal link"""
         n = len(self.links) + 1
-        self.links[n] = InternalLink()
+        self.links[n] = DestinationXYZ(page=1)
         return n
 
     def set_link(self, link, y=0, page=-1):
         """Set destination of internal link"""
-        if page == -1:
-            page_object_id = self._current_page_object_id()
-        else:
-            page_object_id = 2 * page + 1
-        self.links[link] = InternalLink(page_object_id, y)
+        self.links[link] = DestinationXYZ(self.page if page == -1 else page, y)
 
+    @check_page
     def link(self, x, y, w, h, link, alt_text=None):
         """
         Puts a link annotation on a rectangular area of the page.
@@ -1095,7 +1094,8 @@ class FPDF:
             )
         )
 
-    def text_annotation(self, x, y, w, h, text):
+    @check_page
+    def text_annotation(self, x, y, text):
         """
         Puts a text annotation on a rectangular area of the page.
 
@@ -1111,9 +1111,22 @@ class FPDF:
                 "Text",
                 x * self.k,
                 self.h_pt - y * self.k,
+                self.k,
+                self.k,
+                contents=text,
+            )
+        )
+
+    @check_page
+    def add_action(self, action, x, y, w, h):
+        self.annots[self.page].append(
+            Annotation(
+                "Action",
+                x * self.k,
+                self.h_pt - y * self.k,
                 w * self.k,
                 h * self.k,
-                contents=text,
+                action=action,
             )
         )
 
@@ -2096,6 +2109,9 @@ class FPDF:
                             self.n, struct_type="/Link", alt_text=annot.alt_text
                         )
 
+                    if annot.action:
+                        annots += f"/A <<{annot.action.dict_as_string()}>>"
+
                     if annot.link:
                         if isinstance(annot.link, str):
                             annots += (
@@ -2106,8 +2122,7 @@ class FPDF:
                                 f"Page {n} has a link with an invalid index: "
                                 f"{annot.link} (doc #links={len(self.links)})"
                             )
-                            link = self.links[annot.link]
-                            annots += f"/Dest {link.dest(self)}"
+                            annots += f"/Dest {self.links[annot.link].dest_str(self)}"
                     annots += ">>"
                 # End links list
                 self._out(f"/Annots [{annots}]")
@@ -3057,16 +3072,14 @@ class FPDF:
                 raise ValueError(
                     f"Incoherent hierarchy: cannot start a level {level} section after a level {self._outline[-1].level} one"
                 )
-        internal_link = InternalLink(self._current_page_object_id(), self.y)
+        dest = DestinationXYZ(self._current_page_object_id(), self.y)
         struct_elem = None
         if self.section_title_styles:
             with self._marked_sequence(title=name) as marked_content:
                 struct_elem = self.struct_builder.struct_elem_per_mc[marked_content]
                 with self._apply_style(self.section_title_styles[level]):
                     self.multi_cell(w=self.epw, h=self.font_size, txt=name, ln=1)
-        self._outline.append(
-            OutlineSection(name, level, self.page, internal_link, struct_elem)
-        )
+        self._outline.append(OutlineSection(name, level, self.page, dest, struct_elem))
 
     @contextmanager
     def _apply_style(self, title_style):

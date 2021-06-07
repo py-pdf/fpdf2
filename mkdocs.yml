@@ -32,6 +32,7 @@ nav:
   - 'Page breaks':                  'PageBreaks.md'
 - 'Document outline & table of contents': 'DocumentOutlineAndTableOfContents.md'
 - 'Text styling':                   'TextStyling.md'
+- 'Annotations':                    'Annotations.md'
 - 'Shapes':                         'Shapes.md'
 - 'Barcodes':                       'Barcodes.md'
 - 'Metadata':                       'Metadata.md'

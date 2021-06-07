@@ -66,7 +66,7 @@ that string.
 As of this writing, I am not sure how length is actually calculated, so this
 remains something to be looked into.
 """
-from typing import NamedTuple
+from abc import ABC
 
 
 def clear_empty_fields(d):
@@ -212,13 +212,22 @@ class PDFArray(list):
         return f"[{serialized_elems}]"
 
 
-class InternalLink(NamedTuple):
-    page_obj_id: int = 0
-    y: int = 0
+# cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
+class Destination(ABC):
+    def dest_str(self, pdf=None):
+        raise NotImplementedError
 
-    def dest(self, pdf=None):
-        # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
+
+class DestinationXYZ(Destination):
+    def __init__(self, page, y=0, zoom=0, page_as_obj_id=True):
+        self.page = page
+        self.y = y
+        self.zoom = zoom
+        self.page_as_obj_id = page_as_obj_id
+
+    def dest_str(self, pdf=None):
         left = 0
         top = (pdf.h_pt - self.y * pdf.k) if pdf else self.y
-        zoom = "null"
-        return f"[{self.page_obj_id} 0 R /XYZ {left} {top:.2f} {zoom}]"
+        # The page object ID is predictable given that _putpages is invoked first in _enddoc:
+        page = f"{2 * self.page + 1} 0 R" if self.page_as_obj_id else self.page
+        return f"[{page} /XYZ {left} {top:.2f} {self.zoom}]"

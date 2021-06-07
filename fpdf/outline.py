@@ -5,7 +5,7 @@ Quoting section 8.2.2 "Document Outline" of the 2006 PDF spec 1.7:
 """
 from typing import NamedTuple, Optional
 
-from .syntax import InternalLink, PDFObject, PDFString
+from .syntax import Destination, PDFObject, PDFString
 from .structure_tree import StructElem
 
 
@@ -13,7 +13,7 @@ class OutlineSection(NamedTuple):
     name: str
     level: str
     page_number: int
-    internal_link: InternalLink
+    dest: Destination
     struct_elem: Optional[StructElem] = None
 
 
@@ -81,7 +81,7 @@ def serialize_outline(sections, first_object_id=1, fpdf=None):
     for section in sections:
         outline_item = OutlineItemDictionary(
             title=section.name,
-            dest=section.internal_link.dest(fpdf),
+            dest=section.dest.dest_str(fpdf),
             struct_elem=section.struct_elem,
             id=n,
         )
