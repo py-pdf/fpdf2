@@ -1062,9 +1062,20 @@ class FPDF:
         self.links[n] = DestinationXYZ(page=1)
         return n
 
-    def set_link(self, link, y=0, page=-1):
-        """Set destination of internal link"""
-        self.links[link] = DestinationXYZ(self.page if page == -1 else page, y)
+    def set_link(self, link, y=0, page=-1, zoom="null"):
+        """
+        Defines the page and position a link points to.
+
+        Args:
+            link (int): a link identifier returned by `add_link`.
+            y (int): optional ordinate of target position.
+                The default value is 0 (top of page).
+            page (int): optional number of target page.
+                -1 indicates the current page, which is the default value.
+            zoom (int): optional new zoom level after following the link.
+                Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
+        """
+        self.links[link] = DestinationXYZ(self.page if page == -1 else page, y, zoom)
 
     @check_page
     def link(self, x, y, w, h, link, alt_text=None):
@@ -1694,13 +1705,11 @@ class FPDF:
 
                 else:
                     if align == "J":
-                        print(f"wmax={wmax} ls={ls} ns={ns}")
                         self.ws = (
                             (wmax - ls) / 1000 * self.font_size / (ns - 1)
                             if ns > 1
                             else 0
                         )
-                        print(self.ws, f"{self.ws * self.k:.3f} Tw")
                         self._out(f"{self.ws * self.k:.3f} Tw")
 
                     if max_line_height and h > max_line_height:
@@ -2090,16 +2099,16 @@ class FPDF:
 
                     # start the annotation entry
                     annots += (
-                        f"<</Type /Annot /Subtype /{annot.type} "
-                        f"/Rect [{rect}] /Border [0 0 0] "
+                        f"<</Type /Annot /Subtype /{annot.type}"
+                        f" /Rect [{rect}] /Border [0 0 0]"
                         # Flag "Print" (bit position 3) specifies to print
                         # the annotation when the page is printed.
                         # cf. https://docs.verapdf.org/validation/pdfa-part1/#rule-653-2
-                        f"/F 4"
+                        f" /F 4"
                     )
 
                     if annot.contents:
-                        annots += f"/Contents {enclose_in_parens(annot.contents)}"
+                        annots += f" /Contents {enclose_in_parens(annot.contents)}"
 
                     if annot.alt_text is not None:
                         # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
@@ -2110,19 +2119,20 @@ class FPDF:
                         )
 
                     if annot.action:
-                        annots += f"/A <<{annot.action.dict_as_string()}>>"
+                        annots += f" /A <<{annot.action.dict_as_string()}>>"
 
                     if annot.link:
                         if isinstance(annot.link, str):
                             annots += (
-                                f"/A <</S /URI /URI {enclose_in_parens(annot.link)}>>"
+                                f" /A <</S /URI /URI {enclose_in_parens(annot.link)}>>"
                             )
                         else:  # Dest type ending of annotation entry
                             assert annot.link in self.links, (
                                 f"Page {n} has a link with an invalid index: "
                                 f"{annot.link} (doc #links={len(self.links)})"
                             )
-                            annots += f"/Dest {self.links[annot.link].dest_str(self)}"
+                            dest = self.links[annot.link]
+                            annots += f" /Dest {dest.as_str(self)}"
                     annots += ">>"
                 # End links list
                 self._out(f"/Annots [{annots}]")
@@ -3072,7 +3082,7 @@ class FPDF:
                 raise ValueError(
                     f"Incoherent hierarchy: cannot start a level {level} section after a level {self._outline[-1].level} one"
                 )
-        dest = DestinationXYZ(self._current_page_object_id(), self.y)
+        dest = DestinationXYZ(self.page, self.y)
         struct_elem = None
         if self.section_title_styles:
             with self._marked_sequence(title=name) as marked_content:

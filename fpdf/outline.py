@@ -81,7 +81,7 @@ def serialize_outline(sections, first_object_id=1, fpdf=None):
     for section in sections:
         outline_item = OutlineItemDictionary(
             title=section.name,
-            dest=section.dest.dest_str(fpdf),
+            dest=section.dest.as_str(fpdf),
             struct_elem=section.struct_elem,
             id=n,
         )

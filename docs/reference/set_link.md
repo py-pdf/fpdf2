@@ -1,24 +1,6 @@
-## set_link ##
+cf. https://pyfpdf.github.io/fpdf2/fpdf/#fpdf.FPDF.set_link
 
-```python
-fpdf.set_link(link, y = 0.0, page = -1)
-```
-### Description ###
-
-Defines the page and position a link points to.
-
-### Parameters ###
-
-link:
-> The link identifier returned by [add_link](add_link.md).
-
-y:
-> Ordinate of target position; -1 indicates the current position. The default value is 0 (top of page).
-
-page:
-> Number of target page; -1 indicates the current page, which is the default value.
-
-
-### See also ###
-
-[add_link](add_link.md).
+<script>
+// Migrating Markdown doc to docstrings - cf. https://github.com/PyFPDF/fpdf2/issues/31
+window.location = 'https://pyfpdf.github.io/fpdf2/fpdf/#fpdf.FPDF.set_link'
+</script>

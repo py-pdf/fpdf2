@@ -19,6 +19,8 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - new `FPDF.add_action()` method, documented in the [Annotations section](https://pyfpdf.github.io/fpdf2/Annotations.html)
 - `FPDF.cell`: new optional `markdown=True` parameter that enables basic Markdown-like styling: `**bold**, __italics__, --underlined--`
 - `FPDF.cell`: new optional boolean `center` parameter that positions the cell horizontally
+- `FPDF.set_link`: new optional `zoom` parameter that sets the zoom level after following the link.
+  Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
 - `HTMLMixin` / `HTML2FPDF`: now support `align="justify"`
 - new method `FPDF.image_filter` to control the image filters used for images
 - extra documentation on [how to configure different page formats for specific pages](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html)

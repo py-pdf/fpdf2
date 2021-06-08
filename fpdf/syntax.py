@@ -214,18 +214,18 @@ class PDFArray(list):
 
 # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
 class Destination(ABC):
-    def dest_str(self, pdf=None):
+    def as_str(self, pdf=None):
         raise NotImplementedError
 
 
 class DestinationXYZ(Destination):
-    def __init__(self, page, y=0, zoom=0, page_as_obj_id=True):
+    def __init__(self, page, y=0, zoom="null", page_as_obj_id=True):
         self.page = page
         self.y = y
         self.zoom = zoom
         self.page_as_obj_id = page_as_obj_id
 
-    def dest_str(self, pdf=None):
+    def as_str(self, pdf=None):
         left = 0
         top = (pdf.h_pt - self.y * pdf.k) if pdf else self.y
         # The page object ID is predictable given that _putpages is invoked first in _enddoc:
