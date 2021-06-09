@@ -132,3 +132,20 @@ def test_template_nominal_csv(tmp_path):
     tmpl.parse_csv(HERE / "mycsvfile.csv", delimiter=";")
     tmpl.add_page()
     assert_pdf_equal(tmpl, HERE / "template_nominal_csv.pdf", tmp_path)
+
+
+def test_template_code39(tmp_path):  # issue-161
+    elements = [
+        {
+            "name": "code39",
+            "type": "C39",
+            "x": 40,
+            "y": 50,
+            "h": 20,
+            "text": "Code 39 barcode",
+            "priority": 1,
+        },
+    ]
+    tmpl = Template(format="A4", title="Sample Code 39 barcode", elements=elements)
+    tmpl.add_page()
+    assert_pdf_equal(tmpl, HERE / "template_code39.pdf", tmp_path)

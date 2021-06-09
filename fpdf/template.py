@@ -47,6 +47,7 @@ class Template:
             "I": self.image,
             "B": self.rect,
             "BC": self.barcode,
+            "C39": self.code39,
             "W": self.write,
         }
         self.texts = {}
@@ -297,6 +298,19 @@ class Template:
         font = font.lower().strip()
         if font == "interleaved 2of5 nt":
             pdf.interleaved2of5(text, x1, y1, w=size, h=y2 - y1)
+
+    @staticmethod
+    def code39(
+        pdf,
+        text,
+        x,
+        y,
+        *_,
+        w=1.5,
+        h=5,
+        **__,
+    ):
+        pdf.code39(text, x, y, w, h)
 
     # Added by Derek Schwalenberg Schwalenberg1013@gmail.com to allow (url) links in
     # templates (using write method) 2014-02-22

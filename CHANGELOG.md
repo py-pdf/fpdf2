@@ -24,6 +24,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - `HTMLMixin` / `HTML2FPDF`: now support `align="justify"`
 - new method `FPDF.image_filter` to control the image filters used for images
 - extra documentation on [how to configure different page formats for specific pages](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html)
+- support for Code 39 barcodes in `fpdf.template`, using `type="C39"`
 ### Fixed
 - avoid an `Undefined font` error when using `write_html` with unicode bold or italics fonts
 
