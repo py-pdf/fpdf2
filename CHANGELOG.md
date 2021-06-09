@@ -23,6 +23,10 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
   Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
 - `HTMLMixin` / `HTML2FPDF`: now support `align="justify"`
 - new method `FPDF.image_filter` to control the image filters used for images
+- `FPDF.add_page`: new optional `duration` parameter, setting the length of time,
+  in seconds, that the page is displayed in presentation mode,
+  before the viewer application automatically advances to the next page.
+  It can also be configured globally through the `page_duration` FPDF property.
 - extra documentation on [how to configure different page formats for specific pages](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html)
 - support for Code 39 barcodes in `fpdf.template`, using `type="C39"`
 ### Fixed

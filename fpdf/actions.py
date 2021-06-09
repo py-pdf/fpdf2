@@ -42,3 +42,12 @@ class LaunchAction(Action):
 
     def dict_as_string(self):
         return f"/S /Launch /F {enclose_in_parens(self.file)}"
+
+
+# Annotation & actions that we tested implementing,
+# but that revealed not be worth the effort:
+# * Popup annotation & Hide action: as of june 2021,
+# do not seem support neither by Adobe Acrobat nor by Sumatra.
+# Moreover, they both use to indirect reference annotations,
+# and hence implementing them would need some consequent refactoring,
+# as annotations are currently defined "inline", not as dedicated PDF objects.

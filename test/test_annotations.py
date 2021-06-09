@@ -10,8 +10,8 @@ HERE = Path(__file__).resolve().parent
 
 def test_text_annotation(tmp_path):
     pdf = FPDF()
-    pdf.add_page()
     pdf.set_font("Helvetica", size=24)
+    pdf.add_page()
     pdf.text(x=60, y=140, txt="Some text.")
     pdf.text_annotation(
         x=100,

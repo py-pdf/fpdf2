@@ -235,6 +235,7 @@ class FPDF:
         self.font_cache_dir = font_cache_dir
         self.xmp_metadata = None
         self.image_filter = "AUTO"
+        self.page_duration = 0  # The pages display duration, cf. add_page()
         # Only set if XMP metadata is added to the document:
         self._xmp_metadata_obj_id = None
         self.struct_builder = StructureTreeBuilder()
@@ -521,7 +522,7 @@ class FPDF:
         self._endpage()  # close page
         self._enddoc()  # close document
 
-    def add_page(self, orientation="", format="", same=False):
+    def add_page(self, orientation="", format="", same=False, duration=0):
         """
         Adds a new page to the document.
         If a page is already present, the `footer()` method is called first.
@@ -535,6 +536,12 @@ class FPDF:
                 (width, height). Default to "a4".
             same (bool): indicates to use the same page format as the previous page.
                 Default to False.
+            duration (float): the page’s display duration, i.e. the maximum length of time,
+                in seconds, that the page is displayed in presentation mode,
+                before the viewer application automatically advances to the next page.
+                Can be configured globally through the `page_duration` FPDF property.
+                As of june 2021, this configuration entry is onored by Adobe Acrobat reader,
+                but ignored by Sumatra PDF reader.
         """
         if self.state == DocumentState.CLOSED:
             raise FPDFException(
@@ -559,7 +566,7 @@ class FPDF:
             self._endpage()
 
         # Start new page
-        self._beginpage(orientation, format, same)
+        self._beginpage(orientation, format, same, duration or self.page_duration)
         self._out("2 J")  # Set line cap style to square
         self.line_width = lw  # Set line width
         self._out(f"{lw * self.k:.2f} w")
@@ -2081,8 +2088,10 @@ class FPDF:
             self._newobj()
             self._out("<</Type /Page")
             self._out("/Parent 1 0 R")
-            w_pt = self.pages[n]["w_pt"]
-            h_pt = self.pages[n]["h_pt"]
+            page = self.pages[n]
+            if page["duration"]:
+                self._out(f"/Dur {page['duration']}")
+            w_pt, h_pt = page["w_pt"], page["h_pt"]
             if w_pt != dw_pt or h_pt != dh_pt:
                 self._out(f"/MediaBox [0 0 {w_pt:.2f} {h_pt:.2f}]")
             self._out("/Resources 2 0 R")
@@ -2145,7 +2154,7 @@ class FPDF:
             self._out("endobj")
 
             # Page content
-            content = self.pages[n]["content"]
+            content = page["content"]
             p = zlib.compress(content) if self.compress else content
             self._newobj()
             self._out(f"<<{filter}/Length {len(p)}>>")
@@ -2168,16 +2177,18 @@ class FPDF:
         alias = self.str_alias_nb_pages.encode("UTF-16BE")
         encoded_nb = str(nb).encode("UTF-16BE")
         for n in range(1, nb + 1):
-            new_content = self.pages[n]["content"].replace(alias, encoded_nb)
-            substituted |= self.pages[n]["content"] != new_content
-            self.pages[n]["content"] = new_content
+            page = self.pages[n]
+            new_content = page["content"].replace(alias, encoded_nb)
+            substituted |= page["content"] != new_content
+            page["content"] = new_content
         # Now repeat for no pages in non-subset fonts
         alias = self.str_alias_nb_pages.encode("latin-1")
         encoded_nb = str(nb).encode("latin-1")
         for n in range(1, nb + 1):
-            new_content = self.pages[n]["content"].replace(alias, encoded_nb)
-            substituted |= self.pages[n]["content"] != new_content
-            self.pages[n]["content"] = new_content
+            page = self.pages[n]
+            new_content = page["content"].replace(alias, encoded_nb)
+            substituted |= page["content"] != new_content
+            page["content"] = new_content
         if substituted:
             LOGGER.info(
                 "Substitution of '%s' was performed in the document",
@@ -2779,9 +2790,9 @@ class FPDF:
         self._out("%%EOF")
         self.state = DocumentState.CLOSED
 
-    def _beginpage(self, orientation, format, same):
+    def _beginpage(self, orientation, format, same, page_duration):
         self.page += 1
-        self.pages[self.page] = {"content": bytearray()}
+        self.pages[self.page] = {"content": bytearray(), "duration": page_duration}
         self.state = DocumentState.GENERATING_PAGE
         self.x = self.l_margin
         self.y = self.t_margin
