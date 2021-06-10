@@ -235,7 +235,8 @@ class FPDF:
         self.font_cache_dir = font_cache_dir
         self.xmp_metadata = None
         self.image_filter = "AUTO"
-        self.page_duration = 0  # The pages display duration, cf. add_page()
+        self.page_duration = 0  # optional pages display duration, cf. add_page()
+        self.page_transition = None  # optional pages transition, cf. add_page()
         # Only set if XMP metadata is added to the document:
         self._xmp_metadata_obj_id = None
         self.struct_builder = StructureTreeBuilder()
@@ -522,7 +523,9 @@ class FPDF:
         self._endpage()  # close page
         self._enddoc()  # close document
 
-    def add_page(self, orientation="", format="", same=False, duration=0):
+    def add_page(
+        self, orientation="", format="", same=False, duration=0, transition=None
+    ):
         """
         Adds a new page to the document.
         If a page is already present, the `footer()` method is called first.
@@ -536,12 +539,15 @@ class FPDF:
                 (width, height). Default to "a4".
             same (bool): indicates to use the same page format as the previous page.
                 Default to False.
-            duration (float): the page’s display duration, i.e. the maximum length of time,
+            duration (float): optional page’s display duration, i.e. the maximum length of time,
                 in seconds, that the page is displayed in presentation mode,
                 before the viewer application automatically advances to the next page.
                 Can be configured globally through the `page_duration` FPDF property.
-                As of june 2021, this configuration entry is onored by Adobe Acrobat reader,
-                but ignored by Sumatra PDF reader.
+                As of june 2021, onored by Adobe Acrobat reader, but ignored by Sumatra PDF reader.
+            transition (Transition child class): optional visual transition to use when moving
+                from another page to the given page during a presentation.
+                Can be configured globally through the `page_transition` FPDF property.
+                As of june 2021, onored by Adobe Acrobat reader, but ignored by Sumatra PDF reader.
         """
         if self.state == DocumentState.CLOSED:
             raise FPDFException(
@@ -566,7 +572,13 @@ class FPDF:
             self._endpage()
 
         # Start new page
-        self._beginpage(orientation, format, same, duration or self.page_duration)
+        self._beginpage(
+            orientation,
+            format,
+            same,
+            duration or self.page_duration,
+            transition or self.page_transition,
+        )
         self._out("2 J")  # Set line cap style to square
         self.line_width = lw  # Set line width
         self._out(f"{lw * self.k:.2f} w")
@@ -2091,6 +2103,8 @@ class FPDF:
             page = self.pages[n]
             if page["duration"]:
                 self._out(f"/Dur {page['duration']}")
+            if page["transition"]:
+                self._out(f"/Trans {page['transition'].dict_as_string()}")
             w_pt, h_pt = page["w_pt"], page["h_pt"]
             if w_pt != dw_pt or h_pt != dh_pt:
                 self._out(f"/MediaBox [0 0 {w_pt:.2f} {h_pt:.2f}]")
@@ -2790,9 +2804,10 @@ class FPDF:
         self._out("%%EOF")
         self.state = DocumentState.CLOSED
 
-    def _beginpage(self, orientation, format, same, page_duration):
+    def _beginpage(self, orientation, format, same, duration, transition):
         self.page += 1
-        self.pages[self.page] = {"content": bytearray(), "duration": page_duration}
+        page = {"content": bytearray(), "duration": duration, "transition": transition}
+        self.pages[self.page] = page
         self.state = DocumentState.GENERATING_PAGE
         self.x = self.l_margin
         self.y = self.t_margin
@@ -2812,8 +2827,7 @@ class FPDF:
                 orientation or self.def_orientation, page_width_pt, page_height_pt
             )
             self.page_break_trigger = self.h - self.b_margin
-        self.pages[self.page]["w_pt"] = self.w_pt
-        self.pages[self.page]["h_pt"] = self.h_pt
+        page["w_pt"], page["h_pt"] = self.w_pt, self.h_pt
 
     def _endpage(self):
         # End of page contents
