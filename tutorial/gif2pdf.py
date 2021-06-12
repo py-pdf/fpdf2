@@ -21,7 +21,6 @@ size = (imgs[0].shape[1], imgs[0].shape[0])
 
 pdf = FPDF(format=size)
 pdf.set_margin(0)
-pdf.set_auto_page_break(False)
 duration_in_secs = 0
 for img in imgs:
     pdf.add_page(duration=duration_in_secs)
