@@ -933,6 +933,10 @@ class FPDF:
         )
 
     @check_page
+    def circle(self, x, y, d, style=None):
+        self.ellipse(x, y, d, d, style)
+
+    @check_page
     def ellipse(self, x, y, w, h, style=None):
         """
         Outputs an ellipse.
