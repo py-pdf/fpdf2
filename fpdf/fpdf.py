@@ -934,6 +934,19 @@ class FPDF:
 
     @check_page
     def circle(self, x, y, d, style=None):
+        """
+        Outputs a circle.
+        It can be drawn (border only), filled (with no border) or both.
+
+        Args:
+            x (int): Abscissa of upper-left bounding box.
+            y (int): Ordinate of upper-left bounding box.
+            d (int): Diameter.
+            style (int): Style of rendering. Possible values are:
+                * `D` or empty string: draw border. This is the default value.
+                * `F`: fill
+                * `DF` or `FD`: draw and fill
+        """
         self.ellipse(x, y, d, d, style)
 
     @check_page
