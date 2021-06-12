@@ -7,9 +7,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
-## [2.4.1] - not released yet
+## [2.4.1] - 2021-06-12
 ### Fixed
 - erroneous page breaks occured for full-width / full-height images
+- rendering issue of non-ASCII characaters with unicode fonts
 
 ## [2.4.0] - 2021-06-11
 ### Changed

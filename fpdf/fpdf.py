@@ -62,7 +62,7 @@ LOGGER = logging.getLogger(__name__)
 HERE = Path(__file__).resolve().parent
 
 # Global variables
-FPDF_VERSION = "2.4.0"
+FPDF_VERSION = "2.4.1"
 FPDF_FONT_DIR = HERE / "font"
 
 PAGE_FORMATS = {
@@ -1634,7 +1634,7 @@ class FPDF:
                         txt_frag_escaped = escape_parens(
                             txt_frag.encode("UTF-16BE").decode("latin-1")
                         )
-                        for char in txt_frag_escaped:
+                        for char in txt_frag:
                             self.current_font["subset"].append(ord(char))
                     else:
                         txt_frag_escaped = escape_parens(txt_frag)

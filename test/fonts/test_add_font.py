@@ -109,3 +109,13 @@ def test_add_core_fonts():
     pdf.add_font("times", style="")
     pdf.add_font("courier")
     assert pdf.fonts == {}  # No fonts added, as all of them are core fonts
+
+
+def test_render_en_dash(tmp_path):  # issue-166
+    pdf = FPDF()
+    font_file_path = HERE / "../fonts/Roboto-Regular.ttf"
+    pdf.add_font("Roboto-Regular", fname=font_file_path, uni=True)
+    pdf.set_font("Roboto-Regular", size=120)
+    pdf.add_page()
+    pdf.cell(w=pdf.epw, txt="–")  # U+2013
+    assert_pdf_equal(pdf, HERE / "render_en_dash.pdf", tmp_path)
