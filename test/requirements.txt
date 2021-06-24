@@ -3,3 +3,4 @@ pylint
 pytest
 pytest-cov
 pytest-timeout
+qrcode

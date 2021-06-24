@@ -9,12 +9,16 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.4.2] - not released yet
 ### Added
-- disable font caching when `fpdf.FPDF` constructor invoked with `font_cache_dir=None`
-- `FPDF.circle`: new method added.
+- disable font caching when `fpdf.FPDF` constructor invoked with `font_cache_dir=None`, thanks to @moe-25 !
+- `FPDF.circle`: new method added, thanks to @viraj-shah18 !
+- `HTMLMixin` / `HTML2FPDF`: support setting HTML font colors by name and short hex codes
 - [`FPDF.will_page_break`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.will_page_break)
 utility method to let users know in advance when adding an elemnt will trigger a page break.
 This can be useful to repeat table headers on each page for exemple,
 _cf._ [documentation on Tables](https://pyfpdf.github.io/fpdf2/Tables.html#repeat-table-header-on-each-page).
+
+### Fixed
+- fixed a bug when `fpdf.Template` was used to render QRCodes, due to a forced conversion to string (#175)
 
 ## [2.4.1] - 2021-06-12
 ### Fixed
@@ -30,7 +34,6 @@ _cf._ [documentation on Tables](https://pyfpdf.github.io/fpdf2/Tables.html#repea
 - the `h` (height) parameter of the `cell`, `multi_cell` & `write` methods gets a default value change, `None`, meaning to use the current font size
 - removed the useless `w` & `h` parameters of the `FPDF.text_annotation()` method
 ### Added
-- Support setting HTML font colors by name and short hex codes
 - new `FPDF.add_action()` method, documented in the [Annotations section](https://pyfpdf.github.io/fpdf2/Annotations.html)
 - `FPDF.cell`: new optional `markdown=True` parameter that enables basic Markdown-like styling: `**bold**, __italics__, --underlined--`
 - `FPDF.cell`: new optional boolean `center` parameter that positions the cell horizontally

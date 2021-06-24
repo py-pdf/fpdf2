@@ -169,7 +169,7 @@ def px2mm(px):
     return int(px) * 25.4 / 72
 
 
-def hex2dec(color="#000000"):
+def color_as_decimal(color="#000000"):
     if not color:
         return None
 
@@ -294,7 +294,7 @@ class HTML2FPDF(HTMLParser):
         else:
             align = self.td.get("align", "L")[0].upper()
             border = border and "LR"
-        bgcolor = hex2dec(self.td.get("bgcolor", self.tr.get("bgcolor", "")))
+        bgcolor = color_as_decimal(self.td.get("bgcolor", self.tr.get("bgcolor", "")))
         # parsing table header/footer (drawn later):
         if self.thead is not None:
             self.theader.append(((width, height, data, border, 0, align), bgcolor))
@@ -442,7 +442,7 @@ class HTML2FPDF(HTMLParser):
             # save previous font state:
             self.font_stack.append((self.font_face, self.font_size, self.font_color))
             if "color" in attrs:
-                color = hex2dec(attrs["color"])
+                color = color_as_decimal(attrs["color"])
                 self.font_color = color
             if "face" in attrs:
                 face = attrs.get("face").lower()

@@ -1,6 +1,9 @@
 from pathlib import Path
 
+import qrcode
+
 from fpdf.template import Template
+
 from ..conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
@@ -149,3 +152,33 @@ def test_template_code39(tmp_path):  # issue-161
     tmpl = Template(format="A4", title="Sample Code 39 barcode", elements=elements)
     tmpl.add_page()
     assert_pdf_equal(tmpl, HERE / "template_code39.pdf", tmp_path)
+
+
+def test_template_qrcode(tmp_path):  # issue-175
+    elements = [
+        {
+            "name": "barcode_0",
+            "type": "I",
+            "x1": 50,
+            "y1": 50,
+            "x2": 100,
+            "y2": 100,
+            "priority": 0,
+            "text": None,
+        },
+        {
+            "name": "barcode_1",
+            "type": "I",
+            "x1": 150,
+            "y1": 150,
+            "x2": 200,
+            "y2": 200,
+            "priority": 0,
+            "text": None,
+        },
+    ]
+    tmpl = Template(format="letter", elements=elements)
+    tmpl.add_page()
+    tmpl["barcode_0"] = qrcode.make("Test 0").get_image()
+    tmpl["barcode_1"] = qrcode.make("Test 1").get_image()
+    assert_pdf_equal(tmpl, HERE / "template_qrcode.pdf", tmp_path)

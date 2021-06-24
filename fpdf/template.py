@@ -106,7 +106,6 @@ class Template:
             raise FPDFException(f"Element not loaded, cannot set item: {name}")
         if not self.pg_no:
             raise FPDFException("No page open, you need to call add_page() first")
-        value = "" if value is None else str(value)
         self.texts[self.pg_no][name.lower()] = value
 
     # setitem shortcut (may be further extended)
