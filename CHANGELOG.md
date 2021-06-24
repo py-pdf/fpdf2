@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
+## [2.4.2] - not released yet
+### Added
+- disable font caching when `fpdf.FPDF` constructor invoked with `font_cache_dir=None`
+
 ## [2.4.1] - 2021-06-12
 ### Fixed
 - erroneous page breaks occured for full-width / full-height images

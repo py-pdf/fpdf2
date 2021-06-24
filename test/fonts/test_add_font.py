@@ -58,7 +58,7 @@ def test_deprecation_warning_for_FPDF_CACHE_DIR():
 
 
 def test_add_font_unicode_with_path_fname_ok(tmp_path):
-    for font_cache_dir in (True, tmp_path):
+    for font_cache_dir in (True, tmp_path, None):
         pdf = FPDF(font_cache_dir=font_cache_dir)
         font_file_path = HERE / "../fonts/Roboto-Regular.ttf"
         pdf.add_font("Roboto-Regular", fname=font_file_path, uni=True)
@@ -69,7 +69,7 @@ def test_add_font_unicode_with_path_fname_ok(tmp_path):
 
 
 def test_add_font_unicode_with_str_fname_ok(tmp_path):
-    for font_cache_dir in (True, str(tmp_path)):
+    for font_cache_dir in (True, str(tmp_path), None):
         pdf = FPDF(font_cache_dir=font_cache_dir)
         font_file_path = HERE / "../fonts/Roboto-Regular.ttf"
         pdf.add_font("Roboto-Regular", fname=str(font_file_path), uni=True)

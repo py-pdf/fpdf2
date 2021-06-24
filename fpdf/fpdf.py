@@ -203,6 +203,7 @@ class FPDF:
                 (width, height) expressed in the given unit. Default to "a4".
             font_cache_dir (Path or str): directory where pickle files
                 for TTF font files are kept.
+                `None` disables font chaching.
                 The default is `True`, meaning the current folder.
         """
         # Initialization of properties
@@ -1039,10 +1040,13 @@ class FPDF:
             else:
                 raise FileNotFoundError(f"TTF Font file not found: {fname}")
 
-            cache_dir = (
-                Path() if self.font_cache_dir is True else Path(self.font_cache_dir)
-            )
-            unifilename = cache_dir / f"{ttffilename.stem}.pkl"
+            if self.font_cache_dir is None:
+                cache_dir = unifilename = None
+            else:
+                cache_dir = (
+                    Path() if self.font_cache_dir is True else Path(self.font_cache_dir)
+                )
+                unifilename = cache_dir / f"{ttffilename.stem}.pkl"
 
             # include numbers in the subset! (if alias present)
             sbarr = list(range(57 if self.str_alias_nb_pages else 32))
@@ -2708,7 +2712,10 @@ class FPDF:
                 self.mtd(font)
 
     def _putTTfontwidths(self, font, maxUni):
-        cw127fname = Path(font["unifilename"]).with_suffix(".cw127.pkl")
+        if font["unifilename"] is None:
+            cw127fname = None
+        else:
+            cw127fname = Path(font["unifilename"]).with_suffix(".cw127.pkl")
         font_dict = load_cache(cw127fname)
         if font_dict:
             rangeid = font_dict["rangeid"]
