@@ -1000,7 +1000,7 @@ class FPDF:
             y (int): Ordinate of upper-left bounging box.
             r (int): Radius of the circle.
             style (int): Style of rendering. Possible values are:
-                * `D` or empty string: draw border. This is the default value.
+                * `D` or None: draw border. This is the default value.
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
         """
