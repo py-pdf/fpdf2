@@ -198,6 +198,31 @@ def test_cell_markdown_missing_ttf_font(tmp_path):
     assert str(error.value) == expected_msg
 
 
+def test_table_with_headers_on_every_page(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    line_height = pdf.font_size * 2
+    col_width = pdf.epw / 4  # distribute content evenly
+
+    def render_table_header():
+        pdf.set_font(style="B")  # enabling bold text
+        for col_name in TABLE_DATA[0]:
+            pdf.cell(col_width, line_height, col_name, border=1)
+        pdf.ln(line_height)
+        pdf.set_font(style="")  # disabling bold text
+
+    render_table_header()
+    for _ in range(10):  # repeat data rows
+        for row in TABLE_DATA[1:]:
+            if pdf.will_page_break(line_height):
+                render_table_header()
+            for datum in row:
+                pdf.cell(col_width, line_height, datum, border=1)
+            pdf.ln(line_height)
+    assert_pdf_equal(pdf, HERE / "table_with_headers_on_every_page.pdf", tmp_path)
+
+
 ## Code used to create this test
 # doc = fpdf.FPDF(format = 'letter', unit = 'pt')
 # set_doc_date_0(doc)

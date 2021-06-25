@@ -1768,12 +1768,24 @@ class FPDF:
                 in_underline,
             )
 
-    def _perform_page_break_if_need_be(self, h):
-        if (
-            self.y + h > self.page_break_trigger
+    def will_page_break(self, height):
+        """
+        Let you know if adding an element will trigger a page break,
+        based on its height and the current ordinate (`y` position).
+
+        Args:
+            height (float): height of the section that would be added, e.g. a cell
+
+        Returns: a boolean indicating if a page break would occur
+        """
+        return (
+            self.y + height > self.page_break_trigger
             and not self.in_footer
             and self.accept_page_break
-        ):
+        )
+
+    def _perform_page_break_if_need_be(self, h):
+        if self.will_page_break(h):
             LOGGER.debug(
                 "Page break on page %d at y=%d for element of height %d > %d",
                 self.page,
@@ -1844,7 +1856,8 @@ class FPDF:
         Using `ln=3` and `maximum height=pdf.font_size` is useful to build tables
         with multiline text in cells.
 
-        Returns: a boolean indicating if page break was triggered.
+        Returns: a boolean indicating if page break was triggered,
+            or if `split_only == True`: `txt` splitted into lines in an array
         """
         page_break_triggered = False
         if split_only:

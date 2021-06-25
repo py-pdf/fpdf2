@@ -65,3 +65,48 @@ pdf.write_html(
 )
 pdf.output('table_html.pdf')
 ```
+
+
+## Repeat table header on each page ##
+
+The following recipe demonstrates a solution to handle this requirement:
+
+```python
+from fpdf import FPDF
+
+TABLE_COL_NAMES = ("First name", "Last name", "Age", "City")
+TABLE_DATA = (
+    ("Jules", "Smith", "34", "San Juan"),
+    ("Mary", "Ramos", "45", "Orlando"),
+    ("Carlson", "Banks", "19", "Los Angeles"),
+    ("Lucas", "Cimon", "31", "Angers"),
+)
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Times", size=16)
+line_height = pdf.font_size * 2
+col_width = pdf.epw / 4  # distribute content evenly
+
+def render_table_header():
+    pdf.set_font(style="B")  # enabling bold text
+    for col_name in TABLE_COL_NAMES:
+        pdf.cell(col_width, line_height, col_name, border=1)
+    pdf.ln(line_height)
+    pdf.set_font(style="")  # disabling bold text
+
+render_table_header()
+for _ in range(10):  # repeat data rows
+    for row in TABLE_DATA:
+        if pdf.will_page_break(line_height):
+            render_table_header()
+        for datum in row:
+            pdf.cell(col_width, line_height, datum, border=1)
+        pdf.ln(line_height)
+
+pdf.output("table_with_headers_on_every_page.pdf")
+```
+
+Note that if you want to use [`multi_cell()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) method instead of `cell()`,
+some extra code will be required: an initial call to `multi_cell` with `split_only=True`
+will be needed in order to compute the number of lines in the cell.
