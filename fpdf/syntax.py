@@ -219,15 +219,20 @@ class Destination(ABC):
 
 
 class DestinationXYZ(Destination):
-    def __init__(self, page, y=0, zoom="null", page_as_obj_id=True):
+    def __init__(self, page, x=0, y=0, zoom="null", page_as_obj_id=True):
         self.page = page
+        self.x = x
         self.y = y
         self.zoom = zoom
         self.page_as_obj_id = page_as_obj_id
 
     def as_str(self, pdf=None):
-        left = 0
+        left = self.x * pdf.k if pdf else self.x
+        if isinstance(left, float):
+            left = round(left, 2)
         top = (pdf.h_pt - self.y * pdf.k) if pdf else self.y
+        if isinstance(top, float):
+            top = round(top, 2)
         # The page object ID is predictable given that _putpages is invoked first in _enddoc:
         page = f"{2 * self.page + 1} 0 R" if self.page_as_obj_id else self.page
-        return f"[{page} /XYZ {left} {top:.2f} {self.zoom}]"
+        return f"[{page} /XYZ {left} {top} {self.zoom}]"

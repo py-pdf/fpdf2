@@ -15,6 +15,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 utility method to let users know in advance when adding an elemnt will trigger a page break.
 This can be useful to repeat table headers on each page for exemple,
 _cf._ [documentation on Tables](https://pyfpdf.github.io/fpdf2/Tables.html#repeat-table-header-on-each-page).
+- `FPDF.set_link` now support a new optional `x` parameter to set the horizontal position after following the link
 
 ## [2.4.1] - 2021-06-12
 ### Fixed

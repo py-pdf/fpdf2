@@ -75,14 +75,21 @@ def test_link_alt_text(tmp_path):
     assert_pdf_equal(pdf, HERE / "link_alt_text.pdf", tmp_path)
 
 
-def test_link_with_zoom(tmp_path):
+def test_link_with_zoom_and_shift(tmp_path):
     pdf = FPDF()
     pdf.set_font("helvetica", size=24)
     pdf.add_page()
     link = pdf.add_link()
-    pdf.set_link(link, page=2, zoom=4)
-    pdf.set_xy(50, 50)
-    pdf.cell(w=100, h=10, txt="Link to 2nd page zoomed", border=1, align="C", link=link)
+    pdf.set_link(link, page=2, x=pdf.epw / 4, y=pdf.epw / 3, zoom=4)
+    pdf.set_xy(30, 50)
+    pdf.cell(
+        w=140,
+        h=10,
+        txt="Link to 2nd page zoomed & shifted",
+        border=1,
+        align="C",
+        link=link,
+    )
     pdf.add_page()
     pdf.multi_cell(
         pdf.epw,
@@ -92,4 +99,4 @@ def test_link_with_zoom(tmp_path):
         " Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
         " Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
     )
-    assert_pdf_equal(pdf, HERE / "link_with_zoom.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "link_with_zoom_and_shift.pdf", tmp_path)

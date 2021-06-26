@@ -1295,7 +1295,7 @@ class FPDF:
         self.links[n] = DestinationXYZ(page=1)
         return n
 
-    def set_link(self, link, y=0, page=-1, zoom="null"):
+    def set_link(self, link, y=0, x=0, page=-1, zoom="null"):
         """
         Defines the page and position a link points to.
 
@@ -1303,12 +1303,16 @@ class FPDF:
             link (int): a link identifier returned by `add_link`.
             y (int): optional ordinate of target position.
                 The default value is 0 (top of page).
+            x (int): optional abscissa of target position.
+                The default value is 0 (top of page).
             page (int): optional number of target page.
                 -1 indicates the current page, which is the default value.
             zoom (int): optional new zoom level after following the link.
                 Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
         """
-        self.links[link] = DestinationXYZ(self.page if page == -1 else page, y, zoom)
+        self.links[link] = DestinationXYZ(
+            self.page if page == -1 else page, x=x, y=y, zoom=zoom
+        )
 
     @check_page
     def link(self, x, y, w, h, link, alt_text=None):
@@ -3388,7 +3392,7 @@ class FPDF:
                 raise ValueError(
                     f"Incoherent hierarchy: cannot start a level {level} section after a level {self._outline[-1].level} one"
                 )
-        dest = DestinationXYZ(self.page, self.y)
+        dest = DestinationXYZ(self.page, y=self.y)
         struct_elem = None
         if self.section_title_styles:
             with self._marked_sequence(title=name) as marked_content:
