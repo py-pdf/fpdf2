@@ -9,6 +9,7 @@ On [fpdf2](https://github.com/pyfpdf/fpdf2/graphs/contributors):
 - Abishek Goda
 - xitrushiy
 - Miroslav Šedivý
+- Arthur Moore
 
 On the original [PyFPDF](https://github.com/reingart/pyfpdf/graphs/contributors):
 
