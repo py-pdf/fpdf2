@@ -41,6 +41,28 @@ def b(s):
     raise ValueError(f"Invalid input: {s}")
 
 
+def get_scale_factor(unit: str) -> float:
+    """
+    Get how many pts are in a unit. (k)
+
+    Args:
+        unit (str): Any of "pt", "mm", "cm", or "in".
+    Returns:
+        float: The number of points in that unit (assuming 72dpi)
+    Raises:
+        ValueError
+    """
+    if unit == "pt":
+        return 1
+    if unit == "mm":
+        return 72 / 25.4
+    if unit == "cm":
+        return 72 / 2.54
+    if unit == "in":
+        return 72.0
+    raise ValueError(f"Incorrect unit: {unit}")
+
+
 def dochecks():
     # Check for locale-related bug
     # if (1.1==1):

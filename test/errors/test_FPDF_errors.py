@@ -40,7 +40,7 @@ def test_incorrect_orientation():
 
 
 def test_units():
-    with pytest.raises(FPDFException) as e:
+    with pytest.raises(ValueError) as e:
         fpdf.FPDF(unit="smiles")
 
     assert str(e.value) == "Incorrect unit: smiles"

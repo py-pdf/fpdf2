@@ -48,6 +48,7 @@ from .util import (
     enclose_in_parens,
     escape_parens,
     substr,
+    get_scale_factor,
 )
 from .deprecation import WarnOnDeprecatedModuleAttributes
 from .syntax import (
@@ -275,16 +276,7 @@ class FPDF:
             "timesnewroman": "times",
         }
         # Scale factor
-        if unit == "pt":
-            self.k = 1
-        elif unit == "mm":
-            self.k = 72 / 25.4
-        elif unit == "cm":
-            self.k = 72 / 2.54
-        elif unit == "in":
-            self.k = 72.0
-        else:
-            raise FPDFException(f"Incorrect unit: {unit}")
+        self.k = get_scale_factor(unit)
 
         self.dw_pt, self.dh_pt = get_page_format(format, self.k)
         self._set_orientation(orientation, self.dw_pt, self.dh_pt)

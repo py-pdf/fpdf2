@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
+## [2.4.3] - not released yet
+### Added
+- `get_scale_factor` utility function to obtain FPDF.k without having to create a document.
+
+### Changed
+- `fpdf.FPDF` constructor now returns a `ValueError` when an invalid unit is provided.
+
 ## [2.4.2] - 2021-06-29
 ### Added
 - disable font caching when `fpdf.FPDF` constructor invoked with `font_cache_dir=None`, thanks to @moe-25 !
