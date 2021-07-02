@@ -10,6 +10,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 ## [2.4.3] - not released yet
 ### Added
 - `get_scale_factor` utility function to obtain FPDF.k without having to create a document.
+- `convert_unit` utility function to convert a number, x,y point, or list of x,y points from one unit to another unit
 
 ### Changed
 - `fpdf.FPDF` constructor now returns a `ValueError` when an invalid unit is provided.

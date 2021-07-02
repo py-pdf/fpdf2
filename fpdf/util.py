@@ -67,6 +67,31 @@ def get_scale_factor(unit: Union[str, float, int]) -> float:
     raise ValueError(f"Incorrect unit: {unit}")
 
 
+def convert_unit(
+    to_convert: Union[float, int, Iterable[Union[float, int, Iterable]]],
+    old_unit: Union[str, float, int],
+    new_unit: Union[str, float, int],
+) -> Union[float, tuple]:
+    """
+     Convert a number or sequence of numbers from one unit to another.
+
+     If either unit is a number it will be treated as the number of points per unit.  So 72 would mean 1 inch.
+
+     Args:
+        to_convert (float, int, Iterable): The number / list of numbers, or points, to convert
+        old_unit (str, float, int): A unit accepted by fpdf.FPDF or a number
+        new_unit (str, float, int): A unit accepted by fpdf.FPDF or a number
+    Returns:
+        (float, tuple): to_convert converted from old_unit to new_unit or a tuple of the same
+    """
+    unit_conversion_factor = get_scale_factor(new_unit) / get_scale_factor(old_unit)
+    if isinstance(to_convert, Iterable):
+        return tuple(
+            map(lambda i: convert_unit(i, 1, unit_conversion_factor), to_convert)
+        )
+    return to_convert / unit_conversion_factor
+
+
 def dochecks():
     # Check for locale-related bug
     # if (1.1==1):
