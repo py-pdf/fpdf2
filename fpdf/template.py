@@ -94,6 +94,10 @@ class Template:
                     if not v.startswith("'") and decimal_sep != ".":
                         v = v.replace(decimal_sep, ".")
                     kargs[keys[i]] = v.strip()
+                try: 
+                    kargs[keys[i]]=float(kargs[keys[i]])
+                except ValueError:
+                    continue
                 self.elements.append(kargs)
         self.keys = [v["name"].lower() for v in self.elements]
 
