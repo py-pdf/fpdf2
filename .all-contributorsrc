@@ -295,7 +295,17 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "bnyw",
+      "name": "Boonyawe Sirimaha",
+      "avatar_url": "https://avatars.githubusercontent.com/u/32655514?v=4",
+      "profile": "https://github.com/bnyw",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
-  "contributorsPerLine": 7
+  "contributorsPerLine": 7,
+  "skipCi": true
 }
