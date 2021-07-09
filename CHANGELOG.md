@@ -13,6 +13,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ### Changed
 - `fpdf.FPDF` constructor now returns a `ValueError` when an invalid unit is provided.
+- `fpdf.FPDF` constructor now accepts an int or float as a unit.
 
 ## [2.4.2] - 2021-06-29
 ### Added

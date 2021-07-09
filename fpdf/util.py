@@ -1,4 +1,5 @@
 import locale
+from typing import Union, Iterable
 
 
 def substr(s, start, length=-1):
@@ -41,17 +42,20 @@ def b(s):
     raise ValueError(f"Invalid input: {s}")
 
 
-def get_scale_factor(unit: str) -> float:
+def get_scale_factor(unit: Union[str, float, int]) -> float:
     """
     Get how many pts are in a unit. (k)
 
     Args:
-        unit (str): Any of "pt", "mm", "cm", or "in".
+        unit (str, float, int): Any of "pt", "mm", "cm", "in", or a number.
     Returns:
         float: The number of points in that unit (assuming 72dpi)
     Raises:
         ValueError
     """
+    if isinstance(unit, (int, float)):
+        return float(unit)
+
     if unit == "pt":
         return 1
     if unit == "mm":

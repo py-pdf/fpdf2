@@ -196,9 +196,10 @@ class FPDF:
         Args:
             orientation (str): possible values are "portrait" (can be abbreviated "P")
                 or "landscape" (can be abbreviated "L"). Default to "portrait".
-            unit (str): possible values are "pt", "mm", "cm" or "in".
+            unit (str, int, float): possible values are "pt", "mm", "cm", "in", or a number.
                 A point equals 1/72 of an inch, that is to say about 0.35 mm (an inch being 2.54 cm).
                 This is a very common unit in typography; font sizes are expressed in this unit.
+                If given a number, then it will be treated as the number of points per unit.  (eg. 72 = 1 in)
                 Default to "mm".
             format (str): possible values are "a3", "a4", "a5", "letter", "legal" or a tuple
                 (width, height) expressed in the given unit. Default to "a4".
