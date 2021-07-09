@@ -165,7 +165,8 @@
       "profile": "https://www.cd-net.net/",
       "contributions": [
         "code",
-        "test"
+        "test",
+        "bug"
       ]
     },
     {
