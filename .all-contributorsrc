@@ -285,7 +285,9 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/85580959?v=4",
       "profile": "https://github.com/moe-25",
       "contributions": [
-        "code"
+        "code",
+        "review",
+        "bug"
       ]
     },
     {
