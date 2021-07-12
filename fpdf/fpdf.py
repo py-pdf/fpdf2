@@ -32,7 +32,7 @@ from datetime import datetime
 from enum import IntEnum
 from functools import wraps
 from pathlib import Path
-from typing import Callable, NamedTuple, Optional, Union
+from typing import Callable, NamedTuple, Optional, Union, List
 
 from PIL import Image
 
@@ -119,6 +119,43 @@ class ToCPlaceholder(NamedTuple):
     start_page: int
     y: int
     pages: int = 1
+
+
+class SubsetMap:
+    """Holds a mapping of used characters and their position in the font's subset
+
+    Characters that must be mapped on their actual unicode must be part of the
+    `identities` list during object instanciation. `pick()` can be used to get the
+    characters corresponding position in the subset. If it's not yet part of the
+    object, a new position is acquired automatically. This implementation always
+    tries to return the lowest possible representation.
+    """
+
+    def __init__(self, identities: List[int]):
+        super().__init__()
+        self._next = 0
+
+        # sort list to ease deletion once _next
+        # becomes higher than first reservation
+        self._reserved = sorted(identities)
+
+        # int(x) to ensure values are integers
+        self._map = {x: int(x) for x in self._reserved}
+
+    def pick(self, unicode: int):
+        if not unicode in self._map:
+            while self._next in self._reserved:
+                self._next += 1
+                if self._next > self._reserved[0]:
+                    del self._reserved[0]
+
+            self._map[unicode] = self._next
+            self._next += 1
+
+        return self._map.get(unicode)
+
+    def dict(self):
+        return self._map.copy()
 
 
 # Disabling this check due to the "format" parameter below:
@@ -1067,13 +1104,10 @@ class FPDF:
 
             # include numbers in the subset! (if alias present)
             # ensure that alias is mapped 1-by-1 additionally (must be replaceable)
+            sbarr = "\x00 "
             if self.str_alias_nb_pages:
-                subset_max = 57
-                for char in self.str_alias_nb_pages:
-                    subset_max = max(subset_max, ord(char))
-            else:
-                subset_max = 32
-            sbarr = list(range(subset_max))
+                sbarr += "0123456789"
+                sbarr += self.str_alias_nb_pages
 
             font_dict = load_cache(unifilename)
             if font_dict is None:
@@ -1102,7 +1136,7 @@ class FPDF:
                     "ut": round(ttf.underlineThickness),
                     "ttffile": ttffilename,
                     "fontkey": fontkey,
-                    "subset": sbarr,
+                    "subset": SubsetMap(map(ord, sbarr)),
                     "unifilename": unifilename,
                     "originalsize": os.stat(ttffilename).st_size,
                     "cw": ttf.charWidths,
@@ -1125,7 +1159,7 @@ class FPDF:
                 "cw": font_dict["cw"],
                 "ttffile": font_dict["ttffile"],
                 "fontkey": fontkey,
-                "subset": sbarr,
+                "subset": SubsetMap(map(ord, sbarr)),
                 "unifilename": unifilename,
             }
             self.font_files[fontkey] = {
@@ -1414,9 +1448,9 @@ class FPDF:
             txt_mapped = ""
             for char in txt:
                 uni = ord(char)
-                if not uni in self.current_font["subset"]:
-                    self.current_font["subset"].append(uni)
-                txt_mapped += chr(self.current_font["subset"].index(uni))
+                # Instead of adding the actual character to the stream it's code is
+                # mapped to a position in the font's subset
+                txt_mapped += chr(self.current_font["subset"].pick(uni))
             txt2 = escape_parens(txt_mapped).encode("UTF-16BE").decode("latin-1")
         else:
             txt2 = escape_parens(txt)
@@ -1647,14 +1681,13 @@ class FPDF:
                     txt_frag_mapped = ""
                     for char in txt_frag:
                         uni = ord(char)
-                        if not uni in self.current_font["subset"]:
-                            self.current_font["subset"].append(uni)
-                        txt_frag_mapped += chr(self.current_font["subset"].index(uni))
+                        txt_frag_mapped += chr(self.current_font["subset"].pick(uni))
 
-                    if not ord(" ") in self.current_font["subset"]:
-                        words = [txt_frag_mapped]
-                    else:
-                        words = txt_frag_mapped.split(chr(self.current_font["subset"].index(ord(" "))))
+                    # Determine the position of space (" ") in the current subset and
+                    # split words whenever this mapping code is found
+                    words = txt_frag_mapped.split(
+                        chr(self.current_font["subset"].pick(ord(" ")))
+                    )
 
                     s += " ["
                     for i, word in enumerate(words):
@@ -1679,9 +1712,9 @@ class FPDF:
                         txt_frag_mapped = ""
                         for char in txt_frag:
                             uni = ord(char)
-                            if not uni in self.current_font["subset"]:
-                                self.current_font["subset"].append(uni)
-                            txt_frag_mapped += chr(self.current_font["subset"].index(uni))
+                            txt_frag_mapped += chr(
+                                self.current_font["subset"].pick(uni)
+                            )
 
                         txt_frag_escaped = escape_parens(
                             txt_frag_mapped.encode("UTF-16BE").decode("latin-1")
@@ -2640,10 +2673,9 @@ class FPDF:
                 self.fonts[font_name]["n"] = self.n + 1
                 ttf = TTFontFile()
                 fontname = f"MPDFAA+{font['name']}"
-                subset = font["subset"]
-                #del subset[0]
-                mappings = {real: subset.index(real) for real in subset}
-                ttfontstream = ttf.makeSubset(font["ttffile"], subset, mappings)
+                subset = font["subset"].dict()
+                del subset[0]
+                ttfontstream = ttf.makeSubset(font["ttffile"], subset)
                 ttfontsize = len(ttfontstream)
                 fontstream = zlib.compress(ttfontstream)
                 codeToGlyph = ttf.codeToGlyph
@@ -2679,14 +2711,20 @@ class FPDF:
                 self._out("endobj")
 
                 # bfChar
+                # This table informs the PDF reader about the unicode
+                # character that each used 16-bit code belongs to. It
+                # allows searching the file and copying text from it.
                 bfChar = []
-                for code in font["subset"]:
-                    code_mapped = font["subset"].index(code)
+                subset = font["subset"].dict()
+                for code in subset:
+                    code_mapped = subset.get(code)
                     if code > 0xFFFF:
                         # Calculate suggorate pair
                         code_high = 0xD800 + (code & 0xFFFF) // 0x400
-                        code_low  = 0xDC00 + (code & 0xFFFF) % 0x400
-                        bfChar.append("<%04X> <%04X%04X>\n" % (code_mapped, code_high, code_low))
+                        code_low = 0xDC00 + (code & 0xFFFF) % 0x400
+                        bfChar.append(
+                            "<%04X> <%04X%04X>\n" % (code_mapped, code_high, code_low)
+                        )
                     else:
                         bfChar.append("<%04X> <%04X>\n" % (code_mapped, code))
 
@@ -2808,7 +2846,7 @@ class FPDF:
         cwlen = maxUni + 1
 
         # for each character
-        subset = set(font["subset"])
+        subset = font["subset"].dict()
         for cid in range(startcid, cwlen):
             if cid == 128 and font_dict:
                 try:
@@ -2827,9 +2865,9 @@ class FPDF:
                 width = 0
 
             if "dw" not in font or (font["dw"] and width != font["dw"]):
-                if not cid in font["subset"]:
+                if not cid in subset:
                     continue
-                cid_mapped = font["subset"].index(cid)
+                cid_mapped = subset.get(cid)
                 if cid_mapped == (prevcid + 1):
                     if width == prevwidth:
                         if width == range_[rangeid][0]:

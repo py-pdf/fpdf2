@@ -397,7 +397,7 @@ class TTFontFile:
                     # unicode_cmap_offset12 which is needed for
                     # characters => 0x10000 (CMAP12)
                     #
-                    #break
+                    # break
 
             self.seek(save_pos)
 
@@ -418,7 +418,7 @@ class TTFontFile:
         # hmtx - Horizontal metrics table
         self.getHMTX(numberOfHMetrics, numGlyphs, glyphToChar, scale)
 
-    def makeSubset(self, file, subset, remap = {}):
+    def makeSubset(self, file, subset):
         self.filename = file
         with open(file, "rb") as self.fh:
             self._pos = 0
@@ -478,7 +478,7 @@ class TTFontFile:
                         # unicode_cmap_offset12 which is needed for
                         # characters => 0x10000 (CMAP12)
                         #
-                        #break
+                        # break
 
                 self.seek(save_pos)
 
@@ -508,14 +508,17 @@ class TTFontFile:
             subsetglyphs = [(0, 0)]  # special "sorted dict"!
             subsetCharToGlyph = {}
             for code in subset:
-                target = remap.get(code, code)
+                target = subset[code] if isinstance(subset, dict) else code
                 if target > 65535:
-                    raise Exception('Character U+%X must be remapped since it cannot be indexed in CMAP4 table' % target)
+                    raise Exception(
+                        "Character U+%X must be remapped since it cannot be indexed in CMAP4 table"
+                        % target
+                    )
                 if code in self.charToGlyph:
                     if (self.charToGlyph[code], target) not in subsetglyphs:
-                         subsetglyphs.append(
+                        subsetglyphs.append(
                             (self.charToGlyph[code], target)
-                         )  # Old Glyph ID => Unicode
+                        )  # Old Glyph ID => Unicode
                     subsetCharToGlyph[target] = self.charToGlyph[
                         code
                     ]  # Unicode to old GlyphID
