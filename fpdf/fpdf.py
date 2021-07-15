@@ -126,10 +126,11 @@ class SubsetMap:
     """Holds a mapping of used characters and their position in the font's subset
 
     Characters that must be mapped on their actual unicode must be part of the
-    `identities` list during object instanciation. `pick()` can be used to get the
-    characters corresponding position in the subset. If it's not yet part of the
-    object, a new position is acquired automatically. This implementation always
-    tries to return the lowest possible representation.
+    `identities` list during object instanciation. These non-negative values should
+    only appear once in the list. `pick()` can be used to get the characters
+    corresponding position in the subset. If it's not yet part of the object, a new
+    position is acquired automatically. This implementation always tries to return
+    the lowest possible representation.
     """
 
     def __init__(self, identities: List[int]):
@@ -1437,10 +1438,10 @@ class FPDF:
             txt_mapped = ""
             for char in txt:
                 uni = ord(char)
-                # Instead of adding the actual character to the stream it's code is
+                # Instead of adding the actual character to the stream its code is
                 # mapped to a position in the font's subset
                 txt_mapped += chr(self.current_font["subset"].pick(uni))
-            txt2 = escape_parens(txt_mapped).encode("UTF-16BE").decode("latin-1")
+            txt2 = escape_parens(txt_mapped.encode("UTF-16BE").decode("latin-1"))
         else:
             txt2 = escape_parens(txt)
         s = f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td ({txt2}) Tj ET"
@@ -2710,9 +2711,9 @@ class FPDF:
                 for code in subset:
                     code_mapped = subset.get(code)
                     if code > 0xFFFF:
-                        # Calculate suggorate pair
-                        code_high = 0xD800 + (code & 0xFFFF) // 0x400
-                        code_low = 0xDC00 + (code & 0xFFFF) % 0x400
+                        # Calculate surrogate pair
+                        code_high = 0xD800 | (code - 0x10000) >> 10
+                        code_low = 0xDC00 | (code & 0x3FF)
                         bfChar.append(
                             "<%04X> <%04X%04X>\n" % (code_mapped, code_high, code_low)
                         )
