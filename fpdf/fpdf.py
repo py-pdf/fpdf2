@@ -838,16 +838,12 @@ class FPDF:
             if markdown
             else ((s, self.font_style, bool(self.underline)),)
         ):
-            cw = self.fonts[self.font_family + style]["cw"]
+            font = self.fonts[self.font_family + style]
             if self.unifontsubset:
                 for char in s:
-                    char = ord(char)
-                    if len(cw) > char:
-                        w += cw[char]
-                    else:
-                        w += self.current_font["desc"].get("MissingWidth") or 500
+                    w += _char_width(font, ord(char))
             else:
-                w += sum(cw.get(char, 0) for char in txt_frag)
+                w += sum(_char_width(font, char) for char in txt_frag)
         if self.font_stretching != 100:
             w *= self.font_stretching / 100
         return w * self.font_size / 1000
@@ -1953,7 +1949,6 @@ class FPDF:
                 if "R" in border:
                     b2 += "R"
                 b = b2 + "T" if "T" in border else b2
-        character_widths = self.current_font["cw"]
         text_cells = []
         sep = -1
         i = 0
@@ -2007,7 +2002,7 @@ class FPDF:
             if self.unifontsubset:
                 l += self.get_string_width(c, True) / self.font_size * 1000
             else:
-                l += character_widths.get(c, 0)
+                l += _char_width(self.current_font, c)
 
             # Automatic line break
             if l > wmax:
@@ -2134,7 +2129,6 @@ class FPDF:
         if h is None:
             h = self.font_size
         txt = self.normalize_text(txt)
-        cw = self.current_font["cw"]
         w = self.w - self.r_margin - self.x
         wmax = (w - 2 * self.c_margin) * 1000 / self.font_size
         s = txt.replace("\r", "")
@@ -2165,7 +2159,7 @@ class FPDF:
             if self.unifontsubset:
                 l += self.get_string_width(c, True) / self.font_size * 1000
             else:
-                l += cw.get(c, 0)
+                l += _char_width(self.current_font, c)
             if l > wmax:
                 # Automatic line break
                 if sep == -1:
@@ -2636,9 +2630,10 @@ class FPDF:
 
                 # Widths
                 self._newobj()
-                cw = font["cw"]
                 self._out(
-                    "[" + " ".join(cw.get(chr(i), 0) for i in range(32, 256)) + "]"
+                    "["
+                    + " ".join(_char_width(font, chr(i)) for i in range(32, 256))
+                    + "]"
                 )
                 self._out("endobj")
 
@@ -2852,18 +2847,11 @@ class FPDF:
                     if e.errno != errno.EACCES:
                         raise  # Not a permission error.
 
-            if cid > 255 and (cid not in subset or cid >= len(font["cw"])):
-                continue
-            width = font["cw"][cid]
-            if width == 0:
-                continue
-            if width == 65535:
-                width = 0
-
+            width = _char_width(font, cid)
             if "dw" not in font or (font["dw"] and width != font["dw"]):
-                if not cid in subset:
-                    continue
                 cid_mapped = subset.get(cid)
+                if cid_mapped is None:
+                    continue
                 if cid_mapped == (prevcid + 1):
                     if width == prevwidth:
                         if width == range_[rangeid][0]:
@@ -3500,6 +3488,17 @@ class FPDF:
         self.set_font(*prev_font)
         self.text_color = prev_text_color
         self.underline = prev_underline
+
+
+def _char_width(font, char):
+    cw = font["cw"]
+    try:
+        width = cw[char]
+    except IndexError:
+        width = font["desc"].get("MissingWidth") or 500
+    if width == 65535:
+        width = 0
+    return width
 
 
 def _sizeof_fmt(num, suffix="B"):
