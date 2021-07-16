@@ -17,6 +17,9 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - `fpdf.FPDF` constructor now returns a `ValueError` when an invalid unit is provided.
 - `fpdf.FPDF` constructor now accepts an int or float as a unit.
 
+### Fixed
+- Detect missing uni=True when loading cached fonts (page numbering was missing digits)
+
 ## [2.4.2] - 2021-06-29
 ### Added
 - disable font caching when `fpdf.FPDF` constructor invoked with `font_cache_dir=None`, thanks to @moe-25 !

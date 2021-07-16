@@ -1126,7 +1126,6 @@ class FPDF:
                     "ut": round(ttf.underlineThickness),
                     "ttffile": ttffilename,
                     "fontkey": fontkey,
-                    "subset": SubsetMap(map(ord, sbarr)),
                     "unifilename": unifilename,
                     "originalsize": os.stat(ttffilename).st_size,
                     "cw": ttf.charWidths,
@@ -1161,9 +1160,16 @@ class FPDF:
         else:
             if fname.endswith(".ttf"):
                 warnings.warn(
-                    "When providing a TTF font file you must pass uni=True to FPDF.set_font"
+                    "When providing a TTF font file you must pass uni=True to FPDF.add_font"
                 )
             font_dict = pickle.loads(Path(fname).read_bytes())
+            if font_dict["type"] == "TTF":
+                warnings.warn(
+                    "Pickle was generated from TTF font file, setting uni=True"
+                )
+                self.add_font(family, style=style, fname=fname, uni=True)
+                return
+
             self.fonts[fontkey] = {"i": len(self.fonts) + 1}
             self.fonts[fontkey].update(font_dict)
             diff = font_dict.get("diff")
