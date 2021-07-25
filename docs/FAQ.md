@@ -31,7 +31,7 @@ This library is not a:
     But it can do columns, chapters, etc.; see the [Tutorial](Tutorial.md).
 
   * XML or object definition language like [Geraldo Reports](http://www.geraldoreports.org/), Jasper Reports, or similar.
-    Vut look at [write_html](HTML.md) for simple HTML reports and [Templates](Templates.md) for fill-in-the-blank documents.
+    But look at [write_html](HTML.md) for simple HTML reports and [Templates](Templates.md) for fill-in-the-blank documents.
 
   * PDF text extractor, converter, splitter or similar.
 
