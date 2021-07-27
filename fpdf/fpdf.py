@@ -41,6 +41,7 @@ from .errors import FPDFException, FPDFPageFormatException
 from .fonts import fpdf_charwidths
 from .image_parsing import get_img_info, load_image, SUPPORTED_IMAGE_FILTERS
 from .outline import serialize_outline, OutlineSection
+from . import drawing
 from .recorder import FPDFRecorder
 from .structure_tree import MarkedContent, StructureTreeBuilder
 from .ttfonts import TTFontFile
@@ -347,6 +348,7 @@ class FPDF(GraphicsStateMixin):
         self.set_display_mode("fullwidth")  # Full width display mode
         self.compress = True  # Enable compression by default
         self.pdf_version = "1.3"  # Set default PDF version No.
+        self._current_draw_context = None
 
     @property
     def unifontsubset(self):
@@ -884,6 +886,52 @@ class FPDF(GraphicsStateMixin):
         self.line_width = width
         if self.page > 0:
             self._out(f"{width * self.k:.2f} w")
+
+    @contextmanager
+    @check_page
+    def drawing_context(self, dump_render_tree=None):
+        """
+        Create a context for drawing paths on the current page.
+
+        If this context manager is called again inside of an active context, it will
+        simply return the existing drawing context, as base drawing contexts cannot be
+        nested.
+
+        Args:
+            dump_render_tree (TextIO): print a pretty tree of all items to be rendered
+                to the provided stream. To store the output in a string, use io.StringIO.
+        """
+
+        if self._current_draw_context is not None:
+            yield self._current_draw_context
+        else:
+            context = drawing.DrawingContext()
+            self._current_draw_context = context
+            try:
+                yield context
+            finally:
+                self._current_draw_context = None
+
+            rendered = context.render(drawing.Point(0, 0), self.k)
+            if dump_render_tree is not None:
+                context.dump_render_tree(dump_render_tree)
+            self._out(rendered)
+
+    @contextmanager
+    def path(self, paint_style, x, y):
+        """
+        Create a path for appending lines and curves to.
+
+        Args:
+            x (float): Abscissa of the path starting point
+            y (float): Ordinate of the path starting point
+            paint_style (fpdf.path.PaintStyle): How the path should be painted
+
+        """
+        with self.drawing_context() as ctxt:
+            path = drawing.PaintedPath(paint_style=paint_style, x=x, y=y)
+            yield path
+            ctxt.add_item(path)
 
     def set_dash_pattern(self, dash=0, gap=0, phase=0):
         """
