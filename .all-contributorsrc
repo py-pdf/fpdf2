@@ -308,6 +308,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "torque",
+      "name": "T",
+      "avatar_url": "https://avatars.githubusercontent.com/u/949138?v=4",
+      "profile": "https://github.com/torque",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
