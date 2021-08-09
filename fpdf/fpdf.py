@@ -25,7 +25,7 @@ import re
 import sys
 import warnings
 import zlib
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import datetime
@@ -349,6 +349,8 @@ class FPDF(GraphicsStateMixin):
         self.compress = True  # Enable compression by default
         self.pdf_version = "1.3"  # Set default PDF version No.
         self._current_draw_context = None
+
+        self._used_graphics_state_dicts = OrderedDict()
 
     @property
     def unifontsubset(self):
@@ -889,21 +891,23 @@ class FPDF(GraphicsStateMixin):
 
     @contextmanager
     @check_page
-    def drawing_context(self, dump_render_tree=None):
+    def drawing_context(self, debug_stream=None):
         """
         Create a context for drawing paths on the current page.
 
         If this context manager is called again inside of an active context, it will
-        simply return the existing drawing context, as base drawing contexts cannot be
-        nested.
+        raise an exception, as base drawing contexts cannot be nested.
 
         Args:
-            dump_render_tree (TextIO): print a pretty tree of all items to be rendered
-                to the provided stream. To store the output in a string, use io.StringIO.
+            debug_stream (TextIO): print a pretty tree of all items to be rendered
+                to the provided stream. To store the output in a string, use
+                `io.StringIO`.
         """
 
         if self._current_draw_context is not None:
-            yield self._current_draw_context
+            raise FPDFException(
+                "cannot create a drawing context while one is already open"
+            )
         else:
             context = drawing.DrawingContext()
             self._current_draw_context = context
@@ -912,25 +916,54 @@ class FPDF(GraphicsStateMixin):
             finally:
                 self._current_draw_context = None
 
-            rendered = context.render(drawing.Point(0, 0), self.k)
-            if dump_render_tree is not None:
-                context.dump_render_tree(dump_render_tree)
+            point = drawing.Point(self.x, self.y)
+            if debug_stream:
+                rendered, gsdicts = context.render_debug(
+                    point, self.k, self.h, debug_stream
+                )
+            else:
+                rendered, gsdicts = context.render(point, self.k, self.h)
+
+            self._used_graphics_state_dicts.update(gsdicts)
             self._out(rendered)
+            if self.pdf_version < "1.4":
+                self.pdf_version = "1.4"
 
     @contextmanager
-    def path(self, paint_style, x, y):
+    def new_path(
+        self, x=0, y=0, paint_rule=drawing.PathPaintRule.AUTO, debug_stream=None
+    ):
         """
         Create a path for appending lines and curves to.
 
         Args:
             x (float): Abscissa of the path starting point
             y (float): Ordinate of the path starting point
-            paint_style (fpdf.path.PaintStyle): How the path should be painted
+            paint_rule (drawing.PathPaintRule): Optional choice of how the path should
+                be painted. The default (AUTO) automatically selects stroke/fill based
+                on the path style settings.
+            debug_stream (TextIO): print a pretty tree of all items to be rendered
+                to the provided stream. To store the output in a string, use
+                `io.StringIO`.
 
         """
-        with self.drawing_context() as ctxt:
-            path = drawing.PaintedPath(paint_style=paint_style, x=x, y=y)
+        with self.drawing_context(debug_stream=debug_stream) as ctxt:
+            path = drawing.PaintedPath(x=x, y=y)
+            path.style.paint_rule = paint_rule
             yield path
+            ctxt.add_item(path)
+
+    def draw_path(self, path, debug_stream=None):
+        """
+        Add a pre-constructed path to the document.
+
+        Args:
+            path (drawing.PaintedPath): the path to be drawn.
+            debug_stream (TextIO): print a pretty tree of all items to be rendered
+                to the provided stream. To store the output in a string, use
+                `io.StringIO`.
+        """
+        with self.drawing_context(debug_stream=debug_stream) as ctxt:
             ctxt.add_item(path)
 
     def set_dash_pattern(self, dash=0, gap=0, phase=0):
@@ -3472,6 +3505,19 @@ class FPDF(GraphicsStateMixin):
         for idx, n in img_ids:
             self._out(f"/I{idx} {pdf_ref(n)}")
 
+    def _put_graphics_state_dicts(self):
+        for name in self._used_graphics_state_dicts:
+            sdict = drawing.get_style_dict_by_name(name)
+
+            self._newobj()
+            self._used_graphics_state_dicts[name] = self.n
+            self._out(sdict)
+            self._out("endobj")
+
+    def _put_graphics_state_refs(self):
+        for name, obj_id in self._used_graphics_state_dicts.items():
+            self._out(f"{drawing.render_pdf_primitive(name)} {pdf_ref(obj_id)}")
+
     def _putresourcedict(self):
         # From section 10.1, "Procedure Sets", of PDF 1.7 spec:
         # > Beginning with PDF 1.4, this feature is considered obsolete.
@@ -3489,11 +3535,18 @@ class FPDF(GraphicsStateMixin):
         self._putxobjectdict()
         self._out(">>")
 
+        if self._used_graphics_state_dicts:
+            self._out("/ExtGState <<")
+            self._put_graphics_state_refs()
+            self._out(">>")
+
     def _putresources(self):
         with self._trace_size("resources.fonts"):
             self._putfonts()
         with self._trace_size("resources.images"):
             self._putimages()
+        with self._trace_size("resources.gfxstate"):
+            self._put_graphics_state_dicts()
 
         # Resource dictionary
         with self._trace_size("resources.dict"):
