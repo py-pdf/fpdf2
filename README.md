@@ -136,6 +136,7 @@ This library could only exist thanks to the dedication of many volunteers around
     <td align="center"><a href="https://github.com/niphlod"><img src="https://avatars.githubusercontent.com/u/122119?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Simone Bizzotto</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=niphlod" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/bnyw"><img src="https://avatars.githubusercontent.com/u/32655514?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Boonyawe Sirimaha</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Abnyw" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/torque"><img src="https://avatars.githubusercontent.com/u/949138?v=4?s=100" width="100px;" alt=""/><br /><sub><b>T</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=torque" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/AubsUK"><img src="https://avatars.githubusercontent.com/u/68870168?v=4?s=100" width="100px;" alt=""/><br /><sub><b>AubsUK</b></sub></a><br /><a href="#question-AubsUK" title="Answering Questions">💬</a></td>
   </tr>
 </table>
 
