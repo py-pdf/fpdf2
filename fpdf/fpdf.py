@@ -25,7 +25,6 @@ import re
 import sys
 import warnings
 import zlib
-import fitz
 import PyPDF2 as p
 from collections import defaultdict
 from collections.abc import Sequence
