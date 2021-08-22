@@ -136,6 +136,11 @@ def test_template_nominal_csv(tmp_path):
     tmpl.add_page()
     tmpl.render()
     assert_pdf_equal(tmpl.pdf, HERE / "template_nominal_csv.pdf", tmp_path)
+    tmpl = Template(format="A4", title="Sample Invoice")
+    tmpl.parse_csv(HERE / "mycsvfile.csv", delimiter=";", encoding="utf-8")
+    tmpl.add_page()
+    tmpl.render()
+    assert_pdf_equal(tmpl.pdf, HERE / "template_nominal_csv.pdf", tmp_path)
 
 
 def test_template_code39(tmp_path):  # issue-161

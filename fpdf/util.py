@@ -15,6 +15,7 @@ def try_to_type(value):
             pass
     return value
 
+
 def substr(s, start, length=-1):
     if length < 0:
         length = len(s) - start

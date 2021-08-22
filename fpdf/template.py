@@ -5,6 +5,7 @@ __copyright__ = "Copyright (C) 2010 Mariano Reingart"
 __license__ = "LGPL 3.0"
 
 import csv
+import locale
 import warnings
 
 from .errors import FPDFException
@@ -65,7 +66,7 @@ class Template:
         self.elements = elements
         self.keys = [v["name"].lower() for v in self.elements]
 
-    def parse_csv(self, infile, delimiter=",", decimal_sep="."):
+    def parse_csv(self, infile, delimiter=",", decimal_sep=".", encoding=None):
         """Parse template format csv file and create elements dict"""
         keys = (
             "name",
@@ -88,7 +89,9 @@ class Template:
         )
         self.elements = []
         self.pg_no = 0
-        with open(infile) as f:
+        if encoding is None:
+            encoding = locale.getpreferredencoding()
+        with open(infile, encoding=encoding) as f:
             for row in csv.reader(f, delimiter=delimiter):
                 kargs = {}
                 for i, v in enumerate(row):
