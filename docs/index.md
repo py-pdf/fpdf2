@@ -22,6 +22,7 @@ This repository is a fork of the library's [original port by Max Pat](http://www
 * [Unicode](Unicode.md) (UTF-8) TrueType font subset embedding (Central European, Cyrillic, Greek, Baltic, Thai, Chinese, Japanese, Korean, Hindi and almost any other language in the world)
 * PNG, GIF and JPG support (including transparency and alpha channel)
 * Shape, Line Drawing
+* Arbitrary path drawing and basic SVG import
 * Generate [Code 39](https://fr.wikipedia.org/wiki/Code_39) & [Interleaved 2 of 5](https://en.wikipedia.org/wiki/Interleaved_2_of_5) barcodes
 * Cell / multi-cell / plaintext writing, automatic page breaks
 * Basic conversion from HTML to PDF
