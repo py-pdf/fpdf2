@@ -1,6 +1,20 @@
+import datetime
 import locale
 from typing import Union, Iterable
 
+try_to_type_known_types = [
+    int,
+    float,
+]
+
+
+def try_to_type(value):
+    for known_type in try_to_type_known_types:
+        try:
+            return known_type(value)
+        except:
+            pass
+    return value
 
 def substr(s, start, length=-1):
     if length < 0:

@@ -9,6 +9,7 @@ import warnings
 
 from .errors import FPDFException
 from .fpdf import FPDF
+from .util import try_to_type
 
 
 def rgb(col):
@@ -93,7 +94,9 @@ class Template:
                 for i, v in enumerate(row):
                     if not v.startswith("'") and decimal_sep != ".":
                         v = v.replace(decimal_sep, ".")
-                    kargs[keys[i]] = v.strip()
+                    stripped_value = v.strip()
+                    typed_value = try_to_type(stripped_value)
+                    kargs[keys[i]] = typed_value
                 self.elements.append(kargs)
         self.keys = [v["name"].lower() for v in self.elements]
 
@@ -174,7 +177,9 @@ class Template:
             pdf.set_font("helvetica", "B", 16)
             pdf.set_auto_page_break(False, margin=0)
 
-            for element in sorted(self.elements, key=lambda x: x["priority"]):
+            sorted_elements = sorted(self.elements, key=lambda x: x["priority"])
+
+            for element in sorted_elements:
                 element = element.copy()
                 element["text"] = self.texts[pg].get(
                     element["name"].lower(), element["text"]
