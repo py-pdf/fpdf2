@@ -1766,7 +1766,7 @@ class FPDF:
         to avoid repeating this processing later on.
         """
         if not txt or not markdown:
-            return ((txt, self.font_style, bool(self.underline)),)
+            return tuple([[txt, self.font_style, bool(self.underline)]])
         prev_font_style = self.font_style
         styled_txt_frags = tuple(self._markdown_parse(txt))
         page = self.page

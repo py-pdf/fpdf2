@@ -1,4 +1,3 @@
-import datetime
 import locale
 from typing import Union, Iterable
 
@@ -12,7 +11,7 @@ def try_to_type(value):
     for known_type in try_to_type_known_types:
         try:
             return known_type(value)
-        except:
+        except ValueError:
             pass
     return value
 
