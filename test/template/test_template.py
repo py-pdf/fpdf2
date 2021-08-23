@@ -186,3 +186,22 @@ def test_template_qrcode(tmp_path):  # issue-175
     tmpl["barcode_0"] = qrcode.make("Test 0").get_image()
     tmpl["barcode_1"] = qrcode.make("Test 1").get_image()
     assert_pdf_equal(tmpl, HERE / "template_qrcode.pdf", tmp_path)
+
+
+def test_rect_background(tmp_path):  # issue-203
+    elements = [
+        {
+            "name": "A rectangle",
+            "type": "B",
+            "background": 0x80FF00,
+            "text": None,
+            "priority": 1,
+            "x1": 50,
+            "y1": 50,
+            "x2": 150,
+            "y2": 150,
+        },
+    ]
+    tmpl = Template(format="A4", elements=elements)
+    tmpl.add_page()
+    assert_pdf_equal(tmpl, HERE / "template_rect_background.pdf", tmp_path)
