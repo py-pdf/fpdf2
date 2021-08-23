@@ -18,6 +18,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ### Fixed
 - `Template` `background` property is now properly supported - [#203](https://github.com/PyFPDF/fpdf2/pull/203)
+  ⚠️ Beware that its default value changed from `0` to `0xffffff`, as a value of **zero would render the background as black**.
 - `Template.parse_csv`: preserving numeric values when using CSV based templates - [#205](https://github.com/PyFPDF/fpdf2/pull/205)
 - the code snippet to generate Code 39 barcodes in the documentation was missing the start & end `*` characters.
 This has been fixed, and a warning is now triggered by the [`FPDF.code39`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.code39) method when those characters are missing.
