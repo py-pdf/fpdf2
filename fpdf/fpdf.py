@@ -35,7 +35,6 @@ from functools import wraps
 from pathlib import Path
 from typing import Callable, NamedTuple, Optional, Union, List
 
-
 from PIL import Image
 
 from .actions import Action
@@ -1768,7 +1767,7 @@ class FPDF:
         to avoid repeating this processing later on.
         """
         if not txt or not markdown:
-            return ((txt, self.font_style, bool(self.underline)),)
+            return tuple([[txt, self.font_style, bool(self.underline)]])
         prev_font_style = self.font_style
         styled_txt_frags = tuple(self._markdown_parse(txt))
         page = self.page
@@ -2380,30 +2379,27 @@ class FPDF:
         self.set_y(y)
         self.set_x(x)
 
-
-    def encryption(self):
-        output = p.PdfFileWriter()
-
-        #For Input
-
-        input_pdf = input("Enter your file name: ")
-        input_save = p.PdfFileReader(open(input_pdf + ".pdf", "rb"))
-
-        for i in range(0, input_save.getNumPages()):
-            output.addPage(input_save.getPage(i))
-
-        #For Output
-
-
-        name = input("Enter name of encrypted file you want: ")
-        output_save = open(name + ".pdf", "wb")
-
-        #Encryption
-
-        password = input("Enter password for the file: ")
-        output.encrypt(password, use_128bit=True)
-        output.write(output_save)
-
+    # def encryption(self):
+    #     output = p.PdfFileWriter()
+    #
+    #     # For Input
+    #
+    #     input_pdf = input("Enter your file name: ")
+    #     input_save = p.PdfFileReader(open(input_pdf + ".pdf", "rb"))
+    #
+    #     for i in range(0, input_save.getNumPages()):
+    #         output.addPage(input_save.getPage(i))
+    #
+    #     # For Output
+    #
+    #     name = input("Enter name of encrypted file you want: ")
+    #     output_save = open(name + ".pdf", "wb")
+    #
+    #     # Encryption
+    #
+    #     password = input("Enter password for the file: ")
+    #     output.encrypt(password, use_128bit=True)
+    #     output.write(output_save)
 
     def output(self, name="", dest=""):
         """
