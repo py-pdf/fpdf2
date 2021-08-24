@@ -24,7 +24,7 @@
 'customer_vat';'T';35.30;74.30;105.30;79.30;'helvetica';10.00;0;0;0;0;0;'I';None;0
 'customer_vat_l';'T';17.30;74.30;32.30;79.30;'helvetica';10.00;0;0;0;0;0;'I';'VAT:';0
 'document_copy';'T';105.30;21.30;140.30;25.30;'helvetica';8.00;0;0;0;0;0;'C';'Original';2
-'document_label';'T';105.30;15.90;180.30;21.10;'helvetica Black';13.00;0;0;0;0;0;'C';'INVOICE';2
+'document_label';'T';105.30;15.90;180.30;21.10;'helvetica';13.00;0;0;0;0;0;'C';'INVOICE';2
 'document_number';'T';115.30;27.80;125.30;33.30;'helvetica';14.00;1;0;0;0;0;'I';'N°: ';2
 'document_type';'T';95.30;16.10;105.30;24.30;'helvetica';16.00;1;0;0;0;0;'C';'X';2
 'due_date';'T';65.30;82.30;85.30;86.30;'helvetica';10.00;0;0;0;0;65535;'I';'31/12/2009';0

@@ -200,3 +200,29 @@ def test_rect_background(tmp_path):  # issue-203
     tmpl = Template(format="A4", elements=elements)
     tmpl.add_page()
     assert_pdf_equal(tmpl, HERE / "template_rect_background.pdf", tmp_path)
+
+
+def test_template_justify(tmp_path):  # issue-207
+    elements = [
+        {
+            "name": "paragraph",
+            "type": "T",
+            "x1": 10,
+            "y1": 15,
+            "x2": 580,
+            "y2": 45,
+            "font": "helvetica",
+            "size": 16,
+            "align": "J",
+            "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore"
+            " et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi"
+            " ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit"
+            " esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,"
+            " sunt in culpa qui officia deserunt mollit anim id est laborum.",
+            "priority": 1,
+            "multiline": True,
+        },
+    ]
+    tmpl = Template(format="A4", unit="pt", elements=elements)
+    tmpl.add_page()
+    assert_pdf_equal(tmpl, HERE / "template_justify.pdf", tmp_path)

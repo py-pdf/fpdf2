@@ -146,7 +146,9 @@ def listing():
 
 # Samples Template Definitions #
 
-As stated in the [Templates](Templates.md) page, there are 3 ways of putting your templates in place. As in that page there are samples for the manually hardcoded way and CSV document loading. Here we will only show a sample of the template engine.
+As stated in the [Templates](Templates.md) page, there are 3 ways of putting your templates in place.
+As in that page there are samples for the manually hardcoded way and CSV document loading.
+Here we will only show a sample of the template engine.
 
 
 
@@ -242,9 +244,9 @@ def invoice():
     elements = db(db.pdf_element.pdf_template_id == 1).select(orderby=db.pdf_element.priority)
 
     f = Template(format="A4",
-             elements = elements,
-             title="Sample Invoice", author="Sample Company",
-             subject="Sample Customer", keywords="Electronic TAX Invoice")
+                 elements = elements,
+                 title="Sample Invoice", author="Sample Company",
+                 subject="Sample Customer", keywords="Electronic TAX Invoice")
     
     # create some random invoice line items and detail data
     detail = "Lorem ipsum dolor sit amet, consectetur. " * 5
@@ -345,4 +347,5 @@ def invoice():
     return f.render('invoice.pdf')
 ```
 
-Of course, this is a hardcoded example. You can use the database to store invoices or any other data; there is no rigid class hierachy to follow, just fill your template like a dict!
+Of course, this is a hardcoded example. You can use the database to store invoices or any other data;
+there is no rigid class hierachy to follow, just fill your template like a dict!

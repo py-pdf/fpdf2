@@ -82,8 +82,6 @@ class Form:
     ):
         if text:
             font = font.strip().lower()
-            if font == "helvetica black":
-                font = "helvetica"
             style = ""
             if bold:
                 style += "B"

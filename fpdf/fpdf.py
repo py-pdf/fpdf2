@@ -1360,10 +1360,10 @@ class FPDF:
         but this method can be useful for instance to define a clickable area inside an image.
 
         Args:
-            x (int): horizontal position (from the left) to the left side of the link rectangle
-            y (int): vertical position (from the top) to the bottom side of the link rectangle
-            w (int): width of the link rectangle
-            h (int): width of the link rectangle
+            x (float): horizontal position (from the left) to the left side of the link rectangle
+            y (float): vertical position (from the top) to the bottom side of the link rectangle
+            w (float): width of the link rectangle
+            h (float): width of the link rectangle
             link: either an URL or a integer returned by `add_link`, defining an internal link to a page
             alt_text (str): optional textual description of the link, for accessibility purposes
         """
