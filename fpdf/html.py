@@ -211,6 +211,10 @@ class HTML2FPDF(HTMLParser):
         """
         super().__init__()
         self.pdf = pdf
+        # divyaman edits {
+        self.top_position_x = -1
+        self.top_position_y = -1
+        #}
         self.image_map = image_map or (lambda src: src)
         self.li_tag_indent = li_tag_indent
         self.table_line_separators = table_line_separators
@@ -384,6 +388,14 @@ class HTML2FPDF(HTMLParser):
             self.pdf.set_x(x)
         if self.table.get("border"):
             self.output_table_sep()
+            # divyaman edit {
+            width = 0
+            for i in self.table_col_width:
+                
+                self.output_table_sep_vertical(width)
+                width += self.width2unit(i)
+            self.output_table_sep_vertical(width)
+            # }
         self.tfooter_out = True
 
     def output_table_sep(self):
@@ -391,6 +403,12 @@ class HTML2FPDF(HTMLParser):
         y1 = self.pdf.y
         width = sum(self.width2unit(length) for length in self.table_col_width)
         self.pdf.line(x1, y1, x1 + width, y1)
+
+    #divyaman edits {
+    def output_table_sep_vertical(self, width):
+        y1 = self.pdf.y
+        self.pdf.line(self.top_position_x+width, self.top_position_y, self.top_position_x+width, y1)
+    # }
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
@@ -489,6 +507,12 @@ class HTML2FPDF(HTMLParser):
             if attrs:
                 self.align = attrs.get("align")
             self._only_imgs_in_td = False
+             # divyaman edit {
+            
+            self.top_position_x = self.pdf.x if(self.top_position_x == -1) else self.top_position_x
+            self.top_position_y = self.pdf.y if(self.top_position_y == -1) else self.top_position_y
+            # } 
+
         if tag == "th":
             self.td = {k.lower(): v for k, v in attrs.items()}
             self.th = True
@@ -679,5 +703,10 @@ class HTMLMixin:
         # Method arguments must override class & instance attributes:
         kwargs2.update(kwargs)
         h2p = HTML2FPDF(self, *args, **kwargs2)
+        
+        # divyaman edits {
+        text = text.replace("\n", "<br>") # this is my change
+        #}
+
         text = html.unescape(text)  # To deal with HTML entities
         h2p.feed(text)
