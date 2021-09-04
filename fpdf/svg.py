@@ -5,6 +5,15 @@ import xml.etree.ElementTree
 
 from . import drawing, html
 
+__pdoc__ = {"force_nodocument": False}
+
+
+def force_nodocument(item):
+    """A decorator that forces pdoc not to document the decorated item (class or method)"""
+    __pdoc__[item.__qualname__] = False
+    return item
+
+
 # https://www.w3.org/TR/SVG/Overview.html
 
 _handy_namespaces = {
@@ -20,6 +29,7 @@ transform_getter = re.compile(
 )
 
 
+@force_nodocument
 class Percent(float):
     """class to represent percentage values"""
 
@@ -72,7 +82,9 @@ angle_units = {
 # scaling we do using viewBox attempts to scale so that 1 svg user unit = 1 pdf pt
 # because this results in the output PDF having the correct physical dimensions (i.e. a
 # feature with a 1cm size in SVG will actually end up being 1cm in size in the PDF).
+@force_nodocument
 def resolve_length(length_str, default_unit="pt"):
+    """Convert a length unit to our canonical length unit, pt."""
     value, unit = unit_splitter.match(length_str).groups()
     if not unit:
         unit = default_unit
@@ -88,8 +100,9 @@ def resolve_length(length_str, default_unit="pt"):
         raise ValueError(f"{length_str} contains unrecognized unit {unit}") from None
 
 
+@force_nodocument
 def resolve_angle(angle_str, default_unit="deg"):
-    """Convert an angle value to our canonical unit, radians"""
+    """Convert an angle value to our canonical angle unit, radians"""
     value, unit = unit_splitter.match(angle_str).groups()
     if not unit:
         unit = default_unit
@@ -100,7 +113,9 @@ def resolve_angle(angle_str, default_unit="deg"):
         raise ValueError(f"angle {angle_str} has unknown unit {unit}") from None
 
 
+@force_nodocument
 def xmlns(space, name):
+    """Create an XML namespace string representation for the given tag name."""
     try:
         space = _handy_namespaces[space]
     except KeyError:
@@ -110,7 +125,10 @@ def xmlns(space, name):
     return f"{{{space}}}{name}"
 
 
+@force_nodocument
 def xmlns_lookup(space, *names):
+    """Create a lookup for the given name in the given XML namespace."""
+
     result = {}
     for name in names:
         result[xmlns(space, name)] = name
@@ -124,6 +142,7 @@ shape_tags = xmlns_lookup(
 )
 
 
+@force_nodocument
 def svgcolor(colorstr):
     try:
         colorstr = html.COLOR_DICT[colorstr]
@@ -136,6 +155,7 @@ def svgcolor(colorstr):
     raise ValueError(f"unsupported color specification {colorstr}")
 
 
+@force_nodocument
 def optional(value, converter=lambda noop: noop):
     if value == "none":
         return None
@@ -166,7 +186,11 @@ svg_attr_map = {
 
 # defs paths are not drawn immediately but are added to xrefs and can be referenced
 # later to be drawn.
+
+
+@force_nodocument
 def handle_defs(defs):
+    """Produce lookups for groups and paths inside the <defs> tag"""
     for child in defs:
         if child.tag in xmlns_lookup("svg", "g"):
             build_group(child)
@@ -174,7 +198,10 @@ def handle_defs(defs):
             build_path(child)
 
 
+@force_nodocument
 def apply_styles(stylable, svg_element):
+    """Apply the known styles from `svg_element` to the pdf path/group `stylable`."""
+
     stylable.style.auto_close = False
 
     for svg_attr, converter in svg_attr_map.items():
@@ -202,7 +229,9 @@ def apply_styles(stylable, svg_element):
         stylable.transform = convert_transforms(tfstr)
 
 
+@force_nodocument
 def build_group(group, pdf_group=None):
+    """Handle nested items within a group <g> tag."""
     if pdf_group is None:
         pdf_group = drawing.GraphicsContext()
         apply_styles(pdf_group, group)
@@ -227,7 +256,9 @@ def build_group(group, pdf_group=None):
     return pdf_group
 
 
+@force_nodocument
 def build_path(path):
+    """Convert an SVG <path> tag into a PDF path object."""
     pdf_path = drawing.PaintedPath()
     apply_styles(pdf_path, path)
 
@@ -241,9 +272,13 @@ def build_path(path):
     return pdf_path
 
 
+@force_nodocument
 class ShapeBuilder:
+    """A namespace within which methods for converting basic shapes can be looked up."""
+
     @staticmethod
     def new_path(tag):
+        """Create a new path with the appropriate styles."""
         path = drawing.PaintedPath()
         apply_styles(path, tag)
 
@@ -251,6 +286,7 @@ class ShapeBuilder:
 
     @classmethod
     def rect(cls, tag):
+        """Convert an SVG <rect> into a PDF path."""
         # svg rect is wound clockwise
         x = float(tag.attrib.get("x", 0))
         y = float(tag.attrib.get("y", 0))
@@ -289,6 +325,7 @@ class ShapeBuilder:
 
     @classmethod
     def circle(cls, tag):
+        """Convert an SVG <circle> into a PDF path."""
         cx = float(tag.attrib.get("cx", 0))
         cy = float(tag.attrib.get("cy", 0))
         r = float(tag.attrib["r"])
@@ -300,6 +337,7 @@ class ShapeBuilder:
 
     @classmethod
     def ellipse(cls, tag):
+        """Convert an SVG <ellipse> into a PDF path."""
         cx = float(tag.attrib.get("cx", 0))
         cy = float(tag.attrib.get("cy", 0))
 
@@ -324,6 +362,7 @@ class ShapeBuilder:
 
     @classmethod
     def line(cls, tag):
+        """Convert an SVG <line> into a PDF path."""
         x1 = float(tag.attrib["x1"])
         y1 = float(tag.attrib["y1"])
         x2 = float(tag.attrib["x2"])
@@ -338,6 +377,7 @@ class ShapeBuilder:
 
     @classmethod
     def polyline(cls, tag):
+        """Convert an SVG <polyline> into a PDF path."""
         points = tag.attrib["points"]
 
         path = cls.new_path(tag)
@@ -349,6 +389,7 @@ class ShapeBuilder:
 
     @classmethod
     def polygon(cls, tag):
+        """Convert an SVG <polygon> into a PDF path."""
         points = tag.attrib["points"]
 
         path = cls.new_path(tag)
@@ -361,7 +402,9 @@ class ShapeBuilder:
 
 # this assumes xrefs only reference already-defined ids. I don't know if this is
 # required by the SVG spec.
+@force_nodocument
 def build_xref(xref):
+    """Resolve a cross-reference to an already-seen SVG element by ID."""
     pdf_group = drawing.GraphicsContext()
     apply_styles(pdf_group, xref)
 
@@ -382,10 +425,9 @@ def build_xref(xref):
     return pdf_group
 
 
+@force_nodocument
 def convert_transforms(tfstr):
-    """
-    Convert SVG/CSS transform functions into our own transformation mapping
-    """
+    """Convert SVG/CSS transform functions into PDF transforms."""
 
     # https://drafts.csswg.org/css-transforms/#two-d-transform-functions
     parsed = transform_getter.findall(tfstr)
@@ -474,7 +516,10 @@ def convert_transforms(tfstr):
     return transform
 
 
+@force_nodocument
 class SVGSmoothCubicCurve(NamedTuple):
+    """SVG chained cubic Bézier curve path element."""
+
     c2: drawing.Point
     end: drawing.Point
 
@@ -508,7 +553,10 @@ class SVGSmoothCubicCurve(NamedTuple):
         return rendered, resolved
 
 
+@force_nodocument
 class SVGRelativeSmoothCubicCurve(NamedTuple):
+    """SVG chained relative cubic Bézier curve path element."""
+
     c2: drawing.Point
     end: drawing.Point
 
@@ -539,7 +587,10 @@ class SVGRelativeSmoothCubicCurve(NamedTuple):
         return rendered, resolved
 
 
+@force_nodocument
 class SVGSmoothQuadraticCurve(NamedTuple):
+    """SVG chained quadratic Bézier curve path element."""
+
     end: drawing.Point
 
     @classmethod
@@ -564,7 +615,10 @@ class SVGSmoothQuadraticCurve(NamedTuple):
         return rendered, resolved
 
 
+@force_nodocument
 class SVGRelativeSmoothQuadraticCurve(NamedTuple):
+    """SVG chained relative quadratic Bézier curve path element."""
+
     end: drawing.Point
 
     @classmethod
@@ -628,8 +682,11 @@ def _read_n_numbers(path_str, n):
     return tuple(float(num) for num in numbers), leftover.lstrip()
 
 
+@force_nodocument
 def svg_path_converter(pdf_path, svg_path):
-    # - can be used as a numeric separator as well, irritatingly (e.g. "3-4" should be
+    """Convert an SVG path string into a structured PDF path object"""
+
+    # "-" can be used as a numeric separator as well, irritatingly (e.g. "3-4" should be
     # parsed like "3, -4"), so we insert spaces before - to make sure these get split
     # apart correctly.
 
@@ -659,8 +716,21 @@ def svg_path_converter(pdf_path, svg_path):
 
 
 class SVGObject:
+    """
+    A representation of an SVG that has been converted to a PDF representation.
+    """
+
     @classmethod
     def from_file(cls, filename, *args, **kwargs):
+        """
+        Create an `SVGObject` from the contents of the file at `filename`.
+
+        Args:
+            filename (path-like): the path to a file containing SVG data.
+
+        Returns:
+            A converted `SVGObject`.
+        """
         with open(filename, "r") as svgfile:
             return cls(svgfile.read(), *args, **kwargs)
 
@@ -673,7 +743,10 @@ class SVGObject:
         self.extract_shape_info(svg_tree)
         self.convert_graphics(svg_tree)
 
+    @force_nodocument
     def extract_shape_info(self, root_tag):
+        """Collect shape info from the given SVG."""
+
         width = root_tag.get("width")
         height = root_tag.get("height")
         viewbox = root_tag.get("viewBox")
@@ -716,7 +789,9 @@ class SVGObject:
         else:
             self.viewbox = None
 
+    @force_nodocument
     def convert_graphics(self, root_tag):
+        """Convert the graphics contained in the SVG into the PDF representation."""
         base_group = drawing.GraphicsContext()
         base_group.style.stroke_width = None
         base_group.style.auto_close = False
@@ -726,9 +801,47 @@ class SVGObject:
         self.base_group = base_group
 
     def transform_to_page_viewport(self, pdf):
+        """
+        Size the converted SVG paths to the page viewport.
+
+        The SVG document size can be specified relative to the rendering viewport
+        (e.g. width=50%). If the converted SVG sizes are relative units, then this
+        computes the appropriate scale transform to size the SVG to the correct
+        dimensions for a page in the current PDF document.
+
+        If the SVG document size is specified in absolute units, then it is not scaled.
+
+        Args:
+            pdf (fpdf.FPDF): the pdf to use the page size of.
+
+        Returns:
+            The same thing as `SVGObject.transform_to_rect_viewport`.
+        """
+
         return self.transform_to_rect_viewport(pdf.k, pdf.w, pdf.h)
 
     def transform_to_rect_viewport(self, scale, width, height):
+        """
+        Size the converted SVG paths to an arbitrarily sized viewport.
+
+        The SVG document size can be specified relative to the rendering viewport
+        (e.g. width=50%). If the converted SVG sizes are relative units, then this
+        computes the appropriate scale transform to size the SVG to the correct
+        dimensions for a page in the current PDF document.
+
+        Args:
+            scale (Number): the scale factor from document units to PDF points.
+            width (Number): the width of the viewport to scale to in document units.
+            height (Number): the height of the viewport to scale to in document units.
+
+        Returns:
+            A tuple of (width, height, `fpdf.drawing.GraphicsContext`), where width and
+            height are the resolved width and height (they may be 0. If 0, the returned
+            `fpdf.drawing.GraphicsContext` will be empty). The
+            `fpdf.drawing.GraphicsContext` contains all of the paths that were
+            converted from the SVG, scaled to the given viewport size.
+        """
+
         if isinstance(self.width, Percent):
             vp_width = self.width * width / 100
         else:
@@ -767,6 +880,19 @@ class SVGObject:
         return vp_width / scale, vp_height / scale, self.base_group
 
     def draw_to_page(self, pdf, x=None, y=None, debug_stream=None):
+        """
+        Directly draw the converted SVG to the given PDF's current page.
+
+        The page viewport is used for sizing the SVG.
+
+        Args:
+            pdf (fpdf.FPDF): the document to which the converted SVG is rendered.
+            x (Number): abscissa of the converted SVG's top-left corner.
+            y (Number): ordinate of the converted SVG's top-left corner.
+            debug_stream (io.TextIO): the stream to which rendering debug info will be
+                written.
+        """
+
         _, _, path = self.transform_to_page_viewport(pdf)
 
         old_x, old_y = pdf.x, pdf.y
