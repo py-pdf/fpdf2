@@ -2839,6 +2839,232 @@ class Rectangle(NamedTuple):
         return rendered, resolved
 
 
+class RoundedRectangle(NamedTuple):
+    """
+    A rectangle with rounded corners.
+
+    See: `PaintedPath.rectangle`
+    """
+
+    org: Point
+    """The top-left corner of the rectangle."""
+    size: Point
+    """The width and height of the rectangle."""
+    corner_radii: Point
+    """The x- and y-radius of the corners."""
+
+    def _decompose(self):
+        items = []
+
+        if (self.size.x == 0) and (self.size.y == 0):
+            pass
+        elif (self.size.x == 0) or (self.size.y == 0):
+            items.append(Move(self.org))
+            items.append(Line(self.org + self.size))
+            items.append(Close())
+        elif (self.corner_radii.x == 0) or (self.corner_radii.y == 0):
+            items.append(Rectangle(self.org, self.size))
+        else:
+            x, y = self.org
+            w, h = self.size
+            rx, ry = self.corner_radii
+            sign_width = (self.size.x >= 0) - (self.size.x < 0)
+            sign_height = (self.size.y >= 0) - (self.size.y < 0)
+
+            if abs(rx) > abs(w):
+                rx = self.size.x
+
+            if abs(ry) > abs(h):
+                ry = self.size.y
+
+            rx = sign_width * abs(rx)
+            ry = sign_height * abs(ry)
+            arc_rad = Point(rx, ry)
+
+            items.append(Move(Point(x + rx, y)))
+            items.append(Line(Point(x + w - rx, y)))
+            items.append(Arc(arc_rad, 0, False, True, Point(x + w, y + ry)))
+            items.append(Line(Point(x + w, y + h - ry)))
+            items.append(Arc(arc_rad, 0, False, True, Point(x + w - rx, y + h)))
+            items.append(Line(Point(x + rx, y + h)))
+            items.append(Arc(arc_rad, 0, False, True, Point(x, y + h - ry)))
+            items.append(Line(Point(x, y + ry)))
+            items.append(Arc(arc_rad, 0, False, True, Point(x + rx, y)))
+            items.append(Close())
+
+        return items
+
+    @force_nodocument
+    def render(self, path_gsds, style, last_item):
+        """
+        Render this path element to its PDF representation.
+
+        Args:
+            path_gsds (dict): a dict of all graphics state dictionaries generated
+                during rendering up to this point.
+            style (GraphicsStyle): the current resolved graphics style
+            last_item: the previous path element.
+
+        Returns:
+            a tuple of `(str, new_last_item)`, where `new_last_item` is a resolved
+            `Line`.
+        """
+        # pylint: disable=unused-argument
+        components = self._decompose()
+
+        if not components:
+            return "", last_item
+
+        render_list = []
+        for item in components:
+            rendered, last_item = item.render(path_gsds, style, last_item)
+            render_list.append(rendered)
+
+        return " ".join(render_list), Line(self.org)
+
+    @force_nodocument
+    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+        """
+        Render this path element to its PDF representation and produce debug
+        information.
+
+        Args:
+            path_gsds (dict): a dict of all graphics state dictionaries generated
+                during rendering up to this point.
+            style (GraphicsStyle): the current resolved graphics style
+            last_item: the previous path element.
+            debug_stream (io.TextIO): the stream to which the debug output should be
+                written. This is not guaranteed to be seekable (e.g. it may be stdout or
+                stderr).
+            pfx (str): the current debug output prefix string (only needed if emitting
+                more than one line).
+
+        Returns:
+            The same tuple as `RoundedRectangle.render`.
+        """
+        # pylint: disable=unused-argument
+        components = self._decompose()
+
+        debug_stream.write(f"{self} resolved to:\n")
+        if not components:
+            debug_stream.write(pfx + " └─ nothing\n")
+            return "", last_item
+
+        render_list = []
+        for item in components[:-1]:
+            rendered, last_item = item.render(path_gsds, style, last_item)
+            debug_stream.write(pfx + f" ├─ {item}\n")
+            render_list.append(rendered)
+
+        rendered, last_item = components[-1].render(path_gsds, style, last_item)
+        debug_stream.write(pfx + f" └─ {components[-1]}\n")
+        render_list.append(rendered)
+
+        return (" ".join(render_list), Line(self.org))
+
+
+class Ellipse(NamedTuple):
+    """
+    An ellipse.
+
+    See: `PaintedPath.ellipse`
+    """
+
+    radii: Point
+    """The x- and y-radii of the ellipse"""
+    center: Point
+    """The abscissa and ordinate of the center of the ellipse"""
+
+    def _decompose(self):
+        items = []
+
+        rx = abs(self.radii.x)
+        ry = abs(self.radii.y)
+        cx, cy = self.center
+
+        arc_rad = Point(rx, ry)
+
+        # this isn't the most efficient way to do this, computationally, but it's
+        # internally consistent.
+        if (rx != 0) and (ry != 0):
+            items.append(Move(Point(cx + rx, cy)))
+            items.append(Arc(arc_rad, 0, False, True, Point(cx, cy + ry)))
+            items.append(Arc(arc_rad, 0, False, True, Point(cx - rx, cy)))
+            items.append(Arc(arc_rad, 0, False, True, Point(cx, cy - ry)))
+            items.append(Arc(arc_rad, 0, False, True, Point(cx + rx, cy)))
+            items.append(Close())
+
+        return items
+
+    @force_nodocument
+    def render(self, path_gsds, style, last_item):
+        """
+        Render this path element to its PDF representation.
+
+        Args:
+            path_gsds (dict): a dict of all graphics state dictionaries generated
+                during rendering up to this point.
+            style (GraphicsStyle): the current resolved graphics style
+            last_item: the previous path element.
+
+        Returns:
+            a tuple of `(str, new_last_item)`, where `new_last_item` is a resolved
+            `Move` to the center of the ellipse.
+        """
+        # pylint: disable=unused-argument
+        components = self._decompose()
+
+        if not components:
+            return "", last_item
+
+        render_list = []
+        for item in components:
+            rendered, last_item = item.render(path_gsds, style, last_item)
+            render_list.append(rendered)
+
+        return " ".join(render_list), Move(self.center)
+
+    @force_nodocument
+    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+        """
+        Render this path element to its PDF representation and produce debug
+        information.
+
+        Args:
+            path_gsds (dict): a dict of all graphics state dictionaries generated
+                during rendering up to this point.
+            style (GraphicsStyle): the current resolved graphics style
+            last_item: the previous path element.
+            debug_stream (io.TextIO): the stream to which the debug output should be
+                written. This is not guaranteed to be seekable (e.g. it may be stdout or
+                stderr).
+            pfx (str): the current debug output prefix string (only needed if emitting
+                more than one line).
+
+        Returns:
+            The same tuple as `Ellipse.render`.
+        """
+        # pylint: disable=unused-argument
+        components = self._decompose()
+
+        debug_stream.write(f"{self} resolved to:\n")
+        if not components:
+            debug_stream.write(pfx + " └─ nothing\n")
+            return "", last_item
+
+        render_list = []
+        for item in components[:-1]:
+            rendered, last_item = item.render(path_gsds, style, last_item)
+            debug_stream.write(pfx + f" ├─ {item}\n")
+            render_list.append(rendered)
+
+        rendered, last_item = components[-1].render(path_gsds, style, last_item)
+        debug_stream.write(pfx + f" └─ {components[-1]}\n")
+        render_list.append(rendered)
+
+        return (" ".join(render_list), Line(self.center))
+
+
 class ImplicitClose(NamedTuple):
     """
     A path close element that is conditionally rendered depending on the value of
@@ -3175,24 +3401,32 @@ class PaintedPath:
     def rectangle(self, x, y, w, h, rx=0, ry=0):
         """
         Append a rectangle as a closed subpath to the current path.
+
+        If the width or the height are 0, the rectangle will be collapsed to a line
+        (unless they're both 0, in which case it's collapsed to nothing).
+
+        Args:
+            x (Number): the abscissa of the starting corner of the rectangle.
+            y (Number): the ordinate of the starting corner of the rectangle.
+            w (Number): the width of the rectangle (if 0, the rectangle will be
+                rendered as a vertical line).
+            h (Number): the height of the rectangle (if 0, the rectangle will be
+                rendered as a horizontal line).
+            rx (Number): the x-radius of the rectangle rounded corner (if 0 the corners
+                will not be rounded).
+            ry (Number): the y-radius of the rectangle rounded corner (if 0 the corners
+                will not be rounded).
+
+        Returns:
+            The path, to allow chaining method calls.
         """
 
-        if (rx == 0) or (ry == 0):
-            self._insert_implicit_close_if_open()
-            self.add_path_element(Rectangle(Point(x, y), Point(w, h)), _copy=False)
-        else:
-            rx = abs(rx)
-            ry = abs(ry)
-            self.move_to(x + rx, y)
-            self.line_to(x + w - rx, y)
-            self.arc_to(rx, ry, 0, False, True, x + w, y + ry)
-            self.line_to(x + w, y + h - ry)
-            self.arc_to(rx, ry, 0, False, True, x + w - rx, y + h)
-            self.line_to(x + rx, y + h)
-            self.arc_to(rx, ry, 0, False, True, x, y + h - ry)
-            self.line_to(x, y + ry)
-            self.arc_to(rx, ry, 0, False, True, x + rx, y)
-            self.close()
+        self._insert_implicit_close_if_open()
+        self.add_path_element(
+            RoundedRectangle(Point(x, y), Point(w, h), Point(rx, ry)), _copy=False
+        )
+        self._closed = True
+        self.move_to(x, y)
 
         return self
 
@@ -3223,17 +3457,10 @@ class PaintedPath:
         Returns:
             The path, to allow chaining method calls.
         """
-        rx = abs(rx)
-        ry = abs(ry)
-
-        # this isn't the most efficient way to do this, computationally, but it's
-        # internally consistent.
-        self.move_to(cx + rx, cy)
-        self.arc_to(rx, ry, 0, False, True, cx, cy + ry)
-        self.arc_to(rx, ry, 0, False, True, cx - rx, cy)
-        self.arc_to(rx, ry, 0, False, True, cx, cy - ry)
-        self.arc_to(rx, ry, 0, False, True, cx + rx, cy)
-        self.close()
+        self._insert_implicit_close_if_open()
+        self.add_path_element(Ellipse(Point(rx, ry), Point(cx, cy)), _copy=False)
+        self._closed = True
+        self.move_to(cx, cy)
 
         return self
 
@@ -3251,7 +3478,6 @@ class PaintedPath:
 
         Returns:
             The path, to allow chaining method calls.
-
         """
         self._insert_implicit_close_if_open()
         self._starter_move = Move(Point(x, y))
