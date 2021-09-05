@@ -65,6 +65,9 @@ def _new_global_style_name():
 def _get_or_set_style_dict(style):
     sdict = style.to_pdf_dict()
 
+    if not sdict:
+        return None
+
     try:
         return _global_style_registry[sdict]
     except KeyError:
@@ -3100,6 +3103,15 @@ class PaintedPath:
     def paint_rule(self, style):
         self.style.paint_rule = style
 
+    @property
+    def clipping_path(self):
+        """Set the clipping path for this path."""
+        return self._root_graphics_context.clipping_path
+
+    @clipping_path.setter
+    def clipping_path(self, new_clipath):
+        self._root_graphics_context.clipping_path = new_clipath
+
     @contextmanager
     def _new_graphics_context(self, _attach=True):
         old_graphics_context = self._graphics_context
@@ -3596,19 +3608,22 @@ class ClippingPath(PaintedPath):
         # rather than only affecting them at painting time. stroke settings and color
         # settings are applied only at paint time.
 
+        if debug_stream:
+            debug_stream.write("<ClippingPath> ")
+
         render_list, last_item = self._root_graphics_context.build_render_list(
-            path_gsds, style, last_item, _push_stack=False
+            path_gsds, style, last_item, debug_stream, pfx, _push_stack=False
         )
 
-        style = GraphicsStyle.merge(style, self.style)
+        merged_style = GraphicsStyle.merge(style, self.style)
         # we should never get a collision error here
-        intersection_rule = style.intersection_rule
-        if style.intersection_rule == GraphicsStyle.INHERIT:
+        intersection_rule = merged_style.intersection_rule
+        if merged_style.intersection_rule == GraphicsStyle.INHERIT:
             intersection_rule = ClippingPathIntersectionRule.NONZERO
         else:
             intersection_rule = ClippingPathIntersectionRule[intersection_rule.name]
 
-        paint_rule = style.resolve_paint_rule()
+        paint_rule = merged_style.resolve_paint_rule()
 
         if debug_stream:
             ...
@@ -3645,7 +3660,8 @@ class GraphicsContext:
         self.style = GraphicsStyle()
         self.path_items = []
 
-        self.transform = None
+        self._transform = None
+        self._clipping_path = None
 
     @property
     def transform(self):
@@ -3660,6 +3676,15 @@ class GraphicsContext:
     #     copied._style_items = copy.deepcopy(self._style_items, memo)
     #     copied.path_items = copy.deepcopy(self.path_items, memo)
     #     return copied
+
+    @property
+    def clipping_path(self):
+        """The `ClippingPath` for this graphics context."""
+        return self._clipping_path
+
+    @clipping_path.setter
+    def clipping_path(self, new_clipath):
+        self._clipping_path = new_clipath
 
     def add_item(self, item):
         """
@@ -3710,14 +3735,19 @@ class GraphicsContext:
             if debug_stream is not None:
                 debug_stream.write(f"{self.__class__.__name__}")
 
-            style = GraphicsStyle.merge(style, self.style)
+            merged_style = GraphicsStyle.merge(style, self.style)
 
             if debug_stream is not None:
                 styles_dbg = []
                 for attr in GraphicsStyle.MERGE_PROPERTIES:
-                    val = getattr(style, attr)
+                    val = getattr(merged_style, attr)
                     if val is not GraphicsStyle.INHERIT:
-                        styles_dbg.append(f"{attr}: {val}")
+                        if getattr(self.style, attr) is GraphicsStyle.INHERIT:
+                            inh = " (inherited)"
+                        else:
+                            inh = ""
+
+                        styles_dbg.append(f"{attr}: {val}{inh}")
 
                 if styles_dbg:
                     debug_stream.write(" {\n")
@@ -3730,41 +3760,18 @@ class GraphicsContext:
                 else:
                     debug_stream.write("\n")
 
-            sdict = _get_or_set_style_dict(style)
+            sdict = _get_or_set_style_dict(self.style)
+
             if sdict is not None:
                 path_gsds[sdict] = None
                 render_list.append(f"{render_pdf_primitive(sdict)} gs")
 
-            if debug_stream:
-                for item in self.path_items[:-1]:
-                    debug_stream.write(pfx + " ├─ ")
-                    rendered, last_item = item.render_debug(
-                        path_gsds, style, last_item, debug_stream, pfx + " │  "
-                    )
-
-                    if rendered:
-                        render_list.append(rendered)
-
-                debug_stream.write(pfx + " └─ ")
-                rendered, last_item = self.path_items[-1].render_debug(
-                    path_gsds, style, last_item, debug_stream, pfx + "    "
-                )
-
-                if rendered:
-                    render_list.append(rendered)
-            else:
-                for item in self.path_items:
-                    rendered, last_item = item.render(path_gsds, style, last_item)
-
-                    if rendered:
-                        render_list.append(rendered)
-
             NO_EMIT_SET = {None, GraphicsStyle.INHERIT}
             # we can't set color in the graphics state context dictionary, so we have to
             # manually inherit it and emit it here.
-            fill_color = style.fill_color
-            stroke_color = style.stroke_color
-            dash_pattern = style.stroke_dash_pattern
+            fill_color = self.style.fill_color
+            stroke_color = self.style.stroke_color
+            dash_pattern = self.style.stroke_dash_pattern
 
             if fill_color not in NO_EMIT_SET:
                 render_list.append(
@@ -3790,6 +3797,48 @@ class GraphicsContext:
                     render_pdf_primitive(dash_pattern)
                     + f" {number_to_str(self.style.stroke_dash_phase)} d"
                 )
+
+            if debug_stream:
+                if self.clipping_path is not None:
+                    debug_stream.write(pfx + " ├─ ")
+                    rendered_cpath, _ = self.clipping_path.render_debug(
+                        path_gsds, merged_style, last_item, debug_stream, pfx + " │  "
+                    )
+                    if rendered_cpath:
+                        render_list.append(rendered_cpath)
+
+                for item in self.path_items[:-1]:
+                    debug_stream.write(pfx + " ├─ ")
+                    rendered, last_item = item.render_debug(
+                        path_gsds, merged_style, last_item, debug_stream, pfx + " │  "
+                    )
+
+                    if rendered:
+                        render_list.append(rendered)
+
+                debug_stream.write(pfx + " └─ ")
+                rendered, last_item = self.path_items[-1].render_debug(
+                    path_gsds, merged_style, last_item, debug_stream, pfx + "    "
+                )
+
+                if rendered:
+                    render_list.append(rendered)
+
+            else:
+                if self.clipping_path is not None:
+                    rendered_cpath, _ = self.clipping_path.render(
+                        path_gsds, merged_style, last_item
+                    )
+                    if rendered_cpath:
+                        render_list.append(rendered_cpath)
+
+                for item in self.path_items:
+                    rendered, last_item = item.render(
+                        path_gsds, merged_style, last_item
+                    )
+
+                    if rendered:
+                        render_list.append(rendered)
 
             # insert transform before points
             if self.transform is not None:
