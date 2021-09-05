@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from contextlib import contextmanager
+import copy
 import enum
 import decimal
 import math
@@ -1375,6 +1376,13 @@ class GraphicsStyle:
         ): PathPaintRule.STROKE_FILL_EVENODD,
     }
     """A dictionary for resolving `PathPaintRule.AUTO`"""
+
+    def __deepcopy__(self, memo):
+        copied = self.__class__()
+        for prop in self.MERGE_PROPERTIES:
+            setattr(copied, prop, getattr(self, prop))
+
+        return copied
 
     @classmethod
     def merge(cls, parent, child):
@@ -2952,7 +2960,7 @@ class DrawingContext:
     def __init__(self):
         self._subitems = []
 
-    def add_item(self, item):
+    def add_item(self, item, _copy=True):
         """
         Append an item to this drawing context
 
@@ -2962,6 +2970,9 @@ class DrawingContext:
 
         if not isinstance(item, (GraphicsContext, PaintedPath)):
             raise TypeError(f"{item} doesn't belong in a DrawingContext")
+
+        if _copy:
+            item = copy.deepcopy(item)
 
         self._subitems.append(item)
 
@@ -3071,6 +3082,21 @@ class PaintedPath:
 
         self.move_to(x, y)
 
+    def __deepcopy__(self, memo):
+        # there's no real way to recover the matching current _graphics_context after
+        # copying the root context, but that's ok because we can just disallow copying
+        # of paths under modification as that is almost certainly wrong usage.
+        if self._graphics_context is not self._root_graphics_context:
+            raise RuntimeError(f"cannot copy path {self} while it is being modified")
+
+        copied = self.__class__()
+        copied._root_graphics_context = copy.deepcopy(self._root_graphics_context, memo)
+        copied._graphics_context = copied._root_graphics_context
+        copied._closed = self._closed
+        copied._close_context = copied._graphics_context
+
+        return copied
+
     @property
     def style(self):
         """The `GraphicsStyle` applied to all elements of this path."""
@@ -3133,18 +3159,18 @@ class PaintedPath:
             ctxt.transform = transform
             yield self
 
-    def add_path_element(self, item):
+    def add_path_element(self, item, _copy=True):
         """
         Add the given element as a path item of this path.
         """
         if self._starter_move is not None:
             self._closed = False
 
-            self._graphics_context.add_item(self._starter_move)
+            self._graphics_context.add_item(self._starter_move, _copy=False)
             self._close_context = self._graphics_context
             self._starter_move = None
 
-        self._graphics_context.add_item(item)
+        self._graphics_context.add_item(item, _copy=_copy)
 
     def rectangle(self, x, y, w, h, rx=0, ry=0):
         """
@@ -3153,7 +3179,7 @@ class PaintedPath:
 
         if (rx == 0) or (ry == 0):
             self._insert_implicit_close_if_open()
-            self.add_path_element(Rectangle(Point(x, y), Point(w, h)))
+            self.add_path_element(Rectangle(Point(x, y), Point(w, h)), _copy=False)
         else:
             rx = abs(rx)
             ry = abs(ry)
@@ -3263,7 +3289,7 @@ class PaintedPath:
         Returns:
             The path, to allow chaining method calls.
         """
-        self.add_path_element(Line(Point(x, y)))
+        self.add_path_element(Line(Point(x, y)), _copy=False)
         return self
 
     def line_relative(self, dx, dy):
@@ -3280,7 +3306,7 @@ class PaintedPath:
         Returns:
             The path, to allow chaining method calls.
         """
-        self.add_path_element(RelativeLine(Point(dx, dy)))
+        self.add_path_element(RelativeLine(Point(dx, dy)), _copy=False)
         return self
 
     def horizontal_line_to(self, x):
@@ -3294,7 +3320,7 @@ class PaintedPath:
         Returns:
             The path, to allow chaining method calls.
         """
-        self.add_path_element(HorizontalLine(x))
+        self.add_path_element(HorizontalLine(x), _copy=False)
         return self
 
     def horizontal_line_relative(self, dx):
@@ -3310,7 +3336,7 @@ class PaintedPath:
         Returns:
             The path, to allow chaining method calls.
         """
-        self.add_path_element(RelativeHorizontalLine(dx))
+        self.add_path_element(RelativeHorizontalLine(dx), _copy=False)
         return self
 
     def vertical_line_to(self, y):
@@ -3324,7 +3350,7 @@ class PaintedPath:
         Returns:
             The path, to allow chaining method calls.
         """
-        self.add_path_element(VerticalLine(y))
+        self.add_path_element(VerticalLine(y), _copy=False)
         return self
 
     def vertical_line_relative(self, dy):
@@ -3340,7 +3366,7 @@ class PaintedPath:
         Returns:
             The path, to allow chaining method calls.
         """
-        self.add_path_element(RelativeVerticalLine(dy))
+        self.add_path_element(RelativeVerticalLine(dy), _copy=False)
         return self
 
     def curve_to(self, x1, y1, x2, y2, x3, y3):
@@ -3362,7 +3388,7 @@ class PaintedPath:
         ctrl2 = Point(x2, y2)
         end = Point(x3, y3)
 
-        self.add_path_element(BezierCurve(ctrl1, ctrl2, end))
+        self.add_path_element(BezierCurve(ctrl1, ctrl2, end), _copy=False)
         return self
 
     def curve_relative(self, dx1, dy1, dx2, dy2, dx3, dy3):
@@ -3396,7 +3422,7 @@ class PaintedPath:
         c2d = Point(dx2, dy2)
         end = Point(dx3, dy3)
 
-        self.add_path_element(RelativeBezierCurve(c1d, c2d, end))
+        self.add_path_element(RelativeBezierCurve(c1d, c2d, end), _copy=False)
         return self
 
     def quadratic_bezier_to(self, x1, y1, x2, y2):
@@ -3405,7 +3431,7 @@ class PaintedPath:
         """
         ctrl = Point(x1, y1)
         end = Point(x2, y2)
-        self.add_path_element(QuadraticBezierCurve(ctrl, end))
+        self.add_path_element(QuadraticBezierCurve(ctrl, end), _copy=False)
         return self
 
     def quadratic_bezier_relative(self, x1, y1, x2, y2):
@@ -3414,7 +3440,7 @@ class PaintedPath:
         """
         ctrl = Point(x1, y1)
         end = Point(x2, y2)
-        self.add_path_element(RelativeQuadraticBezierCurve(ctrl, end))
+        self.add_path_element(RelativeQuadraticBezierCurve(ctrl, end), _copy=False)
         return self
 
     def arc_to(self, rx, ry, rotation, large_arc, positive_sweep, x, y):
@@ -3460,7 +3486,9 @@ class PaintedPath:
         positive_sweep = bool(positive_sweep)
         end = Point(x, y)
 
-        self.add_path_element(Arc(radii, rotation, large_arc, positive_sweep, end))
+        self.add_path_element(
+            Arc(radii, rotation, large_arc, positive_sweep, end), _copy=False
+        )
         return self
 
     def arc_relative(self, rx, ry, rotation, large_arc, positive_sweep, dx, dy):
@@ -3508,7 +3536,7 @@ class PaintedPath:
         end = Point(dx, dy)
 
         self.add_path_element(
-            RelativeArc(radii, rotation, large_arc, positive_sweep, end)
+            RelativeArc(radii, rotation, large_arc, positive_sweep, end), _copy=False
         )
         return self
 
@@ -3516,13 +3544,13 @@ class PaintedPath:
         """
         Explicitly close the current (sub)path.
         """
-        self.add_path_element(Close())
+        self.add_path_element(Close(), _copy=False)
         self._closed = True
         self.move_relative(0, 0)
 
     def _insert_implicit_close_if_open(self):
         if not self._closed:
-            self._close_context.add_item(ImplicitClose())
+            self._close_context.add_item(ImplicitClose(), _copy=False)
             self._close_context = self._graphics_context
             self._closed = True
 
@@ -3593,13 +3621,6 @@ class ClippingPath(PaintedPath):
         super().__init__(x=x, y=y)
         self.paint_rule = PathPaintRule.DONT_PAINT
 
-    # def __deepcopy__(self, memo):
-    #     copied = ClippingPath(self._intersection_rule, self._paint_style)
-    #     copied._root_graphics_context = copy.deepcopy(self._root_graphics_context, memo)
-    #     copied._graphics_context = copied._root_graphics_context
-    #     copied._closed = self._closed
-    #     return copied
-
     def render(self, path_gsds, style, last_item, debug_stream=None, pfx=None):
         # painting the clipping path outside of its root graphics context allows it to
         # be transformed without affecting the transform of the graphics context of the
@@ -3663,6 +3684,16 @@ class GraphicsContext:
         self._transform = None
         self._clipping_path = None
 
+    def __deepcopy__(self, memo):
+        copied = self.__class__()
+        copied.style = copy.deepcopy(self.style, memo)
+        copied.path_items = copy.deepcopy(self.path_items, memo)
+
+        copied._transform = copy.deepcopy(self.transform, memo)
+        copied._clipping_path = copy.deepcopy(self.clipping_path, memo)
+
+        return copied
+
     @property
     def transform(self):
         return self._transform
@@ -3670,12 +3701,6 @@ class GraphicsContext:
     @transform.setter
     def transform(self, tf):
         self._transform = tf
-
-    # def __deepcopy__(self, memo):
-    #     copied = GraphicsContext()
-    #     copied._style_items = copy.deepcopy(self._style_items, memo)
-    #     copied.path_items = copy.deepcopy(self.path_items, memo)
-    #     return copied
 
     @property
     def clipping_path(self):
@@ -3686,7 +3711,7 @@ class GraphicsContext:
     def clipping_path(self, new_clipath):
         self._clipping_path = new_clipath
 
-    def add_item(self, item):
+    def add_item(self, item, _copy=True):
         """
         Add a path element to this graphics context.
 
@@ -3694,6 +3719,9 @@ class GraphicsContext:
             item: the path element to add. May be a primitive element or another
                 `GraphicsContext` or a `PaintedPath`.
         """
+        if _copy:
+            item = copy.deepcopy(item)
+
         self.path_items.append(item)
 
     def merge(self, other_context):
