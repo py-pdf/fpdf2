@@ -9,6 +9,7 @@ __license__ = "LGPL 3.0"
 import html
 import logging
 from html.parser import HTMLParser
+from .table import Table
 
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
@@ -225,6 +226,10 @@ class HTML2FPDF(HTMLParser):
         self.font_size = pdf.font_size_pt
         self.set_font(pdf.font_family or "times", size=self.font_size)
         self.font_color = 0, 0, 0  # initialize font color, r,g,b format
+
+
+        self.active_table : Table or None = None # Table object
+
         self.table = None  # table attributes
         self.table_col_width = None  # column (header) widths
         self.table_col_index = None  # current column index
@@ -242,6 +247,9 @@ class HTML2FPDF(HTMLParser):
         self.hsize = dict(h1=2, h2=1.5, h3=1.17, h4=1, h5=0.83, h6=0.67)
         self._only_imgs_in_td = False
 
+        self._cell_x = list()  # log of cell x,y positions for a single row
+        self._cell_y = list()
+
     def width2unit(self, length):
         "Handle conversion of % measures into the measurement unit used"
         if length[-1] == "%":
@@ -252,11 +260,21 @@ class HTML2FPDF(HTMLParser):
         return int(length)
 
     def handle_data(self, data):
-        if self.td is not None:  # drawing a table?
-            self._insert_td(data)
-        elif self.table is not None:
-            # ignore anything else than td inside a table
-            pass
+
+        if self.active_table is not None:
+            self.active_table.add_data(data)
+            return
+        #
+        # if self.td is not None:  # drawing a table?
+        #     self._insert_td(data)
+        #     # TODO: store border information
+        #     # TODO: process the stored border information when a </tr> (handle_endtag is found)
+        #
+        # elif self.table is not None:
+        #     # ignore anything else than td inside a table
+        #
+        #     pass
+
         elif self.align:
             LOGGER.debug("align '%s'", data.replace("\n", "\\n"))
             self.pdf.multi_cell(
@@ -278,15 +296,41 @@ class HTML2FPDF(HTMLParser):
                 LOGGER.debug("write '%s'", data.replace("\n", "\\n"))
                 self.pdf.write(self.h, data)
 
-    def _insert_td(self, data=""):
-        self._only_imgs_in_td = False
+    def _store_td_data(self, data=""):
+
+        """Data stored:
+
+        width
+        x
+        border
+        bgcolor
+
+        number_of_lines --> stored in self
+
+        """
+
         width = self._td_width()
-        height = int(self.td.get("height", 0)) // 4 or self.h * 1.30
+        text_height = int(self.td.get("height", 0)) // 4 or self.h * 1.30
+
+        # check if the data fits
+        # if not, then increase the row height
+
+        split_text = self.pdf.multi_cell(width, text_height, data, ln=0,
+                                         split_only=True)  # split only means no data is added to the pdf
+        number_of_text_lines = len(split_text)
+        minimum_row_height = number_of_text_lines * text_height
+
+        height = minimum_row_height
+
         if not self.table_row_height:
-            self.table_row_height = height
-        elif self.table_row_height > height:
+            self.table_row_height = minimum_row_height
+        elif self.table_row_height > minimum_row_height:
             height = self.table_row_height
+        else:
+            self.table_row_height = minimum_row_height
+
         border = int(self.table.get("border", 0))
+
         if self.th:
             self.set_style("B", True)
             border = border or "B"
@@ -295,11 +339,20 @@ class HTML2FPDF(HTMLParser):
             align = self.td.get("align", "L")[0].upper()
             border = border and "LR"
         bgcolor = color_as_decimal(self.td.get("bgcolor", self.tr.get("bgcolor", "")))
+
         # parsing table header/footer (drawn later):
         if self.thead is not None:
-            self.theader.append(((width, height, data, border, 0, align), bgcolor))
+            self.theader.append(((width, text_height, data, border, 3, align), bgcolor))
+            return
         if self.tfoot is not None:
-            self.tfooter.append(((width, height, data, border, 0, align), bgcolor))
+            self.tfooter.append(((width, text_height, data, border, 3, align), bgcolor))
+            return
+
+
+
+
+
+
         # check if reached end of page, add table footer and header:
         if self.tfooter:
             height += self.tfooter[0][0][1]
@@ -322,7 +375,78 @@ class HTML2FPDF(HTMLParser):
                 align,
                 data.replace("\n", "\\n"),
             )
-            self.pdf.cell(width, height, data, border=border, ln=0, align=align)
+
+            self.pdf.multi_cell(width, text_height, data, border=border, ln=3, align=align)
+
+
+
+    def _insert_td(self, data=""):
+        self._only_imgs_in_td = False
+        width = self._td_width()
+        text_height = int(self.td.get("height", 0)) // 4 or self.h * 1.30
+
+        # check if the data fits
+        # if not, then increase the row height
+
+        split_text = self.pdf.multi_cell(width, text_height, data, ln=0,
+                                     split_only=True)  # split only means no data is added to the pdf
+        number_of_text_lines = len(split_text)
+        minimum_row_height = number_of_text_lines * text_height
+
+        height = minimum_row_height
+
+        if not self.table_row_height:
+            self.table_row_height = minimum_row_height
+        elif self.table_row_height > minimum_row_height:
+            height = self.table_row_height
+        else:
+            self.table_row_height = minimum_row_height
+        border = int(self.table.get("border", 0))
+
+        if self.th:
+            self.set_style("B", True)
+            border = border or "B"
+            align = self.td.get("align", "C")[0].upper()
+        else:
+            align = self.td.get("align", "L")[0].upper()
+            border = border and "LR"
+        bgcolor = color_as_decimal(self.td.get("bgcolor", self.tr.get("bgcolor", "")))
+        # parsing table header/footer (drawn later):
+        if self.thead is not None:
+            self.theader.append(((width, text_height, data, border, 3, align), bgcolor))
+        if self.tfoot is not None:
+            self.tfooter.append(((width, text_height, data, border, 3, align), bgcolor))
+        # check if reached end of page, add table footer and header:
+        if self.tfooter:
+            height += self.tfooter[0][0][1]
+        if self.pdf.y + height > self.pdf.page_break_trigger and not self.th:
+            self.output_table_footer()
+            self.pdf.add_page(same=True)
+            self.theader_out = self.tfooter_out = False
+        if self.tfoot is None and self.thead is None:
+            if not self.theader_out:
+                self.output_table_header()
+            self.box_shadow(width, height, bgcolor)
+            # self.pdf.x may have shifted due to <img> inside <td>:
+            self.pdf.set_x(self._td_x())
+            LOGGER.debug(
+                "td cell x=%d width=%d height=%d border=%s align=%s '%s'",
+                self.pdf.x,
+                width,
+                height,
+                border,
+                align,
+                data.replace("\n", "\\n"),
+            )
+            # self.pdf.cell(width, height, data, border=border, ln=0, align=align)
+
+            self._cell_x.append(self.pdf.get_x)
+            self._cell_y.append(self.pdf.get_y)
+
+            self.pdf.multi_cell(width, text_height, data, border=border, ln=3, align=align)
+
+
+
 
     def _td_x(self):
         "Return the current table cell left side horizontal position"
@@ -366,7 +490,13 @@ class HTML2FPDF(HTMLParser):
             self.set_style("b", True)
             for cell, bgcolor in self.theader:
                 self.box_shadow(cell[0], cell[1], bgcolor)
-                self.pdf.cell(*cell)  # includes the border
+                self.pdf.multi_cell(w = cell[0],
+                                    h = cell[1],
+                                    txt = cell[2],
+                                    border = cell[3],
+                                    ln = cell[4],
+                                    align = cell[5],
+                                    )
             self.set_style("b", b)
             self.pdf.ln(self.theader[0][0][1])
             self.pdf.set_x(self.table_offset)
@@ -379,7 +509,13 @@ class HTML2FPDF(HTMLParser):
             self.pdf.set_x(self.table_offset)
             for cell, bgcolor in self.tfooter:
                 self.box_shadow(cell[0], cell[1], bgcolor)
-                self.pdf.cell(*cell)
+                self.pdf.multi_cell(w=cell[0],
+                                    h=cell[1],
+                                    txt=cell[2],
+                                    border=cell[3],
+                                    ln=cell[4],
+                                    align=cell[5],
+                                    )
             self.pdf.ln(self.tfooter[0][0][1])
             self.pdf.set_x(x)
         if self.table.get("border"):
@@ -456,52 +592,83 @@ class HTML2FPDF(HTMLParser):
             self.set_font()
             self.set_text_color()
         if tag == "table":
-            self.table = {k.lower(): v for k, v in attrs.items()}
-            if "width" not in self.table:
-                self.table["width"] = "100%"
-            if self.table["width"][-1] == "%":
+
+            if self.active_table is not None:
+                raise NotImplementedError('Nested tables are not implemented')
+
+            self.active_table = Table()
+
+            # parse table attrs
+            table_attrs = {k.lower(): v for k, v in attrs.items()}
+
+
+            table_attrs = {k.lower(): v for k, v in attrs.items()}
+            if "width" not in table_attrs:
+                table_attrs["width"] = "100%"
+            if table_attrs["width"][-1] == "%":
                 w = self.pdf.w - self.pdf.r_margin - self.pdf.l_margin
-                w *= int(self.table["width"][:-1]) / 100
-                self.table_offset = (self.pdf.w - w) / 2
-            self.table_col_width = []
-            self.theader_out = self.tfooter_out = False
-            self.theader = []
-            self.tfooter = []
-            self.thead = None
-            self.tfoot = None
-            self.pdf.ln()
+                w *= int(table_attrs["width"][:-1]) / 100
+                self.active_table.table_offset = (self.pdf.w - w) / 2
+
+            self.active_table.width = table_attrs['width']
+
+
+            # self.table_col_width = []
+            # self.theader_out = self.tfooter_out = False
+            # self.theader = []
+            # self.tfooter = []
+            # self.thead = None
+            # self.tfoot = None
+            # self.pdf.ln()
+
         if tag == "tr":
-            self.tr_index = 0 if self.tr_index is None else (self.tr_index + 1)
-            self.tr = {k.lower(): v for k, v in attrs.items()}
-            self.table_col_index = 0
-            self.table_row_height = 0
-            self.pdf.set_x(self.table_offset)
-            # Adding an horizontal line separator between rows:
-            if self.table_line_separators and self.tr_index > 0:
-                self.output_table_sep()
+            self.active_table.tr_start()
+            # self.tr_index = 0 if self.tr_index is None else (self.tr_index + 1)
+            # self.tr = {k.lower(): v for k, v in attrs.items()}
+            # self.table_col_index = 0
+            # self.table_row_height = 0
+            # self.pdf.set_x(self.table_offset)
+            # # Adding an horizontal line separator between rows:
+            # if self.table_line_separators and self.tr_index > 0:
+            #     self.output_table_sep()
         if tag == "td":
-            self.td = {k.lower(): v for k, v in attrs.items()}
-            if "width" in self.td and self.table_col_index >= len(self.table_col_width):
-                assert self.table_col_index == len(
-                    self.table_col_width
-                ), f"table_col_index={self.table_col_index} #table_col_width={len(self.table_col_width)}"
-                self.table_col_width.append(self.td["width"])
-            if attrs:
-                self.align = attrs.get("align")
-            self._only_imgs_in_td = False
+            self.active_table.td_start(attrs = {k.lower(): v for k, v in attrs.items()})
+
+            # self.td = {k.lower(): v for k, v in attrs.items()}
+            # if "width" in self.td and self.table_col_index >= len(self.table_col_width):
+            #     assert self.table_col_index == len(
+            #         self.table_col_width
+            #     ), f"table_col_index={self.table_col_index} #table_col_width={len(self.table_col_width)}"
+            #     self.table_col_width.append(self.td["width"])
+            # if attrs:
+            #     self.align = attrs.get("align")
+            # self._only_imgs_in_td = False
         if tag == "th":
-            self.td = {k.lower(): v for k, v in attrs.items()}
-            self.th = True
-            if "width" in self.td and self.table_col_index >= len(self.table_col_width):
-                assert self.table_col_index == len(
-                    self.table_col_width
-                ), f"table_col_index={self.table_col_index} #table_col_width={len(self.table_col_width)}"
-                self.table_col_width.append(self.td["width"])
+
+            # TODO:
+            print('todo')
+
+            # self.td = {k.lower(): v for k, v in attrs.items()}
+            # self.th = True
+            # if "width" in self.td and self.table_col_index >= len(self.table_col_width):
+            #     assert self.table_col_index == len(
+            #         self.table_col_width
+            #     ), f"table_col_index={self.table_col_index} #table_col_width={len(self.table_col_width)}"
+            #     self.table_col_width.append(self.td["width"])
         if tag == "thead":
-            self.thead = {}
+            # TODO:
+            print('todo')
+            # self.thead = {}
         if tag == "tfoot":
-            self.tfoot = {}
+            # TODO:
+            print('todo')
+            # self.tfoot = {}
         if tag == "img" and "src" in attrs:
+
+            if self.active_table is not None:
+                self.active_table.add_image(attrs)
+                return
+
             width = px2mm(attrs.get("width", 0))
             height = px2mm(attrs.get("height", 0))
             if self.pdf.y + height > self.pdf.page_break_trigger:
@@ -540,6 +707,7 @@ class HTML2FPDF(HTMLParser):
                     self.table_row_height = height
             else:
                 self.pdf.set_y(y + height)
+
         if tag in ("b", "i", "u"):
             self.set_style(tag, True)
         if tag == "center":
@@ -581,14 +749,19 @@ class HTML2FPDF(HTMLParser):
             self.indent -= 1
             self.bullet.pop()
         if tag == "table":
-            if not self.tfooter_out:
-                self.output_table_footer()
-            self.table = None
-            self.th = False
-            self.theader = None
-            self.tfooter = None
-            self.pdf.ln(self.h)
-            self.tr_index = None
+
+            self.active_table.insert(self.pdf)
+            self.active_table = None
+
+            # if not self.tfooter_out:
+            #     self.output_table_footer()
+            # self.table = None
+            # self.th = False
+            # self.theader = None
+            # self.tfooter = None
+            # self.pdf.ln(self.h)
+            # self.tr_index = None
+
         if tag == "thead":
             self.thead = None
             self.tr_index = None
@@ -603,6 +776,11 @@ class HTML2FPDF(HTMLParser):
                 self.pdf.ln(self.table_row_height)
             self.table_col_index = None
             self.tr = None
+        if tag == "td":
+            self.active_table.td_close()
+            return
+
+
         if tag in ("td", "th"):
             if self.th:
                 LOGGER.debug("revert style")

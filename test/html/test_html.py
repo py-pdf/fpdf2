@@ -288,19 +288,28 @@ def test_customize_ul(tmp_path):
 def test_img_inside_html_table(tmp_path):
     pdf = MyFPDF()
     pdf.add_page()
+
+
+
     pdf.write_html(
         """<table>
         <tr>
             <td width="50%">
-                <img src="test/image/png_images/affc57dfffa5ec448a0795738d456018.png" height="235" width="435"/>
+                <img src="C:/data/python/fpdf2/test/image/png_images/affc57dfffa5ec448a0795738d456018.png" height="235" width="435"/>
             </td>
             <td width="50%">
-                <img src="test/image/image_types/insert_images_insert_png.png" height="162" width="154"/>
+                <img src="C:/data/python/fpdf2/test/image/png_images/affc57dfffa5ec448a0795738d456018.png" height="162" width="154"/>
+                text below image
             </td>
         </tr>
+        <tr>
+        <td>cell</td><td>cell2</td></tr>
     </table>"""
     )
-    assert_pdf_equal(pdf, HERE / "test_img_inside_html_table.pdf", tmp_path)
+
+    pdf.output('c:/data/test.pdf')
+
+    # assert_pdf_equal(pdf, HERE / "test_img_inside_html_table.pdf", tmp_path)
 
 
 def test_img_inside_html_table_without_explicit_dimensions(tmp_path):
@@ -428,3 +437,23 @@ def test_html_font_color_name(tmp_path):
         '<font color="beige"><p><i>italic hello in beige</i></p></font>'
     )
     assert_pdf_equal(pdf, HERE / "html_font_color_name.pdf", tmp_path)
+
+
+def test_html_multiline_cell(tmp_path):
+    pdf = MyFPDF()
+    pdf.add_page()
+
+    html = """<table border="1"><thead><tr>
+    <th width="30%">First name</th><th width="30%">Last name</th><th width="15%">Age</th><th width="25%">City</th>
+    </tr></thead><tbody>
+    <tr><td>Jean Abdul William the XVII-th</td><td>Smith</td><td>34</td><td>Saint-Mahturin-sur-Loire - it may even be so long that multiple lines are needed to write it down completely</td></tr>
+    <tr><td>Jules Maria Christof Jan Marie Wessel</td><td>van Binsbergen</td><td>7</td><td>Home</td>
+    <tr><td>Short</td><td>y</td><td>7</td><td>None</td>
+    </tr></tbody></table>
+    """
+
+    pdf.write_html(html)
+
+    pdf.output(r'c:\data\test.pdf')
+
+

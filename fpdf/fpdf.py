@@ -1893,7 +1893,7 @@ class FPDF:
         Args:
             w (int): cell width. If 0, they extend up to the right margin of the page.
             h (int): cell height. Default value: None, meaning to use the current font size.
-            txt (str): strign to print.
+            txt (str): string to print.
             border: Indicates if borders must be drawn around the cell.
                 The value can be either a number (`0`: no border ; `1`: frame)
                 or a string containing some or all of the following characters
