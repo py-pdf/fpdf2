@@ -350,7 +350,8 @@ class FPDF(GraphicsStateMixin):
         self.pdf_version = "1.3"  # Set default PDF version No.
         self._current_draw_context = None
 
-        self._used_graphics_state_dicts = OrderedDict()
+        self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
+        self._graphics_state_obj_refs = OrderedDict()
 
     @property
     def unifontsubset(self):
@@ -908,26 +909,30 @@ class FPDF(GraphicsStateMixin):
             raise FPDFException(
                 "cannot create a drawing context while one is already open"
             )
+
+        context = drawing.DrawingContext()
+        self._current_draw_context = context
+        try:
+            yield context
+        finally:
+            self._current_draw_context = None
+
+        point = drawing.Point(self.x, self.y)
+        if debug_stream:
+            rendered = context.render_debug(
+                self._drawing_graphics_state_registry,
+                point,
+                self.k,
+                self.h,
+                debug_stream,
+            )
         else:
-            context = drawing.DrawingContext()
-            self._current_draw_context = context
-            try:
-                yield context
-            finally:
-                self._current_draw_context = None
+            rendered = context.render(
+                self._drawing_graphics_state_registry, point, self.k, self.h
+            )
 
-            point = drawing.Point(self.x, self.y)
-            if debug_stream:
-                rendered, gsdicts = context.render_debug(
-                    point, self.k, self.h, debug_stream
-                )
-            else:
-                rendered, gsdicts = context.render(point, self.k, self.h)
-
-            self._used_graphics_state_dicts.update(gsdicts)
-            self._out(rendered)
-            if self.pdf_version < "1.4":
-                self.pdf_version = "1.4"
+        self._out(rendered)
+        self.pdf_version = max(self.pdf_version, "1.4")
 
     @contextmanager
     def new_path(
@@ -3506,16 +3511,14 @@ class FPDF(GraphicsStateMixin):
             self._out(f"/I{idx} {pdf_ref(n)}")
 
     def _put_graphics_state_dicts(self):
-        for name in self._used_graphics_state_dicts:
-            sdict = drawing.get_style_dict_by_name(name)
-
+        for state_dict, name in self._drawing_graphics_state_registry.items():
             self._newobj()
-            self._used_graphics_state_dicts[name] = self.n
-            self._out(sdict)
+            self._graphics_state_obj_refs[name] = self.n
+            self._out(state_dict)
             self._out("endobj")
 
     def _put_graphics_state_refs(self):
-        for name, obj_id in self._used_graphics_state_dicts.items():
+        for name, obj_id in self._graphics_state_obj_refs.items():
             self._out(f"{drawing.render_pdf_primitive(name)} {pdf_ref(obj_id)}")
 
     def _putresourcedict(self):
@@ -3535,7 +3538,7 @@ class FPDF(GraphicsStateMixin):
         self._putxobjectdict()
         self._out(">>")
 
-        if self._used_graphics_state_dicts:
+        if self._drawing_graphics_state_registry:
             self._out("/ExtGState <<")
             self._put_graphics_state_refs()
             self._out(">>")

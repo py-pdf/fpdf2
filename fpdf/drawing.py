@@ -25,10 +25,6 @@ def force_document(item):
 # type alias:
 Number = Union[int, float, decimal.Decimal]
 
-_global_style_registry = {}
-# this is just a reverse mapping of the above
-_global_style_name_lookup = {}
-
 
 # this maybe should live in fpdf.syntax
 class Raw(str):
@@ -45,40 +41,23 @@ EOL_CHARS = frozenset({"\n", "\r"})
 """Characters PDF considers to mark the end of a line."""
 
 
-def get_style_dict_by_name(name):
-    """
-    Look up the named style dictionary.
+class GraphicsStateDictRegistry(OrderedDict):
+    def register_style(self, style):
+        sdict = style.to_pdf_dict()
 
-    Args:
-        name (str): the name of the dictionary to look up. This should be a name taken
-            from the list of style dictionaries returned by `GraphicsContext.render`.
+        # empty style does not need a dictionary
+        if not sdict:
+            return None
 
-    Raises:
-        KeyError: if no dictionary with the given name exists.
-    """
-    return _global_style_name_lookup[name]
+        try:
+            return self[sdict]
+        except KeyError:
+            pass
 
+        name = Name(f"GS{len(self)}")
+        self[sdict] = name
 
-def _new_global_style_name():
-    return Name(f"GS{len(_global_style_registry)}")
-
-
-def _get_or_set_style_dict(style):
-    sdict = style.to_pdf_dict()
-
-    if not sdict:
-        return None
-
-    try:
-        return _global_style_registry[sdict]
-    except KeyError:
-        pass
-
-    name = _new_global_style_name()
-    _global_style_registry[sdict] = name
-    _global_style_name_lookup[name] = sdict
-
-    return name
+        return name
 
 
 def _check_range(value, minimum=0.0, maximum=1.0):
@@ -164,9 +143,6 @@ def render_pdf_primitive(primitive):
         raise TypeError(f"cannot produce PDF representation for value {primitive!r}")
 
     return Raw(output)
-
-
-_global_style_registry[render_pdf_primitive({Name("Type"): Name("ExtGState")})] = None
 
 
 # We allow passing alpha in as None instead of a numeric quantity, which signals to the
@@ -1667,7 +1643,6 @@ class GraphicsStyle:
         Only explicitly specified values are emitted.
         """
         result = OrderedDict()
-        result[Name("Type")] = Name("ExtGState")
 
         for key in PDFStyleKeys:
             value = getattr(self, key.value, GraphicsStyle.INHERIT)
@@ -1678,7 +1653,18 @@ class GraphicsStyle:
                 # PathPaintRule auto resolution only.
                 result[key.value] = value
 
-        return render_pdf_primitive(result)
+        if result:
+            # Only insert this key if there is at least one other item in the result so
+            # that we don't junk up the output PDF with empty ExtGState dictionaries.
+            type_name = Name("Type")
+            result[type_name] = Name("ExtGState")
+            result.move_to_end(type_name, last=False)
+
+            return render_pdf_primitive(result)
+
+        # this signals to the GraphicsStateDictRegistry that there is nothing to
+        # register. This is a success case.
+        return None
 
     @force_nodocument
     def resolve_paint_rule(self):
@@ -3217,18 +3203,17 @@ class DrawingContext:
             .render(last_item)
         )
 
-        # we use an OrderedDict here so that the path_gsds output ordering is
-        # deterministic for a given input and also inherently deduplicated.
-        path_gsds = OrderedDict()
         render_list = ["q", scale]
 
-        return render_list, path_gsds, style, last_item
+        return render_list, style, last_item
 
-    def render(self, first_point, scale, height):
+    def render(self, gsd_registry, first_point, scale, height):
         """
         Render the drawing context to PDF format.
 
         Args:
+            gsd_registry (GraphicsStateDictRegistry): the parent document's graphics
+                state registry.
             first_point (Point): the starting point to use if the first path element is
                 a relative element.
             scale (Number): the scale factor to convert from PDF pt units into the
@@ -3238,29 +3223,27 @@ class DrawingContext:
                 instead of the PDF native behavior of bottom-left.
 
         Returns:
-            A `tuple[str, dict[str, None]]` where the string is the PDF representation
-            of all the paths and groups in this context, and the dict's keys are the
-            names of the graphics state dictionaries used in this context so that they
-            can be retrieved later using `get_style_dict_by_name`.
+            A string composed of the PDF representation of all the paths and groups in
+            this context (an empty string is returned if there are no paths or groups)
         """
         if not self._subitems:
-            return "", OrderedDict()
+            return ""
 
-        render_list, path_gsds, style, last_item = self._setup_render_prereqs(
+        render_list, style, last_item = self._setup_render_prereqs(
             first_point, scale, height
         )
 
         for item in self._subitems:
-            rendered, last_item = item.render(path_gsds, style, last_item)
+            rendered, last_item = item.render(gsd_registry, style, last_item)
             if rendered:
                 render_list.append(rendered)
 
         render_list.append("Q")
 
-        return " ".join(render_list), path_gsds
+        return " ".join(render_list)
 
-    def render_debug(self, first_point, scale, height, debug_stream):
-        render_list, path_gsds, style, last_item = self._setup_render_prereqs(
+    def render_debug(self, gsd_registry, first_point, scale, height, debug_stream):
+        render_list, style, last_item = self._setup_render_prereqs(
             first_point, scale, height
         )
 
@@ -3268,7 +3251,7 @@ class DrawingContext:
         for child in self._subitems[:-1]:
             debug_stream.write(" ├─ ")
             rendered = child.render_debug(
-                path_gsds, style, last_item, debug_stream, " │  "
+                gsd_registry, style, last_item, debug_stream, " │  "
             )
             if rendered:
                 render_list.append(rendered)
@@ -3276,7 +3259,7 @@ class DrawingContext:
         if self._subitems:
             debug_stream.write(" └─ ")
             rendered, last_item = self._subitems[-1].render_debug(
-                path_gsds, style, last_item, debug_stream, "    "
+                gsd_registry, style, last_item, debug_stream, "    "
             )
             if rendered:
                 render_list.append(rendered)
@@ -3284,9 +3267,9 @@ class DrawingContext:
             render_list.append("Q")
 
             # print(render_list)
-            return " ".join(render_list), path_gsds
+            return " ".join(render_list)
 
-        return "", OrderedDict()
+        return ""
 
 
 class PaintedPath:
@@ -4014,11 +3997,10 @@ class GraphicsContext:
                 else:
                     debug_stream.write("\n")
 
-            sdict = _get_or_set_style_dict(self.style)
+            style_dict_name = path_gsds.register_style(self.style)
 
-            if sdict is not None:
-                path_gsds[sdict] = None
-                render_list.append(f"{render_pdf_primitive(sdict)} gs")
+            if style_dict_name is not None:
+                render_list.append(f"{render_pdf_primitive(style_dict_name)} gs")
 
             NO_EMIT_SET = {None, GraphicsStyle.INHERIT}
             # we can't set color in the graphics state context dictionary, so we have to
