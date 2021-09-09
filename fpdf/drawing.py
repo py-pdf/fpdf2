@@ -3048,7 +3048,7 @@ class Ellipse(NamedTuple):
         debug_stream.write(pfx + f" └─ {components[-1]}\n")
         render_list.append(rendered)
 
-        return (" ".join(render_list), Line(self.center))
+        return (" ".join(render_list), Move(self.center))
 
 
 class ImplicitClose(NamedTuple):
@@ -3250,7 +3250,7 @@ class DrawingContext:
         debug_stream.write("ROOT\n")
         for child in self._subitems[:-1]:
             debug_stream.write(" ├─ ")
-            rendered = child.render_debug(
+            rendered, last_item = child.render_debug(
                 gsd_registry, style, last_item, debug_stream, " │  "
             )
             if rendered:
@@ -3266,7 +3266,6 @@ class DrawingContext:
 
             render_list.append("Q")
 
-            # print(render_list)
             return " ".join(render_list)
 
         return ""
