@@ -25,6 +25,7 @@ import re
 import sys
 import warnings
 import zlib
+import base64
 from collections import defaultdict
 from collections.abc import Sequence
 from contextlib import contextmanager
@@ -35,6 +36,9 @@ from pathlib import Path
 from typing import Callable, NamedTuple, Optional, Union, List
 
 from PIL import Image
+
+from pystrich.datamatrix import DataMatrixEncoder, DataMatrixRenderer
+from pystrich.qrcode import QRCodeEncoder, QRCodeRenderer
 
 from .actions import Action
 from .errors import FPDFException, FPDFPageFormatException
@@ -2343,6 +2347,80 @@ class FPDF:
         """
         self.x = self.l_margin
         self.y += self.lasth if h is None else h
+    
+    @check_page
+    def datamatrix(self, text='', x=0, y=0, w=57, h=57, cellsize=5):
+        "Convert text to a datamatrix barcode and put in on the page"
+
+        pilImage = self._to_datamatrix(text, w, h, cellsize)
+        base64Image = self._convert_pilimage_to_base64(pilImage)
+
+        self.image(base64Image, x, y, w, h, type="png")
+
+    def _to_datamatrix(self, text, width, height, cellsize):
+        "Convert text to a datamatrix barcode in the form of a pilimage"
+
+        encoder = self._place_in_datamatrix_encoder(text, width, height)
+        renderer = DataMatrixRenderer(encoder.matrix, encoder.regions)
+        pilImage = renderer.get_pilimage(cellsize)
+
+        return pilImage
+
+    def _place_in_datamatrix_encoder(self, text, width, height):
+        "Place text into a 'DataMatrixEncoder' instance"
+
+        encoder = DataMatrixEncoder(text)
+        encoder.width = width
+        encoder.height = height
+
+        return encoder
+
+    def _convert_pilimage_to_base64(self, pilImage):
+        "Convert pilimage to a base64 string"
+
+        with io.BytesIO() as memoryStream:
+            pilImage.save(memoryStream, "PNG")
+            imgageBytes = memoryStream.getvalue()
+            base64Image = self._convert_bytes_to_b64_image(imgageBytes, "png")
+
+        return base64Image
+
+    def _convert_bytes_to_b64_image(self, bytes, format):
+        "Convert a bytes array to a base64 string"
+
+        imageInfo = f"data:image/{format};base64, "
+        base64Data = base64 \
+            .b64encode(bytes) \
+            .decode("ascii")
+
+        return imageInfo + base64Data
+    
+    @check_page
+    def qrcode(self, text='', x=0, y=0, w=57, h=57, cellsize=5):
+        "Convert text to a qrcode and put in on the page"
+
+        pilImage = self._to_qrcode(text, w, h, cellsize)
+        base64Image = self._convert_pilimage_to_base64(pilImage)
+
+        self.image(base64Image, x, y, w, h, type="png")
+
+    def _to_qrcode(self, text, width, height, cellsize):
+        "Convert text to a qrcode in the form of a pilimage"
+
+        encoder = self._place_in_qrcode_encoder(text, width, height)
+        renderer = QRCodeRenderer(encoder.matrix)
+        pilImage = renderer.get_pilimage(cellsize)
+
+        return pilImage
+
+    def _place_in_qrcode_encoder(self, text, width, height):
+        "Place text into a 'Code128Encoder' instance"
+
+        encoder = QRCodeEncoder(text)
+        encoder.width = width
+        encoder.height = height
+
+        return encoder
 
     def get_x(self):
         """Returns the abscissa of the current position."""
