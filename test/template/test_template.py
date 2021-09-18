@@ -28,6 +28,7 @@ def test_template_nominal_hardcoded(tmp_path):
             "align": "I",
             "text": "logo",
             "priority": 2,
+            "multiline": 0,
         },
         {
             "name": "company_name",
@@ -45,6 +46,26 @@ def test_template_nominal_hardcoded(tmp_path):
             "align": "I",
             "text": "",
             "priority": 2,
+            "multiline": 0,
+        },
+        {
+            "name": "multline_text",
+            "type": "T",
+            "x1": 20,
+            "y1": 100,
+            "x2": 40,
+            "y2": 105,
+            "font": "helvetica",
+            "size": 12,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "foreground": 0,
+            "background": 0x88ff00,
+            "align": "I",
+            "text": "Lorem ipsum dolor sit amet, consectetur adipisici elit",
+            "priority": 2,
+            "multiline": 1,
         },
         {
             "name": "box",
@@ -62,6 +83,7 @@ def test_template_nominal_hardcoded(tmp_path):
             "align": "I",
             "text": None,
             "priority": 0,
+            "multiline": 0,
         },
         {
             "name": "box_x",
@@ -79,6 +101,7 @@ def test_template_nominal_hardcoded(tmp_path):
             "align": "I",
             "text": None,
             "priority": 2,
+            "multiline": 0,
         },
         {
             "name": "line1",
@@ -96,6 +119,7 @@ def test_template_nominal_hardcoded(tmp_path):
             "align": "I",
             "text": None,
             "priority": 3,
+            "multiline": 0,
         },
         {
             "name": "barcode",
@@ -113,6 +137,7 @@ def test_template_nominal_hardcoded(tmp_path):
             "align": "I",
             "text": "200000000001000159053338016581200810081",
             "priority": 3,
+            "multiline": 0,
         },
     ]
     tmpl = Template(format="A4", elements=elements, title="Sample Invoice")
@@ -124,7 +149,8 @@ def test_template_nominal_hardcoded(tmp_path):
 
 
 def test_template_nominal_csv(tmp_path):
-    """Taken from docs/Templates.md"""
+    """Same data as in docs/Templates.md
+	The numeric_text tests for a regression."""
     tmpl = Template(format="A4", title="Sample Invoice")
     tmpl.parse_csv(HERE / "mycsvfile.csv", delimiter=";")
     tmpl.add_page()
