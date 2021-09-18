@@ -10,7 +10,6 @@ import warnings
 
 from .errors import FPDFException
 from .fpdf import FPDF
-from .util import try_to_type
 
 
 def rgb(col):
@@ -74,14 +73,15 @@ class Template:
         self.elements = elements
         self.keys = [v["name"].lower() for v in self.elements]
 
-    def _parse_colorcode(self, s):
+    @staticmethod
+    def _parse_colorcode(s):
         """ Allow hex and oct values for colors """
         s = s.strip()
         if not s:
             raise ValueError('Foreground and Background must be numeric')
         if s[:2] in ['0x', '0X']:
             return int(s, 16)
-        elif s[0] == '0':
+        if s[0] == '0':
             return int(s, 8)
         return int(s)
 
