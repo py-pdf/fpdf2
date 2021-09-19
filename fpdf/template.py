@@ -87,15 +87,19 @@ class Template:
 
     def parse_csv(self, infile, delimiter=",", decimal_sep=".", encoding=None):
         """Parse template format csv file and create elements dict"""
+        def varsep_float(s):
+            """Convert to float with given decimal seperator"""
+            # glad to have nonlocal scoping...
+            return float(s.replace(decimal_sep, '.'))
         handlers = (
             ("name", str.strip),
             ("type", str.strip),
-            ("x1", float),
-            ("y1", float),
-            ("x2", float),
-            ("y2", float),
+            ("x1", varsep_float),
+            ("y1", varsep_float),
+            ("x2", varsep_float),
+            ("y2", varsep_float),
             ("font", str.strip),
-            ("size", float),
+            ("size", varsep_float),
             ("bold", int),
             ("italic", int),
             ("underline", int),
@@ -114,8 +118,6 @@ class Template:
             for row in csv.reader(f, delimiter=delimiter):
                 kargs = {}
                 for i, v in enumerate(row):
-                    if not v.startswith("'") and decimal_sep != ".":
-                        v = v.replace(decimal_sep, ".")
                     kargs[handlers[i][0]] = handlers[i][1](v)
                 self.elements.append(kargs)
         self.keys = [v["name"].lower() for v in self.elements]
