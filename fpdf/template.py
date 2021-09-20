@@ -75,22 +75,24 @@ class Template:
 
     @staticmethod
     def _parse_colorcode(s):
-        """ Allow hex and oct values for colors """
+        """Allow hex and oct values for colors"""
         s = s.strip()
         if not s:
-            raise ValueError('Foreground and Background must be numeric')
-        if s[:2] in ['0x', '0X']:
+            raise ValueError("Foreground and Background must be numeric")
+        if s[:2] in ["0x", "0X"]:
             return int(s, 16)
-        if s[0] == '0':
+        if s[0] == "0":
             return int(s, 8)
         return int(s)
 
     def parse_csv(self, infile, delimiter=",", decimal_sep=".", encoding=None):
         """Parse template format csv file and create elements dict"""
+
         def varsep_float(s):
             """Convert to float with given decimal seperator"""
             # glad to have nonlocal scoping...
-            return float(s.replace(decimal_sep, '.'))
+            return float(s.replace(decimal_sep, "."))
+
         handlers = (
             ("name", str.strip),
             ("type", str.strip),

@@ -61,7 +61,7 @@ def test_template_nominal_hardcoded(tmp_path):
             "italic": 0,
             "underline": 0,
             "foreground": 0,
-            "background": 0x88ff00,
+            "background": 0x88FF00,
             "align": "I",
             "text": "Lorem ipsum dolor sit amet, consectetur adipisici elit",
             "priority": 2,
@@ -150,7 +150,7 @@ def test_template_nominal_hardcoded(tmp_path):
 
 def test_template_nominal_csv(tmp_path):
     """Same data as in docs/Templates.md
-	The numeric_text tests for a regression."""
+    The numeric_text tests for a regression."""
     tmpl = Template(format="A4", title="Sample Invoice")
     tmpl.parse_csv(HERE / "mycsvfile.csv", delimiter=";")
     tmpl.add_page()
