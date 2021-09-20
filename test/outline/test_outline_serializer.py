@@ -18,7 +18,7 @@ def test_serialize_outline():
     )
     assert (
         serialize_outline(sections, first_object_id=6)
-        == """\
+        == f"""\
 6 0 obj
 <<
 /Count 2
@@ -35,7 +35,7 @@ endobj
 /Last 8 0 R
 /Next 9 0 R
 /Parent 6 0 R
-/Title (Title 1)
+/Title ({'Title 1'.encode("UTF-16BE").decode("latin-1")})
 >>
 endobj
 8 0 obj
@@ -43,7 +43,7 @@ endobj
 /Count 0
 /Dest [5 0 R /XYZ 0 0 null]
 /Parent 7 0 R
-/Title (Subtitle 1.1)
+/Title ({'Subtitle 1.1'.encode("UTF-16BE").decode("latin-1")})
 >>
 endobj
 9 0 obj
@@ -54,7 +54,7 @@ endobj
 /Last 11 0 R
 /Parent 6 0 R
 /Prev 7 0 R
-/Title (Title 2)
+/Title ({'Title 2'.encode("UTF-16BE").decode("latin-1")})
 >>
 endobj
 10 0 obj
@@ -63,7 +63,7 @@ endobj
 /Dest [9 0 R /XYZ 0 0 null]
 /Next 11 0 R
 /Parent 9 0 R
-/Title (Subtitle 2.1)
+/Title ({'Subtitle 2.1'.encode("UTF-16BE").decode("latin-1")})
 >>
 endobj
 11 0 obj
@@ -72,7 +72,7 @@ endobj
 /Dest [11 0 R /XYZ 0 0 null]
 /Parent 9 0 R
 /Prev 10 0 R
-/Title (Subtitle 2.2)
+/Title ({'Subtitle 2.2'.encode("UTF-16BE").decode("latin-1")})
 >>
 endobj"""
     )

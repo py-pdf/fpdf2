@@ -81,9 +81,11 @@ def test_single_image_structure_tree():
     struct_builder.add_marked_content(
         MarkedContent(1, 0, "/Figure", 0, "Image title", "Image description")
     )
+    encoded_desc = "Image description".encode("UTF-16BE").decode("latin-1")
+    encoded_title = "Image title".encode("UTF-16BE").decode("latin-1")
     assert (
         struct_builder.serialize(first_object_id=3)
-        == """\
+        == f"""\
 3 0 obj
 <<
 /K [4 0 R]
@@ -106,12 +108,12 @@ endobj
 endobj
 6 0 obj
 <<
-/Alt (Image description)
+/Alt ({encoded_desc})
 /K [0]
 /P 4 0 R
 /Pg 1 0 R
 /S /Figure
-/T (Image title)
+/T ({encoded_title})
 /Type /StructElem
 >>
 endobj"""

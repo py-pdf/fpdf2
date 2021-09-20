@@ -198,7 +198,7 @@ def camel_case(property_name):
 
 class PDFString(str):
     def serialize(self):
-        return f"({self})"
+        return f'({self.encode("UTF-16BE").decode("latin-1")})'
 
 
 class PDFArray(list):
