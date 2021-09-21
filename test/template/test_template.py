@@ -28,7 +28,6 @@ def test_template_nominal_hardcoded(tmp_path):
             "align": "I",
             "text": "logo",
             "priority": 2,
-            "multiline": 0,
         },
         {
             "name": "company_name",
@@ -46,7 +45,7 @@ def test_template_nominal_hardcoded(tmp_path):
             "align": "I",
             "text": "",
             "priority": 2,
-            "multiline": 0,
+            # multiline is optional, so we test some items without it.
         },
         {
             "name": "multline_text",
