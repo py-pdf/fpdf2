@@ -69,3 +69,59 @@ pdf.output("qrcode.pdf")
 Output preview:
 
 ![](qrcode.png)
+
+
+## DataMatrix ##
+
+`fpdf2` can be combined with the [`pystrich`](https://github.com/mmulqueen/pyStrich) library to generate [DataMatrix barcodes](https://en.wikipedia.org/wiki/Data_Matrix):
+`pystrich` generates pilimages, which can then be inserted into the PDF file via the `FPDF.image()` method.
+
+```python
+from fpdf import FPDF
+from pystrich.datamatrix import DataMatrixEncoder, DataMatrixRenderer
+
+
+# Define the properties of the barcode
+positionX = 10
+positionY = 10
+width = 57
+height = 57
+cellsize = 5
+
+# Prepare the datamatrix renderer that will be used to generate the pilimage
+encoder = DataMatrixEncoder("[Text to be converted to a datamatrix barcode]")
+encoder.width = width
+encoder.height = height
+renderer = DataMatrixRenderer(encoder.matrix, encoder.regions)
+
+# Generate a pilimage and move it into the memory stream
+img = renderer.get_pilimage(cellsize)
+
+# Draw the barcode image into a PDF file
+pdf = FPDF()
+pdf.add_page()
+pdf.image(img, positionX, positionY, width, height)
+```
+
+![](datamatrix.png)
+
+### Extend FPDF with a datamatrix() method ###
+
+The code above could be added to the FPDF class as an extension method in the following way.
+
+```python
+from fpdf import FPDF
+from pystrich.datamatrix import DataMatrixEncoder, DataMatrixRenderer
+
+
+def datamatrix(self, text='', x=0, y=0, w=57, h=57, cellsize=5):
+    "Convert text to a datamatrix barcode and put in on the page"
+    encoder = DataMatrixEncoder(text)
+    encoder.width = w
+    encoder.height = h
+    renderer = DataMatrixRenderer(encoder.matrix, encoder.regions)
+    img = renderer.get_pilimage(cellsize)
+    self.image(img, x, y, w, h)
+
+FPDF.datamatrix = datamatrix
+```

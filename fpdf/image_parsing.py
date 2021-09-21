@@ -32,7 +32,7 @@ def load_image(filename):
 def _decode_base64_image(base64Image):
     "Decode the base 64 image string into an io byte stream."
 
-    imageData = base64Image.split('base64,')[1]
+    imageData = base64Image.split("base64,")[1]
     decodedData = base64.b64decode(imageData)
     imageBytes = BytesIO(decodedData)
 
