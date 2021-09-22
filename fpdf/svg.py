@@ -721,17 +721,20 @@ class SVGObject:
     """
 
     @classmethod
-    def from_file(cls, filename, *args, **kwargs):
+    def from_file(cls, filename, *args, encoding="utf-8", **kwargs):
         """
         Create an `SVGObject` from the contents of the file at `filename`.
 
         Args:
             filename (path-like): the path to a file containing SVG data.
+            *args: forwarded directly to the SVGObject initializer. For subclass use.
+            encoding (str): optional charset encoding to use when reading the file.
+            **kwargs: forwarded directly to the SVGObject initializer. For subclass use.
 
         Returns:
             A converted `SVGObject`.
         """
-        with open(filename, "r") as svgfile:
+        with open(filename, "r", encoding=encoding) as svgfile:
             return cls(svgfile.read(), *args, **kwargs)
 
     def __init__(self, svg_text):
