@@ -1,5 +1,7 @@
+# pylint: disable=redefined-outer-name, no-self-use, protected-access
+
+
 from pathlib import Path
-import re
 
 import fpdf
 from test.conftest import assert_pdf_equal

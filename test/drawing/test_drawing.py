@@ -1,5 +1,6 @@
+# pylint: disable=redefined-outer-name, no-self-use, protected-access
+
 from decimal import Decimal
-from io import StringIO
 from pathlib import Path
 import re
 
@@ -174,9 +175,7 @@ class TestUtilities:
 
 
 class TestStyles:
-    def test_individual_attribute(
-        self, tmp_path, auto_pdf, open_path_drawing, dummy_styles
-    ):
+    def test_individual_attribute(self, auto_pdf, open_path_drawing, dummy_styles):
         sname, value = dummy_styles
         setattr(open_path_drawing.style, sname, value)
 
@@ -208,7 +207,7 @@ class TestStyles:
         auto_pdf.draw_path(open_path_drawing)
 
     def test_dictionary_generation(self, dummy_styles):
-        ...
+        _ = dummy_styles
 
     def test_bad_style_parameters(self, invalid_styles):
         attr, value, exc = invalid_styles
@@ -225,34 +224,34 @@ class TestStyles:
 
 
 class TestPoint:
-    def test_render(self, /):
+    def test_render(self):
         ...
 
-    def test_dot(self, /):
+    def test_dot(self):
         ...
 
-    def test_angle(self, /):
+    def test_angle(self):
         ...
 
-    def test_magnitude(self, /):
+    def test_magnitude(self):
         ...
 
-    def test_add(self, /):
+    def test_add(self):
         ...
 
-    def test_sub(self, /):
+    def test_sub(self):
         ...
 
-    def test_neg(self, /):
+    def test_neg(self):
         ...
 
-    def test_mul(self, /):
+    def test_mul(self):
         ...  # also test rmul
 
-    def test_matmul(self, /):
+    def test_matmul(self):
         ...
 
-    def test_str(self, /):
+    def test_str(self):
         ...
 
 
@@ -304,7 +303,7 @@ def test_check_page():
     pdf = fpdf.FPDF(unit="pt")
 
     with pytest.raises(fpdf.FPDFException) as no_page_err:
-        with pdf.new_path() as path:
+        with pdf.new_path() as _:
             pass
 
     expected_error_msg = "No page open, you need to call add_page() first"
