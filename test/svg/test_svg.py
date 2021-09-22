@@ -197,6 +197,95 @@ def test_svg_path_parsing(svg_paths):
                 SVGRelativeSmoothCubicCurve(Point(150.0, -100.0), Point(150.0, 0.0)),
             ],
         ),
+        (
+            "M0,0l50 -50",
+            [
+                Move(Point(0.0, 0.0)),
+                RelativeLine(Point(50.0, -50.0)),
+            ],
+        ),
+        (
+            "M0,0,10,10",
+            [
+                Move(Point(0.0, 0.0)),
+                Line(Point(10.0, 10.0)),
+            ],
+        ),
+        (
+            "m0,0,10,10",
+            [
+                RelativeMove(Point(0.0, 0.0)),
+                RelativeLine(Point(10.0, 10.0)),
+            ],
+        ),
+        (
+            "M0,0H10",
+            [
+                Move(Point(0.0, 0.0)),
+                HorizontalLine(10.0),
+            ],
+        ),
+        (
+            "M0,0h10",
+            [
+                Move(Point(0.0, 0.0)),
+                RelativeHorizontalLine(10.0),
+            ],
+        ),
+        (
+            "M0,0V10",
+            [
+                Move(Point(0.0, 0.0)),
+                VerticalLine(10.0),
+            ],
+        ),
+        (
+            "M0,0v10",
+            [
+                Move(Point(0.0, 0.0)),
+                RelativeVerticalLine(10.0),
+            ],
+        ),
+        (
+            "M0,0 c 10, 10 20, 20 30, 30",
+            [
+                Move(Point(0.0, 0.0)),
+                RelativeBezierCurve(
+                    Point(10.0, 10.0), Point(20.0, 20.0), Point(30.0, 30.0)
+                ),
+            ],
+        ),
+        (
+            "M0,0 q 10, 10 20, 20",
+            [
+                Move(Point(0.0, 0.0)),
+                RelativeQuadraticBezierCurve(Point(10.0, 10.0), Point(20.0, 20.0)),
+            ],
+        ),
+        (
+            "M0,0 q 10, 10 20, 20 T1,2",
+            [
+                Move(Point(0.0, 0.0)),
+                RelativeQuadraticBezierCurve(Point(10.0, 10.0), Point(20.0, 20.0)),
+                SVGRelativeSmoothQuadraticCurve(Point(1.0, 2.0)),
+            ],
+        ),
+        (
+            "M0,0 A 22.4171,22.4171 0 1 0 0,31.7026",
+            [
+                Move(Point(0.0, 0.0)),
+                Arc(Point(22.4171, 22.4171), 0.0, True, False, Point(0.0, 31.7026)),
+            ],
+        ),
+        (
+            "M0,0 a22.4171,22.4171 0 1 0 0,31.7026",
+            [
+                Move(Point(0.0, 0.0)),
+                RelativeArc(
+                    Point(22.4171, 22.4171), 0.0, True, False, Point(0.0, 31.7026)
+                ),
+            ],
+        ),
     ],
     ids=lambda param: param[0],
 )
