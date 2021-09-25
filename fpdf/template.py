@@ -223,17 +223,16 @@ class FlexTemplate:
             )
 
     @staticmethod
-    def line(pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, **__):
+    def line(pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, background=0xFFFFFF, **__):
         if pdf.draw_color.lower() != rgb_as_str(foreground):
             pdf.set_draw_color(*rgb(foreground))
-        # print "SetLineWidth", size
+        if pdf.fill_color != rgb_as_str(background):
+            pdf.set_fill_color(*rgb(background))
         pdf.set_line_width(size)
         pdf.line(x1, y1, x2, y2)
 
     @staticmethod
-    def rect(
-        pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, background=0xFFFFFF, **__
-    ):
+    def rect(pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, background=0xFFFFFF, **__):
         if pdf.draw_color.lower() != rgb_as_str(foreground):
             pdf.set_draw_color(*rgb(foreground))
         if pdf.fill_color != rgb_as_str(background):
@@ -321,7 +320,7 @@ class FlexTemplate:
 
     def _render_element(self, element):
         handler_name = element["type"].upper()
-        if element.get("rotate"):  # don't rotate by 0.0 degrees
+        if element.get("rotate"):
             with self.pdf.rotation(element["rotate"], element["x1"], element["y1"]):
                 self.handlers[handler_name](self.pdf, **element)
         else:
