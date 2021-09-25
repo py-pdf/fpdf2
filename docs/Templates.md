@@ -37,7 +37,37 @@ tmpl[item_key_02] = "Text 12"
 tmpl.render(outfile="example.pdf")
 ```
 
-The Template() class will create and manage its own FPDF() instance, so you don't need to worry about anything else. 
+The Template() class will create and manage its own FPDF() instance, so you don't need to worry about how it all works together. It also allows to set the page format, title of the document and other metadata for the PDF file.
+
+The constructor signature is as follows:
+
+```python
+fpdf.template.Template(
+		elements=None,
+		format="A4",
+		orientation="portrait",
+		unit="mm",
+		title="",
+		author="",
+		subject="",
+		creator="",
+		keywords="",
+		)
+```
+
+Its important methods are:
+* Template.load_elements(elements)
+  * An alternative to supplying the elements dict to the constructor.
+* Template.parse_csv(infile,  delimiter=",", decimal_sep=".", encoding=None)
+  * Load a template CSV file instead of supplying a dict.
+* Template.add_page()
+  * Renders the elements to the current page, and proceeds to the next page.
+* Template.render(outfile=None)
+  * Renders the content to the last page, and writes the PDF to a file if its name is given.
+ 
+Setting text values for specific template items is done by treating the class as a dict, with the name of the item as the key:
+
+`tmpl["company_name"] = "Sample Company"`
 
 
 ## Using FlexTemplate() ##
@@ -105,20 +135,47 @@ pdf.output("example.pdf")
 
 As you see, this can be quite a bit more involved, but there are hardly any limits on how you can combine templated and non-templated content on each page. Just think of the different templates as of building blocks, like configurable rubber stamps, which you can apply in any combination on any page you like.
 
-Of course, you can just as well use a set of full page templates, possibly differentiating between cover page, table of contents, normal content pages, and an index page, or something along those lines. 
+Of course, you can just as well use a set of full-page templates, possibly differentiating between cover page, table of contents, normal content pages, and an index page, or something along those lines. 
+
+And here's how you can use a template several times on one page (and by extension, several times on several pages):
+
+```python
+elements = [
+    {"name":"box", "type":"B", "x1":0, "y1":0, "x2":50, "y2":50,},
+    {"name":"d1", "type":"L", "x1":0, "y1":0, "x2":50, "y2":50,},
+	{"name":"d2", "type":"L", "x1":0, "y1":50, "x2":50, "y2":0,},
+	{"name":"label", "type":"T", "x1":0, "y1":52, "x2":50, "y2":57, "text":"Label",},
+]
+pdf = FPDF()
+pdf.add_page()
+templ = FlexTemplate(pdf, elements)
+templ["label"] = "Offset: 50 / 50 mm"
+templ.render(offsetx=50, offsety=50)
+templ["label"] = "Offset: 50 / 120 mm"
+templ.render(offsetx=50, offsety=120)
+templ["label"] = "Offset: 120 / 50 mm"
+templ.render(offsetx=120, offsety=50)
+templ["label"] = "Offset: 120 / 120 mm"
+templ.render(offsetx=120, offsety=120)
+pdf.output("example.pdf")
+```
+
+Since we're handling the properties of the FPDF() instance directly, the constructor signature of this class is much simpler:
+
+```python
+fpdf.template.FlexTemplate(self, pdf, elements=None)
+```
+
+It supports the same method as Template(), except for `add_page()`, which you will instead execute directly on the FPDF() instance. The dict syntax for setting text values is also supported.
 
 
 # Details - Template definition #
 
-A template is composed of a header and a list of elements.
-
-The header contains the page format, title of the document and other metadata.
-
-Elements have the following properties (columns in a CSV, fields in a database):
+A template definition consists of a number of elements, which have the following properties (columns in a CSV, items in a dict, fields in a database):
 
   * __name__: placeholder identification
     * _mandatory_
-  * type:
+  * __type__:
     * '__T__': Text - places one or several lines of text on the page
 	* '__L__': Line - draws a line from x1/y1 to x2/y2
 	* '__I__': Image - positions and scales an image into the bounding box
@@ -132,32 +189,27 @@ Elements have the following properties (columns in a CSV, fields in a database):
     * _mandatory_
   * __font__: e.g. "helvetica"
     * _optional_, default: "helvetica"
-	* ignored for non-text elements
-  * __size__: text size in points (int value)
+  * __size__: text size, or line width for line and rect, in points (float value)
     * _optional_, default: 10
-	* ignored for non-text elements
   * __bold, italic, underline__: text style, enabled with True or equivalent value
 	* in csv, only int values, 0 as false, non-0 as true
     * _optional_, default: false
-	* ignored for non-text elements
   * __foreground, background__: text and fill colors, e.g. 0xFFFFFF
     * _optional_, default: 0x000000/0xFFFFFF
   * __align__: text alignment, '__L__': left, '__R__': right, '__C__': center
     * _optional_, default: 'L'
-	* ignored for non-text elements
   * __text__: default string, can be replaced at runtime
     * _optional_, default: empty
-	* ignored for purely graphical element types (lines, boxes, and images)
   * __priority__: Z-order (int value)
     * _optional_, default: 0
   * __multiline__: configure text wrapping
     * in dicts, None for single line, True to for multicells (multiple lines), False trims to exactly fit the space defined
 	* in csv, 0 for single line, >0 for multiple lines, <0 for exact fit
     * _optional_, default: single line
-	* ignored for non-text elements
   * __rotation__: rotate the element in degrees around the top left corner x1/y1 (float)
     * _optional_, default: 0.0 - no rotation
 
+Fields that are not relevant to a specific element type will be ignored there.
 
 # How to create a template #
 

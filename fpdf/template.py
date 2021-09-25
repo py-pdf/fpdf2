@@ -42,7 +42,12 @@ class FlexTemplate:
     def load_elements(self, elements):
         """Initialize the internal element structures"""
         self.elements = elements
-        self.keys = [v["name"].lower() for v in self.elements]
+        self.keys = []
+        for e in elements:
+            if not "priority" in e:
+                e["priority"] = 0
+            self.keys.append(e["name"].lower())
+        #self.keys = [v["name"].lower() for v in self.elements]
 
     @staticmethod
     def _parse_colorcode(s):
@@ -314,18 +319,29 @@ class FlexTemplate:
         pdf.set_xy(x1, y1)
         pdf.write(5, text, link)
 
-    def render(self):
+    def _render_element(self, element):
+        handler_name = element["type"].upper()
+        if element.get("rotate"):  # don't rotate by 0.0 degrees
+            with self.pdf.rotation(element["rotate"], element["x1"], element["y1"]):
+                self.handlers[handler_name](self.pdf, **element)
+        else:
+            self.handlers[handler_name](self.pdf, **element)
+
+    def render(self, offsetx=0.0, offsety=0.0, rotate=0.0):
         sorted_elements = sorted(self.elements, key=lambda x: x["priority"])
         for element in sorted_elements:
             element = element.copy()
-            element["text"] = self.texts.get(element["name"].lower(), element["text"])
-            handler_name = element["type"].upper()
-            # if 'rotate' in element:
-            if element.get("rotate"):  # don't rotate by 0.0 degrees
-                with self.pdf.rotation(element["rotate"], element["x1"], element["y1"]):
-                    self.handlers[handler_name](self.pdf, **element)
+            element["text"] = self.texts.get(element["name"].lower(), element.get("text", ""))
+            element["x1"] = element["x1"] + offsetx
+            element["y1"] = element["y1"] + offsety
+            element["x2"] = element["x2"] + offsetx
+            element["y2"] = element["y2"] + offsety
+            if rotate:  # don't rotate by 0.0 degrees
+                with self.pdf.rotation(rotate, offsetx, offsety):
+                    self._render_element(element)
             else:
-                self.handlers[handler_name](self.pdf, **element)
+                self._render_element(element)
+
         self.texts = {}  # reset modified entries for the next page
 
 
