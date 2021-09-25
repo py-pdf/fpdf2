@@ -8,6 +8,106 @@ Also, the elements can be defined in a CSV file or in a database, so the user ca
 
 A template is used like a dict, setting its items' values.
 
+# How to use Templates #
+
+There are two approaches to using templates.
+
+## Using Template() ##
+
+The traditional approach is to use the Template() class, This class accepts one template definition, and can apply it to each page of a document. The useage pattern here is:
+
+```python
+tmpl = Template(elements=elements)
+# first page and content
+tmpl.add_page()
+tmpl[item_key_01] = "Text 01"
+tmpl[item_key_02] = "Text 02"
+...
+
+# second page and content
+tmpl.add_page()
+tmpl[item_key_01] = "Text 11"
+tmpl[item_key_02] = "Text 12"
+...
+
+# possibly more pages
+...
+
+# finalize document and write to file
+tmpl.render(outfile="example.pdf")
+```
+
+The Template() class will create and manage its own FPDF() instance, so you don't need to worry about anything else. 
+
+
+## Using FlexTemplate() ##
+
+When more flexibility is desired, then the FlexTemplate() class comes into play.
+In this case, you first need to create your own FPDF() instance. You can then pass this to the constructor of one or several FlexTemplate() instances, and have each of them load a template definition.  
+ 
+```python
+pdf = FPDF()
+pdf.add_page()
+# One template for the first page
+fp_tmpl = FlexTemplate(pdf, elements=fp_elements)
+fp_tmpl["item_key_01"] = "Text 01"
+fp_tmpl["item_key_02"] = "Text 02"
+...
+fp_tmpl.render() # add template items to first page
+
+# add some more non-template content to the first page
+pdf.polyline(point_list, fill=False, polygon=False)
+
+# second page
+pdf.add_page()
+# header for the second page
+h_tmpl = FlexTemplate(pdf, elements=h_elements)
+h_tmpl["item_key_HA"] = "Text 2A"
+h_tmpl["item_key_HB"] = "Text 2B"
+...
+h_tmpl.render() # add header items to second page
+
+# footer for the second page
+f_tmpl = FlexTemplate(pdf, elements=f_elements)
+f_tmpl["item_key_FC"] = "Text 2C"
+f_tmpl["item_key_FD"] = "Text 2D"
+...
+f_tmpl.render() # add footer items to second page
+
+# other content on the second page
+pdf.dashed_line(x1, y1, x2, y2, dash_length=1, space_length=1):
+
+# third page
+pdf.add_page()
+# header for the third page, just reuse the same template instance after render()
+h_tmpl["item_key_HA"] = "Text 3A"
+h_tmpl["item_key_HB"] = "Text 3B"
+...
+h_tmpl.render() # add header items to third page
+
+# footer for the third page
+f_tmpl["item_key_FC"] = "Text 3C"
+f_tmpl["item_key_FD"] = "Text 3D"
+...
+f_tmpl.render() # add footer items to third page
+
+# other content on the third page
+pdf.rect(x, y, w, h, style=None)
+
+# possibly more pages
+pdf.next_page()
+...
+...
+
+# finally write everything to a file
+pdf.output("example.pdf")
+```
+
+As you see, this can be quite a bit more involved, but there are hardly any limits on how you can combine templated and non-templated content on each page. Just think of the different templates as of building blocks, like configurable rubber stamps, which you can apply in any combination on any page you like.
+
+Of course, you can just as well use a set of full page templates, possibly differentiating between cover page, table of contents, normal content pages, and an index page, or something along those lines. 
+
+
 # Details - Template definition #
 
 A template is composed of a header and a list of elements.
@@ -16,23 +116,54 @@ The header contains the page format, title of the document and other metadata.
 
 Elements have the following properties (columns in a CSV, fields in a database):
 
-  * name: placeholder identification
-  * type: 'T': texts, 'L': lines, 'I': images, 'B': boxes, 'BC': barcodes
-  * x1, y1, x2, y2: top-left, bottom-right coordinates (in mm)
-  * font: e.g. "helvetica"
-  * size: text size in points, e.g. 10
-  * bold, italic, underline: text style (non-empty to enable)
-  * foreground, background: text and fill colors, e.g. 0xFFFFFF
-  * align: text alignment, 'L': left, 'R': right, 'C': center
-  * text: default string, can be replaced at runtime
-  * priority: Z-order
-  * multiline: None for single line (default), True to for multicells (multiple lines), False trims to exactly fit the space defined
+  * __name__: placeholder identification
+    * _mandatory_
+  * type:
+    * '__T__': Text - places one or several lines of text on the page
+	* '__L__': Line - draws a line from x1/y1 to x2/y2
+	* '__I__': Image - positions and scales an image into the bounding box
+	* '__B__': Box - draws a rectangle around the bounding box
+	* '__BC__': Barcode - inserts an "Interleaved 2 of 5" type barcode
+	* '__C39__': Code 39 - inserts a "Code 39" type barcode
+	* '__W__': "Write" - uses the FPDF.write() method to add text to the page
+    * _mandatory_
+  * __x1, y1, x2, y2__: top-left, bottom-right coordinates (in mm), defining a bounding box in most cases
+    * for multiline text, this is the bounding box for just the first line, not the complete box
+    * _mandatory_
+  * __font__: e.g. "helvetica"
+    * _optional_, default: "helvetica"
+	* ignored for non-text elements
+  * __size__: text size in points (int value)
+    * _optional_, default: 10
+	* ignored for non-text elements
+  * __bold, italic, underline__: text style, enabled with True or equivalent value
+	* in csv, only int values, 0 as false, non-0 as true
+    * _optional_, default: false
+	* ignored for non-text elements
+  * __foreground, background__: text and fill colors, e.g. 0xFFFFFF
+    * _optional_, default: 0x000000/0xFFFFFF
+  * __align__: text alignment, '__L__': left, '__R__': right, '__C__': center
+    * _optional_, default: 'L'
+	* ignored for non-text elements
+  * __text__: default string, can be replaced at runtime
+    * _optional_, default: empty
+	* ignored for purely graphical element types (lines, boxes, and images)
+  * __priority__: Z-order (int value)
+    * _optional_, default: 0
+  * __multiline__: configure text wrapping
+    * in dicts, None for single line, True to for multicells (multiple lines), False trims to exactly fit the space defined
+	* in csv, 0 for single line, >0 for multiple lines, <0 for exact fit
+    * _optional_, default: single line
+	* ignored for non-text elements
+  * __rotation__: rotate the element in degrees around the top left corner x1/y1 (float)
+    * _optional_, default: 0.0 - no rotation
+
 
 # How to create a template #
 
 A template can be created in 3 ways:
 
-  * By defining everything manually in a hardcoded way
+  * By defining everything manually in a hardcoded way as a Python dictionary
   * By using a template definition in a CSV document and parsing the CSV with Template.parse\_dict()
   * By defining the template in a database (this applies to [Web2Py] (Web2Py.md) integration)
 
@@ -76,16 +207,19 @@ See template.py or [Web2Py] (Web2Py.md) for a complete example.
 You define your elements in a CSV file "mycsvfile.csv"
 that will look like:
 ```
-line0;L;20.0;12.0;190.0;12.0;times;0.5;0;0;0;0;16777215;C;;0;0
-line1;L;20.0;36.0;190.0;36.0;times;0.5;0;0;0;0;16777215;C;;0;0
-name0;T;21.0;14.0;104.0;25.0;times;16.0;0;0;0;0;16777215;L;name;2;0
-title0;T;21.0;26.0;104.0;30.0;times;10.0;0;0;0;0;16777215;L;title;2;0
-multiline;T;21.0;50.0;28.0;54.0;times;10.5;0;0;0;0;16777215;L;multi line;0;1
-numeric_text;T;21.0;80.0;100.0;84.0;times;10.5;0;0;0;0;16777215;R;007;0;0
+line0;L;20.0;12.0;190.0;12.0;times;0.5;0;0;0;0;16777215;C;;0;0;0.0
+line1;L;20.0;36.0;190.0;36.0;times;0.5;0;0;0;0;16777215;C;;0;0;0.0
+name0;T;21.0;14.0;104.0;25.0;times;16.0;0;0;0;0;16777215;L;name;2;0;0.0
+title0;T;21.0;26.0;104.0;30.0;times;10.0;0;0;0;0;16777215;L;title;2;0;0.0
+multiline;T;21.0;50.0;28.0;54.0;times;10.5;0;0;0;0;0xffff00;L;multi line;0;1;0.0
+numeric_text;T;21.0;80.0;100.0;84.0;times;10.5;0;0;0;0;;R;007;0;0;0.0
+empty_fields;T;21.0;100.0;100.0;104.0
+rotated;T;21.0;80.0;100.0;84.0;times;10.5;0;0;0;0;;R;ROTATED;0;0;30.0
 ```
 
 Remember that each line represents an element and each field represents one of the properties of the element in the following order:
-('name','type','x1','y1','x2','y2','font','size','bold','italic','underline','foreground','background','align','text','priority', 'multiline')
+('name','type','x1','y1','x2','y2','font','size','bold','italic','underline','foreground','background','align','text','priority', 'multiline', 'rotate')
+As noted above, most fields may be left empty, so a line is valid with only 6 items. The "empty_fields" line of the example demonstrates all that can be left away.
 
 Then you can use the file like this:
 
