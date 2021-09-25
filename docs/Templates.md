@@ -166,7 +166,11 @@ Since we're handling the properties of the FPDF() instance directly, the constru
 fpdf.template.FlexTemplate(self, pdf, elements=None)
 ```
 
-It supports the same method as Template(), except for `add_page()`, which you will instead execute directly on the FPDF() instance. The dict syntax for setting text values is also supported.
+It supports the same method as Template(), except for `add_page()`, which you will instead execute directly on the FPDF() instance. However, the render() method has a few more parameters:
+
+`FlexTemplate.render(offsetx=0.0, offsety=0.0, rotate=0.0)`
+
+The dict syntax for setting text values is also supported.
 
 
 # Details - Template definition #
