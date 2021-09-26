@@ -47,6 +47,9 @@ class FlexTemplate:
             # priority is optional, but we need a default for sorting.
             if not "priority" in e:
                 e["priority"] = 0
+            # x2 is optional for barcode types, but needed for offset rendering
+            if e["type"] in ["B", "C39"] and "x2" not in e:
+                e["x2"] = 0
             self.keys.append(e["name"].lower())
 
     @staticmethod
@@ -74,49 +77,53 @@ class FlexTemplate:
             # glad to have nonlocal scoping...
             return float((s.strip() or default).replace(decimal_sep, "."))
 
-        handlers = (
-            ("name", str),
-            ("type", str),
-            ("x1", varsep_float),
-            ("y1", varsep_float),
-            ("x2", varsep_float),
-            ("y2", varsep_float),
-            ("font", str, "helvetica"),
-            ("size", varsep_float, 10.0),
-            ("bold", int, 0),
-            ("italic", int, 0),
-            ("underline", int, 0),
-            ("foreground", self._parse_colorcode, 0x0),
-            ("background", self._parse_colorcode, 0xFFFFFF),
-            ("align", str, "L"),
-            ("text", str, ""),
-            ("priority", int, 0),
-            ("multiline", self._parse_multiline, None),
-            ("rotate", varsep_float, 0.0),
+        key_config = (
+            # key, converter, mandatory
+            ("name", str, True),
+            ("type", str, True),
+            ("x1", varsep_float, True),
+            ("y1", varsep_float, True),
+            ("x2", varsep_float, True),
+            ("y2", varsep_float, True),
+            ("font", str, False),
+            ("size", varsep_float, False),
+            ("bold", int, False),
+            ("italic", int, False),
+            ("underline", int, False),
+            ("foreground", self._parse_colorcode, False),
+            ("background", self._parse_colorcode, False),
+            ("align", str, False),
+            ("text", str, False),
+            ("priority", int, False),
+            ("multiline", self._parse_multiline, False),
+            ("rotate", varsep_float, False),
         )
         self.elements = []
         if encoding is None:
             encoding = locale.getpreferredencoding()
-        hlen = len(handlers)
         with open(infile, encoding=encoding) as f:
             for row in csv.reader(f, delimiter=delimiter):
-                rlen = len(row)
-                # fill in any missing items
-                row[rlen + 1 :] = [""] * (hlen - rlen)
+                # fill in blanks for any missing items
+                row.extend([""] * (len(key_config) - len(row)))
                 kargs = {}
-                for i, v in enumerate(row):
-                    handler = handlers[i]
-                    vs = v.strip()
+                for i, (val, cfg) in enumerate(zip(row, key_config)):
+                    vs = val.strip()
                     if not vs:
-                        if len(handler) < 3:
+                        if cfg[2]:  # mandatory
+                            if cfg[0] == "x2" and row["type"] in ["B", "C39"]:
+                                # two types don't need x2, but offset rendering does
+                                continue
                             raise FPDFException(
-                                "Mandatory value '%s' missing in csv data" % handler[0]
+                                "Mandatory value '%s' missing in csv data" % cfg[0]
                             )
-                        kargs[handler[0]] = handler[2]  # default
+                        elif cfg[0] == "priority":
+                            # formally optional, but we need some value for sorting
+                            kargs["priority"] = 0
+                        # otherwise, let the type handlers use their own defaults
                     else:
-                        kargs[handler[0]] = handler[1](v)
+                        kargs[cfg[0]] = cfg[1](vs)
                 self.elements.append(kargs)
-        self.keys = [v["name"].lower() for v in self.elements]
+        self.keys = [val["name"].lower() for val in self.elements]
 
     def __setitem__(self, name, value):
         if name.lower() not in self.keys:
@@ -272,7 +279,6 @@ class FlexTemplate:
         *_,
         x1=0,
         y1=0,
-        x2=0,
         y2=0,
         text="",
         size=1.5,
@@ -286,9 +292,6 @@ class FlexTemplate:
             raise FPDFException(
                 "Arguments x,y,w,h are invalid. Use x1,y1,x2,y2 instead."
             )
-        w = x2 - x1
-        if w <= 0:
-            w = 1.5
         h = y2 - y1
         if h <= 0:
             h = 5
