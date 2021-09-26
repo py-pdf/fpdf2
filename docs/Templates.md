@@ -1,16 +1,18 @@
 # Introduction #
 
-Templates are predefined documents (like invoices, tax forms, etc.), where each element (text, lines, barcodes, etc.) has a fixed position (x1, y1, x2, y2), style (font, size, etc.) and a default text.
+Templates are predefined documents (like invoices, tax forms, etc.), or parts of such documents, where each element (text, lines, barcodes, etc.) has a fixed position (x1, y1, x2, y2), style (font, size, etc.) and a default text.
 
-This elements can act as placeholders, so the program can change the default text "filling" the document.
+These elements can act as placeholders, so the program can change the default text "filling" the document.
 
-Also, the elements can be defined in a CSV file or in a database, so the user can easily adapt the form to his printing needs.
+Besides being defined in code, the elements can also be defined in a CSV file or in a database, so the user can easily adapt the form to his printing needs.
 
 A template is used like a dict, setting its items' values.
+
 
 # How to use Templates #
 
 There are two approaches to using templates.
+
 
 ## Using Template() ##
 
@@ -61,7 +63,7 @@ Its public methods are:
 * `Template.parse_csv(infile,  delimiter=",", decimal_sep=".", encoding=None)`
   * Load a template CSV file instead of supplying a dict.
 * `Template.add_page()`
-  * Renders the elements to the current page, and proceeds to the next page.
+  * Renders the elements to the current page (except at first call), and proceeds to the next page.
 * `Template.render(outfile=None)`
   * Renders the contents to the last page, and writes the PDF to a file if its name is given.
  
@@ -135,7 +137,7 @@ pdf.next_page()
 pdf.output("example.pdf")
 ```
 
-As you see, this can be quite a bit more involved, but there are hardly any limits on how you can combine templated and non-templated content on each page. Just think of the different templates as of building blocks, like configurable rubber stamps, which you can apply in any combination on any page you like.
+Evidently, this can end up quite a bit more involved, but there are hardly any limits on how you can combine templated and non-templated content on each page. Just think of the different templates as of building blocks, like configurable rubber stamps, which you can apply in any combination on any page you like.
 
 Of course, you can just as well use a set of full-page templates, possibly differentiating between cover page, table of contents, normal content pages, and an index page, or something along those lines. 
 
@@ -162,7 +164,7 @@ templ.render(offsetx=120, offsety=120, rotate=30.0)
 pdf.output("example.pdf")
 ```
 
-Since we're handling the properties of the FPDF() instance directly, the constructor signature of this class is much simpler:
+Since we're handling the properties of the FPDF() instance separately, the constructor signature of this class is much simpler:
 
 ```python
 fpdf.template.FlexTemplate(pdf, elements=None)
@@ -179,17 +181,18 @@ It supports the same public methods as Template(), except for `add_page()`, whic
  
 Setting text values for specific template items is done by treating the class as a dict, with the name of the item as the key:
 
-The dict syntax for setting text values is also supported:
+The dict syntax for setting text values is the same:
 
 ```python
 FlexTemplate["company_name"] = "Sample Company"
 ```
 
+
 # Details - Template definition #
 
 A template definition consists of a number of elements, which have the following properties (columns in a CSV, items in a dict, fields in a database):
 
-* __name__: placeholder identification
+* __name__: placeholder identification (unique text string)
     * _mandatory_
 * __type__:
     * '__T__': Text - places one or several lines of text on the page
@@ -203,32 +206,47 @@ A template definition consists of a number of elements, which have the following
     * _mandatory_
 * __x1, y1, x2, y2__: top-left, bottom-right coordinates (in mm), defining a bounding box in most cases
     * for multiline text, this is the bounding box for just the first line, not the complete box
-    * for the barcodes types, the height of the barcode is `y2 - y1`.
-    * _mandatory_ (_optional_ for the barcode types)
-* __font__: e.g. "helvetica"
-    * _optional_, default: "helvetica"
-* __size__: text size, or line width for line and rect, in points (float value)
+    * for the barcodes types, the height of the barcode is `y2 - y1`, x2 is ignored.
+    * _mandatory_ ("x2" _optional_ for the barcode types)
+* __font__: the name of a font type for the text types
+    * _optional_
+    * default: "helvetica"
+* __size__: the size property of the element (float value)
+    * for text, the font size in points
+    * for line and rect, the line width in points 
     * for the barcode types, the width of one bar in mm.
-    * _optional_, default: 10
-* __bold, italic, underline__: text style, enabled with True or equivalent value
+    * _optional_
+    * default: 10 for text, 2 mm for 'BC', 1.5 mm for 'C39'
+* __bold, italic, underline__: text style properties
+    * in elements dict, enabled with True or equivalent value
     * in csv, only int values, 0 as false, non-0 as true
-    * _optional_, default: false
-* __foreground, background__: text and fill colors, e.g. 0xFFFFFF
-    * _optional_, default: 0x000000/0xFFFFFF
+    * _optional_
+    * default: false
+* __foreground, background__: text and fill colors (int value, commonly given in hex as 0xRRGGBB)
+    * _optional_
+    * default: 0x000000/0xFFFFFF
 * __align__: text alignment, '__L__': left, '__R__': right, '__C__': center
-    * _optional_, default: 'L'
+    * _optional_
+    * default: 'L'
 * __text__: default string, can be replaced at runtime
-    * _optional_, default: empty
+    * displayed text for 'T' and 'W'
+    * data to encode for barcode types
+    * _optional_
+    * default: empty
 * __priority__: Z-order (int value)
-    * _optional_, default: 0
+    * _optional_
+    * default: 0
 * __multiline__: configure text wrapping
-    * in dicts, None for single line, True to for multicells (multiple lines), False trims to exactly fit the space defined
+    * in dicts, None for single line, True for multicells (multiple lines), False trims to exactly fit the space defined
     * in csv, 0 for single line, >0 for multiple lines, <0 for exact fit
-    * _optional_, default: single line
+    * _optional_
+    * default: single line
 * __rotation__: rotate the element in degrees around the top left corner x1/y1 (float)
-    * _optional_, default: 0.0 - no rotation
+    * _optional_
+    * default: 0.0 - no rotation
 
-Fields that are not relevant to a specific element type will be ignored there.
+Fields that are not relevant to a specific element type will be ignored there, but if present must still adhere to the specified data type.
+
 
 # How to create a template #
 
@@ -238,8 +256,6 @@ A template can be created in 3 ways:
   * By using a template definition in a CSV document and parsing the CSV with Template.parse\_dict()
   * By defining the template in a database (this applies to [Web2Py] (Web2Py.md) integration)
 
-
-Note the following, the definition of a template will contain the elements. The header will be given during instantiation (except for the database method).
 
 # Example - Hardcoded #
 
@@ -258,7 +274,7 @@ elements = [
     { 'name': 'barcode', 'type': 'BC', 'x1': 20.0, 'y1': 246.5, 'x2': 140.0, 'y2': 254.0, 'font': 'Interleaved 2of5 NT', 'size': 0.75, 'bold': 0, 'italic': 0, 'underline': 0, 'foreground': 0, 'background': 0, 'align': 'I', 'text': '200000000001000159053338016581200810081', 'priority': 3, 'multiline': 0},
 ]
 
-#here we instantiate the template and define the HEADER
+#here we instantiate the template
 f = Template(format="A4", elements=elements,
              title="Sample Invoice")
 f.add_page()
@@ -273,6 +289,7 @@ f.render("./template.pdf")
 ```
 
 See template.py or [Web2Py] (Web2Py.md) for a complete example.
+
 
 # Example - Elements defined in CSV file #
 You define your elements in a CSV file "mycsvfile.csv"
