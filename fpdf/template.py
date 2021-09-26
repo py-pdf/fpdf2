@@ -74,6 +74,7 @@ class FlexTemplate:
             return True
         if i < 0:
             return False
+        return None
 
     def parse_csv(self, infile, delimiter=",", decimal_sep=".", encoding=None):
         """Parse template format csv file and create elements dict"""
@@ -112,16 +113,17 @@ class FlexTemplate:
                 # fill in blanks for any missing items
                 row.extend([""] * (len(key_config) - len(row)))
                 kargs = {}
-                for i, (val, cfg) in enumerate(zip(row, key_config)):
+                for val, cfg in zip(row, key_config):
                     vs = val.strip()
                     if not vs:
                         if cfg[2]:  # mandatory
                             if cfg[0] == "x2" and row["type"] in ["B", "C39"]:
                                 # two types don't need x2, but offset rendering does
-                                continue
-                            raise FPDFException(
-                                f"Mandatory value '{cfg[0]}' missing in csv data"
-                            )
+                                pass
+                            else:
+                                raise FPDFException(
+                                        f"Mandatory value '{cfg[0]}' missing in csv data"
+                                        )
                         elif cfg[0] == "priority":
                             # formally optional, but we need some value for sorting
                             kargs["priority"] = 0
@@ -373,6 +375,7 @@ class FlexTemplate:
 class Template(FlexTemplate):
     # Disabling this check due to the "format" parameter below:
     # pylint: disable=redefined-builtin
+    # pylint: disable=unused-argument
     def __init__(
         self,
         infile=None,
@@ -403,6 +406,7 @@ class Template(FlexTemplate):
             self.render()
         self.pdf.add_page()
 
+    # pylint: disable=arguments-differ
     def render(self, outfile=None, dest=None):
         """
         Args:
