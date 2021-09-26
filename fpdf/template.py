@@ -122,8 +122,8 @@ class FlexTemplate:
                                 pass
                             else:
                                 raise FPDFException(
-                                        f"Mandatory value '{cfg[0]}' missing in csv data"
-                                        )
+                                    f"Mandatory value '{cfg[0]}' missing in csv data"
+                                )
                         elif cfg[0] == "priority":
                             # formally optional, but we need some value for sorting
                             kargs["priority"] = 0
