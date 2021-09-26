@@ -59,11 +59,40 @@ def test_flextemplate_offset(tmp_path):
 def test_flextemplate_multipage(tmp_path):
 
     elements = [
-            {"name":"box", "type":"B", "x1":0, "y1":0, "x2":50, "y2":50,},
-            {"name":"d1", "type":"L", "x1":0, "y1":0, "x2":50, "y2":50,},
-            {"name":"d2", "type":"L", "x1":0, "y1":50, "x2":50, "y2":0,},
-            {"name":"label", "type":"T", "x1":0, "y1":52, "x2":50, "y2":57, "text":"Label",},
-            ]
+        {
+            "name": "box",
+            "type": "B",
+            "x1": 0,
+            "y1": 0,
+            "x2": 50,
+            "y2": 50,
+        },
+        {
+            "name": "d1",
+            "type": "L",
+            "x1": 0,
+            "y1": 0,
+            "x2": 50,
+            "y2": 50,
+        },
+        {
+            "name": "d2",
+            "type": "L",
+            "x1": 0,
+            "y1": 50,
+            "x2": 50,
+            "y2": 0,
+        },
+        {
+            "name": "label",
+            "type": "T",
+            "x1": 0,
+            "y1": 52,
+            "x2": 50,
+            "y2": 57,
+            "text": "Label",
+        },
+    ]
     pdf = FPDF()
     pdf.add_page()
     tmpl_0 = FlexTemplate(pdf, elements)
