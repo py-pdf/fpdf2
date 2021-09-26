@@ -1,21 +1,6 @@
 import locale
 from typing import Union, Iterable
 
-_TRY_TO_TYPE_KNOWN_TYPES = (
-    int,
-    float,
-)
-
-
-def try_to_type(value):
-    "Try to convert a string into a number"
-    for known_type in _TRY_TO_TYPE_KNOWN_TYPES:
-        try:
-            return known_type(value)
-        except ValueError:
-            pass
-    return value
-
 
 def substr(s, start, length=-1):
     if length < 0:

@@ -428,3 +428,12 @@ def test_html_font_color_name(tmp_path):
         '<font color="beige"><p><i>italic hello in beige</i></p></font>'
     )
     assert_pdf_equal(pdf, HERE / "html_font_color_name.pdf", tmp_path)
+
+
+def test_html_heading_hebrew(tmp_path):
+    pdf = MyFPDF()
+    pdf.add_font("DejaVuSans", fname=HERE / "../fonts/DejaVuSans.ttf", uni=True)
+    pdf.set_font("DejaVuSans")
+    pdf.add_page()
+    pdf.write_html("<h1>Hebrew: שלום עולם</h1>")
+    assert_pdf_equal(pdf, HERE / "html_heading_hebrew.pdf", tmp_path)

@@ -1,5 +1,6 @@
 import zlib
 from io import BytesIO
+import base64
 from urllib.request import urlopen
 
 from PIL import Image
@@ -22,8 +23,20 @@ def load_image(filename):
     if filename.startswith(("http://", "https://")):
         with urlopen(filename) as url_file:
             return BytesIO(url_file.read())
+    elif filename.startswith("data"):
+        return _decode_base64_image(filename)
     with open(filename, "rb") as local_file:
         return BytesIO(local_file.read())
+
+
+def _decode_base64_image(base64Image):
+    "Decode the base 64 image string into an io byte stream."
+
+    imageData = base64Image.split("base64,")[1]
+    decodedData = base64.b64decode(imageData)
+    imageBytes = BytesIO(decodedData)
+
+    return imageBytes
 
 
 def get_img_info(img, image_filter="AUTO"):

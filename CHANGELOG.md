@@ -10,6 +10,11 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 ## [2.4.4] - not released yet
 ### Added
 - markdown support in `multi_cell()`, thanks to Yeshi Namkhai
+- base 64 images can now be provided to `FPDF.image`, thanks to @MWhatsUp
+- documentation on how to generate datamatrix barcodes using the `pystrich` lib: [documentation section](https://pyfpdf.github.io/fpdf2/Barcodes.html#datamatrix), thanks to @MWhatsUp
+### Fixed
+- HTML headings (`<h1>`, `<h2>`...) can now contain non-ASCII characters without triggering a `UnicodeEncodeError`
+- when using `Template`, CSV column types are now safely parsed, thanks to @gmischler
 
 ## [2.4.3] - 2021-09-01
 ### Added
