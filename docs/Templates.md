@@ -204,7 +204,7 @@ A template definition consists of a number of elements, which have the following
 * __x1, y1, x2, y2__: top-left, bottom-right coordinates (in mm), defining a bounding box in most cases
     * for multiline text, this is the bounding box for just the first line, not the complete box
     * for the barcodes types, the height of the barcode is `y2 - y1`.
-    * _mandatory_ (x2 is not used in the barcode types, but must still be present as integer value)
+    * _mandatory_ (_optional_ for the barcode types)
 * __font__: e.g. "helvetica"
     * _optional_, default: "helvetica"
 * __size__: text size, or line width for line and rect, in points (float value)
@@ -290,7 +290,7 @@ rotated;T;21.0;80.0;100.0;84.0;times;10.5;0;0;0;0;;R;ROTATED;0;0;30.0
 
 Remember that each line represents an element and each field represents one of the properties of the element in the following order:
 ('name','type','x1','y1','x2','y2','font','size','bold','italic','underline','foreground','background','align','text','priority', 'multiline', 'rotate')
-As noted above, most fields may be left empty, so a line is valid with only 6 items. The "empty_fields" line of the example demonstrates all that can be left away.
+As noted above, most fields may be left empty, so a line is valid with only 6 items. The "empty_fields" line of the example demonstrates all that can be left away. In addition, for the barcode types "x2" may be empty.
 
 Then you can use the file like this:
 

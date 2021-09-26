@@ -185,7 +185,6 @@ def test_template_code39(tmp_path):  # issue-161
             "type": "C39",
             "x1": 40,
             "y1": 50,
-            "x2": 0,  # dummy value
             "y2": 70,
             "size": 1.5,
             "text": "Code 39 barcode",
