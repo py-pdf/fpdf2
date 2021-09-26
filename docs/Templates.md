@@ -43,37 +43,39 @@ The constructor signature is as follows:
 
 ```python
 fpdf.template.Template(
-		elements=None,
-		format="A4",
-		orientation="portrait",
-		unit="mm",
-		title="",
-		author="",
-		subject="",
-		creator="",
-		keywords="",
-		)
+        elements=None,
+        format="A4",
+        orientation="portrait",
+        unit="mm",
+        title="",
+        author="",
+        subject="",
+        creator="",
+        keywords="",
+        )
 ```
 
-Its important methods are:
-* Template.load_elements(elements)
+Its public methods are:
+* `Template.load_elements(elements)`
   * An alternative to supplying the elements dict to the constructor.
-* Template.parse_csv(infile,  delimiter=",", decimal_sep=".", encoding=None)
+* `Template.parse_csv(infile,  delimiter=",", decimal_sep=".", encoding=None)`
   * Load a template CSV file instead of supplying a dict.
-* Template.add_page()
+* `Template.add_page()`
   * Renders the elements to the current page, and proceeds to the next page.
-* Template.render(outfile=None)
-  * Renders the content to the last page, and writes the PDF to a file if its name is given.
+* `Template.render(outfile=None)`
+  * Renders the contents to the last page, and writes the PDF to a file if its name is given.
  
 Setting text values for specific template items is done by treating the class as a dict, with the name of the item as the key:
 
-`tmpl["company_name"] = "Sample Company"`
+```python
+Template["company_name"] = "Sample Company"
+```
 
 
 ## Using FlexTemplate() ##
 
 When more flexibility is desired, then the FlexTemplate() class comes into play.
-In this case, you first need to create your own FPDF() instance. You can then pass this to the constructor of one or several FlexTemplate() instances, and have each of them load a template definition.  
+In this case, you first need to create your own FPDF() instance. You can then pass this to the constructor of one or several FlexTemplate() instances, and have each of them load a template definition. For any page of the document, you can set text values on a template, and then render it on that page. After rendering, the template will be reset to its default values.
  
 ```python
 pdf = FPDF()
@@ -137,14 +139,14 @@ As you see, this can be quite a bit more involved, but there are hardly any limi
 
 Of course, you can just as well use a set of full-page templates, possibly differentiating between cover page, table of contents, normal content pages, and an index page, or something along those lines. 
 
-And here's how you can use a template several times on one page (and by extension, several times on several pages):
+And here's how you can use a template several times on one page (and by extension, several times on several pages). When rendering with an `offsetx` and/or `offsety` argument, the contents of the template will end up in a different place on the page. A `rotate` argument will change its orientation, rotated around the origin of the template.:
 
 ```python
 elements = [
     {"name":"box", "type":"B", "x1":0, "y1":0, "x2":50, "y2":50,},
     {"name":"d1", "type":"L", "x1":0, "y1":0, "x2":50, "y2":50,},
-	{"name":"d2", "type":"L", "x1":0, "y1":50, "x2":50, "y2":0,},
-	{"name":"label", "type":"T", "x1":0, "y1":52, "x2":50, "y2":57, "text":"Label",},
+    {"name":"d2", "type":"L", "x1":0, "y1":50, "x2":50, "y2":0,},
+    {"name":"label", "type":"T", "x1":0, "y1":52, "x2":50, "y2":57, "text":"Label",},
 ]
 pdf = FPDF()
 pdf.add_page()
@@ -156,61 +158,74 @@ templ.render(offsetx=50, offsety=120)
 templ["label"] = "Offset: 120 / 50 mm"
 templ.render(offsetx=120, offsety=50)
 templ["label"] = "Offset: 120 / 120 mm"
-templ.render(offsetx=120, offsety=120)
+templ.render(offsetx=120, offsety=120, rotate=30.0)
 pdf.output("example.pdf")
 ```
 
 Since we're handling the properties of the FPDF() instance directly, the constructor signature of this class is much simpler:
 
 ```python
-fpdf.template.FlexTemplate(self, pdf, elements=None)
+fpdf.template.FlexTemplate(pdf, elements=None)
 ```
 
-It supports the same method as Template(), except for `add_page()`, which you will instead execute directly on the FPDF() instance. However, the render() method has a few more parameters:
+It supports the same public methods as Template(), except for `add_page()`, which you will instead execute directly on the FPDF() instance. However, the render() method has a few more parameters and a bit different semantics:
 
-`FlexTemplate.render(offsetx=0.0, offsety=0.0, rotate=0.0)`
+* `FlexTemplate.load_elements(elements)`
+  * An alternative to supplying the elements dict to the constructor.
+* `FlexTemplate.parse_csv(infile,  delimiter=",", decimal_sep=".", encoding=None)`
+  * Load a template CSV file instead of supplying a dict.
+* `FlexFlexTemplate.render(offsetx=0.0, offsety=0.0, rotate=0.0)`
+  * Renders the contents to the current page.
+ 
+Setting text values for specific template items is done by treating the class as a dict, with the name of the item as the key:
 
-The dict syntax for setting text values is also supported.
+The dict syntax for setting text values is also supported:
 
+```python
+FlexTemplate["company_name"] = "Sample Company"
+```
 
 # Details - Template definition #
 
 A template definition consists of a number of elements, which have the following properties (columns in a CSV, items in a dict, fields in a database):
 
-  * __name__: placeholder identification
+* __name__: placeholder identification
     * _mandatory_
-  * __type__:
+* __type__:
     * '__T__': Text - places one or several lines of text on the page
-	* '__L__': Line - draws a line from x1/y1 to x2/y2
-	* '__I__': Image - positions and scales an image into the bounding box
-	* '__B__': Box - draws a rectangle around the bounding box
-	* '__BC__': Barcode - inserts an "Interleaved 2 of 5" type barcode
-	* '__C39__': Code 39 - inserts a "Code 39" type barcode
-	* '__W__': "Write" - uses the FPDF.write() method to add text to the page
+    * '__L__': Line - draws a line from x1/y1 to x2/y2
+    * '__I__': Image - positions and scales an image into the bounding box
+    * '__B__': Box - draws a rectangle around the bounding box
+    * '__BC__': Barcode - inserts an "Interleaved 2 of 5" type barcode
+    * '__C39__': Code 39 - inserts a "Code 39" type barcode
+        * Incompatible change: The first implementation of this type used the non-standard template keys "x", "y", "w", and "h", which are no longer valid.
+    * '__W__': "Write" - uses the FPDF.write() method to add text to the page
     * _mandatory_
-  * __x1, y1, x2, y2__: top-left, bottom-right coordinates (in mm), defining a bounding box in most cases
+* __x1, y1, x2, y2__: top-left, bottom-right coordinates (in mm), defining a bounding box in most cases
     * for multiline text, this is the bounding box for just the first line, not the complete box
-    * _mandatory_
-  * __font__: e.g. "helvetica"
+    * for the barcodes types, the height of the barcode is `y2 - y1`.
+    * _mandatory_ (x2 is not used in the barcode types, but must still be present as integer value)
+* __font__: e.g. "helvetica"
     * _optional_, default: "helvetica"
-  * __size__: text size, or line width for line and rect, in points (float value)
+* __size__: text size, or line width for line and rect, in points (float value)
+    * for the barcode types, the width of one bar in mm.
     * _optional_, default: 10
-  * __bold, italic, underline__: text style, enabled with True or equivalent value
-	* in csv, only int values, 0 as false, non-0 as true
+* __bold, italic, underline__: text style, enabled with True or equivalent value
+    * in csv, only int values, 0 as false, non-0 as true
     * _optional_, default: false
-  * __foreground, background__: text and fill colors, e.g. 0xFFFFFF
+* __foreground, background__: text and fill colors, e.g. 0xFFFFFF
     * _optional_, default: 0x000000/0xFFFFFF
-  * __align__: text alignment, '__L__': left, '__R__': right, '__C__': center
+* __align__: text alignment, '__L__': left, '__R__': right, '__C__': center
     * _optional_, default: 'L'
-  * __text__: default string, can be replaced at runtime
+* __text__: default string, can be replaced at runtime
     * _optional_, default: empty
-  * __priority__: Z-order (int value)
+* __priority__: Z-order (int value)
     * _optional_, default: 0
-  * __multiline__: configure text wrapping
+* __multiline__: configure text wrapping
     * in dicts, None for single line, True to for multicells (multiple lines), False trims to exactly fit the space defined
-	* in csv, 0 for single line, >0 for multiple lines, <0 for exact fit
+    * in csv, 0 for single line, >0 for multiple lines, <0 for exact fit
     * _optional_, default: single line
-  * __rotation__: rotate the element in degrees around the top left corner x1/y1 (float)
+* __rotation__: rotate the element in degrees around the top left corner x1/y1 (float)
     * _optional_, default: 0.0 - no rotation
 
 Fields that are not relevant to a specific element type will be ignored there.
