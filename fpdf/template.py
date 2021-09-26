@@ -47,9 +47,15 @@ class FlexTemplate:
             # priority is optional, but we need a default for sorting.
             if not "priority" in e:
                 e["priority"] = 0
+            for k in ("name", "type", "x1", "y1", "y2"):
+                if k not in e:
+                    raise KeyError(f"Mandatory key '{k}' missing in input data")
             # x2 is optional for barcode types, but needed for offset rendering
-            if e["type"] in ["B", "C39"] and "x2" not in e:
-                e["x2"] = 0
+            if "x2" not in e:
+                if e["type"] in ["B", "C39"]:
+                    e["x2"] = 0
+                else:
+                    raise KeyError("Mandatory key 'x2' missing in input data")
             self.keys.append(e["name"].lower())
 
     @staticmethod
@@ -114,7 +120,7 @@ class FlexTemplate:
                                 # two types don't need x2, but offset rendering does
                                 continue
                             raise FPDFException(
-                                "Mandatory value '%s' missing in csv data" % cfg[0]
+                                f"Mandatory value '{cfg[0]}' missing in csv data"
                             )
                         elif cfg[0] == "priority":
                             # formally optional, but we need some value for sorting
@@ -289,8 +295,8 @@ class FlexTemplate:
         **__,
     ):
         if x is not None or y is not None or w is not None or h is not None:
-            raise FPDFException(
-                "Arguments x,y,w,h are invalid. Use x1,y1,x2,y2 instead."
+            raise ValueError(
+                "Arguments x/y/w/h are invalid. Use x1/y1/y2/size instead."
             )
         h = y2 - y1
         if h <= 0:

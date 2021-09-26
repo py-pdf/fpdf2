@@ -1,8 +1,9 @@
 from pathlib import Path
+from pytest import raises
 
 import qrcode
 
-from fpdf.template import Template
+from fpdf.template import Template, FPDFException
 
 from ..conftest import assert_pdf_equal
 
@@ -176,6 +177,31 @@ def test_template_multipage(tmp_path):
     tmpl["name0"] = "Heinz Mustermann"
     tmpl["title0"] = "Worker"
     assert_pdf_equal(tmpl, HERE / "template_multipage.pdf", tmp_path)
+
+
+def test_template_badinput(tmp_path):
+    """Testing Template() with non-conforming definitions."""
+    elements = [{ }]
+    with raises(KeyError):
+        tmpl = Template(elements=elements)
+    elements = [{"name":"n", "type":"X"}]
+    with raises(KeyError):
+        tmpl = Template(elements=elements)
+        tmpl.render()
+    elements = [{"name":"n", "type":"T","x1":0,"y1":0,"x2":0,"y2":"x"}]
+    with raises(TypeError):
+        tmpl = Template(elements=elements)
+        tmpl.render()
+    tmpl = Template()
+    with raises(FPDFException):
+        tmpl.parse_csv(HERE / "mandmissing.csv", delimiter=";")
+    with raises(ValueError):
+        tmpl.parse_csv(HERE / "badint.csv", delimiter=";")
+    with raises(ValueError):
+        tmpl.parse_csv(HERE / "badfloat.csv", delimiter=";")
+    with raises(KeyError):
+        tmpl.parse_csv(HERE / "badtype.csv", delimiter=";")
+        tmpl.render()
 
 
 def test_template_code39(tmp_path):  # issue-161
