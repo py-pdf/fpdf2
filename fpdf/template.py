@@ -419,4 +419,4 @@ class Template(FlexTemplate):
         self.pdf.set_auto_page_break(False, margin=0)
         super().render()
         if outfile:
-            pdf.output(outfile)
+            self.pdf.output(outfile)

@@ -84,4 +84,3 @@ def test_flextemplate_multipage(tmp_path):
     tmpl_1.parse_csv(HERE / "mycsvfile.csv", delimiter=";")
     tmpl_1.render()
     assert_pdf_equal(pdf, HERE / "flextemplate_multipage.pdf", tmp_path)
-
