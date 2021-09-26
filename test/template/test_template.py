@@ -182,14 +182,14 @@ def test_template_multipage(tmp_path):
 # pylint: disable=unused-argument
 def test_template_badinput(tmp_path):
     """Testing Template() with non-conforming definitions."""
-    elements = [{ }]
+    elements = [{}]
     with raises(KeyError):
         tmpl = Template(elements=elements)
-    elements = [{"name":"n", "type":"X"}]
+    elements = [{"name": "n", "type": "X"}]
     with raises(KeyError):
         tmpl = Template(elements=elements)
         tmpl.render()
-    elements = [{"name":"n", "type":"T","x1":0,"y1":0,"x2":0,"y2":"x"}]
+    elements = [{"name": "n", "type": "T", "x1": 0, "y1": 0, "x2": 0, "y2": "x"}]
     with raises(TypeError):
         tmpl = Template(elements=elements)
         tmpl.render()
