@@ -44,10 +44,10 @@ class FlexTemplate:
         self.elements = elements
         self.keys = []
         for e in elements:
+            # priority is optional, but we need a default for sorting.
             if not "priority" in e:
                 e["priority"] = 0
             self.keys.append(e["name"].lower())
-        #self.keys = [v["name"].lower() for v in self.elements]
 
     @staticmethod
     def _parse_colorcode(s):
@@ -223,16 +223,16 @@ class FlexTemplate:
             )
 
     @staticmethod
-    def line(pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, background=0xFFFFFF, **__):
+    def line(pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, **__):
         if pdf.draw_color.lower() != rgb_as_str(foreground):
             pdf.set_draw_color(*rgb(foreground))
-        if pdf.fill_color != rgb_as_str(background):
-            pdf.set_fill_color(*rgb(background))
         pdf.set_line_width(size)
         pdf.line(x1, y1, x2, y2)
 
     @staticmethod
-    def rect(pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, background=0xFFFFFF, **__):
+    def rect(
+        pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, background=0xFFFFFF, **__
+    ):
         if pdf.draw_color.lower() != rgb_as_str(foreground):
             pdf.set_draw_color(*rgb(foreground))
         if pdf.fill_color != rgb_as_str(background):
@@ -269,15 +269,30 @@ class FlexTemplate:
     @staticmethod
     def code39(
         pdf,
-        text,
-        x,
-        y,
         *_,
-        w=1.5,
-        h=5,
+        x1=0,
+        y1=0,
+        x2=0,
+        y2=0,
+        text="",
+        size=1.5,
+        x=None,
+        y=None,
+        w=None,
+        h=None,
         **__,
     ):
-        pdf.code39(text, x, y, w, h)
+        if x is not None or y is not None or w is not None or h is not None:
+            raise FPDFException(
+                "Arguments x,y,w,h are invalid. Use x1,y1,x2,y2 instead."
+            )
+        w = x2 - x1
+        if w <= 0:
+            w = 1.5
+        h = y2 - y1
+        if h <= 0:
+            h = 5
+        pdf.code39(text, x1, y1, size, h)
 
     # Added by Derek Schwalenberg Schwalenberg1013@gmail.com to allow (url) links in
     # templates (using write method) 2014-02-22
@@ -330,7 +345,9 @@ class FlexTemplate:
         sorted_elements = sorted(self.elements, key=lambda x: x["priority"])
         for element in sorted_elements:
             element = element.copy()
-            element["text"] = self.texts.get(element["name"].lower(), element.get("text", ""))
+            element["text"] = self.texts.get(
+                element["name"].lower(), element.get("text", "")
+            )
             element["x1"] = element["x1"] + offsetx
             element["y1"] = element["y1"] + offsety
             element["x2"] = element["x2"] + offsetx

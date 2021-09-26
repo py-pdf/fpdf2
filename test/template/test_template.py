@@ -153,13 +153,29 @@ def test_template_nominal_csv(tmp_path):
     tmpl = Template(format="A4", title="Sample Invoice")
     tmpl.parse_csv(HERE / "mycsvfile.csv", delimiter=";")
     tmpl.add_page()
-    tmpl['empty_fields'] = 'empty'
+    tmpl["empty_fields"] = "empty"
     assert_pdf_equal(tmpl, HERE / "template_nominal_csv.pdf", tmp_path)
     tmpl = Template(format="A4", title="Sample Invoice")
     tmpl.parse_csv(HERE / "mycsvfile.csv", delimiter=";", encoding="utf-8")
     tmpl.add_page()
-    tmpl['empty_fields'] = 'empty'
+    tmpl["empty_fields"] = "empty"
     assert_pdf_equal(tmpl, HERE / "template_nominal_csv.pdf", tmp_path)
+
+
+def test_template_multipage(tmp_path):
+    """Testing a Template() populating several pages."""
+    tmpl = Template(format="A4", title="Sample Invoice")
+    tmpl.parse_csv(HERE / "mycsvfile.csv", delimiter=";")
+    tmpl.add_page()
+    tmpl["name0"] = "Joe Doe"
+    tmpl["title0"] = "Director"
+    tmpl.add_page()
+    tmpl["name0"] = "Jane Doe"
+    tmpl["title0"] = "General Manager"
+    tmpl.add_page()
+    tmpl["name0"] = "Heinz Mustermann"
+    tmpl["title0"] = "Worker"
+    assert_pdf_equal(tmpl, HERE / "template_multipage.pdf", tmp_path)
 
 
 def test_template_code39(tmp_path):  # issue-161
@@ -167,9 +183,11 @@ def test_template_code39(tmp_path):  # issue-161
         {
             "name": "code39",
             "type": "C39",
-            "x": 40,
-            "y": 50,
-            "h": 20,
+            "x1": 40,
+            "y1": 50,
+            "x2": 0,  # dummy value
+            "y2": 70,
+            "size": 1.5,
             "text": "Code 39 barcode",
             "priority": 1,
         },

@@ -59,3 +59,8 @@ nosetests.xml
 
 # Idea
 .idea
+*.un~
+*.swp
+*.md~
+*.py~
+*.csv~
