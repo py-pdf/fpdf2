@@ -179,6 +179,7 @@ def test_template_multipage(tmp_path):
     assert_pdf_equal(tmpl, HERE / "template_multipage.pdf", tmp_path)
 
 
+# pylint: disable=unused-argument
 def test_template_badinput(tmp_path):
     """Testing Template() with non-conforming definitions."""
     elements = [{ }]
