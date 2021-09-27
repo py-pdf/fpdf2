@@ -279,6 +279,7 @@ class FPDF:
         self.image_filter = "AUTO"
         self.page_duration = 0  # optional pages display duration, cf. add_page()
         self.page_transition = None  # optional pages transition, cf. add_page()
+        self._rotating = False
         # Only set if XMP metadata is added to the document:
         self._xmp_metadata_obj_id = None
         self.struct_builder = StructureTreeBuilder()
@@ -677,6 +678,8 @@ class FPDF:
             raise FPDFException(
                 "A page cannot be added on a closed document, after calling output()"
             )
+        if self._rotating:
+            raise FPDFException(".add_page() should not be called inside .rotation()")
         if self.state == DocumentState.UNINITIALIZED:
             self.open()
         family = self.font_family
@@ -778,6 +781,10 @@ class FPDF:
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
+        if self._rotating:
+            raise FPDFException(
+                ".set_draw_color() should not be called inside .rotation()"
+            )
         if (r == 0 and g == 0 and b == 0) or g == -1:
             self.draw_color = f"{r / 255:.3f} G"
         else:
@@ -797,6 +804,10 @@ class FPDF:
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
+        if self._rotating:
+            raise FPDFException(
+                ".set_fill_color() should not be called inside .rotation()"
+            )
         if (r == 0 and g == 0 and b == 0) or g == -1:
             self.fill_color = f"{r / 255:.3f} g"
         else:
@@ -816,6 +827,10 @@ class FPDF:
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
+        if self._rotating:
+            raise FPDFException(
+                ".set_text_color() should not be called inside .rotation()"
+            )
         if (r == 0 and g == 0 and b == 0) or g == -1:
             self.text_color = f"{r / 255:.3f} g"
         else:
@@ -858,6 +873,10 @@ class FPDF:
         Args:
             width (int): the width in user unit
         """
+        if self._rotating:
+            raise FPDFException(
+                ".set_line_width() should not be called inside .rotation()"
+            )
         self.line_width = width
         if self.page > 0:
             self._out(f"{width * self.k:.2f} w")
@@ -1230,6 +1249,8 @@ class FPDF:
             raise ValueError(
                 f"Unknown style provided (only B/I/U letters are allowed): {style}"
             )
+        if self._rotating:
+            raise FPDFException(".set_font() should not be called inside .rotation()")
         if "U" in style:
             self.underline = 1
             style = style.replace("U", "")
@@ -1295,6 +1316,10 @@ class FPDF:
         Args:
             size (int): font size in points
         """
+        if self._rotating:
+            raise FPDFException(
+                ".set_font_size() should not be called inside .rotation()"
+            )
         if self.font_size_pt == size:
             return
         self.font_size_pt = size
@@ -1314,6 +1339,10 @@ class FPDF:
         Args:
             stretching (int): horizontal stretching (scaling) in percents.
         """
+        if self._rotating:
+            raise FPDFException(
+                ".set_stretching() should not be called inside .rotation()"
+            )
         if self.font_stretching == stretching:
             return
         self.font_stretching = stretching
@@ -1522,7 +1551,9 @@ class FPDF:
             f"q {c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm "
             f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm\n"
         )
+        self._rotating = True
         yield
+        self._rotating = False
         self._out("Q\n")
 
     @property
