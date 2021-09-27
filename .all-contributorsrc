@@ -333,7 +333,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/17468844?v=4",
       "profile": "http://www.schorsch.com/",
       "contributions": [
-        "code"
+        "code",
+        "bug"
       ]
     }
   ],
