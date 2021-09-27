@@ -335,7 +335,8 @@
       "profile": "http://www.schorsch.com/",
       "contributions": [
         "code",
-        "bug"
+        "bug",
+        "doc"
       ]
     }
   ],
