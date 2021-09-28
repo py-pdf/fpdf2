@@ -12,6 +12,7 @@ from html.parser import HTMLParser
 
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
+DEFAULT_HEADING_SIZES = dict(h1=2, h2=1.5, h3=1.17, h4=1, h5=0.83, h6=0.67)
 
 COLOR_DICT = {
     "black": "#000000",
@@ -198,6 +199,7 @@ class HTML2FPDF(HTMLParser):
         li_tag_indent=5,
         table_line_separators=False,
         ul_bullet_char=BULLET_WIN1252,
+        heading_sizes=None,
         **_,
     ):
         """
@@ -239,7 +241,9 @@ class HTML2FPDF(HTMLParser):
         self.theader_out = self.tfooter_out = False
         self.table_row_height = 0
         self.heading_level = None
-        self.hsize = dict(h1=2, h2=1.5, h3=1.17, h4=1, h5=0.83, h6=0.67)
+        self.heading_sizes = dict(**DEFAULT_HEADING_SIZES)
+        if heading_sizes:
+            self.heading_sizes.update(heading_sizes)
         self._only_imgs_in_td = False
 
     def width2unit(self, length):
@@ -405,12 +409,12 @@ class HTML2FPDF(HTMLParser):
             self.pdf.ln(self.h)
             if attrs:
                 self.align = attrs.get("align")
-        if tag in self.hsize:
+        if tag in self.heading_sizes:
             self.heading_level = int(tag[1:])
-            k = self.hsize[tag]
-            self.pdf.ln(5 * k)
+            hsize = self.heading_sizes[tag]
+            self.pdf.ln(5 * hsize)
             self.pdf.set_text_color(150, 0, 0)
-            self.set_font(size=12 * k)
+            self.set_font(size=12 * hsize)
             if attrs:
                 self.align = attrs.get("align")
         if tag == "hr":
@@ -552,7 +556,7 @@ class HTML2FPDF(HTMLParser):
     def handle_endtag(self, tag):
         # Closing tag
         LOGGER.debug("ENDTAG %s", tag)
-        if tag in self.hsize:
+        if tag in self.heading_sizes:
             self.heading_level = None
             self.pdf.ln(self.h)
             self.set_font()

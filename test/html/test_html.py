@@ -451,7 +451,21 @@ def test_html_headings_line_height(tmp_path):  # issue-223
     <h4>H4   {long_title*3}</h4>
     <h5>H5   {long_title*3}</h5>
     <h6>H6   {long_title*4}</h6>
-    <p>P   {long_title*5}<p>
-    """
+    <p>P   {long_title*5}<p>"""
     )
     assert_pdf_equal(pdf, HERE / "html_headings_line_height.pdf", tmp_path)
+
+
+def test_html_custom_heading_sizes(tmp_path):  # issue-223
+    pdf = MyFPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<h1>This is a H1</h1>
+           <h2>This is a H2</h2>
+           <h3>This is a H3</h3>
+           <h4>This is a H4</h4>
+           <h5>This is a H5</h5>
+           <h6>This is a H6</h6>""",
+        heading_sizes=dict(h1=0.5, h2=1, h3=1.5, h4=2, h5=2.5, h6=3),
+    )
+    assert_pdf_equal(pdf, HERE / "html_custom_heading_sizes.pdf", tmp_path)
