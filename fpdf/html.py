@@ -275,7 +275,7 @@ class HTML2FPDF(HTMLParser):
             else:
                 if self.heading_level:
                     self.pdf.start_section(data, self.heading_level - 1)
-                LOGGER.debug("write '%s'", data.replace("\n", "\\n"))
+                LOGGER.debug("write '%s' h=%d", data.replace("\n", "\\n"), self.h)
                 self.pdf.write(self.h, data)
 
     def _insert_td(self, data=""):
@@ -410,7 +410,7 @@ class HTML2FPDF(HTMLParser):
             k = self.hsize[tag]
             self.pdf.ln(5 * k)
             self.pdf.set_text_color(150, 0, 0)
-            self.pdf.set_font_size(12 * k)
+            self.set_font(size=12 * k)
             if attrs:
                 self.align = attrs.get("align")
         if tag == "hr":

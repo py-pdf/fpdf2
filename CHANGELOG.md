@@ -13,6 +13,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - base 64 images can now be provided to `FPDF.image`, thanks to @MWhatsUp
 - documentation on how to generate datamatrix barcodes using the `pystrich` lib: [documentation section](https://pyfpdf.github.io/fpdf2/Barcodes.html#datamatrix), thanks to @MWhatsUp
 ### Fixed
+- line height of HTML headings (`<h1>`, `<h2>`...) that were not scaled properly with the font size
 - HTML headings (`<h1>`, `<h2>`...) can now contain non-ASCII characters without triggering a `UnicodeEncodeError`
 - when using `Template`, CSV column types are now safely parsed, thanks to @gmischler
 ### Changed

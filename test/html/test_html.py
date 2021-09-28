@@ -437,3 +437,21 @@ def test_html_heading_hebrew(tmp_path):
     pdf.add_page()
     pdf.write_html("<h1>Hebrew: שלום עולם</h1>")
     assert_pdf_equal(pdf, HERE / "html_heading_hebrew.pdf", tmp_path)
+
+
+def test_html_headings_line_height(tmp_path):  # issue-223
+    pdf = MyFPDF()
+    pdf.add_page()
+    long_title = "The Quick Brown Fox Jumped Over The Lazy Dog "
+    pdf.write_html(
+        f"""
+    <h1>H1   {long_title*2}</h1>
+    <h2>H2   {long_title*2}</h2>
+    <h3>H3   {long_title*2}</h3>
+    <h4>H4   {long_title*3}</h4>
+    <h5>H5   {long_title*3}</h5>
+    <h6>H6   {long_title*4}</h6>
+    <p>P   {long_title*5}<p>
+    """
+    )
+    assert_pdf_equal(pdf, HERE / "html_headings_line_height.pdf", tmp_path)
