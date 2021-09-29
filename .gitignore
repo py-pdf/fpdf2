@@ -59,8 +59,7 @@ nosetests.xml
 
 # Idea
 .idea
-*.un~
+
+# Vim backup and swap files
+*.*~
 *.swp
-*.md~
-*.py~
-*.csv~
