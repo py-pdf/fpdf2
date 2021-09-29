@@ -11,28 +11,31 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 ### Added
 - markdown support in `multi_cell()`, thanks to Yeshi Namkhai
 - base 64 images can now be provided to `FPDF.image`, thanks to @MWhatsUp
-- documentation on how to generate datamatrix barcodes using the `pystrich` lib: [documentation section](https://pyfpdf.github.io/fpdf2/Barcodes.html#datamatrix), thanks to @MWhatsUp
+- documentation on how to generate datamatrix barcodes using the `pystrich` lib: [documentation section](https://pyfpdf.github.io/fpdf2/Barcodes.html#datamatrix),
+  thanks to @MWhatsUp
+- `write_html`: headings (`<h1>`, `<h2>`...) relative sizes can now be configured through an optional `heading_sizes` parameter
 ### Fixed
-- HTML headings (`<h1>`, `<h2>`...) can now contain non-ASCII characters without triggering a `UnicodeEncodeError`
-- when using `Template`, CSV column types are now safely parsed, thanks to @gmischler
+- `write_html`: headings (`<h1>`, `<h2>`...) can now contain non-ASCII characters without triggering a `UnicodeEncodeError`
+- `Template`: CSV column types are now safely parsed, thanks to @gmischler
+### Changed
+- `write_html`: the line height of headings (`<h1>`, `<h2>`...) is now properly scaled with its font size
+- some `FPDF` methods should not be used inside a `rotation` context, or things can get broken.
+  This is now forbidden: an exception is now raised in those cases.
 
 ## [2.4.3] - 2021-09-01
 ### Added
-- support for **emojis**! Me precisely unicode characters above `0xFFFF` in general, thanks to @moe-25
+- support for **emojis**! More precisely unicode characters above `0xFFFF` in general, thanks to @moe-25
 - `Template` can now insert justified text
 - [`get_scale_factor`](https://pyfpdf.github.io/fpdf2/fpdf/util.html#fpdf.util.get_scale_factor) utility function to obtain `FPDF.k` without having to create a document
 - [`convert_unit`](https://pyfpdf.github.io/fpdf2/fpdf/util.html#fpdf.util.convert_unit) utility function to convert a number, `x,y` point, or list of `x,y` points from one unit to another unit
-
 ### Changed
 - `fpdf.FPDF()` constructor now accepts ints or floats as a unit, and raises a `ValueError` if an invalid unit is provided.
-
 ### Fixed
 - `Template` `background` property is now properly supported - [#203](https://github.com/PyFPDF/fpdf2/pull/203)
   ⚠️ Beware that its default value changed from `0` to `0xffffff`, as a value of **zero would render the background as black**.
 - `Template.parse_csv`: preserving numeric values when using CSV based templates - [#205](https://github.com/PyFPDF/fpdf2/pull/205)
 - the code snippet to generate Code 39 barcodes in the documentation was missing the start & end `*` characters.
 This has been fixed, and a warning is now triggered by the [`FPDF.code39`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.code39) method when those characters are missing.
-
 ### Fixed
 - Detect missing `uni=True` when loading cached fonts (page numbering was missing digits)
 
@@ -40,13 +43,12 @@ This has been fixed, and a warning is now triggered by the [`FPDF.code39`](https
 ### Added
 - disable font caching when `fpdf.FPDF` constructor invoked with `font_cache_dir=None`, thanks to @moe-25 !
 - [`FPDF.circle`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.circle): new method added, thanks to @viraj-shah18 !
-- `HTMLMixin` / `HTML2FPDF`: support setting HTML font colors by name and short hex codes
+- `write_html`: support setting HTML font colors by name and short hex codes
 - [`FPDF.will_page_break`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.will_page_break)
 utility method to let users know in advance when adding an elemnt will trigger a page break.
 This can be useful to repeat table headers on each page for exemple,
 _cf._ [documentation on Tables](https://pyfpdf.github.io/fpdf2/Tables.html#repeat-table-header-on-each-page).
 - [`FPDF.set_link`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link) now support a new optional `x` parameter to set the horizontal position after following the link
-
 ### Fixed
 - fixed a bug when `fpdf.Template` was used to render QRCodes, due to a forced conversion to string (#175)
 
@@ -69,7 +71,7 @@ _cf._ [documentation on Tables](https://pyfpdf.github.io/fpdf2/Tables.html#repea
 - `FPDF.cell`: new optional boolean `center` parameter that positions the cell horizontally
 - `FPDF.set_link`: new optional `zoom` parameter that sets the zoom level after following the link.
   Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
-- `HTMLMixin` / `HTML2FPDF`: now support `align="justify"`
+- `write_html`: now support `align="justify"`
 - new method `FPDF.image_filter` to control the image filters used for images
 - `FPDF.add_page`: new optional `duration` & `transition` parameters
   used for [presentations (documentation page)](https://pyfpdf.github.io/fpdf2/Presentations.html)
@@ -96,7 +98,7 @@ _cf._ [documentation on Tables](https://pyfpdf.github.io/fpdf2/Tables.html#repea
 - new method `FPDF.text_annotation` to insert... Text Annotations
 - `FPDF.image` now also accepts an `io.BytesIO` as input
 ### Fixed
-- `HTMLMixin` / `HTML2FPDF`: properly handling `<img>` inside `<td>` & allowing to center them horizontally
+- `write_html`: properly handling `<img>` inside `<td>` & allowing to center them horizontally
 
 ## [2.3.2] - 2021-03-27
 ### Added
@@ -142,7 +144,7 @@ prevented strings passed first to the text-rendering methods to be displayed.
 ## [2.2.0] - 2021-01-11
 ### Added
 - new unit tests, a code formatter (`black`) and a linter (`pylint`) to improve code quality
-- new boolean parameter `table_line_separators` for `HTMLMixin.write_html` & underlying `HTML2FPDF` constructor
+- new boolean parameter `table_line_separators` for `write_html` & underlying `HTML2FPDF` constructor
 ### Changed
 - the documentation URL is now simply https://pyfpdf.github.io/fpdf2/
 ### Removed
