@@ -43,9 +43,11 @@ class FlexTemplate:
                 If you omit this, then you need to call either load_elements()
                 or parse_csv() before doing anything else.
         """
+        if not isinstance(pdf, FPDF):
+            raise TypeError("'pdf' must be an instance of fpdf.FPDF()")
+        self.pdf = pdf
         if elements:
             self.load_elements(elements)
-        self.pdf = pdf
         self.handlers = {
             "T": self._text,
             "L": self._line,
@@ -88,7 +90,7 @@ class FlexTemplate:
         """Allow hex and oct values for colors"""
         if s[:2] in ["0x", "0X"]:
             return int(s, 16)
-        if s[:2] in ["0o", "0O"]:
+        if s[0] == "0":
             return int(s, 8)
         return int(s)
 
