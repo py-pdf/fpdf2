@@ -16,7 +16,7 @@ There are two approaches to using templates.
 
 ## Using Template() ##
 
-The traditional approach is to use the Template() class, This class accepts one template definition, and can apply it to each page of a document. The useage pattern here is:
+The traditional approach is to use the Template() class, This class accepts one template definition, and can apply it to each page of a document. The usage pattern here is:
 
 ```python
 tmpl = Template(elements=elements)
@@ -41,32 +41,8 @@ tmpl.render(outfile="example.pdf")
 
 The Template() class will create and manage its own FPDF() instance, so you don't need to worry about how it all works together. It also allows to set the page format, title of the document and other metadata for the PDF file.
 
-The constructor signature is as follows:
+For the method signatures, see [pyfpdf.github.io: class Template](https://pyfpdf.github.io/fpdf2/fpdf/template.html#fpdf.template.Template).
 
-```python
-fpdf.template.Template(
-        elements=None,
-        format="A4",
-        orientation="portrait",
-        unit="mm",
-        title="",
-        author="",
-        subject="",
-        creator="",
-        keywords="",
-        )
-```
-
-Its public methods are:
-* `Template.load_elements(elements)`
-  * An alternative to supplying the elements dict to the constructor.
-* `Template.parse_csv(infile,  delimiter=",", decimal_sep=".", encoding=None)`
-  * Load a template CSV file instead of supplying a dict.
-* `Template.add_page()`
-  * Renders the elements to the current page (except at first call), and proceeds to the next page.
-* `Template.render(outfile=None)`
-  * Renders the contents to the last page, and writes the PDF to a file if its name is given.
- 
 Setting text values for specific template items is done by treating the class as a dict, with the name of the item as the key:
 
 ```python
@@ -164,24 +140,9 @@ templ.render(offsetx=120, offsety=120, rotate=30.0)
 pdf.output("example.pdf")
 ```
 
-Since we're handling the properties of the FPDF() instance separately, the constructor signature of this class is much simpler:
+For the method signatures, see [pyfpdf.github.io: class FlexTemplate](https://pyfpdf.github.io/fpdf2/fpdf/template.html#fpdf.template.FlexTemplate).
 
-```python
-fpdf.template.FlexTemplate(pdf, elements=None)
-```
-
-It supports the same public methods as Template(), except for `add_page()`, which you will instead execute directly on the FPDF() instance. However, the render() method has a few more parameters and a bit different semantics:
-
-* `FlexTemplate.load_elements(elements)`
-  * An alternative to supplying the elements dict to the constructor.
-* `FlexTemplate.parse_csv(infile,  delimiter=",", decimal_sep=".", encoding=None)`
-  * Load a template CSV file instead of supplying a dict.
-* `FlexFlexTemplate.render(offsetx=0.0, offsety=0.0, rotate=0.0)`
-  * Renders the contents to the current page.
- 
-Setting text values for specific template items is done by treating the class as a dict, with the name of the item as the key:
-
-The dict syntax for setting text values is the same:
+The dict syntax for setting text values is the same as above:
 
 ```python
 FlexTemplate["company_name"] = "Sample Company"
@@ -190,7 +151,7 @@ FlexTemplate["company_name"] = "Sample Company"
 
 # Details - Template definition #
 
-A template definition consists of a number of elements, which have the following properties (columns in a CSV, items in a dict, fields in a database):
+A template definition consists of a number of elements, which have the following properties (columns in a CSV, items in a dict, fields in a database).
 
 * __name__: placeholder identification (unique text string)
     * _mandatory_

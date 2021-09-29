@@ -1,4 +1,4 @@
-"""PDF Template Helper for FPDF.py"""
+"""PDF Template Helpers for fpdf.py"""
 
 __author__ = "Mariano Reingart <reingart@gmail.com>"
 __copyright__ = "Copyright (C) 2010 Mariano Reingart"
@@ -12,35 +12,60 @@ from .errors import FPDFException
 from .fpdf import FPDF
 
 
-def rgb(col):
+def _rgb(col):
     return (col // 65536), (col // 256 % 256), (col % 256)
 
 
-def rgb_as_str(col):
-    r, g, b = rgb(col)
+def _rgb_as_str(col):
+    r, g, b = _rgb(col)
     if (r == 0 and g == 0 and b == 0) or g == -1:
         return f"{r / 255:.3f} g"
     return f"{r / 255:.3f} {g / 255:.3f} {b / 255:.3f} rg"
 
 
 class FlexTemplate:
+    """
+    A flexible templating class.
+
+    Allows to apply one or several template definitions to any page of
+    a document in any combination.
+    """
+
     def __init__(self, pdf, elements=None):
+        """
+        Arguments:
+
+            pdf (fpdf.FPDF() instance):
+                All content will be added to this object.
+
+            elements (list of dicts):
+                A template definition in a list of dicts.
+                If you omit this, then you need to call either load_elements()
+                or parse_csv() before doing anything else.
+        """
         if elements:
             self.load_elements(elements)
         self.pdf = pdf
         self.handlers = {
-            "T": self.text,
-            "L": self.line,
-            "I": self.image,
-            "B": self.rect,
-            "BC": self.barcode,
-            "C39": self.code39,
-            "W": self.write,
+            "T": self._text,
+            "L": self._line,
+            "I": self._image,
+            "B": self._rect,
+            "BC": self._barcode,
+            "C39": self._code39,
+            "W": self._write,
         }
         self.texts = {}
 
     def load_elements(self, elements):
-        """Initialize the internal element structures"""
+        """
+        Load a template definition.
+
+        Arguments:
+
+            elements (list of dicts):
+                A template definition in a list of dicts
+        """
         self.elements = elements
         self.keys = []
         for e in elements:
@@ -77,9 +102,29 @@ class FlexTemplate:
         return None
 
     def parse_csv(self, infile, delimiter=",", decimal_sep=".", encoding=None):
-        """Parse template format csv file and create elements dict"""
+        """
+        Load the template definition from a CSV file.
 
-        def varsep_float(s, default="0"):
+        Arguments:
+
+            infile (string):
+                The filename of the CSV file.
+
+            delimiter (single character):
+                The character that seperates the fields in the CSV file:
+                Usually a comma, semicolon, or tab.
+
+            decimal_sep (single character):
+                The decimal separator used in the file.
+                Usually either a point or a comma.
+
+            encoding (string):
+                The character encoding of the file.
+                Default is the system default encoding.
+
+        """
+
+        def _varsep_float(s, default="0"):
             """Convert to float with given decimal seperator"""
             # glad to have nonlocal scoping...
             return float((s.strip() or default).replace(decimal_sep, "."))
@@ -88,12 +133,12 @@ class FlexTemplate:
             # key, converter, mandatory
             ("name", str, True),
             ("type", str, True),
-            ("x1", varsep_float, True),
-            ("y1", varsep_float, True),
-            ("x2", varsep_float, True),
-            ("y2", varsep_float, True),
+            ("x1", _varsep_float, True),
+            ("y1", _varsep_float, True),
+            ("x2", _varsep_float, True),
+            ("y2", _varsep_float, True),
             ("font", str, False),
-            ("size", varsep_float, False),
+            ("size", _varsep_float, False),
             ("bold", int, False),
             ("italic", int, False),
             ("underline", int, False),
@@ -103,7 +148,7 @@ class FlexTemplate:
             ("text", str, False),
             ("priority", int, False),
             ("multiline", self._parse_multiline, False),
-            ("rotate", varsep_float, False),
+            ("rotate", _varsep_float, False),
         )
         self.elements = []
         if encoding is None:
@@ -157,7 +202,22 @@ class FlexTemplate:
         )
 
     def split_multicell(self, text, element_name):
-        """Divide (\n) a string using a given element width"""
+        """
+        Split a string between words, for the parts to fit into a given element
+        width. Additional splits will be made replacing any '\\n' characters.
+
+        Arguments:
+
+            text (string):
+                The input text string.
+
+            element_name (string):
+                The name of the template element to fit the text inside.
+
+        Returns:
+            A list of substrings, each of which will fit into the element width
+            when rendered in the element font style and size.
+        """
         element = next(
             element
             for element in self.elements
@@ -180,7 +240,7 @@ class FlexTemplate:
         )
 
     @staticmethod
-    def text(
+    def _text(
         pdf,
         *_,
         x1=0,
@@ -201,10 +261,10 @@ class FlexTemplate:
     ):
         if not text:
             return
-        if pdf.text_color != rgb_as_str(foreground):
-            pdf.set_text_color(*rgb(foreground))
-        if pdf.fill_color != rgb_as_str(background):
-            pdf.set_fill_color(*rgb(background))
+        if pdf.text_color != _rgb_as_str(foreground):
+            pdf.set_text_color(*_rgb(foreground))
+        if pdf.fill_color != _rgb_as_str(background):
+            pdf.set_fill_color(*_rgb(background))
 
         font = font.strip().lower()
         style = ""
@@ -238,30 +298,30 @@ class FlexTemplate:
             )
 
     @staticmethod
-    def line(pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, **__):
-        if pdf.draw_color.lower() != rgb_as_str(foreground):
-            pdf.set_draw_color(*rgb(foreground))
+    def _line(pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, **__):
+        if pdf.draw_color.lower() != _rgb_as_str(foreground):
+            pdf.set_draw_color(*_rgb(foreground))
         pdf.set_line_width(size)
         pdf.line(x1, y1, x2, y2)
 
     @staticmethod
-    def rect(
+    def _rect(
         pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, background=0xFFFFFF, **__
     ):
-        if pdf.draw_color.lower() != rgb_as_str(foreground):
-            pdf.set_draw_color(*rgb(foreground))
-        if pdf.fill_color != rgb_as_str(background):
-            pdf.set_fill_color(*rgb(background))
+        if pdf.draw_color.lower() != _rgb_as_str(foreground):
+            pdf.set_draw_color(*_rgb(foreground))
+        if pdf.fill_color != _rgb_as_str(background):
+            pdf.set_fill_color(*_rgb(background))
         pdf.set_line_width(size)
         pdf.rect(x1, y1, x2 - x1, y2 - y1, style="FD")
 
     @staticmethod
-    def image(pdf, *_, x1=0, y1=0, x2=0, y2=0, text="", **__):
+    def _image(pdf, *_, x1=0, y1=0, x2=0, y2=0, text="", **__):
         if text:
             pdf.image(text, x1, y1, w=x2 - x1, h=y2 - y1, link="")
 
     @staticmethod
-    def barcode(
+    def _barcode(
         pdf,
         *_,
         x1=0,
@@ -275,14 +335,14 @@ class FlexTemplate:
         **__,
     ):
         # pylint: disable=unused-argument
-        if pdf.draw_color.lower() != rgb_as_str(foreground):
-            pdf.set_draw_color(*rgb(foreground))
+        if pdf.draw_color.lower() != _rgb_as_str(foreground):
+            pdf.set_draw_color(*_rgb(foreground))
         font = font.lower().strip()
         if font == "interleaved 2of5 nt":
             pdf.interleaved2of5(text, x1, y1, w=size, h=y2 - y1)
 
     @staticmethod
-    def code39(
+    def _code39(
         pdf,
         *_,
         x1=0,
@@ -308,7 +368,7 @@ class FlexTemplate:
     # Added by Derek Schwalenberg Schwalenberg1013@gmail.com to allow (url) links in
     # templates (using write method) 2014-02-22
     @staticmethod
-    def write(
+    def _write(
         pdf,
         *_,
         x1=0,
@@ -326,8 +386,8 @@ class FlexTemplate:
         **__,
     ):
         # pylint: disable=unused-argument
-        if pdf.text_color != rgb_as_str(foreground):
-            pdf.set_text_color(*rgb(foreground))
+        if pdf.text_color != _rgb_as_str(foreground):
+            pdf.set_text_color(*_rgb(foreground))
         font = font.strip().lower()
         style = ""
         for tag in "B", "I", "U":
@@ -373,6 +433,12 @@ class FlexTemplate:
 
 
 class Template(FlexTemplate):
+    """
+    A simple templating class.
+
+    Allows to apply a single template definition to all pages of a document.
+    """
+
     # Disabling this check due to the "format" parameter below:
     # pylint: disable=redefined-builtin
     # pylint: disable=unused-argument
@@ -390,9 +456,36 @@ class Template(FlexTemplate):
         keywords="",
     ):
         """
-        Args:
-            infile (str): [**DEPRECATED**] unused, will be removed in a later version
+        Arguments:
+
+            infile (str):
+                [**DEPRECATED**] unused, will be removed in a later version
+
+            elements (list of dicts):
+                A template definition in a list of dicts.
+                If you omit this, then you need to call either load_elements()
+                or parse_csv() before doing anything else.
+
+            format (str):
+                The page format of the document (eg. "A4" or "letter").
+
+            orientation (str):
+                The orientation of the document.
+                Possible values are "portrait"/"P" or "landscape"/"L"
+
+            unit (str):
+                The units used in the template definition.
+                One of "mm", "cm", "in", "pt", or a number for points per unit.
+
+            title (str): The title of the document.
+
+            author (str): The author of the document.
+
+            subject (str): The subject matter of the document.
+
+            creator (str): The creator of the document.
         """
+
         pdf = FPDF(format=format, orientation=orientation, unit=unit)
         pdf.set_title(title)
         pdf.set_author(author)
@@ -402,6 +495,7 @@ class Template(FlexTemplate):
         super().__init__(pdf=pdf, elements=elements)
 
     def add_page(self):
+        """Finish the current page, and proceed to the next one."""
         if self.pdf.page:
             self.render()
         self.pdf.add_page()
@@ -409,10 +503,16 @@ class Template(FlexTemplate):
     # pylint: disable=arguments-differ
     def render(self, outfile=None, dest=None):
         """
-        Args:
-            outfile (str): optional output PDF file path. If ommited, the
-                `.pdf.output(...)` method can be manuallyy called afterwise.
-            dest (str): [**DEPRECATED**] unused, will be removed in a later version
+        Finish the document and process all pending data.
+
+        Arguments:
+
+            outfile (str):
+                If given, the PDF file will be written to this file name.
+                Alternatively, the `.pdf.output()` method can be manually called.
+
+            dest (str):
+                [**DEPRECATED**] unused, will be removed in a later version.
         """
         if dest:
             warnings.warn(
