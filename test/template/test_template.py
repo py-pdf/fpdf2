@@ -214,13 +214,31 @@ def test_template_code39(tmp_path):  # issue-161
             "y1": 50,
             "y2": 70,
             "size": 1.5,
-            "text": "Code 39 barcode",
+            "text": "*Code 39 barcode*",
             "priority": 1,
         },
     ]
     tmpl = Template(format="A4", title="Sample Code 39 barcode", elements=elements)
     tmpl.add_page()
     assert_pdf_equal(tmpl, HERE / "template_code39.pdf", tmp_path)
+
+
+def test_template_code39_defaultheight(tmp_path):  # height <= 0 invokes default
+    elements = [
+        {
+            "name": "code39",
+            "type": "C39",
+            "x1": 40,
+            "y1": 50,
+            "y2": 50,
+            "size": 1.5,
+            "text": "*Code 39 barcode*",
+            "priority": 1,
+        },
+    ]
+    tmpl = Template(format="A4", title="Sample Code 39 barcode", elements=elements)
+    tmpl.add_page()
+    assert_pdf_equal(tmpl, HERE / "template_code39_defaultheight.pdf", tmp_path)
 
 
 def test_template_qrcode(tmp_path):  # issue-175
