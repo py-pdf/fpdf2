@@ -14,6 +14,8 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - documentation on how to generate datamatrix barcodes using the `pystrich` lib: [documentation section](https://pyfpdf.github.io/fpdf2/Barcodes.html#datamatrix),
   thanks to @MWhatsUp
 - `write_html`: headings (`<h1>`, `<h2>`...) relative sizes can now be configured through an optional `heading_sizes` parameter
+- a subclass of `HTML2FPDF` can now easily be used by setting `FPDF.HTML2FPDF_CLASS`,
+  _cf._ [documentation](https://pyfpdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html#with-html)
 ### Fixed
 - `write_html`: headings (`<h1>`, `<h2>`...) can now contain non-ASCII characters without triggering a `UnicodeEncodeError`
 - `Template`: CSV column types are now safely parsed, thanks to @gmischler

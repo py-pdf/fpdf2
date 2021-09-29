@@ -32,7 +32,32 @@ Note that a page break will always be triggered after inserting the table of con
 When using [`fpdf.HTMLMixin`](HTML.md), a document outline is automatically built.
 You can insert a table of content with the special `<toc>` tag.
 
-Custom styling of the table of contents can be achieved by overriding the `render_toc` method in a subclass.
+Custom styling of the table of contents can be achieved by overriding the `render_toc` method
+in a subclass of `fpdf.html.HTML2FPDF`:
+```python
+from fpdf import FPDF, HTMLMixin, HTML2FPDF
+
+class CustomHTML2FPDF(HTML2FPDF):
+    def render_toc(self, pdf, outline):
+        pdf.cell(txt='Table of contents:', ln=1)
+        for section in outline:
+            pdf.cell(txt=f'* {section.name} (page {section.page_number})', ln=1)
+
+class PDF(FPDF, HTMLMixin):
+    HTML2FPDF_CLASS = CustomHTML2FPDF
+
+pdf = PDF()
+pdf.add_page()
+pdf.write_html("""<toc></toc>
+    <h1>Level 1</h1>
+    <h2>Level 2</h2>
+    <h3>Level 3</h3>
+    <h4>Level 4</h4>
+    <h5>Level 5</h5>
+    <h6>Level 6</h6>
+    <p>paragraph<p>""")
+pdf.output("html_toc.pdf")
+```
 
 ## Code samples ##
 

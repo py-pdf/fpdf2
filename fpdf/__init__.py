@@ -8,7 +8,7 @@ from .fpdf import (
     FPDF_FONT_DIR as _FPDF_FONT_DIR,
     FPDF_VERSION as _FPDF_VERSION,
 )
-from .html import HTMLMixin
+from .html import HTMLMixin, HTML2FPDF
 from .template import Template
 from .deprecation import WarnOnDeprecatedModuleAttributes
 
@@ -41,6 +41,7 @@ __all__ = [
     "Template",
     "TitleStyle",
     "HTMLMixin",
+    "HTML2FPDF",
     # FPDF Constants
     "FPDF_VERSION",
     "FPDF_FONT_DIR",

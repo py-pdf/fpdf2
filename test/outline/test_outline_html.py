@@ -1,13 +1,13 @@
 from pathlib import Path
 
-import fpdf
+from fpdf import FPDF, HTMLMixin
 from test.conftest import assert_pdf_equal
 
 
 HERE = Path(__file__).resolve().parent
 
 
-class MyFPDF(fpdf.FPDF, fpdf.HTMLMixin):
+class MyFPDF(FPDF, HTMLMixin):
     pass
 
 
@@ -217,6 +217,9 @@ def test_html_toc_2_pages(tmp_path):
         Lorem ipsum dolor sit amet, consectetur adipiscing elit,
         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
         <h2>Subtitle 54</h2>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        <h2>Subtitle 55</h2>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit,
         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
         """
