@@ -339,7 +339,11 @@ def test_template_split_multicell(tmp_path):
             "multiline": 1,
         }
     ]
-    text = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
+    text = (
+        "Lorem ipsum dolor sit amet, consetetur sadipscing elitr,"
+        " sed diam nonumy eirmod tempor invidunt ut labore et dolore"
+        " magna aliquyam erat, sed diam voluptua."
+    )
     expected = [
         "Lorem ipsum dolor",
         "sit amet, consetetur",
