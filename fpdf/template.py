@@ -241,9 +241,9 @@ class FlexTemplate:
             split_only=True,
         )
 
-    @staticmethod
     def _text(
-        pdf,
+        self,
+        rotations,
         *_,
         x1=0,
         y1=0,
@@ -263,6 +263,7 @@ class FlexTemplate:
     ):
         if not text:
             return
+        pdf = self.pdf
         if pdf.text_color != _rgb_as_str(foreground):
             pdf.set_text_color(*_rgb(foreground))
         if pdf.fill_color != _rgb_as_str(background):
@@ -281,77 +282,151 @@ class FlexTemplate:
         if underline:
             style += "U"
         pdf.set_font(font, style, size)
-        pdf.set_xy(x1, y1)
         width, height = x2 - x1, y2 - y1
+        rotate = __.get("rotate")
+        if rotate:
+            rotations.append((rotate, x1, y2))
         if multiline is None:  # write without wrapping/trimming (default)
-            pdf.cell(
-                w=width, h=height, txt=text, border=0, ln=0, align=align, fill=True
+            self._render_rotated(
+                (x1, y1),
+                pdf.cell,
+                (),
+                {
+                    "w": width,
+                    "h": height,
+                    "txt": text,
+                    "border": 0,
+                    "ln": 0,
+                    "align": align,
+                    "fill": True,
+                },
+                rotations,
             )
         elif multiline:  # automatic word - warp
-            pdf.multi_cell(
-                w=width, h=height, txt=text, border=0, align=align, fill=True
+            self._render_rotated(
+                (x1, y1),
+                pdf.multi_cell,
+                (),
+                {
+                    "w": width,
+                    "h": height,
+                    "txt": text,
+                    "border": 0,
+                    "align": align,
+                    "fill": True,
+                },
+                rotations,
             )
         else:  # trim to fit exactly the space defined
             text = pdf.multi_cell(
                 w=width, h=height, txt=text, align=align, split_only=True
             )[0]
-            pdf.cell(
-                w=width, h=height, txt=text, border=0, ln=0, align=align, fill=True
+            self._render_rotated(
+                (x1, y1),
+                pdf.cell,
+                (),
+                {
+                    "w": width,
+                    "h": height,
+                    "txt": text,
+                    "border": 0,
+                    "ln": 0,
+                    "align": align,
+                    "fill": True,
+                },
+                rotations,
             )
 
-    @staticmethod
-    def _line(pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, **__):
+    def _line(self, rotations, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, **__):
+        pdf = self.pdf
         if pdf.draw_color.lower() != _rgb_as_str(foreground):
             pdf.set_draw_color(*_rgb(foreground))
         pdf.set_line_width(size)
-        pdf.line(x1, y1, x2, y2)
+        rotate = __.get("rotate")
+        if rotate:
+            rotations.append((rotate, x1, y2))
+        self._render_rotated(None, pdf.line, (x1, y1, x2, y2), {}, rotations)
 
-    @staticmethod
     def _rect(
-        pdf, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, background=0xFFFFFF, **__
+        self,
+        rotations,
+        *_,
+        x1=0,
+        y1=0,
+        x2=0,
+        y2=0,
+        size=0,
+        foreground=0,
+        background=0xFFFFFF,
+        **__,
     ):
+        pdf = self.pdf
         if pdf.draw_color.lower() != _rgb_as_str(foreground):
             pdf.set_draw_color(*_rgb(foreground))
         if pdf.fill_color != _rgb_as_str(background):
             pdf.set_fill_color(*_rgb(background))
         pdf.set_line_width(size)
-        pdf.rect(x1, y1, x2 - x1, y2 - y1, style="FD")
+        rotate = __.get("rotate")
+        if rotate:
+            rotations.append((rotate, x1, y2))
+        self._render_rotated(
+            None, pdf.rect, (x1, y1, x2 - x1, y2 - y1), {"style": "FD"}, rotations
+        )
 
-    @staticmethod
-    def _image(pdf, *_, x1=0, y1=0, x2=0, y2=0, text="", **__):
+    def _image(self, rotations, *_, x1=0, y1=0, x2=0, y2=0, text="", **__):
         if text:
-            pdf.image(text, x1, y1, w=x2 - x1, h=y2 - y1, link="")
+            rotate = __.get("rotate")
+            if rotate:
+                rotations.append((rotate, x1, y2))
+            self._render_rotated(
+                None,
+                self.pdf.image,
+                (text, x1, y1),
+                {"w": x2 - x1, "h": y2 - y1, "link": ""},
+                rotations,
+            )
 
-    @staticmethod
     def _barcode(
-        pdf,
+        self,
+        rotations,
         *_,
         x1=0,
         y1=0,
         x2=0,
         y2=0,
         text="",
-        font="helvetica",
+        font="interleaved 2of5 nt",
         size=1,
         foreground=0,
         **__,
     ):
         # pylint: disable=unused-argument
-        if pdf.draw_color.lower() != _rgb_as_str(foreground):
-            pdf.set_draw_color(*_rgb(foreground))
+        pdf = self.pdf
+        if pdf.fill_color.lower() != _rgb_as_str(foreground):
+            pdf.set_fill_color(*_rgb(foreground))
         font = font.lower().strip()
         if font == "interleaved 2of5 nt":
-            pdf.interleaved2of5(text, x1, y1, w=size, h=y2 - y1)
+            rotate = __.get("rotate")
+            if rotate:
+                rotations.append((rotate, x1, y2))
+            self._render_rotated(
+                None,
+                pdf.interleaved2of5,
+                (text, x1, y1),
+                {"w": size, "h": y2 - y1},
+                rotations,
+            )
 
-    @staticmethod
     def _code39(
-        pdf,
+        self,
+        rotations,
         *_,
         x1=0,
         y1=0,
         y2=0,
         text="",
         size=1.5,
+        foreground=0,
         x=None,
         y=None,
         w=None,
@@ -362,16 +437,22 @@ class FlexTemplate:
             raise ValueError(
                 "Arguments x/y/w/h are invalid. Use x1/y1/y2/size instead."
             )
+        pdf = self.pdf
+        if pdf.fill_color.lower() != _rgb_as_str(foreground):
+            pdf.set_fill_color(*_rgb(foreground))
         h = y2 - y1
         if h <= 0:
             h = 5
-        pdf.code39(text, x1, y1, size, h)
+        rotate = __.get("rotate")
+        if rotate:
+            rotations.append((rotate, x1, y2))
+        self._render_rotated(None, pdf.code39, (text, x1, y1, size, h), {}, rotations)
 
     # Added by Derek Schwalenberg Schwalenberg1013@gmail.com to allow (url) links in
     # templates (using write method) 2014-02-22
-    @staticmethod
     def _write(
-        pdf,
+        self,
+        rotations,
         *_,
         x1=0,
         y1=0,
@@ -388,6 +469,7 @@ class FlexTemplate:
         **__,
     ):
         # pylint: disable=unused-argument
+        pdf = self.pdf
         if pdf.text_color != _rgb_as_str(foreground):
             pdf.set_text_color(*_rgb(foreground))
         font = font.strip().lower()
@@ -403,16 +485,26 @@ class FlexTemplate:
         if underline:
             style += "U"
         pdf.set_font(font, style, size)
-        pdf.set_xy(x1, y1)
-        pdf.write(5, text, link)
+        rotate = __.get("rotate")
+        if rotate:
+            rotations.append((rotate, x1, y2))
+        self._render_rotated((x1, y1), pdf.write, (5, text, link), {}, rotations)
 
-    def _render_element(self, element):
-        handler_name = element["type"].upper()
-        if element.get("rotate"):
-            with self.pdf.rotation(element["rotate"], element["x1"], element["y1"]):
-                self.handlers[handler_name](self.pdf, **element)
+    def _render_rotated(self, pos, func, args, kwargs, rotations):
+        # Solves issue 226
+        # Settings operations (fonts, colors, line widths etc.) must not appear
+        # within a rotation context.
+        # The solution is to queue up rotations and execute them all in one go
+        # once everything else has been set up.
+        # Technically, we could keep rotating until we're dizzy (up to Pythons
+        # recursion limit), but in practise we take two turns at most.
+        if rotations:
+            with self.pdf.rotation(*(rotations[0])):
+                self._render_rotated(pos, func, args, kwargs, rotations[1:])
         else:
-            self.handlers[handler_name](self.pdf, **element)
+            if pos:
+                self.pdf.set_xy(*pos)
+            func(*args, **kwargs)
 
     def render(self, offsetx=0.0, offsety=0.0, rotate=0.0):
         sorted_elements = sorted(self.elements, key=lambda x: x["priority"])
@@ -425,12 +517,14 @@ class FlexTemplate:
             element["y1"] = element["y1"] + offsety
             element["x2"] = element["x2"] + offsetx
             element["y2"] = element["y2"] + offsety
+            handler_name = element["type"].upper()
             if rotate:  # don't rotate by 0.0 degrees
-                with self.pdf.rotation(rotate, offsetx, offsety):
-                    self._render_element(element)
+                rotations = [
+                    (rotate, offsetx, offsety),
+                ]
+                self.handlers[handler_name](rotations, **element)
             else:
-                self._render_element(element)
-
+                self.handlers[handler_name]([], **element)
         self.texts = {}  # reset modified entries for the next page
 
 

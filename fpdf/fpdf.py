@@ -3276,8 +3276,8 @@ class FPDF:
             "A": "nn",
             "Z": "wn",
         }
-
-        self.set_fill_color(0)
+        # The caller should do this, or we can't rotate the thing.
+        # self.set_fill_color(0)
         code = txt
         # add leading zero if code-length is odd
         if len(code) % 2 != 0:
@@ -3366,7 +3366,8 @@ class FPDF:
             "+": "nwnnnwnwn",
             "%": "nnnwnwnwn",
         }
-        self.set_fill_color(0)
+        # The caller should do this, or we can't rotate the thing.
+        # self.set_fill_color(0)
         for c in txt.upper():
             if c not in chars:
                 raise RuntimeError(f'Invalid char "{c}" for Code39')

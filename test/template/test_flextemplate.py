@@ -1,4 +1,5 @@
 from pathlib import Path
+import qrcode
 from fpdf.fpdf import FPDF
 from fpdf.template import FlexTemplate
 from ..conftest import assert_pdf_equal
@@ -113,3 +114,90 @@ def test_flextemplate_multipage(tmp_path):
     tmpl_1.parse_csv(HERE / "mycsvfile.csv", delimiter=";")
     tmpl_1.render()
     assert_pdf_equal(pdf, HERE / "flextemplate_multipage.pdf", tmp_path)
+
+
+def test_flextemplate_rotation(tmp_path):
+    elements = [
+        {
+            "name": "box",
+            "type": "B",
+            "x1": 30,
+            "y1": 0,
+            "x2": 80,
+            "y2": 20,
+            "rotate": 10.0,
+        },
+        {
+            "name": "line",
+            "type": "L",
+            "x1": 0,
+            "y1": 0,
+            "x2": 50,
+            "y2": 20,
+            "rotate": 15.0,
+        },
+        {
+            "name": "rotatapalooza!",
+            "type": "T",
+            "x1": 40,
+            "y1": 10,
+            "x2": 60,
+            "y2": 15,
+            "text": "Label",
+            "rotate": -15.0,
+        },
+        {
+            "name": "multi",
+            "type": "T",
+            "x1": 80,
+            "y1": 10,
+            "x2": 100,
+            "y2": 15,
+            "text": "Lorem ipsum dolor sit amet, consectetur adipisici elit",
+            "rotate": 90.0,
+            "multiline": True,
+        },
+        {
+            "name": "barcode",
+            "type": "BC",
+            "x1": 60,
+            "y1": 00,
+            "x2": 70,
+            "y2": 10,
+            "text": "123456",
+            "size": 1,
+            "rotate": 30.0,
+        },
+        {
+            "name": "barcode",
+            "type": "C39",
+            "x1": 80,
+            "y1": 10,
+            "x2": 70,
+            "y2": 15,
+            "text": "*987*",
+            "size": 1,
+            "rotate": 60.0,
+        },
+        {
+            "name": "qrcode",
+            "type": "I",
+            "x1": 30,
+            "y1": 0,
+            "x2": 40,
+            "y2": 10,
+            "rotate": 45,
+        },
+    ]
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("courier", "", 10)
+    templ = FlexTemplate(pdf, elements)
+    templ["qrcode"] = qrcode.make("Test 0").get_image()
+    templ.render(offsetx=100, offsety=100, rotate=5)
+    pdf.add_page()
+    for i in range(0, 360, 6):
+        templ["qrcode"] = qrcode.make("Test 0").get_image()
+        templ.render(offsetx=100, offsety=100, rotate=i)
+    templ.render()
+    assert_pdf_equal(pdf, HERE / "flextemplate_rotation.pdf", tmp_path)
