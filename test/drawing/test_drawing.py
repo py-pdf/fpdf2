@@ -9,6 +9,8 @@ from test.conftest import assert_pdf_equal
 
 import pytest
 
+from . import parameters
+
 
 HERE = Path(__file__).resolve().parent
 bad_path_chars = re.compile(r"[\[\]=#, ]")
@@ -44,40 +46,6 @@ def open_path_drawing():
     path.style.auto_close = False
 
     return path
-
-
-@pytest.fixture(
-    params=[
-        ("auto_close", True),
-        ("intersection_rule", "evenodd"),
-        ("fill_color", None),
-        ("fill_color", "#00F"),
-        ("fill_color", "#00FC"),
-        ("fill_color", "#00FF00"),
-        ("fill_color", "#00FF007F"),
-        ("fill_opacity", None),
-        ("fill_opacity", 0.5),
-        ("stroke_color", None),
-        ("stroke_color", "#00F"),
-        ("stroke_color", "#00FC"),
-        ("stroke_color", "#00FF00"),
-        ("stroke_color", "#00FF007F"),
-        ("stroke_opacity", None),
-        ("stroke_opacity", 0.5),
-        ("stroke_width", None),
-        ("stroke_width", 0),
-        ("stroke_width", 2),
-        ("stroke_join_style", "miter"),
-        ("stroke_join_style", "bevel"),
-        ("stroke_cap_style", "butt"),
-        ("stroke_cap_style", "square"),
-        ("stroke_dash_pattern", [0.5, 0.5]),
-        ("stroke_dash_pattern", [1, 2, 3, 1]),
-    ],
-    ids=lambda val: f"{val[0]}={val[1]}",
-)
-def dummy_styles(request):
-    return request.param
 
 
 @pytest.fixture(
@@ -175,9 +143,9 @@ class TestUtilities:
 
 
 class TestStyles:
-    def test_individual_attribute(self, auto_pdf, open_path_drawing, dummy_styles):
-        sname, value = dummy_styles
-        setattr(open_path_drawing.style, sname, value)
+    @pytest.mark.parametrize("style_name, value", parameters.style_attributes)
+    def test_individual_attribute(self, auto_pdf, open_path_drawing, style_name, value):
+        setattr(open_path_drawing.style, style_name, value)
 
         auto_pdf.draw_path(open_path_drawing)
 
@@ -206,8 +174,8 @@ class TestStyles:
 
         auto_pdf.draw_path(open_path_drawing)
 
-    def test_dictionary_generation(self, dummy_styles):
-        _ = dummy_styles
+    def test_dictionary_generation(self):
+        pass
 
     def test_bad_style_parameters(self, invalid_styles):
         attr, value, exc = invalid_styles
