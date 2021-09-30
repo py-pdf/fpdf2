@@ -46,6 +46,7 @@ class FlexTemplate:
         if not isinstance(pdf, FPDF):
             raise TypeError("'pdf' must be an instance of fpdf.FPDF()")
         self.pdf = pdf
+        self.splitting_pdf = None  # for split_multicell()
         if elements:
             self.load_elements(elements)
         self.handlers = {
@@ -225,6 +226,9 @@ class FlexTemplate:
             for element in self.elements
             if element["name"].lower() == element_name.lower()
         )
+        if not self.splitting_pdf:
+            self.splitting_pdf = FPDF()
+            self.splitting_pdf.add_page()
         style = ""
         if element["bold"]:
             style += "B"
@@ -232,8 +236,8 @@ class FlexTemplate:
             style += "I"
         if element["underline"]:
             style += "U"
-        self.pdf.set_font(element["font"], style, element["size"])
-        return self.pdf.multi_cell(
+        self.splitting_pdf.set_font(element["font"], style, element["size"])
+        return self.splitting_pdf.multi_cell(
             w=element["x2"] - element["x1"],
             h=element["y2"] - element["y1"],
             txt=str(text),
