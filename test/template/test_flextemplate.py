@@ -137,13 +137,13 @@ def test_flextemplate_rotation(tmp_path):
             "rotate": 15.0,
         },
         {
-            "name": "rotatapalooza!",
+            "name": "text!",
             "type": "T",
             "x1": 40,
             "y1": 10,
             "x2": 60,
             "y2": 15,
-            "text": "Label",
+            "text": "rotatapalooza!",
             "rotate": -15.0,
         },
         {
@@ -158,6 +158,16 @@ def test_flextemplate_rotation(tmp_path):
             "multiline": True,
         },
         {
+            "name": "write",
+            "type": "W",
+            "x1": 35,
+            "y1": 0,
+            "x2": 45,
+            "y2": 5,
+            "text": "Writing",
+            "rotate": -30.0,
+        },
+        {
             "name": "barcode",
             "type": "BC",
             "x1": 60,
@@ -169,7 +179,7 @@ def test_flextemplate_rotation(tmp_path):
             "rotate": 30.0,
         },
         {
-            "name": "barcode",
+            "name": "code39",
             "type": "C39",
             "x1": 80,
             "y1": 10,
@@ -199,5 +209,4 @@ def test_flextemplate_rotation(tmp_path):
     for i in range(0, 360, 6):
         templ["qrcode"] = qrcode.make("Test 0").get_image()
         templ.render(offsetx=100, offsety=100, rotate=i)
-    templ.render()
     assert_pdf_equal(pdf, HERE / "flextemplate_rotation.pdf", tmp_path)
