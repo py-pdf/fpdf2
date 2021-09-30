@@ -315,3 +315,42 @@ def test_template_justify(tmp_path):  # issue-207
     tmpl = Template(format="A4", unit="pt", elements=elements)
     tmpl.add_page()
     assert_pdf_equal(tmpl, HERE / "template_justify.pdf", tmp_path)
+
+
+def test_template_split_multicell(tmp_path):
+    elements = [
+        {
+            "name": "multline_text",
+            "type": "T",
+            "x1": 20,
+            "y1": 100,
+            "x2": 60,
+            "y2": 105,
+            "font": "helvetica",
+            "size": 12,
+            "bold": 0,
+            "italic": 0,
+            "underline": 0,
+            "foreground": 0,
+            "background": 0x88FF00,
+            "align": "I",
+            "text": "Lorem ipsum",
+            "priority": 2,
+            "multiline": 1,
+        }
+    ]
+    text = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
+    expected = [
+        "Lorem ipsum dolor",
+        "sit amet, consetetur",
+        "sadipscing elitr, sed",
+        "diam nonumy",
+        "eirmod tempor",
+        "invidunt ut labore et",
+        "dolore magna",
+        "aliquyam erat, sed",
+        "diam voluptua.",
+    ]
+    tmpl = Template(format="A4", unit="pt", elements=elements)
+    res = tmpl.split_multicell(text, "multline_text")
+    assert res == expected
