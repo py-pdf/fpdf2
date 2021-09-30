@@ -2,7 +2,7 @@
 
 Templates are predefined documents (like invoices, tax forms, etc.), or parts of such documents, where each element (text, lines, barcodes, etc.) has a fixed position (x1, y1, x2, y2), style (font, size, etc.) and a default text.
 
-These elements can act as placeholders, so the program can change the default text "filling" the document.
+These elements can act as placeholders, so the program can change the default text "filling in" the document.
 
 Besides being defined in code, the elements can also be defined in a CSV file or in a database, so the user can easily adapt the form to his printing needs.
 
@@ -39,7 +39,7 @@ tmpl[item_key_02] = "Text 12"
 tmpl.render(outfile="example.pdf")
 ```
 
-The Template() class will create and manage its own FPDF() instance, so you don't need to worry about how it all works together. It also allows to set the page format, title of the document and other metadata for the PDF file.
+The Template() class will create and manage its own FPDF() instance, so you don't need to worry about how it all works together. It also allows to set the page format, title of the document, measuring unit, and other metadata for the PDF file.
 
 For the method signatures, see [pyfpdf.github.io: class Template](https://pyfpdf.github.io/fpdf2/fpdf/template.html#fpdf.template.Template).
 
@@ -117,7 +117,7 @@ Evidently, this can end up quite a bit more involved, but there are hardly any l
 
 Of course, you can just as well use a set of full-page templates, possibly differentiating between cover page, table of contents, normal content pages, and an index page, or something along those lines. 
 
-And here's how you can use a template several times on one page (and by extension, several times on several pages). When rendering with an `offsetx` and/or `offsety` argument, the contents of the template will end up in a different place on the page. A `rotate` argument will change its orientation, rotated around the origin of the template.:
+And here's how you can use a template several times on one page (and by extension, several times on several pages). When rendering with an `offsetx` and/or `offsety` argument, the contents of the template will end up in a different place on the page. A `rotate` argument will change its orientation, rotated around the origin of the template. The pivot of the rotation is the offset location.
 
 ```python
 elements = [
@@ -152,6 +152,7 @@ FlexTemplate["company_name"] = "Sample Company"
 # Details - Template definition #
 
 A template definition consists of a number of elements, which have the following properties (columns in a CSV, items in a dict, fields in a database).
+Dimensions (except font size, which always uses points) are given in user defined units (default: mm). Those are the units that can be specified when creating a `Template()` or a `FPDF()` instance.
 
 * __name__: placeholder identification (unique text string)
     * _mandatory_
@@ -165,7 +166,7 @@ A template definition consists of a number of elements, which have the following
         * Incompatible change: The first implementation of this type used the non-standard template keys "x", "y", "w", and "h", which are no longer valid.
     * '__W__': "Write" - uses the FPDF.write() method to add text to the page
     * _mandatory_
-* __x1, y1, x2, y2__: top-left, bottom-right coordinates (in mm), defining a bounding box in most cases
+* __x1, y1, x2, y2__: top-left, bottom-right coordinates, defining a bounding box in most cases
     * for multiline text, this is the bounding box for just the first line, not the complete box
     * for the barcodes types, the height of the barcode is `y2 - y1`, x2 is ignored.
     * _mandatory_ ("x2" _optional_ for the barcode types)
@@ -173,11 +174,11 @@ A template definition consists of a number of elements, which have the following
     * _optional_
     * default: "helvetica"
 * __size__: the size property of the element (float value)
-    * for text, the font size in points
-    * for line and rect, the line width in points 
-    * for the barcode types, the width of one bar in mm.
+    * for text, the font size (in points!)
+    * for line and rect, the line width
+    * for the barcode types, the width of one bar 
     * _optional_
-    * default: 10 for text, 2 mm for 'BC', 1.5 mm for 'C39'
+    * default: 10 for text, 2 for 'BC', 1.5 for 'C39'
 * __bold, italic, underline__: text style properties
     * in elements dict, enabled with True or equivalent value
     * in csv, only int values, 0 as false, non-0 as true
@@ -206,7 +207,7 @@ A template definition consists of a number of elements, which have the following
     * _optional_
     * default: 0.0 - no rotation
 
-Fields that are not relevant to a specific element type will be ignored there, but if present must still adhere to the specified data type.
+Fields that are not relevant to a specific element type will be ignored there, but if not left empty in a CSV file, they must still adhere to the specified data type.
 
 
 # How to create a template #
