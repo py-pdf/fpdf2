@@ -9,15 +9,19 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.4.4] - not released yet
 ### Added
+- `Template()` has gained a more flexible cousin `FlexTemplate()`, thanks to @gmischler
 - markdown support in `multi_cell()`, thanks to Yeshi Namkhai
 - base 64 images can now be provided to `FPDF.image`, thanks to @MWhatsUp
 - documentation on how to generate datamatrix barcodes using the `pystrich` lib: [documentation section](https://pyfpdf.github.io/fpdf2/Barcodes.html#datamatrix),
   thanks to @MWhatsUp
 - `write_html`: headings (`<h1>`, `<h2>`...) relative sizes can now be configured through an optional `heading_sizes` parameter
 ### Fixed
+- `Template`: `split_multicell()` will not write spurious font data to the target document anymore, thanks to @gmischler
+- `Template`: rotation now should work correctly in all situations, thanks to @gmischler
 - `write_html`: headings (`<h1>`, `<h2>`...) can now contain non-ASCII characters without triggering a `UnicodeEncodeError`
 - `Template`: CSV column types are now safely parsed, thanks to @gmischler
 ### Changed
+- `Template`: Incompatible change: the Code39 barcode type has changed the input field names, making it possible to use it in CSV files.
 - `write_html`: the line height of headings (`<h1>`, `<h2>`...) is now properly scaled with its font size
 - some `FPDF` methods should not be used inside a `rotation` context, or things can get broken.
   This is now forbidden: an exception is now raised in those cases.
