@@ -138,6 +138,7 @@ This library could only exist thanks to the dedication of many volunteers around
     <td align="center"><a href="https://github.com/torque"><img src="https://avatars.githubusercontent.com/u/949138?v=4?s=100" width="100px;" alt=""/><br /><sub><b>T</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=torque" title="Code">💻</a> <a href="#design-torque" title="Design">🎨</a></td>
     <td align="center"><a href="https://github.com/AubsUK"><img src="https://avatars.githubusercontent.com/u/68870168?v=4?s=100" width="100px;" alt=""/><br /><sub><b>AubsUK</b></sub></a><br /><a href="#question-AubsUK" title="Answering Questions">💬</a></td>
     <td align="center"><a href="http://www.schorsch.com/"><img src="https://avatars.githubusercontent.com/u/17468844?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Georg Mischler</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=gmischler" title="Code">💻</a> <a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Agmischler" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=gmischler" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://www.buymeacoffee.com/ping"><img src="https://avatars.githubusercontent.com/u/104607?v=4?s=100" width="100px;" alt=""/><br /><sub><b>ping</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Aping" title="Bug reports">🐛</a></td>
   </tr>
 </table>
 
