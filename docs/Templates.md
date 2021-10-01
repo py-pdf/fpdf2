@@ -117,7 +117,7 @@ Evidently, this can end up quite a bit more involved, but there are hardly any l
 
 Of course, you can just as well use a set of full-page templates, possibly differentiating between cover page, table of contents, normal content pages, and an index page, or something along those lines. 
 
-And here's how you can use a template several times on one page (and by extension, several times on several pages). When rendering with an `offsetx` and/or `offsety` argument, the contents of the template will end up in a different place on the page. A `rotate` argument will change its orientation, rotated around the origin of the template. The pivot of the rotation is the offset location.
+And here's how you can use a template several times on one page (and by extension, several times on several pages). When rendering with an `offsetx` and/or `offsety` argument, the contents of the template will end up in a different place on the page. A `rotate` argument will change its orientation, rotated around the origin of the template. The pivot of the rotation is the offset location. And finally, a `scale` argument allows you to insert the template larger or smaller than it was defined.
 
 ```python
 elements = [
@@ -133,10 +133,10 @@ templ["label"] = "Offset: 50 / 50 mm"
 templ.render(offsetx=50, offsety=50)
 templ["label"] = "Offset: 50 / 120 mm"
 templ.render(offsetx=50, offsety=120)
-templ["label"] = "Offset: 120 / 50 mm"
-templ.render(offsetx=120, offsety=50)
-templ["label"] = "Offset: 120 / 120 mm"
-templ.render(offsetx=120, offsety=120, rotate=30.0)
+templ["label"] = "Offset: 120 / 50 mm, Scale: 0.5"
+templ.render(offsetx=120, offsety=50, scale=0.5)
+templ["label"] = "Offset: 120 / 120 mm, Rotate: 30°, Scale=0.5"
+templ.render(offsetx=120, offsety=120, rotate=30.0, scale=0.5)
 pdf.output("example.pdf")
 ```
 

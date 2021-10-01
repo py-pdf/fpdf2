@@ -256,6 +256,7 @@ class FlexTemplate:
         text="",
         font="helvetica",
         size=10,
+        scale=1.0,
         bold=False,
         italic=False,
         underline=False,
@@ -285,7 +286,7 @@ class FlexTemplate:
             style += "I"
         if underline:
             style += "U"
-        pdf.set_font(font, style, size)
+        pdf.set_font(font, style, size * scale)
         width, height = x2 - x1, y2 - y1
         rotate = __.get("rotate")
         if rotate:
@@ -341,11 +342,23 @@ class FlexTemplate:
                 rotations,
             )
 
-    def _line(self, rotations, *_, x1=0, y1=0, x2=0, y2=0, size=0, foreground=0, **__):
+    def _line(
+        self,
+        rotations,
+        *_,
+        x1=0,
+        y1=0,
+        x2=0,
+        y2=0,
+        size=0,
+        scale=1.0,
+        foreground=0,
+        **__,
+    ):
         pdf = self.pdf
         if pdf.draw_color.lower() != _rgb_as_str(foreground):
             pdf.set_draw_color(*_rgb(foreground))
-        pdf.set_line_width(size)
+        pdf.set_line_width(size * scale)
         rotate = __.get("rotate")
         if rotate:
             rotations.append((rotate, x1, y2))
@@ -360,6 +373,7 @@ class FlexTemplate:
         x2=0,
         y2=0,
         size=0,
+        scale=1.0,
         foreground=0,
         background=0xFFFFFF,
         **__,
@@ -369,7 +383,7 @@ class FlexTemplate:
             pdf.set_draw_color(*_rgb(foreground))
         if pdf.fill_color != _rgb_as_str(background):
             pdf.set_fill_color(*_rgb(background))
-        pdf.set_line_width(size)
+        pdf.set_line_width(size * scale)
         rotate = __.get("rotate")
         if rotate:
             rotations.append((rotate, x1, y2))
@@ -401,6 +415,7 @@ class FlexTemplate:
         text="",
         font="interleaved 2of5 nt",
         size=1,
+        scale=1.0,
         foreground=0,
         **__,
     ):
@@ -417,7 +432,7 @@ class FlexTemplate:
                 None,
                 pdf.interleaved2of5,
                 (text, x1, y1),
-                {"w": size, "h": y2 - y1},
+                {"w": size * scale, "h": y2 - y1},
                 rotations,
             )
 
@@ -430,6 +445,7 @@ class FlexTemplate:
         y2=0,
         text="",
         size=1.5,
+        scale=1.0,
         foreground=0,
         x=None,
         y=None,
@@ -450,7 +466,9 @@ class FlexTemplate:
         rotate = __.get("rotate")
         if rotate:
             rotations.append((rotate, x1, y2))
-        self._render_rotated(None, pdf.code39, (text, x1, y1, size, h), {}, rotations)
+        self._render_rotated(
+            None, pdf.code39, (text, x1, y1, size * scale, h), {}, rotations
+        )
 
     # Added by Derek Schwalenberg Schwalenberg1013@gmail.com to allow (url) links in
     # templates (using write method) 2014-02-22
@@ -465,6 +483,7 @@ class FlexTemplate:
         text="",
         font="helvetica",
         size=10,
+        scale=1.0,
         bold=False,
         italic=False,
         underline=False,
@@ -488,7 +507,7 @@ class FlexTemplate:
             style += "I"
         if underline:
             style += "U"
-        pdf.set_font(font, style, size)
+        pdf.set_font(font, style, size * scale)
         rotate = __.get("rotate")
         if rotate:
             rotations.append((rotate, x1, y2))
@@ -510,25 +529,43 @@ class FlexTemplate:
                 self.pdf.set_xy(*pos)
             func(*args, **kwargs)
 
-    def render(self, offsetx=0.0, offsety=0.0, rotate=0.0):
+    def render(self, offsetx=0.0, offsety=0.0, rotate=0.0, scale=1.0):
+        """
+        Add the contents of the template to the PDF document.
+
+        Arguments:
+
+            offsetx, offsety (float):
+                Place the template to move its origin to the given coordinates.
+
+            rotate (float):
+                Rotate the inserted template around its (offset) origin.
+
+            scale (float):
+                Scale the inserted template by this factor.
+        """
         sorted_elements = sorted(self.elements, key=lambda x: x["priority"])
         for element in sorted_elements:
-            element = element.copy()
-            element["text"] = self.texts.get(
-                element["name"].lower(), element.get("text", "")
-            )
-            element["x1"] = element["x1"] + offsetx
-            element["y1"] = element["y1"] + offsety
-            element["x2"] = element["x2"] + offsetx
-            element["y2"] = element["y2"] + offsety
-            handler_name = element["type"].upper()
+            ele = element.copy()  # don't want to modify the callers original
+            ele["text"] = self.texts.get(ele["name"].lower(), ele.get("text", ""))
+            if scale != 1.0:
+                ele["x1"] = ele["x1"] * scale
+                ele["y1"] = ele["y1"] * scale
+                ele["x2"] = ele["x1"] + ((ele["x2"] - element["x1"]) * scale)
+                ele["y2"] = ele["y1"] + ((ele["y2"] - element["y1"]) * scale)
+            ele["x1"] = ele["x1"] + offsetx
+            ele["x2"] = ele["x2"] + offsetx
+            ele["y1"] = ele["y1"] + offsety
+            ele["y2"] = ele["y2"] + offsety
+            ele["scale"] = scale
+            handler_name = ele["type"].upper()
             if rotate:  # don't rotate by 0.0 degrees
                 rotations = [
                     (rotate, offsetx, offsety),
                 ]
-                self.handlers[handler_name](rotations, **element)
+                self.handlers[handler_name](rotations, **ele)
             else:
-                self.handlers[handler_name]([], **element)
+                self.handlers[handler_name]([], **ele)
         self.texts = {}  # reset modified entries for the next page
 
 

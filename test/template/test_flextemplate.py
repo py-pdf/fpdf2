@@ -50,10 +50,10 @@ def test_flextemplate_offset(tmp_path):
     templ.render(offsetx=50, offsety=50)
     templ["label"] = "Offset: 50 / 120 mm"
     templ.render(offsetx=50, offsety=120)
-    templ["label"] = "Offset: 120 / 50 mm"
-    templ.render(offsetx=120, offsety=50)
-    templ["label"] = "Offset: 120 / 120 mm, Rotate: 30°"
-    templ.render(offsetx=120, offsety=120, rotate=30.0)
+    templ["label"] = "Offset: 120 / 50 mm, Scale: 0.5"
+    templ.render(offsetx=120, offsety=50, scale=0.5)
+    templ["label"] = "Offset: 120 / 120 mm, Rotate: 30°, Scale: 0.5"
+    templ.render(offsetx=120, offsety=120, rotate=30.0, scale=0.5)
     assert_pdf_equal(pdf, HERE / "flextemplate_offset.pdf", tmp_path)
 
 
@@ -206,7 +206,9 @@ def test_flextemplate_rotation(tmp_path):
     templ["qrcode"] = qrcode.make("Test 0").get_image()
     templ.render(offsetx=100, offsety=100, rotate=5)
     pdf.add_page()
+    scale = 1.2
     for i in range(0, 360, 6):
         templ["qrcode"] = qrcode.make("Test 0").get_image()
-        templ.render(offsetx=100, offsety=100, rotate=i)
+        templ.render(offsetx=100, offsety=130, rotate=i, scale=scale)
+        scale -= 0.01
     assert_pdf_equal(pdf, HERE / "flextemplate_rotation.pdf", tmp_path)
