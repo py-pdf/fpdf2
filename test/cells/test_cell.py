@@ -198,6 +198,19 @@ def test_cell_markdown_missing_ttf_font(tmp_path):
     assert str(error.value) == expected_msg
 
 
+def test_cell_markdown_bleeding(tmp_path):  # issue 241
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=60)
+    pdf.cell(txt="--Lorem Ipsum dolor--", markdown=True, ln=1)
+    pdf.cell(txt="No Markdown", markdown=False, ln=1)
+    pdf.cell(txt="**Lorem Ipsum dolor**", markdown=True, ln=1)
+    pdf.cell(txt="No Markdown", markdown=False, ln=1)
+    pdf.cell(txt="__Lorem Ipsum dolor__", markdown=True, ln=1)
+    pdf.cell(txt="No Markdown", markdown=False, ln=1)
+    assert_pdf_equal(pdf, HERE / "cell_markdown_bleeding.pdf", tmp_path)
+
+
 def test_table_with_headers_on_every_page(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
@@ -221,30 +234,3 @@ def test_table_with_headers_on_every_page(tmp_path):
                 pdf.cell(col_width, line_height, datum, border=1)
             pdf.ln(line_height)
     assert_pdf_equal(pdf, HERE / "table_with_headers_on_every_page.pdf", tmp_path)
-
-
-## Code used to create this test
-# doc = fpdf.FPDF(format = 'letter', unit = 'pt')
-# set_doc_date_0(doc)
-# doc.add_page()
-
-# doc.set_font('helvetica', size=TEXT_SIZE)
-# text = ('Lorem ipsum Ut nostrud irure reprehenderit anim nostrud dolore sed '
-#         'ut Excepteur dolore ut sunt irure consectetur tempor eu tempor '
-#         'nostrud dolore sint exercitation aliquip velit ullamco esse dolore '
-#         'mollit ea sed voluptate commodo amet eiusmod incididunt Excepteur '
-#         'Excepteur officia est ea dolore sed id in cillum incididunt quis ex '
-#         'id aliqua ullamco reprehenderit cupidatat in quis pariatur ex et '
-#         'veniam consectetur et minim minim nulla ea in quis Ut in '
-#         'consectetur cillum aliquip pariatur qui quis sint reprehenderit '
-#         'anim incididunt laborum dolor dolor est dolor fugiat ut officia do '
-#         'dolore deserunt nulla voluptate officia mollit elit consequat ad '
-#         'aliquip non nulla dolor nisi magna consectetur anim sint officia '
-#         'sit tempor anim do laboris ea culpa eu veniam sed cupidatat in anim '
-#         'fugiat culpa enim Ut cillum in exercitation magna nostrud aute '
-#         'proident laboris est ullamco nulla occaecat nulla proident '
-#         'consequat in ut labore non sit id cillum ut ea quis est ut dolore '
-#         'nisi aliquip aute pariatur ullamco ut cillum Duis nisi elit sit '
-#         'cupidatat do Ut aliqua irure sunt sunt proident sit aliqua in '
-#         'dolore Ut in sint sunt exercitation aliquip elit velit dolor nisi '
-#         '')*100
