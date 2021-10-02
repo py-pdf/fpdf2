@@ -79,9 +79,9 @@ class FlexTemplate:
             "y2": (int, float),
             "font": (str, type(None)),
             "size": (int, float),
-            "bold": int,
-            "italic": int,
-            "underline": int,
+            "bold": object, # "bool or equivalent"
+            "italic": object,
+            "underline": object,
             "foreground": int,
             "background": int,
             "align": (str, type(None)),

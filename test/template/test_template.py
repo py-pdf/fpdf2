@@ -40,8 +40,8 @@ def test_template_nominal_hardcoded(tmp_path):
             "font": "helvetica",
             "size": 12,
             "bold": 1,
-            "italic": 0,
-            "underline": 0,
+            "italic": 1,
+            "underline": 1,
             "foreground": 0,
             "align": "I",
             "text": "",
@@ -178,6 +178,31 @@ def test_template_multipage(tmp_path):
 
 
 # pylint: disable=unused-argument
+def test_template_item_access(tmp_path):
+    """Testing Template() getitem/setitem."""
+    elements = [
+        {
+            "name": "name",
+            "type": "T",
+            "x1": 20,
+            "y1": 75,
+            "x2": 30,
+            "y2": 90,
+            "text": "default text",
+        }
+    ]
+    templ = Template(elements=elements)
+    assert ("notthere" in templ) == False
+    with raises(FPDFException):
+        templ["notthere"] = "something"
+    defaultval = templ["name"]  # find in default data
+    assert defaultval == "default text"
+    templ["name"] = "new text"
+    defaultval = templ["name"]  # find in text data
+    assert defaultval == "new text"
+
+
+# pylint: disable=unused-argument
 def test_template_badinput(tmp_path):
     """Testing Template() with non-conforming definitions."""
     for arg in (
@@ -191,7 +216,7 @@ def test_template_badinput(tmp_path):
         "keywords",
     ):
         with raises(TypeError):
-            Template(**{arg: 7})
+            Template(**{arg: 7})  # numeric instead of str
     elements = [{}]
     with raises(KeyError):
         tmpl = Template(elements=elements)
@@ -199,7 +224,21 @@ def test_template_badinput(tmp_path):
     with raises(KeyError):
         tmpl = Template(elements=elements)
         tmpl.render()
-    elements = [
+    elements = [  # missing mandatory x2
+        {
+            "name": "n",
+            "type": "T",
+            "x1": 0,
+            "y1": 0,
+            "y2": 0,
+            "text": "Hello!",
+        }
+    ]
+    with raises(KeyError):
+        tmpl = Template(elements=elements)
+        tmpl["n"] = "hello"
+        tmpl.render()
+    elements = [  # malformed y2
         {
             "name": "n",
             "type": "T",
