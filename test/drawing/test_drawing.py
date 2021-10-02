@@ -48,52 +48,14 @@ def open_path_drawing():
     return path
 
 
-@pytest.fixture(
-    params=[
-        "normal",
-        "multiply",
-        "screen",
-        "overlay",
-        "darken",
-        "lighten",
-        "color_dodge",
-        "color_burn",
-        "hard_light",
-        "soft_light",
-        "difference",
-        "exclusion",
-        "hue",
-        "saturation",
-        "color",
-        "luminosity",
-    ],
-    ids=lambda val: f"blend_mode={val}",
-)
-def blend_mode(request, open_path_drawing):
+@pytest.fixture
+def prepared_blend_path(open_path_drawing):
     open_path_drawing.style.fill_color = fpdf.drawing.rgb8(100, 120, 200)
     open_path_drawing.style.stroke_color = fpdf.drawing.rgb8(200, 120, 100)
     open_path_drawing.style.fill_opacity = 0.8
     open_path_drawing.style.stroke_opacity = 0.8
 
-    return open_path_drawing, request.param
-
-
-@pytest.fixture(
-    params=[
-        ("auto_close", 2, ValueError),
-        ("paint_rule", 123, TypeError),
-        ("paint_rule", "asdasd", ValueError),
-        ("intersection_rule", 123, TypeError),
-        ("intersection_rule", "asdasd", ValueError),
-        ("fill_color", "123", ValueError),
-        ("fill_color", 2, TypeError),
-        ("fill_opacity", "123123", TypeError),
-        ("fill_opacity", 2, ValueError),
-    ],
-    ids=lambda val: f"{val[0]}={val[1]}",
-)
-def invalid_styles(request):
-    return request.param
+    return open_path_drawing
 
 
 class TestUtilities:
@@ -112,21 +74,6 @@ class TestUtilities:
     def hex_string(self, request):
         return request.param
 
-    @pytest.fixture(
-        params=[
-            (100, "100"),
-            (Decimal("1.1"), "1.1"),
-            (Decimal("0.000008"), "0"),
-            (1.05, "1.05"),
-            (10.00001, "10"),
-            (-1.12345, "-1.1235"),
-            (-0.00004, "-0"),
-        ],
-        ids=lambda val: f"number_{val}",
-    )
-    def numbers(self, request):
-        return request.param
-
     def test_hex_string_parser(self, hex_string):
         value, result = hex_string
         if isinstance(result, type) and issubclass(result, Exception):
@@ -135,11 +82,56 @@ class TestUtilities:
         else:
             assert fpdf.drawing.color_from_hex_string(value) == result
 
-    def test_number_to_str(self, numbers):
-        assert fpdf.drawing.number_to_str(numbers[0]) == numbers[1]
+    @pytest.mark.parametrize("number, converted", parameters.numbers)
+    def test_number_to_str(self, number, converted):
+        assert fpdf.drawing.number_to_str(number) == converted
 
     def test_range_check(self):
         ...
+
+
+class TestGraphicsStateDictRegistry:
+    @pytest.fixture
+    def new_style_registry(self):
+        return fpdf.drawing.GraphicsStateDictRegistry()
+
+    def test_empty_style(self, new_style_registry):
+        style = fpdf.drawing.GraphicsStyle()
+
+        result = new_style_registry.register_style(style)
+
+        assert result is None
+
+    def test_adding_styles(self, new_style_registry):
+        first = fpdf.drawing.GraphicsStyle()
+        second = fpdf.drawing.GraphicsStyle()
+
+        first.stroke_width = 1
+        second.stroke_width = 2
+
+        first_name = new_style_registry.register_style(first)
+        second_name = new_style_registry.register_style(second)
+
+        assert isinstance(first_name, fpdf.drawing.Name)
+        assert isinstance(second_name, fpdf.drawing.Name)
+        assert first_name != second_name
+        # I don't think it's necessary to check that first_name is actually e.g. "GS1", since
+        # the naming pattern is an implementation detail that can change without
+        # affecting anything.
+
+    def test_style_deduplication(self, new_style_registry):
+        first = fpdf.drawing.GraphicsStyle()
+        second = fpdf.drawing.GraphicsStyle()
+
+        first.stroke_width = 1
+        second.stroke_width = 1
+
+        first_name = new_style_registry.register_style(first)
+        second_name = new_style_registry.register_style(second)
+
+        assert isinstance(first_name, fpdf.drawing.Name)
+        assert isinstance(second_name, fpdf.drawing.Name)
+        assert first_name == second_name
 
 
 class TestStyles:
@@ -167,27 +159,29 @@ class TestStyles:
         with pytest.raises(ValueError):
             open_path_drawing.style.stroke_dash_phase = 0.5
 
-    def test_blend_modes(self, auto_pdf, blend_mode):
-        open_path_drawing, blend_mode = blend_mode
-
-        open_path_drawing.style.blend_mode = blend_mode
+    @pytest.mark.parametrize(
+        "blend_mode", parameters.blend_modes, ids=lambda param: f"blend mode {param}"
+    )
+    def test_blend_modes(
+        self, auto_pdf, open_path_drawing, prepared_blend_path, blend_mode
+    ):
+        prepared_blend_path.style.blend_mode = blend_mode
 
         auto_pdf.draw_path(open_path_drawing)
 
     def test_dictionary_generation(self):
         pass
 
-    def test_bad_style_parameters(self, invalid_styles):
-        attr, value, exc = invalid_styles
-
+    @pytest.mark.parametrize("style_name, value, exception", parameters.invalid_styles)
+    def test_bad_style_parameters(self, style_name, value, exception):
         style = fpdf.drawing.GraphicsStyle()
-        with pytest.raises(exc):
-            setattr(style, attr, value)
+        with pytest.raises(exception):
+            setattr(style, style_name, value)
 
     def test_merge(self):
         ...
 
-    def test_style_lookup(self):
+    def test_pdf_dictionary_converion(self):
         ...
 
 
