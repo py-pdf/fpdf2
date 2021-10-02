@@ -164,7 +164,7 @@ Dimensions (except font size, which always uses points) are given in user define
     * '__BC__': Barcode - inserts an "Interleaved 2 of 5" type barcode
     * '__C39__': Code 39 - inserts a "Code 39" type barcode
         * Incompatible change: The first implementation of this type used the non-standard template keys "x", "y", "w", and "h", which are no longer valid.
-    * '__W__': "Write" - uses the FPDF.write() method to add text to the page
+    * '__W__': "Write" - uses the `FPDF.write()` method to add text to the page
     * _mandatory_
 * __x1, y1, x2, y2__: top-left, bottom-right coordinates, defining a bounding box in most cases
     * for multiline text, this is the bounding box for just the first line, not the complete box
@@ -193,7 +193,7 @@ Dimensions (except font size, which always uses points) are given in user define
 * __text__: default string, can be replaced at runtime
     * displayed text for 'T' and 'W'
     * data to encode for barcode types
-    * _optional_
+    * _optional_ (if missing for text/write, the element is ignored)
     * default: empty
 * __priority__: Z-order (int value)
     * _optional_

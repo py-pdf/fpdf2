@@ -492,6 +492,8 @@ class FlexTemplate:
         **__,
     ):
         # pylint: disable=unused-argument
+        if not text:
+            return
         pdf = self.pdf
         if pdf.text_color != _rgb_as_str(foreground):
             pdf.set_text_color(*_rgb(foreground))
