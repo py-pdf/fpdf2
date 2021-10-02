@@ -189,9 +189,20 @@ def test_template_badinput(tmp_path):
     with raises(KeyError):
         tmpl = Template(elements=elements)
         tmpl.render()
-    elements = [{"name": "n", "type": "T", "x1": 0, "y1": 0, "x2": 0, "y2": "x"}]
+    elements = [
+        {
+            "name": "n",
+            "type": "T",
+            "x1": 0,
+            "y1": 0,
+            "x2": 0,
+            "y2": "x",
+            "text": "Hello!",
+        }
+    ]
     with raises(TypeError):
         tmpl = Template(elements=elements)
+        tmpl["n"] = "hello"
         tmpl.render()
     tmpl = Template()
     with raises(FPDFException):
