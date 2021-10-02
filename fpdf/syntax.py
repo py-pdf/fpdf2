@@ -228,6 +228,9 @@ class DestinationXYZ(Destination):
         self.zoom = zoom
         self.page_as_obj_id = page_as_obj_id
 
+    def __repr__(self):
+        return f'DestinationXYZ(page={self.page}, x={self.x}, y={self.y}, zoom="{self.zoom}", page_as_obj_id={self.page_as_obj_id})'
+
     def as_str(self, pdf=None):
         left = self.x * pdf.k if pdf else self.x
         if isinstance(left, float):

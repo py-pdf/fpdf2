@@ -63,7 +63,7 @@ LOGGER = logging.getLogger(__name__)
 HERE = Path(__file__).resolve().parent
 
 # Global variables
-FPDF_VERSION = "2.4.3"
+FPDF_VERSION = "2.4.4"
 FPDF_FONT_DIR = HERE / "font"
 
 PAGE_FORMATS = {
@@ -280,6 +280,7 @@ class FPDF:
         self.page_duration = 0  # optional pages display duration, cf. add_page()
         self.page_transition = None  # optional pages transition, cf. add_page()
         self._rotating = False
+        self._markdown_leak_end_style = False
         # Only set if XMP metadata is added to the document:
         self._xmp_metadata_obj_id = None
         self.struct_builder = StructureTreeBuilder()
@@ -1691,23 +1692,24 @@ class FPDF:
             if self.fill_color != self.text_color:
                 s += f"q {self.text_color} "
 
+            prev_font_style, prev_underline = self.font_style, self.underline
+            s_width, underlines = 0, []
             s += (
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2f} Td"
             )
-
-            s_width, underlines = 0, []
-
             # If multibyte, Tw has no effect - do word spacing using an
             # adjustment before each space
             if self.ws and self.unifontsubset:
                 space = escape_parens(" ".encode("UTF-16BE").decode("latin-1"))
                 s += " 0 Tw"
                 for txt_frag, style, underline in styled_txt_frags:
-                    if markdown and self.font_style != style:
-                        s += f" /F{self.fonts[self.font_family + style]['i']} {self.font_size_pt:.2f} Tf"
-                    self.font_style = style
-                    self.current_font = self.fonts[self.font_family + self.font_style]
+                    if self.font_style != style:
+                        self.font_style = style
+                        self.current_font = self.fonts[
+                            self.font_family + self.font_style
+                        ]
+                        s += f" /F{self.current_font['i']} {self.font_size_pt:.2f} Tf"
                     txt_frag_mapped = ""
                     for char in txt_frag:
                         uni = ord(char)
@@ -1734,10 +1736,12 @@ class FPDF:
                     s += "] TJ"
             else:
                 for txt_frag, style, underline in styled_txt_frags:
-                    if markdown and self.font_style != style:
-                        s += f" /F{self.fonts[self.font_family + style]['i']} {self.font_size_pt:.2f} Tf"
-                    self.font_style = style
-                    self.current_font = self.fonts[self.font_family + self.font_style]
+                    if self.font_style != style:
+                        self.font_style = style
+                        self.current_font = self.fonts[
+                            self.font_family + self.font_style
+                        ]
+                        s += f" /F{self.current_font['i']} {self.font_size_pt:.2f} Tf"
                     if self.unifontsubset:
                         txt_frag_mapped = ""
                         for char in txt_frag:
@@ -1757,6 +1761,13 @@ class FPDF:
                     self.underline = underline
                     s_width += self.get_string_width(txt_frag, True)
             s += " ET"
+            # Restoring font style & underline mode after handling changes by Markdown annotations:
+            if not self._markdown_leak_end_style:
+                if self.font_style != prev_font_style:
+                    self.font_style = prev_font_style
+                    self.current_font = self.fonts[self.font_family + self.font_style]
+                    s += f" /F{self.current_font['i']} {self.font_size_pt:.2f} Tf"
+                self.underline = prev_underline
 
             for start_x, txt_frag in underlines:
                 s += " " + self._do_underline(
@@ -1977,6 +1988,10 @@ class FPDF:
         if normalized_string_length > 0 and s[-1] == "\n":
             normalized_string_length -= 1
 
+        prev_font_style, prev_underline = self.font_style, self.underline
+        if markdown and not split_only:
+            self._markdown_leak_end_style = True
+
         b = 0
         if border:
             if border == 1:
@@ -2152,6 +2167,13 @@ class FPDF:
             self._out, self.add_page = _out, _add_page
             self.set_xy(*location)  # restore location
             return text_cells
+        if markdown:
+            if self.font_style != prev_font_style:
+                self.font_style = prev_font_style
+                self.current_font = self.fonts[self.font_family + self.font_style]
+                s += f" /F{self.current_font['i']} {self.font_size_pt:.2f} Tf"
+            self.underline = prev_underline
+            self._markdown_leak_end_style = False
 
         return page_break_triggered
 
@@ -3501,11 +3523,10 @@ class FPDF:
         """
         if level < 0:
             raise ValueError('"level" mut be equal or greater than zero')
-        if self._outline:
-            if level > self._outline[-1].level + 1:
-                raise ValueError(
-                    f"Incoherent hierarchy: cannot start a level {level} section after a level {self._outline[-1].level} one"
-                )
+        if self._outline and level > self._outline[-1].level + 1:
+            raise ValueError(
+                f"Incoherent hierarchy: cannot start a level {level} section after a level {self._outline[-1].level} one"
+            )
         dest = DestinationXYZ(self.page, y=self.y)
         struct_elem = None
         if self.section_title_styles:

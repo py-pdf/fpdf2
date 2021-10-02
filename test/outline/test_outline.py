@@ -69,7 +69,7 @@ def test_simple_outline(tmp_path):
         pdf,
         "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
     )
-    assert_pdf_equal(pdf, HERE / "test_simple_outline.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "simple_outline.pdf", tmp_path)
 
 
 def p(pdf, text, **kwargs):
@@ -157,4 +157,4 @@ def test_2_pages_outline(tmp_path):
             " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         )
 
-    assert_pdf_equal(pdf, HERE / "test_2_pages_outline.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "2_pages_outline.pdf", tmp_path)

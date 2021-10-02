@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-import fpdf
+from fpdf import FPDF, HTMLMixin
 from fpdf.errors import FPDFException
 from fpdf.html import px2mm
 from test.conftest import assert_pdf_equal
@@ -11,7 +11,7 @@ from test.conftest import assert_pdf_equal
 HERE = Path(__file__).resolve().parent
 
 
-class MyFPDF(fpdf.FPDF, fpdf.HTMLMixin):
+class MyFPDF(FPDF, HTMLMixin):
     pass
 
 
@@ -264,7 +264,7 @@ def test_customize_ul(tmp_path):
             <li><b>term2</b>: definition2</li>
         </ul>"""
     # 1. Customizing through class attributes:
-    class CustomPDF(fpdf.FPDF, fpdf.HTMLMixin):
+    class CustomPDF(FPDF, HTMLMixin):
         li_tag_indent = 5
         ul_bullet_char = "\x86"
 
@@ -466,6 +466,6 @@ def test_html_custom_heading_sizes(tmp_path):  # issue-223
            <h4>This is a H4</h4>
            <h5>This is a H5</h5>
            <h6>This is a H6</h6>""",
-        heading_sizes=dict(h1=0.5, h2=1, h3=1.5, h4=2, h5=2.5, h6=3),
+        heading_sizes=dict(h1=6, h2=12, h3=18, h4=24, h5=30, h6=36),
     )
     assert_pdf_equal(pdf, HERE / "html_custom_heading_sizes.pdf", tmp_path)

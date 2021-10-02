@@ -12,7 +12,7 @@ from html.parser import HTMLParser
 
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
-DEFAULT_HEADING_SIZES = dict(h1=2, h2=1.5, h3=1.17, h4=1, h5=0.83, h6=0.67)
+DEFAULT_HEADING_SIZES = dict(h1=24, h2=18, h3=14, h4=12, h5=10, h6=8)
 
 COLOR_DICT = {
     "black": "#000000",
@@ -413,9 +413,9 @@ class HTML2FPDF(HTMLParser):
             self.font_stack.append((self.font_face, self.font_size, self.font_color))
             self.heading_level = int(tag[1:])
             hsize = self.heading_sizes[tag]
-            self.pdf.ln(5 * hsize)
             self.pdf.set_text_color(150, 0, 0)
-            self.set_font(size=12 * hsize)
+            self.set_font(size=hsize)
+            self.pdf.ln(self.h)
             if attrs:
                 self.align = attrs.get("align")
         if tag == "hr":
@@ -663,7 +663,7 @@ class HTML2FPDF(HTMLParser):
     def render_toc(self, pdf, outline):
         "This method can be overriden by subclasses to customize the Table of Contents style."
         pdf.ln()
-        for section in outline[1:]:  # skipping top-level h1
+        for section in outline:
             link = pdf.add_link()
             pdf.set_link(link, page=section.page_number)
             text = f'{" " * section.level * 2} {section.name}'
@@ -676,11 +676,13 @@ class HTML2FPDF(HTMLParser):
 
 
 class HTMLMixin:
+    HTML2FPDF_CLASS = HTML2FPDF
+
     def write_html(self, text, *args, **kwargs):
         """Parse HTML and convert it to PDF"""
         kwargs2 = vars(self)
         # Method arguments must override class & instance attributes:
         kwargs2.update(kwargs)
-        h2p = HTML2FPDF(self, *args, **kwargs2)
+        h2p = self.HTML2FPDF_CLASS(self, *args, **kwargs2)
         text = html.unescape(text)  # To deal with HTML entities
         h2p.feed(text)

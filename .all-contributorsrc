@@ -338,6 +338,15 @@
         "bug",
         "doc"
       ]
+    },
+    {
+      "login": "ping",
+      "name": "ping",
+      "avatar_url": "https://avatars.githubusercontent.com/u/104607?v=4",
+      "profile": "https://www.buymeacoffee.com/ping",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,

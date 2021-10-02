@@ -481,9 +481,20 @@ class FlexTemplate:
         **__,
     ):
         if x is not None or y is not None or w is not None or h is not None:
-            raise ValueError(
-                "Arguments x/y/w/h are invalid. Use x1/y1/y2/size instead."
+            warnings.warn(
+                "code39 arguments x/y/w/h are deprecated, please use x1/y1/y2/size instead",
+                PendingDeprecationWarning,
             )
+            if x1 is None and x is not None:
+                x1 = x
+            if y1 is None and y is not None:
+                y1 = y
+            if size is None and w is not None:
+                size = w
+            if x2 is None:
+                x2 = x1 + size
+            if y2 is None and h is not None:
+                y2 = y1 + h
         pdf = self.pdf
         if pdf.fill_color.lower() != _rgb_as_str(foreground):
             pdf.set_fill_color(*_rgb(foreground))
