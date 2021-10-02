@@ -69,6 +69,28 @@ class FlexTemplate:
             elements (list of dicts):
                 A template definition in a list of dicts
         """
+        key_config = {
+            # key: type
+            "name": (str, type(None)),
+            "type": (str, type(None)),
+            "x1": (int, float),
+            "y1": (int, float),
+            "x2": (int, float),
+            "y2": (int, float),
+            "font": (str, type(None)),
+            "size": (int, float),
+            "bold": int,
+            "italic": int,
+            "underline": int,
+            "foreground": int,
+            "background": int,
+            "align": (str, type(None)),
+            "text": (str, type(None)),
+            "priority": int,
+            "multiline": (bool, type(None)),
+            "rotate": (int, float),
+        }
+
         self.elements = elements
         self.keys = []
         for e in elements:
@@ -84,6 +106,11 @@ class FlexTemplate:
                     e["x2"] = 0
                 else:
                     raise KeyError("Mandatory key 'x2' missing in input data")
+            for k, t in key_config.items():
+                if k in e and not isinstance(e[k], t):
+                    raise TypeError(
+                        f'Value of element item "{k}" must be {t}, not {type(e[k])}.'
+                    )
             self.keys.append(e["name"].lower())
 
     @staticmethod
@@ -555,10 +582,12 @@ class FlexTemplate:
                 ele["y1"] = ele["y1"] * scale
                 ele["x2"] = ele["x1"] + ((ele["x2"] - element["x1"]) * scale)
                 ele["y2"] = ele["y1"] + ((ele["y2"] - element["y1"]) * scale)
-            ele["x1"] = ele["x1"] + offsetx
-            ele["x2"] = ele["x2"] + offsetx
-            ele["y1"] = ele["y1"] + offsety
-            ele["y2"] = ele["y2"] + offsety
+            if offsetx:
+                ele["x1"] = ele["x1"] + offsetx
+                ele["x2"] = ele["x2"] + offsetx
+            if offsety:
+                ele["y1"] = ele["y1"] + offsety
+                ele["y2"] = ele["y2"] + offsety
             ele["scale"] = scale
             handler_name = ele["type"].upper()
             if rotate:  # don't rotate by 0.0 degrees
@@ -624,7 +653,23 @@ class Template(FlexTemplate):
 
             creator (str): The creator of the document.
         """
-
+        if infile:
+            warnings.warn(
+                '"infile" is unused and will soon be deprecated',
+                PendingDeprecationWarning,
+            )
+        for arg in (
+            "format",
+            "orientation",
+            "unit",
+            "title",
+            "author",
+            "subject",
+            "creator",
+            "keywords",
+        ):
+            if not isinstance(locals()[arg], str):
+                raise TypeError(f'Argument "{arg}" must be of type str.')
         pdf = FPDF(format=format, orientation=orientation, unit=unit)
         pdf.set_title(title)
         pdf.set_author(author)

@@ -207,7 +207,7 @@ Dimensions (except font size, which always uses points) are given in user define
     * _optional_
     * default: 0.0 - no rotation
 
-Fields that are not relevant to a specific element type will be ignored there, but if not left empty in a CSV file, they must still adhere to the specified data type.
+Fields that are not relevant to a specific element type will be ignored there, but if not left empty, they must still adhere to the specified data type (in dicts, string fields may be None).
 
 
 # How to create a template #

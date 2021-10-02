@@ -65,7 +65,7 @@ def test_template_nominal_hardcoded(tmp_path):
             "align": "I",
             "text": "Lorem ipsum dolor sit amet, consectetur adipisici elit",
             "priority": 2,
-            "multiline": 1,
+            "multiline": True,
         },
         {
             "name": "box",
@@ -83,7 +83,6 @@ def test_template_nominal_hardcoded(tmp_path):
             "align": "I",
             "text": None,
             "priority": 0,
-            "multiline": 0,
         },
         {
             "name": "box_x",
@@ -101,7 +100,6 @@ def test_template_nominal_hardcoded(tmp_path):
             "align": "I",
             "text": None,
             "priority": 2,
-            "multiline": 0,
         },
         {
             "name": "line1",
@@ -119,7 +117,7 @@ def test_template_nominal_hardcoded(tmp_path):
             "align": "I",
             "text": None,
             "priority": 3,
-            "multiline": 0,
+            "multiline": False,
         },
         {
             "name": "barcode",
@@ -137,7 +135,7 @@ def test_template_nominal_hardcoded(tmp_path):
             "align": "I",
             "text": "200000000001000159053338016581200810081",
             "priority": 3,
-            "multiline": 0,
+            "multiline": False,
         },
     ]
     tmpl = Template(format="A4", elements=elements, title="Sample Invoice")
@@ -182,6 +180,18 @@ def test_template_multipage(tmp_path):
 # pylint: disable=unused-argument
 def test_template_badinput(tmp_path):
     """Testing Template() with non-conforming definitions."""
+    for arg in (
+        "format",
+        "orientation",
+        "unit",
+        "title",
+        "author",
+        "subject",
+        "creator",
+        "keywords",
+    ):
+        with raises(TypeError):
+            Template(**{arg: 7})
     elements = [{}]
     with raises(KeyError):
         tmpl = Template(elements=elements)
@@ -347,7 +357,7 @@ def test_template_split_multicell(tmp_path):
             "align": "I",
             "text": "Lorem ipsum",
             "priority": 2,
-            "multiline": 1,
+            "multiline": True,
         }
     ]
     text = (
