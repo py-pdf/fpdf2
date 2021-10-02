@@ -192,7 +192,7 @@ def test_template_item_access(tmp_path):
         }
     ]
     templ = Template(elements=elements)
-    assert ("notthere" in templ) == False
+    assert ("notthere" in templ) is False
     with raises(FPDFException):
         templ["notthere"] = "something"
     defaultval = templ["name"]  # find in default data
