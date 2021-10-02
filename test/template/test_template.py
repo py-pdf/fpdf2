@@ -1,5 +1,5 @@
 from pathlib import Path
-from pytest import raises
+from pytest import raises, warns
 
 import qrcode
 
@@ -242,6 +242,27 @@ def test_template_code39(tmp_path):  # issue-161
     tmpl = Template(format="A4", title="Sample Code 39 barcode", elements=elements)
     tmpl.add_page()
     assert_pdf_equal(tmpl, HERE / "template_code39.pdf", tmp_path)
+
+
+def test_template_code39_legacy(tmp_path):
+    # check that old parameters still work
+    # This uses the same values as above, and compares to the same file.
+    elements = [
+        {
+            "name": "code39",
+            "type": "C39",
+            "x": 40,
+            "y": 50,
+            "w": 1.5,
+            "h": 20,
+            "text": "*Code 39 barcode*",
+            "priority": 1,
+        },
+    ]
+    with warns(PendingDeprecationWarning):
+        tmpl = Template(format="A4", title="Sample Code 39 barcode", elements=elements)
+        tmpl.add_page()
+        assert_pdf_equal(tmpl, HERE / "template_code39.pdf", tmp_path)
 
 
 def test_template_code39_defaultheight(tmp_path):  # height <= 0 invokes default

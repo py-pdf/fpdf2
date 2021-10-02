@@ -99,6 +99,19 @@ class FlexTemplate:
                 e["priority"] = 0
             for k in ("name", "type", "x1", "y1", "y2"):
                 if k not in e:
+                    if e["type"] == "C39":
+                        # lots of legacy special casing.
+                        # We need to do that here, so that rotation and scaling
+                        # still work.
+                        if k == "x1" and "x" in e:
+                            e["x1"] = e["x"]
+                            continue
+                        if k == "y1" and "y" in e:
+                            e["y1"] = e["y"]
+                            continue
+                        if k == "y2" and "h" in e:
+                            e["y2"] = e["y1"] + e["h"]
+                            continue
                     raise KeyError(f"Mandatory key '{k}' missing in input data")
             # x2 is optional for barcode types, but needed for offset rendering
             if "x2" not in e:
@@ -106,6 +119,9 @@ class FlexTemplate:
                     e["x2"] = 0
                 else:
                     raise KeyError("Mandatory key 'x2' missing in input data")
+            if not "size" in e and e["type"] == "C39":
+                if "w" in e:
+                    e["size"] = e["w"]
             for k, t in key_config.items():
                 if k in e and not isinstance(e[k], t):
                     raise TypeError(
@@ -485,16 +501,6 @@ class FlexTemplate:
                 "code39 arguments x/y/w/h are deprecated, please use x1/y1/y2/size instead",
                 PendingDeprecationWarning,
             )
-            if x1 is None and x is not None:
-                x1 = x
-            if y1 is None and y is not None:
-                y1 = y
-            if size is None and w is not None:
-                size = w
-            if x2 is None:
-                x2 = x1 + size
-            if y2 is None and h is not None:
-                y2 = y1 + h
         pdf = self.pdf
         if pdf.fill_color.lower() != _rgb_as_str(foreground):
             pdf.set_fill_color(*_rgb(foreground))

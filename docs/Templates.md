@@ -163,7 +163,7 @@ Dimensions (except font size, which always uses points) are given in user define
     * '__B__': Box - draws a rectangle around the bounding box
     * '__BC__': Barcode - inserts an "Interleaved 2 of 5" type barcode
     * '__C39__': Code 39 - inserts a "Code 39" type barcode
-        * Incompatible change: The first implementation of this type used the non-standard template keys "x", "y", "w", and "h", which are no longer valid.
+        * Incompatible change: A previous implementation of this type used the non-standard element keys "x", "y", "w", and "h", which are now deprecated (but still work for the moment).
     * '__W__': "Write" - uses the `FPDF.write()` method to add text to the page
     * _mandatory_
 * __x1, y1, x2, y2__: top-left, bottom-right coordinates, defining a bounding box in most cases
