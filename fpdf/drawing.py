@@ -32,7 +32,7 @@ class Raw(str):
 
 
 class Name(str):
-    """str subclass signfying a PDF name, which are emitted differently than normal strings."""
+    """str subclass signifying a PDF name, which are emitted differently than normal strings."""
 
 
 WHITESPACE = frozenset({"\0", "\t", "\n", "\f", "\r", " "})
@@ -42,6 +42,10 @@ EOL_CHARS = frozenset({"\n", "\r"})
 
 
 class GraphicsStateDictRegistry(OrderedDict):
+    """
+    A container providing deduplication of graphics state dictionaries across a PDF.
+    """
+
     def register_style(self, style):
         sdict = style.to_pdf_dict()
 
