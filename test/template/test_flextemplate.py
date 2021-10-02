@@ -1,4 +1,5 @@
 from pathlib import Path
+from pytest import raises
 import qrcode
 from fpdf.fpdf import FPDF
 from fpdf.template import FlexTemplate
@@ -212,3 +213,9 @@ def test_flextemplate_rotation(tmp_path):
         templ.render(offsetx=100, offsety=130, rotate=i, scale=scale)
         scale -= 0.01
     assert_pdf_equal(pdf, HERE / "flextemplate_rotation.pdf", tmp_path)
+
+
+# pylint: disable=unused-argument
+def test_flextemplate_badinput(tmp_path):
+    with raises(TypeError):
+        FlexTemplate("NotAnFPDF()Instance")
