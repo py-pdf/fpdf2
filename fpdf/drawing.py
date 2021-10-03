@@ -4,6 +4,7 @@ import copy
 import enum
 import decimal
 import math
+import re
 from typing import Optional, NamedTuple, Union
 
 __pdoc__ = {"force_nodocument": False}
@@ -24,6 +25,7 @@ def force_document(item):
 
 # type alias:
 Number = Union[int, float, decimal.Decimal]
+NumberClass = (int, float, decimal.Decimal)
 
 
 # this maybe should live in fpdf.syntax
@@ -35,10 +37,28 @@ class Name(str):
     """str subclass signifying a PDF name, which are emitted differently than normal strings."""
 
 
-WHITESPACE = frozenset({"\0", "\t", "\n", "\f", "\r", " "})
+WHITESPACE = frozenset("\0\t\n\f\r ")
 """Characters PDF considers to be whitespace."""
-EOL_CHARS = frozenset({"\n", "\r"})
+EOL_CHARS = frozenset("\n\r")
 """Characters PDF considers to mark the end of a line."""
+DELIMITERS = frozenset("()<>[]{}/%")
+"""Special delimiter characters"""
+
+
+NAME_ESC = re.compile(
+    b"[^" + bytes(v for v in range(33, 127) if v not in b"()<>[]{}/%#\\") + b"]"
+)
+STR_ESC = re.compile(r"[\n\r\t\b\f()\\]")
+STR_ESC_MAP = {
+    "\n": r"\n",
+    "\r": r"\r",
+    "\t": r"\t",
+    "\b": r"\b",
+    "\f": r"\f",
+    "(": r"\(",
+    ")": r"\)",
+    "\\": r"\\",
+}
 
 
 class GraphicsStateDictRegistry(OrderedDict):
@@ -117,21 +137,25 @@ def render_pdf_primitive(primitive):
     elif callable(getattr(primitive, "pdf_repr", None)):
         output = primitive.pdf_repr()
     elif isinstance(primitive, Name):
-        # this should handle escape sequences, to be proper (#XX)
-        output = f"/{primitive}"
-    elif isinstance(primitive, str):
-        # this should handle escape sequences, to be proper (\n \r \t \b \f \( \) \\)
-        output = f"({str})"
-    elif isinstance(primitive, bytes):
-        output = f"<{primitive.hex()}>"
-    elif isinstance(primitive, (int, float, decimal.Decimal)):
-        output = number_to_str(primitive)
-    elif isinstance(primitive, bool):
-        output = ["false", "true"][primitive]
-    elif isinstance(primitive, (list, tuple)):
-        output = "[" + " ".join(render_pdf_primitive(val) for val in primitive) + "]"
+        # we do bytes conversion to "handle" multi-byte runes but I don't know if this
+        # is strictly correct (I guess if all multi-byte runes are encoded
+        # consistently (e.g. everything in utf-8), then it should be okay).
+        escaped = NAME_ESC.sub(
+            lambda m: b"#%02X" % m[0][0], primitive.encode()
+        ).decode()
+        output = f"/{escaped}"
     elif primitive is None:
         output = "null"
+    elif isinstance(primitive, str):
+        output = f"({STR_ESC.sub(lambda m: STR_ESC_MAP[m[0]], primitive)})"
+    elif isinstance(primitive, bytes):
+        output = f"<{primitive.hex()}>"
+    elif isinstance(primitive, bool):  # has to come before number check
+        output = ["false", "true"][primitive]
+    elif isinstance(primitive, NumberClass):
+        output = number_to_str(primitive)
+    elif isinstance(primitive, (list, tuple)):
+        output = "[" + " ".join(render_pdf_primitive(val) for val in primitive) + "]"
     elif isinstance(primitive, dict):
         item_list = []
         for key, val in primitive.items():
@@ -546,7 +570,7 @@ class Point(NamedTuple):
         Returns:
             A Point whose coordinates are the result of the multiplication.
         """
-        if isinstance(other, (int, float, decimal.Decimal)):
+        if isinstance(other, NumberClass):
             return Point(self.x * other, self.y * other)
 
         return NotImplemented
@@ -569,7 +593,7 @@ class Point(NamedTuple):
         Returns:
             A Point whose coordinates are the result of the division.
         """
-        if isinstance(other, (int, float, decimal.Decimal)):
+        if isinstance(other, NumberClass):
             return Point(self.x / other, self.y / other)
 
         return NotImplemented
@@ -895,7 +919,7 @@ class Transform(NamedTuple):
         Returns:
             A Transform with the modified parameters.
         """
-        if isinstance(other, (int, float, decimal.Decimal)):
+        if isinstance(other, NumberClass):
             return Transform(
                 a=self.a * other,
                 b=self.b * other,
@@ -1574,9 +1598,7 @@ class GraphicsStyle:
 
     @stroke_miter_limit.setter
     def stroke_miter_limit(self, value):
-        if (value is GraphicsStyle.INHERIT) or isinstance(
-            value, (int, float, decimal.Decimal)
-        ):
+        if (value is GraphicsStyle.INHERIT) or isinstance(value, NumberClass):
             setattr(self, PDFStyleKeys.STROKE_MITER_LIMIT.value, value)
         else:
             raise TypeError(f"{value} is not a number")
