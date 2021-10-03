@@ -578,7 +578,7 @@ class Point(NamedTuple):
     __rmul__ = __mul__
 
     @force_document
-    def __div__(self, other):
+    def __truediv__(self, other):
         """
         Divide a point by a scalar value.
 
@@ -598,7 +598,28 @@ class Point(NamedTuple):
 
         return NotImplemented
 
-    # no __rdiv__ because division is not commutative!
+    @force_document
+    def __floordiv__(self, other):
+        """
+        Divide a point by a scalar value using integer division.
+
+        .. note::
+
+            Because division is not commutative, `Point // scalar` is implemented, but
+            `scalar // Point` is nonsensical and not implemented.
+
+        Args:
+            other (Number): the scalar value by which to divide the point's coordinates.
+
+        Returns:
+            A Point whose coordinates are the result of the division.
+        """
+        if isinstance(other, NumberClass):
+            return Point(self.x // other, self.y // other)
+
+        return NotImplemented
+
+    # no __r(true|floor)div__ because division is not commutative!
 
     @force_document
     def __matmul__(self, other):
