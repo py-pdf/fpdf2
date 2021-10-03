@@ -7,7 +7,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
-## [2.4.5] - not released yet
+## [2.4.6] - not released yet
+
+## [2.4.5] - 2021-10-03
+### Fixed
+- ensure support for old field names in `Template.code39` for backward compatibility
 
 ## [2.4.4] - 2021-10-01
 ### Added
