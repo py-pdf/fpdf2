@@ -78,7 +78,7 @@ Documentation:
 --------------
 
 - [Documentation Home](https://pyfpdf.github.io/fpdf2/)
-- [Tutorial](https://pyfpdf.github.io/fpdf2/Tutorial.html) (Spanish translation available)
+- [Tutorial](https://pyfpdf.github.io/fpdf2/Tutorial.html) ([Spanish translation available](https://pyfpdf.github.io/fpdf2/Tutorial-es.html))
 - Release notes: [CHANGELOG.md](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)
 
 You can also have a look at the `tests/`, they're great usage examples!
