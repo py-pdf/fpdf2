@@ -156,6 +156,7 @@ def test_flextemplate_rotation(tmp_path):
             "y2": 15,
             "text": "Lorem ipsum dolor sit amet, consectetur adipisici elit",
             "rotate": 90.0,
+			"background": 0xEEFFFF,
             "multiline": True,
         },
         {
