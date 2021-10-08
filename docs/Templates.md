@@ -186,7 +186,8 @@ Dimensions (except font size, which always uses points) are given in user define
     * default: false
 * __foreground, background__: text and fill colors (int value, commonly given in hex as 0xRRGGBB)
     * _optional_
-    * default: 0x000000/0xFFFFFF
+    * default: foreground 0x000000 = black; background None/empty = transparent
+	* Incompatible change: Up to 2.4.5, the default background for text and rect elements was solid white, with no way to make them transparent.
 * __align__: text alignment, '__L__': left, '__R__': right, '__C__': center
     * _optional_
     * default: 'L'

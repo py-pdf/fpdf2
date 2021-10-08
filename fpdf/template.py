@@ -124,8 +124,9 @@ class FlexTemplate:
                     e["size"] = e["w"]
             for k, t in key_config.items():
                 if k in e and not isinstance(e[k], t):
+                    ttype = t.__name__ if isinstance(t, type) else ' or '.join([f"'{x.__name__}'" for x in t])
                     raise TypeError(
-                        f'Value of element item "{k}" must be {t}, not {type(e[k])}.'
+                        f"Value of element item '{k}' must be {ttype}, not '{type(e[k]).__name__}'."
                     )
             self.keys.append(e["name"].lower())
 
@@ -225,6 +226,8 @@ class FlexTemplate:
         self.keys = [val["name"].lower() for val in self.elements]
 
     def __setitem__(self, name, value):
+        assert isinstance(name, str), f"name must be of type 'str', not '{type(name).__name__}'."
+        # value has too many valid types to reasonably check here
         if name.lower() not in self.keys:
             raise FPDFException(f"Element not loaded, cannot set item: {name}")
         self.texts[name.lower()] = value
@@ -233,11 +236,13 @@ class FlexTemplate:
     set = __setitem__
 
     def __contains__(self, name):
+        assert isinstance(name, str), f"name must be of type 'str', not '{type(name).__name__}'."
         return name.lower() in self.keys
 
     def __getitem__(self, name):
+        assert isinstance(name, str), f"name must be of type 'str', not '{type(name).__name__}'."
         if name not in self.keys:
-            return None
+            raise KeyError(name)
         key = name.lower()
         if key in self.texts:
             # text for this page:
@@ -305,7 +310,7 @@ class FlexTemplate:
         underline=False,
         align="",
         foreground=0,
-        background=0xFFFFFF,
+        background=None,
         multiline=None,
         **__,
     ):
@@ -314,8 +319,12 @@ class FlexTemplate:
         pdf = self.pdf
         if pdf.text_color != _rgb_as_str(foreground):
             pdf.set_text_color(*_rgb(foreground))
-        if pdf.fill_color != _rgb_as_str(background):
-            pdf.set_fill_color(*_rgb(background))
+        if background is None:
+            fill = False
+        else:
+            fill = True
+            if pdf.fill_color != _rgb_as_str(background):
+                pdf.set_fill_color(*_rgb(background))
 
         font = font.strip().lower()
         style = ""
@@ -346,7 +355,7 @@ class FlexTemplate:
                     "border": 0,
                     "ln": 0,
                     "align": align,
-                    "fill": True,
+                    "fill": fill,
                 },
                 rotations,
             )
@@ -361,7 +370,7 @@ class FlexTemplate:
                     "txt": text,
                     "border": 0,
                     "align": align,
-                    "fill": True,
+                    "fill": fill,
                 },
                 rotations,
             )
@@ -380,7 +389,7 @@ class FlexTemplate:
                     "border": 0,
                     "ln": 0,
                     "align": align,
-                    "fill": True,
+                    "fill": fill,
                 },
                 rotations,
             )
@@ -418,20 +427,24 @@ class FlexTemplate:
         size=0,
         scale=1.0,
         foreground=0,
-        background=0xFFFFFF,
+        background=None,
         **__,
     ):
         pdf = self.pdf
         if pdf.draw_color.lower() != _rgb_as_str(foreground):
             pdf.set_draw_color(*_rgb(foreground))
-        if pdf.fill_color != _rgb_as_str(background):
-            pdf.set_fill_color(*_rgb(background))
+        if background is None:
+            style = "D"
+        else:
+            style = "FD"
+            if pdf.fill_color != _rgb_as_str(background):
+                pdf.set_fill_color(*_rgb(background))
         pdf.set_line_width(size * scale)
         rotate = __.get("rotate")
         if rotate:
             rotations.append((rotate, x1, y2))
         self._render_rotated(
-            None, pdf.rect, (x1, y1, x2 - x1, y2 - y1), {"style": "FD"}, rotations
+            None, pdf.rect, (x1, y1, x2 - x1, y2 - y1), {"style": style}, rotations
         )
 
     def _image(self, rotations, *_, x1=0, y1=0, x2=0, y2=0, text="", **__):

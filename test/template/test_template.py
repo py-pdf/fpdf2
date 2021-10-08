@@ -195,11 +195,20 @@ def test_template_item_access(tmp_path):
     assert ("notthere" in templ) is False
     with raises(FPDFException):
         templ["notthere"] = "something"
+    with raises(KeyError):
+        templ["notthere"]
     defaultval = templ["name"]  # find in default data
     assert defaultval == "default text"
     templ["name"] = "new text"
     defaultval = templ["name"]  # find in text data
     assert defaultval == "new text"
+    # bad type item access
+    with raises(AssertionError):
+        templ[7]
+    with raises(AssertionError):
+        templ[7] = 8
+    with raises(AssertionError):
+        7 in templ
 
 
 # pylint: disable=unused-argument
@@ -263,6 +272,12 @@ def test_template_badinput(tmp_path):
     with raises(KeyError):
         tmpl.parse_csv(HERE / "badtype.csv", delimiter=";")
         tmpl.render()
+    with warns(PendingDeprecationWarning):
+        Template(infile="whatever")
+    with raises(AttributeError):
+        with warns(PendingDeprecationWarning):
+            tmpl = Template()
+            tmpl.render(dest='whatever')
 
 
 def test_template_code39(tmp_path):  # issue-161
