@@ -27,10 +27,13 @@ document.output("hello_world.pdf")
 ```
 
 It is a fork and the successor of `PyFPDF`.
-Compared with other PDF libraries, `fpdf2` is simple, small and versatile, with
-advanced capabilities, and is easy to learn, extend and maintain.
+Compared with other PDF libraries, `fpdf2` is simple, small and versatile, with advanced capabilities, and is easy to learn and extend.
+It is also entirely writen in Python (no C is involved), and has only **one** dependency so far, to handle images: [Pillow](https://pillow.readthedocs.io/en/stable/).
 
-Looking for Developer Help!
+**Development status**: this project is **mature** and **actively maintained**.
+
+We are looking for contributing developers: if you want to get involved but don't know how,
+or would like to volunteer helping maintain this lib, [open a discussion](https://github.com/PyFPDF/fpdf2/discussions)!
 
 Installation Instructions:
 --------------------------
@@ -60,13 +63,13 @@ Features:
  * Shape, Line Drawing
  * Generate [Code 39](https://fr.wikipedia.org/wiki/Code_39) & [Interleaved 2 of 5](https://en.wikipedia.org/wiki/Interleaved_2_of_5) barcodes
  * Cell / multi-cell / plaintext writing, automatic page breaks
- * Basic conversion from HTML to PDF
+ * Basic [conversion from HTML to PDF](https://pyfpdf.github.io/fpdf2/HTML.html)
+ * A [templating system](https://pyfpdf.github.io/fpdf2/Templates.html) to render PDFs in batchs
  * Images & links alternative descriptions
  * Table of contents & [document outline](https://pyfpdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html)
  * Optional basic Markdown-like styling: `**bold**, __italics__, --underlined--`
  * Clean error handling through exceptions
- * Only **one** dependency so far: [Pillow](https://pillow.readthedocs.io/en/stable/)
- * Unit tests with `qpdf`-based PDF diffing
+ * Unit tests with `qpdf`-based PDF diffing and a high code coverage
 
 We validate all our PDF samples using 3 different checkers:
 
@@ -78,7 +81,7 @@ Documentation:
 --------------
 
 - [Documentation Home](https://pyfpdf.github.io/fpdf2/)
-- [Tutorial](https://pyfpdf.github.io/fpdf2/Tutorial.html) (Spanish translation available)
+- [Tutorial](https://pyfpdf.github.io/fpdf2/Tutorial.html) ([Spanish translation available](https://pyfpdf.github.io/fpdf2/Tutorial-es.html))
 - Release notes: [CHANGELOG.md](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)
 
 You can also have a look at the `tests/`, they're great usage examples!
@@ -139,6 +142,7 @@ This library could only exist thanks to the dedication of many volunteers around
     <td align="center"><a href="https://github.com/AubsUK"><img src="https://avatars.githubusercontent.com/u/68870168?v=4?s=100" width="100px;" alt=""/><br /><sub><b>AubsUK</b></sub></a><br /><a href="#question-AubsUK" title="Answering Questions">💬</a></td>
     <td align="center"><a href="http://www.schorsch.com/"><img src="https://avatars.githubusercontent.com/u/17468844?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Georg Mischler</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=gmischler" title="Code">💻</a> <a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Agmischler" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=gmischler" title="Documentation">📖</a></td>
     <td align="center"><a href="https://www.buymeacoffee.com/ping"><img src="https://avatars.githubusercontent.com/u/104607?v=4?s=100" width="100px;" alt=""/><br /><sub><b>ping</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Aping" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="http://portfedh@gmail.com"><img src="https://avatars.githubusercontent.com/u/59422723?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Portfedh</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=portfedh" title="Documentation">📖</a></td>
   </tr>
 </table>
 
