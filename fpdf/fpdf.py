@@ -3323,12 +3323,12 @@ class FPDF:
                 f"{cb}{cs}" for cb, cs in zip(bar_char[char_bar], bar_char[char_space])
             )
 
-            for bar, char in enumerate(seq):
+            for bar_index, char in enumerate(seq):
                 # set line_width depending on value
                 line_width = narrow if char == "n" else wide
 
                 # draw every second value, the other is represented by space
-                if bar % 2 == 0:
+                if bar_index % 2 == 0:
                     self.rect(x, y, line_width, h, "F")
 
                 x += line_width
