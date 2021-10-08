@@ -161,13 +161,14 @@ Dimensions (except font size, which always uses points) are given in user define
     * '__L__': Line - draws a line from x1/y1 to x2/y2
     * '__I__': Image - positions and scales an image into the bounding box
     * '__B__': Box - draws a rectangle around the bounding box
+    * '__E__': Ellipse - draws an ellipse inside the bounding box
     * '__BC__': Barcode - inserts an "Interleaved 2 of 5" type barcode
     * '__C39__': Code 39 - inserts a "Code 39" type barcode
         * Incompatible change: A previous implementation of this type used the non-standard element keys "x", "y", "w", and "h", which are now deprecated (but still work for the moment).
     * '__W__': "Write" - uses the `FPDF.write()` method to add text to the page
     * _mandatory_
 * __x1, y1, x2, y2__: top-left, bottom-right coordinates, defining a bounding box in most cases
-    * for multiline text, this is the bounding box for just the first line, not the complete box
+    * for multiline text, this is the bounding box of just the first line, not the complete box
     * for the barcodes types, the height of the barcode is `y2 - y1`, x2 is ignored.
     * _mandatory_ ("x2" _optional_ for the barcode types)
 * __font__: the name of a font type for the text types
@@ -175,7 +176,7 @@ Dimensions (except font size, which always uses points) are given in user define
     * default: "helvetica"
 * __size__: the size property of the element (float value)
     * for text, the font size (in points!)
-    * for line and rect, the line width
+    * for line, box, and ellipse, the line width
     * for the barcode types, the width of one bar 
     * _optional_
     * default: 10 for text, 2 for 'BC', 1.5 for 'C39'
@@ -187,7 +188,7 @@ Dimensions (except font size, which always uses points) are given in user define
 * __foreground, background__: text and fill colors (int value, commonly given in hex as 0xRRGGBB)
     * _optional_
     * default: foreground 0x000000 = black; background None/empty = transparent
-	* Incompatible change: Up to 2.4.5, the default background for text and rect elements was solid white, with no way to make them transparent.
+    * Incompatible change: Up to 2.4.5, the default background for text and box elements was solid white, with no way to make them transparent.
 * __align__: text alignment, '__L__': left, '__R__': right, '__C__': center
     * _optional_
     * default: 'L'

@@ -86,6 +86,14 @@ def test_flextemplate_multipage(tmp_path):
             "y2": 0,
         },
         {
+            "name": "e",
+            "type": "E",
+            "x1": 0,
+            "y1": 50,
+            "x2": 50,
+            "y2": 0,
+        },
+        {
             "name": "label",
             "type": "T",
             "x1": 0,
@@ -199,6 +207,16 @@ def test_flextemplate_rotation(tmp_path):
             "x2": 40,
             "y2": 10,
             "rotate": 45,
+        },
+        {
+            "name": "ellipse",
+            "type": "E",
+            "x1": 50,
+            "y1": -10,
+            "x2": 70,
+            "y2": 0,
+			"background":0x88FFFF,
+            "rotate": -45,
         },
     ]
     pdf = FPDF()

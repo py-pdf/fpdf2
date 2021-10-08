@@ -54,6 +54,7 @@ class FlexTemplate:
             "L": self._line,
             "I": self._image,
             "B": self._rect,
+            "E": self._ellipse,
             "BC": self._barcode,
             "C39": self._code39,
             "W": self._write,
@@ -445,6 +446,37 @@ class FlexTemplate:
             rotations.append((rotate, x1, y2))
         self._render_rotated(
             None, pdf.rect, (x1, y1, x2 - x1, y2 - y1), {"style": style}, rotations
+        )
+
+    def _ellipse(
+        self,
+        rotations,
+        *_,
+        x1=0,
+        y1=0,
+        x2=0,
+        y2=0,
+        size=0,
+        scale=1.0,
+        foreground=0,
+        background=None,
+        **__,
+    ):
+        pdf = self.pdf
+        if pdf.draw_color.lower() != _rgb_as_str(foreground):
+            pdf.set_draw_color(*_rgb(foreground))
+        if background is None:
+            style = "D"
+        else:
+            style = "FD"
+            if pdf.fill_color != _rgb_as_str(background):
+                pdf.set_fill_color(*_rgb(background))
+        pdf.set_line_width(size * scale)
+        rotate = __.get("rotate")
+        if rotate:
+            rotations.append((rotate, x1, y2))
+        self._render_rotated(
+            None, pdf.ellipse, (x1, y1, x2 - x1, y2 - y1), {"style": style}, rotations
         )
 
     def _image(self, rotations, *_, x1=0, y1=0, x2=0, y2=0, text="", **__):
