@@ -356,3 +356,122 @@ increasing the column number and altering the position of the next column so the
 Once the bottom limit of the third column is reached, the 
 [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) method will reset and go 
 back to the first column and trigger a page break.
+
+## Tuto 5 - Creating Tables ##
+
+This tutorial will explain how to create tables easily.
+
+The code will create three different tables to explain what
+ can be achieved with some simple adjustments.
+
+```python
+ from fpdf import FPDF
+
+
+class PDF(FPDF):
+    # Load data
+    def load_data(self, name):
+        # Read file lines
+        data = []
+        with open(name) as file:
+            for line in file:
+                data += [line[:-1].split(",")]
+        return data
+
+    # Simple table
+    def basic_table(self, header, data):
+        # Header
+        for col in header:
+            self.cell(48, 7, col, 1)
+        self.ln()
+        # Data
+        for row in data:
+            for col in row:
+                self.cell(48, 6, col, 1)
+            self.ln()
+
+    # Better table
+    def improved_table(self, header, data):
+        # Column widths
+        w = [42, 39, 35, 40]
+        # Header
+        for width, header_text in zip(w, header):
+            self.cell(width, 7, header_text, 1, 0, "C")
+        self.ln()
+        # Data
+        for row in data:
+            self.cell(w[0], 6, row[0], "LR")
+            self.cell(w[1], 6, row[1], "LR")
+            self.cell(w[2], 6, row[2], "LR", 0, "R")
+            self.cell(w[3], 6, row[3], "LR", 0, "R")
+            self.ln()
+        # Closure line
+        self.cell(sum(w), 0, "", "T")
+
+    # Colored table
+    def fancy_table(self, header, data):
+        # Colors, line width and bold font
+        self.set_fill_color(255, 100, 0)
+        self.set_text_color(255)
+        self.set_draw_color(255, 0, 0)
+        self.set_line_width(0.3)
+        self.set_font(style="B")
+        # Header
+        w = [40, 40, 38, 45]
+        for width, header_text in zip(w, header):
+            self.cell(width, 7, header_text, 1, 0, "C", True)
+        self.ln()
+        # Color and font restoration
+        self.set_fill_color(224, 235, 255)
+        self.set_text_color(0)
+        self.set_font()
+        # Data
+        fill = False
+        for row in data:
+            self.cell(w[0], 6, row[0], "LR", 0, "L", fill)
+            self.cell(w[1], 6, row[1], "LR", 0, "L", fill)
+            self.cell(w[2], 6, row[2], "LR", 0, "R", fill)
+            self.cell(w[3], 6, row[3], "LR", 0, "R", fill)
+            self.ln()
+            fill = not fill
+        self.cell(sum(w), 0, "", "T")
+
+
+pdf = PDF()
+# Column titles
+header = ["Country", "Capital", "Area (sq km)", "Population"]
+# Data loading
+data = pdf.load_data("countries.txt")
+pdf.set_font("helvetica", size=14)
+pdf.add_page()
+pdf.basic_table(header, data)
+pdf.add_page()
+pdf.improved_table(header, data)
+pdf.add_page()
+pdf.fancy_table(header, data)
+pdf.output("tuto5.pdf")
+
+```
+
+[Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf)
+[Countries text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
+
+Since a table is just a collection of cells, it is natural to build one
+ from them.
+
+The first example is achieved in the most basic way possible: simple framed
+ cells, all of the same size and left aligned. The result is rudimentary but
+ very quick to obtain.
+
+The second table brings some improvements: each column has its own width,
+ titles are centered and figures right aligned. Moreover, horizontal lines have
+ been removed. This is done by means of the border parameter of the Cell()
+ method, which specifies which sides of the cell must be drawn. Here we want
+ the left (L) and right (R) ones. Now only the problem of the horizontal line
+ to finish the table remains. There are two possibilities to solv it: check
+ for the last line in the loop, in which case we use LRB for the border
+ parameter; or, as done here, add the line once the loop is over.
+
+The third table is similar to the second one but uses colors. Fill, text and
+ line colors are simply specified. Alternate coloring for rows is obtained by
+ using alternatively transparent and filled cells.
