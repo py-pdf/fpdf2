@@ -116,7 +116,7 @@ class FlexTemplate:
                     raise KeyError(f"Mandatory key '{k}' missing in input data")
             # x2 is optional for barcode types, but needed for offset rendering
             if "x2" not in e:
-                if e["type"] in ["B", "C39"]:
+                if e["type"] in ["BC", "C39"]:
                     e["x2"] = 0
                 else:
                     raise KeyError("Mandatory key 'x2' missing in input data")
@@ -210,7 +210,7 @@ class FlexTemplate:
                     vs = val.strip()
                     if not vs:
                         if cfg[2]:  # mandatory
-                            if cfg[0] == "x2" and row["type"] in ["B", "C39"]:
+                            if cfg[0] == "x2" and row[1] in ["BC", "C39"]:
                                 # two types don't need x2, but offset rendering does
                                 pass
                             else:

@@ -182,7 +182,6 @@ def test_flextemplate_rotation(tmp_path):
             "type": "BC",
             "x1": 60,
             "y1": 00,
-            "x2": 70,
             "y2": 10,
             "text": "123456",
             "size": 1,
