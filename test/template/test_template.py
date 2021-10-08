@@ -177,6 +177,163 @@ def test_template_multipage(tmp_path):
     assert_pdf_equal(tmpl, HERE / "template_multipage.pdf", tmp_path)
 
 
+def test_template_textstyles(tmp_path):
+    """Testing bold, italic, underline in template and in tags."""
+    elements = [
+        {
+            "name": "tb",
+            "type": "T",
+            "x1": 20,
+            "y1": 20,
+            "x2": 30,
+            "y2": 25,
+            "text": "text bold",
+            "bold":True,
+        },
+        {
+            "name": "ti",
+            "type": "T",
+            "x1": 20,
+            "y1": 30,
+            "x2": 30,
+            "y2": 35,
+            "text": "text italic",
+            "italic":True,
+        },
+        {
+            "name": "tu",
+            "type": "T",
+            "x1": 20,
+            "y1": 40,
+            "x2": 30,
+            "y2": 45,
+            "text": "text underline",
+            "underline":True,
+        },
+        {
+            "name": "tbiu",
+            "type": "T",
+            "x1": 20,
+            "y1": 50,
+            "x2": 30,
+            "y2": 55,
+            "text": "text all",
+            "bold":True,
+            "italic":True,
+            "underline":True,
+        },
+        {
+            "name": "wb",
+            "type": "W",
+            "x1": 20,
+            "y1": 60,
+            "x2": 30,
+            "y2": 65,
+            "text": "write bold",
+            "bold":True,
+        },
+        {
+            "name": "wi",
+            "type": "W",
+            "x1": 20,
+            "y1": 70,
+            "x2": 30,
+            "y2": 75,
+            "text": "write italic",
+            "italic":True,
+        },
+        {
+            "name": "wu",
+            "type": "W",
+            "x1": 20,
+            "y1": 80,
+            "x2": 30,
+            "y2": 85,
+            "text": "write underline",
+            "underline":True,
+        },
+        {
+            "name": "wbiu",
+            "type": "W",
+            "x1": 20,
+            "y1": 90,
+            "x2": 30,
+            "y2": 95,
+            "text": "write all",
+            "bold":True,
+            "italic":True,
+            "underline":True,
+        },
+
+        {
+            "name": "tbt",
+            "type": "T",
+            "x1": 20,
+            "y1": 100,
+            "x2": 30,
+            "y2": 105,
+            "text": "<B>text bold tags</B>",
+        },
+
+        {
+            "name": "tit",
+            "type": "T",
+            "x1": 20,
+            "y1": 110,
+            "x2": 30,
+            "y2": 115,
+            "text": "<I>text italic tags</I>",
+        },
+
+        {
+            "name": "tut",
+            "type": "T",
+            "x1": 20,
+            "y1": 120,
+            "x2": 30,
+            "y2": 125,
+            "text": "<U>text underline tags</U>",
+        },
+
+        {
+            "name": "wbt",
+            "type": "W",
+            "x1": 20,
+            "y1": 130,
+            "x2": 30,
+            "y2": 135,
+            "text": "<B>write bold tags</B>",
+        },
+
+        {
+            "name": "wit",
+            "type": "W",
+            "x1": 20,
+            "y1": 140,
+            "x2": 30,
+            "y2": 145,
+            "text": "<I>write italic tags</I>",
+        },
+
+        {
+            "name": "wut",
+            "type": "W",
+            "x1": 20,
+            "y1": 150,
+            "x2": 30,
+            "y2": 155,
+            "text": "<U>write underline tags</U>",
+        },
+
+    ]
+    tmpl = Template(elements=elements)
+    tmpl.add_page()
+    assert_pdf_equal(tmpl, HERE / "template_textstyles.pdf", tmp_path)
+
+
+
+
+
 # pylint: disable=unused-argument
 def test_template_item_access(tmp_path):
     """Testing Template() getitem/setitem."""
