@@ -164,7 +164,7 @@ def test_flextemplate_rotation(tmp_path):
             "y2": 15,
             "text": "Lorem ipsum dolor sit amet, consectetur adipisici elit",
             "rotate": 90.0,
-			"background": 0xEEFFFF,
+            "background": 0xEEFFFF,
             "multiline": True,
         },
         {
@@ -214,7 +214,7 @@ def test_flextemplate_rotation(tmp_path):
             "y1": -10,
             "x2": 70,
             "y2": 0,
-			"background":0x88FFFF,
+            "background": 0x88FFFF,
             "rotate": -45,
         },
     ]

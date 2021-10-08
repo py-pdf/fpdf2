@@ -188,7 +188,7 @@ def test_template_textstyles(tmp_path):
             "x2": 30,
             "y2": 25,
             "text": "text bold",
-            "bold":True,
+            "bold": True,
         },
         {
             "name": "ti",
@@ -198,7 +198,7 @@ def test_template_textstyles(tmp_path):
             "x2": 30,
             "y2": 35,
             "text": "text italic",
-            "italic":True,
+            "italic": True,
         },
         {
             "name": "tu",
@@ -208,7 +208,7 @@ def test_template_textstyles(tmp_path):
             "x2": 30,
             "y2": 45,
             "text": "text underline",
-            "underline":True,
+            "underline": True,
         },
         {
             "name": "tbiu",
@@ -218,9 +218,9 @@ def test_template_textstyles(tmp_path):
             "x2": 30,
             "y2": 55,
             "text": "text all",
-            "bold":True,
-            "italic":True,
-            "underline":True,
+            "bold": True,
+            "italic": True,
+            "underline": True,
         },
         {
             "name": "wb",
@@ -230,7 +230,7 @@ def test_template_textstyles(tmp_path):
             "x2": 30,
             "y2": 65,
             "text": "write bold",
-            "bold":True,
+            "bold": True,
         },
         {
             "name": "wi",
@@ -240,7 +240,7 @@ def test_template_textstyles(tmp_path):
             "x2": 30,
             "y2": 75,
             "text": "write italic",
-            "italic":True,
+            "italic": True,
         },
         {
             "name": "wu",
@@ -250,7 +250,7 @@ def test_template_textstyles(tmp_path):
             "x2": 30,
             "y2": 85,
             "text": "write underline",
-            "underline":True,
+            "underline": True,
         },
         {
             "name": "wbiu",
@@ -260,11 +260,10 @@ def test_template_textstyles(tmp_path):
             "x2": 30,
             "y2": 95,
             "text": "write all",
-            "bold":True,
-            "italic":True,
-            "underline":True,
+            "bold": True,
+            "italic": True,
+            "underline": True,
         },
-
         {
             "name": "tbt",
             "type": "T",
@@ -274,7 +273,6 @@ def test_template_textstyles(tmp_path):
             "y2": 105,
             "text": "<B>text bold tags</B>",
         },
-
         {
             "name": "tit",
             "type": "T",
@@ -284,7 +282,6 @@ def test_template_textstyles(tmp_path):
             "y2": 115,
             "text": "<I>text italic tags</I>",
         },
-
         {
             "name": "tut",
             "type": "T",
@@ -294,7 +291,6 @@ def test_template_textstyles(tmp_path):
             "y2": 125,
             "text": "<U>text underline tags</U>",
         },
-
         {
             "name": "wbt",
             "type": "W",
@@ -304,7 +300,6 @@ def test_template_textstyles(tmp_path):
             "y2": 135,
             "text": "<B>write bold tags</B>",
         },
-
         {
             "name": "wit",
             "type": "W",
@@ -314,7 +309,6 @@ def test_template_textstyles(tmp_path):
             "y2": 145,
             "text": "<I>write italic tags</I>",
         },
-
         {
             "name": "wut",
             "type": "W",
@@ -324,14 +318,10 @@ def test_template_textstyles(tmp_path):
             "y2": 155,
             "text": "<U>write underline tags</U>",
         },
-
     ]
     tmpl = Template(elements=elements)
     tmpl.add_page()
     assert_pdf_equal(tmpl, HERE / "template_textstyles.pdf", tmp_path)
-
-
-
 
 
 # pylint: disable=unused-argument
@@ -353,6 +343,7 @@ def test_template_item_access(tmp_path):
     with raises(FPDFException):
         templ["notthere"] = "something"
     with raises(KeyError):
+        # pylint: disable=pointless-statement
         templ["notthere"]
     defaultval = templ["name"]  # find in default data
     assert defaultval == "default text"
@@ -361,10 +352,12 @@ def test_template_item_access(tmp_path):
     assert defaultval == "new text"
     # bad type item access
     with raises(AssertionError):
+        # pylint: disable=pointless-statement
         templ[7]
     with raises(AssertionError):
         templ[7] = 8
     with raises(AssertionError):
+        # pylint: disable=pointless-statement
         7 in templ
 
 
@@ -434,7 +427,7 @@ def test_template_badinput(tmp_path):
     with raises(AttributeError):
         with warns(PendingDeprecationWarning):
             tmpl = Template()
-            tmpl.render(dest='whatever')
+            tmpl.render(dest="whatever")
 
 
 def test_template_code39(tmp_path):  # issue-161
