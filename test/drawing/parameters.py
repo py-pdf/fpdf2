@@ -2,8 +2,22 @@
 import pytest
 
 from decimal import Decimal
+from contextlib import contextmanager
 
 import fpdf
+
+
+@contextmanager
+def no_exception():
+    yield
+
+
+def exception(exc):
+    def wrapper():
+        return pytest.raises(exc)
+
+    return wrapper
+
 
 hex_colors = (
     pytest.param(
@@ -84,6 +98,276 @@ transforms = (
     pytest.param(T.rotation_d(90), P(1, 0), P(0, 1.0), id="rotation_d"),
     pytest.param(T.shearing(1, 0), P(1, 1), P(2, 1), id="shearing"),
 )
+
+coercive_enums = (
+    pytest.param(
+        fpdf.drawing.IntersectionRule,
+        (fpdf.drawing.IntersectionRule.NONZERO, "NONZERO", "nonzero", "NONzero"),
+        fpdf.drawing.IntersectionRule.NONZERO,
+        no_exception,
+        id="IntersectionRule.NONZERO",
+    ),
+    pytest.param(
+        fpdf.drawing.IntersectionRule,
+        (fpdf.drawing.IntersectionRule.EVENODD, "EVENODD", "evenodd", "EveNOdD"),
+        fpdf.drawing.IntersectionRule.EVENODD,
+        no_exception,
+        id="IntersectionRule.EVENODD",
+    ),
+    pytest.param(
+        fpdf.drawing.IntersectionRule,
+        ("nonsense",),
+        None,
+        exception(ValueError),
+        id="coerce bad string",
+    ),
+    pytest.param(
+        fpdf.drawing.IntersectionRule,
+        (1234,),
+        None,
+        exception(TypeError),
+        id="coerce wrong type entirely",
+    ),
+    pytest.param(
+        fpdf.drawing.PathPaintRule,
+        (fpdf.drawing.PathPaintRule.STROKE, "stroke", "S"),
+        fpdf.drawing.PathPaintRule.STROKE,
+        no_exception,
+        id="PathPaintRule.STROKE",
+    ),
+    pytest.param(
+        fpdf.drawing.PathPaintRule,
+        (fpdf.drawing.PathPaintRule.FILL_NONZERO, "fill_nonzero", "f"),
+        fpdf.drawing.PathPaintRule.FILL_NONZERO,
+        no_exception,
+        id="PathPaintRule.FILL_NONZERO",
+    ),
+    pytest.param(
+        fpdf.drawing.PathPaintRule,
+        (fpdf.drawing.PathPaintRule.FILL_EVENODD, "fill_evenodd", "f*"),
+        fpdf.drawing.PathPaintRule.FILL_EVENODD,
+        no_exception,
+        id="PathPaintRule.FILL_EVENODD",
+    ),
+    pytest.param(
+        fpdf.drawing.PathPaintRule,
+        (fpdf.drawing.PathPaintRule.STROKE_FILL_NONZERO, "stroke_fill_nonzero", "B"),
+        fpdf.drawing.PathPaintRule.STROKE_FILL_NONZERO,
+        no_exception,
+        id="PathPaintRule.STROKE_FILL_NONZERO",
+    ),
+    pytest.param(
+        fpdf.drawing.PathPaintRule,
+        (fpdf.drawing.PathPaintRule.STROKE_FILL_EVENODD, "stroke_fill_evenodd", "B*"),
+        fpdf.drawing.PathPaintRule.STROKE_FILL_EVENODD,
+        no_exception,
+        id="PathPaintRule.STROKE_FILL_EVENODD",
+    ),
+    pytest.param(
+        fpdf.drawing.PathPaintRule,
+        (fpdf.drawing.PathPaintRule.DONT_PAINT, "dont_paint", "n"),
+        fpdf.drawing.PathPaintRule.DONT_PAINT,
+        no_exception,
+        id="PathPaintRule.DONT_PAINT",
+    ),
+    pytest.param(
+        fpdf.drawing.PathPaintRule,
+        (fpdf.drawing.PathPaintRule.AUTO, "auto"),
+        fpdf.drawing.PathPaintRule.AUTO,
+        no_exception,
+        id="PathPaintRule.AUTO",
+    ),
+    pytest.param(
+        fpdf.drawing.ClippingPathIntersectionRule,
+        (fpdf.drawing.ClippingPathIntersectionRule.NONZERO, "nonzero", "W"),
+        fpdf.drawing.ClippingPathIntersectionRule.NONZERO,
+        no_exception,
+        id="ClippingPathIntersectionRule.NONZERO",
+    ),
+    pytest.param(
+        fpdf.drawing.ClippingPathIntersectionRule,
+        (fpdf.drawing.ClippingPathIntersectionRule.EVENODD, "evenodd", "W*"),
+        fpdf.drawing.ClippingPathIntersectionRule.EVENODD,
+        no_exception,
+        id="ClippingPathIntersectionRule.EVENODD",
+    ),
+    pytest.param(
+        fpdf.drawing.StrokeCapStyle,
+        (-1,),
+        None,
+        exception(ValueError),
+        id="int coerce out of range",
+    ),
+    pytest.param(
+        fpdf.drawing.StrokeCapStyle,
+        ("nonsense",),
+        None,
+        exception(ValueError),
+        id="int coerce bad key",
+    ),
+    pytest.param(
+        fpdf.drawing.StrokeCapStyle,
+        (1.0, object()),
+        None,
+        exception(TypeError),
+        id="int coerce bad type",
+    ),
+    pytest.param(
+        fpdf.drawing.StrokeCapStyle,
+        (fpdf.drawing.StrokeCapStyle.BUTT, "butt", 0),
+        fpdf.drawing.StrokeCapStyle.BUTT,
+        no_exception,
+        id="StrokeCapStyle.BUTT",
+    ),
+    pytest.param(
+        fpdf.drawing.StrokeCapStyle,
+        (fpdf.drawing.StrokeCapStyle.ROUND, "round", 1),
+        fpdf.drawing.StrokeCapStyle.ROUND,
+        no_exception,
+        id="StrokeCapStyle.ROUND",
+    ),
+    pytest.param(
+        fpdf.drawing.StrokeCapStyle,
+        (fpdf.drawing.StrokeCapStyle.SQUARE, "square", 2),
+        fpdf.drawing.StrokeCapStyle.SQUARE,
+        no_exception,
+        id="StrokeCapStyle.SQUARE",
+    ),
+    pytest.param(
+        fpdf.drawing.StrokeJoinStyle,
+        (fpdf.drawing.StrokeJoinStyle.MITER, "miter", 0),
+        fpdf.drawing.StrokeJoinStyle.MITER,
+        no_exception,
+        id="StrokeJoinStyle.MITER",
+    ),
+    pytest.param(
+        fpdf.drawing.StrokeJoinStyle,
+        (fpdf.drawing.StrokeJoinStyle.ROUND, "round", 1),
+        fpdf.drawing.StrokeJoinStyle.ROUND,
+        no_exception,
+        id="StrokeJoinStyle.ROUND",
+    ),
+    pytest.param(
+        fpdf.drawing.StrokeJoinStyle,
+        (fpdf.drawing.StrokeJoinStyle.BEVEL, "bevel", 2),
+        fpdf.drawing.StrokeJoinStyle.BEVEL,
+        no_exception,
+        id="StrokeJoinStyle.BEVEL",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.NORMAL, "normal"),
+        fpdf.drawing.BlendMode.NORMAL,
+        no_exception,
+        id="BlendMode.NORMAL",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.MULTIPLY, "multiply"),
+        fpdf.drawing.BlendMode.MULTIPLY,
+        no_exception,
+        id="BlendMode.MULTIPLY",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.SCREEN, "screen"),
+        fpdf.drawing.BlendMode.SCREEN,
+        no_exception,
+        id="BlendMode.SCREEN",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.OVERLAY, "overlay"),
+        fpdf.drawing.BlendMode.OVERLAY,
+        no_exception,
+        id="BlendMode.OVERLAY",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.DARKEN, "darken"),
+        fpdf.drawing.BlendMode.DARKEN,
+        no_exception,
+        id="BlendMode.DARKEN",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.LIGHTEN, "lighten"),
+        fpdf.drawing.BlendMode.LIGHTEN,
+        no_exception,
+        id="BlendMode.LIGHTEN",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.COLOR_DODGE, "color_dodge"),
+        fpdf.drawing.BlendMode.COLOR_DODGE,
+        no_exception,
+        id="BlendMode.COLOR_DODGE",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.COLOR_BURN, "color_burn"),
+        fpdf.drawing.BlendMode.COLOR_BURN,
+        no_exception,
+        id="BlendMode.COLOR_BURN",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.HARD_LIGHT, "hard_light"),
+        fpdf.drawing.BlendMode.HARD_LIGHT,
+        no_exception,
+        id="BlendMode.HARD_LIGHT",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.SOFT_LIGHT, "soft_light"),
+        fpdf.drawing.BlendMode.SOFT_LIGHT,
+        no_exception,
+        id="BlendMode.SOFT_LIGHT",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.DIFFERENCE, "difference"),
+        fpdf.drawing.BlendMode.DIFFERENCE,
+        no_exception,
+        id="BlendMode.DIFFERENCE",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.EXCLUSION, "exclusion"),
+        fpdf.drawing.BlendMode.EXCLUSION,
+        no_exception,
+        id="BlendMode.EXCLUSION",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.HUE, "hue"),
+        fpdf.drawing.BlendMode.HUE,
+        no_exception,
+        id="BlendMode.HUE",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.SATURATION, "saturation"),
+        fpdf.drawing.BlendMode.SATURATION,
+        no_exception,
+        id="BlendMode.SATURATION",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.COLOR, "color"),
+        fpdf.drawing.BlendMode.COLOR,
+        no_exception,
+        id="BlendMode.COLOR",
+    ),
+    pytest.param(
+        fpdf.drawing.BlendMode,
+        (fpdf.drawing.BlendMode.LUMINOSITY, "luminosity"),
+        fpdf.drawing.BlendMode.LUMINOSITY,
+        no_exception,
+        id="BlendMode.LUMINOSITY",
+    ),
+)
+
 
 style_attributes = (
     pytest.param("auto_close", True, id="auto close"),

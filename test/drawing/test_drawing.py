@@ -295,9 +295,78 @@ class TestTransform:
     # TODO: figure out a better way to test these constructors
     @pytest.mark.parametrize("tf, pt, result", parameters.transforms)
     def test_constructors(self, tf, pt, result):
-        # use of pytest.approx here works because fpdf.drawing.Point is a NamedTuple and
-        # wouldn't work otherwise
+        # use of pytest.approx here works because fpdf.drawing.Point is a NamedTuple
+        # (approx supports tuples) and wouldn't work if it were a normal object
         assert pt @ tf == pytest.approx(result)
+
+    def test_chaining(self):
+        tf = (
+            fpdf.drawing.Transform.identity()
+            .translate(1, 1)
+            .scale(2, 1)
+            .rotate(0.3)
+            .shear(0, 0.5)
+        )
+        assert tf == pytest.approx(
+            fpdf.drawing.Transform(
+                a=1.910672978251212,
+                b=1.546376902448285,
+                c=-0.29552020666133955,
+                d=0.8075763857949362,
+                e=1.6151527715898724,
+                f=2.353953288243221,
+            )
+        )
+
+    def test_about(self):
+        tf = fpdf.drawing.Transform.scaling(2).about(10, 10)
+
+        assert tf == fpdf.drawing.Transform(a=2, b=0, c=0, d=2, e=-10, f=-10)
+        assert tf == fpdf.drawing.Transform.translation(-10, -10).scale(2).translate(
+            10, 10
+        )
+
+    def test_mul(self):
+        tf = fpdf.drawing.Transform(1, 2, 3, 4, 5, 6)
+
+        assert tf * 6 == fpdf.drawing.Transform(6, 12, 18, 24, 30, 36)
+        assert 6 * tf == fpdf.drawing.Transform(6, 12, 18, 24, 30, 36)
+
+        with pytest.raises(TypeError):
+            _ = tf * "abc"
+
+    def test_matmul(self):
+        tf1 = fpdf.drawing.Transform(1, 2, 3, 4, 5, 6)
+        tf2 = fpdf.drawing.Transform(6, 5, 4, 3, 2, 1)
+
+        assert tf1 @ tf2 == fpdf.drawing.Transform(a=14, b=11, c=34, d=27, e=56, f=44)
+        assert tf2 @ tf1 == fpdf.drawing.Transform(a=21, b=32, c=13, d=20, e=10, f=14)
+
+        with pytest.raises(TypeError):
+            _ = tf1 @ 123
+
+    def test_render(self):
+        tf = fpdf.drawing.Transform(1, 2, 3, 4, 5, 6)
+
+        assert (
+            tf.render(fpdf.drawing.Move(fpdf.drawing.Point(0, 0)))[0]
+            == "1 2 3 4 5 6 cm"
+        )
+
+    def test_str(self):
+        # don't actually assert the output looks like something in particular, just make
+        # sure it doesn't raise, I guess.
+        str(fpdf.drawing.Transform(1, 2, 3, 4, 5, 6))
+
+
+class TestStyleEnums:
+    @pytest.mark.parametrize("owner, values, result, guard", parameters.coercive_enums)
+    def test_coercive_enums(self, owner, values, result, guard):
+        # this is just brute force testing which doesn't seem to be the most intelligent
+        # way to do it, but I also don't have a better strategy at all
+        for value in values:
+            with guard():
+                assert owner.coerce(value) is result
 
 
 class TestStyles:
