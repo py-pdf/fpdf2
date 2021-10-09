@@ -7,7 +7,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
-## [2.4.4] - not released yet
+## [2.4.6] - not released yet
+### Added
+- Templates now support drawing ellipses.
+### Fixed
+- The exception making the "x2" template field optional for barcode elements did not work correctly.
+### Changed
+- All template elements now have a transparent default background instead of white.
+
+## [2.4.5] - 2021-10-03
+### Fixed
+- ensure support for old field names in `Template.code39` for backward compatibility
+
+## [2.4.4] - 2021-10-01
 ### Added
 - `Template()` has gained a more flexible cousin `FlexTemplate()`, thanks to @gmischler
 - markdown support in `multi_cell()`, thanks to Yeshi Namkhai
@@ -15,15 +27,20 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - documentation on how to generate datamatrix barcodes using the `pystrich` lib: [documentation section](https://pyfpdf.github.io/fpdf2/Barcodes.html#datamatrix),
   thanks to @MWhatsUp
 - `write_html`: headings (`<h1>`, `<h2>`...) relative sizes can now be configured through an optional `heading_sizes` parameter
+- a subclass of `HTML2FPDF` can now easily be used by setting `FPDF.HTML2FPDF_CLASS`,
+  _cf._ [documentation](https://pyfpdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html#with-html)
 ### Fixed
 - `Template`: `split_multicell()` will not write spurious font data to the target document anymore, thanks to @gmischler
 - `Template`: rotation now should work correctly in all situations, thanks to @gmischler
 - `write_html`: headings (`<h1>`, `<h2>`...) can now contain non-ASCII characters without triggering a `UnicodeEncodeError`
 - `Template`: CSV column types are now safely parsed, thanks to @gmischler
+- `cell(..., markdown=True)` "leaked" its final style (bold / italics / underline) onto the following cells
 ### Changed
 - `write_html`: the line height of headings (`<h1>`, `<h2>`...) is now properly scaled with its font size
 - some `FPDF` methods should not be used inside a `rotation` context, or things can get broken.
   This is now forbidden: an exception is now raised in those cases.
+### Deprecated
+- `Template`: `code39` barcode input field names changed from `x/y/w/h` to `x1/y1/y2/size`
 
 ## [2.4.3] - 2021-09-01
 ### Added
