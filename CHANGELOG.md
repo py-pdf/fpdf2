@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.4.6] - not released yet
+### Added
+- Templates now support drawing ellipses.
+### Fixed
+- The exception making the "x2" template field optional for barcode elements did not work correctly.
+### Changed
+- All template elements now have a transparent default background instead of white.
 
 ## [2.4.5] - 2021-10-03
 ### Fixed
