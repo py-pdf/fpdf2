@@ -9,7 +9,7 @@ from .fpdf import (
     FPDF_VERSION as _FPDF_VERSION,
 )
 from .html import HTMLMixin, HTML2FPDF
-from .template import Template
+from .template import Template, FlexTemplate
 from .deprecation import WarnOnDeprecatedModuleAttributes
 
 FPDF_VERSION = _FPDF_VERSION
@@ -39,6 +39,7 @@ __all__ = [
     # Classes
     "FPDF",
     "Template",
+    "FlexTemplate",
     "TitleStyle",
     "HTMLMixin",
     "HTML2FPDF",
