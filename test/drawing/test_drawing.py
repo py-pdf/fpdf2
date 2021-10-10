@@ -1,6 +1,7 @@
 # pylint: disable=redefined-outer-name, no-self-use, protected-access
 
 from decimal import Decimal
+import io
 import math
 from pathlib import Path
 import re
@@ -405,7 +406,19 @@ class TestStyles:
         auto_pdf.draw_path(open_path_drawing)
 
     def test_dictionary_generation(self):
-        pass
+        style = fpdf.drawing.GraphicsStyle()
+
+        style.fill_opacity = 0.5
+        style.stroke_opacity = 0.75
+        style.blend_mode = "lighten"
+        style.stroke_width = 2
+        style.stroke_join_style = "round"
+        style.stroke_cap_style = "butt"
+
+        assert (
+            style.to_pdf_dict()
+            == "<< /Type /ExtGState\n/ca 0.5\n/BM /Lighten\n/CA 0.75\n/LW 2\n/LC 0\n/LJ 1 >>"
+        )
 
     @pytest.mark.parametrize("style_name, value, exception", parameters.invalid_styles)
     def test_bad_style_parameters(self, style_name, value, exception):
@@ -414,10 +427,80 @@ class TestStyles:
             setattr(style, style_name, value)
 
     def test_merge(self):
-        ...
+        style = fpdf.drawing.GraphicsStyle()
 
-    def test_pdf_dictionary_converion(self):
-        ...
+        style.fill_opacity = 0.5
+        style.stroke_opacity = 0.75
+        style.blend_mode = "lighten"
+        style.stroke_width = 2
+        style.stroke_join_style = "round"
+        style.stroke_cap_style = "butt"
+
+        override = fpdf.drawing.GraphicsStyle()
+
+        override.fill_opacity = 0.25
+        override.stroke_opacity = 0.1
+        override.blend_mode = "hue"
+
+        merged = fpdf.drawing.GraphicsStyle.merge(style, override)
+
+        assert merged.fill_opacity == 0.25
+        assert merged.stroke_opacity == 0.1
+        assert merged.blend_mode == fpdf.drawing.BlendMode.HUE.value
+        assert merged.stroke_width == 2
+        assert merged.stroke_join_style == fpdf.drawing.StrokeJoinStyle.ROUND.value
+        assert merged.stroke_cap_style == fpdf.drawing.StrokeCapStyle.BUTT.value
+
+    def test_paint_rule_resolution(self):
+        style = fpdf.drawing.GraphicsStyle()
+
+        style.paint_rule = "auto"
+
+        assert (
+            style.resolve_paint_rule() is fpdf.drawing.PathPaintRule.STROKE_FILL_NONZERO
+        )
+
+        style.stroke_width = 2
+        style.stroke_color = "#000"
+        style.fill_color = None
+        assert style.resolve_paint_rule() is fpdf.drawing.PathPaintRule.STROKE
+
+        style.fill_color = "#123"
+        assert (
+            style.resolve_paint_rule() is fpdf.drawing.PathPaintRule.STROKE_FILL_NONZERO
+        )
+
+        style.intersection_rule = fpdf.drawing.IntersectionRule.EVENODD
+        assert (
+            style.resolve_paint_rule() is fpdf.drawing.PathPaintRule.STROKE_FILL_EVENODD
+        )
+
+
+class TestPathElements:
+    @pytest.mark.parametrize(
+        "start, element, expected, end_point, end_class", parameters.path_elements
+    )
+    def test_render(self, start, element, expected, end_point, end_class):
+        style = fpdf.drawing.GraphicsStyle()
+        style.auto_close = False
+        rendered, last_item = element.render({}, style, start)
+
+        assert rendered == expected
+        assert isinstance(last_item, end_class)
+        assert last_item.end_point == pytest.approx(end_point)
+
+    @pytest.mark.parametrize(
+        "start, element, expected, end_point, end_class", parameters.path_elements
+    )
+    def test_render_debug(self, start, element, expected, end_point, end_class):
+        dbg = io.StringIO()
+        style = fpdf.drawing.GraphicsStyle()
+        style.auto_close = False
+        rendered, last_item = element.render_debug({}, style, start, dbg, "")
+
+        assert rendered == expected
+        assert isinstance(last_item, end_class)
+        assert last_item.end_point == pytest.approx(end_point)
 
 
 # def test_path_creation(tmp_path):
