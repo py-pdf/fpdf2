@@ -1775,13 +1775,13 @@ class Move(NamedTuple):
         return self.pt
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -1792,14 +1792,14 @@ class Move(NamedTuple):
         return _render_move(self.pt), self
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -1812,7 +1812,7 @@ class Move(NamedTuple):
             The same tuple as `Move.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(str(self) + "\n")
 
         return rendered, resolved
@@ -1832,13 +1832,13 @@ class RelativeMove(NamedTuple):
     """The offset by which to move."""
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -1851,14 +1851,14 @@ class RelativeMove(NamedTuple):
         return _render_move(point), Move(point)
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -1871,7 +1871,7 @@ class RelativeMove(NamedTuple):
             The same tuple as `RelativeMove.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(f"{self} resolved to {resolved}\n")
 
         return rendered, resolved
@@ -1896,13 +1896,13 @@ class Line(NamedTuple):
         return self.pt
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -1913,14 +1913,14 @@ class Line(NamedTuple):
         return _render_line(self.pt), self
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -1933,7 +1933,7 @@ class Line(NamedTuple):
             The same tuple as `Line.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(str(self) + "\n")
 
         return rendered, resolved
@@ -1954,13 +1954,13 @@ class RelativeLine(NamedTuple):
     """The endpoint of the line relative to the previous path element."""
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -1973,14 +1973,14 @@ class RelativeLine(NamedTuple):
         return _render_line(point), Line(point)
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -1993,7 +1993,7 @@ class RelativeLine(NamedTuple):
             The same tuple as `RelativeLine.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(f"{self} resolved to {resolved}\n")
 
         return rendered, resolved
@@ -2010,13 +2010,13 @@ class HorizontalLine(NamedTuple):
     """The abscissa of the horizontal line's end point."""
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -2029,14 +2029,14 @@ class HorizontalLine(NamedTuple):
         return _render_line(end_point), Line(end_point)
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -2049,7 +2049,7 @@ class HorizontalLine(NamedTuple):
             The same tuple as `HorizontalLine.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(f"{self} resolved to {resolved}\n")
 
         return rendered, resolved
@@ -2070,13 +2070,13 @@ class RelativeHorizontalLine(NamedTuple):
     """
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -2089,14 +2089,14 @@ class RelativeHorizontalLine(NamedTuple):
         return _render_line(end_point), Line(end_point)
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -2109,7 +2109,7 @@ class RelativeHorizontalLine(NamedTuple):
             The same tuple as `RelativeHorizontalLine.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(f"{self} resolved to {resolved}\n")
 
         return rendered, resolved
@@ -2126,13 +2126,13 @@ class VerticalLine(NamedTuple):
     """The ordinate of the vertical line's end point."""
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -2145,14 +2145,14 @@ class VerticalLine(NamedTuple):
         return _render_line(end_point), Line(end_point)
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -2165,7 +2165,7 @@ class VerticalLine(NamedTuple):
             The same tuple as `VerticalLine.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(f"{self} resolved to {resolved}\n")
 
         return rendered, resolved
@@ -2186,13 +2186,13 @@ class RelativeVerticalLine(NamedTuple):
     """
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -2205,14 +2205,14 @@ class RelativeVerticalLine(NamedTuple):
         return _render_line(end_point), Line(end_point)
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -2225,7 +2225,7 @@ class RelativeVerticalLine(NamedTuple):
             The same tuple as `RelativeVerticalLine.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(f"{self} resolved to {resolved}\n")
 
         return rendered, resolved
@@ -2254,13 +2254,13 @@ class BezierCurve(NamedTuple):
         return self.end
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -2271,14 +2271,14 @@ class BezierCurve(NamedTuple):
         return (_render_curve(self.c1, self.c2, self.end), self)
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -2291,7 +2291,7 @@ class BezierCurve(NamedTuple):
             The same tuple as `BezierCurve.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(str(self) + "\n")
 
         return rendered, resolved
@@ -2317,13 +2317,13 @@ class RelativeBezierCurve(NamedTuple):
     """The curve's end point relative to the end of the previous path element."""
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -2344,14 +2344,14 @@ class RelativeBezierCurve(NamedTuple):
         )
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -2364,7 +2364,7 @@ class RelativeBezierCurve(NamedTuple):
             The same tuple as `RelativeBezierCurve.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(f"{self} resolved to {resolved}\n")
 
         return rendered, resolved
@@ -2406,13 +2406,13 @@ class QuadraticBezierCurve(NamedTuple):
         return BezierCurve(ctrl1, ctrl2, end)
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -2422,20 +2422,20 @@ class QuadraticBezierCurve(NamedTuple):
         # pylint: disable=unused-argument
         return (
             self.to_cubic_curve(last_item.end_point).render(
-                path_gsds, style, last_item
+                gsd_registry, style, last_item
             )[0],
             self,
         )
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -2448,7 +2448,7 @@ class QuadraticBezierCurve(NamedTuple):
             The same tuple as `QuadraticBezierCurve.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(
             f"{self} resolved to {self.to_cubic_curve(last_item.end_point)}\n"
         )
@@ -2470,13 +2470,13 @@ class RelativeQuadraticBezierCurve(NamedTuple):
     """The curve's end point relative to the end of the previous path element."""
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -2491,17 +2491,17 @@ class RelativeQuadraticBezierCurve(NamedTuple):
         end = last_point + self.end
 
         absolute = QuadraticBezierCurve(ctrl=ctrl, end=end)
-        return absolute.render(path_gsds, style, last_item)
+        return absolute.render(gsd_registry, style, last_item)
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -2514,7 +2514,7 @@ class RelativeQuadraticBezierCurve(NamedTuple):
             The same tuple as `RelativeQuadraticBezierCurve.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(
             f"{self} resolved to {resolved} "
             f"then to {resolved.to_cubic_curve(last_item.end_point)}\n"
@@ -2667,13 +2667,13 @@ class Arc(NamedTuple):
         return curves
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -2689,21 +2689,21 @@ class Arc(NamedTuple):
 
         return (
             " ".join(
-                curve.render(path_gsds, style, prev)[0]
+                curve.render(gsd_registry, style, prev)[0]
                 for prev, curve in zip([last_item, *curves[:-1]], curves)
             ),
             curves[-1],
         )
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -2731,7 +2731,7 @@ class Arc(NamedTuple):
 
         return (
             " ".join(
-                curve.render(path_gsds, style, prev)[0]
+                curve.render(gsd_registry, style, prev)[0]
                 for prev, curve in zip(previous, curves)
             ),
             curves[-1],
@@ -2762,13 +2762,13 @@ class RelativeArc(NamedTuple):
     """The end point of the arc relative to the end of the previous path element."""
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -2783,17 +2783,17 @@ class RelativeArc(NamedTuple):
             self.large,
             self.sweep,
             last_item.end_point + self.end,
-        ).render(path_gsds, style, last_item)
+        ).render(gsd_registry, style, last_item)
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -2815,7 +2815,7 @@ class RelativeArc(NamedTuple):
             self.large,
             self.sweep,
             last_item.end_point + self.end,
-        ).render_debug(path_gsds, style, last_item, debug_stream, pfx)
+        ).render_debug(gsd_registry, style, last_item, debug_stream, pfx)
 
 
 class Rectangle(NamedTuple):
@@ -2827,13 +2827,13 @@ class Rectangle(NamedTuple):
     """The width and height of the rectangle."""
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -2846,14 +2846,14 @@ class Rectangle(NamedTuple):
         return (f"{self.org.render()} {self.size.render()} re", Line(self.org))
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -2866,7 +2866,7 @@ class Rectangle(NamedTuple):
             The same tuple as `Rectangle.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(f"{self} resolved to {rendered}\n")
 
         return rendered, resolved
@@ -2928,13 +2928,13 @@ class RoundedRectangle(NamedTuple):
         return items
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -2950,20 +2950,20 @@ class RoundedRectangle(NamedTuple):
 
         render_list = []
         for item in components:
-            rendered, last_item = item.render(path_gsds, style, last_item)
+            rendered, last_item = item.render(gsd_registry, style, last_item)
             render_list.append(rendered)
 
         return " ".join(render_list), Line(self.org)
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -2985,11 +2985,11 @@ class RoundedRectangle(NamedTuple):
 
         render_list = []
         for item in components[:-1]:
-            rendered, last_item = item.render(path_gsds, style, last_item)
+            rendered, last_item = item.render(gsd_registry, style, last_item)
             debug_stream.write(pfx + f" ├─ {item}\n")
             render_list.append(rendered)
 
-        rendered, last_item = components[-1].render(path_gsds, style, last_item)
+        rendered, last_item = components[-1].render(gsd_registry, style, last_item)
         debug_stream.write(pfx + f" └─ {components[-1]}\n")
         render_list.append(rendered)
 
@@ -3030,13 +3030,13 @@ class Ellipse(NamedTuple):
         return items
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -3052,20 +3052,20 @@ class Ellipse(NamedTuple):
 
         render_list = []
         for item in components:
-            rendered, last_item = item.render(path_gsds, style, last_item)
+            rendered, last_item = item.render(gsd_registry, style, last_item)
             render_list.append(rendered)
 
         return " ".join(render_list), Move(self.center)
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -3087,11 +3087,11 @@ class Ellipse(NamedTuple):
 
         render_list = []
         for item in components[:-1]:
-            rendered, last_item = item.render(path_gsds, style, last_item)
+            rendered, last_item = item.render(gsd_registry, style, last_item)
             debug_stream.write(pfx + f" ├─ {item}\n")
             render_list.append(rendered)
 
-        rendered, last_item = components[-1].render(path_gsds, style, last_item)
+        rendered, last_item = components[-1].render(gsd_registry, style, last_item)
         debug_stream.write(pfx + f" └─ {components[-1]}\n")
         render_list.append(rendered)
 
@@ -3105,13 +3105,13 @@ class ImplicitClose(NamedTuple):
     """
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -3126,14 +3126,14 @@ class ImplicitClose(NamedTuple):
         return "", last_item
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -3146,7 +3146,7 @@ class ImplicitClose(NamedTuple):
             The same tuple as `ImplicitClose.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(f"{self} resolved to {rendered}\n")
 
         return rendered, resolved
@@ -3163,13 +3163,13 @@ class Close(NamedTuple):
     """
 
     @force_nodocument
-    def render(self, path_gsds, style, last_item):
+    def render(self, gsd_registry, style, last_item):
         """
         Render this path element to its PDF representation.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
 
@@ -3181,14 +3181,14 @@ class Close(NamedTuple):
         return "h", last_item
 
     @force_nodocument
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -3201,7 +3201,7 @@ class Close(NamedTuple):
             The same tuple as `Close.render`.
         """
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved = self.render(gsd_registry, style, last_item)
         debug_stream.write(str(self) + "\n")
 
         return rendered, resolved
@@ -3841,11 +3841,11 @@ class PaintedPath:
             self._close_context = self._graphics_context
             self._closed = True
 
-    def render(self, path_gsds, style, last_item, debug_stream=None, pfx=None):
+    def render(self, gsd_registry, style, last_item, debug_stream=None, pfx=None):
         self._insert_implicit_close_if_open()
 
         render_list, last_item = self._root_graphics_context.build_render_list(
-            path_gsds, style, last_item, debug_stream, pfx
+            gsd_registry, style, last_item, debug_stream, pfx
         )
 
         paint_rule = GraphicsStyle.merge(style, self.style).resolve_paint_rule()
@@ -3854,14 +3854,14 @@ class PaintedPath:
 
         return " ".join(render_list), last_item
 
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -3873,7 +3873,7 @@ class PaintedPath:
         Returns:
             The same tuple as `PaintedPath.render`.
         """
-        return self.render(path_gsds, style, last_item, debug_stream, pfx)
+        return self.render(gsd_registry, style, last_item, debug_stream, pfx)
 
 
 class ClippingPath(PaintedPath):
@@ -3908,7 +3908,7 @@ class ClippingPath(PaintedPath):
         super().__init__(x=x, y=y)
         self.paint_rule = PathPaintRule.DONT_PAINT
 
-    def render(self, path_gsds, style, last_item, debug_stream=None, pfx=None):
+    def render(self, gsd_registry, style, last_item, debug_stream=None, pfx=None):
         # painting the clipping path outside of its root graphics context allows it to
         # be transformed without affecting the transform of the graphics context of the
         # path it is being used to clip. This is because, unlike all of the other style
@@ -3920,7 +3920,7 @@ class ClippingPath(PaintedPath):
             debug_stream.write("<ClippingPath> ")
 
         render_list, last_item = self._root_graphics_context.build_render_list(
-            path_gsds, style, last_item, debug_stream, pfx, _push_stack=False
+            gsd_registry, style, last_item, debug_stream, pfx, _push_stack=False
         )
 
         merged_style = GraphicsStyle.merge(style, self.style)
@@ -3941,14 +3941,14 @@ class ClippingPath(PaintedPath):
 
         return " ".join(render_list), last_item
 
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(self, gsd_registry, style, last_item, debug_stream, pfx):
         """
         Render this path element to its PDF representation and produce debug
         information.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -3960,7 +3960,7 @@ class ClippingPath(PaintedPath):
         Returns:
             The same tuple as `ClippingPath.render`.
         """
-        return self.render(path_gsds, style, last_item, debug_stream, pfx)
+        return self.render(gsd_registry, style, last_item, debug_stream, pfx)
 
 
 class GraphicsContext:
@@ -4017,7 +4017,13 @@ class GraphicsContext:
 
     @force_nodocument
     def build_render_list(
-        self, path_gsds, style, last_item, debug_stream=None, pfx=None, _push_stack=True
+        self,
+        gsd_registry,
+        style,
+        last_item,
+        debug_stream=None,
+        pfx=None,
+        _push_stack=True,
     ):
         """
         Build a list composed of all all the individual elements rendered.
@@ -4028,8 +4034,8 @@ class GraphicsContext:
         string.
 
         Args:
-            path_gsds (dict): a dict of all graphics state dictionaries generated
-                during rendering up to this point.
+            gsd_registry (GraphicsStateDictRegistry): the owner's graphics state
+                dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
             debug_stream (io.TextIO): the stream to which the debug output should be
@@ -4075,7 +4081,7 @@ class GraphicsContext:
                 else:
                     debug_stream.write("\n")
 
-            style_dict_name = path_gsds.register_style(self.style)
+            style_dict_name = gsd_registry.register_style(self.style)
 
             if style_dict_name is not None:
                 render_list.append(f"{render_pdf_primitive(style_dict_name)} gs")
@@ -4116,7 +4122,11 @@ class GraphicsContext:
                 if self.clipping_path is not None:
                     debug_stream.write(pfx + " ├─ ")
                     rendered_cpath, _ = self.clipping_path.render_debug(
-                        path_gsds, merged_style, last_item, debug_stream, pfx + " │  "
+                        gsd_registry,
+                        merged_style,
+                        last_item,
+                        debug_stream,
+                        pfx + " │  ",
                     )
                     if rendered_cpath:
                         render_list.append(rendered_cpath)
@@ -4124,7 +4134,11 @@ class GraphicsContext:
                 for item in self.path_items[:-1]:
                     debug_stream.write(pfx + " ├─ ")
                     rendered, last_item = item.render_debug(
-                        path_gsds, merged_style, last_item, debug_stream, pfx + " │  "
+                        gsd_registry,
+                        merged_style,
+                        last_item,
+                        debug_stream,
+                        pfx + " │  ",
                     )
 
                     if rendered:
@@ -4132,7 +4146,7 @@ class GraphicsContext:
 
                 debug_stream.write(pfx + " └─ ")
                 rendered, last_item = self.path_items[-1].render_debug(
-                    path_gsds, merged_style, last_item, debug_stream, pfx + "    "
+                    gsd_registry, merged_style, last_item, debug_stream, pfx + "    "
                 )
 
                 if rendered:
@@ -4141,14 +4155,14 @@ class GraphicsContext:
             else:
                 if self.clipping_path is not None:
                     rendered_cpath, _ = self.clipping_path.render(
-                        path_gsds, merged_style, last_item
+                        gsd_registry, merged_style, last_item
                     )
                     if rendered_cpath:
                         render_list.append(rendered_cpath)
 
                 for item in self.path_items:
                     rendered, last_item = item.render(
-                        path_gsds, merged_style, last_item
+                        gsd_registry, merged_style, last_item
                     )
 
                     if rendered:
@@ -4165,17 +4179,23 @@ class GraphicsContext:
         return render_list, last_item
 
     def render(
-        self, path_gsds, style, last_item, debug_stream=None, pfx=None, _push_stack=True
+        self,
+        gsd_registry,
+        style,
+        last_item,
+        debug_stream=None,
+        pfx=None,
+        _push_stack=True,
     ):
         render_list, last_item = self.build_render_list(
-            path_gsds, style, last_item, debug_stream, pfx, _push_stack=_push_stack
+            gsd_registry, style, last_item, debug_stream, pfx, _push_stack=_push_stack
         )
 
         return " ".join(render_list), last_item
 
     def render_debug(
-        self, path_gsds, style, last_item, debug_stream, pfx, _push_stack=True
+        self, gsd_registry, style, last_item, debug_stream, pfx, _push_stack=True
     ):
         return self.render(
-            path_gsds, style, last_item, debug_stream, pfx, _push_stack=_push_stack
+            gsd_registry, style, last_item, debug_stream, pfx, _push_stack=_push_stack
         )
