@@ -3285,6 +3285,11 @@ class DrawingContext:
             if rendered:
                 render_list.append(rendered)
 
+        # there was nothing to render: the only items are the start group and scale
+        # transform.
+        if len(render_list) == 2:
+            return ""
+
         render_list.append("Q")
 
         return " ".join(render_list)
@@ -3310,6 +3315,11 @@ class DrawingContext:
             )
             if rendered:
                 render_list.append(rendered)
+
+            # there was nothing to render: the only items are the start group and scale
+            # transform.
+            if len(render_list) == 2:
+                return ""
 
             render_list.append("Q")
 
