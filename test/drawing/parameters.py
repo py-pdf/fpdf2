@@ -602,3 +602,108 @@ path_elements = (
         id="close",
     ),
 )
+
+PP = fpdf.drawing.PaintedPath
+d = fpdf.drawing
+
+painted_path_elements = (
+    # circle, ellipse, rectangle
+    pytest.param(
+        ((PP.rectangle, (1, 2, 3, 4)),),
+        [d.Move(P(0, 0)), d.RoundedRectangle(P(1, 2), P(3, 4), P(0, 0))],
+        "q 0 0 m 1 2 3 4 re B Q",
+        id="rectangle",
+    ),
+    pytest.param(
+        ((PP.circle, (1, 2, 3)),),
+        [d.Move(P(0, 0)), d.Ellipse(center=P(1, 2), radii=P(3, 3))],
+        "q 0 0 m 4 2 m 4 3.6569 2.6569 5 1 5 c -0.6569 5 -2 3.6569 -2 2 c -2 0.3431 "
+        "-0.6569 -1 1 -1 c 2.6569 -1 4 0.3431 4 2 c h B Q",
+        id="circle",
+    ),
+    pytest.param(
+        ((PP.ellipse, (1, 2, 3, 4)),),
+        [d.Move(P(0, 0)), d.Ellipse(center=P(1, 2), radii=P(3, 4))],
+        "q 0 0 m 4 2 m 4 4.2091 2.6569 6 1 6 c -0.6569 6 -2 4.2091 -2 2 c -2 -0.2091 "
+        "-0.6569 -2 1 -2 c 2.6569 -2 4 -0.2091 4 2 c h B Q",
+        id="ellipse",
+    ),
+    pytest.param(
+        ((PP.line_to, (2, 1)),),
+        [d.Move(P(0, 0)), d.Line(P(2, 1))],
+        "q 0 0 m 2 1 l h B Q",
+        id="line_to",
+    ),
+    pytest.param(
+        ((PP.line_relative, (2, 1)),),
+        [d.Move(P(0, 0)), d.RelativeLine(P(2, 1))],
+        "q 0 0 m 2 1 l h B Q",
+        id="line_relative",
+    ),
+    pytest.param(
+        ((PP.horizontal_line_to, (2,)),),
+        [d.Move(P(0, 0)), d.HorizontalLine(2)],
+        "q 0 0 m 2 0 l h B Q",
+        id="horizontal_line_to",
+    ),
+    pytest.param(
+        ((PP.horizontal_line_relative, (2,)),),
+        [d.Move(P(0, 0)), d.RelativeHorizontalLine(2)],
+        "q 0 0 m 2 0 l h B Q",
+        id="horizontal_line_relative",
+    ),
+    pytest.param(
+        ((PP.vertical_line_to, (2,)),),
+        [d.Move(P(0, 0)), d.VerticalLine(2)],
+        "q 0 0 m 0 2 l h B Q",
+        id="vertical_line_to",
+    ),
+    pytest.param(
+        ((PP.vertical_line_relative, (2,)),),
+        [d.Move(P(0, 0)), d.RelativeVerticalLine(2)],
+        "q 0 0 m 0 2 l h B Q",
+        id="vertical_line_relative",
+    ),
+    pytest.param(
+        ((PP.curve_to, (1, 2, 3, 4, 5, 6)),),
+        [d.Move(P(0, 0)), d.BezierCurve(P(1, 2), P(3, 4), P(5, 6))],
+        "q 0 0 m 1 2 3 4 5 6 c h B Q",
+        id="curve_to",
+    ),
+    pytest.param(
+        ((PP.curve_relative, (1, 2, 3, 4, 5, 6)),),
+        [d.Move(P(0, 0)), d.RelativeBezierCurve(P(1, 2), P(3, 4), P(5, 6))],
+        "q 0 0 m 1 2 3 4 5 6 c h B Q",
+        id="curve_relative",
+    ),
+    pytest.param(
+        ((PP.quadratic_curve_to, (1, 2, 3, 4)),),
+        [d.Move(P(0, 0)), d.QuadraticBezierCurve(P(1, 2), P(3, 4))],
+        "q 0 0 m 0.6667 1.3333 1.6667 2.6667 3 4 c h B Q",
+        id="quadratic_curve_to",
+    ),
+    pytest.param(
+        ((PP.quadratic_curve_relative, (1, 2, 3, 4)),),
+        [d.Move(P(0, 0)), d.RelativeQuadraticBezierCurve(P(1, 2), P(3, 4))],
+        "q 0 0 m 0.6667 1.3333 1.6667 2.6667 3 4 c h B Q",
+        id="quadratic_curve_relative",
+    ),
+    pytest.param(
+        ((PP.arc_to, (3, 3, 0, False, False, 1, 1)),),
+        [d.Move(P(0, 0)), d.Arc(P(3, 3), 0, False, False, P(1, 1))],
+        "q 0 0 m 0.2489 0.4083 0.5917 0.7511 1 1 c h B Q",
+        id="arc_to",
+    ),
+    pytest.param(
+        ((PP.arc_relative, (3, 3, 0, False, False, 1, 1)),),
+        [d.Move(P(0, 0)), d.RelativeArc(P(3, 3), 0, False, False, P(1, 1))],
+        "q 0 0 m 0.2489 0.4083 0.5917 0.7511 1 1 c h B Q",
+        id="arc_relative",
+    ),
+    pytest.param(
+        ((PP.close, ()),),
+        [d.Move(P(0, 0)), d.Close()],
+        "q 0 0 m h B Q",
+        id="close",
+    ),
+)
