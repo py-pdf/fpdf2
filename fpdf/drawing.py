@@ -1739,6 +1739,12 @@ class GraphicsStyle:
                 # good default.
                 rule = PathPaintRule.STROKE_FILL_NONZERO
 
+        elif self.paint_rule is GraphicsStyle.INHERIT:
+            # this shouldn't happen under normal usage, but certain API (ab)use can end
+            # up in this state. We can't resolve anything meaningful, so fall back to a
+            # sane(?) default.
+            rule = PathPaintRule.STROKE_FILL_NONZERO
+
         else:
             rule = self.paint_rule
 
