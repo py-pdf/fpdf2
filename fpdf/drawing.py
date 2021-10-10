@@ -2377,7 +2377,7 @@ class QuadraticBezierCurve(NamedTuple):
     This draws a Bézier curve parameterized by the end point of the previous path
     element, one off-curve control point, and an end point.
 
-    See: `PaintedPath.quadratic_bezier_to`
+    See: `PaintedPath.quadratic_curve_to`
     """
 
     ctrl: Point
@@ -2461,7 +2461,7 @@ class RelativeQuadraticBezierCurve(NamedTuple):
     A quadratic Bézier curve path element whose points are specified relative to the end
     point of the previous path element.
 
-    See: `PaintedPath.quadratic_bezier_relative`
+    See: `PaintedPath.quadratic_curve_relative`
     """
 
     ctrl: Point
@@ -3662,13 +3662,13 @@ class PaintedPath:
             dy1 (Number): ordinate of the first control point relative to the end point
                 of the previous path element
             dx2 (Number): abscissa offset of the second control point relative to the
-                first control point
+                end point of the previous path element
             dy2 (Number): ordinate offset of the second control point relative to the
-                first control point
-            dx3 (Number): abscissa offset of the end point relative to the second
-                control point
-            dy3 (Number): ordinate offset of the end point relative to the second
-                control point
+                end point of the previous path element
+            dx3 (Number): abscissa offset of the end point relative to the end point of
+                the previous path element
+            dy3 (Number): ordinate offset of the end point relative to the end point of
+                the previous path element
 
         Returns:
             The path, to allow chaining method calls.
@@ -3680,21 +3680,43 @@ class PaintedPath:
         self.add_path_element(RelativeBezierCurve(c1d, c2d, end), _copy=False)
         return self
 
-    def quadratic_bezier_to(self, x1, y1, x2, y2):
+    def quadratic_curve_to(self, x1, y1, x2, y2):
         """
         Append a cubic Bézier curve mimicking the specified quadratic Bézier curve.
+
+        Args:
+            x1 (Number): abscissa of the control point
+            y1 (Number): ordinate of the control point
+            x2 (Number): abscissa of the end point
+            y2 (Number): ordinate of the end point
+
+        Returns:
+            The path, to allow chaining method calls.
         """
         ctrl = Point(x1, y1)
         end = Point(x2, y2)
         self.add_path_element(QuadraticBezierCurve(ctrl, end), _copy=False)
         return self
 
-    def quadratic_bezier_relative(self, x1, y1, x2, y2):
+    def quadratic_curve_relative(self, dx1, dy1, dx2, dy2):
         """
         Append a cubic Bézier curve mimicking the specified quadratic Bézier curve.
+
+        Args:
+            dx1 (Number): abscissa of the control point relative to the end point of
+                the previous path element
+            dy1 (Number): ordinate of the control point relative to the end point of
+                the previous path element
+            dx2 (Number): abscissa offset of the end point relative to the end point of
+                the previous path element
+            dy2 (Number): ordinate offset of the end point relative to the end point of
+                the previous path element
+
+        Returns:
+            The path, to allow chaining method calls.
         """
-        ctrl = Point(x1, y1)
-        end = Point(x2, y2)
+        ctrl = Point(dx1, dy1)
+        end = Point(dx2, dy2)
         self.add_path_element(RelativeQuadraticBezierCurve(ctrl, end), _copy=False)
         return self
 
