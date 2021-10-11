@@ -279,7 +279,7 @@ class FPDF:
         self.image_filter = "AUTO"
         self.page_duration = 0  # optional pages display duration, cf. add_page()
         self.page_transition = None  # optional pages transition, cf. add_page()
-        self._rotating = False
+        self._rotating = 0 # counting levels of nested rotation contexts
         self._markdown_leak_end_style = False
         # Only set if XMP metadata is added to the document:
         self._xmp_metadata_obj_id = None
@@ -1552,9 +1552,9 @@ class FPDF:
             f"q {c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm "
             f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm\n"
         )
-        self._rotating = True
+        self._rotating += 1
         yield
-        self._rotating = False
+        self._rotating -= 1
         self._out("Q\n")
 
     @property
