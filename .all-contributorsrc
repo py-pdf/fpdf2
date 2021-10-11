@@ -336,7 +336,8 @@
       "contributions": [
         "code",
         "bug",
-        "doc"
+        "doc",
+        "ideas"
       ]
     },
     {
@@ -354,7 +355,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/59422723?v=4",
       "profile": "http://portfedh@gmail.com",
       "contributions": [
-        "doc"
+        "doc",
+        "tutorial"
       ]
     }
   ],
