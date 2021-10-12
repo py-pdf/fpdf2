@@ -2,6 +2,8 @@
 
 Español: [Tutorial-es](Tutorial-es.md)
 
+[Documentation](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
+
 [TOC]
 
 ## Tuto 1 - Minimal Example ##
@@ -475,3 +477,93 @@ The second table brings some improvements: each column has its own width,
 The third table is similar to the second one but uses colors. Fill, text and
  line colors are simply specified. Alternate coloring for rows is obtained by
  using alternatively transparent and filled cells.
+
+## Tuto 6 - Creating links and mixing text styles ##
+
+This tutorial will explain several ways to insert links inside a pdf document,
+ as well as adding links to external sources.
+
+ It will also show several ways we can use different text styles,
+ (bold, italic, underline) within the same text.
+
+```python
+import fpdf
+
+
+class MyFPDF(fpdf.FPDF, fpdf.HTMLMixin):
+    pass
+
+
+pdf = MyFPDF()
+
+# First page
+pdf.add_page()
+pdf.set_font("helvetica", size=20)
+pdf.write(5, "To find out what's new in self tutorial, click ")
+pdf.set_font(style="U")
+link = pdf.add_link()
+pdf.write(5, "here", link)
+pdf.set_font()
+
+# Second page
+pdf.add_page()
+pdf.set_link(link)
+pdf.image("../docs/fpdf2-logo.png", 10, 10, 30, 0, "", "http://www.fpdf.org")
+pdf.set_left_margin(45)
+pdf.set_font_size(14)
+pdf.write_html(
+    """You can now easily print text mixing different
+styles: <B>bold</B>, <I>italic</I>, <U>underlined</U>, or
+<B><I><U>all at once</U></I></B>!<BR>You can also insert links
+on text, such as <A HREF="http://www.fpdf.org">www.fpdf.org</A>,
+or on an image: click on the logo."""
+)
+
+pdf.output("tuto6.pdf")
+
+```
+
+[Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf)
+
+[fpdf2-logo](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
+
+The new method shown here to print text is
+ [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
+. It is very similar to
+ [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
+ , the key differences being:
+
+- The end of line is at the right margin and the next line begins at the left
+ margin.
+- The current position moves to the end of the text.
+
+The method therefore allows us to write a chunk of text, alter the font style,
+ and continue from the exact place we left off.
+On the other hand, its main drawback is that we cannot justify the text like
+ we do with the
+ [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
+ method.
+
+In the first page of the example, we used
+ [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
+ for this purpose. The beginning of the sentence is written in regular style
+ text, then using the
+ [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font)
+ method, we switched to underline and finished the sentence.
+
+To add an internal link pointing to the second page, we used the
+ [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link)
+ method, whch creates a clickable area which we named "link" that directs to
+ another place within the document. On the second page, we used
+ [set_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link)
+ to define the destination area for the link we just created.
+
+To create the external link using an image, we used
+ [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
+. The method has the
+ option to pass a link as one of its arguments. The link can be both internal
+ or external.
+
+As an alternative, another option to change the font style and add links is to
+ use the write_html() method. It is an html parser, which allows adding text,
+ changing font style and adding links using html.
