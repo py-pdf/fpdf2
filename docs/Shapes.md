@@ -24,7 +24,8 @@ pdf = FPDF()
 pdf.add_page()
 pdf.set_line_width(0.5)
 pdf.set_draw_color(r=0, g=128, b=255)
-pdf.dashed_line(x1=50, y1=50, x2=150, y2=100, dash_length=2, space_length=3)
+pdf.set_dash_pattern(dash=2, gap=3)
+pdf.line(x1=50, y1=50, x2=150, y2=100)
 pdf.output("blue_dashed_line.pdf")
 ```
 

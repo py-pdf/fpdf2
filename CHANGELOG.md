@@ -13,6 +13,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 ### Fixed
 - The exception making the "x2" template field optional for barcode elements did not work correctly.
 ### Changed
+- `dashed_line()` is deprecated in favour of the new `set_dash_pattern()`, which works with all lines and curves.
 - All template elements now have a transparent default background instead of white.
 
 ## [2.4.5] - 2021-10-03
