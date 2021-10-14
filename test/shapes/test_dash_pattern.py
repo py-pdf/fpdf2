@@ -24,7 +24,7 @@ def test_dash_pattern(tmp_path):
     # solid line
     draw_stuff(20, 20)
     # simple dash
-    pdf.set_dash_pattern(3, 3)
+    pdf.set_dash_pattern(3)
     draw_stuff(100, 20)
     # dashdot by overlap
     pdf.set_dash_pattern(4, 6)
@@ -54,3 +54,6 @@ def test_dash_pattern_badinput(tmp_path):
         pdf.set_dash_pattern(gap="hu")
     with raises(AssertionError):
         pdf.set_dash_pattern(phase=None)
+    with raises(fpdf.FPDFException):
+        with pdf.rotation(30, 50, 50):
+            pdf.set_dash_pattern()

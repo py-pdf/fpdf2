@@ -911,7 +911,7 @@ class FPDF:
         ), "Phase must not be a negative number."
         if self._rotating:
             raise FPDFException(
-                ".set_line_width() should not be called inside .rotation()"
+                ".set_dash_pattern() should not be called inside .rotation()"
             )
         if dash:
             if gap:
