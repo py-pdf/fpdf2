@@ -28,11 +28,11 @@ jobs:
           python -m pip install --upgrade pip setuptools
           pip install --upgrade . -r test/requirements.txt -r docs/requirements.txt -r contributors/requirements.txt
       - name: Statically checking code 🔎
-        run: pylint fpdf test
+        run: pylint fpdf test tutorial/tuto*.py
       - name: Ensure code has been autoformatted with black 🖌️
         run: black --check .
       - name: Checking all PDF samples ☑
-        if: matrix.python-version == '3.9'
+        if: matrix.python-version == '3.10'
         run: |
           # Using qpdf
           find . -name '*.pdf' | xargs -n 1 qpdf --check
@@ -64,14 +64,14 @@ jobs:
       - name: Deploy documentation 🚀
         # GitHub Pages deployment should not be done for all Python versions,
         # otherwise commits will conflict on the gh-pages branch:
-        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.9'
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.10'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: public/
       - name: Publish on Pypi 🚀
         # Similarly, we only publish a new version on Pypi once per pipeline running on master:
-        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.9'
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.10'
         run: |
           sudo apt update && sudo apt install -y curl jq
           echo Versions already released on Pypi: $(curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]')

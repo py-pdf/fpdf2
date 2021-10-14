@@ -9,13 +9,7 @@ English: [Tutorial](Tutorial.md)
 Empecemos con el ejemplo clásico: 
 
 ```python
-from fpdf import FPDF
-
-pdf = FPDF()
-pdf.add_page()
-pdf.set_font('helvetica', 'B', 16)
-pdf.cell(40, 10, 'Hola Mundo!')
-pdf.output('tuto1.pdf')
+{% include "../tutorial/tuto1.py" %}
 ```
 
 [Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
@@ -62,38 +56,7 @@ Finalmente, el documento es cerrado y enviado al explorador con [output](fpdf/fp
 Aquí hay un ejemplo de dos páginas con encabezado, pie y logo: 
 
 ```python
-from fpdf import FPDF
-
-class PDF(FPDF):
-    def header(self):
-        # Logo
-        self.image('logo_pb.png', 10, 8, 33)
-        # helvetica bold 15
-        self.set_font('helvetica', 'B', 15)
-        # Moverse a la derecha
-        self.cell(80)
-        # Título
-        self.cell(30, 10, 'Title', 1, 0, 'C')
-        # Salto de línea(Line break)
-        self.ln(20)
-
-    # Pie de página
-    def footer(self):
-        # Posicionamiento a 1.5 cm desde el fin de página
-        self.set_y(-15)
-        # helvetica italic 8
-        self.set_font('helvetica', 'I', 8)
-        # Número de página
-        self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
-
-# Instanciación de clase heredada
-pdf = PDF()
-pdf.alias_nb_pages()
-pdf.add_page()
-pdf.set_font('Times', '', 12)
-for i in range(1, 41):
-    pdf.cell(0, 10, 'Printing line number ' + str(i), 0, 1)
-pdf.output('tuto2.pdf')
+{% include "../tutorial/tuto2.py" %}
 ```
 [Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
 
@@ -111,73 +74,7 @@ Otra característica interesante es usada aquí: el salto de página automático
 
 Continuemos con un ejemplo que imprime párrafos justificados. También ilustra el uso de colores.
 ```python
-from fpdf import FPDF
-
-title = '20000 Leagues Under the Seas'
-
-class PDF(FPDF):
-    def header(self):
-        # helvetica bold 15
-        self.set_font('helvetica', 'B', 15)
-        # Calcular ancho del texto (title) y establecer posición
-        w = self.get_string_width(title) + 6
-        self.set_x((210 - w) / 2)
-        # Colores del marco, fondo y texto
-        self.set_draw_color(0, 80, 180)
-        self.set_fill_color(230, 230, 0)
-        self.set_text_color(220, 50, 50)
-        # Grosor del marco (1 mm)
-        self.set_line_width(1)
-        # Título
-        self.cell(w, 9, title, 1, 1, 'C', True)
-        # Salto de línea
-        self.ln(10)
-
-    def footer(self):
-        # Posición a 1.5 cm desde abajo
-        self.set_y(-15)
-        # helvetica italic 8
-        self.set_font('helvetica', 'I', 8)
-        # Color de texto en gris
-        self.set_text_color(128)
-        # Número de pagina
-        self.cell(0, 10, 'Page ' + str(self.page_no()), 0, 0, 'C')
-
-    def chapter_title(self, num, label):
-        # helvetica 12
-        self.set_font('helvetica', '', 12)
-        # Color de fondo
-        self.set_fill_color(200, 220, 255)
-        # Título
-        self.cell(0, 6, f'Chapter {num} : {label}', 0, 1, 'L', True)
-        # Salto de línea
-        self.ln(4)
-
-    def chapter_body(self, name):
-        # Leer archivo de texto
-        with open(name, 'rb') as fh:
-            txt = fh.read().decode('latin-1')
-        # Times 12
-        self.set_font('Times', '', 12)
-        # Emitir texto justificado
-        self.multi_cell(0, 5, txt)
-        # Salto de línea
-        self.ln()
-        # Mención en italic -cursiva-
-        self.set_font('', 'I')
-        self.cell(0, 5, '(end of excerpt)')
-
-    def print_chapter(self, num, title, name):
-        self.add_page()
-        self.chapter_title(num, title)
-        self.chapter_body(name)
-
-pdf = PDF()
-pdf.set_title(title)
-pdf.set_author('Jules Verne')
-pdf.print_chapter(1, 'A RUNAWAY REEF', '20k_c1.txt')
-pdf.print_chapter(2, 'THE PROS AND CONS', '20k_c2.txt')
-pdf.output('tuto3.pdf')
+{% include "../tutorial/tuto3.py" %}
 ```
 [Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)
 

@@ -9,9 +9,9 @@ Besides being defined in code, the elements can also be defined in a CSV file or
 A template is used like a dict, setting its items' values.
 
 
-# How to use Templates #
+** How to use Templates? **
 
-There are two approaches to using templates.
+There are two approaches to using templates, detailed in the sections below:
 
 
 ## Using Template() ##

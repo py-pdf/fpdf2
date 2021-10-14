@@ -1,2 +1,29 @@
-France;Paris;?;?
-Spain;Madrid;?;?
+Country,Capital,Area (sq km),Population
+Algeria,Algiers,2381740,33770000
+American Samoa,Pago Pago,199,57500
+Andorra,Andorra la Vella,468,72400
+Angola,Luanda,1246700,12531000
+Anguilla,The Valley,102,14100
+Antigua Barbuda,Saint John,443,69800
+Argentina,Buenos Aires,2766890,40677000
+Armenia,Yerevan,29800,2969000
+Aruba,Oranjestad,193,101500
+Australia,Canberra,7686850,20601000
+Austria,Vienna,83858,8206000
+Azerbaijan,Baku,86600,8178000
+Bahamas,Nassau,13940,307500
+Bahrain,Manama,665,718300
+Bangladesh,Dhaka,144000,153547000
+Barbados,Bridgetown,431,282000
+Belarus,Minsk,207600,9686000
+Belgium,Brussels,30510,10404000
+Belize,Belmopan,22966,301300
+Benin,Porto Novo,112620,8295000
+Bermuda,Hamilton,53,66500
+Bhutan,Thimphu,47000,682300
+Bolivia,Sucre,1098580,9248000
+Bosnia,Sarajevo,51129,4590000
+Botswana,Gaborone,600370,1842000
+Brazil,Brasilia,8511965,191909000
+British Virgin Isl,Road Town,153,24000
+Brunei,Bandar Seri ,5770,381400

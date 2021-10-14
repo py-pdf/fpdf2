@@ -9,12 +9,18 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.4.6] - not released yet
 ### Added
-- Templates now support drawing ellipses.
+- New `set_dash_pattern()`, which works with all lines and curves, thanks to @gmischler.
+- Templates now support drawing ellipses, thanks to @gmischler
+- New sections have been added to [the tutorial](https://pyfpdf.github.io/fpdf2/Tutorial.html), thanks to @portfedh:
+
+    5. [Creating Tables](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
+    6. [Creating links and mixing text styles](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-6-creating-links-and-mixing-text-styles)
 ### Fixed
-- The exception making the "x2" template field optional for barcode elements did not work correctly.
+- The exception making the "x2" template field optional for barcode elements did not work correctly, thanks to @gmischler
 ### Changed
-- `dashed_line()` is deprecated in favour of the new `set_dash_pattern()`, which works with all lines and curves.
-- All template elements now have a transparent default background instead of white.
+- All template elements now have a transparent default background instead of white, thanks to @gmischler
+### Deprecated
+- `dashed_line()` is now deprecated, thanks to @gmischler.
 
 ## [2.4.5] - 2021-10-03
 ### Fixed
@@ -22,7 +28,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.4.4] - 2021-10-01
 ### Added
-- `Template()` has gained a more flexible cousin `FlexTemplate()`, thanks to @gmischler
+- `Template()` has gained a more flexible cousin `FlexTemplate()`, _cf._ [documentation](https://pyfpdf.github.io/fpdf2/Templates.html), thanks to @gmischler
 - markdown support in `multi_cell()`, thanks to Yeshi Namkhai
 - base 64 images can now be provided to `FPDF.image`, thanks to @MWhatsUp
 - documentation on how to generate datamatrix barcodes using the `pystrich` lib: [documentation section](https://pyfpdf.github.io/fpdf2/Barcodes.html#datamatrix),

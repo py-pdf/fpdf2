@@ -1,6 +1,8 @@
 # Tutorial #
 
-Español: [Tutorial-es](Tutorial-es.md)
+Versión en español: [Tutorial-es](Tutorial-es.md)
+
+Methods full documentation: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
 
@@ -9,16 +11,10 @@ Español: [Tutorial-es](Tutorial-es.md)
 Let's start with the classic example:
 
 ```python
-from fpdf import FPDF
-
-pdf = FPDF()
-pdf.add_page()
-pdf.set_font('helvetica', 'B', 16)
-pdf.cell(40, 10, 'Hello World!')
-pdf.output('tuto1.pdf')
+{% include "../tutorial/tuto1.py" %}
 ```
 
-[Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
+[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
 
 After including the library file, we create an `FPDF` object. The 
 [FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF) constructor is used here with the default values: 
@@ -79,41 +75,10 @@ returns the PDF `bytearray` buffer.
 Here is a two page example with header, footer and logo:
 
 ```python
-from fpdf import FPDF
-
-class PDF(FPDF):
-    def header(self):
-        # Logo
-        self.image('logo_pb.png', 10, 8, 33)
-        # helvetica bold 15
-        self.set_font('helvetica', 'B', 15)
-        # Move to the right
-        self.cell(80)
-        # Title
-        self.cell(30, 10, 'Title', 1, 0, 'C')
-        # Line break
-        self.ln(20)
-
-    # Page footer
-    def footer(self):
-        # Position at 1.5 cm from bottom
-        self.set_y(-15)
-        # helvetica italic 8
-        self.set_font('helvetica', 'I', 8)
-        # Page number
-        self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
-
-# Instantiation of inherited class
-pdf = PDF()
-pdf.alias_nb_pages()
-pdf.add_page()
-pdf.set_font('Times', '', 12)
-for i in range(1, 41):
-    pdf.cell(0, 10, 'Printing line number ' + str(i), 0, 1)
-pdf.output('tuto2.pdf')
+{% include "../tutorial/tuto2.py" %}
 ```
 
-[Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
+[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
 
 This example makes use of the [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) and 
 [footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) methods to process page headers and footers. They
@@ -150,76 +115,10 @@ Let's continue with an example which prints justified paragraphs. It also
 illustrates the use of colors.
 
 ```python
-from fpdf import FPDF
-
-title = '20000 Leagues Under the Seas'
-
-class PDF(FPDF):
-    def header(self):
-        # helvetica bold 15
-        self.set_font('helvetica', 'B', 15)
-        # Calculate width of title and position
-        w = self.get_string_width(title) + 6
-        self.set_x((210 - w) / 2)
-        # Colors of frame, background and text
-        self.set_draw_color(0, 80, 180)
-        self.set_fill_color(230, 230, 0)
-        self.set_text_color(220, 50, 50)
-        # Thickness of frame (1 mm)
-        self.set_line_width(1)
-        # Title
-        self.cell(w, 9, title, 1, 1, 'C', True)
-        # Line break
-        self.ln(10)
-
-    def footer(self):
-        # Position at 1.5 cm from bottom
-        self.set_y(-15)
-        # helvetica italic 8
-        self.set_font('helvetica', 'I', 8)
-        # Text color in gray
-        self.set_text_color(128)
-        # Page number
-        self.cell(0, 10, 'Page ' + str(self.page_no()), 0, 0, 'C')
-
-    def chapter_title(self, num, label):
-        # helvetica 12
-        self.set_font('helvetica', '', 12)
-        # Background color
-        self.set_fill_color(200, 220, 255)
-        # Title
-        self.cell(0, 6, f'Chapter {num} : {label}', 0, 1, 'L', True)
-        # Line break
-        self.ln(4)
-
-    def chapter_body(self, name):
-        # Read text file
-        with open(name, 'rb') as fh:
-            txt = fh.read().decode('latin-1')
-        # Times 12
-        self.set_font('Times', '', 12)
-        # Output justified text
-        self.multi_cell(0, 5, txt)
-        # Line break
-        self.ln()
-        # Mention in italics
-        self.set_font('', 'I')
-        self.cell(0, 5, '(end of excerpt)')
-
-    def print_chapter(self, num, title, name):
-        self.add_page()
-        self.chapter_title(num, title)
-        self.chapter_body(name)
-
-pdf = PDF()
-pdf.set_title(title)
-pdf.set_author('Jules Verne')
-pdf.print_chapter(1, 'A RUNAWAY REEF', '20k_c1.txt')
-pdf.print_chapter(2, 'THE PROS AND CONS', '20k_c2.txt')
-pdf.output('tuto3.pdf')
+{% include "../tutorial/tuto3.py" %}
 ```
 
-[Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)
+[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)
 
 [Jules Verne text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
@@ -250,98 +149,10 @@ plug-in, is to right-click and select Document Properties.
  This example is a variant of the previous one, showing how to lay the text across multiple columns.
 
 ```python
- from fpdf import FPDF
-
-
-class PDF(FPDF):
-    # Current column
-    col = 0
-    # Ordinate of column start
-    y0 = 0
-
-    def header(self):
-        # Page header
-        self.set_font("helvetica", "B", 15)
-        w = self.get_string_width(title) + 6
-        self.set_x((210 - w) / 2)
-        self.set_draw_color(0, 80, 180)
-        self.set_fill_color(230, 230, 0)
-        self.set_text_color(220, 50, 50)
-        self.set_line_width(1)
-        self.cell(w, 9, title, 1, 1, "C", True)
-        self.ln(10)
-        # Save ordinate
-        self.y0 = self.get_y()
-
-    def footer(self):
-        # Page footer
-        self.set_y(-15)
-        self.set_font("helvetica", "I", 8)
-        self.set_text_color(128)
-        self.cell(0, 10, f"Page {self.page_no()}", 0, 0, "C")
-
-    def set_col(self, col):
-        # Set position at a given column
-        self.col = col
-        x = 10 + col * 65
-        self.set_left_margin(x)
-        self.set_x(x)
-
-    @property
-    def accept_page_break(self):
-        if self.col < 2:
-            # Go to next column:
-            self.set_col(self.col + 1)
-            # Set ordinate to top:
-            self.set_y(self.y0)
-            # Stay on the same page:
-            return False
-        # Go back to first column:
-        self.set_col(0)
-        # Trigger a page break:
-        return True
-
-    def chapter_title(self, num, label):
-        # Title
-        self.set_font("helvetica", "", 12)
-        self.set_fill_color(200, 220, 255)
-        self.cell(0, 6, f"Chapter {num} : {label}", 0, 1, "L", True)
-        self.ln(4)
-        # Save ordinate
-        self.y0 = self.get_y()
-
-    def chapter_body(self, name):
-        # Read text file
-        with open(name, "rb") as fh:
-            txt = fh.read().decode("latin-1")
-        # Font
-        self.set_font("Times", size=12)
-        # Output text in a 6 cm width column
-        self.multi_cell(60, 5, txt)
-        self.ln()
-        # Mention
-        self.set_font(style="I")
-        self.cell(0, 5, "(end of excerpt)")
-        # Go back to first column
-        self.set_col(0)
-
-    def print_chapter(self, num, title, name):
-        # Add chapter
-        self.add_page()
-        self.chapter_title(num, title)
-        self.chapter_body(name)
-
-
-pdf = PDF()
-title = "20000 Leagues Under the Seas"
-pdf.set_title(title)
-pdf.set_author("Jules Verne")
-pdf.print_chapter(1, "A RUNAWAY REEF", "20k_c1.txt")
-pdf.print_chapter(2, "THE PROS AND CONS", "20k_c1.txt")
-pdf.output("tuto4.pdf")
+{% include "../tutorial/tuto4.py" %}
 ```
 
-[Demo](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
+[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
 
 [Jules Verne text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
@@ -356,3 +167,93 @@ increasing the column number and altering the position of the next column so the
 Once the bottom limit of the third column is reached, the 
 [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) method will reset and go 
 back to the first column and trigger a page break.
+
+## Tuto 5 - Creating Tables ##
+
+This tutorial will explain how to create tables easily.
+
+The code will create three different tables to explain what
+ can be achieved with some simple adjustments.
+
+```python
+{% include "../tutorial/tuto5.py" %}
+```
+
+[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
+[Countries text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
+
+Since a table is just a collection of cells, it is natural to build one
+ from them.
+
+The first example is achieved in the most basic way possible: simple framed
+ cells, all of the same size and left aligned. The result is rudimentary but
+ very quick to obtain.
+
+The second table brings some improvements: each column has its own width,
+ titles are centered and figures right aligned. Moreover, horizontal lines have
+ been removed. This is done by means of the border parameter of the Cell()
+ method, which specifies which sides of the cell must be drawn. Here we want
+ the left (L) and right (R) ones. Now only the problem of the horizontal line
+ to finish the table remains. There are two possibilities to solv it: check
+ for the last line in the loop, in which case we use LRB for the border
+ parameter; or, as done here, add the line once the loop is over.
+
+The third table is similar to the second one but uses colors. Fill, text and
+ line colors are simply specified. Alternate coloring for rows is obtained by
+ using alternatively transparent and filled cells.
+
+## Tuto 6 - Creating links and mixing text styles ##
+
+This tutorial will explain several ways to insert links inside a pdf document,
+ as well as adding links to external sources.
+
+ It will also show several ways we can use different text styles,
+ (bold, italic, underline) within the same text.
+
+```python
+{% include "../tutorial/tuto6.py" %}
+```
+
+[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
+[fpdf2-logo](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
+
+The new method shown here to print text is
+ [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
+. It is very similar to
+ [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
+ , the key differences being:
+
+- The end of line is at the right margin and the next line begins at the left
+ margin.
+- The current position moves to the end of the text.
+
+The method therefore allows us to write a chunk of text, alter the font style,
+ and continue from the exact place we left off.
+On the other hand, its main drawback is that we cannot justify the text like
+ we do with the
+ [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
+ method.
+
+In the first page of the example, we used
+ [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
+ for this purpose. The beginning of the sentence is written in regular style
+ text, then using the
+ [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font)
+ method, we switched to underline and finished the sentence.
+
+To add an internal link pointing to the second page, we used the
+ [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link)
+ method, whch creates a clickable area which we named "link" that directs to
+ another place within the document. On the second page, we used
+ [set_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link)
+ to define the destination area for the link we just created.
+
+To create the external link using an image, we used
+ [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
+. The method has the
+ option to pass a link as one of its arguments. The link can be both internal
+ or external.
+
+As an alternative, another option to change the font style and add links is to
+ use the `write_html()` method. It is an html parser, which allows adding text,
+ changing font style and adding links using html.

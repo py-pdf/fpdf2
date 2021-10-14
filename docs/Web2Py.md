@@ -1,4 +1,3 @@
-
 # Introduction #
 
 If you use [web2py](http://www.web2py.com), you can make complex reports that can be viewed in a browser, or downloaded as PDF (taking advantage of web2py HTML helper objects to easily diagram a report). See [write_html](HTML.md) for more information, supported tags and attributes, etc.
@@ -15,7 +14,7 @@ Also, you can put the content of the `fpdf/` directory in this repository into t
 **Note about images**: these sample images are small so they may look like low quality ones. For better results, use bigger images: more DPI (screen is often 72/96DPI, printers are often 300/600DPI). As a rule of thumb, use at least half of the image size when rendering to PDF, ie. if an image is 500x200px, use 250x100px as width and height attributes of the IMG tag.
 
 
-# Sample Report #
+## Sample Report ##
 
 You could make a "professional looking" bussiness report just using web2py HTML helpers, mixin headers, logos, charts, text and tables.
 
@@ -77,7 +76,8 @@ def report():
 
 ```
 
-# Sample Table Listing #
+
+## Sample Table Listing ##
 
 Also, you can make nice tables that automatically spreads over several pages, with headers and footers, column and row highlighting, etc., in a very pythonic way:
 
@@ -144,15 +144,14 @@ def listing():
 ```
 
 
-# Samples Template Definitions #
+## Samples Template Definitions ##
 
 As stated in the [Templates](Templates.md) page, there are 3 ways of putting your templates in place.
 As in that page there are samples for the manually hardcoded way and CSV document loading.
 Here we will only show a sample of the template engine.
 
 
-
-# Sample Templating Engine #
+## Sample Templating Engine ##
 
 PyFPDF and web2py can be used to make PDF documents using templates like invoices, badges, certificates, etc.:
 

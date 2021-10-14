@@ -1,85 +1,73 @@
+import csv
 from fpdf import FPDF
 
 
 class PDF(FPDF):
-    # Load data
-    def load_data(self, name):
-        # Read file lines
-        data = []
-        with open(name) as file:
-            for line in file:
-                data += [line[:-1].split(";")]
-        return data
-
-    # Simple table
-    def basic_table(self, header, data):
-        # Header
-        for col in header:
-            self.cell(40, 7, col, 1)
+    def basic_table(self, headings, rows):
+        for heading in headings:
+            self.cell(40, 7, heading, 1)
         self.ln()
-        # Data
-        for row in data:
+        for row in rows:
             for col in row:
                 self.cell(40, 6, col, 1)
             self.ln()
 
-    # Better table
-    def improved_table(self, header, data):
-        # Column widths
-        w = [40, 35, 40, 45]
-        # Header
-        for width, header_text in zip(w, header):
-            self.cell(width, 7, header_text, 1, 0, "C")
+    def improved_table(self, headings, rows, col_widths=(42, 39, 35, 40)):
+        for col_width, heading in zip(col_widths, headings):
+            self.cell(col_width, 7, heading, 1, 0, "C")
         self.ln()
-        # Data
-        for row in data:
-            self.cell(w[0], 6, row[0], "LR")
-            self.cell(w[1], 6, row[1], "LR")
-            self.cell(w[2], 6, row[2], "LR", 0, "R")
-            self.cell(w[3], 6, row[3], "LR", 0, "R")
+        for row in rows:
+            self.cell(col_widths[0], 6, row[0], "LR")
+            self.cell(col_widths[1], 6, row[1], "LR")
+            self.cell(col_widths[2], 6, row[2], "LR", 0, "R")
+            self.cell(col_widths[3], 6, row[3], "LR", 0, "R")
             self.ln()
-        # Closure line
-        self.cell(sum(w), 0, "", "T")
+        # Closure line:
+        self.cell(sum(col_widths), 0, "", "T")
 
-    # Colored table
-    def fancy_table(self, header, data):
-        # Colors, line width and bold font
-        self.set_fill_color(255, 0, 0)
+    def colored_table(self, headings, rows, col_widths=(42, 39, 35, 42)):
+        # Colors, line width and bold font:
+        self.set_fill_color(255, 100, 0)
         self.set_text_color(255)
-        self.set_draw_color(128, 0, 0)
+        self.set_draw_color(255, 0, 0)
         self.set_line_width(0.3)
         self.set_font(style="B")
-        # Header
-        w = [40, 35, 40, 45]
-        for width, header_text in zip(w, header):
-            self.cell(width, 7, header_text, 1, 0, "C", True)
+        for col_width, heading in zip(col_widths, headings):
+            self.cell(col_width, 7, heading, 1, 0, "C", True)
         self.ln()
-        # Color and font restoration
+        # Color and font restoration:
         self.set_fill_color(224, 235, 255)
         self.set_text_color(0)
         self.set_font()
-        # Data
         fill = False
-        for row in data:
-            self.cell(w[0], 6, row[0], "LR", 0, "L", fill)
-            self.cell(w[1], 6, row[1], "LR", 0, "L", fill)
-            self.cell(w[2], 6, row[2], "LR", 0, "R", fill)
-            self.cell(w[3], 6, row[3], "LR", 0, "R", fill)
+        for row in rows:
+            self.cell(col_widths[0], 6, row[0], "LR", 0, "L", fill)
+            self.cell(col_widths[1], 6, row[1], "LR", 0, "L", fill)
+            self.cell(col_widths[2], 6, row[2], "LR", 0, "R", fill)
+            self.cell(col_widths[3], 6, row[3], "LR", 0, "R", fill)
             self.ln()
             fill = not fill
-        self.cell(sum(w), 0, "", "T")
+        self.cell(sum(col_widths), 0, "", "T")
 
 
+def load_data_from_csv(csv_filepath):
+    headings, rows = [], []
+    with open(csv_filepath, encoding="utf8") as csv_file:
+        for row in csv.reader(csv_file, delimiter=","):
+            if not headings:  # extracting column names from first row:
+                headings = row
+            else:
+                rows.append(row)
+    return headings, rows
+
+
+col_names, data = load_data_from_csv("countries.txt")
 pdf = PDF()
-# Column titles
-header = ["Country", "Capital", "Area (sq km)", "Pop. (thousands)"]
-# Data loading
-data = pdf.load_data("countries.txt")  # TODO: fill this file with more & real data
 pdf.set_font("helvetica", size=14)
 pdf.add_page()
-pdf.basic_table(header, data)
+pdf.basic_table(col_names, data)
 pdf.add_page()
-pdf.improved_table(header, data)
+pdf.improved_table(col_names, data)
 pdf.add_page()
-pdf.fancy_table(header, data)
+pdf.colored_table(col_names, data)
 pdf.output("tuto5.pdf")

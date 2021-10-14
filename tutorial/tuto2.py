@@ -3,24 +3,23 @@ from fpdf import FPDF
 
 class PDF(FPDF):
     def header(self):
-        # Logo
+        # Rendering logo:
         self.image("../docs/fpdf2-logo.png", 10, 8, 33)
-        # helvetica bold 15
+        # Setting font: helvetica bold 15
         self.set_font("helvetica", "B", 15)
-        # Move to the right
+        # Moving cursor to the right:
         self.cell(80)
-        # Title
+        # Printing title:
         self.cell(30, 10, "Title", 1, 0, "C")
-        # Line break
+        # Performing a line break:
         self.ln(20)
 
-    # Page footer
     def footer(self):
-        # Position at 1.5 cm from bottom
+        # Position cursor at 1.5 cm from bottom:
         self.set_y(-15)
-        # helvetica italic 8
+        # Setting font: helvetica italic 8
         self.set_font("helvetica", "I", 8)
-        # Page number
+        # Printing page number:
         self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", 0, 0, "C")
 
 

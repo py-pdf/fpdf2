@@ -18,6 +18,8 @@ theme:
   name: material
   custom_dir: docs/overrides/
 markdown_extensions: [toc, pymdownx.highlight, pymdownx.superfences]
+plugins:
+  - include-markdown
 nav:
 - 'Project Home':                   'index.md'
 - 'Tutorial':                       'Tutorial.md'
