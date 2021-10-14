@@ -85,7 +85,9 @@ f_tmpl["item_key_FD"] = "Text 2D"
 f_tmpl.render() # add footer items to second page
 
 # other content on the second page
-pdf.dashed_line(x1, y1, x2, y2, dash_length=1, space_length=1):
+pdf.set_dash_pattern(dash=1, gap=1)
+pdf.line(x1, y1, x2, y2):
+pdf.set_dash_pattern()
 
 # third page
 pdf.add_page()
