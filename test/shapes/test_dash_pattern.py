@@ -38,6 +38,7 @@ def test_dash_pattern(tmp_path):
     assert_pdf_equal(pdf, HERE / "dash_pattern.pdf", tmp_path)
 
 
+# pylint: disable=unused-argument
 def test_dash_pattern_badinput(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
