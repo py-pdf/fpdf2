@@ -560,9 +560,9 @@ class HTML2FPDF(HTMLParser):
         if tag in self.heading_sizes:
             self.heading_level = None
             face, size, color = self.font_stack.pop()
+            self.pdf.ln(self.h)
             self.set_font(face, size)
             self.set_text_color(*color)
-            self.pdf.ln(self.h)
             self.align = None
         if tag == "pre":
             face, size, color = self.font_stack.pop()
