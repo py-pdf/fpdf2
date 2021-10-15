@@ -30,6 +30,8 @@ def test_dash_pattern(tmp_path):
     pdf.set_dash_pattern(4, 6)
     draw_stuff(20, 100)
     pdf.set_dash_pattern(0.5, 9.5, 3.25)
+    # coverage: repeating the same pattern should not add it again
+    pdf.set_dash_pattern(0.5, 9.5, 3.25)
     draw_stuff(20, 100)
     # reset to solid
     pdf.set_dash_pattern()
@@ -42,17 +44,17 @@ def test_dash_pattern(tmp_path):
 def test_dash_pattern_badinput(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
-    with raises(AssertionError):
+    with raises(ValueError):
         pdf.set_dash_pattern(dash=-1)
-    with raises(AssertionError):
+    with raises(ValueError):
         pdf.set_dash_pattern(gap=-1)
-    with raises(AssertionError):
+    with raises(ValueError):
         pdf.set_dash_pattern(phase=-1)
-    with raises(AssertionError):
+    with raises(ValueError):
         pdf.set_dash_pattern(dash="yo")
-    with raises(AssertionError):
+    with raises(ValueError):
         pdf.set_dash_pattern(gap="hu")
-    with raises(AssertionError):
+    with raises(ValueError):
         pdf.set_dash_pattern(phase=None)
     with raises(fpdf.FPDFException):
         with pdf.rotation(30, 50, 50):

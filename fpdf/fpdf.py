@@ -900,15 +900,12 @@ class FPDF:
 
         Omitting 'dash' (= 0) resets the pattern to a solid line.
         """
-        assert (
-            isinstance(dash, (int, float)) and dash >= 0
-        ), "Dash length must not be a negative number."
-        assert (
-            isinstance(gap, (int, float)) and gap >= 0
-        ), "gap length must not be a negative number."
-        assert (
-            isinstance(phase, (int, float)) and phase >= 0
-        ), "Phase must not be a negative number."
+        if not (isinstance(dash, (int, float)) and dash >= 0):
+            raise ValueError("Dash length must be zero or a positive number.")
+        if not (isinstance(gap, (int, float)) and gap >= 0):
+            raise ValueError("gap length must be zero or a positive number.")
+        if not (isinstance(phase, (int, float)) and phase >= 0):
+            raise ValueError("Phase must be zero or a positive number.")
         if self._rotating:
             raise FPDFException(
                 ".set_dash_pattern() should not be called inside .rotation()"
