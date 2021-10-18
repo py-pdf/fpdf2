@@ -56,6 +56,3 @@ def test_dash_pattern_badinput(tmp_path):
         pdf.set_dash_pattern(gap="hu")
     with raises(ValueError):
         pdf.set_dash_pattern(phase=None)
-    with raises(fpdf.FPDFException):
-        with pdf.rotation(30, 50, 50):
-            pdf.set_dash_pattern()
