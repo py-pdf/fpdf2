@@ -280,6 +280,7 @@ class FPDF:
         self.image_filter = "AUTO"
         self.page_duration = 0  # optional pages display duration, cf. add_page()
         self.page_transition = None  # optional pages transition, cf. add_page()
+        self.allow_images_transparency = True
         self._rotating = 0  # counting levels of nested rotation contexts
         self._markdown_leak_end_style = False
         # Only set if XMP metadata is added to the document:
@@ -3051,7 +3052,7 @@ class FPDF:
             trns = " ".join(f"{x} {x}" for x in info["trns"])
             self._out(f"/Mask [{trns}]")
 
-        if "smask" in info:
+        if self.allow_images_transparency and "smask" in info:
             self._out(f"/SMask {self.n + 1} 0 R")
 
         self._out(f"/Length {len(info['data'])}>>")
@@ -3059,7 +3060,7 @@ class FPDF:
         self._out("endobj")
 
         # Soft mask
-        if "smask" in info:
+        if self.allow_images_transparency and "smask" in info:
             dp = f"/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns {info['w']}"
             smask = {
                 "w": info["w"],

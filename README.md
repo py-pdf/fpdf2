@@ -19,11 +19,11 @@ fpdf2
 ```python
 from fpdf import FPDF
 
-document = FPDF()
-document.add_page()
-document.set_font('helvetica', size=12)
-document.cell(txt="hello world")
-document.output("hello_world.pdf")
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font('helvetica', size=12)
+pdf.cell(txt="hello world")
+pdf.output("hello_world.pdf")
 ```
 
 It is a fork and the successor of `PyFPDF`.

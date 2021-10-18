@@ -75,3 +75,22 @@ pdf.output("pdf-with-image.pdf")
 ```
 
 Beware that "flattening" images this way will convert alpha channels to black.
+
+
+## Disabling transparency ##
+
+By default images transparency is preserved:
+alpha channels are extracted and converted to an embedded `SMask`.
+This can be disabled by setting `.allow_images_transparency`,
+_e.g._ to allow compliance with [PDF/A-1](https://en.wikipedia.org/wiki/PDF/A#Description):
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.allow_images_transparency = False
+pdf.set_font("Helvetica", size=15)
+pdf.cell(w=pdf.epw, h=30, txt="Text behind. " * 6)
+pdf.image("docs/fpdf2-logo.png", x=0)
+pdf.output("pdf-including-image-without-transparency.pdf")
+```
