@@ -76,7 +76,7 @@ class TestUtilities:
     def test_render_primitive(self, primitive, result):
         assert fpdf.drawing.render_pdf_primitive(primitive) == result
 
-    # TODO: add check for bad primitives: class without pdf_repr, dict with non-Name
+    # Add check for bad primitives: class without pdf_repr, dict with non-Name
     # keys. Check for proper escaping of Name and string edge cases
 
 
@@ -293,7 +293,6 @@ class TestPoint:
 
 
 class TestTransform:
-    # TODO: figure out a better way to test these constructors
     @pytest.mark.parametrize("tf, pt, result", parameters.transforms)
     def test_constructors(self, tf, pt, result):
         # use of pytest.approx here works because fpdf.drawing.Point is a NamedTuple
@@ -572,11 +571,14 @@ class TestDrawingContext:
 
 
 class TestPaintedPath:
+    path_class = fpdf.drawing.PaintedPath
+    comp_index = 0
+
     @pytest.mark.parametrize(
         "method_calls, elements, rendered", parameters.painted_path_elements
     )
     def test_path_elements(self, method_calls, elements, rendered):
-        pth = fpdf.drawing.PaintedPath()
+        pth = self.path_class()
 
         for method, args in method_calls:
             method(pth, *args)
@@ -584,7 +586,7 @@ class TestPaintedPath:
         assert pth._graphics_context.path_items == elements
 
     def test_implicit_close_insertion(self):
-        pth = fpdf.drawing.PaintedPath()
+        pth = self.path_class()
 
         pth.move_to(0, 0)
         pth.line_to(1, 1)
@@ -594,13 +596,13 @@ class TestPaintedPath:
         assert pth._starter_move == fpdf.drawing.Move(fpdf.drawing.Point(2, 2))
         assert pth._graphics_context.path_items[-1] == fpdf.drawing.ImplicitClose()
 
-    def test_style(self):
-        pth = fpdf.drawing.PaintedPath()
+    def test_style_property(self):
+        pth = self.path_class()
         pth.style.fill_color = "#010203"
         assert pth._graphics_context.style.fill_color == fpdf.drawing.rgb8(1, 2, 3)
 
-    def test_transform(self):
-        pth = fpdf.drawing.PaintedPath()
+    def test_transform_property(self):
+        pth = self.path_class()
 
         tf = fpdf.drawing.Transform.translation(5, 10)
         pth.transform = tf
@@ -608,32 +610,49 @@ class TestPaintedPath:
         assert pth._graphics_context.transform == tf
 
     def test_transform_group(self):
-        pth = fpdf.drawing.PaintedPath()
+        pth = self.path_class()
         tf = fpdf.drawing.Transform.translation(1, 2)
         with pth.transform_group(fpdf.drawing.Transform.translation(1, 2)):
             assert pth._root_graphics_context != pth._graphics_context
             assert pth._graphics_context.transform == tf
 
     def test_auto_close(self):
-        pth = fpdf.drawing.PaintedPath()
+        pth = self.path_class()
         pth.auto_close = True
         assert pth._root_graphics_context.style.auto_close is True
 
     def test_paint_rule(self):
-        pth = fpdf.drawing.PaintedPath()
+        pth = self.path_class()
         pth.paint_rule = "auto"
         assert (
             pth._root_graphics_context.style.paint_rule
             is fpdf.drawing.PathPaintRule.AUTO
         )
 
-    def test_clipping_path(self):
-        pth = fpdf.drawing.PaintedPath()
+    @pytest.mark.parametrize("rendered", parameters.clipping_path_result)
+    def test_clipping_path(self, rendered):
+        pth = self.path_class()
         clp = fpdf.drawing.ClippingPath()
+
+        clp.move_to(1, 1).horizontal_line_to(9).vertical_line_to(9).horizontal_line_to(
+            1
+        ).close()
 
         pth.clipping_path = clp
 
+        pth.move_to(0, 0)
+        pth.line_to(10, 0)
+        pth.line_to(5, 10)
+        pth.close()
+
         assert pth._root_graphics_context.clipping_path == clp
+
+        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        style = fpdf.drawing.GraphicsStyle()
+        style.paint_rule = "auto"
+
+        rend, _ = pth.render(gsdr, style, fpdf.drawing.Move(fpdf.drawing.Point(0, 0)))
+        assert rend == rendered[self.comp_index]
 
     @pytest.mark.parametrize(
         "method_calls, elements, rendered", parameters.painted_path_elements
@@ -646,13 +665,13 @@ class TestPaintedPath:
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
 
-        pth = fpdf.drawing.PaintedPath()
+        pth = self.path_class()
 
         for method, args in method_calls:
             method(pth, *args)
 
         rend, _ = pth.render(gsdr, style, fpdf.drawing.Move(fpdf.drawing.Point(0, 0)))
-        assert rend == rendered
+        assert rend == rendered[self.comp_index]
 
     def test_copy(self):
         # this is a pretty clunky way to test this, but it does make sure that copying
@@ -662,7 +681,7 @@ class TestPaintedPath:
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
 
-        pth = fpdf.drawing.PaintedPath()
+        pth = self.path_class()
         pth.line_to(1, 1)
 
         pth2 = copy.deepcopy(pth)
@@ -688,21 +707,175 @@ class TestPaintedPath:
         start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
         dbg = io.StringIO()
 
-        pth = fpdf.drawing.PaintedPath()
+        pth = self.path_class()
 
         for method, args in method_calls:
             method(pth, *args)
 
         rend, _ = pth.render(gsdr, style, start, dbg, "")
-        assert rend == rendered
+        assert rend == rendered[self.comp_index]
 
 
-class TestClippingPath:
-    ...
+# This class inherits all of the tests from the PaintedPath test class, just like it
+# inherits all of its functionality.
+class TestClippingPath(TestPaintedPath):
+    path_class = fpdf.drawing.ClippingPath
+    comp_index = 1
 
 
+# these tests are all more or less redundant with the PaintedPath tests in terms of
+# functionality, but having them implemented may give more information about where a
+# regression occurs, if one does.
 class TestGraphicsContext:
-    ...
+    def test_copy(self):
+        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        style = fpdf.drawing.GraphicsStyle()
+        style.paint_rule = "auto"
+
+        gfx = fpdf.drawing.GraphicsContext()
+        gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(1, 2)))
+
+        gfx2 = copy.deepcopy(gfx)
+
+        rend1, _ = gfx.render(gsdr, style, start)
+        rend2, _ = gfx2.render(gsdr, style, start)
+
+        gfx2.add_item(fpdf.drawing.Line(fpdf.drawing.Point(3, 4)))
+
+        rend3, _ = gfx.render(gsdr, style, start)
+        rend4, _ = gfx2.render(gsdr, style, start)
+
+        assert rend1 == rend2 == rend3
+        assert rend3 != rend4
+
+        assert rend1 == "q 1 2 m Q"
+        assert rend4 == "q 1 2 m 3 4 l Q"
+
+    def test_transform_property(self):
+        gfx = fpdf.drawing.GraphicsContext()
+
+        tf = fpdf.drawing.Transform.translation(5, 10)
+        gfx.transform = tf
+
+        assert gfx.transform == tf
+
+    def test_clipping_path_property(self):
+        gfx = fpdf.drawing.GraphicsContext()
+        clp = fpdf.drawing.ClippingPath()
+
+        clp.move_to(1, 1).horizontal_line_to(9).vertical_line_to(9).horizontal_line_to(
+            1
+        ).close()
+
+        gfx.clipping_path = clp
+        gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(1, 2)))
+        gfx.add_item(fpdf.drawing.Line(fpdf.drawing.Point(3, 4)))
+
+        assert gfx.clipping_path == clp
+
+        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        style = fpdf.drawing.GraphicsStyle()
+        style.paint_rule = "auto"
+
+        rend, _ = gfx.render(gsdr, style, start)
+        assert rend == "q 1 1 m 9 1 l 9 9 l 1 9 l h W n 1 2 m 3 4 l Q"
+
+    def test_empty_render(self):
+        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        style = fpdf.drawing.GraphicsStyle()
+        style.paint_rule = "auto"
+
+        tf = fpdf.drawing.Transform.translation(5, 10)
+        clp = fpdf.drawing.ClippingPath()
+
+        clp.move_to(1, 1).horizontal_line_to(9).vertical_line_to(9).horizontal_line_to(
+            1
+        ).close()
+
+        gfx = fpdf.drawing.GraphicsContext()
+        gfx.clipping_path = clp
+        gfx.transform = tf
+
+        rend, _ = gfx.render(gsdr, style, start)
+        assert rend == ""
+
+    def test_add_item(self):
+        gfx = fpdf.drawing.GraphicsContext()
+        gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(10, 0)))
+
+        assert gfx.path_items == [fpdf.drawing.Move(fpdf.drawing.Point(10, 0))]
+
+    def test_merge(self):
+        gfx1 = fpdf.drawing.GraphicsContext()
+        gfx1.add_item(fpdf.drawing.Move(fpdf.drawing.Point(10, 0)))
+
+        gfx2 = fpdf.drawing.GraphicsContext()
+        gfx2.add_item(fpdf.drawing.Line(fpdf.drawing.Point(2, 2)))
+
+        gfx1.merge(gfx2)
+
+        assert gfx1.path_items == [
+            fpdf.drawing.Move(fpdf.drawing.Point(10, 0)),
+            fpdf.drawing.Line(fpdf.drawing.Point(2, 2)),
+        ]
+
+    def test_build_render_list(self):
+        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        style = fpdf.drawing.GraphicsStyle()
+        style.paint_rule = "auto"
+
+        gfx = fpdf.drawing.GraphicsContext()
+        gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(1, 2)))
+        gfx.add_item(fpdf.drawing.Line(fpdf.drawing.Point(3, 4)))
+
+        rend_list1, _ = gfx.build_render_list(gsdr, style, start)
+
+        assert rend_list1 == ["q", "1 2 m", "3 4 l", "Q"]
+
+        rend_list2, _ = gfx.build_render_list(gsdr, style, start, _push_stack=False)
+
+        assert rend_list2 == ["1 2 m", "3 4 l"]
+
+    def test_render(self):
+        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        style = fpdf.drawing.GraphicsStyle()
+        style.paint_rule = "auto"
+
+        gfx = fpdf.drawing.GraphicsContext()
+        gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(1, 2)))
+        gfx.add_item(fpdf.drawing.Line(fpdf.drawing.Point(3, 4)))
+
+        rend1, _ = gfx.render(gsdr, style, start)
+
+        assert rend1 == "q 1 2 m 3 4 l Q"
+
+        rend2, _ = gfx.render(gsdr, style, start, _push_stack=False)
+
+        assert rend2 == "1 2 m 3 4 l"
+
+    def test_render_debug(self):
+        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        style = fpdf.drawing.GraphicsStyle()
+        style.paint_rule = "auto"
+        dbg = io.StringIO()
+
+        gfx = fpdf.drawing.GraphicsContext()
+        gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(1, 2)))
+        gfx.add_item(fpdf.drawing.Line(fpdf.drawing.Point(3, 4)))
+
+        rend1, _ = gfx.render_debug(gsdr, style, start, dbg, "")
+
+        assert rend1 == "q 1 2 m 3 4 l Q"
+
+        rend2, _ = gfx.render_debug(gsdr, style, start, dbg, "", _push_stack=False)
+
+        assert rend2 == "1 2 m 3 4 l"
 
 
 def test_check_page():
