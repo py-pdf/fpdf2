@@ -11,21 +11,22 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 ### Added
 - New `set_dash_pattern()`, which works with all lines and curves, thanks to @gmischler.
 - Templates now support drawing ellipses, thanks to @gmischler
+- New documentation on how to display equations, using Google Charts or `matplotlib`: [Maths](https://pyfpdf.github.io/fpdf2/Maths.html)
 - New sections have been added to [the tutorial](https://pyfpdf.github.io/fpdf2/Tutorial.html), thanks to @portfedh:
 
     5. [Creating Tables](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
     6. [Creating links and mixing text styles](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-6-creating-links-and-mixing-text-styles)
-- while images transparency is still handled by default through the use of `SMask`,
+- While images transparency is still handled by default through the use of `SMask`,
   this can be disabled by setting `pdf.allow_images_transparency = False`
   in order to allow compliance with [PDF/A-1](https://en.wikipedia.org/wiki/PDF/A#Description)
 ### Fixed
-- The exception making the "x2" template field optional for barcode elements did not work correctly, thanks to @gmischler
+- The exception making the "x2" template field optional for barcode elements did not work correctly, fixed by @gmischler
 ### Changed
 - All template elements now have a transparent default background instead of white, thanks to @gmischler
 - To reduce the size of generated PDFs, no `SMask` entry is inserted for images that are fully opaque
   (= with an alpha channel containing only 0xff characters)
 ### Deprecated
-- `dashed_line()` is now deprecated, thanks to @gmischler.
+- `dashed_line()` is now deprecated in favor of `set_dash_pattern()`
 
 ## [2.4.5] - 2021-10-03
 ### Fixed
