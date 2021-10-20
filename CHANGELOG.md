@@ -9,6 +9,9 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.4.6] - not released yet
 ### Added
+- a mechanism to detect & downscale oversized images,
+  _cf._ [documentation](https://pyfpdf.github.io/fpdf2/Images.html#oversized-images-detection-downscaling).
+  [Feedbacks](https://github.com/PyFPDF/fpdf2/discussions) on this new feature are welcome!
 - New `set_dash_pattern()`, which works with all lines and curves, thanks to @gmischler.
 - Templates now support drawing ellipses, thanks to @gmischler
 - New sections have been added to [the tutorial](https://pyfpdf.github.io/fpdf2/Tutorial.html), thanks to @portfedh:
