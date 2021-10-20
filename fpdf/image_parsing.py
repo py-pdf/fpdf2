@@ -37,7 +37,7 @@ def _decode_base64_image(base64Image):
     return imageBytes
 
 
-def get_img_info(img, image_filter="AUTO"):
+def get_img_info(img, image_filter="AUTO", dims=None):
     """
     Args:
         img: `BytesIO` or `PIL.Image.Image` instance
@@ -45,6 +45,8 @@ def get_img_info(img, image_filter="AUTO"):
     """
     if not isinstance(img, Image.Image):
         img = Image.open(img)
+    if dims:
+        img = img.resize(dims, resample=Image.NEAREST)
     if image_filter == "AUTO":
         # Very simple logic for now:
         image_filter = "DCTDecode" if img.format == "JPEG" else "FlateDecode"

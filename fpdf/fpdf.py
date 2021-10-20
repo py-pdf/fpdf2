@@ -281,6 +281,8 @@ class FPDF:
         self.page_duration = 0  # optional pages display duration, cf. add_page()
         self.page_transition = None  # optional pages transition, cf. add_page()
         self.allow_images_transparency = True
+        self.huge_images = None  # do nothing by default. Allowed values: 'WARN', 'RESIZE'
+        self.huge_images_ratio = 3  # number of pixels per UserSpace point
         self._rotating = 0  # counting levels of nested rotation contexts
         self._markdown_leak_end_style = False
         # Only set if XMP metadata is added to the document:
@@ -2360,22 +2362,56 @@ class FPDF:
             name, img = hashlib.md5(name.getvalue()).hexdigest(), name
         else:
             name, img = str(name), name
-        if name not in self.images:
-            info = get_img_info(img or load_image(name), self.image_filter)
-            info["i"] = len(self.images) + 1
-            self.images[name] = info
+        info = self.images.get(name)
+        if info:
+            info["usages"] += 1
         else:
-            info = self.images[name]
+            if not img:
+                img = load_image(name)
+            info = get_img_info(img, self.image_filter)
+            info["i"] = len(self.images) + 1
+            info["usages"] = 1
+            self.images[name] = info
 
         # Automatic width and height calculation if needed
-        if w == 0 and h == 0:
-            # Put image at 72 dpi
+        if w == 0 and h == 0:  # Put image at 72 dpi
             w = info["w"] / self.k
             h = info["h"] / self.k
         elif w == 0:
             w = h * info["w"] / info["h"]
         elif h == 0:
             h = w * info["h"] / info["w"]
+
+        if self.huge_images and info["usages"] == 1:
+            width_in_pt, height_in_pt = w * self.k, h * self.k
+            lowres_name = f"lowres-{name}"
+            lowres_info = self.images.get(lowres_name)
+            if width_in_pt < info["w"] / self.huge_images_ratio and height_in_pt < info["h"] / self.huge_images_ratio:
+                factor = min(info['w']/width_in_pt, info['h']/height_in_pt)/self.huge_images_ratio
+                if self.huge_images.lower().startswith("warn"):
+                    LOGGER.warning("Image %s with size %.1fx%.1fpx is rendered at size %.1fx%.1fpt."
+                                   " Set pdf.huge_images = 'RESIZE' to reduce embedded image size by a factor %.1f",
+                                   name, info['w'], info['h'], width_in_pt, height_in_pt, factor)
+                elif self.huge_images.lower() in ("resize", "rescale"):
+                    info["usages"] -= 1  # no need to embed the high-resolution image
+                    if lowres_info:  # Great, we've already done the job!
+                        info = lowres_info
+                        info["usages"] += 1
+                        # TODO: in case existing low-res image is too small, build a bigger low-res image
+                    else:
+                        if not img:
+                            img = load_image(name)
+                        dims = (round(info['w']/factor), round(info['h']/factor))
+                        info = get_img_info(img, self.image_filter, dims=dims)
+                        info["i"] = len(self.images) + 1
+                        info["usages"] = 1
+                        self.images[lowres_name] = info
+                        LOGGER.debug("Created new low-res img with name=%s dims=%s id=%d", lowres_name, dims, info["i"])
+                    name = lowres_name
+                else:
+                    raise ValueError(f"Invalid value for attribute .huge_images: {self.huge_images}")
+            elif lowres_info:  # embedding the same image in a high-res after inserting it in low-res:
+                lowres_info.update(info)
 
         # Flowing mode
         if y is None:
@@ -2534,7 +2570,7 @@ class FPDF:
             # Page
             self._newobj()
             self._out("<</Type /Page")
-            self._out("/Parent 1 0 R")
+            self._out(f"/Parent {pdf_ref(1)}")
             page = self.pages[n]
             if page["duration"]:
                 self._out(f"/Dur {page['duration']}")
@@ -2543,7 +2579,7 @@ class FPDF:
             w_pt, h_pt = page["w_pt"], page["h_pt"]
             if w_pt != dw_pt or h_pt != dh_pt:
                 self._out(f"/MediaBox [0 0 {w_pt:.2f} {h_pt:.2f}]")
-            self._out("/Resources 2 0 R")
+            self._out(f"/Resources {pdf_ref(2)}")
 
             page_annots = self.annots[n]
             if page_annots:  # Annotations, e.g. links:
@@ -2599,7 +2635,7 @@ class FPDF:
             spid = self._struct_parents_id_per_page.get(self.n)
             if spid is not None:
                 self._out(f"/StructParents {spid}")
-            self._out(f"/Contents {self.n + 1} 0 R>>")
+            self._out(f"/Contents {pdf_ref(self.n + 1)}>>")
             self._out("endobj")
 
             # Page content
@@ -2613,7 +2649,7 @@ class FPDF:
         self.offsets[1] = len(self.buffer)
         self._out("1 0 obj")
         self._out("<</Type /Pages")
-        self._out("/Kids [" + " ".join(f"{3 + 2 * i} 0 R" for i in range(nb)) + "]")
+        self._out("/Kids [" + " ".join(pdf_ref(3 + 2 * i) for i in range(nb)) + "]")
         self._out(f"/Count {nb}")
         self._out(f"/MediaBox [0 0 {dw_pt:.2f} {dh_pt:.2f}]")
         self._out(">>")
@@ -2726,11 +2762,11 @@ class FPDF:
                 self._out(f"/BaseFont /{name}")
                 self._out(f"/Subtype /{my_type}")
                 self._out("/FirstChar 32 /LastChar 255")
-                self._out(f"/Widths {self.n + 1} 0 R")
-                self._out(f"/FontDescriptor {self.n + 2} 0 R")
+                self._out(f"/Widths {pdf_ref(self.n + 1)}")
+                self._out(f"/FontDescriptor {pdf_ref(self.n + 2)}")
                 if font["enc"]:
                     if "diff" in font:
-                        self._out(f"/Encoding {nf + font['diff']} 0 R")
+                        self._out(f"/Encoding {pdf_ref(nf + font['diff'])}")
                     else:
                         self._out("/Encoding /WinAnsiEncoding")
                 self._out(">>")
@@ -2765,7 +2801,7 @@ class FPDF:
                     s += " /FontFile"
                     if my_type != "Type1":
                         s += "2"
-                    s += f" {self.font_files[filename]['n']} 0 R"
+                    s += " " + pdf_ref(self.font_files[filename]['n'])
                 self._out(f"{s}>>")
                 self._out("endobj")
             elif my_type == "TTF":
@@ -2788,8 +2824,8 @@ class FPDF:
                 self._out("/Subtype /Type0")
                 self._out(f"/BaseFont /{fontname}")
                 self._out("/Encoding /Identity-H")
-                self._out(f"/DescendantFonts [{self.n + 1} 0 R]")
-                self._out(f"/ToUnicode {self.n + 2} 0 R")
+                self._out(f"/DescendantFonts [{pdf_ref(self.n + 1)}]")
+                self._out(f"/ToUnicode {pdf_ref(self.n + 2)}")
                 self._out(">>")
                 self._out("endobj")
 
@@ -2800,12 +2836,12 @@ class FPDF:
                 self._out("<</Type /Font")
                 self._out("/Subtype /CIDFontType2")
                 self._out(f"/BaseFont /{fontname}")
-                self._out(f"/CIDSystemInfo {self.n + 2} 0 R")
-                self._out(f"/FontDescriptor {self.n + 3} 0 R")
+                self._out(f"/CIDSystemInfo {pdf_ref(self.n + 2)}")
+                self._out(f"/FontDescriptor {pdf_ref(self.n + 3)}")
                 if font["desc"].get("MissingWidth"):
                     self._out(f"/DW {font['desc']['MissingWidth']}")
                 self._putTTfontwidths(font, ttf.maxUni)
-                self._out(f"/CIDToGIDMap {self.n + 4} 0 R")
+                self._out(f"/CIDToGIDMap {pdf_ref(self.n + 4)}")
                 self._out(">>")
                 self._out("endobj")
 
@@ -2882,7 +2918,7 @@ class FPDF:
                         v = v | 4
                         v = v & ~32  # SYMBOLIC font flag
                     self._out(f" /{kd} {v}")
-                self._out(f"/FontFile2 {self.n + 2} 0 R")
+                self._out(f"/FontFile2 {pdf_ref(self.n + 2)}")
                 self._out(">>")
                 self._out("endobj")
 
@@ -3015,11 +3051,13 @@ class FPDF:
         self._out(f"/W [{''.join(w)}]")
 
     def _putimages(self):
-        for info in sorted(self.images.values(), key=lambda info: info["i"]):
-            self._putimage(info)
-            del info["data"]
-            if "smask" in info:
-                del info["smask"]
+        for img_info in sorted(self.images.values(), key=lambda img_info: img_info["i"]):
+            if img_info["usages"] == 0:
+                continue
+            self._putimage(img_info)
+            del img_info["data"]
+            if "smask" in img_info:
+                del img_info["smask"]
 
     def _putimage(self, info):
         if "data" not in info:
@@ -3034,7 +3072,7 @@ class FPDF:
         if info["cs"] == "Indexed":
             self._out(
                 f"/ColorSpace [/Indexed /DeviceRGB "
-                f"{len(info['pal']) // 3 - 1} {self.n + 1} 0 R]"
+                f"{len(info['pal']) // 3 - 1} {pdf_ref(self.n + 1)}]"
             )
         else:
             self._out(f"/ColorSpace /{info['cs']}")
@@ -3053,7 +3091,7 @@ class FPDF:
             self._out(f"/Mask [{trns}]")
 
         if self.allow_images_transparency and "smask" in info:
-            self._out(f"/SMask {self.n + 1} 0 R")
+            self._out(f"/SMask {pdf_ref(self.n + 1)}")
 
         self._out(f"/Length {len(info['data'])}>>")
         self._out(pdf_stream(info["data"]))
@@ -3086,10 +3124,10 @@ class FPDF:
             self._out("endobj")
 
     def _putxobjectdict(self):
-        i = [(x["i"], x["n"]) for x in self.images.values()]
-        i.sort()
-        for idx, n in i:
-            self._out(f"/I{idx} {n} 0 R")
+        img_ids = [(img_info["i"], img_info["n"]) for img_info in self.images.values() if img_info["usages"]]
+        img_ids.sort()
+        for idx, n in img_ids:
+            self._out(f"/I{idx} {pdf_ref(n)}")
 
     def _putresourcedict(self):
         # From section 10.1, "Procedure Sets", of PDF 1.7 spec:
@@ -3099,9 +3137,9 @@ class FPDF:
         # > (preferably, all of those listed in Table 10.1).
         self._out("/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]")
         self._out("/Font <<")
-        f = [(x["i"], x["n"]) for x in self.fonts.values()]
-        f.sort()
-        for idx, n in f:
+        font_ids = [(x["i"], x["n"]) for x in self.fonts.values()]
+        font_ids.sort()
+        for idx, n in font_ids:
             self._out(f"/F{idx} {pdf_ref(n)}")
         self._out(">>")
         self._out("/XObject <<")
