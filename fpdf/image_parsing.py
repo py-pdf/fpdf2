@@ -46,7 +46,7 @@ def get_img_info(img, image_filter="AUTO", dims=None):
     if not isinstance(img, Image.Image):
         img = Image.open(img)
     if dims:
-        img = img.resize(dims, resample=Image.NEAREST)
+        img = img.resize(dims, resample=Image.ANTIALIAS)
     if image_filter == "AUTO":
         # Very simple logic for now:
         image_filter = "DCTDecode" if img.format == "JPEG" else "FlateDecode"

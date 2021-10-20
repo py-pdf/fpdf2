@@ -281,8 +281,10 @@ class FPDF:
         self.page_duration = 0  # optional pages display duration, cf. add_page()
         self.page_transition = None  # optional pages transition, cf. add_page()
         self.allow_images_transparency = True
-        self.huge_images = None  # do nothing by default. Allowed values: 'WARN', 'RESIZE'
-        self.huge_images_ratio = 3  # number of pixels per UserSpace point
+        self.huge_images = (
+            None  # do nothing by default. Allowed values: 'WARN', 'RESIZE'
+        )
+        self.huge_images_ratio = 2  # number of pixels per UserSpace point
         self._rotating = 0  # counting levels of nested rotation contexts
         self._markdown_leak_end_style = False
         # Only set if XMP metadata is added to the document:
@@ -2386,31 +2388,71 @@ class FPDF:
             width_in_pt, height_in_pt = w * self.k, h * self.k
             lowres_name = f"lowres-{name}"
             lowres_info = self.images.get(lowres_name)
-            if width_in_pt < info["w"] / self.huge_images_ratio and height_in_pt < info["h"] / self.huge_images_ratio:
-                factor = min(info['w']/width_in_pt, info['h']/height_in_pt)/self.huge_images_ratio
+            if (
+                info["w"] > width_in_pt * self.huge_images_ratio
+                and info["h"] > height_in_pt * self.huge_images_ratio
+            ):
+                factor = (
+                    min(info["w"] / width_in_pt, info["h"] / height_in_pt)
+                    / self.huge_images_ratio
+                )
                 if self.huge_images.lower().startswith("warn"):
-                    LOGGER.warning("Image %s with size %.1fx%.1fpx is rendered at size %.1fx%.1fpt."
-                                   " Set pdf.huge_images = 'RESIZE' to reduce embedded image size by a factor %.1f",
-                                   name, info['w'], info['h'], width_in_pt, height_in_pt, factor)
+                    LOGGER.warning(
+                        "OVERSIZED: Image %s with size %.1fx%.1fpx is rendered at size %.1fx%.1fpt."
+                        " Set pdf.huge_images = 'RESIZE' to reduce embedded image size by a factor %.1f",
+                        name,
+                        info["w"],
+                        info["h"],
+                        width_in_pt,
+                        height_in_pt,
+                        factor,
+                    )
                 elif self.huge_images.lower() in ("resize", "rescale"):
+                    dims = (
+                        round(width_in_pt * self.huge_images_ratio),
+                        round(height_in_pt * self.huge_images_ratio),
+                    )
                     info["usages"] -= 1  # no need to embed the high-resolution image
                     if lowres_info:  # Great, we've already done the job!
                         info = lowres_info
+                        if (
+                            info["w"] * info["h"] < dims[0] * dims[1]
+                        ):  # The existing low-res image is too small, we need a bigger low-res image:
+                            info.update(
+                                get_img_info(
+                                    img or load_image(name),
+                                    self.image_filter,
+                                    dims=dims,
+                                )
+                            )
+                            LOGGER.debug(
+                                "OVERSIZED: Updated low-res image with name=%s id=%d to dims=%s",
+                                lowres_name,
+                                info["i"],
+                                dims,
+                            )
                         info["usages"] += 1
-                        # TODO: in case existing low-res image is too small, build a bigger low-res image
                     else:
-                        if not img:
-                            img = load_image(name)
-                        dims = (round(info['w']/factor), round(info['h']/factor))
-                        info = get_img_info(img, self.image_filter, dims=dims)
+                        info = get_img_info(
+                            img or load_image(name), self.image_filter, dims=dims
+                        )
                         info["i"] = len(self.images) + 1
                         info["usages"] = 1
                         self.images[lowres_name] = info
-                        LOGGER.debug("Created new low-res img with name=%s dims=%s id=%d", lowres_name, dims, info["i"])
+                        LOGGER.debug(
+                            "OVERSIZED: Generated new low-res image with name=%s dims=%s id=%d",
+                            lowres_name,
+                            dims,
+                            info["i"],
+                        )
                     name = lowres_name
                 else:
-                    raise ValueError(f"Invalid value for attribute .huge_images: {self.huge_images}")
-            elif lowres_info:  # embedding the same image in a high-res after inserting it in low-res:
+                    raise ValueError(
+                        f"Invalid value for attribute .huge_images: {self.huge_images}"
+                    )
+            elif (
+                lowres_info
+            ):  # embedding the same image in a high-res after inserting it in low-res:
                 lowres_info.update(info)
 
         # Flowing mode
@@ -2801,7 +2843,7 @@ class FPDF:
                     s += " /FontFile"
                     if my_type != "Type1":
                         s += "2"
-                    s += " " + pdf_ref(self.font_files[filename]['n'])
+                    s += " " + pdf_ref(self.font_files[filename]["n"])
                 self._out(f"{s}>>")
                 self._out("endobj")
             elif my_type == "TTF":
@@ -3051,7 +3093,9 @@ class FPDF:
         self._out(f"/W [{''.join(w)}]")
 
     def _putimages(self):
-        for img_info in sorted(self.images.values(), key=lambda img_info: img_info["i"]):
+        for img_info in sorted(
+            self.images.values(), key=lambda img_info: img_info["i"]
+        ):
             if img_info["usages"] == 0:
                 continue
             self._putimage(img_info)
@@ -3124,7 +3168,11 @@ class FPDF:
             self._out("endobj")
 
     def _putxobjectdict(self):
-        img_ids = [(img_info["i"], img_info["n"]) for img_info in self.images.values() if img_info["usages"]]
+        img_ids = [
+            (img_info["i"], img_info["n"])
+            for img_info in self.images.values()
+            if img_info["usages"]
+        ]
         img_ids.sort()
         for idx, n in img_ids:
             self._out(f"/I{idx} {pdf_ref(n)}")
