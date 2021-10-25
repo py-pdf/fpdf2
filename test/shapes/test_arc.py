@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 from pathlib import Path
 
 import fpdf
@@ -60,6 +61,7 @@ def test_arc_style(tmp_path):
 
 
 def test_arc_line_width(tmp_path):
+    # pylint: disable=duplicate-code
     pdf = fpdf.FPDF(unit="mm")
     pdf.add_page()
 

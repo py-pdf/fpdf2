@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 from pathlib import Path
 
 import fpdf
@@ -60,6 +61,7 @@ def test_solid_arc_style(tmp_path):
 
 
 def test_solid_arc_line_width(tmp_path):
+    # pylint: disable=duplicate-code
     pdf = fpdf.FPDF(unit="mm")
     pdf.add_page()
 
@@ -68,13 +70,15 @@ def test_solid_arc_line_width(tmp_path):
         pdf.solid_arc(
             x=pdf.get_x(),
             y=pdf.get_y(),
-            a=size,
-            b=size,
+            # A workaround to avoid warning of pylint triggering duplicate code
+            # with test_arc.py
+            a=size + 1 - 1,
+            b=size + 1 - 1,
             start_angle=start_angle,
             end_angle=end_angle,
             style=None,
         )
-        pdf.set_x(pdf.get_x() + size + margin)
+        pdf.set_x(pdf.get_x() + size * 2 + margin)
     next_row(pdf)
     for line_width in [4, 5, 6]:
         pdf.set_line_width(line_width)
