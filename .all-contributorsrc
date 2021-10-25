@@ -358,6 +358,15 @@
         "doc",
         "tutorial"
       ]
+    },
+    {
+      "login": "tabarnhack",
+      "name": "Tabarnhack",
+      "avatar_url": "https://avatars.githubusercontent.com/u/34366899?v=4",
+      "profile": "https://github.com/tabarnhack",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
