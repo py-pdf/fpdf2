@@ -59,7 +59,7 @@ jobs:
           mkdir -p public/
           mkdocs build
           pdoc --html -o public/ fpdf
-          cd contributors/ && ./build_contributors_html_page.py PyFPDF/fpdf2
+          cd contributors/ && PYTHONUNBUFFERED=1 ./build_contributors_html_page.py PyFPDF/fpdf2
           cp -t ../public/ contributors.html contributors-map-small.png
       - name: Deploy documentation 🚀
         # GitHub Pages deployment should not be done for all Python versions,
