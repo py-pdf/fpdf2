@@ -1,4 +1,3 @@
-# pylint: disable=duplicate-code
 from pathlib import Path
 
 import fpdf
@@ -22,7 +21,7 @@ def test_arc_not_circle(tmp_path):
     pdf = fpdf.FPDF(unit="mm")
     pdf.add_page()
 
-    for counter, style in enumerate(["", "F", "FD", "DF", None]):
+    for counter, style in enumerate(["F", "FD", "DF", None]):
         pdf.arc(
             x=pdf.get_x(),
             y=pdf.get_y(),
@@ -43,7 +42,7 @@ def test_arc_style(tmp_path):
     pdf = fpdf.FPDF(unit="mm")
     pdf.add_page()
 
-    for counter, style in enumerate(["", "F", "FD", "DF", None]):
+    for counter, style in enumerate(["F", "FD", "DF", None]):
         pdf.arc(
             x=pdf.get_x(),
             y=pdf.get_y(),
@@ -61,7 +60,6 @@ def test_arc_style(tmp_path):
 
 
 def test_arc_line_width(tmp_path):
-    # pylint: disable=duplicate-code
     pdf = fpdf.FPDF(unit="mm")
     pdf.add_page()
 
@@ -136,3 +134,121 @@ def test_arc_fill_color(tmp_path):
     next_row(pdf)
 
     assert_pdf_equal(pdf, HERE / "class_arc_fill_color.pdf", tmp_path)
+
+
+def test_arc_inclination(tmp_path):
+    pdf = fpdf.FPDF(unit="mm")
+    pdf.add_page()
+
+    for counter, inclination in enumerate([0, 30, 90, 120]):
+        pdf.arc(
+            x=pdf.get_x(),
+            y=pdf.get_y(),
+            a=size,
+            b=size,
+            start_angle=start_angle,
+            end_angle=end_angle,
+            inclination=inclination,
+            style=None,
+        )
+        pdf.set_x(pdf.get_x() + size + margin)
+        if counter % 3 == 0:
+            next_row(pdf)
+
+    assert_pdf_equal(pdf, HERE / "class_arc_inclination.pdf", tmp_path)
+
+
+def test_arc_clockwise(tmp_path):
+    pdf = fpdf.FPDF(unit="mm")
+    pdf.add_page()
+
+    for inclination in [0, 30, 90, 120]:
+        pdf.arc(
+            x=pdf.get_x(),
+            y=pdf.get_y(),
+            a=size,
+            b=size,
+            start_angle=start_angle,
+            end_angle=end_angle,
+            inclination=inclination,
+            style=None,
+        )
+        pdf.set_x(pdf.get_x() + size + margin)
+        pdf.arc(
+            x=pdf.get_x(),
+            y=pdf.get_y(),
+            a=size,
+            b=size,
+            start_angle=start_angle,
+            end_angle=end_angle,
+            inclination=inclination,
+            clockwise=True,
+            style=None,
+        )
+        next_row(pdf)
+
+    assert_pdf_equal(pdf, HERE / "class_arc_clockwise.pdf", tmp_path)
+
+
+def test_arc_start_from_center(tmp_path):
+    pdf = fpdf.FPDF(unit="mm")
+    pdf.add_page()
+
+    for inclination in [0, 30, 90, 120]:
+        pdf.arc(
+            x=pdf.get_x(),
+            y=pdf.get_y(),
+            a=size,
+            b=size,
+            start_angle=start_angle,
+            end_angle=end_angle,
+            inclination=inclination,
+            style=None,
+        )
+        pdf.set_x(pdf.get_x() + size + margin)
+        pdf.arc(
+            x=pdf.get_x(),
+            y=pdf.get_y(),
+            a=size,
+            b=size,
+            start_angle=start_angle,
+            end_angle=end_angle,
+            inclination=inclination,
+            start_from_center=True,
+            style=None,
+        )
+        next_row(pdf)
+
+    assert_pdf_equal(pdf, HERE / "class_arc_start_from_center.pdf", tmp_path)
+
+
+def test_arc_end_at_center(tmp_path):
+    pdf = fpdf.FPDF(unit="mm")
+    pdf.add_page()
+
+    for inclination in [0, 30, 90, 120]:
+        pdf.arc(
+            x=pdf.get_x(),
+            y=pdf.get_y(),
+            a=size,
+            b=size,
+            start_angle=start_angle,
+            end_angle=end_angle,
+            inclination=inclination,
+            style=None,
+        )
+        pdf.set_x(pdf.get_x() + size + margin)
+        pdf.arc(
+            x=pdf.get_x(),
+            y=pdf.get_y(),
+            a=size,
+            b=size,
+            start_angle=start_angle,
+            end_angle=end_angle,
+            inclination=inclination,
+            end_at_center=True,
+            style=None,
+        )
+        next_row(pdf)
+
+    assert_pdf_equal(pdf, HERE / "class_arc_end_at_center.pdf", tmp_path)

@@ -22,6 +22,10 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - While images transparency is still handled by default through the use of `SMask`,
   this can be disabled by setting `pdf.allow_images_transparency = False`
   in order to allow compliance with [PDF/A-1](https://en.wikipedia.org/wiki/PDF/A#Description)
+- [`FPDF.arc`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.arc): new method added. 
+  It enables to draw arcs in a PDF document.
+- [`FPDF.solid_arc`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.solid_arc): new method added.
+  It enables to draw solid arcs in a PDF document. A solid arc combines an arc and a triangle to form a pie slice.
 ### Fixed
 - The exception making the "x2" template field optional for barcode elements did not work correctly, fixed by @gmischler
 ### Changed

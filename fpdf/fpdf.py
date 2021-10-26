@@ -1127,14 +1127,21 @@ class FPDF:
             inclination (int): Inclination of the arc in respect of the x-axis (default: 0).
             clockwise (bool): Way of drawing the arc (True: clockwise, False: counterclockwise) (default: False).
             start_from_center (bool): Start drawing from the center of the circle (default: False).
-            end_at_center (bool): End drawind at the center of the circle (default: False).
+            end_at_center (bool): End drawing at the center of the circle (default: False).
             style (int): Style of rendering. Possible values are:
                 * `D` or None: draw border. This is the default value.
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
         """
-        style_to_operators = {"F": "f", "FD": "B", "DF": "B"}
-        op = style_to_operators.get(style, "S")
+        style_to_operators = {None: "S", "D": "S", "F": "f", "FD": "B", "DF": "B"}
+
+        if style not in style_to_operators:
+            raise FPDFException(
+                f"Undefined style: {style} - "
+                f"Style should be one of {list(style_to_operators.keys())}"
+            )
+
+        op = style_to_operators[style]
 
         if b is None:
             b = a
@@ -1256,7 +1263,7 @@ class FPDF:
         style=None,
     ):
         """
-        Outputs a solid arc.
+        Outputs a solid arc. A solid arc combines an arc and a triangle to form a pie slice
         It can be drawn (border only), filled (with no border) or both.
 
         Args:
