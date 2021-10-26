@@ -22,6 +22,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - While images transparency is still handled by default through the use of `SMask`,
   this can be disabled by setting `pdf.allow_images_transparency = False`
   in order to allow compliance with [PDF/A-1](https://en.wikipedia.org/wiki/PDF/A#Description)
+- added [Tutorial in Russian](https://pyfpdf.github.io/fpdf2/Tutorial-ru.html)
 ### Fixed
 - The exception making the "x2" template field optional for barcode elements did not work correctly, fixed by @gmischler
 ### Changed
