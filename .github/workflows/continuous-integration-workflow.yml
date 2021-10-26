@@ -53,6 +53,9 @@ jobs:
           # Uploading coverage report to codecov.io
           bash <(curl -s https://codecov.io/bash)
       - name: Generating HTML documentation 🏗️
+        # As build_contributors_html_page.py can hang due to GitHub rate-limiting,
+        # we only execute this on master for now. And it should always be executed for one Python version only.
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.10'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
