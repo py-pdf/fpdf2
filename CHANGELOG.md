@@ -33,6 +33,8 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - All template elements now have a transparent default background instead of white, thanks to @gmischler
 - To reduce the size of generated PDFs, no `SMask` entry is inserted for images that are fully opaque
   (= with an alpha channel containing only 0xff characters)
+- The `rect`, `ellipse` & `circle` all have a `style` parameter in common.
+  They now all properly accept a value of `"D"` and raise a `ValueError` for invalid values.
 ### Deprecated
 - `dashed_line()` is now deprecated in favor of `set_dash_pattern()`
 

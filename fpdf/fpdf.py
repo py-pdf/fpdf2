@@ -1017,8 +1017,7 @@ class FPDF:
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
         """
-        style_to_operators = {"F": "f", "FD": "B", "DF": "B"}
-        op = style_to_operators.get(style, "S")
+        op = _style_to_operator(style)
         self._out(
             f"{x * self.k:.2f} {(self.h - y) * self.k:.2f} {w * self.k:.2f} "
             f"{-h * self.k:.2f} re {op}"
@@ -1040,8 +1039,7 @@ class FPDF:
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
         """
-        style_to_operators = {"F": "f", "FD": "B", "DF": "B"}
-        op = style_to_operators.get(style, "S")
+        op = _style_to_operator(style)
 
         cx = x + w / 2
         cy = y + h / 2
@@ -1133,15 +1131,7 @@ class FPDF:
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
         """
-        style_to_operators = {None: "S", "D": "S", "F": "f", "FD": "B", "DF": "B"}
-
-        if style not in style_to_operators:
-            raise FPDFException(
-                f"Undefined style: {style} - "
-                f"Style should be one of {list(style_to_operators.keys())}"
-            )
-
-        op = style_to_operators[style]
+        op = _style_to_operator(style)
 
         if b is None:
             b = a
@@ -3883,6 +3873,17 @@ class FPDF:
         self.set_font(*prev_font)
         self.text_color = prev_text_color
         self.underline = prev_underline
+
+
+def _style_to_operator(style):
+    style_to_operators = {"F": "f", "FD": "B", "DF": "B", "D": "S"}
+    if not style:
+        style = "D"
+    if style not in style_to_operators:
+        raise ValueError(
+            f"Invalid value for style: '{style}'. Allowed values: {'/'.join(style_to_operators.keys())}"
+        )
+    return style_to_operators[style]
 
 
 def _char_width(font, char):
