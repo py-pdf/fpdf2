@@ -45,14 +45,28 @@ FPDF original features:
 * Image, colors and links support
 * Page compression
 
+## Tutorials ##
+
+* [English](https://pyfpdf.github.io/fpdf2/Tutorial.html)
+* [Spanish](https://pyfpdf.github.io/fpdf2/Tutorial-es.html)
+* [हिंदी](https://pyfpdf.github.io/fpdf2/Tutorial-हिंदी.html)
+
 ## Installation ##
 
 * From [PyPI](https://pypi.python.org/pypi/fpdf2): `pip install fpdf2`
 * From source:
     * Clone the repository: `git clone https://github.com/PyFPDF/fpdf2.git`
-    * On ubuntu the following packages are required: `sudo apt-get install libjpeg-dev libpython-dev zlib1g-dev # libpython3.3-dev #(if necessary)`
+    * On ubuntu the following packages are required: `sudo apt-get install libjpeg-dev libpython-dev zlib1g-dev`
     * Run `python setup.py install`
 
 ## Support ##
 
-For community support, please feel free to file an [issue](https://github.com/PyFPDF/fpdf2/issues).
+For community support, please feel free to file an [issue](https://github.com/PyFPDF/fpdf2/issues)
+or [open a discussion](https://github.com/PyFPDF/fpdf2/discussions).
+
+## Misc ##
+
+* Release notes: [CHANGELOG.md](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)
+* This library could only exist thanks to the dedication of many volunteers around the world:
+  [list & map of contributors](https://github.com/PyFPDF/fpdf2/blob/master/README.md#contributors-)
+* Looking for alternatives? Check out [this detailed list of PDF-related Python libs by Patrick Maupin](https://github.com/pmaupin/pdfrw#other-libraries). There is also `pikepdf`, `PyFPDF2` & `WeasyPrint`.

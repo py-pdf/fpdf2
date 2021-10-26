@@ -45,7 +45,7 @@ To get the latest development version:
 
 ```bash
 # Linux only:
-sudo apt-get install libjpeg-dev libpython-dev zlib1g-dev # libpython3.3-dev #(if necessary)
+sudo apt-get install libjpeg-dev libpython-dev zlib1g-dev
 
 # Linux and Windows:
 git clone https://github.com/PyFPDF/fpdf2.git
