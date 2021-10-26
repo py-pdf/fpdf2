@@ -2,6 +2,8 @@
 
 English: [Tutorial](Tutorial.md)
 
+हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
+
 [TOC]
 
 ## Ejemplo básico ##

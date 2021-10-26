@@ -42,12 +42,22 @@ def test_oversized_images_downscale_twice(tmp_path):
     assert_pdf_equal(pdf, HERE / "oversized_images_downscale_twice.pdf", tmp_path)
 
 
-def test_oversized_images_downscale_and_highres():
+def test_oversized_images_downscaled_and_highres():
     pdf = fpdf.FPDF()
     pdf.oversized_images = "DOWNSCALE"
     pdf.add_page()
     pdf.image(IMAGE_PATH, w=50)
     pdf.image(IMAGE_PATH, w=pdf.epw)
+    assert len(pdf.images) == 1, pdf.images.keys()
+    # Not calling assert_pdf_equal to avoid storing a large binary (1.4M) in this git repo
+
+
+def test_oversized_images_highres_and_downscaled():
+    pdf = fpdf.FPDF()
+    pdf.oversized_images = "DOWNSCALE"
+    pdf.add_page()
+    pdf.image(IMAGE_PATH, w=pdf.epw)
+    pdf.image(IMAGE_PATH, w=50)
     assert len(pdf.images) == 1, pdf.images.keys()
     # Not calling assert_pdf_equal to avoid storing a large binary (1.4M) in this git repo
 
