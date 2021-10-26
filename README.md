@@ -146,6 +146,7 @@ This library could only exist thanks to the dedication of many volunteers around
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/tabarnhack"><img src="https://avatars.githubusercontent.com/u/34366899?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Tabarnhack</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=tabarnhack" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/Mridulbirla13"><img src="https://avatars.githubusercontent.com/u/24730417?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Mridul Birla</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=Mridulbirla13" title="Documentation">📖</a></td>
   </tr>
 </table>
 
