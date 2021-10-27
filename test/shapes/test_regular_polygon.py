@@ -1,13 +1,7 @@
-import sys
-sys.path.insert(0, '/Users/londonbettman/Desktop/School/ComputerScience/Software Lab/Git Contribution Project/fpdf2')
 from fpdf import FPDF
-
 
 pdf = FPDF()
 pdf.add_page()
-
-
-#(x, y, Number of sides, Polygon width, Degrees to rotate, Style)
 
 #no fill with line
 pdf.regular_polygon(10,35,3,25)
@@ -62,15 +56,6 @@ pdf.regular_polygon(70,235,5,25,200)
 pdf.regular_polygon(100,235,6,25,0)
 pdf.regular_polygon(130,235,7,25,13)
 pdf.regular_polygon(160,235,8,25,22.5)
-
-pdf.set_line_width(0.2)
-pdf.set_draw_color(0, 0, 0)
-pdf.regular_polygon(10,275,3,25)
-pdf.regular_polygon(40,275,4,25)
-pdf.regular_polygon(70,275,5,25)
-pdf.regular_polygon(100,275,6,25)
-pdf.regular_polygon(130,275,7,25)
-pdf.regular_polygon(160,275,8,25)
 
 pdf.output("test_regular_polygon.pdf")
 
