@@ -126,16 +126,16 @@ und [set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color) die Farben ge
 auf 1 mm (Abweichend vom Standardwert von 0,2) festgelegt. Schließlich geben wir die Zelle aus 
 (Der letzte Parameter True zeigt an, dass der Hintergrund gefüllt werden muss).
 
-Die Methode zum Drucken der Absätze ist [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell).
-Jedes Mal, wenn eine Zeile den rechten Rand der Zelle erreicht oder ein Wagenrücklauf
-wird ein Zeilenumbruch durchgeführt und automatisch eine neue Zelle
-unter der aktuellen Zelle erstellt. Der Text wird standardmäßig im Blocksatz ausgerichtet.
+Zur Erstellung von Absätzen wir die Methode [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) genutzt.
+Jedes Mal, wenn eine Zeile den rechten Rand der Zelle erreicht oder ein Zeilenumbruchzeichen im Text erkannt wird,
+wird ein Zeilenumbruch durchgeführt und automatisch eine neue Zelle unterhalb der aktuellen Zelle erstellt. 
+Der Text wird standardmäßig im Blocksatz ausgerichtet.
 
-Es werden zwei Dokumenteigenschaften definiert: der Titel 
-([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) und der Autor 
-([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Die Eigenschaften können auf zwei Arten eingesehen werden.
-Erstens können Sie das Dokument direkt mit Acrobat Reader öffnen, das Menü Datei
-und wählen Sie die Option Dokumenteigenschaften. Die zweite Möglichkeit, die auch über das
+Es werden zwei Dokumenteigenschaften definiert: Titel 
+([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) und Autor 
+([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Dokumenteneigenschaften können auf zwei Arten eingesehen werden.
+Man kann das Dokument mit dem Acrobat Reader öffnen und im Menü **Datei** die Option **Dokumenteigenschaften** auswählen. 
+Alternativ Die zweite Möglichkeit, die auch über das
 Plug-in, indem Sie mit der rechten Maustaste auf das Dokument klicken und die Option Dokumenteigenschaften wählen.
 
 
