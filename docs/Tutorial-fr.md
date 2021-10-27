@@ -1,78 +1,60 @@
-# Tutorial #
-
-Version en français : [Tutorial-fr](Tutorial-fr.md)
+﻿# Tutorial #
 
 Versión en español: [Tutorial-es](Tutorial-es.md)
 
 हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
 
-Methods full documentation: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
+Documentation complète des méthodes : [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
 
-## Tuto 1 - Minimal Example ##
+## Tuto 1 - Exemple minimal ##
 
-Let's start with the classic example:
+Commençons par un exemple classique :
 
 ```python
 {% include "../tutorial/tuto1.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
+[PDF généré](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
 
-After including the library file, we create an `FPDF` object. The 
-[FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF) constructor is used here with the default values: 
-pages are in A4 portrait and the measure unit is millimeter.
-It could have been specified explicitly with:
+Après avoir inclu la librairie, on créé un objet `FPDF`. Le constructeur [FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF) est utilisé avec ses valeurs par défaut : 
+les pages sont en format portrait A4 et l'unité de mesure est le millimètre.
+Cela peut également être spéficié de cette manière :
 
 ```python
 pdf = FPDF(orientation="P", unit="mm", format="A4")
 ```
 
-It is possible to set the PDF in landscape mode (`L`) or to use other page formats
-(such as `Letter` and `Legal`) and measure units (`pt`, `cm`, `in`).
+Il est possible de créer un PDF en format paysage (`L`) ou encore d'utiliser d'autres formats (par exemple `Letter` et `Legal`) et unités de mesure (`pt`, `cm`, `in`).
 
-There is no page for the moment, so we have to add one with 
-[add_page](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page). The origin is at the upper-left corner and the
-current position is by default placed at 1 cm from the borders; the margins can
-be changed with [set_margins](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins).
+Il n'y a pas encore de page, il faut donc en créer une avec [add_page](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page). Le coin en haut à gauche correspond à l'origine, et le curseur (c'est-à-dire la position actuelle où l'on va afficher un élément) est placé par défaut à 1 cm des bords; les marges peuvent être modifiées avec [set_margins](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins).
 
-Before we can print text, it is mandatory to select a font with 
-[set_font](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), otherwise the document would be invalid.
-We choose Helvetica bold 16:
+Avant de pouvoir afficher du texte, il faut obligatoirement choisir une police de caractères avec [set_font](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), sinon le document sera invalide.
+Choisissons Helvetica bold 16:
 
 ```python
 pdf.set_font('helvetica', 'B', 16)
 ```
 
-We could have specified italics with `I`, underlined with `U` or a regular font
-with an empty string (or any combination). Note that the font size is given in
-points, not millimeters (or another user unit); it is the only exception.
-The other built-in fonts are `Times`, `Courier`, `Symbol` and `ZapfDingbats`.
+On aurait pu spécifier une police en italique avec `I`; soulignée avec `U` ou une police normale avec une chaine de caractères vide. Il est aussi possible de combiner les effets en combinant les caractères. Notez que la taille des caractères est à spécifier en points (pts), pas en millimètres (ou tout autre unité); c'est la seule exception.
+Les autres polices fournies par défaut sont `Times`, `Courier`, `Symbol` et `ZapfDingbats`.
 
-We can now print a cell with [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell). A cell is a rectangular
-area, possibly framed, which contains some text. It is rendered at the current
-position. We specify its dimensions, its text (centered or aligned), if borders
-should be drawn, and where the current position moves after it (to the right,
-below or to the beginning of the next line). To add a frame, we would do this:
+On peut maintenant afficher une cellule avec [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell). Une cellule est une zone rectangulaire, avec ou sans cadre, qui contient du texte. Elle est affichée à la position actuelle du curseur. On spécifie ses dimensions, le texte (centré ou aligné), si y il a une bordure ou non, ainsi que la position du curseur après avoir affiché la cellule (s'il se déplace à droite, vers le bas ou au début de la ligne suivante). Pour ajouter un cadre, on utilise ceci :
 
 ```python
 pdf.cell(40, 10, 'Hello World!', 1)
 ```
 
-To add a new cell next to it with centered text and go to the next line, we
-would do:
+Pour ajouter une nouvelle cellule avec un texte centré, et déplacer le curseur à la ligne suivante on utilise cela :
 
 ```python
 pdf.cell(60, 10, 'Powered by FPDF.', ln=1, align='C')
 ```
 
-**Remark**: the line break can also be done with [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). This
-method allows to specify in addition the height of the break.
+**Remarque** : le saut de ligne peut aussi être fait avec [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). Cette méthode permet de spécifier la hauteur du saut.
 
-Finally, the document is closed and saved under the provided file path using
-[output](fpdf/fpdf.html#fpdf.fpdf.FPDF.output). Without any parameter provided, `output()`
-returns the PDF `bytearray` buffer.
+Enfin, le document est sauvegardé à l'endroit spécifié en utilisant [output](fpdf/fpdf.html#fpdf.fpdf.FPDF.output). Sans aucun paramètre, `output()` retourne le buffer `bytearray` du PDF.
 
 ## Tuto 2 - Header, footer, page break and image ##
 
