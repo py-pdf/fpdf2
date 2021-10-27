@@ -6,47 +6,40 @@ Vollständige Dokumentation der Methoden: [`fpdf.FPDF` API doc](https://pyfpdf.g
 
 ## Lektion 1 - Minimalbeispiel ##
 
-Beginnen wir mit dem Klassiker::
+Beginnen wir mit dem Klassiker:
 
 ```python
 {% include "../tutorial/tuto1.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
+[Erzeugtes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
 
-Nachdem wir die Bibliothek eingebunden haben, erstellen wir ein `FPDF` Objekt. Der 
-[`FPDF`](fpdf/fpdf.html#fpdf.fpdf.FPDF) Konstruktor wird hier mit den Standardwerten verwendet: Die Seiten sind im A4-Hochformat und die Maßeinheit ist Millimeter.
+Nachdem wir die Bibliothek eingebunden haben, erstellen zuerst wir ein `FPDF` Objekt. Der 
+[`FPDF`](fpdf/fpdf.html#fpdf.fpdf.FPDF) Konstruktor wird hier mit den Standardwerten verwendet: Das Seitenformat wird auf A4-Hochformat gesetzt und als Maßeinheit  Millimeter festgelegt.
 
-Dies hätte auch explizit mit angegeben werden können:
+Diese Werte hätten wir auch explizit angegeben können:
 
 ```python
 pdf = FPDF(orientation="P", unit="mm", format="A4")
 ```
-Es ist auch möglich, die PDF-Datei im Querformat zu erstellen (`L`) sowie andere Seitenformate
+Es ist auch möglich, eine PDF-Datei im Querformat zu erstellen (`L`), sowie andere Seitenformate
 (`Letter` und `Legal`) und Maßeinheiten (`pt`, `cm`, `in`) zu verwenden.
 
-Bisher haben wir dem Dokument noch keine Seite hinzugefügt. Das können wir mit [`add_page`](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page). nachholen.
-Der Ursprung liegt in der oberen linken Ecke und die
-aktuelle Position ist standardmäßig 1 cm von den Rändern entfernt. Die Randabstände können
-können mit [`set_margins`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins) angespasst werden.
+Bisher haben wir dem Dokument noch keine Seite hinzugefügt. Um eine Seite hinzuzufügen, verwenden wir [`add_page`](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page).
+Der Ursprung der Koordinaten liegt in der oberen linken Ecke und die aktuelle Schreibposition ist standardmäßig jeweils 1 cm von den Rändern entfernt. Diese Randabstände können mit [`set_margins`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins) angespasst werden.
 
-Bevor wir Text hinzufügen können, müssen wir zuerst mit [`set_font`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) eine Schriftart auswählen, um ein gültiges Dokument zu erzeugen.
-Wir wählen Helvetica, fett in Schriftgröße 16:
+Bevor wir Text hinzufügen können, müssen wir zuerst mit [`set_font`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) eine Schriftart festlegen, um ein gültiges Dokument zu erzeugen.
+Wir wählen Helvetica, fett in Schriftgröße 16 pt:
 
 ```python
 pdf.set_font('helvetica', 'B', 16)
 ```
 
-Wir hätten auch kursiv mit `I`, unterstrichen mit `U` oder eine "normale" Darstellung
-durch die Übergabe einer leeren Zeichenkette wählen können. Beliebige Kombinationen der drei Werte sind zulässig. Beachte, dass die Schriftgröße in
-Punkten und nicht in Millimetern (oder einer anderen durch den Benutzer bei der Erstellung mit `unit=` festgelegten Maßeinheit) angegeben wird. 
-Dies ist die einzige Ausnahme vom Grundsatz, dass immer die durch den Benutzer gewählte Maßeinheit bei der Verwendung von Maßangeben genutzt wird.
-Die anderen eingebauten Schriftarten sind `Times`, `Courier`, `Symbol` und `ZapfDingbats`.
+Anstelle von `B` hätten wir mit `I` kursiv , `U` unterstichen oder durch die Übergabe einer leeren Zeichenkette einen "normale" Textstil wählen können. Beliebige Kombinationen der drei Werte sind zulässig. Beachte, dass die Schriftgröße in Punkt und nicht in Millimetern (oder einer anderen durch den Benutzer bei der Erstellung mit `unit=` festgelegten Maßeinheit) angegeben wird. 
+Dies ist die einzige Ausnahme vom Grundsatz, dass immer die durch den Benutzer gewählte Maßeinheit bei der Festlegung von Positions- oder Größenangaben genutzt wird. Neben `Helvetica` stehen `Times`, `Courier`, `Symbol` und `ZapfDingbats` als Standardschriftarten zur Verfügung.
 
-Wir können jetzt eine Zelle mit [`cell`](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) einfügen. Eine Zelle ist ein rechteckiger
-Bereich, optional umrahmt, der Text enthält. Sie wird an der aktuellen Position gerendert. Wir können die Abmessungen, den Text (zentriert oder ausgerichtet), eine gewünschten Rahmung
-und wohin sich die aktuelle Position nach der Zelle bewegt (nach rechts,
-unten oder an den Anfang der nächsten Zeile) bestimmen. 
+Wir können jetzt eine erste Textzelle mit [`cell`](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) einfügen. Eine Zelle ist ein rechteckiger
+Bereich - optional umrahmt - der Text enthalten kann. Sie wird an der jeweils aktuellen Schreibposition gerendert. Wir können die Abmessungen der Zelle, den Text und dessen Formatierung (zentriert oder ausgerichtet), einen ggf. gewünschten Rahmen und die Festlegung der neuen Schreibposition nach dem Schreiben der Zelle (rechts, unten oder am Anfang der nächsten Zeile) bestimmen. 
 
 Um einen Rahmen hinzuzufügen, würden wir die Methode folgendermaßen einbinden:
 
@@ -74,34 +67,32 @@ Hier ein zweiseitiges Beispiel mit Kopfzeile, Fußzeile und Logo:
 {% include "../tutorial/tuto2.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
+[Erzeugtes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
 
 Dieses Beispiel verwendet die Methoden [`header`](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) und 
 [`footer`](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer), um Kopf- und Fußzeilen zu verarbeiten. Sie
-werden jeweils automatisch aufgerufen. Die Methoder 'header' direkt vor dem durch uns hinzugefügten Inhalt, die Methode 'footer' wenn die Bearbeitung einer Seite durch das Hinzufügen eienr weiteren Seite oder das Abspeichern des Dokuments abgeschlossen wird. 
-Die Methoden existieren bereits in der Klasse FPDF, sind aber leer. Daher müssen wir die Klasse erweitern und sie überschreiben.
+werden jeweils automatisch aufgerufen. Die Methode 'header' direkt nach dem Hinzugügen einer neuen Seite, die Methode 'footer' wenn die Bearbeitung einer Seite durch das Hinzufügen einer weiteren Seite oder das Abspeichern des Dokuments abgeschlossen wird. 
+Die Methoden existieren bereits in der Klasse FPDF, sind aber leer. Um sie zu nutzen, müssen wir die Klasse erweitern und sie überschreiben.
 
-Das Logo wird mit der Methode [`image`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) eingebunden, indem man seine linke obere Ecke und seine Breite angibt. 
-Die Höhe wird automatisch berechnet, um die Bildproportionen beizubehalten.
+Das Logo wird mit der Methode [`image`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) eingebunden, und auf der Seite durch die Angabe der Position der linken oberen Ecke und die gewünschte Bildbreite platziert. Die Höhe wird automatisch berechnet, um die Proportionen des Bildes zu erhalten.
 
-Um die Seitenzahl einzufügenn, wird ein Nullwert als Breite der Zelle übergeben. Das bedeutet,
+Um die Seitenzahl einzufügenn, übergeben wir zuerst der Zelle einen Nullwert als Breite der Zelle. Das bedeutet,
 dass die Zelle bis zum rechten Rand der Seite reichen soll. Das ist besonders praktisch, um
 Text zu zentrieren. Die aktuelle Seitenzahl wird durch
-die Methode [`page_no`](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) zurückgegeben.
+die Methode [`page_no`](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) ermittelt und in die Zelle geschrieben.
 Die Gesamtseitenzahl wird mit Hilfe des speziellen Platzhalterwertes `{nb}` ermittelt,
 der beim Schließen des Dokuments ersetzt wird (vorausgesetzt, du hast vorher 
 [`alias_nb_pages`](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages)) aufgerufen.
 Beachte die Verwendung der Methode [`set_y`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y), mit der du die
-Position an einer absoluten Stelle der Seite - von oben oder von
+vertikale Schreibposition an einer absoluten Stelle der Seite - von oben oder von
 unten aus - setzen kannst. 
 
 Eine weitere interessante Funktion wird hier ebenfalls verwendet: der automatische Seitenumbruch. Sobald
 eine Zelle eine festgelegte Grenze in der Seite überschreitet (standardmäßig 2 Zentimeter vom unteren Rand), wird ein 
-Umbruch durchgeführt und die Schrift auf der nächsten Seite automatisch beibehalten. Obwohl die Kopf- und
-Fußzeile ihre eigene Schriftart (`Helvetica`) wählen, wird im Textkörper `Times` verwendet.
-Dieser Mechanismus der automatischen Übernahme gilt auch für Farben und Zeilenbreite.
-Der Grenzwert, der den Seitenumbruch auslöst, kann mit 
-[`set_auto_page_break`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break) festgelegt werden .
+Seitenumbruch durchgeführt und die Einstellungen der gewahlten Schrift auf der nächsten Seite automatisch beibehalten. Obwohl die Kopf- und
+Fußzeilen ihre eigene Schriftart (`Helvetica`) wählen, wird im Textkörper `Times` verwendet.
+Dieser Mechanismus der automatischen Übernahme der Einstellungen nach Seitenumbruch gilt auch für Farben und Zeilenbreite.
+Der Grenzwert, der den Seitenumbruch auslöst, kann mit [`set_auto_page_break`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break) festgelegt werden .
 
 ## Lektion 3 - Zeilenumbrüche und Farben ##
 
@@ -116,10 +107,9 @@ Fahren wir mit einem Beispiel fort, das Absätze im Blocksatz ausgibt. Es demons
 [Jules Verne text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 Die Methode [`get_string_width`](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) ermöglicht die Bestimmung
-die Breite eines Strings in der aktuellen Schriftart. Das Beispiel nutzt sie zur Berechnung der
-Position und die Breite des Rahmens, der den Titel umgibt. Anschließend werden mit [`set_draw_color`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [`set_fill_color`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) und 
-und [`set_text_color`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color) die Farben gesetzt und die Linienstärke mit [`set_line_width`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width)
-auf 1 mm (Abweichend vom Standardwert von 0,2) festgelegt. Schließlich geben wir die Zelle aus 
+die Breite des übergebenen Textes in der aktuellen Schriftart. Das Beispiel nutzt sie zur Berechnung der
+Position und der Breite des Rahmens, der den Titel umgibt. Anschließend werden die Farben mit [`set_draw_color`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [`set_fill_color`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) und 
+und [`set_text_color`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color) gesetzt und die Linienstärke mit [`set_line_width`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width) auf 1 mm (Abweichend vom Standardwert von 0,2) festgelegt. Schließlich geben wir die Zelle aus 
 (Der letzte Parameter True zeigt an, dass der Hintergrund gefüllt werden muss).
 
 Zur Erstellung von Absätzen wir die Methode [`multi_cell`](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) genutzt.
