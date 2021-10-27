@@ -1055,32 +1055,22 @@ class FPDF:
         self.ellipse(x, y, r, r, style)
 
     @check_page
-    def reg_poly(self, x, y, n, w, d=0, style=None):
-        #x cord, y cord, num of sides, width
-        ap = w / 2  #apothem r
-        cx = x + ap #center x
-        cy = y - ap #center y
-        sl = 0
-        #center point = (cx, cy)
-
-        if (n % 2) == 0:
-            sl = (2*ap)*(math.tan(math.pi/n))
-            r = math.sqrt(math.pow(ap,2) + math.pow((sl/2),2))
-            #radius = ap^2 + (sl/2)^2
-            #solves for hypotenuse given both legs
-        else:
-            r = w / 2  #radius R
-
+    def regular_polygon(self, x, y, numSides, polyWidth, rotateDegrees=0, style=None):
+        #x cord, y cord, num of sides, width, rotation in degrees, style
+        radius = polyWidth / 2
+        centerX = x + radius
+        centerY = y - radius
+        
         points = []
         i = 1
-        while i < n+1:
-            point = cx + r*math.cos(math.radians((360/n)*i)+math.radians(d)), cy + r*math.sin(math.radians((360/n)*i)+math.radians(d))
+        while i < numSides+1:
+            point = centerX + radius*math.cos(math.radians((360/numSides)*i)+math.radians(rotateDegrees)), centerY + radius*math.sin(math.radians((360/numSides)*i)+math.radians(rotateDegrees))
             points.append(point)
             i += 1
         #gets x,y at point from center + radius
         #then rotates 360/n and repeats
         self.polygon(points, style)
-        
+
 
     def add_font(self, family, style="", fname=None, uni=False):
         """
