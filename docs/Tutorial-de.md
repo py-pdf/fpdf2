@@ -113,7 +113,7 @@ und [`set_text_color`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color) gesetzt und
 (Der letzte Parameter True zeigt an, dass der Hintergrund gefüllt werden muss).
 
 Zur Erstellung von Absätzen wir die Methode [`multi_cell`](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) genutzt.
-Jedes Mal, wenn eine Zeile den rechten Rand der Zelle erreicht oder ein Zeilenumbruchzeichen im Text erkannt wird,
+Jedes Mal, wenn eine Zeile den rechten Rand der Zelle erreicht oder ein Zeilenumbruchzeichen `\\n` im Text erkannt wird,
 wird ein Zeilenumbruch durchgeführt und automatisch eine neue Zelle unterhalb der aktuellen Zelle erstellt. 
 Der Text wird standardmäßig im Blocksatz ausgerichtet.
 
@@ -131,17 +131,17 @@ Alternativ kann man auch mit der rechten Maustaste auf das Dokument klicken und 
 {% include "../tutorial/tuto4.py" %}
 ```
 
-[Resultierendes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
+[Erzeugtes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
 
 [Jules Verne Text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 Der Hauptunterschied zur vorherigen Lektion ist die Verwendung der Methoden 
 [`accept_page_break`](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) und `set_col`.
 
-Wird [`accept_page_break`](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) verwedet, wird die aktuelle Spaltennummer überprüft, sobald 
-die Zelle die untere Grenze der Seite überschreitet. Ist die Spaltennummer kleiner als 2 (wir haben uns entschieden, die Seite in drei Spalten zu unterteilen), wird die Methode `set_col` aufgerufen. Sie erhöht die Spaltennummer auf die nächsthöhere und setzt die Position auf den Anfang der nächsten Spalte, damit der Text dort fortgesetzt werden kann.
+Wird [`accept_page_break`](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) verwendet, wird die aktuelle Spaltennummer überprüft, sobald 
+die Zelle den zur Auslösung eines Seitenumbruchs festgelegten Abstand zum unteren Seitenrand (Standard 2cm) überschreitet. Ist die Spaltennummer kleiner als 2 (wir haben uns entschieden, die Seite in drei Spalten zu unterteilen), wird die Methode `set_col` aufgerufen. Sie erhöht die Spaltennummer auf die nächsthöhere und setzt die Schreibposition auf den Anfang der nächsten Spalte, damit der Text dort fortgesetzt werden kann.
 
-Sobald die untere Grenze der dritten Spalte erreicht ist, wird durch die Methode [`accept_page_break`](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) ein Seitenumbruch ausgelöst und die aktive Spalte zurückgesetzt.
+Sobald det Text der dritten den oben beschriebenen Abstand zum Seitenende erreicht, wird durch die Methode [`accept_page_break`](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) ein Seitenumbruch ausgelöst und die aktive Spalte sowie Schreibposition zurückgesetzt.
 
 ## Lektion 5 - Tabellen erstellen ##
 
@@ -158,16 +158,16 @@ Der Code wird drei verschiedene Tabellen erstellen, um zu zeigen, welche Effekte
 
 Da eine Tabelle lediglich eine Sammlung von Zellen darstellt, ist es naheliegend, eine Tabelle aus den bereits bekannten Zellen aufzubauen.
 
-Das erste Beispiel wird auf die einfachste Art und Weise realisiert: einfach gerahmte Zellen, die alle die gleiche Größe haben und linksbündig ausgerichtet sind. Das Ergebnis ist rudimentär, aber sehr schnell zu erzielen.
+Das erste Beispiel wird auf die einfachste Art und Weise realisiert. Einfach gerahmte Zellen, die alle die gleiche Größe haben und linksbündig ausgerichtet sind. Das Ergebnis ist rudimentär, aber sehr schnell zu erzielen.
 
 Die zweite Tabelle bringt einige Verbesserungen: Jede Spalte hat ihre eigene Breite,
  die Überschriften sind zentriert und die Zahlen rechtsbündig ausgerichtet. Außerdem wurden die horizontalen Linien
  entfernt. Dies geschieht mit Hilfe des Randparameters der Methode `cell()`, der angibt, welche Seiten der Zelle gezeichnet werden müssen. 
  Im Beispiel wählen wir die linke (L) und die rechte (R) Seite. Jetzt muss nur noch das Problem der horizontalen Linie
- zum Abschluss der Tabelle gelöst werden. Es gibt zwei Möglichkeiten, es zu lösen: In der Schleife prüfen, ob wir uns in der letzten Zeile befinden und den border Parameter als "LRB" übergeben oder, wie hier geschehen, die abschließende Zeile separat nach dem Durchlaufen der Schleife einfügen.
+ zum Abschluss der Tabelle gelöst werden. Es gibt zwei Möglichkeiten, es zu lösen: In der Schleife prüfen, ob wir uns in der letzten Zeile befinden und dann "LRB" als Rahmenparameter übergeben oder, wie hier geschehen, eine abschließende Zelle separat nach dem Durchlaufen der Schleife einfügen.
 
 Die dritte Tabelle der zweiten sehr ähnlich, verwendet aber zusätzlich Farben. Füllung, Text und
- Linienfarben werden einfach mit den entsprechenden Methoden gesetzt. Eine wechselnde Färbung der Zeilen kann durch die abwechselnde Verwendung transparenter und gefüllter Zellen erreicht werden.
+ Linienfarben werden einfach mit den entsprechenden Methoden gesetzt. Eine wechselnde Färbung der Zeilen wird durch die abwechselnde Verwendung transparenter und gefüllter Zellen erreicht.
 
 ## Lektiono 6 - Links erstellen und Textstile mischen ##
 
@@ -190,19 +190,19 @@ Die hier gezeigte neue Methode zur Einbindung von Text lautet
  Rand.
 - Die aktuelle Position wird an das Textende gesetzt.
 
-Die Methode ermöglicht es uns somit, zuerst einen Textabschnitt zu schreiben, dann den Schriftstil zu ändern,
- und genau an der Stelle fortzufahren, an der wir aufgehört haben.
-Der größte Nachteil ist jedoch, dass die von [`multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) bekannte Möglichkeit zur Festlegung der Textausrixhtung fehlt.
+Die Methode ermöglicht es uns somit, zuerst einen Textabschnitt zu schreiben, dann den Schriftstil zu ändern
+und genau an der Stelle fortzufahren, an der wir aufgehört haben.
+Der größte Nachteil ist jedoch, dass die von [`multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) bekannte Möglichkeit zur Festlegung der Textausrichtung fehlt.
 
-Auf der ersten Seite des Beispiels haben wir hierfür [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
-eingesetzt. Der Anfang des Satzes wird in "normalem" Stil geschrieben, dann mit der Methode
- [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) auf Unterstreichung umgestellt und der Satz beendet.
+Auf der ersten Seite des Beispiels nutzen wir [`write()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write).
+Der Anfang des Satzes wird in "normalem" Stil geschrieben, dann mit der Methode
+ [`set_font()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) auf Unterstreichung umgestellt und der Satz beendet.
 
 Um einen internen Link hinzuzufügen, der auf die zweite Seite verweist, nutzen wir die Methode
  [`add_link()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link), die einen anklickbaren Bereich erzeugt, 
  den wir "link" nennen und der auf eine andere Stelle innerhalb des Dokuments verweist. Auf der zweiten Seite verwenden wir
  [`set_link()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link), um den Zielbereich für den soeben erstellten Link zu definieren.
 
-Um einen externen Link mit Hilfe eines Bildes zu erstellen, verwenden wir [`image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). Es besteht die Möglichkeit der Methode, ein Linkziel als eines ihrer Argumente zu übergeben. Der Link kann sowohl einer interner als auch ein externer sein.
+Um einen externen Link mit Hilfe eines Bildes zu erstellen, verwenden wir [`image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). Es besteht die Möglichkeit, der Methode ein Linkziel als eines ihrer Argumente zu übergeben. Der Link kann sowohl einer interner als auch ein externer sein.
 
 Eine weitere Möglichkeit, den Schriftstil zu ändern und Links hinzuzufügen, stellt die Verwendung der Methode `write_html()` dar. Sie ist ein HTML-Parser, der das Hinzufügen von Text, Änderung des Schriftstils und Erstellen von Links mittels HTML ermöglicht.
