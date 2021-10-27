@@ -5,6 +5,10 @@ Versión en español: [Tutorial-es](Tutorial-es.md)
 Русская версия: [Tutorial-ru](Tutorial-ru.md)
 
 हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
+Русская версия: [Tutorial-ru](Tutorial-ru.md)
+
+
+Русская версия: [Tutorial-ru](Tutorial-ru.md)
 
 Русская версия: [Tutorial-ru](Tutorial-ru.md)
 

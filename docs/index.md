@@ -50,6 +50,7 @@ FPDF original features:
 * [English](https://pyfpdf.github.io/fpdf2/Tutorial.html)
 * [Spanish](https://pyfpdf.github.io/fpdf2/Tutorial-es.html)
 * [हिंदी](https://pyfpdf.github.io/fpdf2/Tutorial-हिंदी.html)
+* [Русский](https://pyfpdf.github.io/fpdf2/Tutorial-ru.html)
 
 ## Installation ##
 
