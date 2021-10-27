@@ -1,5 +1,11 @@
 # Kurzanleitung #
 
+English version: [Tutorial](Tutorial.md)
+
+Versión en español: [Tutorial-es](Tutorial-es.md)
+
+हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
+
 Vollständige Dokumentation der Methoden: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
@@ -153,7 +159,7 @@ Der Code wird drei verschiedene Tabellen erstellen, um zu zeigen, welche Effekte
 {% include "../tutorial/tuto5.py" %}
 ```
 
-[Resultierendes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
+[Erzeugtes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
 [Länder](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
 
 Da eine Tabelle lediglich eine Sammlung von Zellen darstellt, ist es naheliegend, eine Tabelle aus den bereits bekannten Zellen aufzubauen.
@@ -169,7 +175,7 @@ Die zweite Tabelle bringt einige Verbesserungen: Jede Spalte hat ihre eigene Bre
 Die dritte Tabelle der zweiten sehr ähnlich, verwendet aber zusätzlich Farben. Füllung, Text und
  Linienfarben werden einfach mit den entsprechenden Methoden gesetzt. Eine wechselnde Färbung der Zeilen wird durch die abwechselnde Verwendung transparenter und gefüllter Zellen erreicht.
 
-## Lektiono 6 - Links erstellen und Textstile mischen ##
+## Lektion 6 - Links erstellen und Textstile mischen ##
 
 In dieser Lektion werden verschiedene Möglichkeiten der Erstellung interner und externer Links beschrieben.
 
@@ -179,7 +185,7 @@ Es wird auch gezeigt, wie man verschiedene Textstile (fett, kursiv, unterstriche
 {% include "../tutorial/tuto6.py" %}
 ```
 
-[Resultierendes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
+[Erzeugtes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
 [fpdf2-logo](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
 
 Die hier gezeigte neue Methode zur Einbindung von Text lautet
