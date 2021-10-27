@@ -1,8 +1,4 @@
-# Anleitung #
-
-Versión en español: [Tutorial-es](Tutorial-es.md)
-
-हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
+# Kurzanleitung #
 
 Vollständige Dokumentation der Methoden: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
@@ -139,7 +135,7 @@ Alternativ kann man auch mit der rechten Maustaste auf das Dokument klicken und 
 
 ## Lektion 4 - Mehrspaltiger Text ##
 
- Dieses Beispiel ist eine Abwandlung des vorherigen Beispiels und zeigt, wie man Text über mehrere Spalten verteilen kann.
+ Dieses Beispiel ist eine Abwandlung des vorherigen Beispiels und zeigt, wie sich Text über mehrere Spalten verteilen lässt.
 
 ```python
 {% include "../tutorial/tuto4.py" %}
@@ -183,60 +179,40 @@ Die zweite Tabelle bringt einige Verbesserungen: Jede Spalte hat ihre eigene Bre
 Die dritte Tabelle der zweiten sehr ähnlich, verwendet aber zusätzlich Farben. Füllung, Text und
  Linienfarben werden einfach mit den entsprechenden Methoden gesetzt. Eine wechselnde Färbung der Zeilen kann durch die abwechselnde Verwendung transparenter und gefüllter Zellen erreicht werden.
 
+## Lektiono 6 - Links erstellen und Textstile mischen ##
 
+In dieser Lektion werden verschiedene Möglichkeiten der Erstellung interner und externer Links beschrieben.
 
-## Tuto 6 - Creating links and mixing text styles ##
-
-This tutorial will explain several ways to insert links inside a pdf document,
- as well as adding links to external sources.
-
- It will also show several ways we can use different text styles,
- (bold, italic, underline) within the same text.
+Es wird auch gezeigt, wie man verschiedene Textstile (fett, kursiv, unterstrichen) innerhalb eines Textes verwenden kann.
 
 ```python
 {% include "../tutorial/tuto6.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
+[Resultierendes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
 [fpdf2-logo](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
 
-The new method shown here to print text is
- [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
-. It is very similar to
- [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
- , the key differences being:
+Die hier gezeigte neue Methode zur Einbindung von Text lautet
+ [`write()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). Sie ähnelt der bereits bekannten
+ [`multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). Die wichtigsten Unterschiede sind:
 
-- The end of line is at the right margin and the next line begins at the left
- margin.
-- The current position moves to the end of the text.
+- Das Ende der Zeile befindet sich am rechten Rand und die nächste Zeile beginnt am linken
+ Rand.
+- Die aktuelle Position wird an das Textende gesetzt.
 
-The method therefore allows us to write a chunk of text, alter the font style,
- and continue from the exact place we left off.
-On the other hand, its main drawback is that we cannot justify the text like
- we do with the
- [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
- method.
+Die Methode ermöglicht es uns somit, zuerst einen Textabschnitt zu schreiben, dann den Schriftstil zu ändern,
+ und genau an der Stelle fortzufahren, an der wir aufgehört haben.
+Der größte Nachteil ist jedoch, dass die von [`multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) bekannte Möglichkeit zur Festlegung der Textausrixhtung fehlt.
 
-In the first page of the example, we used
- [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
- for this purpose. The beginning of the sentence is written in regular style
- text, then using the
- [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font)
- method, we switched to underline and finished the sentence.
+Auf der ersten Seite des Beispiels haben wir hierfür [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
+eingesetzt. Der Anfang des Satzes wird in "normalem" Stil geschrieben, dann mit der Methode
+ [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) auf Unterstreichung umgestellt und der Satz beendet.
 
-To add an internal link pointing to the second page, we used the
- [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link)
- method, whch creates a clickable area which we named "link" that directs to
- another place within the document. On the second page, we used
- [set_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link)
- to define the destination area for the link we just created.
+Um einen internen Link hinzuzufügen, der auf die zweite Seite verweist, nutzen wir die Methode
+ [`add_link()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link), die einen anklickbaren Bereich erzeugt, 
+ den wir "link" nennen und der auf eine andere Stelle innerhalb des Dokuments verweist. Auf der zweiten Seite verwenden wir
+ [`set_link()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link), um den Zielbereich für den soeben erstellten Link zu definieren.
 
-To create the external link using an image, we used
- [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
-. The method has the
- option to pass a link as one of its arguments. The link can be both internal
- or external.
+Um einen externen Link mit Hilfe eines Bildes zu erstellen, verwenden wir [`image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). Es besteht die Möglichkeit der Methode, ein Linkziel als eines ihrer Argumente zu übergeben. Der Link kann sowohl einer interner als auch ein externer sein.
 
-As an alternative, another option to change the font style and add links is to
- use the `write_html()` method. It is an html parser, which allows adding text,
- changing font style and adding links using html.
+Eine weitere Möglichkeit, den Schriftstil zu ändern und Links hinzuzufügen, stellt die Verwendung der Methode `write_html()` dar. Sie ist ein HTML-Parser, der das Hinzufügen von Text, Änderung des Schriftstils und Erstellen von Links mittels HTML ermöglicht.
