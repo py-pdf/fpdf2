@@ -81,7 +81,7 @@ Documentation:
 --------------
 
 - [Documentation Home](https://pyfpdf.github.io/fpdf2/)
-- Tutorial in several languages: [English](https://pyfpdf.github.io/fpdf2/Tutorial.html) - [Spanish](https://pyfpdf.github.io/fpdf2/Tutorial-es.html) - [हिंदी](https://pyfpdf.github.io/fpdf2/Tutorial-हिंदी.html)
+- Tutorial in several languages: [English](https://pyfpdf.github.io/fpdf2/Tutorial.html) - [Deutsche](https://pyfpdf.github.io/fpdf2/Tutorial-de.html) - [Spanish](https://pyfpdf.github.io/fpdf2/Tutorial-es.html) - [हिंदी](https://pyfpdf.github.io/fpdf2/Tutorial-हिंदी.html)
 - Release notes: [CHANGELOG.md](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)
 
 You can also have a look at the `tests/`, they're great usage examples!
@@ -146,7 +146,8 @@ This library could only exist thanks to the dedication of many volunteers around
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/tabarnhack"><img src="https://avatars.githubusercontent.com/u/34366899?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Tabarnhack</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=tabarnhack" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/Mridulbirla13"><img src="https://avatars.githubusercontent.com/u/24730417?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Mridul Birla</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=Mridulbirla13" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/Mridulbirla13"><img src="https://avatars.githubusercontent.com/u/24730417?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Mridul Birla</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=Mridulbirla13" title="Translation">🌍</a></td>
+    <td align="center"><a href="https://github.com/digidigital"><img src="https://avatars.githubusercontent.com/u/28964886?v=4?s=100" width="100px;" alt=""/><br /><sub><b>digidigital</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=digidigital" title="Translation">🌍</a></td>
   </tr>
 </table>
 

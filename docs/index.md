@@ -48,6 +48,7 @@ FPDF original features:
 ## Tutorials ##
 
 * [English](https://pyfpdf.github.io/fpdf2/Tutorial.html)
+* [Deutsche](https://pyfpdf.github.io/fpdf2/Tutorial-de.html)
 * [Spanish](https://pyfpdf.github.io/fpdf2/Tutorial-es.html)
 * [हिंदी](https://pyfpdf.github.io/fpdf2/Tutorial-हिंदी.html)
 
