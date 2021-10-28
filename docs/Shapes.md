@@ -71,3 +71,29 @@ coords = ((100, 0), (5, 69), (41, 181), (159, 181), (195, 69))
 pdf.polygon(coords, fill=True)
 pdf.output("polygon.pdf")
 ```
+
+## Arc ##
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_line_width(2)
+pdf.set_fill_color(r=255, g=0, b=0)
+pdf.arc(x=75, y=75, a=25, b=25, start_angle=30, end_angle=130, style="FD")
+pdf.output("arc.pdf")
+```
+
+## Solid arc ##
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_line_width(2)
+pdf.set_fill_color(r=255, g=0, b=0)
+pdf.solid_arc(x=75, y=75, a=25, b=25, start_angle=30, end_angle=130, style="FD")
+pdf.output("solid_arc.pdf")
+```
