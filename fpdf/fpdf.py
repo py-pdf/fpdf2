@@ -2135,11 +2135,25 @@ class FPDF:
         if ws > 0:
             self.ws = 0
             self._out("0 Tw")
-        self.add_page(same=True)
+        self._break_or_add_page()
         self.x = x  # restore x but not y after drawing header
         if ws > 0:
             self.ws = ws
             self._out(f"{ws * self.k:.3f} Tw")
+
+    def _break_or_add_page(self):
+        """
+        This method is useful when it is necessary to go back to the first page,
+        for example: in a document containing two or more columns
+        """
+        if self._has_next_page():
+            self.page += 1
+        else:
+            self.add_page()
+            self.add_page(same=True)
+
+    def _has_next_page(self):
+        return self.page_no() > self.page
 
     @check_page
     def multi_cell(
