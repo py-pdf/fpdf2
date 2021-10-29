@@ -2143,8 +2143,8 @@ class FPDF:
 
     def _break_or_add_page(self):
         """
-        This method is useful when it is necessary to go back to the first page,
-        for example: in a document containing two or more columns
+        This method is useful when it is necessary to go to the next page
+        instead of creating a new one
         """
         if self._has_next_page():
             self.page += 1
