@@ -4,6 +4,8 @@ English: [Tutorial](Tutorial.md)
 
 हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
 
+Versione in italiano: [Tutorial-it](Tutorial-it.md)
+
 [TOC]
 
 ## Ejemplo básico ##

@@ -6,6 +6,8 @@ Versión en español: [Tutorial-es](Tutorial-es.md)
 
 हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
 
+Versione in italiano: [Tutorial-it](Tutorial-it.md)
+
 Vollständige Dokumentation der Methoden: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
