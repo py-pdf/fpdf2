@@ -2149,7 +2149,6 @@ class FPDF:
         if self._has_next_page():
             self.page += 1
         else:
-            self.add_page()
             self.add_page(same=True)
 
     def _has_next_page(self):
