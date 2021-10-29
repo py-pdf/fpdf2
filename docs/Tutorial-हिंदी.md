@@ -1,6 +1,8 @@
 विभिन्न उदाहरण जल्दी से दिखाते हैं कि fpdf2 का उपयोग कैसे करें। आपको सभी मुख्य विशेषताओं की व्याख्या मिल जाएगी।
 
-English: [Tutorial](Tutorial.md)
+English version: [Tutorial](Tutorial.md)
+
+Deutsche Version: [Tutorial-de](Tutorial-de.md)
 
 Versión en español: [Tutorial-es](Tutorial-es.md)
 
