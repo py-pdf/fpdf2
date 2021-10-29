@@ -385,6 +385,15 @@
       "contributions": [
         "translation"
       ]
+    },
+    {
+      "login": "xit4",
+      "name": "Xit",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7601720?v=4",
+      "profile": "https://github.com/xit4",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
