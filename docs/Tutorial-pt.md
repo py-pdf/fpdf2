@@ -98,7 +98,7 @@ Vamos continuar com um exemplo que imprime parágrafos justificados e o uso de c
 
 [PDF resultante](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)
 
-[Jules Verne text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+[Texto de Júlio Verne](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 O método [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) permite determinar o comprimento de uma string na fonte atual, e que é usada aqui para calcular a posição e a largura do quadro ao redor do título. Em seguida, as cores são definidas (via [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [set_fill_color] (fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) e [set_text_color] (fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) e a espessura da linha é definida como 1 mm (contra 0,2 por padrão) com [set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Finalmente, produzimos a célula (se o último parâmetro for verdadeiro, indica que o plano de fundo deve ser preenchido).
 
@@ -122,7 +122,7 @@ Este exemplo é uma variante do anterior, mostrando como colocar o texto em vár
 
 [PDF resultante](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
 
-[Texto de Júlio Verne] (https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+[Texto de Júlio Verne](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 A principal diferença em relação ao tutorial anterior é o uso do [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) e os métodos set_col.
 
