@@ -116,9 +116,9 @@ O segundo, também disponível no plug-in, é clicar com o botão direito e sele
 
 Este exemplo é uma variante do anterior, mostrando como colocar o texto em várias colunas.
 
-`` `python
+```python
 {% include "../tutorial/tuto4.py"%}
-`` `
+```
 
 [PDF resultante](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
 
@@ -137,9 +137,9 @@ Este tutorial irá explicar como criar tabelas facilmente.
 
 O código seguinte cria três tabelas diferentes para explicar o que pode ser alcançado com alguns ajustes simples.
 
-`` `python
+```python
 {% include "../tutorial/tuto5.py"%}
-`` `
+```
 
 [PDF resultante](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
 [Texto dos países] (https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
