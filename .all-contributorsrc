@@ -403,6 +403,15 @@
       "contributions": [
         "translation"
       ]
+    },
+    {
+      "login": "fuscati",
+      "name": "André Assunção",
+      "avatar_url": "https://avatars.githubusercontent.com/u/48717599?v=4",
+      "profile": "https://github.com/fuscati",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
