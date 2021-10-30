@@ -20,9 +20,9 @@ Vamos começar com um exemplo clássico:
 {% include "../tutorial/tuto1.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
+[PDF resultante](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
 
-Após incluirmos o ficheiro da biblioteca, criamos um objeto `FPDF. O
+Após incluirmos o ficheiro da biblioteca, criamos um objeto `FPDF`. O
 [FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF) construtor é construído com os seguintes parâmetros por omissão: 
 Páginas são em formato A4 vertical e a unidade de medida é o milímetro.
 Pode ser especificado explicitamente através de:
@@ -73,7 +73,7 @@ Aqui temos um exemplo de duas páginas com cabeçalho, rodapé e logótipo:
 {% include "../tutorial/tuto2.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
+[PDF resultante](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
 
 Este exemplo usa os [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) e o [footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) para processar cabeçalhos e rodapés de página. Estes são chamados automaticamente. Eles já existem na classe FPDF, mas não fazem nada, portanto, temos que os estender a classe e substituí-los.
 
@@ -96,7 +96,7 @@ Vamos continuar com um exemplo que imprime parágrafos justificados e o uso de c
 {% include "../tutorial/tuto3.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)
+[PDF resultante](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)
 
 [Jules Verne text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
@@ -120,7 +120,7 @@ Este exemplo é uma variante do anterior, mostrando como colocar o texto em vár
 {% include "../tutorial/tuto4.py"%}
 `` `
 
-[PDF resultante] (https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
+[PDF resultante](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
 
 [Texto de Júlio Verne] (https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
@@ -141,7 +141,7 @@ O código seguinte cria três tabelas diferentes para explicar o que pode ser al
 {% include "../tutorial/tuto5.py"%}
 `` `
 
-[PDF resultante] (https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
+[PDF resultante](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
 [Texto dos países] (https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
 
 Uma vez que uma tabela é apenas uma coleção de células, é natural construir uma
@@ -165,7 +165,7 @@ Também mostrará várias maneiras de usar diferentes estilos de texto, (negrito
 {% include "../tutorial/tuto6.py"%}
 `` `
 
-[PDF resultante] (https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
+[PDF resultante](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
 [fpdf2-logo] (https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
 
 
