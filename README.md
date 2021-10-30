@@ -149,6 +149,7 @@ This library could only exist thanks to the dedication of many volunteers around
     <td align="center"><a href="https://github.com/Mridulbirla13"><img src="https://avatars.githubusercontent.com/u/24730417?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Mridul Birla</b></sub></a><br /><a href="#translation-Mridulbirla13" title="Translation">🌍</a></td>
     <td align="center"><a href="https://github.com/digidigital"><img src="https://avatars.githubusercontent.com/u/28964886?v=4?s=100" width="100px;" alt=""/><br /><sub><b>digidigital</b></sub></a><br /><a href="#translation-digidigital" title="Translation">🌍</a></td>
     <td align="center"><a href="https://github.com/xit4"><img src="https://avatars.githubusercontent.com/u/7601720?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Xit</b></sub></a><br /><a href="#translation-xit4" title="Translation">🌍</a></td>
+    <td align="center"><a href="https://github.com/AABur"><img src="https://avatars.githubusercontent.com/u/41373199?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Alexander Burchenko</b></sub></a><br /><a href="#translation-AABur" title="Translation">🌍</a></td>
   </tr>
 </table>
 
