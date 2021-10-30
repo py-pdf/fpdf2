@@ -8,6 +8,8 @@ Versión en español: [Tutorial-es](Tutorial-es.md)
 
 Versione in italiano: [Tutorial-it](Tutorial-it.md)
 
+Versão em português: [Tutorial-pt](Tutorial-pt.md)
+
 Methods full documentation: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
