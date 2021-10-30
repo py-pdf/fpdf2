@@ -161,9 +161,9 @@ Este tutorial irá explicar várias maneiras de inserir links dentro de um docum
 
 Também mostrará várias maneiras de usar diferentes estilos de texto, (negrito, itálico, sublinhado) no mesmo texto.
 
-`` `python
+```python
 {% include "../tutorial/tuto6.py"%}
-`` `
+```
 
 [PDF resultante](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
 [fpdf2-logo] (https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
