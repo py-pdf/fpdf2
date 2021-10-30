@@ -100,7 +100,7 @@ Vamos continuar com um exemplo que imprime parágrafos justificados e o uso de c
 
 [Texto de Júlio Verne](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-O método [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) permite determinar o comprimento de uma string na fonte atual, e que é usada aqui para calcular a posição e a largura do quadro ao redor do título. Em seguida, as cores são definidas (via [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [set_fill_color] (fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) e [set_text_color] (fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) e a espessura da linha é definida como 1 mm (contra 0,2 por padrão) com [set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Finalmente, produzimos a célula (se o último parâmetro for verdadeiro, indica que o plano de fundo deve ser preenchido).
+O método [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) permite determinar o comprimento de uma string na fonte atual, e que é usada aqui para calcular a posição e a largura do quadro ao redor do título. Em seguida, as cores são definidas (via [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) e [set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) e a espessura da linha é definida como 1 mm (contra 0,2 por padrão) com [set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Finalmente, produzimos a célula (se o último parâmetro for verdadeiro, indica que o plano de fundo deve ser preenchido).
 
 O método usado para imprimir os parágrafos é [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell).
 Cada vez que uma linha atinge a extremidade direita da célula ou um código de fim de linha é encontrado, uma quebra de linha é emitida e uma nova célula é criada automaticamente sob a atual. O texto é justificado por padrão.
@@ -126,7 +126,7 @@ Este exemplo é uma variante do anterior, mostrando como colocar o texto em vár
 
 A principal diferença em relação ao tutorial anterior é o uso do [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) e os métodos set_col.
 
-Usando o método [accept_page_break] (fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break), quando a célula ultrapassar o limite inferior da página, ela verificará o número da coluna atual. Se isso for menor que 2 (optamos por dividir a página em três colunas), chamando o método set_col, aumentando o número da coluna e alterando a posição da próxima coluna para que o texto continue aí.
+Usando o método [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break), quando a célula ultrapassar o limite inferior da página, ela verificará o número da coluna atual. Se isso for menor que 2 (optamos por dividir a página em três colunas), chamando o método set_col, aumentando o número da coluna e alterando a posição da próxima coluna para que o texto continue aí.
 
 Quando o limite inferior da terceira coluna é alcançado, o método [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) será redefinido e vai voltar para a primeira coluna e adicionar uma quebra de página.
 
@@ -142,7 +142,7 @@ O código seguinte cria três tabelas diferentes para explicar o que pode ser al
 ```
 
 [PDF resultante](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
-[Texto dos países] (https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
+[Texto dos países](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
 
 Uma vez que uma tabela é apenas uma coleção de células, é natural construir uma
 a partir delas.
@@ -166,11 +166,11 @@ Também mostrará várias maneiras de usar diferentes estilos de texto, (negrito
 ```
 
 [PDF resultante](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo] (https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
 
 
 
-O novo método mostrado aqui para imprimir texto é [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). É muito parecido com [multi_cell ()] (https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell), sendo as principais diferenças:
+O novo método mostrado aqui para imprimir texto é [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). É muito parecido com [multi_cell ()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell), sendo as principais diferenças:
 
 - O fim da linha está na margem direita e a próxima linha começa na 
   margem esquerda.
