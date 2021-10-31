@@ -307,7 +307,6 @@ class FlexTemplate:
 
     def _text(
         self,
-        rotations,
         *_,
         x1=0,
         y1=0,
@@ -351,64 +350,20 @@ class FlexTemplate:
         if underline:
             style += "U"
         pdf.set_font(font, style, size * scale)
+        pdf.set_xy(x1, y1)
         width, height = x2 - x1, y2 - y1
-        rotate = __.get("rotate")
-        if rotate:
-            rotations.append((rotate, x1, y2))
         if multiline is None:  # write without wrapping/trimming (default)
-            self._render_rotated(
-                (x1, y1),
-                pdf.cell,
-                (),
-                {
-                    "w": width,
-                    "h": height,
-                    "txt": text,
-                    "border": 0,
-                    "ln": 0,
-                    "align": align,
-                    "fill": fill,
-                },
-                rotations,
-            )
+            pdf.cell(w=width, h=height, txt=text, border=0, ln=0, align=align, fill=fill)
         elif multiline:  # automatic word - warp
-            self._render_rotated(
-                (x1, y1),
-                pdf.multi_cell,
-                (),
-                {
-                    "w": width,
-                    "h": height,
-                    "txt": text,
-                    "border": 0,
-                    "align": align,
-                    "fill": fill,
-                },
-                rotations,
-            )
+            pdf.multi_cell(w=width, h=height, txt=text, border=0, align=align, fill=fill)
         else:  # trim to fit exactly the space defined
             text = pdf.multi_cell(
                 w=width, h=height, txt=text, align=align, split_only=True
             )[0]
-            self._render_rotated(
-                (x1, y1),
-                pdf.cell,
-                (),
-                {
-                    "w": width,
-                    "h": height,
-                    "txt": text,
-                    "border": 0,
-                    "ln": 0,
-                    "align": align,
-                    "fill": fill,
-                },
-                rotations,
-            )
+            pdf.cell(w=width, h=height, txt=text, border=0, ln=0, align=align, fill=fill)
 
     def _line(
         self,
-        rotations,
         *_,
         x1=0,
         y1=0,
@@ -419,18 +374,13 @@ class FlexTemplate:
         foreground=0,
         **__,
     ):
-        pdf = self.pdf
-        if pdf.draw_color.lower() != _rgb_as_str(foreground):
-            pdf.set_draw_color(*_rgb(foreground))
-        pdf.set_line_width(size * scale)
-        rotate = __.get("rotate")
-        if rotate:
-            rotations.append((rotate, x1, y2))
-        self._render_rotated(None, pdf.line, (x1, y1, x2, y2), {}, rotations)
+        if self.pdf.draw_color.lower() != _rgb_as_str(foreground):
+            self.pdf.set_draw_color(*_rgb(foreground))
+        self.pdf.set_line_width(size * scale)
+        self.pdf.line(x1, y1, x2, y2)
 
     def _rect(
         self,
-        rotations,
         *_,
         x1=0,
         y1=0,
@@ -452,16 +402,10 @@ class FlexTemplate:
             if pdf.fill_color != _rgb_as_str(background):
                 pdf.set_fill_color(*_rgb(background))
         pdf.set_line_width(size * scale)
-        rotate = __.get("rotate")
-        if rotate:
-            rotations.append((rotate, x1, y2))
-        self._render_rotated(
-            None, pdf.rect, (x1, y1, x2 - x1, y2 - y1), {"style": style}, rotations
-        )
+        pdf.rect(x1, y1, x2 - x1, y2 - y1, style=style)
 
     def _ellipse(
         self,
-        rotations,
         *_,
         x1=0,
         y1=0,
@@ -483,29 +427,14 @@ class FlexTemplate:
             if pdf.fill_color != _rgb_as_str(background):
                 pdf.set_fill_color(*_rgb(background))
         pdf.set_line_width(size * scale)
-        rotate = __.get("rotate")
-        if rotate:
-            rotations.append((rotate, x1, y2))
-        self._render_rotated(
-            None, pdf.ellipse, (x1, y1, x2 - x1, y2 - y1), {"style": style}, rotations
-        )
+        pdf.ellipse(x1, y1, x2 - x1, y2 - y1, style=style)
 
-    def _image(self, rotations, *_, x1=0, y1=0, x2=0, y2=0, text="", **__):
+    def _image(self, *_, x1=0, y1=0, x2=0, y2=0, text="", **__):
         if text:
-            rotate = __.get("rotate")
-            if rotate:
-                rotations.append((rotate, x1, y2))
-            self._render_rotated(
-                None,
-                self.pdf.image,
-                (text, x1, y1),
-                {"w": x2 - x1, "h": y2 - y1, "link": ""},
-                rotations,
-            )
+            self.pdf.image(text, x1, y1, w=x2 - x1, h=y2 - y1, link="")
 
     def _barcode(
         self,
-        rotations,
         *_,
         x1=0,
         y1=0,
@@ -524,20 +453,10 @@ class FlexTemplate:
             pdf.set_fill_color(*_rgb(foreground))
         font = font.lower().strip()
         if font == "interleaved 2of5 nt":
-            rotate = __.get("rotate")
-            if rotate:
-                rotations.append((rotate, x1, y2))
-            self._render_rotated(
-                None,
-                pdf.interleaved2of5,
-                (text, x1, y1),
-                {"w": size * scale, "h": y2 - y1},
-                rotations,
-            )
+            pdf.interleaved2of5(text, x1, y1, w=size * scale, h=y2 - y1)
 
     def _code39(
         self,
-        rotations,
         *_,
         x1=0,
         y1=0,
@@ -563,18 +482,12 @@ class FlexTemplate:
         h = y2 - y1
         if h <= 0:
             h = 5
-        rotate = __.get("rotate")
-        if rotate:
-            rotations.append((rotate, x1, y2))
-        self._render_rotated(
-            None, pdf.code39, (text, x1, y1, size * scale, h), {}, rotations
-        )
+        pdf.code39(text, x1, y1, size * scale, h)
 
     # Added by Derek Schwalenberg Schwalenberg1013@gmail.com to allow (url) links in
     # templates (using write method) 2014-02-22
     def _write(
         self,
-        rotations,
         *_,
         x1=0,
         y1=0,
@@ -610,26 +523,8 @@ class FlexTemplate:
         if underline:
             style += "U"
         pdf.set_font(font, style, size * scale)
-        rotate = __.get("rotate")
-        if rotate:
-            rotations.append((rotate, x1, y2))
-        self._render_rotated((x1, y1), pdf.write, (5, text, link), {}, rotations)
-
-    def _render_rotated(self, pos, func, args, kwargs, rotations):
-        # Solves issue 226
-        # Settings operations (fonts, colors, line widths etc.) must not appear
-        # within a rotation context.
-        # The solution is to queue up rotations and execute them all in one go
-        # once everything else has been set up.
-        # Technically, we could keep rotating until we're dizzy (up to Pythons
-        # recursion limit), but in practise we take two turns at most.
-        if rotations:
-            with self.pdf.rotation(*(rotations[0])):
-                self._render_rotated(pos, func, args, kwargs, rotations[1:])
-        else:
-            if pos:
-                self.pdf.set_xy(*pos)
-            func(*args, **kwargs)
+        pdf.set_xy(x1, y1)
+        pdf.write(5, text, link)
 
     def render(self, offsetx=0.0, offsety=0.0, rotate=0.0, scale=1.0):
         """
@@ -664,12 +559,18 @@ class FlexTemplate:
             ele["scale"] = scale
             handler_name = ele["type"].upper()
             if rotate:  # don't rotate by 0.0 degrees
-                rotations = [
-                    (rotate, offsetx, offsety),
-                ]
-                self.handlers[handler_name](rotations, **ele)
+                with self.pdf.rotation(rotate, offsetx, offsety):
+                    if "rotate" in ele and ele['rotate']:
+                        with self.pdf.rotation(ele["rotate"], ele["x1"], ele["y1"]):
+                            self.handlers[handler_name](**ele)
+                    else:
+                        self.handlers[handler_name](**ele)
             else:
-                self.handlers[handler_name]([], **ele)
+                if "rotate" in ele and ele['rotate']:
+                    with self.pdf.rotation(ele["rotate"], ele["x1"], ele["y1"]):
+                        self.handlers[handler_name](**ele)
+                else:
+                    self.handlers[handler_name](**ele)
         self.texts = {}  # reset modified entries for the next page
 
 
