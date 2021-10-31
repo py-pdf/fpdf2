@@ -58,42 +58,14 @@ Enfin, le document est sauvegardé à l'endroit spécifié en utilisant [output]
 
 ## Tuto 2 - En-tête, bas de page, saut de page et image ##
 
-Voici un exemple contenant deux pages avec un en-tête, un bad de page et un logo :
+Voici un exemple contenant deux pages avec un en-tête, un bas de page et un logo :
 
 ```python
 {% include "../tutorial/tuto2.py" %}
 ```
 
 [PDF généré](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
-
-This example makes use of the [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) and 
-[footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) methods to process page headers and footers. They
-are called automatically. They already exist in the FPDF class but do nothing,
-therefore we have to extend the class and override them.
-
-The logo is printed with the [image](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method by specifying
-its upper-left corner and its width. The height is calculated automatically to
-respect the image proportions.
-
-To print the page number, a null value is passed as the cell width. It means
-that the cell should extend up to the right margin of the page; it is handy to
-center text. The current page number is returned by
-the [page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) method; as for
-the total number of pages, it is obtained by means of the special value `{nb}`
-which will be substituted on document closure (provided you first called 
-[alias_nb_pages](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages)).
-Note the use of the [set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) method which allows to set
-position at an absolute location in the page, starting from the top or the
-bottom.
-
-Another interesting feature is used here: the automatic page breaking. As soon
-as a cell would cross a limit in the page (at 2 centimeters from the bottom by
-default), a break is performed and the font restored. Although the header and
-footer select their own font (`helvetica`), the body continues with `Times`.
-This mechanism of automatic restoration also applies to colors and line width.
-The limit which triggers page breaks can be set with 
-[set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
-
+En cours de traduction.
 
 ## Tuto 3 - Sauts de ligne et couleurs ##
 En cours de traduction.
