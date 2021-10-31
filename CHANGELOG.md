@@ -10,8 +10,12 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 ## [2.4.6] - not released yet
 ### Added
 - Temporary changes to graphics state variables are now possible by `with FPDF.local_context():`, thanks to @gmischler
+- a mechanism to detect & downscale oversized images,
+  _cf._ [documentation](https://pyfpdf.github.io/fpdf2/Images.html#oversized-images-detection-downscaling).
+  [Feedbacks](https://github.com/PyFPDF/fpdf2/discussions) on this new feature are welcome!
 - New `set_dash_pattern()`, which works with all lines and curves, thanks to @gmischler.
 - Templates now support drawing ellipses, thanks to @gmischler
+- New documentation on how to display equations, using Google Charts or `matplotlib`: [Maths](https://pyfpdf.github.io/fpdf2/Maths.html)
 - New sections have been added to [the tutorial](https://pyfpdf.github.io/fpdf2/Tutorial.html), thanks to @portfedh:
 
     5. [Creating Tables](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
@@ -19,10 +23,24 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 ### Fixed
 - All graphics state manipulations are now possible within a rotation context, thanks to @gmischler
 - The exception making the "x2" template field optional for barcode elements did not work correctly, thanks to @gmischler
+- New translation of the tutorial in Hindi, thanks to @Mridulbirla13: [हिंदी संस्करण](https://pyfpdf.github.io/fpdf2/Tutorial-हिंदी.html); [Deutsche](https://pyfpdf.github.io/fpdf2/Tutorial-de.html), thanks to @digidigital; and [Italian](https://pyfpdf.github.io/fpdf2/Tutorial-it.html) thanks to @xit4; [Русский](https://pyfpdf.github.io/fpdf2/Tutorial-ru.html) thanks to @AABur; and [português](https://pyfpdf.github.io/fpdf2/Tutorial-pt.html) thanks to @fuscati
+- While images transparency is still handled by default through the use of `SMask`,
+  this can be disabled by setting `pdf.allow_images_transparency = False`
+  in order to allow compliance with [PDF/A-1](https://en.wikipedia.org/wiki/PDF/A#Description)
+- [`FPDF.arc`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.arc): new method added. 
+  It enables to draw arcs in a PDF document.
+- [`FPDF.solid_arc`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.solid_arc): new method added.
+  It enables to draw solid arcs in a PDF document. A solid arc combines an arc and a triangle to form a pie slice.
+### Fixed
+- The exception making the "x2" template field optional for barcode elements did not work correctly, fixed by @gmischler
 ### Changed
 - All template elements now have a transparent default background instead of white, thanks to @gmischler
+- To reduce the size of generated PDFs, no `SMask` entry is inserted for images that are fully opaque
+  (= with an alpha channel containing only 0xff characters)
+- The `rect`, `ellipse` & `circle` all have a `style` parameter in common.
+  They now all properly accept a value of `"D"` and raise a `ValueError` for invalid values.
 ### Deprecated
-- `dashed_line()` is now deprecated, thanks to @gmischler.
+- `dashed_line()` is now deprecated in favor of `set_dash_pattern()`
 
 ## [2.4.5] - 2021-10-03
 ### Fixed

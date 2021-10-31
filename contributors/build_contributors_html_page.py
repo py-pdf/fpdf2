@@ -9,6 +9,7 @@
 # API DOC: https://developer.github.com/v3/issues/
 
 import argparse
+import logging
 import os
 import sys
 
@@ -22,6 +23,11 @@ THIS_SCRIPT_PARENT_DIR = os.path.dirname(os.path.realpath(__file__))
 def main():
     if "GITHUB_TOKEN" not in os.environ:
         raise RuntimeError("Environment variable GITHUB_TOKEN must be defined")
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s - %(filename)s:%(lineno)d [%(levelname)s] %(message)s",
+    )
+    logging.getLogger("agithub.GitHub").setLevel(logging.DEBUG)
     args = parse_args()
     ag = GitHubAPIWrapper(token=os.environ["GITHUB_TOKEN"])
     org, repo = args.org_repo.split("/")

@@ -1,6 +1,14 @@
 # Tutorial #
 
+Deutsche Version: [Tutorial-de](Tutorial-de.md)
+
 Versión en español: [Tutorial-es](Tutorial-es.md)
+
+हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
+
+Versione in italiano: [Tutorial-it](Tutorial-it.md)
+
+Versão em português: [Tutorial-pt](Tutorial-pt.md)
 
 Methods full documentation: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
@@ -243,7 +251,7 @@ In the first page of the example, we used
 
 To add an internal link pointing to the second page, we used the
  [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link)
- method, whch creates a clickable area which we named "link" that directs to
+ method, which creates a clickable area which we named "link" that directs to
  another place within the document. On the second page, we used
  [set_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link)
  to define the destination area for the link we just created.

@@ -37,6 +37,7 @@ nav:
 - 'Presentations':                  'Presentations.md'
 - 'Annotations':                    'Annotations.md'
 - 'Shapes':                         'Shapes.md'
+- 'Maths':                          'Maths.md'
 - 'Barcodes':                       'Barcodes.md'
 - 'Metadata':                       'Metadata.md'
 - 'Logging':                        'Logging.md'

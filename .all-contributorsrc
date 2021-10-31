@@ -358,6 +358,60 @@
         "doc",
         "tutorial"
       ]
+    },
+    {
+      "login": "tabarnhack",
+      "name": "Tabarnhack",
+      "avatar_url": "https://avatars.githubusercontent.com/u/34366899?v=4",
+      "profile": "https://github.com/tabarnhack",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Mridulbirla13",
+      "name": "Mridul Birla",
+      "avatar_url": "https://avatars.githubusercontent.com/u/24730417?v=4",
+      "profile": "https://github.com/Mridulbirla13",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "digidigital",
+      "name": "digidigital",
+      "avatar_url": "https://avatars.githubusercontent.com/u/28964886?v=4",
+      "profile": "https://github.com/digidigital",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "xit4",
+      "name": "Xit",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7601720?v=4",
+      "profile": "https://github.com/xit4",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "AABur",
+      "name": "Alexander Burchenko",
+      "avatar_url": "https://avatars.githubusercontent.com/u/41373199?v=4",
+      "profile": "https://github.com/AABur",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "fuscati",
+      "name": "André Assunção",
+      "avatar_url": "https://avatars.githubusercontent.com/u/48717599?v=4",
+      "profile": "https://github.com/fuscati",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,

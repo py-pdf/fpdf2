@@ -239,5 +239,5 @@ class DestinationXYZ(Destination):
         if isinstance(top, float):
             top = round(top, 2)
         # The page object ID is predictable given that _putpages is invoked first in _enddoc:
-        page = f"{2 * self.page + 1} 0 R" if self.page_as_obj_id else self.page
+        page = iobj_ref(2 * self.page + 1) if self.page_as_obj_id else self.page
         return f"[{page} /XYZ {left} {top} {self.zoom}]"

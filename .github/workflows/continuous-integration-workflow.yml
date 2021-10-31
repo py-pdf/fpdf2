@@ -53,13 +53,16 @@ jobs:
           # Uploading coverage report to codecov.io
           bash <(curl -s https://codecov.io/bash)
       - name: Generating HTML documentation 🏗️
+        # As build_contributors_html_page.py can hang due to GitHub rate-limiting,
+        # we only execute this on master for now. And it should always be executed for one Python version only.
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.10'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p public/
           mkdocs build
           pdoc --html -o public/ fpdf
-          cd contributors/ && ./build_contributors_html_page.py PyFPDF/fpdf2
+          cd contributors/ && PYTHONUNBUFFERED=1 ./build_contributors_html_page.py PyFPDF/fpdf2
           cp -t ../public/ contributors.html contributors-map-small.png
       - name: Deploy documentation 🚀
         # GitHub Pages deployment should not be done for all Python versions,
