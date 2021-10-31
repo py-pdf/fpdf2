@@ -48,10 +48,13 @@ FPDF original features:
 ## Tutorials ##
 
 * [English](https://pyfpdf.github.io/fpdf2/Tutorial.html)
-* [Deutsche](https://pyfpdf.github.io/fpdf2/Tutorial-de.html)
-* [Spanish](https://pyfpdf.github.io/fpdf2/Tutorial-es.html)
-* [French](https://pyfpdf.github.io/fpdf2/Tutorial-fr.html)
+* [Deutsch](https://pyfpdf.github.io/fpdf2/Tutorial-de.html)
+* [Italian](https://pyfpdf.github.io/fpdf2/Tutorial-it.html)
+* [español](https://pyfpdf.github.io/fpdf2/Tutorial-es.html)
+* [français](https://pyfpdf.github.io/fpdf2/Tutorial-fr.html)
 * [हिंदी](https://pyfpdf.github.io/fpdf2/Tutorial-हिंदी.html)
+* [português](https://pyfpdf.github.io/fpdf2/Tutorial-pt.html)
+* [Русский](https://pyfpdf.github.io/fpdf2/Tutorial-ru.html)
 
 ## Installation ##
 
@@ -65,6 +68,13 @@ FPDF original features:
 
 For community support, please feel free to file an [issue](https://github.com/PyFPDF/fpdf2/issues)
 or [open a discussion](https://github.com/PyFPDF/fpdf2/discussions).
+
+## Related ##
+
+* [Create PDFs with Python](https://www.youtube.com/playlist?list=PLjNQtX45f0dR9K2sMJ5ad9wVjqslNBIC0) : a series of tutorial videos by bvalgard
+* [digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2](https://github.com/digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2) : scripts ported from PHP to add transpareny to elements of the page or part of an image, allow to write circular text,
+   draw pie charts and bar diagrams, embed JavaScript, draw rectangles with rounded corners, draw a star shape,
+   restrict the rendering of some elements to screen or printout, paint linear / radial / multi-color gradients gradients, add stamps & watermarks, write sheared text...
 
 ## Misc ##
 
