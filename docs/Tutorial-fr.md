@@ -65,10 +65,38 @@ Voici un exemple contenant deux pages avec un en-tête, un bas de page et un log
 ```
 
 [PDF généré](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
-En cours de traduction.
 
-## Tuto 3 - Sauts de ligne et couleurs ##
-En cours de traduction.
+Cet exemple utilise les méthodes [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) et [footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) pour générer des en-têtes et des bas de page. Elles sont appelées automatiquement. Elles existent déjà dans la classe FPDF mais elles ne font rien, il faut donc étendre la classe et ajouter un override pour ces méthodes.
+
+Le logo est affiché avec la méthode [image](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) en spécifiant la position du coin supérieur gauche et la largeur de l'image. La hauteur est calculée automatiquement pour garder les proportions de l'image.
+
+Pour centrer le numéro de page dans le bas de page, il faut passer la valeur nulle à la place de la largeur de la cellule. Cela fait prendre toute la largeur de la page à la cellule, ce qui permet de centrer le texte. Le numéro de page actuel est obtenu avec la méthode [page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no); le nombre total de pages est obtenu avec la variable `{nb}` qui prend sa valeur quand le document est fermé (si la méthode [alias_nb_pages](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages) est appelée au préalable).
+La méthode [set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) permet de spécifier une position dans la page relative au haut ou pas de page.
+
+Une autre fonctionnalité intéressante est utilisée ici : les sauts de page automatiques. Si une cellule dépasse la limite du contenu de la page (par défaut à 2 centimètres du bas), un saut de page est inséré à la place et la police de caractères est restaurée. C'est-à-dire, bien que l'en-tête et le bas de page utilisent la police (`helvetica`), le corps du texte garde la police `Times`.
+Ce mécanisme de restauration automatique s'applique également à la couleur et l'épaisseur des lignes.
+La limite du contenu qui déclenche le saut de page peut être spécifiée avec [set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
+
+
+## Tuto 3 - Saut de ligne et couleur ##
+Continuons avec un exemple qui affiche des paragraphes avec du texte justifié. Cet exemple montre également l'utilisation de couleurs.
+
+```python
+{% include "../tutorial/tuto3.py" %}
+```
+
+[PDF généré](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)
+
+[Texte de Jules Verne](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+
+La méthode [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) permet de déterminer la largeur d'un texte utilisant la police actuelle, ce qui permet de calculer la position et la largeur du cadre autour du titre. Ensuite les couleurs sont spécifiées (avec [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) et [set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) et on spécifie l'épaisseur de la bordure du cadre à 1 mm (contre 0.2 par défaut) avec [set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Enfin, on affiche la cellule (le dernier paramètre "true" indique que le fond doit être rempli).
+
+La méthode [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) est utilisée pour afficher les paragraphes.
+Chaque fois qu'une ligne atteint le bord d'une cellule ou qu'un caractère de retour à la ligne est présent, un saut de ligne est inséré et une nouvelle cellule est créée automatiquement sous la cellule actuelle. Le texte est justifié par défaut.
+
+Deux propriétés sont définies pour le document : le titre ([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) et l'auteur ([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Les propriétés peuvent être trouvées de deux manières.
+Soit en ouvrant le document PDF avec Acrobat Reader. Elles sont alors visibles dans le menu Fichier -> Propriétés du document.
+Ou bien, également disponible depuis le plug-in, en faisant un clique droit et en sélectionnant Propriétés du document.
 
 ## Tuto 4 - Colonnes multiples ##
 En cours de traduction.
