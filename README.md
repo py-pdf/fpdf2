@@ -153,6 +153,9 @@ This library could only exist thanks to the dedication of many volunteers around
     <td align="center"><a href="https://github.com/fuscati"><img src="https://avatars.githubusercontent.com/u/48717599?v=4?s=100" width="100px;" alt=""/><br /><sub><b>André Assunção</b></sub></a><br /><a href="#translation-fuscati" title="Translation">🌍</a></td>
     <td align="center"><a href="http://frenchcomputerguy.com/"><img src="https://avatars.githubusercontent.com/u/5825096?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Quentin Brault</b></sub></a><br /><a href="#translation-Tititesouris" title="Translation">🌍</a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/paulacampigotto"><img src="https://avatars.githubusercontent.com/u/36995920?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Paula Campigotto</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Apaulacampigotto" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=paulacampigotto" title="Code">💻</a> <a href="https://github.com/PyFPDF/fpdf2/pulls?q=is%3Apr+reviewed-by%3Apaulacampigotto" title="Reviewed Pull Requests">👀</a></td>
+  </tr>
 </table>
 
 <!-- markdownlint-restore -->
