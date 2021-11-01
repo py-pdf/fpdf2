@@ -151,6 +151,7 @@ This library could only exist thanks to the dedication of many volunteers around
     <td align="center"><a href="https://github.com/xit4"><img src="https://avatars.githubusercontent.com/u/7601720?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Xit</b></sub></a><br /><a href="#translation-xit4" title="Translation">🌍</a></td>
     <td align="center"><a href="https://github.com/AABur"><img src="https://avatars.githubusercontent.com/u/41373199?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Alexander Burchenko</b></sub></a><br /><a href="#translation-AABur" title="Translation">🌍</a></td>
     <td align="center"><a href="https://github.com/fuscati"><img src="https://avatars.githubusercontent.com/u/48717599?v=4?s=100" width="100px;" alt=""/><br /><sub><b>André Assunção</b></sub></a><br /><a href="#translation-fuscati" title="Translation">🌍</a></td>
+    <td align="center"><a href="http://frenchcomputerguy.com/"><img src="https://avatars.githubusercontent.com/u/5825096?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Quentin Brault</b></sub></a><br /><a href="#translation-Tititesouris" title="Translation">🌍</a></td>
   </tr>
 </table>
 
