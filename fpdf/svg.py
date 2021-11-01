@@ -22,7 +22,9 @@ _handy_namespaces = {
 }
 
 alphabet = re.compile(r"([a-zA-Z])")
-number_split = re.compile(r"[ ,]+")
+number_sign = re.compile(r"([+-])")
+number_split = re.compile(r"(?:\s+,\s+|\s+,|,\s+|\s+|,)")
+decimal_disaster = re.compile(r"(\d+\.\d+|\d+\.|\.\d+)(\.)")
 transform_getter = re.compile(
     r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)"
     r"\(((?:\s*(?:[-+]?[\d\.]+,?)+\s*)+)\)"
@@ -686,11 +688,30 @@ def _read_n_numbers(path_str, n):
 def svg_path_converter(pdf_path, svg_path):
     """Convert an SVG path string into a structured PDF path object"""
 
-    # "-" can be used as a numeric separator as well, irritatingly (e.g. "3-4" should be
-    # parsed like "3, -4"), so we insert spaces before - to make sure these get split
-    # apart correctly.
+    # the SVG specification talks about path error handling in § 9.5.4:
+    # https://www.w3.org/TR/SVG/paths.html#PathDataErrorHandling. In general we follow
+    # the advice of "Wherever possible, all SVG user agents shall report all errors to
+    # the user" and propagate exceptions from the path parsing up to the caller rather
+    # than silently producing incorrect output.
 
-    svg_path = alphabet.sub(r" \1 ", svg_path).replace("-", " -").strip()
+    # "+", "-", and "." can be used as numeric separators as well, irritatingly. For
+    # example, 3-4 should be parsed as (3, -4), 3+4 should be parsed as (3, 4), and
+    # 3.4.5 should be parsed as (3.4, 0.5) (split like 3.4, .5)
+
+    # decimal_disaster substitution has to be called twice to handle extremely
+    # degenerate cases like 1.2.3.4, which will be split into 1.2 .3.4 by the first
+    # pass due to the regex substitution not handling overlapping regions. The expected
+    # output in this case would be "1.2 .3 .4"
+    svg_path = decimal_disaster.sub(
+        r"\1 \2",
+        decimal_disaster.sub(
+            r"\1 \2", number_sign.sub(r" \1", alphabet.sub(r" \1 ", svg_path))
+        ),
+    ).strip()
+
+    if svg_path[0] not in {"M", "m"}:
+        raise ValueError(f"SVG path does not start with moveto command: {svg_path}")
+
     while svg_path:
         read_idx = 0
         directive = svg_path[read_idx]
