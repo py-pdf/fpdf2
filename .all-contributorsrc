@@ -412,6 +412,15 @@
       "contributions": [
         "translation"
       ]
+    },
+    {
+      "login": "Tititesouris",
+      "name": "Quentin Brault",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5825096?v=4",
+      "profile": "http://frenchcomputerguy.com/",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
