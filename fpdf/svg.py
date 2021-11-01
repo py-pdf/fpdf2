@@ -167,7 +167,6 @@ def optional(value, converter=lambda noop: noop):
     return converter(value)
 
 
-cross_references = {}
 svg_attr_map = {
     "fill": lambda colorstr: ("fill_color", optional(colorstr, svgcolor)),
     "stroke-width": lambda valuestr: ("stroke_width", optional(valuestr, float)),
@@ -184,20 +183,6 @@ svg_attr_map = {
     "stroke-opacity": lambda stropstr: ("stroke_opacity", optional(stropstr)),
     "fill-opacity": lambda filopstr: ("fill_opacity", optional(filopstr)),
 }
-
-
-# defs paths are not drawn immediately but are added to xrefs and can be referenced
-# later to be drawn.
-
-
-@force_nodocument
-def handle_defs(defs):
-    """Produce lookups for groups and paths inside the <defs> tag"""
-    for child in defs:
-        if child.tag in xmlns_lookup("svg", "g"):
-            build_group(child)
-        if child.tag in xmlns_lookup("svg", "path"):
-            build_path(child)
 
 
 @force_nodocument
@@ -229,49 +214,6 @@ def apply_styles(stylable, svg_element):
         pass
     else:
         stylable.transform = convert_transforms(tfstr)
-
-
-@force_nodocument
-def build_group(group, pdf_group=None):
-    """Handle nested items within a group <g> tag."""
-    if pdf_group is None:
-        pdf_group = drawing.GraphicsContext()
-        apply_styles(pdf_group, group)
-
-    for child in group:
-        if child.tag in xmlns_lookup("svg", "defs"):
-            handle_defs(child)
-        if child.tag in xmlns_lookup("svg", "g"):
-            pdf_group.add_item(build_group(child))
-        if child.tag in xmlns_lookup("svg", "path"):
-            pdf_group.add_item(build_path(child))
-        elif child.tag in shape_tags:
-            pdf_group.add_item(getattr(ShapeBuilder, shape_tags[child.tag])(child))
-        if child.tag in xmlns_lookup("svg", "use"):
-            pdf_group.add_item(build_xref(child))
-
-    try:
-        cross_references["#" + group.attrib["id"]] = pdf_group
-    except KeyError:
-        pass
-
-    return pdf_group
-
-
-@force_nodocument
-def build_path(path):
-    """Convert an SVG <path> tag into a PDF path object."""
-    pdf_path = drawing.PaintedPath()
-    apply_styles(pdf_path, path)
-
-    svg_path_converter(pdf_path, path.attrib["d"])
-
-    try:
-        cross_references["#" + path.attrib["id"]] = pdf_path
-    except KeyError:
-        pass
-
-    return pdf_path
 
 
 @force_nodocument
@@ -400,31 +342,6 @@ class ShapeBuilder:
         svg_path_converter(path, points)
 
         return path
-
-
-# this assumes xrefs only reference already-defined ids. I don't know if this is
-# required by the SVG spec.
-@force_nodocument
-def build_xref(xref):
-    """Resolve a cross-reference to an already-seen SVG element by ID."""
-    pdf_group = drawing.GraphicsContext()
-    apply_styles(pdf_group, xref)
-
-    for candidate in xmlns_lookup("xlink", "href"):
-        try:
-            ref = xref.attrib[candidate]
-            break
-        except KeyError:
-            pass
-    else:
-        raise ValueError(f"use {xref} doesn't contain known xref attribute")
-
-    try:
-        pdf_group.add_item(cross_references[ref])
-    except KeyError:
-        raise ValueError(f"use {xref} references nonexistent ref id {ref}") from None
-
-    return pdf_group
 
 
 @force_nodocument
@@ -759,6 +676,8 @@ class SVGObject:
             return cls(svgfile.read(), *args, **kwargs)
 
     def __init__(self, svg_text):
+        self.cross_references = {}
+
         svg_tree = xml.etree.ElementTree.fromstring(svg_text)
 
         if svg_tree.tag not in xmlns_lookup("svg", "svg"):
@@ -820,7 +739,7 @@ class SVGObject:
         base_group.style.stroke_width = None
         base_group.style.auto_close = False
 
-        build_group(root_tag, base_group)
+        self.build_group(root_tag, base_group)
 
         self.base_group = base_group
 
@@ -929,3 +848,84 @@ class SVGObject:
 
         finally:
             pdf.set_xy(old_x, old_y)
+
+    # defs paths are not drawn immediately but are added to xrefs and can be referenced
+    # later to be drawn.
+    @force_nodocument
+    def handle_defs(self, defs):
+        """Produce lookups for groups and paths inside the <defs> tag"""
+        for child in defs:
+            if child.tag in xmlns_lookup("svg", "g"):
+                self.build_group(child)
+            if child.tag in xmlns_lookup("svg", "path"):
+                self.build_path(child)
+
+    # this assumes xrefs only reference already-defined ids. I don't know if this is
+    # required by the SVG spec.
+    @force_nodocument
+    def build_xref(self, xref):
+        """Resolve a cross-reference to an already-seen SVG element by ID."""
+        pdf_group = drawing.GraphicsContext()
+        apply_styles(pdf_group, xref)
+
+        for candidate in xmlns_lookup("xlink", "href"):
+            try:
+                ref = xref.attrib[candidate]
+                break
+            except KeyError:
+                pass
+        else:
+            raise ValueError(f"use {xref} doesn't contain known xref attribute")
+
+        try:
+            pdf_group.add_item(self.cross_references[ref])
+        except KeyError:
+            raise ValueError(
+                f"use {xref} references nonexistent ref id {ref}"
+            ) from None
+
+        return pdf_group
+
+    @force_nodocument
+    def build_group(self, group, pdf_group=None):
+        """Handle nested items within a group <g> tag."""
+        if pdf_group is None:
+            pdf_group = drawing.GraphicsContext()
+            apply_styles(pdf_group, group)
+
+        for child in group:
+            if child.tag in xmlns_lookup("svg", "defs"):
+                self.handle_defs(child)
+            if child.tag in xmlns_lookup("svg", "g"):
+                pdf_group.add_item(self.build_group(child))
+            if child.tag in xmlns_lookup("svg", "path"):
+                pdf_group.add_item(self.build_path(child))
+            elif child.tag in shape_tags:
+                pdf_group.add_item(getattr(ShapeBuilder, shape_tags[child.tag])(child))
+            if child.tag in xmlns_lookup("svg", "use"):
+                pdf_group.add_item(self.build_xref(child))
+
+        try:
+            self.cross_references["#" + group.attrib["id"]] = pdf_group
+        except KeyError:
+            pass
+
+        return pdf_group
+
+    @force_nodocument
+    def build_path(self, path):
+        """Convert an SVG <path> tag into a PDF path object."""
+        pdf_path = drawing.PaintedPath()
+        apply_styles(pdf_path, path)
+
+        svg_path = path.attrib.get("d", None)
+
+        if svg_path is not None:
+            svg_path_converter(pdf_path, svg_path)
+
+        try:
+            self.cross_references["#" + path.attrib["id"]] = pdf_path
+        except KeyError:
+            pass
+
+        return pdf_path
