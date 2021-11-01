@@ -296,6 +296,7 @@ class FPDF:
         self._toc_placeholder = None  # ToCPlaceholder
         self._outline = []  # list of OutlineSection
         self.section_title_styles = {}  # level -> TitleStyle
+        self.total_pages = 0
 
         # Standard fonts
         self.core_fonts = {
@@ -2150,9 +2151,11 @@ class FPDF:
             self.page += 1
         else:
             self.add_page(same=True)
+            self.total_pages = max(self.page, self.total_pages)
+        self.set_y(self.t_margin)
 
     def _has_next_page(self):
-        return self.page_no() > self.page
+        return self.total_pages > self.page
 
     @check_page
     def multi_cell(
