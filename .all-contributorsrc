@@ -412,6 +412,26 @@
       "contributions": [
         "translation"
       ]
+    },
+    {
+      "login": "Tititesouris",
+      "name": "Quentin Brault",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5825096?v=4",
+      "profile": "http://frenchcomputerguy.com/",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "paulacampigotto",
+      "name": "Paula Campigotto",
+      "avatar_url": "https://avatars.githubusercontent.com/u/36995920?v=4",
+      "profile": "https://github.com/paulacampigotto",
+      "contributions": [
+        "bug",
+        "code",
+        "review"
+      ]
     }
   ],
   "contributorsPerLine": 7,
