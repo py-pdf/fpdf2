@@ -2147,7 +2147,7 @@ class FPDF:
         if ws > 0:
             self.ws = 0
             self._out("0 Tw")
-        self.add_page()
+        self.add_page(same=True)
         self.x = x  # restore x but not y after drawing header
         if ws > 0:
             self.ws = ws
