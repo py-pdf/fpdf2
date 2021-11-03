@@ -296,7 +296,6 @@ class FPDF:
         self._toc_placeholder = None  # ToCPlaceholder
         self._outline = []  # list of OutlineSection
         self.section_title_styles = {}  # level -> TitleStyle
-        self.total_pages = 0
 
         # Standard fonts
         self.core_fonts = {
@@ -361,6 +360,13 @@ class FPDF:
         Effective page height: the page height minus its vertical margins.
         """
         return self.h - self.t_margin - self.b_margin
+
+    @property
+    def pages_count(self):
+        """
+        Returns the total pages of the document.
+        """
+        return len(self.pages)
 
     def set_margin(self, margin):
         """
@@ -689,6 +695,11 @@ class FPDF:
             raise FPDFException(".add_page() should not be called inside .rotation()")
         if self.state == DocumentState.UNINITIALIZED:
             self.open()
+
+        if self._has_next_page():
+            self._increase_current_page_number()
+            return
+
         family = self.font_family
         style = f"{self.font_style}U" if self.underline else self.font_style
         size = self.font_size_pt
@@ -2136,26 +2147,22 @@ class FPDF:
         if ws > 0:
             self.ws = 0
             self._out("0 Tw")
-        self._break_or_add_page()
+        self.add_page()
         self.x = x  # restore x but not y after drawing header
         if ws > 0:
             self.ws = ws
             self._out(f"{ws * self.k:.3f} Tw")
 
-    def _break_or_add_page(self):
-        """
-        This method is useful when it is necessary to go to the next page
-        instead of creating a new one
-        """
-        if self._has_next_page():
-            self.page += 1
-        else:
-            self.add_page(same=True)
-        self.total_pages = max(self.page, self.total_pages)
-        self.set_y(self.t_margin)
-
     def _has_next_page(self):
-        return self.total_pages > self.page
+        return self.pages_count > self.page
+
+    def _increase_current_page_number(self):
+        """
+        If the total number of pages is bigger than current page number it will go to
+        the next existing page and update its `y` attribute, otherwise it will add a new page.
+        """
+        self.page += 1
+        self.set_y(self.t_margin)
 
     @check_page
     def multi_cell(
@@ -2798,7 +2805,7 @@ class FPDF:
         return txt
 
     def _putpages(self):
-        nb = self.page  # total number of pages
+        nb = self.pages_count  # total number of pages
         if self.str_alias_nb_pages:
             self._substitute_page_number()
         if self._toc_placeholder:
@@ -2900,7 +2907,7 @@ class FPDF:
         self._out("endobj")
 
     def _substitute_page_number(self):
-        nb = self.page  # total number of pages
+        nb = self.pages_count  # total number of pages
         substituted = False
         # Replace number of pages in fonts using subsets (unicode)
         alias = self.str_alias_nb_pages.encode("UTF-16BE")

@@ -33,8 +33,8 @@ def test_add_page_duration(tmp_path):
 
 def test_break_or_add_page(tmp_path):
     pdf = fpdf.FPDF()
-    pdf.set_auto_page_break(auto=True)
-    pdf._break_or_add_page()
+    pdf.set_auto_page_break(auto=True, margin=0)
+    pdf.add_page()
     pdf.set_font("Helvetica", "", 16)
     for i in range(1, 51):
         pdf.set_x(10)
