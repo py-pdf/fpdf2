@@ -44,4 +44,4 @@ def test_break_or_add_page(tmp_path):
     for i in range(51, 101):
         pdf.set_x(100)
         pdf.multi_cell(50, 10, f"Text {i} - Page {pdf.page}", 1, "C")
-    assert_pdf_equal(pdf, HERE / "break_or_add_page.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "break_or_add_page.pdf", tmp_path, generate=True)

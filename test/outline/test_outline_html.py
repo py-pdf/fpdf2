@@ -224,7 +224,7 @@ def test_html_toc_2_pages(tmp_path):
         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
         """
     )
-    assert_pdf_equal(pdf, HERE / "html_toc_2_pages.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "html_toc_2_pages.pdf", tmp_path, generate=True)
 
 
 def test_html_toc_with_h1_as_2nd_heading(tmp_path):  # issue 239

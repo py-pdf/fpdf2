@@ -696,10 +696,6 @@ class FPDF:
         if self.state == DocumentState.UNINITIALIZED:
             self.open()
 
-        if self._has_next_page():
-            self._increase_current_page_number()
-            return
-
         family = self.font_family
         style = f"{self.font_style}U" if self.underline else self.font_style
         size = self.font_size_pt
@@ -708,6 +704,7 @@ class FPDF:
         fc = self.fill_color
         tc = self.text_color
         stretching = self.font_stretching
+
         if self.page > 0:
             # Page footer
             self.in_footer = 1
@@ -716,14 +713,26 @@ class FPDF:
             # close page
             self._endpage()
 
-        # Start new page
-        self._beginpage(
-            orientation,
-            format,
-            same,
-            duration or self.page_duration,
-            transition or self.page_transition,
-        )
+        if self._has_next_page():
+            self._beginpage(
+                orientation,
+                format,
+                same,
+                duration or self.page_duration,
+                transition or self.page_transition,
+                new_page=False,
+            )
+
+        else:
+            # Start new page
+            self._beginpage(
+                orientation,
+                format,
+                same,
+                duration or self.page_duration,
+                transition or self.page_transition,
+            )
+
         self._out("2 J")  # Set line cap style to square
         self.line_width = lw  # Set line width
         self._out(f"{lw * self.k:.2f} w")
@@ -2156,14 +2165,6 @@ class FPDF:
     def _has_next_page(self):
         return self.pages_count > self.page
 
-    def _increase_current_page_number(self):
-        """
-        If the total number of pages is bigger than current page number it will go to
-        the next existing page and update its `y` attribute, otherwise it will add a new page.
-        """
-        self.page += 1
-        self.set_y(self.t_margin)
-
     @check_page
     def multi_cell(
         self,
@@ -3552,10 +3553,19 @@ class FPDF:
         self._out("%%EOF")
         self.state = DocumentState.CLOSED
 
-    def _beginpage(self, orientation, format, same, duration, transition):
+    def _beginpage(
+        self, orientation, format, same, duration, transition, new_page=True
+    ):
         self.page += 1
-        page = {"content": bytearray(), "duration": duration, "transition": transition}
-        self.pages[self.page] = page
+        if new_page:
+            page = {
+                "content": bytearray(),
+                "duration": duration,
+                "transition": transition,
+            }
+            self.pages[self.page] = page
+        else:
+            page = self.pages[self.page]
         self.state = DocumentState.GENERATING_PAGE
         self.x = self.l_margin
         self.y = self.t_margin

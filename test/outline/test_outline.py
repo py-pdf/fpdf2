@@ -156,5 +156,4 @@ def test_2_pages_outline(tmp_path):
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit,"
             " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         )
-
-    assert_pdf_equal(pdf, HERE / "2_pages_outline.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "2_pages_outline.pdf", tmp_path, tmp_path)
