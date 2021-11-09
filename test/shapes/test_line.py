@@ -1,4 +1,5 @@
 from pathlib import Path
+from pytest import warns
 
 import fpdf
 from test.conftest import assert_pdf_equal
@@ -42,7 +43,8 @@ def test_dash(tmp_path):
     pdf.add_page()
 
     def draw_diagonal_dash(pdf, x, y, *a, **k):
-        pdf.dashed_line(x, y, x + size, y + size / 2, *a, **k)
+        with warns(PendingDeprecationWarning):
+            pdf.dashed_line(x, y, x + size, y + size / 2, *a, **k)
 
     for width in [0.71, 1, 2]:
         pdf.set_line_width(width)
@@ -65,13 +67,14 @@ def test_dash(tmp_path):
 
     next_row(pdf)
     pdf.set_line_width(1)
-    x, y = pdf.get_x(), pdf.get_y()
-    pdf.dashed_line(x, y, x + 100, y + 80, 10, 3)
-    pdf.set_x(pdf.get_x() + 20)
-    x, y = pdf.get_x(), pdf.get_y()
-    pdf.dashed_line(x, y, x + 100, y + 80, 3, 20)
-    pdf.set_x(pdf.get_x() + 20)
-    x, y = pdf.get_x(), pdf.get_y()
-    pdf.dashed_line(x, y, x + 100, y + 80, 6, 17)
+    with warns(PendingDeprecationWarning):
+        x, y = pdf.get_x(), pdf.get_y()
+        pdf.dashed_line(x, y, x + 100, y + 80, 10, 3)
+        pdf.set_x(pdf.get_x() + 20)
+        x, y = pdf.get_x(), pdf.get_y()
+        pdf.dashed_line(x, y, x + 100, y + 80, 3, 20)
+        pdf.set_x(pdf.get_x() + 20)
+        x, y = pdf.get_x(), pdf.get_y()
+        pdf.dashed_line(x, y, x + 100, y + 80, 6, 17)
 
     assert_pdf_equal(pdf, HERE / "class_dash.pdf", tmp_path)

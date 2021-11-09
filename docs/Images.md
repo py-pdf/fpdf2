@@ -75,3 +75,54 @@ pdf.output("pdf-with-image.pdf")
 ```
 
 Beware that "flattening" images this way will convert alpha channels to black.
+
+
+## Oversized images detection & downscaling ##
+
+If the resulting PDF size is a concern,
+you may want to check if some inserted images are _oversized_,
+meaning their resolution is unnecessarily high given the size they are displayed.
+
+There is how to enable this detection mechanism with `fpdf2`:
+
+```python
+pdf.oversized_images = "WARN"
+```
+
+After setting this property, a `WARNING` log will be displayed whenever an oversized image is inserted.
+
+`fpdf2` is also able to automatically downscale such oversized images:
+
+```python
+pdf.oversized_images = "DOWNSCALE"
+```
+
+After this, oversized images will be automatically resized, generating `DEBUG` logs like this:
+```
+OVERSIZED: Generated new low-res image with name=lowres-test.png dims=(319, 451) id=2
+```
+
+For finer control, you can set `pdf.oversized_images_ratio` to set the threshold determining if an image is oversized.
+
+If the concepts of "image compression" or "image resolution" are a bit obscure for you,
+this article is a recommended reading:
+[The 5 minute guide to image quality](https://medium.com/unsplash/the-5-minute-guide-to-image-quality-ad7c3503c845)
+
+
+## Disabling transparency ##
+
+By default images transparency is preserved:
+alpha channels are extracted and converted to an embedded `SMask`.
+This can be disabled by setting `.allow_images_transparency`,
+_e.g._ to allow compliance with [PDF/A-1](https://en.wikipedia.org/wiki/PDF/A#Description):
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.allow_images_transparency = False
+pdf.set_font("Helvetica", size=15)
+pdf.cell(w=pdf.epw, h=30, txt="Text behind. " * 6)
+pdf.image("docs/fpdf2-logo.png", x=0)
+pdf.output("pdf-including-image-without-transparency.pdf")
+```

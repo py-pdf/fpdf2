@@ -19,11 +19,11 @@ fpdf2
 ```python
 from fpdf import FPDF
 
-document = FPDF()
-document.add_page()
-document.set_font('helvetica', size=12)
-document.cell(txt="hello world")
-document.output("hello_world.pdf")
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font('helvetica', size=12)
+pdf.cell(txt="hello world")
+pdf.output("hello_world.pdf")
 ```
 
 It is a fork and the successor of `PyFPDF`.
@@ -45,7 +45,7 @@ To get the latest development version:
 
 ```bash
 # Linux only:
-sudo apt-get install libjpeg-dev libpython-dev zlib1g-dev # libpython3.3-dev #(if necessary)
+sudo apt-get install libjpeg-dev libpython-dev zlib1g-dev
 
 # Linux and Windows:
 git clone https://github.com/PyFPDF/fpdf2.git
@@ -81,7 +81,7 @@ Documentation:
 --------------
 
 - [Documentation Home](https://pyfpdf.github.io/fpdf2/)
-- [Tutorial](https://pyfpdf.github.io/fpdf2/Tutorial.html) ([Spanish translation available](https://pyfpdf.github.io/fpdf2/Tutorial-es.html))
+- Tutorial in several languages: [English](https://pyfpdf.github.io/fpdf2/Tutorial.html) - [Deutsch](https://pyfpdf.github.io/fpdf2/Tutorial-de.html) - [español](https://pyfpdf.github.io/fpdf2/Tutorial-es.html) - [हिंदी](https://pyfpdf.github.io/fpdf2/Tutorial-हिंदी.html) [português](https://pyfpdf.github.io/fpdf2/Tutorial-pt.html) - [Русский](https://pyfpdf.github.io/fpdf2/Tutorial-ru.html) - [Italian](https://pyfpdf.github.io/fpdf2/Tutorial-it.html) - [français](https://pyfpdf.github.io/fpdf2/Tutorial-fr.html)
 - Release notes: [CHANGELOG.md](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)
 
 You can also have a look at the `tests/`, they're great usage examples!
@@ -144,6 +144,18 @@ This library could only exist thanks to the dedication of many volunteers around
     <td align="center"><a href="https://www.buymeacoffee.com/ping"><img src="https://avatars.githubusercontent.com/u/104607?v=4?s=100" width="100px;" alt=""/><br /><sub><b>ping</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Aping" title="Bug reports">🐛</a></td>
     <td align="center"><a href="http://portfedh@gmail.com"><img src="https://avatars.githubusercontent.com/u/59422723?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Portfedh</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=portfedh" title="Documentation">📖</a> <a href="#tutorial-portfedh" title="Tutorials">✅</a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/tabarnhack"><img src="https://avatars.githubusercontent.com/u/34366899?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Tabarnhack</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=tabarnhack" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/Mridulbirla13"><img src="https://avatars.githubusercontent.com/u/24730417?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Mridul Birla</b></sub></a><br /><a href="#translation-Mridulbirla13" title="Translation">🌍</a></td>
+    <td align="center"><a href="https://github.com/digidigital"><img src="https://avatars.githubusercontent.com/u/28964886?v=4?s=100" width="100px;" alt=""/><br /><sub><b>digidigital</b></sub></a><br /><a href="#translation-digidigital" title="Translation">🌍</a></td>
+    <td align="center"><a href="https://github.com/xit4"><img src="https://avatars.githubusercontent.com/u/7601720?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Xit</b></sub></a><br /><a href="#translation-xit4" title="Translation">🌍</a></td>
+    <td align="center"><a href="https://github.com/AABur"><img src="https://avatars.githubusercontent.com/u/41373199?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Alexander Burchenko</b></sub></a><br /><a href="#translation-AABur" title="Translation">🌍</a></td>
+    <td align="center"><a href="https://github.com/fuscati"><img src="https://avatars.githubusercontent.com/u/48717599?v=4?s=100" width="100px;" alt=""/><br /><sub><b>André Assunção</b></sub></a><br /><a href="#translation-fuscati" title="Translation">🌍</a></td>
+    <td align="center"><a href="http://frenchcomputerguy.com/"><img src="https://avatars.githubusercontent.com/u/5825096?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Quentin Brault</b></sub></a><br /><a href="#translation-Tititesouris" title="Translation">🌍</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/paulacampigotto"><img src="https://avatars.githubusercontent.com/u/36995920?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Paula Campigotto</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Apaulacampigotto" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=paulacampigotto" title="Code">💻</a> <a href="https://github.com/PyFPDF/fpdf2/pulls?q=is%3Apr+reviewed-by%3Apaulacampigotto" title="Reviewed Pull Requests">👀</a></td>
+  </tr>
 </table>
 
 <!-- markdownlint-restore -->
@@ -163,3 +175,12 @@ Other libraries
 ---------------
 
 For alternatives, check out [this detailed list of PDF-related Python libs by Patrick Maupin](https://github.com/pmaupin/pdfrw#other-libraries). There is also `pikepdf`, `PyFPDF2` & `WeasyPrint`.
+
+
+Related
+-------
+
+* [Create PDFs with Python](https://www.youtube.com/playlist?list=PLjNQtX45f0dR9K2sMJ5ad9wVjqslNBIC0) : a series of tutorial videos by bvalgard
+* [digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2](https://github.com/digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2) : scripts ported from PHP to add transpareny to elements of the page or part of an image, allow to write circular text,
+   draw pie charts and bar diagrams, embed JavaScript, draw rectangles with rounded corners, draw a star shape,
+   restrict the rendering of some elements to screen or printout, paint linear / radial / multi-color gradients gradients, add stamps & watermarks, write sheared text...

@@ -272,6 +272,7 @@ class FPDF:
         self.draw_color = "0 G"
         self.fill_color = "0 g"
         self.text_color = "0 g"
+        self.dash_pattern = "[] 0 d"
         self.ws = 0  # word spacing
         self.angle = 0  # used by deprecated method: rotate()
         self.font_cache_dir = font_cache_dir
@@ -279,7 +280,11 @@ class FPDF:
         self.image_filter = "AUTO"
         self.page_duration = 0  # optional pages display duration, cf. add_page()
         self.page_transition = None  # optional pages transition, cf. add_page()
-        self._rotating = False
+        self.allow_images_transparency = True
+        # Do nothing by default. Allowed values: 'WARN', 'DOWNSCALE':
+        self.oversized_images = None
+        self.oversized_images_ratio = 2  # number of pixels per UserSpace point
+        self._rotating = 0  # counting levels of nested rotation contexts
         self._markdown_leak_end_style = False
         # Only set if XMP metadata is added to the document:
         self._xmp_metadata_obj_id = None
@@ -882,6 +887,44 @@ class FPDF:
         if self.page > 0:
             self._out(f"{width * self.k:.2f} w")
 
+    def set_dash_pattern(self, dash=0, gap=0, phase=0):
+        """
+        Set the current dash pattern for lines and curves.
+
+        Args:
+            dash (float >= 0):
+                The length of the dashes in current units.
+
+            gap (float >= 0):
+                The length of the gaps between dashes in current units.
+                If omitted, the dash length will be used.
+
+            phase (float >= 0):
+                Where in the sequence to start drawing.
+
+        Omitting 'dash' (= 0) resets the pattern to a solid line.
+        """
+        if not (isinstance(dash, (int, float)) and dash >= 0):
+            raise ValueError("Dash length must be zero or a positive number.")
+        if not (isinstance(gap, (int, float)) and gap >= 0):
+            raise ValueError("gap length must be zero or a positive number.")
+        if not (isinstance(phase, (int, float)) and phase >= 0):
+            raise ValueError("Phase must be zero or a positive number.")
+        if self._rotating:
+            raise FPDFException(
+                ".set_dash_pattern() should not be called inside .rotation()"
+            )
+        if dash:
+            if gap:
+                dstr = f"[{dash * self.k:.3f} {gap * self.k:.3f}] {phase *self.k:.3f} d"
+            else:
+                dstr = f"[{dash * self.k:.3f}] {phase *self.k:.3f} d"
+        else:
+            dstr = "[] 0 d"
+        if dstr != self.dash_pattern:
+            self.dash_pattern = dstr
+            self._out(dstr)
+
     @check_page
     def line(self, x1, y1, x2, y2):
         """
@@ -934,16 +977,12 @@ class FPDF:
         """
         self.polyline(point_list, fill=fill, polygon=True)
 
-    def _set_dash(self, dash_length=None, space_length=None):
-        dash = ""
-        if dash_length and space_length:
-            dash = f"{dash_length * self.k:.3f} {space_length * self.k:.3f}"
-        self._out(f"[{dash}] 0 d")
-
     @check_page
     def dashed_line(self, x1, y1, x2, y2, dash_length=1, space_length=1):
         """
         Draw a dashed line between two points.
+        **DEPRECATED** 2.4.6
+        - use set_dash_pattern() and the normal drawing operations instead
 
         Args:
             x1 (int): Abscissa of first point
@@ -953,9 +992,14 @@ class FPDF:
             dash_length (int): Length of the dash
             space_length (int): Length of the space between 2 dashes
         """
-        self._set_dash(dash_length, space_length)
+        warnings.warn(
+            "dashed_line() is deprecated, and will be removed in a future release. "
+            "Use set_dash_pattern() and the normal drawing operations instead.",
+            PendingDeprecationWarning,
+        )
+        self.set_dash_pattern(dash_length, space_length)
         self.line(x1, y1, x2, y2)
-        self._set_dash()
+        self.set_dash_pattern()
 
     @check_page
     def rect(self, x, y, w, h, style=None):
@@ -973,8 +1017,7 @@ class FPDF:
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
         """
-        style_to_operators = {"F": "f", "FD": "B", "DF": "B"}
-        op = style_to_operators.get(style, "S")
+        op = _style_to_operator(style)
         self._out(
             f"{x * self.k:.2f} {(self.h - y) * self.k:.2f} {w * self.k:.2f} "
             f"{-h * self.k:.2f} re {op}"
@@ -996,8 +1039,7 @@ class FPDF:
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
         """
-        style_to_operators = {"F": "f", "FD": "B", "DF": "B"}
-        op = style_to_operators.get(style, "S")
+        op = _style_to_operator(style)
 
         cx = x + w / 2
         cy = y + h / 2
@@ -1088,6 +1130,188 @@ class FPDF:
         self.polygon(points, style)
         #passes points through polygon function
 
+    def arc(
+        self,
+        x,
+        y,
+        a,
+        start_angle,
+        end_angle,
+        b=None,
+        inclination=0,
+        clockwise=False,
+        start_from_center=False,
+        end_at_center=False,
+        style=None,
+    ):
+        """
+        Outputs an arc.
+        It can be drawn (border only), filled (with no border) or both.
+            a (int): Semi-major axis diameter.
+            b (int): Semi-minor axis diameter, if None, equals to a (default: None).
+            start_angle (int): Start angle of the arc (in degrees).
+            end_angle (int): End angle of the arc (in degrees).
+            inclination (int): Inclination of the arc in respect of the x-axis (default: 0).
+            clockwise (bool): Way of drawing the arc (True: clockwise, False: counterclockwise) (default: False).
+            start_from_center (bool): Start drawing from the center of the circle (default: False).
+            end_at_center (bool): End drawing at the center of the circle (default: False).
+            style (int): Style of rendering. Possible values are:
+                * `D` or None: draw border. This is the default value.
+                * `F`: fill
+                * `DF` or `FD`: draw and fill
+        """
+        op = _style_to_operator(style)
+
+        if b is None:
+            b = a
+
+        a /= 2
+        b /= 2
+
+        cx = x + a
+        cy = y + b
+
+        # Functions used only to construct other points of the bezier curve
+        def deg_to_rad(deg):
+            return deg * math.pi / 180
+
+        def angle_to_param(angle):
+            angle = deg_to_rad(angle % 360)
+            eta = math.atan2(math.sin(angle) / b, math.cos(angle) / a)
+
+            if eta < 0:
+                eta += 2 * math.pi
+            return eta
+
+        theta = deg_to_rad(inclination)
+        cos_theta = math.cos(theta)
+        sin_theta = math.sin(theta)
+
+        def evaluate(eta):
+            a_cos_eta = a * math.cos(eta)
+            b_sin_eta = b * math.sin(eta)
+
+            return [
+                cx + a_cos_eta * cos_theta - b_sin_eta * sin_theta,
+                cy + a_cos_eta * sin_theta + b_sin_eta * cos_theta,
+            ]
+
+        def derivative_evaluate(eta):
+            a_sin_eta = a * math.sin(eta)
+            b_cos_eta = b * math.cos(eta)
+
+            return [
+                -a_sin_eta * cos_theta - b_cos_eta * sin_theta,
+                -a_sin_eta * sin_theta + b_cos_eta * cos_theta,
+            ]
+
+        # Calculating start_eta and end_eta so that
+        #   start_eta < end_eta   <= start_eta + 2*PI if counterclockwise
+        #   end_eta   < start_eta <= end_eta + 2*PI   if clockwise
+        start_eta = angle_to_param(start_angle)
+        end_eta = angle_to_param(end_angle)
+
+        if not clockwise and end_eta <= start_eta:
+            end_eta += 2 * math.pi
+        elif clockwise and end_eta >= start_eta:
+            start_eta += 2 * math.pi
+
+        start_point = evaluate(start_eta)
+
+        # Move to the start point
+        if start_from_center:
+            self._out(f"{cx * self.k:.2f} {(self.h - cy) * self.k:.2f} m")
+            self._out(
+                f"{start_point[0] * self.k:.2f} {(self.h - start_point[1]) * self.k:.2f} l"
+            )
+        else:
+            self._out(
+                f"{start_point[0] * self.k:.2f} {(self.h - start_point[1]) * self.k:.2f} m"
+            )
+
+        # Number of curves to use, maximal segment angle is 2*PI/max_curves
+        max_curves = 4
+        n = min(
+            max_curves, math.ceil(abs(end_eta - start_eta) / (2 * math.pi / max_curves))
+        )
+        d_eta = (end_eta - start_eta) / n
+
+        alpha = math.sin(d_eta) * (math.sqrt(4 + 3 * math.tan(d_eta / 2) ** 2) - 1) / 3
+
+        eta2 = start_eta
+        p2 = evaluate(eta2)
+        p2_prime = derivative_evaluate(eta2)
+
+        for i in range(n):
+            p1 = p2
+            p1_prime = p2_prime
+
+            eta2 += d_eta
+            p2 = evaluate(eta2)
+            p2_prime = derivative_evaluate(eta2)
+
+            control_point_1 = [p1[0] + alpha * p1_prime[0], p1[1] + alpha * p1_prime[1]]
+            control_point_2 = [p2[0] - alpha * p2_prime[0], p2[1] - alpha * p2_prime[1]]
+
+            end = ""
+            if i == n - 1 and not end_at_center:
+                end = f" {op}"
+
+            self._out(
+                (
+                    f"{control_point_1[0] * self.k:.2f} {(self.h - control_point_1[1]) * self.k:.2f} "
+                    f"{control_point_2[0] * self.k:.2f} {(self.h - control_point_2[1]) * self.k:.2f} "
+                    f"{p2[0] * self.k:.2f} {(self.h - p2[1]) * self.k:.2f} c" + end
+                )
+            )
+
+        if end_at_center:
+            self._out(f"{cx * self.k:.2f} {(self.h - cy) * self.k:.2f} l {op}")
+
+    @check_page
+    def solid_arc(
+        self,
+        x,
+        y,
+        a,
+        start_angle,
+        end_angle,
+        b=None,
+        inclination=0,
+        clockwise=False,
+        style=None,
+    ):
+        """
+        Outputs a solid arc. A solid arc combines an arc and a triangle to form a pie slice
+        It can be drawn (border only), filled (with no border) or both.
+
+        Args:
+            x (int): Abscissa of upper-left bounging box.
+            y (int): Ordinate of upper-left bounging box.
+            a (int): Semi-major axis.
+            b (int): Semi-minor axis, if None, equals to a (default: None).
+            start_angle (int): Start angle of the arc (in degrees).
+            end_angle (int): End angle of the arc (in degrees).
+            inclination (int): Inclination of the arc in respect of the x-axis (default: 0).
+            clockwise (bool): Way of drawing the arc (True: clockwise, False: counterclockwise) (default: False).
+            style (int): Style of rendering. Possible values are:
+                * `D` or None: draw border. This is the default value.
+                * `F`: fill
+                * `DF` or `FD`: draw and fill
+        """
+        self.arc(
+            x,
+            y,
+            a,
+            start_angle,
+            end_angle,
+            b,
+            inclination,
+            clockwise,
+            True,
+            True,
+            style,
+        )
 
     def add_font(self, family, style="", fname=None, uni=False):
         """
@@ -1587,9 +1811,9 @@ class FPDF:
             f"q {c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm "
             f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm\n"
         )
-        self._rotating = True
+        self._rotating += 1
         yield
-        self._rotating = False
+        self._rotating -= 1
         self._out("Q\n")
 
     @property
@@ -2354,22 +2578,28 @@ class FPDF:
             name, img = hashlib.md5(name.getvalue()).hexdigest(), name
         else:
             name, img = str(name), name
-        if name not in self.images:
-            info = get_img_info(img or load_image(name), self.image_filter)
-            info["i"] = len(self.images) + 1
-            self.images[name] = info
+        info = self.images.get(name)
+        if info:
+            info["usages"] += 1
         else:
-            info = self.images[name]
+            if not img:
+                img = load_image(name)
+            info = get_img_info(img, self.image_filter)
+            info["i"] = len(self.images) + 1
+            info["usages"] = 1
+            self.images[name] = info
 
         # Automatic width and height calculation if needed
-        if w == 0 and h == 0:
-            # Put image at 72 dpi
+        if w == 0 and h == 0:  # Put image at 72 dpi
             w = info["w"] / self.k
             h = info["h"] / self.k
         elif w == 0:
             w = h * info["w"] / info["h"]
         elif h == 0:
             h = w * info["h"] / info["w"]
+
+        if self.oversized_images and info["usages"] == 1:
+            info = self._downscale_image(name, img, info, w, h)
 
         # Flowing mode
         if y is None:
@@ -2392,6 +2622,75 @@ class FPDF:
         if link:
             self.link(x, y, w, h, link)
 
+        return info
+
+    def _downscale_image(self, name, img, info, w, h):
+        width_in_pt, height_in_pt = w * self.k, h * self.k
+        lowres_name = f"lowres-{name}"
+        lowres_info = self.images.get(lowres_name)
+        if (
+            info["w"] > width_in_pt * self.oversized_images_ratio
+            and info["h"] > height_in_pt * self.oversized_images_ratio
+        ):
+            factor = (
+                min(info["w"] / width_in_pt, info["h"] / height_in_pt)
+                / self.oversized_images_ratio
+            )
+            if self.oversized_images.lower().startswith("warn"):
+                LOGGER.warning(
+                    "OVERSIZED: Image %s with size %.1fx%.1fpx is rendered at size %.1fx%.1fpt."
+                    " Set pdf.oversized_images = 'DOWNSCALE' to reduce embedded image size by a factor %.1f",
+                    name,
+                    info["w"],
+                    info["h"],
+                    width_in_pt,
+                    height_in_pt,
+                    factor,
+                )
+            elif self.oversized_images.lower() == "downscale":
+                dims = (
+                    round(width_in_pt * self.oversized_images_ratio),
+                    round(height_in_pt * self.oversized_images_ratio),
+                )
+                info["usages"] -= 1  # no need to embed the high-resolution image
+                if lowres_info:  # Great, we've already done the job!
+                    info = lowres_info
+                    if info["w"] * info["h"] < dims[0] * dims[1]:
+                        # The existing low-res image is too small, we need a bigger low-res image:
+                        info.update(
+                            get_img_info(
+                                img or load_image(name), self.image_filter, dims
+                            )
+                        )
+                        LOGGER.debug(
+                            "OVERSIZED: Updated low-res image with name=%s id=%d to dims=%s",
+                            lowres_name,
+                            info["i"],
+                            dims,
+                        )
+                    info["usages"] += 1
+                else:
+                    info = get_img_info(
+                        img or load_image(name), self.image_filter, dims
+                    )
+                    info["i"] = len(self.images) + 1
+                    info["usages"] = 1
+                    self.images[lowres_name] = info
+                    LOGGER.debug(
+                        "OVERSIZED: Generated new low-res image with name=%s dims=%s id=%d",
+                        lowres_name,
+                        dims,
+                        info["i"],
+                    )
+            else:
+                raise ValueError(
+                    f"Invalid value for attribute .oversized_images: {self.oversized_images}"
+                )
+        elif lowres_info:
+            # Embedding the same image in high-res after inserting it in low-res:
+            lowres_info.update(info)
+            del self.images[name]
+            info = lowres_info
         return info
 
     @contextmanager
@@ -2528,7 +2827,7 @@ class FPDF:
             # Page
             self._newobj()
             self._out("<</Type /Page")
-            self._out("/Parent 1 0 R")
+            self._out(f"/Parent {pdf_ref(1)}")
             page = self.pages[n]
             if page["duration"]:
                 self._out(f"/Dur {page['duration']}")
@@ -2537,7 +2836,7 @@ class FPDF:
             w_pt, h_pt = page["w_pt"], page["h_pt"]
             if w_pt != dw_pt or h_pt != dh_pt:
                 self._out(f"/MediaBox [0 0 {w_pt:.2f} {h_pt:.2f}]")
-            self._out("/Resources 2 0 R")
+            self._out(f"/Resources {pdf_ref(2)}")
 
             page_annots = self.annots[n]
             if page_annots:  # Annotations, e.g. links:
@@ -2593,7 +2892,7 @@ class FPDF:
             spid = self._struct_parents_id_per_page.get(self.n)
             if spid is not None:
                 self._out(f"/StructParents {spid}")
-            self._out(f"/Contents {self.n + 1} 0 R>>")
+            self._out(f"/Contents {pdf_ref(self.n + 1)}>>")
             self._out("endobj")
 
             # Page content
@@ -2607,7 +2906,7 @@ class FPDF:
         self.offsets[1] = len(self.buffer)
         self._out("1 0 obj")
         self._out("<</Type /Pages")
-        self._out("/Kids [" + " ".join(f"{3 + 2 * i} 0 R" for i in range(nb)) + "]")
+        self._out("/Kids [" + " ".join(pdf_ref(3 + 2 * i) for i in range(nb)) + "]")
         self._out(f"/Count {nb}")
         self._out(f"/MediaBox [0 0 {dw_pt:.2f} {dh_pt:.2f}]")
         self._out(">>")
@@ -2720,11 +3019,11 @@ class FPDF:
                 self._out(f"/BaseFont /{name}")
                 self._out(f"/Subtype /{my_type}")
                 self._out("/FirstChar 32 /LastChar 255")
-                self._out(f"/Widths {self.n + 1} 0 R")
-                self._out(f"/FontDescriptor {self.n + 2} 0 R")
+                self._out(f"/Widths {pdf_ref(self.n + 1)}")
+                self._out(f"/FontDescriptor {pdf_ref(self.n + 2)}")
                 if font["enc"]:
                     if "diff" in font:
-                        self._out(f"/Encoding {nf + font['diff']} 0 R")
+                        self._out(f"/Encoding {pdf_ref(nf + font['diff'])}")
                     else:
                         self._out("/Encoding /WinAnsiEncoding")
                 self._out(">>")
@@ -2759,7 +3058,7 @@ class FPDF:
                     s += " /FontFile"
                     if my_type != "Type1":
                         s += "2"
-                    s += f" {self.font_files[filename]['n']} 0 R"
+                    s += " " + pdf_ref(self.font_files[filename]["n"])
                 self._out(f"{s}>>")
                 self._out("endobj")
             elif my_type == "TTF":
@@ -2782,8 +3081,8 @@ class FPDF:
                 self._out("/Subtype /Type0")
                 self._out(f"/BaseFont /{fontname}")
                 self._out("/Encoding /Identity-H")
-                self._out(f"/DescendantFonts [{self.n + 1} 0 R]")
-                self._out(f"/ToUnicode {self.n + 2} 0 R")
+                self._out(f"/DescendantFonts [{pdf_ref(self.n + 1)}]")
+                self._out(f"/ToUnicode {pdf_ref(self.n + 2)}")
                 self._out(">>")
                 self._out("endobj")
 
@@ -2794,12 +3093,12 @@ class FPDF:
                 self._out("<</Type /Font")
                 self._out("/Subtype /CIDFontType2")
                 self._out(f"/BaseFont /{fontname}")
-                self._out(f"/CIDSystemInfo {self.n + 2} 0 R")
-                self._out(f"/FontDescriptor {self.n + 3} 0 R")
+                self._out(f"/CIDSystemInfo {pdf_ref(self.n + 2)}")
+                self._out(f"/FontDescriptor {pdf_ref(self.n + 3)}")
                 if font["desc"].get("MissingWidth"):
                     self._out(f"/DW {font['desc']['MissingWidth']}")
                 self._putTTfontwidths(font, ttf.maxUni)
-                self._out(f"/CIDToGIDMap {self.n + 4} 0 R")
+                self._out(f"/CIDToGIDMap {pdf_ref(self.n + 4)}")
                 self._out(">>")
                 self._out("endobj")
 
@@ -2876,7 +3175,7 @@ class FPDF:
                         v = v | 4
                         v = v & ~32  # SYMBOLIC font flag
                     self._out(f" /{kd} {v}")
-                self._out(f"/FontFile2 {self.n + 2} 0 R")
+                self._out(f"/FontFile2 {pdf_ref(self.n + 2)}")
                 self._out(">>")
                 self._out("endobj")
 
@@ -3009,11 +3308,15 @@ class FPDF:
         self._out(f"/W [{''.join(w)}]")
 
     def _putimages(self):
-        for info in sorted(self.images.values(), key=lambda info: info["i"]):
-            self._putimage(info)
-            del info["data"]
-            if "smask" in info:
-                del info["smask"]
+        for img_info in sorted(
+            self.images.values(), key=lambda img_info: img_info["i"]
+        ):
+            if img_info["usages"] == 0:
+                continue
+            self._putimage(img_info)
+            del img_info["data"]
+            if "smask" in img_info:
+                del img_info["smask"]
 
     def _putimage(self, info):
         if "data" not in info:
@@ -3028,7 +3331,7 @@ class FPDF:
         if info["cs"] == "Indexed":
             self._out(
                 f"/ColorSpace [/Indexed /DeviceRGB "
-                f"{len(info['pal']) // 3 - 1} {self.n + 1} 0 R]"
+                f"{len(info['pal']) // 3 - 1} {pdf_ref(self.n + 1)}]"
             )
         else:
             self._out(f"/ColorSpace /{info['cs']}")
@@ -3046,15 +3349,15 @@ class FPDF:
             trns = " ".join(f"{x} {x}" for x in info["trns"])
             self._out(f"/Mask [{trns}]")
 
-        if "smask" in info:
-            self._out(f"/SMask {self.n + 1} 0 R")
+        if self.allow_images_transparency and "smask" in info:
+            self._out(f"/SMask {pdf_ref(self.n + 1)}")
 
         self._out(f"/Length {len(info['data'])}>>")
         self._out(pdf_stream(info["data"]))
         self._out("endobj")
 
         # Soft mask
-        if "smask" in info:
+        if self.allow_images_transparency and "smask" in info:
             dp = f"/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns {info['w']}"
             smask = {
                 "w": info["w"],
@@ -3080,10 +3383,14 @@ class FPDF:
             self._out("endobj")
 
     def _putxobjectdict(self):
-        i = [(x["i"], x["n"]) for x in self.images.values()]
-        i.sort()
-        for idx, n in i:
-            self._out(f"/I{idx} {n} 0 R")
+        img_ids = [
+            (img_info["i"], img_info["n"])
+            for img_info in self.images.values()
+            if img_info["usages"]
+        ]
+        img_ids.sort()
+        for idx, n in img_ids:
+            self._out(f"/I{idx} {pdf_ref(n)}")
 
     def _putresourcedict(self):
         # From section 10.1, "Procedure Sets", of PDF 1.7 spec:
@@ -3093,9 +3400,9 @@ class FPDF:
         # > (preferably, all of those listed in Table 10.1).
         self._out("/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]")
         self._out("/Font <<")
-        f = [(x["i"], x["n"]) for x in self.fonts.values()]
-        f.sort()
-        for idx, n in f:
+        font_ids = [(x["i"], x["n"]) for x in self.fonts.values()]
+        font_ids.sort()
+        for idx, n in font_ids:
             self._out(f"/F{idx} {pdf_ref(n)}")
         self._out(">>")
         self._out("/XObject <<")
@@ -3595,6 +3902,17 @@ class FPDF:
         self.set_font(*prev_font)
         self.text_color = prev_text_color
         self.underline = prev_underline
+
+
+def _style_to_operator(style):
+    style_to_operators = {"F": "f", "FD": "B", "DF": "B", "D": "S"}
+    if not style:
+        style = "D"
+    if style not in style_to_operators:
+        raise ValueError(
+            f"Invalid value for style: '{style}'. Allowed values: {'/'.join(style_to_operators.keys())}"
+        )
+    return style_to_operators[style]
 
 
 def _char_width(font, char):

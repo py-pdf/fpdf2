@@ -24,6 +24,8 @@ def test_load_text_file():
     bc = contents.encode()
 
     resource = fpdf.image_parsing.load_image(str(file)).getvalue()
+    # loaded a text file in binary mode, may contain DOS style line endings.
+    resource = resource.replace(b"\r\n", b"\n")
     assert bytes(resource) == bc
 
 
