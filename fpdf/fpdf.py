@@ -1104,8 +1104,8 @@ class FPDF:
         Style can also be applied (fill, border...)
 
         Args:
-            x (int): Abscissa of upper-left bounging box.
-            y (int): Ordinate of upper-left bounging box.
+            x (int): Abscissa of upper-left bounding box.
+            y (int): Ordinate of upper-left bounding box.
             numSides (int): Number of sides for polygon.
             polyWidth (int): width of the polygon.
             rotateDegrees (int): degree amount to rotate polygon. (can be left blank)
