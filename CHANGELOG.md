@@ -27,6 +27,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
   It enables to draw arcs in a PDF document.
 - [`FPDF.solid_arc`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.solid_arc): new method added.
   It enables to draw solid arcs in a PDF document. A solid arc combines an arc and a triangle to form a pie slice.
+- [`FPDF.regular_polygon`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.regular_polygon): new method added.
 ### Fixed
 - The exception making the "x2" template field optional for barcode elements did not work correctly, fixed by @gmischler
 ### Changed
