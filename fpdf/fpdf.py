@@ -1118,17 +1118,21 @@ class FPDF:
         radius = polyWidth / 2
         centerX = x + radius
         centerY = y - radius
-        #center point is (centerX, centerY)
+        # center point is (centerX, centerY)
         points = []
         i = 1
-        for i in range(1,numSides+1):
-            point = centerX + radius*math.cos(math.radians((360/numSides)*i)+math.radians(rotateDegrees)), centerY + radius*math.sin(math.radians((360/numSides)*i)+math.radians(rotateDegrees))
+        for i in range(1, numSides + 1):
+            point = centerX + radius * math.cos(
+                math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
+            ), centerY + radius * math.sin(
+                math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
+            )
             points.append(point)
             i += 1
-        #creates list of touples containing cordinate points of vertices 
+        # creates list of touples containing cordinate points of vertices
 
         self.polygon(points, style)
-        #passes points through polygon function
+        # passes points through polygon function
 
     def arc(
         self,
