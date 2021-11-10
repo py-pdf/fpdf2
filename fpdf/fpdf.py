@@ -266,6 +266,8 @@ class FPDF(GraphicsStateMixin):
         self.lasth = 0  # height of last cell printed
         self.current_font = {}  # current font
         self.str_alias_nb_pages = "{nb}"
+        # Scale factor
+        self.k = get_scale_factor(unit)
         # graphics state variables from the stack
         self.font_family = ""  # current font family
         self.font_style = ""  # current font style
@@ -276,6 +278,7 @@ class FPDF(GraphicsStateMixin):
         self.fill_color = "0 g"
         self.text_color = "0 g"
         self.dash_pattern = "[] 0 d"
+        self.line_width = 0.567 / self.k  # line width (0.2 mm)
         # font_size is initialized below after the standard fonts have been set up
         # end of grapics state variables
         self.ws = 0  # word spacing
@@ -325,8 +328,6 @@ class FPDF(GraphicsStateMixin):
             "couriernew": "courier",
             "timesnewroman": "times",
         }
-        # Scale factor
-        self.k = get_scale_factor(unit)
 
         self.dw_pt, self.dh_pt = get_page_format(format, self.k)
         self._set_orientation(orientation, self.dw_pt, self.dh_pt)
@@ -341,7 +342,6 @@ class FPDF(GraphicsStateMixin):
         self.set_margins(margin, margin)
         self.x, self.y = self.l_margin, self.t_margin
         self.c_margin = margin / 10.0  # Interior cell margin (1 mm)
-        self.line_width = 0.567 / self.k  # line width (0.2 mm)
         # sets self.auto_page_break, self.b_margin & self.page_break_trigger:
         self.set_auto_page_break(True, 2 * margin)
         self.set_display_mode("fullwidth")  # Full width display mode
@@ -1788,14 +1788,12 @@ class FPDF(GraphicsStateMixin):
         angle *= math.pi / 180
         c, s = math.cos(angle), math.sin(angle)
         cx, cy = x * self.k, (self.h - y) * self.k
-        self._out(
-            f"q {c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm "
-            f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm\n"
-        )
-        self._push_local_stack()
-        yield
-        self._pop_local_stack()
-        self._out("Q\n")
+        with self.local_context():
+            self._out(
+                f"{c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm "
+                f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm\n"
+            )
+            yield
 
     @check_page
     @contextmanager
@@ -1819,6 +1817,7 @@ class FPDF(GraphicsStateMixin):
             font_size_pt
             font_size
             dash_pattern
+            line_width
         """
         self._push_local_stack()
         self._out("\nq ")

@@ -23,6 +23,7 @@ class GraphicsStateMixin:
                 font_size_pt=0,
                 font_size=0,
                 dash_pattern="[] 0 d",
+                line_width=0,
             ),
         ]
 
@@ -111,3 +112,11 @@ class GraphicsStateMixin:
     @dash_pattern.setter
     def dash_pattern(self, v):
         self.__statestack[-1]["dash_pattern"] = v
+
+    @property
+    def line_width(self):
+        return self.__statestack[-1]["line_width"]
+
+    @line_width.setter
+    def line_width(self, v):
+        self.__statestack[-1]["line_width"] = v
