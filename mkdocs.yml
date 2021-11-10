@@ -20,6 +20,35 @@ theme:
 markdown_extensions: [toc, pymdownx.highlight, pymdownx.superfences]
 plugins:
   - include-markdown
+  - search
+  - with-pdf:  # https://github.com/orzih/mkdocs-with-pdf
+      output_path: fpdf2-manual.pdf
+      cover_title: fpdf2 manual
+      cover_subtitle: A minimalist PDF creation library for Python
+      author: ' '
+      copyright: ' '
+      #cover: false
+      #back_cover: true
+      #custom_template_path: TEMPLATES PATH
+      #toc_title: TOC TITLE TEXT
+      #heading_shift: false
+      #toc_level: 3
+      #ordered_chapter_level: 2
+      #excludes_children:
+      #    - 'release-notes/:upgrading'
+      #exclude_pages:
+      #    - 'appendix/contribute/'
+      #convert_iframe:
+      #    - src: IFRAME SRC
+      #      img: POSTER IMAGE URL
+      #      text: ALTERNATE TEXT
+      #two_columns_level: 3
+      #render_js: true
+      #headless_chrome_path: headless-chromium
+      #enabled_if_env: ENABLE_PDF_EXPORT
+      #debug_html: true
+      #show_anchors: true
+      #verbose: true
 nav:
 - 'Project Home':                   'index.md'
 - 'Tutorial':                       'Tutorial.md'

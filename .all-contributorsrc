@@ -432,6 +432,15 @@
         "code",
         "review"
       ]
+    },
+    {
+      "login": "bettman-latin",
+      "name": "bettman-latin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/91155492?v=4",
+      "profile": "https://github.com/bettman-latin",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

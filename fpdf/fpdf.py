@@ -1080,6 +1080,43 @@ class FPDF(GraphicsStateMixin):
         self.ellipse(x, y, r, r, style)
 
     @check_page
+    def regular_polygon(self, x, y, numSides, polyWidth, rotateDegrees=0, style=None):
+        """
+        Outputs a regular polygon with n sides
+        It can be rotated
+        Style can also be applied (fill, border...)
+
+        Args:
+            x (int): Abscissa of upper-left bounding box.
+            y (int): Ordinate of upper-left bounding box.
+            numSides (int): Number of sides for polygon.
+            polyWidth (int): width of the polygon.
+            rotateDegrees (int): degree amount to rotate polygon. (can be left blank)
+            style (int): Style of rendering. Possible values are: (can be left blank)
+                * `D` or None: draw border. This is the default value.
+                * `F`: fill
+                * `DF` or `FD`: draw and fill
+
+        """
+        radius = polyWidth / 2
+        centerX = x + radius
+        centerY = y - radius
+        # center point is (centerX, centerY)
+        points = []
+        i = 1
+        for i in range(1, numSides + 1):
+            point = centerX + radius * math.cos(
+                math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
+            ), centerY + radius * math.sin(
+                math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
+            )
+            points.append(point)
+            i += 1
+        # creates list of touples containing cordinate points of vertices
+
+        self.polygon(points, style)
+        # passes points through polygon function
+
     def arc(
         self,
         x,
@@ -1097,10 +1134,6 @@ class FPDF(GraphicsStateMixin):
         """
         Outputs an arc.
         It can be drawn (border only), filled (with no border) or both.
-
-        Args:
-            x (int): Abscissa of upper-left bounging box.
-            y (int): Ordinate of upper-left bounging box.
             a (int): Semi-major axis diameter.
             b (int): Semi-minor axis diameter, if None, equals to a (default: None).
             start_angle (int): Start angle of the arc (in degrees).

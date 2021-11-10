@@ -60,6 +60,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p public/
+          # Setting PDF manual version:
+          sed -i "s/author:.*/author: v$(python setup.py -V 2>/dev/null)/" mkdocs.yml
           mkdocs build
           pdoc --html -o public/ fpdf
           cd contributors/ && PYTHONUNBUFFERED=1 ./build_contributors_html_page.py PyFPDF/fpdf2

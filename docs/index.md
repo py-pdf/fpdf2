@@ -81,4 +81,5 @@ or [open a discussion](https://github.com/PyFPDF/fpdf2/discussions).
 * Release notes: [CHANGELOG.md](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)
 * This library could only exist thanks to the dedication of many volunteers around the world:
   [list & map of contributors](https://github.com/PyFPDF/fpdf2/blob/master/README.md#contributors-)
+* You can download an offline PDF version of this manual: [fpdf2-manual.pdf](fpdf2-manual.pdf)
 * Looking for alternatives? Check out [this detailed list of PDF-related Python libs by Patrick Maupin](https://github.com/pmaupin/pdfrw#other-libraries). There is also `pikepdf`, `PyFPDF2` & `WeasyPrint`.

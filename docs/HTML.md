@@ -6,6 +6,9 @@ This is implemented by using `html.parser.HTMLParser` from the Python standard l
 The whole HTML 5 specification is very likely **not** supported, neither as CSS,
 but bug reports & contributions are very welcome to improve this.
 
+For a more robust & feature-full HTML-to-PDF converter in Python,
+you may want to check [WeasyPrint](https://weasyprint.org).
+
 
 ## write_html usage example ##
 

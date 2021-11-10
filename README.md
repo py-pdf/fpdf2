@@ -155,6 +155,7 @@ This library could only exist thanks to the dedication of many volunteers around
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/paulacampigotto"><img src="https://avatars.githubusercontent.com/u/36995920?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Paula Campigotto</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Apaulacampigotto" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=paulacampigotto" title="Code">💻</a> <a href="https://github.com/PyFPDF/fpdf2/pulls?q=is%3Apr+reviewed-by%3Apaulacampigotto" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="https://github.com/bettman-latin"><img src="https://avatars.githubusercontent.com/u/91155492?v=4?s=100" width="100px;" alt=""/><br /><sub><b>bettman-latin</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=bettman-latin" title="Code">💻</a></td>
   </tr>
 </table>
 
