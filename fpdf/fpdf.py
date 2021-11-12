@@ -247,8 +247,8 @@ class FPDF(GraphicsStateMixin):
                 `None` disables font chaching.
                 The default is `True`, meaning the current folder.
         """
-        GraphicsStateMixin.__init__(self)
-        # Initialization of properties
+        super().__init__()
+        # Initialization of instance attributes
         self.offsets = {}  # array of object offsets
         self.page = 0  # current page number
         self.n = 2  # current object number
@@ -266,21 +266,7 @@ class FPDF(GraphicsStateMixin):
         self.lasth = 0  # height of last cell printed
         self.current_font = {}  # current font
         self.str_alias_nb_pages = "{nb}"
-        # Scale factor
-        self.k = get_scale_factor(unit)
-        # graphics state variables from the stack
-        self.font_family = ""  # current font family
-        self.font_style = ""  # current font style
-        self.font_size_pt = 12  # current font size in points
-        self.font_stretching = 100  # current font stretching
-        self.underline = 0  # underlining flag
-        self.draw_color = "0 G"
-        self.fill_color = "0 g"
-        self.text_color = "0 g"
-        self.dash_pattern = "[] 0 d"
-        self.line_width = 0.567 / self.k  # line width (0.2 mm)
-        # font_size is initialized below after the standard fonts have been set up
-        # end of grapics state variables
+
         self.ws = 0  # word spacing
         self.angle = 0  # used by deprecated method: rotate()
         self.font_cache_dir = font_cache_dir
@@ -328,13 +314,27 @@ class FPDF(GraphicsStateMixin):
             "couriernew": "courier",
             "timesnewroman": "times",
         }
+        # Scale factor
+        self.k = get_scale_factor(unit)
+
+        # Graphics state variables defined as properties by GraphicsStateMixin.
+        # We set their default values here.
+        self.font_family = ""  # current font family
+        self.font_style = ""  # current font style
+        self.font_size_pt = 12  # current font size in points
+        self.font_size = self.font_size_pt / self.k
+        self.font_stretching = 100  # current font stretching
+        self.underline = 0  # underlining flag
+        self.draw_color = "0 G"
+        self.fill_color = "0 g"
+        self.text_color = "0 g"
+        self.dash_pattern = "[] 0 d"
+        self.line_width = 0.567 / self.k  # line width (0.2 mm)
+        # end of grapics state variables
 
         self.dw_pt, self.dh_pt = get_page_format(format, self.k)
         self._set_orientation(orientation, self.dw_pt, self.dh_pt)
         self.def_orientation = self.cur_orientation
-        # another one from the graphics state stack
-        self.font_size = self.font_size_pt / self.k
-
         # Page spacing
         # Page margins (1 cm)
         margin = (7200 / 254) / self.k

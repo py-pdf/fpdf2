@@ -10,7 +10,7 @@ class GraphicsStateMixin:
     directly by user code.
     """
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.__statestack = [
             dict(
                 draw_color="0 G",
@@ -26,6 +26,7 @@ class GraphicsStateMixin:
                 line_width=0,
             ),
         ]
+        super().__init__(*args, **kwargs)
 
     def _push_local_stack(self):
         self.__statestack.append(self.__statestack[-1].copy())
