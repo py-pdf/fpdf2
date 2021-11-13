@@ -103,14 +103,45 @@ and you will just have to run `git commit -a` again.
 
 ## Testing ##
 
-To run tests, `cd` into the repository, install the dependencies using
+### Running tests
+
+To run tests, `cd` into `fpdf2` repository, install the dependencies using
 `pip install -r test/requirements.txt`,  and run `pytest`.
+
+You can run a single test by executing: `pytest -k function_name`.
 
 Alternatively, you can use [Tox](https://tox.readthedocs.io/en/latest/).
 It is self-documented in the `tox.ini` file in the repository.
 To run tests for all versions of Python, simply run `tox`.
 If you do not want to run tests for all versions of python, run `tox -e py39`
 (or your version of Python).
+
+### Why is a test failing?
+
+If there are some failing tests after you made a code change,
+it is usually because **there are difference between an expected PDF generated and the actual one produced**.
+
+Calling `pytest -vv` will display **the difference of PDF source code** between the expected & actual files,
+but that may be difficult to understand,
+
+You can also have a look at the PDF files involved by navigating to the temporary test directory
+that is printed out during the test failure:
+```
+=================================== FAILURES ===================================
+____________________________ test_html_simple_table ____________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_html_simple_table0')
+```
+
+This directory contains the **actual** & **expected** files, that you can vsualize to spot differences:
+```
+$ ls /tmp/pytest-of-runner/pytest-0/test_html_simple_table0
+actual.pdf
+actual_qpdf.pdf
+expected_qpdf.pdf
+```
+
+### assert_pdf_equal & writing new tests
 
 When a unit test generates a PDF, it is recommended to use the `assert_pdf_equal`
 utility function in order to validate the output.
@@ -127,8 +158,6 @@ check the output in case of a failed test.
 
 In order to generate a "reference" PDF file, simply call `assert_pdf_equal`
 once with `generate=True`.
-
-Be sure to see the example tests in the `test/` folder in general.
 
 ## GitHub pipeline ##
 
