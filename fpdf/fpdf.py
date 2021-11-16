@@ -713,25 +713,15 @@ class FPDF:
             # close page
             self._endpage()
 
-        if self._has_next_page():
-            self._beginpage(
-                orientation,
-                format,
-                same,
-                duration or self.page_duration,
-                transition or self.page_transition,
-                new_page=False,
-            )
-
-        else:
-            # Start new page
-            self._beginpage(
-                orientation,
-                format,
-                same,
-                duration or self.page_duration,
-                transition or self.page_transition,
-            )
+        # Start new page
+        self._beginpage(
+            orientation,
+            format,
+            same,
+            duration or self.page_duration,
+            transition or self.page_transition,
+            new_page=not self._has_next_page(),
+        )
 
         self._out("2 J")  # Set line cap style to square
         self.line_width = lw  # Set line width
