@@ -7,7 +7,10 @@ ability to draw pretty much any vector shape on the page.
 
 The drawing API makes use of features (notably transparency and blending modes)
 that were introduced in PDF 1.4. Therefore, use of the features of this module
-will automatically set the output version to 1.4 (the default is 1.3).
+will automatically set the output version to 1.4 (fpdf normally defaults to
+version 1.3. Because the PDF 1.4 specification was originally published in
+2001, this version should be compatible with all viewers currently in general
+use).
 
 ## Getting Started
 
@@ -87,7 +90,7 @@ Additionally, it's not generally possible to deconstruct a composed
 transformation (representing an ordered sequence of translations, scaling,
 rotations, shearing) back into the sequence of individual transformation
 functions that produced it. That's okay, because this isn't important unless
-you're trying to do something like  animate transforms after they've been
+you're trying to do something like animate transforms after they've been
 composed, which you can't do in a PDF anyway.
 
 All that said, let's take the example we've been working with for a spin (the
@@ -185,5 +188,5 @@ created programmatically by creating instances of the
 groups of paths.
 
 Storing paths in intermediate objects allows reusing them and can open up more
-advanced use-cases. The `fpdf.svg` SVG converter, for example, is implemented
-using the `fpdf.drawing` interface.
+advanced use-cases. The [`fpdf.svg`](SVG.html) SVG converter, for example, is
+implemented using the `fpdf.drawing` interface.
