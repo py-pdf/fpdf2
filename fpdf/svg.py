@@ -700,37 +700,37 @@ class SVGObject:
         else:
             self.preserve_ar = True
 
-        if width is not None:
+        if width is None:
+            width = Percent(100)
+        else:
             width.strip()
             if width.endswith("%"):
                 width = Percent(width[:-1])
             else:
                 width = resolve_length(width)
-        else:
-            width = Percent(100)
 
         self.width = width
 
-        if height is not None:
+        if height is None:
+            height = Percent(100)
+        else:
             height.strip()
             if height.endswith("%"):
                 height = Percent(height[:-1])
             else:
                 height = resolve_length(height)
-        else:
-            height = Percent(100)
 
         self.height = height
 
-        if viewbox is not None:
+        if viewbox is None:
+            self.viewbox = None
+        else:
             viewbox.strip()
             vx, vy, vw, vh = [float(num) for num in NUMBER_SPLIT.split(viewbox)]
             if (vw < 0) or (vh < 0):
                 raise ValueError(f"invalid negative width/height in viewbox {viewbox}")
 
             self.viewbox = [vx, vy, vw, vh]
-        else:
-            self.viewbox = None
 
     @force_nodocument
     def convert_graphics(self, root_tag):

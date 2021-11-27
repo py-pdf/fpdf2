@@ -1422,10 +1422,10 @@ class GraphicsStyle:
         new = cls()
         for prop in cls.MERGE_PROPERTIES:
             cval = getattr(child, prop)
-            if cval is not GraphicsStyle.INHERIT:
-                setattr(new, prop, cval)
-            else:
+            if cval is GraphicsStyle.INHERIT:
                 setattr(new, prop, getattr(parent, prop))
+            else:
+                setattr(new, prop, cval)
 
         return new
 
