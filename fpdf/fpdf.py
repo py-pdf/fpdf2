@@ -329,7 +329,7 @@ class FPDF(GraphicsStateMixin):
         self.draw_color = "0 G"
         self.fill_color = "0 g"
         self.text_color = "0 g"
-        self.dash_pattern = "[] 0 d"
+        self.dash_pattern = dict(dash=0, gap=0, phase=0)
         self.line_width = 0.567 / self.k  # line width (0.2 mm)
         # end of grapics state variables
 
@@ -994,15 +994,20 @@ class FPDF(GraphicsStateMixin):
             raise ValueError("gap length must be zero or a positive number.")
         if not (isinstance(phase, (int, float)) and phase >= 0):
             raise ValueError("Phase must be zero or a positive number.")
-        if dash:
-            if gap:
-                dstr = f"[{dash * self.k:.3f} {gap * self.k:.3f}] {phase *self.k:.3f} d"
+
+        pattern = dict(dash=dash, gap=gap, phase=phase)
+
+        if pattern != self.dash_pattern:
+            self.dash_pattern = pattern
+
+            if dash:
+                if gap:
+                    dstr = f"[{dash * self.k:.3f} {gap * self.k:.3f}] {phase *self.k:.3f} d"
+                else:
+                    dstr = f"[{dash * self.k:.3f}] {phase *self.k:.3f} d"
             else:
-                dstr = f"[{dash * self.k:.3f}] {phase *self.k:.3f} d"
-        else:
-            dstr = "[] 0 d"
-        if dstr != self.dash_pattern:
-            self.dash_pattern = dstr
+                dstr = "[] 0 d"
+
             self._out(dstr)
 
     @check_page
