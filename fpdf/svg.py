@@ -16,16 +16,16 @@ def force_nodocument(item):
 
 # https://www.w3.org/TR/SVG/Overview.html
 
-_handy_namespaces = {
+_HANDY_NAMESPACES = {
     "svg": "http://www.w3.org/2000/svg",
     "xlink": "http://www.w3.org/1999/xlink",
 }
 
-alphabet = re.compile(r"([a-zA-Z])")
-number_sign = re.compile(r"([+-])")
-number_split = re.compile(r"(?:\s+,\s+|\s+,|,\s+|\s+|,)")
-decimal_disaster = re.compile(r"(\d+\.\d+|\d+\.|\.\d+)(\.)")
-transform_getter = re.compile(
+ALPHABET = re.compile(r"([a-zA-Z])")
+NUMBER_SIGN = re.compile(r"([+-])")
+NUMBER_SPLIT = re.compile(r"(?:\s+,\s+|\s+,|,\s+|\s+|,)")
+DECIMAL_DISASTER = re.compile(r"(\d+\.\d+|\d+\.|\.\d+)(\.)")
+TRANSFORM_GETTER = re.compile(
     r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)"
     r"\(((?:\s*(?:[-+]?[\d\.]+,?)+\s*)+)\)"
 )
@@ -119,7 +119,7 @@ def resolve_angle(angle_str, default_unit="deg"):
 def xmlns(space, name):
     """Create an XML namespace string representation for the given tag name."""
     try:
-        space = _handy_namespaces[space]
+        space = _HANDY_NAMESPACES[space]
     except KeyError:
         # probably we should not eat this KeyError actually
         space = ""
@@ -174,7 +174,7 @@ svg_attr_map = {
     "stroke-dasharray": lambda dasharray: (
         "stroke_dash_pattern",
         optional(
-            dasharray, lambda da: [float(item) for item in number_split.split(da)]
+            dasharray, lambda da: [float(item) for item in NUMBER_SPLIT.split(da)]
         ),
     ),
     "stroke-linecap": lambda capstr: ("stroke_cap_style", optional(capstr)),
@@ -349,12 +349,12 @@ def convert_transforms(tfstr):
     """Convert SVG/CSS transform functions into PDF transforms."""
 
     # https://drafts.csswg.org/css-transforms/#two-d-transform-functions
-    parsed = transform_getter.findall(tfstr)
+    parsed = TRANSFORM_GETTER.findall(tfstr)
 
     transform = drawing.Transform.identity()
     for tf_type, args in parsed:
         if tf_type == "matrix":
-            a, b, c, d, e, f = tuple(float(n) for n in number_split.split(args))
+            a, b, c, d, e, f = tuple(float(n) for n in NUMBER_SPLIT.split(args))
             transform = drawing.Transform(a, b, c, d, e, f) @ transform
 
         elif tf_type == "rotate":
@@ -363,7 +363,7 @@ def convert_transforms(tfstr):
 
         elif tf_type == "scale":
             # if sy is not provided, it takes a value equal to sx
-            args = number_split.split(args)
+            args = NUMBER_SPLIT.split(args)
             if len(args) == 2:
                 sx = float(args[0])
                 sy = float(args[1])
@@ -382,7 +382,7 @@ def convert_transforms(tfstr):
 
         elif tf_type == "skew":
             # if sy is not provided, it takes a value equal to 0
-            args = number_split.split(args)
+            args = NUMBER_SPLIT.split(args)
             if len(args) == 2:
                 sx = resolve_angle(args[0])
                 sy = resolve_angle(args[1])
@@ -410,7 +410,7 @@ def convert_transforms(tfstr):
 
         elif tf_type == "translate":
             # if y is not provided, it takes a value equal to 0
-            args = number_split.split(args)
+            args = NUMBER_SPLIT.split(args)
             if len(args) == 2:
                 x = resolve_length(args[0])
                 y = resolve_length(args[1])
@@ -594,7 +594,7 @@ path_directives = {*path_directive_mapping}
 
 def _read_n_numbers(path_str, n):
     path_str = path_str.lstrip()
-    *numbers, leftover = number_split.split(path_str, maxsplit=n)
+    *numbers, leftover = NUMBER_SPLIT.split(path_str, maxsplit=n)
     if len(numbers) == n - 1:
         numbers.append(leftover)
         leftover = ""
@@ -615,14 +615,14 @@ def svg_path_converter(pdf_path, svg_path):
     # example, 3-4 should be parsed as (3, -4), 3+4 should be parsed as (3, 4), and
     # 3.4.5 should be parsed as (3.4, 0.5) (split like 3.4, .5)
 
-    # decimal_disaster substitution has to be called twice to handle extremely
+    # DECIMAL_DISASTER substitution has to be called twice to handle extremely
     # degenerate cases like 1.2.3.4, which will be split into 1.2 .3.4 by the first
     # pass due to the regex substitution not handling overlapping regions. The expected
     # output in this case would be "1.2 .3 .4"
-    svg_path = decimal_disaster.sub(
+    svg_path = DECIMAL_DISASTER.sub(
         r"\1 \2",
-        decimal_disaster.sub(
-            r"\1 \2", number_sign.sub(r" \1", alphabet.sub(r" \1 ", svg_path))
+        DECIMAL_DISASTER.sub(
+            r"\1 \2", NUMBER_SIGN.sub(r" \1", ALPHABET.sub(r" \1 ", svg_path))
         ),
     ).strip()
 
@@ -724,7 +724,7 @@ class SVGObject:
 
         if viewbox is not None:
             viewbox.strip()
-            vx, vy, vw, vh = [float(num) for num in number_split.split(viewbox)]
+            vx, vy, vw, vh = [float(num) for num in NUMBER_SPLIT.split(viewbox)]
             if (vw < 0) or (vh < 0):
                 raise ValueError(f"invalid negative width/height in viewbox {viewbox}")
 
