@@ -570,7 +570,8 @@ class TestDrawingContext:
         assert result == "q 1 0 0 -1 0 10 cm q 0 0 m 10 10 l h B Q Q"
 
 
-class TestPaintedPath:
+# this is named so it doesn't get picked up by pytest implicitly.
+class CommonPathTests:
     path_class = fpdf.drawing.PaintedPath
     comp_index = 0
 
@@ -716,9 +717,26 @@ class TestPaintedPath:
         assert rend == rendered[self.comp_index]
 
 
+class TestPaintedPath(CommonPathTests):
+    def test_inheriting_document_properties(self, auto_pdf):
+        auto_pdf.set_line_width(1)
+        auto_pdf.set_dash_pattern(dash=1, gap=2, phase=1)
+        auto_pdf.set_draw_color(255, 0, 0)
+        auto_pdf.set_fill_color(0, 0, 255)
+
+        with auto_pdf.new_path() as path:
+            path.style.paint_rule = fpdf.drawing.PathPaintRule.STROKE_FILL_NONZERO
+            path.style.stroke_join_style = "round"
+            path.style.stroke_cap_style = "round"
+
+            path.move_to(2, 2)
+            path.line_to(2, 8)
+            path.line_to(8, 8)
+
+
 # This class inherits all of the tests from the PaintedPath test class, just like it
 # inherits all of its functionality.
-class TestClippingPath(TestPaintedPath):
+class TestClippingPath(CommonPathTests):
     path_class = fpdf.drawing.ClippingPath
     comp_index = 1
 
