@@ -3232,6 +3232,10 @@ class DrawingContext:
 
         Args:
             item (GraphicsContext, PaintedPath): the item to be appended.
+            _copy (bool): if true (the default), the item will be copied before being
+                appended. This prevents modifications to a referenced object from
+                "retroactively" altering its style/shape and should be disabled with
+                caution.
         """
 
         if not isinstance(item, (GraphicsContext, PaintedPath)):
@@ -3302,6 +3306,26 @@ class DrawingContext:
         return " ".join(render_list)
 
     def render_debug(self, gsd_registry, first_point, scale, height, debug_stream):
+        """
+        Render the drawing context to PDF format.
+
+        Args:
+            gsd_registry (GraphicsStateDictRegistry): the parent document's graphics
+                state registry.
+            first_point (Point): the starting point to use if the first path element is
+                a relative element.
+            scale (Number): the scale factor to convert from PDF pt units into the
+                document's semantic units (e.g. mm or in).
+            height (Number): the page height. This is used to remap the coordinates to
+                be from the top-left corner of the page (matching fpdf's behavior)
+                instead of the PDF native behavior of bottom-left.
+            debug_stream (TextIO): a text stream to which a debug representation of the
+                drawing structure will be written.
+
+        Returns:
+            A string composed of the PDF representation of all the paths and groups in
+            this context (an empty string is returned if there are no paths or groups)
+        """
         render_list, style, last_item = self._setup_render_prereqs(
             first_point, scale, height
         )
@@ -3434,6 +3458,13 @@ class PaintedPath:
     def add_path_element(self, item, _copy=True):
         """
         Add the given element as a path item of this path.
+
+        Args:
+            item: the item to add to this path.
+            _copy (bool): if true (the default), the item will be copied before being
+                appended. This prevents modifications to a referenced object from
+                "retroactively" altering its style/shape and should be disabled with
+                caution.
         """
         if self._starter_move is not None:
             self._closed = False
@@ -4012,6 +4043,10 @@ class GraphicsContext:
         Args:
             item: the path element to add. May be a primitive element or another
                 `GraphicsContext` or a `PaintedPath`.
+            _copy (bool): if true (the default), the item will be copied before being
+                appended. This prevents modifications to a referenced object from
+                "retroactively" altering its style/shape and should be disabled with
+                caution.
         """
         if _copy:
             item = copy.deepcopy(item)
