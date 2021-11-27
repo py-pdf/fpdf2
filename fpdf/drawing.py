@@ -1410,6 +1410,14 @@ class GraphicsStyle:
 
         return copied
 
+    def __setattr__(self, name, value):
+        if not hasattr(self, name):
+            raise AttributeError(
+                f'{self.__class__} does not have style "{name}" (a typo?)'
+            )
+
+        super().__setattr__(name, value)
+
     @classmethod
     def merge(cls, parent, child):
         """
@@ -1441,11 +1449,11 @@ class GraphicsStyle:
     @paint_rule.setter
     def paint_rule(self, new):
         if new is None:
-            self._paint_rule = PathPaintRule.DONT_PAINT
+            super().__setattr__("_paint_rule", PathPaintRule.DONT_PAINT)
         if new is GraphicsStyle.INHERIT:
-            self._paint_rule = new
+            super().__setattr__("_paint_rule", new)
         else:
-            self._paint_rule = PathPaintRule.coerce(new)
+            super().__setattr__("_paint_rule", PathPaintRule.coerce(new))
 
     @property
     def auto_close(self):
@@ -1459,7 +1467,7 @@ class GraphicsStyle:
                 f"auto_close must be a bool or GraphicsStyle.INHERIT, not {new}"
             )
 
-        self._auto_close = new
+        super().__setattr__("_auto_close", new)
 
     @property
     def intersection_rule(self):
@@ -1470,9 +1478,9 @@ class GraphicsStyle:
     def intersection_rule(self, new):
         # don't allow None for this one.
         if new is GraphicsStyle.INHERIT:
-            self._intersection_rule = new
+            super().__setattr__("_intersection_rule", new)
         else:
-            self._intersection_rule = IntersectionRule.coerce(new)
+            super().__setattr__("_intersection_rule", IntersectionRule.coerce(new))
 
     @property
     def fill_color(self):
@@ -1490,14 +1498,12 @@ class GraphicsStyle:
             color = color_from_hex_string(color)
 
         if isinstance(color, (DeviceRGB, DeviceGray, DeviceCMYK)):
-            self._fill_color = color
-            # strip opacity
-            # self._fill_color = color.__class__(*color.colors)
+            super().__setattr__("_fill_color", color)
             if color.a is not None:
                 self.fill_opacity = color.a
 
         elif (color is None) or (color is GraphicsStyle.INHERIT):
-            self._fill_color = color
+            super().__setattr__("_fill_color", color)
 
         else:
             raise TypeError(f"{color} doesn't look like a drawing color")
@@ -1512,7 +1518,7 @@ class GraphicsStyle:
         if new not in {None, GraphicsStyle.INHERIT}:
             _check_range(new)
 
-        setattr(self, PDFStyleKeys.FILL_ALPHA.value, new)
+        super().__setattr__(PDFStyleKeys.FILL_ALPHA.value, new)
 
     @property
     def stroke_color(self):
@@ -1530,12 +1536,12 @@ class GraphicsStyle:
             color = color_from_hex_string(color)
 
         if isinstance(color, (DeviceRGB, DeviceGray, DeviceCMYK)):
-            self._stroke_color = color
+            super().__setattr__("_stroke_color", color)
             if color.a is not None:
                 self.stroke_opacity = color.a
 
         elif (color is None) or (color is GraphicsStyle.INHERIT):
-            self._stroke_color = color
+            super().__setattr__("_stroke_color", color)
 
         else:
             raise TypeError(f"{color} doesn't look like a drawing color")
@@ -1550,7 +1556,7 @@ class GraphicsStyle:
         if new not in {None, GraphicsStyle.INHERIT}:
             _check_range(new)
 
-        setattr(self, PDFStyleKeys.STROKE_ALPHA.value, new)
+        super().__setattr__(PDFStyleKeys.STROKE_ALPHA.value, new)
 
     @property
     def blend_mode(self):
@@ -1560,9 +1566,11 @@ class GraphicsStyle:
     @blend_mode.setter
     def blend_mode(self, value):
         if value is GraphicsStyle.INHERIT:
-            setattr(self, PDFStyleKeys.BLEND_MODE.value, value)
+            super().__setattr__(PDFStyleKeys.BLEND_MODE.value, value)
         else:
-            setattr(self, PDFStyleKeys.BLEND_MODE.value, BlendMode.coerce(value).value)
+            super().__setattr__(
+                PDFStyleKeys.BLEND_MODE.value, BlendMode.coerce(value).value
+            )
 
     @property
     def stroke_width(self):
@@ -1577,7 +1585,7 @@ class GraphicsStyle:
         ):
             raise TypeError(f"stroke_width must be a number, not {type(width)}")
 
-        setattr(self, PDFStyleKeys.STROKE_WIDTH.value, width)
+        super().__setattr__(PDFStyleKeys.STROKE_WIDTH.value, width)
 
     @property
     def stroke_cap_style(self):
@@ -1587,10 +1595,10 @@ class GraphicsStyle:
     @stroke_cap_style.setter
     def stroke_cap_style(self, value):
         if value is GraphicsStyle.INHERIT:
-            setattr(self, PDFStyleKeys.STROKE_CAP_STYLE.value, value)
+            super().__setattr__(PDFStyleKeys.STROKE_CAP_STYLE.value, value)
         else:
-            setattr(
-                self, PDFStyleKeys.STROKE_CAP_STYLE.value, StrokeCapStyle.coerce(value)
+            super().__setattr__(
+                PDFStyleKeys.STROKE_CAP_STYLE.value, StrokeCapStyle.coerce(value)
             )
 
     @property
@@ -1603,10 +1611,9 @@ class GraphicsStyle:
     @stroke_join_style.setter
     def stroke_join_style(self, value):
         if value is GraphicsStyle.INHERIT:
-            setattr(self, PDFStyleKeys.STROKE_JOIN_STYLE.value, value)
+            super().__setattr__(PDFStyleKeys.STROKE_JOIN_STYLE.value, value)
         else:
-            setattr(
-                self,
+            super().__setattr__(
                 PDFStyleKeys.STROKE_JOIN_STYLE.value,
                 StrokeJoinStyle.coerce(value),
             )
@@ -1621,7 +1628,7 @@ class GraphicsStyle:
     @stroke_miter_limit.setter
     def stroke_miter_limit(self, value):
         if (value is GraphicsStyle.INHERIT) or isinstance(value, NumberClass):
-            setattr(self, PDFStyleKeys.STROKE_MITER_LIMIT.value, value)
+            super().__setattr__(PDFStyleKeys.STROKE_MITER_LIMIT.value, value)
         else:
             raise TypeError(f"{value} is not a number")
 
@@ -1648,11 +1655,11 @@ class GraphicsStyle:
                 new = (tuple(value), result[1])
             else:
                 new = (tuple(value), 0)
-            setattr(self, PDFStyleKeys.STROKE_DASH_PATTERN.value, new)
+            super().__setattr__(PDFStyleKeys.STROKE_DASH_PATTERN.value, new)
         elif value is None:
-            setattr(self, PDFStyleKeys.STROKE_DASH_PATTERN.value, ((), 0))
+            super().__setattr__(PDFStyleKeys.STROKE_DASH_PATTERN.value, ((), 0))
         elif value is GraphicsStyle.INHERIT:
-            setattr(self, PDFStyleKeys.STROKE_DASH_PATTERN.value, value)
+            super().__setattr__(PDFStyleKeys.STROKE_DASH_PATTERN.value, value)
         else:
             raise TypeError(f"{value} cannot be interpreted as a dash pattern")
 
@@ -1674,8 +1681,8 @@ class GraphicsStyle:
                 self, PDFStyleKeys.STROKE_DASH_PATTERN.value, GraphicsStyle.INHERIT
             )
             if isinstance(result, tuple):
-                setattr(
-                    self, PDFStyleKeys.STROKE_DASH_PATTERN.value, (result[0], value)
+                super().__setattr__(
+                    PDFStyleKeys.STROKE_DASH_PATTERN.value, (result[0], value)
                 )
             else:
                 raise ValueError("no dash pattern to set the phase on")
