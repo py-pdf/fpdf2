@@ -61,6 +61,7 @@ Features
  * Internal/External Links
  * PNG, GIF and JPG support (including transparency and alpha channel)
  * Shape, Line Drawing
+ * Arbitrary path drawing and basic SVG import
  * Generate [Code 39](https://fr.wikipedia.org/wiki/Code_39) & [Interleaved 2 of 5](https://en.wikipedia.org/wiki/Interleaved_2_of_5) barcodes
  * Cell / multi-cell / plaintext writing, automatic page breaks
  * Basic [conversion from HTML to PDF](https://pyfpdf.github.io/fpdf2/HTML.html)
