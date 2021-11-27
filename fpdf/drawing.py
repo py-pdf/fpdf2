@@ -36,6 +36,16 @@ class Raw(str):
 class Name(str):
     """str subclass signifying a PDF name, which are emitted differently than normal strings."""
 
+    NAME_ESC = re.compile(
+        b"[^" + bytes(v for v in range(33, 127) if v not in b"()<>[]{}/%#\\") + b"]"
+    )
+
+    def pdf_repr(self) -> str:
+        escaped = self.NAME_ESC.sub(
+            lambda m: b"#%02X" % m[0][0], self.encode()
+        ).decode()
+        return f"/{escaped}"
+
 
 WHITESPACE = frozenset("\0\t\n\f\r ")
 """Characters PDF considers to be whitespace."""
@@ -45,9 +55,6 @@ DELIMITERS = frozenset("()<>[]{}/%")
 """Special delimiter characters"""
 
 
-NAME_ESC = re.compile(
-    b"[^" + bytes(v for v in range(33, 127) if v not in b"()<>[]{}/%#\\") + b"]"
-)
 STR_ESC = re.compile(r"[\n\r\t\b\f()\\]")
 STR_ESC_MAP = {
     "\n": r"\n",
@@ -115,10 +122,11 @@ def render_pdf_primitive(primitive):
     values of the type Name, str, bytes, numbers, booleans, list/tuple, and dict.
 
     Any custom type can be passed in as long as it provides a `pdf_repr` method that
-    takes no arguments and returns a string. The existence of this method is checked
-    before any other type checking is performed, so, for example, a `dict` subclass
-    with a `pdf_repr` method would be converted using its `pdf_repr` method rather than
-    the built-in `dict` conversion process.
+    takes no arguments and returns a string. The primitive object is returned directly
+    if it is an instance of the `Raw` class. Otherwise, The existence of the `pdf_repr`
+    method is checked before any other type checking is performed, so, for example, a
+    `dict` subclass with a `pdf_repr` method would be converted using its `pdf_repr`
+    method rather than the built-in `dict` conversion process.
 
     Args:
         primitive: the primitive value to convert to its PDF representation.
@@ -133,17 +141,10 @@ def render_pdf_primitive(primitive):
     """
 
     if isinstance(primitive, Raw):
-        output = primitive
-    elif callable(getattr(primitive, "pdf_repr", None)):
+        return primitive
+
+    if callable(getattr(primitive, "pdf_repr", None)):
         output = primitive.pdf_repr()
-    elif isinstance(primitive, Name):
-        # we do bytes conversion to "handle" multi-byte runes but I don't know if this
-        # is strictly correct (I guess if all multi-byte runes are encoded
-        # consistently (e.g. everything in utf-8), then it should be okay).
-        escaped = NAME_ESC.sub(
-            lambda m: b"#%02X" % m[0][0], primitive.encode()
-        ).decode()
-        output = f"/{escaped}"
     elif primitive is None:
         output = "null"
     elif isinstance(primitive, str):
