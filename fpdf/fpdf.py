@@ -912,26 +912,31 @@ class FPDF(GraphicsStateMixin):
 
         context = drawing.DrawingContext()
         self._current_draw_context = context
-        try:
-            yield context
-        finally:
-            self._current_draw_context = None
+        with self.local_context():
+            self.set_line_width(self.line_width / self.k)
+            self.set_dash_pattern(
+                **{k: v / self.k for k, v in self.dash_pattern.items()}
+            )
 
-        point = drawing.Point(self.x, self.y)
-        if debug_stream:
-            rendered = context.render_debug(
+            try:
+                yield context
+            finally:
+                self._current_draw_context = None
+
+            render_args = (
                 self._drawing_graphics_state_registry,
-                point,
+                drawing.Point(self.x, self.y),
                 self.k,
                 self.h,
-                debug_stream,
-            )
-        else:
-            rendered = context.render(
-                self._drawing_graphics_state_registry, point, self.k, self.h
             )
 
-        self._out(rendered)
+            if debug_stream:
+                rendered = context.render_debug(*render_args, debug_stream)
+            else:
+                rendered = context.render(*render_args)
+
+            self._out(rendered)
+
         self.pdf_version = max(self.pdf_version, "1.4")
 
     @contextmanager
