@@ -1,5 +1,6 @@
 # pylint: disable=redefined-outer-name, no-self-use, protected-access
 from pathlib import Path
+from xml.etree import ElementTree
 
 import fpdf
 from ..conftest import assert_pdf_equal
@@ -70,13 +71,24 @@ class TestSVGPathParsing:
         assert result == pdf_path._root_graphics_context.path_items
 
 
-@pytest.mark.parametrize("svg_file", parameters.test_svg_sources)
-def test_svg_conversion(tmp_path, svg_file):
-    svg = fpdf.svg.SVGObject.from_file(svg_file)
+@pytest.mark.parametrize("shape, output, guard", parameters.test_svg_shape_tags)
+def test_svg_shape_conversion(shape, output, guard):
+    xml = ElementTree.fromstring(shape)
+    converter = getattr(fpdf.svg.ShapeBuilder, xml.tag)
 
-    pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
-    pdf.add_page()
+    with guard:
+        path = converter(xml)
+        assert output == path._root_graphics_context.path_items
 
-    svg.draw_to_page(pdf)
 
-    assert_pdf_equal(pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path)
+class TestSVGObject:
+    @pytest.mark.parametrize("svg_file", parameters.test_svg_sources)
+    def test_svg_conversion(self, tmp_path, svg_file):
+        svg = fpdf.svg.SVGObject.from_file(svg_file)
+
+        pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
+        pdf.add_page()
+
+        svg.draw_to_page(pdf)
+
+        assert_pdf_equal(pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path)

@@ -1,6 +1,7 @@
 # pylint: disable=redefined-outer-name, no-self-use, protected-access
 import pytest
 
+from contextlib import contextmanager
 from pathlib import Path
 
 # import fpdf
@@ -22,6 +23,8 @@ from fpdf.drawing import (
     RelativeArc as a,
     ImplicitClose,
     Close,
+    RoundedRectangle,
+    Ellipse,
 )
 
 from fpdf.svg import (
@@ -32,6 +35,11 @@ from fpdf.svg import (
 )
 
 SVG_SOURCE_DIR = Path(__file__).resolve().parent / "svg_sources"
+
+
+@contextmanager
+def no_error():
+    yield
 
 
 def svgfile(name):
@@ -67,6 +75,212 @@ T = pointifier(SVGSmoothQuadraticCurve)
 t = pointifier(SVGRelativeSmoothQuadraticCurve)
 iz = pointifier(ImplicitClose)
 Z = pointifier(Close)
+
+Re = pointifier(RoundedRectangle)
+El = pointifier(Ellipse)
+
+test_svg_shape_tags = (
+    pytest.param(
+        '<rect x="20" y="20" width="60" height="60"/>',
+        [M(0, 0), Re(20, 20, 60, 60, 0, 0)],
+        no_error(),
+        id="rect",
+    ),
+    pytest.param(
+        '<rect x="20" y="20" width="60" height="60" rx="none" ry="none"/>',
+        [M(0, 0), Re(20, 20, 60, 60, 0, 0)],
+        no_error(),
+        id="rect rx and ry none",
+    ),
+    pytest.param(
+        '<rect x="20" y="20" width="60" height="60" rx="10" ry="none"/>',
+        [M(0, 0), Re(20, 20, 60, 60, 10, 0)],
+        no_error(),
+        id="rect rx ry none",
+    ),
+    pytest.param(
+        '<rect x="20" y="20" width="60" height="60" rx="10"/>',
+        [M(0, 0), Re(20, 20, 60, 60, 10, 10)],
+        no_error(),
+        id="rect rx no ry",
+    ),
+    pytest.param(
+        '<rect x="20" y="20" width="60" height="60" rx="10" ry="auto"/>',
+        [M(0, 0), Re(20, 20, 60, 60, 10, 10)],
+        no_error(),
+        id="rect rx ry auto",
+    ),
+    pytest.param(
+        '<rect x="20" y="20" width="60" height="60" ry="30"/>',
+        [M(0, 0), Re(20, 20, 60, 60, 30, 30)],
+        no_error(),
+        id="rect ry no rx",
+    ),
+    pytest.param(
+        '<rect x="20" y="20" width="60" height="60" rx="none" ry="30"/>',
+        [M(0, 0), Re(20, 20, 60, 60, 0, 30)],
+        no_error(),
+        id="rect ry rx none",
+    ),
+    pytest.param(
+        '<rect x="20" y="20" width="60" height="60" rx="auto" ry="30"/>',
+        [M(0, 0), Re(20, 20, 60, 60, 30, 30)],
+        no_error(),
+        id="rect ry rx auto",
+    ),
+    pytest.param(
+        '<rect x="20" y="20" width="500" height="60" rx="100" ry="10"/>',
+        [M(0, 0), Re(20, 20, 500, 60, 100, 10)],
+        no_error(),
+        id="rect rx and ry",
+    ),
+    pytest.param(
+        '<rect x="20" y="20" width="500" height="60" rx="-100" ry="10"/>',
+        [],
+        pytest.raises(ValueError),
+        id="rect negative rx",
+    ),
+    pytest.param(
+        '<rect x="20" y="20" width="-500" height="60" rx="100" ry="10"/>',
+        [],
+        pytest.raises(ValueError),
+        id="rect negative width",
+    ),
+    pytest.param(
+        '<circle r="10"/>',
+        [M(0, 0), El(10, 10, 0, 0)],
+        no_error(),
+        id="circle no cx no cy",
+    ),
+    pytest.param(
+        '<circle cx="10" r="10"/>',
+        [M(0, 0), El(10, 10, 10, 0)],
+        no_error(),
+        id="circle cx no cy",
+    ),
+    pytest.param(
+        '<circle cy="10" r="10"/>',
+        [M(0, 0), El(10, 10, 0, 10)],
+        no_error(),
+        id="circle cy no cx",
+    ),
+    pytest.param(
+        '<circle cx="10" cy="20" r="10"/>',
+        [M(0, 0), El(10, 10, 10, 20)],
+        no_error(),
+        id="circle cy cx",
+    ),
+    pytest.param(
+        '<circle r="-10"/>',
+        [M(0, 0), El(-10, -10, 0, 0)],
+        no_error(),
+        id="circle negative r",
+    ),
+    pytest.param(
+        '<circle cx="10" cy="10"/>', [], pytest.raises(KeyError), id="circle no r"
+    ),
+    pytest.param(
+        '<ellipse rx="10"/>',
+        [M(0, 0), El(10, 10, 0, 0)],
+        no_error(),
+        id="ellipse no cx no cy no ry",
+    ),
+    pytest.param(
+        '<ellipse rx="10" ry="auto"/>',
+        [M(0, 0), El(10, 10, 0, 0)],
+        no_error(),
+        id="ellipse no cx no cy ry auto",
+    ),
+    pytest.param(
+        '<ellipse ry="10"/>',
+        [M(0, 0), El(10, 10, 0, 0)],
+        no_error(),
+        id="ellipse no cx no cy no rx",
+    ),
+    pytest.param(
+        '<ellipse rx="auto" ry="10"/>',
+        [M(0, 0), El(10, 10, 0, 0)],
+        no_error(),
+        id="ellipse no cx no cy rx auto",
+    ),
+    pytest.param(
+        "<ellipse/>",
+        [],
+        no_error(),
+        id="ellipse empty",
+    ),
+    pytest.param(
+        '<ellipse cx="10" rx="10"/>',
+        [M(0, 0), El(10, 10, 10, 0)],
+        no_error(),
+        id="ellipse cx no cy",
+    ),
+    pytest.param(
+        '<ellipse cy="10" rx="10"/>',
+        [M(0, 0), El(10, 10, 0, 10)],
+        no_error(),
+        id="ellipse cy no cx",
+    ),
+    pytest.param(
+        '<ellipse cx="10" cy="20" rx="10"/>',
+        [M(0, 0), El(10, 10, 10, 20)],
+        no_error(),
+        id="ellipse cy cx",
+    ),
+    pytest.param(
+        '<ellipse rx="-10"/>',
+        [M(0, 0), El(-10, -10, 0, 0)],
+        no_error(),
+        id="ellipse negative r",
+    ),
+    pytest.param(
+        '<ellipse rx="-10"/>',
+        [M(0, 0), El(-10, -10, 0, 0)],
+        no_error(),
+        id="ellipse negative r",
+    ),
+    pytest.param(
+        '<line x1="0" y1="0" x2="10" y2="10"/>',
+        [M(0, 0), L(10, 10)],
+        no_error(),
+        id="line",
+    ),
+    pytest.param(
+        '<line y1="0" x2="10" y2="10"/>',
+        [],
+        pytest.raises(KeyError),
+        id="line no x1",
+    ),
+    pytest.param(
+        '<polyline points="1, 0 10, 10, -20, -50"/>',
+        [M(1, 0), L(10, 10), L(-20, -50)],
+        no_error(),
+        id="polyline",
+    ),
+    pytest.param(
+        "<polyline/>",
+        [],
+        pytest.raises(KeyError),
+        id="polyline no points",
+    ),
+    pytest.param(
+        '<polygon points="1, 0 10, 10, -20, -50"/>',
+        [M(1, 0), L(10, 10), L(-20, -50), Z()],
+        no_error(),
+        id="polygon",
+    ),
+    pytest.param(
+        "<polygon/>",
+        [],
+        pytest.raises(KeyError),
+        id="polygon no points",
+    ),
+)
+
+test_svg_shape_documents = (
+    pytest.param(svgfile("shapes", "rect.svg"), id="SVG rectangles"),
+    pytest.param(svgfile("shapes", "circle.svg"), id="SVG rectangles"),
+)
 
 test_svg_sources = (
     pytest.param(svgfile("arcs01.svg"), id="SVG spec arcs01"),
