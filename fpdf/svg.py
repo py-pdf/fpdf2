@@ -249,7 +249,10 @@ class ShapeBuilder:
         elif rx == "auto":
             rx = ry = float(ry)
         elif ry == "auto":
-            rx = ry = float(rx)
+            ry = rx = float(rx)
+        else:
+            rx = float(rx)
+            ry = float(ry)
 
         if (width < 0) or (height < 0) or (rx < 0) or (ry < 0):
             raise ValueError(f"bad rect {tag}")
