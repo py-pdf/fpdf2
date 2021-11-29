@@ -158,30 +158,100 @@ def svgcolor(colorstr):
 
 
 @force_nodocument
-def optional(value, converter=lambda noop: noop):
-    if value == "none":
+def convert_stroke_width(incoming):
+    val = float(incoming)
+    if val < 0:
+        raise ValueError(f"stroke width {incoming} cannot be negative")
+    if val == 0:
         return None
-    if value == "auto":
+
+    return val
+
+
+@force_nodocument
+def convert_miterlimit(incoming):
+    val = float(incoming)
+    if val < 1.0:
+        raise ValueError(f"miter limit {incoming} cannot be less than 1")
+
+    return val
+
+
+@force_nodocument
+def clamp_float(min, max):
+    def converter(value):
+        val = float(value)
+        if val < min:
+            return min
+        if val > max:
+            return max
+        return val
+
+    return converter
+
+
+@force_nodocument
+def inheritable(value, converter=lambda value: value):
+    if value == "inherit":
         return drawing.GraphicsStyle.INHERIT
 
     return converter(value)
 
 
+@force_nodocument
+def optional(value, converter=lambda noop: noop):
+    if value == "none":
+        return None
+
+    return inheritable(value, converter)
+
+
+# this is mostly SVG 1.1 stuff. SVG 2 changed some of this and the documentation is much
+# harder to assemble into something coherently understandable
 svg_attr_map = {
+    # https://www.w3.org/TR/SVG11/painting.html#FillProperty
     "fill": lambda colorstr: ("fill_color", optional(colorstr, svgcolor)),
-    "stroke-width": lambda valuestr: ("stroke_width", optional(valuestr, float)),
+    # https://www.w3.org/TR/SVG11/painting.html#FillRuleProperty
+    "fill-rule": lambda fillrulestr: ("intersection_rule", inheritable(fillrulestr)),
+    # https://www.w3.org/TR/SVG11/painting.html#FillOpacityProperty
+    "fill-opacity": lambda filopstr: (
+        "fill_opacity",
+        inheritable(filopstr, clamp_float(0.0, 1.0)),
+    ),
+    # https://www.w3.org/TR/SVG11/painting.html#StrokeProperty
     "stroke": lambda colorstr: ("stroke_color", optional(colorstr, svgcolor)),
+    # https://www.w3.org/TR/SVG11/painting.html#StrokeWidthProperty
+    "stroke-width": lambda valuestr: (
+        "stroke_width",
+        inheritable(valuestr, convert_stroke_width),
+    ),
+    # https://www.w3.org/TR/SVG11/painting.html#StrokeDasharrayProperty
     "stroke-dasharray": lambda dasharray: (
         "stroke_dash_pattern",
         optional(
             dasharray, lambda da: [float(item) for item in NUMBER_SPLIT.split(da)]
         ),
     ),
-    "stroke-linecap": lambda capstr: ("stroke_cap_style", optional(capstr)),
-    "stroke-linejoin": lambda joinstr: ("stroke_join_style", optional(joinstr)),
-    "stroke-miterlimit": lambda limstr: ("stroke_miter_limit", optional(limstr)),
-    "stroke-opacity": lambda stropstr: ("stroke_opacity", optional(stropstr)),
-    "fill-opacity": lambda filopstr: ("fill_opacity", optional(filopstr)),
+    # stroke-dashoffset may be a percentage, which we don't support currently
+    # https://www.w3.org/TR/SVG11/painting.html#StrokeDashoffsetProperty
+    "stroke-dashoffset": lambda dashoff: (
+        "stroke_dash_phase",
+        inheritable(dashoff, float),
+    ),
+    # https://www.w3.org/TR/SVG11/painting.html#StrokeLinecapProperty
+    "stroke-linecap": lambda capstr: ("stroke_cap_style", inheritable(capstr)),
+    # https://www.w3.org/TR/SVG11/painting.html#StrokeLinejoinProperty
+    "stroke-linejoin": lambda joinstr: ("stroke_join_style", inheritable(joinstr)),
+    # https://www.w3.org/TR/SVG11/painting.html#StrokeMiterlimitProperty
+    "stroke-miterlimit": lambda limstr: (
+        "stroke_miter_limit",
+        inheritable(limstr, convert_miterlimit),
+    ),
+    # https://www.w3.org/TR/SVG11/painting.html#StrokeOpacityProperty
+    "stroke-opacity": lambda stropstr: (
+        "stroke_opacity",
+        inheritable(stropstr, clamp_float(0.0, 1.0)),
+    ),
 }
 
 
