@@ -66,6 +66,14 @@ class TestSVGPathParsing:
 
         assert result == pdf_path._root_graphics_context.path_items
 
+    @pytest.mark.parametrize("path, result", parameters.svg_path_implicit_directives)
+    def test_parsing_all_implicit_directives(self, path, result):
+        pdf_path = fpdf.drawing.PaintedPath()
+
+        fpdf.svg.svg_path_converter(pdf_path, path)
+
+        assert result == pdf_path._root_graphics_context.path_items
+
     @pytest.mark.parametrize("path, result", parameters.svg_path_edge_cases)
     def test_parsing_edge_cases(self, path, result):
         pdf_path = fpdf.drawing.PaintedPath()
