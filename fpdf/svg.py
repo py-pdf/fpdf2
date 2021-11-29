@@ -827,6 +827,7 @@ class SVGObject:
         base_group = drawing.GraphicsContext()
         base_group.style.stroke_width = None
         base_group.style.auto_close = False
+        base_group.style.stroke_cap_style = "butt"
 
         self.build_group(root_tag, base_group)
 
