@@ -351,6 +351,10 @@ class ShapeBuilder:
 def convert_transforms(tfstr):
     """Convert SVG/CSS transform functions into PDF transforms."""
 
+    # SVG 2 uses CSS transforms. SVG 1.1 transforms are slightly different. I'm really
+    # not sure if it is worth it to try to support SVG 2 because it is significantly
+    # more entangled with The HTML Disaster than SVG 1.1, which makes it astronomically
+    # harder to support.
     # https://drafts.csswg.org/css-transforms/#two-d-transform-functions
     parsed = TRANSFORM_GETTER.findall(tfstr)
 
@@ -361,8 +365,20 @@ def convert_transforms(tfstr):
             transform = drawing.Transform(a, b, c, d, e, f) @ transform
 
         elif tf_type == "rotate":
-            theta = resolve_angle(args)
-            transform = drawing.Transform.rotation(theta=theta) @ transform
+            theta, *about = NUMBER_SPLIT.split(args)
+            theta = resolve_angle(theta)
+            rotation = drawing.Transform.rotation(theta=theta)
+            if about:
+                # this is an SVG 1.1 feature. SVG 2 uses the transform-origin property.
+                # see: https://www.w3.org/TR/SVG11/coords.html#TransformAttribute
+                if len(about) == 2:
+                    rotation = rotation.about(float(about[0]), float(about[1]))
+                else:
+                    raise ValueError(
+                        f"rotation transform {tf_type}({args}) is malformed"
+                    )
+
+            transform = rotation @ transform
 
         elif tf_type == "scale":
             # if sy is not provided, it takes a value equal to sx
@@ -377,13 +393,13 @@ def convert_transforms(tfstr):
 
             transform = drawing.Transform.scaling(x=sx, y=sy) @ transform
 
-        elif tf_type == "scaleX":
+        elif tf_type == "scaleX":  # SVG 2
             transform = drawing.Transform.scaling(x=float(args), y=1) @ transform
 
-        elif tf_type == "scaleY":
+        elif tf_type == "scaleY":  # SVG 2
             transform = drawing.Transform.scaling(x=1, y=float(args)) @ transform
 
-        elif tf_type == "skew":
+        elif tf_type == "skew":  # SVG 2, not the same as skewX@skewY
             # if sy is not provided, it takes a value equal to 0
             args = NUMBER_SPLIT.split(args)
             if len(args) == 2:
@@ -425,12 +441,12 @@ def convert_transforms(tfstr):
 
             transform = drawing.Transform.translation(x=x, y=y) @ transform
 
-        elif tf_type == "translateX":
+        elif tf_type == "translateX":  # SVG 2
             transform = (
                 drawing.Transform.translation(x=resolve_length(args), y=0) @ transform
             )
 
-        elif tf_type == "translateY":
+        elif tf_type == "translateY":  # SVG 2
             transform = (
                 drawing.Transform.translation(x=0, y=resolve_length(args)) @ transform
             )
