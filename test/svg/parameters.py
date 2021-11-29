@@ -32,6 +32,7 @@ from fpdf.drawing import (
 )
 
 from fpdf.svg import (
+    resolve_length,
     SVGSmoothCubicCurve,
     SVGRelativeSmoothCubicCurve,
     SVGSmoothQuadraticCurve,
@@ -870,5 +871,120 @@ svg_path_implicit_directives = (
         "M 0 1 Q 2 3 4 5 t 6 7 8 9",
         [M(0, 1), Q(2, 3, 4, 5), t(6, 7), t(8, 9)],
         id="relative smooth quadratic bezier",
+    ),
+)
+
+
+def svg_snippet(width="", height="", viewbox="", aspect=True):
+    if width:
+        width = f'width="{width}"'
+    if height:
+        height = f'height="{height}"'
+    if viewbox:
+        viewbox = f'viewBox="{viewbox}"'
+    if aspect:
+        aspect = 'preserveAspectRatio="xMidYMid"'
+    else:
+        aspect = 'preserveAspectRatio="none"'
+
+    return f"""<?xml version="1.0" standalone="no"?>
+        <svg {width} {height} {viewbox} {aspect} xmlns="http://www.w3.org/2000/svg" version="1.1">
+        </svg>
+        """
+
+
+# test "renders" these onto a 10pt by 10pt page.
+svg_shape_info_tests = (
+    pytest.param(
+        svg_snippet(width="10mm"),
+        (resolve_length("10mm"), 10),
+        Transform.identity(),
+        id="width only",
+    ),
+    pytest.param(
+        svg_snippet(height="10mm"),
+        (10, resolve_length("10mm")),
+        Transform.identity(),
+        id="height only",
+    ),
+    pytest.param(
+        svg_snippet(width="100%", height="100%"),
+        (10, 10),
+        Transform.identity(),
+        id="fit percent",
+    ),
+    pytest.param(
+        svg_snippet(width="50%", height="50%"),
+        (5, 5),
+        Transform.identity(),
+        id="small percent",
+    ),
+    pytest.param(
+        svg_snippet(width="10mm", height="10mm"),
+        (resolve_length("10mm"),) * 2,
+        Transform.identity(),
+        id="same shape",
+    ),
+    pytest.param(
+        svg_snippet(width="11mm", height="9mm"),
+        (resolve_length("11mm"), resolve_length("9mm")),
+        Transform.identity(),
+        id="different shape",
+    ),
+    pytest.param(
+        svg_snippet(width="110%", height="90%"),
+        (11, 9),
+        Transform.identity(),
+        id="different shape, percent",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="0 0 100 100"),
+        (10, 10),
+        Transform.scaling(0.1),
+        id="viewbox 100",
+    ),
+    pytest.param(
+        svg_snippet(width="5mm", height="6mm", viewbox="0 0 100 100"),
+        (resolve_length("5mm"), resolve_length("6mm")),
+        Transform.scaling(resolve_length("5mm") / 100).translate(
+            x=0, y=10 * resolve_length("5mm") / 100
+        ),
+        id="fixed size, viewbox 100",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="0 0 110 90"),
+        (10, 10),
+        Transform.scaling(10 / 110).translate(x=0, y=10 * 10 / 110),
+        id="viewbox wide",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="0 0 90 110"),
+        (10, 10),
+        Transform.scaling(10 / 110).translate(x=10 * 10 / 110, y=0),
+        id="viewbox tall",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="0 0 110 90", aspect=False),
+        (10, 10),
+        Transform.scaling(10 / 110, 10 / 90),
+        id="viewbox wide, no aspect preservation",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="0 0 90 110", aspect=False),
+        (10, 10),
+        Transform.scaling(10 / 90, 10 / 110),
+        id="viewbox tall, no aspect preservation",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="45 55 90 110"),
+        (10, 10),
+        Transform.scaling(10 / 110, 10 / 110).translate(-35 / 11, -5),
+        id="viewbox tall and shifted",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="45 55 90 110", aspect=False),
+        (10, 10),
+        Transform.scaling(10 / 90, 10 / 110).translate(-5, -5),
+        id="viewbox tall and shifted, no aspect preservation",
     ),
 )

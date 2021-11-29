@@ -129,6 +129,19 @@ class TestSVGAttributeConversion:
 
 
 class TestSVGObject:
+    @pytest.mark.parametrize(
+        "svg_data, expected_dim, expected_tf", parameters.svg_shape_info_tests
+    )
+    def test_document_shape_info(self, svg_data, expected_dim, expected_tf):
+        pdf = fpdf.FPDF(unit="pt", format=(10, 10))
+        pdf.add_page()
+
+        svg = fpdf.svg.SVGObject(svg_data)
+        width, height, base_group = svg.transform_to_page_viewport(pdf)
+
+        assert (width, height) == pytest.approx(expected_dim)
+        assert base_group.transform == pytest.approx(expected_tf)
+
     @pytest.mark.parametrize("svg_file", parameters.test_svg_sources)
     def test_svg_conversion(self, tmp_path, svg_file):
         svg = fpdf.svg.SVGObject.from_file(svg_file)
