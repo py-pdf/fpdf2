@@ -13,13 +13,17 @@ from . import parameters
 GENERATED_PDF_DIR = Path(__file__).resolve().parent / "generated_pdf"
 
 
-def svg_snippet(snippet):
-    return f"""
-        <?xml version="1.0" standalone="no"?>
-        <svg width="4cm" height="4cm" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" version="1.1">
-        {snippet}
-        </svg>
-        """
+def assert_style_match(lhs, rhs):
+    mismatches = []
+    for attr in lhs.MERGE_PROPERTIES:
+        left = getattr(lhs, attr)
+        right = getattr(rhs, attr)
+        # can't short circuit because we want to report all of the issues
+        if left != right:
+            mismatches.append(f"left.{attr} ({left}) != right.{attr} ({right})")
+
+    if mismatches:
+        raise AssertionError("Styles do not match:\n    " + "\n    ".join(mismatches))
 
 
 class TestUnits:
@@ -103,6 +107,17 @@ class TestSVGAttributeConversion:
         assert_pdf_equal(
             pdf, GENERATED_PDF_DIR / "transforms" / f"{svg_file.stem}.pdf", tmp_path
         )
+
+    @pytest.mark.parametrize(
+        "element, expected, guard", parameters.test_svg_attribute_conversion
+    )
+    def test_attribute_conversion(self, element, expected, guard):
+        xml = ElementTree.fromstring(element)
+
+        stylable = fpdf.drawing.PaintedPath()
+        with guard:
+            fpdf.svg.apply_styles(stylable, xml)
+            assert_style_match(stylable.style, expected)
 
 
 class TestSVGObject:

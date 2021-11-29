@@ -9,6 +9,8 @@ from pathlib import Path
 from fpdf.drawing import (
     Point,
     Transform,
+    IntersectionRule,
+    GraphicsStyle,
     Move,
     RelativeMove,
     Line,
@@ -80,6 +82,17 @@ Z = pointifier(Close)
 
 Re = pointifier(RoundedRectangle)
 El = pointifier(Ellipse)
+
+
+def Gs(**kwargs):
+    style = GraphicsStyle()
+    # this is set on all stylables by the SVG machinery
+    style.auto_close = False
+    for name, val in kwargs.items():
+        setattr(style, name, val)
+
+    return style
+
 
 test_svg_shape_tags = (
     pytest.param(
@@ -407,6 +420,297 @@ test_svg_transform_documents = (
     pytest.param(svgfile("transforms", "skew.svg"), id="skew"),
     pytest.param(svgfile("transforms", "translate.svg"), id="translate"),
     pytest.param(svgfile("transforms", "multi.svg"), id="multiple"),
+)
+
+test_svg_attribute_conversion = (
+    pytest.param(
+        '<path fill="none"/>',
+        Gs(fill_color=None),
+        no_error(),
+        id="fill color none",
+    ),
+    pytest.param(
+        '<path fill="inherit"/>',
+        Gs(fill_color=GraphicsStyle.INHERIT),
+        no_error(),
+        id="fill color inherit",
+    ),
+    pytest.param(
+        '<path fill="black"/>',
+        Gs(fill_color="#000"),
+        no_error(),
+        id="fill color name",
+    ),
+    pytest.param(
+        '<path fill="#0007"/>',
+        Gs(fill_color="#0007", fill_opacity=0x77 / 0xFF),
+        no_error(),
+        id="fill color rgba",
+    ),
+    pytest.param(
+        '<path fill="1"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="fill color invalid",
+    ),
+    pytest.param(
+        '<path fill-rule="inherit"/>',
+        Gs(intersection_rule=GraphicsStyle.INHERIT),
+        no_error(),
+        id="fill-rule inherit",
+    ),
+    pytest.param(
+        '<path fill-rule="nonzero"/>',
+        Gs(intersection_rule=IntersectionRule.NONZERO),
+        no_error(),
+        id="fill-rule nonzero",
+    ),
+    pytest.param(
+        '<path fill-rule="evenodd"/>',
+        Gs(intersection_rule=IntersectionRule.EVENODD),
+        no_error(),
+        id="fill-rule evenodd",
+    ),
+    pytest.param(
+        '<path fill-rule="none"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="fill-rule invalid",
+    ),
+    pytest.param(
+        '<path fill-opacity="0.5"/>',
+        Gs(fill_opacity=0.5),
+        no_error(),
+        id="fill-opacity 0.5",
+    ),
+    pytest.param(
+        '<path fill-opacity="-2"/>',
+        Gs(fill_opacity=0.0),
+        no_error(),
+        id="fill-opacity too small",
+    ),
+    pytest.param(
+        '<path fill-opacity="5"/>',
+        Gs(fill_opacity=1.0),
+        no_error(),
+        id="fill-opacity too big",
+    ),
+    pytest.param(
+        '<path fill-opacity="inherit"/>',
+        Gs(fill_opacity=GraphicsStyle.INHERIT),
+        no_error(),
+        id="fill-opacity inherit",
+    ),
+    pytest.param(
+        '<path fill-opacity="none"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="fill-opacity invalid",
+    ),
+    pytest.param(
+        '<path stroke="none"/>',
+        Gs(stroke_color=None),
+        no_error(),
+        id="stroke color none",
+    ),
+    pytest.param(
+        '<path stroke="inherit"/>',
+        Gs(stroke_color=GraphicsStyle.INHERIT),
+        no_error(),
+        id="stroke color inherit",
+    ),
+    pytest.param(
+        '<path stroke="black"/>',
+        Gs(stroke_color="#000"),
+        no_error(),
+        id="stroke color name",
+    ),
+    pytest.param(
+        '<path stroke="#0007"/>',
+        Gs(stroke_color="#0007", stroke_opacity=0x77 / 0xFF),
+        no_error(),
+        id="stroke color rgba",
+    ),
+    pytest.param(
+        '<path stroke="1"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="stroke color invalid",
+    ),
+    pytest.param(
+        '<path stroke-width="0"/>',
+        Gs(stroke_width=None),
+        no_error(),
+        id="stroke-width 0",
+    ),
+    pytest.param(
+        '<path stroke-width="2"/>',
+        Gs(stroke_width=2),
+        no_error(),
+        id="stroke-width number",
+    ),
+    pytest.param(
+        '<path stroke-width="inherit"/>',
+        Gs(),
+        no_error(),
+        id="stroke-width inherit",
+    ),
+    pytest.param(
+        '<path stroke-width="-2"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="stroke-width negative",
+    ),
+    pytest.param(
+        '<path stroke-width="bad"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="stroke-width number",
+    ),
+    pytest.param(
+        '<path stroke-dasharray="1 2 3 4 5"/>',
+        Gs(stroke_dash_pattern=[1, 2, 3, 4, 5]),
+        no_error(),
+        id="stroke-dasharray list",
+    ),
+    pytest.param(
+        '<path stroke-dasharray="1"/>',
+        Gs(stroke_dash_pattern=[1]),
+        no_error(),
+        id="stroke-dasharray single value",
+    ),
+    pytest.param(
+        '<path stroke-dasharray="inherit"/>',
+        Gs(),
+        no_error(),
+        id="stroke-dasharray inherit",
+    ),
+    pytest.param(
+        '<path stroke-dasharray="bad"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="stroke-dasharray invalid",
+    ),
+    pytest.param(
+        '<path stroke-dasharray="1" stroke-dashoffset="1"/>',
+        Gs(stroke_dash_pattern=[1], stroke_dash_phase=1),
+        no_error(),
+        id="stroke-dashoffset",
+    ),
+    pytest.param(
+        '<path stroke-linecap="butt"/>',
+        Gs(stroke_cap_style="butt"),
+        no_error(),
+        id="stroke-linecap butt",
+    ),
+    pytest.param(
+        '<path stroke-linecap="round"/>',
+        Gs(stroke_cap_style="round"),
+        no_error(),
+        id="stroke-linecap round",
+    ),
+    pytest.param(
+        '<path stroke-linecap="square"/>',
+        Gs(stroke_cap_style="square"),
+        no_error(),
+        id="stroke-linecap square",
+    ),
+    pytest.param(
+        '<path stroke-linecap="inherit"/>',
+        Gs(stroke_cap_style=GraphicsStyle.INHERIT),
+        no_error(),
+        id="stroke-linecap inherit",
+    ),
+    pytest.param(
+        '<path stroke-linecap="bad"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="stroke-linecap invalid",
+    ),
+    pytest.param(
+        '<path stroke-linejoin="miter"/>',
+        Gs(stroke_join_style="miter"),
+        no_error(),
+        id="stroke-linejoin miter",
+    ),
+    pytest.param(
+        '<path stroke-linejoin="round"/>',
+        Gs(stroke_join_style="round"),
+        no_error(),
+        id="stroke-linejoin round",
+    ),
+    pytest.param(
+        '<path stroke-linejoin="bevel"/>',
+        Gs(stroke_join_style="bevel"),
+        no_error(),
+        id="stroke-linejoin bevel",
+    ),
+    pytest.param(
+        '<path stroke-linejoin="inherit"/>',
+        Gs(stroke_join_style=GraphicsStyle.INHERIT),
+        no_error(),
+        id="stroke-linejoin inherit",
+    ),
+    pytest.param(
+        '<path stroke-linejoin="bad"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="stroke-linejoin invalid",
+    ),
+    pytest.param(
+        '<path stroke-miterlimit="2"/>',
+        Gs(stroke_miter_limit=2),
+        no_error(),
+        id="stroke-miterlimit",
+    ),
+    pytest.param(
+        '<path stroke-miterlimit="inherit"/>',
+        Gs(stroke_miter_limit=GraphicsStyle.INHERIT),
+        no_error(),
+        id="stroke-miterlimit inherit",
+    ),
+    pytest.param(
+        '<path stroke-miterlimit="0.5"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="stroke-miterlimit too small",
+    ),
+    pytest.param(
+        '<path stroke-miterlimit="bad"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="stroke-miterlimit invalid",
+    ),
+    pytest.param(
+        '<path stroke-opacity="0.5"/>',
+        Gs(stroke_opacity=0.5),
+        no_error(),
+        id="stroke-opacity 0.5",
+    ),
+    pytest.param(
+        '<path stroke-opacity="-2"/>',
+        Gs(stroke_opacity=0.0),
+        no_error(),
+        id="stroke-opacity too small",
+    ),
+    pytest.param(
+        '<path stroke-opacity="5"/>',
+        Gs(stroke_opacity=1.0),
+        no_error(),
+        id="stroke-opacity too big",
+    ),
+    pytest.param(
+        '<path stroke-opacity="inherit"/>',
+        Gs(stroke_opacity=GraphicsStyle.INHERIT),
+        no_error(),
+        id="stroke-opacity inherit",
+    ),
+    pytest.param(
+        '<path stroke-opacity="none"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="stroke-opacity invalid",
+    ),
 )
 
 test_svg_sources = (
