@@ -832,7 +832,7 @@ class SVGObject:
 
         self.base_group = base_group
 
-    def transform_to_page_viewport(self, pdf):
+    def transform_to_page_viewport(self, pdf, align_viewbox=True):
         """
         Size the converted SVG paths to the page viewport.
 
@@ -845,14 +845,16 @@ class SVGObject:
 
         Args:
             pdf (fpdf.FPDF): the pdf to use the page size of.
+            align_viewbox (bool): if True, mimic some of the SVG alignment rules if the
+                viewbox aspect ratio does not match that of the viewport.
 
         Returns:
             The same thing as `SVGObject.transform_to_rect_viewport`.
         """
 
-        return self.transform_to_rect_viewport(pdf.k, pdf.w, pdf.h)
+        return self.transform_to_rect_viewport(pdf.k, pdf.w, pdf.h, align_viewbox)
 
-    def transform_to_rect_viewport(self, scale, width, height):
+    def transform_to_rect_viewport(self, scale, width, height, align_viewbox=True):
         """
         Size the converted SVG paths to an arbitrarily sized viewport.
 
@@ -865,6 +867,8 @@ class SVGObject:
             scale (Number): the scale factor from document units to PDF points.
             width (Number): the width of the viewport to scale to in document units.
             height (Number): the height of the viewport to scale to in document units.
+            align_viewbox (bool): if True, mimic some of the SVG alignment rules if the
+                viewbox aspect ratio does not match that of the viewport.
 
         Returns:
             A tuple of (width, height, `fpdf.drawing.GraphicsContext`), where width and
@@ -895,17 +899,23 @@ class SVGObject:
             if (vw == 0) or (vh == 0):
                 return 0, 0, drawing.GraphicsContext()
 
-            w_ratio = vp_width / self.viewbox[2]
-            h_ratio = vp_height / self.viewbox[3]
+            w_ratio = vp_width / vw
+            h_ratio = vp_height / vh
 
             if self.preserve_ar and (w_ratio != h_ratio):
                 w_ratio = h_ratio = min(w_ratio, h_ratio)
 
             transform = (
                 transform
-                @ drawing.Transform.scaling(x=w_ratio, y=h_ratio)
                 @ drawing.Transform.translation(x=-vx, y=-vy)
+                @ drawing.Transform.scaling(x=w_ratio, y=h_ratio)
             )
+
+            if align_viewbox:
+                transform = transform @ drawing.Transform.translation(
+                    x=vp_width / 2 - (vw / 2) * w_ratio,
+                    y=vp_height / 2 - (vh / 2) * h_ratio,
+                )
 
         self.base_group.transform = transform
 
