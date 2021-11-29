@@ -25,9 +25,13 @@ svg.draw_to_page(pdf)
 pdf.output("my_file.pdf")
 ```
 
-This does assume that the width/height of the SVG are specified in absolute
-units rather than relative ones (i.e. the top-level `<svg>` tag has something
-like `width="5cm"` and not `width=50%`).
+Because this takes the PDF document size from the source SVG, it does assume
+that the width/height of the SVG are specified in absolute units rather than
+relative ones (i.e. the top-level `<svg>` tag has something like `width="5cm"`
+and not `width=50%`). In this case, if the values are percentages, they will be
+interpreted as their literal numeric value (i.e. `100%` would be treated as
+`100 pt`). The next example uses `transform_to_page_viewport`, which will scale
+an SVG with a percentage based `width` to the pre-defined PDF page size.
 
 The converted SVG object can be returned as an fpdf.drawing.GraphicsContext
 collection of drawing directives for more control over how it is rendered:
@@ -40,7 +44,9 @@ svg = fpdf.svg.SVGObject.from_file("my_file.svg")
 pdf = FPDF(unit="in", format=(8.5, 11))
 pdf.add_page()
 
-width, height, paths = svg.transform_to_page_viewport(pdf)
+# We pass align_viewbox=False because we want to perform positioning manually
+# after the size transform has been computed.
+width, height, paths = svg.transform_to_page_viewport(pdf, align_viewbox=False)
 # note: transformation order is important! This centers the svg drawing at the
 # origin, rotates it 90 degrees clockwise, and then repositions it to the
 # middle of the output page.
