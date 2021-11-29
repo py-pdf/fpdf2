@@ -81,6 +81,30 @@ def test_svg_shape_conversion(shape, output, guard):
         assert output == path._root_graphics_context.path_items
 
 
+class TestSVGAttributeConversion:
+    @pytest.mark.parametrize(
+        "transform, expected, guard", parameters.test_svg_transforms
+    )
+    def test_svg_transform_conversion(self, transform, expected, guard):
+        with guard:
+            result = fpdf.svg.convert_transforms(transform)
+            assert result == pytest.approx(expected)
+
+    @pytest.mark.parametrize("svg_file", parameters.test_svg_transform_documents)
+    def test_svg_transform_conversion_visual(self, tmp_path, svg_file):
+        # this only tests the SVG 1.1 transforms for now because the 2.0 transforms do not seem to be widely supported?
+        svg = fpdf.svg.SVGObject.from_file(svg_file)
+
+        pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
+        pdf.add_page()
+
+        svg.draw_to_page(pdf)
+
+        assert_pdf_equal(
+            pdf, GENERATED_PDF_DIR / "transforms" / f"{svg_file.stem}.pdf", tmp_path
+        )
+
+
 class TestSVGObject:
     @pytest.mark.parametrize("svg_file", parameters.test_svg_sources)
     def test_svg_conversion(self, tmp_path, svg_file):

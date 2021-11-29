@@ -2,11 +2,13 @@
 import pytest
 
 from contextlib import contextmanager
+import math
 from pathlib import Path
 
 # import fpdf
 from fpdf.drawing import (
     Point,
+    Transform,
     Move,
     RelativeMove,
     Line,
@@ -42,8 +44,8 @@ def no_error():
     yield
 
 
-def svgfile(name):
-    return SVG_SOURCE_DIR / name
+def svgfile(*names):
+    return SVG_SOURCE_DIR.joinpath(*names)
 
 
 def P(x, y):
@@ -277,9 +279,134 @@ test_svg_shape_tags = (
     ),
 )
 
-test_svg_shape_documents = (
-    pytest.param(svgfile("shapes", "rect.svg"), id="SVG rectangles"),
-    pytest.param(svgfile("shapes", "circle.svg"), id="SVG rectangles"),
+test_svg_transforms = (
+    pytest.param(
+        "matrix(1,2,3,4,5,6)",
+        Transform(1, 2, 3, 4, 5, 6),
+        no_error(),
+        id="matrix",
+    ),
+    pytest.param(
+        "rotate(30)",
+        Transform.rotation_d(30),
+        no_error(),
+        id="rotate",
+    ),
+    pytest.param(
+        "rotate(30, 10, 10)",
+        Transform.rotation_d(30).about(10, 10),
+        no_error(),
+        id="rotate about",
+    ),
+    pytest.param(
+        "rotate(30, 10)",
+        Transform.identity(),
+        pytest.raises(ValueError),
+        id="rotate bad syntax",
+    ),
+    pytest.param(
+        "scale(2)",
+        Transform.scaling(x=2, y=2),
+        no_error(),
+        id="scale combined",
+    ),
+    pytest.param(
+        "scale(2, 1)",
+        Transform.scaling(x=2, y=1),
+        no_error(),
+        id="scale x",
+    ),
+    pytest.param(
+        "scale(1 2)",
+        Transform.scaling(x=1, y=2),
+        no_error(),
+        id="scale y",
+    ),
+    pytest.param(
+        "scale(1 2 3)",
+        Transform.identity(),
+        pytest.raises(ValueError),
+        id="scale bad syntax",
+    ),
+    pytest.param(
+        "scaleX(2)",
+        Transform.scaling(x=2, y=1),
+        no_error(),
+        id="scaleX",
+    ),
+    pytest.param(
+        "scaleY(2)",
+        Transform.scaling(x=1, y=2),
+        no_error(),
+        id="scaleY",
+    ),
+    pytest.param(
+        "skew(2)",
+        Transform.shearing(x=math.tan(math.radians(2)), y=0),
+        no_error(),
+        id="skew x-only",
+    ),
+    pytest.param(
+        "skew(2, 3)",
+        Transform.shearing(x=math.tan(math.radians(2)), y=math.tan(math.radians(3))),
+        no_error(),
+        id="skew x and y",
+    ),
+    pytest.param(
+        "skewX(2)",
+        Transform.shearing(x=math.tan(math.radians(2)), y=0),
+        no_error(),
+        id="skewX",
+    ),
+    pytest.param(
+        "skewY(2)",
+        Transform.shearing(x=0, y=math.tan(math.radians(2))),
+        no_error(),
+        id="skewY",
+    ),
+    pytest.param(
+        "translate(20)",
+        Transform.translation(x=20, y=0),
+        no_error(),
+        id="translate x-only",
+    ),
+    pytest.param(
+        "translate(20, 30)",
+        Transform.translation(x=20, y=30),
+        no_error(),
+        id="translate x and y",
+    ),
+    pytest.param(
+        "translateX(10)",
+        Transform.translation(x=10, y=0),
+        no_error(),
+        id="translateX",
+    ),
+    pytest.param(
+        "translateY(10)",
+        Transform.translation(x=0, y=10),
+        no_error(),
+        id="translateY",
+    ),
+    pytest.param(
+        "skewX(30) scale(1, 1.25) translate(200, 200) rotate(45) translate(-500, -500)",
+        Transform.translation(-500, -500)
+        .rotate_d(45)
+        .translate(200, 200)
+        .scale(1, 1.25)
+        .shear(math.tan(math.radians(30)), 0),
+        no_error(),
+        id="multiple",
+    ),
+)
+
+test_svg_transform_documents = (
+    pytest.param(svgfile("transforms", "matrix.svg"), id="matrix"),
+    pytest.param(svgfile("transforms", "rotate.svg"), id="rotate"),
+    pytest.param(svgfile("transforms", "scale.svg"), id="scale"),
+    pytest.param(svgfile("transforms", "skew.svg"), id="skew"),
+    pytest.param(svgfile("transforms", "translate.svg"), id="translate"),
+    pytest.param(svgfile("transforms", "multi.svg"), id="multiple"),
 )
 
 test_svg_sources = (
