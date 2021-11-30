@@ -37,8 +37,11 @@ with pdf.new_path() as path:
 
 pdf.output("drawing-demo.pdf")
 ```
+This example draws an hourglass shape centered on the page:
 
-This example draws an hourglass shape centered on the page.
+<p align="center"><img src="drawing/demo-1.webp"/></p>
+<p align="center"><a href="drawing/demo-1.pdf">view as PDF</a></p>
+
 
 ## Adding Some Style
 
@@ -71,7 +74,10 @@ pdf.output("drawing-demo.pdf")
 ```
 
 If you make color choices like these, it's probably not a good idea to quit your
-day job to become a graphic designer.
+day job to become a graphic designer. Here's what the output should look like:
+
+<p align="center"><img src="drawing/demo-2.webp"/></p>
+<p align="center"><a href="drawing/demo-2.pdf">view as PDF</a></p>
 
 ## Transforms And You
 
@@ -97,9 +103,8 @@ All that said, let's take the example we've been working with for a spin (the
 pun is intended, you see, because we're going to rotate the drawing).
 Explaining the joke does make it better.
 
-An easy way to apply a transform to a group of points is the
-`path.transform_group` context manager. Any points added within this context
-will have the provided transform applied to them.
+An easy way to apply a transform to a path is through the `path.transform`
+property.
 
 ```python
 import fpdf
@@ -113,22 +118,23 @@ with pdf.new_path() as path:
     path.style.stroke_width = 1
     path.style.stroke_opacity = 0.75
     path.style.stroke_join_style = "round"
+    path.transform = fpdf.drawing.Transform.rotation_d(45).scale(0.707).about(5, 5)
 
-    with path.transform_group(
-        fpdf.drawing.Transform.rotation_d(45).scale(0.707).about(5, 5)
-    ):
-        path.move_to(2, 2)
-        path.line_to(8, 8)
-        path.horizontal_line_relative(-6)
-        path.line_relative(6, -6)
+    path.move_to(2, 2)
+    path.line_to(8, 8)
+    path.horizontal_line_relative(-6)
+    path.line_relative(6, -6)
 
     path.close()
 
 pdf.output("drawing-demo.pdf")
 ```
 
+<p align="center"><img src="drawing/demo-3.webp"/></p>
+<p align="center"><a href="drawing/demo-3.pdf">view as PDF</a></p>
+
 The transform in the above example rotates the path 45 degrees clockwise
-and scales it by 1/sqrt(2) around its center point. This transform could be
+and scales it by `1/sqrt(2)` around its center point. This transform could be
 equivalently written as:
 
 ```python
@@ -139,7 +145,7 @@ T.translation(-5, -5) @ T.rotation_d(45) @ T.scaling(0.707) @ T.translation(5, 5
 ```
 
 Because all transforms operate on points relative to the origin, if we had
-rotated the image without first centering it on the origin, we would have
+rotated the path without first centering it on the origin, we would have
 rotated it partway off of the page. Similarly, the size-reduction from the
 scaling would have moved it closer to the origin. By bracketing the transforms
 with the two translations, the placement of the drawing on the page is
@@ -178,6 +184,8 @@ with pdf.new_path() as path:
 
 pdf.output("drawing-demo.pdf")
 ```
+<p align="center"><img src="drawing/demo-4.webp"/></p>
+<p align="center"><a href="drawing/demo-4.pdf">view as PDF</a></p>
 
 ## Next Steps
 
