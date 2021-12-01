@@ -7,6 +7,8 @@ import math
 import re
 from typing import Optional, NamedTuple, Union
 
+from . import util
+
 __pdoc__ = {"force_nodocument": False}
 
 
@@ -148,7 +150,7 @@ def render_pdf_primitive(primitive):
     elif primitive is None:
         output = "null"
     elif isinstance(primitive, str):
-        output = f"({STR_ESC.sub(lambda m: STR_ESC_MAP[m[0]], primitive)})"
+        output = f"({util.escape_parens(primitive)})"
     elif isinstance(primitive, bytes):
         output = f"<{primitive.hex()}>"
     elif isinstance(primitive, bool):  # has to come before number check

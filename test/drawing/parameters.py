@@ -65,7 +65,7 @@ pdf_primitives = (
         fpdf.drawing.Name("pdf#<name>"), r("/pdf#23#3Cname#3E"), id="escape name"
     ),
     pytest.param("string", r("(string)"), id="string"),
-    pytest.param("\n\r\t\b\f()\\", r(r"""(\n\r\t\b\f\(\)\\)"""), id="escape string"),
+    pytest.param("\r()\\", r(r"""(\r\(\)\\)"""), id="escape string"),
     pytest.param(b"bytes", r("<6279746573>"), id="bytes"),
     pytest.param(123, r("123"), id="integer"),
     pytest.param(123.456, r("123.456"), id="float"),
