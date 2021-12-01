@@ -178,13 +178,13 @@ def convert_miterlimit(incoming):
 
 
 @force_nodocument
-def clamp_float(min, max):
+def clamp_float(min_val, max_val):
     def converter(value):
         val = float(value)
-        if val < min:
-            return min
-        if val > max:
-            return max
+        if val < min_val:
+            return min_val
+        if val > max_val:
+            return max_val
         return val
 
     return converter
