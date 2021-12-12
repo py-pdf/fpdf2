@@ -1372,7 +1372,7 @@ class GraphicsStyle:
     """Singleton specifying a style parameter should be inherited from the parent context."""
 
     # order is be important here because some of these properties are entangled, e.g.
-    # stroke_dash_pattern and stroke_dash_phase
+    # fill_color and fill_opacity
     MERGE_PROPERTIES = (
         "paint_rule",
         "auto_close",
@@ -1389,7 +1389,12 @@ class GraphicsStyle:
         "stroke_dash_pattern",
         "stroke_dash_phase",
     )
-    """An ordered list of properties to use when merging two GraphicsStyles."""
+    """An ordered collection of properties to use when merging two GraphicsStyles."""
+
+    PDF_STYLE_KEYS = (
+        *(k.value for k in PDFStyleKeys if k is not PDFStyleKeys.STROKE_DASH_PATTERN),
+    )
+    """An ordered collection of keys to directly emit when serializing the style."""
 
     _PAINT_RULE_LOOKUP = {
         frozenset({}): PathPaintRule.DONT_PAINT,
@@ -1405,21 +1410,6 @@ class GraphicsStyle:
     }
     """A dictionary for resolving `PathPaintRule.AUTO`"""
 
-    def __deepcopy__(self, memo):
-        copied = self.__class__()
-        for prop in self.MERGE_PROPERTIES:
-            setattr(copied, prop, getattr(self, prop))
-
-        return copied
-
-    def __setattr__(self, name, value):
-        if not hasattr(self, name):
-            raise AttributeError(
-                f'{self.__class__} does not have style "{name}" (a typo?)'
-            )
-
-        super().__setattr__(name, value)
-
     @classmethod
     def merge(cls, parent, child):
         """
@@ -1432,27 +1422,57 @@ class GraphicsStyle:
         new = cls()
         for prop in cls.MERGE_PROPERTIES:
             cval = getattr(child, prop)
-            if cval is GraphicsStyle.INHERIT:
+            if cval is cls.INHERIT:
                 setattr(new, prop, getattr(parent, prop))
             else:
                 setattr(new, prop, cval)
 
         return new
 
+    def __init__(self):
+        self.allow_transparency = self.INHERIT
+        self.paint_rule = self.INHERIT
+        self.auto_close = self.INHERIT
+        self.intersection_rule = self.INHERIT
+        self.fill_color = self.INHERIT
+        self.fill_opacity = self.INHERIT
+        self.stroke_color = self.INHERIT
+        self.stroke_opacity = self.INHERIT
+        self.blend_mode = self.INHERIT
+        self.stroke_width = self.INHERIT
+        self.stroke_cap_style = self.INHERIT
+        self.stroke_join_style = self.INHERIT
+        self.stroke_miter_limit = self.INHERIT
+        self.stroke_dash_pattern = self.INHERIT
+        self.stroke_dash_phase = self.INHERIT
+
+    def __deepcopy__(self, memo):
+        copied = self.__class__()
+        for prop in self.MERGE_PROPERTIES:
+            setattr(copied, prop, getattr(self, prop))
+
+        return copied
+
+    def __setattr__(self, name, value):
+        if not hasattr(self.__class__, name):
+            raise AttributeError(
+                f'{self.__class__} does not have style "{name}" (a typo?)'
+            )
+
+        super().__setattr__(name, value)
     # If these are used in a nested graphics context inside of a painting path
     # operation, they are no-ops. However, they can be used for outer GraphicsContexts
     # that painting paths inherit from.
     @property
     def paint_rule(self):
         """The paint rule to use for this path/group."""
-
-        return getattr(self, "_paint_rule", GraphicsStyle.INHERIT)
+        return self._paint_rule  # pylint: disable=no-member
 
     @paint_rule.setter
     def paint_rule(self, new):
         if new is None:
             super().__setattr__("_paint_rule", PathPaintRule.DONT_PAINT)
-        if new is GraphicsStyle.INHERIT:
+        if new is self.INHERIT:
             super().__setattr__("_paint_rule", new)
         else:
             super().__setattr__("_paint_rule", PathPaintRule.coerce(new))
@@ -1460,26 +1480,24 @@ class GraphicsStyle:
     @property
     def auto_close(self):
         """If True, unclosed paths will be automatically closed before stroking."""
-        return getattr(self, "_auto_close", GraphicsStyle.INHERIT)
+        return self._auto_close  # pylint: disable=no-member
 
     @auto_close.setter
     def auto_close(self, new):
-        if new not in {True, False, GraphicsStyle.INHERIT}:
-            raise ValueError(
-                f"auto_close must be a bool or GraphicsStyle.INHERIT, not {new}"
-            )
+        if new not in {True, False, self.INHERIT}:
+            raise TypeError(f"auto_close must be a bool or self.INHERIT, not {new}")
 
         super().__setattr__("_auto_close", new)
 
     @property
     def intersection_rule(self):
         """The desired intersection rule for this path/group."""
-        return getattr(self, "_intersection_rule", GraphicsStyle.INHERIT)
+        return self._intersection_rule  # pylint: disable=no-member
 
     @intersection_rule.setter
     def intersection_rule(self, new):
         # don't allow None for this one.
-        if new is GraphicsStyle.INHERIT:
+        if new is self.INHERIT:
             super().__setattr__("_intersection_rule", new)
         else:
             super().__setattr__("_intersection_rule", IntersectionRule.coerce(new))
@@ -1492,7 +1510,7 @@ class GraphicsStyle:
         When setting this property, if the color specifies an opacity value, that will
         be used to set the fill_opacity property as well.
         """
-        return getattr(self, "_fill_color", GraphicsStyle.INHERIT)
+        return self._fill_color  # pylint: disable=no-member
 
     @fill_color.setter
     def fill_color(self, color):
@@ -1504,7 +1522,7 @@ class GraphicsStyle:
             if color.a is not None:
                 self.fill_opacity = color.a
 
-        elif (color is None) or (color is GraphicsStyle.INHERIT):
+        elif (color is None) or (color is self.INHERIT):
             super().__setattr__("_fill_color", color)
 
         else:
@@ -1513,11 +1531,11 @@ class GraphicsStyle:
     @property
     def fill_opacity(self):
         """The desired fill opacity for this path/group."""
-        return getattr(self, PDFStyleKeys.FILL_ALPHA.value, GraphicsStyle.INHERIT)
+        return getattr(self, PDFStyleKeys.FILL_ALPHA.value)
 
     @fill_opacity.setter
     def fill_opacity(self, new):
-        if new not in {None, GraphicsStyle.INHERIT}:
+        if new not in {None, self.INHERIT}:
             _check_range(new)
 
         super().__setattr__(PDFStyleKeys.FILL_ALPHA.value, new)
@@ -1530,7 +1548,7 @@ class GraphicsStyle:
         When setting this property, if the color specifies an opacity value, that will
         be used to set the fill_opacity property as well.
         """
-        return getattr(self, "_stroke_color", GraphicsStyle.INHERIT)
+        return self._stroke_color  # pylint: disable=no-member
 
     @stroke_color.setter
     def stroke_color(self, color):
@@ -1542,7 +1560,7 @@ class GraphicsStyle:
             if color.a is not None:
                 self.stroke_opacity = color.a
 
-        elif (color is None) or (color is GraphicsStyle.INHERIT):
+        elif (color is None) or (color is self.INHERIT):
             super().__setattr__("_stroke_color", color)
 
         else:
@@ -1551,11 +1569,11 @@ class GraphicsStyle:
     @property
     def stroke_opacity(self):
         """The desired stroke opacity for this path/group."""
-        return getattr(self, PDFStyleKeys.STROKE_ALPHA.value, GraphicsStyle.INHERIT)
+        return getattr(self, PDFStyleKeys.STROKE_ALPHA.value)
 
     @stroke_opacity.setter
     def stroke_opacity(self, new):
-        if new not in {None, GraphicsStyle.INHERIT}:
+        if new not in {None, self.INHERIT}:
             _check_range(new)
 
         super().__setattr__(PDFStyleKeys.STROKE_ALPHA.value, new)
@@ -1563,11 +1581,11 @@ class GraphicsStyle:
     @property
     def blend_mode(self):
         """The desired blend mode for this path/group."""
-        return getattr(self, PDFStyleKeys.BLEND_MODE.value, GraphicsStyle.INHERIT)
+        return getattr(self, PDFStyleKeys.BLEND_MODE.value)
 
     @blend_mode.setter
     def blend_mode(self, value):
-        if value is GraphicsStyle.INHERIT:
+        if value is self.INHERIT:
             super().__setattr__(PDFStyleKeys.BLEND_MODE.value, value)
         else:
             super().__setattr__(
@@ -1577,13 +1595,13 @@ class GraphicsStyle:
     @property
     def stroke_width(self):
         """The desired stroke width for this path/group."""
-        return getattr(self, PDFStyleKeys.STROKE_WIDTH.value, GraphicsStyle.INHERIT)
+        return getattr(self, PDFStyleKeys.STROKE_WIDTH.value)
 
     @stroke_width.setter
     def stroke_width(self, width):
         if not isinstance(
             width,
-            (int, float, decimal.Decimal, type(None), type(GraphicsStyle.INHERIT)),
+            (int, float, decimal.Decimal, type(None), type(self.INHERIT)),
         ):
             raise TypeError(f"stroke_width must be a number, not {type(width)}")
 
@@ -1592,11 +1610,11 @@ class GraphicsStyle:
     @property
     def stroke_cap_style(self):
         """The desired stroke cap style for this path/group."""
-        return getattr(self, PDFStyleKeys.STROKE_CAP_STYLE.value, GraphicsStyle.INHERIT)
+        return getattr(self, PDFStyleKeys.STROKE_CAP_STYLE.value)
 
     @stroke_cap_style.setter
     def stroke_cap_style(self, value):
-        if value is GraphicsStyle.INHERIT:
+        if value is self.INHERIT:
             super().__setattr__(PDFStyleKeys.STROKE_CAP_STYLE.value, value)
         else:
             super().__setattr__(
@@ -1606,13 +1624,11 @@ class GraphicsStyle:
     @property
     def stroke_join_style(self):
         """The desired stroke join style for this path/group."""
-        return getattr(
-            self, PDFStyleKeys.STROKE_JOIN_STYLE.value, GraphicsStyle.INHERIT
-        )
+        return getattr(self, PDFStyleKeys.STROKE_JOIN_STYLE.value)
 
     @stroke_join_style.setter
     def stroke_join_style(self, value):
-        if value is GraphicsStyle.INHERIT:
+        if value is self.INHERIT:
             super().__setattr__(PDFStyleKeys.STROKE_JOIN_STYLE.value, value)
         else:
             super().__setattr__(
@@ -1623,13 +1639,11 @@ class GraphicsStyle:
     @property
     def stroke_miter_limit(self):
         """The desired stroke miter limit for this path/group."""
-        return getattr(
-            self, PDFStyleKeys.STROKE_MITER_LIMIT.value, GraphicsStyle.INHERIT
-        )
+        return getattr(self, PDFStyleKeys.STROKE_MITER_LIMIT.value)
 
     @stroke_miter_limit.setter
     def stroke_miter_limit(self, value):
-        if (value is GraphicsStyle.INHERIT) or isinstance(value, NumberClass):
+        if (value is self.INHERIT) or isinstance(value, NumberClass):
             super().__setattr__(PDFStyleKeys.STROKE_MITER_LIMIT.value, value)
         else:
             raise TypeError(f"{value} is not a number")
@@ -1637,61 +1651,45 @@ class GraphicsStyle:
     @property
     def stroke_dash_pattern(self):
         """The desired stroke dash pattern for this path/group."""
-        result = getattr(
-            self, PDFStyleKeys.STROKE_DASH_PATTERN.value, GraphicsStyle.INHERIT
-        )
-        if isinstance(result, tuple):
-            return result[0]
-        return result
+        return self._stroke_dash_pattern  # pylint: disable=no-member
 
     @stroke_dash_pattern.setter
     def stroke_dash_pattern(self, value):
-        if isinstance(value, (float, int)):
-            value = (value,)
-
-        if isinstance(value, (list, tuple)):
-            result = getattr(
-                self, PDFStyleKeys.STROKE_DASH_PATTERN.value, GraphicsStyle.INHERIT
-            )
-            if isinstance(result, tuple):
-                new = (tuple(value), result[1])
-            else:
-                new = (tuple(value), 0)
-            super().__setattr__(PDFStyleKeys.STROKE_DASH_PATTERN.value, new)
-        elif value is None:
-            super().__setattr__(PDFStyleKeys.STROKE_DASH_PATTERN.value, ((), 0))
-        elif value is GraphicsStyle.INHERIT:
-            super().__setattr__(PDFStyleKeys.STROKE_DASH_PATTERN.value, value)
+        if value is None:
+            result = ()
+        elif value is self.INHERIT:
+            result = value
+        elif isinstance(value, NumberClass):
+            result = (value,)
         else:
-            raise TypeError(f"{value} cannot be interpreted as a dash pattern")
+            try:
+                accum = []
+                for item in value:
+                    if not isinstance(item, NumberClass):
+                        raise TypeError(
+                            f"stroke_dash_pattern {value} sequence has non-numeric value"
+                        )
+                    accum.append(item)
+            except TypeError:
+                raise TypeError(
+                    f"stroke_dash_pattern {value} must be a number or sequence of numbers"
+                ) from None
+            else:
+                result = (*accum,)
+
+        super().__setattr__("_stroke_dash_pattern", result)
 
     @property
     def stroke_dash_phase(self):
-        """The desired stroke dash patter phase offset for this path/group."""
-        result = getattr(
-            self, PDFStyleKeys.STROKE_DASH_PATTERN.value, GraphicsStyle.INHERIT
-        )
-        if isinstance(result, tuple):
-            return result[1]
-
-        return result
+        """The desired stroke dash pattern phase offset for this path/group."""
+        return self._stroke_dash_phase  # pylint: disable=no-member
 
     @stroke_dash_phase.setter
     def stroke_dash_phase(self, value):
-        if isinstance(value, (float, int)):
-            result = getattr(
-                self, PDFStyleKeys.STROKE_DASH_PATTERN.value, GraphicsStyle.INHERIT
-            )
-            if isinstance(result, tuple):
-                super().__setattr__(
-                    PDFStyleKeys.STROKE_DASH_PATTERN.value, (result[0], value)
-                )
-            else:
-                raise ValueError("no dash pattern to set the phase on")
-        elif value is GraphicsStyle.INHERIT:
-            pass
-        else:
-            raise TypeError(f"{value} isn't a number")
+        if value is self.INHERIT or isinstance(value, NumberClass):
+            return super().__setattr__("_stroke_dash_phase", value)
+
+        raise TypeError(f"{value} isn't a number or GraphicsStyle.INHERIT")
 
     def to_pdf_dict(self):
         """
@@ -1701,14 +1699,23 @@ class GraphicsStyle:
         """
         result = OrderedDict()
 
-        for key in PDFStyleKeys:
-            value = getattr(self, key.value, GraphicsStyle.INHERIT)
+        for key in self.PDF_STYLE_KEYS:
+            value = getattr(self, key, self.INHERIT)
 
-            if (value is not GraphicsStyle.INHERIT) and (value is not None):
+            if (value is not self.INHERIT) and (value is not None):
                 # None is used for out-of-band signaling on these, e.g. a stroke_width
                 # of None doesn't need to land here because it signals the
                 # PathPaintRule auto resolution only.
-                result[key.value] = value
+                result[key] = value
+
+        # There is additional logic in GraphicsContext to ensure that this will work
+        if (self.stroke_dash_pattern is not self.INHERIT) and (
+            self.stroke_dash_pattern is not None
+        ):
+            result[PDFStyleKeys.STROKE_DASH_PATTERN.value] = [
+                self.stroke_dash_pattern,
+                self.stroke_dash_phase,
+            ]
 
         if result:
             # Only insert this key if there is at least one other item in the result so
@@ -1749,7 +1756,7 @@ class GraphicsStyle:
                 # good default.
                 rule = PathPaintRule.STROKE_FILL_NONZERO
 
-        elif self.paint_rule is GraphicsStyle.INHERIT:
+        elif self.paint_rule is self.INHERIT:
             # this shouldn't happen under normal usage, but certain API (ab)use can end
             # up in this state. We can't resolve anything meaningful, so fall back to a
             # sane(?) default.
@@ -3256,8 +3263,7 @@ class DrawingContext:
         self._subitems.append(item)
 
     @staticmethod
-    def _setup_render_prereqs(first_point, scale, height):
-        style = GraphicsStyle()
+    def _setup_render_prereqs(style, first_point, scale, height):
         style.auto_close = True
         style.paint_rule = PathPaintRule.AUTO
         style.intersection_rule = IntersectionRule.NONZERO
@@ -3274,7 +3280,7 @@ class DrawingContext:
 
         return render_list, style, last_item
 
-    def render(self, gsd_registry, first_point, scale, height):
+    def render(self, gsd_registry, first_point, scale, height, starting_style):
         """
         Render the drawing context to PDF format.
 
@@ -3288,6 +3294,8 @@ class DrawingContext:
             height (Number): the page height. This is used to remap the coordinates to
                 be from the top-left corner of the page (matching fpdf's behavior)
                 instead of the PDF native behavior of bottom-left.
+            starting_style (GraphicsStyle): the base style for this drawing context,
+                derived from the document's current style defaults.
 
         Returns:
             A string composed of the PDF representation of all the paths and groups in
@@ -3297,7 +3305,7 @@ class DrawingContext:
             return ""
 
         render_list, style, last_item = self._setup_render_prereqs(
-            first_point, scale, height
+            starting_style, first_point, scale, height
         )
 
         for item in self._subitems:
@@ -3310,11 +3318,23 @@ class DrawingContext:
         if len(render_list) == 2:
             return ""
 
+        style_dict_name = gsd_registry.register_style(style)
+
+        if style_dict_name is not None:
+            render_list.insert(2, f"{render_pdf_primitive(style_dict_name)} gs")
+            render_list.insert(
+                3,
+                render_pdf_primitive(style.stroke_dash_pattern)
+                + f" {number_to_str(style.stroke_dash_phase)} d",
+            )
+
         render_list.append("Q")
 
         return " ".join(render_list)
 
-    def render_debug(self, gsd_registry, first_point, scale, height, debug_stream):
+    def render_debug(
+        self, gsd_registry, first_point, scale, height, starting_style, debug_stream
+    ):
         """
         Render the drawing context to PDF format.
 
@@ -3328,6 +3348,8 @@ class DrawingContext:
             height (Number): the page height. This is used to remap the coordinates to
                 be from the top-left corner of the page (matching fpdf's behavior)
                 instead of the PDF native behavior of bottom-left.
+            starting_style (GraphicsStyle): the base style for this drawing context,
+                derived from the document's current style defaults.
             debug_stream (TextIO): a text stream to which a debug representation of the
                 drawing structure will be written.
 
@@ -3336,7 +3358,7 @@ class DrawingContext:
             this context (an empty string is returned if there are no paths or groups)
         """
         render_list, style, last_item = self._setup_render_prereqs(
-            first_point, scale, height
+            starting_style, first_point, scale, height
         )
 
         debug_stream.write("ROOT\n")
@@ -3360,6 +3382,16 @@ class DrawingContext:
             # transform.
             if len(render_list) == 2:
                 return ""
+
+            style_dict_name = gsd_registry.register_style(style)
+
+            if style_dict_name is not None:
+                render_list.insert(2, f"{render_pdf_primitive(style_dict_name)} gs")
+                render_list.insert(
+                    3,
+                    render_pdf_primitive(style.stroke_dash_pattern)
+                    + f" {number_to_str(style.stroke_dash_phase)} d",
+                )
 
             render_list.append("Q")
 
@@ -3973,7 +4005,7 @@ class ClippingPath(PaintedPath):
         merged_style = GraphicsStyle.merge(style, self.style)
         # we should never get a collision error here
         intersection_rule = merged_style.intersection_rule
-        if merged_style.intersection_rule == GraphicsStyle.INHERIT:
+        if merged_style.intersection_rule == merged_style.INHERIT:
             intersection_rule = ClippingPathIntersectionRule.NONZERO
         else:
             intersection_rule = ClippingPathIntersectionRule[intersection_rule.name]
@@ -4107,14 +4139,14 @@ class GraphicsContext:
             if debug_stream is not None:
                 debug_stream.write(f"{self.__class__.__name__}")
 
-            merged_style = GraphicsStyle.merge(style, self.style)
+            merged_style = style.__class__.merge(style, self.style)
 
             if debug_stream is not None:
                 styles_dbg = []
-                for attr in GraphicsStyle.MERGE_PROPERTIES:
+                for attr in merged_style.MERGE_PROPERTIES:
                     val = getattr(merged_style, attr)
-                    if val is not GraphicsStyle.INHERIT:
-                        if getattr(self.style, attr) is GraphicsStyle.INHERIT:
+                    if val is not merged_style.INHERIT:
+                        if getattr(self.style, attr) is merged_style.INHERIT:
                             inh = " (inherited)"
                         else:
                             inh = ""
@@ -4132,17 +4164,36 @@ class GraphicsContext:
                 else:
                     debug_stream.write("\n")
 
-            style_dict_name = gsd_registry.register_style(self.style)
+            NO_EMIT_SET = {None, merged_style.INHERIT}
+
+            emit_style = self.style
+            # in order to decouple the dash pattern and the dash phase at the API layer,
+            # we have to perform additional logic here to recombine them. We can rely
+            # on these being serializable because we always get a sane style on the
+            # drawing context.
+            dash_pattern = merged_style.stroke_dash_pattern
+            dash_phase = merged_style.stroke_dash_phase
+            if (dash_pattern != style.stroke_dash_pattern) or (
+                dash_phase != style.stroke_dash_phase
+            ):
+                if emit_style is self.style:
+                    emit_style = copy.deepcopy(emit_style)
+                emit_style.stroke_dash_pattern = dash_pattern
+                emit_style.stroke_dash_phase = dash_phase
+
+                emit_dash = (dash_pattern, dash_phase)
+            else:
+                emit_dash = None
+
+            style_dict_name = gsd_registry.register_style(emit_style)
 
             if style_dict_name is not None:
                 render_list.append(f"{render_pdf_primitive(style_dict_name)} gs")
 
-            NO_EMIT_SET = {None, GraphicsStyle.INHERIT}
             # we can't set color in the graphics state context dictionary, so we have to
             # manually inherit it and emit it here.
             fill_color = self.style.fill_color
             stroke_color = self.style.stroke_color
-            dash_pattern = self.style.stroke_dash_pattern
 
             if fill_color not in NO_EMIT_SET:
                 render_list.append(
@@ -4156,17 +4207,10 @@ class GraphicsContext:
                     + f" {stroke_color.OPERATOR.upper()}"
                 )
 
-            # We perform this redundant drawing operation here (the dash pattern is also
-            # emitted to the graphics state parameter dictionary for this path) because
-            # macOS preview.app does not appear to render dash patterns specified in
-            # the graphics state parameter dictionary. This was cross-referenced
-            # against mupdf and adobe acrobat reader DC, which both do render as
-            # expected, giving some assurance that it isn't a problem with the PDF
-            # generation itself.
-            if dash_pattern not in NO_EMIT_SET:
+            if emit_dash is not None:
                 render_list.append(
-                    render_pdf_primitive(dash_pattern)
-                    + f" {number_to_str(self.style.stroke_dash_phase)} d"
+                    render_pdf_primitive(emit_dash[0])
+                    + f" {number_to_str(emit_dash[1])} d"
                 )
 
             if debug_stream:

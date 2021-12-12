@@ -912,30 +912,36 @@ class FPDF(GraphicsStateMixin):
 
         context = drawing.DrawingContext()
         self._current_draw_context = context
-        with self.local_context():
-            self.set_line_width(self.line_width / self.k)
-            self.set_dash_pattern(
-                **{k: v / self.k for k, v in self.dash_pattern.items()}
-            )
+        try:
+            yield context
+        finally:
+            self._current_draw_context = None
 
-            try:
-                yield context
-            finally:
-                self._current_draw_context = None
+        starting_style = drawing.GraphicsStyle()
+        starting_style.stroke_width = self.line_width
 
-            render_args = (
-                self._drawing_graphics_state_registry,
-                drawing.Point(self.x, self.y),
-                self.k,
-                self.h,
-            )
+        dash_info = self.dash_pattern
+        dash_pattern = (dash_info["dash"], dash_info["gap"])
+        if (dash_pattern[0] == 0) or (dash_pattern[1] == 0):
+            dash_pattern = None
 
-            if debug_stream:
-                rendered = context.render_debug(*render_args, debug_stream)
-            else:
-                rendered = context.render(*render_args)
+        starting_style.stroke_dash_pattern = dash_pattern
+        starting_style.stroke_dash_phase = dash_info["phase"]
 
-            self._out(rendered)
+        render_args = (
+            self._drawing_graphics_state_registry,
+            drawing.Point(self.x, self.y),
+            self.k,
+            self.h,
+            starting_style,
+        )
+
+        if debug_stream:
+            rendered = context.render_debug(*render_args, debug_stream)
+        else:
+            rendered = context.render(*render_args)
+
+        self._out(rendered)
 
         self.pdf_version = max(self.pdf_version, "1.4")
 
