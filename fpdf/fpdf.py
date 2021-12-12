@@ -918,6 +918,7 @@ class FPDF(GraphicsStateMixin):
             self._current_draw_context = None
 
         starting_style = drawing.GraphicsStyle()
+        starting_style.allow_transparency = self.allow_images_transparency
         starting_style.stroke_width = self.line_width
 
         dash_info = self.dash_pattern

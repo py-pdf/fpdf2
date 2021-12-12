@@ -1375,6 +1375,7 @@ class GraphicsStyle:
     # fill_color and fill_opacity
     MERGE_PROPERTIES = (
         "paint_rule",
+        "allow_transparency",
         "auto_close",
         "intersection_rule",
         "fill_color",
@@ -1390,6 +1391,13 @@ class GraphicsStyle:
         "stroke_dash_phase",
     )
     """An ordered collection of properties to use when merging two GraphicsStyles."""
+
+    TRANSPARENCY_KEYS = (
+        PDFStyleKeys.FILL_ALPHA.value,
+        PDFStyleKeys.STROKE_ALPHA.value,
+        PDFStyleKeys.BLEND_MODE.value,
+    )
+    """An ordered collection of attributes not to emit in no transparency mode."""
 
     PDF_STYLE_KEYS = (
         *(k.value for k in PDFStyleKeys if k is not PDFStyleKeys.STROKE_DASH_PATTERN),
@@ -1460,6 +1468,17 @@ class GraphicsStyle:
             )
 
         super().__setattr__(name, value)
+
+    # at some point it probably makes sense to turn this into a general compliance
+    # property, but for now this is the simple approach.
+    @property
+    def allow_transparency(self):
+        return self._allow_transparency  # pylint: disable=no-member
+
+    @allow_transparency.setter
+    def allow_transparency(self, new):
+        return super().__setattr__("_allow_transparency", new)
+
     # If these are used in a nested graphics context inside of a painting path
     # operation, they are no-ops. However, they can be used for outer GraphicsContexts
     # that painting paths inherit from.
@@ -1716,6 +1735,11 @@ class GraphicsStyle:
                 self.stroke_dash_pattern,
                 self.stroke_dash_phase,
             ]
+
+        if self.allow_transparency is False:
+            for key in self.TRANSPARENCY_KEYS:
+                if key in result:
+                    del result[key]
 
         if result:
             # Only insert this key if there is at least one other item in the result so
@@ -4167,6 +4191,10 @@ class GraphicsContext:
             NO_EMIT_SET = {None, merged_style.INHERIT}
 
             emit_style = self.style
+            if merged_style.allow_transparency != self.style.allow_transparency:
+                emit_style = copy.deepcopy(self.style)
+                emit_style.allow_transparency = merged_style.allow_transparency
+
             # in order to decouple the dash pattern and the dash phase at the API layer,
             # we have to perform additional logic here to recombine them. We can rely
             # on these being serializable because we always get a sane style on the
