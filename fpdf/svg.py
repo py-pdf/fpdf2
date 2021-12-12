@@ -119,12 +119,11 @@ def resolve_angle(angle_str, default_unit="deg"):
 def xmlns(space, name):
     """Create an XML namespace string representation for the given tag name."""
     try:
-        space = _HANDY_NAMESPACES[space]
+        space = f"{{{_HANDY_NAMESPACES[space]}}}"
     except KeyError:
-        # probably we should not eat this KeyError actually
         space = ""
 
-    return f"{{{space}}}{name}"
+    return f"{space}{name}"
 
 
 @force_nodocument
