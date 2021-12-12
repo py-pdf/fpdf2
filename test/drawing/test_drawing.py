@@ -388,12 +388,6 @@ class TestStyles:
 
         auto_pdf.draw_path(open_path_drawing)
 
-    def test_illegal_stroke_dash_phase(self, open_path_drawing):
-        open_path_drawing.style.stroke_dash_pattern = fpdf.drawing.GraphicsStyle.INHERIT
-
-        with pytest.raises(ValueError):
-            open_path_drawing.style.stroke_dash_phase = 0.5
-
     @pytest.mark.parametrize(
         "blend_mode", parameters.blend_modes, ids=lambda param: f"blend mode {param}"
     )
@@ -529,8 +523,9 @@ class TestDrawingContext:
 
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
         start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        style = fpdf.drawing.GraphicsStyle()
 
-        result = ctx.render(gsdr, start, 1, 10)
+        result = ctx.render(gsdr, start, 1, 10, style)
 
         assert result == ""
 
@@ -540,8 +535,9 @@ class TestDrawingContext:
 
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
         start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        style = fpdf.drawing.GraphicsStyle()
 
-        result = ctx.render(gsdr, start, 1, 10)
+        result = ctx.render(gsdr, start, 1, 10, style)
 
         assert result == "q 1 0 0 -1 0 10 cm q 0 0 m 10 10 l h B Q Q"
 
@@ -551,9 +547,10 @@ class TestDrawingContext:
 
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
         start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        style = fpdf.drawing.GraphicsStyle()
         dbg = io.StringIO()
 
-        result = ctx.render_debug(gsdr, start, 1, 10, dbg)
+        result = ctx.render_debug(gsdr, start, 1, 10, style, dbg)
 
         assert result == ""
 
@@ -563,9 +560,10 @@ class TestDrawingContext:
 
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
         start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        style = fpdf.drawing.GraphicsStyle()
         dbg = io.StringIO()
 
-        result = ctx.render_debug(gsdr, start, 1, 10, dbg)
+        result = ctx.render_debug(gsdr, start, 1, 10, style, dbg)
 
         assert result == "q 1 0 0 -1 0 10 cm q 0 0 m 10 10 l h B Q Q"
 
@@ -719,19 +717,27 @@ class CommonPathTests:
 
 class TestPaintedPath(CommonPathTests):
     def test_inheriting_document_properties(self, auto_pdf):
-        auto_pdf.set_line_width(1)
-        auto_pdf.set_dash_pattern(dash=1, gap=2, phase=1)
+        auto_pdf.set_line_width(0.25)
+        auto_pdf.set_dash_pattern(dash=0.25, gap=0.5, phase=0.2)
         auto_pdf.set_draw_color(255, 0, 0)
         auto_pdf.set_fill_color(0, 0, 255)
 
+        auto_pdf.compress = False
+
+        auto_pdf.rect(1, 1, 8, 2, style="DF")
+
         with auto_pdf.new_path() as path:
             path.style.paint_rule = fpdf.drawing.PathPaintRule.STROKE_FILL_NONZERO
-            path.style.stroke_join_style = "round"
-            path.style.stroke_cap_style = "round"
 
-            path.move_to(2, 2)
-            path.line_to(2, 8)
-            path.line_to(8, 8)
+            path.rectangle(1, 4, 8, 2)
+
+        with auto_pdf.new_path() as path:
+            path.style.paint_rule = fpdf.drawing.PathPaintRule.STROKE_FILL_NONZERO
+            path.style.stroke_width = 0.25
+            path.style.stroke_dash_pattern = (0.25, 0.5)
+            path.style.stroke_dash_phase = 0.2
+
+            path.rectangle(1, 7, 8, 2)
 
 
 # This class inherits all of the tests from the PaintedPath test class, just like it

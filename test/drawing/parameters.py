@@ -417,7 +417,7 @@ blend_modes = (
 )
 
 invalid_styles = (
-    pytest.param("auto_close", 2, ValueError, id="invalid auto_close"),
+    pytest.param("auto_close", 2, TypeError, id="invalid auto_close"),
     pytest.param("paint_rule", 123, TypeError, id="invalid numeric paint_rule"),
     pytest.param("paint_rule", "asdasd", ValueError, id="invalid string paint_rule"),
     pytest.param(
