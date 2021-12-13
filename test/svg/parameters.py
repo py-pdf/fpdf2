@@ -151,6 +151,18 @@ test_svg_shape_tags = (
         id="rect rx and ry",
     ),
     pytest.param(
+        '<rect x="20" y="20" width="0" height="60" rx="10" ry="10"/>',
+        [],
+        no_error(),
+        id="rect width 0",
+    ),
+    pytest.param(
+        '<rect x="20" y="20" width="60" height="60" rx="60" ry="60"/>',
+        [M(0, 0), Re(20, 20, 60, 60, 30, 30)],
+        no_error(),
+        id="rect overlarge rx and ry",
+    ),
+    pytest.param(
         '<rect x="20" y="20" width="500" height="60" rx="-100" ry="10"/>',
         [],
         pytest.raises(ValueError),
@@ -367,6 +379,12 @@ test_svg_transforms = (
         id="skew x and y",
     ),
     pytest.param(
+        "skew(2, 3, 4, 5, 6)",
+        None,
+        pytest.raises(ValueError),
+        id="skew too many args",
+    ),
+    pytest.param(
         "skewX(2)",
         Transform.shearing(x=math.tan(math.radians(2)), y=0),
         no_error(),
@@ -389,6 +407,12 @@ test_svg_transforms = (
         Transform.translation(x=20, y=30),
         no_error(),
         id="translate x and y",
+    ),
+    pytest.param(
+        "translate(20, 30, 45)",
+        None,
+        pytest.raises(ValueError),
+        id="translate too many args",
     ),
     pytest.param(
         "translateX(10)",
@@ -808,6 +832,49 @@ svg_path_directives = (
     ),
 )
 
+svg_path_render_tests = (
+    pytest.param(
+        "M 0 1 C 2 3 4 5 6 7 S 8 9 10 11",
+        "q 0 1 m 2 3 4 5 6 7 c 8 9 8 9 10 11 c h B Q",
+        id="smooth cubic bezier",
+    ),
+    pytest.param(
+        "M 0 1 S 8 9 10 11",
+        "q 0 1 m 0 1 8 9 10 11 c h B Q",
+        id="smooth cubic bezier unchained",
+    ),
+    pytest.param(
+        "M 0 1 C 2 3 4 5 6 7 s 8 9 10 11",
+        "q 0 1 m 2 3 4 5 6 7 c 8 9 14 16 16 18 c h B Q",
+        id="relative smooth cubic bezier",
+    ),
+    pytest.param(
+        "M 0 1 s 8 9 10 11",
+        "q 0 1 m 0 1 8 10 10 12 c h B Q",
+        id="relative smooth cubic bezier unchained",
+    ),
+    pytest.param(
+        "M 0 1 Q 2 3 4 5 T 6 7",
+        "q 0 1 m 1.3333 2.3333 2.6667 3.6667 4 5 c 5.3333 6.3333 6 7 6 7 c h B Q",
+        id="smooth quadratic bezier",
+    ),
+    pytest.param(
+        "M 0 1 T 6 7",
+        "q 0 1 m 0 1 2 3 6 7 c h B Q",
+        id="smooth quadratic bezier unchained",
+    ),
+    pytest.param(
+        "M 0 1 Q 2 3 4 5 t 6 7",
+        "q 0 1 m 1.3333 2.3333 2.6667 3.6667 4 5 c 5.3333 6.3333 7.3333 8.6667 10 12 c h B Q",
+        id="relative smooth quadratic bezier",
+    ),
+    pytest.param(
+        "M 0 1 t 6 7",
+        "q 0 1 m 0 1 2 3.3333 6 8 c h B Q",
+        id="relative smooth quadratic bezier unchained",
+    ),
+)
+
 svg_path_implicit_directives = (
     pytest.param("M 0 1 L 2 3 4 5", [M(0, 1), L(2, 3), L(4, 5)], id="line"),
     pytest.param("m 0 1 l 2 3 4 5", [M(0, 1), l(2, 3), l(4, 5)], id="relative line"),
@@ -900,48 +967,56 @@ svg_shape_info_tests = (
         svg_snippet(width="10mm"),
         (resolve_length("10mm"), 10),
         Transform.identity(),
+        no_error(),
         id="width only",
     ),
     pytest.param(
         svg_snippet(height="10mm"),
         (10, resolve_length("10mm")),
         Transform.identity(),
+        no_error(),
         id="height only",
     ),
     pytest.param(
         svg_snippet(width="100%", height="100%"),
         (10, 10),
         Transform.identity(),
+        no_error(),
         id="fit percent",
     ),
     pytest.param(
         svg_snippet(width="50%", height="50%"),
         (5, 5),
         Transform.identity(),
+        no_error(),
         id="small percent",
     ),
     pytest.param(
         svg_snippet(width="10mm", height="10mm"),
         (resolve_length("10mm"),) * 2,
         Transform.identity(),
+        no_error(),
         id="same shape",
     ),
     pytest.param(
         svg_snippet(width="11mm", height="9mm"),
         (resolve_length("11mm"), resolve_length("9mm")),
         Transform.identity(),
+        no_error(),
         id="different shape",
     ),
     pytest.param(
         svg_snippet(width="110%", height="90%"),
         (11, 9),
         Transform.identity(),
+        no_error(),
         id="different shape, percent",
     ),
     pytest.param(
         svg_snippet(viewbox="0 0 100 100"),
         (10, 10),
         Transform.scaling(0.1),
+        no_error(),
         id="viewbox 100",
     ),
     pytest.param(
@@ -950,42 +1025,56 @@ svg_shape_info_tests = (
         Transform.scaling(resolve_length("5mm") / 100).translate(
             x=0, y=10 * resolve_length("5mm") / 100
         ),
+        no_error(),
         id="fixed size, viewbox 100",
     ),
     pytest.param(
         svg_snippet(viewbox="0 0 110 90"),
         (10, 10),
         Transform.scaling(10 / 110).translate(x=0, y=10 * 10 / 110),
+        no_error(),
         id="viewbox wide",
     ),
     pytest.param(
         svg_snippet(viewbox="0 0 90 110"),
         (10, 10),
         Transform.scaling(10 / 110).translate(x=10 * 10 / 110, y=0),
+        no_error(),
         id="viewbox tall",
     ),
     pytest.param(
         svg_snippet(viewbox="0 0 110 90", aspect=False),
         (10, 10),
         Transform.scaling(10 / 110, 10 / 90),
+        no_error(),
         id="viewbox wide, no aspect preservation",
     ),
     pytest.param(
         svg_snippet(viewbox="0 0 90 110", aspect=False),
         (10, 10),
         Transform.scaling(10 / 90, 10 / 110),
+        no_error(),
         id="viewbox tall, no aspect preservation",
     ),
     pytest.param(
         svg_snippet(viewbox="45 55 90 110"),
         (10, 10),
         Transform.scaling(10 / 110, 10 / 110).translate(-35 / 11, -5),
+        no_error(),
         id="viewbox tall and shifted",
     ),
     pytest.param(
         svg_snippet(viewbox="45 55 90 110", aspect=False),
         (10, 10),
         Transform.scaling(10 / 90, 10 / 110).translate(-5, -5),
+        no_error(),
         id="viewbox tall and shifted, no aspect preservation",
+    ),
+    pytest.param(
+        svg_snippet(viewbox="0 0 -90 110", aspect=False),
+        (10, 10),
+        None,
+        pytest.raises(ValueError),
+        id="invalid viewbox",
     ),
 )

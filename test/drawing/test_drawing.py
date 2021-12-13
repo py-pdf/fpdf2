@@ -19,14 +19,20 @@ bad_path_chars = re.compile(r"[\[\]=#, ]")
 
 
 @pytest.fixture(scope="function")
-def auto_pdf(request, tmp_path):
+def auto_pdf(request):
     pdf = fpdf.FPDF(unit="mm", format=(10, 10))
     pdf.add_page()
 
     yield pdf
 
+
+@pytest.fixture(scope="function")
+def auto_pdf_cmp(request, tmp_path, auto_pdf):
+
+    yield auto_pdf
+
     assert_pdf_equal(
-        pdf,
+        auto_pdf,
         HERE / "generated_pdf" / f"{bad_path_chars.sub('_', request.node.name)}.pdf",
         tmp_path,
     )
@@ -371,32 +377,34 @@ class TestStyleEnums:
 
 class TestStyles:
     @pytest.mark.parametrize("style_name, value", parameters.style_attributes)
-    def test_individual_attribute(self, auto_pdf, open_path_drawing, style_name, value):
+    def test_individual_attribute(
+        self, auto_pdf_cmp, open_path_drawing, style_name, value
+    ):
         setattr(open_path_drawing.style, style_name, value)
 
-        auto_pdf.draw_path(open_path_drawing)
+        auto_pdf_cmp.draw_path(open_path_drawing)
 
-    def test_stroke_miter_limit(self, auto_pdf, open_path_drawing):
+    def test_stroke_miter_limit(self, auto_pdf_cmp, open_path_drawing):
         open_path_drawing.style.stroke_join_style = "miter"
         open_path_drawing.style.stroke_miter_limit = 1.4
 
-        auto_pdf.draw_path(open_path_drawing)
+        auto_pdf_cmp.draw_path(open_path_drawing)
 
-    def test_stroke_dash_phase(self, auto_pdf, open_path_drawing):
+    def test_stroke_dash_phase(self, auto_pdf_cmp, open_path_drawing):
         open_path_drawing.style.stroke_dash_pattern = [0.5, 0.5]
         open_path_drawing.style.stroke_dash_phase = 0.5
 
-        auto_pdf.draw_path(open_path_drawing)
+        auto_pdf_cmp.draw_path(open_path_drawing)
 
     @pytest.mark.parametrize(
         "blend_mode", parameters.blend_modes, ids=lambda param: f"blend mode {param}"
     )
     def test_blend_modes(
-        self, auto_pdf, open_path_drawing, prepared_blend_path, blend_mode
+        self, auto_pdf_cmp, open_path_drawing, prepared_blend_path, blend_mode
     ):
         prepared_blend_path.style.blend_mode = blend_mode
 
-        auto_pdf.draw_path(open_path_drawing)
+        auto_pdf_cmp.draw_path(open_path_drawing)
 
     def test_dictionary_generation(self):
         style = fpdf.drawing.GraphicsStyle()
@@ -554,18 +562,33 @@ class TestDrawingContext:
 
         assert result == ""
 
-    def test_render_debug(self):
-        ctx = fpdf.drawing.DrawingContext()
-        ctx.add_item(fpdf.drawing.PaintedPath().line_to(10, 10))
-
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
-        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
-        style = fpdf.drawing.GraphicsStyle()
+    def test_render_debug(self, auto_pdf):
         dbg = io.StringIO()
 
-        result = ctx.render_debug(gsdr, start, 1, 10, style, dbg)
+        with auto_pdf.drawing_context(debug_stream=dbg) as ctx:
+            ctx.add_item(fpdf.drawing.PaintedPath().line_to(10, 10))
 
-        assert result == "q 1 0 0 -1 0 10 cm q 0 0 m 10 10 l h B Q Q"
+        assert dbg.getvalue() == (
+            "ROOT\n"
+            " └─ GraphicsContext {\n"
+            "        paint_rule: PathPaintRule.AUTO (inherited)\n"
+            "        allow_transparency: True (inherited)\n"
+            "        auto_close: True (inherited)\n"
+            "        intersection_rule: IntersectionRule.NONZERO (inherited)\n"
+            "        stroke_width: 0.20002499999999995 (inherited)\n"
+            "        stroke_dash_pattern: () (inherited)\n"
+            "        stroke_dash_phase: 0 (inherited)\n"
+            "    }┐\n"
+            "     ├─ Move(pt=Point(x=0, y=0))\n"
+            "     ├─ Line(pt=Point(x=10, y=10))\n"
+            "     └─ ImplicitClose() resolved to h\n"
+        )
+
+    def test_concurrent_drawing_context(self, auto_pdf):
+        with auto_pdf.drawing_context() as _:
+            with pytest.raises(fpdf.FPDFException):
+                with auto_pdf.drawing_context() as _:
+                    pass
 
 
 # this is named so it doesn't get picked up by pytest implicitly.
@@ -716,22 +739,22 @@ class CommonPathTests:
 
 
 class TestPaintedPath(CommonPathTests):
-    def test_inheriting_document_properties(self, auto_pdf):
-        auto_pdf.set_line_width(0.25)
-        auto_pdf.set_dash_pattern(dash=0.25, gap=0.5, phase=0.2)
-        auto_pdf.set_draw_color(255, 0, 0)
-        auto_pdf.set_fill_color(0, 0, 255)
+    def test_inheriting_document_properties(self, auto_pdf_cmp):
+        auto_pdf_cmp.set_line_width(0.25)
+        auto_pdf_cmp.set_dash_pattern(dash=0.25, gap=0.5, phase=0.2)
+        auto_pdf_cmp.set_draw_color(255, 0, 0)
+        auto_pdf_cmp.set_fill_color(0, 0, 255)
 
-        auto_pdf.compress = False
+        auto_pdf_cmp.compress = False
 
-        auto_pdf.rect(1, 1, 8, 2, style="DF")
+        auto_pdf_cmp.rect(1, 1, 8, 2, style="DF")
 
-        with auto_pdf.new_path() as path:
+        with auto_pdf_cmp.new_path() as path:
             path.style.paint_rule = fpdf.drawing.PathPaintRule.STROKE_FILL_NONZERO
 
             path.rectangle(1, 4, 8, 2)
 
-        with auto_pdf.new_path() as path:
+        with auto_pdf_cmp.new_path() as path:
             path.style.paint_rule = fpdf.drawing.PathPaintRule.STROKE_FILL_NONZERO
             path.style.stroke_width = 0.25
             path.style.stroke_dash_pattern = (0.25, 0.5)
