@@ -4029,15 +4029,14 @@ class ClippingPath(PaintedPath):
         merged_style = GraphicsStyle.merge(style, self.style)
         # we should never get a collision error here
         intersection_rule = merged_style.intersection_rule
-        if merged_style.intersection_rule == merged_style.INHERIT:
+        if intersection_rule is merged_style.INHERIT:
             intersection_rule = ClippingPathIntersectionRule.NONZERO
         else:
-            intersection_rule = ClippingPathIntersectionRule[intersection_rule.name]
+            intersection_rule = ClippingPathIntersectionRule[
+                intersection_rule.name  # pylint: disable=no-member
+            ]
 
         paint_rule = merged_style.resolve_paint_rule()
-
-        if debug_stream:
-            ...
 
         render_list.append(intersection_rule.value)
         render_list.append(paint_rule.value)
