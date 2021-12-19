@@ -25,7 +25,7 @@ import re
 import sys
 import warnings
 import zlib
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import datetime
@@ -2261,180 +2261,167 @@ class FPDF(GraphicsStateMixin):
             w = self.w - self.r_margin - self.x
         if h is None:
             h = self.font_size
-        wmax = (w - 2 * self.c_margin) * 1000 / self.font_size
+        maximum_allowed_width = (w - 2 * self.c_margin) * 1000 / self.font_size
 
         # Calculate text length
         txt = self.normalize_text(txt)
-        s = txt.replace("\r", "")
-        normalized_string_length = len(s)
-        if normalized_string_length > 0 and s[-1] == "\n":
-            normalized_string_length -= 1
+        normalized_string = txt.replace("\r", "")
 
         prev_font_style, prev_underline = self.font_style, self.underline
         if markdown and not split_only:
             self._markdown_leak_end_style = True
-
-        b = 0
-        if border:
-            if border == 1:
-                border = "LTRB"
-                b = "LRT"
-                b2 = "LR"
-            else:
-                b2 = ""
-                if "L" in border:
-                    b2 += "L"
-                if "R" in border:
-                    b2 += "R"
-                b = b2 + "T" if "T" in border else b2
-        text_cells = []
-        sep = -1
-        i = 0
-        j = 0
-        l = 0
-        ns = 0
-        nl = 1
         prev_x, prev_y = self.x, self.y
-        while i < normalized_string_length:
-            # Get next character
-            c = s[i]
 
-            # Explicit line break
-            if c == "\n":
-                if self.ws > 0:
-                    self.ws = 0
-                    self._out("0 Tw")
+        if not border:
+            border = ""
+        elif border == 1:
+            border = "LTRB"
 
-                if max_line_height and h > max_line_height:
-                    height = max_line_height
-                    h -= height
-                else:
-                    height = h
-                new_page = self.cell(
-                    w,
-                    h=height,
-                    txt=substr(s, j, i - j),
-                    border=b,
-                    ln=2,
-                    align=align,
-                    fill=fill,
-                    link=link,
-                    markdown=markdown,
-                )
-                page_break_triggered = page_break_triggered or new_page
-                text_cells.append(substr(s, j, i - j))
+        current_line_characters = []
+        current_line_width = 0
+        space_break = None
+        hyphen_break = None
 
-                i += 1
-                sep = -1
-                j = i
-                l = 0
-                ns = 0
-                nl += 1
-                if border and nl == 2:
-                    b = b2
-                continue
-
-            if c == " ":
-                sep = i
-                ls = l
-                ns += 1
+        def get_character_width(character):
             if self.unifontsubset:
-                l += self.get_string_width(c, True) / self.font_size * 1000
+                return self.get_string_width(character, True) / self.font_size * 1000
             else:
-                l += _char_width(self.current_font, c)
+                return _char_width(self.current_font, character)
 
-            # Automatic line break
-            if l > wmax:
-                if sep == -1:
-                    if i == j:
-                        i += 1
-                    if self.ws > 0:
-                        self.ws = 0
-                        self._out("0 Tw")
+        def start_new_line():
+            current_line_characters = []
+            current_line_width = 0
+            space_break = None
+            hyphen_break = None
 
-                    if max_line_height and h > max_line_height:
-                        height = max_line_height
-                        h -= height
-                    else:
-                        height = h
-                    new_page = self.cell(
-                        w,
-                        h=height,
-                        txt=substr(s, j, i - j),
-                        border=b,
-                        ln=2,
-                        align=align,
-                        fill=fill,
-                        link=link,
-                        markdown=markdown,
-                    )
-                    page_break_triggered = page_break_triggered or new_page
-                    text_cells.append(substr(s, j, i - j))
+        def add_character_to_line(character):
+            current_line_width += get_character_width(character)
+            current_line_characters.append(character)
 
-                else:
-                    if align == "J":
-                        self.ws = (
-                            (wmax - ls) / 1000 * self.font_size / (ns - 1)
-                            if ns > 1
-                            else 0
-                        )
-                        self._out(f"{self.ws * self.k:.3f} Tw")
+        text_line = namedtuple("text_line", ("text", "text_width"))
 
-                    if max_line_height and h > max_line_height:
-                        height = max_line_height
-                        h -= height
-                    else:
-                        height = h
-                    new_page = self.cell(
-                        w,
-                        h=height,
-                        txt=substr(s, j, sep - j),
-                        border=b,
-                        ln=2,
-                        align=align,
-                        fill=fill,
-                        link=link,
-                        markdown=markdown,
-                    )
-                    page_break_triggered = page_break_triggered or new_page
-                    text_cells.append(substr(s, j, sep - j))
+        automatic_break_hint = namedtuple("automatic_break_hint", (
+            "character_sequence_slice",
+            "text_width",
+            "normalized_string_position",
+        ))
 
-                    i = sep + 1
-                sep = -1
-                j = i
-                l = 0
-                ns = 0
-                nl += 1
-                if border and nl == 2:
-                    b = b2
+        # TODO (oleksii-shyman) :: replace stubs with real symbols
+        SOFT_HYPHEN = "soft-hyphen"
+        HYPHEN = "hyphen"
+        HYPHEN_WIDTH = get_character_width(HYPHEN)
+        SPACE = " "
+        NEWLINE = "\n"
+
+        text_lines = []
+
+        # stage 1 - break original text into substrings
+        index = 0
+        while index < len(normalized_string):
+
+            character = normalized_string[index]
+
+            if character == NEWLINE:
+                text_lines.append(text_line(
+                    "".join(current_line_characters),
+                    current_line_width))
+                start_new_line()
+            elif character == SPACE:
+                # TODO (oleksii-shyman) :: validate that line doesn't start from space
+                space_break = automatic_break_hint(
+                    current_line_characters[:],
+                    current_line_width,
+                    index)
+                add_character_to_line(character)
+            elif character == SOFT_HYPHEN:
+                # TODO (oleksii-shyman) :: validate that:
+                # 1 - soft hyphen is not the first character in the word
+                # 2 - there are no multiple soft hyphens in a row
+                line_width_with_hyphen_inserted = current_line_width + HYPHEN_WIDTH
+                if line_width_with_hyphen_inserted <= maximum_allowed_width:
+                    hyphen_break = automatic_break_hint(
+                        # hyphen is not appended at this stage
+                        # the reason for this move - avoid copy of slices to maintain linear complexity
+                        # current_line_characters contains only characters that are guaranteed to
+                        # be included in the result string
+                        current_line_characters[:],
+                        line_width_with_hyphen_inserted,
+                        index)
             else:
-                i += 1
+                add_character_to_line(character)
 
-        # Last chunk
-        if self.ws > 0:
-            self.ws = 0
-            self._out("0 Tw")
-        if border and "B" in border:
-            b += "B"
+            # automatic line break
+            if current_line_width > maximum_allowed_width:
+                if space_break is None and hyphen_break is None:
+                    text_lines.append(text_line(
+                        "".join(current_line_characters),
+                        current_line_width))
+                elif hyphen_break is not None and (space_break is None or
+                        hyphen_break.normalized_string_position >
+                        space_break.normalized_string_position):
+                    text_lines.append(text_line(
+                        "".join(hyphen_break.character_sequence_slice + HYPHEN),
+                        hyphen_break.text_width))
+                    start_new_line()
+                    index = hyphen_break.normalized_string_position
+                elif space_break is not None and (hyphen_break is None or
+                        hyphen_break.normalized_string_position <
+                        space_break.normalized_string_position):
+                    text_lines.append(text_line(
+                        "".join(space_break.character_sequence_slice),
+                        space_break.text_width))
+                    start_new_line()
+                    index = space_break.normalized_string_position
 
-        new_page = self.cell(
-            w,
-            h=h,
-            txt=substr(s, j, i - j),
-            border=b,
-            ln=0 if ln == 3 else ln,
-            align=align,
-            fill=fill,
-            link=link,
-            markdown=markdown,
-        )
-        if new_page:
-            # When a page jump is performed and ln=3,
-            # we stick to that new vertical offset.
-            # cf. test_multi_cell_table_with_automatic_page_break
-            prev_y = self.y
-        page_break_triggered = page_break_triggered or new_page
-        text_cells.append(substr(s, j, i - j))
+            index += 1
+
+        if current_line_width:
+            text_lines.append(text_line(
+                "".join(current_line_characters),
+                current_line_width))
+
+        # stage 2 - wrap substrings into cells
+        for text_line_index, text_line in enumerate(text_lines):
+            is_last_line = (text_line_index == len(text_lines) - 1)
+            number_of_spaces_at_current_line = text_line.text.count(SPACE)
+
+            # TODO :: not sure that this logics is correct
+            # why `current_cell_height` is substituted from `h`?
+            if max_line_height is not None and h > max_line_height:
+                current_cell_height = max_line_height
+                h -= current_cell_height
+            else:
+                current_cell_height = h
+
+            self.ws = (
+                ((maximum_allowed_width - text_line.text_width) /
+                 1000 * self.font_size / number_of_spaces_at_current_line)
+                if number_of_spaces_at_current_line else 0
+                ) if align == "J" else 0
+            self._out(f"{self.ws * self.k:.3f} Tw")
+
+            new_page = self.cell(
+                w,
+                h=current_cell_height,
+                txt=text_line.text,
+                border="".join((
+                    "T" if "T" in border and text_line_index == 0 else "",
+                    "L" if "L" in border else "",
+                    "R" if "R" in border else "",
+                    "B" if "B" in border and is_last_line else "",
+                )),
+                ln=(2 if not is_last_line else (0 if ln == 3 else ln)),
+                align=align,
+                fill=fill,
+                link=link,
+                markdown=markdown,
+            )
+            if is_last_line and new_page:
+                # When a page jump is performed and ln=3,
+                # we stick to that new vertical offset.
+                # cf. test_multi_cell_table_with_automatic_page_break
+                prev_y = self.y
+            page_break_triggered = page_break_triggered or new_page
 
         new_x, new_y = {
             0: (self.x, self.y + h),
@@ -2448,12 +2435,12 @@ class FPDF(GraphicsStateMixin):
             # restore writing functions
             self._out, self.add_page = _out, _add_page
             self.set_xy(*location)  # restore location
-            return text_cells
+            return [text_line.text for text_line in text_lines]
         if markdown:
             if self.font_style != prev_font_style:
                 self.font_style = prev_font_style
                 self.current_font = self.fonts[self.font_family + self.font_style]
-                s += f" /F{self.current_font['i']} {self.font_size_pt:.2f} Tf"
+                normalized_string += f" /F{self.current_font['i']} {self.font_size_pt:.2f} Tf"
             self.underline = prev_underline
             self._markdown_leak_end_style = False
 
