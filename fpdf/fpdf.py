@@ -2277,26 +2277,11 @@ class FPDF(GraphicsStateMixin):
         elif border == 1:
             border = "LTRB"
 
-        current_line_characters = []
-        current_line_width = 0
-        space_break = None
-        hyphen_break = None
-
         def get_character_width(character):
             if self.unifontsubset:
                 return self.get_string_width(character, True) / self.font_size * 1000
             else:
                 return _char_width(self.current_font, character)
-
-        def start_new_line():
-            current_line_characters = []
-            current_line_width = 0
-            space_break = None
-            hyphen_break = None
-
-        def add_character_to_line(character):
-            current_line_width += get_character_width(character)
-            current_line_characters.append(character)
 
         text_line = namedtuple("text_line", ("text", "text_width"))
 
@@ -2306,9 +2291,59 @@ class FPDF(GraphicsStateMixin):
             "normalized_string_position",
         ))
 
-        # TODO (oleksii-shyman) :: replace stubs with real symbols
-        SOFT_HYPHEN = "soft-hyphen"
-        HYPHEN = "hyphen"
+        class CurrentLine:
+
+            def __init__(self):
+                self.characters = []
+                self.width = 0
+                self.space_break = None
+                self.hyphen_break = None
+
+            def add_character(self, character):
+                self.width += get_character_width(character)
+                self.characters.append(character)
+
+            def add_space_hint(self, normalized_string_position):
+                self.space_break = automatic_break_hint(
+                    self.characters[:],
+                    self.width,
+                    normalized_string_position)
+
+            def add_hyphen_hint(self, normalized_string_position):
+                line_width_with_hyphen_inserted = self.width + HYPHEN_WIDTH
+                if line_width_with_hyphen_inserted <= maximum_allowed_width:
+                    self.hyphen_break = automatic_break_hint(
+                        # hyphen is not appended at this stage
+                        # the reason for this move - avoid copy of slices to maintain linear complexity
+                        # current_line_characters contains only characters that are guaranteed to
+                        # be included in the result string
+                        self.characters[:],
+                        line_width_with_hyphen_inserted,
+                        index)
+
+            def automatic_break(self):
+                if self.hyphen_break is not None and (
+                        self.space_break is None or
+                        self.hyphen_break.normalized_string_position >
+                        self.space_break.normalized_string_position):
+                    return (
+                        self.hyphen_break.normalized_string_position,
+                        text_line("".join(
+                            self.hyphen_break.character_sequence_slice + HYPHEN),
+                            self.hyphen_break.text_width))
+                elif self.space_break is not None and (
+                        self.hyphen_break is None or
+                        self.hyphen_break.normalized_string_position <
+                        self.space_break.normalized_string_position):
+                    return (
+                        self.space_break.normalized_string_position,
+                        text_line("".join(
+                            self.space_break.character_sequence_slice),
+                            self.space_break.text_width))
+                return None, text_line("".join(self.characters), self.width)
+
+        SOFT_HYPHEN = "\u00ad"
+        HYPHEN = "‐"
         HYPHEN_WIDTH = get_character_width(HYPHEN)
         SPACE = " "
         NEWLINE = "\n"
@@ -2317,68 +2352,42 @@ class FPDF(GraphicsStateMixin):
 
         # stage 1 - break original text into substrings
         index = 0
+        current_line = CurrentLine()
         while index < len(normalized_string):
 
             character = normalized_string[index]
 
             if character == NEWLINE:
                 text_lines.append(text_line(
-                    "".join(current_line_characters),
-                    current_line_width))
-                start_new_line()
+                    "".join(current_line.characters),
+                    current_line.width))
+                current_line = CurrentLine()
             elif character == SPACE:
                 # TODO (oleksii-shyman) :: validate that line doesn't start from space
-                space_break = automatic_break_hint(
-                    current_line_characters[:],
-                    current_line_width,
-                    index)
-                add_character_to_line(character)
+                current_line.add_space_hint(index)
+                current_line.add_character(character)
             elif character == SOFT_HYPHEN:
                 # TODO (oleksii-shyman) :: validate that:
                 # 1 - soft hyphen is not the first character in the word
                 # 2 - there are no multiple soft hyphens in a row
-                line_width_with_hyphen_inserted = current_line_width + HYPHEN_WIDTH
-                if line_width_with_hyphen_inserted <= maximum_allowed_width:
-                    hyphen_break = automatic_break_hint(
-                        # hyphen is not appended at this stage
-                        # the reason for this move - avoid copy of slices to maintain linear complexity
-                        # current_line_characters contains only characters that are guaranteed to
-                        # be included in the result string
-                        current_line_characters[:],
-                        line_width_with_hyphen_inserted,
-                        index)
+                current_line.add_hyphen_hint(index)
             else:
-                add_character_to_line(character)
+                current_line.add_character(character)
 
             # automatic line break
-            if current_line_width > maximum_allowed_width:
-                if space_break is None and hyphen_break is None:
-                    text_lines.append(text_line(
-                        "".join(current_line_characters),
-                        current_line_width))
-                elif hyphen_break is not None and (space_break is None or
-                        hyphen_break.normalized_string_position >
-                        space_break.normalized_string_position):
-                    text_lines.append(text_line(
-                        "".join(hyphen_break.character_sequence_slice + HYPHEN),
-                        hyphen_break.text_width))
-                    start_new_line()
-                    index = hyphen_break.normalized_string_position
-                elif space_break is not None and (hyphen_break is None or
-                        hyphen_break.normalized_string_position <
-                        space_break.normalized_string_position):
-                    text_lines.append(text_line(
-                        "".join(space_break.character_sequence_slice),
-                        space_break.text_width))
-                    start_new_line()
-                    index = space_break.normalized_string_position
+            if current_line.width > maximum_allowed_width:
+                index_correction, valid_line = current_line.automatic_break()
+                text_lines.append(valid_line)
+                if index_correction is not None:
+                    index = index_correction
+                current_line = CurrentLine()
 
             index += 1
 
-        if current_line_width:
+        if current_line.width:
             text_lines.append(text_line(
-                "".join(current_line_characters),
-                current_line_width))
+                "".join(current_line.characters),
+                current_line.width))
 
         # stage 2 - wrap substrings into cells
         for text_line_index, text_line in enumerate(text_lines):
@@ -3938,8 +3947,8 @@ def _char_width(font, char):
     cw = font["cw"]
     try:
         width = cw[char]
-    except IndexError:
-        width = font["desc"].get("MissingWidth") or 500
+    except (IndexError, KeyError):
+        width = font.get("desc", {}).get("MissingWidth") or 500
     if width == 65535:
         width = 0
     return width
