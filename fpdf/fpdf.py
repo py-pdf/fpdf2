@@ -2283,13 +2283,44 @@ class FPDF(GraphicsStateMixin):
             else:
                 return _char_width(self.current_font, character)
 
-        text_line = namedtuple("text_line", ("text", "text_width"))
+        def justified_word_spacing(text_width, number_of_spaces_between_words):
+            return ((maximum_allowed_width - text_width) /
+                    1000 * self.font_size / number_of_spaces_between_words)
+
+        class UnjustifiedTextLine:
+
+            def __init__(self, text, word_spacing=0):
+                self.text = text
+                self.word_spacing = word_spacing
+            
+            @property
+            def justify(self):
+                return False
+
+            def word_spacing_with_scale(self, _):
+                return "0 Tw"
+
+        class JustifiedTextLine(UnjustifiedTextLine):
+
+            @property
+            def justify(self):
+                return True
+
+            def word_spacing_with_scale(self, scale_factor):
+                return f"{self.word_spacing * scale_factor:.3f} Tw"
 
         automatic_break_hint = namedtuple("automatic_break_hint", (
             "character_sequence_slice",
             "text_width",
-            "normalized_string_position",
+            "index_in_normalized_string",
+            "number_of_spaces_between_words",
         ))
+
+        SOFT_HYPHEN = "\u00ad"
+        HYPHEN = "‐"
+        HYPHEN_WIDTH = get_character_width(HYPHEN)
+        SPACE = " "
+        NEWLINE = "\n"
 
         class CurrentLine:
 
@@ -2298,18 +2329,36 @@ class FPDF(GraphicsStateMixin):
                 self.width = 0
                 self.space_break = None
                 self.hyphen_break = None
+                self.number_of_spaces = 0
+                self.last_index_in_normalized_string = 0
 
-            def add_character(self, character):
-                self.width += get_character_width(character)
-                self.characters.append(character)
+            def add_character(self, character, index_in_normalized_string):
+                assert character != NEWLINE
 
-            def add_space_hint(self, normalized_string_position):
+                if character == SPACE:
+                    # TODO (oleksii-shyman) :: validate that line doesn't start from space
+                    current_line.add_space_hint(index_in_normalized_string)
+                elif character == SOFT_HYPHEN:
+                    # TODO (oleksii-shyman) :: validate that:
+                    # 1 - soft hyphen is not the first character in the word
+                    # 2 - there are no multiple soft hyphens in a row
+                    current_line.add_hyphen_hint(index_in_normalized_string)
+
+                if character != SOFT_HYPHEN:
+                    self.width += get_character_width(character)
+                    self.characters.append(character)
+                    self.last_index_in_normalized_string = (
+                        index_in_normalized_string)
+
+            def add_space_hint(self, index_in_normalized_string):
                 self.space_break = automatic_break_hint(
                     self.characters[:],
                     self.width,
-                    normalized_string_position)
+                    index_in_normalized_string,
+                    self.number_of_spaces)
+                self.number_of_spaces += 1
 
-            def add_hyphen_hint(self, normalized_string_position):
+            def add_hyphen_hint(self, index_in_normalized_string):
                 line_width_with_hyphen_inserted = self.width + HYPHEN_WIDTH
                 if line_width_with_hyphen_inserted <= maximum_allowed_width:
                     self.hyphen_break = automatic_break_hint(
@@ -2319,34 +2368,40 @@ class FPDF(GraphicsStateMixin):
                         # be included in the result string
                         self.characters[:],
                         line_width_with_hyphen_inserted,
-                        index)
+                        index_in_normalized_string,
+                        self.number_of_spaces)
+
+            @staticmethod
+            def _automatic_break_from_hint(break_hint, text):
+                if (break_hint.number_of_spaces_between_words and
+                        align == 'J'):
+                    return (
+                        break_hint.index_in_normalized_string,
+                        JustifiedTextLine(
+                            text,
+                            justified_word_spacing(
+                                break_hint.text_width,
+                                break_hint.number_of_spaces_between_words)))
+                return (break_hint.index_in_normalized_string,
+                        UnjustifiedTextLine(text))
 
             def automatic_break(self):
                 if self.hyphen_break is not None and (
                         self.space_break is None or
-                        self.hyphen_break.normalized_string_position >
-                        self.space_break.normalized_string_position):
-                    return (
-                        self.hyphen_break.normalized_string_position,
-                        text_line("".join(
-                            self.hyphen_break.character_sequence_slice + HYPHEN),
-                            self.hyphen_break.text_width))
+                        self.hyphen_break.index_in_normalized_string >
+                        self.space_break.index_in_normalized_string):
+                    return self._automatic_break_from_hint(
+                        self.hyphen_break, "".join(
+                            self.hyphen_break.character_sequence_slice + HYPHEN))
                 elif self.space_break is not None and (
                         self.hyphen_break is None or
                         self.hyphen_break.normalized_string_position <
                         self.space_break.normalized_string_position):
-                    return (
-                        self.space_break.normalized_string_position,
-                        text_line("".join(
-                            self.space_break.character_sequence_slice),
-                            self.space_break.text_width))
-                return None, text_line("".join(self.characters), self.width)
-
-        SOFT_HYPHEN = "\u00ad"
-        HYPHEN = "‐"
-        HYPHEN_WIDTH = get_character_width(HYPHEN)
-        SPACE = " "
-        NEWLINE = "\n"
+                    return self._automatic_break_from_hint(
+                        self.space_break, "".join(
+                            self.space_break.character_sequence_slice))
+                return (self.last_index_in_normalized_string - 1,
+                        UnjustifiedTextLine("".join(self.characters[:-1])))
 
         text_lines = []
 
@@ -2358,41 +2413,28 @@ class FPDF(GraphicsStateMixin):
             character = normalized_string[index]
 
             if character == NEWLINE:
-                text_lines.append(text_line(
-                    "".join(current_line.characters),
-                    current_line.width))
+                # explicit break
+                text_lines.append(UnjustifiedTextLine(
+                    "".join(current_line.characters)))
                 current_line = CurrentLine()
-            elif character == SPACE:
-                # TODO (oleksii-shyman) :: validate that line doesn't start from space
-                current_line.add_space_hint(index)
-                current_line.add_character(character)
-            elif character == SOFT_HYPHEN:
-                # TODO (oleksii-shyman) :: validate that:
-                # 1 - soft hyphen is not the first character in the word
-                # 2 - there are no multiple soft hyphens in a row
-                current_line.add_hyphen_hint(index)
             else:
-                current_line.add_character(character)
+                current_line.add_character(character, index)
 
             # automatic line break
             if current_line.width > maximum_allowed_width:
-                index_correction, valid_line = current_line.automatic_break()
+                index, valid_line = current_line.automatic_break()
                 text_lines.append(valid_line)
-                if index_correction is not None:
-                    index = index_correction
                 current_line = CurrentLine()
 
             index += 1
 
         if current_line.width:
-            text_lines.append(text_line(
-                "".join(current_line.characters),
-                current_line.width))
+            text_lines.append(UnjustifiedTextLine(
+                "".join(current_line.characters)))
 
         # stage 2 - wrap substrings into cells
         for text_line_index, text_line in enumerate(text_lines):
             is_last_line = (text_line_index == len(text_lines) - 1)
-            number_of_spaces_at_current_line = text_line.text.count(SPACE)
 
             # TODO :: not sure that this logics is correct
             # why `current_cell_height` is substituted from `h`?
@@ -2402,12 +2444,11 @@ class FPDF(GraphicsStateMixin):
             else:
                 current_cell_height = h
 
-            self.ws = (
-                ((maximum_allowed_width - text_line.text_width) /
-                 1000 * self.font_size / number_of_spaces_at_current_line)
-                if number_of_spaces_at_current_line else 0
-                ) if align == "J" else 0
-            self._out(f"{self.ws * self.k:.3f} Tw")
+            if text_line.justify:
+                self._out(text_line.word_spacing_with_scale(self.k))
+            elif self.ws > 0:
+                self._out(text_line.word_spacing_with_scale(self.k))
+            self.ws = text_line.word_spacing
 
             new_page = self.cell(
                 w,
@@ -2425,7 +2466,7 @@ class FPDF(GraphicsStateMixin):
                 link=link,
                 markdown=markdown,
             )
-            if is_last_line and new_page:
+            if is_last_line and new_page and ln == 3:
                 # When a page jump is performed and ln=3,
                 # we stick to that new vertical offset.
                 # cf. test_multi_cell_table_with_automatic_page_break
