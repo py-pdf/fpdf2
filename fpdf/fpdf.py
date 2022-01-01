@@ -2436,9 +2436,9 @@ class FPDF(GraphicsStateMixin):
         for text_line_index, text_line in enumerate(text_lines):
             is_last_line = (text_line_index == len(text_lines) - 1)
 
-            # TODO :: not sure that this logics is correct
-            # why `current_cell_height` is substituted from `h`?
-            if max_line_height is not None and h > max_line_height:
+            if (max_line_height is not None and
+                    h > max_line_height and
+                    not is_last_line):
                 current_cell_height = max_line_height
                 h -= current_cell_height
             else:
