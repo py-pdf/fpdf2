@@ -2322,7 +2322,9 @@ class FPDF(GraphicsStateMixin):
         )
 
         SOFT_HYPHEN = "\u00ad"
-        HYPHEN = "‐"
+        HYPHEN = "\u002d"
+        if not self.unifontsubset and self.core_fonts_encoding:
+            HYPHEN = "-"
         HYPHEN_WIDTH = get_character_width(HYPHEN)
         SPACE = " "
         NEWLINE = "\n"
@@ -2398,7 +2400,7 @@ class FPDF(GraphicsStateMixin):
                 ):
                     return self._automatic_break_from_hint(
                         self.hyphen_break,
-                        "".join(self.hyphen_break.character_sequence_slice + HYPHEN),
+                        "".join([*self.hyphen_break.character_sequence_slice, HYPHEN]),
                     )
                 if self.space_break is not None and (
                     self.hyphen_break is None
