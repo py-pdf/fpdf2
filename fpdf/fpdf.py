@@ -2249,9 +2249,14 @@ class FPDF(GraphicsStateMixin):
         """
         page_break_triggered = False
         if split_only:
-            _out, _add_page = self._out, self.add_page
+            _out, _add_page, _perform_page_break_if_need_be = (
+                self._out,
+                self.add_page,
+                self._perform_page_break_if_need_be,
+            )
             self._out = lambda *args, **kwargs: None
             self.add_page = lambda *args, **kwargs: None
+            self._perform_page_break_if_need_be = lambda *args, **kwargs: None
 
         # Store this information for manipulating position.
         location = (self.get_x(), self.get_y())
@@ -2446,7 +2451,11 @@ class FPDF(GraphicsStateMixin):
 
         if split_only:
             # restore writing functions
-            self._out, self.add_page = _out, _add_page
+            self._out, self.add_page, self._perform_page_break_if_need_be = (
+                _out,
+                _add_page,
+                _perform_page_break_if_need_be,
+            )
             self.set_xy(*location)  # restore location
             return text_cells
         if markdown:

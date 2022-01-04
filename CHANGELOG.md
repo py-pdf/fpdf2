@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.4.7] - not released yet
+### Fixed
+- `will_page_break()` & `accept_page_break` are not invoked anymore during a call to `multi_cell(split_only=True)`
 
 ## [2.4.6] - 2021-11-16
 ### Added
