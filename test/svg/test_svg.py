@@ -201,9 +201,7 @@ class TestSVGObject:
 
         svg.draw_to_page(pdf)
 
-        assert_pdf_equal(
-            pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path, generate=True
-        )
+        assert_pdf_equal(pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path)
 
     @pytest.mark.parametrize("svg_file", parameters.test_svg_sources[0:1])
     def test_draw_to_page_offset(self, tmp_path, svg_file):
