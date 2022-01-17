@@ -2,6 +2,8 @@
 
 English version: [Tutorial](Tutorial.md)
 
+Version en français : [Tutorial-fr](Tutorial-fr.md)
+
 Deutsche Version: [Tutorial-de](Tutorial-de.md)
 
 हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
@@ -9,6 +11,8 @@ Deutsche Version: [Tutorial-de](Tutorial-de.md)
 Versione in italiano: [Tutorial-it](Tutorial-it.md)
 
 Versão em português: [Tutorial-pt](Tutorial-pt.md)
+
+Версия на русском: [Tutorial-ru](Tutorial-ru.md)
 
 [TOC]
 
