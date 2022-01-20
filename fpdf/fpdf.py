@@ -1585,7 +1585,7 @@ class FPDF(GraphicsStateMixin):
 
         Standard fonts use `Latin-1` encoding by default, but Windows
         encoding `cp1252` (Western Europe) can be used with
-        [set_doc_option](set_doc_option.md) ("core_fonts_encoding", encoding).
+        `self.core_fonts_encoding = encoding`.
 
         The font specified is retained from page to page.
         The method can be called before the first page is created.

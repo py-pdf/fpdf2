@@ -157,3 +157,13 @@ def test_2_pages_outline(tmp_path):
             " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         )
     assert_pdf_equal(pdf, HERE / "2_pages_outline.pdf", tmp_path)
+
+
+def test_russian_heading(tmp_path):  # issue-320
+    pdf = FPDF()
+    pdf.add_font("Roboto", style="B", fname="test/fonts/Roboto-Regular.ttf", uni=True)
+    pdf.set_font("Roboto", style="B")
+    pdf.add_page()
+    pdf.start_section("Русский, English, 1 2 3...")
+    pdf.write(8, "Русский текст в параграфе.")
+    assert_pdf_equal(pdf, HERE / "russian_heading.pdf", tmp_path)
