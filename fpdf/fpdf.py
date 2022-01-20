@@ -1827,7 +1827,7 @@ class FPDF(GraphicsStateMixin):
                 # Instead of adding the actual character to the stream its code is
                 # mapped to a position in the font's subset
                 txt_mapped += chr(self.current_font["subset"].pick(uni))
-            txt2 = escape_parens(txt_mapped.encode("UTF-16BE").decode("latin-1"))
+            txt2 = escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))
         else:
             txt2 = escape_parens(txt)
         s = f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td ({txt2}) Tj ET"
@@ -2083,7 +2083,7 @@ class FPDF(GraphicsStateMixin):
             # If multibyte, Tw has no effect - do word spacing using an
             # adjustment before each space
             if self.ws and self.unifontsubset:
-                space = escape_parens(" ".encode("UTF-16BE").decode("latin-1"))
+                space = escape_parens(" ".encode("utf-16-be").decode("latin-1"))
                 s += " 0 Tw"
                 for txt_frag, style, underline in styled_txt_frags:
                     if self.font_style != style:
@@ -2105,7 +2105,7 @@ class FPDF(GraphicsStateMixin):
 
                     s += " ["
                     for i, word in enumerate(words):
-                        word = escape_parens(word.encode("UTF-16BE").decode("latin-1"))
+                        word = escape_parens(word.encode("utf-16-be").decode("latin-1"))
                         s += f"({word}) "
                         is_last_word = (i + 1) == len(words)
                         if not is_last_word:
@@ -2133,7 +2133,7 @@ class FPDF(GraphicsStateMixin):
                             )
 
                         txt_frag_escaped = escape_parens(
-                            txt_frag_mapped.encode("UTF-16BE").decode("latin-1")
+                            txt_frag_mapped.encode("utf-16-be").decode("latin-1")
                         )
                     else:
                         txt_frag_escaped = escape_parens(txt_frag)
@@ -3051,8 +3051,8 @@ class FPDF(GraphicsStateMixin):
         nb = self.pages_count  # total number of pages
         substituted = False
         # Replace number of pages in fonts using subsets (unicode)
-        alias = self.str_alias_nb_pages.encode("UTF-16BE")
-        encoded_nb = str(nb).encode("UTF-16BE")
+        alias = self.str_alias_nb_pages.encode("utf-16-be")
+        encoded_nb = str(nb).encode("utf-16-be")
         for n in range(1, nb + 1):
             page = self.pages[n]
             new_content = page["content"].replace(alias, encoded_nb)
