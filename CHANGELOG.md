@@ -14,6 +14,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ### Fixed
 - `will_page_break()` & `accept_page_break` are not invoked anymore during a call to `multi_cell(split_only=True)`
+- display Unicode characters in the table of content
 
 ## [2.4.6] - 2021-11-16
 ### Added

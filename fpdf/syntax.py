@@ -198,9 +198,7 @@ def camel_case(property_name):
 
 class PDFString(str):
     def serialize(self):
-        # Filtering out characters that are not encodable as Latin1 for now,
-        # as an outline /Title seemingly cannot "just" be encoded as UTF-16BE:
-        return f'({self.encode("latin-1", "ignore").decode("latin-1")})'
+        return f'({self.encode("UTF-16", "ignore").decode("latin-1")})'
 
 
 class PDFArray(list):
