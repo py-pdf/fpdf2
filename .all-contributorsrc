@@ -464,6 +464,16 @@
         "bug",
         "code"
       ]
+    },
+    {
+      "login": "pwt",
+      "name": "pwt",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1089749?v=4",
+      "profile": "https://github.com/pwt",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
