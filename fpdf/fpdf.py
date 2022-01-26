@@ -25,7 +25,7 @@ import re
 import sys
 import warnings
 import zlib
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import datetime
@@ -40,6 +40,7 @@ from .actions import Action
 from .errors import FPDFException, FPDFPageFormatException
 from .fonts import fpdf_charwidths
 from .image_parsing import get_img_info, load_image, SUPPORTED_IMAGE_FILTERS
+from .line_break import Fragment, MultiLineBreak
 from .outline import serialize_outline, OutlineSection
 from .recorder import FPDFRecorder
 from .structure_tree import MarkedContent, StructureTreeBuilder
@@ -857,20 +858,32 @@ class FPDF(GraphicsStateMixin):
         # normalized is parameter for internal use
         s = s if normalized else self.normalize_text(s)
         w = 0
-        for txt_frag, style, _ in (
+        for frag in (
             self._markdown_parse(s)
             if markdown
-            else ((s, self.font_style, bool(self.underline)),)
+            else (Fragment.from_string(s, self.font_style, bool(self.underline)),)
         ):
-            font = self.fonts[self.font_family + style]
-            if self.unifontsubset:
-                for char in s:
-                    w += _char_width(font, ord(char))
-            else:
-                w += sum(_char_width(font, char) for char in txt_frag)
+            w += self.get_normalized_string_width_with_style(frag.string, frag.style)
         if self.font_stretching != 100:
             w *= self.font_stretching / 100
         return w * self.font_size / 1000
+
+    def get_normalized_string_width_with_style(self, string, style):
+        """
+        Returns the length of a string with given style
+
+        Args:
+            string (str): the string whose length is to be computed.
+            style (str) : the string representing the style
+        """
+        w = 0
+        font = self.fonts[self.font_family + style]
+        if self.unifontsubset:
+            for char in string:
+                w += _char_width(font, ord(char))
+        else:
+            w += sum(_char_width(font, char) for char in string)
+        return w
 
     def set_line_width(self, width):
         """
@@ -1910,12 +1923,86 @@ class FPDF(GraphicsStateMixin):
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
         txt = self.normalize_text(txt)
         styled_txt_frags = self._preload_font_styles(txt, markdown)
+        return self._render_styled_cell_text(
+            w,
+            h,
+            styled_txt_frags,
+            border,
+            ln,
+            align,
+            fill,
+            link,
+            center,
+        )
+
+    def _render_styled_cell_text(
+        self,
+        w=None,
+        h=None,
+        styled_txt_frags=(),
+        border=0,
+        ln=0,
+        align="",
+        fill=False,
+        link="",
+        center=False,
+    ):
+        """
+        Prints a cell (rectangular area) with optional borders, background color and
+        character string. The upper-left corner of the cell corresponds to the current
+        position. The text can be aligned or centered. After the call, the current
+        position moves to the right or to the next line. It is possible to put a link
+        on the text.
+
+        If automatic page breaking is enabled and the cell goes beyond the limit, a
+        page break is performed before outputting.
+
+        Args:
+            w (int): Cell width. Default value: None, meaning to fit text width.
+                If 0, the cell extends up to the right margin.
+            h (int): Cell height. Default value: None, meaning an height equal
+                to the current font size.
+            styled_txt_frags (tuple): Tuple of fragments to render.
+                Default value: empty tuple.
+            border: Indicates if borders must be drawn around the cell.
+                The value can be either a number (`0`: no border ; `1`: frame)
+                or a string containing some or all of the following characters
+                (in any order):
+                `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
+            ln (int): Indicates where the current position should go after the call.
+                Possible values are: `0`: to the right ; `1`: to the beginning of the
+                next line ; `2`: below. Putting 1 is equivalent to putting 0 and calling
+                `ln` just after. Default value: 0.
+            align (str): Allows to center or align the text inside the cell.
+                Possible values are: `L` or empty string: left align (default value) ;
+                `C`: center ; `R`: right align
+            fill (bool): Indicates if the cell background must be painted (`True`)
+                or transparent (`False`). Default value: False.
+            link (str): optional link to add on the cell, internal
+                (identifier returned by `add_link`) or external URL.
+            center (bool): center the cell horizontally in the page
+            markdown (bool): enable minimal markdown-like markup to render part
+                of text as bold / italics / underlined. Default to False.
+
+        Returns: a boolean indicating if page break was triggered
+        """
+        if not self.font_family:
+            raise FPDFException("No font set, you need to call set_font() beforehand")
+        if isinstance(border, int) and border not in (0, 1):
+            warnings.warn(
+                'Integer values for "border" parameter other than 1 are currently '
+                "ignored"
+            )
+            border = 1
+        styled_txt_width = 0
+        for styled_txt_frag in styled_txt_frags:
+            styled_txt_width += self.get_string_width(styled_txt_frag.string)
         if w == 0:
             w = self.w - self.r_margin - self.x
         elif w is None:
-            if not txt:
+            if not styled_txt_frags:
                 raise ValueError("A 'txt' parameter must be provided if 'w' is None")
-            w = self.get_string_width(txt, True, markdown) + 2
+            w = styled_txt_width + 2
         if h is None:
             h = self.font_size
         # pylint: disable=invalid-unary-operand-type
@@ -1960,11 +2047,12 @@ class FPDF(GraphicsStateMixin):
                     f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S "
                 )
 
-        if txt:
+        if styled_txt_frags:
             if align == "R":
-                dx = w - self.c_margin - self.get_string_width(txt, True, markdown)
+                dx = w - self.c_margin - styled_txt_width
             elif align == "C":
-                dx = (w - self.get_string_width(txt, True, markdown)) / 2
+                # styled_txt_width = self.stretch_width(styled_txt_width)
+                dx = (w - styled_txt_width) / 2
             else:
                 dx = self.c_margin
 
@@ -1982,7 +2070,10 @@ class FPDF(GraphicsStateMixin):
             if self.ws and self.unifontsubset:
                 space = escape_parens(" ".encode("UTF-16BE").decode("latin-1"))
                 s += " 0 Tw"
-                for txt_frag, style, underline in styled_txt_frags:
+                for frag in styled_txt_frags:
+                    txt_frag = frag.string
+                    style = frag.style
+                    underline = frag.underline
                     if self.font_style != style:
                         self.font_style = style
                         self.current_font = self.fonts[
@@ -2014,7 +2105,10 @@ class FPDF(GraphicsStateMixin):
                     s_width += self.get_string_width(txt_frag, True)
                     s += "] TJ"
             else:
-                for txt_frag, style, underline in styled_txt_frags:
+                for frag in styled_txt_frags:
+                    txt_frag = frag.string
+                    style = frag.style
+                    underline = frag.underline
                     if self.font_style != style:
                         self.font_style = style
                         self.current_font = self.fonts[
@@ -2060,7 +2154,7 @@ class FPDF(GraphicsStateMixin):
                 self.link(
                     self.x + dx,
                     self.y + (0.5 * h) - (0.5 * self.font_size),
-                    self.get_string_width(txt, True, markdown),
+                    styled_txt_width,
                     self.font_size,
                     link,
                 )
@@ -2086,18 +2180,22 @@ class FPDF(GraphicsStateMixin):
         so we return the resulting `styled_txt_frags` tuple
         to avoid repeating this processing later on.
         """
-        if not txt or not markdown:
-            return tuple([[txt, self.font_style, bool(self.underline)]])
+        if not txt:
+            return tuple()
+        if not markdown:
+            return tuple(
+                [Fragment.from_string(txt, self.font_style, bool(self.underline))]
+            )
         prev_font_style = self.font_style
         styled_txt_frags = tuple(self._markdown_parse(txt))
         page = self.page
         # We set the current to page to zero so that
         # set_font() does not produce any text object on the stream buffer:
         self.page = 0
-        if any("B" in style for _, style, _ in styled_txt_frags):
+        if any("B" in frag.style for frag in styled_txt_frags):
             # Ensuring bold font is supported:
             self.set_font(style="B")
-        if any("I" in style for _, style, _ in styled_txt_frags):
+        if any("I" in frag.style for frag in styled_txt_frags):
             # Ensuring italics font is supported:
             self.set_font(style="I")
         # Restoring initial style:
@@ -2108,7 +2206,7 @@ class FPDF(GraphicsStateMixin):
     def _markdown_parse(self, txt):
         "Split some text into fragments based on styling: **bold**, __italics__, --underlined--"
         txt_frag, in_bold, in_italics, in_underline = (
-            "",
+            [],
             "B" in self.font_style,
             "I" in self.font_style,
             bool(self.underline),
@@ -2127,10 +2225,10 @@ class FPDF(GraphicsStateMixin):
                 and (len(txt) < 3 or txt[2] != half_marker)
             ):
                 if txt_frag:
-                    yield (
-                        txt_frag,
+                    yield Fragment(
                         ("B" if in_bold else "") + ("I" if in_italics else ""),
                         in_underline,
+                        txt_frag,
                     )
                 if txt[:2] == self.MARKDOWN_BOLD_MARKER:
                     in_bold = not in_bold
@@ -2138,16 +2236,16 @@ class FPDF(GraphicsStateMixin):
                     in_italics = not in_italics
                 if txt[:2] == self.MARKDOWN_UNDERLINE_MARKER:
                     in_underline = not in_underline
-                txt_frag = ""
+                txt_frag = []
                 txt = txt[2:]
             else:
-                txt_frag += txt[0]
+                txt_frag.append(txt[0])
                 txt = txt[1:]
         if txt_frag:
-            yield (
-                txt_frag,
+            yield Fragment(
                 ("B" if in_bold else "") + ("I" if in_italics else ""),
                 in_underline,
+                txt_frag,
             )
 
     def will_page_break(self, height):
@@ -2266,6 +2364,7 @@ class FPDF(GraphicsStateMixin):
         # Calculate text length
         txt = self.normalize_text(txt)
         normalized_string = txt.replace("\r", "")
+        styled_text_fragments = self._preload_font_styles(normalized_string, markdown)
 
         prev_font_style, prev_underline = self.font_style, self.underline
         if markdown and not split_only:
@@ -2277,173 +2376,17 @@ class FPDF(GraphicsStateMixin):
         elif border == 1:
             border = "LTRB"
 
-        def get_character_width(character):
-            if self.unifontsubset:
-                return self.get_string_width(character, True) / self.font_size * 1000
-            return _char_width(self.current_font, character)
-
-        def justified_word_spacing(text_width, number_of_spaces_between_words):
-            return (
-                (maximum_allowed_width - text_width)
-                / 1000
-                * self.font_size
-                / number_of_spaces_between_words
-            )
-
-        class UnjustifiedTextLine:
-            def __init__(self, text, word_spacing=0):
-                self.text = text
-                self.word_spacing = word_spacing
-
-            @property
-            def justify(self):
-                return False
-
-            # pylint: disable=no-self-use
-            def word_spacing_with_scale(self, _):
-                return "0 Tw"
-
-        class JustifiedTextLine(UnjustifiedTextLine):
-            @property
-            def justify(self):
-                return True
-
-            def word_spacing_with_scale(self, scale_factor):
-                return f"{self.word_spacing * scale_factor:.3f} Tw"
-
-        automatic_break_hint = namedtuple(
-            "automatic_break_hint",
-            (
-                "character_sequence_slice",
-                "text_width",
-                "index_in_normalized_string",
-                "number_of_spaces_between_words",
-            ),
-        )
-
-        SOFT_HYPHEN = "\u00ad"
-        HYPHEN = "\u002d"
-        if not self.unifontsubset and self.core_fonts_encoding:
-            HYPHEN = "-"
-        HYPHEN_WIDTH = get_character_width(HYPHEN)
-        SPACE = " "
-        NEWLINE = "\n"
-
-        class CurrentLine:
-            def __init__(self):
-                self.characters = []
-                self.width = 0
-                self.space_break = None
-                self.hyphen_break = None
-                self.number_of_spaces = 0
-                self.last_index_in_normalized_string = 0
-
-            def add_character(self, character, index_in_normalized_string):
-                assert character != NEWLINE
-
-                if character == SPACE:
-                    current_line.add_space_hint(index_in_normalized_string)
-                elif character == SOFT_HYPHEN:
-                    current_line.add_hyphen_hint(index_in_normalized_string)
-
-                if character != SOFT_HYPHEN:
-                    self.width += get_character_width(character)
-                    self.characters.append(character)
-                    self.last_index_in_normalized_string = index_in_normalized_string
-
-            def add_space_hint(self, index_in_normalized_string):
-                self.space_break = automatic_break_hint(
-                    self.characters[:],
-                    self.width,
-                    index_in_normalized_string,
-                    self.number_of_spaces,
-                )
-                self.number_of_spaces += 1
-
-            def add_hyphen_hint(self, index_in_normalized_string):
-                line_width_with_hyphen_inserted = self.width + HYPHEN_WIDTH
-                if line_width_with_hyphen_inserted <= maximum_allowed_width:
-                    self.hyphen_break = automatic_break_hint(
-                        # hyphen is not appended at this stage
-                        # the reason for this move - avoid copy of slices to maintain linear complexity
-                        # current_line_characters contains only characters that are guaranteed to
-                        # be included in the result string
-                        self.characters[:],
-                        line_width_with_hyphen_inserted,
-                        index_in_normalized_string,
-                        self.number_of_spaces,
-                    )
-
-            @staticmethod
-            def _automatic_break_from_hint(break_hint, text):
-                if break_hint.number_of_spaces_between_words and align == "J":
-                    return (
-                        break_hint.index_in_normalized_string,
-                        JustifiedTextLine(
-                            text,
-                            justified_word_spacing(
-                                break_hint.text_width,
-                                break_hint.number_of_spaces_between_words,
-                            ),
-                        ),
-                    )
-                return (
-                    break_hint.index_in_normalized_string,
-                    UnjustifiedTextLine(text),
-                )
-
-            def automatic_break(self):
-                if self.hyphen_break is not None and (
-                    self.space_break is None
-                    or self.hyphen_break.index_in_normalized_string
-                    > self.space_break.index_in_normalized_string
-                ):
-                    return self._automatic_break_from_hint(
-                        self.hyphen_break,
-                        "".join([*self.hyphen_break.character_sequence_slice, HYPHEN]),
-                    )
-                if self.space_break is not None and (
-                    self.hyphen_break is None
-                    or self.hyphen_break.index_in_normalized_string
-                    < self.space_break.index_in_normalized_string
-                ):
-                    return self._automatic_break_from_hint(
-                        self.space_break,
-                        "".join(self.space_break.character_sequence_slice),
-                    )
-                return (
-                    self.last_index_in_normalized_string - 1,
-                    UnjustifiedTextLine("".join(self.characters[:-1])),
-                )
-
         text_lines = []
+        multi_line_break = MultiLineBreak(
+            styled_text_fragments,
+            self.get_normalized_string_width_with_style,
+            justify=(align == "J"),
+        )
+        text_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
+        while (text_line) is not None:
+            text_lines.append(text_line)
+            text_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
 
-        # stage 1 - break original text into substrings
-        index = 0
-        current_line = CurrentLine()
-        while index < len(normalized_string):
-
-            character = normalized_string[index]
-
-            if character == NEWLINE:
-                # explicit break
-                text_lines.append(UnjustifiedTextLine("".join(current_line.characters)))
-                current_line = CurrentLine()
-            else:
-                current_line.add_character(character, index)
-
-            # automatic line break
-            if current_line.width > maximum_allowed_width:
-                index, valid_line = current_line.automatic_break()
-                text_lines.append(valid_line)
-                current_line = CurrentLine()
-
-            index += 1
-
-        if current_line.width:
-            text_lines.append(UnjustifiedTextLine("".join(current_line.characters)))
-
-        # stage 2 - wrap substrings into cells
         for text_line_index, text_line in enumerate(text_lines):
             is_last_line = text_line_index == len(text_lines) - 1
 
@@ -2453,16 +2396,23 @@ class FPDF(GraphicsStateMixin):
             else:
                 current_cell_height = h
 
+            word_spacing = 0
             if text_line.justify:
-                self._out(text_line.word_spacing_with_scale(self.k))
+                word_spacing = (
+                    (maximum_allowed_width - text_line.text_width)
+                    / 1000
+                    * self.font_size
+                    / text_line.number_of_spaces_between_words
+                )
+                self._out(f"{word_spacing * self.k:.3f} Tw")
             elif self.ws > 0:
-                self._out(text_line.word_spacing_with_scale(self.k))
-            self.ws = text_line.word_spacing
+                self._out("0 Tw")
+            self.ws = word_spacing
 
-            new_page = self.cell(
+            new_page = self._render_styled_cell_text(
                 w,
                 h=current_cell_height,
-                txt=text_line.text,
+                styled_txt_frags=text_line.fragments,
                 border="".join(
                     (
                         "T" if "T" in border and text_line_index == 0 else "",
@@ -2475,7 +2425,6 @@ class FPDF(GraphicsStateMixin):
                 align=align,
                 fill=fill,
                 link=link,
-                markdown=markdown,
             )
             if is_last_line and new_page and ln == 3:
                 # When a page jump is performed and ln=3,
@@ -2496,7 +2445,13 @@ class FPDF(GraphicsStateMixin):
             # restore writing functions
             self._out, self.add_page = _out, _add_page
             self.set_xy(*location)  # restore location
-            return [text_line.text for text_line in text_lines]
+            result = []
+            for text_line in text_lines:
+                characters = []
+                for frag in text_line.fragments:
+                    characters.extend(frag.characters)
+                result.append("".join(characters))
+            return result
         if markdown:
             if self.font_style != prev_font_style:
                 self.font_style = prev_font_style
