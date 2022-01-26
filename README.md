@@ -61,6 +61,7 @@ Features
  * Internal/External Links
  * PNG, GIF and JPG support (including transparency and alpha channel)
  * Shape, Line Drawing
+ * Arbitrary path drawing and basic SVG import
  * Generate [Code 39](https://fr.wikipedia.org/wiki/Code_39) & [Interleaved 2 of 5](https://en.wikipedia.org/wiki/Interleaved_2_of_5) barcodes
  * Cell / multi-cell / plaintext writing, automatic page breaks
  * Basic [conversion from HTML to PDF](https://pyfpdf.github.io/fpdf2/HTML.html)
@@ -156,6 +157,9 @@ This library could only exist thanks to the dedication of many volunteers around
   <tr>
     <td align="center"><a href="https://github.com/paulacampigotto"><img src="https://avatars.githubusercontent.com/u/36995920?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Paula Campigotto</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Apaulacampigotto" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=paulacampigotto" title="Code">💻</a> <a href="https://github.com/PyFPDF/fpdf2/pulls?q=is%3Apr+reviewed-by%3Apaulacampigotto" title="Reviewed Pull Requests">👀</a></td>
     <td align="center"><a href="https://github.com/bettman-latin"><img src="https://avatars.githubusercontent.com/u/91155492?v=4?s=100" width="100px;" alt=""/><br /><sub><b>bettman-latin</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=bettman-latin" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/oleksii-shyman"><img src="https://avatars.githubusercontent.com/u/8827452?v=4?s=100" width="100px;" alt=""/><br /><sub><b>oleksii-shyman</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=oleksii-shyman" title="Code">💻</a> <a href="#design-oleksii-shyman" title="Design">🎨</a> <a href="#ideas-oleksii-shyman" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://lcomrade.su"><img src="https://avatars.githubusercontent.com/u/70049256?v=4?s=100" width="100px;" alt=""/><br /><sub><b>lcomrade</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=lcomrade" title="Documentation">📖</a> <a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Alcomrade" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=lcomrade" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/pwt"><img src="https://avatars.githubusercontent.com/u/1089749?v=4?s=100" width="100px;" alt=""/><br /><sub><b>pwt</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Apwt" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=pwt" title="Code">💻</a></td>
   </tr>
 </table>
 

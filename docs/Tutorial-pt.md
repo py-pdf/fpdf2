@@ -1,5 +1,9 @@
 # Tutorial #
 
+English version: [Tutorial](Tutorial.md)
+
+Version en français : [Tutorial-fr](Tutorial-fr.md)
+
 Deutsche Version: [Tutorial-de](Tutorial-de.md)
 
 Versión en español: [Tutorial-es](Tutorial-es.md)
@@ -7,6 +11,8 @@ Versión en español: [Tutorial-es](Tutorial-es.md)
 हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
 
 Versione in italiano: [Tutorial-it](Tutorial-it.md)
+
+Версия на русском: [Tutorial-ru](Tutorial-ru.md)
 
 Methods full documentation: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 

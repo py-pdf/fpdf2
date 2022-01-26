@@ -7,7 +7,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
-## [2.4.7] - not released yet
+## [2.5.1] - not released yet
+
+## [2.5.0] - 2022-01-22
+### Added
+Thanks to @torque for contributing this massive new feature:
+- add [`fpdf.drawing`](https://pyfpdf.github.io/fpdf2/Drawing.html) API for composing paths from an arbitrary sequence of lines and curves.
+- add [`fpdf.svg.convert_svg_to_drawing`](https://pyfpdf.github.io/fpdf2/SVG.html) function to support converting basic scalable vector graphics (SVG) images to PDF paths.
+
+### Fixed
+- `will_page_break()` & `accept_page_break` are not invoked anymore during a call to `multi_cell(split_only=True)`
+- Unicode characters in headings are now properly displayed in the table of content, _cf._ [#320](https://github.com/PyFPDF/fpdf2/issues/320) - thanks @lcomrade
 
 ## [2.4.6] - 2021-11-16
 ### Added

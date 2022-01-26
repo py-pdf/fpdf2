@@ -25,7 +25,7 @@ import re
 import sys
 import warnings
 import zlib
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import datetime
@@ -42,6 +42,7 @@ from .fonts import fpdf_charwidths
 from .image_parsing import get_img_info, load_image, SUPPORTED_IMAGE_FILTERS
 from .line_break import Fragment, MultiLineBreak
 from .outline import serialize_outline, OutlineSection
+from . import drawing
 from .recorder import FPDFRecorder
 from .structure_tree import MarkedContent, StructureTreeBuilder
 from .ttfonts import TTFontFile
@@ -65,7 +66,7 @@ LOGGER = logging.getLogger(__name__)
 HERE = Path(__file__).resolve().parent
 
 # Global variables
-FPDF_VERSION = "2.4.6"
+FPDF_VERSION = "2.5.0"
 FPDF_FONT_DIR = HERE / "font"
 
 PAGE_FORMATS = {
@@ -329,7 +330,7 @@ class FPDF(GraphicsStateMixin):
         self.draw_color = "0 G"
         self.fill_color = "0 g"
         self.text_color = "0 g"
-        self.dash_pattern = "[] 0 d"
+        self.dash_pattern = dict(dash=0, gap=0, phase=0)
         self.line_width = 0.567 / self.k  # line width (0.2 mm)
         # end of grapics state variables
 
@@ -348,6 +349,10 @@ class FPDF(GraphicsStateMixin):
         self.set_display_mode("fullwidth")  # Full width display mode
         self.compress = True  # Enable compression by default
         self.pdf_version = "1.3"  # Set default PDF version No.
+        self._current_draw_context = None
+
+        self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
+        self._graphics_state_obj_refs = OrderedDict()
 
     @property
     def unifontsubset(self):
@@ -898,6 +903,99 @@ class FPDF(GraphicsStateMixin):
         if self.page > 0:
             self._out(f"{width * self.k:.2f} w")
 
+    @contextmanager
+    @check_page
+    def drawing_context(self, debug_stream=None):
+        """
+        Create a context for drawing paths on the current page.
+
+        If this context manager is called again inside of an active context, it will
+        raise an exception, as base drawing contexts cannot be nested.
+
+        Args:
+            debug_stream (TextIO): print a pretty tree of all items to be rendered
+                to the provided stream. To store the output in a string, use
+                `io.StringIO`.
+        """
+
+        if self._current_draw_context is not None:
+            raise FPDFException(
+                "cannot create a drawing context while one is already open"
+            )
+
+        context = drawing.DrawingContext()
+        self._current_draw_context = context
+        try:
+            yield context
+        finally:
+            self._current_draw_context = None
+
+        starting_style = drawing.GraphicsStyle()
+        starting_style.allow_transparency = self.allow_images_transparency
+        starting_style.stroke_width = self.line_width
+
+        dash_info = self.dash_pattern
+        dash_pattern = (dash_info["dash"], dash_info["gap"])
+        if (dash_pattern[0] == 0) or (dash_pattern[1] == 0):
+            dash_pattern = None
+
+        starting_style.stroke_dash_pattern = dash_pattern
+        starting_style.stroke_dash_phase = dash_info["phase"]
+
+        render_args = (
+            self._drawing_graphics_state_registry,
+            drawing.Point(self.x, self.y),
+            self.k,
+            self.h,
+            starting_style,
+        )
+
+        if debug_stream:
+            rendered = context.render_debug(*render_args, debug_stream)
+        else:
+            rendered = context.render(*render_args)
+
+        self._out(rendered)
+
+        self.pdf_version = max(self.pdf_version, "1.4")
+
+    @contextmanager
+    def new_path(
+        self, x=0, y=0, paint_rule=drawing.PathPaintRule.AUTO, debug_stream=None
+    ):
+        """
+        Create a path for appending lines and curves to.
+
+        Args:
+            x (float): Abscissa of the path starting point
+            y (float): Ordinate of the path starting point
+            paint_rule (drawing.PathPaintRule): Optional choice of how the path should
+                be painted. The default (AUTO) automatically selects stroke/fill based
+                on the path style settings.
+            debug_stream (TextIO): print a pretty tree of all items to be rendered
+                to the provided stream. To store the output in a string, use
+                `io.StringIO`.
+
+        """
+        with self.drawing_context(debug_stream=debug_stream) as ctxt:
+            path = drawing.PaintedPath(x=x, y=y)
+            path.style.paint_rule = paint_rule
+            yield path
+            ctxt.add_item(path)
+
+    def draw_path(self, path, debug_stream=None):
+        """
+        Add a pre-constructed path to the document.
+
+        Args:
+            path (drawing.PaintedPath): the path to be drawn.
+            debug_stream (TextIO): print a pretty tree of all items to be rendered
+                to the provided stream. To store the output in a string, use
+                `io.StringIO`.
+        """
+        with self.drawing_context(debug_stream=debug_stream) as ctxt:
+            ctxt.add_item(path)
+
     def set_dash_pattern(self, dash=0, gap=0, phase=0):
         """
         Set the current dash pattern for lines and curves.
@@ -921,15 +1019,20 @@ class FPDF(GraphicsStateMixin):
             raise ValueError("gap length must be zero or a positive number.")
         if not (isinstance(phase, (int, float)) and phase >= 0):
             raise ValueError("Phase must be zero or a positive number.")
-        if dash:
-            if gap:
-                dstr = f"[{dash * self.k:.3f} {gap * self.k:.3f}] {phase *self.k:.3f} d"
+
+        pattern = dict(dash=dash, gap=gap, phase=phase)
+
+        if pattern != self.dash_pattern:
+            self.dash_pattern = pattern
+
+            if dash:
+                if gap:
+                    dstr = f"[{dash * self.k:.3f} {gap * self.k:.3f}] {phase *self.k:.3f} d"
+                else:
+                    dstr = f"[{dash * self.k:.3f}] {phase *self.k:.3f} d"
             else:
-                dstr = f"[{dash * self.k:.3f}] {phase *self.k:.3f} d"
-        else:
-            dstr = "[] 0 d"
-        if dstr != self.dash_pattern:
-            self.dash_pattern = dstr
+                dstr = "[] 0 d"
+
             self._out(dstr)
 
     @check_page
@@ -1495,7 +1598,7 @@ class FPDF(GraphicsStateMixin):
 
         Standard fonts use `Latin-1` encoding by default, but Windows
         encoding `cp1252` (Western Europe) can be used with
-        [set_doc_option](set_doc_option.md) ("core_fonts_encoding", encoding).
+        `self.core_fonts_encoding = encoding`.
 
         The font specified is retained from page to page.
         The method can be called before the first page is created.
@@ -1737,7 +1840,7 @@ class FPDF(GraphicsStateMixin):
                 # Instead of adding the actual character to the stream its code is
                 # mapped to a position in the font's subset
                 txt_mapped += chr(self.current_font["subset"].pick(uni))
-            txt2 = escape_parens(txt_mapped.encode("UTF-16BE").decode("latin-1"))
+            txt2 = escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))
         else:
             txt2 = escape_parens(txt)
         s = f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td ({txt2}) Tj ET"
@@ -2068,7 +2171,7 @@ class FPDF(GraphicsStateMixin):
             # If multibyte, Tw has no effect - do word spacing using an
             # adjustment before each space
             if self.ws and self.unifontsubset:
-                space = escape_parens(" ".encode("UTF-16BE").decode("latin-1"))
+                space = escape_parens(" ".encode("utf-16-be").decode("latin-1"))
                 s += " 0 Tw"
                 for frag in styled_txt_frags:
                     txt_frag = frag.string
@@ -2093,7 +2196,7 @@ class FPDF(GraphicsStateMixin):
 
                     s += " ["
                     for i, word in enumerate(words):
-                        word = escape_parens(word.encode("UTF-16BE").decode("latin-1"))
+                        word = escape_parens(word.encode("utf-16-be").decode("latin-1"))
                         s += f"({word}) "
                         is_last_word = (i + 1) == len(words)
                         if not is_last_word:
@@ -2124,7 +2227,7 @@ class FPDF(GraphicsStateMixin):
                             )
 
                         txt_frag_escaped = escape_parens(
-                            txt_frag_mapped.encode("UTF-16BE").decode("latin-1")
+                            txt_frag_mapped.encode("utf-16-be").decode("latin-1")
                         )
                     else:
                         txt_frag_escaped = escape_parens(txt_frag)
@@ -2347,9 +2450,14 @@ class FPDF(GraphicsStateMixin):
         """
         page_break_triggered = False
         if split_only:
-            _out, _add_page = self._out, self.add_page
+            _out, _add_page, _perform_page_break_if_need_be = (
+                self._out,
+                self.add_page,
+                self._perform_page_break_if_need_be,
+            )
             self._out = lambda *args, **kwargs: None
             self.add_page = lambda *args, **kwargs: None
+            self._perform_page_break_if_need_be = lambda *args, **kwargs: None
 
         # Store this information for manipulating position.
         location = (self.get_x(), self.get_y())
@@ -2443,7 +2551,11 @@ class FPDF(GraphicsStateMixin):
 
         if split_only:
             # restore writing functions
-            self._out, self.add_page = _out, _add_page
+            self._out, self.add_page, self._perform_page_break_if_need_be = (
+                _out,
+                _add_page,
+                _perform_page_break_if_need_be,
+            )
             self.set_xy(*location)  # restore location
             result = []
             for text_line in text_lines:
@@ -2944,8 +3056,8 @@ class FPDF(GraphicsStateMixin):
         nb = self.pages_count  # total number of pages
         substituted = False
         # Replace number of pages in fonts using subsets (unicode)
-        alias = self.str_alias_nb_pages.encode("UTF-16BE")
-        encoded_nb = str(nb).encode("UTF-16BE")
+        alias = self.str_alias_nb_pages.encode("utf-16-be")
+        encoded_nb = str(nb).encode("utf-16-be")
         for n in range(1, nb + 1):
             page = self.pages[n]
             new_content = page["content"].replace(alias, encoded_nb)
@@ -3420,6 +3532,17 @@ class FPDF(GraphicsStateMixin):
         for idx, n in img_ids:
             self._out(f"/I{idx} {pdf_ref(n)}")
 
+    def _put_graphics_state_dicts(self):
+        for state_dict, name in self._drawing_graphics_state_registry.items():
+            self._newobj()
+            self._graphics_state_obj_refs[name] = self.n
+            self._out(state_dict)
+            self._out("endobj")
+
+    def _put_graphics_state_refs(self):
+        for name, obj_id in self._graphics_state_obj_refs.items():
+            self._out(f"{drawing.render_pdf_primitive(name)} {pdf_ref(obj_id)}")
+
     def _putresourcedict(self):
         # From section 10.1, "Procedure Sets", of PDF 1.7 spec:
         # > Beginning with PDF 1.4, this feature is considered obsolete.
@@ -3437,11 +3560,18 @@ class FPDF(GraphicsStateMixin):
         self._putxobjectdict()
         self._out(">>")
 
+        if self._drawing_graphics_state_registry:
+            self._out("/ExtGState <<")
+            self._put_graphics_state_refs()
+            self._out(">>")
+
     def _putresources(self):
         with self._trace_size("resources.fonts"):
             self._putfonts()
         with self._trace_size("resources.images"):
             self._putimages()
+        with self._trace_size("resources.gfxstate"):
+            self._put_graphics_state_dicts()
 
         # Resource dictionary
         with self._trace_size("resources.dict"):

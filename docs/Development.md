@@ -177,6 +177,7 @@ Ask maintainers through comments if some errors in the pipeline seem obscure to 
 4. check that [the GitHub Actions succeed](https://github.com/PyFPDF/fpdf2/actions), and that [a new release appears on Pypi](https://pypi.org/project/fpdf2/#history)
 5. perform a [GitHub release](https://github.com/PyFPDF/fpdf2/releases), taking the description from the `CHANGELOG.md`.
 It will create a new `git` tag.
+6. Announce the release on [r/pythonnews](https://www.reddit.com/r/pythonnews/)
 
 ## Documentation ##
 

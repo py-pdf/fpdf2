@@ -22,6 +22,7 @@ This repository is a fork of the library's [original port by Max Pat](http://www
 * [Unicode](Unicode.md) (UTF-8) TrueType font subset embedding (Central European, Cyrillic, Greek, Baltic, Thai, Chinese, Japanese, Korean, Hindi and almost any other language in the world)
 * PNG, GIF and JPG support (including transparency and alpha channel)
 * Shape, Line Drawing
+* Arbitrary path drawing and basic SVG import
 * Generate [Code 39](https://fr.wikipedia.org/wiki/Code_39) & [Interleaved 2 of 5](https://en.wikipedia.org/wiki/Interleaved_2_of_5) barcodes
 * Cell / multi-cell / plaintext writing, automatic page breaks
 * Basic conversion from HTML to PDF
@@ -89,7 +90,8 @@ or [open a discussion](https://github.com/PyFPDF/fpdf2/discussions).
 * [digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2](https://github.com/digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2) : scripts ported from PHP to add transpareny to elements of the page or part of an image, allow to write circular text,
    draw pie charts and bar diagrams, embed JavaScript, draw rectangles with rounded corners, draw a star shape,
    restrict the rendering of some elements to screen or printout, paint linear / radial / multi-color gradients gradients, add stamps & watermarks, write sheared text...
-* Looking for alternative libraries? Check out [this detailed list of PDF-related Python libs by Patrick Maupin](https://github.com/pmaupin/pdfrw#other-libraries). There is also `pikepdf`, `PyFPDF2` & `WeasyPrint`.
+* Looking for alternative libraries? Check out [this detailed list of PDF-related Python libs by Patrick Maupin](https://github.com/pmaupin/pdfrw#other-libraries).
+  There is also [borb](https://github.com/jorisschellekens/borb), [pikepdf](https://github.com/pikepdf/pikepdf) & [WeasyPrint](https://github.com/Kozea/WeasyPrint).
 
 ## Misc ##
 
