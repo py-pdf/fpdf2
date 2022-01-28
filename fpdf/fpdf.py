@@ -3070,7 +3070,7 @@ class FPDF(GraphicsStateMixin):
             substituted |= page["content"] != new_content
             page["content"] = new_content
         if substituted:
-            LOGGER.info(
+            LOGGER.debug(
                 "Substitution of '%s' was performed in the document",
                 self.str_alias_nb_pages,
             )
