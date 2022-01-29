@@ -869,7 +869,7 @@ class FPDF(GraphicsStateMixin):
         ):
             font = self.fonts[self.font_family + style]
             if self.unifontsubset:
-                for char in s:
+                for char in txt_frag:
                     w += _char_width(font, ord(char))
             else:
                 w += sum(_char_width(font, char) for char in txt_frag)
