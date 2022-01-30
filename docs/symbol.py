@@ -4,9 +4,9 @@ import fpdf
 
 pdf = fpdf.FPDF()
 pdf.set_margin(0)
-for i, n in enumerate(chain(range(0x21, 0x81), range(0xa0, 0xff))):
+for i, n in enumerate(chain(range(0x21, 0x81), range(0xA0, 0xFF))):
     if i % 25 == 0:
-        col = (i // 25)
+        col = i // 25
         if col % 3 == 0:
             pdf.l_margin = 0
             pdf.add_page()
