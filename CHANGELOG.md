@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.5.1] - not released yet
+### Added
+- new documentation page on [Emojis, Symbols & Dingbats](https://pyfpdf.github.io/fpdf2/EmojisSymbolsDingbats.html)
+
 ### Changed
 - log level of `_substitute_page_number()` has been lowered from `INFO` to `DEBUG`
 

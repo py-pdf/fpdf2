@@ -74,6 +74,7 @@ nav:
 - 'Logging':                        'Logging.md'
 - 'Templates':                      'Templates.md'
 - 'Unicode':                        'Unicode.md'
+- 'Emojis, Symbols & Dingbats':     'EmojisSymbolsDingbats.md'
 - 'Web2Py':                         'Web2Py.md'
 - 'API':                            'https://pyfpdf.github.io/fpdf2/fpdf/'
 - 'Development':                    'Development.md'
