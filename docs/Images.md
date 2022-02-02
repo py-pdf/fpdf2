@@ -70,14 +70,14 @@ pdf.output("pdf-with-image.pdf")
 
 ## SVG images ##
 
-By default, SVG images will be converted to JPEGs before being embedded.
-To embed them as [PDF paths](SVG.md), use the [`vector_image()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.vector_image) method:
+SVG images passed to the [`image()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method
+will be embedded as [PDF paths](SVG.md):
 ```python
 from fpdf import FPDF
 
 pdf = FPDF()
 pdf.add_page()
-pdf.vector_image("SVG_logo.svg", w=100)
+pdf.image("SVG_logo.svg", w=100)
 pdf.output("pdf-with-vector-image.pdf")
 ```
 

@@ -877,23 +877,27 @@ class SVGObject:
             converted from the SVG, scaled to the given viewport size.
         """
 
-        if isinstance(self.width, Percent) and not ignore_svg_top_attrs:
+        if ignore_svg_top_attrs:
+            vp_width = width
+        elif isinstance(self.width, Percent):
             if not width:
                 raise ValueError(
                     'SVG "width" is a percentage, hence a viewport width is required'
                 )
             vp_width = self.width * width / 100
         else:
-            vp_width = width or self.width
+            vp_width = self.width or width
 
-        if isinstance(self.height, Percent) and not ignore_svg_top_attrs:
+        if ignore_svg_top_attrs:
+            vp_height = height
+        elif isinstance(self.height, Percent):
             if not height:
                 raise ValueError(
                     'SVG "height" is a percentage, hence a viewport height is required'
                 )
             vp_height = self.height * height / 100
         else:
-            vp_height = height or self.height
+            vp_height = self.height or height
 
         if scale == 1:
             transform = drawing.Transform.identity()

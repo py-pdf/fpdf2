@@ -151,6 +151,7 @@ class TestSVGAttributeConversion:
         svg = fpdf.svg.SVGObject.from_file(svg_file)
 
         pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
+        pdf.set_margin(0)
         pdf.add_page()
 
         svg.draw_to_page(pdf)
@@ -183,6 +184,7 @@ class TestSVGObject:
     )
     def test_document_shape_info(self, svg_data, expected_dim, expected_tf, guard):
         pdf = fpdf.FPDF(unit="pt", format=(10, 10))
+        pdf.set_margin(0)
         pdf.add_page()
 
         with guard:
@@ -197,6 +199,7 @@ class TestSVGObject:
         svg = fpdf.svg.SVGObject.from_file(svg_file)
 
         pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
+        pdf.set_margin(0)
         pdf.add_page()
 
         svg.draw_to_page(pdf)
@@ -208,6 +211,7 @@ class TestSVGObject:
         svg = fpdf.svg.SVGObject.from_file(svg_file)
 
         pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
+        pdf.set_margin(0)
         pdf.add_page()
 
         svg.draw_to_page(pdf, x=5, y=5)
@@ -246,6 +250,7 @@ class TestSVGObject:
         svg = fpdf.svg.SVGObject.from_file(parameters.svgfile("SVG_logo.svg"))
 
         pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
+        pdf.set_margin(0)
         pdf.allow_images_transparency = False
         pdf.add_page()
 
