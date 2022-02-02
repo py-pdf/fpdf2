@@ -788,27 +788,21 @@ class SVGObject:
         else:
             self.preserve_ar = True
 
-        if width is None:
-            width = Percent(100)
-        else:
+        self.width = None
+        if width is not None:
             width.strip()
             if width.endswith("%"):
-                width = Percent(width[:-1])
+                self.width = Percent(width[:-1])
             else:
-                width = resolve_length(width)
+                self.width = resolve_length(width)
 
-        self.width = width
-
-        if height is None:
-            height = Percent(100)
-        else:
+        self.height = None
+        if height is not None:
             height.strip()
             if height.endswith("%"):
-                height = Percent(height[:-1])
+                self.height = Percent(height[:-1])
             else:
-                height = resolve_length(height)
-
-        self.height = height
+                self.height = resolve_length(height)
 
         if viewbox is None:
             self.viewbox = None
@@ -852,9 +846,11 @@ class SVGObject:
             The same thing as `SVGObject.transform_to_rect_viewport`.
         """
 
-        return self.transform_to_rect_viewport(pdf.k, pdf.w, pdf.h, align_viewbox)
+        return self.transform_to_rect_viewport(pdf.k, pdf.epw, pdf.eph, align_viewbox)
 
-    def transform_to_rect_viewport(self, scale, width, height, align_viewbox=True):
+    def transform_to_rect_viewport(
+        self, scale, width, height, align_viewbox=True, ignore_svg_top_attrs=False
+    ):
         """
         Size the converted SVG paths to an arbitrarily sized viewport.
 
@@ -869,6 +865,9 @@ class SVGObject:
             height (Number): the height of the viewport to scale to in document units.
             align_viewbox (bool): if True, mimic some of the SVG alignment rules if the
                 viewbox aspect ratio does not match that of the viewport.
+            ignore_svg_top_attrs (bool): ignore <svg> top attributes like "width", "height"
+                or "preserveAspectRatio" when figuring the image dimensions.
+                Require width & height to be provided as parameters.
 
         Returns:
             A tuple of (width, height, `fpdf.drawing.GraphicsContext`), where width and
@@ -878,20 +877,28 @@ class SVGObject:
             converted from the SVG, scaled to the given viewport size.
         """
 
-        if isinstance(self.width, Percent):
+        if isinstance(self.width, Percent) and not ignore_svg_top_attrs:
+            if not width:
+                raise ValueError(
+                    'SVG "width" is a percentage, hence a viewport width is required'
+                )
             vp_width = self.width * width / 100
         else:
-            vp_width = self.width
+            vp_width = width or self.width
 
-        if isinstance(self.height, Percent):
+        if isinstance(self.height, Percent) and not ignore_svg_top_attrs:
+            if not height:
+                raise ValueError(
+                    'SVG "height" is a percentage, hence a viewport height is required'
+                )
             vp_height = self.height * height / 100
         else:
-            vp_height = self.height
+            vp_height = height or self.height
 
-        if scale != 1:
-            transform = drawing.Transform.scaling(1 / scale)
-        else:
+        if scale == 1:
             transform = drawing.Transform.identity()
+        else:
+            transform = drawing.Transform.scaling(1 / scale)
 
         if self.viewbox:
             vx, vy, vw, vh = self.viewbox
@@ -902,7 +909,7 @@ class SVGObject:
             w_ratio = vp_width / vw
             h_ratio = vp_height / vh
 
-            if self.preserve_ar and (w_ratio != h_ratio):
+            if not ignore_svg_top_attrs and self.preserve_ar and (w_ratio != h_ratio):
                 w_ratio = h_ratio = min(w_ratio, h_ratio)
 
             transform = (
@@ -934,7 +941,6 @@ class SVGObject:
             debug_stream (io.TextIO): the stream to which rendering debug info will be
                 written.
         """
-
         _, _, path = self.transform_to_page_viewport(pdf)
 
         old_x, old_y = pdf.x, pdf.y

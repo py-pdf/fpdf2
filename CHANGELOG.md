@@ -12,6 +12,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - new documentation page on [Emojis, Symbols & Dingbats](https://pyfpdf.github.io/fpdf2/EmojisSymbolsDingbats.html)
 
 ### Changed
+- `image()` method now insert `.svg` images as PDF paths
 - log level of `_substitute_page_number()` has been lowered from `INFO` to `DEBUG`
 
 ### Fixed

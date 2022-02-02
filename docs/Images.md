@@ -20,6 +20,7 @@ pdf.image("docs/fpdf2-logo.png", x=20, y=60)
 pdf.output("pdf-with-image.pdf")
 ```
 
+
 ## Assembling images ##
 `fpdf2` can be an easy solution to assemble images into a PDF.
 
@@ -67,9 +68,23 @@ pdf.output("pdf-with-image.pdf")
 ```
 
 
+## SVG images ##
+
+By default, SVG images will be converted to JPEGs before being embedded.
+To embed them as [PDF paths](SVG.md), use the [`vector_image()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.vector_image) method:
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.vector_image("SVG_logo.svg", w=100)
+pdf.output("pdf-with-vector-image.pdf")
+```
+
+
 ## Retrieve images from URLs ##
 
-URLs to images can be directly passed to the [`image`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method:
+URLs to images can be directly passed to the [`image()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method:
 
 ```python
 pdf.image("https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png")

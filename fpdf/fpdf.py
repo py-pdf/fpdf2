@@ -39,13 +39,14 @@ from PIL import Image
 from .actions import Action
 from .errors import FPDFException, FPDFPageFormatException
 from .fonts import fpdf_charwidths
+from .graphics_state import GraphicsStateMixin
 from .image_parsing import get_img_info, load_image, SUPPORTED_IMAGE_FILTERS
 from .outline import serialize_outline, OutlineSection
 from . import drawing
 from .recorder import FPDFRecorder
 from .structure_tree import MarkedContent, StructureTreeBuilder
 from .ttfonts import TTFontFile
-from .graphics_state import GraphicsStateMixin
+from .svg import Percent, SVGObject
 from .util import (
     enclose_in_parens,
     escape_parens,
@@ -2723,6 +2724,9 @@ class FPDF(GraphicsStateMixin):
                 '"type" is unused and will soon be deprecated',
                 PendingDeprecationWarning,
             )
+        if str(name).endswith(".svg"):
+            # Insert it as a PDF path:
+            return self._vector_image(name, x, y, w, h, link, title, alt_text)
         if isinstance(name, str):
             img = None
         elif isinstance(name, Image.Image):
@@ -2759,7 +2763,6 @@ class FPDF(GraphicsStateMixin):
             self._perform_page_break_if_need_be(h)
             y = self.y
             self.y += h
-
         if x is None:
             x = self.x
 
@@ -2776,6 +2779,66 @@ class FPDF(GraphicsStateMixin):
             self.link(x, y, w, h, link)
 
         return info
+
+    def _vector_image(
+        self,
+        filepath,
+        x=None,
+        y=None,
+        w=0,
+        h=0,
+        link="",
+        title=None,
+        alt_text=None,
+    ):
+        svg = SVGObject.from_file(filepath)
+        if w == 0 and h == 0:
+            if not svg.width or not svg.height:
+                raise ValueError(
+                    '<svg> has no "height" / "width": w= or h= must be provided to FPDF.image()'
+                )
+            w = (
+                svg.width * self.epw / 100
+                if isinstance(svg.width, Percent)
+                else svg.width
+            )
+            h = (
+                svg.height * self.eph / 100
+                if isinstance(svg.height, Percent)
+                else svg.height
+            )
+        else:
+            _, _, vw, vh = svg.viewbox
+            if w == 0:
+                w = vw * h / vh
+            elif h == 0:
+                h = vh * w / vw
+
+        # Flowing mode
+        if y is None:
+            self._perform_page_break_if_need_be(h)
+            y = self.y
+            self.y += h
+        if x is None:
+            x = self.x
+
+        _, _, path = svg.transform_to_rect_viewport(
+            scale=1, width=w, height=h, ignore_svg_top_attrs=True
+        )
+        path.transform = path.transform @ drawing.Transform.translation(x, y)
+
+        try:
+            old_x, old_y = self.x, self.y
+            self.set_xy(0, 0)
+            if title or alt_text:
+                with self._marked_sequence(title=title, alt_text=alt_text):
+                    self.draw_path(path)
+            else:
+                self.draw_path(path)
+        finally:
+            self.set_xy(old_x, old_y)
+        if link:
+            self.link(x, y, w, h, link)
 
     def _downscale_image(self, name, img, info, w, h):
         width_in_pt, height_in_pt = w * self.k, h * self.k
