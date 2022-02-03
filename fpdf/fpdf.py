@@ -2159,7 +2159,6 @@ class FPDF(GraphicsStateMixin):
             if align == "R":
                 dx = w - self.c_margin - styled_txt_width
             elif align == "C":
-                # styled_txt_width = self.stretch_width(styled_txt_width)
                 dx = (w - styled_txt_width) / 2
             else:
                 dx = self.c_margin
