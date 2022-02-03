@@ -474,6 +474,16 @@
         "bug",
         "code"
       ]
+    },
+    {
+      "login": "mcerveny",
+      "name": "Martin Cerveny",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1438115?v=4",
+      "profile": "https://github.com/mcerveny",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

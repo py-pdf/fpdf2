@@ -39,6 +39,6 @@ https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md
 Hence, please check that your bug is still present using the latest version of fpdf2 from the git repository,
 by installing it this way:
 
-    pip install git+https://github.com/PyPDF/fpdf2.git@master
+    pip install git+https://github.com/PyFPDF/fpdf2.git@master
 
 -->

@@ -2017,6 +2017,11 @@ class FPDF(GraphicsStateMixin):
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
+        if isinstance(w, str) or isinstance(h, str):
+            raise ValueError(
+                "Parameter 'w' and 'h' must be numbers, not strings."
+                " You can omit them by passing string content with txt="
+            )
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
                 'Integer values for "border" parameter other than 1 are currently '
@@ -2448,6 +2453,11 @@ class FPDF(GraphicsStateMixin):
         Returns: a boolean indicating if page break was triggered,
             or if `split_only == True`: `txt` splitted into lines in an array
         """
+        if isinstance(w, str) or isinstance(h, str):
+            raise ValueError(
+                "Parameter 'w' and 'h' must be numbers, not strings."
+                " You can omit them by passing string content with txt="
+            )
         page_break_triggered = False
         if split_only:
             _out, _add_page, _perform_page_break_if_need_be = (
@@ -2592,6 +2602,11 @@ class FPDF(GraphicsStateMixin):
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
+        if isinstance(h, str):
+            raise ValueError(
+                "Parameter 'h' must be a number, not a string."
+                " You can omit it by passing string content with txt="
+            )
         if h is None:
             h = self.font_size
         txt = self.normalize_text(txt)
@@ -3072,7 +3087,7 @@ class FPDF(GraphicsStateMixin):
             substituted |= page["content"] != new_content
             page["content"] = new_content
         if substituted:
-            LOGGER.info(
+            LOGGER.debug(
                 "Substitution of '%s' was performed in the document",
                 self.str_alias_nb_pages,
             )

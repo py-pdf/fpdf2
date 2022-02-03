@@ -118,7 +118,7 @@ pdf.output("unicode.pdf")
 
 
 View the result here: 
-[unicode.pdf](https://github.com/reingart/pyfpdf/raw/master/tutorial/unicode.pdf)
+[unicode.pdf](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/unicode.pdf)
 
 ## Metric Files ##
 
