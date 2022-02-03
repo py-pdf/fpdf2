@@ -16,9 +16,6 @@ class Fragment:
     def from_string(cls, string, style, underlined):
         return cls(style, underlined, list(string))
 
-    def add_character(self, character):
-        self.characters.append(character)
-
     def trim(self, index):
         self.characters = self.characters[:index]
 
@@ -34,13 +31,13 @@ class Fragment:
         )
 
 
-text_line = namedtuple(
-    "text_line",
+TextLine = namedtuple(
+    "TextLine",
     ("fragments", "text_width", "number_of_spaces_between_words", "justify"),
 )
 
-space_hint = namedtuple(
-    "break_hint",
+SpaceHint = namedtuple(
+    "SpaceHint",
     (
         "original_fragment_index",
         "original_character_index",
@@ -51,9 +48,9 @@ space_hint = namedtuple(
     ),
 )
 
-hyphen_hint = namedtuple(
-    "hyphen_hint",
-    space_hint._fields
+HyphenHint = namedtuple(
+    "HyphenHint",
+    SpaceHint._fields
     + (
         "character_to_append",
         "character_to_append_width",
@@ -70,6 +67,16 @@ class CurrentLine:
         self.number_of_spaces = 0
 
         # automatic break hints
+        # CurrentLine class remembers 3 positions
+        # 1 - position of last inserted character.
+        #     class attributes (`width`, `fragments`)
+        #     is used for this purpose
+        # 2 - position of last inserted space
+        #     SpaceHint is used fo this purpose.
+        # 3 - position of last inserted soft-hyphen
+        #     HyphenHint is used fo this purpose.
+        # The purpose of multiple positions tracking - to have an ability
+        # to break in multiple places, depending on condition.
         self.space_break_hint = None
         self.hyphen_break_hint = None
 
@@ -87,6 +94,10 @@ class CurrentLine:
         if not self.fragments:
             self.fragments.append(Fragment(style, underline))
 
+        # characters are expected to be grouped into fragments by styles and
+        # underline attributes. If the last existing fragment doesn't match
+        # the (style, underline) of pending character ->
+        # create a new fragment with matching (style, underline)
         elif (
             style != self.fragments[-1].style
             or underline != self.fragments[-1].underline
@@ -95,7 +106,7 @@ class CurrentLine:
         active_fragment = self.fragments[-1]
 
         if character == SPACE:
-            self.space_break_hint = space_hint(
+            self.space_break_hint = SpaceHint(
                 original_fragment_index,
                 original_character_index,
                 len(self.fragments),
@@ -105,7 +116,7 @@ class CurrentLine:
             )
             self.number_of_spaces += 1
         elif character == SOFT_HYPHEN:
-            self.hyphen_break_hint = hyphen_hint(
+            self.hyphen_break_hint = HyphenHint(
                 original_fragment_index,
                 original_character_index,
                 len(self.fragments),
@@ -123,6 +134,11 @@ class CurrentLine:
             active_fragment.characters.append(character)
 
     def _apply_automatic_hint(self, break_hint):
+        """
+        This function mutates the current_line, applying one of the states
+        observed in the past and stored in
+        `hyphen_break_hint` or `space_break_hint` attributes.
+        """
         self.fragments = self.fragments[: break_hint.current_line_fragment_index]
         if self.fragments:
             self.fragments[-1].trim(break_hint.current_line_character_index)
@@ -130,11 +146,11 @@ class CurrentLine:
         self.width = break_hint.width
 
     def manual_break(self, justify=False):
-        return text_line(
-            self.fragments,
-            self.width,
-            self.number_of_spaces,
-            self.number_of_spaces and justify,
+        return TextLine(
+            fragments=self.fragments,
+            text_width=self.width,
+            number_of_spaces_between_words=self.number_of_spaces,
+            justify=(self.number_of_spaces > 0) and justify,
         )
 
     def automatic_break_possible(self):
@@ -206,6 +222,7 @@ class MultiLineBreak:
             )
 
             if character == NEWLINE:
+                self.character_index += 1
                 return current_line.manual_break()
 
             if current_line.width + character_width > maximum_width:
