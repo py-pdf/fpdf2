@@ -1,3 +1,4 @@
+from io import BytesIO
 from pathlib import Path
 
 import pytest
@@ -42,3 +43,14 @@ def test_svg_image_fixed_dimensions(tmp_path):
     pdf.add_page()
     pdf.image(HERE / "../svg/svg_sources/SVG_logo_fixed_dimensions.svg")
     assert_pdf_equal(pdf, HERE / "svg_image_fixed_dimensions.pdf", tmp_path)
+
+
+def test_svg_image_from_bytesio(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.image(
+        BytesIO(
+            b'<svg width="180" height="180" xmlns="http://www.w3.org/2000/svg"><rect x="60" y="60" width="60" height="60"/></svg>'
+        )
+    )
+    assert_pdf_equal(pdf, HERE / "svg_image_from_bytesio.pdf", tmp_path)

@@ -15,6 +15,7 @@ def load_image(filename):
     """
     This method is used to load external resources, such as images.
     It is automatically called when resource added to document by `FPDF.image()`.
+    It always return a BytesIO buffer.
     """
     # if a bytesio instance is passed in, use it as is.
     if isinstance(filename, BytesIO):
@@ -33,8 +34,7 @@ def _decode_base64_image(base64Image):
     "Decode the base 64 image string into an io byte stream."
     imageData = base64Image.split("base64,")[1]
     decodedData = base64.b64decode(imageData)
-    imageBytes = BytesIO(decodedData)
-    return imageBytes
+    return BytesIO(decodedData)
 
 
 def get_img_info(img, image_filter="AUTO", dims=None):

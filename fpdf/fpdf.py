@@ -33,6 +33,7 @@ from enum import IntEnum
 from functools import wraps
 from pathlib import Path
 from typing import Callable, NamedTuple, Optional, Union, List
+from xml.etree.ElementTree import ParseError, XML
 
 from PIL import Image
 
@@ -2726,12 +2727,15 @@ class FPDF(GraphicsStateMixin):
             )
         if str(name).endswith(".svg"):
             # Insert it as a PDF path:
-            return self._vector_image(name, x, y, w, h, link, title, alt_text)
+            img = load_image(str(name))
+            return self._vector_image(img, x, y, w, h, link, title, alt_text)
         if isinstance(name, str):
             img = None
         elif isinstance(name, Image.Image):
             name, img = hashlib.md5(name.tobytes()).hexdigest(), name
         elif isinstance(name, io.BytesIO):
+            if _is_xml(name):
+                return self._vector_image(name, x, y, w, h, link, title, alt_text)
             name, img = hashlib.md5(name.getvalue()).hexdigest(), name
         else:
             name, img = str(name), name
@@ -2782,7 +2786,7 @@ class FPDF(GraphicsStateMixin):
 
     def _vector_image(
         self,
-        filepath,
+        img: io.BytesIO,
         x=None,
         y=None,
         w=0,
@@ -2791,7 +2795,7 @@ class FPDF(GraphicsStateMixin):
         title=None,
         alt_text=None,
     ):
-        svg = SVGObject.from_file(filepath)
+        svg = SVGObject(img.getvalue())
         if w == 0 and h == 0:
             if not svg.width or not svg.height:
                 raise ValueError(
@@ -4176,6 +4180,14 @@ def _sizeof_fmt(num, suffix="B"):
             return f"{num:3.1f}{unit}{suffix}"
         num /= 1024
     return f"{num:.1f}Yi{suffix}"
+
+
+def _is_xml(img: io.BytesIO):
+    try:
+        XML(img.getvalue())
+        return True
+    except ParseError:
+        return False
 
 
 sys.modules[__name__].__class__ = WarnOnDeprecatedModuleAttributes
