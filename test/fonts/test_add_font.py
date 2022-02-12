@@ -124,7 +124,7 @@ def test_add_core_fonts():
     pdf.add_font("helvetica", style="IB")
     pdf.add_font("times", style="")
     pdf.add_font("courier")
-    assert pdf.fonts == {}  # No fonts added, as all of them are core fonts
+    assert not pdf.fonts  # No fonts added, as all of them are core fonts
 
 
 def test_render_en_dash(tmp_path):  # issue-166

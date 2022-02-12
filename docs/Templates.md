@@ -1,4 +1,4 @@
-# Introduction #
+# Templates #
 
 Templates are predefined documents (like invoices, tax forms, etc.), or parts of such documents, where each element (text, lines, barcodes, etc.) has a fixed position (x1, y1, x2, y2), style (font, size, etc.) and a default text.
 
@@ -151,7 +151,7 @@ FlexTemplate["company_name"] = "Sample Company"
 ```
 
 
-# Details - Template definition #
+### Details - Template definition ###
 
 A template definition consists of a number of elements, which have the following properties (columns in a CSV, items in a dict, fields in a database).
 Dimensions (except font size, which always uses points) are given in user defined units (default: mm). Those are the units that can be specified when creating a `Template()` or a `FPDF()` instance.
@@ -214,7 +214,7 @@ Dimensions (except font size, which always uses points) are given in user define
 Fields that are not relevant to a specific element type will be ignored there, but if not left empty, they must still adhere to the specified data type (in dicts, string fields may be None).
 
 
-# How to create a template #
+### How to create a template ###
 
 A template can be created in 3 ways:
 
@@ -223,7 +223,7 @@ A template can be created in 3 ways:
   * By defining the template in a database (this applies to [Web2Py] (Web2Py.md) integration)
 
 
-# Example - Hardcoded #
+### Example - Hardcoded ###
 
 ```python
 
@@ -257,7 +257,7 @@ f.render("./template.pdf")
 See template.py or [Web2Py] (Web2Py.md) for a complete example.
 
 
-# Example - Elements defined in CSV file #
+### Example - Elements defined in CSV file ###
 You define your elements in a CSV file "mycsvfile.csv"
 that will look like:
 ```

@@ -162,11 +162,10 @@ once with `generate=True`.
 ## GitHub pipeline ##
 
 A [GitHub Actions](https://help.github.com/en/actions/reference) pipeline
-is executed on every commit on the `master` branch,
-and for every _Pull Request_.
+is executed on every commit on the `master` branch, and for every _Pull Request_.
 
 It performs all validation steps detailed above: code checking with `black`,
-linting with `pylint`, unit tests...
+static code analysis with `pylint`, unit tests...
 _Pull Requests_ submitted must pass all those checks in order to be approved.
 Ask maintainers through comments if some errors in the pipeline seem obscure to you.
 
@@ -178,6 +177,7 @@ Ask maintainers through comments if some errors in the pipeline seem obscure to 
 4. check that [the GitHub Actions succeed](https://github.com/PyFPDF/fpdf2/actions), and that [a new release appears on Pypi](https://pypi.org/project/fpdf2/#history)
 5. perform a [GitHub release](https://github.com/PyFPDF/fpdf2/releases), taking the description from the `CHANGELOG.md`.
 It will create a new `git` tag.
+6. Announce the release on [r/pythonnews](https://www.reddit.com/r/pythonnews/)
 
 ## Documentation ##
 
@@ -212,7 +212,3 @@ It may be intimidating at first, but while technical, it is usually quite clear 
 
 It is also a great place to look for new features for `fpdf2`:
 there are still many PDF features that this library does not support.
-
-## See also ##
-[Project Home](index.md), [Frequently asked questions](FAQ.md), 
-[Unicode](Unicode.md).

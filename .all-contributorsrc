@@ -337,7 +337,8 @@
         "code",
         "bug",
         "doc",
-        "ideas"
+        "ideas",
+        "question"
       ]
     },
     {
@@ -439,6 +440,48 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/91155492?v=4",
       "profile": "https://github.com/bettman-latin",
       "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "oleksii-shyman",
+      "name": "oleksii-shyman",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8827452?v=4",
+      "profile": "https://github.com/oleksii-shyman",
+      "contributions": [
+        "code",
+        "design",
+        "ideas"
+      ]
+    },
+    {
+      "login": "lcomrade",
+      "name": "lcomrade",
+      "avatar_url": "https://avatars.githubusercontent.com/u/70049256?v=4",
+      "profile": "https://lcomrade.su",
+      "contributions": [
+        "doc",
+        "bug",
+        "code"
+      ]
+    },
+    {
+      "login": "pwt",
+      "name": "pwt",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1089749?v=4",
+      "profile": "https://github.com/pwt",
+      "contributions": [
+        "bug",
+        "code"
+      ]
+    },
+    {
+      "login": "mcerveny",
+      "name": "Martin Cerveny",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1438115?v=4",
+      "profile": "https://github.com/mcerveny",
+      "contributions": [
+        "bug",
         "code"
       ]
     }

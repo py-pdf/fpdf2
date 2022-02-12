@@ -35,8 +35,8 @@ It is also entirely writen in Python (no C is involved), and has only **one** de
 We are looking for contributing developers: if you want to get involved but don't know how,
 or would like to volunteer helping maintain this lib, [open a discussion](https://github.com/PyFPDF/fpdf2/discussions)!
 
-Installation Instructions:
---------------------------
+Installation Instructions
+-------------------------
 ```bash
 pip install fpdf2
 ```
@@ -53,14 +53,15 @@ cd fpdf2
 python setup.py install
 ```
 
-Features:
----------
+Features
+--------
 
  * Python 3.6+ support
  * Unicode (UTF-8) TrueType font subset embedding
  * Internal/External Links
  * PNG, GIF and JPG support (including transparency and alpha channel)
  * Shape, Line Drawing
+ * Arbitrary path drawing and basic SVG import
  * Generate [Code 39](https://fr.wikipedia.org/wiki/Code_39) & [Interleaved 2 of 5](https://en.wikipedia.org/wiki/Interleaved_2_of_5) barcodes
  * Cell / multi-cell / plaintext writing, automatic page breaks
  * Basic [conversion from HTML to PDF](https://pyfpdf.github.io/fpdf2/HTML.html)
@@ -77,8 +78,8 @@ We validate all our PDF samples using 3 different checkers:
 [![PDF Checker logo](https://pyfpdf.github.io/fpdf2/pdfchecker-logo.png)](https://www.datalogics.com/products/pdf-tools/pdf-checker/)
 [![VeraPDF logo](https://pyfpdf.github.io/fpdf2/vera-logo.jpg)](https://verapdf.org)
 
-Documentation:
---------------
+Documentation
+-------------
 
 - [Documentation Home](https://pyfpdf.github.io/fpdf2/)
 - Tutorial in several languages: [English](https://pyfpdf.github.io/fpdf2/Tutorial.html) - [Deutsch](https://pyfpdf.github.io/fpdf2/Tutorial-de.html) - [español](https://pyfpdf.github.io/fpdf2/Tutorial-es.html) - [हिंदी](https://pyfpdf.github.io/fpdf2/Tutorial-हिंदी.html) [português](https://pyfpdf.github.io/fpdf2/Tutorial-pt.html) - [Русский](https://pyfpdf.github.io/fpdf2/Tutorial-ru.html) - [Italian](https://pyfpdf.github.io/fpdf2/Tutorial-it.html) - [français](https://pyfpdf.github.io/fpdf2/Tutorial-fr.html)
@@ -86,10 +87,10 @@ Documentation:
 
 You can also have a look at the `tests/`, they're great usage examples!
 
-Developers:
------------
+Developement
+------------
 
-Please check [the documentation page dedicated to development](https://pyfpdf.github.io/fpdf2/Development.html).
+Please check the [dedicated documentation page](https://pyfpdf.github.io/fpdf2/Development.html).
 
 ## Contributors ✨
 
@@ -140,7 +141,7 @@ This library could only exist thanks to the dedication of many volunteers around
     <td align="center"><a href="https://github.com/bnyw"><img src="https://avatars.githubusercontent.com/u/32655514?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Boonyawe Sirimaha</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Abnyw" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/torque"><img src="https://avatars.githubusercontent.com/u/949138?v=4?s=100" width="100px;" alt=""/><br /><sub><b>T</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=torque" title="Code">💻</a> <a href="#design-torque" title="Design">🎨</a></td>
     <td align="center"><a href="https://github.com/AubsUK"><img src="https://avatars.githubusercontent.com/u/68870168?v=4?s=100" width="100px;" alt=""/><br /><sub><b>AubsUK</b></sub></a><br /><a href="#question-AubsUK" title="Answering Questions">💬</a></td>
-    <td align="center"><a href="http://www.schorsch.com/"><img src="https://avatars.githubusercontent.com/u/17468844?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Georg Mischler</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=gmischler" title="Code">💻</a> <a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Agmischler" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=gmischler" title="Documentation">📖</a> <a href="#ideas-gmischler" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="http://www.schorsch.com/"><img src="https://avatars.githubusercontent.com/u/17468844?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Georg Mischler</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=gmischler" title="Code">💻</a> <a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Agmischler" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=gmischler" title="Documentation">📖</a> <a href="#ideas-gmischler" title="Ideas, Planning, & Feedback">🤔</a> <a href="#question-gmischler" title="Answering Questions">💬</a></td>
     <td align="center"><a href="https://www.buymeacoffee.com/ping"><img src="https://avatars.githubusercontent.com/u/104607?v=4?s=100" width="100px;" alt=""/><br /><sub><b>ping</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Aping" title="Bug reports">🐛</a></td>
     <td align="center"><a href="http://portfedh@gmail.com"><img src="https://avatars.githubusercontent.com/u/59422723?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Portfedh</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=portfedh" title="Documentation">📖</a> <a href="#tutorial-portfedh" title="Tutorials">✅</a></td>
   </tr>
@@ -156,6 +157,10 @@ This library could only exist thanks to the dedication of many volunteers around
   <tr>
     <td align="center"><a href="https://github.com/paulacampigotto"><img src="https://avatars.githubusercontent.com/u/36995920?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Paula Campigotto</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Apaulacampigotto" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=paulacampigotto" title="Code">💻</a> <a href="https://github.com/PyFPDF/fpdf2/pulls?q=is%3Apr+reviewed-by%3Apaulacampigotto" title="Reviewed Pull Requests">👀</a></td>
     <td align="center"><a href="https://github.com/bettman-latin"><img src="https://avatars.githubusercontent.com/u/91155492?v=4?s=100" width="100px;" alt=""/><br /><sub><b>bettman-latin</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=bettman-latin" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/oleksii-shyman"><img src="https://avatars.githubusercontent.com/u/8827452?v=4?s=100" width="100px;" alt=""/><br /><sub><b>oleksii-shyman</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=oleksii-shyman" title="Code">💻</a> <a href="#design-oleksii-shyman" title="Design">🎨</a> <a href="#ideas-oleksii-shyman" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://lcomrade.su"><img src="https://avatars.githubusercontent.com/u/70049256?v=4?s=100" width="100px;" alt=""/><br /><sub><b>lcomrade</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=lcomrade" title="Documentation">📖</a> <a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Alcomrade" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=lcomrade" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/pwt"><img src="https://avatars.githubusercontent.com/u/1089749?v=4?s=100" width="100px;" alt=""/><br /><sub><b>pwt</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Apwt" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=pwt" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/mcerveny"><img src="https://avatars.githubusercontent.com/u/1438115?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Martin Cerveny</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Amcerveny" title="Bug reports">🐛</a>  <a href="https://github.com/PyFPDF/fpdf2/commits?author=paulacampigotto" title="Code">💻</a></td>
   </tr>
 </table>
 
@@ -172,16 +177,7 @@ Contributions of any kind welcome!
 
 _(screenshot from June 2021, click on the map above to access an up-to-date online version)_
 
-Other libraries
----------------
+Community, related tools, alternative libraries
+-----------------------------------------------
 
-For alternatives, check out [this detailed list of PDF-related Python libs by Patrick Maupin](https://github.com/pmaupin/pdfrw#other-libraries). There is also `pikepdf`, `PyFPDF2` & `WeasyPrint`.
-
-
-Related
--------
-
-* [Create PDFs with Python](https://www.youtube.com/playlist?list=PLjNQtX45f0dR9K2sMJ5ad9wVjqslNBIC0) : a series of tutorial videos by bvalgard
-* [digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2](https://github.com/digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2) : scripts ported from PHP to add transpareny to elements of the page or part of an image, allow to write circular text,
-   draw pie charts and bar diagrams, embed JavaScript, draw rectangles with rounded corners, draw a star shape,
-   restrict the rendering of some elements to screen or printout, paint linear / radial / multi-color gradients gradients, add stamps & watermarks, write sheared text...
+More about those in [the documentation](https://pyfpdf.github.io/fpdf2/#community).

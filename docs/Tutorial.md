@@ -12,6 +12,8 @@ Versione in italiano: [Tutorial-it](Tutorial-it.md)
 
 Versão em português: [Tutorial-pt](Tutorial-pt.md)
 
+Версия на русском: [Tutorial-ru](Tutorial-ru.md)
+
 Methods full documentation: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]

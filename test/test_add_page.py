@@ -29,3 +29,19 @@ def test_add_page_duration(tmp_path):
     pdf.add_page()
     pdf.cell(txt="Page 3")
     assert_pdf_equal(pdf, HERE / "add_page_duration.pdf", tmp_path)
+
+
+def test_break_or_add_page(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.set_auto_page_break(auto=True, margin=0)
+    pdf.add_page()
+    pdf.set_font("Helvetica", "", 16)
+    for i in range(1, 51):
+        pdf.set_x(10)
+        pdf.multi_cell(50, 10, f"Text {i} - Page {pdf.page}", 1, "C")
+    pdf.page = 1
+    pdf.set_xy(100, 10)
+    for i in range(51, 101):
+        pdf.set_x(100)
+        pdf.multi_cell(50, 10, f"Text {i} - Page {pdf.page}", 1, "C")
+    assert_pdf_equal(pdf, HERE / "break_or_add_page.pdf", tmp_path)

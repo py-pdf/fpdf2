@@ -22,6 +22,7 @@ This repository is a fork of the library's [original port by Max Pat](http://www
 * [Unicode](Unicode.md) (UTF-8) TrueType font subset embedding (Central European, Cyrillic, Greek, Baltic, Thai, Chinese, Japanese, Korean, Hindi and almost any other language in the world)
 * PNG, GIF and JPG support (including transparency and alpha channel)
 * Shape, Line Drawing
+* Arbitrary path drawing and basic SVG import
 * Generate [Code 39](https://fr.wikipedia.org/wiki/Code_39) & [Interleaved 2 of 5](https://en.wikipedia.org/wiki/Interleaved_2_of_5) barcodes
 * Cell / multi-cell / plaintext writing, automatic page breaks
 * Basic conversion from HTML to PDF
@@ -64,17 +65,34 @@ FPDF original features:
     * On ubuntu the following packages are required: `sudo apt-get install libjpeg-dev libpython-dev zlib1g-dev`
     * Run `python setup.py install`
 
-## Support ##
+**Developement**: check the [dedicated documentation page](Development.md).
+
+## Community ##
+
+### Support ###
 
 For community support, please feel free to file an [issue](https://github.com/PyFPDF/fpdf2/issues)
 or [open a discussion](https://github.com/PyFPDF/fpdf2/discussions).
 
-## Related ##
+### They use fpdf2 ###
+<!-- cf. Watchman Pypi & DavHau/pypi-deps-db -->
+* [Undying Dusk](https://lucas-c.itch.io/undying-dusk) : a **video game in PDF format**, with a gameplay based on exploration and logic puzzles, in the tradition of dungeon crawlers
+* [OpenDroneMap](https://github.com/OpenDroneMap/ODM) : a command line toolkit for processing aerial drone imagery
+* [OpenSfM](https://github.com/mapillary/OpenSfM) : a Structure from Motion library, serving as a processing pipeline for reconstructing camera poses and 3D scenes from multiple images
+* [RPA Framework](https://github.com/robocorp/rpaframework) : libraries and tools for Robotic Process Automation (RPA), designed to be used with both [Robot Framework](https://robotframework.org)
+* [Concordia](https://github.com/LibraryOfCongress/concordia) : a platform developed by the US Library of Congress for crowdsourcing transcription and tagging of text in digitized images
+* [GovReady-Q Compliance Server](https://github.com/GovReady/govready-q) : GRC platform for highly automated, user-friendly, self-service compliance assessments and documentation (DevSecOps)
+* [csv2pdf](https://github.com/TECH-SAVVY-GUY/csv2pdf) : convert CSV files to PDF files easily
+
+### Related ###
 
 * [Create PDFs with Python](https://www.youtube.com/playlist?list=PLjNQtX45f0dR9K2sMJ5ad9wVjqslNBIC0) : a series of tutorial videos by bvalgard
 * [digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2](https://github.com/digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2) : scripts ported from PHP to add transpareny to elements of the page or part of an image, allow to write circular text,
    draw pie charts and bar diagrams, embed JavaScript, draw rectangles with rounded corners, draw a star shape,
    restrict the rendering of some elements to screen or printout, paint linear / radial / multi-color gradients gradients, add stamps & watermarks, write sheared text...
+* Looking for alternative libraries? Check out [this detailed list of PDF-related Python libs by Patrick Maupin (`pdfrw` author)](https://github.com/pmaupin/pdfrw#other-libraries).
+  There is also [borb](https://github.com/jorisschellekens/borb), [pikepdf](https://github.com/pikepdf/pikepdf) & [WeasyPrint](https://github.com/Kozea/WeasyPrint).
+  More about combining `fpdf2` with `borb` & `pdfrw` [on this page](ExistingPDFs.md).
 
 ## Misc ##
 
@@ -82,4 +100,3 @@ or [open a discussion](https://github.com/PyFPDF/fpdf2/discussions).
 * This library could only exist thanks to the dedication of many volunteers around the world:
   [list & map of contributors](https://github.com/PyFPDF/fpdf2/blob/master/README.md#contributors-)
 * You can download an offline PDF version of this manual: [fpdf2-manual.pdf](fpdf2-manual.pdf)
-* Looking for alternatives? Check out [this detailed list of PDF-related Python libs by Patrick Maupin](https://github.com/pmaupin/pdfrw#other-libraries). There is also `pikepdf`, `PyFPDF2` & `WeasyPrint`.

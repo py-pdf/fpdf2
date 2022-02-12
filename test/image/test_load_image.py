@@ -1,5 +1,4 @@
 import binascii
-from io import BytesIO
 from pathlib import Path
 
 import pytest
@@ -10,12 +9,6 @@ from test.conftest import assert_pdf_equal
 
 
 HERE = Path(__file__).resolve().parent
-
-
-def test_recognize_bytesIO():
-    s = BytesIO()
-    a = fpdf.image_parsing.load_image(s)
-    assert a == s
 
 
 def test_load_text_file():

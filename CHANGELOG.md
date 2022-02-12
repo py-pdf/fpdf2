@@ -7,16 +7,42 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
-## [2.4.6] - not released yet
+## [2.5.1] - not released yet
 ### Added
-- Temporary changes to graphics state variables are now possible by `with FPDF.local_context():`, thanks to @gmischler
+- support for soft-hyphen (`\u00ad`) break in `cell()` & `multi_cell()` calls - thanks @oleksii-shyman!
+- new documentation page on [Emojis, Symbols & Dingbats](https://pyfpdf.github.io/fpdf2/EmojisSymbolsDingbats.html)
+- documentation on combining `borb` & `fpdf2`: [Creating a borb.pdf.document.Document from a FPDF instance](https://pyfpdf.github.io/fpdf2/ExistingPDFs.html)
+
+### Changed
+- `image()` method now insert `.svg` images as PDF paths
+- log level of `_substitute_page_number()` has been lowered from `INFO` to `DEBUG`
+
+### Fixed
+- a bug in `get_string_width()` with unicode fonts and Markdown enabled,
+  resulting in calls to `cell()` / `multi_cell()` with `align="R"` to display nothing - thanks @mcerveny for the fix!
+- a bug with incorrect width calculation of markdown text
+
+## [2.5.0] - 2022-01-22
+### Added
+Thanks to @torque for contributing this massive new feature:
+- add [`fpdf.drawing`](https://pyfpdf.github.io/fpdf2/Drawing.html) API for composing paths from an arbitrary sequence of lines and curves.
+- add [`fpdf.svg.convert_svg_to_drawing`](https://pyfpdf.github.io/fpdf2/SVG.html) function to support converting basic scalable vector graphics (SVG) images to PDF paths.
+
+### Fixed
+- `will_page_break()` & `accept_page_break` are not invoked anymore during a call to `multi_cell(split_only=True)`
+- Unicode characters in headings are now properly displayed in the table of content, _cf._ [#320](https://github.com/PyFPDF/fpdf2/issues/320) - thanks @lcomrade
+
+## [2.4.6] - 2021-11-16
+### Added
+- New `FPDF.pages_count` property, thanks to @paulacampigotto
+- Temporary changes to graphics state variables are now possible using `with FPDF.local_context():`, thanks to @gmischler
 - a mechanism to detect & downscale oversized images,
   _cf._ [documentation](https://pyfpdf.github.io/fpdf2/Images.html#oversized-images-detection-downscaling).
   [Feedbacks](https://github.com/PyFPDF/fpdf2/discussions) on this new feature are welcome!
 - New `set_dash_pattern()`, which works with all lines and curves, thanks to @gmischler.
 - Templates now support drawing ellipses, thanks to @gmischler
 - New documentation on how to display equations, using Google Charts or `matplotlib`: [Maths](https://pyfpdf.github.io/fpdf2/Maths.html)
-- The whole documentation can now be downloaded as a PDF: [fpdf2-manual.pdf](pyfpdf.github.io/fpdf2/fpdf2-manual.pdf)
+- The whole documentation can now be downloaded as a PDF: [fpdf2-manual.pdf](https://pyfpdf.github.io/fpdf2/fpdf2-manual.pdf)
 - New sections have been added to [the tutorial](https://pyfpdf.github.io/fpdf2/Tutorial.html), thanks to @portfedh:
 
     5. [Creating Tables](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
@@ -29,10 +55,11 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
   It enables to draw arcs in a PDF document.
 - [`FPDF.solid_arc`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.solid_arc): new method added.
   It enables to draw solid arcs in a PDF document. A solid arc combines an arc and a triangle to form a pie slice.
-- [`FPDF.regular_polygon`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.regular_polygon): new method added.
+- [`FPDF.regular_polygon`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.regular_polygon): new method added, thanks to @bettman-latin
 ### Fixed
 - All graphics state manipulations are now possible within a rotation context, thanks to @gmischler
 - The exception making the "x2" template field optional for barcode elements did not work correctly, fixed by @gmischler
+- It is now possible to get back to a previous page to add more content, _e.g._ with a 2-column layout, thanks to @paulacampigotto
 ### Changed
 - All template elements now have a transparent default background instead of white, thanks to @gmischler
 - To reduce the size of generated PDFs, no `SMask` entry is inserted for images that are fully opaque

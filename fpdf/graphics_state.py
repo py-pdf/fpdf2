@@ -22,7 +22,7 @@ class GraphicsStateMixin:
                 font_family="",
                 font_size_pt=0,
                 font_size=0,
-                dash_pattern="[] 0 d",
+                dash_pattern=dict(dash=0, gap=0, phase=0),
                 line_width=0,
             ),
         ]

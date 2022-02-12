@@ -15,8 +15,7 @@ def test_insert_jpg(tmp_path):
     pdf = fpdf.FPDF()
     pdf.compress = False
     pdf.add_page()
-    file_path = HERE / "insert_images_insert_jpg.jpg"
-    pdf.image(file_path, x=15, y=15, h=140)
+    pdf.image(HERE / "insert_images_insert_jpg.jpg", x=15, y=15, h=140)
     if sys.platform in ("cygwin", "win32"):
         # Pillow uses libjpeg-turbo on Windows and libjpeg elsewhere,
         # leading to a slightly different image being parsed and included in the PDF:
@@ -34,8 +33,7 @@ def test_insert_jpg_jpxdecode(tmp_path):
     pdf.compress = False
     pdf.set_image_filter("JPXDecode")
     pdf.add_page()
-    file_path = HERE / "insert_images_insert_jpg.jpg"
-    pdf.image(file_path, x=15, y=15, h=140)
+    pdf.image(HERE / "insert_images_insert_jpg.jpg", x=15, y=15, h=140)
     assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_jpxdecode.pdf", tmp_path)
 
 
@@ -44,8 +42,7 @@ def test_insert_jpg_flatedecode(tmp_path):
     pdf.compress = False
     pdf.set_image_filter("FlateDecode")
     pdf.add_page()
-    file_path = HERE / "insert_images_insert_jpg.jpg"
-    pdf.image(file_path, x=15, y=15, h=140)
+    pdf.image(HERE / "insert_images_insert_jpg.jpg", x=15, y=15, h=140)
     if sys.platform in ("cygwin", "win32"):
         # Pillow uses libjpeg-turbo on Windows and libjpeg elsewhere,
         # leading to a slightly different image being parsed and included in the PDF:
@@ -60,8 +57,7 @@ def test_insert_png(tmp_path):
     pdf = fpdf.FPDF()
     pdf.compress = False
     pdf.add_page()
-    file_path = HERE / "insert_images_insert_png.png"
-    pdf.image(file_path, x=15, y=15, h=140)
+    pdf.image(HERE / "insert_images_insert_png.png", x=15, y=15, h=140)
     assert_pdf_equal(pdf, HERE / "image_types_insert_png.pdf", tmp_path)
 
 
@@ -71,8 +67,9 @@ def test_insert_png_alpha(tmp_path):
     pdf.add_page()
     pdf.set_font("Helvetica", size=30)
     pdf.cell(w=pdf.epw, h=30, txt="BEHIND")
-    file_path = HERE / "../png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png"
-    pdf.image(file_path, x=25, y=0, h=40)
+    pdf.image(
+        HERE / "../png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png", x=25, y=0, h=40
+    )
     assert_pdf_equal(pdf, HERE / "image_types_insert_png_alpha.pdf", tmp_path)
 
 
@@ -82,8 +79,9 @@ def test_insert_png_disallow_transparency(tmp_path):
     pdf.add_page()
     pdf.set_font("Helvetica", size=30)
     pdf.cell(w=pdf.epw, h=30, txt="BEHIND")
-    file_path = HERE / "../png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png"
-    pdf.image(file_path, x=25, y=0, h=40)
+    pdf.image(
+        HERE / "../png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png", x=25, y=0, h=40
+    )
     assert_pdf_equal(
         pdf, HERE / "image_types_insert_png_disallow_transparency.pdf", tmp_path
     )
@@ -94,8 +92,9 @@ def test_insert_png_alpha_dctdecode(tmp_path):
     pdf.compress = False
     pdf.set_image_filter("DCTDecode")
     pdf.add_page()
-    file_path = HERE / "../png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png"
-    pdf.image(file_path, x=15, y=15, h=140)
+    pdf.image(
+        HERE / "../png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png", x=15, y=15, h=140
+    )
     if sys.platform in ("cygwin", "win32"):
         # Pillow uses libjpeg-turbo on Windows and libjpeg elsewhere,
         # leading to a slightly different image being parsed and included in the PDF:
@@ -112,8 +111,7 @@ def test_insert_bmp(tmp_path):
     pdf = fpdf.FPDF()
     pdf.compress = False
     pdf.add_page()
-    file_path = HERE / "circle.bmp"
-    pdf.image(file_path, x=15, y=15, h=140)
+    pdf.image(HERE / "circle.bmp", x=15, y=15, h=140)
     assert_pdf_equal(pdf, HERE / "image_types_insert_bmp.pdf", tmp_path)
 
 
@@ -121,16 +119,14 @@ def test_insert_gif(tmp_path):
     pdf = fpdf.FPDF()
     pdf.compress = False
     pdf.add_page()
-    file_path = HERE / "circle.gif"
-    pdf.image(file_path, x=15, y=15)
+    pdf.image(HERE / "circle.gif", x=15, y=15)
     assert_pdf_equal(pdf, HERE / "image_types_insert_gif.pdf", tmp_path)
 
 
 def test_insert_pillow(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
-    file_path = HERE / "insert_images_insert_png.png"
-    img = Image.open(file_path)
+    img = Image.open(HERE / "insert_images_insert_png.png")
     pdf.image(img, x=15, y=15, h=140)
     assert_pdf_equal(pdf, HERE / "image_types_insert_png.pdf", tmp_path)
 
@@ -150,8 +146,7 @@ def test_insert_pillow_issue_139(tmp_path):
 def test_insert_bytesio(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
-    file_path = HERE / "insert_images_insert_png.png"
-    img = Image.open(file_path)
+    img = Image.open(HERE / "insert_images_insert_png.png")
     img_bytes = io.BytesIO()
     img.save(img_bytes, "PNG")
     pdf.image(img_bytes, x=15, y=15, h=140)

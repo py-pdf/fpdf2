@@ -211,6 +211,22 @@ def test_cell_markdown_bleeding(tmp_path):  # issue 241
     assert_pdf_equal(pdf, HERE / "cell_markdown_bleeding.pdf", tmp_path)
 
 
+def test_cell_markdown_right_aligned(tmp_path):  # issue 333
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf", uni=True)
+    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf", uni=True)
+    pdf.set_font("Roboto", size=60)
+    pdf.cell(
+        0,
+        9,
+        "**X** **X** **X** **X** **X** **X** **X** **X** **X**",
+        markdown=True,
+        align="R",
+    )
+    assert_pdf_equal(pdf, HERE / "cell_markdown_right_aligned.pdf", tmp_path)
+
+
 def test_table_with_headers_on_every_page(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()

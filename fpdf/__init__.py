@@ -10,6 +10,7 @@ from .fpdf import (
 )
 from .html import HTMLMixin, HTML2FPDF
 from .template import Template, FlexTemplate
+from . import svg
 from .deprecation import WarnOnDeprecatedModuleAttributes
 
 FPDF_VERSION = _FPDF_VERSION

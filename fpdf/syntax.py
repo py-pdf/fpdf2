@@ -96,7 +96,7 @@ def create_dictionary_string(
     return "".join(
         [
             open_dict,
-            field_join.join(key_value_join.join(map(str, f)) for f in dict_.items()),
+            field_join.join(key_value_join.join((k, str(v))) for k, v in dict_.items()),
             close_dict,
         ]
     )
@@ -198,9 +198,7 @@ def camel_case(property_name):
 
 class PDFString(str):
     def serialize(self):
-        # Filtering out characters that are not encodable as Latin1 for now,
-        # as an outline /Title seemingly cannot "just" be encoded as UTF-16BE:
-        return f'({self.encode("latin-1", "ignore").decode("latin-1")})'
+        return f'({self.encode("UTF-16").decode("latin-1")})'
 
 
 class PDFArray(list):

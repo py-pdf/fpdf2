@@ -21,6 +21,26 @@ pdf.output("pdf-with-image.pdf")
 ```
 
 
+## Assembling images ##
+`fpdf2` can be an easy solution to assemble images into a PDF.
+
+The following code snippets provide examples of some basic layouts for assembling images into PDF files.
+
+### Side by side images, full height, landscape page ###
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF(orientation="landscape")
+pdf.set_margin(0)
+pdf.add_page()
+pdf.image("imgA.png", h=pdf.eph, w=pdf.epw/2)               # full page height, half page width
+pdf.set_y(0)
+pdf.image("imgB.jpg", h=pdf.eph, w=pdf.epw/2, x=pdf.epw/2)  # full page height, half page width, right half of the page
+pdf.output("side-by-side.pdf")
+```
+
+
 ## Alternative description ##
 
 A textual description of the image can be provided, for accessibility purposes:
@@ -48,9 +68,23 @@ pdf.output("pdf-with-image.pdf")
 ```
 
 
-## Image URLs ##
+## SVG images ##
 
-URLs to images can be directly passed to the [`image`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method:
+SVG images passed to the [`image()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method
+will be embedded as [PDF paths](SVG.md):
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.image("SVG_logo.svg", w=100)
+pdf.output("pdf-with-vector-image.pdf")
+```
+
+
+## Retrieve images from URLs ##
+
+URLs to images can be directly passed to the [`image()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method:
 
 ```python
 pdf.image("https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png")

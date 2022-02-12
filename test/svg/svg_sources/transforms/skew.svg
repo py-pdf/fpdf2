@@ -1,0 +1,7 @@
+<?xml version="1.0" standalone="no"?>
+<svg width="10cm" height="10cm" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" version="1.1">
+  <rect x="400" y="400" width="200" height="200" fill="none" stroke="black" stroke-width="20" transform="skewX(10)"/>
+  <rect x="400" y="400" width="200" height="200" fill="none" stroke="orange" stroke-width="20" transform="skewY(10)"/>
+  <rect x="400" y="400" width="200" height="200" fill="none" stroke="green" stroke-width="20" transform="skewX(20) skewY(20)"/>
+  <rect x="400" y="400" width="200" height="200" fill="none" stroke="blue" stroke-width="20" transform="skewY(20) skewX(20)"/>
+</svg>
