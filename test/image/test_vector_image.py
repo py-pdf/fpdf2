@@ -50,7 +50,9 @@ def test_svg_image_from_bytesio(tmp_path):
     pdf.add_page()
     pdf.image(
         BytesIO(
-            b'<svg width="180" height="180" xmlns="http://www.w3.org/2000/svg"><rect x="60" y="60" width="60" height="60"/></svg>'
+            b'<svg width="180" height="180" xmlns="http://www.w3.org/2000/svg">'
+            b'  <rect x="60" y="60" width="60" height="60"/>'
+            b"</svg>"
         )
     )
     assert_pdf_equal(pdf, HERE / "svg_image_from_bytesio.pdf", tmp_path)

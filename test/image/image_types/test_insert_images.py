@@ -55,7 +55,6 @@ def test_insert_jpg_flatedecode(tmp_path):
 
 def test_insert_png(tmp_path):
     pdf = fpdf.FPDF()
-    pdf.compress = False
     pdf.add_page()
     pdf.image(HERE / "insert_images_insert_png.png", x=15, y=15, h=140)
     assert_pdf_equal(pdf, HERE / "image_types_insert_png.pdf", tmp_path)
