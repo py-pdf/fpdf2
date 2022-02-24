@@ -2080,9 +2080,13 @@ class FPDF(GraphicsStateMixin):
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
             ln (int): Indicates where the current position should go after the call.
-                Possible values are: `0`: to the right ; `1`: to the beginning of the
-                next line ; `2`: below. Putting 1 is equivalent to putting 0 and calling
-                `ln` just after. Default value: 0.
+                Possible values are:
+                `-1`: On the same line at the end of the actual text,
+                `0`: to the right
+                `1`: to the beginning of the next line
+                `2`: below.
+                Putting 1 is equivalent to putting 0 and calling `ln` just after.
+                Default value: 0.
             align (str): Allows to center or align the text inside the cell.
                 Possible values are: `L` or empty string: left align (default value) ;
                 `C`: center ; `R`: right align
@@ -2157,6 +2161,7 @@ class FPDF(GraphicsStateMixin):
                     f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S "
                 )
 
+        s_width, underlines = 0, []
         if styled_txt_frags:
             if align == "R":
                 dx = w - self.c_margin - styled_txt_width
@@ -2169,7 +2174,6 @@ class FPDF(GraphicsStateMixin):
                 s += f"q {self.text_color} "
 
             prev_font_style, prev_underline = self.font_style, self.underline
-            s_width, underlines = 0, []
             s += (
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2f} Td"
@@ -2275,6 +2279,8 @@ class FPDF(GraphicsStateMixin):
             self.y += h  # Go to next line
             if ln == 1:
                 self.x = self.l_margin
+        elif ln < 0:  # temporary workaround; end of added text.
+            self.x += s_width
         else:
             self.x += w
 
@@ -2470,9 +2476,6 @@ class FPDF(GraphicsStateMixin):
             self.add_page = lambda *args, **kwargs: None
             self._perform_page_break_if_need_be = lambda *args, **kwargs: None
 
-        # Store this information for manipulating position.
-        location = (self.get_x(), self.get_y())
-
         # If width is 0, set width to available width between margins
         if w == 0:
             w = self.w - self.r_margin - self.x
@@ -2567,7 +2570,7 @@ class FPDF(GraphicsStateMixin):
                 _add_page,
                 _perform_page_break_if_need_be,
             )
-            self.set_xy(*location)  # restore location
+            self.set_xy(prev_x, prev_y)  # restore location
             result = []
             for text_line in text_lines:
                 characters = []
@@ -2610,69 +2613,51 @@ class FPDF(GraphicsStateMixin):
             )
         if h is None:
             h = self.font_size
-        txt = self.normalize_text(txt)
-        w = self.w - self.r_margin - self.x
-        wmax = (w - 2 * self.c_margin) * 1000 / self.font_size
-        s = txt.replace("\r", "")
-        nb = len(s)
-        sep = -1
-        i = 0
-        j = 0
-        l = 0
-        nl = 1
-        while i < nb:
-            # Get next character
-            c = s[i]
-            if c == "\n":
-                # Explicit line break
-                self.cell(w, h, substr(s, j, i - j), ln=2, link=link)
-                i += 1
-                sep = -1
-                j = i
-                l = 0
-                if nl == 1:
-                    self.x = self.l_margin
-                    w = self.w - self.r_margin - self.x
-                    wmax = (w - 2 * self.c_margin) * 1000 / self.font_size
-                nl += 1
-                continue
-            if c == " ":
-                sep = i
-            if self.unifontsubset:
-                l += self.get_string_width(c, True) / self.font_size * 1000
+
+        page_break_triggered = False
+        normalized_string = self.normalize_text(txt).replace("\r", "")
+        styled_text_fragments = self._preload_font_styles(normalized_string, False)
+
+        text_lines = []
+        multi_line_break = MultiLineBreak(
+            styled_text_fragments, self.get_normalized_string_width_with_style
+        )
+        prev_x = self.x
+        # first line from current x position to right margin
+        first_width = self.w - prev_x - self.r_margin - 2 * self.c_margin
+        first_fswidth = first_width * 1000 / self.font_size
+        text_line = multi_line_break.get_line_of_given_width(
+            first_fswidth, no_wordsplit=True
+        )
+        # remaining lines fill between margins
+        full_width = self.w - self.l_margin - self.r_margin - 2 * self.c_margin
+        full_fswidth = full_width * 1000 / self.font_size
+        while (text_line) is not None:
+            text_lines.append(text_line)
+            text_line = multi_line_break.get_line_of_given_width(full_fswidth)
+        if not text_lines:
+            return False
+
+        self.ws = 0  # currently only left aligned, so no word spacing
+        for text_line_index, text_line in enumerate(text_lines):
+            if text_line_index == 0:
+                line_width = first_width
             else:
-                l += _char_width(self.current_font, c)
-            if l > wmax:
-                # Automatic line break
-                if sep == -1:
-                    if self.x > self.l_margin:
-                        # Move to next line
-                        self.x = self.l_margin
-                        self.y += h
-                        w = self.w - self.r_margin - self.x
-                        wmax = (w - 2 * self.c_margin) * 1000 / self.font_size
-                        i += 1
-                        nl += 1
-                        continue
-                    if i == j:
-                        i += 1
-                    self.cell(w, h, substr(s, j, i - j), ln=2, link=link)
-                else:
-                    self.cell(w, h, substr(s, j, sep - j), ln=2, link=link)
-                    i = sep + 1
-                sep = -1
-                j = i
-                l = 0
-                if nl == 1:
-                    self.x = self.l_margin
-                    w = self.w - self.r_margin - self.x
-                    wmax = (w - 2 * self.c_margin) * 1000 / self.font_size
-                nl += 1
-            else:
-                i += 1
-        # Last chunk
-        if i != j:
-            self.cell(l / 1000 * self.font_size, h, substr(s, j), link=link)
+                line_width = full_width
+                self.ln()
+            new_page = self._render_styled_cell_text(
+                line_width,
+                h=h,
+                styled_txt_frags=text_line.fragments,
+                border=0,
+                ln=-1,
+                align="L",
+                fill=False,
+                link=link,
+            )
+            page_break_triggered = page_break_triggered or new_page
+
+        return page_break_triggered
 
     @check_page
     def image(
@@ -3431,8 +3416,7 @@ class FPDF(GraphicsStateMixin):
                 # check if self has a attr mtd which is callable (method)
                 if not callable(getattr(self, mtd, None)):
                     raise FPDFException(f"Unsupported font type: {my_type}")
-                # pylint: disable=no-member
-                self.mtd(font)
+                self.mtd(font)  # pylint: disable=no-member
 
     def _putTTfontwidths(self, font, maxUni):
         if font["unifilename"] is None:

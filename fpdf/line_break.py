@@ -201,10 +201,15 @@ class MultiLineBreak:
             character = HYPHEN
         return self.size_by_style(character, style)
 
-    def get_line_of_given_width(self, maximum_width):
+    # pylint: disable=too-many-return-statements
+    def get_line_of_given_width(self, maximum_width, no_wordsplit=False):
 
         if self.fragment_index == len(self.styled_text_fragments):
             return None
+
+        last_fragment_index = self.fragment_index
+        last_character_index = self.character_index
+        line_full = False
 
         current_line = CurrentLine()
         while self.fragment_index < len(self.styled_text_fragments):
@@ -237,6 +242,9 @@ class MultiLineBreak:
                     ) = current_line.automatic_break(self.justify)
                     self.character_index += 1
                     return line
+                if no_wordsplit:
+                    line_full = True
+                    break
                 return current_line.manual_break()
 
             current_line.add_character(
@@ -251,4 +259,9 @@ class MultiLineBreak:
             self.character_index += 1
 
         if current_line.width:
+            if line_full and no_wordsplit:
+                # roll back and return empty line to trigger line break
+                self.fragment_index = last_fragment_index
+                self.character_index = last_character_index
+                return CurrentLine()
             return current_line.manual_break()
