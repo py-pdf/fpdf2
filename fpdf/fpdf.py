@@ -97,6 +97,28 @@ class DocumentState(IntEnum):
     CLOSED = 3  # EOF printed
 
 
+class X(IntEnum):
+    LEFT = 1  # self.x
+    RIGHT = 2  # self.x + w
+    START = 3  # left end of actual text
+    END = 4  # right end of actual text
+    CENTER = 5  # center of actual text
+    LMARGIN = 6  # self.l_margin
+    RMARGIN = 7  # self.w - self.r_margin
+    LPAGE = 8  # 0.0
+    RPAGE = 9  # self.w
+
+
+class Y(IntEnum):
+    TOP = 1  # self.y
+    LAST = 2  # top of last line (TOP for single lines)
+    NEXT = 3  # LAST + h
+    TMARGIN = 4  # self.t_margin
+    BMARGIN = 5  # self.h - self.b_margin
+    TPAGE = 6  # 0.0
+    BPAGE = 7  # self.h
+
+
 class Annotation(NamedTuple):
     type: str
     x: int
@@ -2030,6 +2052,14 @@ class FPDF(GraphicsStateMixin):
                 "ignored"
             )
             border = 1
+        newpos_x = X.RIGHT
+        newpos_y = Y.TOP
+        if ln == 1:
+            newpos_x = X.LMARGIN
+            newpos_y = Y.NEXT
+        elif ln == 2:
+            newpos_x = X.LEFT
+            newpos_y = Y.NEXT
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
         txt = self.normalize_text(txt)
         styled_txt_frags = self._preload_font_styles(txt, markdown)
@@ -2038,11 +2068,12 @@ class FPDF(GraphicsStateMixin):
             h,
             styled_txt_frags,
             border,
-            ln,
-            align,
-            fill,
-            link,
-            center,
+            newpos_x=newpos_x,
+            newpos_y=newpos_y,
+            align=align,
+            fill=fill,
+            link=link,
+            center=center,
         )
 
     def _render_styled_cell_text(
@@ -2051,7 +2082,8 @@ class FPDF(GraphicsStateMixin):
         h=None,
         styled_txt_frags=(),
         border=0,
-        ln=0,
+        newpos_x=X.RIGHT,
+        newpos_y=Y.TOP,
         align="",
         fill=False,
         link="",
@@ -2079,14 +2111,24 @@ class FPDF(GraphicsStateMixin):
                 or a string containing some or all of the following characters
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
-            ln (int): Indicates where the current position should go after the call.
-                Possible values are:
-                `-1`: On the same line at the end of the actual text,
-                `0`: to the right
-                `1`: to the beginning of the next line
-                `2`: below.
-                Putting 1 is equivalent to putting 0 and calling `ln` just after.
-                Default value: 0.
+            newpos_x: Current position in x after the call.
+                X.LEFT    - left end of the cell
+                X.RIGHT   - right end of the cell (default)
+                X.START   - start of actual text
+                X.END     - end of actual text
+                X.CENTER  - center of actual text
+                X.LMARGIN - left page margin (start of printable area)
+                X.RMARGIN - right page margin (end of printable area)
+                X.LPAGE   - left edge of page
+                X.RPAGE   - right edge of page
+            newpos_y: Current position in y after the call.
+                Y.TOP     - top of the first line (default)
+                Y.LAST    - top of the last line (same as TOP for single-line text)
+                Y.NEXT    - top of next line (bottom of current text)
+                Y.TMARGIN - top page margin (start of printable area)
+                Y.BMARGIN - bottom page margin (end of printable area)
+                Y.TPAGE   - top edge of page
+                Y.BPAGE   - bottom edge of page
             align (str): Allows to center or align the text inside the cell.
                 Possible values are: `L` or empty string: left align (default value) ;
                 `C`: center ; `R`: right align
@@ -2161,6 +2203,7 @@ class FPDF(GraphicsStateMixin):
                     f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S "
                 )
 
+        s_start = self.x
         s_width, underlines = 0, []
         if styled_txt_frags:
             if align == "R":
@@ -2169,6 +2212,7 @@ class FPDF(GraphicsStateMixin):
                 dx = (w - styled_txt_width) / 2
             else:
                 dx = self.c_margin
+            s_start += dx
 
             if self.fill_color != self.text_color:
                 s += f"q {self.text_color} "
@@ -2247,7 +2291,8 @@ class FPDF(GraphicsStateMixin):
                     self.underline = underline
                     s_width += self.get_string_width(txt_frag, True)
             s += " ET"
-            # Restoring font style & underline mode after handling changes by Markdown annotations:
+            # Restoring font style & underline mode after handling changes
+            # by Markdown annotations:
             if not self._markdown_leak_end_style:
                 if self.font_style != prev_font_style:
                     self.font_style = prev_font_style
@@ -2275,14 +2320,36 @@ class FPDF(GraphicsStateMixin):
             self._out(s)
         self.lasth = h
 
-        if ln > 0:
-            self.y += h  # Go to next line
-            if ln == 1:
-                self.x = self.l_margin
-        elif ln < 0:  # temporary workaround; end of added text.
-            self.x += s_width
-        else:
+        # X.LEFT -> self.x stays the same
+        if newpos_x == X.RIGHT:
             self.x += w
+        elif newpos_x == X.START:
+            self.x = s_start
+        elif newpos_x == X.END:
+            self.x = s_start + s_width - self.c_margin
+        elif newpos_x == X.CENTER:
+            self.x = (s_start + s_width) / 2.0
+        elif newpos_x == X.LMARGIN:
+            self.x = self.l_margin
+        elif newpos_x == X.RMARGIN:
+            self.x = self.w - self.r_margin
+        elif newpos_x == X.LPAGE:
+            self.x = 0.0
+        elif newpos_x == X.RPAGE:
+            self.x = self.w
+
+        # Y.TOP:  -> self.y stays the same
+        # Y.LAST: -> self.y stays the same (single line)
+        if newpos_y == Y.NEXT:
+            self.y += h
+        if newpos_y == Y.TMARGIN:
+            self.y = self.t_margin
+        if newpos_y == Y.BMARGIN:
+            self.y = self.h - self.b_margin
+        if newpos_y == Y.TPAGE:
+            self.y = 0.0
+        if newpos_y == Y.BPAGE:
+            self.y = self.h
 
         return page_break_triggered
 
@@ -2465,6 +2532,15 @@ class FPDF(GraphicsStateMixin):
                 "Parameter 'w' and 'h' must be numbers, not strings."
                 " You can omit them by passing string content with txt="
             )
+        newpos_x = X.RIGHT
+        newpos_y = Y.NEXT
+        if ln == 1:
+            newpos_x = X.LMARGIN
+        elif ln == 2:
+            newpos_x = X.LEFT
+        elif ln == 3:
+            newpos_y = Y.TOP
+
         page_break_triggered = False
         if split_only:
             _out, _add_page, _perform_page_break_if_need_be = (
@@ -2543,25 +2619,21 @@ class FPDF(GraphicsStateMixin):
                         "B" if "B" in border and is_last_line else "",
                     )
                 ),
-                ln=(2 if not is_last_line else (0 if ln == 3 else ln)),
+                newpos_x=newpos_x if is_last_line else X.LEFT,
+                newpos_y=newpos_y if is_last_line else Y.NEXT,
                 align=align,
                 fill=fill,
                 link=link,
             )
-            if is_last_line and new_page and ln == 3:
-                # When a page jump is performed and ln=3,
-                # we stick to that new vertical offset.
+            if is_last_line and new_page and newpos_y == Y.TOP:
+                # When a page jump is performed and the requested y is TOP (ln=3),
+                # pretend we started at the top of the text block on the new page.
                 # cf. test_multi_cell_table_with_automatic_page_break
                 prev_y = self.y
             page_break_triggered = page_break_triggered or new_page
 
-        new_x, new_y = {
-            0: (self.x, self.y + h),
-            1: (self.l_margin, self.y),
-            2: (prev_x, self.y),
-            3: (self.x, prev_y),
-        }[ln]
-        self.set_xy(new_x, new_y)
+        if newpos_y == Y.TOP:  # We may have jumped a few lines -> reset
+            self.y = prev_y
 
         if split_only:
             # restore writing functions
@@ -2650,7 +2722,8 @@ class FPDF(GraphicsStateMixin):
                 h=h,
                 styled_txt_frags=text_line.fragments,
                 border=0,
-                ln=-1,
+                newpos_x=X.END,
+                newpos_y=Y.TOP,
                 align="L",
                 fill=False,
                 link=link,
