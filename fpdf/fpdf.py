@@ -105,8 +105,6 @@ class X(IntEnum):
     CENTER = 5  # center of actual text
     LMARGIN = 6  # self.l_margin
     RMARGIN = 7  # self.w - self.r_margin
-    LPAGE = 8  # 0.0
-    RPAGE = 9  # self.w
 
 
 class Y(IntEnum):
@@ -115,8 +113,6 @@ class Y(IntEnum):
     NEXT = 3  # LAST + h
     TMARGIN = 4  # self.t_margin
     BMARGIN = 5  # self.h - self.b_margin
-    TPAGE = 6  # 0.0
-    BPAGE = 7  # self.h
 
 
 class Annotation(NamedTuple):
@@ -2119,16 +2115,12 @@ class FPDF(GraphicsStateMixin):
                 X.CENTER  - center of actual text
                 X.LMARGIN - left page margin (start of printable area)
                 X.RMARGIN - right page margin (end of printable area)
-                X.LPAGE   - left edge of page
-                X.RPAGE   - right edge of page
             newpos_y: Current position in y after the call.
                 Y.TOP     - top of the first line (default)
                 Y.LAST    - top of the last line (same as TOP for single-line text)
                 Y.NEXT    - top of next line (bottom of current text)
                 Y.TMARGIN - top page margin (start of printable area)
                 Y.BMARGIN - bottom page margin (end of printable area)
-                Y.TPAGE   - top edge of page
-                Y.BPAGE   - bottom edge of page
             align (str): Allows to center or align the text inside the cell.
                 Possible values are: `L` or empty string: left align (default value) ;
                 `C`: center ; `R`: right align
@@ -2328,15 +2320,11 @@ class FPDF(GraphicsStateMixin):
         elif newpos_x == X.END:
             self.x = s_start + s_width - self.c_margin
         elif newpos_x == X.CENTER:
-            self.x = (s_start + s_width) / 2.0
+            self.x = (s_start + s_start + s_width) / 2.0
         elif newpos_x == X.LMARGIN:
             self.x = self.l_margin
         elif newpos_x == X.RMARGIN:
             self.x = self.w - self.r_margin
-        elif newpos_x == X.LPAGE:
-            self.x = 0.0
-        elif newpos_x == X.RPAGE:
-            self.x = self.w
 
         # Y.TOP:  -> self.y stays the same
         # Y.LAST: -> self.y stays the same (single line)
@@ -2346,10 +2334,6 @@ class FPDF(GraphicsStateMixin):
             self.y = self.t_margin
         if newpos_y == Y.BMARGIN:
             self.y = self.h - self.b_margin
-        if newpos_y == Y.TPAGE:
-            self.y = 0.0
-        if newpos_y == Y.BPAGE:
-            self.y = self.h
 
         return page_break_triggered
 
@@ -4251,4 +4235,12 @@ def _is_xml(img: io.BytesIO):
 sys.modules[__name__].__class__ = WarnOnDeprecatedModuleAttributes
 
 
-__all__ = ["FPDF", "load_cache", "get_page_format", "TitleStyle", "PAGE_FORMATS"]
+__all__ = [
+    "FPDF",
+    "X",
+    "Y",
+    "load_cache",
+    "get_page_format",
+    "TitleStyle",
+    "PAGE_FORMATS",
+]
