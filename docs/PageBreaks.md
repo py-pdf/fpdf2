@@ -1,7 +1,8 @@
 # Page breaks #
 
-By default, `fpdf2` will automatically perform page breaks whenever a cell is rendered at the bottom of a page
-with a height greater than the page bottom margin.
+By default, `fpdf2` will automatically perform page breaks whenever a cell or
+the text from a `write()` is rendered at the bottom of a page with a height
+greater than the page bottom margin.
 
 This behaviour can be controlled using the
 [`set_auto_page_break`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break)

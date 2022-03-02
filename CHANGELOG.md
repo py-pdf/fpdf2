@@ -14,6 +14,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - documentation on combining `borb` & `fpdf2`: [Creating a borb.pdf.document.Document from a FPDF instance](https://pyfpdf.github.io/fpdf2/ExistingPDFs.html)
 
 ### Changed
+- `write()` now supports soft hyphen characters, thanks to @gmischler
 - `image()` method now insert `.svg` images as PDF paths
 - log level of `_substitute_page_number()` has been lowered from `INFO` to `DEBUG`
 

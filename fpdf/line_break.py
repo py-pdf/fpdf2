@@ -245,7 +245,7 @@ class MultiLineBreak:
                 if no_wordsplit:
                     line_full = True
                     break
-                return current_line.manual_break()
+                return current_line.manual_break(self.justify)
 
             current_line.add_character(
                 character,
@@ -258,10 +258,11 @@ class MultiLineBreak:
 
             self.character_index += 1
 
+        if line_full and no_wordsplit:
+            # roll back and return empty line to trigger continuation
+            # on the next line.
+            self.fragment_index = last_fragment_index
+            self.character_index = last_character_index
+            return CurrentLine().manual_break(self.justify)
         if current_line.width:
-            if line_full and no_wordsplit:
-                # roll back and return empty line to trigger line break
-                self.fragment_index = last_fragment_index
-                self.character_index = last_character_index
-                return CurrentLine()
             return current_line.manual_break()
