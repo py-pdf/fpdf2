@@ -1,7 +1,8 @@
 import math
 import re
 from typing import NamedTuple
-import xml.etree.ElementTree
+
+from defusedxml.ElementTree import fromstring as parse_xml_str
 
 from . import drawing, html
 
@@ -766,7 +767,7 @@ class SVGObject:
     def __init__(self, svg_text):
         self.cross_references = {}
 
-        svg_tree = xml.etree.ElementTree.fromstring(svg_text)
+        svg_tree = parse_xml_str(svg_text)
 
         if svg_tree.tag not in xmlns_lookup("svg", "svg"):
             raise ValueError(f"root tag must be svg, not {svg_tree.tag}")

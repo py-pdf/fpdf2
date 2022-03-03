@@ -24,12 +24,19 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies ⚙️
         run: |
-          sudo apt-get install qpdf libjpeg-dev
+          sudo apt-get install libjpeg-dev
           python -m pip install --upgrade pip setuptools
           pip install --upgrade . -r test/requirements.txt -r docs/requirements.txt -r contributors/requirements.txt
+      - name: Install qpdf ⚙️
+        if: matrix.python-version != '3.9'  # This allows us to run the unit tests WITHOUT qpdf in just one parallel execution
+        run: sudo apt-get install qpdf
       - name: Statically checking code 🔎
-        run: pylint fpdf test tutorial/tuto*.py
+        if: matrix.python-version == '3.10'
+        run: |
+            pylint fpdf test tutorial/tuto*.py
+            bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
       - name: Ensure code has been autoformatted with black 🖌️
+        if: matrix.python-version == '3.10'
         run: black --check .
       - name: Checking all PDF samples ☑
         if: matrix.python-version == '3.10'
