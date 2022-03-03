@@ -1,11 +1,11 @@
 # pylint: disable=redefined-outer-name, no-self-use, protected-access
 import io
 from pathlib import Path
-from xml.etree import ElementTree
 
 import fpdf
 from ..conftest import assert_pdf_equal
 
+from defusedxml.ElementTree import fromstring as parse_xml_str
 import pytest
 
 
@@ -128,7 +128,7 @@ class TestSVGPathParsing:
 
 @pytest.mark.parametrize("shape, output, guard", parameters.test_svg_shape_tags)
 def test_svg_shape_conversion(shape, output, guard):
-    xml = ElementTree.fromstring(shape)
+    xml = parse_xml_str(shape)
     converter = getattr(fpdf.svg.ShapeBuilder, xml.tag)
 
     with guard:
@@ -164,7 +164,7 @@ class TestSVGAttributeConversion:
         "element, expected, guard", parameters.test_svg_attribute_conversion
     )
     def test_attribute_conversion(self, element, expected, guard):
-        xml = ElementTree.fromstring(element)
+        xml = parse_xml_str(element)
 
         stylable = fpdf.drawing.PaintedPath()
         with guard:

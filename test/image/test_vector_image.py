@@ -2,6 +2,7 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
+from defusedxml.common import EntitiesForbidden
 
 import fpdf
 from test.conftest import assert_pdf_equal
@@ -56,3 +57,29 @@ def test_svg_image_from_bytesio(tmp_path):
         )
     )
     assert_pdf_equal(pdf, HERE / "svg_image_from_bytesio.pdf", tmp_path)
+
+
+def test_svg_image_billion_laughs():
+    "cf. https://pypi.org/project/defusedxml/#attack-vectors"
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    with pytest.raises(EntitiesForbidden):
+        pdf.image(
+            BytesIO(
+                b'<?xml version="1.0"?>'
+                b"<!DOCTYPE lolz ["
+                b'  <!ENTITY lol "lol">'
+                b"  <!ELEMENT lolz (#PCDATA)>"
+                b'  <!ENTITY lol1 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">'
+                b'  <!ENTITY lol2 "&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;">'
+                b'  <!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">'
+                b'  <!ENTITY lol4 "&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;">'
+                b'  <!ENTITY lol5 "&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;">'
+                b'  <!ENTITY lol6 "&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;">'
+                b'  <!ENTITY lol7 "&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;">'
+                b'  <!ENTITY lol8 "&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;">'
+                b'  <!ENTITY lol9 "&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;">'
+                b"]>"
+                b"<lolz>&lol9;</lolz>"
+            )
+        )

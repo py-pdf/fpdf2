@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import os
-
 from fpdf import FPDF
 
 pdf = FPDF()
@@ -66,8 +64,3 @@ pdf.write(5, "This is standard built-in font")
 
 fn = "unicode.pdf"
 pdf.output(fn)
-
-try:
-    os.startfile(fn)
-except AttributeError:
-    os.system(f'xdg-open "{fn}"')

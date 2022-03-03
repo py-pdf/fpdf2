@@ -33,7 +33,6 @@ from enum import IntEnum
 from functools import wraps
 from pathlib import Path
 from typing import Callable, NamedTuple, Optional, Union, List
-from xml.etree.ElementTree import ParseError, XML
 
 from PIL import Image
 
@@ -2798,11 +2797,15 @@ class FPDF(GraphicsStateMixin):
         if isinstance(name, str):
             img = None
         elif isinstance(name, Image.Image):
-            name, img = hashlib.md5(name.tobytes()).hexdigest(), name
+            bytes = name.tobytes()
+            # disabling bandit rule as we just build a cache key, this is secure
+            name, img = hashlib.md5(bytes).hexdigest(), name  # nosec B303 B324
         elif isinstance(name, io.BytesIO):
             if _is_xml(name):
                 return self._vector_image(name, x, y, w, h, link, title, alt_text)
-            name, img = hashlib.md5(name.getvalue()).hexdigest(), name
+            bytes = name.getvalue()
+            # disabling bandit rule as we just build a cache key, this is secure
+            name, img = hashlib.md5(bytes).hexdigest(), name  # nosec B303 B324
         else:
             name, img = str(name), name
         info = self.images.get(name)
@@ -4248,11 +4251,8 @@ def _sizeof_fmt(num, suffix="B"):
 
 
 def _is_xml(img: io.BytesIO):
-    try:
-        XML(img.getvalue())
-        return True
-    except ParseError:
-        return False
+    bytes = img.getvalue()
+    return bytes.startswith(b"<?xml ") or bytes.startswith(b"<svg ")
 
 
 sys.modules[__name__].__class__ = WarnOnDeprecatedModuleAttributes
