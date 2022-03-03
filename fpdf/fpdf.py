@@ -2531,7 +2531,7 @@ class FPDF(GraphicsStateMixin):
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
             print_sh (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
-				character, instead of a line breaking opportunity. Default value: False
+                                character, instead of a line breaking opportunity. Default value: False
 
         Using `ln=3` and `maximum height=pdf.font_size` is useful to build tables
         with multiline text in cells.
@@ -2676,7 +2676,7 @@ class FPDF(GraphicsStateMixin):
             link (str): optional link to add on the text, internal
                 (identifier returned by `add_link`) or external URL.
             print_sh (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
-				character, instead of a line breaking opportunity. Default value: False
+                                character, instead of a line breaking opportunity. Default value: False
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
