@@ -2496,6 +2496,7 @@ class FPDF(GraphicsStateMixin):
         ln=0,
         max_line_height=None,
         markdown=False,
+        print_sh=False,
     ):
         """
         This method allows printing text with line breaks. They can be automatic
@@ -2530,6 +2531,8 @@ class FPDF(GraphicsStateMixin):
             max_line_height (int): optional maximum height of each sub-cell generated
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
+            print_sh (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
+				character, instead of a line breaking opportunity. Default value: False
 
         Using `ln=3` and `maximum height=pdf.font_size` is useful to build tables
         with multiline text in cells.
@@ -2589,6 +2592,7 @@ class FPDF(GraphicsStateMixin):
             styled_text_fragments,
             self.get_normalized_string_width_with_style,
             justify=(align == "J"),
+            print_sh=print_sh,
         )
         text_line = multi_line_break.get_line_of_given_width(maximum_allowed_emwidth)
         while (text_line) is not None:
@@ -2659,7 +2663,7 @@ class FPDF(GraphicsStateMixin):
         return page_break_triggered
 
     @check_page
-    def write(self, h=None, txt="", link=""):
+    def write(self, h=None, txt="", link="", print_sh=False):
         """
         Prints text from the current position.
         When the right margin is reached, a line break occurs at the most recent
@@ -2672,6 +2676,8 @@ class FPDF(GraphicsStateMixin):
             txt (str): text content
             link (str): optional link to add on the text, internal
                 (identifier returned by `add_link`) or external URL.
+            print_sh (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
+				character, instead of a line breaking opportunity. Default value: False
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
@@ -2689,7 +2695,9 @@ class FPDF(GraphicsStateMixin):
 
         text_lines = []
         multi_line_break = MultiLineBreak(
-            styled_text_fragments, self.get_normalized_string_width_with_style
+            styled_text_fragments,
+            self.get_normalized_string_width_with_style,
+            print_sh=print_sh,
         )
         prev_x = self.x
         # first line from current x position to right margin

@@ -56,7 +56,7 @@ def test_first_999_chars(font_filename, tmp_path):
 
     # Create a PDF with the first 999 charters defined in the font:
     for counter, character in enumerate(ttf.saveChar, 0):
-        pdf.write(8, f"{counter:03}) {character:03x} - {character:c}")
+        pdf.write(8, f"{counter:03}) {character:03x} - {character:c}", print_sh=True)
         pdf.ln()
         if counter >= 999:
             break

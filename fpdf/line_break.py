@@ -61,7 +61,8 @@ HyphenHint = namedtuple(
 
 
 class CurrentLine:
-    def __init__(self):
+    def __init__(self, print_sh=False):
+        self.print_sh = print_sh
         self.fragments = []
         self.width = 0
         self.number_of_spaces = 0
@@ -75,6 +76,8 @@ class CurrentLine:
         #     SpaceHint is used fo this purpose.
         # 3 - position of last inserted soft-hyphen
         #     HyphenHint is used fo this purpose.
+        #     If print_sh=True, soft-hyphen is treated as
+        #     a normal printable character.
         # The purpose of multiple positions tracking - to have an ability
         # to break in multiple places, depending on condition.
         self.space_break_hint = None
@@ -115,7 +118,7 @@ class CurrentLine:
                 self.number_of_spaces,
             )
             self.number_of_spaces += 1
-        elif character == SOFT_HYPHEN:
+        elif character == SOFT_HYPHEN and not self.print_sh:
             self.hyphen_break_hint = HyphenHint(
                 original_fragment_index,
                 original_character_index,
@@ -129,7 +132,7 @@ class CurrentLine:
                 underline,
             )
 
-        if character != SOFT_HYPHEN:
+        if character != SOFT_HYPHEN or self.print_sh:
             self.width += character_width
             active_fragment.characters.append(character)
 
@@ -185,18 +188,18 @@ class CurrentLine:
 
 
 class MultiLineBreak:
-    def __init__(self, styled_text_fragments, size_by_style, justify=False):
-
+    def __init__(
+        self, styled_text_fragments, size_by_style, justify=False, print_sh=False
+    ):
         self.styled_text_fragments = styled_text_fragments
-
         self.size_by_style = size_by_style
         self.justify = justify
-
+        self.print_sh = print_sh
         self.fragment_index = 0
         self.character_index = 0
 
     def _get_character_width(self, character, style=""):
-        if character == SOFT_HYPHEN:
+        if character == SOFT_HYPHEN and not self.print_sh:
             # HYPHEN is inserted instead of SOFT_HYPHEN
             character = HYPHEN
         return self.size_by_style(character, style)
@@ -211,7 +214,7 @@ class MultiLineBreak:
         last_character_index = self.character_index
         line_full = False
 
-        current_line = CurrentLine()
+        current_line = CurrentLine(print_sh=self.print_sh)
         while self.fragment_index < len(self.styled_text_fragments):
 
             current_fragment = self.styled_text_fragments[self.fragment_index]
