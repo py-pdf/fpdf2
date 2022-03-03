@@ -48,10 +48,10 @@ def main():
         else:
             user_locations[user_login]["issues"] += 1
     print("Now generating the HTML page...")
-    env = Environment(loader=FileSystemLoader(THIS_SCRIPT_PARENT_DIR))
+    env = Environment(loader=FileSystemLoader(THIS_SCRIPT_PARENT_DIR), autoescape=True)
     template = env.get_template("contributors.html.jinja2")
     out_filepath = os.path.join(THIS_SCRIPT_PARENT_DIR, "contributors.html")
-    with open(out_filepath, "w") as out_file:
+    with open(out_filepath, "w", encoding="utf-8") as out_file:
         out_file.write(
             template.render(org_repo=args.org_repo, user_locations=user_locations)
         )
@@ -121,10 +121,10 @@ class HTTPRequester:
     def _fetch(self, *args, **kwargs):
         http_code, response = self.http_method_executer(*args, **kwargs)
         if http_code == 403 and self.ignore_403s:
-            print("HTTP {}: {}".format(http_code, response["message"]), file=sys.stderr)
+            print(f"HTTP {http_code}: {response['message']}", file=sys.stderr)
             return []
         if http_code != 200:
-            raise RuntimeError("HTTP code: {}: {}".format(http_code, response))
+            raise RuntimeError(f"HTTP code: {http_code}: {response}")
         return response
 
 

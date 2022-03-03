@@ -8,13 +8,14 @@ from setuptools import find_packages, setup
 
 if __name__ == "__main__":
     version = re.findall(
-        r'FPDF_VERSION = "(\d+.\d+.\d+[^"]*)"', Path("fpdf/fpdf.py").read_text()
+        r'FPDF_VERSION = "(\d+.\d+.\d+[^"]*)"',
+        Path("fpdf/fpdf.py").read_text(encoding="utf-8"),
     )[0]
     setup(
         name="fpdf2",
         version=version,
         description="Simple PDF generation for Python",
-        long_description=Path("README.md").read_text(),
+        long_description=Path("README.md").read_text(encoding="utf-8"),
         long_description_content_type="text/markdown",
         author="Olivier PLATHEY ported by Max",
         author_email="maxpat78@yahoo.it",
@@ -31,6 +32,7 @@ if __name__ == "__main__":
         packages=find_packages(),
         package_dir={"fpdf": "fpdf"},
         install_requires=[
+            "defusedxml",
             "Pillow",
         ],
         classifiers=[
