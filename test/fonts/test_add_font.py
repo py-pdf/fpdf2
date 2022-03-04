@@ -10,13 +10,20 @@ from test.conftest import assert_pdf_equal
 HERE = Path(__file__).resolve().parent
 
 
-def test_add_font_non_existing():
+def test_add_font_non_existing_file():
     pdf = FPDF()
-    for uni in (True, False):
-        with pytest.raises(FileNotFoundError) as error:
-            pdf.add_font("non-existing", uni=uni)
-        expected_msg = "[Errno 2] No such file or directory: 'non-existing.pkl'"
-        assert str(error.value) == expected_msg
+    with pytest.raises(FileNotFoundError) as error:
+        pdf.add_font("MyFont", fname="non-existing-file.ttf")
+    expected_msg = "TTF Font file not found: non-existing-file.ttf"
+    assert str(error.value) == expected_msg
+
+
+def test_add_font_non_existing_file_pkl():
+    pdf = FPDF()
+    with pytest.raises(FileNotFoundError) as error:
+        pdf.add_font("MyFont", fname="non-existing-file.pkl")
+    expected_msg = "[Errno 2] No such file or directory: 'non-existing-file.pkl'"
+    assert str(error.value) == expected_msg
 
 
 def test_deprecation_warning_for_FPDF_CACHE_DIR():
@@ -54,7 +61,7 @@ def test_add_font_unicode_with_path_fname_ok(tmp_path):
     for font_cache_dir in (True, tmp_path, None):
         pdf = FPDF(font_cache_dir=font_cache_dir)
         font_file_path = HERE / "Roboto-Regular.ttf"
-        pdf.add_font("Roboto-Regular", fname=str(font_file_path))
+        pdf.add_font("Roboto-Regular", fname=str(font_file_path), uni=True)
         pdf.set_font("Roboto-Regular", size=64)
         pdf.add_page()
         pdf.cell(txt="Hello World!")
@@ -65,7 +72,7 @@ def test_add_font_unicode_with_str_fname_ok(tmp_path):
     for font_cache_dir in (True, str(tmp_path), None):
         pdf = FPDF(font_cache_dir=font_cache_dir)
         font_file_path = HERE / "Roboto-Regular.ttf"
-        pdf.add_font("Roboto-Regular", fname=str(font_file_path))
+        pdf.add_font("Roboto-Regular", fname=str(font_file_path), uni=True)
         pdf.set_font("Roboto-Regular", size=64)
         pdf.add_page()
         pdf.cell(txt="Hello World!")
@@ -79,15 +86,14 @@ def teardown():
 
 
 def test_add_core_fonts():
-    """Try to add core fonts. This shouldn't add any fonts, as core fonts like
-    Helvetica are built-in"""
+    font_file_path = HERE / "Roboto-Regular.ttf"
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("Helvetica")
-    pdf.add_font("Helvetica", style="B")
-    pdf.add_font("helvetica", style="IB")
-    pdf.add_font("times", style="")
-    pdf.add_font("courier")
+    pdf.add_font("Helvetica", fname=font_file_path)
+    pdf.add_font("Helvetica", style="B", fname=font_file_path)
+    pdf.add_font("helvetica", style="IB", fname=font_file_path)
+    pdf.add_font("times", style="", fname=font_file_path)
+    pdf.add_font("courier", fname=font_file_path)
     assert not pdf.fonts  # No fonts added, as all of them are core fonts
 
 

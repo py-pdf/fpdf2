@@ -1447,7 +1447,7 @@ class FPDF(GraphicsStateMixin):
         else:
             uni = str(fname).endswith(".ttf")
         if not fname:
-            fname = family.replace(" ", "") + f"{style.lower()}.pkl"
+            raise ValueError('"fname" parameter is required')
         style = "".join(sorted(style.upper()))
         if any(letter not in "BI" for letter in style):
             raise ValueError(

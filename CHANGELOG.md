@@ -14,6 +14,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - documentation on combining `borb` & `fpdf2`: [Creating a borb.pdf.document.Document from a FPDF instance](https://pyfpdf.github.io/fpdf2/ExistingPDFs.html)
 
 ### Changed
+- `fname` is now a required parameter for `FPDF.add_font()`
 - `image()` method now insert `.svg` images as PDF paths
 - the [defusedxml](https://pypi.org/project/defusedxml/) package was added as dependency in order to make SVG parsing safer
 - log level of `_substitute_page_number()` has been lowered from `INFO` to `DEBUG`
