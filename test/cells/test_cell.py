@@ -177,9 +177,9 @@ def test_cell_markdown(tmp_path):
 def test_cell_markdown_with_ttf_fonts(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf", uni=True)
-    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf", uni=True)
-    pdf.add_font("Roboto", "I", HERE / "../fonts/Roboto-Italic.ttf", uni=True)
+    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf")
+    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf")
+    pdf.add_font("Roboto", "I", HERE / "../fonts/Roboto-Italic.ttf")
     pdf.set_font("Roboto", size=60)
     pdf.cell(txt="**Lorem** __Ipsum__ --dolor--", markdown=True)
     assert_pdf_equal(pdf, HERE / "cell_markdown_with_ttf_fonts.pdf", tmp_path)
@@ -188,7 +188,7 @@ def test_cell_markdown_with_ttf_fonts(tmp_path):
 def test_cell_markdown_missing_ttf_font(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf", uni=True)
+    pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf")
     pdf.set_font("Roboto", size=60)
     with pytest.raises(fpdf.FPDFException) as error:
         pdf.cell(txt="**Lorem Ipsum**", markdown=True)
@@ -214,8 +214,8 @@ def test_cell_markdown_bleeding(tmp_path):  # issue 241
 def test_cell_markdown_right_aligned(tmp_path):  # issue 333
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf", uni=True)
-    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf", uni=True)
+    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf")
+    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf")
     pdf.set_font("Roboto", size=60)
     pdf.cell(
         0,

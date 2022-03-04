@@ -15,12 +15,23 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ### Changed
 - `image()` method now insert `.svg` images as PDF paths
+- the [defusedxml](https://pypi.org/project/defusedxml/) package was added as dependency in order to make SVG parsing safer
 - log level of `_substitute_page_number()` has been lowered from `INFO` to `DEBUG`
 
 ### Fixed
 - a bug in `get_string_width()` with unicode fonts and Markdown enabled,
   resulting in calls to `cell()` / `multi_cell()` with `align="R"` to display nothing - thanks @mcerveny for the fix!
 - a bug with incorrect width calculation of markdown text
+
+### Deprecated
+- the font caching mechanism, that used the `pickle` module, has been removed, for security reasons,
+  and because it provided little performance, and only for specific use cases - _cf._ [issue #345](https://github.com/PyFPDF/fpdf2/issues/345).
+  That means that the `font_cache_dir` optional parameter of `fpdf.FPDF` constructor
+  and the `uni` optional argument of `FPDF.add_font()` are deprecated.
+  The `fpdf.fpdf.load_cache` function has also been removed.
+
+To be extra clear: `uni=True` can now be removed from all calls to `FPDF.add_font()`.
+If the value of the `fname` argument passed to `add_font()` ends with `.ttf`, it is considered a TrueType font.
 
 ## [2.5.0] - 2022-01-22
 ### Added

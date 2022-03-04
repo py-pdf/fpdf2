@@ -402,7 +402,7 @@ def test_html_justify_paragraph(tmp_path):
 
 def test_issue_156(tmp_path):
     pdf = MyFPDF()
-    pdf.add_font("Roboto", style="B", fname="test/fonts/Roboto-Bold.ttf", uni=True)
+    pdf.add_font("Roboto", style="B", fname="test/fonts/Roboto-Bold.ttf")
     pdf.set_font("Roboto", style="B")
     pdf.add_page()
     with pytest.raises(FPDFException) as error:
@@ -411,7 +411,7 @@ def test_issue_156(tmp_path):
         str(error.value)
         == "Undefined font: roboto - Use built-in fonts or FPDF.add_font() beforehand"
     )
-    pdf.add_font("Roboto", fname="test/fonts/Roboto-Regular.ttf", uni=True)
+    pdf.add_font("Roboto", fname="test/fonts/Roboto-Regular.ttf")
     pdf.write_html("Regular text<br><b>Bold text</b>")
     assert_pdf_equal(pdf, HERE / "issue_156.pdf", tmp_path)
 
@@ -432,7 +432,7 @@ def test_html_font_color_name(tmp_path):
 
 def test_html_heading_hebrew(tmp_path):
     pdf = MyFPDF()
-    pdf.add_font("DejaVuSans", fname=HERE / "../fonts/DejaVuSans.ttf", uni=True)
+    pdf.add_font("DejaVuSans", fname=HERE / "../fonts/DejaVuSans.ttf")
     pdf.set_font("DejaVuSans")
     pdf.add_page()
     pdf.write_html("<h1>Hebrew: שלום עולם</h1>")
