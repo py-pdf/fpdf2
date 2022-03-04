@@ -62,6 +62,12 @@ HyphenHint = namedtuple(
 
 class CurrentLine:
     def __init__(self, print_sh=False):
+        """
+        Per-line text fragment management for use by MultiLineBreak.
+            Args:
+                print_sh (bool): If true, a soft-hyphen will be rendered
+                    normally, instead of triggering a line break. Default: False
+        """
         self.print_sh = print_sh
         self.fragments = []
         self.width = 0
@@ -76,8 +82,6 @@ class CurrentLine:
         #     SpaceHint is used fo this purpose.
         # 3 - position of last inserted soft-hyphen
         #     HyphenHint is used fo this purpose.
-        #     If print_sh=True, soft-hyphen is treated as
-        #     a normal printable character.
         # The purpose of multiple positions tracking - to have an ability
         # to break in multiple places, depending on condition.
         self.space_break_hint = None
@@ -205,7 +209,7 @@ class MultiLineBreak:
         return self.size_by_style(character, style)
 
     # pylint: disable=too-many-return-statements
-    def get_line_of_given_width(self, maximum_width, no_wordsplit=False):
+    def get_line_of_given_width(self, maximum_width, wordsplit=True):
 
         if self.fragment_index == len(self.styled_text_fragments):
             return None
@@ -245,7 +249,7 @@ class MultiLineBreak:
                     ) = current_line.automatic_break(self.justify)
                     self.character_index += 1
                     return line
-                if no_wordsplit:
+                if not wordsplit:
                     line_full = True
                     break
                 return current_line.manual_break(self.justify)
@@ -261,7 +265,7 @@ class MultiLineBreak:
 
             self.character_index += 1
 
-        if line_full and no_wordsplit:
+        if line_full and not wordsplit:
             # roll back and return empty line to trigger continuation
             # on the next line.
             self.fragment_index = last_fragment_index

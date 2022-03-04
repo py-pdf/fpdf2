@@ -96,7 +96,19 @@ class DocumentState(IntEnum):
     CLOSED = 3  # EOF printed
 
 
-class X(IntEnum):
+class XPos(IntEnum):
+    """
+    Positional values in horizontal direction for use after printing text.
+        LEFT    - left end of the cell
+        RIGHT   - right end of the cell (default)
+        START   - start of actual text
+        END     - end of actual text
+        WCONT   - for write() to continue next (slightly left of END)
+        CENTER  - center of actual text
+        LMARGIN - left page margin (start of printable area)
+        RMARGIN - right page margin (end of printable area)
+    """
+
     LEFT = 1  # self.x
     RIGHT = 2  # self.x + w
     START = 3  # left end of actual text
@@ -107,7 +119,16 @@ class X(IntEnum):
     RMARGIN = 8  # self.w - self.r_margin
 
 
-class Y(IntEnum):
+class YPos(IntEnum):
+    """
+    Positional values in vertical direction for use after printing text.
+        TOP     - top of the first line (default)
+        LAST    - top of the last line (same as TOP for single-line text)
+        NEXT    - top of next line (bottom of current text)
+        TMARGIN - top page margin (start of printable area)
+        BMARGIN - bottom page margin (end of printable area)
+    """
+
     TOP = 1  # self.y
     LAST = 2  # top of last line (TOP for single lines)
     NEXT = 3  # LAST + h
@@ -2048,19 +2069,24 @@ class FPDF(GraphicsStateMixin):
                 "ignored"
             )
             border = 1
-        newpos_x = X.RIGHT
-        newpos_y = Y.TOP
+        newpos_x = XPos.RIGHT
+        newpos_y = YPos.TOP
         if ln == 1:
-            newpos_x = X.LMARGIN
-            newpos_y = Y.NEXT
+            newpos_x = XPos.LMARGIN
+            newpos_y = YPos.NEXT
         elif ln == 2:
-            newpos_x = X.LEFT
-            newpos_y = Y.NEXT
+            newpos_x = XPos.LEFT
+            newpos_y = YPos.NEXT
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
         txt = self.normalize_text(txt)
         styled_txt_frags = self._preload_font_styles(txt, markdown)
         return self._render_styled_cell_text(
-            TextLine(styled_txt_frags, 0.0, 0, False),
+            TextLine(
+                styled_txt_frags,
+                text_width=0.0,
+                number_of_spaces_between_words=0,
+                justify=False,
+            ),
             w,
             h,
             border,
@@ -2078,8 +2104,8 @@ class FPDF(GraphicsStateMixin):
         w=None,
         h=None,
         border=0,
-        newpos_x=X.RIGHT,
-        newpos_y=Y.TOP,
+        newpos_x=XPos.RIGHT,
+        newpos_y=YPos.TOP,
         align="",
         fill=False,
         link="",
@@ -2107,21 +2133,8 @@ class FPDF(GraphicsStateMixin):
                 or a string containing some or all of the following characters
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
-            newpos_x (Enum X): New current position in x after the call.
-                X.LEFT    - left end of the cell
-                X.RIGHT   - right end of the cell (default)
-                X.START   - start of actual text
-                X.END     - end of actual text
-                X.WCONT   - for write() to continue next (slightly left of X.END)
-                X.CENTER  - center of actual text
-                X.LMARGIN - left page margin (start of printable area)
-                X.RMARGIN - right page margin (end of printable area)
-            newpos_y (Enum Y): New current position in y after the call.
-                Y.TOP     - top of the first line (default)
-                Y.LAST    - top of the last line (same as TOP for single-line text)
-                Y.NEXT    - top of next line (bottom of current text)
-                Y.TMARGIN - top page margin (start of printable area)
-                Y.BMARGIN - bottom page margin (end of printable area)
+            newpos_x (Enum XPos): New current position in x after the call.
+            newpos_y (Enum YPos): New current position in y after the call.
             align (str): Allows to align the text inside the cell.
                 Possible values are: `L` or empty string: left align (default value);
                 `C`: center; `R`: right align; `J`: justify (if more than one word)
@@ -2219,7 +2232,9 @@ class FPDF(GraphicsStateMixin):
                 f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2f} Td"
             )
 
-            word_spacing = 0
+            word_spacing = (
+                0  # precursor to self.ws, or manual spacing of unicode fonts.
+            )
             if align == "J" and text_line.number_of_spaces_between_words:
                 word_spacing = (
                     w - self.c_margin - self.c_margin - styled_txt_width
@@ -2334,29 +2349,29 @@ class FPDF(GraphicsStateMixin):
             self._out(s)
         self.lasth = h
 
-        # X.LEFT -> self.x stays the same
-        if newpos_x == X.RIGHT:
+        # XPos.LEFT -> self.x stays the same
+        if newpos_x == XPos.RIGHT:
             self.x += w
-        elif newpos_x == X.START:
+        elif newpos_x == XPos.START:
             self.x = s_start
-        elif newpos_x == X.END:
+        elif newpos_x == XPos.END:
             self.x = s_start + s_width
-        elif newpos_x == X.WCONT:
+        elif newpos_x == XPos.WCONT:
             self.x = s_start + s_width - self.c_margin
-        elif newpos_x == X.CENTER:
+        elif newpos_x == XPos.CENTER:
             self.x = (s_start + s_start + s_width) / 2.0
-        elif newpos_x == X.LMARGIN:
+        elif newpos_x == XPos.LMARGIN:
             self.x = self.l_margin
-        elif newpos_x == X.RMARGIN:
+        elif newpos_x == XPos.RMARGIN:
             self.x = self.w - self.r_margin
 
-        # Y.TOP:  -> self.y stays the same
-        # Y.LAST: -> self.y stays the same (single line)
-        if newpos_y == Y.NEXT:
+        # YPos.TOP:  -> self.y stays the same
+        # YPos.LAST: -> self.y stays the same (single line)
+        if newpos_y == YPos.NEXT:
             self.y += h
-        if newpos_y == Y.TMARGIN:
+        if newpos_y == YPos.TMARGIN:
             self.y = self.t_margin
-        if newpos_y == Y.BMARGIN:
+        if newpos_y == YPos.BMARGIN:
             self.y = self.h - self.b_margin
 
         return page_break_triggered
@@ -2531,7 +2546,7 @@ class FPDF(GraphicsStateMixin):
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
             print_sh (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
-                                character, instead of a line breaking opportunity. Default value: False
+                character, instead of a line breaking opportunity. Default value: False
 
         Using `ln=3` and `maximum height=pdf.font_size` is useful to build tables
         with multiline text in cells.
@@ -2544,14 +2559,14 @@ class FPDF(GraphicsStateMixin):
                 "Parameter 'w' and 'h' must be numbers, not strings."
                 " You can omit them by passing string content with txt="
             )
-        newpos_x = X.RIGHT
-        newpos_y = Y.NEXT
+        newpos_x = XPos.RIGHT
+        newpos_y = YPos.NEXT
         if ln == 1:
-            newpos_x = X.LMARGIN
+            newpos_x = XPos.LMARGIN
         elif ln == 2:
-            newpos_x = X.LEFT
+            newpos_x = XPos.LEFT
         elif ln == 3:
-            newpos_y = Y.TOP
+            newpos_y = YPos.TOP
 
         page_break_triggered = False
         if split_only:
@@ -2621,20 +2636,20 @@ class FPDF(GraphicsStateMixin):
                         "B" if "B" in border and is_last_line else "",
                     )
                 ),
-                newpos_x=newpos_x if is_last_line else X.LEFT,
-                newpos_y=newpos_y if is_last_line else Y.NEXT,
+                newpos_x=newpos_x if is_last_line else XPos.LEFT,
+                newpos_y=newpos_y if is_last_line else YPos.NEXT,
                 align="L" if (align == "J" and is_last_line) else align,
                 fill=fill,
                 link=link,
             )
-            if is_last_line and new_page and newpos_y == Y.TOP:
+            if is_last_line and new_page and newpos_y == YPos.TOP:
                 # When a page jump is performed and the requested y is TOP (ln=3),
                 # pretend we started at the top of the text block on the new page.
                 # cf. test_multi_cell_table_with_automatic_page_break
                 prev_y = self.y
             page_break_triggered = page_break_triggered or new_page
 
-        if newpos_y == Y.TOP:  # We may have jumped a few lines -> reset
+        if newpos_y == YPos.TOP:  # We may have jumped a few lines -> reset
             self.y = prev_y
 
         if split_only:
@@ -2676,7 +2691,7 @@ class FPDF(GraphicsStateMixin):
             link (str): optional link to add on the text, internal
                 (identifier returned by `add_link`) or external URL.
             print_sh (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
-                                character, instead of a line breaking opportunity. Default value: False
+                character, instead of a line breaking opportunity. Default value: False
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
@@ -2701,13 +2716,13 @@ class FPDF(GraphicsStateMixin):
         prev_x = self.x
         # first line from current x position to right margin
         first_width = self.w - prev_x - self.r_margin
-        first_emwidth = first_width * 1000 / self.font_size
+        first_emwidth = (first_width - 2 * self.c_margin) * 1000 / self.font_size
         text_line = multi_line_break.get_line_of_given_width(
-            first_emwidth, no_wordsplit=True
+            first_emwidth, wordsplit=False
         )
         # remaining lines fill between margins
         full_width = self.w - self.l_margin - self.r_margin
-        full_emwidth = full_width * 1000 / self.font_size
+        full_emwidth = (full_width - 2 * self.c_margin) * 1000 / self.font_size
         while (text_line) is not None:
             text_lines.append(text_line)
             text_line = multi_line_break.get_line_of_given_width(full_emwidth)
@@ -2728,8 +2743,8 @@ class FPDF(GraphicsStateMixin):
                 line_width,
                 h=h,
                 border=0,
-                newpos_x=X.WCONT,
-                newpos_y=Y.TOP,
+                newpos_x=XPos.WCONT,
+                newpos_y=YPos.TOP,
                 align="L",
                 fill=False,
                 link=link,
@@ -4260,8 +4275,8 @@ sys.modules[__name__].__class__ = WarnOnDeprecatedModuleAttributes
 
 __all__ = [
     "FPDF",
-    "X",
-    "Y",
+    "XPos",
+    "YPos",
     "load_cache",
     "get_page_format",
     "TitleStyle",
