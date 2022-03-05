@@ -480,7 +480,7 @@ class FlexTemplate:
         if x is not None or y is not None or w is not None or h is not None:
             warnings.warn(
                 "code39 arguments x/y/w/h are deprecated, please use x1/y1/y2/size instead",
-                PendingDeprecationWarning,
+                DeprecationWarning,
             )
         pdf = self.pdf
         if pdf.fill_color.lower() != _rgb_as_str(foreground):
@@ -636,7 +636,7 @@ class Template(FlexTemplate):
         if infile:
             warnings.warn(
                 '"infile" is unused and will soon be deprecated',
-                PendingDeprecationWarning,
+                DeprecationWarning,
             )
         for arg in (
             "format",
@@ -681,7 +681,7 @@ class Template(FlexTemplate):
         if dest:
             warnings.warn(
                 '"dest" is unused and will soon be deprecated',
-                PendingDeprecationWarning,
+                DeprecationWarning,
             )
         self.pdf.set_font("helvetica", "B", 16)
         self.pdf.set_auto_page_break(False, margin=0)

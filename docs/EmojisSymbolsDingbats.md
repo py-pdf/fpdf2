@@ -11,7 +11,7 @@ Here is an example using the [DejaVu](https://dejavu-fonts.github.io) font:
 import fpdf
 
 pdf = fpdf.FPDF()
-pdf.add_font("DejaVuSans", fname="DejaVuSans.ttf", uni=True)
+pdf.add_font("DejaVuSans", fname="DejaVuSans.ttf")
 pdf.set_font("DejaVuSans", size=64)
 pdf.add_page()
 pdf.multi_cell(0, txt="".join([chr(0x1F600 + x) for x in range(68)]))

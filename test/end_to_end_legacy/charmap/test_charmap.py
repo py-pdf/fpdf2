@@ -48,7 +48,7 @@ def test_first_999_chars(font_filename, tmp_path):
 
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.add_font(font_name, fname=font_path, uni=True)
+    pdf.add_font(font_name, fname=font_path)
     pdf.set_font(font_name, size=10)
 
     ttf = MyTTFontFile()
