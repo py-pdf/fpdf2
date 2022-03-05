@@ -242,7 +242,7 @@ class FPDF(GraphicsStateMixin):
         if font_cache_dir != "DEPRECATED":
             warnings.warn(
                 '"font_cache_dir" parameter is deprecated, unused and will soon be removed',
-                PendingDeprecationWarning,
+                DeprecationWarning,
             )
         super().__init__()
         # Initialization of instance attributes
@@ -592,7 +592,7 @@ class FPDF(GraphicsStateMixin):
         warnings.warn(
             "set_doc_option() is deprecated. "
             "Simply set the `core_fonts_encoding` property as a replacement.",
-            PendingDeprecationWarning,
+            DeprecationWarning,
         )
         if opt != "core_fonts_encoding":
             raise FPDFException(f'Unknown document option "{opt}"')
@@ -1099,7 +1099,7 @@ class FPDF(GraphicsStateMixin):
         warnings.warn(
             "dashed_line() is deprecated, and will be removed in a future release. "
             "Use set_dash_pattern() and the normal drawing operations instead.",
-            PendingDeprecationWarning,
+            DeprecationWarning,
         )
         self.set_dash_pattern(dash_length, space_length)
         self.line(x1, y1, x2, y2)
@@ -1442,7 +1442,7 @@ class FPDF(GraphicsStateMixin):
         if uni != "DEPRECATED":
             warnings.warn(
                 '"uni" parameter is deprecated, unused and will soon be removed',
-                PendingDeprecationWarning,
+                DeprecationWarning,
             )
         else:
             uni = str(fname).endswith(".ttf")
@@ -1526,7 +1526,7 @@ class FPDF(GraphicsStateMixin):
             warnings.warn(
                 "Support for .pkl font files definition is deprecated, and will be removed from fpdf2 soon."
                 " If you require this feature, please report your need on fpdf2 GitHub project.",
-                PendingDeprecationWarning,
+                DeprecationWarning,
             )
             font_dict = pickle.loads(Path(fname).read_bytes())
             font_dict["i"] = len(self.fonts) + 1
@@ -1825,7 +1825,7 @@ class FPDF(GraphicsStateMixin):
         warnings.warn(
             "rotate() can produces malformed PDFs and is deprecated. "
             "Use the rotation() context manager instead.",
-            PendingDeprecationWarning,
+            DeprecationWarning,
         )
         if x is None:
             x = self.x
@@ -2688,7 +2688,7 @@ class FPDF(GraphicsStateMixin):
         if type:
             warnings.warn(
                 '"type" parameter is deprecated, unused and will soon be removed',
-                PendingDeprecationWarning,
+                DeprecationWarning,
             )
         if str(name).endswith(".svg"):
             # Insert it as a PDF path:
@@ -2976,7 +2976,7 @@ class FPDF(GraphicsStateMixin):
         if dest:
             warnings.warn(
                 '"dest" parameter is deprecated, unused and will soon be removed',
-                PendingDeprecationWarning,
+                DeprecationWarning,
             )
         # Finish document if necessary:
         if self.state < DocumentState.CLOSED:

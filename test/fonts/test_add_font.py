@@ -57,26 +57,16 @@ def test_deprecation_warning_for_FPDF_CACHE_DIR():
     assert fpdf.SOME == 1
 
 
-def test_add_font_unicode_with_path_fname_ok(tmp_path):
-    for font_cache_dir in (True, tmp_path, None):
-        pdf = FPDF(font_cache_dir=font_cache_dir)
-        font_file_path = HERE / "Roboto-Regular.ttf"
-        pdf.add_font("Roboto-Regular", fname=str(font_file_path), uni=True)
-        pdf.set_font("Roboto-Regular", size=64)
-        pdf.add_page()
-        pdf.cell(txt="Hello World!")
-        assert_pdf_equal(pdf, HERE / "add_font_unicode.pdf", tmp_path)
-
-
-def test_add_font_unicode_with_str_fname_ok(tmp_path):
+def test_add_font_with_str_fname_ok(tmp_path):
+    font_file_path = HERE / "Roboto-Regular.ttf"
     for font_cache_dir in (True, str(tmp_path), None):
-        pdf = FPDF(font_cache_dir=font_cache_dir)
-        font_file_path = HERE / "Roboto-Regular.ttf"
-        pdf.add_font("Roboto-Regular", fname=str(font_file_path), uni=True)
-        pdf.set_font("Roboto-Regular", size=64)
-        pdf.add_page()
-        pdf.cell(txt="Hello World!")
-        assert_pdf_equal(pdf, HERE / "add_font_unicode.pdf", tmp_path)
+        with pytest.warns(DeprecationWarning):
+            pdf = FPDF(font_cache_dir=font_cache_dir)
+            pdf.add_font("Roboto-Regular", fname=str(font_file_path))
+            pdf.set_font("Roboto-Regular", size=64)
+            pdf.add_page()
+            pdf.cell(txt="Hello World!")
+            assert_pdf_equal(pdf, HERE / "add_font_unicode.pdf", tmp_path)
 
 
 def teardown():
