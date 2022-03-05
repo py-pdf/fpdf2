@@ -2072,7 +2072,7 @@ class FPDF(GraphicsStateMixin):
                 dx = self.c_margin
 
             if self.fill_color != self.text_color:
-                s += f"q {self.text_color} "
+                s += f"{self.text_color} "
 
             prev_font_style, prev_underline = self.font_style, self.underline
             s_width, underlines = 0, []
@@ -2157,7 +2157,7 @@ class FPDF(GraphicsStateMixin):
                 )
 
             if self.fill_color != self.text_color:
-                s += " Q"
+                s += f" {self.fill_color}"
 
             if link:
                 self.link(
