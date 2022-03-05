@@ -11,7 +11,7 @@ def test_render_styled_newpos(tmp_path):
     """
     Verify that _render_styled_cell_text() places the new position
     in the right places in all possible combinations of alignment,
-    newpos_x, and newpos_y.
+    new_x, and new_y.
     """
     doc = fpdf.FPDF()
     doc.set_font("helvetica", style="U", size=24)
@@ -19,7 +19,7 @@ def test_render_styled_newpos(tmp_path):
     twidth = 100
 
     data = (
-        # txt,        align, newpos_x,    newpos_y
+        # txt,        align, new_x,    new_y
         ["Left Top L", "L", fpdf.XPos.LEFT, fpdf.YPos.TOP],
         ["Left Top R", "R", fpdf.XPos.LEFT, fpdf.YPos.TOP],
         ["Left Top C", "C", fpdf.XPos.LEFT, fpdf.YPos.TOP],
@@ -77,8 +77,8 @@ def test_render_styled_newpos(tmp_path):
             twidth,
             border=1,
             align=align,  # "L" if align == "J" else align,
-            newpos_x=newx,
-            newpos_y=newy,
+            new_x=newx,
+            new_y=newy,
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):

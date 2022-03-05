@@ -418,7 +418,7 @@ class FPDF(GraphicsStateMixin):
         Sets the document right, left, top & bottom margins to the same value.
 
         Args:
-            margin (int): margin in the unit specified to FPDF constructor
+            margin (float): margin in the unit specified to FPDF constructor
         """
         self.set_margins(margin, margin)
         self.set_auto_page_break(self.auto_page_break, margin)
@@ -430,9 +430,9 @@ class FPDF(GraphicsStateMixin):
         Also sets the current FPDF.y on the page to this minimum vertical position.
 
         Args:
-            left (int): left margin in the unit specified to FPDF constructor
-            top (int): top margin in the unit specified to FPDF constructor
-            right (int): optional right margin in the unit specified to FPDF constructor
+            left (float): left margin in the unit specified to FPDF constructor
+            top (float): top margin in the unit specified to FPDF constructor
+            right (float): optional right margin in the unit specified to FPDF constructor
         """
         self.set_left_margin(left)
         if self.y < top or self.y == self.t_margin:
@@ -448,7 +448,7 @@ class FPDF(GraphicsStateMixin):
         Also sets the current FPDF.x on the page to this minimum horizontal position.
 
         Args:
-            margin (int): margin in the unit specified to FPDF constructor
+            margin (float): margin in the unit specified to FPDF constructor
         """
         if self.x < margin or self.x == self.l_margin:
             self.x = margin
@@ -459,7 +459,7 @@ class FPDF(GraphicsStateMixin):
         Sets the document top margin.
 
         Args:
-            margin (int): margin in the unit specified to FPDF constructor
+            margin (float): margin in the unit specified to FPDF constructor
         """
         self.t_margin = margin
 
@@ -468,7 +468,7 @@ class FPDF(GraphicsStateMixin):
         Sets the document right margin.
 
         Args:
-            margin (int): margin in the unit specified to FPDF constructor
+            margin (float): margin in the unit specified to FPDF constructor
         """
         self.r_margin = margin
 
@@ -479,7 +479,7 @@ class FPDF(GraphicsStateMixin):
 
         Args:
             auto (bool): enable or disable this mode
-            margin (int): optional bottom margin (distance from the bottom of the page)
+            margin (float): optional bottom margin (distance from the bottom of the page)
                 in the unit specified to FPDF constructor
         """
         self.auto_page_break = auto
@@ -931,7 +931,7 @@ class FPDF(GraphicsStateMixin):
         The method can be called before the first page is created and the value is retained from page to page.
 
         Args:
-            width (int): the width in user unit
+            width (float): the width in user unit
         """
         self.line_width = width
         if self.page > 0:
@@ -1075,10 +1075,10 @@ class FPDF(GraphicsStateMixin):
         Draw a line between two points.
 
         Args:
-            x1 (int): Abscissa of first point
-            y1 (int): Ordinate of first point
-            x2 (int): Abscissa of second point
-            y2 (int): Ordinate of second point
+            x1 (float): Abscissa of first point
+            y1 (float): Ordinate of first point
+            x2 (float): Abscissa of second point
+            y2 (float): Ordinate of second point
         """
         self._out(
             f"{x1 * self.k:.2f} {(self.h - y1) * self.k:.2f} m {x2 * self.k:.2f} "
@@ -1129,12 +1129,12 @@ class FPDF(GraphicsStateMixin):
         - use set_dash_pattern() and the normal drawing operations instead
 
         Args:
-            x1 (int): Abscissa of first point
-            y1 (int): Ordinate of first point
-            x2 (int): Abscissa of second point
-            y2 (int): Ordinate of second point
-            dash_length (int): Length of the dash
-            space_length (int): Length of the space between 2 dashes
+            x1 (float): Abscissa of first point
+            y1 (float): Ordinate of first point
+            x2 (float): Abscissa of second point
+            y2 (float): Ordinate of second point
+            dash_length (float): Length of the dash
+            space_length (float): Length of the space between 2 dashes
         """
         warnings.warn(
             "dashed_line() is deprecated, and will be removed in a future release. "
@@ -1152,11 +1152,11 @@ class FPDF(GraphicsStateMixin):
         It can be drawn (border only), filled (with no border) or both.
 
         Args:
-            x (int): Abscissa of upper-left bounging box.
-            y (int): Ordinate of upper-left bounging box.
-            w (int): Width.
-            h (int): Height.
-            style (int): Style of rendering. Possible values are:
+            x (float): Abscissa of upper-left bounging box.
+            y (float): Ordinate of upper-left bounging box.
+            w (float): Width.
+            h (float): Height.
+            style (str): Style of rendering. Possible values are:
                 * `D` or empty string: draw border. This is the default value.
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
@@ -1174,11 +1174,11 @@ class FPDF(GraphicsStateMixin):
         It can be drawn (border only), filled (with no border) or both.
 
         Args:
-            x (int): Abscissa of upper-left bounging box.
-            y (int): Ordinate of upper-left bounging box.
-            w (int): Width.
-            h (int): Height.
-            style (int): Style of rendering. Possible values are:
+            x (float): Abscissa of upper-left bounging box.
+            y (float): Ordinate of upper-left bounging box.
+            w (float): Width.
+            h (float): Height.
+            style (str): Style of rendering. Possible values are:
                 * `D` or empty string: draw border. This is the default value.
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
@@ -1230,10 +1230,10 @@ class FPDF(GraphicsStateMixin):
         It can be drawn (border only), filled (with no border) or both.
 
         Args:
-            x (int): Abscissa of upper-left bounging box.
-            y (int): Ordinate of upper-left bounging box.
-            r (int): Radius of the circle.
-            style (int): Style of rendering. Possible values are:
+            x (float): Abscissa of upper-left bounging box.
+            y (float): Ordinate of upper-left bounging box.
+            r (float): Radius of the circle.
+            style (str): Style of rendering. Possible values are:
                 * `D` or None: draw border. This is the default value.
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
@@ -1248,12 +1248,12 @@ class FPDF(GraphicsStateMixin):
         Style can also be applied (fill, border...)
 
         Args:
-            x (int): Abscissa of upper-left bounding box.
-            y (int): Ordinate of upper-left bounding box.
+            x (float): Abscissa of upper-left bounding box.
+            y (float): Ordinate of upper-left bounding box.
             numSides (int): Number of sides for polygon.
-            polyWidth (int): width of the polygon.
-            rotateDegrees (int): degree amount to rotate polygon. (can be left blank)
-            style (int): Style of rendering. Possible values are: (can be left blank)
+            polyWidth (float): width of the polygon.
+            rotateDegrees (float): degree amount to rotate polygon. (can be left blank)
+            style (str): Style of rendering. Possible values are: (can be left blank)
                 * `D` or None: draw border. This is the default value.
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
@@ -1295,15 +1295,15 @@ class FPDF(GraphicsStateMixin):
         """
         Outputs an arc.
         It can be drawn (border only), filled (with no border) or both.
-            a (int): Semi-major axis diameter.
-            b (int): Semi-minor axis diameter, if None, equals to a (default: None).
-            start_angle (int): Start angle of the arc (in degrees).
-            end_angle (int): End angle of the arc (in degrees).
-            inclination (int): Inclination of the arc in respect of the x-axis (default: 0).
+            a (float): Semi-major axis diameter.
+            b (float): Semi-minor axis diameter, if None, equals to a (default: None).
+            start_angle (float): Start angle of the arc (in degrees).
+            end_angle (float): End angle of the arc (in degrees).
+            inclination (float): Inclination of the arc in respect of the x-axis (default: 0).
             clockwise (bool): Way of drawing the arc (True: clockwise, False: counterclockwise) (default: False).
             start_from_center (bool): Start drawing from the center of the circle (default: False).
             end_at_center (bool): End drawing at the center of the circle (default: False).
-            style (int): Style of rendering. Possible values are:
+            style (str): Style of rendering. Possible values are:
                 * `D` or None: draw border. This is the default value.
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
@@ -1434,15 +1434,15 @@ class FPDF(GraphicsStateMixin):
         It can be drawn (border only), filled (with no border) or both.
 
         Args:
-            x (int): Abscissa of upper-left bounging box.
-            y (int): Ordinate of upper-left bounging box.
-            a (int): Semi-major axis.
-            b (int): Semi-minor axis, if None, equals to a (default: None).
-            start_angle (int): Start angle of the arc (in degrees).
-            end_angle (int): End angle of the arc (in degrees).
-            inclination (int): Inclination of the arc in respect of the x-axis (default: 0).
+            x (float): Abscissa of upper-left bounging box.
+            y (float): Ordinate of upper-left bounging box.
+            a (float): Semi-major axis.
+            b (float): Semi-minor axis, if None, equals to a (default: None).
+            start_angle (float): Start angle of the arc (in degrees).
+            end_angle (float): End angle of the arc (in degrees).
+            inclination (float): Inclination of the arc in respect of the x-axis (default: 0).
             clockwise (bool): Way of drawing the arc (True: clockwise, False: counterclockwise) (default: False).
-            style (int): Style of rendering. Possible values are:
+            style (str): Style of rendering. Possible values are:
                 * `D` or None: draw border. This is the default value.
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
@@ -1618,7 +1618,7 @@ class FPDF(GraphicsStateMixin):
             style (str): empty string (by default) or a combination
                 of one or several letters among B (bold), I (italic) and U (underline).
                 Bold and italic styles do not apply to Symbol and ZapfDingbats fonts.
-            size (int): in points. The default value is the current size.
+            size (float): in points. The default value is the current size.
         """
         if not family:
             family = self.font_family
@@ -1692,7 +1692,7 @@ class FPDF(GraphicsStateMixin):
         Configure the font size in points
 
         Args:
-            size (int): font size in points
+            size (float): font size in points
         """
         if self.font_size_pt == size:
             return
@@ -1711,7 +1711,7 @@ class FPDF(GraphicsStateMixin):
         By default, no stretching is set (which is equivalent to a value of 100).
 
         Args:
-            stretching (int): horizontal stretching (scaling) in percents.
+            stretching (float): horizontal stretching (scaling) in percents.
         """
         if self.font_stretching == stretching:
             return
@@ -1737,13 +1737,13 @@ class FPDF(GraphicsStateMixin):
 
         Args:
             link (int): a link identifier returned by `add_link`.
-            y (int): optional ordinate of target position.
+            y (float): optional ordinate of target position.
                 The default value is 0 (top of page).
-            x (int): optional abscissa of target position.
+            x (float): optional abscissa of target position.
                 The default value is 0 (top of page).
             page (int): optional number of target page.
                 -1 indicates the current page, which is the default value.
-            zoom (int): optional new zoom level after following the link.
+            zoom (float): optional new zoom level after following the link.
                 Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
         """
         self.links[link] = DestinationXYZ(
@@ -1784,10 +1784,10 @@ class FPDF(GraphicsStateMixin):
         Puts a text annotation on a rectangular area of the page.
 
         Args:
-            x (int): horizontal position (from the left) to the left side of the link rectangle
-            y (int): vertical position (from the top) to the bottom side of the link rectangle
-            w (int): width of the link rectangle
-            h (int): width of the link rectangle
+            x (float): horizontal position (from the left) to the left side of the link rectangle
+            y (float): vertical position (from the top) to the bottom side of the link rectangle
+            w (float): width of the link rectangle
+            h (float): width of the link rectangle
             text (str): text to display
         """
         self.annots[self.page].append(
@@ -1808,10 +1808,10 @@ class FPDF(GraphicsStateMixin):
 
         Args:
             action (fpdf.actions.Action): the action to add
-            x (int): horizontal position (from the left) to the left side of the link rectangle
-            y (int): vertical position (from the top) to the bottom side of the link rectangle
-            w (int): width of the link rectangle
-            h (int): width of the link rectangle
+            x (float): horizontal position (from the left) to the left side of the link rectangle
+            y (float): vertical position (from the top) to the bottom side of the link rectangle
+            w (float): width of the link rectangle
+            h (float): width of the link rectangle
         """
         self.annots[self.page].append(
             Annotation(
@@ -1832,8 +1832,8 @@ class FPDF(GraphicsStateMixin):
         but it is usually easier to use the `cell()`, `multi_cell() or `write()` methods.
 
         Args:
-            x (int): abscissa of the origin
-            y (int): ordinate of the origin
+            x (float): abscissa of the origin
+            y (float): ordinate of the origin
             txt (str): string to print
         """
         if not self.font_family:
@@ -1994,9 +1994,9 @@ class FPDF(GraphicsStateMixin):
         page break is performed before outputting.
 
         Args:
-            w (int): Cell width. Default value: None, meaning to fit text width.
+            w (float): Cell width. Default value: None, meaning to fit text width.
                 If 0, the cell extends up to the right margin.
-            h (int): Cell height. Default value: None, meaning an height equal
+            h (float): Cell height. Default value: None, meaning an height equal
                 to the current font size.
             txt (str): String to print. Default value: empty string.
             border: Indicates if borders must be drawn around the cell.
@@ -2034,14 +2034,14 @@ class FPDF(GraphicsStateMixin):
                 "ignored"
             )
             border = 1
-        newpos_x = XPos.RIGHT
-        newpos_y = YPos.TOP
+        new_x = XPos.RIGHT
+        new_y = YPos.TOP
         if ln == 1:
-            newpos_x = XPos.LMARGIN
-            newpos_y = YPos.NEXT
+            new_x = XPos.LMARGIN
+            new_y = YPos.NEXT
         elif ln == 2:
-            newpos_x = XPos.LEFT
-            newpos_y = YPos.NEXT
+            new_x = XPos.LEFT
+            new_y = YPos.NEXT
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
         txt = self.normalize_text(txt)
         styled_txt_frags = self._preload_font_styles(txt, markdown)
@@ -2055,8 +2055,8 @@ class FPDF(GraphicsStateMixin):
             w,
             h,
             border,
-            newpos_x=newpos_x,
-            newpos_y=newpos_y,
+            new_x=new_x,
+            new_y=new_y,
             align=align,
             fill=fill,
             link=link,
@@ -2065,16 +2065,16 @@ class FPDF(GraphicsStateMixin):
 
     def _render_styled_cell_text(
         self,
-        text_line,
-        w=None,
-        h=None,
-        border=0,
-        newpos_x=XPos.RIGHT,
-        newpos_y=YPos.TOP,
-        align="",
-        fill=False,
-        link="",
-        center=False,
+        text_line: TextLine,
+        w: float = None,
+        h: float = None,
+        border: Union[str, int] = 0,
+        new_x: XPos = XPos.RIGHT,
+        new_y: YPos = YPos.TOP,
+        align: str = "",
+        fill: bool = False,
+        link: str = "",
+        center: bool = False,
     ):
         """
         Prints a cell (rectangular area) with optional borders, background color and
@@ -2089,17 +2089,17 @@ class FPDF(GraphicsStateMixin):
         Args:
             text_line (TextLine instance): Contains the (possibly empty) tuple of
                 fragments to render.
-            w (int): Cell width. Default value: None, meaning to fit text width.
+            w (float): Cell width. Default value: None, meaning to fit text width.
                 If 0, the cell extends up to the right margin.
-            h (int): Cell height. Default value: None, meaning an height equal
+            h (float): Cell height. Default value: None, meaning an height equal
                 to the current font size.
             border: Indicates if borders must be drawn around the cell.
                 The value can be either a number (`0`: no border ; `1`: frame)
                 or a string containing some or all of the following characters
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
-            newpos_x (Enum XPos): New current position in x after the call.
-            newpos_y (Enum YPos): New current position in y after the call.
+            new_x (Enum XPos): New current position in x after the call.
+            new_y (Enum YPos): New current position in y after the call.
             align (str): Allows to align the text inside the cell.
                 Possible values are: `L` or empty string: left align (default value);
                 `C`: center; `R`: right align; `J`: justify (if more than one word)
@@ -2315,28 +2315,28 @@ class FPDF(GraphicsStateMixin):
         self.lasth = h
 
         # XPos.LEFT -> self.x stays the same
-        if newpos_x == XPos.RIGHT:
+        if new_x == XPos.RIGHT:
             self.x += w
-        elif newpos_x == XPos.START:
+        elif new_x == XPos.START:
             self.x = s_start
-        elif newpos_x == XPos.END:
+        elif new_x == XPos.END:
             self.x = s_start + s_width
-        elif newpos_x == XPos.WCONT:
+        elif new_x == XPos.WCONT:
             self.x = s_start + s_width - self.c_margin
-        elif newpos_x == XPos.CENTER:
+        elif new_x == XPos.CENTER:
             self.x = (s_start + s_start + s_width) / 2.0
-        elif newpos_x == XPos.LMARGIN:
+        elif new_x == XPos.LMARGIN:
             self.x = self.l_margin
-        elif newpos_x == XPos.RMARGIN:
+        elif new_x == XPos.RMARGIN:
             self.x = self.w - self.r_margin
 
         # YPos.TOP:  -> self.y stays the same
         # YPos.LAST: -> self.y stays the same (single line)
-        if newpos_y == YPos.NEXT:
+        if new_y == YPos.NEXT:
             self.y += h
-        if newpos_y == YPos.TMARGIN:
+        if new_y == YPos.TMARGIN:
             self.y = self.t_margin
-        if newpos_y == YPos.BMARGIN:
+        if new_y == YPos.BMARGIN:
             self.y = self.h - self.b_margin
 
         return page_break_triggered
@@ -2486,8 +2486,8 @@ class FPDF(GraphicsStateMixin):
         the background painted.
 
         Args:
-            w (int): cell width. If 0, they extend up to the right margin of the page.
-            h (int): cell height. Default value: None, meaning to use the current font size.
+            w (float): cell width. If 0, they extend up to the right margin of the page.
+            h (float): cell height. Default value: None, meaning to use the current font size.
             txt (str): strign to print.
             border: Indicates if borders must be drawn around the cell.
                 The value can be either a number (`0`: no border ; `1`: frame)
@@ -2507,7 +2507,7 @@ class FPDF(GraphicsStateMixin):
                 Possible values are: `0`: to the bottom right ; `1`: to the beginning
                 of the next line ; `2`: below with the same horizontal offset ;
                 `3`: to the right with the same vertical offset. Default value: 0.
-            max_line_height (int): optional maximum height of each sub-cell generated
+            max_line_height (float): optional maximum height of each sub-cell generated
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
             print_sh (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
@@ -2524,14 +2524,14 @@ class FPDF(GraphicsStateMixin):
                 "Parameter 'w' and 'h' must be numbers, not strings."
                 " You can omit them by passing string content with txt="
             )
-        newpos_x = XPos.RIGHT
-        newpos_y = YPos.NEXT
+        new_x = XPos.RIGHT
+        new_y = YPos.NEXT
         if ln == 1:
-            newpos_x = XPos.LMARGIN
+            new_x = XPos.LMARGIN
         elif ln == 2:
-            newpos_x = XPos.LEFT
+            new_x = XPos.LEFT
         elif ln == 3:
-            newpos_y = YPos.TOP
+            new_y = YPos.TOP
 
         page_break_triggered = False
         if split_only:
@@ -2601,20 +2601,20 @@ class FPDF(GraphicsStateMixin):
                         "B" if "B" in border and is_last_line else "",
                     )
                 ),
-                newpos_x=newpos_x if is_last_line else XPos.LEFT,
-                newpos_y=newpos_y if is_last_line else YPos.NEXT,
+                new_x=new_x if is_last_line else XPos.LEFT,
+                new_y=new_y if is_last_line else YPos.NEXT,
                 align="L" if (align == "J" and is_last_line) else align,
                 fill=fill,
                 link=link,
             )
-            if is_last_line and new_page and newpos_y == YPos.TOP:
+            if is_last_line and new_page and new_y == YPos.TOP:
                 # When a page jump is performed and the requested y is TOP (ln=3),
                 # pretend we started at the top of the text block on the new page.
                 # cf. test_multi_cell_table_with_automatic_page_break
                 prev_y = self.y
             page_break_triggered = page_break_triggered or new_page
 
-        if newpos_y == YPos.TOP:  # We may have jumped a few lines -> reset
+        if new_y == YPos.TOP:  # We may have jumped a few lines -> reset
             self.y = prev_y
 
         if split_only:
@@ -2642,7 +2642,9 @@ class FPDF(GraphicsStateMixin):
         return page_break_triggered
 
     @check_page
-    def write(self, h=None, txt="", link="", print_sh=False):
+    def write(
+        self, h: float = None, txt: str = "", link: str = "", print_sh: bool = False
+    ):
         """
         Prints text from the current position.
         When the right margin is reached, a line break occurs at the most recent
@@ -2651,7 +2653,7 @@ class FPDF(GraphicsStateMixin):
         Upon method exit, the current position is left just at the end of the text.
 
         Args:
-            h (int): line height. Default value: None, meaning to use the current font size.
+            h (float): line height. Default value: None, meaning to use the current font size.
             txt (str): text content
             link (str): optional link to add on the text, internal
                 (identifier returned by `add_link`) or external URL.
@@ -2708,8 +2710,8 @@ class FPDF(GraphicsStateMixin):
                 line_width,
                 h=h,
                 border=0,
-                newpos_x=XPos.WCONT,
-                newpos_y=YPos.TOP,
+                new_x=XPos.WCONT,
+                new_y=YPos.TOP,
                 align="L",
                 fill=False,
                 link=link,
@@ -2747,15 +2749,15 @@ class FPDF(GraphicsStateMixin):
         Args:
             name: either a string representing a file path to an image, an URL to an image,
                 an io.BytesIO, or a instance of `PIL.Image.Image`
-            x (int): optional horizontal position where to put the image on the page.
+            x (float): optional horizontal position where to put the image on the page.
                 If not specified or equal to None, the current abscissa is used.
-            y (int): optional vertical position where to put the image on the page.
+            y (float): optional vertical position where to put the image on the page.
                 If not specified or equal to None, the current ordinate is used.
                 After the call, the current ordinate is moved to the bottom of the image
-            w (int): optional width of the image. If not specified or equal to zero,
+            w (float): optional width of the image. If not specified or equal to zero,
                 it is automatically calculated from the image size.
                 Pass `pdf.epw` to scale horizontally to the full page width.
-            h (int): optional height of the image. If not specified or equal to zero,
+            h (float): optional height of the image. If not specified or equal to zero,
                 it is automatically calculated from the image size.
                 Pass `pdf.eph` to scale horizontally to the full page height.
             type (str): [**DEPRECATED**] unused, will be removed in a later version.
@@ -2994,7 +2996,7 @@ class FPDF(GraphicsStateMixin):
         the amount passed as parameter.
 
         Args:
-            h (int): The height of the break.
+            h (float): The height of the break.
                 By default, the value equals the height of the last printed cell.
         """
         self.x = self.l_margin
@@ -3010,7 +3012,7 @@ class FPDF(GraphicsStateMixin):
         If the value provided is negative, it is relative to the right of the page.
 
         Args:
-            x (int): the new current abscissa
+            x (float): the new current abscissa
         """
         self.x = x if x >= 0 else self.w + x
 
@@ -3024,7 +3026,7 @@ class FPDF(GraphicsStateMixin):
         If the value provided is negative, it is relative to the bottom of the page.
 
         Args:
-            y (int): the new current ordinate
+            y (float): the new current ordinate
         """
         self.x = self.l_margin
         self.y = y if y >= 0 else self.h + y
@@ -3035,8 +3037,8 @@ class FPDF(GraphicsStateMixin):
         If the values provided are negative, they are relative respectively to the right and bottom of the page.
 
         Args:
-            x (int): the new current abscissa
-            y (int): the new current ordinate
+            x (float): the new current abscissa
+            y (float): the new current ordinate
         """
         self.set_y(y)
         self.set_x(x)
@@ -4220,7 +4222,6 @@ __all__ = [
     "FPDF",
     "XPos",
     "YPos",
-    "load_cache",
     "get_page_format",
     "TitleStyle",
     "PAGE_FORMATS",

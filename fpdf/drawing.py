@@ -512,7 +512,7 @@ class Point(NamedTuple):
             The scalar result of the distance computation.
         """
 
-        return (self.x**2 + self.y**2) ** 0.5
+        return (self.x ** 2 + self.y ** 2) ** 0.5
 
     @force_document
     def __add__(self, other):
@@ -2660,7 +2660,7 @@ class Arc(NamedTuple):
         lam_da = (prime.x / radii.x) ** 2 + (prime.y / radii.y) ** 2
 
         if lam_da > 1:
-            radii = Point(x=(lam_da**0.5) * radii.x, y=(lam_da**0.5) * radii.y)
+            radii = Point(x=(lam_da ** 0.5) * radii.x, y=(lam_da ** 0.5) * radii.y)
 
         sign = (self.large != self.sweep) - (self.large == self.sweep)
         rxry2 = (radii.x * radii.y) ** 2
