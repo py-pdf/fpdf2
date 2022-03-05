@@ -43,7 +43,7 @@ def test_dash(tmp_path):
     pdf.add_page()
 
     def draw_diagonal_dash(pdf, x, y, *a, **k):
-        with warns(PendingDeprecationWarning):
+        with warns(DeprecationWarning):
             pdf.dashed_line(x, y, x + size, y + size / 2, *a, **k)
 
     for width in [0.71, 1, 2]:
@@ -67,7 +67,7 @@ def test_dash(tmp_path):
 
     next_row(pdf)
     pdf.set_line_width(1)
-    with warns(PendingDeprecationWarning):
+    with warns(DeprecationWarning):
         x, y = pdf.get_x(), pdf.get_y()
         pdf.dashed_line(x, y, x + 100, y + 80, 10, 3)
         pdf.set_x(pdf.get_x() + 20)

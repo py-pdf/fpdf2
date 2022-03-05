@@ -161,7 +161,7 @@ def test_2_pages_outline(tmp_path):
 
 def test_russian_heading(tmp_path):  # issue-320
     pdf = FPDF()
-    pdf.add_font("Roboto", style="B", fname="test/fonts/Roboto-Regular.ttf", uni=True)
+    pdf.add_font("Roboto", style="B", fname="test/fonts/Roboto-Regular.ttf")
     pdf.set_font("Roboto", style="B")
     pdf.add_page()
     pdf.start_section("Русский, English, 1 2 3...")

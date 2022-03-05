@@ -163,7 +163,7 @@ def test_multi_cell_table_unbreakable(tmp_path):  # issue 111
 def test_multi_cell_justified_with_unicode_font(tmp_path):  # issue 118
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.add_font("DejaVu", "", HERE / "../fonts/DejaVuSans.ttf", uni=True)
+    pdf.add_font("DejaVu", "", HERE / "../fonts/DejaVuSans.ttf")
     pdf.set_font("DejaVu", "", 14)
     text = 'Justified line containing "()" that is long enough to trigger wrapping and a line jump'
     pdf.multi_cell(w=0, h=8, txt=text, ln=1)

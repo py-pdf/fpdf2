@@ -27,9 +27,9 @@ def test_multi_cell_markdown(tmp_path):
 def test_multi_cell_markdown_with_ttf_fonts(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf", uni=True)
-    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf", uni=True)
-    pdf.add_font("Roboto", "I", HERE / "../fonts/Roboto-Italic.ttf", uni=True)
+    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf")
+    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf")
+    pdf.add_font("Roboto", "I", HERE / "../fonts/Roboto-Italic.ttf")
     pdf.set_font("Roboto", size=32)
     text = (  # Some text where styling occur over line breaks:
         "Lorem ipsum dolor, **consectetur adipiscing** elit,"
@@ -46,7 +46,7 @@ def test_multi_cell_markdown_with_ttf_fonts(tmp_path):
 def test_multi_cell_markdown_missing_ttf_font():
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf", uni=True)
+    pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf")
     pdf.set_font("Roboto", size=60)
     with pytest.raises(fpdf.FPDFException) as error:
         pdf.multi_cell(w=pdf.epw, txt="**Lorem Ipsum**", markdown=True)

@@ -422,10 +422,10 @@ def test_template_badinput(tmp_path):
     with raises(KeyError):
         tmpl.parse_csv(HERE / "badtype.csv", delimiter=";")
         tmpl.render()
-    with warns(PendingDeprecationWarning):
+    with warns(DeprecationWarning):
         Template(infile="whatever")
     with raises(AttributeError):
-        with warns(PendingDeprecationWarning):
+        with warns(DeprecationWarning):
             tmpl = Template()
             tmpl.render(dest="whatever")
 
@@ -463,7 +463,7 @@ def test_template_code39_legacy(tmp_path):
             "priority": 1,
         },
     ]
-    with warns(PendingDeprecationWarning):
+    with warns(DeprecationWarning):
         tmpl = Template(format="A4", title="Sample Code 39 barcode", elements=elements)
         tmpl.add_page()
         assert_pdf_equal(tmpl, HERE / "template_code39.pdf", tmp_path)
