@@ -2302,6 +2302,7 @@ class FPDF(GraphicsStateMixin):
 
             if self.fill_color != self.text_color:
                 s += " Q"
+                # cf. issue 348 & test_multi_cell_markdown_with_fill_color:
                 if style_changed:
                     s += f" /F{self.current_font['i']} {self.font_size_pt:.2f} Tf"
 
@@ -2327,7 +2328,7 @@ class FPDF(GraphicsStateMixin):
         elif new_x == XPos.WCONT:
             self.x = s_start + s_width - self.c_margin
         elif new_x == XPos.CENTER:
-            self.x = (s_start + s_start + s_width) / 2.0
+            self.x = s_start + s_width / 2.0
         elif new_x == XPos.LMARGIN:
             self.x = self.l_margin
         elif new_x == XPos.RMARGIN:
@@ -2583,6 +2584,15 @@ class FPDF(GraphicsStateMixin):
                 maximum_allowed_emwidth
             )
 
+        if not text_lines:  # ensure we display at least one cell - cf. issue #349
+            text_lines = [
+                TextLine(
+                    "",
+                    text_width=0,
+                    number_of_spaces_between_words=0,
+                    justify=False,
+                )
+            ]
         for text_line_index, text_line in enumerate(text_lines):
             is_last_line = text_line_index == len(text_lines) - 1
 
