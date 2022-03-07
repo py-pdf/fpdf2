@@ -60,6 +60,7 @@ nav:
 - 'Layout':
   - 'Page format and orientation':  'PageFormatAndOrientation.md'
   - 'Margins':                      'Margins.md'
+  - 'Line breaks':                  'LineBreaks.md'
   - 'Page breaks':                  'PageBreaks.md'
 - 'Document outline & table of contents': 'DocumentOutlineAndTableOfContents.md'
 - 'Text styling':                   'TextStyling.md'
@@ -75,6 +76,7 @@ nav:
 - 'Templates':                      'Templates.md'
 - 'Unicode':                        'Unicode.md'
 - 'Emojis, Symbols & Dingbats':     'EmojisSymbolsDingbats.md'
+- 'borb':                           'borb.md'
 - 'Web2Py':                         'Web2Py.md'
 - 'API':                            'https://pyfpdf.github.io/fpdf2/fpdf/'
 - 'Development':                    'Development.md'

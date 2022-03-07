@@ -54,3 +54,14 @@ def test_multi_cell_markdown_missing_ttf_font():
         "Undefined font: robotoB - Use built-in fonts or FPDF.add_font() beforehand"
     )
     assert str(error.value) == expected_msg
+
+
+def test_multi_cell_markdown_with_fill_color(tmp_path):  # issue 348
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=10)
+    pdf.set_fill_color(255, 0, 0)
+    pdf.multi_cell(
+        50, markdown=True, txt="aa bb cc **dd ee dd ee dd ee dd ee dd ee dd ee**"
+    )
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_with_fill_color.pdf", tmp_path)

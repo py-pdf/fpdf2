@@ -7,12 +7,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
-## [2.5.1] - not released yet
+## [2.5.2] - not released yet
+### Fixed
+- a bug with string width calculation when Markdown is enabled - _cf._ [#351](https://github.com/PyFPDF/fpdf2/issues/351)
+
+## [2.5.1] - 2022-03-07
 ### Added
 - new parameters `new_x` and `new_y` for `cell()` and `multi_cell()`, replacing `ln=0`, thanks to @gmischler
 - support for soft-hyphen (`\u00ad`) break in `write()`, `cell()` & `multi_cell()` calls - thanks @oleksii-shyman & @gmischler!
+  Documentation: [Line breaks](https://pyfpdf.github.io/fpdf2/LineBreaks.html)
 - new documentation page on [Emojis, Symbols & Dingbats](https://pyfpdf.github.io/fpdf2/EmojisSymbolsDingbats.html)
-- documentation on combining `borb` & `fpdf2`: [Creating a borb.pdf.document.Document from a FPDF instance](https://pyfpdf.github.io/fpdf2/ExistingPDFs.html)
+- documentation on combining `borb` & `fpdf2`: [Creating a borb.pdf.document.Document from a FPDF instance](https://pyfpdf.github.io/fpdf2/borb.html)
 
 ### Changed
 - `write()` now supports soft hyphen characters, thanks to @gmischler
@@ -22,6 +27,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - log level of `_substitute_page_number()` has been lowered from `INFO` to `DEBUG`
 
 ### Fixed
+- a bug when rendering Markdown and setting a custom `text_color` or `fill_color`
 - a bug in `get_string_width()` with unicode fonts and Markdown enabled,
   resulting in calls to `cell()` / `multi_cell()` with `align="R"` to display nothing - thanks @mcerveny for the fix!
 - a bug with incorrect width calculation of markdown text
