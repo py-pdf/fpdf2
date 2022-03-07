@@ -2015,7 +2015,7 @@ class FPDF(GraphicsStateMixin):
                 or transparent (`False`). Default value: False.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
-            center (bool): center the cell horizontally in the page
+            center (bool): **DEPRECATED** 2.5.1: Use align="C" instead.
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
 
@@ -2107,7 +2107,7 @@ class FPDF(GraphicsStateMixin):
                 or transparent (`False`). Default value: False.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
-            center (bool): center the cell horizontally in the page
+            center (bool): **DEPRECATED** 2.5.1: Use align="C" instead.
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
 
@@ -2135,8 +2135,11 @@ class FPDF(GraphicsStateMixin):
             w = styled_txt_width + self.c_margin + self.c_margin
         if h is None:
             h = self.font_size
-        # pylint: disable=invalid-unary-operand-type
         if center:
+            warnings.warn(
+                'The "center" parameter is deprecated, and will soon be removed.'
+                ' Consider using align="C" instead.',
+                DeprecationWarning)
             self.x = self.l_margin + (self.epw - w) / 2
         page_break_triggered = self._perform_page_break_if_need_be(h)
         s = ""

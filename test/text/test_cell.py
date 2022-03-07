@@ -165,7 +165,8 @@ def test_cell_centering(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=60)
-    pdf.cell(txt="Lorem ipsum", border=1, center=True)
+    with pytest.warns(DeprecationWarning):
+        pdf.cell(txt="Lorem ipsum", border=1, center=True)
     assert_pdf_equal(pdf, HERE / "cell_centering.pdf", tmp_path)
 
 

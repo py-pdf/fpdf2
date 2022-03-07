@@ -26,6 +26,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - a bug with incorrect width calculation of markdown text
 
 ### Deprecated
+- The parameter "center" to `cell()` is now deprecated, use `align="C"` instead.
 - the font caching mechanism, that used the `pickle` module, has been removed, for security reasons,
   and because it provided little performance gain, and only for specific use cases - _cf._ [issue #345](https://github.com/PyFPDF/fpdf2/issues/345).
   That means that the `font_cache_dir` optional parameter of `fpdf.FPDF` constructor
