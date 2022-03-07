@@ -329,5 +329,7 @@ def test_multi_cell_with_empty_contents(tmp_path):  # issue 349
         pdf.multi_cell(20, new_x=XPos.RIGHT, new_y=YPos.TOP, txt=str(i))
     pdf.ln(10)
     for i in range(1, 5):
-        pdf.multi_cell(20, new_x=XPos.RIGHT, new_y=YPos.TOP, txt=str(i) if i > 2 else "")
+        pdf.multi_cell(
+            20, new_x=XPos.RIGHT, new_y=YPos.TOP, txt=str(i) if i > 2 else ""
+        )
     assert_pdf_equal(pdf, HERE / "multi_cell_with_empty_contents.pdf", tmp_path)
