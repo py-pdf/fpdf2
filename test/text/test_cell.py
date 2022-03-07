@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-import fpdf
+from fpdf import FPDF, XPos, YPos, FPDFException
 from test.conftest import assert_pdf_equal
 
 TEXT_SIZE, SPACING = 36, 1.15
@@ -21,7 +21,7 @@ TABLE_DATA = (
 
 
 def test_ln_positioning_and_page_breaking_for_cell(tmp_path):
-    doc = fpdf.FPDF(format="letter", unit="pt")
+    doc = FPDF(format="letter", unit="pt")
     doc.add_page()
 
     doc.set_font("helvetica", size=TEXT_SIZE)
@@ -59,7 +59,8 @@ def test_ln_positioning_and_page_breaking_for_cell(tmp_path):
             w=72,
             h=TEXT_SIZE * 1.5,
             border=1,
-            ln=2,
+            new_x=XPos.LEFT,
+            new_y=YPos.NEXT,
             txt=text[i * 100 : i * 100 + 99],
         )
 
@@ -69,7 +70,7 @@ def test_ln_positioning_and_page_breaking_for_cell(tmp_path):
 
 
 def test_cell_ln_0(tmp_path):
-    doc = fpdf.FPDF()
+    doc = FPDF()
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
     doc.cell(w=45, h=LINE_HEIGHT, border=1, txt="Lorem")
@@ -81,16 +82,18 @@ def test_cell_ln_0(tmp_path):
 
 def test_cell_ln_1(tmp_path):
     """
+    Catch DeprecationWarning for ln=1.
     Validating that: "Using ln=1 is equivalent to using ln=0 and calling the `ln` method just after."
     """
-    doc = fpdf.FPDF()
+    doc = FPDF()
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
-    doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Lorem ipsum", ln=1)
+    with pytest.warns(DeprecationWarning):
+        doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Lorem ipsum", ln=1)
     doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Ut nostrud irure")
     assert_pdf_equal(doc, HERE / "ln_1.pdf", tmp_path)
 
-    doc = fpdf.FPDF()
+    doc = FPDF()
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
     doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Lorem ipsum")
@@ -100,7 +103,7 @@ def test_cell_ln_1(tmp_path):
 
 
 def test_cell_table_with_pagebreak(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
     line_height = pdf.font_size * 2
@@ -115,7 +118,7 @@ def test_cell_table_with_pagebreak(tmp_path):
 
 
 def test_cell_table_unbreakable(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
     line_height = pdf.font_size * 2
@@ -131,16 +134,16 @@ def test_cell_table_unbreakable(tmp_path):
 
 
 def test_cell_without_font_set():
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
-    with pytest.raises(fpdf.FPDFException) as error:
+    with pytest.raises(FPDFException) as error:
         pdf.cell(txt="Hello World!")
     expected_msg = "No font set, you need to call set_font() beforehand"
     assert str(error.value) == expected_msg
 
 
 def test_cell_without_w_nor_h(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
     pdf.cell(txt="Lorem ipsum", border=1)
@@ -150,7 +153,7 @@ def test_cell_without_w_nor_h(tmp_path):
 
 
 def test_cell_missing_text_or_width(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
     with pytest.raises(ValueError) as error:
@@ -162,7 +165,7 @@ def test_cell_missing_text_or_width(tmp_path):
 
 
 def test_cell_centering(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=60)
     with pytest.warns(DeprecationWarning):
@@ -171,7 +174,7 @@ def test_cell_centering(tmp_path):
 
 
 def test_cell_markdown(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=60)
     pdf.cell(txt="**Lorem** __Ipsum__ --dolor--", markdown=True)
@@ -179,7 +182,7 @@ def test_cell_markdown(tmp_path):
 
 
 def test_cell_markdown_with_ttf_fonts(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf")
     pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf")
@@ -190,11 +193,11 @@ def test_cell_markdown_with_ttf_fonts(tmp_path):
 
 
 def test_cell_markdown_missing_ttf_font(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf")
     pdf.set_font("Roboto", size=60)
-    with pytest.raises(fpdf.FPDFException) as error:
+    with pytest.raises(FPDFException) as error:
         pdf.cell(txt="**Lorem Ipsum**", markdown=True)
     expected_msg = (
         "Undefined font: robotoB - Use built-in fonts or FPDF.add_font() beforehand"
@@ -203,20 +206,26 @@ def test_cell_markdown_missing_ttf_font(tmp_path):
 
 
 def test_cell_markdown_bleeding(tmp_path):  # issue 241
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=60)
-    pdf.cell(txt="--Lorem Ipsum dolor--", markdown=True, ln=1)
-    pdf.cell(txt="No Markdown", markdown=False, ln=1)
-    pdf.cell(txt="**Lorem Ipsum dolor**", markdown=True, ln=1)
-    pdf.cell(txt="No Markdown", markdown=False, ln=1)
-    pdf.cell(txt="__Lorem Ipsum dolor__", markdown=True, ln=1)
-    pdf.cell(txt="No Markdown", markdown=False, ln=1)
+    pdf.cell(
+        txt="--Lorem Ipsum dolor--", markdown=True, new_x=XPos.LMARGIN, new_y=YPos.NEXT
+    )
+    pdf.cell(txt="No Markdown", markdown=False, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.cell(
+        txt="**Lorem Ipsum dolor**", markdown=True, new_x=XPos.LMARGIN, new_y=YPos.NEXT
+    )
+    pdf.cell(txt="No Markdown", markdown=False, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.cell(
+        txt="__Lorem Ipsum dolor__", markdown=True, new_x=XPos.LMARGIN, new_y=YPos.NEXT
+    )
+    pdf.cell(txt="No Markdown", markdown=False, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     assert_pdf_equal(pdf, HERE / "cell_markdown_bleeding.pdf", tmp_path)
 
 
 def test_cell_markdown_right_aligned(tmp_path):  # issue 333
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf")
     pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf")
@@ -232,7 +241,7 @@ def test_cell_markdown_right_aligned(tmp_path):  # issue 333
 
 
 def test_table_with_headers_on_every_page(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
     line_height = pdf.font_size * 2

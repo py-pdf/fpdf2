@@ -9,6 +9,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.5.1] - not released yet
 ### Added
+- new parameters `new_x` and `new_y` for `cell()` and `multi_cell()`, replacing `ln=0`, thanks to @gmischler
 - support for soft-hyphen (`\u00ad`) break in `write()`, `cell()` & `multi_cell()` calls - thanks @oleksii-shyman & @gmischler!
 - new documentation page on [Emojis, Symbols & Dingbats](https://pyfpdf.github.io/fpdf2/EmojisSymbolsDingbats.html)
 - documentation on combining `borb` & `fpdf2`: [Creating a borb.pdf.document.Document from a FPDF instance](https://pyfpdf.github.io/fpdf2/ExistingPDFs.html)
@@ -26,6 +27,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - a bug with incorrect width calculation of markdown text
 
 ### Deprecated
+- The parameter `ln` to `cell()` and `multi_cell()` is now deprecated, use `new_x` and `new_y` instead.
 - The parameter "center" to `cell()` is now deprecated, use `align="C"` instead.
 - the font caching mechanism, that used the `pickle` module, has been removed, for security reasons,
   and because it provided little performance gain, and only for specific use cases - _cf._ [issue #345](https://github.com/PyFPDF/fpdf2/issues/345).

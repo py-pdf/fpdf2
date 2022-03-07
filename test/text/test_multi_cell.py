@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import fpdf
+from fpdf import FPDF, XPos, YPos
 from test.conftest import assert_pdf_equal
 
 
@@ -19,7 +19,7 @@ TABLE_DATA = (
 
 
 def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
-    doc = fpdf.FPDF(format="letter", unit="pt")
+    doc = FPDF(format="letter", unit="pt")
     doc.add_page()
 
     doc.set_font("helvetica", size=TEXT_SIZE)
@@ -44,18 +44,83 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         "dolore Ut in sint sunt exercitation aliquip elit velit dolor nisi "
     )
 
-    doc.multi_cell(w=144, h=LINE_HEIGHT, border=1, txt=text[:29], ln=0)
-    doc.multi_cell(w=180, h=LINE_HEIGHT, border=1, txt=text[29:60], ln=2)
-    doc.multi_cell(w=144, h=LINE_HEIGHT, border=1, txt=text[60:90], ln=1)
-    doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1, ln=1, txt=text[0:30])
-    doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1, ln=1, txt=text[31:60])
-    doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1, ln=1, txt=text[61:90])
-    doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1, ln=1, txt=text[91:120])
+    doc.multi_cell(
+        w=144, h=LINE_HEIGHT, border=1, txt=text[:29], new_x=XPos.RIGHT, new_y=YPos.NEXT
+    )
+    doc.multi_cell(
+        w=180,
+        h=LINE_HEIGHT,
+        border=1,
+        txt=text[29:60],
+        new_x=XPos.LEFT,
+        new_y=YPos.NEXT,
+    )
+    doc.multi_cell(
+        w=144,
+        h=LINE_HEIGHT,
+        border=1,
+        txt=text[60:90],
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+    doc.cell(
+        w=72 * 5,
+        h=LINE_HEIGHT,
+        border=1,
+        txt=text[0:30],
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+    doc.cell(
+        w=72 * 5,
+        h=LINE_HEIGHT,
+        border=1,
+        txt=text[31:60],
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+    doc.cell(
+        w=72 * 5,
+        h=LINE_HEIGHT,
+        border=1,
+        txt=text[61:90],
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+    doc.cell(
+        w=72 * 5,
+        h=LINE_HEIGHT,
+        border=1,
+        txt=text[91:120],
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
     doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1)
-    doc.cell(w=1, h=LINE_HEIGHT, ln=2)
-    doc.multi_cell(w=144, h=LINE_HEIGHT, border=1, txt=text[30:90], ln=2)
-    doc.cell(w=72 * 2, h=LINE_HEIGHT, border=1, ln=2, txt="Lorem ipsum")
-    doc.cell(w=72 * 2, h=LINE_HEIGHT, border=1, ln=2, txt="Lorem ipsum")
+    doc.cell(w=1, h=LINE_HEIGHT, new_x=XPos.LEFT, new_y=YPos.NEXT)
+    doc.multi_cell(
+        w=144,
+        h=LINE_HEIGHT,
+        border=1,
+        txt=text[30:90],
+        new_x=XPos.LEFT,
+        new_y=YPos.NEXT,
+    )
+    doc.cell(
+        w=72 * 2,
+        h=LINE_HEIGHT,
+        border=1,
+        txt="Lorem ipsum",
+        new_x=XPos.LEFT,
+        new_y=YPos.NEXT,
+    )
+    doc.cell(
+        w=72 * 2,
+        h=LINE_HEIGHT,
+        border=1,
+        txt="Lorem ipsum",
+        new_x=XPos.LEFT,
+        new_y=YPos.NEXT,
+    )
 
     assert_pdf_equal(
         doc, HERE / "ln_positioning_and_page_breaking_for_multicell.pdf", tmp_path
@@ -63,7 +128,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
 
 
 def test_multi_cell_ln_0(tmp_path):
-    doc = fpdf.FPDF()
+    doc = FPDF()
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
     doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="Lorem")
@@ -74,22 +139,37 @@ def test_multi_cell_ln_0(tmp_path):
 
 
 def test_multi_cell_ln_1(tmp_path):
-    doc = fpdf.FPDF()
+    doc = FPDF()
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
-    doc.multi_cell(w=100, h=LINE_HEIGHT, border=1, txt="Lorem ipsum", ln=1)
+    doc.multi_cell(
+        w=100,
+        h=LINE_HEIGHT,
+        border=1,
+        txt="Lorem ipsum",
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
     doc.multi_cell(w=100, h=LINE_HEIGHT, border=1, txt="Ut nostrud irure")
     assert_pdf_equal(doc, HERE / "multi_cell_ln_1.pdf", tmp_path)
 
 
 def test_multi_cell_ln_3(tmp_path):
-    doc = fpdf.FPDF()
+    doc = FPDF()
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
-    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="Lorem")
-    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="ipsum")
-    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="Ut")
-    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, ln=3, txt="nostrud")
+    doc.multi_cell(
+        w=45, h=LINE_HEIGHT, border=1, txt="Lorem", new_x=XPos.RIGHT, new_y=YPos.TOP
+    )
+    doc.multi_cell(
+        w=45, h=LINE_HEIGHT, border=1, txt="ipsum", new_x=XPos.RIGHT, new_y=YPos.TOP
+    )
+    doc.multi_cell(
+        w=45, h=LINE_HEIGHT, border=1, txt="Ut", new_x=XPos.RIGHT, new_y=YPos.TOP
+    )
+    doc.multi_cell(
+        w=45, h=LINE_HEIGHT, border=1, txt="nostrud", new_x=XPos.RIGHT, new_y=YPos.TOP
+    )
     assert_pdf_equal(doc, HERE / "multi_cell_ln_3.pdf", tmp_path)
 
 
@@ -98,7 +178,7 @@ def test_multi_cell_ln_3_table(tmp_path):
     Test rendering of a table with multi-lines cell contents
     cf. https://github.com/PyFPDF/fpdf2/issues/63
     """
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=10)
     line_height = pdf.font_size * 2.5
@@ -112,7 +192,8 @@ def test_multi_cell_ln_3_table(tmp_path):
                 line_height,
                 str(datum),
                 border=1,
-                ln=3,
+                new_x=XPos.RIGHT,
+                new_y=YPos.TOP,
                 max_line_height=pdf.font_size,
             )
         pdf.ln(line_height)
@@ -120,7 +201,7 @@ def test_multi_cell_ln_3_table(tmp_path):
 
 
 def test_multi_cell_table_with_automatic_page_break(tmp_path):  # issue 120
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
     line_height = pdf.font_size * 2
@@ -133,7 +214,8 @@ def test_multi_cell_table_with_automatic_page_break(tmp_path):  # issue 120
                     line_height,
                     datum,
                     border=1,
-                    ln=3,
+                    new_x=XPos.RIGHT,
+                    new_y=YPos.TOP,
                     max_line_height=pdf.font_size,
                 )
             pdf.ln(line_height)
@@ -143,7 +225,7 @@ def test_multi_cell_table_with_automatic_page_break(tmp_path):  # issue 120
 
 
 def test_multi_cell_table_unbreakable(tmp_path):  # issue 111
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
     line_height = pdf.font_size * 2
@@ -153,7 +235,12 @@ def test_multi_cell_table_unbreakable(tmp_path):  # issue 111
             for row in TABLE_DATA:
                 for datum in row:
                     pdf.multi_cell(
-                        col_width, line_height, f"{datum} ({i})", border=1, ln=3
+                        col_width,
+                        line_height,
+                        f"{datum} ({i})",
+                        border=1,
+                        new_x=XPos.RIGHT,
+                        new_y=YPos.TOP,
                     )
                 pdf.ln(line_height)
         pdf.ln(line_height * 2)
@@ -161,12 +248,12 @@ def test_multi_cell_table_unbreakable(tmp_path):  # issue 111
 
 
 def test_multi_cell_justified_with_unicode_font(tmp_path):  # issue 118
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.add_font("DejaVu", "", HERE / "../fonts/DejaVuSans.ttf")
     pdf.set_font("DejaVu", "", 14)
     text = 'Justified line containing "()" that is long enough to trigger wrapping and a line jump'
-    pdf.multi_cell(w=0, h=8, txt=text, ln=1)
+    pdf.multi_cell(w=0, h=8, txt=text, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     assert_pdf_equal(
         pdf, HERE / "test_multi_cell_justified_with_unicode_font.pdf", tmp_path
     )
@@ -183,7 +270,7 @@ def test_multi_cell_table_unbreakable2(tmp_path):  # issue 120 - 2nd snippet
         "G": "test_lin",
         "H": "test_lin",
     }
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_margins(20, 20)
     pdf.set_font("Times", "B", size=7)
@@ -195,7 +282,8 @@ def test_multi_cell_table_unbreakable2(tmp_path):  # issue 120 - 2nd snippet
             line_height,
             header,
             border=1,
-            ln=3,
+            new_x=XPos.RIGHT,
+            new_y=YPos.TOP,
             max_line_height=pdf.font_size,
             align="C",
         )
@@ -211,7 +299,8 @@ def test_multi_cell_table_unbreakable2(tmp_path):  # issue 120 - 2nd snippet
                     line_height,
                     cell,
                     border=1,
-                    ln=3,
+                    new_x=XPos.RIGHT,
+                    new_y=YPos.TOP,
                     max_line_height=pdf.font_size,
                     align="C",
                 )
@@ -220,7 +309,7 @@ def test_multi_cell_table_unbreakable2(tmp_path):  # issue 120 - 2nd snippet
 
 
 def test_multi_cell_split_only():  # discussion 314
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=TEXT_SIZE)
     text = "Lorem ipsum Ut nostrud irure reprehenderit anim nostrud dolore sed ut"

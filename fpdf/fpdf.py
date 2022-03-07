@@ -48,6 +48,8 @@ from .structure_tree import MarkedContent, StructureTreeBuilder
 from .ttfonts import TTFontFile
 from .svg import Percent, SVGObject
 from .util import (
+    XPos,
+    YPos,
     enclose_in_parens,
     escape_parens,
     substr,
@@ -93,46 +95,6 @@ class DocumentState(IntEnum):
     READY = 1  # page not started yet
     GENERATING_PAGE = 2
     CLOSED = 3  # EOF printed
-
-
-class XPos(IntEnum):
-    """
-    Positional values in horizontal direction for use after printing text.
-        LEFT    - left end of the cell
-        RIGHT   - right end of the cell (default)
-        START   - start of actual text
-        END     - end of actual text
-        WCONT   - for write() to continue next (slightly left of END)
-        CENTER  - center of actual text
-        LMARGIN - left page margin (start of printable area)
-        RMARGIN - right page margin (end of printable area)
-    """
-
-    LEFT = 1  # self.x
-    RIGHT = 2  # self.x + w
-    START = 3  # left end of actual text
-    END = 4  # right end of actual text
-    WCONT = 5  # continuation point for write()
-    CENTER = 6  # center of actual text
-    LMARGIN = 7  # self.l_margin
-    RMARGIN = 8  # self.w - self.r_margin
-
-
-class YPos(IntEnum):
-    """
-    Positional values in vertical direction for use after printing text.
-        TOP     - top of the first line (default)
-        LAST    - top of the last line (same as TOP for single-line text)
-        NEXT    - top of next line (bottom of current text)
-        TMARGIN - top page margin (start of printable area)
-        BMARGIN - bottom page margin (end of printable area)
-    """
-
-    TOP = 1  # self.y
-    LAST = 2  # top of last line (TOP for single lines)
-    NEXT = 3  # LAST + h
-    TMARGIN = 4  # self.t_margin
-    BMARGIN = 5  # self.h - self.b_margin
 
 
 class Annotation(NamedTuple):
@@ -1976,7 +1938,9 @@ class FPDF(GraphicsStateMixin):
         h=None,
         txt="",
         border=0,
-        ln=0,
+        new_x=XPos.RIGHT,
+        new_y=YPos.TOP,
+        ln=None,
         align="",
         fill=False,
         link="",
@@ -2004,10 +1968,9 @@ class FPDF(GraphicsStateMixin):
                 or a string containing some or all of the following characters
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
-            ln (int): Indicates where the current position should go after the call.
-                Possible values are: `0`: to the right ; `1`: to the beginning of the
-                next line ; `2`: below. Putting 1 is equivalent to putting 0 and calling
-                `ln` just after. Default value: 0.
+            new_x (Enum XPos): New current position in x after the call. Default: RIGHT
+            new_y (Enum YPos): New current position in y after the call. Default: TOP
+            ln (int): **DEPRECATED** 2.5.1: Use new_x and new_y instead.
             align (str): Allows to center or align the text inside the cell.
                 Possible values are: `L` or empty string: left align (default value) ;
                 `C`: center ; `R`: right align
@@ -2034,14 +1997,24 @@ class FPDF(GraphicsStateMixin):
                 "ignored"
             )
             border = 1
-        new_x = XPos.RIGHT
-        new_y = YPos.TOP
-        if ln == 1:
-            new_x = XPos.LMARGIN
-            new_y = YPos.NEXT
-        elif ln == 2:
-            new_x = XPos.LEFT
-            new_y = YPos.NEXT
+        if ln is not None:
+            warnings.warn(
+                (
+                    'The parameter "ln" is deprecated.'
+                    ' Use "new_x" and "new_y" instead.'
+                ),
+                DeprecationWarning,
+            )
+            # For backwards compatibility, if "ln" is used we overwrite "new_[xy]".
+            if ln == 0:
+                new_x = XPos.RIGHT
+                new_y = YPos.TOP
+            elif ln == 1:
+                new_x = XPos.LMARGIN
+                new_y = YPos.NEXT
+            elif ln == 2:
+                new_x = XPos.LEFT
+                new_y = YPos.NEXT
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
         txt = self.normalize_text(txt)
         styled_txt_frags = self._preload_font_styles(txt, markdown)
@@ -2138,12 +2111,15 @@ class FPDF(GraphicsStateMixin):
         if center:
             warnings.warn(
                 'The "center" parameter is deprecated, and will soon be removed.'
-                ' Consider using align="C" instead.',
-                DeprecationWarning)
+                ' Use align="C" instead.',
+                DeprecationWarning,
+            )
             self.x = self.l_margin + (self.epw - w) / 2
         page_break_triggered = self._perform_page_break_if_need_be(h)
         s = ""
         k = self.k
+        # pylint: disable=invalid-unary-operand-type
+        # "h" can't actually be None
         if fill:
             op = "B" if border == 1 else "f"
             s = (
@@ -2155,6 +2131,7 @@ class FPDF(GraphicsStateMixin):
                 f"{self.x * k:.2f} {(self.h - self.y) * k:.2f} "
                 f"{w * k:.2f} {-h * k:.2f} re S "
             )
+        # pylint: enable=invalid-unary-operand-type
 
         if isinstance(border, str):
             x = self.x
@@ -2475,7 +2452,9 @@ class FPDF(GraphicsStateMixin):
         fill=False,
         split_only=False,
         link="",
-        ln=0,
+        new_x=XPos.RIGHT,
+        new_y=YPos.NEXT,
+        ln=None,
         max_line_height=None,
         markdown=False,
         print_sh=False,
@@ -2506,18 +2485,17 @@ class FPDF(GraphicsStateMixin):
                 word-wrapping and return the resulting multi-lines array of strings.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
-            ln (int): Indicates where the current position should go after the call.
-                Possible values are: `0`: to the bottom right ; `1`: to the beginning
-                of the next line ; `2`: below with the same horizontal offset ;
-                `3`: to the right with the same vertical offset. Default value: 0.
+            new_x (Enum XPos): New current position in x after the call. Default: RIGHT
+            new_y (Enum YPos): New current position in y after the call. Default: NEXT
+            ln (int): **DEPRECATED** 2.5.1: Use new_x and new_y instead.
             max_line_height (float): optional maximum height of each sub-cell generated
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
             print_sh (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
                 character, instead of a line breaking opportunity. Default value: False
 
-        Using `ln=3` and `maximum height=pdf.font_size` is useful to build tables
-        with multiline text in cells.
+        Using `new_x=XPos.RIGHT, new_y=XPos.TOP, maximum height=pdf.font_size` is
+        useful to build tables with multiline text in cells.
 
         Returns: a boolean indicating if page break was triggered,
             or if `split_only == True`: `txt` splitted into lines in an array
@@ -2527,14 +2505,27 @@ class FPDF(GraphicsStateMixin):
                 "Parameter 'w' and 'h' must be numbers, not strings."
                 " You can omit them by passing string content with txt="
             )
-        new_x = XPos.RIGHT
-        new_y = YPos.NEXT
-        if ln == 1:
-            new_x = XPos.LMARGIN
-        elif ln == 2:
-            new_x = XPos.LEFT
-        elif ln == 3:
-            new_y = YPos.TOP
+        if ln is not None:
+            warnings.warn(
+                (
+                    'The parameter "ln" is deprecated.'
+                    ' Use "new_x" and "new_y" instead.'
+                ),
+                DeprecationWarning,
+            )
+            # For backwards compatibility, if "ln" is used we overwrite "new_[xy]".
+            if ln == 0:
+                new_x = XPos.RIGHT
+                new_y = YPos.NEXT
+            elif ln == 1:
+                new_x = XPos.LMARGIN
+                new_y = YPos.NEXT
+            elif ln == 2:
+                new_x = XPos.LEFT
+                new_y = YPos.NEXT
+            elif ln == 3:
+                new_x = XPos.RIGHT
+                new_y = YPos.TOP
 
         page_break_triggered = False
         if split_only:
@@ -4153,7 +4144,13 @@ class FPDF(GraphicsStateMixin):
             with self._marked_sequence(title=name) as marked_content:
                 struct_elem = self.struct_builder.struct_elem_per_mc[marked_content]
                 with self._apply_style(self.section_title_styles[level]):
-                    self.multi_cell(w=self.epw, h=self.font_size, txt=name, ln=1)
+                    self.multi_cell(
+                        w=self.epw,
+                        h=self.font_size,
+                        txt=name,
+                        new_x=XPos.LMARGIN,
+                        new_y=YPos.NEXT,
+                    )
         self._outline.append(OutlineSection(name, level, self.page, dest, struct_elem))
 
     @contextmanager

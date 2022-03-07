@@ -6,6 +6,7 @@ __license__ = "LGPL 3.0"
 
 # Inspired by tuto5.py and several examples from fpdf.org, html2fpdf, etc.
 
+from .util import XPos, YPos
 import html
 import logging
 from html.parser import HTMLParser
@@ -268,7 +269,8 @@ class HTML2FPDF(HTMLParser):
                 self.h,
                 data,
                 border=0,
-                ln=1,
+                new_x=XPos.LMARGIN,
+                new_y=YPos.NEXT,
                 align=self.align[0].upper(),
                 link=self.href,
             )
@@ -301,9 +303,21 @@ class HTML2FPDF(HTMLParser):
         bgcolor = color_as_decimal(self.td.get("bgcolor", self.tr.get("bgcolor", "")))
         # parsing table header/footer (drawn later):
         if self.thead is not None:
-            self.theader.append(((width, height, data, border, 0, align), bgcolor))
+            # The ln=None (after new[xy]) needs cleanup after ln is removed
+            self.theader.append(
+                (
+                    (width, height, data, border, XPos.RIGHT, YPos.TOP, None, align),
+                    bgcolor,
+                )
+            )
         if self.tfoot is not None:
-            self.tfooter.append(((width, height, data, border, 0, align), bgcolor))
+            # The ln=None (after new[xy]) needs cleanup after ln is removed
+            self.tfooter.append(
+                (
+                    (width, height, data, border, XPos.RIGHT, YPos.TOP, None, align),
+                    bgcolor,
+                )
+            )
         # check if reached end of page, add table footer and header:
         if self.tfooter:
             height += self.tfooter[0][0][1]
@@ -326,7 +340,15 @@ class HTML2FPDF(HTMLParser):
                 align,
                 data.replace("\n", "\\n"),
             )
-            self.pdf.cell(width, height, data, border=border, ln=0, align=align)
+            self.pdf.cell(
+                width,
+                height,
+                data,
+                border=border,
+                align=align,
+                new_x=XPos.RIGHT,
+                new_y=YPos.TOP,
+            )
 
     def _td_x(self):
         "Return the current table cell left side horizontal position"
@@ -668,7 +690,14 @@ class HTML2FPDF(HTMLParser):
             pdf.set_link(link, page=section.page_number)
             text = f'{" " * section.level * 2} {section.name}'
             text += f' {"." * (60 - section.level*2 - len(section.name))} {section.page_number}'
-            pdf.multi_cell(w=pdf.epw, h=pdf.font_size, txt=text, ln=1, link=link)
+            pdf.multi_cell(
+                w=pdf.epw,
+                h=pdf.font_size,
+                txt=text,
+                new_x=XPos.LMARGIN,
+                new_y=YPos.NEXT,
+                link=link,
+            )
 
     # Subclasses of _markupbase.ParserBase must implement this:
     def error(self, message):

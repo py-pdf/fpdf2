@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, TitleStyle, errors
+from fpdf import FPDF, XPos, YPos, TitleStyle, errors
 from test.conftest import assert_pdf_equal
 
 
@@ -73,7 +73,14 @@ def test_simple_outline(tmp_path):
 
 
 def p(pdf, text, **kwargs):
-    pdf.multi_cell(w=pdf.epw, h=pdf.font_size, txt=text, ln=1, **kwargs)
+    pdf.multi_cell(
+        w=pdf.epw,
+        h=pdf.font_size,
+        txt=text,
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+        **kwargs,
+    )
 
 
 # pylint: disable=unused-argument
@@ -92,7 +99,15 @@ def render_toc(pdf, outline):
         text += (
             f' {"." * (60 - section.level*2 - len(section.name))} {section.page_number}'
         )
-        pdf.multi_cell(w=pdf.epw, h=pdf.font_size, txt=text, ln=1, align="C", link=link)
+        pdf.multi_cell(
+            w=pdf.epw,
+            h=pdf.font_size,
+            txt=text,
+            new_x=XPos.LMARGIN,
+            new_y=YPos.NEXT,
+            align="C",
+            link=link,
+        )
 
 
 def test_insert_toc_placeholder_with_invalid_arg_type():
