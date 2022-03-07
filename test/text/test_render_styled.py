@@ -9,7 +9,7 @@ from test.conftest import assert_pdf_equal
 HERE = Path(__file__).resolve().parent
 
 
-data = (
+CELLDATA = (
     # txt,        align, new_x,    new_y
     ["Left Top L", "L", fpdf.XPos.LEFT, fpdf.YPos.TOP],
     ["Left Top R", "R", fpdf.XPos.LEFT, fpdf.YPos.TOP],
@@ -57,7 +57,7 @@ def test_render_styled_newpos(tmp_path):
     doc.set_margin(10)
     twidth = 100
 
-    for i, item in enumerate(data):
+    for i, item in enumerate(CELLDATA):
         i = i % 4
         if i == 0:
             doc.add_page()
@@ -106,7 +106,7 @@ def test_cell_newpos(tmp_path):
     doc.set_margin(10)
     twidth = 100
 
-    for i, item in enumerate(data):
+    for i, item in enumerate(CELLDATA):
         i = i % 4
         if i == 0:
             doc.add_page()
@@ -148,7 +148,7 @@ def test_multi_cell_newpos(tmp_path):
     doc.set_margin(10)
     twidth = 100
 
-    for i, item in enumerate(data):
+    for i, item in enumerate(CELLDATA):
         i = i % 4
         if i == 0:
             doc.add_page()
@@ -175,7 +175,7 @@ def test_multi_cell_newpos(tmp_path):
     assert_pdf_equal(doc, HERE / "multi_cell_newpos.pdf", tmp_path)
 
 
-data2 = (
+LN_CELLDATA = (
     # txt,     align, ln
     ["ln=0 L", "L", 0],
     ["ln=0 R", "R", 0],
@@ -211,7 +211,7 @@ def test_cell_lnpos(tmp_path):
     doc.set_margin(10)
     twidth = 100
 
-    for i, item in enumerate(data2):
+    for i, item in enumerate(LN_CELLDATA):
         i = i % 4
         if i == 0:
             doc.add_page()
@@ -252,7 +252,7 @@ def test_multi_cell_lnpos(tmp_path):
     doc.set_margin(10)
     twidth = 100
 
-    for i, item in enumerate(data2):
+    for i, item in enumerate(LN_CELLDATA):
         i = i % 4
         if i == 0:
             doc.add_page()

@@ -1940,7 +1940,7 @@ class FPDF(GraphicsStateMixin):
         border=0,
         new_x=XPos.RIGHT,
         new_y=YPos.TOP,
-        ln=None,
+        ln="DEPRECATED",
         align="",
         fill=False,
         link="",
@@ -1997,7 +1997,7 @@ class FPDF(GraphicsStateMixin):
                 "ignored"
             )
             border = 1
-        if ln is not None:
+        if ln != "DEPRECATED":
             warnings.warn(
                 (
                     'The parameter "ln" is deprecated.'
@@ -2458,7 +2458,7 @@ class FPDF(GraphicsStateMixin):
         link="",
         new_x=XPos.RIGHT,
         new_y=YPos.NEXT,
-        ln=None,
+        ln="DEPRECATED",
         max_line_height=None,
         markdown=False,
         print_sh=False,
@@ -2509,7 +2509,7 @@ class FPDF(GraphicsStateMixin):
                 "Parameter 'w' and 'h' must be numbers, not strings."
                 " You can omit them by passing string content with txt="
             )
-        if ln is not None:
+        if ln != "DEPRECATED":
             warnings.warn(
                 (
                     'The parameter "ln" is deprecated.'
