@@ -1,4 +1,4 @@
-from collections import namedtuple
+from typing import NamedTuple, Any, Union, Sequence
 
 SOFT_HYPHEN = "\u00ad"
 HYPHEN = "\u002d"
@@ -7,23 +7,23 @@ NEWLINE = "\n"
 
 
 class Fragment:
-    def __init__(self, style, underlined, characters=None):
+    def __init__(self, style: str, underlined: bool, characters: str = None):
         self.characters = [] if characters is None else characters
         self.style = style
         self.underline = underlined
 
     @classmethod
-    def from_string(cls, string, style, underlined):
+    def from_string(cls, string: str, style: str, underlined: bool):
         return cls(style, underlined, list(string))
 
-    def trim(self, index):
+    def trim(self, index: int):
         self.characters = self.characters[:index]
 
     @property
     def string(self):
         return "".join(self.characters)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any):
         return (
             self.characters == other.characters
             and self.style == other.style
@@ -31,37 +31,44 @@ class Fragment:
         )
 
 
-TextLine = namedtuple(
-    "TextLine",
-    ("fragments", "text_width", "number_of_spaces_between_words", "justify"),
-)
+class TextLine(NamedTuple):
+    fragments: tuple
+    text_width: float
+    number_of_spaces_between_words: int
+    justify: bool
 
-SpaceHint = namedtuple(
-    "SpaceHint",
-    (
-        "original_fragment_index",
-        "original_character_index",
-        "current_line_fragment_index",
-        "current_line_character_index",
-        "width",
-        "number_of_spaces",
-    ),
-)
 
-HyphenHint = namedtuple(
-    "HyphenHint",
-    SpaceHint._fields
-    + (
-        "character_to_append",
-        "character_to_append_width",
-        "character_to_append_style",
-        "character_to_append_underline",
-    ),
-)
+class SpaceHint(NamedTuple):
+    original_fragment_index: int
+    original_character_index: int
+    current_line_fragment_index: int
+    current_line_character_index: int
+    width: float
+    number_of_spaces: int
+
+
+class HyphenHint(NamedTuple):
+    original_fragment_index: int
+    original_character_index: int
+    current_line_fragment_index: int
+    current_line_character_index: int
+    width: float
+    number_of_spaces: int
+    character_to_append: str
+    character_to_append_width: float
+    character_to_append_style: str
+    character_to_append_underline: bool
 
 
 class CurrentLine:
-    def __init__(self):
+    def __init__(self, print_sh: bool = False):
+        """
+        Per-line text fragment management for use by MultiLineBreak.
+            Args:
+                print_sh (bool): If true, a soft-hyphen will be rendered
+                    normally, instead of triggering a line break. Default: False
+        """
+        self.print_sh = print_sh
         self.fragments = []
         self.width = 0
         self.number_of_spaces = 0
@@ -82,12 +89,12 @@ class CurrentLine:
 
     def add_character(
         self,
-        character,
-        character_width,
-        style,
-        underline,
-        original_fragment_index,
-        original_character_index,
+        character: str,
+        character_width: float,
+        style: str,
+        underline: bool,
+        original_fragment_index: int,
+        original_character_index: int,
     ):
         assert character != NEWLINE
 
@@ -115,7 +122,7 @@ class CurrentLine:
                 self.number_of_spaces,
             )
             self.number_of_spaces += 1
-        elif character == SOFT_HYPHEN:
+        elif character == SOFT_HYPHEN and not self.print_sh:
             self.hyphen_break_hint = HyphenHint(
                 original_fragment_index,
                 original_character_index,
@@ -129,11 +136,11 @@ class CurrentLine:
                 underline,
             )
 
-        if character != SOFT_HYPHEN:
+        if character != SOFT_HYPHEN or self.print_sh:
             self.width += character_width
             active_fragment.characters.append(character)
 
-    def _apply_automatic_hint(self, break_hint):
+    def _apply_automatic_hint(self, break_hint: Union[SpaceHint, HyphenHint]):
         """
         This function mutates the current_line, applying one of the states
         observed in the past and stored in
@@ -145,7 +152,7 @@ class CurrentLine:
         self.number_of_spaces = break_hint.number_of_spaces
         self.width = break_hint.width
 
-    def manual_break(self, justify=False):
+    def manual_break(self, justify: bool = False):
         return TextLine(
             fragments=self.fragments,
             text_width=self.width,
@@ -156,7 +163,7 @@ class CurrentLine:
     def automatic_break_possible(self):
         return self.hyphen_break_hint is not None or self.space_break_hint is not None
 
-    def automatic_break(self, justify):
+    def automatic_break(self, justify: bool):
         assert self.automatic_break_possible()
         if self.hyphen_break_hint is not None and (
             self.space_break_hint is None
@@ -185,28 +192,37 @@ class CurrentLine:
 
 
 class MultiLineBreak:
-    def __init__(self, styled_text_fragments, size_by_style, justify=False):
-
+    def __init__(
+        self,
+        styled_text_fragments: Sequence,
+        size_by_style: Sequence,
+        justify: bool = False,
+        print_sh: bool = False,
+    ):
         self.styled_text_fragments = styled_text_fragments
-
         self.size_by_style = size_by_style
         self.justify = justify
-
+        self.print_sh = print_sh
         self.fragment_index = 0
         self.character_index = 0
 
-    def _get_character_width(self, character, style=""):
-        if character == SOFT_HYPHEN:
+    def _get_character_width(self, character: str, style: str = ""):
+        if character == SOFT_HYPHEN and not self.print_sh:
             # HYPHEN is inserted instead of SOFT_HYPHEN
             character = HYPHEN
         return self.size_by_style(character, style)
 
-    def get_line_of_given_width(self, maximum_width):
+    # pylint: disable=too-many-return-statements
+    def get_line_of_given_width(self, maximum_width: float, wordsplit: bool = True):
 
         if self.fragment_index == len(self.styled_text_fragments):
             return None
 
-        current_line = CurrentLine()
+        last_fragment_index = self.fragment_index
+        last_character_index = self.character_index
+        line_full = False
+
+        current_line = CurrentLine(print_sh=self.print_sh)
         while self.fragment_index < len(self.styled_text_fragments):
 
             current_fragment = self.styled_text_fragments[self.fragment_index]
@@ -237,7 +253,10 @@ class MultiLineBreak:
                     ) = current_line.automatic_break(self.justify)
                     self.character_index += 1
                     return line
-                return current_line.manual_break()
+                if not wordsplit:
+                    line_full = True
+                    break
+                return current_line.manual_break(self.justify)
 
             current_line.add_character(
                 character,
@@ -250,5 +269,11 @@ class MultiLineBreak:
 
             self.character_index += 1
 
+        if line_full and not wordsplit:
+            # roll back and return empty line to trigger continuation
+            # on the next line.
+            self.fragment_index = last_fragment_index
+            self.character_index = last_character_index
+            return CurrentLine().manual_break(self.justify)
         if current_line.width:
             return current_line.manual_break()

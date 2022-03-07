@@ -155,7 +155,10 @@ def test_cell_missing_text_or_width(tmp_path):
     pdf.set_font("Times", size=16)
     with pytest.raises(ValueError) as error:
         pdf.cell()
-    assert str(error.value) == "A 'txt' parameter must be provided if 'w' is None"
+    assert (
+        str(error.value)
+        == "A 'text_line' parameter with fragments must be provided if 'w' is None"
+    )
 
 
 def test_cell_centering(tmp_path):

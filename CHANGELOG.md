@@ -9,11 +9,12 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.5.1] - not released yet
 ### Added
-- support for soft-hyphen (`\u00ad`) break in `cell()` & `multi_cell()` calls - thanks @oleksii-shyman & @gmischler!
+- support for soft-hyphen (`\u00ad`) break in `write()`, `cell()` & `multi_cell()` calls - thanks @oleksii-shyman & @gmischler!
 - new documentation page on [Emojis, Symbols & Dingbats](https://pyfpdf.github.io/fpdf2/EmojisSymbolsDingbats.html)
 - documentation on combining `borb` & `fpdf2`: [Creating a borb.pdf.document.Document from a FPDF instance](https://pyfpdf.github.io/fpdf2/ExistingPDFs.html)
 
 ### Changed
+- `write()` now supports soft hyphen characters, thanks to @gmischler
 - `fname` is now a required parameter for `FPDF.add_font()`
 - `image()` method now insert `.svg` images as PDF paths
 - the [defusedxml](https://pypi.org/project/defusedxml/) package was added as dependency in order to make SVG parsing safer

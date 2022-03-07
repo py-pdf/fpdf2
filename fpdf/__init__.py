@@ -3,6 +3,8 @@ import sys
 
 from .fpdf import (
     FPDF,
+    XPos,
+    YPos,
     FPDFException,
     TitleStyle,
     FPDF_FONT_DIR as _FPDF_FONT_DIR,
@@ -39,6 +41,8 @@ __all__ = [
     "__license__",
     # Classes
     "FPDF",
+    "XPos",
+    "YPos",
     "Template",
     "FlexTemplate",
     "TitleStyle",

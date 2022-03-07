@@ -144,10 +144,10 @@ to 1 mm (against 0.2 by default) with
 [set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Finally, we output the cell (the
 last parameter to true indicates that the background must be filled).
 
-The method used to print the paragraphs is [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell).
+The method used to print the paragraphs is [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). Text is justified by default.
 Each time a line reaches the right extremity of the cell or a carriage return
 character is met, a line break is issued and a new cell automatically created
-under the current one. Text is justified by default.
+under the current one. An automatic break is performed at the location of the nearest space or soft-hyphen (\u00ad) character before the right limit. A soft-hyphen will be replaced by a normal hyphen when triggering a line break, and ignored otherwise.
 
 Two document properties are defined: the title 
 ([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) and the author 
