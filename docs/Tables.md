@@ -26,7 +26,8 @@ line_height = pdf.font_size * 2.5
 col_width = pdf.epw / 4  # distribute content evenly
 for row in data:
     for datum in row:
-        pdf.multi_cell(col_width, line_height, datum, border=1, ln=3, max_line_height=pdf.font_size)
+        pdf.multi_cell(col_width, line_height, datum, border=1,
+                new_x=XPos.RIGHT, new_y=YPos.TOP, max_line_height=pdf.font_size)
     pdf.ln(line_height)
 pdf.output('table_with_cells.pdf')
 ```

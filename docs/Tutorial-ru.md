@@ -55,7 +55,7 @@ pdf.cell(40, 10, 'Hello World!', 1)
 Чтобы добавить новую ячейку с центрированным текстом и перейти к следующей строке, мы сделаем следующее:
 
 ```python
-pdf.cell(60, 10, 'Powered by FPDF.', ln=1, align='C')
+pdf.cell(60, 10, 'Powered by FPDF.', new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='C')
 ```
 
 **Примечание**: разрыв строки также можно сделать с помощью [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). Этот метод позволяет дополнительно указать высоту разрыва.

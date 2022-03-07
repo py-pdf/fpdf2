@@ -33,9 +33,12 @@ import fpdf
 pdf = fpdf.FPDF()
 pdf.add_page()
 pdf.set_font("symbol", size=36)
-pdf.cell(h=16, txt="\u0022 \u0068 \u0024 \u0065 \u00ce \u00c2, \u0068/\u0065 \u0040 \u00a5", ln=1)
-pdf.cell(h=16, txt="\u0044 \u0046 \u0053 \u0057 \u0059 \u0061 \u0062 \u0063", ln=1)
-pdf.cell(h=16, txt="\u00a0 \u00a7 \u00a8 \u00a9 \u00aa \u00ab \u00ac \u00ad \u00ae \u00af \u00db \u00dc \u00de", ln=1)
+pdf.cell(h=16, txt="\u0022 \u0068 \u0024 \u0065 \u00ce \u00c2, \u0068/\u0065 \u0040 \u00a5",
+        new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+pdf.cell(h=16, txt="\u0044 \u0046 \u0053 \u0057 \u0059 \u0061 \u0062 \u0063",
+        new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+pdf.cell(h=16, txt="\u00a0 \u00a7 \u00a8 \u00a9 \u00aa \u00ab \u00ac \u00ad \u00ae \u00af \u00db \u00dc \u00de",
+        new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 pdf.output("symbol.pdf")
 ```
 
