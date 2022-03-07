@@ -12,6 +12,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - new parameters `new_x` and `new_y` for `cell()` and `multi_cell()`, replacing `ln=0`, thanks to @gmischler
 ### Fixed
 - a bug with string width calculation when Markdown is enabled - _cf._ [#351](https://github.com/PyFPDF/fpdf2/issues/351)
+- a regression: now again `multi_cell()` always renders a cell, even if `txt` is an empty string - _cf._ [#349](https://github.com/PyFPDF/fpdf2/issues/349)
 ### Deprecated
 - The parameter `ln` to `cell()` and `multi_cell()` is now deprecated, use `new_x` and `new_y` instead.
 - The parameter "center" to `cell()` is now deprecated, use `align="C"` instead.
