@@ -9,8 +9,9 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
 ## [2.5.2] - not released yet
 ### Fixed
-- a bug with string width calculation when Markdown is enabled - _cf._ [#351](https://github.com/PyFPDF/fpdf2/issues/351)
 - a regression: now again `multi_cell()` always renders a cell, even if `txt` is an empty string - _cf._ [#349](https://github.com/PyFPDF/fpdf2/issues/349)
+- a bug with string width calculation when Markdown is enabled - _cf._ [#351](https://github.com/PyFPDF/fpdf2/issues/351)
+- a bug when parsing some SVG files - _cf._ [#356](https://github.com/PyFPDF/fpdf2/issues/356)
 
 ## [2.5.1] - 2022-03-07
 ### Added
