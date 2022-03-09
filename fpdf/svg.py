@@ -737,7 +737,10 @@ def svg_path_converter(pdf_path, svg_path):
                 {"m": "l", "M": "L"}[last_directive_name]
             ]
 
-        numbers, svg_path = _read_n_numbers(svg_path[read_idx:], read_count)
+        if read_count:
+            numbers, svg_path = _read_n_numbers(svg_path[read_idx:], read_count)
+        else:
+            numbers, svg_path = (), svg_path[read_idx:].strip()
 
         last_directive(pdf_path, *numbers)
 

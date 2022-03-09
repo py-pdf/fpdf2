@@ -1951,7 +1951,7 @@ class FPDF(GraphicsStateMixin):
         Prints a cell (rectangular area) with optional borders, background color and
         character string. The upper-left corner of the cell corresponds to the current
         position. The text can be aligned or centered. After the call, the current
-        position moves to the right or to the next line. It is possible to put a link
+        position moves to the selected `new_x`/`new_y` position. It is possible to put a link
         on the text.
 
         If automatic page breaking is enabled and the cell goes beyond the limit, a
@@ -2474,7 +2474,7 @@ class FPDF(GraphicsStateMixin):
         Args:
             w (float): cell width. If 0, they extend up to the right margin of the page.
             h (float): cell height. Default value: None, meaning to use the current font size.
-            txt (str): strign to print.
+            txt (str): string to print.
             border: Indicates if borders must be drawn around the cell.
                 The value can be either a number (`0`: no border ; `1`: frame)
                 or a string containing some or all of the following characters

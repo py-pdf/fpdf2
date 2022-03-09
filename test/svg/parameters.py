@@ -754,6 +754,7 @@ test_svg_sources = (
     pytest.param(svgfile("triangle01.svg"), id="SVG spec triangle01"),
     pytest.param(svgfile("SVG_logo.svg"), id="SVG logo from wikipedia"),
     pytest.param(svgfile("viewbox.svg"), id="weird viewbox"),
+    pytest.param(svgfile("search.svg"), id="search icon"),  # issue 356
 )
 
 svg_path_edge_cases = (
