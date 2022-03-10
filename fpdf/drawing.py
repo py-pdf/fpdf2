@@ -1578,6 +1578,8 @@ class GraphicsStyle:
             super().__setattr__("_stroke_color", color)
             if color.a is not None:
                 self.stroke_opacity = color.a
+            if self.stroke_width is self.INHERIT:
+                self.stroke_width = 1
 
         elif (color is None) or (color is self.INHERIT):
             super().__setattr__("_stroke_color", color)
@@ -3441,7 +3443,7 @@ class PaintedPath:
         self._closed = True
         self._close_context = self._graphics_context
 
-        self.move_to(x, y)
+        self._starter_move = Move(Point(x, y))
 
     def __deepcopy__(self, memo):
         # there's no real way to recover the matching current _graphics_context after
@@ -3533,7 +3535,6 @@ class PaintedPath:
         """
         if self._starter_move is not None:
             self._closed = False
-
             self._graphics_context.add_item(self._starter_move, _copy=False)
             self._close_context = self._graphics_context
             self._starter_move = None
@@ -3641,8 +3642,11 @@ class PaintedPath:
             x (Number): abscissa of the (sub)path starting point relative to the.
             y (Number): ordinate of the (sub)path starting point relative to the.
         """
-
         self._insert_implicit_close_if_open()
+        if self._starter_move is not None:
+            self._closed = False
+            self._graphics_context.add_item(self._starter_move, _copy=False)
+            self._close_context = self._graphics_context
         self._starter_move = RelativeMove(Point(x, y))
         return self
 
