@@ -755,9 +755,11 @@ test_svg_sources = (
     pytest.param(svgfile("SVG_logo.svg"), id="SVG logo from wikipedia"),
     pytest.param(svgfile("viewbox.svg"), id="weird viewbox"),
     pytest.param(svgfile("search.svg"), id="search icon"),  # issue 356
+    # discovered while investigatin issue 358:
+    pytest.param(svgfile("issue_358b.svg"), id="repeated relative move"),
     pytest.param(
-        svgfile("issue_358b.svg"), id="search icon"
-    ),  # discovered while investigatin issue 358
+        svgfile("issue_358.svg"), id="arc start depending on initial point"
+    ),  # issue 358
 )
 
 svg_path_edge_cases = (

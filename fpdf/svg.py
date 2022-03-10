@@ -537,7 +537,7 @@ class SVGSmoothCubicCurve(NamedTuple):
             cls(c2=drawing.Point(x=c2x, y=c2y), end=drawing.Point(x=ex, y=ey))
         )
 
-    def render(self, path_gsds, style, last_item):
+    def render(self, path_gsds, style, last_item, initial_point):
         # technically, it would also be possible to chain on from a quadratic Bézier,
         # since we can convert those to cubic curves and then retrieve the appropriate
         # control point. However, the SVG specification states in
@@ -550,15 +550,19 @@ class SVGSmoothCubicCurve(NamedTuple):
             c1 = last_item.end_point
 
         return drawing.BezierCurve(c1, self.c2, self.end).render(
-            path_gsds, style, last_item
+            path_gsds, style, last_item, initial_point
         )
 
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(
+        self, path_gsds, style, last_item, initial_point, debug_stream, pfx
+    ):
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved, initial_point = self.render(
+            path_gsds, style, last_item, initial_point
+        )
         debug_stream.write(f"{self} resolved to {resolved}\n")
 
-        return rendered, resolved
+        return rendered, resolved, initial_point
 
 
 @force_nodocument
@@ -574,7 +578,7 @@ class SVGRelativeSmoothCubicCurve(NamedTuple):
             cls(c2=drawing.Point(x=c2x, y=c2y), end=drawing.Point(x=ex, y=ey))
         )
 
-    def render(self, path_gsds, style, last_item):
+    def render(self, path_gsds, style, last_item, initial_point):
         last_point = last_item.end_point
 
         if isinstance(last_item, drawing.BezierCurve):
@@ -585,14 +589,20 @@ class SVGRelativeSmoothCubicCurve(NamedTuple):
         c2 = last_point + self.c2
         end = last_point + self.end
 
-        return drawing.BezierCurve(c1, c2, end).render(path_gsds, style, last_item)
+        return drawing.BezierCurve(c1, c2, end).render(
+            path_gsds, style, last_item, initial_point
+        )
 
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(
+        self, path_gsds, style, last_item, initial_point, debug_stream, pfx
+    ):
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved, initial_point = self.render(
+            path_gsds, style, last_item, initial_point
+        )
         debug_stream.write(f"{self} resolved to {resolved}\n")
 
-        return rendered, resolved
+        return rendered, resolved, initial_point
 
 
 @force_nodocument
@@ -605,22 +615,26 @@ class SVGSmoothQuadraticCurve(NamedTuple):
     def from_path_points(cls, path, ex, ey):
         return path.add_path_element(cls(end=drawing.Point(x=ex, y=ey)))
 
-    def render(self, path_gsds, style, last_item):
+    def render(self, path_gsds, style, last_item, initial_point):
         if isinstance(last_item, drawing.QuadraticBezierCurve):
             ctrl = (2 * last_item.end) - last_item.ctrl
         else:
             ctrl = last_item.end_point
 
         return drawing.QuadraticBezierCurve(ctrl, self.end).render(
-            path_gsds, style, last_item
+            path_gsds, style, last_item, initial_point
         )
 
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(
+        self, path_gsds, style, last_item, initial_point, debug_stream, pfx
+    ):
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved, initial_point = self.render(
+            path_gsds, style, last_item, initial_point
+        )
         debug_stream.write(f"{self} resolved to {resolved}\n")
 
-        return rendered, resolved
+        return rendered, resolved, initial_point
 
 
 @force_nodocument
@@ -633,7 +647,7 @@ class SVGRelativeSmoothQuadraticCurve(NamedTuple):
     def from_path_points(cls, path, ex, ey):
         return path.add_path_element(cls(end=drawing.Point(x=ex, y=ey)))
 
-    def render(self, path_gsds, style, last_item):
+    def render(self, path_gsds, style, last_item, initial_point):
         last_point = last_item.end_point
 
         if isinstance(last_item, drawing.QuadraticBezierCurve):
@@ -644,15 +658,19 @@ class SVGRelativeSmoothQuadraticCurve(NamedTuple):
         end = last_point + self.end
 
         return drawing.QuadraticBezierCurve(ctrl, end).render(
-            path_gsds, style, last_item
+            path_gsds, style, last_item, initial_point
         )
 
-    def render_debug(self, path_gsds, style, last_item, debug_stream, pfx):
+    def render_debug(
+        self, path_gsds, style, last_item, initial_point, debug_stream, pfx
+    ):
         # pylint: disable=unused-argument
-        rendered, resolved = self.render(path_gsds, style, last_item)
+        rendered, resolved, initial_point = self.render(
+            path_gsds, style, last_item, initial_point
+        )
         debug_stream.write(f"{self} resolved to {resolved}\n")
 
-        return rendered, resolved
+        return rendered, resolved, initial_point
 
 
 path_directive_mapping = {
