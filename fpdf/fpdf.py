@@ -1997,6 +1997,16 @@ class FPDF(GraphicsStateMixin):
                 "ignored"
             )
             border = 1
+        if not isinstance(new_x, XPos):
+            raise ValueError(
+                f'Invalid value for parameter "new_x" ({new_x}),'
+                "must be instance of Enum XPos"
+            )
+        if not isinstance(new_y, YPos):
+            raise ValueError(
+                f'Invalid value for parameter "new_y" ({new_y}),'
+                "must be instance of Enum YPos"
+            )
         if ln != "DEPRECATED":
             warnings.warn(
                 (
@@ -2015,6 +2025,11 @@ class FPDF(GraphicsStateMixin):
             elif ln == 2:
                 new_x = XPos.LEFT
                 new_y = YPos.NEXT
+            else:
+                raise ValueError(
+                    f'Invalid value for parameter "ln" ({ln}),'
+                    " must be an int between 0 and 2."
+                )
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
         txt = self.normalize_text(txt)
         styled_txt_frags = self._preload_font_styles(txt, markdown)
@@ -2509,6 +2524,16 @@ class FPDF(GraphicsStateMixin):
                 "Parameter 'w' and 'h' must be numbers, not strings."
                 " You can omit them by passing string content with txt="
             )
+        if not isinstance(new_x, XPos):
+            raise ValueError(
+                f'Invalid value for parameter "new_x" ({new_x}),'
+                "must be instance of Enum XPos"
+            )
+        if not isinstance(new_y, YPos):
+            raise ValueError(
+                f'Invalid value for parameter "new_y" ({new_y}),'
+                "must be instance of Enum YPos"
+            )
         if ln != "DEPRECATED":
             warnings.warn(
                 (
@@ -2530,6 +2555,11 @@ class FPDF(GraphicsStateMixin):
             elif ln == 3:
                 new_x = XPos.RIGHT
                 new_y = YPos.TOP
+            else:
+                raise ValueError(
+                    f'Invalid value for parameter "ln" ({ln}),'
+                    " must be an int between 0 and 3."
+                )
 
         page_break_triggered = False
         if split_only:

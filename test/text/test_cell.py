@@ -263,3 +263,16 @@ def test_table_with_headers_on_every_page(tmp_path):
                 pdf.cell(col_width, line_height, datum, border=1)
             pdf.ln(line_height)
     assert_pdf_equal(pdf, HERE / "table_with_headers_on_every_page.pdf", tmp_path)
+
+
+def test_cell_newpos_badinput(tmp_path):  # pylint: disable=unused-argument
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pytest.raises(ValueError):
+        with pytest.warns(DeprecationWarning):
+            pdf.cell(ln=5)
+    with pytest.raises(ValueError):
+        pdf.cell(new_x=5)
+    with pytest.raises(ValueError):
+        pdf.cell(new_y=None)

@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from fpdf import FPDF, XPos, YPos
 from test.conftest import assert_pdf_equal
 
@@ -333,3 +335,16 @@ def test_multi_cell_with_empty_contents(tmp_path):  # issue 349
             20, new_x=XPos.RIGHT, new_y=YPos.TOP, txt=str(i) if i > 2 else ""
         )
     assert_pdf_equal(pdf, HERE / "multi_cell_with_empty_contents.pdf", tmp_path)
+
+
+def test_multicell_newpos_badinput(tmp_path):  # pylint: disable=unused-argument
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pytest.raises(ValueError):
+        with pytest.warns(DeprecationWarning):
+            pdf.multi_cell(0, ln=5)
+    with pytest.raises(ValueError):
+        pdf.multi_cell(0, new_x=5)
+    with pytest.raises(ValueError):
+        pdf.multi_cell(0, new_y=None)

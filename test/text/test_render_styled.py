@@ -204,7 +204,6 @@ def test_cell_lnpos(tmp_path):
 
     Note:
         cell() doesn't process align="J", and uses "L" instead.
-                cell() doesn't process ln=3, and uses ln=0 instead.
     """
     doc = fpdf.FPDF()
     doc.set_font("helvetica", style="U", size=24)
@@ -213,13 +212,15 @@ def test_cell_lnpos(tmp_path):
 
     for i, item in enumerate(LN_CELLDATA):
         i = i % 4
+        ln = item[2]
+        if ln > 2:  # not valid for cell()
+            break
         if i == 0:
             doc.add_page()
         doc.x = 20
         doc.y = 20 + (i * 20)
         s = item[0]
         align = item[1]
-        ln = item[2]
         with pytest.warns(DeprecationWarning):
             doc.cell(
                 twidth,
