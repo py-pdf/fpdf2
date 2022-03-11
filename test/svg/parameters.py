@@ -755,6 +755,9 @@ test_svg_sources = (
     pytest.param(svgfile("SVG_logo.svg"), id="SVG logo from wikipedia"),
     pytest.param(svgfile("viewbox.svg"), id="weird viewbox"),
     pytest.param(svgfile("search.svg"), id="search icon"),  # issue 356
+    # discovered while investigatin issue 358:
+    pytest.param(svgfile("issue_358b.svg"), id="repeated relative move"),
+    pytest.param(svgfile("issue_358.svg"), id="arc start & initial point"),  # issue 358
 )
 
 svg_path_edge_cases = (
@@ -769,16 +772,20 @@ svg_path_edge_cases = (
     pytest.param("M 0,1 L-2-3", [M(0, 1), L(-2, -3)], id="negative number separation"),
     pytest.param("M 0,1 L+2+3", [M(0, 1), L(2, 3)], id="unary plus number separation"),
     pytest.param("M 0 1 2 3 4 5", [M(0, 1), L(2, 3), L(4, 5)], id="implicit L"),
-    pytest.param("m 0 1 2 3 4 5", [m(0, 1), l(2, 3), l(4, 5)], id="implicit l"),
     pytest.param(
-        "m 0. .1 L 2.2 3.3", [m(0, 0.1), L(2.2, 3.3)], id="floating point numbers"
+        "m 0 1 2 3 4 5", [M(0, 0), m(0, 1), l(2, 3), l(4, 5)], id="implicit l"
+    ),
+    pytest.param(
+        "m 0. .1 L 2.2 3.3",
+        [M(0, 0), m(0, 0.1), L(2.2, 3.3)],
+        id="floating point numbers",
     ),
     pytest.param("M0..1L.2.3.4.5", [M(0.0, 0.1), L(0.2, 0.3), L(0.4, 0.5)], id="why"),
 )
 
 svg_path_directives = (
     pytest.param("M 0 1 L 2 3", [M(0, 1), L(2, 3)], id="line"),
-    pytest.param("m 0 1 l 2 3", [M(0, 1), l(2, 3)], id="relative line"),
+    pytest.param("m 0 1 l 2 3", [M(0, 0), m(0, 1), l(2, 3)], id="relative line"),
     pytest.param("M 0 1 H 2", [M(0, 1), H(2)], id="horizontal line"),
     pytest.param("M 0 1 h 2", [M(0, 1), h(2)], id="relative horizontal line"),
     pytest.param("M 0 1 V 2", [M(0, 1), V(2)], id="vertical line"),
@@ -878,7 +885,9 @@ svg_path_render_tests = (
 
 svg_path_implicit_directives = (
     pytest.param("M 0 1 L 2 3 4 5", [M(0, 1), L(2, 3), L(4, 5)], id="line"),
-    pytest.param("m 0 1 l 2 3 4 5", [M(0, 1), l(2, 3), l(4, 5)], id="relative line"),
+    pytest.param(
+        "m 0 1 l 2 3 4 5", [M(0, 0), m(0, 1), l(2, 3), l(4, 5)], id="relative line"
+    ),
     pytest.param("M 0 1 H 2 3", [M(0, 1), H(2), H(3)], id="horizontal line"),
     pytest.param("M 0 1 h 2 3", [M(0, 1), h(2), h(3)], id="relative horizontal line"),
     pytest.param("M 0 1 V 2 3", [M(0, 1), V(2), V(3)], id="vertical line"),
