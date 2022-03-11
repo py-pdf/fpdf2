@@ -439,7 +439,7 @@ B = fpdf.drawing.BezierCurve
 
 path_elements = (
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.Move(P(1, 2)),
         "1 2 m",
         P(1, 2),
@@ -447,7 +447,7 @@ path_elements = (
         id="move",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.RelativeMove(P(1, 2)),
         "2 3 m",
         P(2, 3),
@@ -455,7 +455,7 @@ path_elements = (
         id="relative move",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.Line(P(1, 2)),
         "1 2 l",
         P(1, 2),
@@ -463,7 +463,7 @@ path_elements = (
         id="line",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.RelativeLine(P(1, 2)),
         "2 3 l",
         P(2, 3),
@@ -471,7 +471,7 @@ path_elements = (
         id="relative line",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.HorizontalLine(2),
         "2 1 l",
         P(2, 1),
@@ -479,7 +479,7 @@ path_elements = (
         id="horizontal line",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.RelativeHorizontalLine(2),
         "3 1 l",
         P(3, 1),
@@ -487,7 +487,7 @@ path_elements = (
         id="relative horizontal line",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.VerticalLine(2),
         "1 2 l",
         P(1, 2),
@@ -495,7 +495,7 @@ path_elements = (
         id="vertical line",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.RelativeVerticalLine(2),
         "1 3 l",
         P(1, 3),
@@ -503,7 +503,7 @@ path_elements = (
         id="relative vertical line",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.BezierCurve(P(1, 2), P(3, 4), P(5, 6)),
         "1 2 3 4 5 6 c",
         P(5, 6),
@@ -511,7 +511,7 @@ path_elements = (
         id="cubic bezier curve",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.RelativeBezierCurve(P(1, 2), P(3, 4), P(5, 6)),
         "2 3 4 5 6 7 c",
         P(6, 7),
@@ -519,7 +519,7 @@ path_elements = (
         id="relative cubic bezier curve",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.QuadraticBezierCurve(P(1, 2), P(3, 4)),
         "1 1.6667 1.6667 2.6667 3 4 c",
         P(3, 4),
@@ -527,7 +527,7 @@ path_elements = (
         id="quadratic bezier curve",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.RelativeQuadraticBezierCurve(P(1, 2), P(3, 4)),
         "1.6667 2.3333 2.6667 3.6667 4 5 c",
         P(4, 5),
@@ -535,7 +535,7 @@ path_elements = (
         id="relative quadratic bezier curve",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.Arc(P(1, 2), 0, True, True, P(3, 4)),
         "1.4142 -0.1046 2.1977 -0.3284 2.75 0.5 c 3.3023 1.3284 3.4142 2.8954 3 4 c",
         P(3, 4),
@@ -543,7 +543,7 @@ path_elements = (
         id="arc",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.RelativeArc(P(1, 2), 0, True, True, P(3, 4)),
         "1.5523 -0.6569 2.6716 -1.1046 3.5 0 c 4.3284 1.1046 4.5523 3.3431 4 5 c",
         P(4, 5),
@@ -551,7 +551,7 @@ path_elements = (
         id="relative arc",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.Rectangle(P(1, 2), P(3, 4)),
         "1 2 3 4 re",
         P(1, 2),
@@ -559,7 +559,7 @@ path_elements = (
         id="rectangle",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.RoundedRectangle(P(1, 2), P(6, 6), P(1, 2)),
         "2 2 m 6 2 l 6.5523 2 7 2.8954 7 4 c 7 6 l 7 7.1046 6.5523 8 6 8 c 2 8 l "
         "1.4477 8 1 7.1046 1 6 c 1 4 l 1 2.8954 1.4477 2 2 2 c h",
@@ -568,7 +568,7 @@ path_elements = (
         id="rounded rectangle",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.Ellipse(P(1, 2), P(3, 4)),
         "4 4 m 4 5.1046 3.5523 6 3 6 c 2.4477 6 2 5.1046 2 4 c 2 2.8954 2.4477 2 3 2 c "
         "3.5523 2 4 2.8954 4 4 c h",
@@ -577,7 +577,7 @@ path_elements = (
         id="rounded rectangle",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.Ellipse(P(1, 2), P(3, 4)),
         "4 4 m 4 5.1046 3.5523 6 3 6 c 2.4477 6 2 5.1046 2 4 c 2 2.8954 2.4477 2 3 2 c "
         "3.5523 2 4 2.8954 4 4 c h",
@@ -586,7 +586,7 @@ path_elements = (
         id="ellipse",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.ImplicitClose(),
         "",
         P(1, 1),
@@ -594,7 +594,7 @@ path_elements = (
         id="implicit close",
     ),
     pytest.param(
-        M(P(1, 1)),
+        P(1, 1),
         fpdf.drawing.Close(),
         "h",
         P(1, 1),

@@ -3140,7 +3140,9 @@ class RoundedRectangle(NamedTuple):
             debug_stream.write(pfx + f" ├─ {item}\n")
             render_list.append(rendered)
 
-        rendered, last_item = components[-1].render(gsd_registry, style, last_item)
+        rendered, last_item, initial_point = components[-1].render(
+            gsd_registry, style, last_item, initial_point
+        )
         debug_stream.write(pfx + f" └─ {components[-1]}\n")
         render_list.append(rendered)
 
@@ -3250,7 +3252,9 @@ class Ellipse(NamedTuple):
             debug_stream.write(pfx + f" ├─ {item}\n")
             render_list.append(rendered)
 
-        rendered, last_item = components[-1].render(gsd_registry, style, last_item)
+        rendered, last_item, initial_point = components[-1].render(
+            gsd_registry, style, last_item, initial_point
+        )
         debug_stream.write(pfx + f" └─ {components[-1]}\n")
         render_list.append(rendered)
 
@@ -4103,6 +4107,7 @@ class PaintedPath:
                 dictionary registry.
             style (GraphicsStyle): the current resolved graphics style
             last_item: the previous path element.
+            initial_point: last position set by a "M" or "m" command
             debug_stream (io.TextIO): the stream to which the debug output should be
                 written. This is not guaranteed to be seekable (e.g. it may be stdout or
                 stderr).
@@ -4486,8 +4491,21 @@ class GraphicsContext:
         return " ".join(render_list), last_item, initial_point
 
     def render_debug(
-        self, gsd_registry, style, last_item, debug_stream, pfx, _push_stack=True
+        self,
+        gsd_registry,
+        style,
+        last_item,
+        initial_point,
+        debug_stream,
+        pfx,
+        _push_stack=True,
     ):
         return self.render(
-            gsd_registry, style, last_item, debug_stream, pfx, _push_stack=_push_stack
+            gsd_registry,
+            style,
+            last_item,
+            initial_point,
+            debug_stream,
+            pfx,
+            _push_stack=_push_stack,
         )
