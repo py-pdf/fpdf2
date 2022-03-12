@@ -67,6 +67,7 @@ nav:
   - 'Tables':                         'Tables.md'
 - 'Text Content':
   - 'Adding Text':                    'Text.md'
+  - 'Line breaks':                    'LineBreaks.md'
   - 'Page breaks':                    'PageBreaks.md'
   - 'Text styling':                   'TextStyling.md'
   - 'Unicode':                        'Unicode.md'
@@ -87,7 +88,9 @@ nav:
 - 'Processing Web Content':
   - 'HTML':                           'HTML.md'
   - 'Web2Py':                         'Web2Py.md'
-- 'Existing PDFs':                  'ExistingPDFs.md'
+- 'Reading and Postprocessing':
+  - 'Existing PDFs':                  'ExistingPDFs.md'
+  - 'Borb':                           'borb.md'
 - 'Development':
   - 'Development Guidelines':         'Development.md'
   - 'Logging':                        'Logging.md'
