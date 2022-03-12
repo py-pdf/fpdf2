@@ -29,7 +29,8 @@ pdf.output("hello_world.pdf")
 
 It is a fork and the successor of `PyFPDF`.
 Compared with other PDF libraries, `fpdf2` is simple, small and versatile, with advanced capabilities, and is easy to learn and extend.
-It is also entirely writen in Python (no C is involved), and has only **one** dependency so far, to handle images: [Pillow](https://pillow.readthedocs.io/en/stable/).
+It is also entirely writen in Python and has only a couple of dependencies
+([Pillow](https://pillow.readthedocs.io/en/stable/) & [defusedxml](https://pypi.org/project/defusedxml/)).
 
 **Development status**: this project is **mature** and **actively maintained**.
 
@@ -162,7 +163,7 @@ This library could only exist thanks to the dedication of many volunteers around
     <td align="center"><a href="https://lcomrade.su"><img src="https://avatars.githubusercontent.com/u/70049256?v=4?s=100" width="100px;" alt=""/><br /><sub><b>lcomrade</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=lcomrade" title="Documentation">📖</a> <a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Alcomrade" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=lcomrade" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/pwt"><img src="https://avatars.githubusercontent.com/u/1089749?v=4?s=100" width="100px;" alt=""/><br /><sub><b>pwt</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Apwt" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=pwt" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/mcerveny"><img src="https://avatars.githubusercontent.com/u/1438115?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Martin Cerveny</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Amcerveny" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=mcerveny" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/Spenhouet"><img src="https://avatars.githubusercontent.com/u/7819068?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Spenhouet</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3ASpenhouet" title="Bug reports">🐛</a> <a href="#question-Spenhouet" title="Answering Questions">💬</a> <a href="https://github.com/PyFPDF/fpdf2/pulls?q=is%3Apr+reviewed-by%3ASpenhouet" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="https://github.com/Spenhouet"><img src="https://avatars.githubusercontent.com/u/7819068?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Spenhouet</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3ASpenhouet" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/pulls?q=is%3Apr+reviewed-by%3ASpenhouet" title="Reviewed Pull Requests">👀</a></td>
   </tr>
 </table>
 

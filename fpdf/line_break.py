@@ -8,9 +8,12 @@ NEWLINE = "\n"
 
 class Fragment:
     def __init__(self, style: str, underlined: bool, characters: str = None):
-        self.characters = [] if characters is None else characters
         self.style = style
         self.underline = underlined
+        self.characters = [] if characters is None else characters
+
+    def __repr__(self):
+        return f"Fragment(style={self.style}, underline={self.underline}, characters={self.characters})"
 
     @classmethod
     def from_string(cls, string: str, style: str, underlined: bool):

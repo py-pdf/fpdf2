@@ -115,13 +115,14 @@ class TestSVGPathParsing:
 
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
         style = fpdf.drawing.GraphicsStyle()
-        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        first_point = fpdf.drawing.Point(0, 0)
+        start = fpdf.drawing.Move(first_point)
 
         if debug:
             dbg = io.StringIO()
-            result = pdf_path.render_debug(gsdr, style, start, dbg, "")[0]
+            result = pdf_path.render_debug(gsdr, style, start, first_point, dbg, "")[0]
         else:
-            result = pdf_path.render(gsdr, style, start)[0]
+            result = pdf_path.render(gsdr, style, start, first_point)[0]
 
         assert result == expected
 

@@ -491,25 +491,27 @@ class TestStyles:
 
 class TestPathElements:
     @pytest.mark.parametrize(
-        "start, element, expected, end_point, end_class", parameters.path_elements
+        "point, element, expected, end_point, end_class", parameters.path_elements
     )
-    def test_render(self, start, element, expected, end_point, end_class):
+    def test_render(self, point, element, expected, end_point, end_class):
+        start = fpdf.drawing.Move(point)
         style = fpdf.drawing.GraphicsStyle()
         style.auto_close = False
-        rendered, last_item = element.render({}, style, start)
+        rendered, last_item, _ = element.render({}, style, start, point)
 
         assert rendered == expected
         assert isinstance(last_item, end_class)
         assert last_item.end_point == pytest.approx(end_point)
 
     @pytest.mark.parametrize(
-        "start, element, expected, end_point, end_class", parameters.path_elements
+        "point, element, expected, end_point, end_class", parameters.path_elements
     )
-    def test_render_debug(self, start, element, expected, end_point, end_class):
+    def test_render_debug(self, point, element, expected, end_point, end_class):
+        start = fpdf.drawing.Move(point)
         dbg = io.StringIO()
         style = fpdf.drawing.GraphicsStyle()
         style.auto_close = False
-        rendered, last_item = element.render_debug({}, style, start, dbg, "")
+        rendered, last_item, _ = element.render_debug({}, style, start, point, dbg, "")
 
         assert rendered == expected
         assert isinstance(last_item, end_class)
@@ -530,7 +532,7 @@ class TestDrawingContext:
         ctx.add_item(fpdf.drawing.GraphicsContext())
 
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
-        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        start = fpdf.drawing.Point(0, 0)
         style = fpdf.drawing.GraphicsStyle()
 
         result = ctx.render(gsdr, start, 1, 10, style)
@@ -542,7 +544,7 @@ class TestDrawingContext:
         ctx.add_item(fpdf.drawing.PaintedPath().line_to(10, 10))
 
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
-        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        start = fpdf.drawing.Point(0, 0)
         style = fpdf.drawing.GraphicsStyle()
 
         result = ctx.render(gsdr, start, 1, 10, style)
@@ -554,7 +556,7 @@ class TestDrawingContext:
         ctx.add_item(fpdf.drawing.GraphicsContext())
 
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
-        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        start = fpdf.drawing.Point(0, 0)
         style = fpdf.drawing.GraphicsStyle()
         dbg = io.StringIO()
 
@@ -673,7 +675,8 @@ class CommonPathTests:
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
 
-        rend, _ = pth.render(gsdr, style, fpdf.drawing.Move(fpdf.drawing.Point(0, 0)))
+        point = fpdf.drawing.Point(0, 0)
+        rend, _, __ = pth.render(gsdr, style, fpdf.drawing.Move(point), point)
         assert rend == rendered[self.comp_index]
 
     @pytest.mark.parametrize(
@@ -692,13 +695,15 @@ class CommonPathTests:
         for method, args in method_calls:
             method(pth, *args)
 
-        rend, _ = pth.render(gsdr, style, fpdf.drawing.Move(fpdf.drawing.Point(0, 0)))
+        point = fpdf.drawing.Point(0, 0)
+        rend, _, __ = pth.render(gsdr, style, fpdf.drawing.Move(point), point)
         assert rend == rendered[self.comp_index]
 
     def test_copy(self):
         # this is a pretty clunky way to test this, but it does make sure that copying
         # works correctly through rendering.
-        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        point = fpdf.drawing.Point(0, 0)
+        start = fpdf.drawing.Move(point)
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
@@ -708,13 +713,13 @@ class CommonPathTests:
 
         pth2 = copy.deepcopy(pth)
 
-        rend1, _ = pth.render(gsdr, style, start)
-        rend2, _ = pth2.render(gsdr, style, start)
+        rend1, _, __ = pth.render(gsdr, style, start, point)
+        rend2, _, __ = pth2.render(gsdr, style, start, point)
 
         pth2.line_to(2, 2)
 
-        rend3, _ = pth.render(gsdr, style, start)
-        rend4, _ = pth2.render(gsdr, style, start)
+        rend3, _, __ = pth.render(gsdr, style, start, point)
+        rend4, _, __ = pth2.render(gsdr, style, start, point)
 
         assert rend1 == rend2 == rend3
         assert rend3 != rend4
@@ -726,7 +731,8 @@ class CommonPathTests:
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
-        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        point = fpdf.drawing.Point(0, 0)
+        start = fpdf.drawing.Move(point)
         dbg = io.StringIO()
 
         pth = self.path_class()
@@ -734,7 +740,7 @@ class CommonPathTests:
         for method, args in method_calls:
             method(pth, *args)
 
-        rend, _ = pth.render(gsdr, style, start, dbg, "")
+        rend, _, __ = pth.render(gsdr, style, start, point, dbg, "")
         assert rend == rendered[self.comp_index]
 
 
@@ -775,7 +781,8 @@ class TestClippingPath(CommonPathTests):
 # regression occurs, if one does.
 class TestGraphicsContext:
     def test_copy(self):
-        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        point = fpdf.drawing.Point(0, 0)
+        start = fpdf.drawing.Move(point)
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
@@ -785,13 +792,13 @@ class TestGraphicsContext:
 
         gfx2 = copy.deepcopy(gfx)
 
-        rend1, _ = gfx.render(gsdr, style, start)
-        rend2, _ = gfx2.render(gsdr, style, start)
+        rend1, _, __ = gfx.render(gsdr, style, start, point)
+        rend2, _, __ = gfx2.render(gsdr, style, start, point)
 
         gfx2.add_item(fpdf.drawing.Line(fpdf.drawing.Point(3, 4)))
 
-        rend3, _ = gfx.render(gsdr, style, start)
-        rend4, _ = gfx2.render(gsdr, style, start)
+        rend3, _, __ = gfx.render(gsdr, style, start, point)
+        rend4, _, __ = gfx2.render(gsdr, style, start, point)
 
         assert rend1 == rend2 == rend3
         assert rend3 != rend4
@@ -821,16 +828,18 @@ class TestGraphicsContext:
 
         assert gfx.clipping_path == clp
 
-        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        point = fpdf.drawing.Point(0, 0)
+        start = fpdf.drawing.Move(point)
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
 
-        rend, _ = gfx.render(gsdr, style, start)
+        rend, _, __ = gfx.render(gsdr, style, start, point)
         assert rend == "q 1 1 m 9 1 l 9 9 l 1 9 l h W n 1 2 m 3 4 l Q"
 
     def test_empty_render(self):
-        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        point = fpdf.drawing.Point(0, 0)
+        start = fpdf.drawing.Move(point)
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
@@ -846,7 +855,7 @@ class TestGraphicsContext:
         gfx.clipping_path = clp
         gfx.transform = tf
 
-        rend, _ = gfx.render(gsdr, style, start)
+        rend, _, __ = gfx.render(gsdr, style, start, point)
         assert rend == ""
 
     def test_add_item(self):
@@ -870,7 +879,8 @@ class TestGraphicsContext:
         ]
 
     def test_build_render_list(self):
-        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        point = fpdf.drawing.Point(0, 0)
+        start = fpdf.drawing.Move(point)
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
@@ -879,16 +889,19 @@ class TestGraphicsContext:
         gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(1, 2)))
         gfx.add_item(fpdf.drawing.Line(fpdf.drawing.Point(3, 4)))
 
-        rend_list1, _ = gfx.build_render_list(gsdr, style, start)
+        rend_list1, _, __ = gfx.build_render_list(gsdr, style, start, point)
 
         assert rend_list1 == ["q", "1 2 m", "3 4 l", "Q"]
 
-        rend_list2, _ = gfx.build_render_list(gsdr, style, start, _push_stack=False)
+        rend_list2, _, __ = gfx.build_render_list(
+            gsdr, style, start, point, _push_stack=False
+        )
 
         assert rend_list2 == ["1 2 m", "3 4 l"]
 
     def test_render(self):
-        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        point = fpdf.drawing.Point(0, 0)
+        start = fpdf.drawing.Move(point)
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
@@ -897,16 +910,17 @@ class TestGraphicsContext:
         gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(1, 2)))
         gfx.add_item(fpdf.drawing.Line(fpdf.drawing.Point(3, 4)))
 
-        rend1, _ = gfx.render(gsdr, style, start)
+        rend1, _, __ = gfx.render(gsdr, style, start, point)
 
         assert rend1 == "q 1 2 m 3 4 l Q"
 
-        rend2, _ = gfx.render(gsdr, style, start, _push_stack=False)
+        rend2, _, __ = gfx.render(gsdr, style, start, point, _push_stack=False)
 
         assert rend2 == "1 2 m 3 4 l"
 
     def test_render_debug(self):
-        start = fpdf.drawing.Move(fpdf.drawing.Point(0, 0))
+        point = fpdf.drawing.Point(0, 0)
+        start = fpdf.drawing.Move(point)
         gsdr = fpdf.drawing.GraphicsStateDictRegistry()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
@@ -916,11 +930,13 @@ class TestGraphicsContext:
         gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(1, 2)))
         gfx.add_item(fpdf.drawing.Line(fpdf.drawing.Point(3, 4)))
 
-        rend1, _ = gfx.render_debug(gsdr, style, start, dbg, "")
+        rend1, _, __ = gfx.render_debug(gsdr, style, start, point, dbg, "")
 
         assert rend1 == "q 1 2 m 3 4 l Q"
 
-        rend2, _ = gfx.render_debug(gsdr, style, start, dbg, "", _push_stack=False)
+        rend2, _, __ = gfx.render_debug(
+            gsdr, style, start, point, dbg, "", _push_stack=False
+        )
 
         assert rend2 == "1 2 m 3 4 l"
 
