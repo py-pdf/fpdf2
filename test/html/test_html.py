@@ -386,6 +386,33 @@ def test_img_inside_html_table_centered_with_caption(tmp_path):
     )
 
 
+def test_html_table_with_empty_cell_contents(tmp_path):  # issue 349
+    pdf = MyFPDF()
+    pdf.set_font_size(30)
+    pdf.add_page()
+    # Reference table cells positions:
+    pdf.write_html(
+        """<table><thead><tr>
+        <th width="25%">left</th><th width="50%">center</th><th width="25%">right</th>
+    </tr></thead><tbody><tr>
+        <td>1</td><td>2</td><td>3</td>
+    </tr><tr>
+        <td>4</td><td>5</td><td>6</td>
+    </tr></tbody></table>"""
+    )
+    # Table with empty cells:
+    pdf.write_html(
+        """<table><thead><tr>
+        <th width="25%">left</th><th width="50%">center</th><th width="25%">right</th>
+    </tr></thead><tbody><tr>
+        <td>1</td><td></td><td>3</td>
+    </tr><tr>
+        <td></td><td>5</td><td></td>
+    </tr></tbody></table>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_table_with_empty_cell_contents.pdf", tmp_path)
+
+
 def test_html_justify_paragraph(tmp_path):
     pdf = MyFPDF()
     pdf.add_page()

@@ -54,3 +54,40 @@ def test_multi_cell_markdown_missing_ttf_font():
         "Undefined font: robotoB - Use built-in fonts or FPDF.add_font() beforehand"
     )
     assert str(error.value) == expected_msg
+
+
+def test_multi_cell_markdown_with_fill_color(tmp_path):  # issue 348
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=10)
+    pdf.set_fill_color(255, 0, 0)
+    pdf.multi_cell(
+        50, markdown=True, txt="aa bb cc **dd ee dd ee dd ee dd ee dd ee dd ee**"
+    )
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_with_fill_color.pdf", tmp_path)
+
+
+def test_multi_cell_markdown_justified(tmp_path):  # issue 327
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    for font in ("Helvetica", "Courier"):
+        pdf.set_font(family=font, size=12)
+        pdf.set_y(pdf.y + 3)
+        pdf.multi_cell(
+            190,
+            markdown=True,
+            align="J",
+            txt=(
+                "Lorem **ipsum** dolor sit amet, **consectetur** adipiscing elit, "
+                "sed do eiusmod tempor incididunt ut labore et dolore magna "
+                "aliqua. Ut enim ad minim veniam, __quis__ nostrud exercitation "
+                "ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis "
+                "aute irure dolor in reprehenderit in voluptate velit esse cillum "
+                "dolore eu fugiat nulla pariatur. Excepteur sint occaecat "
+                "cupidatat non proident, sunt in culpa qui officia deserunt "
+                "mollit anim id est laborum."
+            ),
+        )
+        pdf.set_x(10)
+        pdf.set_y(pdf.y + 5)
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_justified.pdf", tmp_path)
