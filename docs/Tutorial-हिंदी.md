@@ -1,19 +1,5 @@
 विभिन्न उदाहरण जल्दी से दिखाते हैं कि fpdf2 का उपयोग कैसे करें। आपको सभी मुख्य विशेषताओं की व्याख्या मिल जाएगी।
 
-English version: [Tutorial](Tutorial.md)
-
-Version en français : [Tutorial-fr](Tutorial-fr.md)
-
-Deutsche Version: [Tutorial-de](Tutorial-de.md)
-
-Versión en español: [Tutorial-es](Tutorial-es.md)
-
-Versione in italiano: [Tutorial-it](Tutorial-it.md)
-
-Versão em português: [Tutorial-pt](Tutorial-pt.md)
-
-Версия на русском: [Tutorial-ru](Tutorial-ru.md)
-
 Methods full documentation / तरीके पूर्ण प्रलेखन: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
