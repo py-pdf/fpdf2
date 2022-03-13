@@ -11,6 +11,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 ### Added
 - new parameters `new_x` and `new_y` for `cell()` and `multi_cell()`, replacing `ln=0`, thanks to @gmischler
 ### Fixed
+- If `multi_cell(align="J")` is given text with multiple paragraphs (text followed by an empty line) at once, it now renders the last line of each paragraph left-aligned, instead of just the very last line [#364](https://github.com/PyFPDF/fpdf2/issues/364), thanks to @gmischler
 - a regression: now again `multi_cell()` always renders a cell, even if `txt` is an empty string - _cf._ [#349](https://github.com/PyFPDF/fpdf2/issues/349)
 - a bug with string width calculation when Markdown is enabled - _cf._ [#351](https://github.com/PyFPDF/fpdf2/issues/351)
 - a bug when parsing some SVG files - _cf._ [#356](https://github.com/PyFPDF/fpdf2/issues/356)

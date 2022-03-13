@@ -348,3 +348,27 @@ def test_multicell_newpos_badinput(tmp_path):  # pylint: disable=unused-argument
         pdf.multi_cell(0, new_x=5)
     with pytest.raises(ValueError):
         pdf.multi_cell(0, new_y=None)
+
+
+def test_multi_cell_j_paragraphs(tmp_path):  # issue 364
+    pdf = FPDF(format="A5")
+    pdf.add_page()
+    pdf.add_font("DejaVu", "", HERE / "../fonts/DejaVuSans.ttf")
+    pdf.set_font("DejaVu", "", 14)
+    pdf.set_margins(34, 55, 34)
+    pdf.set_auto_page_break(auto=True, margin=55)
+    # pylint: disable=line-too-long
+    text = """« Jadis, si je me souviens bien, ma vie était un festin où s’ouvraient tous les cœurs, où tous les vins coulaient.
+
+Un soir, j’ai assis la Beauté sur mes genoux. — Et je l’ai trouvée amère. — Et je l’ai injuriée.
+
+Je me suis armé contre la justice.
+
+Je me suis enfui. Ô sorcières, ô misère, ô haine, c’est à vous que mon trésor a été confié !
+
+Je parvins à faire s’évanouir dans mon esprit toute l’espérance humaine. Sur toute joie pour l’étrangler j’ai fait le bond sourd de la bête féroce.
+
+J’ai appelé les bourreaux pour, en périssant, mordre la crosse de leurs fusils. J’ai appelé les fléaux, pour m’étouffer avec le sable, le sang. Le malheur a été mon dieu. Je me suis allongé dans la boue. Je me suis séché à l’air du crime. Et j’ai joué de bons tours à la folie."""
+
+    pdf.multi_cell(w=0, h=None, txt=text, align="J")
+    assert_pdf_equal(pdf, HERE / "multi_cell_j_paragraphs.pdf", tmp_path)
