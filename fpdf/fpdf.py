@@ -2200,7 +2200,7 @@ class FPDF(GraphicsStateMixin):
 
             # precursor to self.ws, or manual spacing of unicode fonts/
             word_spacing = 0
-            if align == "J" and text_line.number_of_spaces_between_words:
+            if text_line.justify:
                 word_spacing = (
                     w - self.c_margin - self.c_margin - styled_txt_width
                 ) / text_line.number_of_spaces_between_words
@@ -2619,9 +2619,10 @@ class FPDF(GraphicsStateMixin):
             ]
         for text_line_index, text_line in enumerate(text_lines):
             is_last_line = text_line_index == len(text_lines) - 1
-            end_of_paragraph = (
-                is_last_line or not text_lines[text_line_index + 1].text_width
-            )
+            # fix issue #364
+            #            end_of_paragraph = (
+            #                is_last_line or not text_lines[text_line_index + 1].text_width
+            #            )
             if max_line_height is not None and h > max_line_height and not is_last_line:
                 current_cell_height = max_line_height
                 h -= current_cell_height
@@ -2642,7 +2643,8 @@ class FPDF(GraphicsStateMixin):
                 ),
                 new_x=new_x if is_last_line else XPos.LEFT,
                 new_y=new_y if is_last_line else YPos.NEXT,
-                align="L" if (align == "J" and end_of_paragraph) else align,
+                # align="L" if (align == "J" and is_last_line) else align,
+                align="L" if (align == "J" and is_last_line) else align,
                 fill=fill,
                 link=link,
             )

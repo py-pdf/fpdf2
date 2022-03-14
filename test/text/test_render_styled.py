@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 import fpdf
-from fpdf.line_break import MultiLineBreak
+from fpdf.line_break import MultiLineBreak, TextLine
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
@@ -75,6 +75,14 @@ def test_render_styled_newpos(tmp_path):
             justify=(align == "J"),
         )
         line = mlb.get_line_of_given_width(twidth * 1000 / doc.font_size)
+        # we need to manually rebuild our TextLine in order to force
+        # justified alignment on a single line.
+        line = TextLine(
+            fragments=line.fragments,
+            text_width=line.text_width,
+            number_of_spaces_between_words=line.number_of_spaces_between_words,
+            justify=align == "J",
+        )
         doc._render_styled_cell_text(
             line,
             twidth,
@@ -160,7 +168,7 @@ def test_multi_cell_newpos(tmp_path):
         newy = item[3]
         doc.multi_cell(
             twidth,
-            txt=s + "\n-",
+            txt=s + " xxxxxxxxxxxxxxx",  # force auto break
             border=1,
             align=align,
             new_x=newx,
@@ -238,7 +246,7 @@ def test_cell_lnpos(tmp_path):
     assert_pdf_equal(doc, HERE / "cell_ln_newpos.pdf", tmp_path)
 
 
-def test_multi_cell_lnpos(tmp_path):
+def test_multi_cell_ln_newpos(tmp_path):
     """
     Verify that multi_cell() places the new position
     in the right places in all possible combinations of alignment,
@@ -265,7 +273,7 @@ def test_multi_cell_lnpos(tmp_path):
         with pytest.warns(DeprecationWarning):
             doc.multi_cell(
                 twidth,
-                txt=s + "\n-",
+                txt=s + " xxxxxxxxxxxxxxxxxxxx",  # force auto break
                 border=1,
                 align=align,
                 ln=ln,
