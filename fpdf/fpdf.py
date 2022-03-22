@@ -2539,11 +2539,9 @@ class FPDF(GraphicsStateMixin):
 
         page_break_triggered = False
         if split_only:
-            _out, _add_page, _perform_page_break_if_need_be = (
-                self._out,
-                self.add_page,
-                self._perform_page_break_if_need_be,
-            )
+            _add_page = self.add_page
+            _out = self._out
+            _perform_page_break_if_need_be = self._perform_page_break_if_need_be
             self._out = lambda *args, **kwargs: None
             self.add_page = lambda *args, **kwargs: None
             self._perform_page_break_if_need_be = lambda *args, **kwargs: None
@@ -2632,11 +2630,9 @@ class FPDF(GraphicsStateMixin):
 
         if split_only:
             # restore writing functions
-            self._out, self.add_page, self._perform_page_break_if_need_be = (
-                _out,
-                _add_page,
-                _perform_page_break_if_need_be,
-            )
+            self.add_page = _add_page
+            self._out = _out
+            self._perform_page_break_if_need_be = _perform_page_break_if_need_be
             self.set_xy(prev_x, prev_y)  # restore location
             result = []
             for text_line in text_lines:
@@ -2979,6 +2975,10 @@ class FPDF(GraphicsStateMixin):
 
     @contextmanager
     def _marked_sequence(self, **kwargs):
+        """
+        Can receive as named arguments any of the entries described in section 14.7.2 'Structure Hierarchy'
+        of the PDF spec: iD, a, c, r, lang, e, actualText
+        """
         page_object_id = self._current_page_object_id()
         mcid = self.struct_builder.next_mcid_for_page(page_object_id)
         marked_content = self._add_marked_content(
@@ -2989,6 +2989,10 @@ class FPDF(GraphicsStateMixin):
         self._out("EMC")
 
     def _add_marked_content(self, page_object_id, **kwargs):
+        """
+        Can receive as named arguments any of the entries described in section 14.7.2 'Structure Hierarchy'
+        of the PDF spec: iD, a, c, r, lang, e, actualText
+        """
         struct_parents_id = self._struct_parents_id_per_page.get(page_object_id)
         if struct_parents_id is None:
             struct_parents_id = len(self._struct_parents_id_per_page)

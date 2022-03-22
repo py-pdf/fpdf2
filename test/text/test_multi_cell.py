@@ -142,24 +142,6 @@ def test_multi_cell_table_with_automatic_page_break(tmp_path):  # issue 120
     )
 
 
-def test_multi_cell_table_unbreakable(tmp_path):  # issue 111
-    pdf = fpdf.FPDF()
-    pdf.add_page()
-    pdf.set_font("Times", size=16)
-    line_height = pdf.font_size * 2
-    col_width = pdf.epw / 4  # distribute content evenly
-    for i in range(5):  # repeat table 5 times
-        with pdf.unbreakable() as pdf:
-            for row in TABLE_DATA:
-                for datum in row:
-                    pdf.multi_cell(
-                        col_width, line_height, f"{datum} ({i})", border=1, ln=3
-                    )
-                pdf.ln(line_height)
-        pdf.ln(line_height * 2)
-    assert_pdf_equal(pdf, HERE / "multi_cell_table_unbreakable.pdf", tmp_path)
-
-
 def test_multi_cell_justified_with_unicode_font(tmp_path):  # issue 118
     pdf = fpdf.FPDF()
     pdf.add_page()
@@ -170,53 +152,6 @@ def test_multi_cell_justified_with_unicode_font(tmp_path):  # issue 118
     assert_pdf_equal(
         pdf, HERE / "test_multi_cell_justified_with_unicode_font.pdf", tmp_path
     )
-
-
-def test_multi_cell_table_unbreakable2(tmp_path):  # issue 120 - 2nd snippet
-    table = {
-        "A": "test_lin_o_00000_001",
-        "B": "3",
-        "C": "4",
-        "D": "test_lin_o_00000",
-        "E": "7",
-        "F": "test_lin_o_00000",
-        "G": "test_lin",
-        "H": "test_lin",
-    }
-    pdf = fpdf.FPDF()
-    pdf.add_page()
-    pdf.set_margins(20, 20)
-    pdf.set_font("Times", "B", size=7)
-    line_height = pdf.font_size * 3
-    col_width = pdf.epw / 8
-    for header in table:
-        pdf.multi_cell(
-            col_width,
-            line_height,
-            header,
-            border=1,
-            ln=3,
-            max_line_height=pdf.font_size,
-            align="C",
-        )
-    pdf.ln(line_height)
-    pdf.set_font(style="")
-    line_height = pdf.font_size * 10
-    col_width = pdf.epw / 8
-    for _ in range(11):
-        with pdf.unbreakable():
-            for cell in table.values():
-                pdf.multi_cell(
-                    col_width,
-                    line_height,
-                    cell,
-                    border=1,
-                    ln=3,
-                    max_line_height=pdf.font_size,
-                    align="C",
-                )
-        pdf.ln(line_height)
-    assert_pdf_equal(pdf, HERE / "multi_cell_table_unbreakable2.pdf", tmp_path)
 
 
 def test_multi_cell_split_only():  # discussion 314

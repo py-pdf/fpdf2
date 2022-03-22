@@ -39,6 +39,11 @@ class FPDFRecorder:
     def rewind(self):
         self.pdf.__dict__ = self._initial
         self._initial = deepcopy(self.pdf.__dict__)
+        # issue #359: those functions need to be explicitly removed due to monkey-patching in multi_cell(split_only=True):
+        if "add_page" in self.pdf.__dict__:
+            del self.pdf.add_page
+            del self.pdf._out
+            del self.pdf._perform_page_break_if_need_be
 
     def replay(self):
         for call in self._calls:
