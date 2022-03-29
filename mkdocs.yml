@@ -77,7 +77,7 @@ nav:
 - 'Unicode':                        'Unicode.md'
 - 'Emojis, Symbols & Dingbats':     'EmojisSymbolsDingbats.md'
 - 'borb':                           'borb.md'
-- 'Web2Py':                         'Web2Py.md'
+- 'Usage in web API':               'UsageInWebAPI.md'
 - 'API':                            'https://pyfpdf.github.io/fpdf2/fpdf/'
 - 'Development':                    'Development.md'
 - 'FAQ':                            'FAQ.md'

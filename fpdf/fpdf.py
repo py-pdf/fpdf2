@@ -2888,8 +2888,8 @@ class FPDF(GraphicsStateMixin):
         )
         path.transform = path.transform @ drawing.Transform.translation(x, y)
 
+        old_x, old_y = self.x, self.y
         try:
-            old_x, old_y = self.x, self.y
             self.set_xy(0, 0)
             if title or alt_text:
                 with self._marked_sequence(title=title, alt_text=alt_text):
