@@ -1944,7 +1944,7 @@ class FPDF(GraphicsStateMixin):
         align="",
         fill=False,
         link="",
-        center=False,
+        center="DEPRECATED",
         markdown=False,
     ):
         """
@@ -2006,6 +2006,16 @@ class FPDF(GraphicsStateMixin):
             raise ValueError(
                 f'Invalid value for parameter "new_y" ({new_y}),'
                 "must be instance of Enum YPos"
+            )
+        if center == "DEPRECATED":
+            center = False
+        else:
+            warnings.warn(
+                (
+                    'The parameter "center" is deprecated.'
+                    ' Use align="C" instead.'
+                ),
+                DeprecationWarning,
             )
         if ln != "DEPRECATED":
             warnings.warn(
@@ -2109,6 +2119,9 @@ class FPDF(GraphicsStateMixin):
                 "ignored"
             )
             border = 1
+        if center:
+            self.x = self.l_margin + (self.epw - w) / 2
+            w = self.epw
         styled_txt_width = text_line.text_width / 1000 * self.font_size
         if not styled_txt_width:
             for styled_txt_frag in text_line.fragments:
@@ -2128,13 +2141,6 @@ class FPDF(GraphicsStateMixin):
             w = styled_txt_width + self.c_margin + self.c_margin
         if h is None:
             h = self.font_size
-        if center:
-            warnings.warn(
-                'The "center" parameter is deprecated, and will soon be removed.'
-                ' Use align="C" instead.',
-                DeprecationWarning,
-            )
-            self.x = self.l_margin + (self.epw - w) / 2
         page_break_triggered = self._perform_page_break_if_need_be(h)
         s = ""
         k = self.k
@@ -2619,10 +2625,6 @@ class FPDF(GraphicsStateMixin):
             ]
         for text_line_index, text_line in enumerate(text_lines):
             is_last_line = text_line_index == len(text_lines) - 1
-            # fix issue #364
-            #            end_of_paragraph = (
-            #                is_last_line or not text_lines[text_line_index + 1].text_width
-            #            )
             if max_line_height is not None and h > max_line_height and not is_last_line:
                 current_cell_height = max_line_height
                 h -= current_cell_height
