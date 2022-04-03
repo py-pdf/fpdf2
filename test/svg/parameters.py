@@ -838,6 +838,11 @@ svg_path_directives = (
         [M(0, 1), L(2, 3), iz(), M(3, 4), L(5, 6)],
         id="implicit close",
     ),
+    pytest.param(
+        "M 0 1 c -7e-5 -4e-5 -8.8492 -3.1382 -8.8493 -3.1383",
+        [M(0, 1), c(-7e-5, -4e-5, -8.8492, -3.1382, -8.8493, -3.1383)],
+        id="exponentiated numbers",  # cf. issue #376
+    ),
 )
 
 svg_path_render_tests = (

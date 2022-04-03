@@ -18,6 +18,7 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 ### Deprecated
 - The parameter `ln` to `cell()` and `multi_cell()` is now deprecated, use `new_x` and `new_y` instead.
 - The parameter "center" to `cell()` is now deprecated, use `align="C"` instead.
+- a bug when using `multi_cell(..., split_only=True)` inside an `unbreakable` section - _cf._ [#359](https://github.com/PyFPDF/fpdf2/issues/359)
 
 ## [2.5.1] - 2022-03-07
 ### Added

@@ -1,7 +1,13 @@
+from pathlib import Path
+
 import pytest
 
 import fpdf
 from fpdf.errors import FPDFException
+
+from test.conftest import assert_pdf_equal
+
+HERE = Path(__file__).resolve().parent
 
 
 def test_add_page_throws_without_page():
@@ -81,3 +87,9 @@ def test_adding_content_after_closing():
         str(error.value)
         == "Content cannot be added on a closed document, after calling output()"
     )
+
+
+def test_repeated_calls_to_output(tmp_path):
+    pdf = fpdf.FPDF()
+    assert_pdf_equal(pdf, HERE / "repeated_calls_to_output.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "repeated_calls_to_output.pdf", tmp_path)
