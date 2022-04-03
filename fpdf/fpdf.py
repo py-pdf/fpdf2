@@ -2119,9 +2119,6 @@ class FPDF(GraphicsStateMixin):
                 "ignored"
             )
             border = 1
-        if center:
-            self.x = self.l_margin + (self.epw - w) / 2
-            w = self.epw
         styled_txt_width = text_line.text_width / 1000 * self.font_size
         if not styled_txt_width:
             for styled_txt_frag in text_line.fragments:
@@ -2141,6 +2138,10 @@ class FPDF(GraphicsStateMixin):
             w = styled_txt_width + self.c_margin + self.c_margin
         if h is None:
             h = self.font_size
+        if center:
+            self.x = self.l_margin  + (self.epw - w) / 2
+            align = "C"
+            #w = self.epw
         page_break_triggered = self._perform_page_break_if_need_be(h)
         s = ""
         k = self.k
