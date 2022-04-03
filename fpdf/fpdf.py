@@ -2011,10 +2011,7 @@ class FPDF(GraphicsStateMixin):
             center = False
         else:
             warnings.warn(
-                (
-                    'The parameter "center" is deprecated.'
-                    ' Use align="C" instead.'
-                ),
+                ('The parameter "center" is deprecated.' ' Use align="C" instead.'),
                 DeprecationWarning,
             )
         if ln != "DEPRECATED":
@@ -2139,7 +2136,7 @@ class FPDF(GraphicsStateMixin):
         if h is None:
             h = self.font_size
         if center:
-            self.x = self.l_margin  + (self.epw - w) / 2
+            self.x = self.l_margin + (self.epw - w) / 2
             align = "C"
         page_break_triggered = self._perform_page_break_if_need_be(h)
         s = ""

@@ -26,7 +26,10 @@ def test_multi_cell_table_unbreakable(tmp_path):  # issue 111
             for row in TABLE_DATA:
                 for datum in row:
                     pdf.multi_cell(
-                        col_width, line_height, f"{datum} ({i})", border=1,
+                        col_width,
+                        line_height,
+                        f"{datum} ({i})",
+                        border=1,
                         new_x=fpdf.XPos.RIGHT,
                         new_y=fpdf.YPos.TOP,
                     )
