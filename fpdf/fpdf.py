@@ -2141,7 +2141,6 @@ class FPDF(GraphicsStateMixin):
         if center:
             self.x = self.l_margin  + (self.epw - w) / 2
             align = "C"
-            #w = self.epw
         page_break_triggered = self._perform_page_break_if_need_be(h)
         s = ""
         k = self.k
