@@ -63,7 +63,6 @@ nav:
   - 'Line breaks':                  'LineBreaks.md'
   - 'Page breaks':                  'PageBreaks.md'
 - 'Document outline & table of contents': 'DocumentOutlineAndTableOfContents.md'
-- 'Text':                           'Text.md'
 - 'Text styling':                   'TextStyling.md'
 - 'Presentations':                  'Presentations.md'
 - 'Annotations':                    'Annotations.md'
