@@ -2,7 +2,7 @@
 
 There are several ways in fpdf to add text to a PDF document, each of which comes with its own special features and its own set of advantages and disadvantages. You will need to pick the right one for your specific task.
 
-| method | lines | markdown | HTML | positioning | details |
+| method | lines | markdown support | HTML support | accepts new current position | details |
 | -- | :--: | :--: | :--: | :--: | -- |
 | [`.text()`](#text)  | one | no | no | fixed | Inserts a single-line text string with a precise location on the base line of the font.|
 | [`.cell()`](#cell)  | one | yes | no | yes | Inserts a single-line text string within the boundaries of a given box, optionally with background and border. |
@@ -13,12 +13,14 @@ There are several ways in fpdf to add text to a PDF document, each of which come
 ## Typographical Limitations
 
 There are a few advanced typesetting features that fpdf doesn't currently support.
+
 * Automatic ligatures - Some writing systems (eg. most hindic scripts such as Devaganari, Hangul) frequently combine a number of written characters into a single glyph. This would require advanced font analysis capabilities, which aren't currently implemented.
 * Contextual forms - In some writing systems (eg. Arabic, Hebrew, Mongolian, etc.), characters may take a different shape, depending on whether they appear at the beginning, in the middle, or at the end of a word, or isolated. Fpdf will always use the same standard shape in those cases.
 * Vertical writing - Some writing systems are meant to be written vertically. Doing so is not directly supported. In cases where this just means to stack characters on top of each other (eg. Chinese, Japanese, etc.), client software can implement this by placing each character individuall at the correct location. In cases where the characters are connected with each other (eg. Mongolian), this may be more difficult, if possible at all.
 
 ## Text Formatting
 For all text insertion methods, the relevant font related properties (eg. font/style and foreground/background color) must be set before invoking them. This includes using:
+
 * [`.set_font()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font)
 * [`.set_text_color()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)
 * [`.set_draw_color()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color) - for cell borders
@@ -27,25 +29,26 @@ For all text insertion methods, the relevant font related properties (eg. font/s
 In addition, some of the methods can optionally use [markdown](TextStyling.html#markdowntrue) or [HTML](HTML.html) markup in the supplied text in order to change the font style (bold/italic/underline) of parts of the output.
 
 ## Change in current position
-`.cell()` and `.multi_cell()` let you specify where the current position (`.x`/`.y`) should go after the call. This is handled by the parameters `new_x` and `new_y`. Their values are one out of the Enums `.XPos` and `.YPos` respectively, which offer the following options:
+`.cell()` and `.multi_cell()` let you specify where the current position (`.x`/`.y`) should go after the call. This is handled by the parameters `new_x` and `new_y`. Their values are one out of the Enums `fpdf.XPos` and `fpdf.YPos` respectively, which offer the following options:
 
-#### .XPos
-* XPos.LEFT    - left end of the cell
-* XPos.RIGHT   - right end of the cell
-* XPos.START   - start of actual text
-* XPos.END     - end of actual text
-* XPos.WCONT   - for write() to continue next (slightly left of END)
-* XPos.CENTER  - center of actual text
-* XPos.LMARGIN - left page margin (start of printable area)
-* XPos.RMARGIN - right page margin (end of printable area)
+#### XPos
 
-#### .YPos
-* YPos.TOP     - top of the first line
-* YPos.LAST    - top of the last line (same as TOP for single-line text)
-* YPos.NEXT    - top of next line (bottom of current text)
-* YPos.TMARGIN - top page margin (start of printable area)
-* YPos.BMARGIN - bottom page margin (end of printable area)
+* `XPos.LEFT`    - left end of the cell
+* `XPos.RIGHT`   - right end of the cell
+* `XPos.START`   - start of actual text
+* `XPos.END`     - end of actual text
+* `XPos.WCONT`   - for write() to continue next (slightly left of END)
+* `XPos.CENTER`  - center of actual text
+* `XPos.LMARGIN` - left page margin (start of printable area)
+* `XPos.RMARGIN` - right page margin (end of printable area)
 
+#### YPos
+
+* `YPos.TOP`     - top of the first line
+* `YPos.LAST`    - top of the last line (same as TOP for single-line text)
+* `YPos.NEXT`    - top of next line (bottom of current text)
+* `YPos.TMARGIN` - top page margin (start of printable area)
+* `YPos.BMARGIN` - bottom page margin (end of printable area)
 
 ## .text()
 Prints a single-line character string. In contrast to the other text methods,
@@ -54,11 +57,7 @@ on the left of the first character, on the baseline. This method allows placing
 a string with typographical precision on the page, but it is usually easier to
 use the `.cell()`, `.multi_cell()` or `.write()` methods.
 
-#### text(x, y, txt='')
-* __x__ (float) - The horizontal component origin position
-* __y__ (float) - The vertical component origin position
-* __txt__ (str) - the text string to print
-
+[Signature and parameters for .text()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text)
 
 ## .cell()
 Prints a cell (rectangular area) with optional borders, background color and
@@ -72,31 +71,7 @@ underlined.
 If automatic page breaking is enabled and the cell goes beyond the limit, a
 page break is performed before outputting.
 
-#### cell(w=None, h=None, txt='', border=0, new_x=XPos.RIGHT, new_y=YPos.TOP, align='', fill=False, link='', center=False, markdown=False)
-
-* __w__ (float) - Cell width. If `None`, fit text width. If 0, the cell extends up to the right margin.
-* __h__ (float) - Cell height. If `None`, use the the current font size.
-* __txt__ (str) - String to print.
-* __border__ - Indicates if borders must be drawn around the cell. The value can be either a number
-	* 0: no border
-	* 1: full frame
-
-	or a string containing some or all of the following characters (in any order):
-	* "L": left
-	* "T": top
-	* "R": right
-	* "B": bottom
-
-* __new_x__ (Enum XPos): New current position in x after the call.
-* __new_y__ (Enum YPos): New current position in y after the call.
-* align (str) - Allows to center or align the text inside the cell. Possible values are:
-	* "L" or empty string: left align
-	* "C": center 
-	* "R": right align
-* __fill__ (bool) - Indicates if the cell background must be painted (True) or transparent (False).
-* __link__ (str) - optional link to add on the cell, internal (identifier returned by `.add_link()`) or external URL.
-* __markdown__ (bool) - enable minimal markdown-like markup.
-
+[Signature and parameters for.cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell)
 
 ## .multi_cell()
 Allows printing text with line breaks. Those can be automatic (breaking at the
@@ -112,40 +87,7 @@ useful to build tables with multiline text in cells.
 In normal operation, returns a boolean indicating if page break was triggered.
 When `split_only == True`, returns `txt` split into lines in an array (with any markdown markup removed).
 
-
-#### multi_cell(w, h=None, txt="", border=0, align="J", fill=False, split_only=False, link="", new_x=XPos.RIGHT, new_y=YPos.NEXT, max_line_height=None, markdown=False, print_sh=False) -> Bool or List
-
-* __w__ (float): cell width. If 0, the cell extends to the right margin of the page.
-* __h__ (float): cell height. If None, use the current font size.
-* __txt__ (str): string to print.
-* __border__: Indicates if borders must be drawn around the cell. The value can be either a number
-	* 0: no border
-	* 1: full frame
-
-	or a string containing some or all of the following characters (in any order):
-	* "L": left
-	* "T": top
-	* "R": right
-	* "B": bottom
-* __align__ (str): Allows to center or align the text inside the cell. Possible values are:
-	* "L" or empty string: left align
-	* "C": center 
-	* "R": right align
-	* "J": justify
-* __fill__ (bool): Indicates if the cell background must be painted (`True`)
-	or transparent (`False`).
-* __split_only__ (bool): if `True`, don't output anything, only perform
-	word-wrapping and return the resulting multi-lines array of strings.
-* __link__ (str): optional link to add on the cell, internal
-	(identifier returned by `add_link`) or external URL.
-* __new_x__ (Enum XPos): New current position in x after the call.
-* __new_y__ (Enum YPos): New current position in y after the call.
-* __max_line_height__ (float): optional maximum height of each sub-cell generated
-* __markdown__ (bool): enable minimal markdown-like markup to render part
-	of text as bold / italics / underlined.
-* __print_sh__ (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
-	character, instead of a line breaking opportunity.
-
+[Signature and parameters for.multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
 
 ## .write()
 Prints multi-line text between the page margins, starting from the current position.
@@ -156,15 +98,7 @@ Upon method exit, the current position is left near the end of the text, ready f
 
 The primary purpose of this method is to print continuously wrapping text, where different parts may be rendered in different fonts or font sizes. This contrasts eg. with `.multi_cell()`, where a change in font family or size can only become effective on a new line.
 
-
-#### write(h: float = None, txt: str = "", link: str = "", print_sh: bool = False) -> bool
-
-* __h__ (float): line height. If None, use the current font size.
-* __txt__ (str): text content
-* __link__ (str): optional link to add on the text, internal
-	(identifier returned by `add_link`) or external URL.
-* __print_sh__ (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
-	character, instead of a line breaking opportunity.
+[Signature and parameters for.write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
 
 
 ## .write_html()
@@ -172,14 +106,5 @@ This method can be accessed by using the class `HTMLMixin` from "[html.py](HTML.
 
 Note that when using data from actual web pages, the result may not look exactly as expected, because `.write_html()` prints all whitespace unchanged as it finds them, while webbrowsers rather collapse each run of consequitive whitespace into a single space character.
 
-#### write_html(text, image_map=None, li_tag_indent=5, table_line_separators=False, ul_bullet_char=BULLET_WIN1252, heading_sizes=None)
-
-* __text__ (str): the HTML text to be processed.
-* __image_map__ (function): an optional one-argument function that maps
-	img tag "src" property to new image URLs.
-* __li_tag_indent__ (float): Indentation of \<li\> elements in document units.
-* __table_line_separators__ (bool): if True, enable horizontal line separators between table rows.
-* __ul_bullet_char__ (str): bullet character for \<ul\> elements.
-* __heading_sizes__ (dict): a dictionary of heading types ("h1" to "h#") as keys and the respective font sizes in points as values. If None, use the builtin defaults.
-
+[Signature and parameters for.write_html()](https://pyfpdf.github.io/fpdf2/fpdf/html.html#fpdf.html.HTMLMixin.write_html)
 
