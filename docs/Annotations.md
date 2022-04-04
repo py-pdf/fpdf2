@@ -24,6 +24,30 @@ pdf.text_annotation(
 pdf.output("text_annotation.pdf")
 ```
 
+Method documentation: [`FPDF.text_annotation`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_annotation)
+
+
+## Highlights ##
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Helvetica", size=24)
+with pdf.add_highlight("Highlight comment"):
+    pdf.text(50, 50, "Line 1")
+    pdf.set_y(50)
+    pdf.multi_cell(w=30, txt="Line 2")
+pdf.cell(w=60, txt="Not highlighted", border=1)
+pdf.output("highlighted.pdf")
+```
+
+Rendering by Sumatra PDF reader:
+![Screenshot of highlight annotation rendered by Sumatra PDF reader](highlighted.png)
+
+Method documentation: [`FPDF.add_highlight`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_highlight)
+
 
 ## Named actions ##
 

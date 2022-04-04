@@ -7,6 +7,7 @@
 # * Ported to Python 2.4 by Max (maxpat78@yahoo.it) on 2006-05               *
 # * Maintainer:  Mariano Reingart (reingart@gmail.com) et al since 2008 est. *
 # * Maintainer:  David Alexander (daveankin@gmail.com) et al since 2017 est. *
+# * Maintainer:  Lucas Cimon et al since 2021 est.                           *
 # ****************************************************************************
 """fpdf module (in fpdf package housing FPDF class)
 
@@ -145,6 +146,10 @@ class Annotation(NamedTuple):
     link: Union[str, int] = None
     alt_text: Optional[str] = None
     action: Optional[Action] = None
+    color: Optional[int] = None
+    modification_time: Optional[datetime] = None
+    title: Optional[str] = None
+    quad_points: Optional[tuple] = None
 
 
 class TitleStyle(NamedTuple):
@@ -387,6 +392,9 @@ class FPDF(GraphicsStateMixin):
 
         self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
         self._graphics_state_obj_refs = OrderedDict()
+
+        self.record_text_quad_points = False
+        self.text_quad_points = []
 
     @property
     def unifontsubset(self):
@@ -1779,7 +1787,7 @@ class FPDF(GraphicsStateMixin):
         )
 
     @check_page
-    def text_annotation(self, x, y, text):
+    def text_annotation(self, x, y, text, w=1, h=1):
         """
         Puts a text annotation on a rectangular area of the page.
 
@@ -1795,8 +1803,8 @@ class FPDF(GraphicsStateMixin):
                 "Text",
                 x * self.k,
                 self.h_pt - y * self.k,
-                self.k,
-                self.k,
+                w * self.k,
+                h * self.k,
                 contents=text,
             )
         )
@@ -1821,6 +1829,76 @@ class FPDF(GraphicsStateMixin):
                 w * self.k,
                 h * self.k,
                 action=action,
+            )
+        )
+
+    @contextmanager
+    def add_highlight(self, text, title="", color=(1, 1, 0), modification_time=None):
+        """
+        Context manager that adds a single highlight annotation based on the text lines inserted
+        inside its indented block.
+
+        Args:
+            text (str): text of the annotation
+            title (str): the text label that shall be displayed in the title bar of the annotation’s
+                pop-up window when open and active. This entry shall identify the user who added the annotation.
+            color (tuple): a tuple of numbers in the range 0.0 to 1.0, representing a colour used for
+                the title bar of the annotation’s pop-up window
+            modification_time (datetime): date and time when the annotation was most recently modified
+        """
+        self.record_text_quad_points = True
+        yield
+        if self.text_quad_points:
+            self.add_text_markup_annotation(
+                "Highlight",
+                text,
+                quad_points=self.text_quad_points,
+                title=title,
+                color=color,
+                modification_time=modification_time,
+            )
+            self.text_quad_points = []
+            self.record_text_quad_points = False
+
+    @check_page
+    def add_text_markup_annotation(
+        self, type, text, quad_points, title="", color=(1, 1, 0), modification_time=None
+    ):
+        """
+        Adds a text markup annotation on a rectangular area of the page.
+
+        Args:
+            text (str): text of the annotation
+            quad_points (tuple): array of 8 × n numbers specifying the coordinates of n quadrilaterals
+                in default user space that comprise the region in which the link should be activated.
+                The coordinates for each quadrilateral are given in the order: x1 y1 x2 y2 x3 y3 x4 y4
+                specifying the four vertices of the quadrilateral in counterclockwise order
+            title (str): the text label that shall be displayed in the title bar of the annotation’s
+                pop-up window when open and active. This entry shall identify the user who added the annotation.
+            color (tuple): a tuple of numbers in the range 0.0 to 1.0, representing a colour used for
+                the title bar of the annotation’s pop-up window
+            modification_time (datetime): date and time when the annotation was most recently modified
+        """
+        if type not in ("Highlight", "Underline", "Squiggly", "StrikeOut"):
+            raise ValueError(f"Invalid text markup annotation subtype: {type}")
+        if modification_time is None:
+            modification_time = datetime.now()
+        x_min = min(quad_points[0::2])
+        y_min = min(quad_points[1::2])
+        x_max = max(quad_points[0::2])
+        y_max = max(quad_points[1::2])
+        self.annots[self.page].append(
+            Annotation(
+                type,
+                contents=text,
+                x=y_min,
+                y=y_max,
+                width=x_max - x_min,
+                height=y_max - y_min,
+                color=color,
+                modification_time=modification_time,
+                title=title,
+                quad_points=quad_points,
             )
         )
 
@@ -1855,6 +1933,26 @@ class FPDF(GraphicsStateMixin):
         if self.fill_color != self.text_color:
             s = f"q {self.text_color} {s} Q"
         self._out(s)
+        if self.record_text_quad_points:
+            unscaled_width = self.get_normalized_string_width_with_style(
+                txt, self.font_style
+            )
+            if self.font_stretching != 100:
+                unscaled_width *= self.font_stretching / 100
+            w = unscaled_width * self.font_size / 1000
+            h = self.font_size
+            self.text_quad_points.extend(
+                [
+                    x * self.k,
+                    (self.h - y) * self.k,
+                    (x + w) * self.k,
+                    (self.h - y) * self.k,
+                    x * self.k,
+                    (self.h - y + h) * self.k,
+                    (x + w) * self.k,
+                    (self.h - y + h) * self.k,
+                ]
+            )
 
     @check_page
     def rotate(self, angle, x=None, y=None):
@@ -2181,6 +2279,20 @@ class FPDF(GraphicsStateMixin):
                     f"{x * k:.2f} {(self.h - (y + h)) * k:.2f} m "
                     f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S "
                 )
+
+        if self.record_text_quad_points:
+            self.text_quad_points.extend(
+                [
+                    x * self.k,
+                    (self.h - y) * self.k,
+                    (x + w) * self.k,
+                    (self.h - y) * self.k,
+                    x * self.k,
+                    (self.h - y - h) * self.k,
+                    (x + w) * self.k,
+                    (self.h - y - h) * self.k,
+                ]
+            )
 
         s_start = self.x
         s_width, underlines = 0, []
@@ -3127,50 +3239,7 @@ class FPDF(GraphicsStateMixin):
             if page_annots:  # Annotations, e.g. links:
                 annots = ""
                 for annot in page_annots:
-                    # first four things in 'link' list are coordinates?
-                    rect = (
-                        f"{annot.x:.2f} {annot.y:.2f} "
-                        f"{annot.x + annot.width:.2f} {annot.y - annot.height:.2f}"
-                    )
-
-                    # start the annotation entry
-                    annots += (
-                        f"<</Type /Annot /Subtype /{annot.type}"
-                        f" /Rect [{rect}] /Border [0 0 0]"
-                        # Flag "Print" (bit position 3) specifies to print
-                        # the annotation when the page is printed.
-                        # cf. https://docs.verapdf.org/validation/pdfa-part1/#rule-653-2
-                        f" /F 4"
-                    )
-
-                    if annot.contents:
-                        annots += f" /Contents {enclose_in_parens(annot.contents)}"
-
-                    if annot.alt_text is not None:
-                        # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
-                        # but tests with Adobe Acrobat Reader reveal that the page /StructParents inserted below
-                        # is enough to link the marked content in the hierarchy tree with this annotation link.
-                        self._add_marked_content(
-                            self.n, struct_type="/Link", alt_text=annot.alt_text
-                        )
-
-                    if annot.action:
-                        annots += f" /A <<{annot.action.dict_as_string()}>>"
-
-                    if annot.link:
-                        if isinstance(annot.link, str):
-                            annots += (
-                                f" /A <</S /URI /URI {enclose_in_parens(annot.link)}>>"
-                            )
-                        else:  # Dest type ending of annotation entry
-                            assert annot.link in self.links, (
-                                f"Page {n} has a link with an invalid index: "
-                                f"{annot.link} (doc #links={len(self.links)})"
-                            )
-                            dest = self.links[annot.link]
-                            annots += f" /Dest {dest.as_str(self)}"
-                    annots += ">>"
-                # End links list
+                    annots += self._annotation_as_string(annot, n)
                 self._out(f"/Annots [{annots}]")
             if self.pdf_version > "1.3":
                 self._out("/Group <</Type /Group /S /Transparency" "/CS /DeviceRGB>>")
@@ -3196,6 +3265,64 @@ class FPDF(GraphicsStateMixin):
         self._out(f"/MediaBox [0 0 {dw_pt:.2f} {dh_pt:.2f}]")
         self._out(">>")
         self._out("endobj")
+
+    def _annotation_as_string(self, annot, page_id):
+        rect = (
+            f"{annot.x:.2f} {annot.y:.2f} "
+            f"{annot.x + annot.width:.2f} {annot.y - annot.height:.2f}"
+        )
+
+        # start the annotation entry
+        out = (
+            f"<</Type /Annot /Subtype /{annot.type}"
+            f" /Rect [{rect}] /Border [0 0 0]"
+            # Flag "Print" (bit position 3) specifies to print
+            # the annotation when the page is printed.
+            # cf. https://docs.verapdf.org/validation/pdfa-part1/#rule-653-2
+            f" /F 4"
+        )
+
+        if annot.contents:
+            out += f" /Contents {enclose_in_parens(annot.contents)}"
+
+        if annot.alt_text is not None:
+            # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
+            # but tests with Adobe Acrobat Reader reveal that the page /StructParents inserted below
+            # is enough to link the marked content in the hierarchy tree with this annotation link.
+            self._add_marked_content(
+                self.n, struct_type="/Link", alt_text=annot.alt_text
+            )
+
+        if annot.action:
+            out += f" /A <<{annot.action.dict_as_string()}>>"
+
+        if annot.link:
+            if isinstance(annot.link, str):
+                out += f" /A <</S /URI /URI {enclose_in_parens(annot.link)}>>"
+            else:  # Dest type ending of annotation entry
+                assert annot.link in self.links, (
+                    f"Page {page_id} has a link with an invalid index: "
+                    f"{annot.link} (doc #links={len(self.links)})"
+                )
+                dest = self.links[annot.link]
+                out += f" /Dest {dest.as_str(self)}"
+
+        if annot.color:
+            out += f" /C [{annot.color[0]} {annot.color[1]} {annot.color[2]}]"
+
+        if annot.title:
+            out += f" /T {annot.title}"
+
+        if annot.modification_time:
+            out += f" /M (D:{annot.modification_time:%Y%m%d%H%M%S})"
+
+        if annot.quad_points:
+            quad_points = " ".join(
+                f"{quad_point:.2f}" for quad_point in annot.quad_points
+            )
+            out += f" /QuadPoints [{quad_points}]"
+
+        return out + ">>"
 
     def _substitute_page_number(self):
         nb = self.pages_count  # total number of pages

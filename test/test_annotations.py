@@ -97,3 +97,15 @@ def test_launch_action(tmp_path):
         h=pdf.font_size,
     )
     assert_pdf_equal(pdf, HERE / "launch_action.pdf", tmp_path)
+
+
+def test_highlighted(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=24)
+    with pdf.add_highlight("Highlight comment"):
+        pdf.text(50, 50, "Line 1")
+        pdf.set_y(50)
+        pdf.multi_cell(w=30, txt="Line 2")
+    pdf.cell(w=60, txt="Not highlighted", border=1)
+    assert_pdf_equal(pdf, HERE / "highlighted.pdf", tmp_path)

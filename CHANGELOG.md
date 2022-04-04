@@ -14,6 +14,9 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - a few bugs when parsing some SVG files - _cf._ [#356](https://github.com/PyFPDF/fpdf2/issues/356), [#358](https://github.com/PyFPDF/fpdf2/issues/358) & [#376](https://github.com/PyFPDF/fpdf2/issues/376)
 - a bug when using `multi_cell(..., split_only=True)` inside an `unbreakable` section - _cf._ [#359](https://github.com/PyFPDF/fpdf2/issues/359)
 
+### Added
+- new `add_highlight()` method to insert highlight annotations: [documentation](https://pyfpdf.github.io/fpdf2/Annotations.html#highlights)
+
 ## [2.5.1] - 2022-03-07
 ### Added
 - support for soft-hyphen (`\u00ad`) break in `write()`, `cell()` & `multi_cell()` calls - thanks @oleksii-shyman & @gmischler!
