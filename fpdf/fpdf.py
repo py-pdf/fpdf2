@@ -4476,6 +4476,7 @@ __all__ = [
     "XPos",
     "YPos",
     "get_page_format",
+    "TextMode",
     "TitleStyle",
     "PAGE_FORMATS",
 ]

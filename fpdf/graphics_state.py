@@ -24,6 +24,7 @@ class GraphicsStateMixin:
                 font_size=0,
                 dash_pattern=dict(dash=0, gap=0, phase=0),
                 line_width=0,
+                text_mode=0,
             ),
         ]
         super().__init__(*args, **kwargs)
@@ -121,3 +122,11 @@ class GraphicsStateMixin:
     @line_width.setter
     def line_width(self, v):
         self.__statestack[-1]["line_width"] = v
+
+    @property
+    def text_mode(self):
+        return self.__statestack[-1]["text_mode"]
+
+    @text_mode.setter
+    def text_mode(self, v):
+        self.__statestack[-1]["text_mode"] = v
