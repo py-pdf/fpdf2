@@ -20,6 +20,9 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 - The parameter "center" to `cell()` is now deprecated, use `align="C"` instead.
 - a bug when using `multi_cell(..., split_only=True)` inside an `unbreakable` section - _cf._ [#359](https://github.com/PyFPDF/fpdf2/issues/359)
 
+### Added
+- new `add_highlight()` method to insert highlight annotations: [documentation](https://pyfpdf.github.io/fpdf2/Annotations.html#highlights)
+
 ## [2.5.1] - 2022-03-07
 ### Added
 - support for soft-hyphen (`\u00ad`) break in `write()`, `cell()` & `multi_cell()` calls - thanks @oleksii-shyman & @gmischler!

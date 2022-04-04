@@ -12,10 +12,11 @@
         "6.4-4": "REASON: enabled by default, can be disabled by setting pdf.allow_images_transparency = False",
         "6.4-5": "REASON: enabled by default, can be disabled by setting pdf.allow_images_transparency = False",
         "6.4-6": "REASON: enabled by default, can be disabled by setting pdf.allow_images_transparency = False",
-        "6.5.2-1": "REASON: fpdf2 allows to create Action annotations that VeraPDF forbid arbitrarily.",
-        "6.6.1-1": "REASON: fpdf2 allows to create Launch actions that VeraPDF forbid arbitrarily.",
-        "6.7.2-1": "REASON: setting XML/XMP metadata is entirely optional with fpdf2.",
-        "6.7.3-1": "REASON: setting XML/XMP metadata is entirely optional with fpdf2.",
-        "6.7.11-1": "REASON: up to fpdf2 v2.3.2, test_xmp_metadata included the PDF/A version and conformance level of the file, but then it started to break PDF Checker does-not-conform-to-claimed-pdfa-type rule. PENDING proper support for PDF/A."
+        "6.5.2-1": "REASON: fpdf2 allows to create Action annotations that VeraPDF forbid arbitrarily",
+        "6.5.3-3": "REASON: fpdf2 does not currently support defining colour space of the DestOutputProfile in the PDF/A-1 OutputIntent dictionary",
+        "6.6.1-1": "REASON: fpdf2 allows to create Launch actions that VeraPDF forbid arbitrarily",
+        "6.7.2-1": "REASON: setting XML/XMP metadata is entirely optional with fpdf2",
+        "6.7.3-1": "REASON: setting XML/XMP metadata is entirely optional with fpdf2",
+        "6.7.11-1": "REASON: up to fpdf2 v2.3.2, test_xmp_metadata included the PDF/A version and conformance level of the file, but then it started to break PDF Checker does-not-conform-to-claimed-pdfa-type rule. PENDING proper support for PDF/A"
     }
 }

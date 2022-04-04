@@ -23,7 +23,6 @@ TABLE_DATA = (
 def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
     doc = FPDF(format="letter", unit="pt")
     doc.add_page()
-
     doc.set_font("helvetica", size=TEXT_SIZE)
     text = (
         "Lorem ipsum Ut nostrud irure reprehenderit anim nostrud dolore sed "
