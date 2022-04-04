@@ -353,9 +353,7 @@ class FlexTemplate:
         pdf.set_xy(x1, y1)
         width, height = x2 - x1, y2 - y1
         if multiline is None:  # write without wrapping/trimming (default)
-            pdf.cell(
-                w=width, h=height, txt=text, border=0, ln=0, align=align, fill=fill
-            )
+            pdf.cell(w=width, h=height, txt=text, border=0, align=align, fill=fill)
         elif multiline:  # automatic word - warp
             pdf.multi_cell(
                 w=width, h=height, txt=text, border=0, align=align, fill=fill
@@ -364,9 +362,7 @@ class FlexTemplate:
             text = pdf.multi_cell(
                 w=width, h=height, txt=text, align=align, split_only=True
             )[0]
-            pdf.cell(
-                w=width, h=height, txt=text, border=0, ln=0, align=align, fill=fill
-            )
+            pdf.cell(w=width, h=height, txt=text, border=0, align=align, fill=fill)
 
     def _line(
         self,

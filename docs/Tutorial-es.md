@@ -39,7 +39,7 @@ pdf.cell(40, 10, 'Hola mundo !', 1)
 Para agregar una nueva celda próxima a ella, con texto centrado y luego ir a la siguiente línea, haríamos: 
 
 ```python
-pdf.cell(60, 10, 'Hecho con FPDF.', 0, 1, 'C')
+pdf.cell(60, 10, 'Hecho con FPDF.', new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='C')
 ```
 
 *Nota*: el salto de línea puede hacerse también con [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). Este método permite especificar adicionalmente la altura del salto. 

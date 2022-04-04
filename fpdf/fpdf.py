@@ -7,6 +7,7 @@
 # * Ported to Python 2.4 by Max (maxpat78@yahoo.it) on 2006-05               *
 # * Maintainer:  Mariano Reingart (reingart@gmail.com) et al since 2008 est. *
 # * Maintainer:  David Alexander (daveankin@gmail.com) et al since 2017 est. *
+# * Maintainer:  Lucas Cimon et al since 2021 est.                           *
 # ****************************************************************************
 """fpdf module (in fpdf package housing FPDF class)
 
@@ -48,6 +49,8 @@ from .structure_tree import MarkedContent, StructureTreeBuilder
 from .ttfonts import TTFontFile
 from .svg import Percent, SVGObject
 from .util import (
+    XPos,
+    YPos,
     enclose_in_parens,
     escape_parens,
     substr,
@@ -95,46 +98,6 @@ class DocumentState(IntEnum):
     CLOSED = 3  # EOF printed
 
 
-class XPos(IntEnum):
-    """
-    Positional values in horizontal direction for use after printing text.
-        LEFT    - left end of the cell
-        RIGHT   - right end of the cell (default)
-        START   - start of actual text
-        END     - end of actual text
-        WCONT   - for write() to continue next (slightly left of END)
-        CENTER  - center of actual text
-        LMARGIN - left page margin (start of printable area)
-        RMARGIN - right page margin (end of printable area)
-    """
-
-    LEFT = 1  # self.x
-    RIGHT = 2  # self.x + w
-    START = 3  # left end of actual text
-    END = 4  # right end of actual text
-    WCONT = 5  # continuation point for write()
-    CENTER = 6  # center of actual text
-    LMARGIN = 7  # self.l_margin
-    RMARGIN = 8  # self.w - self.r_margin
-
-
-class YPos(IntEnum):
-    """
-    Positional values in vertical direction for use after printing text.
-        TOP     - top of the first line (default)
-        LAST    - top of the last line (same as TOP for single-line text)
-        NEXT    - top of next line (bottom of current text)
-        TMARGIN - top page margin (start of printable area)
-        BMARGIN - bottom page margin (end of printable area)
-    """
-
-    TOP = 1  # self.y
-    LAST = 2  # top of last line (TOP for single lines)
-    NEXT = 3  # LAST + h
-    TMARGIN = 4  # self.t_margin
-    BMARGIN = 5  # self.h - self.b_margin
-
-
 class Annotation(NamedTuple):
     type: str
     x: int
@@ -145,6 +108,65 @@ class Annotation(NamedTuple):
     link: Union[str, int] = None
     alt_text: Optional[str] = None
     action: Optional[Action] = None
+    color: Optional[int] = None
+    modification_time: Optional[datetime] = None
+    title: Optional[str] = None
+    quad_points: Optional[tuple] = None
+    page: Optional[int] = None
+
+    def serialize(self, fpdf):
+        "Convert this object dictionnary to a string"
+        rect = (
+            f"{self.x:.2f} {self.y:.2f} "
+            f"{self.x + self.width:.2f} {self.y - self.height:.2f}"
+        )
+
+        out = (
+            f"<</Type /Annot /Subtype /{self.type}"
+            f" /Rect [{rect}] /Border [0 0 0]"
+            # Flag "Print" (bit position 3) specifies to print
+            # the annotation when the page is printed.
+            # cf. https://docs.verapdf.org/validation/pdfa-part1/#rule-653-2
+            f" /F 4"
+        )
+
+        if self.contents:
+            out += f" /Contents {enclose_in_parens(self.contents)}"
+
+        if self.action:
+            out += f" /A <<{self.action.dict_as_string()}>>"
+
+        if self.link:
+            if isinstance(self.link, str):
+                out += f" /A <</S /URI /URI {enclose_in_parens(self.link)}>>"
+            else:  # Dest type ending of annotation entry
+                assert (
+                    self.link in fpdf.links
+                ), f"Link with an invalid index: {self.link} (doc #links={len(fpdf.links)})"
+                out += f" /Dest {fpdf.links[self.link].as_str(fpdf)}"
+
+        if self.color:
+            # pylint: disable=unsubscriptable-object
+            out += f" /C [{self.color[0]} {self.color[1]} {self.color[2]}]"
+
+        if self.title:
+            out += f" /T ({escape_parens(self.title)})"
+
+        if self.modification_time:
+            out += f" /M (D:{self.modification_time:%Y%m%d%H%M%S})"
+
+        if self.quad_points:
+            # pylint: disable=not-an-iterable
+            quad_points = " ".join(
+                f"{quad_point:.2f}" for quad_point in self.quad_points
+            )
+            out += f" /QuadPoints [{quad_points}]"
+
+        if self.page:
+            # Same logic as FPDF._current_page_object_id:
+            out += f" /P {pdf_ref(2 * self.page + 1)}"
+
+        return out + ">>"
 
 
 class TitleStyle(NamedTuple):
@@ -387,6 +409,11 @@ class FPDF(GraphicsStateMixin):
 
         self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
         self._graphics_state_obj_refs = OrderedDict()
+
+        self.record_text_quad_points = False
+        self.text_quad_points = defaultdict(
+            list
+        )  # page number -> array of 8 × n numbers
 
     @property
     def unifontsubset(self):
@@ -1779,7 +1806,7 @@ class FPDF(GraphicsStateMixin):
         )
 
     @check_page
-    def text_annotation(self, x, y, text):
+    def text_annotation(self, x, y, text, w=1, h=1):
         """
         Puts a text annotation on a rectangular area of the page.
 
@@ -1795,8 +1822,8 @@ class FPDF(GraphicsStateMixin):
                 "Text",
                 x * self.k,
                 self.h_pt - y * self.k,
-                self.k,
-                self.k,
+                w * self.k,
+                h * self.k,
                 contents=text,
             )
         )
@@ -1821,6 +1848,91 @@ class FPDF(GraphicsStateMixin):
                 w * self.k,
                 h * self.k,
                 action=action,
+            )
+        )
+
+    @contextmanager
+    def add_highlight(self, text, title="", color=(1, 1, 0), modification_time=None):
+        """
+        Context manager that adds a single highlight annotation based on the text lines inserted
+        inside its indented block.
+
+        Args:
+            text (str): text of the annotation
+            title (str): the text label that shall be displayed in the title bar of the annotation’s
+                pop-up window when open and active. This entry shall identify the user who added the annotation.
+            color (tuple): a tuple of numbers in the range 0.0 to 1.0, representing a colour used for
+                the title bar of the annotation’s pop-up window
+            modification_time (datetime): date and time when the annotation was most recently modified
+        """
+        if self.record_text_quad_points:
+            raise FPDFException("add_highlight() cannot be nested")
+        self.record_text_quad_points = True
+        yield
+        for page, quad_points in self.text_quad_points.items():
+            self.add_text_markup_annotation(
+                "Highlight",
+                text,
+                quad_points=quad_points,
+                title=title,
+                color=color,
+                modification_time=modification_time,
+                page=page,
+            )
+            self.text_quad_points = defaultdict(list)
+        self.record_text_quad_points = False
+
+    @check_page
+    def add_text_markup_annotation(
+        self,
+        type,
+        text,
+        quad_points,
+        title="",
+        color=(1, 1, 0),
+        modification_time=None,
+        page=None,
+    ):
+        """
+        Adds a text markup annotation on some quadrilateral areas of the page.
+
+        Args:
+            type (str): "Highlight", "Underline", "Squiggly" or "StrikeOut"
+            text (str): text of the annotation
+            quad_points (tuple): array of 8 × n numbers specifying the coordinates of n quadrilaterals
+                in default user space that comprise the region in which the link should be activated.
+                The coordinates for each quadrilateral are given in the order: x1 y1 x2 y2 x3 y3 x4 y4
+                specifying the four vertices of the quadrilateral in counterclockwise order
+            title (str): the text label that shall be displayed in the title bar of the annotation’s
+                pop-up window when open and active. This entry shall identify the user who added the annotation.
+            color (tuple): a tuple of numbers in the range 0.0 to 1.0, representing a colour used for
+                the title bar of the annotation’s pop-up window
+            modification_time (datetime): date and time when the annotation was most recently modified
+            page (int): index of the page where this annotation is added
+        """
+        if type not in ("Highlight", "Underline", "Squiggly", "StrikeOut"):
+            raise ValueError(f"Invalid text markup annotation subtype: {type}")
+        if modification_time is None:
+            modification_time = datetime.now()
+        if page is None:
+            page = self.page
+        x_min = min(quad_points[0::2])
+        y_min = min(quad_points[1::2])
+        x_max = max(quad_points[0::2])
+        y_max = max(quad_points[1::2])
+        self.annots[page].append(
+            Annotation(
+                type,
+                contents=text,
+                x=y_min,
+                y=y_max,
+                width=x_max - x_min,
+                height=y_max - y_min,
+                color=color,
+                modification_time=modification_time,
+                title=title,
+                quad_points=quad_points,
+                page=page,
             )
         )
 
@@ -1855,6 +1967,26 @@ class FPDF(GraphicsStateMixin):
         if self.fill_color != self.text_color:
             s = f"q {self.text_color} {s} Q"
         self._out(s)
+        if self.record_text_quad_points:
+            unscaled_width = self.get_normalized_string_width_with_style(
+                txt, self.font_style
+            )
+            if self.font_stretching != 100:
+                unscaled_width *= self.font_stretching / 100
+            w = unscaled_width * self.font_size / 1000
+            h = self.font_size
+            self.text_quad_points[self.page].extend(
+                [
+                    x * self.k,
+                    (self.h - y) * self.k,
+                    (x + w) * self.k,
+                    (self.h - y) * self.k,
+                    x * self.k,
+                    (self.h - y + h) * self.k,
+                    (x + w) * self.k,
+                    (self.h - y + h) * self.k,
+                ]
+            )
 
     @check_page
     def rotate(self, angle, x=None, y=None):
@@ -1976,18 +2108,20 @@ class FPDF(GraphicsStateMixin):
         h=None,
         txt="",
         border=0,
-        ln=0,
+        new_x=XPos.RIGHT,
+        new_y=YPos.TOP,
+        ln="DEPRECATED",
         align="",
         fill=False,
         link="",
-        center=False,
+        center="DEPRECATED",
         markdown=False,
     ):
         """
         Prints a cell (rectangular area) with optional borders, background color and
         character string. The upper-left corner of the cell corresponds to the current
         position. The text can be aligned or centered. After the call, the current
-        position moves to the right or to the next line. It is possible to put a link
+        position moves to the selected `new_x`/`new_y` position. It is possible to put a link
         on the text.
 
         If automatic page breaking is enabled and the cell goes beyond the limit, a
@@ -2004,10 +2138,9 @@ class FPDF(GraphicsStateMixin):
                 or a string containing some or all of the following characters
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
-            ln (int): Indicates where the current position should go after the call.
-                Possible values are: `0`: to the right ; `1`: to the beginning of the
-                next line ; `2`: below. Putting 1 is equivalent to putting 0 and calling
-                `ln` just after. Default value: 0.
+            new_x (Enum XPos): New current position in x after the call. Default: RIGHT
+            new_y (Enum YPos): New current position in y after the call. Default: TOP
+            ln (int): **DEPRECATED** 2.5.1: Use new_x and new_y instead.
             align (str): Allows to center or align the text inside the cell.
                 Possible values are: `L` or empty string: left align (default value) ;
                 `C`: center ; `R`: right align
@@ -2015,7 +2148,7 @@ class FPDF(GraphicsStateMixin):
                 or transparent (`False`). Default value: False.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
-            center (bool): center the cell horizontally in the page
+            center (bool): **DEPRECATED** 2.5.1: Use align="C" instead.
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
 
@@ -2034,14 +2167,46 @@ class FPDF(GraphicsStateMixin):
                 "ignored"
             )
             border = 1
-        new_x = XPos.RIGHT
-        new_y = YPos.TOP
-        if ln == 1:
-            new_x = XPos.LMARGIN
-            new_y = YPos.NEXT
-        elif ln == 2:
-            new_x = XPos.LEFT
-            new_y = YPos.NEXT
+        if not isinstance(new_x, XPos):
+            raise ValueError(
+                f'Invalid value for parameter "new_x" ({new_x}),'
+                "must be instance of Enum XPos"
+            )
+        if not isinstance(new_y, YPos):
+            raise ValueError(
+                f'Invalid value for parameter "new_y" ({new_y}),'
+                "must be instance of Enum YPos"
+            )
+        if center == "DEPRECATED":
+            center = False
+        else:
+            warnings.warn(
+                ('The parameter "center" is deprecated.' ' Use align="C" instead.'),
+                DeprecationWarning,
+            )
+        if ln != "DEPRECATED":
+            warnings.warn(
+                (
+                    'The parameter "ln" is deprecated.'
+                    ' Use "new_x" and "new_y" instead.'
+                ),
+                DeprecationWarning,
+            )
+            # For backwards compatibility, if "ln" is used we overwrite "new_[xy]".
+            if ln == 0:
+                new_x = XPos.RIGHT
+                new_y = YPos.TOP
+            elif ln == 1:
+                new_x = XPos.LMARGIN
+                new_y = YPos.NEXT
+            elif ln == 2:
+                new_x = XPos.LEFT
+                new_y = YPos.NEXT
+            else:
+                raise ValueError(
+                    f'Invalid value for parameter "ln" ({ln}),'
+                    " must be an int between 0 and 2."
+                )
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
         txt = self.normalize_text(txt)
         styled_txt_frags = self._preload_font_styles(txt, markdown)
@@ -2107,7 +2272,7 @@ class FPDF(GraphicsStateMixin):
                 or transparent (`False`). Default value: False.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
-            center (bool): center the cell horizontally in the page
+            center (bool): **DEPRECATED** 2.5.1: Use align="C" instead.
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
 
@@ -2140,12 +2305,14 @@ class FPDF(GraphicsStateMixin):
             w = styled_txt_width + self.c_margin + self.c_margin
         if h is None:
             h = self.font_size
-        # pylint: disable=invalid-unary-operand-type
         if center:
             self.x = self.l_margin + (self.epw - w) / 2
+            align = "C"
         page_break_triggered = self._perform_page_break_if_need_be(h)
         s = ""
         k = self.k
+        # pylint: disable=invalid-unary-operand-type
+        # "h" can't actually be None
         if fill:
             op = "B" if border == 1 else "f"
             s = (
@@ -2157,6 +2324,7 @@ class FPDF(GraphicsStateMixin):
                 f"{self.x * k:.2f} {(self.h - self.y) * k:.2f} "
                 f"{w * k:.2f} {-h * k:.2f} re S "
             )
+        # pylint: enable=invalid-unary-operand-type
 
         if isinstance(border, str):
             x = self.x
@@ -2182,6 +2350,22 @@ class FPDF(GraphicsStateMixin):
                     f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S "
                 )
 
+        if self.record_text_quad_points:
+            x = self.x
+            y = self.y
+            self.text_quad_points[self.page].extend(
+                [
+                    x * self.k,
+                    (self.h - y) * self.k,
+                    (x + w) * self.k,
+                    (self.h - y) * self.k,
+                    x * self.k,
+                    (self.h - y - h) * self.k,
+                    (x + w) * self.k,
+                    (self.h - y - h) * self.k,
+                ]
+            )
+
         s_start = self.x
         s_width, underlines = 0, []
         if text_line.fragments:
@@ -2205,7 +2389,7 @@ class FPDF(GraphicsStateMixin):
 
             # precursor to self.ws, or manual spacing of unicode fonts/
             word_spacing = 0
-            if align == "J" and text_line.number_of_spaces_between_words:
+            if text_line.justify:
                 word_spacing = (
                     w - self.c_margin - self.c_margin - styled_txt_width
                 ) / text_line.number_of_spaces_between_words
@@ -2476,7 +2660,9 @@ class FPDF(GraphicsStateMixin):
         fill=False,
         split_only=False,
         link="",
-        ln=0,
+        new_x=XPos.RIGHT,
+        new_y=YPos.NEXT,
+        ln="DEPRECATED",
         max_line_height=None,
         markdown=False,
         print_sh=False,
@@ -2492,7 +2678,7 @@ class FPDF(GraphicsStateMixin):
         Args:
             w (float): cell width. If 0, they extend up to the right margin of the page.
             h (float): cell height. Default value: None, meaning to use the current font size.
-            txt (str): strign to print.
+            txt (str): string to print.
             border: Indicates if borders must be drawn around the cell.
                 The value can be either a number (`0`: no border ; `1`: frame)
                 or a string containing some or all of the following characters
@@ -2507,18 +2693,17 @@ class FPDF(GraphicsStateMixin):
                 word-wrapping and return the resulting multi-lines array of strings.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
-            ln (int): Indicates where the current position should go after the call.
-                Possible values are: `0`: to the bottom right ; `1`: to the beginning
-                of the next line ; `2`: below with the same horizontal offset ;
-                `3`: to the right with the same vertical offset. Default value: 0.
+            new_x (Enum XPos): New current position in x after the call. Default: RIGHT
+            new_y (Enum YPos): New current position in y after the call. Default: NEXT
+            ln (int): **DEPRECATED** 2.5.1: Use new_x and new_y instead.
             max_line_height (float): optional maximum height of each sub-cell generated
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
             print_sh (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
                 character, instead of a line breaking opportunity. Default value: False
 
-        Using `ln=3` and `maximum height=pdf.font_size` is useful to build tables
-        with multiline text in cells.
+        Using `new_x=XPos.RIGHT, new_y=XPos.TOP, maximum height=pdf.font_size` is
+        useful to build tables with multiline text in cells.
 
         Returns: a boolean indicating if page break was triggered,
             or if `split_only == True`: `txt` splitted into lines in an array
@@ -2528,22 +2713,45 @@ class FPDF(GraphicsStateMixin):
                 "Parameter 'w' and 'h' must be numbers, not strings."
                 " You can omit them by passing string content with txt="
             )
-        new_x = XPos.RIGHT
-        new_y = YPos.NEXT
-        if ln == 1:
-            new_x = XPos.LMARGIN
-        elif ln == 2:
-            new_x = XPos.LEFT
-        elif ln == 3:
-            new_y = YPos.TOP
+        if not isinstance(new_x, XPos):
+            raise ValueError(
+                f'Invalid value for parameter "new_x" ({new_x}),'
+                "must be instance of Enum XPos"
+            )
+        if not isinstance(new_y, YPos):
+            raise ValueError(
+                f'Invalid value for parameter "new_y" ({new_y}),'
+                "must be instance of Enum YPos"
+            )
+        if ln != "DEPRECATED":
+            warnings.warn(
+                (
+                    'The parameter "ln" is deprecated.'
+                    ' Use "new_x" and "new_y" instead.'
+                ),
+                DeprecationWarning,
+            )
+            # For backwards compatibility, if "ln" is used we overwrite "new_[xy]".
+            if ln == 0:
+                new_x = XPos.RIGHT
+                new_y = YPos.NEXT
+            elif ln == 1:
+                new_x = XPos.LMARGIN
+                new_y = YPos.NEXT
+            elif ln == 2:
+                new_x = XPos.LEFT
+                new_y = YPos.NEXT
+            elif ln == 3:
+                new_x = XPos.RIGHT
+                new_y = YPos.TOP
+            else:
+                raise ValueError(
+                    f'Invalid value for parameter "ln" ({ln}),'
+                    " must be an int between 0 and 3."
+                )
 
         page_break_triggered = False
         if split_only:
-            _out, _add_page, _perform_page_break_if_need_be = (
-                self._out,
-                self.add_page,
-                self._perform_page_break_if_need_be,
-            )
             self._out = lambda *args, **kwargs: None
             self.add_page = lambda *args, **kwargs: None
             self._perform_page_break_if_need_be = lambda *args, **kwargs: None
@@ -2595,7 +2803,6 @@ class FPDF(GraphicsStateMixin):
             ]
         for text_line_index, text_line in enumerate(text_lines):
             is_last_line = text_line_index == len(text_lines) - 1
-
             if max_line_height is not None and h > max_line_height and not is_last_line:
                 current_cell_height = max_line_height
                 h -= current_cell_height
@@ -2616,6 +2823,7 @@ class FPDF(GraphicsStateMixin):
                 ),
                 new_x=new_x if is_last_line else XPos.LEFT,
                 new_y=new_y if is_last_line else YPos.NEXT,
+                # align="L" if (align == "J" and is_last_line) else align,
                 align="L" if (align == "J" and is_last_line) else align,
                 fill=fill,
                 link=link,
@@ -2632,11 +2840,9 @@ class FPDF(GraphicsStateMixin):
 
         if split_only:
             # restore writing functions
-            self._out, self.add_page, self._perform_page_break_if_need_be = (
-                _out,
-                _add_page,
-                _perform_page_break_if_need_be,
-            )
+            del self.add_page
+            del self._out
+            del self._perform_page_break_if_need_be
             self.set_xy(prev_x, prev_y)  # restore location
             result = []
             for text_line in text_lines:
@@ -2895,8 +3101,8 @@ class FPDF(GraphicsStateMixin):
         )
         path.transform = path.transform @ drawing.Transform.translation(x, y)
 
+        old_x, old_y = self.x, self.y
         try:
-            old_x, old_y = self.x, self.y
             self.set_xy(0, 0)
             if title or alt_text:
                 with self._marked_sequence(title=title, alt_text=alt_text):
@@ -2979,6 +3185,10 @@ class FPDF(GraphicsStateMixin):
 
     @contextmanager
     def _marked_sequence(self, **kwargs):
+        """
+        Can receive as named arguments any of the entries described in section 14.7.2 'Structure Hierarchy'
+        of the PDF spec: iD, a, c, r, lang, e, actualText
+        """
         page_object_id = self._current_page_object_id()
         mcid = self.struct_builder.next_mcid_for_page(page_object_id)
         marked_content = self._add_marked_content(
@@ -2989,6 +3199,10 @@ class FPDF(GraphicsStateMixin):
         self._out("EMC")
 
     def _add_marked_content(self, page_object_id, **kwargs):
+        """
+        Can receive as named arguments any of the entries described in section 14.7.2 'Structure Hierarchy'
+        of the PDF spec: iD, a, c, r, lang, e, actualText
+        """
         struct_parents_id = self._struct_parents_id_per_page.get(page_object_id)
         if struct_parents_id is None:
             struct_parents_id = len(self._struct_parents_id_per_page)
@@ -3126,25 +3340,7 @@ class FPDF(GraphicsStateMixin):
             if page_annots:  # Annotations, e.g. links:
                 annots = ""
                 for annot in page_annots:
-                    # first four things in 'link' list are coordinates?
-                    rect = (
-                        f"{annot.x:.2f} {annot.y:.2f} "
-                        f"{annot.x + annot.width:.2f} {annot.y - annot.height:.2f}"
-                    )
-
-                    # start the annotation entry
-                    annots += (
-                        f"<</Type /Annot /Subtype /{annot.type}"
-                        f" /Rect [{rect}] /Border [0 0 0]"
-                        # Flag "Print" (bit position 3) specifies to print
-                        # the annotation when the page is printed.
-                        # cf. https://docs.verapdf.org/validation/pdfa-part1/#rule-653-2
-                        f" /F 4"
-                    )
-
-                    if annot.contents:
-                        annots += f" /Contents {enclose_in_parens(annot.contents)}"
-
+                    annots += annot.serialize(self)
                     if annot.alt_text is not None:
                         # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
                         # but tests with Adobe Acrobat Reader reveal that the page /StructParents inserted below
@@ -3152,24 +3348,6 @@ class FPDF(GraphicsStateMixin):
                         self._add_marked_content(
                             self.n, struct_type="/Link", alt_text=annot.alt_text
                         )
-
-                    if annot.action:
-                        annots += f" /A <<{annot.action.dict_as_string()}>>"
-
-                    if annot.link:
-                        if isinstance(annot.link, str):
-                            annots += (
-                                f" /A <</S /URI /URI {enclose_in_parens(annot.link)}>>"
-                            )
-                        else:  # Dest type ending of annotation entry
-                            assert annot.link in self.links, (
-                                f"Page {n} has a link with an invalid index: "
-                                f"{annot.link} (doc #links={len(self.links)})"
-                            )
-                            dest = self.links[annot.link]
-                            annots += f" /Dest {dest.as_str(self)}"
-                    annots += ">>"
-                # End links list
                 self._out(f"/Annots [{annots}]")
             if self.pdf_version > "1.3":
                 self._out("/Group <</Type /Group /S /Transparency" "/CS /DeviceRGB>>")
@@ -4163,7 +4341,13 @@ class FPDF(GraphicsStateMixin):
             with self._marked_sequence(title=name) as marked_content:
                 struct_elem = self.struct_builder.struct_elem_per_mc[marked_content]
                 with self._apply_style(self.section_title_styles[level]):
-                    self.multi_cell(w=self.epw, h=self.font_size, txt=name, ln=1)
+                    self.multi_cell(
+                        w=self.epw,
+                        h=self.font_size,
+                        txt=name,
+                        new_x=XPos.LMARGIN,
+                        new_y=YPos.NEXT,
+                    )
         self._outline.append(OutlineSection(name, level, self.page, dest, struct_elem))
 
     @contextmanager

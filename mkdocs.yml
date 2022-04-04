@@ -87,7 +87,7 @@ nav:
   - 'Document outline & table of contents': 'DocumentOutlineAndTableOfContents.md'
 - 'Processing Web Content':
   - 'HTML':                           'HTML.md'
-  - 'Web2Py':                         'Web2Py.md'
+  - 'Usage in web API':               'UsageInWebAPI.md'
 - 'Reading and Postprocessing':
   - 'Existing PDFs':                  'ExistingPDFs.md'
   - 'Borb':                           'borb.md'
@@ -96,4 +96,3 @@ nav:
   - 'Logging':                        'Logging.md'
 - 'API':                            'https://pyfpdf.github.io/fpdf2/fpdf/'
 - 'FAQ':                            'FAQ.md'
-

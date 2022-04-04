@@ -48,7 +48,7 @@ pdf.cell(40, 10, 'Hello World!', 1)
 Per aggiungere una nuova cella di fianco alla precedente con testo centrato e poi spostarci alla riga successiva, faremmo:
 
 ```python
-pdf.cell(60, 10, 'Powered by FPDF.', ln=1, align='C')
+pdf.cell(60, 10, 'Powered by FPDF.', new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='C')
 ```
 
 **NB**: si può andare a capo anche con [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). Questo metodo permette di specificare l'altezza dello spazio.

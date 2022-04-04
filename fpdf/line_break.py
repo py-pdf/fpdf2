@@ -259,7 +259,7 @@ class MultiLineBreak:
                 if not wordsplit:
                     line_full = True
                     break
-                return current_line.manual_break(self.justify)
+                return current_line.manual_break()
 
             current_line.add_character(
                 character,
