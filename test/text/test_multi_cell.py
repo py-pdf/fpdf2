@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF, XPos, YPos
-from test.conftest import assert_pdf_equal
+from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
 HERE = Path(__file__).resolve().parent
@@ -24,35 +24,20 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
     doc = FPDF(format="letter", unit="pt")
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
-    text = (
-        "Lorem ipsum Ut nostrud irure reprehenderit anim nostrud dolore sed "
-        "ut Excepteur dolore ut sunt irure consectetur tempor eu tempor "
-        "nostrud dolore sint exercitation aliquip velit ullamco esse dolore "
-        "mollit ea sed voluptate commodo amet eiusmod incididunt Excepteur "
-        "Excepteur officia est ea dolore sed id in cillum incididunt quis ex "
-        "id aliqua ullamco reprehenderit cupidatat in quis pariatur ex et "
-        "veniam consectetur et minim minim nulla ea in quis Ut in "
-        "consectetur cillum aliquip pariatur qui quis sint reprehenderit "
-        "anim incididunt laborum dolor dolor est dolor fugiat ut officia do "
-        "dolore deserunt nulla voluptate officia mollit elit consequat ad "
-        "aliquip non nulla dolor nisi magna consectetur anim sint officia "
-        "sit tempor anim do laboris ea culpa eu veniam sed cupidatat in anim "
-        "fugiat culpa enim Ut cillum in exercitation magna nostrud aute "
-        "proident laboris est ullamco nulla occaecat nulla proident "
-        "consequat in ut labore non sit id cillum ut ea quis est ut dolore "
-        "nisi aliquip aute pariatur ullamco ut cillum Duis nisi elit sit "
-        "cupidatat do Ut aliqua irure sunt sunt proident sit aliqua in "
-        "dolore Ut in sint sunt exercitation aliquip elit velit dolor nisi "
-    )
 
     doc.multi_cell(
-        w=144, h=LINE_HEIGHT, border=1, txt=text[:29], new_x=XPos.RIGHT, new_y=YPos.NEXT
+        w=144,
+        h=LINE_HEIGHT,
+        border=1,
+        txt=LOREM_IPSUM[:29],
+        new_x=XPos.RIGHT,
+        new_y=YPos.NEXT,
     )
     doc.multi_cell(
         w=180,
         h=LINE_HEIGHT,
         border=1,
-        txt=text[29:60],
+        txt=LOREM_IPSUM[29:60],
         new_x=XPos.LEFT,
         new_y=YPos.NEXT,
     )
@@ -60,7 +45,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=144,
         h=LINE_HEIGHT,
         border=1,
-        txt=text[60:90],
+        txt=LOREM_IPSUM[60:90],
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
     )
@@ -68,7 +53,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=72 * 5,
         h=LINE_HEIGHT,
         border=1,
-        txt=text[0:30],
+        txt=LOREM_IPSUM[0:30],
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
     )
@@ -76,7 +61,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=72 * 5,
         h=LINE_HEIGHT,
         border=1,
-        txt=text[31:60],
+        txt=LOREM_IPSUM[31:60],
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
     )
@@ -84,7 +69,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=72 * 5,
         h=LINE_HEIGHT,
         border=1,
-        txt=text[61:90],
+        txt=LOREM_IPSUM[61:90],
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
     )
@@ -92,7 +77,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=72 * 5,
         h=LINE_HEIGHT,
         border=1,
-        txt=text[91:120],
+        txt=LOREM_IPSUM[91:120],
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
     )
@@ -102,7 +87,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=144,
         h=LINE_HEIGHT,
         border=1,
-        txt=text[30:90],
+        txt=LOREM_IPSUM[30:90],
         new_x=XPos.LEFT,
         new_y=YPos.NEXT,
     )

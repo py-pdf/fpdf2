@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF, XPos, YPos, FPDFException
-from test.conftest import assert_pdf_equal
+from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 TEXT_SIZE, SPACING = 36, 1.15
 LINE_HEIGHT = TEXT_SIZE * SPACING
@@ -123,7 +123,7 @@ def test_cell_without_w_nor_h(tmp_path):
     assert_pdf_equal(pdf, HERE / "cell_without_w_nor_h.pdf", tmp_path)
 
 
-def test_cell_missing_text_or_width(tmp_path):
+def test_cell_missing_text_or_width(tmp_path):  # pylint: disable=unused-argument
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
@@ -163,7 +163,7 @@ def test_cell_markdown_with_ttf_fonts(tmp_path):
     assert_pdf_equal(pdf, HERE / "cell_markdown_with_ttf_fonts.pdf", tmp_path)
 
 
-def test_cell_markdown_missing_ttf_font(tmp_path):
+def test_cell_markdown_missing_ttf_font(tmp_path):  # pylint: disable=unused-argument
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf")
