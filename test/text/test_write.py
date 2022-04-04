@@ -27,7 +27,6 @@ text_data = (
     "nisi aliquip aute pariatur ullamco ut cillum Duis nisi elit sit "
     "cupidatat do Ut aliqua irure sunt sunt proident sit aliqua in "
     "dolore Ut in sint sunt exercitation aliquip elit velit dolor nisi "
-    ""
 )
 # pylint: enable=all
 

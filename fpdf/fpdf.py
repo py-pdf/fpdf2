@@ -150,6 +150,61 @@ class Annotation(NamedTuple):
     modification_time: Optional[datetime] = None
     title: Optional[str] = None
     quad_points: Optional[tuple] = None
+    page: Optional[int] = None
+
+    def serialize(self, fpdf):
+        "Convert this object dictionnary to a string"
+        rect = (
+            f"{self.x:.2f} {self.y:.2f} "
+            f"{self.x + self.width:.2f} {self.y - self.height:.2f}"
+        )
+
+        out = (
+            f"<</Type /Annot /Subtype /{self.type}"
+            f" /Rect [{rect}] /Border [0 0 0]"
+            # Flag "Print" (bit position 3) specifies to print
+            # the annotation when the page is printed.
+            # cf. https://docs.verapdf.org/validation/pdfa-part1/#rule-653-2
+            f" /F 4"
+        )
+
+        if self.contents:
+            out += f" /Contents {enclose_in_parens(self.contents)}"
+
+        if self.action:
+            out += f" /A <<{self.action.dict_as_string()}>>"
+
+        if self.link:
+            if isinstance(self.link, str):
+                out += f" /A <</S /URI /URI {enclose_in_parens(self.link)}>>"
+            else:  # Dest type ending of annotation entry
+                assert (
+                    self.link in fpdf.links
+                ), f"Link with an invalid index: {self.link} (doc #links={len(fpdf.links)})"
+                out += f" /Dest {fpdf.links[self.link].as_str(fpdf)}"
+
+        if self.color:
+            # pylint: disable=unsubscriptable-object
+            out += f" /C [{self.color[0]} {self.color[1]} {self.color[2]}]"
+
+        if self.title:
+            out += f" /T ({escape_parens(self.title)})"
+
+        if self.modification_time:
+            out += f" /M (D:{self.modification_time:%Y%m%d%H%M%S})"
+
+        if self.quad_points:
+            # pylint: disable=not-an-iterable
+            quad_points = " ".join(
+                f"{quad_point:.2f}" for quad_point in self.quad_points
+            )
+            out += f" /QuadPoints [{quad_points}]"
+
+        if self.page:
+            # Same logic as FPDF._current_page_object_id:
+            out += f" /P {pdf_ref(2 * self.page + 1)}"
+
+        return out + ">>"
 
 
 class TitleStyle(NamedTuple):
@@ -394,7 +449,9 @@ class FPDF(GraphicsStateMixin):
         self._graphics_state_obj_refs = OrderedDict()
 
         self.record_text_quad_points = False
-        self.text_quad_points = []
+        self.text_quad_points = defaultdict(
+            list
+        )  # page number -> array of 8 × n numbers
 
     @property
     def unifontsubset(self):
@@ -1846,23 +1903,33 @@ class FPDF(GraphicsStateMixin):
                 the title bar of the annotation’s pop-up window
             modification_time (datetime): date and time when the annotation was most recently modified
         """
+        if self.record_text_quad_points:
+            raise FPDFException("add_highlight() cannot be nested")
         self.record_text_quad_points = True
         yield
-        if self.text_quad_points:
+        for page, quad_points in self.text_quad_points.items():
             self.add_text_markup_annotation(
                 "Highlight",
                 text,
-                quad_points=self.text_quad_points,
+                quad_points=quad_points,
                 title=title,
                 color=color,
                 modification_time=modification_time,
+                page=page,
             )
-            self.text_quad_points = []
-            self.record_text_quad_points = False
+            self.text_quad_points = defaultdict(list)
+        self.record_text_quad_points = False
 
     @check_page
     def add_text_markup_annotation(
-        self, type, text, quad_points, title="", color=(1, 1, 0), modification_time=None
+        self,
+        type,
+        text,
+        quad_points,
+        title="",
+        color=(1, 1, 0),
+        modification_time=None,
+        page=None,
     ):
         """
         Adds a text markup annotation on a rectangular area of the page.
@@ -1883,11 +1950,13 @@ class FPDF(GraphicsStateMixin):
             raise ValueError(f"Invalid text markup annotation subtype: {type}")
         if modification_time is None:
             modification_time = datetime.now()
+        if page is None:
+            page = self.page
         x_min = min(quad_points[0::2])
         y_min = min(quad_points[1::2])
         x_max = max(quad_points[0::2])
         y_max = max(quad_points[1::2])
-        self.annots[self.page].append(
+        self.annots[page].append(
             Annotation(
                 type,
                 contents=text,
@@ -1899,6 +1968,7 @@ class FPDF(GraphicsStateMixin):
                 modification_time=modification_time,
                 title=title,
                 quad_points=quad_points,
+                page=page,
             )
         )
 
@@ -1941,7 +2011,7 @@ class FPDF(GraphicsStateMixin):
                 unscaled_width *= self.font_stretching / 100
             w = unscaled_width * self.font_size / 1000
             h = self.font_size
-            self.text_quad_points.extend(
+            self.text_quad_points[self.page].extend(
                 [
                     x * self.k,
                     (self.h - y) * self.k,
@@ -2281,7 +2351,9 @@ class FPDF(GraphicsStateMixin):
                 )
 
         if self.record_text_quad_points:
-            self.text_quad_points.extend(
+            x = self.x
+            y = self.y
+            self.text_quad_points[self.page].extend(
                 [
                     x * self.k,
                     (self.h - y) * self.k,
@@ -3239,7 +3311,14 @@ class FPDF(GraphicsStateMixin):
             if page_annots:  # Annotations, e.g. links:
                 annots = ""
                 for annot in page_annots:
-                    annots += self._annotation_as_string(annot, n)
+                    annots += annot.serialize(self)
+                    if annot.alt_text is not None:
+                        # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
+                        # but tests with Adobe Acrobat Reader reveal that the page /StructParents inserted below
+                        # is enough to link the marked content in the hierarchy tree with this annotation link.
+                        self._add_marked_content(
+                            self.n, struct_type="/Link", alt_text=annot.alt_text
+                        )
                 self._out(f"/Annots [{annots}]")
             if self.pdf_version > "1.3":
                 self._out("/Group <</Type /Group /S /Transparency" "/CS /DeviceRGB>>")
@@ -3265,64 +3344,6 @@ class FPDF(GraphicsStateMixin):
         self._out(f"/MediaBox [0 0 {dw_pt:.2f} {dh_pt:.2f}]")
         self._out(">>")
         self._out("endobj")
-
-    def _annotation_as_string(self, annot, page_id):
-        rect = (
-            f"{annot.x:.2f} {annot.y:.2f} "
-            f"{annot.x + annot.width:.2f} {annot.y - annot.height:.2f}"
-        )
-
-        # start the annotation entry
-        out = (
-            f"<</Type /Annot /Subtype /{annot.type}"
-            f" /Rect [{rect}] /Border [0 0 0]"
-            # Flag "Print" (bit position 3) specifies to print
-            # the annotation when the page is printed.
-            # cf. https://docs.verapdf.org/validation/pdfa-part1/#rule-653-2
-            f" /F 4"
-        )
-
-        if annot.contents:
-            out += f" /Contents {enclose_in_parens(annot.contents)}"
-
-        if annot.alt_text is not None:
-            # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
-            # but tests with Adobe Acrobat Reader reveal that the page /StructParents inserted below
-            # is enough to link the marked content in the hierarchy tree with this annotation link.
-            self._add_marked_content(
-                self.n, struct_type="/Link", alt_text=annot.alt_text
-            )
-
-        if annot.action:
-            out += f" /A <<{annot.action.dict_as_string()}>>"
-
-        if annot.link:
-            if isinstance(annot.link, str):
-                out += f" /A <</S /URI /URI {enclose_in_parens(annot.link)}>>"
-            else:  # Dest type ending of annotation entry
-                assert annot.link in self.links, (
-                    f"Page {page_id} has a link with an invalid index: "
-                    f"{annot.link} (doc #links={len(self.links)})"
-                )
-                dest = self.links[annot.link]
-                out += f" /Dest {dest.as_str(self)}"
-
-        if annot.color:
-            out += f" /C [{annot.color[0]} {annot.color[1]} {annot.color[2]}]"
-
-        if annot.title:
-            out += f" /T {annot.title}"
-
-        if annot.modification_time:
-            out += f" /M (D:{annot.modification_time:%Y%m%d%H%M%S})"
-
-        if annot.quad_points:
-            quad_points = " ".join(
-                f"{quad_point:.2f}" for quad_point in annot.quad_points
-            )
-            out += f" /QuadPoints [{quad_points}]"
-
-        return out + ">>"
 
     def _substitute_page_number(self):
         nb = self.pages_count  # total number of pages

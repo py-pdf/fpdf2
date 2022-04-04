@@ -109,3 +109,30 @@ def test_highlighted(tmp_path):
         pdf.multi_cell(w=30, txt="Line 2")
     pdf.cell(w=60, txt="Not highlighted", border=1)
     assert_pdf_equal(pdf, HERE / "highlighted.pdf", tmp_path)
+
+
+def test_highlighted_over_page_break(tmp_path):
+    text_data = (
+        "Lorem ipsum Ut nostrud irure reprehenderit anim nostrud dolore sed "
+        "ut Excepteur dolore ut sunt irure consectetur tempor eu tempor "
+        "nostrud dolore sint exercitation aliquip velit ullamco esse dolore "
+        "mollit ea sed voluptate commodo amet eiusmod incididunt Excepteur "
+        "Excepteur officia est ea dolore sed id in cillum incididunt quis ex "
+        "id aliqua ullamco reprehenderit cupidatat in quis pariatur ex et "
+        "veniam consectetur et minim minim nulla ea in quis Ut in "
+        "consectetur cillum aliquip pariatur qui quis sint reprehenderit "
+        "anim incididunt laborum dolor dolor est dolor fugiat ut officia do "
+        "dolore deserunt nulla voluptate officia mollit elit consequat ad "
+        "aliquip non nulla dolor nisi magna consectetur anim sint officia "
+        "sit tempor anim do laboris ea culpa eu veniam sed cupidatat in anim "
+        "fugiat culpa enim"
+    )
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica", size=24)
+    pdf.y = 20
+    pdf.write(txt=text_data)
+    pdf.ln()
+    with pdf.add_highlight("Comment", title="Freddy Mercury"):
+        pdf.write(txt=text_data)
+    assert_pdf_equal(pdf, HERE / "highlighted_over_page_break.pdf", tmp_path)
