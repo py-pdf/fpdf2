@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 import fpdf
-from test.conftest import assert_pdf_equal
+from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 TEXT_SIZE, SPACING = 36, 1.15
 LINE_HEIGHT = TEXT_SIZE * SPACING
@@ -23,37 +23,8 @@ TABLE_DATA = (
 def test_ln_positioning_and_page_breaking_for_cell(tmp_path):
     doc = fpdf.FPDF(format="letter", unit="pt")
     doc.add_page()
-
     doc.set_font("helvetica", size=TEXT_SIZE)
-    # pylint has to be disabled for the variable "text". Otherwise it will be marked as
-    # "duplicate code" due to the same variable in the "test_multi_call.py" file
-    # Note: just using "disable=duplicate-code" isn't working due to an unfixed bug in
-    # pylint --> https://github.com/PyCQA/pylint/issues/214
-
-    # pylint: disable=all
-    text = (
-        "Lorem ipsum Ut nostrud irure reprehenderit anim nostrud dolore sed "
-        "ut Excepteur dolore ut sunt irure consectetur tempor eu tempor "
-        "nostrud dolore sint exercitation aliquip velit ullamco esse dolore "
-        "mollit ea sed voluptate commodo amet eiusmod incididunt Excepteur "
-        "Excepteur officia est ea dolore sed id in cillum incididunt quis ex "
-        "id aliqua ullamco reprehenderit cupidatat in quis pariatur ex et "
-        "veniam consectetur et minim minim nulla ea in quis Ut in "
-        "consectetur cillum aliquip pariatur qui quis sint reprehenderit "
-        "anim incididunt laborum dolor dolor est dolor fugiat ut officia do "
-        "dolore deserunt nulla voluptate officia mollit elit consequat ad "
-        "aliquip non nulla dolor nisi magna consectetur anim sint officia "
-        "sit tempor anim do laboris ea culpa eu veniam sed cupidatat in anim "
-        "fugiat culpa enim Ut cillum in exercitation magna nostrud aute "
-        "proident laboris est ullamco nulla occaecat nulla proident "
-        "consequat in ut labore non sit id cillum ut ea quis est ut dolore "
-        "nisi aliquip aute pariatur ullamco ut cillum Duis nisi elit sit "
-        "cupidatat do Ut aliqua irure sunt sunt proident sit aliqua in "
-        "dolore Ut in sint sunt exercitation aliquip elit velit dolor nisi "
-        ""
-    ) * 100
-    # pylint: enable=all
-
+    text = LOREM_IPSUM * 100
     for i in range(20):
         doc.cell(
             w=72,
@@ -149,7 +120,7 @@ def test_cell_without_w_nor_h(tmp_path):
     assert_pdf_equal(pdf, HERE / "cell_without_w_nor_h.pdf", tmp_path)
 
 
-def test_cell_missing_text_or_width(tmp_path):
+def test_cell_missing_text_or_width():
     pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
@@ -188,7 +159,7 @@ def test_cell_markdown_with_ttf_fonts(tmp_path):
     assert_pdf_equal(pdf, HERE / "cell_markdown_with_ttf_fonts.pdf", tmp_path)
 
 
-def test_cell_markdown_missing_ttf_font(tmp_path):
+def test_cell_markdown_missing_ttf_font():
     pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf")
