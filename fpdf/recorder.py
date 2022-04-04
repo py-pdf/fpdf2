@@ -51,6 +51,7 @@ class FPDFRecorder:
                     warnings.warn(
                         "Detected usage of a context manager inside an unbreakable() section, which is not supported"
                     )
+                # The results of other methods can also be invalidated: .pages_count, page_no(), get_x() / get_y(), will_page_break()
             except Exception as error:
                 raise FPDFException(
                     f"Failed to replay FPDF call: {func}(*{args}, **{kwargs})"

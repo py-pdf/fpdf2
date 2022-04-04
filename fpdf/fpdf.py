@@ -98,6 +98,17 @@ class DocumentState(IntEnum):
     CLOSED = 3  # EOF printed
 
 
+class TextMode(IntEnum):
+    FILL = 0
+    STROKE = 1
+    FILL_STROKE = 2
+    INVISIBLE = 3
+    FILL_CLIP = 4
+    STROKE_CLIP = 5
+    FILL_STROKE_CLIP = 6
+    CLIP = 7
+
+
 class Annotation(NamedTuple):
     type: str
     x: int
@@ -388,6 +399,7 @@ class FPDF(GraphicsStateMixin):
         self.text_color = "0 g"
         self.dash_pattern = dict(dash=0, gap=0, phase=0)
         self.line_width = 0.567 / self.k  # line width (0.2 mm)
+        self.text_mode = TextMode.FILL
         # end of grapics state variables
 
         self.dw_pt, self.dh_pt = get_page_format(format, self.k)
@@ -2386,6 +2398,9 @@ class FPDF(GraphicsStateMixin):
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2f} Td"
             )
+
+            if self.text_mode != TextMode.FILL:
+                s += f" {self.text_mode} Tr {self.line_width:.2f} w"
 
             # precursor to self.ws, or manual spacing of unicode fonts/
             word_spacing = 0
@@ -4406,6 +4421,15 @@ class FPDF(GraphicsStateMixin):
         self.set_font(*prev_font)
         self.text_color = prev_text_color
         self.underline = prev_underline
+
+    @contextmanager
+    def set_text_mode(self, mode, width=None):
+        old_mode, old_width = self.text_mode, self.line_width
+        self.text_mode = mode
+        if width is not None:
+            self.line_width = width
+        yield
+        self.text_mode, self.line_width = old_mode, old_width
 
 
 def _style_to_operator(style):

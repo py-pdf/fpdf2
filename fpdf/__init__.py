@@ -6,6 +6,7 @@ from .fpdf import (
     FPDF,
     FPDFException,
     TitleStyle,
+    TextMode,
     FPDF_FONT_DIR as _FPDF_FONT_DIR,
     FPDF_VERSION as _FPDF_VERSION,
 )

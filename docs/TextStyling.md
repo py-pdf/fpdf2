@@ -30,6 +30,33 @@ pdf.output("style.pdf")
 ```
 
 
+## Text mode ##
+
+The PDF spec defines several text modes:
+![](pdf-text-modes.jpg)
+
+The global text mode can be controlled with the `.text_mode` attribute,
+or temporarily set with the `set_text_mode` context manager:
+
+```python
+from fpdf import FPDF, TextMode
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Helvetica", size=100)
+with pdf.set_text_mode(TextMode.STROKE):
+    pdf.cell(txt="Hello world")
+pdf.ln()
+pdf.line_width = 1
+with pdf.set_text_mode(TextMode.STROKE):
+    pdf.cell(txt="Hello world")
+pdf.ln()
+with pdf.set_text_mode(TextMode.STROKE, width=2):
+    pdf.cell(txt="Hello world")
+pdf.output("text-modes.pdf")
+```
+
+
 ## write_html ##
 
 [`write_html`](HTML.md) allows to set emphasis on text through the `<b>`, `<i>` and `<u>` tags:
