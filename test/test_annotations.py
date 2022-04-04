@@ -3,7 +3,7 @@ from pathlib import Path
 from fpdf import FPDF
 from fpdf.actions import GoToAction, GoToRemoteAction, LaunchAction, NamedAction
 from fpdf.syntax import DestinationXYZ
-from test.conftest import assert_pdf_equal
+from test.conftest import assert_pdf_equal, EPOCH
 
 HERE = Path(__file__).resolve().parent
 
@@ -103,7 +103,7 @@ def test_highlighted(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=24)
-    with pdf.add_highlight("Highlight comment"):
+    with pdf.add_highlight("Highlight comment", modification_time=EPOCH):
         pdf.text(50, 50, "Line 1")
         pdf.set_y(50)
         pdf.multi_cell(w=30, txt="Line 2")
@@ -133,6 +133,6 @@ def test_highlighted_over_page_break(tmp_path):
     pdf.y = 20
     pdf.write(txt=text_data)
     pdf.ln()
-    with pdf.add_highlight("Comment", title="Freddy Mercury"):
+    with pdf.add_highlight("Comment", title="Freddy Mercury", modification_time=EPOCH):
         pdf.write(txt=text_data)
     assert_pdf_equal(pdf, HERE / "highlighted_over_page_break.pdf", tmp_path)
