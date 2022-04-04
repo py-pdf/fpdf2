@@ -4239,6 +4239,7 @@ class FPDF(GraphicsStateMixin):
         """
         prev_page, prev_y = self.page, self.y
         recorder = FPDFRecorder(self, accept_page_break=False)
+        recorder.page_break_triggered = False
         LOGGER.debug("Starting unbreakable block")
         yield recorder
         y_scroll = recorder.y - prev_y + (recorder.page - prev_page) * self.eph
@@ -4249,7 +4250,24 @@ class FPDF(GraphicsStateMixin):
             # Performing this call through .pdf so that it does not get recorded & replayed:
             recorder.pdf._perform_page_break()
             recorder.replay()
+            recorder.page_break_triggered = True
         LOGGER.debug("Ending unbreakable block")
+
+    @contextmanager
+    def offset_rendering(self):
+        """
+        All rendering performed in this context is made on a dummy FPDF object.
+        This allows to test the results of some operations on the global layout
+        before performing them "for real".
+        """
+        prev_page, prev_y = self.page, self.y
+        recorder = FPDFRecorder(self, accept_page_break=False)
+        recorder.page_break_triggered = False
+        yield recorder
+        y_scroll = recorder.y - prev_y + (recorder.page - prev_page) * self.eph
+        if prev_y + y_scroll > self.page_break_trigger or recorder.page > prev_page:
+            recorder.page_break_triggered = True
+        recorder.rewind()
 
     @check_page
     def insert_toc_placeholder(self, render_toc_function, pages=1):
@@ -4338,6 +4356,20 @@ class FPDF(GraphicsStateMixin):
         dest = DestinationXYZ(self.page, y=self.y)
         struct_elem = None
         if self.section_title_styles:
+            # We first check if adding this multi-cell will trigger a page break:
+            with self.offset_rendering() as pdf:
+                # pylint: disable=protected-access
+                with pdf._apply_style(pdf.section_title_styles[level]):
+                    pdf.multi_cell(
+                        w=pdf.epw,
+                        h=pdf.font_size,
+                        txt=name,
+                        new_x=XPos.LMARGIN,
+                        new_y=YPos.NEXT,
+                    )
+            if pdf.page_break_triggered:
+                # If so, we trigger a page break manually beforehand:
+                self.add_page()
             with self._marked_sequence(title=name) as marked_content:
                 struct_elem = self.struct_builder.struct_elem_per_mc[marked_content]
                 with self._apply_style(self.section_title_styles[level]):

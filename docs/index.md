@@ -27,7 +27,7 @@ This repository is a fork of the library's [original port by Max Pat](http://www
 * [Cell / multi-cell / plaintext writing](Text.md), [automatic page breaks](PageBreaks.md)
 * Basic [conversion from HTML to PDF](HTML.md)
 * A [templating system](Templates.md) to render PDFs in batchs
-* Images & links alternative descriptions
+* Images & links alternative descriptions, for accessibility
 * Table of contents & [document outline](DocumentOutlineAndTableOfContents.md)
 * [Annotations](Annotations.md), including text highlights
 * [Presentation mode](Presentations.md) with control over page display duration & transitions

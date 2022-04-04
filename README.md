@@ -67,7 +67,7 @@ Features
  * [Cell / multi-cell / plaintext writing](https://pyfpdf.github.io/fpdf2/Text.html), [automatic page breaks](https://pyfpdf.github.io/fpdf2/PageBreaks.html)
  * Basic [conversion from HTML to PDF](https://pyfpdf.github.io/fpdf2/HTML.html)
  * A [templating system](https://pyfpdf.github.io/fpdf2/Templates.html) to render PDFs in batchs
- * Images & links alternative descriptions
+ * Images & links alternative descriptions, for accessibility
  * Table of contents & [document outline](https://pyfpdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html)
  * [Annotations](https://pyfpdf.github.io/fpdf2/Annotations.html), including text highlights
  * [Presentation mode](https://pyfpdf.github.io/fpdf2/Presentations.html) with control over page display duration & transitions

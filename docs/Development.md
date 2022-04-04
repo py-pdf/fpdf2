@@ -79,7 +79,7 @@ before every commit:
 ```shell
 #!/bin/bash
 git_cached_names() { git diff --cached --name-only --diff-filter=ACM; }
-if grep -IRF generate=True $(git_cached_names | grep 'test.*\.py$'); then
+if git_cached_names | grep -q 'test.*\.py$' && grep -IRF generate=True $(git_cached_names | grep 'test.*\.py$'); then
     echo '`generate=True` left remaining in a call to assert_pdf_equal'
     exit 1
 fi

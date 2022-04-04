@@ -34,6 +34,24 @@ for i in range(4):  # repeat table 4 times
             for datum in row:
                 pdf.cell(col_width, line_height, f"{datum} ({i})", border=1)
             pdf.ln(line_height)
+     print('page_break_triggered:', pdf.page_break_triggered)
     pdf.ln(line_height * 2)
 pdf.("unbreakable_tables.pdf")
+```
+
+An alternative approach is [`offset_rendering()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.offset_rendering)
+that allows to test the results of some operations on the global layout
+before performing them "for real":
+
+```python
+with pdf.offset_rendering() as dummy:
+    # Dummy rendering:
+    dummy.multi_cell(...)
+if dummy.page_break_triggered:
+    # We trigger a page break manually beforehand:
+    pdf.add_page()
+    # We duplicate the section header:
+    pdf.cell(txt="Appendix C")
+# Now performing our rendering for real:
+pdf.multi_cell(...)
 ```
