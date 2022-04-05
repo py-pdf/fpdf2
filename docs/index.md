@@ -69,6 +69,15 @@ FPDF original features:
 
 **Developement**: check the [dedicated documentation page](Development.md).
 
+### Displaying deprecation warnings
+`DeprecationWarning`s are not displayed by Python by default.
+
+Hence, every time you use a newer version of `fpdf2`, we strongly encourage you to execute your scripts
+with the `-Wd` option (_cf._ [documentation](https://docs.python.org/3/using/cmdline.html#cmdoption-W)) 
+in order to get warned about deprecated features used in your code.
+
+This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
+
 ## Community ##
 
 ### Support ###

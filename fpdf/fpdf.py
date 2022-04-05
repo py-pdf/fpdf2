@@ -2185,13 +2185,6 @@ class FPDF(GraphicsStateMixin):
                 DeprecationWarning,
             )
         if ln != "DEPRECATED":
-            warnings.warn(
-                (
-                    'The parameter "ln" is deprecated.'
-                    ' Use "new_x" and "new_y" instead.'
-                ),
-                DeprecationWarning,
-            )
             # For backwards compatibility, if "ln" is used we overwrite "new_[xy]".
             if ln == 0:
                 new_x = XPos.RIGHT
@@ -2207,6 +2200,13 @@ class FPDF(GraphicsStateMixin):
                     f'Invalid value for parameter "ln" ({ln}),'
                     " must be an int between 0 and 2."
                 )
+            warnings.warn(
+                (
+                    'The parameter "ln" is deprecated.'
+                    f" Instead of ln={ln} use new_x=XPos.{new_x.name}, new_y=YPos.{new_y.name}."
+                ),
+                DeprecationWarning,
+            )
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
         txt = self.normalize_text(txt)
         styled_txt_frags = self._preload_font_styles(txt, markdown)
@@ -2724,13 +2724,6 @@ class FPDF(GraphicsStateMixin):
                 "must be instance of Enum YPos"
             )
         if ln != "DEPRECATED":
-            warnings.warn(
-                (
-                    'The parameter "ln" is deprecated.'
-                    ' Use "new_x" and "new_y" instead.'
-                ),
-                DeprecationWarning,
-            )
             # For backwards compatibility, if "ln" is used we overwrite "new_[xy]".
             if ln == 0:
                 new_x = XPos.RIGHT
@@ -2749,6 +2742,13 @@ class FPDF(GraphicsStateMixin):
                     f'Invalid value for parameter "ln" ({ln}),'
                     " must be an int between 0 and 3."
                 )
+            warnings.warn(
+                (
+                    'The parameter "ln" is deprecated.'
+                    f" Instead of ln={ln} use new_x=XPos.{new_x.name}, new_y=YPos.{new_y.name}."
+                ),
+                DeprecationWarning,
+            )
 
         page_break_triggered = False
         if split_only:
@@ -3194,8 +3194,11 @@ class FPDF(GraphicsStateMixin):
         marked_content = self._add_marked_content(
             page_object_id, struct_type="/Figure", mcid=mcid, **kwargs
         )
+        start_page = self.page
         self._out(f"/P <</MCID {mcid}>> BDC")
         yield marked_content
+        if self.page != start_page:
+            raise FPDFException("A page jump occured inside a marked sequence")
         self._out("EMC")
 
     def _add_marked_content(self, page_object_id, **kwargs):
