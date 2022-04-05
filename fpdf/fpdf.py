@@ -1973,7 +1973,10 @@ class FPDF(GraphicsStateMixin):
             txt2 = escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))
         else:
             txt2 = escape_parens(txt)
-        s = f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td ({txt2}) Tj ET"
+        s = f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td"
+        if self.text_mode != TextMode.FILL:
+            s += f" {self.text_mode} Tr {self.line_width:.2f} w"
+        s += f" ({txt2}) Tj ET"
         if self.underline and txt != "":
             s += " " + self._do_underline(x, y, txt)
         if self.fill_color != self.text_color:
