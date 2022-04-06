@@ -52,6 +52,7 @@ with pdf.local_context(text_mode=TextMode.CLIP):
         pdf.circle(x=130-r/2, y=70-r/2, r=r)
 pdf.output("text-modes.pdf")
 ```
+![](text-modes.png)
 
 
 ## write_html ##
