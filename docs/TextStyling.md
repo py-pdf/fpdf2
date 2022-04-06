@@ -35,24 +35,21 @@ pdf.output("style.pdf")
 The PDF spec defines several text modes:
 ![](pdf-text-modes.jpg)
 
-The global text mode can be controlled with the `.text_mode` attribute,
-or temporarily set with the `set_text_mode` context manager:
+The global text mode can be controlled with the `.text_mode` attribute:
 
 ```python
 from fpdf import FPDF, TextMode
 
-pdf = FPDF()
+pdf = FPDF(orientation="landscape")
 pdf.add_page()
 pdf.set_font("Helvetica", size=100)
-with pdf.set_text_mode(TextMode.STROKE):
+with pdf.local_context(text_mode=TextMode.STROKE, line_width=2):
     pdf.cell(txt="Hello world")
 pdf.ln()
-pdf.line_width = 1
-with pdf.set_text_mode(TextMode.STROKE):
-    pdf.cell(txt="Hello world")
-pdf.ln()
-with pdf.set_text_mode(TextMode.STROKE, width=2):
-    pdf.cell(txt="Hello world")
+with pdf.local_context(text_mode=TextMode.CLIP):
+    pdf.cell(txt="CLIP text mode")
+    for r in range(0, 250, 2):
+        pdf.circle(x=130-r/2, y=70-r/2, r=r)
 pdf.output("text-modes.pdf")
 ```
 

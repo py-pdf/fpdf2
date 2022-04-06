@@ -2,7 +2,6 @@ import locale
 from typing import Union, Iterable
 from enum import IntEnum
 
-
 # Those two need to be here to avoid circular imports.
 class XPos(IntEnum):
     """

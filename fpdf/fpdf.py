@@ -2077,7 +2077,7 @@ class FPDF(GraphicsStateMixin):
 
     @check_page
     @contextmanager
-    def local_context(self):
+    def local_context(self, **kwargs):
         """
         Create a local grapics state, which won't affect the surrounding code.
         This method must be used as a context manager using `with`:
@@ -2098,8 +2098,12 @@ class FPDF(GraphicsStateMixin):
             font_size
             dash_pattern
             line_width
+
+        Inside the context, new values for those settings can be provided as key-values pairs to this method.
         """
         self._push_local_stack()
+        for key, value in kwargs.items():
+            setattr(self, key, value)
         self._out("\nq ")
         yield
         self._out(" Q\n")
@@ -4424,15 +4428,6 @@ class FPDF(GraphicsStateMixin):
         self.set_font(*prev_font)
         self.text_color = prev_text_color
         self.underline = prev_underline
-
-    @contextmanager
-    def set_text_mode(self, mode, width=None):
-        old_mode, old_width = self.text_mode, self.line_width
-        self.text_mode = mode
-        if width is not None:
-            self.line_width = width
-        yield
-        self.text_mode, self.line_width = old_mode, old_width
 
 
 def _style_to_operator(style):
