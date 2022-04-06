@@ -477,6 +477,7 @@ class FlexTemplate:
             warnings.warn(
                 "code39 arguments x/y/w/h are deprecated, please use x1/y1/y2/size instead",
                 DeprecationWarning,
+                stacklevel=2,
             )
         pdf = self.pdf
         if pdf.fill_color.lower() != _rgb_as_str(foreground):
@@ -631,8 +632,9 @@ class Template(FlexTemplate):
         """
         if infile:
             warnings.warn(
-                '"infile" is unused and will soon be deprecated',
+                '"infile" is deprecated, unused and will soon be removed',
                 DeprecationWarning,
+                stacklevel=2,
             )
         for arg in (
             "format",
@@ -676,8 +678,9 @@ class Template(FlexTemplate):
         """
         if dest:
             warnings.warn(
-                '"dest" is unused and will soon be deprecated',
+                '"dest" is deprecated, unused and will soon be removed',
                 DeprecationWarning,
+                stacklevel=2,
             )
         self.pdf.set_font("helvetica", "B", 16)
         self.pdf.set_auto_page_break(False, margin=0)
