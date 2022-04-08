@@ -1,3 +1,6 @@
+from .enums import TextMode
+
+
 class GraphicsStateMixin:
     """Mixin class for managing a stack of graphics state variables.
 
@@ -24,7 +27,7 @@ class GraphicsStateMixin:
                 font_size=0,
                 dash_pattern=dict(dash=0, gap=0, phase=0),
                 line_width=0,
-                text_mode=0,
+                text_mode=TextMode.FILL,
             ),
         ]
         super().__init__(*args, **kwargs)

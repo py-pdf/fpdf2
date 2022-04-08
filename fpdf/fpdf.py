@@ -12,7 +12,6 @@
 """fpdf module (in fpdf package housing FPDF class)
 
 This module contains FPDF class inspiring this library.
-The version number is updated here (above and below in variable).
 """
 
 import hashlib
@@ -29,34 +28,25 @@ from collections import defaultdict, OrderedDict
 from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import datetime
-from enum import IntEnum
 from functools import wraps
 from pathlib import Path
 from typing import Callable, NamedTuple, Optional, Union, List
 
 from PIL import Image
 
+from . import drawing
 from .actions import Action
+from .deprecation import WarnOnDeprecatedModuleAttributes
+from .enums import DocumentState, TextMode, XPos, YPos
 from .errors import FPDFException, FPDFPageFormatException
 from .fonts import fpdf_charwidths
 from .graphics_state import GraphicsStateMixin
 from .image_parsing import get_img_info, load_image, SUPPORTED_IMAGE_FILTERS
 from .line_break import Fragment, TextLine, MultiLineBreak
 from .outline import serialize_outline, OutlineSection
-from . import drawing
 from .recorder import FPDFRecorder
 from .structure_tree import MarkedContent, StructureTreeBuilder
-from .ttfonts import TTFontFile
 from .svg import Percent, SVGObject
-from .util import (
-    XPos,
-    YPos,
-    enclose_in_parens,
-    escape_parens,
-    substr,
-    get_scale_factor,
-)
-from .deprecation import WarnOnDeprecatedModuleAttributes
 from .syntax import (
     create_dictionary_string as pdf_d,
     create_list_string as pdf_l,
@@ -64,6 +54,14 @@ from .syntax import (
     iobj_ref as pdf_ref,
     DestinationXYZ,
 )
+from .ttfonts import TTFontFile
+from .util import (
+    enclose_in_parens,
+    escape_parens,
+    substr,
+    get_scale_factor,
+)
+
 
 LOGGER = logging.getLogger(__name__)
 HERE = Path(__file__).resolve().parent
@@ -89,24 +87,6 @@ ZOOM_CONFIGS = {  # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
     "fullwidth": ("/FitH", "null"),
     "real": ("/XYZ", "null", "null", "1"),
 }
-
-
-class DocumentState(IntEnum):
-    UNINITIALIZED = 0
-    READY = 1  # page not started yet
-    GENERATING_PAGE = 2
-    CLOSED = 3  # EOF printed
-
-
-class TextMode(IntEnum):
-    FILL = 0
-    STROKE = 1
-    FILL_STROKE = 2
-    INVISIBLE = 3
-    FILL_CLIP = 4
-    STROKE_CLIP = 5
-    FILL_STROKE_CLIP = 6
-    CLIP = 7
 
 
 class Annotation(NamedTuple):
@@ -2086,23 +2066,37 @@ class FPDF(GraphicsStateMixin):
                 set_some_state()
                 draw_some_stuff()
 
-        The affected settings are:
+        The affected settings are all those controlled by the GraphicsStateMixin:
             draw_color
             fill_color
             text_color
-            underline
+            font_family
+            font_size
+            font_size_pt
             font_style
             font_stretching
-            font_family
-            font_size_pt
-            font_size
             dash_pattern
             line_width
+            text_mode
+            underline
 
-        Inside the context, new values for those settings can be provided as key-values pairs to this method.
+        Args:
+            **kwargs: key-values settings to set at the beggining of this context.
+                The only settings that can be initialized this way are
+                underline, font_stretching, dash_pattern, line_width & text_mode.
         """
         self._push_local_stack()
         for key, value in kwargs.items():
+            if key not in (
+                "underline",
+                "font_stretching",
+                "dash_pattern",
+                "line_width",
+                "text_mode",
+            ):
+                raise ValueError(
+                    "This setting must be set through the appropriate method"
+                )
             setattr(self, key, value)
         self._out("\nq ")
         yield

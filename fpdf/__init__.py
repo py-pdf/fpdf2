@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 import sys
 
-from .util import XPos, YPos
+from .enums import TextMode, XPos, YPos
 from .fpdf import (
     FPDF,
     FPDFException,
     TitleStyle,
-    TextMode,
     FPDF_FONT_DIR as _FPDF_FONT_DIR,
     FPDF_VERSION as _FPDF_VERSION,
 )
