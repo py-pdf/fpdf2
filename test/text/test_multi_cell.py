@@ -7,6 +7,7 @@ from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
 HERE = Path(__file__).resolve().parent
+FONTS_DIR = HERE.parent / "fonts"
 
 TEXT_SIZE, SPACING = 36, 1.15
 LINE_HEIGHT = TEXT_SIZE * SPACING
@@ -284,3 +285,23 @@ J’ai appelé les bourreaux pour, en périssant, mordre la crosse de leurs fusi
 
     pdf.multi_cell(w=0, h=None, txt=text, align="J")
     assert_pdf_equal(pdf, HERE / "multi_cell_j_paragraphs.pdf", tmp_path)
+
+
+def test_multi_cell_font_leakage(tmp_path):  # Issue #359
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Roboto", fname=FONTS_DIR / "Roboto-Regular.ttf")
+    pdf.add_font("Roboto", style="B", fname=FONTS_DIR / "Roboto-Bold.ttf")
+    pdf.set_font("Roboto", "", 12)
+
+    pdf.multi_cell(0, txt="xyz **abcde**", markdown=True)
+    pdf.ln()
+    pdf.set_font("Roboto", "", 12)
+    pdf.multi_cell(0, txt="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    pdf.ln()
+    pdf.ln()
+    pdf.multi_cell(0, txt="xyz **abcde** ", markdown=True)
+    pdf.ln()
+    pdf.set_font("Roboto", "", 12)
+    pdf.multi_cell(0, txt="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    assert_pdf_equal(pdf, HERE / "multi_cell_font_leakage.pdf", tmp_path)
