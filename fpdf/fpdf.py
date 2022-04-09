@@ -2424,18 +2424,14 @@ class FPDF(GraphicsStateMixin):
                         chr(current_font["subset"].pick(ord(" ")))
                     )
 
-                    #sl.append("[")
                     wsl = []
                     for i, word in enumerate(words):
                         word = escape_parens(word.encode("utf-16-be").decode("latin-1"))
                         if i == 0:
                             wsl.append(f"({word})")
-                        #is_last_word = (i + 1) == len(words)
-                        #if not is_last_word:
                         else:
                             adj = -(word_spacing * self.k) * 1000 / self.font_size_pt
                             wsl.append(f"{adj:.3f}({space}{word})")
-                    #sl.append("] TJ")
                     sl.append(f"[{' '.join(wsl)}] TJ")
                     if frag.underline:
                         underlines.append((self.x + dx + s_width, frag.string))
