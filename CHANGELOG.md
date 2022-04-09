@@ -24,6 +24,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - the page structure of the documentation has been revised, with a new page about [adding text](https://pyfpdf.github.io/fpdf2/Text.html), thanks to @gmischler
 - a warning is now raised if a context manager is used inside an `unbreakable()` section, which is not supported
 ### Fixed
+- No font properties should be leaked anymore after using markdown or in any other situations ([#359](https://github.com/PyFPDF/fpdf2/issues/349), thanks to @gmischler
 - If `multi_cell(align="J")` is given text with multiple paragraphs (text followed by an empty line) at once, it now renders the last line of each paragraph left-aligned, instead of just the very last line [#364](https://github.com/PyFPDF/fpdf2/issues/364), thanks to @gmischler
 - a regression: now again `multi_cell()` always renders a cell, even if `txt` is an empty string - _cf._ [#349](https://github.com/PyFPDF/fpdf2/issues/349)
 - a bug with string width calculation when Markdown is enabled - _cf._ [#351](https://github.com/PyFPDF/fpdf2/issues/351)
