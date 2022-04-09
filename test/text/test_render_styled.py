@@ -48,7 +48,7 @@ CELLDATA = (
 
 def test_render_styled_newpos(tmp_path):
     """
-    Verify that _render_styled_cell_text() places the new position
+    Verify that _render_styled_text_line() places the new position
     in the right places in all possible combinations of alignment,
     new_x, and new_y.
     """
@@ -83,7 +83,7 @@ def test_render_styled_newpos(tmp_path):
             number_of_spaces_between_words=line.number_of_spaces_between_words,
             justify=align == "J",
         )
-        doc._render_styled_cell_text(
+        doc._render_styled_text_line(
             line,
             twidth,
             border=1,
