@@ -353,9 +353,7 @@ class FlexTemplate:
         pdf.set_xy(x1, y1)
         width, height = x2 - x1, y2 - y1
         if multiline is None:  # write without wrapping/trimming (default)
-            pdf.cell(
-                w=width, h=height, txt=text, border=0, ln=0, align=align, fill=fill
-            )
+            pdf.cell(w=width, h=height, txt=text, border=0, align=align, fill=fill)
         elif multiline:  # automatic word - warp
             pdf.multi_cell(
                 w=width, h=height, txt=text, border=0, align=align, fill=fill
@@ -364,9 +362,7 @@ class FlexTemplate:
             text = pdf.multi_cell(
                 w=width, h=height, txt=text, align=align, split_only=True
             )[0]
-            pdf.cell(
-                w=width, h=height, txt=text, border=0, ln=0, align=align, fill=fill
-            )
+            pdf.cell(w=width, h=height, txt=text, border=0, align=align, fill=fill)
 
     def _line(
         self,
@@ -478,8 +474,10 @@ class FlexTemplate:
         **__,
     ):
         if x is not None or y is not None or w is not None or h is not None:
-            raise ValueError(
-                "Arguments x/y/w/h are invalid. Use x1/y1/y2/size instead."
+            warnings.warn(
+                "code39 arguments x/y/w/h are deprecated, please use x1/y1/y2/size instead",
+                DeprecationWarning,
+                stacklevel=2,
             )
         pdf = self.pdf
         if pdf.fill_color.lower() != _rgb_as_str(foreground):
@@ -634,8 +632,9 @@ class Template(FlexTemplate):
         """
         if infile:
             warnings.warn(
-                '"infile" is unused and will soon be deprecated',
-                PendingDeprecationWarning,
+                '"infile" is deprecated, unused and will soon be removed',
+                DeprecationWarning,
+                stacklevel=2,
             )
         for arg in (
             "format",
@@ -679,8 +678,9 @@ class Template(FlexTemplate):
         """
         if dest:
             warnings.warn(
-                '"dest" is unused and will soon be deprecated',
-                PendingDeprecationWarning,
+                '"dest" is deprecated, unused and will soon be removed',
+                DeprecationWarning,
+                stacklevel=2,
             )
         self.pdf.set_font("helvetica", "B", 16)
         self.pdf.set_auto_page_break(False, margin=0)

@@ -324,8 +324,7 @@ def test_template_textstyles(tmp_path):
     assert_pdf_equal(tmpl, HERE / "template_textstyles.pdf", tmp_path)
 
 
-# pylint: disable=unused-argument
-def test_template_item_access(tmp_path):
+def test_template_item_access():
     """Testing Template() getitem/setitem."""
     elements = [
         {
@@ -361,8 +360,7 @@ def test_template_item_access(tmp_path):
         7 in templ
 
 
-# pylint: disable=unused-argument
-def test_template_badinput(tmp_path):
+def test_template_badinput():
     """Testing Template() with non-conforming definitions."""
     for arg in (
         "format",
@@ -422,10 +420,10 @@ def test_template_badinput(tmp_path):
     with raises(KeyError):
         tmpl.parse_csv(HERE / "badtype.csv", delimiter=";")
         tmpl.render()
-    with warns(PendingDeprecationWarning):
+    with warns(DeprecationWarning):
         Template(infile="whatever")
     with raises(AttributeError):
-        with warns(PendingDeprecationWarning):
+        with warns(DeprecationWarning):
             tmpl = Template()
             tmpl.render(dest="whatever")
 
@@ -463,7 +461,7 @@ def test_template_code39_legacy(tmp_path):
             "priority": 1,
         },
     ]
-    with warns(PendingDeprecationWarning):
+    with warns(DeprecationWarning):
         tmpl = Template(format="A4", title="Sample Code 39 barcode", elements=elements)
         tmpl.add_page()
         assert_pdf_equal(tmpl, HERE / "template_code39.pdf", tmp_path)
@@ -563,7 +561,7 @@ def test_template_justify(tmp_path):  # issue-207
     assert_pdf_equal(tmpl, HERE / "template_justify.pdf", tmp_path)
 
 
-def test_template_split_multicell(tmp_path):
+def test_template_split_multicell():
     elements = [
         {
             "name": "multline_text",
