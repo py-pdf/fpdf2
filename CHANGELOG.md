@@ -7,22 +7,109 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
-## [2.4.6] - not released yet
+## Displaying deprecation warnings
+`DeprecationWarning`s are not displayed by Python by default.
+
+Hence, every time you use a newer version of `fpdf2`, we strongly encourage you to execute your scripts
+with the `-Wd` option (_cf._ [documentation](https://docs.python.org/3/using/cmdline.html#cmdoption-W)) 
+in order to get warned about deprecated features used in your code.
+
+This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
+
+## [2.5.2] - not released yet
 ### Added
-- Temporary changes to graphics state variables are now possible by `with FPDF.local_context():`, thanks to @gmischler
+- new parameters `new_x` and `new_y` for `cell()` and `multi_cell()`, replacing `ln=0`, thanks to @gmischler
+- new `add_highlight()` method to insert highlight annotations: [documentation](https://pyfpdf.github.io/fpdf2/Annotations.html#highlights)
+- new `offset_rendering()` method: [documentation](https://pyfpdf.github.io/fpdf2/PageBreaks.html#unbreakable-sections)
+- the page structure of the documentation has been revised, with a new page about [adding text](https://pyfpdf.github.io/fpdf2/Text.html), thanks to @gmischler
+- a warning is now raised if a context manager is used inside an `unbreakable()` section, which is not supported
+### Fixed
+- No font properties should be leaked anymore after using markdown or in any other situations ([#359](https://github.com/PyFPDF/fpdf2/issues/349), thanks to @gmischler
+- If `multi_cell(align="J")` is given text with multiple paragraphs (text followed by an empty line) at once, it now renders the last line of each paragraph left-aligned, instead of just the very last line [#364](https://github.com/PyFPDF/fpdf2/issues/364), thanks to @gmischler
+- a regression: now again `multi_cell()` always renders a cell, even if `txt` is an empty string - _cf._ [#349](https://github.com/PyFPDF/fpdf2/issues/349)
+- a bug with string width calculation when Markdown is enabled - _cf._ [#351](https://github.com/PyFPDF/fpdf2/issues/351)
+- a few bugs when parsing some SVG files - _cf._ [#356](https://github.com/PyFPDF/fpdf2/issues/356), [#358](https://github.com/PyFPDF/fpdf2/issues/358) & [#376](https://github.com/PyFPDF/fpdf2/issues/376)
+### Deprecated
+- The parameter `ln` to `cell()` and `multi_cell()` is now deprecated, use `new_x` and `new_y` instead.
+- The parameter `center` to `cell()` is now deprecated, use `align="C"` instead.
+- a bug when using `multi_cell(..., split_only=True)` inside an `unbreakable` section - _cf._ [#359](https://github.com/PyFPDF/fpdf2/issues/359)
+
+## [2.5.1] - 2022-03-07
+### Added
+- support for soft-hyphen (`\u00ad`) break in `write()`, `cell()` & `multi_cell()` calls - thanks @oleksii-shyman & @gmischler!
+  Documentation: [Line breaks](https://pyfpdf.github.io/fpdf2/LineBreaks.html)
+- new documentation page on [Emojis, Symbols & Dingbats](https://pyfpdf.github.io/fpdf2/EmojisSymbolsDingbats.html)
+- documentation on combining `borb` & `fpdf2`: [Creating a borb.pdf.document.Document from a FPDF instance](https://pyfpdf.github.io/fpdf2/borb.html)
+
+### Changed
+- `write()` now supports soft hyphen characters, thanks to @gmischler
+- `fname` is now a required parameter for `FPDF.add_font()`
+- `image()` method now insert `.svg` images as PDF paths
+- the [defusedxml](https://pypi.org/project/defusedxml/) package was added as dependency in order to make SVG parsing safer
+- log level of `_substitute_page_number()` has been lowered from `INFO` to `DEBUG`
+
+### Fixed
+- a bug when rendering Markdown and setting a custom `text_color` or `fill_color`
+- a bug in `get_string_width()` with unicode fonts and Markdown enabled,
+  resulting in calls to `cell()` / `multi_cell()` with `align="R"` to display nothing - thanks @mcerveny for the fix!
+- a bug with incorrect width calculation of markdown text
+
+### Deprecated
+- the font caching mechanism, that used the `pickle` module, has been removed, for security reasons,
+  and because it provided little performance gain, and only for specific use cases - _cf._ [issue #345](https://github.com/PyFPDF/fpdf2/issues/345).
+  That means that the `font_cache_dir` optional parameter of `fpdf.FPDF` constructor
+  and the `uni` optional argument of `FPDF.add_font()` are deprecated.
+  The `fpdf.fpdf.load_cache` function has also been removed.
+
+To be extra clear: `uni=True` can now be removed from all calls to `FPDF.add_font()`.
+If the value of the `fname` argument passed to `add_font()` ends with `.ttf`, it is considered a TrueType font.
+
+## [2.5.0] - 2022-01-22
+### Added
+Thanks to @torque for contributing this massive new feature:
+- add [`fpdf.drawing`](https://pyfpdf.github.io/fpdf2/Drawing.html) API for composing paths from an arbitrary sequence of lines and curves.
+- add [`fpdf.svg.convert_svg_to_drawing`](https://pyfpdf.github.io/fpdf2/SVG.html) function to support converting basic scalable vector graphics (SVG) images to PDF paths.
+
+### Fixed
+- `will_page_break()` & `accept_page_break` are not invoked anymore during a call to `multi_cell(split_only=True)`
+- Unicode characters in headings are now properly displayed in the table of content, _cf._ [#320](https://github.com/PyFPDF/fpdf2/issues/320) - thanks @lcomrade
+
+## [2.4.6] - 2021-11-16
+### Added
+- New `FPDF.pages_count` property, thanks to @paulacampigotto
+- Temporary changes to graphics state variables are now possible using `with FPDF.local_context():`, thanks to @gmischler
+- a mechanism to detect & downscale oversized images,
+  _cf._ [documentation](https://pyfpdf.github.io/fpdf2/Images.html#oversized-images-detection-downscaling).
+  [Feedbacks](https://github.com/PyFPDF/fpdf2/discussions) on this new feature are welcome!
 - New `set_dash_pattern()`, which works with all lines and curves, thanks to @gmischler.
 - Templates now support drawing ellipses, thanks to @gmischler
+- New documentation on how to display equations, using Google Charts or `matplotlib`: [Maths](https://pyfpdf.github.io/fpdf2/Maths.html)
+- The whole documentation can now be downloaded as a PDF: [fpdf2-manual.pdf](https://pyfpdf.github.io/fpdf2/fpdf2-manual.pdf)
 - New sections have been added to [the tutorial](https://pyfpdf.github.io/fpdf2/Tutorial.html), thanks to @portfedh:
 
     5. [Creating Tables](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
     6. [Creating links and mixing text styles](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-6-creating-links-and-mixing-text-styles)
+- New translation of the tutorial in Hindi, thanks to @Mridulbirla13: [हिंदी संस्करण](https://pyfpdf.github.io/fpdf2/Tutorial-हिंदी.html); [Deutsch](https://pyfpdf.github.io/fpdf2/Tutorial-de.html), thanks to @digidigital; and [Italian](https://pyfpdf.github.io/fpdf2/Tutorial-it.html) thanks to @xit4; [Русский](https://pyfpdf.github.io/fpdf2/Tutorial-ru.html) thanks to @AABur; and [português](https://pyfpdf.github.io/fpdf2/Tutorial-pt.html) thanks to @fuscati; [français](https://pyfpdf.github.io/fpdf2/Tutorial-fr.html), thanks to @Tititesouris
+- While images transparency is still handled by default through the use of `SMask`,
+  this can be disabled by setting `pdf.allow_images_transparency = False`
+  in order to allow compliance with [PDF/A-1](https://en.wikipedia.org/wiki/PDF/A#Description)
+- [`FPDF.arc`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.arc): new method added. 
+  It enables to draw arcs in a PDF document.
+- [`FPDF.solid_arc`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.solid_arc): new method added.
+  It enables to draw solid arcs in a PDF document. A solid arc combines an arc and a triangle to form a pie slice.
+- [`FPDF.regular_polygon`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.regular_polygon): new method added, thanks to @bettman-latin
 ### Fixed
 - All graphics state manipulations are now possible within a rotation context, thanks to @gmischler
-- The exception making the "x2" template field optional for barcode elements did not work correctly, thanks to @gmischler
+- The exception making the "x2" template field optional for barcode elements did not work correctly, fixed by @gmischler
+- It is now possible to get back to a previous page to add more content, _e.g._ with a 2-column layout, thanks to @paulacampigotto
 ### Changed
 - All template elements now have a transparent default background instead of white, thanks to @gmischler
+- To reduce the size of generated PDFs, no `SMask` entry is inserted for images that are fully opaque
+  (= with an alpha channel containing only 0xff characters)
+- The `rect`, `ellipse` & `circle` all have a `style` parameter in common.
+  They now all properly accept a value of `"D"` and raise a `ValueError` for invalid values.
 ### Deprecated
-- `dashed_line()` is now deprecated, thanks to @gmischler.
+- `dashed_line()` is now deprecated in favor of `set_dash_pattern()`
 
 ## [2.4.5] - 2021-10-03
 ### Fixed
