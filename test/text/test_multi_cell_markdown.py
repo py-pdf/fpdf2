@@ -14,7 +14,7 @@ def test_multi_cell_markdown(tmp_path):
     pdf.set_font("Times", "", 32)
     text = (  # Some text where styling occur over line breaks:
         "Lorem ipsum dolor amet, **consectetur adipiscing** elit,"
-        " sed do eiusmod __tempor incididunt__ ut labore et dolore magna aliqua."
+        " sed do eiusmod __tempor incididunt__ ut labore et dolore --magna aliqua--."
     )
     pdf.multi_cell(
         w=pdf.epw, txt=text, markdown=True
@@ -33,7 +33,7 @@ def test_multi_cell_markdown_with_ttf_fonts(tmp_path):
     pdf.set_font("Roboto", size=32)
     text = (  # Some text where styling occur over line breaks:
         "Lorem ipsum dolor, **consectetur adipiscing** elit,"
-        " eiusmod __tempor incididunt__ ut labore et dolore magna aliqua."
+        " eiusmod __tempor incididunt__ ut labore et dolore --magna aliqua--."
     )
     pdf.multi_cell(
         w=pdf.epw, txt=text, markdown=True
