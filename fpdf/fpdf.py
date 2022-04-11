@@ -2113,34 +2113,21 @@ class FPDF(GraphicsStateMixin):
             )
         if font_size is not None:
             self.set_font_size(font_size)
-        # We set colors for stroking & non-stroking operations
-        # at the beginning of the graphics state context
-        # to avoid repeating them for every call to text() / cell() / write(),
-        # which would also generate useless q/Q stack operators:
         if draw_color is not None:
             if isinstance(draw_color, Sequence):
                 self.set_draw_color(*draw_color)
             else:
                 self.set_draw_color(draw_color)
-        if self.draw_color != self.DEFAULT_DRAW_COLOR:
-            self._out(f"{self.draw_color} ")
-            self.draw_color = self.DEFAULT_DRAW_COLOR
         if fill_color is not None:
             if isinstance(fill_color, Sequence):
                 self.set_fill_color(*fill_color)
             else:
                 self.set_fill_color(fill_color)
-        if self.fill_color != self.DEFAULT_FILL_COLOR:
-            self._out(f"{self.fill_color} ")
-            self.fill_color = self.DEFAULT_FILL_COLOR
         if text_color is not None:
             if isinstance(text_color, Sequence):
                 self.set_text_color(*text_color)
             else:
                 self.set_text_color(text_color)
-        if self.text_color != self.DEFAULT_TEXT_COLOR:
-            self._out(f"{self.text_color} ")
-            self.text_color = self.DEFAULT_TEXT_COLOR
         yield
         self._out("\nQ")
         self._pop_local_stack()

@@ -35,7 +35,7 @@ The text mode can be controlled with the `.text_mode` attribute.
 With `STROKE` modes, the line width is induced by `.line_width`,
 and its color can be configured with [`set_draw_color()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color).
 With `FILL` modes, the filling color can be controlled by [`set_fill_color()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color)
-of [`set_text_color()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color).
+or [`set_text_color()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color).
 
 With any of the 4 `CLIP` modes, the letters will be filled by vector drawings made afterwards,
 as can be seen in this example:
