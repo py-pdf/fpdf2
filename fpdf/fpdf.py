@@ -272,6 +272,10 @@ class FPDF(GraphicsStateMixin):
     MARKDOWN_ITALICS_MARKER = "__"
     MARKDOWN_UNDERLINE_MARKER = "--"
 
+    DEFAULT_DRAW_COLOR = "0 G"
+    DEFAULT_FILL_COLOR = "0 g"
+    DEFAULT_TEXT_COLOR = "0 g"
+
     def __init__(
         self,
         orientation="portrait",
@@ -374,9 +378,9 @@ class FPDF(GraphicsStateMixin):
         self.font_size = self.font_size_pt / self.k
         self.font_stretching = 100  # current font stretching
         self.underline = 0  # underlining flag
-        self.draw_color = "0 G"
-        self.fill_color = "0 g"
-        self.text_color = "0 g"
+        self.draw_color = self.DEFAULT_DRAW_COLOR
+        self.fill_color = self.DEFAULT_FILL_COLOR
+        self.text_color = self.DEFAULT_TEXT_COLOR
         self.dash_pattern = dict(dash=0, gap=0, phase=0)
         self.line_width = 0.567 / self.k  # line width (0.2 mm)
         self.text_mode = TextMode.FILL
@@ -795,10 +799,10 @@ class FPDF(GraphicsStateMixin):
 
         # Set colors
         self.draw_color = dc
-        if dc != "0 G":
+        if dc != self.DEFAULT_DRAW_COLOR:
             self._out(dc)
         self.fill_color = fc
-        if fc != "0 g":
+        if fc != self.DEFAULT_FILL_COLOR:
             self._out(fc)
         self.text_color = tc
 
@@ -2057,7 +2061,16 @@ class FPDF(GraphicsStateMixin):
 
     @check_page
     @contextmanager
-    def local_context(self, **kwargs):
+    def local_context(
+        self,
+        draw_color=None,
+        fill_color=None,
+        text_color=None,
+        font_family=None,
+        font_style=None,
+        font_size=None,
+        **kwargs,
+    ):
         """
         Create a local grapics state, which won't affect the surrounding code.
         This method must be used as a context manager using `with`:
@@ -2072,7 +2085,6 @@ class FPDF(GraphicsStateMixin):
             text_color
             font_family
             font_size
-            font_size_pt
             font_style
             font_stretching
             dash_pattern
@@ -2082,25 +2094,55 @@ class FPDF(GraphicsStateMixin):
 
         Args:
             **kwargs: key-values settings to set at the beggining of this context.
-                The only settings that can be initialized this way are
-                underline, font_stretching, dash_pattern, line_width & text_mode.
         """
         self._push_local_stack()
         for key, value in kwargs.items():
             if key not in (
-                "underline",
-                "font_stretching",
                 "dash_pattern",
+                "font_stretching",
                 "line_width",
                 "text_mode",
+                "underline",
             ):
-                raise ValueError(
-                    "This setting must be set through the appropriate method"
-                )
+                raise ValueError(f"Unsupported setting: {key}")
             setattr(self, key, value)
-        self._out("\nq ")
+        self._out("q ")
+        if font_family is not None or font_style is not None:
+            self.set_font(
+                font_family or self.font_family, font_style or self.font_style
+            )
+        if font_size is not None:
+            self.set_font_size(font_size)
+        # We set colors for stroking & non-stroking operations
+        # at the beginning of the graphics state context
+        # to avoid repeating them for every call to text() / cell() / write(),
+        # which would also generate useless q/Q stack operators:
+        if draw_color is not None:
+            if isinstance(draw_color, Sequence):
+                self.set_draw_color(*draw_color)
+            else:
+                self.set_draw_color(draw_color)
+        if self.draw_color != self.DEFAULT_DRAW_COLOR:
+            self._out(f"{self.draw_color} ")
+            self.draw_color = self.DEFAULT_DRAW_COLOR
+        if fill_color is not None:
+            if isinstance(fill_color, Sequence):
+                self.set_fill_color(*fill_color)
+            else:
+                self.set_fill_color(fill_color)
+        if self.fill_color != self.DEFAULT_FILL_COLOR:
+            self._out(f"{self.fill_color} ")
+            self.fill_color = self.DEFAULT_FILL_COLOR
+        if text_color is not None:
+            if isinstance(text_color, Sequence):
+                self.set_text_color(*text_color)
+            else:
+                self.set_text_color(text_color)
+        if self.text_color != self.DEFAULT_TEXT_COLOR:
+            self._out(f"{self.text_color} ")
+            self.text_color = self.DEFAULT_TEXT_COLOR
         yield
-        self._out(" Q\n")
+        self._out(" Q")
         self._pop_local_stack()
 
     @property
@@ -2845,7 +2887,7 @@ class FPDF(GraphicsStateMixin):
                 link=link,
             )
             if is_last_line and new_page and new_y == YPos.TOP:
-                # When a page jump is performed and the requested y is TOP (ln=3),
+                # When a page jump is performed and the requested y is TOP,
                 # pretend we started at the top of the text block on the new page.
                 # cf. test_multi_cell_table_with_automatic_page_break
                 prev_y = self.y
