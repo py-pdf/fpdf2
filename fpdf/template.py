@@ -376,7 +376,7 @@ class FlexTemplate:
         foreground=0,
         **__,
     ):
-        if self.pdf.draw_color.lower() != _rgb_as_str(foreground):
+        if self.pdf.draw_color.pdf_repr().lower() != _rgb_as_str(foreground):
             self.pdf.set_draw_color(*_rgb(foreground))
         self.pdf.set_line_width(size * scale)
         self.pdf.line(x1, y1, x2, y2)
@@ -395,7 +395,7 @@ class FlexTemplate:
         **__,
     ):
         pdf = self.pdf
-        if pdf.draw_color.lower() != _rgb_as_str(foreground):
+        if pdf.draw_color.pdf_repr().lower() != _rgb_as_str(foreground):
             pdf.set_draw_color(*_rgb(foreground))
         if background is None:
             style = "D"
@@ -420,7 +420,7 @@ class FlexTemplate:
         **__,
     ):
         pdf = self.pdf
-        if pdf.draw_color.lower() != _rgb_as_str(foreground):
+        if pdf.draw_color.pdf_repr().lower() != _rgb_as_str(foreground):
             pdf.set_draw_color(*_rgb(foreground))
         if background is None:
             style = "D"
@@ -451,7 +451,7 @@ class FlexTemplate:
     ):
         # pylint: disable=unused-argument
         pdf = self.pdf
-        if pdf.fill_color.lower() != _rgb_as_str(foreground):
+        if pdf.fill_color.pdf_repr().lower() != _rgb_as_str(foreground):
             pdf.set_fill_color(*_rgb(foreground))
         font = font.lower().strip()
         if font == "interleaved 2of5 nt":
@@ -480,7 +480,7 @@ class FlexTemplate:
                 stacklevel=2,
             )
         pdf = self.pdf
-        if pdf.fill_color.lower() != _rgb_as_str(foreground):
+        if pdf.fill_color.pdf_repr().lower() != _rgb_as_str(foreground):
             pdf.set_fill_color(*_rgb(foreground))
         h = y2 - y1
         if h <= 0:

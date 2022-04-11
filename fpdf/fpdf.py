@@ -273,10 +273,6 @@ class FPDF(GraphicsStateMixin):
     MARKDOWN_ITALICS_MARKER = "__"
     MARKDOWN_UNDERLINE_MARKER = "--"
 
-    DEFAULT_DRAW_COLOR = "0 G"
-    DEFAULT_FILL_COLOR = "0 g"
-    DEFAULT_TEXT_COLOR = "0 g"
-
     def __init__(
         self,
         orientation="portrait",
@@ -802,10 +798,10 @@ class FPDF(GraphicsStateMixin):
         # Set colors
         self.draw_color = dc
         if dc != self.DEFAULT_DRAW_COLOR:
-            self._out(dc)
+            self._out(dc.pdf_repr().upper())
         self.fill_color = fc
         if fc != self.DEFAULT_FILL_COLOR:
-            self._out(fc)
+            self._out(fc.pdf_repr().lower())
         self.text_color = tc
 
         # BEGIN Page header
@@ -820,10 +816,10 @@ class FPDF(GraphicsStateMixin):
 
         if self.draw_color != dc:  # Restore colors
             self.draw_color = dc
-            self._out(dc)
+            self._out(dc.pdf_repr().upper())
         if self.fill_color != fc:
             self.fill_color = fc
-            self._out(fc)
+            self._out(fc.pdf_repr().lower())
         self.text_color = tc
 
         if stretching != 100:  # Restore stretching
@@ -867,11 +863,11 @@ class FPDF(GraphicsStateMixin):
             b (int): blue component (between 0 and 255)
         """
         if (r == 0 and g == 0 and b == 0) or g == -1:
-            self.draw_color = f"{r / 255:.3f} G"
+            self.draw_color = drawing.DeviceGray(r / 255)
         else:
-            self.draw_color = f"{r / 255:.3f} {g / 255:.3f} {b / 255:.3f} RG"
+            self.draw_color = drawing.DeviceRGB(r / 255, g / 255, b / 255)
         if self.page > 0:
-            self._out(self.draw_color)
+            self._out(self.draw_color.pdf_repr().upper())
 
     def set_fill_color(self, r, g=-1, b=-1):
         """
@@ -886,11 +882,11 @@ class FPDF(GraphicsStateMixin):
             b (int): blue component (between 0 and 255)
         """
         if (r == 0 and g == 0 and b == 0) or g == -1:
-            self.fill_color = f"{r / 255:.3f} g"
+            self.fill_color = drawing.DeviceGray(r / 255)
         else:
-            self.fill_color = f"{r / 255:.3f} {g / 255:.3f} {b / 255:.3f} rg"
+            self.fill_color = drawing.DeviceRGB(r / 255, g / 255, b / 255)
         if self.page > 0:
-            self._out(self.fill_color)
+            self._out(self.fill_color.pdf_repr().lower())
 
     def set_text_color(self, r, g=-1, b=-1):
         """
@@ -905,9 +901,9 @@ class FPDF(GraphicsStateMixin):
             b (int): blue component (between 0 and 255)
         """
         if (r == 0 and g == 0 and b == 0) or g == -1:
-            self.text_color = f"{r / 255:.3f} g"
+            self.text_color = drawing.DeviceGray(r / 255)
         else:
-            self.text_color = f"{r / 255:.3f} {g / 255:.3f} {b / 255:.3f} rg"
+            self.text_color = drawing.DeviceRGB(r / 255, g / 255, b / 255)
 
     def get_string_width(self, s, normalized=False, markdown=False):
         """
@@ -989,18 +985,7 @@ class FPDF(GraphicsStateMixin):
         finally:
             self._current_draw_context = None
 
-        starting_style = drawing.GraphicsStyle()
-        starting_style.allow_transparency = self.allow_images_transparency
-        starting_style.stroke_width = self.line_width
-
-        dash_info = self.dash_pattern
-        dash_pattern = (dash_info["dash"], dash_info["gap"])
-        if (dash_pattern[0] == 0) or (dash_pattern[1] == 0):
-            dash_pattern = None
-
-        starting_style.stroke_dash_pattern = dash_pattern
-        starting_style.stroke_dash_phase = dash_info["phase"]
-
+        starting_style = self._current_graphic_style()
         render_args = (
             self._drawing_graphics_state_registry,
             drawing.Point(self.x, self.y),
@@ -1017,6 +1002,30 @@ class FPDF(GraphicsStateMixin):
         self._out(rendered)
 
         self.pdf_version = max(self.pdf_version, "1.4")
+
+    def _current_graphic_style(self):
+        gs = drawing.GraphicsStyle()
+        gs.allow_transparency = self.allow_images_transparency
+
+        # This initial stroke_width is ignored when embedding SVGs,
+        # as the value in SVGObject.convert_graphics() takes precedence,
+        # so this probably creates an unnecessary PDF dict entry:
+        gs.stroke_width = self.line_width
+
+        if self.draw_color != self.DEFAULT_DRAW_COLOR:
+            gs.stroke_color = self.draw_color
+        if self.fill_color != self.DEFAULT_FILL_COLOR:
+            gs.fill_color = self.fill_color
+
+        dash_info = self.dash_pattern
+        dash_pattern = (dash_info["dash"], dash_info["gap"])
+        if (dash_pattern[0] == 0) or (dash_pattern[1] == 0):
+            dash_pattern = None
+
+        gs.stroke_dash_pattern = dash_pattern
+        gs.stroke_dash_phase = dash_info["phase"]
+
+        return gs
 
     @contextmanager
     def new_path(
@@ -1972,7 +1981,7 @@ class FPDF(GraphicsStateMixin):
         if self.underline and txt != "":
             s += " " + self._do_underline(x, y, txt)
         if self.fill_color != self.text_color:
-            s = f"q {self.text_color} {s} Q"
+            s = f"q {self.text_color.pdf_repr().lower()} {s} Q"
         self._out(s)
         if self.record_text_quad_points:
             unscaled_width = self.get_normalized_string_width_with_style(
@@ -2072,32 +2081,44 @@ class FPDF(GraphicsStateMixin):
     @contextmanager
     def local_context(
         self,
-        draw_color=None,
-        fill_color=None,
-        text_color=None,
         font_family=None,
         font_style=None,
         font_size=None,
+        line_width=None,
+        draw_color=None,
+        fill_color=None,
+        text_color=None,
+        dash_pattern=None,
         **kwargs,
     ):
         """
-        Create a local grapics state, which won't affect the surrounding code.
+        Creates a local graphics state, which won't affect the surrounding code.
         This method must be used as a context manager using `with`:
 
             with pdf.local_context():
                 set_some_state()
                 draw_some_stuff()
 
-        The affected settings are all those controlled by the GraphicsStateMixin:
+        The affected settings are those controlled by GraphicsStateMixin and drawing.GraphicsStyle:
+            allow_transparency
+            auto_close
+            blend_mode
+            dash_pattern
             draw_color
             fill_color
-            text_color
+            fill_opacity
             font_family
             font_size
             font_style
             font_stretching
-            dash_pattern
+            intersection_rule
             line_width
+            paint_rule
+            stroke_cap_style
+            stroke_join_style
+            stroke_miter_limit
+            stroke_opacity
+            text_color
             text_mode
             underline
 
@@ -2105,23 +2126,39 @@ class FPDF(GraphicsStateMixin):
             **kwargs: key-values settings to set at the beggining of this context.
         """
         self._push_local_stack()
+        gs = None
         for key, value in kwargs.items():
-            if key not in (
-                "dash_pattern",
-                "font_stretching",
-                "line_width",
-                "text_mode",
-                "underline",
+            if key in (
+                "stroke_color",
+                "stroke_dash_phase",
+                "stroke_dash_pattern",
+                "stroke_width",
             ):
+                raise ValueError(
+                    f"Unsupported setting: {key} - This can be controlled through dash_pattern / draw_color / line_width"
+                )
+            if key in drawing.GraphicsStyle.MERGE_PROPERTIES:
+                if gs is None:
+                    gs = drawing.GraphicsStyle()
+                setattr(gs, key, value)
+            elif key in ("font_stretching", "text_mode", "underline"):
+                setattr(self, key, value)
+            else:
                 raise ValueError(f"Unsupported setting: {key}")
-            setattr(self, key, value)
-        self._out("q\n")
-        if font_family is not None or font_style is not None:
+        if gs:
+            gs_name = self._drawing_graphics_state_registry.register_style(gs)
+            self._out(f"q /{gs_name} gs")
+        else:
+            self._out("q")
+        # All the folling calls to .set*() methods invoke .out() and write to the stream buffer:
+        if font_family is not None or font_style is not None or font_size is not None:
             self.set_font(
-                font_family or self.font_family, font_style or self.font_style
+                font_family or self.font_family,
+                font_style or self.font_style,
+                font_size or self.font_size_pt,
             )
-        if font_size is not None:
-            self.set_font_size(font_size)
+        if line_width is not None:
+            self.set_line_width(line_width)
         if draw_color is not None:
             if isinstance(draw_color, Sequence):
                 self.set_draw_color(*draw_color)
@@ -2137,8 +2174,10 @@ class FPDF(GraphicsStateMixin):
                 self.set_text_color(*text_color)
             else:
                 self.set_text_color(text_color)
+        if dash_pattern is not None:
+            self.set_dash_pattern(**dash_pattern)
         yield
-        self._out("\nQ")
+        self._out("Q")
         self._pop_local_stack()
 
     @property
@@ -2433,7 +2472,7 @@ class FPDF(GraphicsStateMixin):
             s_start += dx
 
             if self.fill_color != self.text_color:
-                sl.append(self.text_color)
+                sl.append(self.text_color.pdf_repr().lower())
 
             sl.append(
                 f"BT {(self.x + dx) * k:.2f} "
@@ -3907,6 +3946,7 @@ class FPDF(GraphicsStateMixin):
         for idx, n in font_ids:
             self._out(f"/F{idx} {pdf_ref(n)}")
         self._out(">>")
+
         self._out("/XObject <<")
         self._putxobjectdict()
         self._out(">>")
@@ -4271,7 +4311,7 @@ class FPDF(GraphicsStateMixin):
             )
         )
         yield
-        self._out("Q\n")
+        self._out("Q")
 
     @contextmanager
     def _trace_size(self, label):

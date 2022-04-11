@@ -1,3 +1,4 @@
+from .drawing import DeviceGray
 from .enums import TextMode
 
 
@@ -13,12 +14,16 @@ class GraphicsStateMixin:
     directly by user code.
     """
 
+    DEFAULT_DRAW_COLOR = DeviceGray(0)
+    DEFAULT_FILL_COLOR = DeviceGray(0)
+    DEFAULT_TEXT_COLOR = DeviceGray(0)
+
     def __init__(self, *args, **kwargs):
         self.__statestack = [
             dict(
-                draw_color="0 G",
-                fill_color="0 g",
-                text_color="0 g",
+                draw_color=self.DEFAULT_DRAW_COLOR,
+                fill_color=self.DEFAULT_FILL_COLOR,
+                text_color=self.DEFAULT_TEXT_COLOR,
                 underline=False,
                 font_style="",
                 font_stretching=100,

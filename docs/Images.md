@@ -40,6 +40,25 @@ pdf.image("imgB.jpg", h=pdf.eph, w=pdf.epw/2, x=pdf.epw/2)  # full page height, 
 pdf.output("side-by-side.pdf")
 ```
 
+### Blending images ###
+
+You can control the color blending mode of overlapping images.
+Valid values for `blend_mode` are `Normal`, `Multiply`, `Screen`, `Overlay`, `Darken`, `Lighten`, `ColorDodge`,
+`ColorBurn`, `HardLight`, `SoftLight`, `Difference`, `Exclusion`, `Hue`, `Saturation`, `Color` and `Luminosity`.
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.image("imgA.png", ...)
+with pdf.local_context(blend_mode="ColorBurn"):
+    pdf.image("imgB.jpg", ...)
+pdf.output("blended-images.pdf")
+```
+
+Demo of all color blend modes: [blending_images.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/drawing/generated_pdf/blending_images.pdf)
+
 
 ## Alternative description ##
 

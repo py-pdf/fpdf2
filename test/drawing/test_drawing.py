@@ -950,3 +950,24 @@ def test_check_page():
 
     expected_error_msg = "No page open, you need to call add_page() first"
     assert expected_error_msg == str(no_page_err.value)
+
+
+def test_blending_images(tmp_path):
+    pdf = fpdf.FPDF(format=(112, 1112))
+    pdf.set_margin(0)
+    pdf.set_font("Helvetica", size=24)
+    pdf.add_page()
+    for i, blend_mode in enumerate(fpdf.drawing.BlendMode):
+        pdf.image(HERE / "../image/png_test_suite/f04n2c08.png", y=70 * i, h=64)
+        with pdf.local_context(blend_mode=blend_mode):
+            pdf.image(HERE / "../image/png_test_suite/pp0n6a08.png", y=70 * i, h=64)
+        pdf.text(x=0, y=70 * i + 10, txt=str(blend_mode))
+    assert_pdf_equal(pdf, HERE / "generated_pdf/blending_images.pdf", tmp_path)
+
+
+def test_invalid_blend_mode():
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    with pytest.raises(ValueError):
+        with pdf.local_context(blend_mode="INVALID_VALUE"):
+            pass

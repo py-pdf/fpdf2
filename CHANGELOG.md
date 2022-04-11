@@ -24,6 +24,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - new `.text_mode` property: [documentation](https://pyfpdf.github.io/fpdf2/TextStyling.html#text_mode)
 - the page structure of the documentation has been revised, with a new page about [adding text](https://pyfpdf.github.io/fpdf2/Text.html), thanks to @gmischler
 - a warning is now raised if a context manager is used inside an `unbreakable()` section, which is not supported
+### Changed
+- `local_context()` can now "scope" even more properties, like `blend_mode`: [documentation](https://pyfpdf.github.io/fpdf2/Images.html#blending-images)
 ### Fixed
 - No font properties should be leaked anymore after using markdown or in any other situations ([#359](https://github.com/PyFPDF/fpdf2/issues/349), thanks to @gmischler
 - If `multi_cell(align="J")` is given text with multiple paragraphs (text followed by an empty line) at once, it now renders the last line of each paragraph left-aligned, instead of just the very last line [#364](https://github.com/PyFPDF/fpdf2/issues/364), thanks to @gmischler

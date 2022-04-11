@@ -75,7 +75,7 @@ class GraphicsStateDictRegistry(OrderedDict):
     A container providing deduplication of graphics state dictionaries across a PDF.
     """
 
-    def register_style(self, style):
+    def register_style(self, style: "GraphicsStyle"):
         sdict = style.to_pdf_dict()
 
         # empty style does not need a dictionary
@@ -220,6 +220,9 @@ class DeviceRGB(
         """The color components as a tuple in order `(r, g, b)` with alpha omitted."""
         return self[:-1]
 
+    def pdf_repr(self) -> str:
+        return " ".join(number_to_str(val) for val in self.colors) + f" {self.OPERATOR}"
+
 
 __pdoc__["DeviceRGB.OPERATOR"] = False
 __pdoc__["DeviceRGB.r"] = "The red color component. Must be in the interval [0, 1]."
@@ -259,6 +262,9 @@ class DeviceGray(
     def colors(self):
         """The color components as a tuple in order (g,) with alpha omitted."""
         return self[:-1]
+
+    def pdf_repr(self) -> str:
+        return " ".join(number_to_str(val) for val in self.colors) + f" {self.OPERATOR}"
 
 
 __pdoc__["DeviceGray.OPERATOR"] = False
@@ -312,6 +318,9 @@ class DeviceCMYK(
         """The color components as a tuple in order (c, m, y, k) with alpha omitted."""
 
         return self[:-1]
+
+    def pdf_repr(self) -> str:
+        return " ".join(number_to_str(val) for val in self.colors) + f" {self.OPERATOR}"
 
 
 __pdoc__["DeviceCMYK.OPERATOR"] = False
@@ -4384,16 +4393,10 @@ class GraphicsContext:
             stroke_color = self.style.stroke_color
 
             if fill_color not in NO_EMIT_SET:
-                render_list.append(
-                    " ".join(number_to_str(val) for val in fill_color.colors)
-                    + f" {fill_color.OPERATOR.lower()}"
-                )
+                render_list.append(fill_color.pdf_repr().lower())
 
             if stroke_color not in NO_EMIT_SET:
-                render_list.append(
-                    " ".join(number_to_str(val) for val in stroke_color.colors)
-                    + f" {stroke_color.OPERATOR.upper()}"
-                )
+                render_list.append(stroke_color.pdf_repr().upper())
 
             if emit_dash is not None:
                 render_list.append(
@@ -4471,7 +4474,7 @@ class GraphicsContext:
     def render(
         self,
         gsd_registry,
-        style,
+        style: DrawingContext,
         last_item,
         initial_point,
         debug_stream=None,
@@ -4493,7 +4496,7 @@ class GraphicsContext:
     def render_debug(
         self,
         gsd_registry,
-        style,
+        style: DrawingContext,
         last_item,
         initial_point,
         debug_stream,
