@@ -2106,7 +2106,7 @@ class FPDF(GraphicsStateMixin):
             ):
                 raise ValueError(f"Unsupported setting: {key}")
             setattr(self, key, value)
-        self._out("q ")
+        self._out("q\n")
         if font_family is not None or font_style is not None:
             self.set_font(
                 font_family or self.font_family, font_style or self.font_style
@@ -2142,7 +2142,7 @@ class FPDF(GraphicsStateMixin):
             self._out(f"{self.text_color} ")
             self.text_color = self.DEFAULT_TEXT_COLOR
         yield
-        self._out(" Q")
+        self._out("\nQ")
         self._pop_local_stack()
 
     @property

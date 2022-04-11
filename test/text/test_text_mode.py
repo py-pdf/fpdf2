@@ -11,14 +11,17 @@ def test_text_modes(tmp_path):
     pdf = FPDF(format=(350, 150))
     pdf.add_page()
     pdf.set_font("Helvetica", size=80)
-    pdf.cell(txt="FILL default text mode")
+    with pdf.local_context(fill_color=(255, 128, 0)):
+        pdf.cell(txt="FILL default")
+    with pdf.local_context(text_color=(0, 128, 255)):
+        pdf.cell(txt=" text mode")
     pdf.ln()
     with pdf.local_context(text_mode=TextMode.STROKE, line_width=2):
         pdf.cell(txt="STROKE text mode")
     pdf.ln()
     pdf.text_mode = TextMode.FILL_STROKE
     pdf.line_width = 4
-    pdf.set_text_color(255, 0, 255)
+    pdf.set_draw_color(255, 0, 255)
     pdf.cell(txt="FILL_STROKE text mode")
     pdf.ln()
     with pdf.local_context():
