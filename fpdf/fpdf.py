@@ -337,7 +337,6 @@ class FPDF(GraphicsStateMixin):
         # Do nothing by default. Allowed values: 'WARN', 'DOWNSCALE':
         self.oversized_images = None
         self.oversized_images_ratio = 2  # number of pixels per UserSpace point
-        self._markdown_leak_end_style = False
         # Only set if XMP metadata is added to the document:
         self._xmp_metadata_obj_id = None
         self.struct_builder = StructureTreeBuilder()
@@ -2424,22 +2423,23 @@ class FPDF(GraphicsStateMixin):
                         chr(current_font["subset"].pick(ord(" ")))
                     )
 
-                    wsl = []
+                    words_strl = []
                     for i, word in enumerate(words):
                         word = escape_parens(word.encode("utf-16-be").decode("latin-1"))
                         if i == 0:
-                            wsl.append(f"({word})")
+                            words_strl.append(f"({word})")
                         else:
                             adj = -(word_spacing * self.k) * 1000 / self.font_size_pt
-                            wsl.append(f"{adj:.3f}({space}{word})")
-                    sl.append(f"[{' '.join(wsl)}] TJ")
+                            words_strl.append(f"{adj:.3f}({space}{word})")
+                    sl.append(f"[{' '.join(words_strl)}] TJ")
                     if frag.underline:
                         underlines.append((self.x + dx + s_width, frag.string))
-                    sw = self.get_normalized_string_width_with_style(
+                    frag_width = self.get_normalized_string_width_with_style(
                         frag.string, current_font_style
                     )
-                    sw *= self.font_stretching * self.font_size * 0.00001  # /100 /1000
-                    s_width += sw + self.ws * frag.string.count(" ")
+                    # /1000 for font space conversion, /100 for percentage -> *0.00001
+                    frag_width *= self.font_stretching * self.font_size * 0.00001
+                    s_width += frag_width + self.ws * frag.string.count(" ")
             else:
                 if word_spacing and word_spacing != self.ws:
                     sl.append(f"{word_spacing * self.k:.3f} Tw")
@@ -2465,11 +2465,12 @@ class FPDF(GraphicsStateMixin):
                     sl.append(f"({txt_frag_escaped}) Tj")
                     if frag.underline:
                         underlines.append((self.x + dx + s_width, frag.string))
-                    sw = self.get_normalized_string_width_with_style(
+                    frag_width = self.get_normalized_string_width_with_style(
                         frag.string, current_font_style
                     )
-                    sw *= self.font_stretching * self.font_size * 0.00001  # /100 /1000
-                    s_width += sw + self.ws * frag.string.count(" ")
+                    # /1000 for font space conversion, /100 for percentage -> *0.00001
+                    frag_width *= self.font_stretching * self.font_size * 0.00001
+                    s_width += frag_width + self.ws * frag.string.count(" ")
             sl.append("ET")
 
             for start_x, txt_frag in underlines:
@@ -2496,10 +2497,9 @@ class FPDF(GraphicsStateMixin):
                 or self.fill_color != self.text_color
             ):
                 s = f"q {' '.join(sl)} Q"
-                self._out(s)
             else:
                 s = " ".join(sl)
-                self._out(s)
+            self._out(s)
         self.lasth = h
 
         # XPos.LEFT -> self.x stays the same
@@ -2770,8 +2770,6 @@ class FPDF(GraphicsStateMixin):
         styled_text_fragments = self._preload_font_styles(normalized_string, markdown)
 
         prev_font_style, prev_underline = self.font_style, self.underline
-        if markdown and not split_only:
-            self._markdown_leak_end_style = True
         prev_x, prev_y = self.x, self.y
 
         if not border:
@@ -2857,7 +2855,6 @@ class FPDF(GraphicsStateMixin):
                 self.font_style = prev_font_style
                 self.current_font = self.fonts[self.font_family + self.font_style]
             self.underline = prev_underline
-            self._markdown_leak_end_style = False
 
         return page_break_triggered
 
