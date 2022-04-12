@@ -6,10 +6,12 @@ __license__ = "LGPL 3.0"
 
 # Inspired by tuto5.py and several examples from fpdf.org, html2fpdf, etc.
 
-from .util import XPos, YPos
 import html
 import logging
 from html.parser import HTMLParser
+
+from .enums import XPos, YPos
+
 
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding

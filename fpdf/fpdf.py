@@ -12,7 +12,6 @@
 """fpdf module (in fpdf package housing FPDF class)
 
 This module contains FPDF class inspiring this library.
-The version number is updated here (above and below in variable).
 """
 
 import hashlib
@@ -29,34 +28,25 @@ from collections import defaultdict, OrderedDict
 from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import datetime
-from enum import IntEnum
 from functools import wraps
 from pathlib import Path
 from typing import Callable, NamedTuple, Optional, Union, List
 
 from PIL import Image
 
+from . import drawing
 from .actions import Action
+from .deprecation import WarnOnDeprecatedModuleAttributes
+from .enums import DocumentState, TextMode, XPos, YPos
 from .errors import FPDFException, FPDFPageFormatException
 from .fonts import fpdf_charwidths
 from .graphics_state import GraphicsStateMixin
 from .image_parsing import get_img_info, load_image, SUPPORTED_IMAGE_FILTERS
 from .line_break import Fragment, TextLine, MultiLineBreak
 from .outline import serialize_outline, OutlineSection
-from . import drawing
 from .recorder import FPDFRecorder
 from .structure_tree import MarkedContent, StructureTreeBuilder
-from .ttfonts import TTFontFile
 from .svg import Percent, SVGObject
-from .util import (
-    XPos,
-    YPos,
-    enclose_in_parens,
-    escape_parens,
-    substr,
-    get_scale_factor,
-)
-from .deprecation import WarnOnDeprecatedModuleAttributes
 from .syntax import (
     create_dictionary_string as pdf_d,
     create_list_string as pdf_l,
@@ -64,6 +54,14 @@ from .syntax import (
     iobj_ref as pdf_ref,
     DestinationXYZ,
 )
+from .ttfonts import TTFontFile
+from .util import (
+    enclose_in_parens,
+    escape_parens,
+    substr,
+    get_scale_factor,
+)
+
 
 LOGGER = logging.getLogger(__name__)
 HERE = Path(__file__).resolve().parent
@@ -89,13 +87,6 @@ ZOOM_CONFIGS = {  # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
     "fullwidth": ("/FitH", "null"),
     "real": ("/XYZ", "null", "null", "1"),
 }
-
-
-class DocumentState(IntEnum):
-    UNINITIALIZED = 0
-    READY = 1  # page not started yet
-    GENERATING_PAGE = 2
-    CLOSED = 3  # EOF printed
 
 
 class Annotation(NamedTuple):
@@ -281,6 +272,10 @@ class FPDF(GraphicsStateMixin):
     MARKDOWN_ITALICS_MARKER = "__"
     MARKDOWN_UNDERLINE_MARKER = "--"
 
+    DEFAULT_DRAW_COLOR = "0 G"
+    DEFAULT_FILL_COLOR = "0 g"
+    DEFAULT_TEXT_COLOR = "0 g"
+
     def __init__(
         self,
         orientation="portrait",
@@ -383,11 +378,12 @@ class FPDF(GraphicsStateMixin):
         self.font_size = self.font_size_pt / self.k
         self.font_stretching = 100  # current font stretching
         self.underline = 0  # underlining flag
-        self.draw_color = "0 G"
-        self.fill_color = "0 g"
-        self.text_color = "0 g"
+        self.draw_color = self.DEFAULT_DRAW_COLOR
+        self.fill_color = self.DEFAULT_FILL_COLOR
+        self.text_color = self.DEFAULT_TEXT_COLOR
         self.dash_pattern = dict(dash=0, gap=0, phase=0)
         self.line_width = 0.567 / self.k  # line width (0.2 mm)
+        self.text_mode = TextMode.FILL
         # end of grapics state variables
 
         self.dw_pt, self.dh_pt = get_page_format(format, self.k)
@@ -804,10 +800,10 @@ class FPDF(GraphicsStateMixin):
 
         # Set colors
         self.draw_color = dc
-        if dc != "0 G":
+        if dc != self.DEFAULT_DRAW_COLOR:
             self._out(dc)
         self.fill_color = fc
-        if fc != "0 g":
+        if fc != self.DEFAULT_FILL_COLOR:
             self._out(fc)
         self.text_color = tc
 
@@ -1965,7 +1961,10 @@ class FPDF(GraphicsStateMixin):
             txt2 = escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))
         else:
             txt2 = escape_parens(txt)
-        s = f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td ({txt2}) Tj ET"
+        s = f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td"
+        if self.text_mode != TextMode.FILL:
+            s += f" {self.text_mode} Tr {self.line_width:.2f} w"
+        s += f" ({txt2}) Tj ET"
         if self.underline and txt != "":
             s += " " + self._do_underline(x, y, txt)
         if self.fill_color != self.text_color:
@@ -2067,7 +2066,16 @@ class FPDF(GraphicsStateMixin):
 
     @check_page
     @contextmanager
-    def local_context(self):
+    def local_context(
+        self,
+        draw_color=None,
+        fill_color=None,
+        text_color=None,
+        font_family=None,
+        font_style=None,
+        font_size=None,
+        **kwargs,
+    ):
         """
         Create a local grapics state, which won't affect the surrounding code.
         This method must be used as a context manager using `with`:
@@ -2076,23 +2084,57 @@ class FPDF(GraphicsStateMixin):
                 set_some_state()
                 draw_some_stuff()
 
-        The affected settings are:
+        The affected settings are all those controlled by the GraphicsStateMixin:
             draw_color
             fill_color
             text_color
-            underline
+            font_family
+            font_size
             font_style
             font_stretching
-            font_family
-            font_size_pt
-            font_size
             dash_pattern
             line_width
+            text_mode
+            underline
+
+        Args:
+            **kwargs: key-values settings to set at the beggining of this context.
         """
         self._push_local_stack()
-        self._out("\nq ")
+        for key, value in kwargs.items():
+            if key not in (
+                "dash_pattern",
+                "font_stretching",
+                "line_width",
+                "text_mode",
+                "underline",
+            ):
+                raise ValueError(f"Unsupported setting: {key}")
+            setattr(self, key, value)
+        self._out("q\n")
+        if font_family is not None or font_style is not None:
+            self.set_font(
+                font_family or self.font_family, font_style or self.font_style
+            )
+        if font_size is not None:
+            self.set_font_size(font_size)
+        if draw_color is not None:
+            if isinstance(draw_color, Sequence):
+                self.set_draw_color(*draw_color)
+            else:
+                self.set_draw_color(draw_color)
+        if fill_color is not None:
+            if isinstance(fill_color, Sequence):
+                self.set_fill_color(*fill_color)
+            else:
+                self.set_fill_color(fill_color)
+        if text_color is not None:
+            if isinstance(text_color, Sequence):
+                self.set_text_color(*text_color)
+            else:
+                self.set_text_color(text_color)
         yield
-        self._out(" Q\n")
+        self._out("\nQ")
         self._pop_local_stack()
 
     @property
@@ -2393,6 +2435,9 @@ class FPDF(GraphicsStateMixin):
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2f} Td"
             )
+
+            if self.text_mode != TextMode.FILL:
+                s += f" {self.text_mode} Tr {self.line_width:.2f} w"
 
             # precursor to self.ws, or manual spacing of unicode fonts/
             word_spacing = 0
@@ -2828,7 +2873,7 @@ class FPDF(GraphicsStateMixin):
                 link=link,
             )
             if is_last_line and new_page and new_y == YPos.TOP:
-                # When a page jump is performed and the requested y is TOP (ln=3),
+                # When a page jump is performed and the requested y is TOP,
                 # pretend we started at the top of the text block on the new page.
                 # cf. test_multi_cell_table_with_automatic_page_break
                 prev_y = self.y
@@ -4457,6 +4502,7 @@ __all__ = [
     "XPos",
     "YPos",
     "get_page_format",
+    "TextMode",
     "TitleStyle",
     "PAGE_FORMATS",
 ]

@@ -16,6 +16,12 @@ methods.
 Simply call `.add_page()`.
 
 
+## will_page_break ##
+
+`will_page_break(height)` lets you know if adding an element will trigger a page break,
+based on its `height` and the current ordinate (`y` position).
+
+
 ## Unbreakable sections ##
 
 In order to render content, like [tables](Tables.md),
