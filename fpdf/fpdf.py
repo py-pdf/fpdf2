@@ -2437,7 +2437,7 @@ class FPDF(GraphicsStateMixin):
             )
 
             if self.text_mode != TextMode.FILL:
-                s += f" {self.text_mode} Tr {self.line_width:.2f} w"
+                sl.append(f"{self.text_mode} Tr {self.line_width:.2f} w")
 
             # precursor to self.ws, or manual spacing of unicode fonts/
             word_spacing = 0
