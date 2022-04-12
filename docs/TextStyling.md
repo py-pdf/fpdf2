@@ -26,7 +26,7 @@ pdf.output("style.pdf")
 ```
 
 
-## Text mode ##
+## .text_mode ##
 
 The PDF spec defines several text modes:
 ![](pdf-text-modes.jpg)

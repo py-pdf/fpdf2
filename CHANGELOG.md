@@ -21,7 +21,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - new parameters `new_x` and `new_y` for `cell()` and `multi_cell()`, replacing `ln=0`, thanks to @gmischler
 - new `add_highlight()` method to insert highlight annotations: [documentation](https://pyfpdf.github.io/fpdf2/Annotations.html#highlights)
 - new `offset_rendering()` method: [documentation](https://pyfpdf.github.io/fpdf2/PageBreaks.html#unbreakable-sections)
-- new `.text_mode` property: [documentation](https://pyfpdf.github.io/fpdf2/TextStyling.html#text-mode)
+- new `.text_mode` property: [documentation](https://pyfpdf.github.io/fpdf2/TextStyling.html#text_mode)
 - the page structure of the documentation has been revised, with a new page about [adding text](https://pyfpdf.github.io/fpdf2/Text.html), thanks to @gmischler
 - a warning is now raised if a context manager is used inside an `unbreakable()` section, which is not supported
 ### Fixed

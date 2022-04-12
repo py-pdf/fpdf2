@@ -104,6 +104,7 @@ class Annotation(NamedTuple):
     title: Optional[str] = None
     quad_points: Optional[tuple] = None
     page: Optional[int] = None
+    border_width: int = 0  # PDF readers support: displayed by Acrobat but not Sumatra
 
     def serialize(self, fpdf):
         "Convert this object dictionnary to a string"
@@ -114,7 +115,7 @@ class Annotation(NamedTuple):
 
         out = (
             f"<</Type /Annot /Subtype /{self.type}"
-            f" /Rect [{rect}] /Border [0 0 0]"
+            f" /Rect [{rect}] /Border [0 0 {self.border_width}]"
             # Flag "Print" (bit position 3) specifies to print
             # the annotation when the page is printed.
             # cf. https://docs.verapdf.org/validation/pdfa-part1/#rule-653-2
@@ -1779,7 +1780,7 @@ class FPDF(GraphicsStateMixin):
         )
 
     @check_page
-    def link(self, x, y, w, h, link, alt_text=None):
+    def link(self, x, y, w, h, link, alt_text=None, border_width=0):
         """
         Puts a link annotation on a rectangular area of the page.
         Text or image links are generally put via [cell](#fpdf.FPDF.cell),
@@ -1793,16 +1794,19 @@ class FPDF(GraphicsStateMixin):
             h (float): width of the link rectangle
             link: either an URL or a integer returned by `add_link`, defining an internal link to a page
             alt_text (str): optional textual description of the link, for accessibility purposes
+            border_width (int): thickness of an optional black border surrounding the link.
+                Not all PDF readers honor this: Acrobat renders it but not Sumatra.
         """
         self.annots[self.page].append(
             Annotation(
                 "Link",
-                x * self.k,
-                self.h_pt - y * self.k,
-                w * self.k,
-                h * self.k,
+                x=x * self.k,
+                y=self.h_pt - y * self.k,
+                width=w * self.k,
+                height=h * self.k,
                 link=link,
                 alt_text=alt_text,
+                border_width=border_width,
             )
         )
 

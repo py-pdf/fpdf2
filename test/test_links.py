@@ -104,3 +104,26 @@ def test_link_with_zoom_and_shift(tmp_path):
     pdf.set_draw_color(r=255, g=0, b=0)
     pdf.rect(x=pdf.epw / 4, y=pdf.epw / 3, w=53.5, h=31)
     assert_pdf_equal(pdf, HERE / "link_with_zoom_and_shift.pdf", tmp_path)
+
+
+def test_link_border(tmp_path):
+    "Acrobat renders this border it but not Sumatra"
+    pdf = PDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=24)
+
+    text = "https://github.com/PyFPDF/fpdf2"
+    height = 10
+    x, y = 50, 150
+
+    pdf.text(x=x, y=y, txt=text)
+    pdf.link(
+        x=x,
+        y=y - height,
+        w=pdf.get_string_width(text),
+        h=height,
+        link="https://github.com/PyFPDF/fpdf2",
+        border_width=4,
+    )
+
+    assert_pdf_equal(pdf, HERE / "link_border.pdf", tmp_path)
