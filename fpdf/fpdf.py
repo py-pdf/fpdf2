@@ -408,6 +408,9 @@ class FPDF(GraphicsStateMixin):
             list
         )  # page number -> array of 8 × n numbers
 
+    def _set_min_pdf_version(self, version):
+        self.pdf_version = max(self.pdf_version, version)
+
     @property
     def unifontsubset(self):
         return self.current_font.get("type") == "TTF"
@@ -585,6 +588,8 @@ class FPDF(GraphicsStateMixin):
             lang (str): the document main language
         """
         self.lang = lang
+        if lang:
+            self._set_min_pdf_version("1.4")
 
     def set_subject(self, subject):
         """
@@ -637,6 +642,8 @@ class FPDF(GraphicsStateMixin):
                 "fpdf2 already performs XMP metadata wrapping in a <?xpacket> tag"
             )
         self.xmp_metadata = xmp_metadata
+        if xmp_metadata:
+            self._set_min_pdf_version("1.4")
 
     def set_doc_option(self, opt, value):
         """
@@ -670,6 +677,8 @@ class FPDF(GraphicsStateMixin):
                 f"'{image_filter}' is not a supported image filter: {''.join(SUPPORTED_IMAGE_FILTERS)}"
             )
         self.image_filter = image_filter
+        if image_filter == "JPXDecode":
+            self._set_min_pdf_version("1.5")
 
     def alias_nb_pages(self, alias="{nb}"):
         """
@@ -1000,8 +1009,8 @@ class FPDF(GraphicsStateMixin):
             rendered = context.render(*render_args)
 
         self._out(rendered)
-
-        self.pdf_version = max(self.pdf_version, "1.4")
+        # The drawing API makes use of features (notably transparency and blending modes) that were introduced in PDF 1.4:
+        self._set_min_pdf_version("1.4")
 
     def _current_graphic_style(self):
         gs = drawing.GraphicsStyle()
@@ -2139,6 +2148,8 @@ class FPDF(GraphicsStateMixin):
                 if gs is None:
                     gs = drawing.GraphicsStyle()
                 setattr(gs, key, value)
+                if key == "blend_mode":
+                    self._set_min_pdf_version("1.4")
             elif key in ("font_stretching", "text_mode", "underline"):
                 setattr(self, key, value)
             else:
@@ -3104,6 +3115,8 @@ class FPDF(GraphicsStateMixin):
             info["i"] = len(self.images) + 1
             info["usages"] = 1
             self.images[name] = info
+        if "smask" in info:
+            self._set_min_pdf_version("1.4")
 
         # Automatic width and height calculation if needed
         if w == 0 and h == 0:  # Put image at 72 dpi
@@ -3297,6 +3310,7 @@ class FPDF(GraphicsStateMixin):
             self._struct_parents_id_per_page[page_object_id] = struct_parents_id
         marked_content = MarkedContent(page_object_id, struct_parents_id, **kwargs)
         self.struct_builder.add_marked_content(marked_content)
+        self._set_min_pdf_version("1.4")  # due to using /MarkInfo
         return marked_content
 
     def _current_page_object_id(self):
@@ -3437,9 +3451,11 @@ class FPDF(GraphicsStateMixin):
                         self._add_marked_content(
                             self.n, struct_type="/Link", alt_text=annot.alt_text
                         )
+                    if annot.quad_points:
+                        self._set_min_pdf_version("1.6")
                 self._out(f"/Annots [{annots}]")
             if self.pdf_version > "1.3":
-                self._out("/Group <</Type /Group /S /Transparency" "/CS /DeviceRGB>>")
+                self._out("/Group <</Type /Group /S /Transparency /CS /DeviceRGB>>")
             spid = self._struct_parents_id_per_page.get(self.n)
             if spid is not None:
                 self._out(f"/StructParents {spid}")
@@ -4116,6 +4132,8 @@ class FPDF(GraphicsStateMixin):
                 "transition": transition,
             }
             self.pages[self.page] = page
+            if transition:
+                self._set_min_pdf_version("1.5")
         else:
             page = self.pages[self.page]
         self.state = DocumentState.GENERATING_PAGE

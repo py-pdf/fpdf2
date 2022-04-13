@@ -3,7 +3,7 @@
 <</Type /Page
 /Parent 1 0 R
 /Resources 2 0 R
-/Group <</Type /Group /S /Transparency/CS /DeviceRGB>>
+/Group <</Type /Group /S /Transparency /CS /DeviceRGB>>
 /Contents 4 0 R>>
 endobj
 4 0 obj
@@ -61,13 +61,13 @@ endobj
 xref
 0 8
 0000000000 65535 f 
-0000000453 00000 n 
-0000000604 00000 n 
+0000000454 00000 n 
+0000000605 00000 n 
 0000000009 00000 n 
-0000000142 00000 n 
-0000000537 00000 n 
-0000000726 00000 n 
-0000000780 00000 n 
+0000000143 00000 n 
+0000000538 00000 n 
+0000000727 00000 n 
+0000000781 00000 n 
 trailer
 <<
 /Size 8
@@ -75,5 +75,5 @@ trailer
 /Info 6 0 R
 >>
 startxref
-883
+884
 %%EOF
