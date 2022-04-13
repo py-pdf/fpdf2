@@ -37,7 +37,7 @@ from PIL import Image
 from . import drawing
 from .actions import Action
 from .deprecation import WarnOnDeprecatedModuleAttributes
-from .enums import DocumentState, TextMode, XPos, YPos
+from .enums import DocumentState, PathPaintRule, TextMode, XPos, YPos
 from .errors import FPDFException, FPDFPageFormatException
 from .fonts import fpdf_charwidths
 from .graphics_state import GraphicsStateMixin
@@ -1028,16 +1028,14 @@ class FPDF(GraphicsStateMixin):
         return gs
 
     @contextmanager
-    def new_path(
-        self, x=0, y=0, paint_rule=drawing.PathPaintRule.AUTO, debug_stream=None
-    ):
+    def new_path(self, x=0, y=0, paint_rule=PathPaintRule.AUTO, debug_stream=None):
         """
         Create a path for appending lines and curves to.
 
         Args:
             x (float): Abscissa of the path starting point
             y (float): Ordinate of the path starting point
-            paint_rule (drawing.PathPaintRule): Optional choice of how the path should
+            paint_rule (PathPaintRule): Optional choice of how the path should
                 be painted. The default (AUTO) automatically selects stroke/fill based
                 on the path style settings.
             debug_stream (TextIO): print a pretty tree of all items to be rendered
