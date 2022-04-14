@@ -17,6 +17,8 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.5.3] - not released yet
+### Fixed
+- infinite loop when calling `.multi_cell()` without enough horizontal space - _cf._ [#389](https://github.com/PyFPDF/fpdf2/issues/389)
 
 ## [2.5.2] - 2022-04-13
 ### Added

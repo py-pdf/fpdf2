@@ -2854,11 +2854,15 @@ class FPDF(GraphicsStateMixin):
             self.add_page = lambda *args, **kwargs: None
             self._perform_page_break_if_need_be = lambda *args, **kwargs: None
 
+        if h is None:
+            h = self.font_size
         # If width is 0, set width to available width between margins
         if w == 0:
             w = self.w - self.r_margin - self.x
-        if h is None:
-            h = self.font_size
+        if w <= 2 * self.c_margin:
+            raise FPDFException(
+                "Not enough horizontal space to render cell. Consider introducing a line break."
+            )
         maximum_allowed_emwidth = (w - 2 * self.c_margin) * 1000 / self.font_size
 
         # Calculate text length

@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, XPos, YPos
+from fpdf import FPDF, FPDFException, XPos, YPos
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
@@ -305,3 +305,12 @@ def test_multi_cell_font_leakage(tmp_path):  # Issue #359
     pdf.set_font("Roboto", "", 12)
     pdf.multi_cell(0, txt="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
     assert_pdf_equal(pdf, HERE / "multi_cell_font_leakage.pdf", tmp_path)
+
+
+def test_multi_cell_with_zero_horizontal_space():  # issue #389
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "", 10)
+    pdf.multi_cell(w=0, h=5, txt="test")
+    with pytest.raises(FPDFException):
+        pdf.multi_cell(w=0, h=5, txt="test")
