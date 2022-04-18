@@ -314,3 +314,13 @@ def test_multi_cell_with_zero_horizontal_space():  # issue #389
     pdf.multi_cell(w=0, h=5, txt="test")
     with pytest.raises(FPDFException):
         pdf.multi_cell(w=0, h=5, txt="test")
+
+
+def test_multi_cell_with_limited_horizontal_space():  # issue #389
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "", 10)
+    pdf.multi_cell(w=pdf.epw - 2 * pdf.c_margin - 1, h=5, txt="test")
+    assert pdf.x == pdf.l_margin + pdf.epw - 2 * pdf.c_margin - 1
+    with pytest.raises(FPDFException):
+        pdf.multi_cell(w=0, h=5, txt="test")

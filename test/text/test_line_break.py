@@ -1,4 +1,7 @@
+from fpdf import FPDFException
 from fpdf.line_break import Fragment, MultiLineBreak, TextLine
+
+import pytest
 
 
 def test_no_fragments():
@@ -34,11 +37,10 @@ def test_width_calculation():
     assert multi_line_break.get_line_of_given_width(0) == TextLine(
         fragments=[], text_width=0, number_of_spaces_between_words=0, justify=False
     )
-    # the first character has width of 2 units. request of 1 unit line returns
-    # an empty line
-    assert multi_line_break.get_line_of_given_width(1) == TextLine(
-        fragments=[], text_width=0, number_of_spaces_between_words=0, justify=False
-    )
+    # the first character has width of 2 units.
+    # request of 1 unit line raises an exception
+    with pytest.raises(FPDFException):
+        multi_line_break.get_line_of_given_width(1)
     # get other characters one by one
     assert multi_line_break.get_line_of_given_width(2) == TextLine(
         fragments=[Fragment.from_string("a", "normal", False)],
