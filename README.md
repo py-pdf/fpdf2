@@ -165,6 +165,9 @@ This library could only exist thanks to the dedication of many volunteers around
     <td align="center"><a href="https://github.com/mcerveny"><img src="https://avatars.githubusercontent.com/u/1438115?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Martin Cerveny</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Amcerveny" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=mcerveny" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/Spenhouet"><img src="https://avatars.githubusercontent.com/u/7819068?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Spenhouet</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3ASpenhouet" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/pulls?q=is%3Apr+reviewed-by%3ASpenhouet" title="Reviewed Pull Requests">👀</a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/mtkumar123"><img src="https://avatars.githubusercontent.com/u/89176219?v=4?s=100" width="100px;" alt=""/><br /><sub><b>mtkumar123</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=mtkumar123" title="Code">💻</a></td>
+  </tr>
 </table>
 
 <!-- markdownlint-restore -->
