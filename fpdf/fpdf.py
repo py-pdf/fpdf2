@@ -3402,14 +3402,12 @@ class FPDF(GraphicsStateMixin):
         if not self.unifontsubset and self.core_fonts_encoding:
             try:
                 return txt.encode(self.core_fonts_encoding).decode("latin-1")
-            except UnicodeEncodeError as e:
+            except UnicodeEncodeError as error:
                 raise FPDFUnicodeEncodingException(
                     encoding=self.core_fonts_encoding,
-                    start=e.start,
-                    end=e.end,
-                    reason=e.reason,
-                    character=txt[e.start],
-                ) from e
+                    start=error.start,
+                    character=txt[error.start],
+                ) from error
         return txt
 
     def _putpages(self):

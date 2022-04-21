@@ -35,7 +35,7 @@ class FPDFPageFormatException(FPDFException):
 class FPDFUnicodeEncodingException(FPDFException):
     """Error is thrown when a character that cannot be encoded by the chosen encoder is provided"""
 
-    def __init__(self, encoding, start, end, reason, character):
+    def __init__(self, encoding, start, character):
         super().__init__()
         self.encoding = encoding
         self.start = start
@@ -48,5 +48,5 @@ class FPDFUnicodeEncodingException(FPDFException):
         )
 
     def __str__(self):
-        return f"""Encoding used is {self.encoding}. Character {self.character} at position {self.start} 
+        return f"""Encoding used is {self.encoding}. Character {self.character} at position {self.start}
         of text is out of encoding range. Please consider using font that supports UTF-8 encoding"""
