@@ -39,15 +39,14 @@ class FPDFUnicodeEncodingException(FPDFException):
         super().__init__()
         self.encoding = encoding
         self.start = start
-        self.end = end
-        self.reason = reason
         self.character = character
 
     def __repr__(self):
         return (
             f"{self.__class__.__name__}"
-            f"{repr(self.encoding), repr(self.start), repr(self.end), repr(self.reason)}"
+            f"{repr(self.encoding), repr(self.start), repr(self.character)}"
         )
 
     def __str__(self):
-        return f"Encoding used is {self.encoding}. Character {self.character} at position {self.start} of text is out of encoding range. Please consider using font that supports UTF-8 encoding"
+        return f"""Encoding used is {self.encoding}. Character {self.character} at position {self.start} 
+        of text is out of encoding range. Please consider using font that supports UTF-8 encoding"""

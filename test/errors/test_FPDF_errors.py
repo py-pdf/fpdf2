@@ -3,7 +3,7 @@ from test.conftest import assert_pdf_equal
 
 import fpdf
 import pytest
-from fpdf.errors import FPDFException
+from fpdf.errors import FPDFException, FPDFUnicodeEncodingException
 
 HERE = Path(__file__).resolve().parent
 
@@ -21,7 +21,7 @@ def test_encoding_exception():
     pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=15)
-    with pytest.raises(FPDFException) as e:
+    with pytest.raises(FPDFUnicodeEncodingException):
         pdf.cell(txt="Joséō")
         # This should through an error since Helvetica is a latin-1 encoder and the ō is out of range.
 
@@ -84,10 +84,16 @@ def test_adding_content_after_closing():
     pdf.output()
     with pytest.raises(FPDFException) as error:
         pdf.add_page()
-    assert str(error.value) == "A page cannot be added on a closed document, after calling output()"
+    assert (
+        str(error.value)
+        == "A page cannot be added on a closed document, after calling output()"
+    )
     with pytest.raises(FPDFException) as error:
         pdf.cell(w=pdf.epw, txt="Hello again!", align="C")
-    assert str(error.value) == "Content cannot be added on a closed document, after calling output()"
+    assert (
+        str(error.value)
+        == "Content cannot be added on a closed document, after calling output()"
+    )
 
 
 def test_repeated_calls_to_output(tmp_path):

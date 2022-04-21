@@ -3409,7 +3409,7 @@ class FPDF(GraphicsStateMixin):
                     end=e.end,
                     reason=e.reason,
                     character=txt[e.start],
-                )
+                ) from e
         return txt
 
     def _putpages(self):
