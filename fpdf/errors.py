@@ -9,14 +9,18 @@ class FPDFPageFormatException(FPDFException):
         super().__init__()
         if unknown and one:
             raise TypeError(
-                "FPDF Page Format Exception cannot be both for " "unknown type and for wrong number of arguments"
+                "FPDF Page Format Exception cannot be both for "
+                "unknown type and for wrong number of arguments"
             )
         self.argument = argument
         self.unknown = unknown
         self.one = one
 
     def __repr__(self):
-        return f"{self.__class__.__name__}" f"({self.argument!r}, {self.unknown!r}, {self.one!r})"
+        return (
+            f"{self.__class__.__name__}"
+            f"({self.argument!r}, {self.unknown!r}, {self.one!r})"
+        )
 
     def __str__(self):
         if self.unknown:
@@ -41,7 +45,8 @@ class FPDFUnicodeEncodingException(FPDFException):
 
     def __repr__(self):
         return (
-            f"{self.__class__.__name__}" f"{repr(self.encoding), repr(self.start), repr(self.end), repr(self.reason)}"
+            f"{self.__class__.__name__}"
+            f"{repr(self.encoding), repr(self.start), repr(self.end), repr(self.reason)}"
         )
 
     def __str__(self):
