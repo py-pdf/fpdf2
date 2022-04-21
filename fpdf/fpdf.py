@@ -24,13 +24,13 @@ import re
 import sys
 import warnings
 import zlib
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict, defaultdict
 from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
-from typing import Callable, NamedTuple, Optional, Union, List
+from typing import Callable, List, NamedTuple, Optional, Union
 
 from PIL import Image
 
@@ -38,30 +38,22 @@ from . import drawing
 from .actions import Action
 from .deprecation import WarnOnDeprecatedModuleAttributes
 from .enums import DocumentState, PathPaintRule, TextMode, XPos, YPos
-from .errors import FPDFException, FPDFPageFormatException
+from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
 from .fonts import fpdf_charwidths
 from .graphics_state import GraphicsStateMixin
-from .image_parsing import get_img_info, load_image, SUPPORTED_IMAGE_FILTERS
-from .line_break import Fragment, TextLine, MultiLineBreak
-from .outline import serialize_outline, OutlineSection
+from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
+from .line_break import Fragment, MultiLineBreak, TextLine
+from .outline import OutlineSection, serialize_outline
 from .recorder import FPDFRecorder
 from .structure_tree import MarkedContent, StructureTreeBuilder
 from .svg import Percent, SVGObject
-from .syntax import (
-    create_dictionary_string as pdf_d,
-    create_list_string as pdf_l,
-    create_stream as pdf_stream,
-    iobj_ref as pdf_ref,
-    DestinationXYZ,
-)
+from .syntax import DestinationXYZ
+from .syntax import create_dictionary_string as pdf_d
+from .syntax import create_list_string as pdf_l
+from .syntax import create_stream as pdf_stream
+from .syntax import iobj_ref as pdf_ref
 from .ttfonts import TTFontFile
-from .util import (
-    enclose_in_parens,
-    escape_parens,
-    substr,
-    get_scale_factor,
-)
-
+from .util import enclose_in_parens, escape_parens, get_scale_factor, substr
 
 LOGGER = logging.getLogger(__name__)
 HERE = Path(__file__).resolve().parent
@@ -108,10 +100,7 @@ class Annotation(NamedTuple):
 
     def serialize(self, fpdf):
         "Convert this object dictionnary to a string"
-        rect = (
-            f"{self.x:.2f} {self.y:.2f} "
-            f"{self.x + self.width:.2f} {self.y - self.height:.2f}"
-        )
+        rect = f"{self.x:.2f} {self.y:.2f} " f"{self.x + self.width:.2f} {self.y - self.height:.2f}"
 
         out = (
             f"<</Type /Annot /Subtype /{self.type}"
@@ -149,9 +138,7 @@ class Annotation(NamedTuple):
 
         if self.quad_points:
             # pylint: disable=not-an-iterable
-            quad_points = " ".join(
-                f"{quad_point:.2f}" for quad_point in self.quad_points
-            )
+            quad_points = " ".join(f"{quad_point:.2f}" for quad_point in self.quad_points)
             out += f" /QuadPoints [{quad_points}]"
 
         if self.page:
@@ -404,9 +391,7 @@ class FPDF(GraphicsStateMixin):
         self._graphics_state_obj_refs = OrderedDict()
 
         self.record_text_quad_points = False
-        self.text_quad_points = defaultdict(
-            list
-        )  # page number -> array of 8 × n numbers
+        self.text_quad_points = defaultdict(list)  # page number -> array of 8 × n numbers
 
     def _set_min_pdf_version(self, version):
         self.pdf_version = max(self.pdf_version, version)
@@ -638,9 +623,7 @@ class FPDF(GraphicsStateMixin):
 
     def set_xmp_metadata(self, xmp_metadata):
         if "<?xpacket" in xmp_metadata[:50]:
-            raise ValueError(
-                "fpdf2 already performs XMP metadata wrapping in a <?xpacket> tag"
-            )
+            raise ValueError("fpdf2 already performs XMP metadata wrapping in a <?xpacket> tag")
         self.xmp_metadata = xmp_metadata
         if xmp_metadata:
             self._set_min_pdf_version("1.4")
@@ -657,8 +640,7 @@ class FPDF(GraphicsStateMixin):
             Simply set the `core_fonts_encoding` property as a replacement.
         """
         warnings.warn(
-            "set_doc_option() is deprecated. "
-            "Simply set the `core_fonts_encoding` property as a replacement.",
+            "set_doc_option() is deprecated. " "Simply set the `core_fonts_encoding` property as a replacement.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -673,9 +655,7 @@ class FPDF(GraphicsStateMixin):
                 meaning to use the best image filter given the images provided.
         """
         if image_filter not in SUPPORTED_IMAGE_FILTERS:
-            raise ValueError(
-                f"'{image_filter}' is not a supported image filter: {''.join(SUPPORTED_IMAGE_FILTERS)}"
-            )
+            raise ValueError(f"'{image_filter}' is not a supported image filter: {''.join(SUPPORTED_IMAGE_FILTERS)}")
         self.image_filter = image_filter
         if image_filter == "JPXDecode":
             self._set_min_pdf_version("1.5")
@@ -736,9 +716,7 @@ class FPDF(GraphicsStateMixin):
         self._endpage()  # close page
         self._enddoc()  # close document
 
-    def add_page(
-        self, orientation="", format="", same=False, duration=0, transition=None
-    ):
+    def add_page(self, orientation="", format="", same=False, duration=0, transition=None):
         """
         Adds a new page to the document.
         If a page is already present, the `footer()` method is called first.
@@ -763,9 +741,7 @@ class FPDF(GraphicsStateMixin):
                 As of june 2021, onored by Adobe Acrobat reader, but ignored by Sumatra PDF reader.
         """
         if self.state == DocumentState.CLOSED:
-            raise FPDFException(
-                "A page cannot be added on a closed document, after calling output()"
-            )
+            raise FPDFException("A page cannot be added on a closed document, after calling output()")
         if self.state == DocumentState.UNINITIALIZED:
             self.open()
 
@@ -928,9 +904,7 @@ class FPDF(GraphicsStateMixin):
         s = s if normalized else self.normalize_text(s)
         w = 0
         for frag in (
-            self._markdown_parse(s)
-            if markdown
-            else (Fragment.from_string(s, self.font_style, bool(self.underline)),)
+            self._markdown_parse(s) if markdown else (Fragment.from_string(s, self.font_style, bool(self.underline)),)
         ):
             w += self.get_normalized_string_width_with_style(frag.string, frag.style)
         if self.font_stretching != 100:
@@ -983,9 +957,7 @@ class FPDF(GraphicsStateMixin):
         """
 
         if self._current_draw_context is not None:
-            raise FPDFException(
-                "cannot create a drawing context while one is already open"
-            )
+            raise FPDFException("cannot create a drawing context while one is already open")
 
         context = drawing.DrawingContext()
         self._current_draw_context = context
@@ -1122,8 +1094,7 @@ class FPDF(GraphicsStateMixin):
             y2 (float): Ordinate of second point
         """
         self._out(
-            f"{x1 * self.k:.2f} {(self.h - y1) * self.k:.2f} m {x2 * self.k:.2f} "
-            f"{(self.h - y2) * self.k:.2f} l S"
+            f"{x1 * self.k:.2f} {(self.h - y1) * self.k:.2f} m {x2 * self.k:.2f} " f"{(self.h - y2) * self.k:.2f} l S"
         )
 
     @check_page
@@ -1139,9 +1110,7 @@ class FPDF(GraphicsStateMixin):
         """
         operator = "m"
         for point in point_list:
-            self._out(
-                f"{point[0] * self.k:.2f} {(self.h - point[1]) * self.k:.2f} {operator}"
-            )
+            self._out(f"{point[0] * self.k:.2f} {(self.h - point[1]) * self.k:.2f} {operator}")
             operator = "l"
         if polygon:
             self._out(" h ")
@@ -1204,10 +1173,7 @@ class FPDF(GraphicsStateMixin):
                 * `DF` or `FD`: draw and fill
         """
         op = _style_to_operator(style)
-        self._out(
-            f"{x * self.k:.2f} {(self.h - y) * self.k:.2f} {w * self.k:.2f} "
-            f"{-h * self.k:.2f} re {op}"
-        )
+        self._out(f"{x * self.k:.2f} {(self.h - y) * self.k:.2f} {w * self.k:.2f} " f"{-h * self.k:.2f} re {op}")
 
     @check_page
     def ellipse(self, x, y, w, h, style=None):
@@ -1310,9 +1276,7 @@ class FPDF(GraphicsStateMixin):
         for i in range(1, numSides + 1):
             point = centerX + radius * math.cos(
                 math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
-            ), centerY + radius * math.sin(
-                math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
-            )
+            ), centerY + radius * math.sin(math.radians((360 / numSides) * i) + math.radians(rotateDegrees))
             points.append(point)
             i += 1
         # creates list of touples containing cordinate points of vertices
@@ -1411,19 +1375,13 @@ class FPDF(GraphicsStateMixin):
         # Move to the start point
         if start_from_center:
             self._out(f"{cx * self.k:.2f} {(self.h - cy) * self.k:.2f} m")
-            self._out(
-                f"{start_point[0] * self.k:.2f} {(self.h - start_point[1]) * self.k:.2f} l"
-            )
+            self._out(f"{start_point[0] * self.k:.2f} {(self.h - start_point[1]) * self.k:.2f} l")
         else:
-            self._out(
-                f"{start_point[0] * self.k:.2f} {(self.h - start_point[1]) * self.k:.2f} m"
-            )
+            self._out(f"{start_point[0] * self.k:.2f} {(self.h - start_point[1]) * self.k:.2f} m")
 
         # Number of curves to use, maximal segment angle is 2*PI/max_curves
         max_curves = 4
-        n = min(
-            max_curves, math.ceil(abs(end_eta - start_eta) / (2 * math.pi / max_curves))
-        )
+        n = min(max_curves, math.ceil(abs(end_eta - start_eta) / (2 * math.pi / max_curves)))
         d_eta = (end_eta - start_eta) / n
 
         alpha = math.sin(d_eta) * (math.sqrt(4 + 3 * math.tan(d_eta / 2) ** 2) - 1) / 3
@@ -1533,9 +1491,7 @@ class FPDF(GraphicsStateMixin):
             raise ValueError('"fname" parameter is required')
         style = "".join(sorted(style.upper()))
         if any(letter not in "BI" for letter in style):
-            raise ValueError(
-                f"Unknown style provided (only B & I letters are allowed): {style}"
-            )
+            raise ValueError(f"Unknown style provided (only B & I letters are allowed): {style}")
         fontkey = f"{family.lower()}{style}"
 
         # Check if font already added or one of the core fonts
@@ -1566,10 +1522,7 @@ class FPDF(GraphicsStateMixin):
                 "Descent": round(ttf.descent),
                 "CapHeight": round(ttf.capHeight),
                 "Flags": ttf.flags,
-                "FontBBox": (
-                    f"[{ttf.bbox[0]:.0f} {ttf.bbox[1]:.0f}"
-                    f" {ttf.bbox[2]:.0f} {ttf.bbox[3]:.0f}]"
-                ),
+                "FontBBox": (f"[{ttf.bbox[0]:.0f} {ttf.bbox[1]:.0f}" f" {ttf.bbox[2]:.0f} {ttf.bbox[3]:.0f}]"),
                 "ItalicAngle": int(ttf.italicAngle),
                 "StemV": round(ttf.stemV),
                 "MissingWidth": round(ttf.defaultWidth),
@@ -1670,9 +1623,7 @@ class FPDF(GraphicsStateMixin):
         family = family.lower()
         style = "".join(sorted(style.upper()))
         if any(letter not in "BIU" for letter in style):
-            raise ValueError(
-                f"Unknown style provided (only B/I/U letters are allowed): {style}"
-            )
+            raise ValueError(f"Unknown style provided (only B/I/U letters are allowed): {style}")
         if "U" in style:
             self.underline = True
             style = style.replace("U", "")
@@ -1680,37 +1631,24 @@ class FPDF(GraphicsStateMixin):
             self.underline = False
 
         if family in self.font_aliases and family + style not in self.fonts:
-            warnings.warn(
-                f"Substituting font {family} by core font "
-                f"{self.font_aliases[family]}"
-            )
+            warnings.warn(f"Substituting font {family} by core font " f"{self.font_aliases[family]}")
             family = self.font_aliases[family]
         elif family in ("symbol", "zapfdingbats") and style:
-            warnings.warn(
-                f"Built-in font {family} only has a single 'style' and can't be bold "
-                f"or italic"
-            )
+            warnings.warn(f"Built-in font {family} only has a single 'style' and can't be bold " f"or italic")
             style = ""
 
         if size == 0:
             size = self.font_size_pt
 
         # Test if font is already selected
-        if (
-            self.font_family == family
-            and self.font_style == style
-            and self.font_size_pt == size
-        ):
+        if self.font_family == family and self.font_style == style and self.font_size_pt == size:
             return
 
         # Test if used for the first time
         fontkey = family + style
         if fontkey not in self.fonts:
             if fontkey not in self.core_fonts:
-                raise FPDFException(
-                    f"Undefined font: {fontkey} - "
-                    f"Use built-in fonts or FPDF.add_font() beforehand"
-                )
+                raise FPDFException(f"Undefined font: {fontkey} - " f"Use built-in fonts or FPDF.add_font() beforehand")
             # If it's one of the core fonts, add it to self.fonts
             self.fonts[fontkey] = {
                 "i": len(self.fonts) + 1,
@@ -1744,9 +1682,7 @@ class FPDF(GraphicsStateMixin):
         self.font_size = size / self.k
         if self.page > 0:
             if not self.current_font:
-                raise FPDFException(
-                    "Cannot set font size: a font must be selected first"
-                )
+                raise FPDFException("Cannot set font size: a font must be selected first")
             self._out(f"BT /F{self.current_font['i']} {self.font_size_pt:.2f} Tf ET")
 
     def set_stretching(self, stretching):
@@ -1790,9 +1726,7 @@ class FPDF(GraphicsStateMixin):
             zoom (float): optional new zoom level after following the link.
                 Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
         """
-        self.links[link] = DestinationXYZ(
-            self.page if page == -1 else page, x=x, y=y, zoom=zoom
-        )
+        self.links[link] = DestinationXYZ(self.page if page == -1 else page, x=x, y=y, zoom=zoom)
 
     @check_page
     def link(self, x, y, w, h, link, alt_text=None, border_width=0):
@@ -1991,9 +1925,7 @@ class FPDF(GraphicsStateMixin):
             s = f"q {self.text_color.pdf_repr().lower()} {s} Q"
         self._out(s)
         if self.record_text_quad_points:
-            unscaled_width = self.get_normalized_string_width_with_style(
-                txt, self.font_style
-            )
+            unscaled_width = self.get_normalized_string_width_with_style(txt, self.font_style)
             if self.font_stretching != 100:
                 unscaled_width *= self.font_stretching / 100
             w = unscaled_width * self.font_size / 1000
@@ -2018,8 +1950,7 @@ class FPDF(GraphicsStateMixin):
           Use `rotation` instead.
         """
         warnings.warn(
-            "rotate() can produces malformed PDFs and is deprecated. "
-            "Use the rotation() context manager instead.",
+            "rotate() can produces malformed PDFs and is deprecated. " "Use the rotation() context manager instead.",
             DeprecationWarning,
             stacklevel=3,
         )
@@ -2037,10 +1968,7 @@ class FPDF(GraphicsStateMixin):
             s = math.sin(angle)
             cx = x * self.k
             cy = (self.h - y) * self.k
-            s = (
-                f"q {c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm "
-                f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm"
-            )
+            s = f"q {c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm " f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm"
             self._out(s)
 
     @check_page
@@ -2078,10 +2006,7 @@ class FPDF(GraphicsStateMixin):
         c, s = math.cos(angle), math.sin(angle)
         cx, cy = x * self.k, (self.h - y) * self.k
         with self.local_context():
-            self._out(
-                f"{c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm "
-                f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm"
-            )
+            self._out(f"{c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm " f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm")
             yield
 
     @check_page
@@ -2261,21 +2186,12 @@ class FPDF(GraphicsStateMixin):
                 " You can omit them by passing string content with txt="
             )
         if isinstance(border, int) and border not in (0, 1):
-            warnings.warn(
-                'Integer values for "border" parameter other than 1 are currently '
-                "ignored"
-            )
+            warnings.warn('Integer values for "border" parameter other than 1 are currently ' "ignored")
             border = 1
         if not isinstance(new_x, XPos):
-            raise ValueError(
-                f'Invalid value for parameter "new_x" ({new_x}),'
-                "must be instance of Enum XPos"
-            )
+            raise ValueError(f'Invalid value for parameter "new_x" ({new_x}),' "must be instance of Enum XPos")
         if not isinstance(new_y, YPos):
-            raise ValueError(
-                f'Invalid value for parameter "new_y" ({new_y}),'
-                "must be instance of Enum YPos"
-            )
+            raise ValueError(f'Invalid value for parameter "new_y" ({new_y}),' "must be instance of Enum YPos")
         if center == "DEPRECATED":
             center = False
         else:
@@ -2296,10 +2212,7 @@ class FPDF(GraphicsStateMixin):
                 new_x = XPos.LEFT
                 new_y = YPos.NEXT
             else:
-                raise ValueError(
-                    f'Invalid value for parameter "ln" ({ln}),'
-                    " must be an int between 0 and 2."
-                )
+                raise ValueError(f'Invalid value for parameter "ln" ({ln}),' " must be an int between 0 and 2.")
             warnings.warn(
                 (
                     'The parameter "ln" is deprecated.'
@@ -2382,10 +2295,7 @@ class FPDF(GraphicsStateMixin):
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         if isinstance(border, int) and border not in (0, 1):
-            warnings.warn(
-                'Integer values for "border" parameter other than 1 are currently '
-                "ignored"
-            )
+            warnings.warn('Integer values for "border" parameter other than 1 are currently ' "ignored")
             border = 1
         styled_txt_width = text_line.text_width / 1000 * self.font_size
         if not styled_txt_width:
@@ -2400,9 +2310,7 @@ class FPDF(GraphicsStateMixin):
             w = self.w - self.r_margin - self.x
         elif w is None:
             if not text_line.fragments:
-                raise ValueError(
-                    "A 'text_line' parameter with fragments must be provided if 'w' is None"
-                )
+                raise ValueError("A 'text_line' parameter with fragments must be provided if 'w' is None")
             w = styled_txt_width + self.c_margin + self.c_margin
         if h is None:
             h = self.font_size
@@ -2415,39 +2323,25 @@ class FPDF(GraphicsStateMixin):
         # "h" can't actually be None
         if fill:
             op = "B" if border == 1 else "f"
-            sl.append(
-                f"{self.x * k:.2f} {(self.h - self.y) * k:.2f} "
-                f"{w * k:.2f} {-h * k:.2f} re {op}"
-            )
+            sl.append(f"{self.x * k:.2f} {(self.h - self.y) * k:.2f} " f"{w * k:.2f} {-h * k:.2f} re {op}")
         elif border == 1:
-            sl.append(
-                f"{self.x * k:.2f} {(self.h - self.y) * k:.2f} "
-                f"{w * k:.2f} {-h * k:.2f} re S"
-            )
+            sl.append(f"{self.x * k:.2f} {(self.h - self.y) * k:.2f} " f"{w * k:.2f} {-h * k:.2f} re S")
         # pylint: enable=invalid-unary-operand-type
 
         if isinstance(border, str):
             x = self.x
             y = self.y
             if "L" in border:
-                sl.append(
-                    f"{x * k:.2f} {(self.h - y) * k:.2f} m "
-                    f"{x * k:.2f} {(self.h - (y + h)) * k:.2f} l S"
-                )
+                sl.append(f"{x * k:.2f} {(self.h - y) * k:.2f} m " f"{x * k:.2f} {(self.h - (y + h)) * k:.2f} l S")
             if "T" in border:
-                sl.append(
-                    f"{x * k:.2f} {(self.h - y) * k:.2f} m "
-                    f"{(x + w) * k:.2f} {(self.h - y) * k:.2f} l S"
-                )
+                sl.append(f"{x * k:.2f} {(self.h - y) * k:.2f} m " f"{(x + w) * k:.2f} {(self.h - y) * k:.2f} l S")
             if "R" in border:
                 sl.append(
-                    f"{(x + w) * k:.2f} {(self.h - y) * k:.2f} m "
-                    f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S"
+                    f"{(x + w) * k:.2f} {(self.h - y) * k:.2f} m " f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S"
                 )
             if "B" in border:
                 sl.append(
-                    f"{x * k:.2f} {(self.h - (y + h)) * k:.2f} m "
-                    f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S"
+                    f"{x * k:.2f} {(self.h - (y + h)) * k:.2f} m " f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S"
                 )
 
         if self.record_text_quad_points:
@@ -2483,10 +2377,7 @@ class FPDF(GraphicsStateMixin):
             if self.fill_color != self.text_color:
                 sl.append(self.text_color.pdf_repr().lower())
 
-            sl.append(
-                f"BT {(self.x + dx) * k:.2f} "
-                f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2f} Td"
-            )
+            sl.append(f"BT {(self.x + dx) * k:.2f} " f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2f} Td")
 
             if self.text_mode != TextMode.FILL:
                 sl.append(f"{self.text_mode} Tr {self.line_width:.2f} w")
@@ -2516,9 +2407,7 @@ class FPDF(GraphicsStateMixin):
 
                     # Determine the position of space (" ") in the current subset and
                     # split words whenever this mapping code is found
-                    words = txt_frag_mapped.split(
-                        chr(current_font["subset"].pick(ord(" ")))
-                    )
+                    words = txt_frag_mapped.split(chr(current_font["subset"].pick(ord(" "))))
 
                     words_strl = []
                     for i, word in enumerate(words):
@@ -2531,9 +2420,7 @@ class FPDF(GraphicsStateMixin):
                     sl.append(f"[{' '.join(words_strl)}] TJ")
                     if frag.underline:
                         underlines.append((self.x + dx + s_width, frag.string))
-                    frag_width = self.get_normalized_string_width_with_style(
-                        frag.string, current_font_style
-                    )
+                    frag_width = self.get_normalized_string_width_with_style(frag.string, current_font_style)
                     # /1000 for font space conversion, /100 for percentage -> *0.00001
                     frag_width *= self.font_stretching * self.font_size * 0.00001
                     s_width += frag_width + self.ws * frag.string.count(" ")
@@ -2554,17 +2441,13 @@ class FPDF(GraphicsStateMixin):
                         for char in frag.string:
                             uni = ord(char)
                             txt_frag_mapped += chr(current_font["subset"].pick(uni))
-                        txt_frag_escaped = escape_parens(
-                            txt_frag_mapped.encode("utf-16-be").decode("latin-1")
-                        )
+                        txt_frag_escaped = escape_parens(txt_frag_mapped.encode("utf-16-be").decode("latin-1"))
                     else:
                         txt_frag_escaped = escape_parens(frag.string)
                     sl.append(f"({txt_frag_escaped}) Tj")
                     if frag.underline:
                         underlines.append((self.x + dx + s_width, frag.string))
-                    frag_width = self.get_normalized_string_width_with_style(
-                        frag.string, current_font_style
-                    )
+                    frag_width = self.get_normalized_string_width_with_style(frag.string, current_font_style)
                     # /1000 for font space conversion, /100 for percentage -> *0.00001
                     frag_width *= self.font_stretching * self.font_size * 0.00001
                     s_width += frag_width + self.ws * frag.string.count(" ")
@@ -2589,10 +2472,7 @@ class FPDF(GraphicsStateMixin):
                 )
         if sl:
             # If any PDF settings have been left modified, wrap the line in a local context.
-            if (
-                current_font_style != self.font_style
-                or self.fill_color != self.text_color
-            ):
+            if current_font_style != self.font_style or self.fill_color != self.text_color:
                 s = f"q {' '.join(sl)} Q"
             else:
                 s = " ".join(sl)
@@ -2638,9 +2518,7 @@ class FPDF(GraphicsStateMixin):
         if not txt:
             return tuple()
         if not markdown:
-            return tuple(
-                [Fragment.from_string(txt, self.font_style, bool(self.underline))]
-            )
+            return tuple([Fragment.from_string(txt, self.font_style, bool(self.underline))])
         prev_font_style = self.font_style
         styled_txt_frags = tuple(self._markdown_parse(txt))
         page = self.page
@@ -2674,11 +2552,7 @@ class FPDF(GraphicsStateMixin):
             )
             half_marker = txt[0]
             # Check that previous & next characters are not identical to the marker:
-            if (
-                is_marker
-                and (not txt_frag or txt_frag[0] != half_marker)
-                and (len(txt) < 3 or txt[2] != half_marker)
-            ):
+            if is_marker and (not txt_frag or txt_frag[0] != half_marker) and (len(txt) < 3 or txt[2] != half_marker):
                 if txt_frag:
                     yield Fragment(
                         ("B" if in_bold else "") + ("I" if in_italics else ""),
@@ -2713,11 +2587,7 @@ class FPDF(GraphicsStateMixin):
 
         Returns: a boolean indicating if a page break would occur
         """
-        return (
-            self.y + height > self.page_break_trigger
-            and not self.in_footer
-            and self.accept_page_break
-        )
+        return self.y + height > self.page_break_trigger and not self.in_footer and self.accept_page_break
 
     def _perform_page_break_if_need_be(self, h):
         if self.will_page_break(h):
@@ -2811,15 +2681,9 @@ class FPDF(GraphicsStateMixin):
                 " You can omit them by passing string content with txt="
             )
         if not isinstance(new_x, XPos):
-            raise ValueError(
-                f'Invalid value for parameter "new_x" ({new_x}),'
-                "must be instance of Enum XPos"
-            )
+            raise ValueError(f'Invalid value for parameter "new_x" ({new_x}),' "must be instance of Enum XPos")
         if not isinstance(new_y, YPos):
-            raise ValueError(
-                f'Invalid value for parameter "new_y" ({new_y}),'
-                "must be instance of Enum YPos"
-            )
+            raise ValueError(f'Invalid value for parameter "new_y" ({new_y}),' "must be instance of Enum YPos")
         if ln != "DEPRECATED":
             # For backwards compatibility, if "ln" is used we overwrite "new_[xy]".
             if ln == 0:
@@ -2835,10 +2699,7 @@ class FPDF(GraphicsStateMixin):
                 new_x = XPos.RIGHT
                 new_y = YPos.TOP
             else:
-                raise ValueError(
-                    f'Invalid value for parameter "ln" ({ln}),'
-                    " must be an int between 0 and 3."
-                )
+                raise ValueError(f'Invalid value for parameter "ln" ({ln}),' " must be an int between 0 and 3.")
             warnings.warn(
                 (
                     'The parameter "ln" is deprecated.'
@@ -2884,9 +2745,7 @@ class FPDF(GraphicsStateMixin):
         text_line = multi_line_break.get_line_of_given_width(maximum_allowed_emwidth)
         while (text_line) is not None:
             text_lines.append(text_line)
-            text_line = multi_line_break.get_line_of_given_width(
-                maximum_allowed_emwidth
-            )
+            text_line = multi_line_break.get_line_of_given_width(maximum_allowed_emwidth)
 
         if not text_lines:  # ensure we display at least one cell - cf. issue #349
             text_lines = [
@@ -2956,9 +2815,7 @@ class FPDF(GraphicsStateMixin):
         return page_break_triggered
 
     @check_page
-    def write(
-        self, h: float = None, txt: str = "", link: str = "", print_sh: bool = False
-    ):
+    def write(self, h: float = None, txt: str = "", link: str = "", print_sh: bool = False):
         """
         Prints text from the current position.
         When the right margin is reached, a line break occurs at the most recent
@@ -2978,8 +2835,7 @@ class FPDF(GraphicsStateMixin):
             raise FPDFException("No font set, you need to call set_font() beforehand")
         if isinstance(h, str):
             raise ValueError(
-                "Parameter 'h' must be a number, not a string."
-                " You can omit it by passing string content with txt="
+                "Parameter 'h' must be a number, not a string." " You can omit it by passing string content with txt="
             )
         if h is None:
             h = self.font_size
@@ -2998,9 +2854,7 @@ class FPDF(GraphicsStateMixin):
         # first line from current x position to right margin
         first_width = self.w - prev_x - self.r_margin
         first_emwidth = (first_width - 2 * self.c_margin) * 1000 / self.font_size
-        text_line = multi_line_break.get_line_of_given_width(
-            first_emwidth, wordsplit=False
-        )
+        text_line = multi_line_break.get_line_of_given_width(first_emwidth, wordsplit=False)
         # remaining lines fill between margins
         full_width = self.w - self.l_margin - self.r_margin
         full_emwidth = (full_width - 2 * self.c_margin) * 1000 / self.font_size
@@ -3166,19 +3020,9 @@ class FPDF(GraphicsStateMixin):
         svg = SVGObject(img.getvalue())
         if w == 0 and h == 0:
             if not svg.width or not svg.height:
-                raise ValueError(
-                    '<svg> has no "height" / "width": w= or h= must be provided to FPDF.image()'
-                )
-            w = (
-                svg.width * self.epw / 100
-                if isinstance(svg.width, Percent)
-                else svg.width
-            )
-            h = (
-                svg.height * self.eph / 100
-                if isinstance(svg.height, Percent)
-                else svg.height
-            )
+                raise ValueError('<svg> has no "height" / "width": w= or h= must be provided to FPDF.image()')
+            w = svg.width * self.epw / 100 if isinstance(svg.width, Percent) else svg.width
+            h = svg.height * self.eph / 100 if isinstance(svg.height, Percent) else svg.height
         else:
             _, _, vw, vh = svg.viewbox
             if w == 0:
@@ -3194,9 +3038,7 @@ class FPDF(GraphicsStateMixin):
         if x is None:
             x = self.x
 
-        _, _, path = svg.transform_to_rect_viewport(
-            scale=1, width=w, height=h, ignore_svg_top_attrs=True
-        )
+        _, _, path = svg.transform_to_rect_viewport(scale=1, width=w, height=h, ignore_svg_top_attrs=True)
         path.transform = path.transform @ drawing.Transform.translation(x, y)
 
         old_x, old_y = self.x, self.y
@@ -3220,10 +3062,7 @@ class FPDF(GraphicsStateMixin):
             info["w"] > width_in_pt * self.oversized_images_ratio
             and info["h"] > height_in_pt * self.oversized_images_ratio
         ):
-            factor = (
-                min(info["w"] / width_in_pt, info["h"] / height_in_pt)
-                / self.oversized_images_ratio
-            )
+            factor = min(info["w"] / width_in_pt, info["h"] / height_in_pt) / self.oversized_images_ratio
             if self.oversized_images.lower().startswith("warn"):
                 LOGGER.warning(
                     "OVERSIZED: Image %s with size %.1fx%.1fpx is rendered at size %.1fx%.1fpt."
@@ -3245,11 +3084,7 @@ class FPDF(GraphicsStateMixin):
                     info = lowres_info
                     if info["w"] * info["h"] < dims[0] * dims[1]:
                         # The existing low-res image is too small, we need a bigger low-res image:
-                        info.update(
-                            get_img_info(
-                                img or load_image(name), self.image_filter, dims
-                            )
-                        )
+                        info.update(get_img_info(img or load_image(name), self.image_filter, dims))
                         LOGGER.debug(
                             "OVERSIZED: Updated low-res image with name=%s id=%d to dims=%s",
                             lowres_name,
@@ -3258,9 +3093,7 @@ class FPDF(GraphicsStateMixin):
                         )
                     info["usages"] += 1
                 else:
-                    info = get_img_info(
-                        img or load_image(name), self.image_filter, dims
-                    )
+                    info = get_img_info(img or load_image(name), self.image_filter, dims)
                     info["i"] = len(self.images) + 1
                     info["usages"] = 1
                     self.images[lowres_name] = info
@@ -3271,9 +3104,7 @@ class FPDF(GraphicsStateMixin):
                         info["i"],
                     )
             else:
-                raise ValueError(
-                    f"Invalid value for attribute .oversized_images: {self.oversized_images}"
-                )
+                raise ValueError(f"Invalid value for attribute .oversized_images: {self.oversized_images}")
         elif lowres_info:
             # Embedding the same image in high-res after inserting it in low-res:
             lowres_info.update(info)
@@ -3289,9 +3120,7 @@ class FPDF(GraphicsStateMixin):
         """
         page_object_id = self._current_page_object_id()
         mcid = self.struct_builder.next_mcid_for_page(page_object_id)
-        marked_content = self._add_marked_content(
-            page_object_id, struct_type="/Figure", mcid=mcid, **kwargs
-        )
+        marked_content = self._add_marked_content(page_object_id, struct_type="/Figure", mcid=mcid, **kwargs)
         start_page = self.page
         self._out(f"/P <</MCID {mcid}>> BDC")
         yield marked_content
@@ -3408,7 +3237,12 @@ class FPDF(GraphicsStateMixin):
         # - for TTF unicode fonts: unicode object (utf8 encoding)
         # - for built-in fonts: string instances (encoding: latin-1, cp1252)
         if not self.unifontsubset and self.core_fonts_encoding:
-            return txt.encode(self.core_fonts_encoding).decode("latin-1")
+            try:
+                return txt.encode(self.core_fonts_encoding).decode("latin-1")
+            except UnicodeEncodeError as e:
+                raise FPDFUnicodeEncodingException(
+                    encoding=self.core_fonts_encoding, start=e.start, end=e.end, reason=e.reason, character=txt[e.start]
+                )
         return txt
 
     def _putpages(self):
@@ -3448,9 +3282,7 @@ class FPDF(GraphicsStateMixin):
                         # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
                         # but tests with Adobe Acrobat Reader reveal that the page /StructParents inserted below
                         # is enough to link the marked content in the hierarchy tree with this annotation link.
-                        self._add_marked_content(
-                            self.n, struct_type="/Link", alt_text=annot.alt_text
-                        )
+                        self._add_marked_content(self.n, struct_type="/Link", alt_text=annot.alt_text)
                     if annot.quad_points:
                         self._set_min_pdf_version("1.6")
                 self._out(f"/Annots [{annots}]")
@@ -3515,7 +3347,9 @@ class FPDF(GraphicsStateMixin):
         expected_final_page = tocp.start_page + tocp.pages - 1
         if self.page != expected_final_page:
             too = "many" if self.page > expected_final_page else "few"
-            error_msg = f"The rendering function passed to FPDF.insert_toc_placeholder triggered too {too} page breaks: "
+            error_msg = (
+                f"The rendering function passed to FPDF.insert_toc_placeholder triggered too {too} page breaks: "
+            )
             error_msg += f"ToC ended on page {self.page} while it was expected to span exactly {tocp.pages} pages"
             raise FPDFException(error_msg)
         self.state = prev_state
@@ -3525,12 +3359,7 @@ class FPDF(GraphicsStateMixin):
         for diff in self.diffs.values():
             # Encodings
             self._newobj()
-            self._out(
-                "<</Type /Encoding /BaseEncoding /WinAnsiEncoding "
-                + "/Differences ["
-                + diff
-                + "]>>"
-            )
+            self._out("<</Type /Encoding /BaseEncoding /WinAnsiEncoding " + "/Differences [" + diff + "]>>")
             self._out("endobj")
 
         for name, info in self.font_files.items():
@@ -3547,9 +3376,7 @@ class FPDF(GraphicsStateMixin):
                         font = substr(font, 6)
                     if header and ord(font[info["length1"]]) == 128:
                         # Strip second binary header
-                        font = substr(font, 0, info["length1"]) + substr(
-                            font, info["length1"] + 6
-                        )
+                        font = substr(font, 0, info["length1"]) + substr(font, info["length1"] + 6)
 
                 self._out(f"<</Length {len(font)}")
                 if compressed:
@@ -3598,11 +3425,7 @@ class FPDF(GraphicsStateMixin):
 
                 # Widths
                 self._newobj()
-                self._out(
-                    "["
-                    + " ".join(_char_width(font, chr(i)) for i in range(32, 256))
-                    + "]"
-                )
+                self._out("[" + " ".join(_char_width(font, chr(i)) for i in range(32, 256)) + "]")
                 self._out("endobj")
 
                 # Descriptor
@@ -3681,9 +3504,7 @@ class FPDF(GraphicsStateMixin):
                         # Calculate surrogate pair
                         code_high = 0xD800 | (code - 0x10000) >> 10
                         code_low = 0xDC00 | (code & 0x3FF)
-                        bfChar.append(
-                            f"<{code_mapped:04X}> <{code_high:04X}{code_low:04X}>\n"
-                        )
+                        bfChar.append(f"<{code_mapped:04X}> <{code_high:04X}{code_low:04X}>\n")
                     else:
                         bfChar.append(f"<{code_mapped:04X}> <{code:04X}>\n")
 
@@ -3852,9 +3673,7 @@ class FPDF(GraphicsStateMixin):
         self._out(f"/W [{''.join(w)}]")
 
     def _putimages(self):
-        for img_info in sorted(
-            self.images.values(), key=lambda img_info: img_info["i"]
-        ):
+        for img_info in sorted(self.images.values(), key=lambda img_info: img_info["i"]):
             if img_info["usages"] == 0:
                 continue
             self._putimage(img_info)
@@ -3873,10 +3692,7 @@ class FPDF(GraphicsStateMixin):
         self._out(f"/Height {info['h']}")
 
         if info["cs"] == "Indexed":
-            self._out(
-                f"/ColorSpace [/Indexed /DeviceRGB "
-                f"{len(info['pal']) // 3 - 1} {pdf_ref(self.n + 1)}]"
-            )
+            self._out(f"/ColorSpace [/Indexed /DeviceRGB " f"{len(info['pal']) // 3 - 1} {pdf_ref(self.n + 1)}]")
         else:
             self._out(f"/ColorSpace /{info['cs']}")
             if info["cs"] == "DeviceCMYK":
@@ -3917,21 +3733,13 @@ class FPDF(GraphicsStateMixin):
         # Palette
         if info["cs"] == "Indexed":
             self._newobj()
-            filter, pal = (
-                ("/Filter /FlateDecode ", zlib.compress(info["pal"]))
-                if self.compress
-                else ("", info["pal"])
-            )
+            filter, pal = ("/Filter /FlateDecode ", zlib.compress(info["pal"])) if self.compress else ("", info["pal"])
             self._out(f"<<{filter}/Length {len(pal)}>>")
             self._out(pdf_stream(pal))
             self._out("endobj")
 
     def _putxobjectdict(self):
-        img_ids = [
-            (img_info["i"], img_info["n"])
-            for img_info in self.images.values()
-            if img_info["usages"]
-        ]
+        img_ids = [(img_info["i"], img_info["n"]) for img_info in self.images.values() if img_info["usages"]]
         img_ids.sort()
         for idx, n in img_ids:
             self._out(f"/I{idx} {pdf_ref(n)}")
@@ -3991,16 +3799,12 @@ class FPDF(GraphicsStateMixin):
         "Builds a Structure Hierarchy, including image alternate descriptions"
         # This property is later used by _putcatalog to insert a reference to the StructTreeRoot:
         self._struct_tree_root_obj_id = self.n + 1
-        self.struct_builder.serialize(
-            first_object_id=self._struct_tree_root_obj_id, fpdf=self
-        )
+        self.struct_builder.serialize(first_object_id=self._struct_tree_root_obj_id, fpdf=self)
 
     def _put_document_outline(self):
         # This property is later used by _putcatalog to insert a reference to the Outlines:
         self._outlines_obj_id = self.n + 1
-        serialize_outline(
-            self._outline, first_object_id=self._outlines_obj_id, fpdf=self
-        )
+        serialize_outline(self._outline, first_object_id=self._outlines_obj_id, fpdf=self)
 
     def _put_xmp_metadata(self):
         xpacket = f'<?xpacket begin="ï»¿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n{self.xmp_metadata}\n<?xpacket end="w"?>\n'
@@ -4025,9 +3829,7 @@ class FPDF(GraphicsStateMixin):
                 creation_date = self.creation_date
                 date_string = f"{creation_date:%Y%m%d%H%M%S}"
             except Exception as error:
-                raise FPDFException(
-                    f"Could not format date: {creation_date}"
-                ) from error
+                raise FPDFException(f"Could not format date: {creation_date}") from error
         else:
             date_string = f"{datetime.now():%Y%m%d%H%M%S}"
         info_d["/CreationDate"] = enclose_in_parens(f"D:{date_string}")
@@ -4121,9 +3923,7 @@ class FPDF(GraphicsStateMixin):
         self._out("%%EOF")
         self.state = DocumentState.CLOSED
 
-    def _beginpage(
-        self, orientation, format, same, duration, transition, new_page=True
-    ):
+    def _beginpage(self, orientation, format, same, duration, transition, new_page=True):
         self.page += 1
         if new_page:
             page = {
@@ -4143,17 +3943,11 @@ class FPDF(GraphicsStateMixin):
         self.font_stretching = 100
         if same:
             if orientation or format:
-                raise ValueError(
-                    f"Inconsistent parameters: same={same} but orientation={orientation} format={format}"
-                )
+                raise ValueError(f"Inconsistent parameters: same={same} but orientation={orientation} format={format}")
         else:
             # Set page format if provided, else use default value:
-            page_width_pt, page_height_pt = (
-                get_page_format(format, self.k) if format else (self.dw_pt, self.dh_pt)
-            )
-            self._set_orientation(
-                orientation or self.def_orientation, page_width_pt, page_height_pt
-            )
+            page_width_pt, page_height_pt = get_page_format(format, self.k) if format else (self.dw_pt, self.dh_pt)
+            self._set_orientation(orientation or self.def_orientation, page_width_pt, page_height_pt)
             self.page_break_trigger = self.h - self.b_margin
         page["w_pt"], page["h_pt"] = self.w_pt, self.h_pt
 
@@ -4183,9 +3977,7 @@ class FPDF(GraphicsStateMixin):
 
     def _out(self, s):
         if self.state == DocumentState.CLOSED:
-            raise FPDFException(
-                "Content cannot be added on a closed document, after calling output()"
-            )
+            raise FPDFException("Content cannot be added on a closed document, after calling output()")
         if not isinstance(s, bytes):
             if not isinstance(s, str):
                 s = str(s)
@@ -4237,9 +4029,7 @@ class FPDF(GraphicsStateMixin):
                 raise RuntimeError(f'Char "{char_space}" invalid for I25: ')
 
             # create a wide/narrow-seq (first digit=bars, second digit=spaces)
-            seq = "".join(
-                f"{cb}{cs}" for cb, cs in zip(bar_char[char_bar], bar_char[char_space])
-            )
+            seq = "".join(f"{cb}{cs}" for cb, cs in zip(bar_char[char_bar], bar_char[char_space]))
 
             for bar_index, char in enumerate(seq):
                 # set line_width depending on value
@@ -4320,12 +4110,7 @@ class FPDF(GraphicsStateMixin):
     @check_page
     @contextmanager
     def rect_clip(self, x, y, w, h):
-        self._out(
-            (
-                f"q {x * self.k:.2f} {(self.h - y - h) * self.k:.2f} {w * self.k:.2f} "
-                f"{h * self.k:.2f} re W n"
-            )
-        )
+        self._out((f"q {x * self.k:.2f} {(self.h - y - h) * self.k:.2f} {w * self.k:.2f} " f"{h * self.k:.2f} re W n"))
         yield
         self._out("Q")
 
@@ -4394,17 +4179,13 @@ class FPDF(GraphicsStateMixin):
                 will occur immediately after calling this method.
         """
         if not callable(render_toc_function):
-            raise TypeError(
-                f"The first argument must be a callable, got: {type(render_toc_function)}"
-            )
+            raise TypeError(f"The first argument must be a callable, got: {type(render_toc_function)}")
         if self._toc_placeholder:
             raise FPDFException(
                 "A placeholder for the table of contents has already been defined"
                 f" on page {self._toc_placeholder.start_page}"
             )
-        self._toc_placeholder = ToCPlaceholder(
-            render_toc_function, self.page, self.y, pages
-        )
+        self._toc_placeholder = ToCPlaceholder(render_toc_function, self.page, self.y, pages)
         for _ in range(pages):
             self.add_page()
 
@@ -4433,9 +4214,7 @@ class FPDF(GraphicsStateMixin):
         """
         for level in (level0, level1, level2, level3, level4, level5, level6):
             if level and not isinstance(level, TitleStyle):
-                raise TypeError(
-                    f"Arguments must all be TitleStyle instances, got: {type(level)}"
-                )
+                raise TypeError(f"Arguments must all be TitleStyle instances, got: {type(level)}")
         self.section_title_styles = {
             0: level0,
             1: level1,
@@ -4495,9 +4274,7 @@ class FPDF(GraphicsStateMixin):
     @contextmanager
     def _apply_style(self, title_style):
         prev_font = (self.font_family, self.font_style, self.font_size_pt)
-        self.set_font(
-            title_style.font_family, title_style.font_style, title_style.font_size_pt
-        )
+        self.set_font(title_style.font_family, title_style.font_style, title_style.font_size_pt)
         prev_text_color = self.text_color
         if title_style.color is not None:
             if isinstance(title_style.color, Sequence):
@@ -4523,9 +4300,7 @@ def _style_to_operator(style):
     if not style:
         style = "D"
     if style not in style_to_operators:
-        raise ValueError(
-            f"Invalid value for style: '{style}'. Allowed values: {'/'.join(style_to_operators.keys())}"
-        )
+        raise ValueError(f"Invalid value for style: '{style}'. Allowed values: {'/'.join(style_to_operators.keys())}")
     return style_to_operators[style]
 
 
