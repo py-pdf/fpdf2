@@ -1,3 +1,5 @@
+import types
+import warnings
 from copy import deepcopy
 
 from .errors import FPDFException
@@ -44,7 +46,12 @@ class FPDFRecorder:
         for call in self._calls:
             func, args, kwargs = call
             try:
-                func(*args, **kwargs)
+                result = func(*args, **kwargs)
+                if isinstance(result, types.GeneratorType):
+                    warnings.warn(
+                        "Detected usage of a context manager inside an unbreakable() section, which is not supported"
+                    )
+                # The results of other methods can also be invalidated: .pages_count, page_no(), get_x() / get_y(), will_page_break()
             except Exception as error:
                 raise FPDFException(
                     f"Failed to replay FPDF call: {func}(*{args}, **{kwargs})"

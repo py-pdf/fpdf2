@@ -1,3 +1,7 @@
+from .drawing import DeviceGray
+from .enums import TextMode
+
+
 class GraphicsStateMixin:
     """Mixin class for managing a stack of graphics state variables.
 
@@ -10,12 +14,16 @@ class GraphicsStateMixin:
     directly by user code.
     """
 
+    DEFAULT_DRAW_COLOR = DeviceGray(0)
+    DEFAULT_FILL_COLOR = DeviceGray(0)
+    DEFAULT_TEXT_COLOR = DeviceGray(0)
+
     def __init__(self, *args, **kwargs):
         self.__statestack = [
             dict(
-                draw_color="0 G",
-                fill_color="0 g",
-                text_color="0 g",
+                draw_color=self.DEFAULT_DRAW_COLOR,
+                fill_color=self.DEFAULT_FILL_COLOR,
+                text_color=self.DEFAULT_TEXT_COLOR,
                 underline=False,
                 font_style="",
                 font_stretching=100,
@@ -24,6 +32,7 @@ class GraphicsStateMixin:
                 font_size=0,
                 dash_pattern=dict(dash=0, gap=0, phase=0),
                 line_width=0,
+                text_mode=TextMode.FILL,
             ),
         ]
         super().__init__(*args, **kwargs)
@@ -121,3 +130,11 @@ class GraphicsStateMixin:
     @line_width.setter
     def line_width(self, v):
         self.__statestack[-1]["line_width"] = v
+
+    @property
+    def text_mode(self):
+        return self.__statestack[-1]["text_mode"]
+
+    @text_mode.setter
+    def text_mode(self, v):
+        self.__statestack[-1]["text_mode"] = v

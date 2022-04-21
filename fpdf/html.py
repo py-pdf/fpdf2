@@ -10,6 +10,9 @@ import html
 import logging
 from html.parser import HTMLParser
 
+from .enums import XPos, YPos
+
+
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
 DEFAULT_HEADING_SIZES = dict(h1=24, h2=18, h3=14, h4=12, h5=10, h6=8)
@@ -268,7 +271,8 @@ class HTML2FPDF(HTMLParser):
                 self.h,
                 data,
                 border=0,
-                ln=1,
+                new_x=XPos.LMARGIN,
+                new_y=YPos.NEXT,
                 align=self.align[0].upper(),
                 link=self.href,
             )
@@ -301,12 +305,38 @@ class HTML2FPDF(HTMLParser):
         bgcolor = color_as_decimal(self.td.get("bgcolor", self.tr.get("bgcolor", "")))
         # parsing table header/footer (drawn later):
         if self.thead is not None:
-            self.theader.append(((width, height, data, border, 0, align), bgcolor))
+            self.theader.append(
+                (
+                    dict(
+                        w=width,
+                        h=height,
+                        txt=data,
+                        border=border,
+                        new_x=XPos.RIGHT,
+                        new_y=YPos.TOP,
+                        align=align,
+                    ),
+                    bgcolor,
+                )
+            )
         if self.tfoot is not None:
-            self.tfooter.append(((width, height, data, border, 0, align), bgcolor))
+            self.tfooter.append(
+                (
+                    dict(
+                        w=width,
+                        h=height,
+                        txt=data,
+                        border=border,
+                        new_x=XPos.RIGHT,
+                        new_y=YPos.TOP,
+                        align=align,
+                    ),
+                    bgcolor,
+                )
+            )
         # check if reached end of page, add table footer and header:
         if self.tfooter:
-            height += self.tfooter[0][0][1]
+            height += self.tfooter[0][0]["h"]
         if self.pdf.y + height > self.pdf.page_break_trigger and not self.th:
             self.output_table_footer()
             self.pdf.add_page(same=True)
@@ -326,7 +356,15 @@ class HTML2FPDF(HTMLParser):
                 align,
                 data.replace("\n", "\\n"),
             )
-            self.pdf.cell(width, height, data, border=border, ln=0, align=align)
+            self.pdf.cell(
+                width,
+                height,
+                data,
+                border=border,
+                align=align,
+                new_x=XPos.RIGHT,
+                new_y=YPos.TOP,
+            )
 
     def _td_x(self):
         "Return the current table cell left side horizontal position"
@@ -368,11 +406,11 @@ class HTML2FPDF(HTMLParser):
             b = self.style.get("b")
             self.pdf.set_x(self.table_offset)
             self.set_style("b", True)
-            for cell, bgcolor in self.theader:
-                self.box_shadow(cell[0], cell[1], bgcolor)
-                self.pdf.cell(*cell)  # includes the border
+            for celldict, bgcolor in self.theader:
+                self.box_shadow(celldict["w"], celldict["h"], bgcolor)
+                self.pdf.cell(**celldict)  # includes the border
             self.set_style("b", b)
-            self.pdf.ln(self.theader[0][0][1])
+            self.pdf.ln(self.theader[0][0]["h"])
             self.pdf.set_x(self.table_offset)
             # self.pdf.set_x(prev_x)
         self.theader_out = True
@@ -381,10 +419,10 @@ class HTML2FPDF(HTMLParser):
         if self.tfooter:
             x = self.pdf.x
             self.pdf.set_x(self.table_offset)
-            for cell, bgcolor in self.tfooter:
-                self.box_shadow(cell[0], cell[1], bgcolor)
-                self.pdf.cell(*cell)
-            self.pdf.ln(self.tfooter[0][0][1])
+            for celldict, bgcolor in self.tfooter:
+                self.box_shadow(celldict["w"], celldict["h"], bgcolor)
+                self.pdf.cell(**celldict)
+            self.pdf.ln(self.tfooter[0][0]["h"])
             self.pdf.set_x(x)
         if self.table.get("border"):
             self.output_table_sep()
@@ -668,7 +706,14 @@ class HTML2FPDF(HTMLParser):
             pdf.set_link(link, page=section.page_number)
             text = f'{" " * section.level * 2} {section.name}'
             text += f' {"." * (60 - section.level*2 - len(section.name))} {section.page_number}'
-            pdf.multi_cell(w=pdf.epw, h=pdf.font_size, txt=text, ln=1, link=link)
+            pdf.multi_cell(
+                w=pdf.epw,
+                h=pdf.font_size,
+                txt=text,
+                new_x=XPos.LMARGIN,
+                new_y=YPos.NEXT,
+                link=link,
+            )
 
     # Subclasses of _markupbase.ParserBase must implement this:
     def error(self, message):

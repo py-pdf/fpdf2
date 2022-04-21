@@ -154,6 +154,7 @@ def test_template_nominal_csv(tmp_path):
     tmpl.add_page()
     tmpl["empty_fields"] = "empty"
     assert_pdf_equal(tmpl, HERE / "template_nominal_csv.pdf", tmp_path)
+
     tmpl = Template(format="A4", title="Sample Invoice")
     tmpl.parse_csv(HERE / "mycsvfile.csv", delimiter=";", encoding="utf-8")
     tmpl.add_page()
@@ -324,8 +325,7 @@ def test_template_textstyles(tmp_path):
     assert_pdf_equal(tmpl, HERE / "template_textstyles.pdf", tmp_path)
 
 
-# pylint: disable=unused-argument
-def test_template_item_access(tmp_path):
+def test_template_item_access():
     """Testing Template() getitem/setitem."""
     elements = [
         {
@@ -361,8 +361,7 @@ def test_template_item_access(tmp_path):
         7 in templ
 
 
-# pylint: disable=unused-argument
-def test_template_badinput(tmp_path):
+def test_template_badinput():
     """Testing Template() with non-conforming definitions."""
     for arg in (
         "format",
@@ -563,7 +562,7 @@ def test_template_justify(tmp_path):  # issue-207
     assert_pdf_equal(tmpl, HERE / "template_justify.pdf", tmp_path)
 
 
-def test_template_split_multicell(tmp_path):
+def test_template_split_multicell():
     elements = [
         {
             "name": "multline_text",

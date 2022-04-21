@@ -26,7 +26,8 @@ line_height = pdf.font_size * 2.5
 col_width = pdf.epw / 4  # distribute content evenly
 for row in data:
     for datum in row:
-        pdf.multi_cell(col_width, line_height, datum, border=1, ln=3, max_line_height=pdf.font_size)
+        pdf.multi_cell(col_width, line_height, datum, border=1,
+                new_x=XPos.RIGHT, new_y=YPos.TOP, max_line_height=pdf.font_size)
     pdf.ln(line_height)
 pdf.output('table_with_cells.pdf')
 ```
@@ -65,6 +66,14 @@ pdf.write_html(
 )
 pdf.output('table_html.pdf')
 ```
+
+Note that `HTMLMixin` has [some limitations, notably regarding multi-lines cells](HTML.html#supported-html-features).
+
+
+## Recipes ##
+
+- our 5th tutorial provides examples on how to build tables: [Tuto 5 - Creating Tables](Tutorial.md#tuto-5-creating-tables)
+- `@bvalgard` wrote a custom `table()` method: [YouTube video](https://www.youtube.com/watch?v=euNvxWaRQMY) - [source code](https://github.com/bvalgard/create-pdf-with-python-fpdf2/blob/main/create_table_fpdf2.py)
 
 
 ## Repeat table header on each page ##

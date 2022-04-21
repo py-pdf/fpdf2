@@ -1,5 +1,7 @@
 from typing import NamedTuple, Any, Union, Sequence
 
+from .errors import FPDFException
+
 SOFT_HYPHEN = "\u00ad"
 HYPHEN = "\u002d"
 SPACE = " "
@@ -208,6 +210,7 @@ class MultiLineBreak:
         self.print_sh = print_sh
         self.fragment_index = 0
         self.character_index = 0
+        self.char_index_for_last_forced_manual_break = None
 
     def _get_character_width(self, character: str, style: str = ""):
         if character == SOFT_HYPHEN and not self.print_sh:
@@ -217,6 +220,10 @@ class MultiLineBreak:
 
     # pylint: disable=too-many-return-statements
     def get_line_of_given_width(self, maximum_width: float, wordsplit: bool = True):
+        char_index_for_last_forced_manual_break = (
+            self.char_index_for_last_forced_manual_break
+        )
+        self.char_index_for_last_forced_manual_break = None
 
         if self.fragment_index == len(self.styled_text_fragments):
             return None
@@ -259,7 +266,12 @@ class MultiLineBreak:
                 if not wordsplit:
                     line_full = True
                     break
-                return current_line.manual_break(self.justify)
+                if char_index_for_last_forced_manual_break == self.character_index:
+                    raise FPDFException(
+                        "Not enough horizontal space to render a single character"
+                    )
+                self.char_index_for_last_forced_manual_break = self.character_index
+                return current_line.manual_break()
 
             current_line.add_character(
                 character,

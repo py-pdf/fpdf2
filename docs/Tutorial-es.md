@@ -1,19 +1,5 @@
 ﻿Los diferentes ejemplos muestran rápidamente como usar fpdf2. Encontrará todas las características principales explicadas.
 
-English version: [Tutorial](Tutorial.md)
-
-Version en français : [Tutorial-fr](Tutorial-fr.md)
-
-Deutsche Version: [Tutorial-de](Tutorial-de.md)
-
-हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
-
-Versione in italiano: [Tutorial-it](Tutorial-it.md)
-
-Versão em português: [Tutorial-pt](Tutorial-pt.md)
-
-Версия на русском: [Tutorial-ru](Tutorial-ru.md)
-
 [TOC]
 
 ## Ejemplo básico ##
@@ -53,7 +39,7 @@ pdf.cell(40, 10, 'Hola mundo !', 1)
 Para agregar una nueva celda próxima a ella, con texto centrado y luego ir a la siguiente línea, haríamos: 
 
 ```python
-pdf.cell(60, 10, 'Hecho con FPDF.', 0, 1, 'C')
+pdf.cell(60, 10, 'Hecho con FPDF.', new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='C')
 ```
 
 *Nota*: el salto de línea puede hacerse también con [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). Este método permite especificar adicionalmente la altura del salto. 

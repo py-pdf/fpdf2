@@ -1,19 +1,5 @@
 # Tutorial #
 
-English version: [Tutorial](Tutorial.md)
-
-Version en français : [Tutorial-fr](Tutorial-fr.md)
-
-Deutsche Version: [Tutorial-de](Tutorial-de.md)
-
-Versión en español: [Tutorial-es](Tutorial-es.md)
-
-हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
-
-Versão em português: [Tutorial-pt](Tutorial-pt.md)
-
-Версия на русском: [Tutorial-ru](Tutorial-ru.md)
-
 Documentazione completa dei metodi: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
@@ -62,7 +48,7 @@ pdf.cell(40, 10, 'Hello World!', 1)
 Per aggiungere una nuova cella di fianco alla precedente con testo centrato e poi spostarci alla riga successiva, faremmo:
 
 ```python
-pdf.cell(60, 10, 'Powered by FPDF.', ln=1, align='C')
+pdf.cell(60, 10, 'Powered by FPDF.', new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='C')
 ```
 
 **NB**: si può andare a capo anche con [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). Questo metodo permette di specificare l'altezza dello spazio.

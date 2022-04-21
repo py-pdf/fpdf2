@@ -7,11 +7,42 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/),
 and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
-## [2.5.2] - not released yet
+## Displaying deprecation warnings
+`DeprecationWarning`s are not displayed by Python by default.
+
+Hence, every time you use a newer version of `fpdf2`, we strongly encourage you to execute your scripts
+with the `-Wd` option (_cf._ [documentation](https://docs.python.org/3/using/cmdline.html#cmdoption-W)) 
+in order to get warned about deprecated features used in your code.
+
+This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
+
+## [2.5.3] - not released yet
+### Added
+- some documentation on how to embed Matplotlib charts: [Maths](https://pyfpdf.github.io/fpdf2/Maths.html)
 ### Fixed
+- infinite loop when calling `.multi_cell()` without enough horizontal space - _cf._ [#389](https://github.com/PyFPDF/fpdf2/issues/389)
+
+## [2.5.2] - 2022-04-13
+### Added
+- new parameters `new_x` and `new_y` for `cell()` and `multi_cell()`, replacing `ln=0`, thanks to @gmischler
+- new `add_highlight()` method to insert highlight annotations: [documentation](https://pyfpdf.github.io/fpdf2/Annotations.html#highlights)
+- new `offset_rendering()` method: [documentation](https://pyfpdf.github.io/fpdf2/PageBreaks.html#unbreakable-sections)
+- new `.text_mode` property: [documentation](https://pyfpdf.github.io/fpdf2/TextStyling.html#text_mode)
+- the page structure of the documentation has been revised, with a new page about [adding text](https://pyfpdf.github.io/fpdf2/Text.html), thanks to @gmischler
+- a warning is now raised if a context manager is used inside an `unbreakable()` section, which is not supported
+### Changed
+- `local_context()` can now "scope" even more properties, like `blend_mode`: [documentation](https://pyfpdf.github.io/fpdf2/Images.html#blending-images)
+### Fixed
+- No font properties should be leaked anymore after using markdown or in any other situations (_cf._ [#359](https://github.com/PyFPDF/fpdf2/issues/349)), thanks to @gmischler
+- If `multi_cell(align="J")` is given text with multiple paragraphs (text followed by an empty line) at once, it now renders the last line of each paragraph left-aligned,
+  instead of just the very last line (_cf._ [#364](https://github.com/PyFPDF/fpdf2/issues/364)), thanks to @gmischler
 - a regression: now again `multi_cell()` always renders a cell, even if `txt` is an empty string - _cf._ [#349](https://github.com/PyFPDF/fpdf2/issues/349)
 - a bug with string width calculation when Markdown is enabled - _cf._ [#351](https://github.com/PyFPDF/fpdf2/issues/351)
-- a few bugs when parsing some SVG files - _cf._ [#356](https://github.com/PyFPDF/fpdf2/issues/356) & [#358](https://github.com/PyFPDF/fpdf2/issues/358)
+- a few bugs when parsing some SVG files - _cf._ [#356](https://github.com/PyFPDF/fpdf2/issues/356), [#358](https://github.com/PyFPDF/fpdf2/issues/358) & [#376](https://github.com/PyFPDF/fpdf2/issues/376)
+- a bug when using `multi_cell(..., split_only=True)` inside an `unbreakable` section - _cf._ [#359](https://github.com/PyFPDF/fpdf2/issues/359)
+### Deprecated
+- The parameter `ln` to `cell()` and `multi_cell()` is now deprecated, use `new_x` and `new_y` instead.
+- The parameter `center` to `cell()` is now deprecated, use `align="C"` instead.
 
 ## [2.5.1] - 2022-03-07
 ### Added

@@ -1,19 +1,5 @@
 ﻿# Tutorial #
 
-English version: [Tutorial](Tutorial.md)
-
-Deutsche Version: [Tutorial-de](Tutorial-de.md)
-
-Versión en español: [Tutorial-es](Tutorial-es.md)
-
-हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
-
-Versione in italiano: [Tutorial-it](Tutorial-it.md)
-
-Versão em português: [Tutorial-pt](Tutorial-pt.md)
-
-Версия на русском: [Tutorial-ru](Tutorial-ru.md)
-
 Documentation complète des méthodes : [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
@@ -59,7 +45,7 @@ pdf.cell(40, 10, 'Hello World!', 1)
 Pour ajouter une nouvelle cellule avec un texte centré, et déplacer le curseur à la ligne suivante on utilise cela :
 
 ```python
-pdf.cell(60, 10, 'Powered by FPDF.', ln=1, align='C')
+pdf.cell(60, 10, 'Powered by FPDF.', new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='C')
 ```
 
 **Remarque** : le saut de ligne peut aussi être fait avec [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). Cette méthode permet de spécifier la hauteur du saut.

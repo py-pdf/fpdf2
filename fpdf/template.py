@@ -353,9 +353,7 @@ class FlexTemplate:
         pdf.set_xy(x1, y1)
         width, height = x2 - x1, y2 - y1
         if multiline is None:  # write without wrapping/trimming (default)
-            pdf.cell(
-                w=width, h=height, txt=text, border=0, ln=0, align=align, fill=fill
-            )
+            pdf.cell(w=width, h=height, txt=text, border=0, align=align, fill=fill)
         elif multiline:  # automatic word - warp
             pdf.multi_cell(
                 w=width, h=height, txt=text, border=0, align=align, fill=fill
@@ -364,9 +362,7 @@ class FlexTemplate:
             text = pdf.multi_cell(
                 w=width, h=height, txt=text, align=align, split_only=True
             )[0]
-            pdf.cell(
-                w=width, h=height, txt=text, border=0, ln=0, align=align, fill=fill
-            )
+            pdf.cell(w=width, h=height, txt=text, border=0, align=align, fill=fill)
 
     def _line(
         self,
@@ -380,7 +376,7 @@ class FlexTemplate:
         foreground=0,
         **__,
     ):
-        if self.pdf.draw_color.lower() != _rgb_as_str(foreground):
+        if self.pdf.draw_color.pdf_repr().lower() != _rgb_as_str(foreground):
             self.pdf.set_draw_color(*_rgb(foreground))
         self.pdf.set_line_width(size * scale)
         self.pdf.line(x1, y1, x2, y2)
@@ -399,7 +395,7 @@ class FlexTemplate:
         **__,
     ):
         pdf = self.pdf
-        if pdf.draw_color.lower() != _rgb_as_str(foreground):
+        if pdf.draw_color.pdf_repr().lower() != _rgb_as_str(foreground):
             pdf.set_draw_color(*_rgb(foreground))
         if background is None:
             style = "D"
@@ -424,7 +420,7 @@ class FlexTemplate:
         **__,
     ):
         pdf = self.pdf
-        if pdf.draw_color.lower() != _rgb_as_str(foreground):
+        if pdf.draw_color.pdf_repr().lower() != _rgb_as_str(foreground):
             pdf.set_draw_color(*_rgb(foreground))
         if background is None:
             style = "D"
@@ -455,7 +451,7 @@ class FlexTemplate:
     ):
         # pylint: disable=unused-argument
         pdf = self.pdf
-        if pdf.fill_color.lower() != _rgb_as_str(foreground):
+        if pdf.fill_color.pdf_repr().lower() != _rgb_as_str(foreground):
             pdf.set_fill_color(*_rgb(foreground))
         font = font.lower().strip()
         if font == "interleaved 2of5 nt":
@@ -481,9 +477,10 @@ class FlexTemplate:
             warnings.warn(
                 "code39 arguments x/y/w/h are deprecated, please use x1/y1/y2/size instead",
                 DeprecationWarning,
+                stacklevel=2,
             )
         pdf = self.pdf
-        if pdf.fill_color.lower() != _rgb_as_str(foreground):
+        if pdf.fill_color.pdf_repr().lower() != _rgb_as_str(foreground):
             pdf.set_fill_color(*_rgb(foreground))
         h = y2 - y1
         if h <= 0:
@@ -635,8 +632,9 @@ class Template(FlexTemplate):
         """
         if infile:
             warnings.warn(
-                '"infile" is unused and will soon be deprecated',
+                '"infile" is deprecated, unused and will soon be removed',
                 DeprecationWarning,
+                stacklevel=2,
             )
         for arg in (
             "format",
@@ -680,8 +678,9 @@ class Template(FlexTemplate):
         """
         if dest:
             warnings.warn(
-                '"dest" is unused and will soon be deprecated',
+                '"dest" is deprecated, unused and will soon be removed',
                 DeprecationWarning,
+                stacklevel=2,
             )
         self.pdf.set_font("helvetica", "B", 16)
         self.pdf.set_auto_page_break(False, margin=0)

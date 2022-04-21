@@ -39,6 +39,21 @@ def test_svg_image_with_custom_size(tmp_path):
     assert_pdf_equal(pdf, HERE / "svg_image_with_custom_size.pdf", tmp_path)
 
 
+def test_svg_image_style_inherited_from_fpdf(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_draw_color(255, 128, 0)
+    pdf.set_fill_color(0, 128, 255)
+    pdf.image(
+        BytesIO(
+            b'<svg width="180" height="180" xmlns="http://www.w3.org/2000/svg">'
+            b'  <rect x="60" y="60" width="60" height="60" stroke-width="2"/>'
+            b"</svg>"
+        )
+    )
+    assert_pdf_equal(pdf, HERE / "svg_image_style_inherited_from_fpdf.pdf", tmp_path)
+
+
 def test_svg_image_fixed_dimensions(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()

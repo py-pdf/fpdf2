@@ -1,19 +1,5 @@
 # Руководство #
 
-English version: [Tutorial](Tutorial.md)
-
-Version en français : [Tutorial-fr](Tutorial-fr.md)
-
-Deutsche Version: [Tutorial-de](Tutorial-de.md)
-
-Versión en español: [Tutorial-es](Tutorial-es.md)
-
-हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
-
-Versione in italiano: [Tutorial-it](Tutorial-it.md)
-
-Versão em português: [Tutorial-pt](Tutorial-pt.md)
-
 Полная документация по методам класса **FPDF**: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
@@ -55,7 +41,7 @@ pdf.cell(40, 10, 'Hello World!', 1)
 Чтобы добавить новую ячейку с центрированным текстом и перейти к следующей строке, мы сделаем следующее:
 
 ```python
-pdf.cell(60, 10, 'Powered by FPDF.', ln=1, align='C')
+pdf.cell(60, 10, 'Powered by FPDF.', new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='C')
 ```
 
 **Примечание**: разрыв строки также можно сделать с помощью [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). Этот метод позволяет дополнительно указать высоту разрыва.

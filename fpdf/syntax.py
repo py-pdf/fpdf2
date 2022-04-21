@@ -67,6 +67,7 @@ As of this writing, I am not sure how length is actually calculated, so this
 remains something to be looked into.
 """
 from abc import ABC
+import re
 
 
 def clear_empty_fields(d):
@@ -116,6 +117,24 @@ def create_stream(stream):
     if isinstance(stream, (bytearray, bytes)):
         stream = str(stream, "latin-1")
     return "\n".join(["stream", stream, "endstream"])
+
+
+class Raw(str):
+    """str subclass signifying raw data to be directly emitted to PDF without transformation."""
+
+
+class Name(str):
+    """str subclass signifying a PDF name, which are emitted differently than normal strings."""
+
+    NAME_ESC = re.compile(
+        b"[^" + bytes(v for v in range(33, 127) if v not in b"()<>[]{}/%#\\") + b"]"
+    )
+
+    def pdf_repr(self) -> str:
+        escaped = self.NAME_ESC.sub(
+            lambda m: b"#%02X" % m[0][0], self.encode()
+        ).decode()
+        return f"/{escaped}"
 
 
 class PDFObject:

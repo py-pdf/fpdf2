@@ -47,11 +47,11 @@ def get_img_info(img, image_filter="AUTO", dims=None):
     if not isinstance(img, Image.Image):
         img = Image.open(img)
     if dims:
-        img = img.resize(dims, resample=Image.ANTIALIAS)
+        img = img.resize(dims, resample=Image.Resampling.LANCZOS)
     if image_filter == "AUTO":
         # Very simple logic for now:
         image_filter = "DCTDecode" if img.format == "JPEG" else "FlateDecode"
-    if img.mode not in ["L", "LA", "RGB", "RGBA"]:
+    if img.mode not in ("L", "LA", "RGB", "RGBA"):
         img = img.convert("RGBA")
     w, h = img.size
     info = {}

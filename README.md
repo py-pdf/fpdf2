@@ -59,19 +59,19 @@ Features
 --------
 
  * Python 3.6+ support
- * Unicode (UTF-8) TrueType font subset embedding
- * Internal/External Links
- * PNG, GIF and JPG support (including transparency and alpha channel)
- * Shape, Line Drawing
- * Arbitrary path drawing and basic SVG import
- * Generate [Code 39](https://fr.wikipedia.org/wiki/Code_39) & [Interleaved 2 of 5](https://en.wikipedia.org/wiki/Interleaved_2_of_5) barcodes
- * Cell / multi-cell / plaintext writing, automatic page breaks
+ * [Unicode](https://pyfpdf.github.io/fpdf2/Unicode.html) (UTF-8) TrueType font subset embedding
+ * Internal / external [links](https://pyfpdf.github.io/fpdf2/Links.html)
+ * Embedding images, including transparency and alpha channel
+ * Arbitrary path drawing and basic [SVG](https://pyfpdf.github.io/fpdf2/SVG.html) import
+ * Embedding [barcodes](https://pyfpdf.github.io/fpdf2/Barcodes.html), [charts & graphs](https://pyfpdf.github.io/fpdf2/Maths.html), [emojis, symbols & dingbats](https://pyfpdf.github.io/fpdf2/EmojisSymbolsDingbats.html)
+ * [Cell / multi-cell / plaintext writing](https://pyfpdf.github.io/fpdf2/Text.html), [automatic page breaks](https://pyfpdf.github.io/fpdf2/PageBreaks.html)
  * Basic [conversion from HTML to PDF](https://pyfpdf.github.io/fpdf2/HTML.html)
  * A [templating system](https://pyfpdf.github.io/fpdf2/Templates.html) to render PDFs in batchs
- * Images & links alternative descriptions
+ * Images & links alternative descriptions, for accessibility
  * Table of contents & [document outline](https://pyfpdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html)
+ * [Annotations](https://pyfpdf.github.io/fpdf2/Annotations.html), including text highlights
+ * [Presentation mode](https://pyfpdf.github.io/fpdf2/Presentations.html) with control over page display duration & transitions
  * Optional basic Markdown-like styling: `**bold**, __italics__, --underlined--`
- * Clean error handling through exceptions
  * Unit tests with `qpdf`-based PDF diffing and a high code coverage
 
 We validate all our PDF samples using 3 different checkers:
@@ -164,6 +164,9 @@ This library could only exist thanks to the dedication of many volunteers around
     <td align="center"><a href="https://github.com/pwt"><img src="https://avatars.githubusercontent.com/u/1089749?v=4?s=100" width="100px;" alt=""/><br /><sub><b>pwt</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Apwt" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=pwt" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/mcerveny"><img src="https://avatars.githubusercontent.com/u/1438115?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Martin Cerveny</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Amcerveny" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=mcerveny" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/Spenhouet"><img src="https://avatars.githubusercontent.com/u/7819068?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Spenhouet</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3ASpenhouet" title="Bug reports">🐛</a> <a href="https://github.com/PyFPDF/fpdf2/pulls?q=is%3Apr+reviewed-by%3ASpenhouet" title="Reviewed Pull Requests">👀</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/mtkumar123"><img src="https://avatars.githubusercontent.com/u/89176219?v=4?s=100" width="100px;" alt=""/><br /><sub><b>mtkumar123</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=mtkumar123" title="Code">💻</a></td>
   </tr>
 </table>
 

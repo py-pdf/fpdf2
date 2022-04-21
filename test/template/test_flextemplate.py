@@ -232,8 +232,7 @@ def test_flextemplate_rotation(tmp_path):
     assert_pdf_equal(pdf, HERE / "flextemplate_rotation.pdf", tmp_path)
 
 
-# pylint: disable=unused-argument
-def test_flextemplate_badinput(tmp_path):
+def test_flextemplate_badinput():
     with raises(TypeError):
         FlexTemplate("NotAnFPDF()Instance")
 

@@ -22,8 +22,10 @@ _HANDY_NAMESPACES = {
     "xlink": "http://www.w3.org/1999/xlink",
 }
 
-ALPHABET = re.compile(r"([a-zA-Z])")
-NUMBER_SIGN = re.compile(r"([+-])")
+# "e" is excluded as it is used to build numbers like -2e-3:
+ALPHABET = re.compile(r"([a-df-zA-Z])")
+# We use a negative lookbehind to NOT split after "e" used as exponentiation:
+NUMBER_SIGN = re.compile(r"(?<!e)([+-])")
 NUMBER_SPLIT = re.compile(r"(?:\s+,\s+|\s+,|,\s+|\s+|,)")
 DECIMAL_DISASTER = re.compile(r"(\d+\.\d+|\d+\.|\.\d+)(\.)")
 TRANSFORM_GETTER = re.compile(

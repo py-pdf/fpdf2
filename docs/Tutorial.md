@@ -1,19 +1,5 @@
 # Tutorial #
 
-Version en français : [Tutorial-fr](Tutorial-fr.md)
-
-Deutsche Version: [Tutorial-de](Tutorial-de.md)
-
-Versión en español: [Tutorial-es](Tutorial-es.md)
-
-हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
-
-Versione in italiano: [Tutorial-it](Tutorial-it.md)
-
-Versão em português: [Tutorial-pt](Tutorial-pt.md)
-
-Версия на русском: [Tutorial-ru](Tutorial-ru.md)
-
 Methods full documentation: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
@@ -72,7 +58,7 @@ To add a new cell next to it with centered text and go to the next line, we
 would do:
 
 ```python
-pdf.cell(60, 10, 'Powered by FPDF.', ln=1, align='C')
+pdf.cell(60, 10, 'Powered by FPDF.', new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='C')
 ```
 
 **Remark**: the line break can also be done with [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). This

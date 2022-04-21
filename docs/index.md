@@ -20,17 +20,19 @@ This repository is a fork of the library's [original port by Max Pat](http://www
 
 * Python 3.6+ support
 * [Unicode](Unicode.md) (UTF-8) TrueType font subset embedding (Central European, Cyrillic, Greek, Baltic, Thai, Chinese, Japanese, Korean, Hindi and almost any other language in the world)
-* PNG, GIF and JPG support (including transparency and alpha channel)
-* Shape, Line Drawing
-* Arbitrary path drawing and basic SVG import
-* Generate [Code 39](https://fr.wikipedia.org/wiki/Code_39) & [Interleaved 2 of 5](https://en.wikipedia.org/wiki/Interleaved_2_of_5) barcodes
-* Cell / multi-cell / plaintext writing, automatic page breaks
-* Basic conversion from HTML to PDF
-* Images & links alternative descriptions
-* Table of contents & [document outline](https://pyfpdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html)
+* Internal / external [links](Links.md)
+* Embedding images, including transparency and alpha channel
+* Arbitrary path drawing and basic [SVG](SVG.md) import
+* Embedding [barcodes](Barcodes.md), [charts & graphs](Maths.md), [emojis, symbols & dingbats](EmojisSymbolsDingbats.md)
+* [Cell / multi-cell / plaintext writing](Text.md), [automatic page breaks](PageBreaks.md)
+* Basic [conversion from HTML to PDF](HTML.md)
+* A [templating system](Templates.md) to render PDFs in batchs
+* Images & links alternative descriptions, for accessibility
+* Table of contents & [document outline](DocumentOutlineAndTableOfContents.md)
+* [Annotations](Annotations.md), including text highlights
+* [Presentation mode](Presentations.md) with control over page display duration & transitions
 * Optional basic Markdown-like styling: `**bold**, __italics__, --underlined--`
-* Clean error handling through exceptions
-* Only **one** dependency so far: [Pillow](https://pillow.readthedocs.io/en/stable/)
+* Only has 2 dependencies: [Pillow](https://pillow.readthedocs.io/en/stable/) & [defusedxml](https://pypi.org/project/defusedxml/)
 * Unit tests with `qpdf`-based PDF diffing
 * PDF samples validation using 3 different checkers:
 
@@ -48,14 +50,14 @@ FPDF original features:
 
 ## Tutorials ##
 
-* [English](https://pyfpdf.github.io/fpdf2/Tutorial.html)
-* [Deutsch](https://pyfpdf.github.io/fpdf2/Tutorial-de.html)
-* [Italian](https://pyfpdf.github.io/fpdf2/Tutorial-it.html)
-* [español](https://pyfpdf.github.io/fpdf2/Tutorial-es.html)
-* [français](https://pyfpdf.github.io/fpdf2/Tutorial-fr.html)
-* [हिंदी](https://pyfpdf.github.io/fpdf2/Tutorial-हिंदी.html)
-* [português](https://pyfpdf.github.io/fpdf2/Tutorial-pt.html)
-* [Русский](https://pyfpdf.github.io/fpdf2/Tutorial-ru.html)
+* [English](Tutorial.md)
+* [Deutsch](Tutorial-de.md)
+* [Italian](Tutorial-it.md)
+* [español](Tutorial-es.md)
+* [français](Tutorial-fr.md)
+* [हिंदी](Tutorial-हिंदी.md)
+* [português](Tutorial-pt.md)
+* [Русский](Tutorial-ru.md)
 
 ## Installation ##
 
@@ -66,6 +68,15 @@ FPDF original features:
     * Run `python setup.py install`
 
 **Developement**: check the [dedicated documentation page](Development.md).
+
+### Displaying deprecation warnings
+`DeprecationWarning`s are not displayed by Python by default.
+
+Hence, every time you use a newer version of `fpdf2`, we strongly encourage you to execute your scripts
+with the `-Wd` option (_cf._ [documentation](https://docs.python.org/3/using/cmdline.html#cmdoption-W)) 
+in order to get warned about deprecated features used in your code.
+
+This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## Community ##
 
@@ -81,7 +92,8 @@ or [open a discussion](https://github.com/PyFPDF/fpdf2/discussions).
 * [OpenSfM](https://github.com/mapillary/OpenSfM) : a Structure from Motion library, serving as a processing pipeline for reconstructing camera poses and 3D scenes from multiple images
 * [RPA Framework](https://github.com/robocorp/rpaframework) : libraries and tools for Robotic Process Automation (RPA), designed to be used with both [Robot Framework](https://robotframework.org)
 * [Concordia](https://github.com/LibraryOfCongress/concordia) : a platform developed by the US Library of Congress for crowdsourcing transcription and tagging of text in digitized images
-* [GovReady-Q Compliance Server](https://github.com/GovReady/govready-q) : GRC platform for highly automated, user-friendly, self-service compliance assessments and documentation (DevSecOps)
+* [wudududu/extract-video-ppt](https://github.com/wudududu/extract-video-ppt) : create a one-page-per-frame PDF from a video or PPT file.
+  `fpdf2` also has a demo script to convert a GIF into a one-page-per-frame PDF: [gif2pdf.py](https://github.com/PyFPDF/fpdf2/blob/master/tutorial/gif2pdf.py)
 * [csv2pdf](https://github.com/TECH-SAVVY-GUY/csv2pdf) : convert CSV files to PDF files easily
 
 ### Related ###

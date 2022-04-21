@@ -1,19 +1,5 @@
 # Kurzanleitung #
 
-English version: [Tutorial](Tutorial.md)
-
-Version en français : [Tutorial-fr](Tutorial-fr.md)
-
-Versión en español: [Tutorial-es](Tutorial-es.md)
-
-हिंदी संस्करण: [Tutorial-हिंदी](Tutorial-हिंदी.md)
-
-Versione in italiano: [Tutorial-it](Tutorial-it.md)
-
-Versão em português: [Tutorial-pt](Tutorial-pt.md)
-
-Версия на русском: [Tutorial-ru](Tutorial-ru.md)
-
 Vollständige Dokumentation der Methoden: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
@@ -64,7 +50,7 @@ pdf.cell(40, 10, 'Hello World!', 1)
 Um eine neue Zelle mit zentriertem Text hinzuzufügen und anschließend in die nächste Zeile zu springen, können wir Folgendes schreiben:
 
 ```python
-pdf.cell(60, 10, 'Powered by FPDF.', ln=1, align='C')
+pdf.cell(60, 10, 'Powered by FPDF.', new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='C')
 ```
 
 **Anmerkung**: Der Zeilenumbruch kann auch mit [`ln`](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln) erfolgen. Diese
