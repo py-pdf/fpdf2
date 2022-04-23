@@ -20,10 +20,11 @@ pdf.image("docs/fpdf2-logo.png", x=20, y=60)
 pdf.output("pdf-with-image.pdf")
 ```
 
+By default an image is rendered with a resolution of 72 dpi,
+but you can control its dimension on the page using the `w=` & `h=` parameters of the [`image()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method.
+
 
 ## Assembling images ##
-`fpdf2` can be an easy solution to assemble images into a PDF.
-
 The following code snippets provide examples of some basic layouts for assembling images into PDF files.
 
 ### Side by side images, full height, landscape page ###
@@ -144,7 +145,7 @@ pdf.image("docs/fpdf2-logo.png", x=20, y=60)
 pdf.output("pdf-with-image.pdf")
 ```
 
-Beware that "flattening" images this way will convert alpha channels to black.
+Beware that "flattening" images this way will fill transparent areas of your images with color (usually black).
 
 
 ## Oversized images detection & downscaling ##
@@ -196,3 +197,5 @@ pdf.cell(w=pdf.epw, h=30, txt="Text behind. " * 6)
 pdf.image("docs/fpdf2-logo.png", x=0)
 pdf.output("pdf-including-image-without-transparency.pdf")
 ```
+
+This will fill transparent areas of your images with color (usually black).

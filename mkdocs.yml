@@ -87,7 +87,7 @@ nav:
   - 'Document outline & table of contents': 'DocumentOutlineAndTableOfContents.md'
 - 'Processing Web Content':
   - 'HTML':                           'HTML.md'
-  - 'Usage in web API':               'UsageInWebAPI.md'
+  - 'Usage in web APIs':              'UsageInWebAPI.md'
 - 'Reading and Postprocessing':
   - 'Existing PDFs':                  'ExistingPDFs.md'
   - 'Borb':                           'borb.md'
