@@ -114,15 +114,16 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
     )
 
 
-def test_multi_cell_ln_0(tmp_path):
+def test_multi_cell_border_thickness(tmp_path):
     doc = FPDF()
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
+    doc.set_line_width(3)
     doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="Lorem")
     doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="ipsum")
     doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="Ut")
     doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="nostrud")
-    assert_pdf_equal(doc, HERE / "multi_cell_ln_0.pdf", tmp_path)
+    assert_pdf_equal(doc, HERE / "multi_cell_border_thickness.pdf", tmp_path)
 
 
 def test_multi_cell_ln_1(tmp_path):

@@ -2,11 +2,3 @@ skips:
   # Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
   # => OK, we don't care though
   - B101
-
-  # Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.
-  # cf. https://github.com/PyFPDF/fpdf2/issues/345
-  - B301
-
-  # Consider possible security implications associated with pickle module.
-  # cf. https://github.com/PyFPDF/fpdf2/issues/345
-  - B403

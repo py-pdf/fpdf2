@@ -19,7 +19,6 @@ import io
 import logging
 import math
 import os
-import pickle
 import re
 import sys
 import warnings
@@ -29,6 +28,7 @@ from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import datetime
 from functools import wraps
+from os.path import splitext
 from pathlib import Path
 from typing import Callable, List, NamedTuple, Optional, Union
 
@@ -1515,16 +1515,21 @@ class FPDF(GraphicsStateMixin):
                 If the file is not found, it will be searched in `FPDF_FONT_DIR`.
             uni (bool): [**DEPRECATED**] unused
         """
+        if not fname:
+            raise ValueError('"fname" parameter is required')
+        ext = splitext(str(fname))[1]
+        if ext not in (".otf", ".otc", ".ttf", ".ttc"):
+            raise ValueError(
+                f"Unsupported font file extension: {ext}."
+                " add_font() used to accept .pkl file as input, but for security reasons"
+                " this feature is deprecated since v2.5.1 and has been removed in v2.5.3."
+            )
         if uni != "DEPRECATED":
             warnings.warn(
                 '"uni" parameter is deprecated, unused and will soon be removed',
                 DeprecationWarning,
                 stacklevel=2,
             )
-        else:
-            uni = str(fname).endswith(".ttf")
-        if not fname:
-            raise ValueError('"fname" parameter is required')
         style = "".join(sorted(style.upper()))
         if any(letter not in "BI" for letter in style):
             raise ValueError(
@@ -1536,101 +1541,68 @@ class FPDF(GraphicsStateMixin):
         if fontkey in self.fonts or fontkey in self.core_fonts:
             warnings.warn(f"Core font or font already added '{fontkey}': doing nothing")
             return
-        if uni:
-            for parent in (".", FPDF_FONT_DIR):
-                if not parent:
-                    continue
-                if (Path(parent) / fname).exists():
-                    ttffilename = Path(parent) / fname
-                    break
-            else:
-                raise FileNotFoundError(f"TTF Font file not found: {fname}")
-
-            # include numbers in the subset! (if alias present)
-            # ensure that alias is mapped 1-by-1 additionally (must be replaceable)
-            sbarr = "\x00 "
-            if self.str_alias_nb_pages:
-                sbarr += "0123456789"
-                sbarr += self.str_alias_nb_pages
-
-            ttf = TTFontFile()
-            ttf.getMetrics(ttffilename)
-            desc = {
-                "Ascent": round(ttf.ascent),
-                "Descent": round(ttf.descent),
-                "CapHeight": round(ttf.capHeight),
-                "Flags": ttf.flags,
-                "FontBBox": (
-                    f"[{ttf.bbox[0]:.0f} {ttf.bbox[1]:.0f}"
-                    f" {ttf.bbox[2]:.0f} {ttf.bbox[3]:.0f}]"
-                ),
-                "ItalicAngle": int(ttf.italicAngle),
-                "StemV": round(ttf.stemV),
-                "MissingWidth": round(ttf.defaultWidth),
-            }
-
-            # Generate metrics .pkl file
-            font_dict = {
-                "type": "TTF",
-                "name": re.sub("[ ()]", "", ttf.fullName),
-                "desc": desc,
-                "up": round(ttf.underlinePosition),
-                "ut": round(ttf.underlineThickness),
-                "ttffile": ttffilename,
-                "fontkey": fontkey,
-                "originalsize": os.stat(ttffilename).st_size,
-                "cw": ttf.charWidths,
-            }
-
-            self.fonts[fontkey] = {
-                "i": len(self.fonts) + 1,
-                "type": font_dict["type"],
-                "name": font_dict["name"],
-                "desc": font_dict["desc"],
-                "up": font_dict["up"],
-                "ut": font_dict["ut"],
-                "cw": font_dict["cw"],
-                "ttffile": font_dict["ttffile"],
-                "fontkey": fontkey,
-                "subset": SubsetMap(map(ord, sbarr)),
-            }
-            self.font_files[fontkey] = {
-                "length1": font_dict["originalsize"],
-                "type": "TTF",
-                "ttffile": ttffilename,
-            }
+        for parent in (".", FPDF_FONT_DIR):
+            if not parent:
+                continue
+            if (Path(parent) / fname).exists():
+                ttffilename = Path(parent) / fname
+                break
         else:
-            warnings.warn(
-                "Support for .pkl font files definition is deprecated, and will be removed from fpdf2 soon."
-                " If you require this feature, please report your need on fpdf2 GitHub project.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            font_dict = pickle.loads(Path(fname).read_bytes())
-            font_dict["i"] = len(self.fonts) + 1
-            self.fonts[fontkey] = font_dict
-            diff = font_dict.get("diff")
-            if diff:
-                # Search existing encodings
-                nb = len(self.diffs)
-                for i in range(1, nb + 1):
-                    if self.diffs[i] == diff:
-                        d = i
-                        break
-                else:
-                    d = nb + 1
-                    self.diffs[d] = diff
-                self.fonts[fontkey]["diff"] = d
-            filename = font_dict.get("filename")
-            if filename:
-                if font_dict["type"] == "TrueType":
-                    originalsize = font_dict["originalsize"]
-                    self.font_files[filename] = {"length1": originalsize}
-                else:
-                    self.font_files[filename] = {
-                        "length1": font_dict["size1"],
-                        "length2": font_dict["size2"],
-                    }
+            raise FileNotFoundError(f"TTF Font file not found: {fname}")
+
+        # include numbers in the subset! (if alias present)
+        # ensure that alias is mapped 1-by-1 additionally (must be replaceable)
+        sbarr = "\x00 "
+        if self.str_alias_nb_pages:
+            sbarr += "0123456789"
+            sbarr += self.str_alias_nb_pages
+
+        ttf = TTFontFile()
+        ttf.getMetrics(ttffilename)
+        desc = {
+            "Ascent": round(ttf.ascent),
+            "Descent": round(ttf.descent),
+            "CapHeight": round(ttf.capHeight),
+            "Flags": ttf.flags,
+            "FontBBox": (
+                f"[{ttf.bbox[0]:.0f} {ttf.bbox[1]:.0f}"
+                f" {ttf.bbox[2]:.0f} {ttf.bbox[3]:.0f}]"
+            ),
+            "ItalicAngle": int(ttf.italicAngle),
+            "StemV": round(ttf.stemV),
+            "MissingWidth": round(ttf.defaultWidth),
+        }
+
+        # Generate metrics .pkl file
+        font_dict = {
+            "type": "TTF",
+            "name": re.sub("[ ()]", "", ttf.fullName),
+            "desc": desc,
+            "up": round(ttf.underlinePosition),
+            "ut": round(ttf.underlineThickness),
+            "ttffile": ttffilename,
+            "fontkey": fontkey,
+            "originalsize": os.stat(ttffilename).st_size,
+            "cw": ttf.charWidths,
+        }
+
+        self.fonts[fontkey] = {
+            "i": len(self.fonts) + 1,
+            "type": font_dict["type"],
+            "name": font_dict["name"],
+            "desc": font_dict["desc"],
+            "up": font_dict["up"],
+            "ut": font_dict["ut"],
+            "cw": font_dict["cw"],
+            "ttffile": font_dict["ttffile"],
+            "fontkey": fontkey,
+            "subset": SubsetMap(map(ord, sbarr)),
+        }
+        self.font_files[fontkey] = {
+            "length1": font_dict["originalsize"],
+            "type": "TTF",
+            "ttffile": ttffilename,
+        }
 
     def set_font(self, family=None, style="", size=0):
         """
