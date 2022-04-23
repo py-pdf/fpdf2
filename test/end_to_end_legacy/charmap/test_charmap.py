@@ -62,6 +62,3 @@ def test_first_999_chars(font_filename, tmp_path):
             break
 
     assert_pdf_equal(pdf, HERE / f"charmap_first_999_chars-{font_name}.pdf", tmp_path)
-
-    for pkl_path in HERE.glob("*.pkl"):
-        pkl_path.unlink()

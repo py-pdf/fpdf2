@@ -1,5 +1,3 @@
-import os
-from contextlib import suppress
 from pathlib import Path
 
 import pytest
@@ -17,7 +15,7 @@ def test_add_font_non_existing_file():
     assert str(error.value) == "TTF Font file not found: non-existing-file.ttf"
 
 
-def test_add_font_non_existing_file_pkl():
+def test_add_font_pkl():
     pdf = FPDF()
     with pytest.raises(ValueError) as error:
         pdf.add_font("MyFont", fname="non-existing-file.pkl")
@@ -68,12 +66,6 @@ def test_add_font_with_str_fname_ok(tmp_path):
             pdf.add_page()
             pdf.cell(txt="Hello World!")
             assert_pdf_equal(pdf, HERE / "add_font_unicode.pdf", tmp_path)
-
-
-def teardown():
-    # Clean-up for test_add_font_from_pkl
-    with suppress(FileNotFoundError):
-        os.remove("Roboto-Regular.pkl")
 
 
 def test_add_core_fonts():

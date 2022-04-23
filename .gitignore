@@ -15,7 +15,6 @@ verapdf-aggregated.json
 contributors/contributors.html
 
 *.py[cod]
-*.pkl
 
 # C extensions
 *.so

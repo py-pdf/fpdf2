@@ -120,32 +120,6 @@ pdf.output("unicode.pdf")
 View the result here: 
 [unicode.pdf](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/unicode.pdf)
 
-## Metric Files ##
-
-FPDF will try to automatically generate metrics (i.e. character widths) about 
-TTF font files to speed up their processing.
-
-Such metrics are stored using the Python Pickle format (`.pkl` extension), by 
-default in the font directory (ensure read and write permission!). Additional 
-information about the caching mechanism is defined in the
-[`add_font`](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font) method documentation.
-
-TTF metric files often weigh about 650K, so keep that in mind if you use many
-TTF fonts and have disk size or memory limitations.
-
-By design, metric files are not imported as they could cause a temporary memory
-leak if not managed properly (this could be an issue in a webserver environment
-with many processes or threads, so the current implementation discards metrics when
-FPDF objects are disposed).
-
-In most circumstances, you will not notice any difference about storing metric
-files vs. generating them in each run on-the-fly (according basic tests, elapsed
-time is equivalent; YMMV).
-
-Like the original PHP implementation, this library should work even if it could
-not store the metric file, and as no source code file is generated at runtime,
-it should work in restricted environments.
-
 ## Free Font Pack and Copyright Restrictions ##
 
 For your convenience, this library collected 96 TTF files in an optional 
