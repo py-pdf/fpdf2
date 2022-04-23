@@ -60,6 +60,21 @@ pdf.output("blended-images.pdf")
 Demo of all color blend modes: [blending_images.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/drawing/generated_pdf/blending_images.pdf)
 
 
+## Image clipping ##
+
+You can select only a portion of the image to render using clipping methods:
+
+* [`rect_clip()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.rect_clip):
+    - [example code](https://github.com/PyFPDF/fpdf2/blob/master/test/image/test_image_clipping.py#L10)
+    - [resulting PDF](https://github.com/PyFPDF/fpdf2/blob/master/test/image/rect_clip.pdf)
+* [`round_clip()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.round_clip):
+    - [example code](https://github.com/PyFPDF/fpdf2/blob/master/test/image/test_image_clipping.py#L33)
+    - [resulting PDF](https://github.com/PyFPDF/fpdf2/blob/master/test/image/round_clip.pdf)
+* [`elliptic_clip()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.elliptic_clip):
+    - [example code](https://github.com/PyFPDF/fpdf2/blob/master/test/image/test_image_clipping.py#L56)
+    - [resulting PDF](https://github.com/PyFPDF/fpdf2/blob/master/test/image/elliptic_clip.pdf)
+
+
 ## Alternative description ##
 
 A textual description of the image can be provided, for accessibility purposes:

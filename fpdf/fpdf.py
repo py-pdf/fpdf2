@@ -1186,8 +1186,8 @@ class FPDF(GraphicsStateMixin):
         It can be drawn (border only), filled (with no border) or both.
 
         Args:
-            x (float): Abscissa of upper-left bounging box.
-            y (float): Ordinate of upper-left bounging box.
+            x (float): Abscissa of upper-left bounding box.
+            y (float): Ordinate of upper-left bounding box.
             w (float): Width.
             h (float): Height.
             style (str): Style of rendering. Possible values are:
@@ -1208,17 +1208,19 @@ class FPDF(GraphicsStateMixin):
         It can be drawn (border only), filled (with no border) or both.
 
         Args:
-            x (float): Abscissa of upper-left bounging box.
-            y (float): Ordinate of upper-left bounging box.
-            w (float): Width.
-            h (float): Height.
+            x (float): Abscissa of upper-left bounding box.
+            y (float): Ordinate of upper-left bounding box.
+            w (float): Width
+            h (float): Height
             style (str): Style of rendering. Possible values are:
                 * `D` or empty string: draw border. This is the default value.
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
         """
-        op = _style_to_operator(style)
+        operator = _style_to_operator(style)
+        self._draw_ellipse(x, y, w, h, operator)
 
+    def _draw_ellipse(self, x, y, w, h, operator):
         cx = x + w / 2
         cy = y + h / 2
         rx = w / 2
@@ -1253,7 +1255,7 @@ class FPDF(GraphicsStateMixin):
             (
                 f"{(cx + lx) * self.k:.2f} {(self.h - cy - ry) * self.k:.2f} "
                 f"{(cx + rx) * self.k:.2f} {(self.h - cy - ly) * self.k:.2f} "
-                f"{(cx + rx) * self.k:.2f} {(self.h - cy) * self.k:.2f} c {op}"
+                f"{(cx + rx) * self.k:.2f} {(self.h - cy) * self.k:.2f} c {operator}"
             )
         )
 
@@ -1264,8 +1266,8 @@ class FPDF(GraphicsStateMixin):
         It can be drawn (border only), filled (with no border) or both.
 
         Args:
-            x (float): Abscissa of upper-left bounging box.
-            y (float): Ordinate of upper-left bounging box.
+            x (float): Abscissa of upper-left bounding box.
+            y (float): Ordinate of upper-left bounding box.
             r (float): Radius of the circle.
             style (str): Style of rendering. Possible values are:
                 * `D` or None: draw border. This is the default value.
@@ -1468,8 +1470,8 @@ class FPDF(GraphicsStateMixin):
         It can be drawn (border only), filled (with no border) or both.
 
         Args:
-            x (float): Abscissa of upper-left bounging box.
-            y (float): Ordinate of upper-left bounging box.
+            x (float): Abscissa of upper-left bounding box.
+            y (float): Ordinate of upper-left bounding box.
             a (float): Semi-major axis.
             b (float): Semi-minor axis, if None, equals to a (default: None).
             start_angle (float): Start angle of the arc (in degrees).
@@ -4319,6 +4321,16 @@ class FPDF(GraphicsStateMixin):
     @check_page
     @contextmanager
     def rect_clip(self, x, y, w, h):
+        """
+        Context manager that defines a rectangular crop zone,
+        useful to render only part of an image.
+
+        Args:
+            x (float): abscissa of the clipping region top left corner
+            y (float): ordinate of the clipping region top left corner
+            w (float): width of the clipping region
+            h (float): height of the clipping region
+        """
         self._out(
             (
                 f"q {x * self.k:.2f} {(self.h - y - h) * self.k:.2f} {w * self.k:.2f} "
@@ -4327,6 +4339,39 @@ class FPDF(GraphicsStateMixin):
         )
         yield
         self._out("Q")
+
+    @check_page
+    @contextmanager
+    def elliptic_clip(self, x, y, w, h):
+        """
+        Context manager that defines an elliptic crop zone,
+        useful to render only part of an image.
+
+        Args:
+            x (float): abscissa of the clipping region top left corner
+            y (float): ordinate of the clipping region top left corner
+            w (float): ellipse width
+            h (float): ellipse height
+        """
+        self._out("q")
+        self._draw_ellipse(x, y, w, h, "W n")
+        yield
+        self._out("Q")
+
+    @check_page
+    @contextmanager
+    def round_clip(self, x, y, r):
+        """
+        Context manager that defines a circular crop zone,
+        useful to render only part of an image.
+
+        Args:
+            x (float): abscissa of the clipping region top left corner
+            y (float): ordinate of the clipping region top left corner
+            r (float): radius of the clipping region
+        """
+        with self.elliptic_clip(x, y, r, r):
+            yield
 
     @contextmanager
     def _trace_size(self, label):

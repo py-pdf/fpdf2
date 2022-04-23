@@ -18,7 +18,8 @@ Simply call `.add_page()`.
 
 ## Inserting the final number of pages of the document ##
 
-The special string `{nb}` will be substituted by the total number of pages on document closure.This special value can changed by calling [alias_nb_pages()](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages).
+The special string `{nb}` will be substituted by the total number of pages on document closure.
+This special value can changed by calling [alias_nb_pages()](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages).
 
 ## will_page_break ##
 
