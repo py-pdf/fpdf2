@@ -3,6 +3,9 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF, XPos, YPos, TitleStyle, errors
+from fpdf.outline import build_outline, outline_as_str
+from fpdf.syntax import iobj_ref as pdf_ref
+
 from test.conftest import assert_pdf_equal
 
 
@@ -182,3 +185,30 @@ def test_russian_heading(tmp_path):  # issue-320
     pdf.start_section("Русский, English, 1 2 3...")
     pdf.write(8, "Русский текст в параграфе.")
     assert_pdf_equal(pdf, HERE / "russian_heading.pdf", tmp_path)
+
+
+def test_self_refering_outline(tmp_path):
+    """
+    Based on Jens Müller talk at NDSS: Processing Dangerous Paths.
+    As of 2022, neither Adobe Acrobat nor Sumatra PDF readers seem vulnerable.
+    """
+
+    class CustomFPDF(FPDF):
+        def _put_document_outline(self):
+            self._outlines_obj_id = self.n + 1
+            outline, outline_items = build_outline(
+                self._outline, first_object_id=self._outlines_obj_id, fpdf=self
+            )
+            outline.first = f"<< /A <<{pdf_ref(self._outlines_obj_id)}>> >>"
+            outline_as_str(outline, outline_items, fpdf=self)
+
+    pdf = CustomFPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+    p(pdf, "Doc Title", align="C")
+    pdf.start_section("Title 1")
+    p(pdf, "Lorem ipsum dolor sit amet,")
+    pdf.add_page()
+    pdf.start_section("Title 2")
+    p(pdf, "consectetur adipiscing elit,")
+    assert_pdf_equal(pdf, HERE / "self_refering_outline.pdf", tmp_path)

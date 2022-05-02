@@ -74,6 +74,11 @@ def serialize_outline(sections, first_object_id=1, fpdf=None):
     Args:
         sections (sequence): list of OutlineSection
     """
+    outline, outline_items = build_outline(sections, first_object_id, fpdf)
+    return outline_as_str(outline, outline_items, fpdf)
+
+
+def build_outline(sections, first_object_id, fpdf):
     outline = OutlineDictionary(id=first_object_id)
     n = first_object_id + 1
     outline_items = []
@@ -106,6 +111,10 @@ def serialize_outline(sections, first_object_id=1, fpdf=None):
             for level, oitem in last_outline_item_per_level.items()
             if level <= section.level
         }
+    return outline, outline_items
+
+
+def outline_as_str(outline, outline_items, fpdf):
     output = []
     output.append(outline.serialize(fpdf))
     for outline_item in outline_items:

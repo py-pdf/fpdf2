@@ -2,6 +2,11 @@ import locale
 from typing import Union, Iterable
 
 
+def object_id_for_page(page):
+    # Predictable given that FPDF._putpages is invoked first in FPDF._enddoc:
+    return 2 * page + 1
+
+
 def substr(s, start, length=-1):
     if length < 0:
         length = len(s) - start

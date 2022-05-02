@@ -41,19 +41,19 @@ With any of the 4 `CLIP` modes, the letters will be filled by vector drawings ma
 as can be seen in this example:
 
 ```python
-from fpdf import FPDF, TextMode
+from fpdf import FPDF
 
 pdf = FPDF(orientation="landscape")
 pdf.add_page()
 pdf.set_font("Helvetica", size=100)
 
-with pdf.local_context(text_mode=TextMode.STROKE, line_width=2):
+with pdf.local_context(text_mode="STROKE", line_width=2):
     pdf.cell(txt="Hello world")
 # Outside the local context, text_mode & line_width are reverted
 # back to their original default values
 pdf.ln()
 
-with pdf.local_context(text_mode=TextMode.CLIP):
+with pdf.local_context(text_mode="CLIP"):
     pdf.cell(txt="CLIP text mode")
     for r in range(0, 250, 2):  # drawing concentric circles
         pdf.circle(x=130-r/2, y=70-r/2, r=r)

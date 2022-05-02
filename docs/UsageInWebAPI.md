@@ -100,7 +100,7 @@ aws lambda create-function-url-config --function-name fpdf2-test --auth-type NON
 ```
 </details>
 
-Those commands do not cover the creation of the `lambda-fpdf2` role,
+Those commands do not cover the creation of the `lambda-fpdf2-role` role,
 nor configuring the lambda access permissions, for example with a `FunctionURLAllowPublicAccess` resource-based policy.
 
 

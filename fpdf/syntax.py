@@ -69,6 +69,8 @@ remains something to be looked into.
 from abc import ABC
 import re
 
+from .util import object_id_for_page
+
 
 def clear_empty_fields(d):
     return {k: v for k, v in d.items() if v}
@@ -190,29 +192,37 @@ class PDFObject:
         """
         Build the PDF Object associative map to serialize,
         based on this class instance properties.
-        The property names are converted to CamelCase,
+        The property names are converted from snake_case to CamelCase,
         and prefixed with a slash character "/".
         """
-        obj_dict = {}
-        for key in dir(self):
-            value = getattr(self, key)
-            if (
-                callable(value)
-                or key.startswith("_")
-                or key in ("id", "ref")
-                or value is None
-            ):
-                continue
-            if isinstance(value, PDFObject):  # indirect object reference
-                value = value.ref
-            elif hasattr(value, "serialize"):  # e.g. PDFArray & PDFString
-                value = value.serialize()
-            obj_dict[f"/{camel_case(key)}"] = value
-        return obj_dict
+        return build_obj_dict({key: getattr(self, key) for key in dir(self)})
 
 
-def camel_case(property_name):
-    return "".join(x for x in property_name.title() if x != "_")
+def build_obj_dict(key_values):
+    """
+    Build the PDF Object associative map to serialize, based on a key-values dict.
+    The property names are converted from snake_case to CamelCase,
+    and prefixed with a slash character "/".
+    """
+    obj_dict = {}
+    for key, value in key_values.items():
+        if (
+            callable(value)
+            or key.startswith("_")
+            or key in ("id", "ref")
+            or value is None
+        ):
+            continue
+        if isinstance(value, PDFObject):  # indirect object reference
+            value = value.ref
+        elif hasattr(value, "serialize"):  # e.g. PDFArray & PDFString
+            value = value.serialize()
+        obj_dict[f"/{camel_case(key)}"] = value
+    return obj_dict
+
+
+def camel_case(snake_case):
+    return "".join(x for x in snake_case.title() if x != "_")
 
 
 class PDFString(str):
@@ -255,6 +265,9 @@ class DestinationXYZ(Destination):
         top = (pdf.h_pt - self.y * pdf.k) if pdf else self.y
         if isinstance(top, float):
             top = round(top, 2)
-        # The page object ID is predictable given that _putpages is invoked first in _enddoc:
-        page = iobj_ref(2 * self.page + 1) if self.page_as_obj_id else self.page
+        page = (
+            iobj_ref(object_id_for_page(self.page))
+            if self.page_as_obj_id
+            else self.page
+        )
         return f"[{page} /XYZ {left} {top} {self.zoom}]"

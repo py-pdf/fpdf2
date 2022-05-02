@@ -37,7 +37,15 @@ from PIL import Image
 from . import drawing
 from .actions import Action
 from .deprecation import WarnOnDeprecatedModuleAttributes
-from .enums import DocumentState, PathPaintRule, TextMode, XPos, YPos
+from .enums import (
+    Align,
+    DocumentState,
+    PathPaintRule,
+    RenderStyle,
+    TextMode,
+    XPos,
+    YPos,
+)
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
 from .fonts import fpdf_charwidths
 from .graphics_state import GraphicsStateMixin
@@ -53,7 +61,13 @@ from .syntax import create_list_string as pdf_l
 from .syntax import create_stream as pdf_stream
 from .syntax import iobj_ref as pdf_ref
 from .ttfonts import TTFontFile
-from .util import enclose_in_parens, escape_parens, get_scale_factor, substr
+from .util import (
+    enclose_in_parens,
+    escape_parens,
+    get_scale_factor,
+    object_id_for_page,
+    substr,
+)
 
 LOGGER = logging.getLogger(__name__)
 HERE = Path(__file__).resolve().parent
@@ -118,7 +132,7 @@ class Annotation(NamedTuple):
             out += f" /Contents {enclose_in_parens(self.contents)}"
 
         if self.action:
-            out += f" /A <<{self.action.dict_as_string()}>>"
+            out += f" /A {self.action.dict_as_string()}"
 
         if self.link:
             if isinstance(self.link, str):
@@ -147,8 +161,7 @@ class Annotation(NamedTuple):
             out += f" /QuadPoints [{quad_points}]"
 
         if self.page:
-            # Same logic as FPDF._current_page_object_id:
-            out += f" /P {pdf_ref(2 * self.page + 1)}"
+            out += f" /P {pdf_ref(object_id_for_page(self.page))}"
 
         return out + ">>"
 
@@ -1190,15 +1203,15 @@ class FPDF(GraphicsStateMixin):
             y (float): Ordinate of upper-left bounding box.
             w (float): Width.
             h (float): Height.
-            style (str): Style of rendering. Possible values are:
+            style (Enum RenderStyle | str): Style of rendering. Possible values are:
                 * `D` or empty string: draw border. This is the default value.
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
         """
-        op = _style_to_operator(style)
+        style = RenderStyle.coerce(style)
         self._out(
             f"{x * self.k:.2f} {(self.h - y) * self.k:.2f} {w * self.k:.2f} "
-            f"{-h * self.k:.2f} re {op}"
+            f"{-h * self.k:.2f} re {style.operator}"
         )
 
     @check_page
@@ -1212,13 +1225,13 @@ class FPDF(GraphicsStateMixin):
             y (float): Ordinate of upper-left bounding box.
             w (float): Width
             h (float): Height
-            style (str): Style of rendering. Possible values are:
+            style (Enum RenderStyle | str): Style of rendering. Possible values are:
                 * `D` or empty string: draw border. This is the default value.
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
         """
-        operator = _style_to_operator(style)
-        self._draw_ellipse(x, y, w, h, operator)
+        style = RenderStyle.coerce(style)
+        self._draw_ellipse(x, y, w, h, style.operator)
 
     def _draw_ellipse(self, x, y, w, h, operator):
         cx = x + w / 2
@@ -1339,12 +1352,12 @@ class FPDF(GraphicsStateMixin):
             clockwise (bool): Way of drawing the arc (True: clockwise, False: counterclockwise) (default: False).
             start_from_center (bool): Start drawing from the center of the circle (default: False).
             end_at_center (bool): End drawing at the center of the circle (default: False).
-            style (str): Style of rendering. Possible values are:
+            style (Enum RenderStyle | str): Style of rendering. Possible values are:
                 * `D` or None: draw border. This is the default value.
                 * `F`: fill
                 * `DF` or `FD`: draw and fill
         """
-        op = _style_to_operator(style)
+        style = RenderStyle.coerce(style)
 
         if b is None:
             b = a
@@ -1439,7 +1452,7 @@ class FPDF(GraphicsStateMixin):
 
             end = ""
             if i == n - 1 and not end_at_center:
-                end = f" {op}"
+                end = f" {style.operator}"
 
             self._out(
                 (
@@ -1450,7 +1463,9 @@ class FPDF(GraphicsStateMixin):
             )
 
         if end_at_center:
-            self._out(f"{cx * self.k:.2f} {(self.h - cy) * self.k:.2f} l {op}")
+            self._out(
+                f"{cx * self.k:.2f} {(self.h - cy) * self.k:.2f} l {style.operator}"
+            )
 
     @check_page
     def solid_arc(
@@ -1772,18 +1787,18 @@ class FPDF(GraphicsStateMixin):
             border_width (int): thickness of an optional black border surrounding the link.
                 Not all PDF readers honor this: Acrobat renders it but not Sumatra.
         """
-        self.annots[self.page].append(
-            Annotation(
-                "Link",
-                x=x * self.k,
-                y=self.h_pt - y * self.k,
-                width=w * self.k,
-                height=h * self.k,
-                link=link,
-                alt_text=alt_text,
-                border_width=border_width,
-            )
+        link = Annotation(
+            "Link",
+            x=x * self.k,
+            y=self.h_pt - y * self.k,
+            width=w * self.k,
+            height=h * self.k,
+            link=link,
+            alt_text=alt_text,
+            border_width=border_width,
         )
+        self.annots[self.page].append(link)
+        return link
 
     @check_page
     def text_annotation(self, x, y, text, w=1, h=1):
@@ -1797,16 +1812,16 @@ class FPDF(GraphicsStateMixin):
             h (float): width of the link rectangle
             text (str): text to display
         """
-        self.annots[self.page].append(
-            Annotation(
-                "Text",
-                x * self.k,
-                self.h_pt - y * self.k,
-                w * self.k,
-                h * self.k,
-                contents=text,
-            )
+        annotation = Annotation(
+            "Text",
+            x * self.k,
+            self.h_pt - y * self.k,
+            w * self.k,
+            h * self.k,
+            contents=text,
         )
+        self.annots[self.page].append(annotation)
+        return annotation
 
     @check_page
     def add_action(self, action, x, y, w, h):
@@ -1820,16 +1835,16 @@ class FPDF(GraphicsStateMixin):
             w (float): width of the link rectangle
             h (float): width of the link rectangle
         """
-        self.annots[self.page].append(
-            Annotation(
-                "Action",
-                x * self.k,
-                self.h_pt - y * self.k,
-                w * self.k,
-                h * self.k,
-                action=action,
-            )
+        annotation = Annotation(
+            "Action",
+            x * self.k,
+            self.h_pt - y * self.k,
+            w * self.k,
+            h * self.k,
+            action=action,
         )
+        self.annots[self.page].append(annotation)
+        return annotation
 
     @contextmanager
     def add_highlight(self, text, title="", color=(1, 1, 0), modification_time=None):
@@ -1900,21 +1915,21 @@ class FPDF(GraphicsStateMixin):
         y_min = min(quad_points[1::2])
         x_max = max(quad_points[0::2])
         y_max = max(quad_points[1::2])
-        self.annots[page].append(
-            Annotation(
-                type,
-                contents=text,
-                x=y_min,
-                y=y_max,
-                width=x_max - x_min,
-                height=y_max - y_min,
-                color=color,
-                modification_time=modification_time,
-                title=title,
-                quad_points=quad_points,
-                page=page,
-            )
+        annotation = Annotation(
+            type,
+            contents=text,
+            x=y_min,
+            y=y_max,
+            width=x_max - x_min,
+            height=y_max - y_min,
+            color=color,
+            modification_time=modification_time,
+            title=title,
+            quad_points=quad_points,
+            page=page,
         )
+        self.annots[self.page].append(annotation)
+        return annotation
 
     @check_page
     def text(self, x, y, txt=""):
@@ -2170,7 +2185,7 @@ class FPDF(GraphicsStateMixin):
         new_x=XPos.RIGHT,
         new_y=YPos.TOP,
         ln="DEPRECATED",
-        align="",
+        align=Align.L,
         fill=False,
         link="",
         center="DEPRECATED",
@@ -2197,10 +2212,10 @@ class FPDF(GraphicsStateMixin):
                 or a string containing some or all of the following characters
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
-            new_x (Enum XPos): New current position in x after the call. Default: RIGHT
-            new_y (Enum YPos): New current position in y after the call. Default: TOP
+            new_x (Enum XPos | str): New current position in x after the call. Default: RIGHT
+            new_y (Enum YPos | str): New current position in y after the call. Default: TOP
             ln (int): **DEPRECATED** 2.5.1: Use new_x and new_y instead.
-            align (str): Allows to center or align the text inside the cell.
+            align (Enum Align | str): Allows to center or align the text inside the cell.
                 Possible values are: `L` or empty string: left align (default value) ;
                 `C`: center ; `R`: right align
             fill (bool): Indicates if the cell background must be painted (`True`)
@@ -2268,6 +2283,7 @@ class FPDF(GraphicsStateMixin):
                 DeprecationWarning,
                 stacklevel=3,
             )
+        align = Align.coerce(align)
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
         txt = self.normalize_text(txt)
         styled_txt_frags = self._preload_font_styles(txt, markdown)
@@ -2297,7 +2313,7 @@ class FPDF(GraphicsStateMixin):
         border: Union[str, int] = 0,
         new_x: XPos = XPos.RIGHT,
         new_y: YPos = YPos.TOP,
-        align: str = "",
+        align: Align = Align.L,
         fill: bool = False,
         link: str = "",
         center: bool = False,
@@ -2324,9 +2340,9 @@ class FPDF(GraphicsStateMixin):
                 or a string containing some or all of the following characters
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
-            new_x (Enum XPos): New current position in x after the call.
-            new_y (Enum YPos): New current position in y after the call.
-            align (str): Allows to align the text inside the cell.
+            new_x (Enum XPos | str): New current position in x after the call.
+            new_y (Enum YPos | str): New current position in y after the call.
+            align (Enum Align | str): Allows to align the text inside the cell.
                 Possible values are: `L` or empty string: left align (default value);
                 `C`: center; `R`: right align; `J`: justify (if more than one word)
             fill (bool): Indicates if the cell background must be painted (`True`)
@@ -2341,6 +2357,7 @@ class FPDF(GraphicsStateMixin):
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
+        align = Align.coerce(align)
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
                 'Integer values for "border" parameter other than 1 are currently '
@@ -2432,9 +2449,9 @@ class FPDF(GraphicsStateMixin):
         current_font_style = self.font_style
         current_font = self.current_font
         if text_line.fragments:
-            if align == "R":
+            if align == Align.R:
                 dx = w - self.c_margin - styled_txt_width
-            elif align == "C":
+            elif align == Align.C:
                 dx = (w - styled_txt_width) / 2
             else:
                 dx = self.c_margin
@@ -2713,7 +2730,7 @@ class FPDF(GraphicsStateMixin):
         h=None,
         txt="",
         border=0,
-        align="J",
+        align=Align.J,
         fill=False,
         split_only=False,
         link="",
@@ -2741,7 +2758,7 @@ class FPDF(GraphicsStateMixin):
                 or a string containing some or all of the following characters
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
-            align (str): Allows to center or align the text. Possible values are:
+            align (Enum Align | str): Allows to center or align the text. Possible values are:
                 `J`: justify (default value); `L` or empty string: left align ;
                 `C`: center ; `R`: right align
             fill (bool): Indicates if the cell background must be painted (`True`)
@@ -2750,8 +2767,8 @@ class FPDF(GraphicsStateMixin):
                 word-wrapping and return the resulting multi-lines array of strings.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
-            new_x (Enum XPos): New current position in x after the call. Default: RIGHT
-            new_y (Enum YPos): New current position in y after the call. Default: NEXT
+            new_x (Enum XPos | str): New current position in x after the call. Default: RIGHT
+            new_y (Enum YPos | str): New current position in y after the call. Default: NEXT
             ln (int): **DEPRECATED** 2.5.1: Use new_x and new_y instead.
             max_line_height (float): optional maximum height of each sub-cell generated
             markdown (bool): enable minimal markdown-like markup to render part
@@ -2807,6 +2824,7 @@ class FPDF(GraphicsStateMixin):
                 DeprecationWarning,
                 stacklevel=3,
             )
+        align = Align.coerce(align)
 
         page_break_triggered = False
         if split_only:
@@ -2838,7 +2856,7 @@ class FPDF(GraphicsStateMixin):
         multi_line_break = MultiLineBreak(
             styled_text_fragments,
             self.get_normalized_string_width_with_style,
-            justify=(align == "J"),
+            justify=(align == Align.J),
             print_sh=print_sh,
         )
         text_line = multi_line_break.get_line_of_given_width(maximum_allowed_emwidth)
@@ -2879,8 +2897,7 @@ class FPDF(GraphicsStateMixin):
                 ),
                 new_x=new_x if is_last_line else XPos.LEFT,
                 new_y=new_y if is_last_line else YPos.NEXT,
-                # align="L" if (align == "J" and is_last_line) else align,
-                align="L" if (align == "J" and is_last_line) else align,
+                align=Align.L if (align == Align.J and is_last_line) else align,
                 fill=fill,
                 link=link,
             )
@@ -2986,7 +3003,7 @@ class FPDF(GraphicsStateMixin):
                 border=0,
                 new_x=XPos.WCONT,
                 new_y=YPos.TOP,
-                align="L",
+                align=Align.L,
                 fill=False,
                 link=link,
             )
@@ -3247,7 +3264,7 @@ class FPDF(GraphicsStateMixin):
         Can receive as named arguments any of the entries described in section 14.7.2 'Structure Hierarchy'
         of the PDF spec: iD, a, c, r, lang, e, actualText
         """
-        page_object_id = self._current_page_object_id()
+        page_object_id = object_id_for_page(self.page)
         mcid = self.struct_builder.next_mcid_for_page(page_object_id)
         marked_content = self._add_marked_content(
             page_object_id, struct_type="/Figure", mcid=mcid, **kwargs
@@ -3272,10 +3289,6 @@ class FPDF(GraphicsStateMixin):
         self.struct_builder.add_marked_content(marked_content)
         self._set_min_pdf_version("1.4")  # due to using /MarkInfo
         return marked_content
-
-    def _current_page_object_id(self):
-        # Predictable given that _putpages is invoked first in _enddoc:
-        return 2 * self.page + 1
 
     @check_page
     def ln(self, h=None):
@@ -3440,7 +3453,11 @@ class FPDF(GraphicsStateMixin):
         self.offsets[1] = len(self.buffer)
         self._out("1 0 obj")
         self._out("<</Type /Pages")
-        self._out("/Kids [" + " ".join(pdf_ref(3 + 2 * i) for i in range(nb)) + "]")
+        self._out(
+            "/Kids ["
+            + " ".join(pdf_ref(object_id_for_page(page)) for page in range(1, nb + 1))
+            + "]"
+        )
         self._out(f"/Count {nb}")
         self._out(f"/MediaBox [0 0 {dw_pt:.2f} {dh_pt:.2f}]")
         self._out(">>")
@@ -4526,17 +4543,6 @@ class FPDF(GraphicsStateMixin):
         self.set_font(*prev_font)
         self.text_color = prev_text_color
         self.underline = prev_underline
-
-
-def _style_to_operator(style):
-    style_to_operators = {"F": "f", "FD": "B", "DF": "B", "D": "S"}
-    if not style:
-        style = "D"
-    if style not in style_to_operators:
-        raise ValueError(
-            f"Invalid value for style: '{style}'. Allowed values: {'/'.join(style_to_operators.keys())}"
-        )
-    return style_to_operators[style]
 
 
 def _char_width(font, char):

@@ -137,4 +137,4 @@ class GraphicsStateMixin:
 
     @text_mode.setter
     def text_mode(self, v):
-        self.__statestack[-1]["text_mode"] = v
+        self.__statestack[-1]["text_mode"] = TextMode.coerce(v)

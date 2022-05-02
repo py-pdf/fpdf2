@@ -1,6 +1,9 @@
 from pathlib import Path
 
 from fpdf import FPDF, TextMode
+
+import pytest
+
 from test.conftest import assert_pdf_equal
 
 
@@ -25,7 +28,7 @@ def test_text_modes(tmp_path):
     pdf.cell(txt="FILL_STROKE text mode")
     pdf.ln()
     with pdf.local_context():
-        pdf.text_mode = TextMode.INVISIBLE
+        pdf.text_mode = "INVISIBLE"  # testing TextMode.coerce
         pdf.cell(txt="INVISIBLE text mode")
     assert_pdf_equal(pdf, HERE / "text_modes.pdf", tmp_path)
 
@@ -58,3 +61,9 @@ def test_clip_text_modes(tmp_path):
             pdf.circle(x=110 - r / 2, y=106 - r / 2, r=r)
     pdf.ln()
     assert_pdf_equal(pdf, HERE / "clip_text_modes.pdf", tmp_path)
+
+
+def test_invalid_text_mode():
+    pdf = FPDF()
+    with pytest.raises(ValueError):
+        pdf.text_mode = "DUMMY"

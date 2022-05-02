@@ -299,9 +299,7 @@ class TTFontFile:
             fsType = self.read_ushort()
             if fsType == 0x0002 or (fsType & 0x0300) != 0:
                 raise RuntimeError(
-                    "ERROR - Font file "
-                    + self.filename
-                    + " cannot be embedded due to copyright restrictions."
+                    f"ERROR - Font file {self.filename} cannot be embedded due to copyright restrictions."
                 )
 
             self.skip(20)
