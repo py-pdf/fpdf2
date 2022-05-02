@@ -140,7 +140,7 @@ class TextMode(CoerciveIntEnum):
     CLIP = 7
 
 
-class XPos(CoerciveIntEnum):
+class XPos(CoerciveEnum):
     """
     Positional values in horizontal direction for use after printing text.
         LEFT    - left end of the cell
@@ -153,17 +153,17 @@ class XPos(CoerciveIntEnum):
         RMARGIN - right page margin (end of printable area)
     """
 
-    LEFT = 1  # self.x
-    RIGHT = 2  # self.x + w
-    START = 3  # left end of actual text
-    END = 4  # right end of actual text
-    WCONT = 5  # continuation point for write()
-    CENTER = 6  # center of actual text
-    LMARGIN = 7  # self.l_margin
-    RMARGIN = 8  # self.w - self.r_margin
+    LEFT = intern("LEFT")  # self.x
+    RIGHT = intern("RIGHT")  # self.x + w
+    START = intern("START")  # left end of actual text
+    END = intern("END")  # right end of actual text
+    WCONT = intern("WCONT")  # continuation point for write()
+    CENTER = intern("CENTER")  # center of actual text
+    LMARGIN = intern("LMARGIN")  # self.l_margin
+    RMARGIN = intern("RMARGIN")  # self.w - self.r_margin
 
 
-class YPos(CoerciveIntEnum):
+class YPos(CoerciveEnum):
     """
     Positional values in vertical direction for use after printing text.
         TOP     - top of the first line (default)
@@ -173,11 +173,11 @@ class YPos(CoerciveIntEnum):
         BMARGIN - bottom page margin (end of printable area)
     """
 
-    TOP = 1  # self.y
-    LAST = 2  # top of last line (TOP for single lines)
-    NEXT = 3  # LAST + h
-    TMARGIN = 4  # self.t_margin
-    BMARGIN = 5  # self.h - self.b_margin
+    TOP = intern("TOP")  # self.y
+    LAST = intern("LAST")  # top of last line (TOP for single lines)
+    NEXT = intern("NEXT")  # LAST + h
+    TMARGIN = intern("TMARGIN")  # self.t_margin
+    BMARGIN = intern("BMARGIN")  # self.h - self.b_margin
 
 
 class BlendMode(CoerciveEnum):

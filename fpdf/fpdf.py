@@ -2334,9 +2334,7 @@ class FPDF(GraphicsStateMixin):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
             new_x (Enum XPos | str): New current position in x after the call.
             new_y (Enum YPos | str): New current position in y after the call.
-            align (Enum Align | str): Allows to align the text inside the cell.
-                Possible values are: `L` or empty string: left align (default value);
-                `C`: center; `R`: right align; `J`: justify (if more than one word)
+            align (Enum Align): Allows to align the text inside the cell.
             fill (bool): Indicates if the cell background must be painted (`True`)
                 or transparent (`False`). Default value: False.
             link (str): optional link to add on the cell, internal
@@ -2349,7 +2347,6 @@ class FPDF(GraphicsStateMixin):
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
-        align = Align.coerce(align)
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
                 'Integer values for "border" parameter other than 1 are currently '
@@ -2781,6 +2778,7 @@ class FPDF(GraphicsStateMixin):
             )
         new_x = XPos.coerce(new_x)
         new_y = YPos.coerce(new_y)
+        print(f"multi_cell: new_x={new_x} new_y={new_y}")
         if ln != "DEPRECATED":
             # For backwards compatibility, if "ln" is used we overwrite "new_[xy]".
             if ln == 0:

@@ -236,8 +236,8 @@ def test_cell_newpos_badinput():
     pdf.set_font("Times", size=16)
     with pytest.raises(ValueError):
         with pytest.warns(DeprecationWarning):
-            pdf.cell(ln=5)
-    with pytest.raises(ValueError):
-        pdf.cell(new_x=5)
-    with pytest.raises(ValueError):
-        pdf.cell(new_y=None)
+            pdf.cell(w=0, ln=5)
+    with pytest.raises(TypeError):
+        pdf.cell(w=0, new_x=5)
+    with pytest.raises(TypeError):
+        pdf.cell(w=0, new_y=None)

@@ -199,7 +199,7 @@ def test_self_refering_outline(tmp_path):
             outline, outline_items = build_outline(
                 self._outline, first_object_id=self._outlines_obj_id, fpdf=self
             )
-            outline.first = f"<< /A <<{pdf_ref(self._outlines_obj_id)}>> >>"
+            outline.first = f"<< /A << /First {pdf_ref(self._outlines_obj_id)} >> >>"
             outline_as_str(outline, outline_items, fpdf=self)
 
     pdf = CustomFPDF()

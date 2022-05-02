@@ -39,7 +39,7 @@ from fpdf import FPDF, HTMLMixin, HTML2FPDF
 
 class CustomHTML2FPDF(HTML2FPDF):
     def render_toc(self, pdf, outline):
-        pdf.cell(txt='Table of contents:', new_x="LMARGIN", new_y=YPos")
+        pdf.cell(txt='Table of contents:', new_x="LMARGIN", new_y="NEXT")
         for section in outline:
             pdf.cell(txt=f'* {section.name} (page {section.page_number})', new_x="LMARGIN", new_y="NEXT")
 

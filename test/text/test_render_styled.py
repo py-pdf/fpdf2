@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 import fpdf
+from fpdf.enums import Align, XPos, YPos
 from fpdf.line_break import MultiLineBreak, TextLine
 from test.conftest import assert_pdf_equal
 
@@ -64,15 +65,15 @@ def test_render_styled_newpos(tmp_path):
         doc.x = 20
         doc.y = 20 + (i * 20)
         s = item[0]
-        align = item[1]
-        newx = fpdf.XPos.coerce(item[2])
-        newy = fpdf.YPos.coerce(item[3])
+        align = Align.coerce(item[1])
+        newx = XPos.coerce(item[2])
+        newy = YPos.coerce(item[3])
         # pylint: disable=protected-access
         frags = doc._preload_font_styles(s, False)
         mlb = MultiLineBreak(
             frags,
             doc.get_normalized_string_width_with_style,
-            justify=(align == "J"),
+            justify=(align == Align.J),
         )
         line = mlb.get_line_of_given_width(twidth * 1000 / doc.font_size)
         # we need to manually rebuild our TextLine in order to force
@@ -81,7 +82,7 @@ def test_render_styled_newpos(tmp_path):
             fragments=line.fragments,
             text_width=line.text_width,
             number_of_spaces_between_words=line.number_of_spaces_between_words,
-            justify=align == "J",
+            justify=align == Align.J,
         )
         doc._render_styled_text_line(
             line,

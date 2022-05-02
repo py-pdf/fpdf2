@@ -24,7 +24,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - documentation on how to use `fpdf2` with [Flask](https://flask.palletsprojects.com), [streamlit](https://streamlit.io/), AWS lambdas: [link to docs](https://pyfpdf.github.io/fpdf2/UsageInWebAPI.html)
 - documentation on how to store PDFs in a database with [SQLAlchemy](https://www.sqlalchemy.org/): [link to docs](https://pyfpdf.github.io/fpdf2/DatabaseStorage.html)
 ### Modified
-- `TextMode`, `XPos` & `YPos` now inherit from `CoerciveIntEnum` and hence can simply be passed as string parameters
+- `TextMode`, `XPos` & `YPos` now inherit from `CoerciveEnum` and hence can simply be passed as string parameters
 ### Fixed
 - infinite loop when calling `.multi_cell()` without enough horizontal space - _cf._ [#389](https://github.com/PyFPDF/fpdf2/issues/389)
 ### Removed

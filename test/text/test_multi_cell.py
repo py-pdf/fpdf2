@@ -254,9 +254,9 @@ def test_multicell_newpos_badinput():
     with pytest.raises(ValueError):
         with pytest.warns(DeprecationWarning):
             pdf.multi_cell(0, ln=5)
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         pdf.multi_cell(0, new_x=5)
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         pdf.multi_cell(0, new_y=None)
 
 
