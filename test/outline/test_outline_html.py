@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from fpdf import FPDF, XPos, YPos, HTMLMixin, HTML2FPDF
+from fpdf import FPDF, HTMLMixin, HTML2FPDF
 from test.conftest import assert_pdf_equal
 
 
@@ -244,12 +244,12 @@ def test_html_toc_with_h1_as_2nd_heading(tmp_path):  # issue 239
 def test_custom_HTML2FPDF(tmp_path):  # issue 240
     class CustomHTML2FPDF(HTML2FPDF):
         def render_toc(self, pdf, outline):
-            pdf.cell(txt="Table of contents:", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+            pdf.cell(txt="Table of contents:", new_x="LMARGIN", new_y="NEXT")
             for section in outline:
                 pdf.cell(
                     txt=f"* {section.name} (page {section.page_number})",
-                    new_x=XPos.LMARGIN,
-                    new_y=YPos.NEXT,
+                    new_x="LMARGIN",
+                    new_y="NEXT",
                 )
 
     class CustomPDF(FPDF, HTMLMixin):

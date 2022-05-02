@@ -11,38 +11,38 @@ HERE = Path(__file__).resolve().parent
 
 CELLDATA = (
     # txt, align, new_x, new_y
-    ["Left Top L", "L", "LEFT", "TOP"],
-    ["Left Top R", "R", "LEFT", "TOP"],
-    ["Left Top C", "C", "LEFT", "TOP"],
-    ["Left Top J", "J", "LEFT", "TOP"],
-    ["Right Last L", "L", "RIGHT", "LAST"],
-    ["Right Last R", "R", "RIGHT", "LAST"],
-    ["Right Last C", "C", "RIGHT", "LAST"],
-    ["Right Last J", "J", "RIGHT", "LAST"],
-    ["Start Next L", "L", "START", "NEXT"],
-    ["Start Next R", "R", "START", "NEXT"],
-    ["Start Next C", "C", "START", "NEXT"],
-    ["Start Next J", "J", "START", "NEXT"],
-    ["End TMargin L", "L", "END", "TMARGIN"],
-    ["End TMargin R", "R", "END", "TMARGIN"],
-    ["End TMargin C", "C", "END", "TMARGIN"],
-    ["End TMargin J", "J", "END", "TMARGIN"],
-    ["WCont Top L", "L", "WCONT", "TOP"],
-    ["WCont Top R", "R", "WCONT", "TOP"],
-    ["WCont Top C", "C", "WCONT", "TOP"],
-    ["WCont Top J", "J", "WCONT", "TOP"],
-    ["Center TOP L", "L", "CENTER", "TOP"],
-    ["Center TOP R", "R", "CENTER", "TOP"],
-    ["Center TOP C", "C", "CENTER", "TOP"],
-    ["Center TOP J", "J", "CENTER", "TOP"],
-    ["LMargin BMargin L", "L", "LMARGIN", "BMARGIN"],
-    ["LMargin BMargin R", "R", "LMARGIN", "BMARGIN"],
-    ["LMargin BMargin C", "C", "LMARGIN", "BMARGIN"],
-    ["LMargin BMargin J", "J", "LMARGIN", "BMARGIN"],
-    ["RMargin Top L", "L", "RMARGIN", "TOP"],
-    ["RMargin Top R", "R", "RMARGIN", "TOP"],
-    ["RMargin Top C", "C", "RMARGIN", "TOP"],
-    ["RMargin Top J", "J", "RMARGIN", "TOP"],
+    ("Left Top L", "L", "LEFT", "TOP"),
+    ("Left Top R", "R", "LEFT", "TOP"),
+    ("Left Top C", "C", "LEFT", "TOP"),
+    ("Left Top J", "J", "LEFT", "TOP"),
+    ("Right Last L", "L", "RIGHT", "LAST"),
+    ("Right Last R", "R", "RIGHT", "LAST"),
+    ("Right Last C", "C", "RIGHT", "LAST"),
+    ("Right Last J", "J", "RIGHT", "LAST"),
+    ("Start Next L", "L", "START", "NEXT"),
+    ("Start Next R", "R", "START", "NEXT"),
+    ("Start Next C", "C", "START", "NEXT"),
+    ("Start Next J", "J", "START", "NEXT"),
+    ("End TMargin L", "L", "END", "TMARGIN"),
+    ("End TMargin R", "R", "END", "TMARGIN"),
+    ("End TMargin C", "C", "END", "TMARGIN"),
+    ("End TMargin J", "J", "END", "TMARGIN"),
+    ("WCont Top L", "L", "WCONT", "TOP"),
+    ("WCont Top R", "R", "WCONT", "TOP"),
+    ("WCont Top C", "C", "WCONT", "TOP"),
+    ("WCont Top J", "J", "WCONT", "TOP"),
+    ("Center TOP L", "L", "CENTER", "TOP"),
+    ("Center TOP R", "R", "CENTER", "TOP"),
+    ("Center TOP C", "C", "CENTER", "TOP"),
+    ("Center TOP J", "J", "CENTER", "TOP"),
+    ("LMargin BMargin L", "L", "LMARGIN", "BMARGIN"),
+    ("LMargin BMargin R", "R", "LMARGIN", "BMARGIN"),
+    ("LMargin BMargin C", "C", "LMARGIN", "BMARGIN"),
+    ("LMargin BMargin J", "J", "LMARGIN", "BMARGIN"),
+    ("RMargin Top L", "L", "RMARGIN", "TOP"),
+    ("RMargin Top R", "R", "RMARGIN", "TOP"),
+    ("RMargin Top C", "C", "RMARGIN", "TOP"),
+    ("RMargin Top J", "J", "RMARGIN", "TOP"),
 )
 
 
@@ -65,8 +65,8 @@ def test_render_styled_newpos(tmp_path):
         doc.y = 20 + (i * 20)
         s = item[0]
         align = item[1]
-        newx = item[2]
-        newy = item[3]
+        newx = fpdf.XPos.coerce(item[2])
+        newy = fpdf.YPos.coerce(item[3])
         # pylint: disable=protected-access
         frags = doc._preload_font_styles(s, False)
         mlb = MultiLineBreak(
@@ -184,23 +184,23 @@ def test_multi_cell_newpos(tmp_path):
 
 
 LN_CELLDATA = (
-    # txt,     align, ln
-    ["ln=0 L", "L", 0],
-    ["ln=0 R", "R", 0],
-    ["ln=0 C", "C", 0],
-    ["ln=0 J", "J", 0],
-    ["ln=1 L", "L", 1],
-    ["ln=1 R", "R", 1],
-    ["ln=1 C", "C", 1],
-    ["ln=1 J", "J", 1],
-    ["ln=2 L", "L", 2],
-    ["ln=2 R", "R", 2],
-    ["ln=2 C", "C", 2],
-    ["ln=2 J", "J", 2],
-    ["ln=3 L", "L", 3],
-    ["ln=3 R", "R", 3],
-    ["ln=3 C", "C", 3],
-    ["ln=3 J", "J", 3],
+    # txt, align, ln
+    ("ln=0 L", "L", 0),
+    ("ln=0 R", "R", 0),
+    ("ln=0 C", "C", 0),
+    ("ln=0 J", "J", 0),
+    ("ln=1 L", "L", 1),
+    ("ln=1 R", "R", 1),
+    ("ln=1 C", "C", 1),
+    ("ln=1 J", "J", 1),
+    ("ln=2 L", "L", 2),
+    ("ln=2 R", "R", 2),
+    ("ln=2 C", "C", 2),
+    ("ln=2 J", "J", 2),
+    ("ln=3 L", "L", 3),
+    ("ln=3 R", "R", 3),
+    ("ln=3 C", "C", 3),
+    ("ln=3 J", "J", 3),
 )
 
 

@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, FPDFException, XPos, YPos
+from fpdf import FPDF, FPDFException
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
@@ -31,82 +31,82 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         h=LINE_HEIGHT,
         border=1,
         txt=LOREM_IPSUM[:29],
-        new_x=XPos.RIGHT,
-        new_y=YPos.NEXT,
+        new_x="RIGHT",
+        new_y="NEXT",
     )
     doc.multi_cell(
         w=180,
         h=LINE_HEIGHT,
         border=1,
         txt=LOREM_IPSUM[29:60],
-        new_x=XPos.LEFT,
-        new_y=YPos.NEXT,
+        new_x="LEFT",
+        new_y="NEXT",
     )
     doc.multi_cell(
         w=144,
         h=LINE_HEIGHT,
         border=1,
         txt=LOREM_IPSUM[60:90],
-        new_x=XPos.LMARGIN,
-        new_y=YPos.NEXT,
+        new_x="LMARGIN",
+        new_y="NEXT",
     )
     doc.cell(
         w=72 * 5,
         h=LINE_HEIGHT,
         border=1,
         txt=LOREM_IPSUM[0:30],
-        new_x=XPos.LMARGIN,
-        new_y=YPos.NEXT,
+        new_x="LMARGIN",
+        new_y="NEXT",
     )
     doc.cell(
         w=72 * 5,
         h=LINE_HEIGHT,
         border=1,
         txt=LOREM_IPSUM[31:60],
-        new_x=XPos.LMARGIN,
-        new_y=YPos.NEXT,
+        new_x="LMARGIN",
+        new_y="NEXT",
     )
     doc.cell(
         w=72 * 5,
         h=LINE_HEIGHT,
         border=1,
         txt=LOREM_IPSUM[61:90],
-        new_x=XPos.LMARGIN,
-        new_y=YPos.NEXT,
+        new_x="LMARGIN",
+        new_y="NEXT",
     )
     doc.cell(
         w=72 * 5,
         h=LINE_HEIGHT,
         border=1,
         txt=LOREM_IPSUM[91:120],
-        new_x=XPos.LMARGIN,
-        new_y=YPos.NEXT,
+        new_x="LMARGIN",
+        new_y="NEXT",
     )
     doc.cell(w=72 * 5, h=LINE_HEIGHT, border=1)
-    doc.cell(w=1, h=LINE_HEIGHT, new_x=XPos.LEFT, new_y=YPos.NEXT)
+    doc.cell(w=1, h=LINE_HEIGHT, new_x="LEFT", new_y="NEXT")
     doc.multi_cell(
         w=144,
         h=LINE_HEIGHT,
         border=1,
         txt=LOREM_IPSUM[30:90],
-        new_x=XPos.LEFT,
-        new_y=YPos.NEXT,
+        new_x="LEFT",
+        new_y="NEXT",
     )
     doc.cell(
         w=72 * 2,
         h=LINE_HEIGHT,
         border=1,
         txt="Lorem ipsum",
-        new_x=XPos.LEFT,
-        new_y=YPos.NEXT,
+        new_x="LEFT",
+        new_y="NEXT",
     )
     doc.cell(
         w=72 * 2,
         h=LINE_HEIGHT,
         border=1,
         txt="Lorem ipsum",
-        new_x=XPos.LEFT,
-        new_y=YPos.NEXT,
+        new_x="LEFT",
+        new_y="NEXT",
     )
 
     assert_pdf_equal(
@@ -135,8 +135,8 @@ def test_multi_cell_ln_1(tmp_path):
         h=LINE_HEIGHT,
         border=1,
         txt="Lorem ipsum",
-        new_x=XPos.LMARGIN,
-        new_y=YPos.NEXT,
+        new_x="LMARGIN",
+        new_y="NEXT",
     )
     doc.multi_cell(w=100, h=LINE_HEIGHT, border=1, txt="Ut nostrud irure")
     assert_pdf_equal(doc, HERE / "multi_cell_ln_1.pdf", tmp_path)
@@ -147,16 +147,14 @@ def test_multi_cell_ln_3(tmp_path):
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
     doc.multi_cell(
-        w=45, h=LINE_HEIGHT, border=1, txt="Lorem", new_x=XPos.RIGHT, new_y=YPos.TOP
+        w=45, h=LINE_HEIGHT, border=1, txt="Lorem", new_x="RIGHT", new_y="TOP"
     )
     doc.multi_cell(
-        w=45, h=LINE_HEIGHT, border=1, txt="ipsum", new_x=XPos.RIGHT, new_y=YPos.TOP
+        w=45, h=LINE_HEIGHT, border=1, txt="ipsum", new_x="RIGHT", new_y="TOP"
     )
+    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="Ut", new_x="RIGHT", new_y="TOP")
     doc.multi_cell(
-        w=45, h=LINE_HEIGHT, border=1, txt="Ut", new_x=XPos.RIGHT, new_y=YPos.TOP
-    )
-    doc.multi_cell(
-        w=45, h=LINE_HEIGHT, border=1, txt="nostrud", new_x=XPos.RIGHT, new_y=YPos.TOP
+        w=45, h=LINE_HEIGHT, border=1, txt="nostrud", new_x="RIGHT", new_y="TOP"
     )
     assert_pdf_equal(doc, HERE / "multi_cell_ln_3.pdf", tmp_path)
 
@@ -180,8 +178,8 @@ def test_multi_cell_ln_3_table(tmp_path):
                 line_height,
                 str(datum),
                 border=1,
-                new_x=XPos.RIGHT,
-                new_y=YPos.TOP,
+                new_x="RIGHT",
+                new_y="TOP",
                 max_line_height=pdf.font_size,
             )
         pdf.ln(line_height)
@@ -202,8 +200,8 @@ def test_multi_cell_table_with_automatic_page_break(tmp_path):  # issue 120
                     line_height,
                     datum,
                     border=1,
-                    new_x=XPos.RIGHT,
-                    new_y=YPos.TOP,
+                    new_x="RIGHT",
+                    new_y="TOP",
                     max_line_height=pdf.font_size,
                 )
             pdf.ln(line_height)
@@ -218,7 +216,7 @@ def test_multi_cell_justified_with_unicode_font(tmp_path):  # issue 118
     pdf.add_font("DejaVu", "", HERE / "../fonts/DejaVuSans.ttf")
     pdf.set_font("DejaVu", "", 14)
     text = 'Justified line containing "()" that is long enough to trigger wrapping and a line jump'
-    pdf.multi_cell(w=0, h=8, txt=text, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.multi_cell(w=0, h=8, txt=text, new_x="LMARGIN", new_y="NEXT")
     assert_pdf_equal(
         pdf, HERE / "test_multi_cell_justified_with_unicode_font.pdf", tmp_path
     )
@@ -242,12 +240,10 @@ def test_multi_cell_with_empty_contents(tmp_path):  # issue 349
     pdf.add_page()
     pdf.set_font("helvetica", size=10)
     for i in range(1, 5):
-        pdf.multi_cell(20, new_x=XPos.RIGHT, new_y=YPos.TOP, txt=str(i))
+        pdf.multi_cell(20, new_x="RIGHT", new_y="TOP", txt=str(i))
     pdf.ln(10)
     for i in range(1, 5):
-        pdf.multi_cell(
-            20, new_x=XPos.RIGHT, new_y=YPos.TOP, txt=str(i) if i > 2 else ""
-        )
+        pdf.multi_cell(20, new_x="RIGHT", new_y="TOP", txt=str(i) if i > 2 else "")
     assert_pdf_equal(pdf, HERE / "multi_cell_with_empty_contents.pdf", tmp_path)
 
 

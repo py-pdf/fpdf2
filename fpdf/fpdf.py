@@ -1928,7 +1928,7 @@ class FPDF(GraphicsStateMixin):
             quad_points=quad_points,
             page=page,
         )
-        self.annots[self.page].append(annotation)
+        self.annots[page].append(annotation)
         return annotation
 
     @check_page
@@ -2241,16 +2241,8 @@ class FPDF(GraphicsStateMixin):
                 "ignored"
             )
             border = 1
-        if not isinstance(new_x, XPos):
-            raise ValueError(
-                f'Invalid value for parameter "new_x" ({new_x}),'
-                "must be instance of Enum XPos"
-            )
-        if not isinstance(new_y, YPos):
-            raise ValueError(
-                f'Invalid value for parameter "new_y" ({new_y}),'
-                "must be instance of Enum YPos"
-            )
+        new_x = XPos.coerce(new_x)
+        new_y = YPos.coerce(new_y)
         if center == "DEPRECATED":
             center = False
         else:
@@ -2787,16 +2779,8 @@ class FPDF(GraphicsStateMixin):
                 "Parameter 'w' and 'h' must be numbers, not strings."
                 " You can omit them by passing string content with txt="
             )
-        if not isinstance(new_x, XPos):
-            raise ValueError(
-                f'Invalid value for parameter "new_x" ({new_x}),'
-                "must be instance of Enum XPos"
-            )
-        if not isinstance(new_y, YPos):
-            raise ValueError(
-                f'Invalid value for parameter "new_y" ({new_y}),'
-                "must be instance of Enum YPos"
-            )
+        new_x = XPos.coerce(new_x)
+        new_y = YPos.coerce(new_y)
         if ln != "DEPRECATED":
             # For backwards compatibility, if "ln" is used we overwrite "new_[xy]".
             if ln == 0:

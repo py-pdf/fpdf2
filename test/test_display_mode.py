@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, XPos, YPos
+from fpdf import FPDF
 from test.conftest import assert_pdf_equal
 
 
@@ -22,8 +22,8 @@ def test_setting_all_zoom(zoom, tmp_path):
         txt="hello world",
         fill=False,
         link="",
-        new_x=XPos.LMARGIN,
-        new_y=YPos.NEXT,
+        new_x="LMARGIN",
+        new_y="NEXT",
     )
     doc.set_display_mode(zoom=zoom)
     assert_pdf_equal(doc, HERE / f"zoom-{zoom}.pdf", tmp_path)
@@ -42,8 +42,8 @@ def test_setting_all_layout(layout, tmp_path):
         txt="hello world",
         fill=False,
         link="",
-        new_x=XPos.LMARGIN,
-        new_y=YPos.NEXT,
+        new_x="LMARGIN",
+        new_y="NEXT",
     )
     doc.set_display_mode(zoom="default", layout=layout)
     assert_pdf_equal(doc, HERE / f"layout-{layout}.pdf", tmp_path)

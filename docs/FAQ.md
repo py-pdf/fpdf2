@@ -80,10 +80,10 @@ def get_me_a_pdf():
     pdf.add_page()
     pdf.set_font('Times', 'B', 15)
     pdf.cell(w=210, h=9, txt=title, border=0,
-            new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='C', fill=False)
+            new_x="LMARGIN", new_y="NEXT", align='C', fill=False)
     pdf.set_font('Times', 'B', 15)
     pdf.cell(w=0, h=6, txt=heading, border=0,
-            new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='L', fill=False)
+            new_x="LMARGIN", new_y="NEXT", align='L', fill=False)
     pdf.set_font('Times', '', 12)
     pdf.multi_cell(w=0, h=5, txt=text)
     response.headers['Content-Type'] = 'application/pdf'

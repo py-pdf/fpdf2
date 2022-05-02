@@ -290,18 +290,18 @@ class FlexTemplate:
             self.splitting_pdf = FPDF()
             self.splitting_pdf.add_page()
         style = ""
-        if element["bold"]:
+        if element.get("bold"):
             style += "B"
-        if element["italic"]:
+        if element.get("italic"):
             style += "I"
-        if element["underline"]:
+        if element.get("underline"):
             style += "U"
         self.splitting_pdf.set_font(element["font"], style, element["size"])
         return self.splitting_pdf.multi_cell(
             w=element["x2"] - element["x1"],
             h=element["y2"] - element["y1"],
             txt=str(text),
-            align=element["align"],
+            align=element.get("align", ""),
             split_only=True,
         )
 

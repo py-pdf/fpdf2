@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, XPos, YPos, TitleStyle, errors
+from fpdf import FPDF, TitleStyle, errors
 from fpdf.outline import build_outline, outline_as_str
 from fpdf.syntax import iobj_ref as pdf_ref
 
@@ -80,8 +80,8 @@ def p(pdf, text, **kwargs):
         w=pdf.epw,
         h=pdf.font_size,
         txt=text,
-        new_x=XPos.LMARGIN,
-        new_y=YPos.NEXT,
+        new_x="LMARGIN",
+        new_y="NEXT",
         **kwargs,
     )
 
@@ -106,8 +106,8 @@ def render_toc(pdf, outline):
             w=pdf.epw,
             h=pdf.font_size,
             txt=text,
-            new_x=XPos.LMARGIN,
-            new_y=YPos.NEXT,
+            new_x="LMARGIN",
+            new_y="NEXT",
             align="C",
             link=link,
         )

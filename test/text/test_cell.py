@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, XPos, YPos, FPDFException
+from fpdf import FPDF, FPDFException
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 TEXT_SIZE, SPACING = 36, 1.15
@@ -30,8 +30,8 @@ def test_ln_positioning_and_page_breaking_for_cell(tmp_path):
             w=72,
             h=TEXT_SIZE * 1.5,
             border=1,
-            new_x=XPos.LEFT,
-            new_y=YPos.NEXT,
+            new_x="LEFT",
+            new_y="NEXT",
             txt=text[i * 100 : i * 100 + 99],
         )
 
@@ -180,18 +180,12 @@ def test_cell_markdown_bleeding(tmp_path):  # issue 241
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=60)
-    pdf.cell(
-        txt="--Lorem Ipsum dolor--", markdown=True, new_x=XPos.LMARGIN, new_y=YPos.NEXT
-    )
-    pdf.cell(txt="No Markdown", markdown=False, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-    pdf.cell(
-        txt="**Lorem Ipsum dolor**", markdown=True, new_x=XPos.LMARGIN, new_y=YPos.NEXT
-    )
-    pdf.cell(txt="No Markdown", markdown=False, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-    pdf.cell(
-        txt="__Lorem Ipsum dolor__", markdown=True, new_x=XPos.LMARGIN, new_y=YPos.NEXT
-    )
-    pdf.cell(txt="No Markdown", markdown=False, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.cell(txt="--Lorem Ipsum dolor--", markdown=True, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(txt="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(txt="**Lorem Ipsum dolor**", markdown=True, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(txt="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(txt="__Lorem Ipsum dolor__", markdown=True, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(txt="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT")
     assert_pdf_equal(pdf, HERE / "cell_markdown_bleeding.pdf", tmp_path)
 
 

@@ -59,7 +59,7 @@ pdf.cell(40, 10, 'Hello World!', 1)
 करेंगे:
 
 ```python
-pdf.cell(60, 10, 'Powered by FPDF.', new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='C')
+pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 ```
 
 **टिप्पणी**: लाइन ब्रेक [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln) के साथ भी किया जा सकता हैं। इस

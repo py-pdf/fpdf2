@@ -29,26 +29,12 @@ For all text insertion methods, the relevant font related properties (eg. font/s
 In addition, some of the methods can optionally use [markdown](TextStyling.html#markdowntrue) or [HTML](HTML.html) markup in the supplied text in order to change the font style (bold/italic/underline) of parts of the output.
 
 ## Change in current position
-`.cell()` and `.multi_cell()` let you specify where the current position (`.x`/`.y`) should go after the call. This is handled by the parameters `new_x` and `new_y`. Their values are one out of the Enums `fpdf.XPos` and `fpdf.YPos` respectively, which offer the following options:
+`.cell()` and `.multi_cell()` let you specify where the current position (`.x`/`.y`) should go after the call.
+This is handled by the parameters `new_x` and `new_y`.
+Their values must one of the following enums values or an equivalent string:
 
-#### XPos
-
-* `XPos.LEFT`    - left end of the cell
-* `XPos.RIGHT`   - right end of the cell
-* `XPos.START`   - start of actual text
-* `XPos.END`     - end of actual text
-* `XPos.WCONT`   - for write() to continue next (slightly left of END)
-* `XPos.CENTER`  - center of actual text
-* `XPos.LMARGIN` - left page margin (start of printable area)
-* `XPos.RMARGIN` - right page margin (end of printable area)
-
-#### YPos
-
-* `YPos.TOP`     - top of the first line
-* `YPos.LAST`    - top of the last line (same as TOP for single-line text)
-* `YPos.NEXT`    - top of next line (bottom of current text)
-* `YPos.TMARGIN` - top page margin (start of printable area)
-* `YPos.BMARGIN` - bottom page margin (end of printable area)
+* [`XPos`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.XPos)
+* [`YPos`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.YPos)
 
 ## .text()
 Prints a single-line character string. In contrast to the other text methods,
@@ -81,7 +67,7 @@ As many cells as necessary are stacked, one below the other.
 Text can be aligned, centered or justified. The cell block can be framed and
 the background painted.
 
-Using `new_x=XPos.RIGHT, new_y=XPos.TOP, maximum height=pdf.font_size` can be
+Using `new_x="RIGHT", new_y="TOP", maximum height=pdf.font_size` can be
 useful to build tables with multiline text in cells.
 
 In normal operation, returns a boolean indicating if page break was triggered.

@@ -49,7 +49,7 @@ pdf.cell(40, 10, 'Hello World!', 1)
 Para adicionar uma nova célula ao lado desta, com texto centralizado e ir para a próxima linha, teríamos de fazer:
 
 ```python
-pdf.cell(60, 10, 'Powered by FPDF.', new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='C')
+pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 ```
 
 **Nota**: a quebra de linha também pode ser feita com [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). Esse método permite especificar, adicionalmente, a altura da quebra.
