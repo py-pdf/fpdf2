@@ -25,19 +25,19 @@ def test_polyline_command_all_k(unit, factor):
     pdf._out = data.append
 
     pdf.polyline(scale_points(POLYLINE_COORDINATES, factor))
-    assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l S "
+    assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l S"
     data.clear()
 
     pdf.polyline(scale_points(POLYLINE_COORDINATES, factor), fill=True)
-    assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l B "
+    assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l B"
     data.clear()
 
     pdf.polyline(scale_points(POLYLINE_COORDINATES, factor), polygon=True)
-    assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l h  S "
+    assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l h S"
     data.clear()
 
     pdf.polyline(scale_points(POLYLINE_COORDINATES, factor), polygon=True, fill=True)
-    assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l h  B "
+    assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l h B"
 
 
 def scale_points(raw_points, k_recip):

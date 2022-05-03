@@ -108,7 +108,7 @@ class Align(CoerciveEnum):
     "Right-align text"
 
     J = intern("JUSTIFY")
-    "Justified text"
+    "Justify text"
 
     @classmethod
     def coerce(cls, value):
@@ -130,6 +130,14 @@ class RenderStyle(CoerciveEnum):
     @property
     def operator(self):
         return {self.D: "S", self.F: "f", self.DF: "B"}[self]
+
+    @property
+    def is_draw(self):
+        return self in (self.D, self.DF)
+
+    @property
+    def is_fill(self):
+        return self in (self.F, self.DF)
 
     @classmethod
     def coerce(cls, value):

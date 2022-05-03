@@ -604,7 +604,7 @@ class Template(FlexTemplate):
         Arguments:
 
             infile (str):
-                [**DEPRECATED**] unused, will be removed in a later version
+                [**DEPRECATED since 2.2.0**] unused, will be removed in a later version
 
             elements (list of dicts):
                 A template definition in a list of dicts.
@@ -674,7 +674,7 @@ class Template(FlexTemplate):
                 Alternatively, the `.pdf.output()` method can be manually called.
 
             dest (str):
-                [**DEPRECATED**] unused, will be removed in a later version.
+                [**DEPRECATED since 2.2.0**] unused, will be removed in a later version.
         """
         if dest:
             warnings.warn(

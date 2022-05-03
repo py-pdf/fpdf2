@@ -69,13 +69,8 @@ from .util import (
     substr,
 )
 
-LOGGER = logging.getLogger(__name__)
-HERE = Path(__file__).resolve().parent
-
-# Global variables
+# Public global variables:
 FPDF_VERSION = "2.5.3"
-FPDF_FONT_DIR = HERE / "font"
-
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),
     "a4": (595.28, 841.89),
@@ -83,6 +78,12 @@ PAGE_FORMATS = {
     "letter": (612, 792),
     "legal": (612, 1008),
 }
+"Supported page format names & dimensions"
+
+# Private global variables:
+LOGGER = logging.getLogger(__name__)
+HERE = Path(__file__).resolve().parent
+FPDF_FONT_DIR = HERE / "font"
 LAYOUT_NAMES = {
     "single": "/SinglePage",
     "continuous": "/OneColumn",
@@ -296,7 +297,7 @@ class FPDF(GraphicsStateMixin):
                 Default to "mm".
             format (str): possible values are "a3", "a4", "a5", "letter", "legal" or a tuple
                 (width, height) expressed in the given unit. Default to "a4".
-            font_cache_dir (Path or str): [**DEPRECATED**] unused
+            font_cache_dir (Path or str): [**DEPRECATED since v2.5.1**] unused
         """
         if font_cache_dir != "DEPRECATED":
             warnings.warn(
@@ -363,6 +364,7 @@ class FPDF(GraphicsStateMixin):
             "zapfdingbats": "ZapfDingbats",
         }
         self.core_fonts_encoding = "latin-1"
+        "Font encoding, Latin-1 by default"
         # Replace these fonts with these core fonts
         self.font_aliases = {
             "arial": "helvetica",
@@ -659,11 +661,11 @@ class FPDF(GraphicsStateMixin):
             value (str) option value
 
         .. deprecated:: 2.4.0
-            Simply set the `core_fonts_encoding` property as a replacement.
+            Simply set the `FPDF.core_fonts_encoding` property as a replacement.
         """
         warnings.warn(
             "set_doc_option() is deprecated. "
-            "Simply set the `core_fonts_encoding` property as a replacement.",
+            "Simply set the `.core_fonts_encoding` property as a replacement.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -1132,16 +1134,35 @@ class FPDF(GraphicsStateMixin):
         )
 
     @check_page
-    def polyline(self, point_list, fill=False, polygon=False):
+    def polyline(self, point_list, fill=False, polygon=False, style=None):
         """
         Draws lines between two or more points.
 
         Args:
             point_list (list of tuples): List of Abscissa and Ordinate of
                                         segments that should be drawn
-            fill (bool): If true then polyline should be filled
-            polygon (bool): If true, close path before stroking
+            fill (bool): [**DEPRECATED since v2.5.4**] Use `style="F"` or `style="DF"` instead
+            polygon (bool): If true, close path before stroking, to fill the inside of the polyline
+            style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
+
+            * `D` or None: draw border. This is the default value.
+            * `F`: fill
+            * `DF` or `FD`: draw and fill
         """
+        if fill:
+            warnings.warn(
+                '"fill" parameter is deprecated, use style="F" or style="DF" instead',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        if fill and style is None:
+            style = RenderStyle.DF
+        else:
+            style = RenderStyle.coerce(style)
+            if fill and style == RenderStyle.D:
+                raise ValueError(
+                    f"Conflicting values provided: fill={fill} & style={style}"
+                )
         operator = "m"
         for point in point_list:
             self._out(
@@ -1149,30 +1170,29 @@ class FPDF(GraphicsStateMixin):
             )
             operator = "l"
         if polygon:
-            self._out(" h ")
-        if fill:
-            self._out(" B ")
-        else:
-            self._out(" S ")
+            self._out(" h")
+        self._out(f" {style.operator}")
 
     @check_page
-    def polygon(self, point_list, fill=False):
+    def polygon(self, point_list, fill=False, style=None):
         """
         Outputs a polygon defined by three or more points.
 
         Args:
-            point_list (list of tuples): List of Abscissa and Ordinate of
-                                        polygon that should be drawn
-            fill (bool): If true polygon will be filled
+            point_list (list of tuples): List of coordinates defining the polygon to draw
+            fill (bool): [**DEPRECATED since v2.5.4**] Use `style="F"` or `style="DF"` instead
+            style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
+
+            * `D` or None: draw border. This is the default value.
+            * `F`: fill
+            * `DF` or `FD`: draw and fill
         """
-        self.polyline(point_list, fill=fill, polygon=True)
+        self.polyline(point_list, fill=fill, polygon=True, style=style)
 
     @check_page
     def dashed_line(self, x1, y1, x2, y2, dash_length=1, space_length=1):
         """
         Draw a dashed line between two points.
-        **DEPRECATED** 2.4.6
-        - use set_dash_pattern() and the normal drawing operations instead
 
         Args:
             x1 (float): Abscissa of first point
@@ -1181,6 +1201,9 @@ class FPDF(GraphicsStateMixin):
             y2 (float): Ordinate of second point
             dash_length (float): Length of the dash
             space_length (float): Length of the space between 2 dashes
+
+        .. deprecated:: 2.4.6
+            Use `FPDF.set_dash_pattern()` and the normal drawing operations instead.
         """
         warnings.warn(
             "dashed_line() is deprecated, and will be removed in a future release. "
@@ -1203,10 +1226,11 @@ class FPDF(GraphicsStateMixin):
             y (float): Ordinate of upper-left bounding box.
             w (float): Width.
             h (float): Height.
-            style (Enum RenderStyle | str): Style of rendering. Possible values are:
-                * `D` or empty string: draw border. This is the default value.
-                * `F`: fill
-                * `DF` or `FD`: draw and fill
+            style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
+
+            * `D` or empty string: draw border. This is the default value.
+            * `F`: fill
+            * `DF` or `FD`: draw and fill
         """
         style = RenderStyle.coerce(style)
         self._out(
@@ -1225,10 +1249,11 @@ class FPDF(GraphicsStateMixin):
             y (float): Ordinate of upper-left bounding box.
             w (float): Width
             h (float): Height
-            style (Enum RenderStyle | str): Style of rendering. Possible values are:
-                * `D` or empty string: draw border. This is the default value.
-                * `F`: fill
-                * `DF` or `FD`: draw and fill
+            style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
+
+            * `D` or empty string: draw border. This is the default value.
+            * `F`: fill
+            * `DF` or `FD`: draw and fill
         """
         style = RenderStyle.coerce(style)
         self._draw_ellipse(x, y, w, h, style.operator)
@@ -1283,9 +1308,10 @@ class FPDF(GraphicsStateMixin):
             y (float): Ordinate of upper-left bounding box.
             r (float): Radius of the circle.
             style (str): Style of rendering. Possible values are:
-                * `D` or None: draw border. This is the default value.
-                * `F`: fill
-                * `DF` or `FD`: draw and fill
+
+            * `D` or None: draw border. This is the default value.
+            * `F`: fill
+            * `DF` or `FD`: draw and fill
         """
         self.ellipse(x, y, r, r, style)
 
@@ -1300,13 +1326,13 @@ class FPDF(GraphicsStateMixin):
             x (float): Abscissa of upper-left bounding box.
             y (float): Ordinate of upper-left bounding box.
             numSides (int): Number of sides for polygon.
-            polyWidth (float): width of the polygon.
-            rotateDegrees (float): degree amount to rotate polygon. (can be left blank)
-            style (str): Style of rendering. Possible values are: (can be left blank)
-                * `D` or None: draw border. This is the default value.
-                * `F`: fill
-                * `DF` or `FD`: draw and fill
+            polyWidth (float): Width of the polygon.
+            rotateDegrees (float): Optional degree amount to rotate polygon.
+            style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
 
+            * `D` or None: draw border. This is the default value.
+            * `F`: fill
+            * `DF` or `FD`: draw and fill
         """
         radius = polyWidth / 2
         centerX = x + radius
@@ -1324,7 +1350,7 @@ class FPDF(GraphicsStateMixin):
             i += 1
         # creates list of touples containing cordinate points of vertices
 
-        self.polygon(points, style)
+        self.polygon(points, style=style)
         # passes points through polygon function
 
     def arc(
@@ -1344,6 +1370,8 @@ class FPDF(GraphicsStateMixin):
         """
         Outputs an arc.
         It can be drawn (border only), filled (with no border) or both.
+
+        Args:
             a (float): Semi-major axis diameter.
             b (float): Semi-minor axis diameter, if None, equals to a (default: None).
             start_angle (float): Start angle of the arc (in degrees).
@@ -1352,10 +1380,11 @@ class FPDF(GraphicsStateMixin):
             clockwise (bool): Way of drawing the arc (True: clockwise, False: counterclockwise) (default: False).
             start_from_center (bool): Start drawing from the center of the circle (default: False).
             end_at_center (bool): End drawing at the center of the circle (default: False).
-            style (Enum RenderStyle | str): Style of rendering. Possible values are:
-                * `D` or None: draw border. This is the default value.
-                * `F`: fill
-                * `DF` or `FD`: draw and fill
+            style (fpdf.enums.RenderStyle, str): Optional style of rendering. Allowed values are:
+
+            * `D` or None: draw border. This is the default value.
+            * `F`: fill
+            * `DF` or `FD`: draw and fill
         """
         style = RenderStyle.coerce(style)
 
@@ -1494,9 +1523,10 @@ class FPDF(GraphicsStateMixin):
             inclination (float): Inclination of the arc in respect of the x-axis (default: 0).
             clockwise (bool): Way of drawing the arc (True: clockwise, False: counterclockwise) (default: False).
             style (str): Style of rendering. Possible values are:
-                * `D` or None: draw border. This is the default value.
-                * `F`: fill
-                * `DF` or `FD`: draw and fill
+
+            * `D` or None: draw border. This is the default value.
+            * `F`: fill
+            * `DF` or `FD`: draw and fill
         """
         self.arc(
             x,
@@ -1524,7 +1554,7 @@ class FPDF(GraphicsStateMixin):
             style (str): font style. "B" for bold, "I" for italic.
             fname (str): font file name. You can specify a relative or full path.
                 If the file is not found, it will be searched in `FPDF_FONT_DIR`.
-            uni (bool): [**DEPRECATED**] unused
+            uni (bool): [**DEPRECATED since 2.5.1**] unused
         """
         if not fname:
             raise ValueError('"fname" parameter is required')
@@ -1990,7 +2020,7 @@ class FPDF(GraphicsStateMixin):
     def rotate(self, angle, x=None, y=None):
         """
         .. deprecated:: 2.1.0
-          Use `rotation` instead.
+            Use `FPDF.rotation()` instead.
         """
         warnings.warn(
             "rotate() can produces malformed PDFs and is deprecated. "
@@ -2212,17 +2242,17 @@ class FPDF(GraphicsStateMixin):
                 or a string containing some or all of the following characters
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
-            new_x (Enum XPos | str): New current position in x after the call. Default: RIGHT
-            new_y (Enum YPos | str): New current position in y after the call. Default: TOP
-            ln (int): **DEPRECATED** 2.5.1: Use new_x and new_y instead.
-            align (Enum Align | str): Allows to center or align the text inside the cell.
+            new_x (fpdf.enums.XPos, str): New current position in x after the call. Default: RIGHT
+            new_y (fpdf.enums.YPos, str): New current position in y after the call. Default: TOP
+            ln (int): **DEPRECATED since 2.5.1**: Use `new_x` and `new_y` instead.
+            align (fpdf.enums.Align, str): Allows to center or align the text inside the cell.
                 Possible values are: `L` or empty string: left align (default value) ;
                 `C`: center ; `R`: right align
             fill (bool): Indicates if the cell background must be painted (`True`)
                 or transparent (`False`). Default value: False.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
-            center (bool): **DEPRECATED** 2.5.1: Use align="C" instead.
+            center (bool): **DEPRECATED since 2.5.1**: Use `align="C"` instead.
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
 
@@ -2336,14 +2366,14 @@ class FPDF(GraphicsStateMixin):
                 or a string containing some or all of the following characters
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
-            new_x (Enum XPos): New current position in x after the call.
-            new_y (Enum YPos): New current position in y after the call.
-            align (Enum Align): Allows to align the text inside the cell.
+            new_x (fpdf.enums.XPos): New current position in x after the call.
+            new_y (fpdf.enums.YPos): New current position in y after the call.
+            align (fpdf.enums.Align): Allows to align the text inside the cell.
             fill (bool): Indicates if the cell background must be painted (`True`)
                 or transparent (`False`). Default value: False.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
-            center (bool): **DEPRECATED** 2.5.1: Use align="C" instead.
+            center (bool): **DEPRECATED since 2.5.1**: Use `align="C"` instead.
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
 
@@ -2751,7 +2781,7 @@ class FPDF(GraphicsStateMixin):
                 or a string containing some or all of the following characters
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
-            align (Enum Align | str): Allows to center or align the text. Possible values are:
+            align (fpdf.enums.Align, str): Allows to center or align the text. Possible values are:
                 `J`: justify (default value); `L` or empty string: left align ;
                 `C`: center ; `R`: right align
             fill (bool): Indicates if the cell background must be painted (`True`)
@@ -2760,9 +2790,9 @@ class FPDF(GraphicsStateMixin):
                 word-wrapping and return the resulting multi-lines array of strings.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
-            new_x (Enum XPos | str): New current position in x after the call. Default: RIGHT
-            new_y (Enum YPos | str): New current position in y after the call. Default: NEXT
-            ln (int): **DEPRECATED** 2.5.1: Use new_x and new_y instead.
+            new_x (fpdf.enums.XPos, str): New current position in x after the call. Default: RIGHT
+            new_y (fpdf.enums.XPos, str): New current position in y after the call. Default: NEXT
+            ln (int): **DEPRECATED since 2.5.1**: Use `new_x` and `new_y` instead.
             max_line_height (float): optional maximum height of each sub-cell generated
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
@@ -3037,7 +3067,7 @@ class FPDF(GraphicsStateMixin):
             h (float): optional height of the image. If not specified or equal to zero,
                 it is automatically calculated from the image size.
                 Pass `pdf.eph` to scale horizontally to the full page height.
-            type (str): [**DEPRECATED**] unused, will be removed in a later version.
+            type (str): [**DEPRECATED since 2.2.0**] unused, will be removed in a later version.
             link (str): optional link to add on the image, internal
                 (identifier returned by `add_link`) or external URL.
             title (str): optional. Currently, never seem rendered by PDF readers.
@@ -3341,7 +3371,7 @@ class FPDF(GraphicsStateMixin):
 
         Args:
             name (str): optional File object or file path where to save the PDF under
-            dest (str): [**DEPRECATED**] unused, will be removed in a later version
+            dest (str): [**DEPRECATED since 2.3.0**] unused, will be removed in a later version
         """
         if dest:
             warnings.warn(

@@ -17,6 +17,10 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.5.4] - not released yet
+### Deprecated
+- the `fill` parameter of the [`polygon()`](http://localhost:8080/fpdf/fpdf.html#fpdf.fpdf.FPDF.polygon)
+  & [`polyline()`](http://localhost:8080/fpdf/fpdf.html#fpdf.fpdf.FPDF.polyline) methods have been replaced by a `style` argument,
+  offering more control
 
 ## [2.5.3] - 2022-02-05
 ### Added

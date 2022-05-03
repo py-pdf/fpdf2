@@ -8,7 +8,6 @@ HERE = Path(__file__).resolve().parent
 
 
 def test_regular_polygon(tmp_path):
-
     pdf = fpdf.FPDF()
     pdf.add_page()
 
@@ -22,12 +21,12 @@ def test_regular_polygon(tmp_path):
 
     # fill and color test
     pdf.set_fill_color(134, 200, 15)
-    pdf.regular_polygon(10, 75, 3, 25, style="f")
-    pdf.regular_polygon(40, 75, 4, 25, style="f")
-    pdf.regular_polygon(70, 75, 5, 25, style="f")
-    pdf.regular_polygon(100, 75, 6, 25, style="f")
-    pdf.regular_polygon(130, 75, 7, 25, style="f")
-    pdf.regular_polygon(160, 75, 8, 25, style="f")
+    pdf.regular_polygon(10, 75, 3, 25, style="df")
+    pdf.regular_polygon(40, 75, 4, 25, style="df")
+    pdf.regular_polygon(70, 75, 5, 25, style="df")
+    pdf.regular_polygon(100, 75, 6, 25, style="df")
+    pdf.regular_polygon(130, 75, 7, 25, style="df")
+    pdf.regular_polygon(160, 75, 8, 25, style="df")
 
     # draw color test
     pdf.set_fill_color(0, 0, 0)
@@ -50,12 +49,12 @@ def test_regular_polygon(tmp_path):
 
     # line color and fill color
     pdf.set_fill_color(3, 190, 252)
-    pdf.regular_polygon(10, 195, 3, 25, style="f")
-    pdf.regular_polygon(40, 195, 4, 25, style="f")
-    pdf.regular_polygon(70, 195, 5, 25, style="f")
-    pdf.regular_polygon(100, 195, 6, 25, style="f")
-    pdf.regular_polygon(130, 195, 7, 25, style="f")
-    pdf.regular_polygon(160, 195, 8, 25, style="f")
+    pdf.regular_polygon(10, 195, 3, 25, style="df")
+    pdf.regular_polygon(40, 195, 4, 25, style="df")
+    pdf.regular_polygon(70, 195, 5, 25, style="df")
+    pdf.regular_polygon(100, 195, 6, 25, style="df")
+    pdf.regular_polygon(130, 195, 7, 25, style="df")
+    pdf.regular_polygon(160, 195, 8, 25, style="df")
 
     # rotation test
     pdf.set_draw_color(0, 0, 255)
@@ -66,5 +65,12 @@ def test_regular_polygon(tmp_path):
     pdf.regular_polygon(130, 235, 7, 25, 13)
     pdf.regular_polygon(160, 235, 8, 25, 22.5)
 
-    # pdf.output("test_regular_polygon.pdf")
-    assert_pdf_equal(pdf, HERE / "class_regular_polygon.pdf", tmp_path)
+    # fill only
+    pdf.regular_polygon(10, 275, 3, 25, style="f")
+    pdf.regular_polygon(40, 275, 4, 25, style="f")
+    pdf.regular_polygon(70, 275, 5, 25, style="f")
+    pdf.regular_polygon(100, 275, 6, 25, style="f")
+    pdf.regular_polygon(130, 275, 7, 25, style="f")
+    pdf.regular_polygon(160, 275, 8, 25, style="f")
+
+    assert_pdf_equal(pdf, HERE / "regular_polygon.pdf", tmp_path)
