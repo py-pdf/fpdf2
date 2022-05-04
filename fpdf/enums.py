@@ -98,6 +98,8 @@ class CoerciveIntEnum(IntEnum):
 
 
 class Align(CoerciveEnum):
+    "Defines how to render text in a cell"
+
     C = intern("CENTER")
     "Center text"
 
@@ -118,11 +120,20 @@ class Align(CoerciveEnum):
 
 
 class RenderStyle(CoerciveEnum):
+    "Defines how to render shapes"
+
     D = intern("DRAW")
-    "Draw lines"
+    """
+    Draw lines.
+    Line color can be controlled with `fpdf.fpdf.FPDF.set_draw_color()`.
+    Line thickness can be controlled with `fpdf.fpdf.FPDF.set_line_width()`.
+    """
 
     F = intern("FILL")
-    "Fill areas"
+    """
+    Fill areas.
+    Filling color can be controlled with `fpdf.fpdf.FPDF.set_fill_color()`.
+    """
 
     DF = intern("DRAW_FILL")
     "Draw lines and fill areas"
@@ -205,6 +216,50 @@ class YPos(CoerciveEnum):
 
     BMARGIN = intern("BMARGIN")  # self.h - self.b_margin
     "bottom page margin (end of printable area)"
+
+
+class PageLayout(CoerciveEnum):
+    "Specify the page layout shall be used when the document is opened"
+
+    SINGLE_PAGE = Name("SinglePage")
+    "Display one page at a time"
+
+    ONE_COLUMN = Name("OneColumn")
+    "Display the pages in one column"
+
+    TWO_COLUMN_LEFT = Name("TwoColumnLeft")
+    "Display the pages in two columns, with odd-numbered pages on the left"
+
+    TWO_COLUMN_RIGHT = Name("TwoColumnRight")
+    "Display the pages in two columns, with odd-numbered pages on the right"
+
+    TWO_PAGE_LEFT = Name("TwoPageLeft")
+    "Display the pages two at a time, with odd-numbered pages on the left"
+
+    TWO_PAGE_RIGHT = Name("TwoPageRight")
+    "Display the pages two at a time, with odd-numbered pages on the right"
+
+
+class PageMode(CoerciveEnum):
+    "Specifying how to display the document on exiting full-screen mode"
+
+    USE_NONE = Name("UseNone")
+    "Neither document outline nor thumbnail images visible"
+
+    USE_OUTLINES = Name("UseOutlines")
+    "Document outline visible"
+
+    USE_THUMBS = Name("UseThumbs")
+    "Thumbnail images visible"
+
+    FULL_SCREEN = Name("FullScreen")
+    "Full-screen mode, with no menu bar, window controls, or any other window visible"
+
+    USE_OC = Name("UseOC")
+    "Optional content group panel visible"
+
+    USE_ATTACHMENTS = Name("UseAttachments")
+    "Attachments panel visible"
 
 
 class BlendMode(CoerciveEnum):

@@ -5,6 +5,8 @@
 Here is an example on how to generate a [Code 39](https://fr.wikipedia.org/wiki/Code_39) barcode:
 
 ```python
+from fpdf import FPDF
+
 pdf = FPDF()
 pdf.add_page()
 pdf.code39("*fpdf2*", x=30, y=50, w=4, h=20)
@@ -21,6 +23,8 @@ Output preview:
 Here is an example on how to generate an [Interleaved 2 of 5](https://en.wikipedia.org/wiki/Interleaved_2_of_5) barcode:
 
 ```python
+from fpdf import FPDF
+
 pdf = FPDF()
 pdf.add_page()
 pdf.interleaved2of5("1337", x=50, y=50, w=4, h=20)
@@ -38,6 +42,7 @@ Here is an example on how to generate a [PDF-417](https://fr.wikipedia.org/wiki/
 using the [`pdf417`](https://github.com/mosquito/pdf417) lib:
 
 ```python
+from fpdf import FPDF
 from pdf417 import encode, render_image
 
 pdf = FPDF()
@@ -57,6 +62,7 @@ Here is an example on how to generate a [QR Code](https://en.wikipedia.org/wiki/
 using the [`python-qrcode`](https://github.com/lincolnloop/python-qrcode) lib:
 
 ```python
+from fpdf import FPDF
 import qrcode
 
 pdf = FPDF()

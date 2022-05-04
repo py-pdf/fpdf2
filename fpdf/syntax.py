@@ -176,7 +176,7 @@ class PDFObject:
             appender = fpdf._out
             assert (
                 fpdf._newobj() == self.id
-            ), "Something went wrong in StructTree object IDs assignement"
+            ), "Something went wrong in StructTree object IDs assignment"
         else:
             appender = output.append
             appender(f"{self.id} 0 obj")
@@ -213,10 +213,16 @@ def build_obj_dict(key_values):
             or value is None
         ):
             continue
+        if hasattr(value, "value"):  # e.g. Enum subclass
+            value = value.value
         if isinstance(value, PDFObject):  # indirect object reference
             value = value.ref
+        elif hasattr(value, "pdf_repr"):  # e.g. Name
+            value = value.pdf_repr()
         elif hasattr(value, "serialize"):  # e.g. PDFArray & PDFString
             value = value.serialize()
+        elif isinstance(value, bool):
+            value = str(value).lower()
         obj_dict[f"/{camel_case(key)}"] = value
     return obj_dict
 

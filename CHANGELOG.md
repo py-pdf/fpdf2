@@ -17,9 +17,15 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.5.4] - not released yet
+### Added
+- new `FPDF.page_mode` property, allowing to display a PDF in **full screen**: [link to docs](https://pyfpdf.github.io/fpdf2/Metadata.html#full-screen)
+- new `FPDF.viewer_preferences` property: [link to docs](https://pyfpdf.github.io/fpdf2/Metadata.html#viewer-preferences)
+### Modified
+- when [`regular_polygon()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.regular_polygon) is called with `style="f"`,
+  the shape outline is not drawn anymore. Use `style="DF"` to also draw a line around its perimeter.
 ### Deprecated
-- the `fill` parameter of the [`polygon()`](http://localhost:8080/fpdf/fpdf.html#fpdf.fpdf.FPDF.polygon)
-  & [`polyline()`](http://localhost:8080/fpdf/fpdf.html#fpdf.fpdf.FPDF.polyline) methods have been replaced by a `style` argument,
+- the `fill` parameter of the [`polygon()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.polygon)
+  & [`polyline()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.polyline) methods have been replaced by a `style` argument,
   offering more control
 
 ## [2.5.3] - 2022-02-05
@@ -35,7 +41,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - infinite loop when calling `.multi_cell()` without enough horizontal space - _cf._ [#389](https://github.com/PyFPDF/fpdf2/issues/389)
 ### Removed
 - support for `.pkl` files passed to `add_font()`. This was deprecated since v2.5.1.
-  As a consequence, `fpdf2` no more uses the `pickle` module.
+  As a consequence, `fpdf2` no more uses the `pickle` module \o/
 
 ## [2.5.2] - 2022-04-13
 ### Added

@@ -40,6 +40,8 @@ from .deprecation import WarnOnDeprecatedModuleAttributes
 from .enums import (
     Align,
     DocumentState,
+    PageLayout,
+    PageMode,
     PathPaintRule,
     RenderStyle,
     TextMode,
@@ -84,10 +86,11 @@ PAGE_FORMATS = {
 LOGGER = logging.getLogger(__name__)
 HERE = Path(__file__).resolve().parent
 FPDF_FONT_DIR = HERE / "font"
-LAYOUT_NAMES = {
-    "single": "/SinglePage",
-    "continuous": "/OneColumn",
-    "two": "/TwoColumnLeft",
+LAYOUT_ALIASES = {
+    "default": None,
+    "single": PageLayout.SINGLE_PAGE,
+    "continuous": PageLayout.ONE_COLUMN,
+    "two": PageLayout.TWO_COLUMN_LEFT,
 }
 ZOOM_CONFIGS = {  # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
     "fullpage": ("/Fit",),
@@ -403,10 +406,12 @@ class FPDF(GraphicsStateMixin):
         # sets self.auto_page_break, self.b_margin & self.page_break_trigger:
         self.set_auto_page_break(True, 2 * margin)
         self.set_display_mode("fullwidth")  # Full width display mode
+        self._page_mode = None
+        self.viewer_preferences = None
         self.compress = True  # Enable compression by default
         self.pdf_version = "1.3"  # Set default PDF version No.
-        self._current_draw_context = None
 
+        self._current_draw_context = None
         self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
         self._graphics_state_obj_refs = OrderedDict()
 
@@ -421,6 +426,14 @@ class FPDF(GraphicsStateMixin):
     @property
     def unifontsubset(self):
         return self.current_font.get("type") == "TTF"
+
+    @property
+    def page_mode(self):
+        return self._page_mode
+
+    @page_mode.setter
+    def page_mode(self, page_mode):
+        self._page_mode = PageMode.coerce(page_mode)
 
     @property
     def epw(self):
@@ -535,7 +548,7 @@ class FPDF(GraphicsStateMixin):
         """
         Defines the way the document is to be displayed by the viewer.
 
-        It allows to set tje zoom level: pages can be displayed entirely on screen,
+        It allows to set the zoom level: pages can be displayed entirely on screen,
         occupy the full width of the window, use the real size,
         be scaled by a specific zooming factor or use the viewer default (configured in its Preferences menu).
 
@@ -545,20 +558,19 @@ class FPDF(GraphicsStateMixin):
             zoom: either "fullpage", "fullwidth", "real", "default",
                 or a number indicating the zooming factor to use, interpreted as a percentage.
                 The zoom level set by default is "default".
-            layout (str): either "single", "continuous", "two" or "default",
+            layout (fpdf.enums.PageLayout, str): allowed layout aliases are "single", "continuous", "two" or "default",
                 meaning to use the viewer default mode.
-                The layout set by default is "default",
-                and this method default value is "continuous".
+                The layout set by default is "continuous".
         """
         if zoom in ZOOM_CONFIGS or not isinstance(zoom, str):
             self.zoom_mode = zoom
         elif zoom != "default":
             raise FPDFException(f"Incorrect zoom display mode: {zoom}")
 
-        if layout in LAYOUT_NAMES:
-            self.layout_mode = layout
-        elif layout != "default":
-            raise FPDFException(f"Incorrect layout display mode: {layout}")
+        if layout in LAYOUT_ALIASES:
+            self.page_layout = LAYOUT_ALIASES[layout]
+        else:
+            self.page_layout = PageLayout.coerce(layout)
 
     def set_compression(self, compress):
         """
@@ -4053,8 +4065,12 @@ class FPDF(GraphicsStateMixin):
             zoom_config = ["/XYZ", "null", "null", str(self.zoom_mode / 100)]
         catalog_d["/OpenAction"] = pdf_l(zoom_config)
 
-        if self.layout_mode in LAYOUT_NAMES:
-            catalog_d["/PageLayout"] = LAYOUT_NAMES[self.layout_mode]
+        if self.page_layout:
+            catalog_d["/PageLayout"] = self.page_layout.value.pdf_repr()
+        if self.page_mode:
+            catalog_d["/PageMode"] = self.page_mode.value.pdf_repr()
+        if self.viewer_preferences:
+            catalog_d["/ViewerPreferences"] = self.viewer_preferences.serialize()
         if self._xmp_metadata_obj_id:
             catalog_d["/Metadata"] = pdf_ref(self._xmp_metadata_obj_id)
         if self._struct_tree_root_obj_id:
@@ -4066,6 +4082,12 @@ class FPDF(GraphicsStateMixin):
         self._out(pdf_d(catalog_d, open_dict="", close_dict=""))
 
     def _putheader(self):
+        if self.page_layout in (PageLayout.TWO_PAGE_LEFT, PageLayout.TWO_PAGE_RIGHT):
+            self._set_min_pdf_version("1.5")
+        if self.page_mode == PageMode.USE_OC:
+            self._set_min_pdf_version("1.5")
+        if self.page_mode == PageMode.USE_ATTACHMENTS:
+            self._set_min_pdf_version("1.6")
         self._out(f"%PDF-{self.pdf_version}")
 
     def _puttrailer(self):
