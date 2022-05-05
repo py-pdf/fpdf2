@@ -17,6 +17,8 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.5.5] - not released yet
+### Added
+- A new option `align="X"` allows to center text around the current x position, thanks to @gmischler
 
 ## [2.5.4] - 2022-05-05
 ### Added

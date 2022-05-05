@@ -103,6 +103,9 @@ class Align(CoerciveEnum):
     C = intern("CENTER")
     "Center text"
 
+    X = intern("X_CENTER")
+    "Center text around current x"
+
     L = intern("LEFT")
     "Left-align text"
 
