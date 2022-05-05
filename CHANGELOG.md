@@ -17,6 +17,10 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.5.5] - not released yet
+### Added
+- allowing to provide an [`AnnotationName`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.AnnotationName)
+  and [`AnnotationFlags`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.AnnotationFlag)
+  onto [text_annotation()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_annotation)
 
 ## [2.5.4] - 2022-05-05
 ### Added
@@ -33,10 +37,10 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
   & [`polyline()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.polyline) methods have been replaced by a `style` argument,
   offering more control
 
-## [2.5.3] - 2022-05-02
+## [2.5.3] - 2022-05-03
 ### Added
 - new `round_clip()` & `elliptic_clip()` image clipping methods: [link to docs](https://pyfpdf.github.io/fpdf2/Images.html#image-clipping)
-- `CoerciveEnum` subclasses have been added: [`Align`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.Align) &  [`RenderStyle`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.RenderStyle)
+- `CoerciveEnum` subclasses have been added: [`Align`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.Align) & [`RenderStyle`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.RenderStyle)
 - documentation on how to embed Matplotlib charts: [link to docs](https://pyfpdf.github.io/fpdf2/Maths.html)
 - documentation on how to use `fpdf2` with [Flask](https://flask.palletsprojects.com), [streamlit](https://streamlit.io/), AWS lambdas: [link to docs](https://pyfpdf.github.io/fpdf2/UsageInWebAPI.html)
 - documentation on how to store PDFs in a database with [SQLAlchemy](https://www.sqlalchemy.org/): [link to docs](https://pyfpdf.github.io/fpdf2/DatabaseStorage.html)

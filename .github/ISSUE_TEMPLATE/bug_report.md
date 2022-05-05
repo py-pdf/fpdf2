@@ -23,7 +23,10 @@ Please include some minimal Python code reproducing your issue:
 ```python
 from fpdf import FPDF
 
+pdf = FPDF()
+...
 ```
+If you don't know how to build a minimal reproducible example, please check this tutorial: https://stackoverflow.com/help/minimal-reproducible-example
 
 **Environment**
 * OS (Windows, Mac OSX, Linux flavour...)

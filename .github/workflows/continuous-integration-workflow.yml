@@ -85,7 +85,6 @@ jobs:
         # Similarly, we only publish a new version on Pypi once per pipeline running on master:
         if: github.ref == 'refs/heads/master' && matrix.python-version == '3.10'
         run: |
-          sudo apt update && sudo apt install -y curl jq
           echo Versions already released on Pypi: $(curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]')
           echo Current code version: $(python setup.py -V)
           # Checking if current code version has already been released:
