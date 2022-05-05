@@ -18,8 +18,10 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.5.4] - not released yet
 ### Added
-- new `FPDF.page_mode` property, allowing to display a PDF in **full screen**: [link to docs](https://pyfpdf.github.io/fpdf2/Metadata.html#full-screen)
-- new `FPDF.viewer_preferences` property: [link to docs](https://pyfpdf.github.io/fpdf2/Metadata.html#viewer-preferences)
+- new `FPDF.page_mode` property, allowing to display a PDF in **full screen**: [link to docs](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html#full-screen)
+- new `FPDF.viewer_preferences` property: [link to docs](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html#viewer-preferences)
+### Fixed
+- removed a debug `print()` statement (`multi_cell: new_x=... new_y=...`) that had been left in [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) method
 ### Modified
 - when [`regular_polygon()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.regular_polygon) is called with `style="f"`,
   the shape outline is not drawn anymore. Use `style="DF"` to also draw a line around its perimeter.

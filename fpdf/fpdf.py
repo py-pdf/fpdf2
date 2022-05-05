@@ -2824,7 +2824,6 @@ class FPDF(GraphicsStateMixin):
             )
         new_x = XPos.coerce(new_x)
         new_y = YPos.coerce(new_y)
-        print(f"multi_cell: new_x={new_x} new_y={new_y}")
         if ln != "DEPRECATED":
             # For backwards compatibility, if "ln" is used we overwrite "new_[xy]".
             if ln == 0:
@@ -3497,16 +3496,14 @@ class FPDF(GraphicsStateMixin):
         # Replace number of pages in fonts using subsets (unicode)
         alias = self.str_alias_nb_pages.encode("utf-16-be")
         encoded_nb = str(nb).encode("utf-16-be")
-        for n in range(1, nb + 1):
-            page = self.pages[n]
+        for page in self.pages.values():
             new_content = page["content"].replace(alias, encoded_nb)
             substituted |= page["content"] != new_content
             page["content"] = new_content
         # Now repeat for no pages in non-subset fonts
         alias = self.str_alias_nb_pages.encode("latin-1")
         encoded_nb = str(nb).encode("latin-1")
-        for n in range(1, nb + 1):
-            page = self.pages[n]
+        for page in self.pages.values():
             new_content = page["content"].replace(alias, encoded_nb)
             substituted |= page["content"] != new_content
             page["content"] = new_content

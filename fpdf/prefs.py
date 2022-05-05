@@ -35,7 +35,6 @@ class ViewerPreferences:
         If false, the title bar should instead display the name of the PDF file containing the document.
         """
         self.non_full_screen_page_mode = PageMode.coerce(non_full_screen_page_mode)
-        "The document’s page mode, specifying how to display the document on exiting full-screen mode"
         if self.non_full_screen_page_mode in (
             PageMode.FULL_SCREEN,
             PageMode.USE_ATTACHMENTS,
@@ -43,6 +42,15 @@ class ViewerPreferences:
             raise ValueError(
                 f"{self.non_full_screen_page_mode} is not a support value for NonFullScreenPageMode"
             )
+
+    @property
+    def non_full_screen_page_mode(self):
+        "(`fpdf.enums.PageMode`) The document’s page mode, specifying how to display the document on exiting full-screen mode"
+        return self._non_full_screen_page_mode
+
+    @non_full_screen_page_mode.setter
+    def non_full_screen_page_mode(self, page_mode):
+        self._non_full_screen_page_mode = PageMode.coerce(page_mode)
 
     def serialize(self):
         obj_dict = build_obj_dict({key: getattr(self, key) for key in dir(self)})
