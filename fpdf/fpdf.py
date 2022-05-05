@@ -2224,14 +2224,14 @@ class FPDF(GraphicsStateMixin):
         h=None,
         txt="",
         border=0,
-        new_x=XPos.RIGHT,
-        new_y=YPos.TOP,
         ln="DEPRECATED",
         align=Align.L,
         fill=False,
         link="",
         center="DEPRECATED",
         markdown=False,
+        new_x=XPos.RIGHT,
+        new_y=YPos.TOP,
     ):
         """
         Prints a cell (rectangular area) with optional borders, background color and
@@ -2769,12 +2769,12 @@ class FPDF(GraphicsStateMixin):
         fill=False,
         split_only=False,
         link="",
-        new_x=XPos.RIGHT,
-        new_y=YPos.NEXT,
         ln="DEPRECATED",
         max_line_height=None,
         markdown=False,
         print_sh=False,
+        new_x=XPos.RIGHT,
+        new_y=YPos.NEXT,
     ):
         """
         This method allows printing text with line breaks. They can be automatic

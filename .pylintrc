@@ -4,4 +4,4 @@ max-line-length=135
 
 [SIMILARITIES]
 # Restricting duplicate-code check:
-min-similarity-lines=10
+min-similarity-lines=30
