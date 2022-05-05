@@ -29,7 +29,7 @@ class Form:
         )
         # parse form format file and create fields dict
         self.fields = {}
-        with open(infile) as file:
+        with open(infile, encoding="utf8") as file:
             for linea in file.readlines():
                 kargs = {}
                 for i, v in enumerate(linea.split(";")):
@@ -94,7 +94,7 @@ class Form:
             # m_k = 72 / 2.54
             # h = (size/m_k)
             pdf.set_xy(x1, y1)
-            pdf.cell(w=x2 - x1, h=y2 - y1, txt=text, border=0, ln=0, align=align)
+            pdf.cell(w=x2 - x1, h=y2 - y1, txt=text, align=align)
             # pdf.Text(x=x1,y=y1,txt=text)
 
     @staticmethod

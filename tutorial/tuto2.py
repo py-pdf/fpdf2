@@ -10,7 +10,7 @@ class PDF(FPDF):
         # Moving cursor to the right:
         self.cell(80)
         # Printing title:
-        self.cell(30, 10, "Title", 1, 0, "C")
+        self.cell(30, 10, "Title", border=1, align="C")
         # Performing a line break:
         self.ln(20)
 
@@ -20,7 +20,7 @@ class PDF(FPDF):
         # Setting font: helvetica italic 8
         self.set_font("helvetica", "I", 8)
         # Printing page number:
-        self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", 0, 0, "C")
+        self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", align="C")
 
 
 # Instantiation of inherited class
@@ -28,5 +28,5 @@ pdf = PDF()
 pdf.add_page()
 pdf.set_font("Times", size=12)
 for i in range(1, 41):
-    pdf.cell(0, 10, f"Printing line number {i}", 0, 1)
-pdf.output("tuto2.pdf")
+    pdf.cell(0, 10, f"Printing line number {i}", new_x="LMARGIN", new_y="NEXT")
+pdf.output("new-tuto2.pdf")

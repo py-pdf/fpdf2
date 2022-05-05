@@ -14,16 +14,16 @@ class PDF(FPDF):
 
     def improved_table(self, headings, rows, col_widths=(42, 39, 35, 40)):
         for col_width, heading in zip(col_widths, headings):
-            self.cell(col_width, 7, heading, 1, 0, "C")
+            self.cell(col_width, 7, heading, border=1, align="C")
         self.ln()
         for row in rows:
-            self.cell(col_widths[0], 6, row[0], "LR")
-            self.cell(col_widths[1], 6, row[1], "LR")
-            self.cell(col_widths[2], 6, row[2], "LR", 0, "R")
-            self.cell(col_widths[3], 6, row[3], "LR", 0, "R")
+            self.cell(col_widths[0], 6, row[0], border="LR")
+            self.cell(col_widths[1], 6, row[1], border="LR")
+            self.cell(col_widths[2], 6, row[2], border="LR", align="R")
+            self.cell(col_widths[3], 6, row[3], border="LR", align="R")
             self.ln()
         # Closure line:
-        self.cell(sum(col_widths), 0, "", "T")
+        self.cell(sum(col_widths), 0, "", border="T")
 
     def colored_table(self, headings, rows, col_widths=(42, 39, 35, 42)):
         # Colors, line width and bold font:
@@ -33,7 +33,7 @@ class PDF(FPDF):
         self.set_line_width(0.3)
         self.set_font(style="B")
         for col_width, heading in zip(col_widths, headings):
-            self.cell(col_width, 7, heading, 1, 0, "C", True)
+            self.cell(col_width, 7, heading, border=1, align="C", fill=True)
         self.ln()
         # Color and font restoration:
         self.set_fill_color(224, 235, 255)
@@ -41,10 +41,10 @@ class PDF(FPDF):
         self.set_font()
         fill = False
         for row in rows:
-            self.cell(col_widths[0], 6, row[0], "LR", 0, "L", fill)
-            self.cell(col_widths[1], 6, row[1], "LR", 0, "L", fill)
-            self.cell(col_widths[2], 6, row[2], "LR", 0, "R", fill)
-            self.cell(col_widths[3], 6, row[3], "LR", 0, "R", fill)
+            self.cell(col_widths[0], 6, row[0], border="LR", align="L", fill=fill)
+            self.cell(col_widths[1], 6, row[1], border="LR", align="L", fill=fill)
+            self.cell(col_widths[2], 6, row[2], border="LR", align="R", fill=fill)
+            self.cell(col_widths[3], 6, row[3], border="LR", align="R", fill=fill)
             self.ln()
             fill = not fill
         self.cell(sum(col_widths), 0, "", "T")

@@ -15,7 +15,16 @@ class PDF(FPDF):
         # Setting thickness of the frame (1 mm)
         self.set_line_width(1)
         # Printing title:
-        self.cell(width, 9, self.title, 1, 1, "C", True)
+        self.cell(
+            width,
+            9,
+            self.title,
+            border=1,
+            new_x="LMARGIN",
+            new_y="NEXT",
+            align="C",
+            fill=True,
+        )
         # Performing a line break:
         self.ln(10)
 
@@ -27,7 +36,7 @@ class PDF(FPDF):
         # Setting text color to gray:
         self.set_text_color(128)
         # Printing page number
-        self.cell(0, 10, f"Page {self.page_no()}", 0, 0, "C")
+        self.cell(0, 10, f"Page {self.page_no()}", align="C")
 
     def chapter_title(self, num, label):
         # Setting font: helvetica 12
@@ -35,7 +44,15 @@ class PDF(FPDF):
         # Setting background color
         self.set_fill_color(200, 220, 255)
         # Printing chapter name:
-        self.cell(0, 6, f"Chapter {num} : {label}", 0, 1, "L", True)
+        self.cell(
+            0,
+            6,
+            f"Chapter {num} : {label}",
+            new_x="LMARGIN",
+            new_y="NEXT",
+            align="L",
+            fill=True,
+        )
         # Performing a line break:
         self.ln(4)
 

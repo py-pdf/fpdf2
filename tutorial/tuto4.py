@@ -15,7 +15,16 @@ class PDF(FPDF):
         self.set_fill_color(230, 230, 0)
         self.set_text_color(220, 50, 50)
         self.set_line_width(1)
-        self.cell(width, 9, self.title, 1, 1, "C", True)
+        self.cell(
+            width,
+            9,
+            self.title,
+            border=1,
+            new_x="LMARGIN",
+            new_y="NEXT",
+            align="C",
+            fill=True,
+        )
         self.ln(10)
         # Saving ordinate position:
         self.y0 = self.get_y()
@@ -24,7 +33,7 @@ class PDF(FPDF):
         self.set_y(-15)
         self.set_font("helvetica", "I", 8)
         self.set_text_color(128)
-        self.cell(0, 10, f"Page {self.page_no()}", 0, 0, "C")
+        self.cell(0, 10, f"Page {self.page_no()}", align="C")
 
     def set_col(self, col):
         # Set column position:
@@ -50,7 +59,15 @@ class PDF(FPDF):
     def chapter_title(self, num, label):
         self.set_font("helvetica", "", 12)
         self.set_fill_color(200, 220, 255)
-        self.cell(0, 6, f"Chapter {num} : {label}", 0, 1, "L", True)
+        self.cell(
+            0,
+            6,
+            f"Chapter {num} : {label}",
+            new_x="LMARGIN",
+            new_y="NEXT",
+            border="L",
+            fill=True,
+        )
         self.ln(4)
         # Saving ordinate position:
         self.y0 = self.get_y()
