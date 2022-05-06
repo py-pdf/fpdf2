@@ -18,7 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.5.5] - not released yet
 ### Added
-- A new option `align="X"` allows to center text around the current x position, thanks to @gmischler
+- A new option `align="X"` to `.cell()` and `.multi_cell()` allows to center text around the current x position, thanks to @gmischler
 
 ## [2.5.4] - 2022-05-05
 ### Added
