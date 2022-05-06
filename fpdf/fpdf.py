@@ -30,7 +30,7 @@ from datetime import datetime
 from functools import wraps
 from os.path import splitext
 from pathlib import Path
-from typing import Callable, List, NamedTuple, Optional, Union
+from typing import Callable, List, NamedTuple, Optional, Tuple, Union
 
 from PIL import Image
 
@@ -39,6 +39,8 @@ from .actions import Action
 from .deprecation import WarnOnDeprecatedModuleAttributes
 from .enums import (
     Align,
+    AnnotationName,
+    AnnotationFlag,
     DocumentState,
     PageLayout,
     PageMode,
@@ -98,6 +100,9 @@ ZOOM_CONFIGS = {  # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
     "real": ("/XYZ", "null", "null", "1"),
 }
 
+# cf. https://docs.verapdf.org/validation/pdfa-part1/#rule-653-2
+DEFAULT_ANNOT_FLAGS = (AnnotationFlag.PRINT,)
+
 
 class Annotation(NamedTuple):
     type: str
@@ -105,6 +110,7 @@ class Annotation(NamedTuple):
     y: int
     width: int
     height: int
+    flags: Tuple[AnnotationFlag] = DEFAULT_ANNOT_FLAGS
     contents: str = None
     link: Union[str, int] = None
     alt_text: Optional[str] = None
@@ -115,6 +121,7 @@ class Annotation(NamedTuple):
     quad_points: Optional[tuple] = None
     page: Optional[int] = None
     border_width: int = 0  # PDF readers support: displayed by Acrobat but not Sumatra
+    name: Optional[AnnotationName] = None  # for text annotations
 
     def serialize(self, fpdf):
         "Convert this object dictionnary to a string"
@@ -126,11 +133,10 @@ class Annotation(NamedTuple):
         out = (
             f"<</Type /Annot /Subtype /{self.type}"
             f" /Rect [{rect}] /Border [0 0 {self.border_width}]"
-            # Flag "Print" (bit position 3) specifies to print
-            # the annotation when the page is printed.
-            # cf. https://docs.verapdf.org/validation/pdfa-part1/#rule-653-2
-            f" /F 4"
         )
+
+        if self.flags:
+            out += f" /F {sum(self.flags)}"
 
         if self.contents:
             out += f" /Contents {enclose_in_parens(self.contents)}"
@@ -166,6 +172,9 @@ class Annotation(NamedTuple):
 
         if self.page:
             out += f" /P {pdf_ref(object_id_for_page(self.page))}"
+
+        if self.name:
+            out += f" /Name {self.name.value.pdf_repr()}"
 
         return out + ">>"
 
@@ -1165,7 +1174,7 @@ class FPDF(GraphicsStateMixin):
             warnings.warn(
                 '"fill" parameter is deprecated, use style="F" or style="DF" instead',
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=5 if polygon else 3,
             )
         if fill and style is None:
             style = RenderStyle.DF
@@ -1823,7 +1832,7 @@ class FPDF(GraphicsStateMixin):
             x (float): horizontal position (from the left) to the left side of the link rectangle
             y (float): vertical position (from the top) to the bottom side of the link rectangle
             w (float): width of the link rectangle
-            h (float): width of the link rectangle
+            h (float): height of the link rectangle
             link: either an URL or a integer returned by `add_link`, defining an internal link to a page
             alt_text (str): optional textual description of the link, for accessibility purposes
             border_width (int): thickness of an optional black border surrounding the link.
@@ -1843,16 +1852,20 @@ class FPDF(GraphicsStateMixin):
         return link
 
     @check_page
-    def text_annotation(self, x, y, text, w=1, h=1):
+    def text_annotation(
+        self, x, y, text, w=1, h=1, name=None, flags=DEFAULT_ANNOT_FLAGS
+    ):
         """
         Puts a text annotation on a rectangular area of the page.
 
         Args:
             x (float): horizontal position (from the left) to the left side of the link rectangle
             y (float): vertical position (from the top) to the bottom side of the link rectangle
-            w (float): width of the link rectangle
-            h (float): width of the link rectangle
             text (str): text to display
+            w (float): optional width of the link rectangle
+            h (float): optional height of the link rectangle
+            name (fpdf.enums.AnnotationName, str): optional icon that shall be used in displaying the annotation
+            flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
         """
         annotation = Annotation(
             "Text",
@@ -1861,6 +1874,8 @@ class FPDF(GraphicsStateMixin):
             w * self.k,
             h * self.k,
             contents=text,
+            name=AnnotationName.coerce(name) if name else None,
+            flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
         )
         self.annots[self.page].append(annotation)
         return annotation
@@ -1875,7 +1890,7 @@ class FPDF(GraphicsStateMixin):
             x (float): horizontal position (from the left) to the left side of the link rectangle
             y (float): vertical position (from the top) to the bottom side of the link rectangle
             w (float): width of the link rectangle
-            h (float): width of the link rectangle
+            h (float): height of the link rectangle
         """
         annotation = Annotation(
             "Action",

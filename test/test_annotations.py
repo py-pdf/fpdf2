@@ -2,6 +2,7 @@ from pathlib import Path
 
 from fpdf import FPDF
 from fpdf.actions import GoToAction, GoToRemoteAction, LaunchAction, NamedAction
+from fpdf.enums import AnnotationName
 from fpdf.syntax import DestinationXYZ, iobj_ref as pdf_ref
 from fpdf.util import object_id_for_page
 
@@ -12,14 +13,32 @@ HERE = Path(__file__).resolve().parent
 
 def test_text_annotation(tmp_path):
     pdf = FPDF()
-    pdf.set_font("Helvetica", size=24)
     pdf.add_page()
-    pdf.text(x=60, y=140, txt="Some text.")
-    pdf.text_annotation(
-        x=100,
-        y=130,
-        text="This is a text annotation.",
+    pdf.set_font("Helvetica", size=12)
+    all_visible_flags = (
+        "PRINT",
+        "NO_ZOOM",
+        "NO_ROTATE",
+        "READ_ONLY",
+        "LOCKED",
+        "TOGGLE_NO_VIEW",
+        "LOCKED_CONTENTS",
     )
+    for i, flags in enumerate((("PRINT",), all_visible_flags)):
+        for j, flag in enumerate(flags):
+            pdf.text(x=15 + 50 * i, y=10 + 5 * j, txt=flag)
+        for j, name in enumerate(
+            (None,)
+            + tuple(AnnotationName.__members__.keys())
+            + tuple(AnnotationName.__members__.values())
+        ):
+            pdf.text_annotation(
+                x=20 + 50 * i,
+                y=50 + 15 * j,
+                text=f"This is a {name or 'default'} annotation.",
+                name=name,
+                flags=flags,
+            )
     assert_pdf_equal(pdf, HERE / "text_annotation.pdf", tmp_path)
 
 

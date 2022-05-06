@@ -342,6 +342,49 @@ class BlendMode(CoerciveEnum):
     """
 
 
+class AnnotationFlag(CoerciveIntEnum):
+    INVISIBLE = 1
+    """
+    If set, do not display the annotation if it does not belong to one of the
+    standard annotation types and no annotation handler is available.
+    """
+    HIDDEN = 2
+    "If set, do not display or print the annotation or allow it to interact with the user"
+    PRINT = 4
+    "If set, print the annotation when the page is printed."
+    NO_ZOOM = 8
+    "If set, do not scale the annotation’s appearance to match the magnification of the page."
+    NO_ROTATE = 16
+    "If set, do not rotate the annotation’s appearance to match the rotation of the page."
+    NO_VIEW = 32
+    "If set, do not display the annotation on the screen or allow it to interact with the user"
+    READ_ONLY = 64
+    """
+    If set, do not allow the annotation to interact with the user.
+    The annotation may be displayed or printed but should not respond to mouse clicks.
+    """
+    LOCKED = 128
+    """
+    If set, do not allow the annotation to be deleted or its properties
+    (including position and size) to be modified by the user.
+    """
+    TOGGLE_NO_VIEW = 256
+    "If set, invert the interpretation of the NoView flag for certain events."
+    LOCKED_CONTENTS = 512
+    "If set, do not allow the contents of the annotation to be modified by the user."
+
+
+class AnnotationName(CoerciveEnum):
+    "The name of an icon that shall be used in displaying the annotation"
+
+    NOTE = Name("Note")
+    COMMENT = Name("Comment")
+    HELP = Name("Help")
+    PARAGRAPH = Name("Paragraph")
+    NEW_PARAGRAPH = Name("NewParagraph")
+    INSERT = Name("Insert")
+
+
 class IntersectionRule(CoerciveEnum):
     """
     An enumeration representing the two possible PDF intersection rules.
