@@ -101,10 +101,10 @@ class Align(CoerciveEnum):
     "Defines how to render text in a cell"
 
     C = intern("CENTER")
-    "Center text"
+    "Center text horizontally"
 
     X = intern("X_CENTER")
-    "Center text around current x"
+    "Center text horizontally around current x position"
 
     L = intern("LEFT")
     "Left-align text"
