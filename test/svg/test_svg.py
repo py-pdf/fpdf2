@@ -260,3 +260,15 @@ class TestSVGObject:
         assert_pdf_equal(
             pdf, GENERATED_PDF_DIR / "SVG_logo_notransparency.pdf", tmp_path
         )
+
+
+class TestSVGStyleParsing:
+    @pytest.mark.parametrize("svg_file", parameters.test_svg_sources[18:20])
+    def test_draw_svg_style_to_page(self, tmp_path, svg_file):
+        svg = fpdf.svg.SVGObject.from_file(svg_file)
+
+        pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
+        pdf.add_page()
+        svg.draw_to_page(pdf)
+
+        assert_pdf_equal(pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path)
