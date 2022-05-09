@@ -22,6 +22,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - allowing to provide an [`AnnotationName`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.AnnotationName)
   and [`AnnotationFlags`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.AnnotationFlag)
   onto [text_annotation()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_annotation)
+- allowing correctly parsing of SVG files with CSS styling (`style="..."` attribute) thanks to @RedShy
 
 ## [2.5.4] - 2022-05-05
 ### Added
