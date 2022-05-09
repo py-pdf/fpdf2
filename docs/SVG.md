@@ -83,6 +83,7 @@ pdf.output("my_file.pdf")
 - basic cross-references
 - stroke & fill coloring and opacity
 - basic stroke styling
+- CSS styling of SVG elements
 
 ## Currently Unsupported Notable SVG Features ##
 
@@ -93,10 +94,6 @@ there are some pretty commonly used features that are unsupported that may
 cause unexpected results (up to and including a normal-looking SVG rendering as
 a completely blank PDF). It is very likely that off-the-shelf SVGs will not be
 converted fully correctly without some preprocessing.
-
-The biggest unsupported feature is probably:
-
-- CSS styling of SVG elements (_cf._ [issue #404](https://github.com/PyFPDF/fpdf2/issues/404))
 
 In addition to that:
 
