@@ -260,3 +260,17 @@ class TestSVGObject:
         assert_pdf_equal(
             pdf, GENERATED_PDF_DIR / "SVG_logo_notransparency.pdf", tmp_path
         )
+
+    def test_svg_conversion_priority_styles(self, tmp_path):
+        svg_file = parameters.svgfile("simple_rect.svg")
+
+        svg = fpdf.svg.SVGObject.from_file(svg_file)
+
+        pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
+        pdf.set_margin(0)
+        pdf.allow_images_transparency = False
+        pdf.add_page()
+
+        svg.draw_to_page(pdf)
+
+        assert_pdf_equal(pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path)
