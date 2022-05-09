@@ -163,6 +163,7 @@ This library could only exist thanks to the dedication of many volunteers around
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/mtkumar123"><img src="https://avatars.githubusercontent.com/u/89176219?v=4?s=100" width="100px;" alt=""/><br /><sub><b>mtkumar123</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=mtkumar123" title="Code">💻</a></td>
+    <td align="center"><a href="http://blog.whatgeek.com.pt"><img src="https://avatars.githubusercontent.com/u/2813722?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Bruno Santos</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Afeiticeir0" title="Bug reports">🐛</a></td>
   </tr>
 </table>
 
