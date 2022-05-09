@@ -9,7 +9,7 @@ except ImportError:
     warnings.warn(
         "defusedxml could not be imported - fpdf2 will not be able to sanitize SVG images provided"
     )
-    from xml.etree.ElementTree import fromstring as parse_xml_str
+    from xml.etree.ElementTree import fromstring as parse_xml_str  # nosec
 
 from . import drawing, html
 

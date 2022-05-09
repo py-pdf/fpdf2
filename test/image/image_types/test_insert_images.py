@@ -11,7 +11,6 @@ from test.conftest import assert_pdf_equal
 HERE = Path(__file__).resolve().parent
 
 
-@pytest.mark.skip()
 def test_insert_jpg(tmp_path):
     pdf = fpdf.FPDF()
     pdf.compress = False
@@ -25,11 +24,10 @@ def test_insert_jpg(tmp_path):
         assert_pdf_equal(pdf, HERE / "image_types_insert_jpg.pdf", tmp_path)
 
 
-# @pytest.mark.skipif(
-    # sys.platform in ("cygwin", "win32"),
-    # reason="Required system libraries to generate JPEG2000 images are a PITA to install under Windows",
-# )
-@pytest.mark.skip()
+@pytest.mark.skipif(
+    sys.platform in ("cygwin", "win32"),
+    reason="Required system libraries to generate JPEG2000 images are a PITA to install under Windows",
+)
 def test_insert_jpg_jpxdecode(tmp_path):
     pdf = fpdf.FPDF()
     pdf.compress = False
@@ -39,7 +37,6 @@ def test_insert_jpg_jpxdecode(tmp_path):
     assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_jpxdecode.pdf", tmp_path)
 
 
-@pytest.mark.skip()
 def test_insert_jpg_flatedecode(tmp_path):
     pdf = fpdf.FPDF()
     pdf.compress = False
@@ -89,7 +86,6 @@ def test_insert_png_disallow_transparency(tmp_path):
     )
 
 
-@pytest.mark.skip()
 def test_insert_png_alpha_dctdecode(tmp_path):
     pdf = fpdf.FPDF()
     pdf.compress = False
