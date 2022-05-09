@@ -505,6 +505,24 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "RedShy",
+      "name": "Davide Consalvo",
+      "avatar_url": "https://avatars.githubusercontent.com/u/24901693?v=4",
+      "profile": "https://github.com/RedShy",
+      "contributions": [
+        "code"
+      ]
+     },
+     {
+      "login": "feiticeir0",
+      "name": "Bruno Santos",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2813722?v=4",
+      "profile": "http://blog.whatgeek.com.pt",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,

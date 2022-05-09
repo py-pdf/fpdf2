@@ -64,8 +64,11 @@ basically meaning any changes to the code package will get reflected directly in
 
 We use [black](https://github.com/psf/black) as a code prettifier.
 This _"uncomprimising Python code formatter"_ must be installed
-in your development environment (`pip install black`) in order to
-auto-format source code before any commit.
+in your development environment in order to auto-format source code before any commit:
+```
+pip install black
+black .  # inside fpdf2 root directory
+```
 
 ## Linting ##
 
