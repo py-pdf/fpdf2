@@ -269,9 +269,11 @@ def parse_style(svg_element):
             if not element:
                 continue
 
-            attr, value = element.split(":")
+            pair = element.split(":")
+            if len(pair) == 2 and pair[0] and pair[1]:
+                attr, value = pair
 
-            svg_element.attrib[attr.strip()] = value.strip()
+                svg_element.attrib[attr.strip()] = value.strip()
 
 
 @force_nodocument
