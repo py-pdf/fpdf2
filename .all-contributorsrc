@@ -514,6 +514,15 @@
       "contributions": [
         "code"
       ]
+     },
+     {
+      "login": "feiticeir0",
+      "name": "Bruno Santos",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2813722?v=4",
+      "profile": "http://blog.whatgeek.com.pt",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
