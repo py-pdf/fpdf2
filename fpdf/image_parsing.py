@@ -3,7 +3,17 @@ from io import BytesIO
 import base64
 from urllib.request import urlopen
 
-from PIL import Image
+try:
+    from PIL import Image
+
+    try:
+        from PIL.Image import Resampling
+
+        RESAMPLE = Resampling.LANCZOS
+    except ImportError:  # For Pillow < 9.1.0
+        RESAMPLE = Image.ANTIALIAS
+except ImportError:
+    Image = None
 
 from .errors import FPDFException
 
@@ -44,10 +54,12 @@ def get_img_info(img, image_filter="AUTO", dims=None):
         img: `BytesIO` or `PIL.Image.Image` instance
         image_filter (str): one of the SUPPORTED_IMAGE_FILTERS
     """
+    if Image is None:
+        raise EnvironmentError("Pillow not available - fpdf2 cannot insert images")
     if not isinstance(img, Image.Image):
         img = Image.open(img)
     if dims:
-        img = img.resize(dims, resample=Image.Resampling.LANCZOS)
+        img = img.resize(dims, resample=RESAMPLE)
     if image_filter == "AUTO":
         # Very simple logic for now:
         image_filter = "DCTDecode" if img.format == "JPEG" else "FlateDecode"

@@ -67,7 +67,7 @@ FPDF original features:
 ## Installation ##
 
 From [PyPI](https://pypi.python.org/pypi/fpdf2):
-```nash
+```bash
 pip install fpdf2
 ```
 
@@ -75,6 +75,11 @@ To get the latest, unreleased, development version straight from the development
 
 ```bash
 pip install git+https://github.com/PyFPDF/fpdf2.git@master
+```
+
+`fpdf2` can be installed without any dependency, but it needs [Pillow](https://pypi.org/project/Pillow/) to render images:
+```bash
+pip install --no-dependencies fpdf2
 ```
 
 **Developement**: check the [dedicated documentation page](Development.md).

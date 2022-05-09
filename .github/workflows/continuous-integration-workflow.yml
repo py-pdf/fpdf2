@@ -14,7 +14,9 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        python-version: [3.7, 3.8, 3.9, '3.10']
+        # python-version: [3.7, 3.8, 3.9, '3.10']
+        python-version: [3.9]
+        pillow-version: ['9.1.0', '8.4.0', '7.2.0', '6.2.2']
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v2
@@ -26,7 +28,7 @@ jobs:
         run: |
           sudo apt-get install libjpeg-dev
           python -m pip install --upgrade pip setuptools
-          pip install --upgrade . -r test/requirements.txt -r docs/requirements.txt -r contributors/requirements.txt
+          pip install --upgrade . -r test/requirements.txt -r docs/requirements.txt -r contributors/requirements.txt Pillow==${{ matrix.pillow-version }}
       - name: Install qpdf ⚙️
         if: matrix.python-version != '3.9'  # This allows us to run the unit tests WITHOUT qpdf in just one parallel execution
         run: sudo apt-get install qpdf

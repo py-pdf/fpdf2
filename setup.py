@@ -31,7 +31,7 @@ if __name__ == "__main__":
         package_dir={"fpdf": "fpdf"},
         install_requires=[
             "defusedxml",
-            "Pillow>=9.1.0",  # version where PIL.Image.Resampling was introduced
+            "Pillow",
         ],
         classifiers=[
             "Development Status :: 5 - Production/Stable",

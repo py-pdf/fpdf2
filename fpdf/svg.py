@@ -1,8 +1,15 @@
 import math
 import re
+import warnings
 from typing import NamedTuple
 
-from defusedxml.ElementTree import fromstring as parse_xml_str
+try:
+    from defusedxml.ElementTree import fromstring as parse_xml_str
+except ImportError:
+    warnings.warn(
+        "defusedxml could not be imported - fpdf2 will not be able to sanitize SVG images provided"
+    )
+    from xml.etree.ElementTree import fromstring as parse_xml_str
 
 from . import drawing, html
 

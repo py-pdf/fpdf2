@@ -32,7 +32,16 @@ from os.path import splitext
 from pathlib import Path
 from typing import Callable, List, NamedTuple, Optional, Tuple, Union
 
-from PIL import Image
+try:
+    from PIL.Image import Image
+except ImportError:
+    warnings.warn(
+        "Pillow could not be imported - fpdf2 will not be able to add any image"
+    )
+
+    class Image:
+        pass
+
 
 from . import drawing
 from .actions import Action
@@ -3125,7 +3134,7 @@ class FPDF(GraphicsStateMixin):
             return self._vector_image(img, x, y, w, h, link, title, alt_text)
         if isinstance(name, str):
             img = None
-        elif isinstance(name, Image.Image):
+        elif isinstance(name, Image):
             bytes = name.tobytes()
             # disabling bandit rule as we just build a cache key, this is secure
             name, img = hashlib.md5(bytes).hexdigest(), name  # nosec B303 B324
