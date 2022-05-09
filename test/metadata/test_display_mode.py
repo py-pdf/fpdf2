@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF
+from fpdf.errors import FPDFException
 from fpdf.enums import PageLayout, PageMode
 from test.conftest import assert_pdf_equal
 
@@ -28,6 +29,24 @@ def test_setting_all_zoom(zoom, tmp_path):
     )
     doc.set_display_mode(zoom=zoom)
     assert_pdf_equal(doc, HERE / f"zoom-{zoom}.pdf", tmp_path)
+
+
+def test_setting_zoom_raises_correct_error():
+    doc = FPDF()
+    doc.add_page()
+    doc.set_font("helvetica", size=12)
+    doc.cell(
+        w=72,
+        h=0,
+        border=1,
+        txt="hello world",
+        fill=False,
+        link="",
+        new_x="LMARGIN",
+        new_y="NEXT",
+    )
+    with pytest.raises(FPDFException):
+        doc.set_display_mode("foo")
 
 
 @pytest.mark.parametrize("page_layout", PageLayout.__members__.keys())
