@@ -48,5 +48,5 @@ class FPDFUnicodeEncodingException(FPDFException):
         return (
             f'Character "{self.character}" at index {self.text_index} in text is outside the range of characters'
             f' supported by the font used: "{self.font_name}".'
-            " Please consider using a font that supports UTF-8 encoding."
+            " Please consider using a Unicode font."
         )
