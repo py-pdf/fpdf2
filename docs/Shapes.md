@@ -68,7 +68,7 @@ pdf.add_page()
 pdf.set_line_width(2)
 pdf.set_fill_color(r=255, g=0, b=0)
 coords = ((100, 0), (5, 69), (41, 181), (159, 181), (195, 69))
-pdf.polygon(coords, fill=True)
+pdf.polygon(coords, style="DF")
 pdf.output("polygon.pdf")
 ```
 
