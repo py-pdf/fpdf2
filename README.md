@@ -28,7 +28,7 @@ pdf.output("hello_world.pdf")
 ```
 
 It is a fork and the successor of `PyFPDF` (_cf._ [history](https://pyfpdf.github.io/fpdf2/Development.html#history)).
-Compared with other PDF libraries, `fpdf2` is simple, fast and versatile, with advanced capabilities, and is easy to learn and extend.
+Compared with other PDF libraries, `fpdf2` is simple, fast and versatile, with advanced capabilities, and is easy to learn and [extend](https://github.com/digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2).
 It is also entirely writen in Python and has only a couple of dependencies
 ([Pillow](https://pillow.readthedocs.io/en/stable/) & [defusedxml](https://pypi.org/project/defusedxml/)).
 
@@ -165,7 +165,7 @@ This library could only exist thanks to the dedication of many volunteers around
     <td align="center"><a href="https://github.com/mtkumar123"><img src="https://avatars.githubusercontent.com/u/89176219?v=4?s=100" width="100px;" alt=""/><br /><sub><b>mtkumar123</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=mtkumar123" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/RedShy"><img src="https://avatars.githubusercontent.com/u/24901693?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Davide Consalvo</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=RedShy" title="Code">💻</a></td>
     <td align="center"><a href="http://blog.whatgeek.com.pt"><img src="https://avatars.githubusercontent.com/u/2813722?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Bruno Santos</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Afeiticeir0" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://github.com/cgkoutzigiannis"><img src="https://avatars.githubusercontent.com/u/41803093?v=4?s=100" width="100px;" alt=""/><br /><sub><b>cgkoutzigiannis</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=cgkoutzigiannis" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/cgkoutzigiannis"><img src="https://avatars.githubusercontent.com/u/41803093?v=4?s=100" width="100px;" alt=""/><br /><sub><b>cgkoutzigiannis</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=cgkoutzigiannis" title="Tests">⚠️</a></td>
   </tr>
 </table>
 

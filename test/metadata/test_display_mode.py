@@ -22,8 +22,6 @@ def test_setting_all_zoom(zoom, tmp_path):
         h=0,
         border=1,
         txt="hello world",
-        fill=False,
-        link="",
         new_x="LMARGIN",
         new_y="NEXT",
     )
@@ -33,18 +31,6 @@ def test_setting_all_zoom(zoom, tmp_path):
 
 def test_setting_zoom_raises_correct_error():
     doc = FPDF()
-    doc.add_page()
-    doc.set_font("helvetica", size=12)
-    doc.cell(
-        w=72,
-        h=0,
-        border=1,
-        txt="hello world",
-        fill=False,
-        link="",
-        new_x="LMARGIN",
-        new_y="NEXT",
-    )
     with pytest.raises(FPDFException):
         doc.set_display_mode("foo")
 

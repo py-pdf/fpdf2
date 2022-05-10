@@ -76,6 +76,7 @@ nav:
 - 'Graphics Content':
   - 'Images':                         'Images.md'
   - 'Shapes':                         'Shapes.md'
+  - 'Transparency':                   'Transparency.md'
   - 'Barcodes':                       'Barcodes.md'
   - 'Drawing':                        'Drawing.md'
   - 'SVG':                            'SVG.md'
