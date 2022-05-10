@@ -514,14 +514,23 @@
       "contributions": [
         "code"
       ]
-     },
-     {
+    },
+    {
       "login": "feiticeir0",
       "name": "Bruno Santos",
       "avatar_url": "https://avatars.githubusercontent.com/u/2813722?v=4",
       "profile": "http://blog.whatgeek.com.pt",
       "contributions": [
         "bug"
+      ]
+    },
+    {
+      "login": "cgkoutzigiannis",
+      "name": "cgkoutzigiannis",
+      "avatar_url": "https://avatars.githubusercontent.com/u/41803093?v=4",
+      "profile": "https://github.com/cgkoutzigiannis",
+      "contributions": [
+        "code"
       ]
     }
   ],
