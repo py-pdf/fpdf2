@@ -47,6 +47,76 @@ Result:
 
 ![](matplotlib.png)
 
+### Using Pandas ###
+Create a plot using [pandas.DataFrame.plot](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.plot.html)
+
+```python
+from fpdf import FPDF
+import pandas as pd
+import matplotlib.pyplot as plt
+import io
+
+data = {'Unemployment_Rate': [6.1,5.8,5.7,5.7,5.8,5.6,5.5,5.3,5.2,5.2],
+        'Stock_Index_Price': [1500,1520,1525,1523,1515,1540,1545,1560,1555,1565]
+       }
+
+plt.figure() # Store figure
+df = pd.DataFrame(data,columns=['Unemployment_Rate','Stock_Index_Price'])
+df.plot(x ='Unemployment_Rate', y='Stock_Index_Price', kind = 'scatter')
+
+# Converting Figure to an image:
+img_buf = io.BytesIO() # Create image object
+plt.savefig(img_buf, dpi=200) # Save the image
+
+pdf = FPDF()
+pdf.add_page()
+pdf.image(img_buf, w=pdf.epw)
+pdf.output("pandas.pdf")
+img_buf.close()
+```
+
+Result:
+
+![](chart-pandas.PNG)
+
+Create a table with pandas dataframe
+```python
+from fpdf import FPDF
+import pandas as pd
+
+df = pd.DataFrame(
+    {
+        "First name": ["Jules", "Mary", "Carlson", "Lucas"],
+        "Last name": ["Smith", "Ramos", "Banks", "Cimon"],
+        "Age": [34, 45, 19, 31],
+        "City": ["San Juan", "Orlando", "Los Angeles", "Saint-Mahturin-sur-Loire"],
+    }
+)
+
+df=df.applymap(str) #Convert all data inside dataframe into string type 
+
+columns = [list(df)] # Get list of dataframe columns
+rows =  df.values.tolist() # Get list of dataframe rows
+data = columns + rows # Combine columns and rows in one list 
+
+# Start pdf creating
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Times", size=10)
+line_height = pdf.font_size * 2.5
+col_width = pdf.epw / 4  # distribute content evenly
+
+for row in data:
+    for datum in row:
+        pdf.multi_cell(col_width, line_height, datum, 
+        border=1,new_x="RIGHT", new_y="TOP", max_line_height=pdf.font_size)
+    pdf.ln(line_height)
+pdf.output('table_with_cells.pdf')
+```
+
+Result:
+![](table-pandas.PNG)
+
 
 ## Mathematical formulas ##
 `fpdf2` can only insert mathematical formula in the form of **images**.
