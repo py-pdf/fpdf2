@@ -4,6 +4,10 @@
 ## Charts ##
 
 ### Using Matplotlib ###
+Before run this example, please install required dependencies following below command:
+```
+pip install matplotlib
+```
 Example taken from [Matplotlib artist tutorial](https://matplotlib.org/stable/tutorials/intermediate/artists.html):
 
 ```python
@@ -49,8 +53,13 @@ Result:
 
 ### Using Pandas ###
 Create a plot using [pandas.DataFrame.plot](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.plot.html)
-To run this example, please install
 
+Before run this example, please install required dependencies following below command:
+```
+pip install matplotlib pandas
+```
+
+Code example:
 ```python
 from fpdf import FPDF
 import pandas as pd
@@ -80,7 +89,14 @@ Result:
 
 ![](chart-pandas.PNG)
 
-Create a table with pandas dataframe
+
+Create a table with pandas dataframe.
+
+Before run this example, please install required dependencies following below command:
+```
+pip install matplotlib pandas
+```
+Code example:
 ```python
 from fpdf import FPDF
 import pandas as pd
