@@ -71,7 +71,7 @@ data = {
     "Stock_Index_Price": [1500, 1520, 1525, 1523, 1515, 1540, 1545, 1560, 1555, 1565],
 }
 
-plt.figure()  # Create a new figure
+plt.figure()  # Create a new figure object
 df = pd.DataFrame(data, columns=["Unemployment_Rate", "Stock_Index_Price"])
 df.plot(x="Unemployment_Rate", y="Stock_Index_Price", kind="scatter")
 
@@ -130,7 +130,6 @@ for row in data:
             line_height,
             datum,
             border=1,
-            new_x="RIGHT",
             new_y="TOP",
             max_line_height=pdf.font_size,
         )
