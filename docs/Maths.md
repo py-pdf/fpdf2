@@ -43,7 +43,7 @@ img = Image.fromarray(np.asarray(canvas.buffer_rgba()))
 
 pdf = FPDF()
 pdf.add_page()
-pdf.image(img, w=pdf.epw)  # full width
+pdf.image(img, w=pdf.epw)  # Make the image full width
 pdf.output("matplotlib.pdf")
 ```
 
@@ -81,7 +81,7 @@ plt.savefig(img_buf, dpi=200)  # Save the image
 
 pdf = FPDF()
 pdf.add_page()
-pdf.image(img_buf, w=pdf.epw)
+pdf.image(img_buf, w=pdf.epw) # Make the image full width
 pdf.output("pandas.pdf")
 img_buf.close()
 ```
