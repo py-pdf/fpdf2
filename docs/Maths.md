@@ -4,7 +4,7 @@
 ## Charts ##
 
 ### Using Matplotlib ###
-Before run this example, please install required dependencies following below command:
+Before running this example, please install the required dependencies using the command below:
 ```
 pip install matplotlib
 ```
