@@ -93,9 +93,9 @@ def test_star(tmp_path):
     assert_pdf_equal(pdf, HERE / "regular_polygon.pdf", tmp_path)
 
 
-def test_star_invalid_style(tmp_path):
+def test_star_invalid_style():
     pdf = fpdf.FPDF()
     pdf.add_page()
 
-    with pytest.raises(fpdf.errors.FPDFException) as e:
+    with pytest.raises(fpdf.errors.FPDFException):
         pdf.star(15, 15, 5, 15, 3, rotateDegrees=0, style="N")
