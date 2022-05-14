@@ -1393,7 +1393,7 @@ class FPDF(GraphicsStateMixin):
             rin (float): radius of internal circle.
             rout (float): radius of external circle.
             corners (int): number of star's corners.
-            rotatateDegrees (float): Optional degree amount to rotate star.
+            rotatateDegrees (float): Optional degree amount to rotate star clockwise.
             style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
 
             * `D`: draw border.
@@ -1409,11 +1409,11 @@ class FPDF(GraphicsStateMixin):
         else:
             raise FPDFException(f"Invalid style: {style}")
 
-        th = math.radians(90 + rotateDegrees)
+        th = math.radians(rotateDegrees)
         points_string = ""
         for i in range(0, (corners * 2) + 1):
-            cx = x + (rout if i % 2 == 0 else rin) * math.cos(th)
-            cy = y + (rout if i % 2 == 0 else rin) * math.sin(th)
+            cx = x + (rout if i % 2 == 0 else rin) * math.sin(th)
+            cy = y + (rout if i % 2 == 0 else rin) * math.cos(th)
 
             th += math.radians(180 / corners)
             points_string += f"{cx * self.k:.2F} {(self.h - cy) * self.k:.2F}"
