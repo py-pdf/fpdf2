@@ -1409,7 +1409,7 @@ class FPDF(GraphicsStateMixin):
 
             th += math.radians(180 / corners)
 
-        self.polyline(point_list, style=style)
+        self.polyline(point_list, polygon=True, style=style)
 
     def arc(
         self,
