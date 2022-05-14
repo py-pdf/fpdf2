@@ -1381,6 +1381,7 @@ class FPDF(GraphicsStateMixin):
         self.polygon(points, style=style)
         # passes points through polygon function
 
+    @check_page
     def star(self, x, y, rin, rout, corners, rotateDegrees=0, style=None):
         """
         Outputs a regular star with n corners.
