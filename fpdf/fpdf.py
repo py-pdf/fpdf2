@@ -1369,7 +1369,6 @@ class FPDF(GraphicsStateMixin):
         centerY = y - radius
         # center point is (centerX, centerY)
         points = []
-        i = 1
         for i in range(1, numSides + 1):
             point = centerX + radius * math.cos(
                 math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
@@ -1377,7 +1376,6 @@ class FPDF(GraphicsStateMixin):
                 math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
             )
             points.append(point)
-            i += 1
         # creates list of touples containing cordinate points of vertices
 
         self.polygon(points, style=style)
