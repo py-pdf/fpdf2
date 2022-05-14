@@ -1381,7 +1381,7 @@ class FPDF(GraphicsStateMixin):
         self.polygon(points, style=style)
         # passes points through polygon function
 
-    def star(self, x, y, rin, rout, corners, rotateDegrees=0, style="FD"):
+    def star(self, x, y, rin, rout, corners, rotateDegrees=0, style=None):
         """
         Outputs a regular star with n corners.
         It can be rotated.
@@ -1396,35 +1396,20 @@ class FPDF(GraphicsStateMixin):
             rotateDegrees (float): Optional degree amount to rotate star clockwise.
 
             style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
-            * `D`: draw border.
+            * `D`: draw border. This is the default value.
             * `F`: fill.
             * `DF` or `FD`: draw and fill.
         """
-        style = style.upper()
-        if style == "F":
-            op = "f"
-        elif style == "D":
-            op = "S"
-        elif style in ("FD", "DF"):
-            op = "B"
-        else:
-            raise FPDFException(f"Invalid style: {style}")
-
         th = math.radians(rotateDegrees)
-        points_string = ""
+        point_list = []
         for i in range(0, (corners * 2) + 1):
-            cx = x + (rout if i % 2 == 0 else rin) * math.sin(th)
-            cy = y + (rout if i % 2 == 0 else rin) * math.cos(th)
+            corner_x = x + (rout if i % 2 == 0 else rin) * math.sin(th)
+            corner_y = y + (rout if i % 2 == 0 else rin) * math.cos(th)
+            point_list.append((corner_x, corner_y))
 
             th += math.radians(180 / corners)
-            points_string += f"{cx * self.k:.2F} {(self.h - cy) * self.k:.2F}"
 
-            if i == 0:
-                points_string += " m "
-            else:
-                points_string += " l "
-
-        self._out(points_string + op)
+        self.polyline(point_list, style=style)
 
     def arc(
         self,
