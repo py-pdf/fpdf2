@@ -90,7 +90,7 @@ def test_star(tmp_path):
     pdf.star(165, y, 5, 15, 8, rotateDegrees=22.5, style="DF")
     pdf.star(195, y, 5, 15, 9, rotateDegrees=77.3, style="DF")
 
-    assert_pdf_equal(pdf, HERE / "regular_polygon.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "regular_star.pdf", tmp_path)
 
 
 def test_star_invalid_style():
