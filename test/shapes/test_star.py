@@ -97,5 +97,5 @@ def test_star_invalid_style():
     pdf = fpdf.FPDF()
     pdf.add_page()
 
-    with pytest.raises(fpdf.errors.FPDFException):
+    with pytest.raises(ValueError):
         pdf.star(15, 15, 5, 15, 3, rotateDegrees=0, style="N")
