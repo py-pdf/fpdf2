@@ -1393,13 +1393,14 @@ class FPDF(GraphicsStateMixin):
             rin (float): radius of internal circle.
             rout (float): radius of external circle.
             corners (int): number of star's corners.
-            rotatateDegrees (float): Optional degree amount to rotate star clockwise.
-            style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
+            rotateDegrees (float): Optional degree amount to rotate star clockwise.
 
+            style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
             * `D`: draw border.
             * `F`: fill.
             * `DF` or `FD`: draw and fill.
         """
+        style = style.upper()
         if style == "F":
             op = "f"
         elif style == "D":
