@@ -532,6 +532,15 @@
       "contributions": [
         "test"
       ]
+    },
+    {
+      "login": "iwayankurniawan",
+      "name": "I Wayan Kurniawan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/30134645?v=4",
+      "profile": "https://github.com/iwayankurniawan",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
