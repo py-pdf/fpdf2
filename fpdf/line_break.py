@@ -9,51 +9,38 @@ NEWLINE = "\n"
 
 
 class Fragment:
-    """
-    A fragment of text with a text style, and possibly more font details.
-
-    This is an internal class of fpdf, and not part of the public API.
-    It may change at any time without notice or deprecation period.
-    """
-
     def __init__(
         self,
-        characters: Union[list, str],
+        font_family: str,
+        font_size_pt: float,
         font_style: str,
         underline: bool,
-        font_family: str = "",
-        font_size_pt: float = 12,
-        font_stretching: float = 100,
+        font_stretching: float,
+        characters: list = None,
     ):
-        if isinstance(characters, str):
-            self.characters = list(characters)
-        else:
-            self.characters = characters
-        self.font_style = font_style
-        self.underline = bool(underline)
         self.font_family = font_family
         self.font_size_pt = font_size_pt
+        self.font_style = font_style
+        self.underline = bool(underline)
         self.font_stretching = font_stretching
+        self.characters = [] if characters is None else characters
 
     def __repr__(self):
-        return (
-            f"Fragment(characters={self.characters}, {self.font_style}, {self.underline}, "
-            f"font=[{self.font_family}, {self.font_size_pt}, {self.font_stretching}], )"
-        )
+        return f"Fragment(font=[{self.font_family}, {self.font_size_pt}, {self.font_style}, {self.underline}, {self.font_stretching}], characters={self.characters})"
 
     @classmethod
-    def from_curfont(cls, characters: Union[list, str], pdf):
+    def from_curfont(cls, pdf, characters: list = None):
         """Alternative constructor: Take current font properties from FPDF instance."""
         return cls(
-            characters=characters,
-            font_style=pdf.font_style,
-            underline=pdf.underline,
             font_family=pdf.font_family,
             font_size_pt=pdf.font_size_pt,
+            font_style=pdf.font_style,
+            underline=pdf.underline,
             font_stretching=pdf.font_stretching,
+            characters=[] if characters is None else characters,
         )
 
-    def rtrim(self, index: int):
+    def trim(self, index: int):
         self.characters = self.characters[:index]
 
     @property
@@ -70,27 +57,12 @@ class Fragment:
             and self.font_stretching == other.font_stretching
         )
 
-    def get_character_width(self, character: str, size_by_style, print_sh=False):
-        if character == SOFT_HYPHEN and not print_sh:
-            # HYPHEN is inserted instead of SOFT_HYPHEN
-            character = HYPHEN
-        gs_size = size_by_style(
-            character,
-            self.font_style,
-            font_size=self.font_size_pt,
-            font_family=self.font_family,
-            font_stretching=self.font_stretching,
-        )
-        # convert glyph space units
-        return gs_size
-
 
 class TextLine(NamedTuple):
     fragments: tuple
     text_width: float
     number_of_spaces_between_words: int
     justify: bool
-    trailing_nl: bool
 
 
 class SpaceHint(NamedTuple):
@@ -162,12 +134,7 @@ class CurrentLine:
         if not self.fragments:
             self.fragments.append(
                 Fragment(
-                    "",
-                    font_style,
-                    underline,
-                    font_family,
-                    font_size_pt,
-                    font_stretching,
+                    font_family, font_size_pt, font_style, underline, font_stretching
                 )
             )
 
@@ -181,12 +148,7 @@ class CurrentLine:
         ):
             self.fragments.append(
                 Fragment(
-                    "",
-                    font_style,
-                    underline,
-                    font_family,
-                    font_size_pt,
-                    font_stretching,
+                    font_family, font_size_pt, font_style, underline, font_stretching
                 )
             )
         active_fragment = self.fragments[-1]
@@ -230,17 +192,16 @@ class CurrentLine:
         """
         self.fragments = self.fragments[: break_hint.current_line_fragment_index]
         if self.fragments:
-            self.fragments[-1].rtrim(break_hint.current_line_character_index)
+            self.fragments[-1].trim(break_hint.current_line_character_index)
         self.number_of_spaces = break_hint.number_of_spaces
         self.width = break_hint.width
 
-    def manual_break(self, justify: bool = False, trailing_nl: bool = False):
+    def manual_break(self, justify: bool = False):
         return TextLine(
             fragments=self.fragments,
             text_width=self.width,
             number_of_spaces_between_words=self.number_of_spaces,
             justify=(self.number_of_spaces > 0) and justify,
-            trailing_nl=trailing_nl,
         )
 
     def automatic_break_possible(self):
@@ -293,6 +254,12 @@ class MultiLineBreak:
         self.character_index = 0
         self.char_index_for_last_forced_manual_break = None
 
+    def _get_character_width(self, character: str, style: str = ""):
+        if character == SOFT_HYPHEN and not self.print_sh:
+            # HYPHEN is inserted instead of SOFT_HYPHEN
+            character = HYPHEN
+        return self.size_by_style(character, style)
+
     # pylint: disable=too-many-return-statements
     def get_line_of_given_width(self, maximum_width: float, wordsplit: bool = True):
         char_index_for_last_forced_manual_break = (
@@ -318,13 +285,13 @@ class MultiLineBreak:
                 continue
 
             character = current_fragment.characters[self.character_index]
-            character_width = current_fragment.get_character_width(
-                character, self.size_by_style, self.print_sh
+            character_width = self._get_character_width(
+                character, current_fragment.font_style
             )
 
             if character == NEWLINE:
                 self.character_index += 1
-                return current_line.manual_break(trailing_nl=True)
+                return current_line.manual_break()
 
             if current_line.width + character_width > maximum_width:
                 if character == SPACE:
@@ -371,3 +338,13 @@ class MultiLineBreak:
         if current_line.width:
             return current_line.manual_break()
 
+    def get_line_of_dynamic_limits(
+        self,
+        y,
+        get_limits,
+        wordsplit: bool = True,
+        final_width: bool = True,
+    ):
+        limits = get_limits(y_top, y_bottom, self.styled_text_fragments)
+        current_width = limits[1] - limits[0]
+        return self.get_line_of_given_width(self, current_width, wordsplit=wordsplit)
