@@ -1382,7 +1382,7 @@ class FPDF(GraphicsStateMixin):
         # passes points through polygon function
 
     @check_page
-    def star(self, x, y, rin, rout, corners, rotateDegrees=0, style=None):
+    def star(self, x, y, r_in, r_out, corners, rotate_degrees=0, style=None):
         """
         Outputs a regular star with n corners.
         It can be rotated.
@@ -1391,8 +1391,8 @@ class FPDF(GraphicsStateMixin):
         Args:
             x (float): Abscissa of star's centre.
             y (float): Ordinate of star's centre.
-            rin (float): radius of internal circle.
-            rout (float): radius of external circle.
+            r_in (float): radius of internal circle.
+            r_out (float): radius of external circle.
             corners (int): number of star's corners.
             rotateDegrees (float): Optional degree amount to rotate star clockwise.
 
@@ -1401,11 +1401,11 @@ class FPDF(GraphicsStateMixin):
             * `F`: fill.
             * `DF` or `FD`: draw and fill.
         """
-        th = math.radians(rotateDegrees)
+        th = math.radians(rotate_degrees)
         point_list = []
         for i in range(0, (corners * 2) + 1):
-            corner_x = x + (rout if i % 2 == 0 else rin) * math.sin(th)
-            corner_y = y + (rout if i % 2 == 0 else rin) * math.cos(th)
+            corner_x = x + (r_out if i % 2 == 0 else r_in) * math.sin(th)
+            corner_y = y + (r_out if i % 2 == 0 else r_in) * math.cos(th)
             point_list.append((corner_x, corner_y))
 
             th += math.radians(180 / corners)
