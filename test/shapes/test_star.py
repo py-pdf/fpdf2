@@ -25,7 +25,7 @@ def test_star(tmp_path):
 
     # fill and color test
     y += 40
-    pdf.set_fill_color(134, 200, 15)
+    pdf.set_fill_color(r=134, g=200, b=15)
     pdf.star(x=15, y=y, r_in=5, r_out=15, corners=3, style="DF")
     pdf.star(x=45, y=y, r_in=5, r_out=15, corners=4, style="DF")
     pdf.star(x=75, y=y, r_in=5, r_out=15, corners=5, style="DF")
@@ -36,8 +36,8 @@ def test_star(tmp_path):
 
     # draw color test
     y += 40
-    pdf.set_fill_color(0, 0, 0)
-    pdf.set_draw_color(204, 0, 204)
+    pdf.set_fill_color(r=0, g=0, b=0)
+    pdf.set_draw_color(r=204, g=0, b=204)
     pdf.star(x=15, y=y, r_in=5, r_out=15, corners=3, style="D")
     pdf.star(x=45, y=y, r_in=5, r_out=15, corners=4, style="D")
     pdf.star(x=75, y=y, r_in=5, r_out=15, corners=5, style="D")
@@ -59,7 +59,7 @@ def test_star(tmp_path):
 
     # line color and fill color
     y += 40
-    pdf.set_fill_color(3, 190, 252)
+    pdf.set_fill_color(r=3, g=190, b=252)
     pdf.star(x=15, y=y, r_in=5, r_out=15, corners=3, style="DF")
     pdf.star(x=45, y=y, r_in=5, r_out=15, corners=4, style="DF")
     pdf.star(x=75, y=y, r_in=5, r_out=15, corners=5, style="DF")
@@ -70,7 +70,7 @@ def test_star(tmp_path):
 
     # fill only
     y += 40
-    pdf.set_draw_color(0, 0, 255)
+    pdf.set_draw_color(r=0, g=0, b=255)
     pdf.star(x=15, y=y, r_in=5, r_out=15, corners=3, style="F")
     pdf.star(x=45, y=y, r_in=5, r_out=15, corners=4, style="F")
     pdf.star(x=75, y=y, r_in=5, r_out=15, corners=5, style="F")
@@ -81,7 +81,7 @@ def test_star(tmp_path):
 
     # rotation test
     y += 40
-    pdf.set_draw_color(0, 0, 255)
+    pdf.set_draw_color(r=0, g=0, b=255)
     pdf.star(x=15, y=y, r_in=5, r_out=15, corners=3, rotateDegrees=0, style="DF")
     pdf.star(x=45, y=y, r_in=5, r_out=15, corners=4, rotateDegrees=35, style="DF")
     pdf.star(x=75, y=y, r_in=5, r_out=15, corners=5, rotateDegrees=45, style="DF")
