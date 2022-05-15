@@ -82,13 +82,13 @@ def test_star(tmp_path):
     # rotation test
     y += 40
     pdf.set_draw_color(r=0, g=0, b=255)
-    pdf.star(x=15, y=y, r_in=5, r_out=15, corners=3, rotateDegrees=0, style="DF")
-    pdf.star(x=45, y=y, r_in=5, r_out=15, corners=4, rotateDegrees=35, style="DF")
-    pdf.star(x=75, y=y, r_in=5, r_out=15, corners=5, rotateDegrees=45, style="DF")
-    pdf.star(x=105, y=y, r_in=5, r_out=15, corners=6, rotateDegrees=200, style="DF")
-    pdf.star(x=135, y=y, r_in=5, r_out=15, corners=7, rotateDegrees=13, style="DF")
-    pdf.star(x=165, y=y, r_in=5, r_out=15, corners=8, rotateDegrees=22.5, style="DF")
-    pdf.star(x=195, y=y, r_in=5, r_out=15, corners=9, rotateDegrees=77.3, style="DF")
+    pdf.star(x=15, y=y, r_in=5, r_out=15, corners=3, rotate_degrees=0, style="DF")
+    pdf.star(x=45, y=y, r_in=5, r_out=15, corners=4, rotate_degrees=35, style="DF")
+    pdf.star(x=75, y=y, r_in=5, r_out=15, corners=5, rotate_degrees=45, style="DF")
+    pdf.star(x=105, y=y, r_in=5, r_out=15, corners=6, rotate_degrees=200, style="DF")
+    pdf.star(x=135, y=y, r_in=5, r_out=15, corners=7, rotate_degrees=13, style="DF")
+    pdf.star(x=165, y=y, r_in=5, r_out=15, corners=8, rotate_degrees=22.5, style="DF")
+    pdf.star(x=195, y=y, r_in=5, r_out=15, corners=9, rotate_degrees=77.3, style="DF")
 
     assert_pdf_equal(pdf, HERE / "regular_star.pdf", tmp_path)
 
@@ -98,4 +98,4 @@ def test_star_invalid_style():
     pdf.add_page()
 
     with pytest.raises(ValueError):
-        pdf.star(x=15, y=15, r_in=5, r_out=15, corners=3, rotateDegrees=0, style="N")
+        pdf.star(x=15, y=15, r_in=5, r_out=15, corners=3, rotate_degrees=0, style="N")
