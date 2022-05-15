@@ -1047,9 +1047,14 @@ class FPDF(GraphicsStateMixin):
         for frag in (
             self._markdown_parse(s)
             if markdown
-            else (Fragment.from_string(s, self.font_style, bool(self.underline)),)
+            else (
+                Fragment.from_curfont(self, list(s)),
+                # Fragment.from_string(s, self.font_style, bool(self.underline)),
+            )
         ):
-            w += self.get_normalized_string_width_with_style(frag.string, frag.style)
+            w += self.get_normalized_string_width_with_style(
+                frag.string, frag.font_style
+            )
         if self.font_stretching != 100:
             w *= self.font_stretching / 100
         return w * self.font_size / 1000
@@ -2790,7 +2795,7 @@ class FPDF(GraphicsStateMixin):
         if not styled_txt_width:
             for styled_txt_frag in text_line.fragments:
                 unscaled_width = self.get_normalized_string_width_with_style(
-                    styled_txt_frag.string, styled_txt_frag.style
+                    styled_txt_frag.string, styled_txt_frag.font_style
                 )
                 if self.font_stretching != 100:
                     unscaled_width *= self.font_stretching / 100
@@ -2912,8 +2917,8 @@ class FPDF(GraphicsStateMixin):
                     sl.append("0 Tw")
                     self.ws = 0
                 for frag in text_line.fragments:
-                    if current_font_style != frag.style:
-                        current_font_style = frag.style
+                    if current_font_style != frag.font_style:
+                        current_font_style = frag.font_style
                         current_font = self.fonts[self.font_family + current_font_style]
                         sl.append(f"/F{current_font['i']} {self.font_size_pt:.2f} Tf")
                     txt_frag_mapped = ""
@@ -2952,8 +2957,8 @@ class FPDF(GraphicsStateMixin):
                 self.ws = word_spacing
 
                 for frag in text_line.fragments:
-                    if current_font_style != frag.style:
-                        current_font_style = frag.style
+                    if current_font_style != frag.font_style:
+                        current_font_style = frag.font_style
                         current_font = self.fonts[self.font_family + current_font_style]
                         sl.append(f"/F{current_font['i']} {self.font_size_pt:.2f} Tf")
                     if self.unifontsubset:
@@ -3046,7 +3051,10 @@ class FPDF(GraphicsStateMixin):
             return tuple()
         if not markdown:
             return tuple(
-                [Fragment.from_string(txt, self.font_style, bool(self.underline))]
+                [
+                    # Fragment.from_string(txt, self.font_style, bool(self.underline))
+                    Fragment.from_curfont(self, list(txt))
+                ]
             )
         prev_font_style = self.font_style
         styled_txt_frags = tuple(self._markdown_parse(txt))
@@ -3054,10 +3062,10 @@ class FPDF(GraphicsStateMixin):
         # We set the current to page to zero so that
         # set_font() does not produce any text object on the stream buffer:
         self.page = 0
-        if any("B" in frag.style for frag in styled_txt_frags):
+        if any("B" in frag.font_style for frag in styled_txt_frags):
             # Ensuring bold font is supported:
             self.set_font(style="B")
-        if any("I" in frag.style for frag in styled_txt_frags):
+        if any("I" in frag.font_style for frag in styled_txt_frags):
             # Ensuring italics font is supported:
             self.set_font(style="I")
         # Restoring initial style:
@@ -3087,9 +3095,17 @@ class FPDF(GraphicsStateMixin):
                 and (len(txt) < 3 or txt[2] != half_marker)
             ):
                 if txt_frag:
+                    #                    yield Fragment(
+                    #                        ("B" if in_bold else "") + ("I" if in_italics else ""),
+                    #                        in_underline,
+                    #                        txt_frag,
+                    #                    )
                     yield Fragment(
+                        self.font_family,
+                        self.font_size_pt,
                         ("B" if in_bold else "") + ("I" if in_italics else ""),
                         in_underline,
+                        self.font_stretching,
                         txt_frag,
                     )
                 if txt[:2] == self.MARKDOWN_BOLD_MARKER:
@@ -3105,8 +3121,11 @@ class FPDF(GraphicsStateMixin):
                 txt = txt[1:]
         if txt_frag:
             yield Fragment(
+                self.font_family,
+                self.font_size_pt,
                 ("B" if in_bold else "") + ("I" if in_italics else ""),
                 in_underline,
+                self.font_stretching,
                 txt_frag,
             )
 
@@ -3409,9 +3428,8 @@ class FPDF(GraphicsStateMixin):
             self.get_normalized_string_width_with_style,
             print_sh=print_sh,
         )
-        prev_x = self.x
         # first line from current x position to right margin
-        first_width = self.w - prev_x - self.r_margin
+        first_width = self.w - self.x - self.r_margin
         first_emwidth = (first_width - 2 * self.c_margin) * 1000 / self.font_size
         if self.font_stretching != 100:
             first_emwidth *= 100 / self.font_stretching

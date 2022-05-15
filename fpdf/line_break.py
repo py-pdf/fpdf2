@@ -9,17 +9,36 @@ NEWLINE = "\n"
 
 
 class Fragment:
-    def __init__(self, style: str, underlined: bool, characters: str = None):
-        self.style = style
-        self.underline = underlined
+    def __init__(
+        self,
+        font_family: str,
+        font_size_pt: float,
+        font_style: str,
+        underline: bool,
+        font_stretching: float,
+        characters: list = None,
+    ):
+        self.font_family = font_family
+        self.font_size_pt = font_size_pt
+        self.font_style = font_style
+        self.underline = bool(underline)
+        self.font_stretching = font_stretching
         self.characters = [] if characters is None else characters
 
     def __repr__(self):
-        return f"Fragment(style={self.style}, underline={self.underline}, characters={self.characters})"
+        return f"Fragment(font=[{self.font_family}, {self.font_size_pt}, {self.font_style}, {self.underline}, {self.font_stretching}], characters={self.characters})"
 
     @classmethod
-    def from_string(cls, string: str, style: str, underlined: bool):
-        return cls(style, underlined, list(string))
+    def from_curfont(cls, pdf, characters: list = None):
+        """Alternative constructor: Take current font properties from FPDF instance."""
+        return cls(
+            font_family=pdf.font_family,
+            font_size_pt=pdf.font_size_pt,
+            font_style=pdf.font_style,
+            underline=pdf.underline,
+            font_stretching=pdf.font_stretching,
+            characters=[] if characters is None else characters,
+        )
 
     def trim(self, index: int):
         self.characters = self.characters[:index]
@@ -31,8 +50,11 @@ class Fragment:
     def __eq__(self, other: Any):
         return (
             self.characters == other.characters
-            and self.style == other.style
+            and self.font_family == other.font_family
+            and self.font_size_pt == other.font_size_pt
+            and self.font_style == other.font_style
             and self.underline == other.underline
+            and self.font_stretching == other.font_stretching
         )
 
 
@@ -60,10 +82,13 @@ class HyphenHint(NamedTuple):
     current_line_character_index: int
     width: float
     number_of_spaces: int
-    character_to_append: str
-    character_to_append_width: float
-    character_to_append_style: str
-    character_to_append_underline: bool
+    curchar: str
+    curchar_width: float
+    curchar_font_family: str
+    curchar_font_size_pt: float
+    curchar_font_style: str
+    curchar_underline: bool
+    curchar_font_stretching: bool
 
 
 class CurrentLine:
@@ -97,25 +122,36 @@ class CurrentLine:
         self,
         character: str,
         character_width: float,
-        style: str,
+        font_family: str,
+        font_size_pt: float,
+        font_style: str,
         underline: bool,
+        font_stretching: float,
         original_fragment_index: int,
         original_character_index: int,
     ):
         assert character != NEWLINE
 
         if not self.fragments:
-            self.fragments.append(Fragment(style, underline))
+            self.fragments.append(
+                Fragment(
+                    font_family, font_size_pt, font_style, underline, font_stretching
+                )
+            )
 
         # characters are expected to be grouped into fragments by styles and
         # underline attributes. If the last existing fragment doesn't match
-        # the (style, underline) of pending character ->
-        # create a new fragment with matching (style, underline)
+        # the (font_style, underline) of pending character ->
+        # create a new fragment with matching (font_style, underline)
         elif (
-            style != self.fragments[-1].style
+            font_style != self.fragments[-1].font_style
             or underline != self.fragments[-1].underline
         ):
-            self.fragments.append(Fragment(style, underline))
+            self.fragments.append(
+                Fragment(
+                    font_family, font_size_pt, font_style, underline, font_stretching
+                )
+            )
         active_fragment = self.fragments[-1]
 
         if character == SPACE:
@@ -138,8 +174,11 @@ class CurrentLine:
                 self.number_of_spaces,
                 HYPHEN,
                 character_width,
-                style,
+                font_family,
+                font_size_pt,
+                font_style,
                 underline,
+                font_stretching,
             )
 
         if character != SOFT_HYPHEN or self.print_sh:
@@ -178,10 +217,13 @@ class CurrentLine:
         ):
             self._apply_automatic_hint(self.hyphen_break_hint)
             self.add_character(
-                self.hyphen_break_hint.character_to_append,
-                self.hyphen_break_hint.character_to_append_width,
-                self.hyphen_break_hint.character_to_append_style,
-                self.hyphen_break_hint.character_to_append_underline,
+                self.hyphen_break_hint.curchar,
+                self.hyphen_break_hint.curchar_width,
+                self.hyphen_break_hint.curchar_font_family,
+                self.hyphen_break_hint.curchar_font_size_pt,
+                self.hyphen_break_hint.curchar_font_style,
+                self.hyphen_break_hint.curchar_underline,
+                self.hyphen_break_hint.curchar_font_stretching,
                 self.hyphen_break_hint.original_fragment_index,
                 self.hyphen_break_hint.original_character_index,
             )
@@ -246,7 +288,7 @@ class MultiLineBreak:
 
             character = current_fragment.characters[self.character_index]
             character_width = self._get_character_width(
-                character, current_fragment.style
+                character, current_fragment.font_style
             )
 
             if character == NEWLINE:
@@ -278,8 +320,11 @@ class MultiLineBreak:
             current_line.add_character(
                 character,
                 character_width,
-                current_fragment.style,
+                current_fragment.font_family,
+                current_fragment.font_size_pt,
+                current_fragment.font_style,
                 current_fragment.underline,
+                current_fragment.font_stretching,
                 self.fragment_index,
                 self.character_index,
             )
@@ -294,3 +339,14 @@ class MultiLineBreak:
             return CurrentLine().manual_break(self.justify)
         if current_line.width:
             return current_line.manual_break()
+
+    def get_line_of_dynamic_limits(
+        self,
+        y,
+        get_limits,
+        wordsplit: bool = True,
+        final_width: bool = True,
+    ):
+        limits = get_limits(y_top, y_bottom, self.styled_text_fragments)
+        current_width = limits[1] - limits[0]
+        return self.get_line_of_given_width(self, current_width, wordsplit=wordsplit)
