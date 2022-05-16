@@ -15,6 +15,8 @@ pdf.set_draw_color(r=255, g=128, b=0)
 pdf.line(x1=50, y1=50, x2=150, y2=100)
 pdf.output("orange_plain_line.pdf")
 ```
+![](orange_plain_line.png)
+
 
 Drawing a dashed light blue line:
 ```python
@@ -28,6 +30,7 @@ pdf.set_dash_pattern(dash=2, gap=3)
 pdf.line(x1=50, y1=50, x2=150, y2=100)
 pdf.output("blue_dashed_line.pdf")
 ```
+![](blue_dashed_line.png)
 
 ## Circle ##
 
@@ -43,6 +46,7 @@ pdf.set_fill_color(r=230, g=30, b=180)
 pdf.circle(x=50, y=50, r=50, style="FD")
 pdf.output("circle.pdf")
 ```
+![](circle.png)
 
 ## Ellipse ##
 
@@ -58,6 +62,7 @@ pdf.set_fill_color(240)
 pdf.ellipse(x=50, y=50, w=100, h=50, style="FD")
 pdf.output("ellipse.pdf")
 ```
+![](ellipse.png)
 
 ## Rectangle ##
 
@@ -72,6 +77,7 @@ for i in range(15):
     pdf.rect(x=5+5*i, y=5+5*i, w=200-10*i, h=200-10*i, style="FD")
 pdf.output("squares.pdf")
 ```
+![](squares.png)
 
 ## Polygon ##
 
@@ -88,6 +94,7 @@ coords = ((100, 0), (5, 69), (41, 181), (159, 181), (195, 69))
 pdf.polygon(coords, style="DF")
 pdf.output("polygon.pdf")
 ```
+![](polygon.png)
 
 ## Arc ##
 
@@ -100,9 +107,17 @@ pdf = FPDF()
 pdf.add_page()
 pdf.set_line_width(2)
 pdf.set_fill_color(r=255, g=0, b=0)
-pdf.arc(x=75, y=75, a=25, b=25, start_angle=30, end_angle=130, style="FD")
+pdf.arc(x=75, y=75, a=25, b=25, start_angle=90, end_angle=260, style="FD")
+
+pdf.set_fill_color(r=255, g=0, b=255)
+pdf.arc(x=105, y=75, a=25, b=50, start_angle=180, end_angle=360, style="FD")
+
+pdf.set_fill_color(r=0, g=255, b=0)
+pdf.arc(x=135, y=75, a=25, b=25, start_angle=0, end_angle=130, style="FD")
+
 pdf.output("arc.pdf")
 ```
+![](arc.png)
 
 ## Solid arc ##
 
@@ -115,9 +130,18 @@ pdf = FPDF()
 pdf.add_page()
 pdf.set_line_width(2)
 pdf.set_fill_color(r=255, g=0, b=0)
-pdf.solid_arc(x=75, y=75, a=25, b=25, start_angle=30, end_angle=130, style="FD")
+pdf.solid_arc(x=75, y=75, a=25, b=25, start_angle=90, end_angle=260, style="FD")
+
+pdf.set_fill_color(r=255, g=0, b=255)
+pdf.solid_arc(x=105, y=75, a=25, b=50, start_angle=180, end_angle=360, style="FD")
+
+pdf.set_fill_color(r=0, g=255, b=0)
+pdf.solid_arc(x=135, y=75, a=25, b=25, start_angle=0, end_angle=130, style="FD")
+
 pdf.output("solid_arc.pdf")
 ```
+![](solid_arc.png)
+
 ## Regular Polygon ##
 
 Using [`regular_polygon()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.regular_polygon):
