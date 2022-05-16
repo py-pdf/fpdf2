@@ -118,6 +118,32 @@ pdf.set_fill_color(r=255, g=0, b=0)
 pdf.solid_arc(x=75, y=75, a=25, b=25, start_angle=30, end_angle=130, style="FD")
 pdf.output("solid_arc.pdf")
 ```
+## Regular Polygon ##
+
+Using [`regular_polygon()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.regular_polygon):
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_line_width(0.5)
+
+pdf.set_fill_color(r=30, g=200, b=0)
+pdf.regular_polygon(x=40, y=80, poly_width=30, rotate_degrees=270, num_sides=3, style="FD")
+
+pdf.set_fill_color(r=10, g=30, b=255)
+pdf.regular_polygon(x=80, y=80, poly_width=30, rotate_degrees=135, num_sides=4, style="FD")
+
+pdf.set_fill_color(r=165, g=10, b=255)
+pdf.regular_polygon(x=120, y=80, poly_width=30, rotate_degrees=198, num_sides=5, style="FD")
+
+pdf.set_fill_color(r=255, g=125, b=10)
+pdf.regular_polygon(x=160, y=80, poly_width=30, rotate_degrees=270, num_sides=6, style="FD")
+pdf.output("regular_polygon.pdf")
+```
+![](regular_polygon.png)
+
 ## Regular Star ##
 
 Using [`star()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.star):
