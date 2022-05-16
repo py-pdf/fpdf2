@@ -1346,7 +1346,9 @@ class FPDF(GraphicsStateMixin):
         self.ellipse(x, y, r, r, style)
 
     @check_page
-    def regular_polygon(self, x, y, numSides, polyWidth, rotateDegrees=0, style=None):
+    def regular_polygon(
+        self, x, y, num_sides, poly_width, rotate_degrees=0, style=None
+    ):
         """
         Outputs a regular polygon with n sides
         It can be rotated
@@ -1355,31 +1357,32 @@ class FPDF(GraphicsStateMixin):
         Args:
             x (float): Abscissa of upper-left bounding box.
             y (float): Ordinate of upper-left bounding box.
-            numSides (int): Number of sides for polygon.
-            polyWidth (float): Width of the polygon.
-            rotateDegrees (float): Optional degree amount to rotate polygon.
+            num_sides (int): Number of sides for polygon.
+            poly_width (float): Width of the polygon.
+            rotate_degrees (float): Optional degree amount to rotate polygon.
             style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
 
             * `D` or None: draw border. This is the default value.
             * `F`: fill
             * `DF` or `FD`: draw and fill
         """
-        radius = polyWidth / 2
+        radius = poly_width / 2
+        # center point is (centerX, centerY)
         centerX = x + radius
         centerY = y - radius
-        # center point is (centerX, centerY)
+
+        # creates list of touples containing cordinate points of vertices
         points = []
-        for i in range(1, numSides + 1):
+        for i in range(1, num_sides + 1):
             point = centerX + radius * math.cos(
-                math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
+                math.radians((360 / num_sides) * i) + math.radians(rotate_degrees)
             ), centerY + radius * math.sin(
-                math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
+                math.radians((360 / num_sides) * i) + math.radians(rotate_degrees)
             )
             points.append(point)
-        # creates list of touples containing cordinate points of vertices
 
-        self.polygon(points, style=style)
         # passes points through polygon function
+        self.polygon(points, style=style)
 
     @check_page
     def star(self, x, y, r_in, r_out, corners, rotate_degrees=0, style=None):
