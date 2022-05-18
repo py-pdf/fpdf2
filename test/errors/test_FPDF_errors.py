@@ -105,3 +105,11 @@ def test_repeated_calls_to_output(tmp_path):
     pdf = fpdf.FPDF()
     assert_pdf_equal(pdf, HERE / "repeated_calls_to_output.pdf", tmp_path)
     assert_pdf_equal(pdf, HERE / "repeated_calls_to_output.pdf", tmp_path)
+
+
+def test_incorrent_number_of_pages_toc():
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.insert_toc_placeholder(lambda a, b: None, 10)
+    with pytest.raises(FPDFException):
+        pdf.close()
