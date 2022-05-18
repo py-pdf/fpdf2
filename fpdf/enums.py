@@ -265,6 +265,18 @@ class PageMode(CoerciveEnum):
     "Attachments panel visible"
 
 
+class TextMarkupType(CoerciveEnum):
+    "Subtype of a text markup annotation"
+
+    HIGHLIGHT = Name("Highlight")
+
+    UNDERLINE = Name("Underline")
+
+    SQUIGGLY = Name("Squiggly")
+
+    STRIKE_OUT = Name("StrikeOut")
+
+
 class BlendMode(CoerciveEnum):
     """
     An enumeration of the named standard named blend functions supported by PDF.

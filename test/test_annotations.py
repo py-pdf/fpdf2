@@ -179,7 +179,9 @@ def test_highlighted(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=24)
-    with pdf.add_highlight("Highlight comment", modification_time=EPOCH):
+    with pdf.add_highlight(
+        "Highlight comment", type="Squiggly", modification_time=EPOCH
+    ):
         pdf.text(50, 50, "Line 1")
         pdf.set_y(50)
         pdf.multi_cell(w=30, txt="Line 2")
