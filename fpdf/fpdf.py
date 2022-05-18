@@ -1018,12 +1018,7 @@ class FPDF(GraphicsStateMixin):
         s = s if normalized else self.normalize_text(s)
         w = 0
         for frag in (
-            self._markdown_parse(s)
-            if markdown
-            else (
-                Fragment.from_curfont(self, list(s)),
-                # Fragment.from_string(s, self.font_style, bool(self.underline)),
-            )
+            self._markdown_parse(s) if markdown else (Fragment.from_curfont(s, self),)
         ):
             w += self.get_normalized_string_width_with_style(
                 frag.string, frag.font_style
@@ -2859,12 +2854,7 @@ class FPDF(GraphicsStateMixin):
         if not txt:
             return tuple()
         if not markdown:
-            return tuple(
-                [
-                    # Fragment.from_string(txt, self.font_style, bool(self.underline))
-                    Fragment.from_curfont(self, list(txt))
-                ]
-            )
+            return tuple([Fragment.from_curfont(txt, self)])
         prev_font_style = self.font_style
         styled_txt_frags = tuple(self._markdown_parse(txt))
         page = self.page
@@ -2904,18 +2894,13 @@ class FPDF(GraphicsStateMixin):
                 and (len(txt) < 3 or txt[2] != half_marker)
             ):
                 if txt_frag:
-                    #                    yield Fragment(
-                    #                        ("B" if in_bold else "") + ("I" if in_italics else ""),
-                    #                        in_underline,
-                    #                        txt_frag,
-                    #                    )
                     yield Fragment(
-                        self.font_family,
-                        self.font_size_pt,
+                        txt_frag,
                         ("B" if in_bold else "") + ("I" if in_italics else ""),
                         in_underline,
+                        self.font_family,
+                        self.font_size_pt,
                         self.font_stretching,
-                        txt_frag,
                     )
                 if txt[:2] == self.MARKDOWN_BOLD_MARKER:
                     in_bold = not in_bold
@@ -2930,12 +2915,12 @@ class FPDF(GraphicsStateMixin):
                 txt = txt[1:]
         if txt_frag:
             yield Fragment(
-                self.font_family,
-                self.font_size_pt,
+                txt_frag,
                 ("B" if in_bold else "") + ("I" if in_italics else ""),
                 in_underline,
+                self.font_family,
+                self.font_size_pt,
                 self.font_stretching,
-                txt_frag,
             )
 
     def will_page_break(self, height):

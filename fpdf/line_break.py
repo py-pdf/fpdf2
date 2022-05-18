@@ -9,35 +9,48 @@ NEWLINE = "\n"
 
 
 class Fragment:
+    """
+    A fragment of text with a text style, and possibly more font details.
+
+    This is an internal class of fpdf, and not part of the public API.
+    It may change at any time without notice or any deprecation period.
+    """
+
     def __init__(
         self,
-        font_family: str,
-        font_size_pt: float,
+        characters: Union[list, str],
         font_style: str,
         underline: bool,
-        font_stretching: float,
-        characters: list = None,
+        font_family: str = "",
+        font_size_pt: float = 12,
+        font_stretching: float = 100,
     ):
-        self.font_family = font_family
-        self.font_size_pt = font_size_pt
+        if isinstance(characters, str):
+            self.characters = list(characters)
+        else:
+            self.characters = characters
         self.font_style = font_style
         self.underline = bool(underline)
+        self.font_family = font_family
+        self.font_size_pt = font_size_pt
         self.font_stretching = font_stretching
-        self.characters = [] if characters is None else characters
 
     def __repr__(self):
-        return f"Fragment(font=[{self.font_family}, {self.font_size_pt}, {self.font_style}, {self.underline}, {self.font_stretching}], characters={self.characters})"
+        return (
+            f"Fragment(characters={self.characters}, {self.font_style}, {self.underline}, "
+            f"font=[{self.font_family}, {self.font_size_pt}, {self.font_stretching}], )"
+        )
 
     @classmethod
-    def from_curfont(cls, pdf, characters: list = None):
+    def from_curfont(cls, characters: Union[list, str], pdf):
         """Alternative constructor: Take current font properties from FPDF instance."""
         return cls(
-            font_family=pdf.font_family,
-            font_size_pt=pdf.font_size_pt,
+            characters=characters,
             font_style=pdf.font_style,
             underline=pdf.underline,
+            font_family=pdf.font_family,
+            font_size_pt=pdf.font_size_pt,
             font_stretching=pdf.font_stretching,
-            characters=[] if characters is None else characters,
         )
 
     def trim(self, index: int):
@@ -134,7 +147,12 @@ class CurrentLine:
         if not self.fragments:
             self.fragments.append(
                 Fragment(
-                    font_family, font_size_pt, font_style, underline, font_stretching
+                    "",
+                    font_style,
+                    underline,
+                    font_family,
+                    font_size_pt,
+                    font_stretching,
                 )
             )
 
@@ -148,7 +166,12 @@ class CurrentLine:
         ):
             self.fragments.append(
                 Fragment(
-                    font_family, font_size_pt, font_style, underline, font_stretching
+                    "",
+                    font_style,
+                    underline,
+                    font_family,
+                    font_size_pt,
+                    font_stretching,
                 )
             )
         active_fragment = self.fragments[-1]
