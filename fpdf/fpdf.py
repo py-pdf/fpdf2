@@ -1246,7 +1246,7 @@ class FPDF(GraphicsStateMixin):
         self.set_dash_pattern()
 
     @check_page
-    def rect(self, x, y, w, h, style=None):
+    def rect(self, x, y, w, h, style=None, round_corners=False):
         """
         Outputs a rectangle.
         It can be drawn (border only), filled (with no border) or both.
@@ -1262,11 +1262,46 @@ class FPDF(GraphicsStateMixin):
             * `F`: fill
             * `DF` or `FD`: draw and fill
         """
-        style = RenderStyle.coerce(style)
-        self._out(
-            f"{x * self.k:.2f} {(self.h - y) * self.k:.2f} {w * self.k:.2f} "
-            f"{-h * self.k:.2f} re {style.operator}"
-        )
+        
+        if round_corners:
+            self._draw_rounded_rect(x, y, w, h, style)
+        else:
+            style = RenderStyle.coerce(style)
+            self._out(
+                f"{x * self.k:.2f} {(self.h - y) * self.k:.2f} {w * self.k:.2f} "
+                f"{-h * self.k:.2f} re {style.operator}"
+            )
+
+    def _draw_rounded_rect(self, x, y, w, h, style):
+        min = h
+        r = (w-h)/2
+
+        if r < 0:
+            r *= -1
+            min = w
+
+        if r == 0:
+            r = w/5
+
+        if r >= min/2:
+            r /=min
+
+        coor_x = [x,x+w,x,x+w]
+        coor_y = [y,y,y+h,y+h]
+
+        self.arc(coor_x[0],coor_y[0], 2*r, 180,270, style=style)
+        self.arc(coor_x[1]-2*r,coor_y[1], 2*r, 270,0, style=style)
+        self.arc(coor_x[2],coor_y[2]-2*r, 2*r, 90,180, style=style)
+        self.arc(coor_x[3]-2*r,coor_y[3] -2*r, 2*r, 0,90,style=style)
+        if style == "DF" or style == "F":
+            self.polyline([(coor_x[0] + r,coor_y[0]),(coor_x[1] -r,coor_y[1]), (coor_x[1], coor_y[1] + r),
+            (coor_x[3], coor_y[3] - r), (coor_x[3] - r, coor_y[3]), (coor_x[2] + r, coor_y[2]),
+            (coor_x[2], coor_y[2] - r),(coor_x[0], coor_y[1] + r), (coor_x[0] + r,coor_y[0])], style=style,)
+        else:
+            self.line(coor_x[0] + r, coor_y[0], coor_x[1] - r,coor_y[1])
+            self.line(coor_x[1], coor_y[1] + r, coor_x[3],coor_y[3] - r)
+            self.line(coor_x[2] + r, coor_y[2], coor_x[3] - r,coor_y[3])
+            self.line(coor_x[0], coor_y[1] + r, coor_x[2],coor_y[2] - r)
 
     @check_page
     def ellipse(self, x, y, w, h, style=None):
