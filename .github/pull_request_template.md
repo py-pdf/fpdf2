@@ -31,8 +31,6 @@ e.g. Fixes #0 <!-- This will automatically close issue #0 once the PR is merged:
 
 - [ ] A mention of the change is present in `CHANGELOG.md`
 
-- [ ] The PR description or comment contains a picture of a cute animal (not mandatory but encouraged 😉)
-
 <!-- Feel free to add additional comments, and to ask questions if some of those guidelines are unclear to you! -->
 
 <!--

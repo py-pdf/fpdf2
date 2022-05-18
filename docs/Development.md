@@ -23,6 +23,11 @@ About the original `PyFPDF` lib:
 > you can still access the [old issues](https://github.com/reingart/pyfpdf_googlecode/issues),
 > and [old wiki](https://github.com/reingart/pyfpdf_googlecode/tree/wiki).
 
+As of version [2.5.4](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md),
+`fpdf2` is fully backward compatible with PyFPDF, with the exception of one minor point:
+for the [`cell()` method](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell), the default value of `h` has changed.
+It used to be `0` and is now set to the current value of `FPDF.font_size`.
+
 
 ## Usage ##
 

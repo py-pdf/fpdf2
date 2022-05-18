@@ -28,6 +28,7 @@ from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import datetime
 from functools import wraps
+from math import isclose
 from os.path import splitext
 from pathlib import Path
 from typing import Callable, List, NamedTuple, Optional, Tuple, Union
@@ -55,6 +56,7 @@ from .enums import (
     PageMode,
     PathPaintRule,
     RenderStyle,
+    TextMarkupType,
     TextMode,
     XPos,
     YPos,
@@ -399,8 +401,7 @@ class FPDF(GraphicsStateMixin):
         # We set their default values here.
         self.font_family = ""  # current font family
         self.font_style = ""  # current font style
-        self.font_size_pt = 12  # current font size in points
-        self.font_size = self.font_size_pt / self.k
+        self.font_size = 12 / self.k
         self.font_stretching = 100  # current font stretching
         self.underline = 0  # underlining flag
         self.draw_color = self.DEFAULT_DRAW_COLOR
@@ -440,6 +441,10 @@ class FPDF(GraphicsStateMixin):
 
     def _set_min_pdf_version(self, version):
         self.pdf_version = max(self.pdf_version, version)
+
+    @property
+    def font_size_pt(self):
+        return self.font_size * self.k
 
     @property
     def unifontsubset(self):
@@ -1763,7 +1768,7 @@ class FPDF(GraphicsStateMixin):
         if (
             self.font_family == family
             and self.font_style == style
-            and self.font_size_pt == size
+            and isclose(self.font_size_pt, size)
         ):
             return
 
@@ -1789,7 +1794,6 @@ class FPDF(GraphicsStateMixin):
         # Select it
         self.font_family = family
         self.font_style = style
-        self.font_size_pt = size
         self.font_size = size / self.k
         self.current_font = self.fonts[fontkey]
         if self.page > 0:
@@ -1802,9 +1806,8 @@ class FPDF(GraphicsStateMixin):
         Args:
             size (float): font size in points
         """
-        if self.font_size_pt == size:
+        if isclose(self.font_size_pt, size):
             return
-        self.font_size_pt = size
         self.font_size = size / self.k
         if self.page > 0:
             if not self.current_font:
@@ -1942,7 +1945,9 @@ class FPDF(GraphicsStateMixin):
         return annotation
 
     @contextmanager
-    def add_highlight(self, text, title="", color=(1, 1, 0), modification_time=None):
+    def add_highlight(
+        self, text, title="", type="Highlight", color=(1, 1, 0), modification_time=None
+    ):
         """
         Context manager that adds a single highlight annotation based on the text lines inserted
         inside its indented block.
@@ -1951,8 +1956,9 @@ class FPDF(GraphicsStateMixin):
             text (str): text of the annotation
             title (str): the text label that shall be displayed in the title bar of the annotation’s
                 pop-up window when open and active. This entry shall identify the user who added the annotation.
+            type (fpdf.enums.TextMarkupType, str): "Highlight", "Underline", "Squiggly" or "StrikeOut".
             color (tuple): a tuple of numbers in the range 0.0 to 1.0, representing a colour used for
-                the title bar of the annotation’s pop-up window
+                the title bar of the annotation’s pop-up window. Defaults to yellow.
             modification_time (datetime): date and time when the annotation was most recently modified
         """
         if self.record_text_quad_points:
@@ -1961,7 +1967,7 @@ class FPDF(GraphicsStateMixin):
         yield
         for page, quad_points in self.text_quad_points.items():
             self.add_text_markup_annotation(
-                "Highlight",
+                type,
                 text,
                 quad_points=quad_points,
                 title=title,
@@ -1987,7 +1993,7 @@ class FPDF(GraphicsStateMixin):
         Adds a text markup annotation on some quadrilateral areas of the page.
 
         Args:
-            type (str): "Highlight", "Underline", "Squiggly" or "StrikeOut"
+            type (fpdf.enums.TextMarkupType, str): "Highlight", "Underline", "Squiggly" or "StrikeOut"
             text (str): text of the annotation
             quad_points (tuple): array of 8 × n numbers specifying the coordinates of n quadrilaterals
                 in default user space that comprise the region in which the link should be activated.
@@ -1996,12 +2002,11 @@ class FPDF(GraphicsStateMixin):
             title (str): the text label that shall be displayed in the title bar of the annotation’s
                 pop-up window when open and active. This entry shall identify the user who added the annotation.
             color (tuple): a tuple of numbers in the range 0.0 to 1.0, representing a colour used for
-                the title bar of the annotation’s pop-up window
+                the title bar of the annotation’s pop-up window. Defaults to yellow.
             modification_time (datetime): date and time when the annotation was most recently modified
             page (int): index of the page where this annotation is added
         """
-        if type not in ("Highlight", "Underline", "Squiggly", "StrikeOut"):
-            raise ValueError(f"Invalid text markup annotation subtype: {type}")
+        type = TextMarkupType.coerce(type).value
         if modification_time is None:
             modification_time = datetime.now()
         if page is None:
@@ -2061,13 +2066,15 @@ class FPDF(GraphicsStateMixin):
             s = f"q {self.text_color.pdf_repr().lower()} {s} Q"
         self._out(s)
         if self.record_text_quad_points:
-            unscaled_width = self.get_normalized_string_width_with_style(
-                txt, self.font_style
+            w = (
+                self.get_normalized_string_width_with_style(txt, self.font_style)
+                * self.font_stretching
+                / 100
+                * self.font_size
+                / 1000
             )
-            if self.font_stretching != 100:
-                unscaled_width *= self.font_stretching / 100
-            w = unscaled_width * self.font_size / 1000
             h = self.font_size
+            y -= 0.8 * h  # same coefficient as in _render_styled_text_line()
             self.text_quad_points[self.page].extend(
                 [
                     x * self.k,
@@ -2075,9 +2082,9 @@ class FPDF(GraphicsStateMixin):
                     (x + w) * self.k,
                     (self.h - y) * self.k,
                     x * self.k,
-                    (self.h - y + h) * self.k,
+                    (self.h - y - h) * self.k,
                     (x + w) * self.k,
-                    (self.h - y + h) * self.k,
+                    (self.h - y - h) * self.k,
                 ]
             )
 

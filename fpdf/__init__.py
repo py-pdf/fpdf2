@@ -16,14 +16,7 @@ from . import svg
 from .deprecation import WarnOnDeprecatedModuleAttributes
 
 FPDF_VERSION = _FPDF_VERSION
-"""Current FPDF Version, also available via `__version__` (which is read by `setup.py`):
-
-<pre>
->>> import fpdf
->>> fpdf.__version__
-'2.2.0'
-</pre>
-"""
+"Current FPDF Version, also available via `__version__`"
 
 FPDF_FONT_DIR = _FPDF_FONT_DIR
 """This is the location of where to look for fonts."""
