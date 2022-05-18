@@ -2,6 +2,7 @@ from pathlib import Path
 
 import fpdf
 from test.conftest import assert_pdf_equal
+from fpdf.drawing import DeviceGray
 
 
 HERE = Path(__file__).resolve().parent
@@ -45,3 +46,27 @@ def test_break_or_add_page(tmp_path):
         pdf.set_x(100)
         pdf.multi_cell(50, 10, f"Text {i} - Page {pdf.page}", 1, "C")
     assert_pdf_equal(pdf, HERE / "break_or_add_page.pdf", tmp_path)
+
+
+def test_break_or_add_page_with_different_draw_and_fill_color(tmp_path):
+    class CustomHeader(fpdf.FPDF):
+        def header(self):
+            self.line_width = 0
+            self.draw_color = DeviceGray(0.2)
+            self.fill_color = DeviceGray(0.2)
+
+    pdf = CustomHeader()
+    pdf.set_auto_page_break(auto=True, margin=0)
+    pdf.draw_color = DeviceGray(0.5)
+    pdf.set_stretching(101)
+    pdf.add_page()
+    pdf.set_font("Helvetica", "", 16)
+    for i in range(1, 51):
+        pdf.set_x(10)
+        pdf.multi_cell(50, 10, f"Text {i} - Page {pdf.page}", 1, "C")
+    pdf.page = 1
+    pdf.set_xy(100, 10)
+    for i in range(51, 101):
+        pdf.set_x(100)
+        pdf.multi_cell(50, 10, f"Text {i} - Page {pdf.page}", 1, "C")
+    assert_pdf_equal(pdf, HERE / "break_or_add_page_draw_fill.pdf", tmp_path)
