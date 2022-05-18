@@ -48,6 +48,9 @@ Rendering by Sumatra PDF reader:
 
 Method documentation: [`FPDF.add_highlight`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_highlight)
 
+The appearance of the "highlight effect" can be controlled through the `type` argument:
+it can be `Highlight` (default), `Underline`, `Squiggly` or `StrikeOut`.
+
 
 ## Named actions ##
 
