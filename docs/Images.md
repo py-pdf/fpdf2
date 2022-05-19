@@ -199,3 +199,5 @@ pdf.output("pdf-including-image-without-transparency.pdf")
 ```
 
 This will fill transparent areas of your images with color (usually black).
+
+_cf._ also documentation on [controlling transparency](Transparency.md).

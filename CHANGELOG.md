@@ -18,16 +18,19 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.5.5] - not released yet
 ### Added
-- A new option `align="X"` to `.cell()` and `.multi_cell()` allows to center text around the current x position, thanks to @gmischler
+- a new option `align="X"` to `.cell()` and `.multi_cell()` allows to center text around the current x position, thanks to @gmischler
 - allowing to provide an [`AnnotationName`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.AnnotationName)
   and [`AnnotationFlags`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.AnnotationFlag)
   onto [text_annotation()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_annotation)
-- allowing correctly parsing of SVG files with CSS styling (`style="..."` attribute) thanks to @RedShy
+- allowing correctly parsing of SVG files with CSS styling (`style="..."` attribute), thanks to @RedShy
+- [`FPDF.star`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.star): new method added to draw regular stars, thanks to @digidigital and @RedShy
+- allowing to change appearance of [highlight annotations](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_highlight) by specifying a [`TextMarkupType`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TextMarkupType)
 - documentation on how to control objects transparency: [link to docs](https://pyfpdf.github.io/fpdf2/Transparency.html)
+- documentation on how to create tables and charts using [pandas](https://pandas.pydata.org/) DataFrames: [link to docs](https://pyfpdf.github.io/fpdf2/Maths.html), thanks to @iwayankurniawan
 
 ## [2.5.4] - 2022-05-05
 ### Added
-- new `FPDF.page_mode` property, allowing to display a PDF in **full screen**: [link to docs](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html#full-screen)
+- new `FPDF.page_mode` property, allowing to display a PDF automatically in **full screen**: [link to docs](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html#full-screen)
 - new `FPDF.viewer_preferences` property: [link to docs](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html#viewer-preferences)
 ### Fixed
 - removed a debug `print()` statement (`multi_cell: new_x=... new_y=...`) that had been left in [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) method 🤦‍♂️

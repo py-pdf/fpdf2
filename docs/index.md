@@ -28,7 +28,8 @@ pdf.output("hello_world.pdf")
 * Embedding images, including transparency and alpha channel, using [Pillow (Python Imaging Library)](https://pillow.readthedocs.io/en/stable/)
 * Arbitrary path drawing and basic [SVG](SVG.md) import
 * Embedding [barcodes](Barcodes.md), [charts & graphs](Maths.md), [emojis, symbols & dingbats](EmojisSymbolsDingbats.md)
-* [Cell / multi-cell / plaintext writing](Text.md), [automatic page breaks](PageBreaks.md)
+* [Cell / multi-cell / plaintext writing](Text.md), with [automatic page breaks](PageBreaks.md), line break and text justification
+* Choice of measurement unit, page format & margins. Optional page header and footer
 * Basic [conversion from HTML to PDF](HTML.md)
 * A [templating system](Templates.md) to render PDFs in batchs
 * Images & links alternative descriptions, for accessibility
@@ -37,21 +38,13 @@ pdf.output("hello_world.pdf")
 * [Presentation mode](Presentations.md) with control over page display duration & transitions
 * Optional basic Markdown-like styling: `**bold**, __italics__`
 * Only has 2 dependencies: [Pillow](https://pillow.readthedocs.io/en/stable/) & [defusedxml](https://pypi.org/project/defusedxml/)
-* Unit tests with `qpdf`-based PDF diffing
+* Can render [mathematical equations & charts](https://pyfpdf.github.io/fpdf2/Maths.html)
 * Many example scripts available throughout this documentation, including usage examples with [Django](https://www.djangoproject.com/), [Flask](https://flask.palletsprojects.com), [streamlit](https://streamlit.io/), AWS lambdas... : [Usage in web APIs](UsageInWebAPI.md)
-* PDF samples validation using 3 different checkers:
+* Unit tests with `qpdf`-based PDF diffing, and PDF samples validation using 3 different checkers:
 
 [![QPDF logo](qpdf-logo.svg)](https://github.com/qpdf/qpdf)
 [![PDF Checker logo](pdfchecker-logo.png)](https://www.datalogics.com/products/pdf-tools/pdf-checker/)
 [![VeraPDF logo](vera-logo.jpg)](https://verapdf.org)
-
-FPDF original features:
-
-* Choice of measurement unit, page format and margins
-* Page header and footer management
-* Automatic page break, line break and text justification
-* Image, colors and links support
-* Page compression
 
 ## Tutorials ##
 

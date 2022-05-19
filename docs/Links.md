@@ -70,6 +70,7 @@ from fpdf import FPDF
 pdf = FPDF()
 pdf.set_font("helvetica", size=24)
 pdf.add_page()
+# Displaying a full-width cell with centered text:
 pdf.cell(w=pdf.epw, txt="Welcome on first page!", align="C")
 pdf.add_page()
 link = pdf.add_link()
