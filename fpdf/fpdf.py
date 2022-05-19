@@ -58,6 +58,7 @@ from .enums import (
     TextMode,
     XPos,
     YPos,
+    Corner,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
 from .fonts import fpdf_charwidths
@@ -1263,8 +1264,8 @@ class FPDF(GraphicsStateMixin):
             * `DF` or `FD`: draw and fill
         """
         
-        if round_corners:
-            self._draw_rounded_rect(x, y, w, h, style)
+        if round_corners != False:
+            self._draw_rounded_rect(x, y, w, h, style, round_corners)
         else:
             style = RenderStyle.coerce(style)
             self._out(
@@ -1272,7 +1273,7 @@ class FPDF(GraphicsStateMixin):
                 f"{-h * self.k:.2f} re {style.operator}"
             )
 
-    def _draw_rounded_rect(self, x, y, w, h, style):
+    def _draw_rounded_rect(self, x, y, w, h, style, round_corners):
         min = h
         r = (w-h)/2
 
@@ -1286,22 +1287,59 @@ class FPDF(GraphicsStateMixin):
         if r >= min/2:
             r /=min
 
+        point_1 = point_8 = (x, y)
+        point_2 = point_3 = (x+w, y)
+        point_4 = point_5 = (x+w, y+h)
+        point_6 = point_7 = (x, y+h)
         coor_x = [x,x+w,x,x+w]
         coor_y = [y,y,y+h,y+h]
 
-        self.arc(coor_x[0],coor_y[0], 2*r, 180,270, style=style)
-        self.arc(coor_x[1]-2*r,coor_y[1], 2*r, 270,0, style=style)
-        self.arc(coor_x[2],coor_y[2]-2*r, 2*r, 90,180, style=style)
-        self.arc(coor_x[3]-2*r,coor_y[3] -2*r, 2*r, 0,90,style=style)
-        if style == "DF" or style == "F":
-            self.polyline([(coor_x[0] + r,coor_y[0]),(coor_x[1] -r,coor_y[1]), (coor_x[1], coor_y[1] + r),
-            (coor_x[3], coor_y[3] - r), (coor_x[3] - r, coor_y[3]), (coor_x[2] + r, coor_y[2]),
-            (coor_x[2], coor_y[2] - r),(coor_x[0], coor_y[1] + r), (coor_x[0] + r,coor_y[0])], style=style,)
-        else:
-            self.line(coor_x[0] + r, coor_y[0], coor_x[1] - r,coor_y[1])
-            self.line(coor_x[1], coor_y[1] + r, coor_x[3],coor_y[3] - r)
-            self.line(coor_x[2] + r, coor_y[2], coor_x[3] - r,coor_y[3])
-            self.line(coor_x[0], coor_y[1] + r, coor_x[2],coor_y[2] - r)
+        if round_corners == True:
+            round_corners = [Corner.TOP_RIGHT.value, Corner.TOP_LEFT.value, Corner.BOTTOM_RIGHT.value, Corner.BOTTOM_LEFT.value]
+        
+        if Corner.TOP_RIGHT.value in round_corners:
+            self.arc(coor_x[0],coor_y[0], 2*r, 180,270, style=style)
+            point_1= (x+r, y)
+            point_8= (x, y+r)
+  
+        
+        if Corner.TOP_LEFT.value in round_corners:
+            self.arc(coor_x[1]-2*r,coor_y[1], 2*r, 270,0, style=style)
+            point_2 = (x+w-r, y)
+            point_3 = (x+w, y+r) 
+
+        
+        if Corner.BOTTOM_LEFT.value in round_corners:
+            self.arc(coor_x[3]-2*r,coor_y[3] -2*r, 2*r, 0,90,style=style)
+            point_4 = (x+w, y+h-r)
+            point_5 = (x+w-r, y+h)
+ 
+
+        if Corner.BOTTOM_RIGHT.value in round_corners:
+            self.arc(coor_x[2],coor_y[2]-2*r, 2*r, 90,180, style=style)
+            point_6 = (x+r, y+h)
+            point_7 = (x, y+h-r)
+
+
+        original_color = self.draw_color.colors
+        new_color = self.fill_color.colors
+
+        self.set_draw_color(new_color[0]*255)
+        if len(new_color) > 1:
+            self.set_draw_color(new_color[0]*255, new_color[1]*255, new_color[2]*255)
+
+        self.polyline([point_1, point_2, point_3, point_4, point_5, point_6,
+        point_7, point_8], style=style,)
+
+        self.set_draw_color(original_color[0])
+        if len(original_color)>1:
+            self.set_draw_color(original_color[0], original_color[1], original_color[2])
+            
+        if style != "F":
+            self.line(point_1[0], point_1[1], point_2[0], point_2[1])
+            self.line(point_3[0], point_3[1], point_4[0], point_4[1])
+            self.line(point_5[0], point_5[1], point_6[0], point_6[1])
+            self.line(point_7[0], point_7[1], point_8[0], point_8[1])
 
     @check_page
     def ellipse(self, x, y, w, h, style=None):
