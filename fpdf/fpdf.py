@@ -4044,11 +4044,11 @@ class FPDF(GraphicsStateMixin):
         # Palette
         if info["cs"] == "Indexed":
             self._newobj()
-            filter, pal = (
-                ("/Filter /FlateDecode ", zlib.compress(info["pal"]))
-                if self.compress
-                else ("", info["pal"])
-            )
+            if self.compress:
+                filter, pal = ("/Filter /FlateDecode ", zlib.compress(info["pal"]))
+            else:
+                filter, pal = ("", info["pal"])
+                
             self._out(f"<<{filter}/Length {len(pal)}>>")
             self._out(pdf_stream(pal))
             self._out("endobj")

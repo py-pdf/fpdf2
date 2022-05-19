@@ -56,15 +56,20 @@ def get_img_info(img, image_filter="AUTO", dims=None):
     """
     if Image is None:
         raise EnvironmentError("Pillow not available - fpdf2 cannot insert images")
+
     if not isinstance(img, Image.Image):
         img = Image.open(img)
+
     if dims:
         img = img.resize(dims, resample=RESAMPLE)
+
     if image_filter == "AUTO":
         # Very simple logic for now:
         image_filter = "DCTDecode" if img.format == "JPEG" else "FlateDecode"
-    if img.mode not in ("L", "LA", "RGB", "RGBA"):
+
+    if img.mode not in ("L", "LA", "RGB", "RGBA", "P", "PA"):
         img = img.convert("RGBA")
+
     w, h = img.size
     info = {}
     if img.mode == "L":
@@ -72,6 +77,20 @@ def get_img_info(img, image_filter="AUTO", dims=None):
         info["data"] = _to_data(img, image_filter)
     elif img.mode == "LA":
         dpn, bpc, colspace = 1, 8, "DeviceGray"
+        alpha_channel = slice(1, None, 2)
+        info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
+        if _has_alpha(img, alpha_channel) and image_filter not in (
+            "DCTDecode",
+            "JPXDecode",
+        ):
+            info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
+    elif img.mode == "P":
+        dpn, bpc, colspace = 1, 8, "Indexed"
+        info["data"] = _to_data(img, image_filter)
+        info["pal"] = img.palette.palette
+    elif img.mode == "PA":
+        dpn, bpc, colspace = 1, 8, "Indexed"
+        info["pal"] = img.palette.palette
         alpha_channel = slice(1, None, 2)
         info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
         if _has_alpha(img, alpha_channel) and image_filter not in (
@@ -102,7 +121,6 @@ def get_img_info(img, image_filter="AUTO", dims=None):
             "bpc": bpc,
             "f": image_filter,
             "dp": dp,
-            "pal": "",
             "trns": "",
         }
     )
@@ -113,18 +131,26 @@ def get_img_info(img, image_filter="AUTO", dims=None):
 def _to_data(img, image_filter, **kwargs):
     if image_filter == "FlateDecode":
         return _to_zdata(img, **kwargs)
+
     if img.mode == "LA":
         img = img.convert("L")
+
     if img.mode == "RGBA":
         img = img.convert("RGB")
+
+    if img.mode == "PA":
+        img = img.convert("P")
+
     if image_filter == "DCTDecode":
         compressed_bytes = BytesIO()
         img.save(compressed_bytes, format="JPEG")
         return compressed_bytes.getvalue()
+
     if image_filter == "JPXDecode":
         compressed_bytes = BytesIO()
         img.save(compressed_bytes, format="JPEG2000")
         return compressed_bytes.getvalue()
+
     raise FPDFException(f'Unsupported image filter: "{image_filter}"')
 
 
