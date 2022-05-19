@@ -24,7 +24,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
   onto [text_annotation()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_annotation)
 - allowing correctly parsing of SVG files with CSS styling (`style="..."` attribute), thanks to @RedShy
 - [`FPDF.star`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.star): new method added to draw regular stars, thanks to @digidigital and @RedShy
-- allowing to change appearance of [highlight annotations](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_highlight) by specifying a [`TextMarkupType`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TextMarkupType)
+- [`FPDF.ink_annotation`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ink_annotation): new method added to add path annotations
+- allowing to change appearance of [highlight annotations](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.highlight) by specifying a [`TextMarkupType`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TextMarkupType)
 - documentation on how to control objects transparency: [link to docs](https://pyfpdf.github.io/fpdf2/Transparency.html)
 - documentation on how to create tables and charts using [pandas](https://pandas.pydata.org/) DataFrames: [link to docs](https://pyfpdf.github.io/fpdf2/Maths.html), thanks to @iwayankurniawan
 
@@ -61,7 +62,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.5.2] - 2022-04-13
 ### Added
 - new parameters `new_x` and `new_y` for `cell()` and `multi_cell()`, replacing `ln=0`, thanks to @gmischler
-- new `add_highlight()` method to insert highlight annotations: [documentation](https://pyfpdf.github.io/fpdf2/Annotations.html#highlights)
+- new `highlight()` method to insert highlight annotations: [documentation](https://pyfpdf.github.io/fpdf2/Annotations.html#highlights)
 - new `offset_rendering()` method: [documentation](https://pyfpdf.github.io/fpdf2/PageBreaks.html#unbreakable-sections)
 - new `.text_mode` property: [documentation](https://pyfpdf.github.io/fpdf2/TextStyling.html#text_mode)
 - the page structure of the documentation has been revised, with a new page about [adding text](https://pyfpdf.github.io/fpdf2/Text.html), thanks to @gmischler

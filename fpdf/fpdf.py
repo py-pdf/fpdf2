@@ -71,8 +71,8 @@ from .recorder import FPDFRecorder
 from .structure_tree import MarkedContent, StructureTreeBuilder
 from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ
-from .syntax import create_dictionary_string as pdf_d
-from .syntax import create_list_string as pdf_l
+from .syntax import create_dictionary_string as pdf_dict
+from .syntax import create_list_string as pdf_list
 from .syntax import create_stream as pdf_stream
 from .syntax import iobj_ref as pdf_ref
 from .ttfonts import TTFontFile
@@ -133,6 +133,7 @@ class Annotation(NamedTuple):
     page: Optional[int] = None
     border_width: int = 0  # PDF readers support: displayed by Acrobat but not Sumatra
     name: Optional[AnnotationName] = None  # for text annotations
+    ink_list: Tuple[int] = ()  # for ink annotations
 
     def serialize(self, fpdf):
         "Convert this object dictionnary to a string"
@@ -176,16 +177,20 @@ class Annotation(NamedTuple):
 
         if self.quad_points:
             # pylint: disable=not-an-iterable
-            quad_points = " ".join(
+            quad_points = pdf_list(
                 f"{quad_point:.2f}" for quad_point in self.quad_points
             )
-            out += f" /QuadPoints [{quad_points}]"
+            out += f" /QuadPoints {quad_points}"
 
         if self.page:
             out += f" /P {pdf_ref(object_id_for_page(self.page))}"
 
         if self.name:
             out += f" /Name {self.name.value.pdf_repr()}"
+
+        if self.ink_list:
+            ink_list = pdf_list(f"{coord:.2f}" for coord in self.ink_list)
+            out += f" /InkList [{ink_list}]"
 
         return out + ">>"
 
@@ -1945,7 +1950,7 @@ class FPDF(GraphicsStateMixin):
         return annotation
 
     @contextmanager
-    def add_highlight(
+    def highlight(
         self, text, title="", type="Highlight", color=(1, 1, 0), modification_time=None
     ):
         """
@@ -1962,7 +1967,7 @@ class FPDF(GraphicsStateMixin):
             modification_time (datetime): date and time when the annotation was most recently modified
         """
         if self.record_text_quad_points:
-            raise FPDFException("add_highlight() cannot be nested")
+            raise FPDFException("highlight() cannot be nested")
         self.record_text_quad_points = True
         yield
         for page, quad_points in self.text_quad_points.items():
@@ -1977,6 +1982,8 @@ class FPDF(GraphicsStateMixin):
             )
             self.text_quad_points = defaultdict(list)
         self.record_text_quad_points = False
+
+    add_highlight = highlight  # For backward compatibilty
 
     @check_page
     def add_text_markup_annotation(
@@ -2029,6 +2036,43 @@ class FPDF(GraphicsStateMixin):
             page=page,
         )
         self.annots[page].append(annotation)
+        return annotation
+
+    @check_page
+    def ink_annotation(
+        self, coords, contents="", title="", color=(1, 1, 0), border_width=1
+    ):
+        """
+        Adds add an ink annotation on the page.
+
+        Args:
+            coords (tuple): an iterable of coordinates (pairs of numbers) defining a path
+            contents (str): textual description
+            title (str): the text label that shall be displayed in the title bar of the annotation’s
+                pop-up window when open and active. This entry shall identify the user who added the annotation.
+            color (tuple): a tuple of numbers in the range 0.0 to 1.0, representing a colour used for
+                the title bar of the annotation’s pop-up window. Defaults to yellow.
+            border_width (int): thickness of the path stroke.
+        """
+        ink_list = sum(((x * self.k, (self.h - y) * self.k) for (x, y) in coords), ())
+        x_min = min(ink_list[0::2])
+        y_min = min(ink_list[1::2])
+        x_max = max(ink_list[0::2])
+        y_max = max(ink_list[1::2])
+        annotation = Annotation(
+            "Ink",
+            x=y_min,
+            y=y_max,
+            width=x_max - x_min,
+            height=y_max - y_min,
+            ink_list=ink_list,
+            color=color,
+            border_width=border_width,
+            page=self.page,
+            contents=contents,
+            title=title,
+        )
+        self.annots[self.page].append(annotation)
         return annotation
 
     @check_page
@@ -4115,7 +4159,7 @@ class FPDF(GraphicsStateMixin):
             date_string = f"{datetime.now():%Y%m%d%H%M%S}"
         info_d["/CreationDate"] = enclose_in_parens(f"D:{date_string}")
 
-        self._out(pdf_d(info_d, open_dict="", close_dict="", has_empty_fields=True))
+        self._out(pdf_dict(info_d, open_dict="", close_dict="", has_empty_fields=True))
 
     def _putcatalog(self):
         catalog_d = {
@@ -4134,7 +4178,7 @@ class FPDF(GraphicsStateMixin):
             ]
         else:  # zoom_mode is a number, not one of the allowed strings:
             zoom_config = ["/XYZ", "null", "null", str(self.zoom_mode / 100)]
-        catalog_d["/OpenAction"] = pdf_l(zoom_config)
+        catalog_d["/OpenAction"] = pdf_list(zoom_config)
 
         if self.page_layout:
             catalog_d["/PageLayout"] = self.page_layout.value.pdf_repr()
@@ -4145,12 +4189,12 @@ class FPDF(GraphicsStateMixin):
         if self._xmp_metadata_obj_id:
             catalog_d["/Metadata"] = pdf_ref(self._xmp_metadata_obj_id)
         if self._struct_tree_root_obj_id:
-            catalog_d["/MarkInfo"] = pdf_d({"/Marked": "true"})
+            catalog_d["/MarkInfo"] = pdf_dict({"/Marked": "true"})
             catalog_d["/StructTreeRoot"] = pdf_ref(self._struct_tree_root_obj_id)
         if self._outlines_obj_id:
             catalog_d["/Outlines"] = pdf_ref(self._outlines_obj_id)
 
-        self._out(pdf_d(catalog_d, open_dict="", close_dict=""))
+        self._out(pdf_dict(catalog_d, open_dict="", close_dict=""))
 
     def _putheader(self):
         if self.page_layout in (PageLayout.TWO_PAGE_LEFT, PageLayout.TWO_PAGE_RIGHT):
@@ -4680,6 +4724,8 @@ def _is_svg(bytes):
 
 sys.modules[__name__].__class__ = WarnOnDeprecatedModuleAttributes
 
+
+__pdoc__ = {"FPDF.add_highlight": False}  # Replaced by FPDF.highlight
 
 __all__ = [
     "FPDF",
