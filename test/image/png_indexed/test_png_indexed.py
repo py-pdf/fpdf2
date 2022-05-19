@@ -43,4 +43,4 @@ def test_png_indexed_files(tmp_path):
         link=None,
     )
 
-    assert_pdf_equal(pdf, HERE / "image_png_indexed.pdf", tmp_path, generate=True)
+    assert_pdf_equal(pdf, HERE / "image_png_indexed.pdf", tmp_path)
