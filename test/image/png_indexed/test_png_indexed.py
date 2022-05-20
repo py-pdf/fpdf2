@@ -24,7 +24,7 @@ def test_png_indexed_files(tmp_path):
     # palette with alpha images (PA)
     pdf.set_image_filter("FlateDecode")
     pdf.image(
-        Image.open(HERE / "palette_alpha_1.png").convert("PA"), x=10, y=80, w=60, h=50
+        Image.open(HERE / "palette_alpha_1.png").convert("PA"), x=10, y=80, w=50, h=50
     )
 
     pdf.set_image_filter("DCTDecode")
