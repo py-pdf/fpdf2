@@ -23,6 +23,6 @@ def test_insert_png_files(tmp_path):
     for path in sorted(HERE.glob("*.png")):
         if path.name not in not_supported:
             pdf.add_page()
-            pdf.image(str(path), x=0, y=0, w=0, h=0, link=None)
+            pdf.image(str(path), x=0, y=0, w=0, h=0)
 
     assert_pdf_equal(pdf, HERE / "image_png_insert_png_files.pdf", tmp_path)
