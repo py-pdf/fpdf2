@@ -86,3 +86,118 @@ def test_rect_fill_color(tmp_path):
     next_row(pdf)
 
     assert_pdf_equal(pdf, HERE / "class_rect_fill_color.pdf", tmp_path)
+
+
+def test_round_corners_rect(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+
+    # no fill diferent sizes test
+    y = 10
+    pdf.rect(10, y, 15, 20, round_corners=True, style="D")
+    pdf.rect(30, y, 20, 15, round_corners=True, style="D")
+    pdf.rect(60, y, 33, 28, round_corners=True, style="D")
+    pdf.rect(100, y, 50, 10, round_corners=True, style="D")
+    pdf.rect(160, y, 10, 10, round_corners=True, style="D")
+
+    # no fill different corners
+    y += 35
+    pdf.rect(10, y, 15, 20, round_corners=("TOP_LEFT"), style="D")
+    pdf.rect(30, y, 20, 15, round_corners=("TOP_RIGHT"), style="D")
+    pdf.rect(60, y, 33, 28, round_corners=("BOTTOM_LEFT"), style="D")
+    pdf.rect(100, y, 50, 10, round_corners=("BOTTOM_RIGHT"), style="D")
+    pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT"), style="D")
+
+    # no fill multiple corners
+    y += 35
+    pdf.rect(10, y, 15, 20, round_corners=("TOP_LEFT", "BOTTOM_RIGHT"), style="D")
+    pdf.rect(30, y, 20, 15, round_corners=("TOP_RIGHT", "TOP_LEFT"), style="D")
+    pdf.rect(
+        60,
+        y,
+        33,
+        28,
+        round_corners=("BOTTOM_LEFT", "BOTTOM_RIGHT", "TOP_LEFT"),
+        style="D",
+    )
+    pdf.rect(
+        100,
+        y,
+        50,
+        10,
+        round_corners=("BOTTOM_RIGHT", "TOP_RIGHT", "TOP_LEFT"),
+        style="D",
+    )
+    pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT", "BOTTOM_LEFT"), style="D")
+
+    # fill color diferent sizes test
+    pdf.set_fill_color(0, 255, 0)
+    y += 35
+    pdf.rect(10, y, 15, 20, round_corners=True, style="DF")
+    pdf.rect(30, y, 20, 15, round_corners=True, style="DF")
+    pdf.rect(60, y, 33, 28, round_corners=True, style="DF")
+    pdf.rect(100, y, 50, 10, round_corners=True, style="DF")
+    pdf.rect(160, y, 10, 10, round_corners=True, style="DF")
+
+    # fill different corners
+    y += 35
+    pdf.rect(10, y, 15, 20, round_corners=("TOP_LEFT"), style="DF")
+    pdf.rect(30, y, 20, 15, round_corners=("TOP_RIGHT"), style="DF")
+    pdf.rect(60, y, 33, 28, round_corners=("BOTTOM_LEFT"), style="DF")
+    pdf.rect(100, y, 50, 10, round_corners=("BOTTOM_RIGHT"), style="DF")
+    pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT"), style="DF")
+
+    # fill multiple corners
+    y += 35
+    pdf.rect(10, y, 15, 20, round_corners=("TOP_LEFT", "BOTTOM_RIGHT"), style="DF")
+    pdf.rect(30, y, 20, 15, round_corners=("TOP_RIGHT", "TOP_LEFT"), style="DF")
+    pdf.rect(
+        60,
+        y,
+        33,
+        28,
+        round_corners=("BOTTOM_LEFT", "BOTTOM_RIGHT", "TOP_LEFT"),
+        style="DF",
+    )
+    pdf.rect(
+        100,
+        y,
+        50,
+        10,
+        round_corners=("BOTTOM_RIGHT", "TOP_RIGHT", "TOP_LEFT"),
+        style="DF",
+    )
+    pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT", "BOTTOM_LEFT"), style="DF")
+
+    # fill only different corners
+    pdf.set_fill_color(255, 255, 0)
+    y += 35
+    pdf.rect(10, y, 15, 20, round_corners=("TOP_LEFT"), style="F")
+    pdf.rect(30, y, 20, 15, round_corners=("TOP_RIGHT"), style="F")
+    pdf.rect(60, y, 33, 28, round_corners=("BOTTOM_LEFT"), style="F")
+    pdf.rect(100, y, 50, 10, round_corners=("BOTTOM_RIGHT"), style="F")
+    pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT"), style="F")
+
+    # fill only multiple corners
+    y += 35
+    pdf.rect(10, y, 15, 20, round_corners=("TOP_LEFT", "BOTTOM_RIGHT"), style="F")
+    pdf.rect(30, y, 20, 15, round_corners=("TOP_RIGHT", "TOP_LEFT"), style="F")
+    pdf.rect(
+        60,
+        y,
+        33,
+        28,
+        round_corners=("BOTTOM_LEFT", "BOTTOM_RIGHT", "TOP_LEFT"),
+        style="F",
+    )
+    pdf.rect(
+        100,
+        y,
+        50,
+        10,
+        round_corners=("BOTTOM_RIGHT", "TOP_RIGHT", "TOP_LEFT"),
+        style="F",
+    )
+    pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT", "BOTTOM_LEFT"), style="F")
+
+    assert_pdf_equal(pdf, HERE / "class_round_corners_rect.pdf", tmp_path)

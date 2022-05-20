@@ -1252,7 +1252,7 @@ class FPDF(GraphicsStateMixin):
         self.set_dash_pattern()
 
     @check_page
-    def rect(self, x, y, w, h, style=None, round_corners=False):
+    def rect(self, x, y, w, h, round_corners=False, style=None):
         """
         Outputs a rectangle.
         It can be drawn (border only), filled (with no border) or both.
@@ -1262,14 +1262,23 @@ class FPDF(GraphicsStateMixin):
             y (float): Ordinate of upper-left bounding box.
             w (float): Width.
             h (float): Height.
+            round_corners (tuple of str, tuple of fpdf.enums.Corner, bool): Optional draw a rectangle with round corners.
+            Possible values are:
+
+            *`TOP_LEFT`: a rectangle with round top left corner
+            *`TOP_RIGHT`: a rectangle with round top right corner
+            *`BOTTOM_LEFT`: a rectangle with round bottom left corner
+            *`BOTTOM_RIGHT`: a rectangle with round bottom right corner
+            *`True`: a rectangle with all round corners
+            *`False`: a rectangle with no round corners
             style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
 
             * `D` or empty string: draw border. This is the default value.
             * `F`: fill
             * `DF` or `FD`: draw and fill
         """
-        
-        if round_corners != False:
+
+        if round_corners is not False:
             self._draw_rounded_rect(x, y, w, h, style, round_corners)
         else:
             style = RenderStyle.coerce(style)
@@ -1280,66 +1289,84 @@ class FPDF(GraphicsStateMixin):
 
     def _draw_rounded_rect(self, x, y, w, h, style, round_corners):
         min = h
-        r = (w-h)/2
+        r = (w - h) / 2
 
         if r < 0:
             r *= -1
             min = w
 
         if r == 0:
-            r = w/5
+            r = w / 5
 
-        if r >= min/2:
-            r /=min
+        if r >= min / 2:
+            r /= min
 
         point_1 = point_8 = (x, y)
-        point_2 = point_3 = (x+w, y)
-        point_4 = point_5 = (x+w, y+h)
-        point_6 = point_7 = (x, y+h)
-        coor_x = [x,x+w,x,x+w]
-        coor_y = [y,y,y+h,y+h]
+        point_2 = point_3 = (x + w, y)
+        point_4 = point_5 = (x + w, y + h)
+        point_6 = point_7 = (x, y + h)
+        coor_x = [x, x + w, x, x + w]
+        coor_y = [y, y, y + h, y + h]
 
-        if round_corners == True:
-            round_corners = [Corner.TOP_RIGHT.value, Corner.TOP_LEFT.value, Corner.BOTTOM_RIGHT.value, Corner.BOTTOM_LEFT.value]
-        
+        if round_corners is True:
+            round_corners = [
+                Corner.TOP_RIGHT.value,
+                Corner.TOP_LEFT.value,
+                Corner.BOTTOM_RIGHT.value,
+                Corner.BOTTOM_LEFT.value,
+            ]
+
         if Corner.TOP_RIGHT.value in round_corners:
-            self.arc(coor_x[0],coor_y[0], 2*r, 180,270, style=style)
-            point_1= (x+r, y)
-            point_8= (x, y+r)
-  
-        
-        if Corner.TOP_LEFT.value in round_corners:
-            self.arc(coor_x[1]-2*r,coor_y[1], 2*r, 270,0, style=style)
-            point_2 = (x+w-r, y)
-            point_3 = (x+w, y+r) 
+            self.arc(coor_x[0], coor_y[0], 2 * r, 180, 270, style=style)
+            point_1 = (x + r, y)
+            point_8 = (x, y + r)
 
-        
+        if Corner.TOP_LEFT.value in round_corners:
+            self.arc(coor_x[1] - 2 * r, coor_y[1], 2 * r, 270, 0, style=style)
+            point_2 = (x + w - r, y)
+            point_3 = (x + w, y + r)
+
         if Corner.BOTTOM_LEFT.value in round_corners:
-            self.arc(coor_x[3]-2*r,coor_y[3] -2*r, 2*r, 0,90,style=style)
-            point_4 = (x+w, y+h-r)
-            point_5 = (x+w-r, y+h)
- 
+            self.arc(coor_x[3] - 2 * r, coor_y[3] - 2 * r, 2 * r, 0, 90, style=style)
+            point_4 = (x + w, y + h - r)
+            point_5 = (x + w - r, y + h)
 
         if Corner.BOTTOM_RIGHT.value in round_corners:
-            self.arc(coor_x[2],coor_y[2]-2*r, 2*r, 90,180, style=style)
-            point_6 = (x+r, y+h)
-            point_7 = (x, y+h-r)
-
+            self.arc(coor_x[2], coor_y[2] - 2 * r, 2 * r, 90, 180, style=style)
+            point_6 = (x + r, y + h)
+            point_7 = (x, y + h - r)
 
         original_color = self.draw_color.colors
         new_color = self.fill_color.colors
 
-        self.set_draw_color(new_color[0]*255)
-        if len(new_color) > 1:
-            self.set_draw_color(new_color[0]*255, new_color[1]*255, new_color[2]*255)
+        self.set_draw_color(new_color[0] * 255)
+        if style != "D":
+            if len(new_color) > 1:
+                self.set_draw_color(
+                    new_color[0] * 255, new_color[1] * 255, new_color[2] * 255
+                )
 
-        self.polyline([point_1, point_2, point_3, point_4, point_5, point_6,
-        point_7, point_8], style=style,)
+            self.polyline(
+                [
+                    point_1,
+                    point_2,
+                    point_3,
+                    point_4,
+                    point_5,
+                    point_6,
+                    point_7,
+                    point_8,
+                    point_1,
+                ],
+                style=style,
+            )
 
-        self.set_draw_color(original_color[0])
-        if len(original_color)>1:
-            self.set_draw_color(original_color[0], original_color[1], original_color[2])
-            
+            self.set_draw_color(original_color[0])
+            if len(original_color) > 1:
+                self.set_draw_color(
+                    original_color[0], original_color[1], original_color[2]
+                )
+
         if style != "F":
             self.line(point_1[0], point_1[1], point_2[0], point_2[1])
             self.line(point_3[0], point_3[1], point_4[0], point_4[1])
