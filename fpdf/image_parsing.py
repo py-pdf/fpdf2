@@ -67,6 +67,9 @@ def get_img_info(img, image_filter="AUTO", dims=None):
         # Very simple logic for now:
         image_filter = "DCTDecode" if img.format == "JPEG" else "FlateDecode"
 
+    if img.mode in ("P", "PA") and image_filter != "FlateDecode":
+        img = img.convert("RGBA")
+
     if img.mode not in ("L", "LA", "RGB", "RGBA", "P", "PA"):
         img = img.convert("RGBA")
 
@@ -136,10 +139,6 @@ def _to_data(img, image_filter, **kwargs):
         img = img.convert("L")
 
     if img.mode == "RGBA":
-        img = img.convert("RGB")
-
-    if img.mode == "PA":
-        # convert to RGB because P doesn't support DCTDecode and JPXDecode
         img = img.convert("RGB")
 
     if image_filter == "DCTDecode":

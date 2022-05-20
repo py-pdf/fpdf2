@@ -4000,9 +4000,14 @@ class FPDF(GraphicsStateMixin):
         self._out(f"/Height {info['h']}")
 
         if info["cs"] == "Indexed":
+            palette_ref = (
+                pdf_ref(self.n + 2)
+                if self.allow_images_transparency and "smask" in info
+                else pdf_ref(self.n + 1)
+            )
             self._out(
                 f"/ColorSpace [/Indexed /DeviceRGB "
-                f"{len(info['pal']) // 3 - 1} {pdf_ref(self.n + 1)}]"
+                f"{len(info['pal']) // 3 - 1} {palette_ref}]"
             )
         else:
             self._out(f"/ColorSpace /{info['cs']}")
