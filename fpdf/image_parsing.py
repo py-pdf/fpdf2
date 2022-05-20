@@ -139,7 +139,8 @@ def _to_data(img, image_filter, **kwargs):
         img = img.convert("RGB")
 
     if img.mode == "PA":
-        img = img.convert("P")
+        # convert to RGB because P doesn't support DCTDecode and JPXDecode
+        img = img.convert("RGB")
 
     if image_filter == "DCTDecode":
         compressed_bytes = BytesIO()
