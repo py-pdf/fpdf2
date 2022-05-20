@@ -4048,7 +4048,6 @@ class FPDF(GraphicsStateMixin):
                 filter, pal = ("/Filter /FlateDecode ", zlib.compress(info["pal"]))
             else:
                 filter, pal = ("", info["pal"])
-                
             self._out(f"<<{filter}/Length {len(pal)}>>")
             self._out(pdf_stream(pal))
             self._out("endobj")
