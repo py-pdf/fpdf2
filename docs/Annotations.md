@@ -35,7 +35,7 @@ from fpdf import FPDF
 pdf = FPDF()
 pdf.add_page()
 pdf.set_font("Helvetica", size=24)
-with pdf.add_highlight("Highlight comment"):
+with pdf.highlight("Highlight comment"):
     pdf.text(50, 50, "Line 1")
     pdf.set_y(50)
     pdf.multi_cell(w=30, txt="Line 2")
@@ -46,10 +46,28 @@ pdf.output("highlighted.pdf")
 Rendering by Sumatra PDF reader:
 ![Screenshot of highlight annotation rendered by Sumatra PDF reader](highlighted.png)
 
-Method documentation: [`FPDF.add_highlight`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_highlight)
+Method documentation: [`FPDF.highlight`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.highlight)
 
 The appearance of the "highlight effect" can be controlled through the `type` argument:
 it can be `Highlight` (default), `Underline`, `Squiggly` or `StrikeOut`.
+
+
+## Ink annotations ##
+
+Those annotations allow to draw paths around parts of a document to highlight them:
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.ink_annotation([(100, 200), (200, 100), (300, 200), (200, 300), (100, 200)],
+                   title="Lucas", contents="Hello world!")
+pdf.output("ink_annotation_demo.pdf")
+```
+
+Rendering by Firefox internal PDF viewer:
+![Screenshot of ink annotation rendered by Firefox](ink_annotation.png)
+
+Method documentation: [`FPDF.ink_annotation`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ink_annotation)
 
 
 ## Named actions ##
