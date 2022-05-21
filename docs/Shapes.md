@@ -79,6 +79,25 @@ pdf.output("squares.pdf")
 ```
 ![](squares.png)
 
+Using [`rect()`] (fpdf/fpdf.html#fpdf.fpdf.FPDF.rect) to draw rectangles with round corners:
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_draw_color(200)
+y = 10
+pdf.rect(60, y, 33, 28, round_corners=True, style="D")
+
+pdf.set_fill_color(0, 255, 0)
+pdf.rect(100, y, 50, 10, round_corners=("BOTTOM_RIGHT"), style="DF")
+
+pdf.set_fill_color(255, 255, 0)
+pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT", "BOTTOM_LEFT"), style="F")
+pdf.output("round_corners_rectangles.pdf")
+```
+![](round_corners_rectangles.png)
+
 ## Polygon ##
 
 Using [`polygon()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.polygon):
