@@ -575,10 +575,10 @@ class PDFStyleKeys(Enum):
 
 
 class Corner(CoerciveEnum):
-    TOP_RIGHT = Name("TOP_RIGHT")
-    TOP_LEFT = Name("TOP_LEFT")
-    BOTTOM_RIGHT = Name("BOTTOM_RIGHT")
-    BOTTOM_LEFT = Name("BOTTOM_LEFT")
+    TOP_RIGHT = "TOP_RIGHT"
+    TOP_LEFT = "TOP_LEFT"
+    BOTTOM_RIGHT = "BOTTOM_RIGHT"
+    BOTTOM_LEFT = "BOTTOM_LEFT"
 
 
 # This enum is only used internally:

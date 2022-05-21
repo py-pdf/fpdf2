@@ -1283,10 +1283,10 @@ class FPDF(GraphicsStateMixin):
             * `DF` or `FD`: draw and fill
         """
 
+        style = RenderStyle.coerce(style)
         if round_corners is not False:
             self._draw_rounded_rect(x, y, w, h, style, round_corners)
         else:
-            style = RenderStyle.coerce(style)
             self._out(
                 f"{x * self.k:.2f} {(self.h - y) * self.k:.2f} {w * self.k:.2f} "
                 f"{-h * self.k:.2f} re {style.operator}"
@@ -1320,32 +1320,37 @@ class FPDF(GraphicsStateMixin):
                 Corner.BOTTOM_RIGHT.value,
                 Corner.BOTTOM_LEFT.value,
             ]
+        else:
+            if len(round_corners) > 4:
+                round_corners = (round_corners,)
+        round_corners = tuple(Corner.coerce(rc) for rc in round_corners)
 
-        if Corner.TOP_RIGHT.value in round_corners:
+        if Corner.TOP_RIGHT in round_corners:
             self.arc(coor_x[0], coor_y[0], 2 * r, 180, 270, style=style)
             point_1 = (x + r, y)
             point_8 = (x, y + r)
 
-        if Corner.TOP_LEFT.value in round_corners:
+        if Corner.TOP_LEFT in round_corners:
             self.arc(coor_x[1] - 2 * r, coor_y[1], 2 * r, 270, 0, style=style)
             point_2 = (x + w - r, y)
             point_3 = (x + w, y + r)
 
-        if Corner.BOTTOM_LEFT.value in round_corners:
+        if Corner.BOTTOM_LEFT in round_corners:
             self.arc(coor_x[3] - 2 * r, coor_y[3] - 2 * r, 2 * r, 0, 90, style=style)
             point_4 = (x + w, y + h - r)
             point_5 = (x + w - r, y + h)
 
-        if Corner.BOTTOM_RIGHT.value in round_corners:
+        if Corner.BOTTOM_RIGHT in round_corners:
             self.arc(coor_x[2], coor_y[2] - 2 * r, 2 * r, 90, 180, style=style)
             point_6 = (x + r, y + h)
             point_7 = (x, y + h - r)
 
-        original_color = self.draw_color.colors
-        new_color = self.fill_color.colors
+        
+        if style.is_fill:
+            original_color = self.draw_color.colors
+            new_color = self.fill_color.colors
 
-        self.set_draw_color(new_color[0] * 255)
-        if style != "D":
+            self.set_draw_color(new_color[0] * 255)
             if len(new_color) > 1:
                 self.set_draw_color(
                     new_color[0] * 255, new_color[1] * 255, new_color[2] * 255
@@ -1366,13 +1371,13 @@ class FPDF(GraphicsStateMixin):
                 style=style,
             )
 
-            self.set_draw_color(original_color[0])
+            self.set_draw_color(original_color[0]*255)
             if len(original_color) > 1:
                 self.set_draw_color(
-                    original_color[0], original_color[1], original_color[2]
+                    original_color[0]*255, original_color[1]*255, original_color[2]*255
                 )
 
-        if style != "F":
+        if style.is_draw:
             self.line(point_1[0], point_1[1], point_2[0], point_2[1])
             self.line(point_3[0], point_3[1], point_4[0], point_4[1])
             self.line(point_5[0], point_5[1], point_6[0], point_6[1])
