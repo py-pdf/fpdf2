@@ -179,9 +179,7 @@ def test_highlighted(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=24)
-    with pdf.add_highlight(
-        "Highlight comment", type="Squiggly", modification_time=EPOCH
-    ):
+    with pdf.highlight("Highlight comment", type="Squiggly", modification_time=EPOCH):
         pdf.text(50, 50, "Line 1")
         pdf.set_y(50)
         pdf.multi_cell(w=30, txt="Line 2")
@@ -195,6 +193,19 @@ def test_highlighted_over_page_break(tmp_path):
     pdf.set_font("helvetica", size=24)
     pdf.write(txt=LOREM_IPSUM)
     pdf.ln()
-    with pdf.add_highlight("Comment", title="Freddy Mercury", modification_time=EPOCH):
+    with pdf.highlight("Comment", title="Freddy Mercury", modification_time=EPOCH):
         pdf.write(txt=LOREM_IPSUM)
     assert_pdf_equal(pdf, HERE / "highlighted_over_page_break.pdf", tmp_path)
+
+
+def test_ink_annotation(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=24)
+    pdf.text(50, 50, "Some text")
+    pdf.ink_annotation(
+        [(40, 50), (70, 25), (100, 50), (70, 75), (40, 50)],
+        title="Lucas",
+        contents="Hello world!",
+    )
+    assert_pdf_equal(pdf, HERE / "ink_annotation.pdf", tmp_path)
