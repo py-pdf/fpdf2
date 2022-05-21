@@ -1345,7 +1345,6 @@ class FPDF(GraphicsStateMixin):
             point_6 = (x + r, y + h)
             point_7 = (x, y + h - r)
 
-        
         if style.is_fill:
             original_color = self.draw_color.colors
             new_color = self.fill_color.colors
@@ -1371,10 +1370,12 @@ class FPDF(GraphicsStateMixin):
                 style=style,
             )
 
-            self.set_draw_color(original_color[0]*255)
+            self.set_draw_color(original_color[0] * 255)
             if len(original_color) > 1:
                 self.set_draw_color(
-                    original_color[0]*255, original_color[1]*255, original_color[2]*255
+                    original_color[0] * 255,
+                    original_color[1] * 255,
+                    original_color[2] * 255,
                 )
 
         if style.is_draw:
