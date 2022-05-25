@@ -5,6 +5,7 @@ import fpdf
 import pytest
 from fpdf.errors import FPDFException, FPDFUnicodeEncodingException
 from fpdf.image_parsing import _to_data
+from PIL import Image
 
 HERE = Path(__file__).resolve().parent
 
@@ -109,11 +110,7 @@ def test_repeated_calls_to_output(tmp_path):
 
 
 def test_unsupported_image_filter_error():
-    class Object:
-        pass
-
-    img = Object()
-    img.mode = "N/A"
+    img = Image.open(HERE / "flowers.png")
     image_filter = "N/A"
     with pytest.raises(FPDFException) as error:
         _to_data(img, image_filter)
