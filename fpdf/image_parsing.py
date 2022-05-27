@@ -92,7 +92,7 @@ def get_img_info(img, image_filter="AUTO", dims=None):
         info["data"] = _to_data(img, image_filter)
         info["pal"] = img.palette.palette
 
-        # che if the P image has transparency
+        # check if the P image has transparency
         if img.info.get("transparency", None) is not None and image_filter not in (
             "DCTDecode",
             "JPXDecode",

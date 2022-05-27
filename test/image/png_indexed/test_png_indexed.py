@@ -45,7 +45,7 @@ def test_png_indexed_transparency(tmp_path):
         # open the image as RGBA
         img_RGBA = Image.open(path_png).convert("RGBA")
 
-        # estract the alpha channel
+        # extract the alpha channel
         alpha = img_RGBA.tobytes()[slice(3, None, 4)]
 
         # create an image that represent the alpha layer
