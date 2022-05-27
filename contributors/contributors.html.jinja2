@@ -22,7 +22,7 @@
     const contributors = [{% for name, contributor in user_locations.items() if contributor.location %}
     {
         name: '{{ name }}',
-        location: '{{ contributor.location }}',
+        location: '{{ contributor.location | safe }}',
         pulls: {{ contributor.pulls }},
         issues: {{ contributor.issues }},
     },{% endfor %}];

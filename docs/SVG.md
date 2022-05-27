@@ -83,7 +83,7 @@ pdf.output("my_file.pdf")
 - basic cross-references
 - stroke & fill coloring and opacity
 - basic stroke styling
-- CSS styling of SVG elements
+- Inline CSS styling via `style="..."` attributes.
 
 ## Currently Unsupported Notable SVG Features ##
 
@@ -102,5 +102,6 @@ In addition to that:
 - markers
 - patterns
 - gradients
-- embedded images or other content (including nested SVGs)
 - a lot of attributes
+- embedded images or other content (including nested SVGs)
+- CSS styling via `<style>` tags or external *.css files.

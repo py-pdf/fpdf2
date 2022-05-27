@@ -3,11 +3,13 @@
 `fpdf2` supports basic rendering from HTML.
 
 This is implemented by using `html.parser.HTMLParser` from the Python standard library.
-The whole HTML 5 specification is very likely **not** supported, neither as CSS,
+The whole HTML 5 specification is **not** supported, and neither is CSS,
 but bug reports & contributions are very welcome to improve this.
+_cf._ [Supported HTML features](#supported-html-features) below for details on its current limitations.
 
 For a more robust & feature-full HTML-to-PDF converter in Python,
-you may want to check [WeasyPrint](https://weasyprint.org) or [borb](https://github.com/jorisschellekens/borb-examples/#76-exporting-html-as-pdf).
+you may want to check [Reportlab](https://www.reportlab.com), [WeasyPrint](https://weasyprint.org)
+or [borb](https://github.com/jorisschellekens/borb-examples/#76-exporting-html-as-pdf).
 
 
 ## write_html usage example ##
@@ -90,5 +92,5 @@ pdf.output("html.pdf")
 **Notes**:
 
 * tables should have at least a first `<th>` row with a `width` attribute.
-* currently multi-line text in table cells is not supported, _cf._ [issue 91](https://github.com/PyFPDF/fpdf2/issues/91).
-  Contributions are welcome to add support for this feature! 😊
+* currently **table cells can only contain a single line**, _cf._ [issue 91](https://github.com/PyFPDF/fpdf2/issues/91).
+  Contributions are welcome to add support for multi-line text in them! 😊
