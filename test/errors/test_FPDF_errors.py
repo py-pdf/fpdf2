@@ -115,7 +115,7 @@ def test_unsupported_image_filter_error():
         get_img_info(img=Image.open(HERE / "flowers.png"), image_filter=image_filter)
     assert str(error.value) == f'Unsupported image filter: "{image_filter}"'
 
-    
+
 def test_incorrent_number_of_pages_toc():
     pdf = fpdf.FPDF()
     pdf.add_page()
