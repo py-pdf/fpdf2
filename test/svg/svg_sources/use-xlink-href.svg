@@ -1,0 +1,27 @@
+<?xml version="1.0" standalone="no"?>
+<svg width="12cm" height="5.25cm" viewBox="0 0 1200 525" version="1.1"
+     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Tests usages of xlink:href - issue #446</title>
+  <defs>
+    <g id="ellipseBase">
+      <ellipse cx="100" cy="100" rx="100" ry="50"
+               fill="none" stroke="#888888" stroke-width="2" />
+    </g>
+    <g id="ellipseTranslated">
+      <ellipse cx="100" cy="100" rx="100" ry="50"
+               fill="none" stroke="#888888" stroke-width="2"
+               transform="translate(50 50)"/>
+    </g>
+  </defs>
+  <use xlink:href="#ellipseBase"/>
+  <g transform="translate(0 100)scale(0.5 0.5)">
+    <use xlink:href="#ellipseBase"/>
+  </g>
+  <g transform="translate(0 200)">
+    <use x="100" xlink:href="#ellipseBase"/>
+  </g>
+  <g transform="translate(0 300)">
+    <use x="100" xlink:href="#ellipseTranslated"/>
+  </g>
+</svg>
+

@@ -28,6 +28,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - allowing to change appearance of [highlight annotations](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.highlight) by specifying a [`TextMarkupType`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TextMarkupType)
 - documentation on how to control objects transparency: [link to docs](https://pyfpdf.github.io/fpdf2/Transparency.html)
 - documentation on how to create tables and charts using [pandas](https://pandas.pydata.org/) DataFrames: [link to docs](https://pyfpdf.github.io/fpdf2/Maths.html), thanks to @iwayankurniawan
+### Fixed
+- support for `"x"` & `"y"` attributes in SVG `<use>` tags
 
 ## [2.5.4] - 2022-05-05
 ### Added

@@ -3983,6 +3983,9 @@ class GraphicsContext:
             merged_style = style.__class__.merge(style, self.style)
 
             if debug_stream is not None:
+                if self._transform:
+                    debug_stream.write(f"({self._transform})")
+
                 styles_dbg = []
                 for attr in merged_style.MERGE_PROPERTIES:
                     val = getattr(merged_style, attr)
