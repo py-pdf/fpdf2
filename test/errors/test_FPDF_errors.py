@@ -4,7 +4,7 @@ from test.conftest import assert_pdf_equal
 import fpdf
 import pytest
 from fpdf.errors import FPDFException, FPDFUnicodeEncodingException
-from fpdf.image_parsing import _to_data
+from fpdf.image_parsing import get_img_info
 from PIL import Image
 
 HERE = Path(__file__).resolve().parent
@@ -110,8 +110,7 @@ def test_repeated_calls_to_output(tmp_path):
 
 
 def test_unsupported_image_filter_error():
-    img = Image.open(HERE / "flowers.png")
     image_filter = "N/A"
     with pytest.raises(FPDFException) as error:
-        _to_data(img, image_filter)
+        get_img_info(img=Image.open(HERE / "flowers.png"), image_filter=image_filter)
     assert str(error.value) == f'Unsupported image filter: "{image_filter}"'
