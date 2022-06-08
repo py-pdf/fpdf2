@@ -26,7 +26,7 @@ import zlib
 from collections import OrderedDict, defaultdict
 from collections.abc import Sequence
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import wraps
 from math import isclose
 from os.path import splitext
@@ -434,15 +434,15 @@ class FPDF(GraphicsStateMixin):
         self.viewer_preferences = None
         self.compress = True  # Enable compression by default
         self.pdf_version = "1.3"  # Set default PDF version No.
+        self.creation_date = True
 
         self._current_draw_context = None
         self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
         self._graphics_state_obj_refs = OrderedDict()
 
         self.record_text_quad_points = False
-        self.text_quad_points = defaultdict(
-            list
-        )  # page number -> array of 8 × n numbers
+        # page number -> array of 8 × n numbers:
+        self.text_quad_points = defaultdict(list)
 
     def _set_min_pdf_version(self, version):
         self.pdf_version = max(self.pdf_version, version)
@@ -681,7 +681,7 @@ class FPDF(GraphicsStateMixin):
 
     def set_creation_date(self, date=None):
         """Sets Creation of Date time, or current time if None given."""
-        self.creation_date = datetime.now() if date is None else date
+        self.creation_date = date
 
     def set_xmp_metadata(self, xmp_metadata):
         if "<?xpacket" in xmp_metadata[:50]:
@@ -3219,7 +3219,7 @@ class FPDF(GraphicsStateMixin):
             # disabling bandit rule as we just build a cache key, this is secure
             name, img = hashlib.md5(bytes).hexdigest(), name  # nosec B303 B324
         elif isinstance(name, io.BytesIO):
-            bytes = name.getvalue()
+            bytes = name.getvalue().strip()
             if _is_svg(bytes):
                 return self._vector_image(name, x, y, w, h, link, title, alt_text)
             # disabling bandit rule as we just build a cache key, this is secure
@@ -4151,17 +4151,18 @@ class FPDF(GraphicsStateMixin):
             "/Producer": enclose_in_parens(getattr(self, "producer", None)),
         }
 
-        if hasattr(self, "creation_date"):
+        if self.creation_date is True:
+            # => no date has been specified, we use the current time by default:
+            self.creation_date = datetime.now(timezone.utc)
+        if self.creation_date:
             try:
-                creation_date = self.creation_date
-                date_string = f"{creation_date:%Y%m%d%H%M%S}"
+                info_d["/CreationDate"] = enclose_in_parens(
+                    f"D:{self.creation_date:%Y%m%d%H%M%SZ%H'%M'}"
+                )
             except Exception as error:
                 raise FPDFException(
-                    f"Could not format date: {creation_date}"
+                    f"Could not format date: {self.creation_date}"
                 ) from error
-        else:
-            date_string = f"{datetime.now():%Y%m%d%H%M%S}"
-        info_d["/CreationDate"] = enclose_in_parens(f"D:{date_string}")
 
         self._out(pdf_dict(info_d, open_dict="", close_dict="", has_empty_fields=True))
 

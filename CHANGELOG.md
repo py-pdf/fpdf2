@@ -23,14 +23,15 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
   and [`AnnotationFlags`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.AnnotationFlag)
   onto [text_annotation()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_annotation)
 - allowing correctly parsing of SVG files with CSS styling (`style="..."` attribute), thanks to @RedShy
-- [`FPDF.star`](https://pyfpdf.github.io/fpdf2/Shapes.html#regular-star): new method added to draw regular stars, thanks to @digidigital and @RedShy
-- [`FPDF.ink_annotation`](https://pyfpdf.github.io/fpdf2/Annotations.html#ink-annotations): new method added to add path annotations
+- [`FPDF.star()`](https://pyfpdf.github.io/fpdf2/Shapes.html#regular-star): new method added to draw regular stars, thanks to @digidigital and @RedShy
+- [`FPDF.ink_annotation()`](https://pyfpdf.github.io/fpdf2/Annotations.html#ink-annotations): new method added to add path annotations
 - allowing embedding of indexed PNG images without converting them to RGB colorspace, thanks to @RedShy
 - allowing to change appearance of [highlight annotations](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.highlight) by specifying a [`TextMarkupType`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TextMarkupType)
 - documentation on how to control objects transparency: [link to docs](https://pyfpdf.github.io/fpdf2/Transparency.html)
 - documentation on how to create tables and charts using [pandas](https://pandas.pydata.org/) DataFrames: [link to docs](https://pyfpdf.github.io/fpdf2/Maths.html), thanks to @iwayankurniawan
 ### Fixed
-- support for `"x"` & `"y"` attributes in SVG `<use>` tags
+- support for `"x"` & `"y"` attributes in SVG `<use>` tags - _cf._ [#446](https://github.com/PyFPDF/fpdf2/issues/446)
+- `CreationDate` of PDFs generated, that was broken - _cf._ [#451](https://github.com/PyFPDF/fpdf2/issues/451)
 
 ## [2.5.4] - 2022-05-05
 ### Added
