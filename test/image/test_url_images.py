@@ -14,7 +14,6 @@ HERE = Path(__file__).resolve().parent
 )
 def test_png_url(tmp_path):
     pdf = fpdf.FPDF()
-    pdf.compress = False
     pdf.add_page()
     png = "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
     pdf.image(png, x=15, y=15, w=30, h=25)
