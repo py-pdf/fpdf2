@@ -31,6 +31,7 @@ if __name__ == "__main__":
         package_dir={"fpdf": "fpdf"},
         install_requires=[
             "defusedxml",
+            "svg.path",
             "Pillow>=6.2.2",  # minimum version tested there: https://github.com/PyFPDF/fpdf2/actions/runs/2295868575
         ],
         classifiers=[

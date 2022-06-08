@@ -1,5 +1,6 @@
 import math
 import re
+from svg.path import parse_path, Move, Close, Line, CubicBezier, QuadraticBezier, Arc
 import warnings
 from typing import NamedTuple
 
@@ -11,7 +12,17 @@ except ImportError:
     )
     from xml.etree.ElementTree import fromstring as parse_xml_str  # nosec
 
-from . import drawing, html
+from . import html
+from .drawing import (
+    color_from_hex_string,
+    BezierCurve,
+    GraphicsContext,
+    GraphicsStyle,
+    PaintedPath,
+    Point,
+    QuadraticBezierCurve,
+    Transform,
+)
 
 __pdoc__ = {"force_nodocument": False}
 
@@ -29,12 +40,7 @@ _HANDY_NAMESPACES = {
     "xlink": "http://www.w3.org/1999/xlink",
 }
 
-# "e" is excluded as it is used to build numbers like -2e-3:
-ALPHABET = re.compile(r"([a-df-zA-Z])")
-# We use a negative lookbehind to NOT split after "e" used as exponentiation:
-NUMBER_SIGN = re.compile(r"(?<!e)([+-])")
 NUMBER_SPLIT = re.compile(r"(?:\s+,\s+|\s+,|,\s+|\s+|,)")
-DECIMAL_DISASTER = re.compile(r"(\d+\.\d+|\d+\.|\.\d+)(\.)")
 TRANSFORM_GETTER = re.compile(
     r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)"
     r"\(((?:\s*(?:[-+]?[\d\.]+,?)+\s*)+)\)"
@@ -161,7 +167,7 @@ def svgcolor(colorstr):
         pass
 
     if colorstr.startswith("#"):
-        return drawing.color_from_hex_string(colorstr)
+        return color_from_hex_string(colorstr)
 
     raise ValueError(f"unsupported color specification {colorstr}")
 
@@ -202,7 +208,7 @@ def clamp_float(min_val, max_val):
 @force_nodocument
 def inheritable(value, converter=lambda value: value):
     if value == "inherit":
-        return drawing.GraphicsStyle.INHERIT
+        return GraphicsStyle.INHERIT
 
     return converter(value)
 
@@ -322,7 +328,7 @@ class ShapeBuilder:
     @staticmethod
     def new_path(tag):
         """Create a new path with the appropriate styles."""
-        path = drawing.PaintedPath()
+        path = PaintedPath()
         apply_styles(path, tag)
 
         return path
@@ -357,7 +363,7 @@ class ShapeBuilder:
             raise ValueError(f"bad rect {tag}")
 
         if (width == 0) or (height == 0):
-            return drawing.PaintedPath()
+            return PaintedPath()
 
         if rx > (width / 2):
             rx = width / 2
@@ -457,16 +463,16 @@ def convert_transforms(tfstr):
     # https://drafts.csswg.org/css-transforms/#two-d-transform-functions
     parsed = TRANSFORM_GETTER.findall(tfstr)
 
-    transform = drawing.Transform.identity()
+    transform = Transform.identity()
     for tf_type, args in parsed:
         if tf_type == "matrix":
             a, b, c, d, e, f = tuple(float(n) for n in NUMBER_SPLIT.split(args))
-            transform = drawing.Transform(a, b, c, d, e, f) @ transform
+            transform = Transform(a, b, c, d, e, f) @ transform
 
         elif tf_type == "rotate":
             theta, *about = NUMBER_SPLIT.split(args)
             theta = resolve_angle(theta)
-            rotation = drawing.Transform.rotation(theta=theta)
+            rotation = Transform.rotation(theta=theta)
             if about:
                 # this is an SVG 1.1 feature. SVG 2 uses the transform-origin property.
                 # see: https://www.w3.org/TR/SVG11/coords.html#TransformAttribute
@@ -490,13 +496,13 @@ def convert_transforms(tfstr):
             else:
                 raise ValueError(f"bad scale transform {tfstr}")
 
-            transform = drawing.Transform.scaling(x=sx, y=sy) @ transform
+            transform = Transform.scaling(x=sx, y=sy) @ transform
 
         elif tf_type == "scaleX":  # SVG 2
-            transform = drawing.Transform.scaling(x=float(args), y=1) @ transform
+            transform = Transform.scaling(x=float(args), y=1) @ transform
 
         elif tf_type == "scaleY":  # SVG 2
-            transform = drawing.Transform.scaling(x=1, y=float(args)) @ transform
+            transform = Transform.scaling(x=1, y=float(args)) @ transform
 
         elif tf_type == "skew":  # SVG 2, not the same as skewX@skewY
             # if sy is not provided, it takes a value equal to 0
@@ -510,20 +516,16 @@ def convert_transforms(tfstr):
             else:
                 raise ValueError(f"bad skew transform {tfstr}")
 
-            transform = (
-                drawing.Transform.shearing(x=math.tan(sx), y=math.tan(sy)) @ transform
-            )
+            transform = Transform.shearing(x=math.tan(sx), y=math.tan(sy)) @ transform
 
         elif tf_type == "skewX":
             transform = (
-                drawing.Transform.shearing(x=math.tan(resolve_angle(args)), y=0)
-                @ transform
+                Transform.shearing(x=math.tan(resolve_angle(args)), y=0) @ transform
             )
 
         elif tf_type == "skewY":
             transform = (
-                drawing.Transform.shearing(x=0, y=math.tan(resolve_angle(args)))
-                @ transform
+                Transform.shearing(x=0, y=math.tan(resolve_angle(args))) @ transform
             )
 
         elif tf_type == "translate":
@@ -538,17 +540,13 @@ def convert_transforms(tfstr):
             else:
                 raise ValueError(f"bad translation transform {tfstr}")
 
-            transform = drawing.Transform.translation(x=x, y=y) @ transform
+            transform = Transform.translation(x=x, y=y) @ transform
 
         elif tf_type == "translateX":  # SVG 2
-            transform = (
-                drawing.Transform.translation(x=resolve_length(args), y=0) @ transform
-            )
+            transform = Transform.translation(x=resolve_length(args), y=0) @ transform
 
         elif tf_type == "translateY":  # SVG 2
-            transform = (
-                drawing.Transform.translation(x=0, y=resolve_length(args)) @ transform
-            )
+            transform = Transform.translation(x=0, y=resolve_length(args)) @ transform
 
     return transform
 
@@ -557,14 +555,12 @@ def convert_transforms(tfstr):
 class SVGSmoothCubicCurve(NamedTuple):
     """SVG chained cubic Bézier curve path element."""
 
-    c2: drawing.Point
-    end: drawing.Point
+    c2: Point
+    end: Point
 
     @classmethod
     def from_path_points(cls, path, c2x, c2y, ex, ey):
-        return path.add_path_element(
-            cls(c2=drawing.Point(x=c2x, y=c2y), end=drawing.Point(x=ex, y=ey))
-        )
+        return path.add_path_element(cls(c2=Point(x=c2x, y=c2y), end=Point(x=ex, y=ey)))
 
     def render(self, path_gsds, style, last_item, initial_point):
         # technically, it would also be possible to chain on from a quadratic Bézier,
@@ -573,12 +569,12 @@ class SVGSmoothCubicCurve(NamedTuple):
         # https://www.w3.org/TR/SVG/paths.html#PathDataCubicBezierCommands
         # "if the previous command was not an C, c, S or s, assume the first control
         # point is coincident with the current point."
-        if isinstance(last_item, drawing.BezierCurve):
+        if isinstance(last_item, BezierCurve):
             c1 = (2 * last_item.end) - last_item.c2
         else:
             c1 = last_item.end_point
 
-        return drawing.BezierCurve(c1, self.c2, self.end).render(
+        return BezierCurve(c1, self.c2, self.end).render(
             path_gsds, style, last_item, initial_point
         )
 
@@ -598,19 +594,17 @@ class SVGSmoothCubicCurve(NamedTuple):
 class SVGRelativeSmoothCubicCurve(NamedTuple):
     """SVG chained relative cubic Bézier curve path element."""
 
-    c2: drawing.Point
-    end: drawing.Point
+    c2: Point
+    end: Point
 
     @classmethod
     def from_path_points(cls, path, c2x, c2y, ex, ey):
-        return path.add_path_element(
-            cls(c2=drawing.Point(x=c2x, y=c2y), end=drawing.Point(x=ex, y=ey))
-        )
+        return path.add_path_element(cls(c2=Point(x=c2x, y=c2y), end=Point(x=ex, y=ey)))
 
     def render(self, path_gsds, style, last_item, initial_point):
         last_point = last_item.end_point
 
-        if isinstance(last_item, drawing.BezierCurve):
+        if isinstance(last_item, BezierCurve):
             c1 = (2 * last_item.end) - last_item.c2
         else:
             c1 = last_point
@@ -618,7 +612,7 @@ class SVGRelativeSmoothCubicCurve(NamedTuple):
         c2 = last_point + self.c2
         end = last_point + self.end
 
-        return drawing.BezierCurve(c1, c2, end).render(
+        return BezierCurve(c1, c2, end).render(
             path_gsds, style, last_item, initial_point
         )
 
@@ -638,19 +632,19 @@ class SVGRelativeSmoothCubicCurve(NamedTuple):
 class SVGSmoothQuadraticCurve(NamedTuple):
     """SVG chained quadratic Bézier curve path element."""
 
-    end: drawing.Point
+    end: Point
 
     @classmethod
     def from_path_points(cls, path, ex, ey):
-        return path.add_path_element(cls(end=drawing.Point(x=ex, y=ey)))
+        return path.add_path_element(cls(end=Point(x=ex, y=ey)))
 
     def render(self, path_gsds, style, last_item, initial_point):
-        if isinstance(last_item, drawing.QuadraticBezierCurve):
+        if isinstance(last_item, QuadraticBezierCurve):
             ctrl = (2 * last_item.end) - last_item.ctrl
         else:
             ctrl = last_item.end_point
 
-        return drawing.QuadraticBezierCurve(ctrl, self.end).render(
+        return QuadraticBezierCurve(ctrl, self.end).render(
             path_gsds, style, last_item, initial_point
         )
 
@@ -670,23 +664,23 @@ class SVGSmoothQuadraticCurve(NamedTuple):
 class SVGRelativeSmoothQuadraticCurve(NamedTuple):
     """SVG chained relative quadratic Bézier curve path element."""
 
-    end: drawing.Point
+    end: Point
 
     @classmethod
     def from_path_points(cls, path, ex, ey):
-        return path.add_path_element(cls(end=drawing.Point(x=ex, y=ey)))
+        return path.add_path_element(cls(end=Point(x=ex, y=ey)))
 
     def render(self, path_gsds, style, last_item, initial_point):
         last_point = last_item.end_point
 
-        if isinstance(last_item, drawing.QuadraticBezierCurve):
+        if isinstance(last_item, QuadraticBezierCurve):
             ctrl = (2 * last_item.end) - last_item.ctrl
         else:
             ctrl = last_point
 
         end = last_point + self.end
 
-        return drawing.QuadraticBezierCurve(ctrl, end).render(
+        return QuadraticBezierCurve(ctrl, end).render(
             path_gsds, style, last_item, initial_point
         )
 
@@ -702,94 +696,143 @@ class SVGRelativeSmoothQuadraticCurve(NamedTuple):
         return rendered, resolved, initial_point
 
 
-path_directive_mapping = {
-    "m": (2, drawing.PaintedPath.move_relative),
-    "M": (2, drawing.PaintedPath.move_to),
-    "z": (0, drawing.PaintedPath.close),
-    "Z": (0, drawing.PaintedPath.close),
-    "l": (2, drawing.PaintedPath.line_relative),
-    "L": (2, drawing.PaintedPath.line_to),
-    "h": (1, drawing.PaintedPath.horizontal_line_relative),
-    "H": (1, drawing.PaintedPath.horizontal_line_to),
-    "v": (1, drawing.PaintedPath.vertical_line_relative),
-    "V": (1, drawing.PaintedPath.vertical_line_to),
-    "c": (6, drawing.PaintedPath.curve_relative),
-    "C": (6, drawing.PaintedPath.curve_to),
-    "s": (4, SVGRelativeSmoothCubicCurve.from_path_points),
-    "S": (4, SVGSmoothCubicCurve.from_path_points),
-    "q": (4, drawing.PaintedPath.quadratic_curve_relative),
-    "Q": (4, drawing.PaintedPath.quadratic_curve_to),
-    "t": (2, SVGRelativeSmoothQuadraticCurve.from_path_points),
-    "T": (2, SVGSmoothQuadraticCurve.from_path_points),
-    "a": (7, drawing.PaintedPath.arc_relative),
-    "A": (7, drawing.PaintedPath.arc_to),
-}
-
-path_directives = {*path_directive_mapping}
-
-
-def _read_n_numbers(path_str, n):
-    path_str = path_str.lstrip()
-    *numbers, leftover = NUMBER_SPLIT.split(path_str, maxsplit=n)
-    if len(numbers) == n - 1:
-        numbers.append(leftover)
-        leftover = ""
-    return tuple(float(num) for num in numbers), leftover.lstrip()
-
-
 @force_nodocument
 def svg_path_converter(pdf_path, svg_path):
     """Convert an SVG path string into a structured PDF path object"""
-
-    # the SVG specification talks about path error handling in § 9.5.4:
-    # https://www.w3.org/TR/SVG/paths.html#PathDataErrorHandling. In general we follow
-    # the advice of "Wherever possible, all SVG user agents shall report all errors to
-    # the user" and propagate exceptions from the path parsing up to the caller rather
-    # than silently producing incorrect output.
-
-    # "+", "-", and "." can be used as numeric separators as well, irritatingly. For
-    # example, 3-4 should be parsed as (3, -4), 3+4 should be parsed as (3, 4), and
-    # 3.4.5 should be parsed as (3.4, 0.5) (split like 3.4, .5)
-
-    # DECIMAL_DISASTER substitution has to be called twice to handle extremely
-    # degenerate cases like 1.2.3.4, which will be split into 1.2 .3.4 by the first
-    # pass due to the regex substitution not handling overlapping regions. The expected
-    # output in this case would be "1.2 .3 .4"
-    svg_path = DECIMAL_DISASTER.sub(
-        r"\1 \2",
-        DECIMAL_DISASTER.sub(
-            r"\1 \2", NUMBER_SIGN.sub(r" \1", ALPHABET.sub(r" \1 ", svg_path))
-        ),
-    ).strip()
-
+    svg_path = svg_path.strip()
     if svg_path[0] not in {"M", "m"}:
         raise ValueError(f"SVG path does not start with moveto command: {svg_path}")
 
-    while svg_path:
-        read_idx = 0
-        directive = svg_path[read_idx]
-
-        if directive in path_directives:
-            read_idx = 1
-            read_count, last_directive = path_directive_mapping[directive]
-            last_directive_name = directive
-
-        # we use read_idx as an indicator of whether the path directive was implicit or
-        # not. SVG allows for purely implicit line directives to follow a move
-        # directive, i.e. `M 0,0 1,1` is the same as `M 0,0 L 1,1`. Similarly,
-        # `m 0,0 1,1` is the same as `m 0,0 l 1,1` (see:
-        # https://www.w3.org/TR/SVG/paths.html#PathDataMovetoCommands)
-        if last_directive_name in {"m", "M"} and read_idx == 0:
-            read_count, last_directive = path_directive_mapping[
-                {"m": "l", "M": "L"}[last_directive_name]
-            ]
-
-        if read_count:
-            numbers, svg_path = _read_n_numbers(svg_path[read_idx:], read_count)
+    current_pos = 0
+    for cmd in parse_path(svg_path):
+        if isinstance(cmd, Move):
+            if cmd.relative:
+                end = cmd.end - current_pos
+                PaintedPath.move_relative(pdf_path, x=end.real, y=end.imag)
+            else:
+                PaintedPath.move_to(pdf_path, x=cmd.end.real, y=cmd.end.imag)
+        elif isinstance(cmd, Line):
+            if cmd.horizontal:
+                if cmd.relative:
+                    delta = cmd.end - current_pos
+                    PaintedPath.horizontal_line_relative(pdf_path, dx=delta.real)
+                else:
+                    PaintedPath.horizontal_line_to(pdf_path, x=cmd.end.real)
+            elif cmd.vertical:
+                if cmd.relative:
+                    delta = cmd.end - current_pos
+                    PaintedPath.vertical_line_relative(pdf_path, dy=delta.imag)
+                else:
+                    PaintedPath.vertical_line_to(pdf_path, y=cmd.end.imag)
+            else:
+                if cmd.relative:
+                    delta = cmd.end - current_pos
+                    PaintedPath.line_relative(pdf_path, dx=delta.real, dy=delta.imag)
+                else:
+                    PaintedPath.line_to(pdf_path, x=cmd.end.real, y=cmd.end.imag)
+        elif isinstance(cmd, Arc):
+            if cmd.relative:
+                end = cmd.end - current_pos
+                PaintedPath.arc_relative(
+                    pdf_path,
+                    rx=cmd.radius.real,
+                    ry=cmd.radius.imag,
+                    rotation=cmd.rotation,
+                    large_arc=cmd.arc,
+                    positive_sweep=cmd.sweep,
+                    dx=end.real,
+                    dy=end.imag,
+                )
+            else:
+                PaintedPath.arc_to(
+                    pdf_path,
+                    rx=cmd.radius.real,
+                    ry=cmd.radius.imag,
+                    rotation=cmd.rotation,
+                    large_arc=cmd.arc,
+                    positive_sweep=cmd.sweep,
+                    x=cmd.end.real,
+                    y=cmd.end.imag,
+                )
+        elif isinstance(cmd, CubicBezier):
+            if cmd.smooth:
+                if cmd.relative:
+                    control2 = cmd.control2 - current_pos
+                    end = cmd.end - current_pos
+                    SVGRelativeSmoothCubicCurve.from_path_points(
+                        pdf_path,
+                        c2x=control2.real,
+                        c2y=control2.imag,
+                        ex=end.real,
+                        ey=end.imag,
+                    )
+                else:
+                    SVGSmoothCubicCurve.from_path_points(
+                        pdf_path,
+                        c2x=cmd.control2.real,
+                        c2y=cmd.control2.imag,
+                        ex=cmd.end.real,
+                        ey=cmd.end.imag,
+                    )
+            else:
+                if cmd.relative:
+                    control1 = cmd.control1 - current_pos
+                    control2 = cmd.control2 - current_pos
+                    end = cmd.end - current_pos
+                    PaintedPath.curve_relative(
+                        pdf_path,
+                        dx1=control1.real,
+                        dy1=control1.imag,
+                        dx2=control2.real,
+                        dy2=control2.imag,
+                        dx3=end.real,
+                        dy3=end.imag,
+                    )
+                else:
+                    PaintedPath.curve_to(
+                        pdf_path,
+                        x1=cmd.control1.real,
+                        y1=cmd.control1.imag,
+                        x2=cmd.control2.real,
+                        y2=cmd.control2.imag,
+                        x3=cmd.end.real,
+                        y3=cmd.end.imag,
+                    )
+        elif isinstance(cmd, QuadraticBezier):
+            if cmd.smooth:
+                if cmd.relative:
+                    end = cmd.end - current_pos
+                    SVGRelativeSmoothQuadraticCurve.from_path_points(
+                        pdf_path, ex=end.real, ey=end.imag
+                    )
+                else:
+                    SVGSmoothQuadraticCurve.from_path_points(
+                        pdf_path, ex=cmd.end.real, ey=cmd.end.imag
+                    )
+            else:
+                if cmd.relative:
+                    control = cmd.control - current_pos
+                    end = cmd.end - current_pos
+                    PaintedPath.quadratic_curve_relative(
+                        pdf_path,
+                        dx1=control.real,
+                        dy1=control.imag,
+                        dx2=end.real,
+                        dy2=end.imag,
+                    )
+                else:
+                    PaintedPath.quadratic_curve_to(
+                        pdf_path,
+                        x1=cmd.control.real,
+                        y1=cmd.control.imag,
+                        x2=cmd.end.real,
+                        y2=cmd.end.imag,
+                    )
+        elif isinstance(cmd, Close):
+            PaintedPath.close(pdf_path)
         else:
-            numbers, svg_path = (), svg_path[read_idx:].strip()
-
-        last_directive(pdf_path, *numbers)
+            raise NotImplementedError(f"Unsupported svg.path command type: {cmd}")
+        current_pos = cmd.end
 
 
 class SVGObject:
@@ -868,7 +911,7 @@ class SVGObject:
     @force_nodocument
     def convert_graphics(self, root_tag):
         """Convert the graphics contained in the SVG into the PDF representation."""
-        base_group = drawing.GraphicsContext()
+        base_group = GraphicsContext()
         base_group.style.stroke_width = None
         base_group.style.auto_close = False
         base_group.style.stroke_cap_style = "butt"
@@ -951,15 +994,15 @@ class SVGObject:
             vp_height = self.height or height
 
         if scale == 1:
-            transform = drawing.Transform.identity()
+            transform = Transform.identity()
         else:
-            transform = drawing.Transform.scaling(1 / scale)
+            transform = Transform.scaling(1 / scale)
 
         if self.viewbox:
             vx, vy, vw, vh = self.viewbox
 
             if (vw == 0) or (vh == 0):
-                return 0, 0, drawing.GraphicsContext()
+                return 0, 0, GraphicsContext()
 
             w_ratio = vp_width / vw
             h_ratio = vp_height / vh
@@ -969,12 +1012,12 @@ class SVGObject:
 
             transform = (
                 transform
-                @ drawing.Transform.translation(x=-vx, y=-vy)
-                @ drawing.Transform.scaling(x=w_ratio, y=h_ratio)
+                @ Transform.translation(x=-vx, y=-vy)
+                @ Transform.scaling(x=w_ratio, y=h_ratio)
             )
 
             if align_viewbox:
-                transform = transform @ drawing.Transform.translation(
+                transform = transform @ Transform.translation(
                     x=vp_width / 2 - (vw / 2) * w_ratio,
                     y=vp_height / 2 - (vh / 2) * h_ratio,
                 )
@@ -1002,7 +1045,7 @@ class SVGObject:
         try:
             if x is not None and y is not None:
                 pdf.set_xy(0, 0)
-                path.transform = path.transform @ drawing.Transform.translation(x, y)
+                path.transform = path.transform @ Transform.translation(x, y)
 
             pdf.draw_path(path, debug_stream)
 
@@ -1025,7 +1068,7 @@ class SVGObject:
     @force_nodocument
     def build_xref(self, xref):
         """Resolve a cross-reference to an already-seen SVG element by ID."""
-        pdf_group = drawing.GraphicsContext()
+        pdf_group = GraphicsContext()
         apply_styles(pdf_group, xref)
 
         for candidate in xmlns_lookup("xlink", "href"):
@@ -1048,7 +1091,7 @@ class SVGObject:
             # Quoting the SVG spec - 5.6.2. Layout of re-used graphics:
             # > The x and y properties define an additional transformation translate(x,y)
             x, y = float(xref.attrib.get("x", 0)), float(xref.attrib.get("y", 0))
-            pdf_group.transform = drawing.Transform.translation(x=x, y=y)
+            pdf_group.transform = Transform.translation(x=x, y=y)
         # Note that we currently do not support "width" & "height" in <use>
 
         return pdf_group
@@ -1057,7 +1100,7 @@ class SVGObject:
     def build_group(self, group, pdf_group=None):
         """Handle nested items within a group <g> tag."""
         if pdf_group is None:
-            pdf_group = drawing.GraphicsContext()
+            pdf_group = GraphicsContext()
             apply_styles(pdf_group, group)
 
         for child in group:
@@ -1082,7 +1125,7 @@ class SVGObject:
     @force_nodocument
     def build_path(self, path):
         """Convert an SVG <path> tag into a PDF path object."""
-        pdf_path = drawing.PaintedPath()
+        pdf_path = PaintedPath()
         apply_styles(pdf_path, path)
 
         svg_path = path.attrib.get("d", None)

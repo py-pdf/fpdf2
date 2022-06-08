@@ -842,9 +842,14 @@ svg_path_directives = (
         id="implicit close",
     ),
     pytest.param(
-        "M 0 1 c -7e-5 -4e-5 -8.8492 -3.1382 -8.8493 -3.1383",
-        [M(0, 1), c(-7e-5, -4e-5, -8.8492, -3.1382, -8.8493, -3.1383)],
+        "M 0 0 c -7e-5 -4e-5 -8.8492 -3.1382 -8.8493 -3.1383",
+        [M(0, 0), c(-7e-5, -4e-5, -8.8492, -3.1382, -8.8493, -3.1383)],
         id="exponentiated numbers",  # cf. issue #376
+    ),
+    pytest.param(
+        "M 0 1 a5.168 5.168 0 013.06-1.837",
+        [M(0, 1), a(P(5.168, 5.168), 0.0, False, True, P(3.06, -1.837))],
+        id="arc with joined arguments",  # cf. issue #450
     ),
 )
 
