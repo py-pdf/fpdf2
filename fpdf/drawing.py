@@ -2940,7 +2940,7 @@ class ImplicitClose(NamedTuple):
             a tuple of `(str, new_last_item)`, where `new_last_item` is whatever the old
             last_item was.
         """
-        # pylint: disable=unused-argument,no-self-use
+        # pylint: disable=unused-argument
         if style.auto_close:
             return "h", last_item, initial_point
 
@@ -3004,7 +3004,7 @@ class Close(NamedTuple):
             a tuple of `(str, new_last_item)`, where `new_last_item` is whatever the old
             last_item was.
         """
-        # pylint: disable=unused-argument,no-self-use
+        # pylint: disable=unused-argument
         return "h", Move(initial_point), initial_point
 
     @force_nodocument

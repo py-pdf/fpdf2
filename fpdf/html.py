@@ -697,7 +697,6 @@ class HTML2FPDF(HTMLParser):
         self.set_style("u", False)
         self.set_text_color(*self.font_color)
 
-    # pylint: disable=no-self-use
     def render_toc(self, pdf, outline):
         "This method can be overriden by subclasses to customize the Table of Contents style."
         pdf.ln()
