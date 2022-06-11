@@ -36,3 +36,15 @@ def test_write_soft_hyphen(tmp_path):
     doc.set_font("helvetica", size=24)
     doc.write(txt=s)
     assert_pdf_equal(doc, HERE / "write_soft_hyphen.pdf", tmp_path)
+
+
+def test_write_trailing_nl(tmp_path):  # issue #455
+    """Each item in lines triggers a line break at the end."""
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    lines = ["Hello\n", "Sweet\n", "World\n"]
+    for line in lines:
+        pdf.write(txt=line)
+    pdf.write(txt="end_mmc")
+    assert_pdf_equal(pdf, HERE / "write_trailing_nl.pdf", tmp_path)

@@ -321,3 +321,18 @@ def test_multi_cell_with_limited_horizontal_space():  # issue #389
     assert pdf.x == pdf.l_margin + pdf.epw - 2 * pdf.c_margin - 1
     with pytest.raises(FPDFException):
         pdf.multi_cell(w=0, h=5, txt="test")
+
+
+def test_multi_cell_trailing_nl(tmp_path):  # issue #455
+    """Each multi_line() call triggers a line break at the end."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    lines = ["Hello\n", "Sweet\n", "World\n"]
+    for line in lines:
+        pdf.multi_cell(200, txt=line)
+    pdf.cell(txt="end_mmc")
+    pdf.ln(50)
+    pdf.multi_cell(200, txt="".join(lines))
+    pdf.cell(txt="end_mc")
+    assert_pdf_equal(pdf, HERE / "multi_cell_trailing_nl.pdf", tmp_path)
