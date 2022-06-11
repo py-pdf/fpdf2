@@ -32,6 +32,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Fixed
 - support for `"x"` & `"y"` attributes in SVG `<use>` tags - _cf._ [#446](https://github.com/PyFPDF/fpdf2/issues/446)
 - `CreationDate` of PDFs generated, that was broken - _cf._ [#451](https://github.com/PyFPDF/fpdf2/issues/451)
+### Fixed
+- multi_cell() and write() ignored a trailing newline character in the supplied text since 2.5.1, fixed thanks to @gmischler.
 
 ## [2.5.4] - 2022-05-05
 ### Added

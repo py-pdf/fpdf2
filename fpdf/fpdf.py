@@ -2436,6 +2436,7 @@ class FPDF(GraphicsStateMixin):
                 text_width=0.0,
                 number_of_spaces_between_words=0,
                 justify=False,
+                trailing_nl=False,
             ),
             w,
             h,
@@ -3012,6 +3013,7 @@ class FPDF(GraphicsStateMixin):
                     text_width=0,
                     number_of_spaces_between_words=0,
                     justify=False,
+                    trailing_nl=False,
                 )
             ]
         if align == Align.X:
@@ -3051,6 +3053,13 @@ class FPDF(GraphicsStateMixin):
             if not is_last_line and align == Align.X:
                 # prevent cumulative shift to the left
                 self.x = prev_x
+            if (
+                is_last_line
+                and text_line.trailing_nl
+                and new_y in (YPos.LAST, YPos.NEXT)
+            ):
+                # The line renderer can't handle trailing newlines in the text.
+                self.ln()
 
         if new_y == YPos.TOP:  # We may have jumped a few lines -> reset
             self.y = prev_y
@@ -3152,7 +3161,9 @@ class FPDF(GraphicsStateMixin):
                 link=link,
             )
             page_break_triggered = page_break_triggered or new_page
-
+        if text_line.trailing_nl:
+            # The line renderer can't handle trailing newlines in the text.
+            self.ln()
         return page_break_triggered
 
     @check_page

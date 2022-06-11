@@ -35,7 +35,11 @@ def test_width_calculation():
 
     # zero width returns empty line
     assert multi_line_break.get_line_of_given_width(0) == TextLine(
-        fragments=[], text_width=0, number_of_spaces_between_words=0, justify=False
+        fragments=[],
+        text_width=0,
+        number_of_spaces_between_words=0,
+        justify=False,
+        trailing_nl=False,
     )
     # the first character has width of 2 units.
     # request of 1 unit line raises an exception
@@ -47,24 +51,28 @@ def test_width_calculation():
         text_width=2,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(3) == TextLine(
         fragments=[Fragment.from_string("b", "normal", False)],
         text_width=3,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(4) == TextLine(
         fragments=[Fragment.from_string("c", "normal", False)],
         text_width=4,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(5) == TextLine(
         fragments=[Fragment.from_string("d", "normal", False)],
         text_width=5,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(100000) is None
 
@@ -92,6 +100,7 @@ def test_single_space_in_fragment():
         text_width=500,
         number_of_spaces_between_words=1,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(100000) is None
 
@@ -138,6 +147,7 @@ def test_single_hard_hyphen_in_fragment():
         text_width=500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(100000) is None
 
@@ -191,6 +201,7 @@ def test_trailing_soft_hyphen():
         text_width=2500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(100000) is None
 
@@ -218,6 +229,7 @@ def test_trailing_whitespace():
         text_width=3000,
         number_of_spaces_between_words=1,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(100000) is None
 
@@ -245,6 +257,7 @@ def test_two_words_one_line():
         text_width=5500,
         number_of_spaces_between_words=1,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(100000) is None
 
@@ -276,6 +289,7 @@ def test_two_words_one_line_justify():
         text_width=5500,
         number_of_spaces_between_words=1,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(100000) is None
 
@@ -305,12 +319,14 @@ def test_two_words_two_lines_break_by_space():
         text_width=2500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("world", "normal", False)],
         text_width=2500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(2500) is None
 
@@ -342,12 +358,14 @@ def test_two_words_two_lines_break_by_space_justify():
         text_width=2500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("world", "normal", False)],
         text_width=2500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(2500) is None
 
@@ -379,12 +397,14 @@ def test_four_words_two_lines_break_by_space():
         text_width=5500,
         number_of_spaces_between_words=1,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(6000) == TextLine(
         fragments=[Fragment.from_string(second_line_text, "normal", False)],
         text_width=5500,
         number_of_spaces_between_words=1,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(2500) is None
 
@@ -420,12 +440,14 @@ def test_four_words_two_lines_break_by_space_justify():
         text_width=5500,
         number_of_spaces_between_words=1,
         justify=True,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(6000) == TextLine(
         fragments=[Fragment.from_string(second_line_text, "normal", False)],
         text_width=5500,
         number_of_spaces_between_words=1,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(2500) is None
 
@@ -461,6 +483,7 @@ def test_break_fragment_into_two_lines():
         text_width=5000,
         number_of_spaces_between_words=1,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(8000) == TextLine(
         fragments=[
@@ -470,6 +493,7 @@ def test_break_fragment_into_two_lines():
         text_width=7500,
         number_of_spaces_between_words=1,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(6000) is None
 
@@ -507,6 +531,7 @@ def test_break_fragment_into_two_lines_justify():
         text_width=5000,
         number_of_spaces_between_words=1,
         justify=True,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(8000) == TextLine(
         fragments=[
@@ -516,6 +541,7 @@ def test_break_fragment_into_two_lines_justify():
         text_width=7500,
         number_of_spaces_between_words=1,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(6000) is None
 
@@ -542,42 +568,49 @@ def test_soft_hyphen_break():
         text_width=2500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("efgh\u002d", "normal", False)],
         text_width=2500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(2200) == TextLine(
         fragments=[Fragment.from_string("ijk\u002d", "normal", False)],
         text_width=2000,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(1000) == TextLine(
         fragments=[Fragment.from_string("l\u002d", "normal", False)],
         text_width=1000,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(1000) == TextLine(
         fragments=[Fragment.from_string("m\u002d", "normal", False)],
         text_width=1000,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(1000) == TextLine(
         fragments=[Fragment.from_string("n\u002d", "normal", False)],
         text_width=1000,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(1000) == TextLine(
         fragments=[Fragment.from_string("op", "normal", False)],
         text_width=1000,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(1000) is None
 
@@ -607,18 +640,21 @@ def test_soft_hyphen_break_justify():
         text_width=3000,
         number_of_spaces_between_words=1,
         justify=True,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(3000) == TextLine(
         fragments=[Fragment.from_string("ef gh\u002d", "normal", False)],
         text_width=3000,
         number_of_spaces_between_words=1,
         justify=True,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(3000) == TextLine(
         fragments=[Fragment.from_string("kl mn", "normal", False)],
         text_width=2500,
         number_of_spaces_between_words=1,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(1000) is None
 
@@ -645,24 +681,28 @@ def test_explicit_break():
         text_width=500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=True,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("b", "normal", False)],
         text_width=500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=True,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("c", "normal", False)],
         text_width=500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=True,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("d", "normal", False)],
         text_width=500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(1000) is None
 
@@ -692,24 +732,28 @@ def test_explicit_break_justify():
         text_width=500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=True,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("b", "normal", False)],
         text_width=500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=True,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("c", "normal", False)],
         text_width=500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=True,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("d", "normal", False)],
         text_width=500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(1000) is None
 
@@ -737,24 +781,28 @@ def test_single_world_doesnt_fit_into_width():
         text_width=2500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("fghij", "normal", False)],
         text_width=2500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("klmno", "normal", False)],
         text_width=2500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("p", "normal", False)],
         text_width=500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(1000) is None
 
@@ -784,24 +832,28 @@ def test_single_world_doesnt_fit_into_width_justify():
         text_width=2500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("fghij", "normal", False)],
         text_width=2500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("klmno", "normal", False)],
         text_width=2500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(2500) == TextLine(
         fragments=[Fragment.from_string("p", "normal", False)],
         text_width=500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(1000) is None
 
@@ -828,5 +880,6 @@ def test_last_line_no_justify():
         text_width=500,
         number_of_spaces_between_words=0,
         justify=False,
+        trailing_nl=False,
     )
     assert multi_line_break.get_line_of_given_width(1000) is None
