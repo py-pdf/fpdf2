@@ -1,8 +1,23 @@
 import math
 import re
-from svg.path import parse_path, Move, Close, Line, CubicBezier, QuadraticBezier, Arc
 import warnings
 from typing import NamedTuple
+
+try:
+    from svg.path import (
+        parse_path,
+        Move,
+        Close,
+        Line,
+        CubicBezier,
+        QuadraticBezier,
+        Arc,
+    )
+except ImportError:
+    warnings.warn(
+        "svg.path could not be imported - fpdf2 will not be able to render SVG images"
+    )
+    parse_path = None
 
 try:
     from defusedxml.ElementTree import fromstring as parse_xml_str
@@ -699,6 +714,11 @@ class SVGRelativeSmoothQuadraticCurve(NamedTuple):
 @force_nodocument
 def svg_path_converter(pdf_path, svg_path):
     """Convert an SVG path string into a structured PDF path object"""
+    if parse_path is None:
+        raise EnvironmentError(
+            "svg?path not available - fpdf2 cannot insert SVG images"
+        )
+
     svg_path = svg_path.strip()
     if svg_path[0] not in {"M", "m"}:
         raise ValueError(f"SVG path does not start with moveto command: {svg_path}")

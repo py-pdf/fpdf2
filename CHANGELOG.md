@@ -17,6 +17,10 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.5.6] - not released yet
+### Changed
+- the [svg.path](https://pypi.org/project/svg.path/) package was added as dependency to better parse SVG files
+### Fixed
+- properly parsing single-digits arguments in SVG paths - _cf._ [#450](https://github.com/PyFPDF/fpdf2/issues/450)
 
 ## [2.5.5] - 2022-06-17
 ### Added

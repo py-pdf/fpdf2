@@ -29,8 +29,8 @@ pdf.output("hello_world.pdf")
 
 It is a fork and the successor of `PyFPDF` (_cf._ [history](https://pyfpdf.github.io/fpdf2/Development.html#history)).
 Compared with other PDF libraries, `fpdf2` is **fast, versatile, easy to learn and to extend** ([example](https://github.com/digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2)).
-It is also entirely writen in Python and only has a couple of dependencies:
-[Pillow](https://pillow.readthedocs.io/en/stable/) & [defusedxml](https://pypi.org/project/defusedxml/).
+It is also entirely writen in Python and has very few dependencies:
+[Pillow](https://pillow.readthedocs.io/en/stable/), [defusedxml](https://pypi.org/project/defusedxml/) & [svg.path](https://pypi.org/project/svg.path/).
 
 **Development status**: this project is **mature** and **actively maintained**.
 
