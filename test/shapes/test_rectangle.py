@@ -202,7 +202,7 @@ def test_round_corners_rect(tmp_path):
     )
     pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT", "BOTTOM_LEFT"), style="F")
 
-    assert_pdf_equal(pdf, HERE / "class_round_corners_rect.pdf", tmp_path, generate=True)
+    assert_pdf_equal(pdf, HERE / "class_round_corners_rect.pdf", tmp_path)
 
 
 def test_round_corners_rect_conditionals(tmp_path):
@@ -234,7 +234,7 @@ def test_round_corners_rect_draw_color(tmp_path):
     pdf.rect(10, 100, 60, 80, round_corners=("TOP_LEFT", "BOTTOM_RIGHT"))
     pdf.rect(90, 100, 50, 65, round_corners=("BOTTOM_LEFT",), style="DF")
 
-    assert_pdf_equal(pdf, HERE / "class_round_corners_rect_draw_color.pdf", tmp_path, generate=True)
+    assert_pdf_equal(pdf, HERE / "class_round_corners_rect_draw_color.pdf", tmp_path)
 
 
 def test_round_corners_rect_invalid_value():
