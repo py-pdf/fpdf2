@@ -103,11 +103,11 @@ def test_round_corners_rect(tmp_path):
 
     # no fill different corners
     y += 35
-    pdf.rect(10, y, 15, 20, round_corners=("TOP_LEFT"), style="D")
-    pdf.rect(30, y, 20, 15, round_corners=("TOP_RIGHT"), style="D")
-    pdf.rect(60, y, 33, 28, round_corners=("BOTTOM_LEFT"), style="D")
-    pdf.rect(100, y, 50, 10, round_corners=("BOTTOM_RIGHT"), style="D")
-    pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT"), style="D")
+    pdf.rect(10, y, 15, 20, round_corners=("TOP_LEFT",), style="D")
+    pdf.rect(30, y, 20, 15, round_corners=("TOP_RIGHT",), style="D")
+    pdf.rect(60, y, 33, 28, round_corners=("BOTTOM_LEFT",), style="D")
+    pdf.rect(100, y, 50, 10, round_corners=("BOTTOM_RIGHT",), style="D")
+    pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT",), style="D")
 
     # no fill multiple corners
     y += 35
@@ -142,11 +142,11 @@ def test_round_corners_rect(tmp_path):
 
     # fill different corners
     y += 35
-    pdf.rect(10, y, 15, 20, round_corners=("TOP_LEFT"), style="DF")
-    pdf.rect(30, y, 20, 15, round_corners=("TOP_RIGHT"), style="DF")
-    pdf.rect(60, y, 33, 28, round_corners=("BOTTOM_LEFT"), style="DF")
-    pdf.rect(100, y, 50, 10, round_corners=("BOTTOM_RIGHT"), style="DF")
-    pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT"), style="DF")
+    pdf.rect(10, y, 15, 20, round_corners=("TOP_LEFT",), style="DF")
+    pdf.rect(30, y, 20, 15, round_corners=("TOP_RIGHT",), style="DF")
+    pdf.rect(60, y, 33, 28, round_corners=("BOTTOM_LEFT",), style="DF")
+    pdf.rect(100, y, 50, 10, round_corners=("BOTTOM_RIGHT",), style="DF")
+    pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT",), style="DF")
 
     # fill multiple corners
     y += 35
@@ -173,11 +173,11 @@ def test_round_corners_rect(tmp_path):
     # fill only different corners
     pdf.set_fill_color(255, 255, 0)
     y += 35
-    pdf.rect(10, y, 15, 20, round_corners=("TOP_LEFT"), style="F")
-    pdf.rect(30, y, 20, 15, round_corners=("TOP_RIGHT"), style="F")
-    pdf.rect(60, y, 33, 28, round_corners=("BOTTOM_LEFT"), style="F")
-    pdf.rect(100, y, 50, 10, round_corners=("BOTTOM_RIGHT"), style="F")
-    pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT"), style="F")
+    pdf.rect(10, y, 15, 20, round_corners=("TOP_LEFT",), style="F")
+    pdf.rect(30, y, 20, 15, round_corners=("TOP_RIGHT",), style="F")
+    pdf.rect(60, y, 33, 28, round_corners=("BOTTOM_LEFT",), style="F")
+    pdf.rect(100, y, 50, 10, round_corners=("BOTTOM_RIGHT",), style="F")
+    pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT",), style="F")
 
     # fill only multiple corners
     y += 35
@@ -190,6 +190,7 @@ def test_round_corners_rect(tmp_path):
         28,
         round_corners=("BOTTOM_LEFT", "BOTTOM_RIGHT", "TOP_LEFT"),
         style="F",
+        corner_radius=8,
     )
     pdf.rect(
         100,
@@ -201,21 +202,21 @@ def test_round_corners_rect(tmp_path):
     )
     pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT", "BOTTOM_LEFT"), style="F")
 
-    assert_pdf_equal(pdf, HERE / "class_round_corners_rect.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "class_round_corners_rect.pdf", tmp_path, generate=True)
 
 
 def test_round_corners_rect_conditionals(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
 
-    # for radius < 0 (w < h)
-    pdf.rect(10, 10, 20, 30, round_corners=("TOP_LEFT", "BOTTOM_RIGHT"))
+    # for w < h  0 (w = h)
+    pdf.rect(10, 10, 20, 40, round_corners=("BOTTOM_LEFT",))
 
     # for radius == 0 (w = h)
-    pdf.rect(40, 10, 30, 30, round_corners=("BOTTOM_LEFT"))
+    pdf.rect(40, 10, 30, 30, round_corners=("BOTTOM_LEFT",))
 
     # for radius >= min / 2 (min < max/2)
-    pdf.rect(80, 10, 50, 10, round_corners=True)
+    pdf.rect(80, 10, 50, 10, round_corners=True, corner_radius=20)
 
     assert_pdf_equal(pdf, HERE / "class_round_corners_rect_conditionals.pdf", tmp_path)
 
@@ -227,13 +228,13 @@ def test_round_corners_rect_draw_color(tmp_path):
     # changing the draw color
     pdf.set_draw_color(150)
     pdf.rect(10, 10, 60, 80, round_corners=("TOP_LEFT", "BOTTOM_RIGHT"))
-    pdf.rect(90, 10, 50, 65, round_corners=("BOTTOM_LEFT"), style="DF")
+    pdf.rect(90, 10, 50, 65, round_corners=("BOTTOM_LEFT",), style="DF")
 
     pdf.set_draw_color(0, 255, 255)
     pdf.rect(10, 100, 60, 80, round_corners=("TOP_LEFT", "BOTTOM_RIGHT"))
-    pdf.rect(90, 100, 50, 65, round_corners=("BOTTOM_LEFT"), style="DF")
+    pdf.rect(90, 100, 50, 65, round_corners=("BOTTOM_LEFT",), style="DF")
 
-    assert_pdf_equal(pdf, HERE / "class_round_corners_rect_draw_color.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "class_round_corners_rect_draw_color.pdf", tmp_path, generate=True)
 
 
 def test_round_corners_rect_invalid_value():
