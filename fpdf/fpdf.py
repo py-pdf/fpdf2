@@ -1257,7 +1257,7 @@ class FPDF(GraphicsStateMixin):
         self.set_dash_pattern()
 
     @check_page
-    def rect(self, x, y, w, h, round_corners=False, style=None):
+    def rect(self, x, y, w, h, style=None, round_corners=False, corner_radius=0):
         """
         Outputs a rectangle.
         It can be drawn (border only), filled (with no border) or both.
@@ -1267,6 +1267,13 @@ class FPDF(GraphicsStateMixin):
             y (float): Ordinate of upper-left bounding box.
             w (float): Width.
             h (float): Height.
+
+            style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
+
+            * `D` or empty string: draw border. This is the default value.
+            * `F`: fill
+            * `DF` or `FD`: draw and fill
+
             round_corners (tuple of str, tuple of fpdf.enums.Corner, bool): Optional draw a rectangle with round corners.
             Possible values are:
 
@@ -1276,32 +1283,26 @@ class FPDF(GraphicsStateMixin):
             *`BOTTOM_RIGHT`: a rectangle with round bottom right corner
             *`True`: a rectangle with all round corners
             *`False`: a rectangle with no round corners
-            style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
 
-            * `D` or empty string: draw border. This is the default value.
-            * `F`: fill
-            * `DF` or `FD`: draw and fill
+            corner_radius: Optional radius of the corners
         """
 
         style = RenderStyle.coerce(style)
         if round_corners is not False:
-            self._draw_rounded_rect(x, y, w, h, style, round_corners)
+            self._draw_rounded_rect(x, y, w, h, style, round_corners, corner_radius)
         else:
             self._out(
                 f"{x * self.k:.2f} {(self.h - y) * self.k:.2f} {w * self.k:.2f} "
                 f"{-h * self.k:.2f} re {style.operator}"
             )
 
-    def _draw_rounded_rect(self, x, y, w, h, style, round_corners):
+    def _draw_rounded_rect(self, x, y, w, h, style, round_corners, r):
         min = h
-        r = (w - h) / 2
-
-        if r < 0:
-            r *= -1
+        if w < h:
             min = w
 
         if r == 0:
-            r = w / 5
+            r = min / 5
 
         if r >= min / 2:
             r /= min
@@ -1320,9 +1321,6 @@ class FPDF(GraphicsStateMixin):
                 Corner.BOTTOM_RIGHT.value,
                 Corner.BOTTOM_LEFT.value,
             ]
-        else:
-            if len(round_corners) > 4:
-                round_corners = (round_corners,)
         round_corners = tuple(Corner.coerce(rc) for rc in round_corners)
 
         if Corner.TOP_RIGHT in round_corners:
@@ -1346,14 +1344,6 @@ class FPDF(GraphicsStateMixin):
             point_7 = (x, y + h - r)
 
         if style.is_fill:
-            original_color = self.draw_color.colors
-            new_color = self.fill_color.colors
-
-            self.set_draw_color(new_color[0] * 255)
-            if len(new_color) > 1:
-                self.set_draw_color(
-                    new_color[0] * 255, new_color[1] * 255, new_color[2] * 255
-                )
 
             self.polyline(
                 [
@@ -1367,16 +1357,8 @@ class FPDF(GraphicsStateMixin):
                     point_8,
                     point_1,
                 ],
-                style=style,
+                style="F",
             )
-
-            self.set_draw_color(original_color[0] * 255)
-            if len(original_color) > 1:
-                self.set_draw_color(
-                    original_color[0] * 255,
-                    original_color[1] * 255,
-                    original_color[2] * 255,
-                )
 
         if style.is_draw:
             self.line(point_1[0], point_1[1], point_2[0], point_2[1])
