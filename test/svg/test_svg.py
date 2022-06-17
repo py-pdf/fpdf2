@@ -1,4 +1,4 @@
-# pylint: disable=redefined-outer-name, no-self-use, protected-access
+# pylint: disable=redefined-outer-name, protected-access
 import io
 from pathlib import Path
 

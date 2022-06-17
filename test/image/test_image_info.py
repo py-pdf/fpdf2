@@ -29,25 +29,41 @@ def break_down_filename(image):
 
 
 def test_get_img_info():
-    short_keys = {"f", "h", "bpc", "w", "cs", "trns", "dp", "pal"}
+    short_keys = {"f", "h", "bpc", "w", "cs", "trns", "dp", "pal", "smask"}
     expected = json.loads((HERE / "image_info.json").read_text(encoding="utf8"))
 
     for path in sorted((HERE / "png_test_suite").glob("*.png")):
         if not path.stem.startswith("x"):
             blob = BytesIO(path.read_bytes())
             info = fpdf.image_parsing.get_img_info(blob)
-            short_info = {k: v for k, v in info.items() if k in short_keys}
+            short_info = {}
+            for k, v in info.items():
+                if k in short_keys:
+                    short_info[k] = v.decode("latin-1") if isinstance(v, bytes) else v
+
             assert short_info == expected[path.name]
 
 
 def test_get_img_info_data_rgba():
+    blob = BytesIO((HERE / "png_test_suite" / "basi6a08.png").read_bytes())
+    info = fpdf.image_parsing.get_img_info(blob)
+    assert (
+        info["data"]
+        == b"x\x9c\xb5\xd5[\x15@P\x18D\xe198\x97\x164\xa1\tMhB\x13\x9a\xd0d"
+        b"\xfc%\xf6Z\xdf<\xef\xc7\x91\xd5P\xf2\xd8P\xf2\xdcP\xf2\xdaP\xf2^Q\xf2YQ"
+        b"\xf2]Q\xf2[Q\xb2\x0bJ\x9f\x0bJ\x8f\x0bJ\x973J\x873J\x9b3J\x8b3J\x93\x07"
+        b"\x94\x06\xb3b#J\xbdgT\x04VT\x04vT\x04N\x94:\xdf\xa8\x08\xbc\xa8\x08\x18"
+        b"\xa5\xf4\x19\xa5\xf4\x18\xa5t\x19\xa5t\x18\xa58\x04V\x1c\x02+\x0e\x01\xf5\x03\xbe\xde\n\xdb"
+    )
+
+
+def test_get_img_info_data_palette():
     blob = BytesIO((HERE / "png_test_suite" / "basi3p02.png").read_bytes())
     info = fpdf.image_parsing.get_img_info(blob)
     assert (
         info["data"]
-        == b"x\x9c\xed\x941\n\x000\x08\x03\xf3\xffO\xdbM\xea APD\x08dQ\x0eo\x08\x08\xc0"
-        b"<\x16\x07\x0f\xfe\x94y\t\n\xfc\x8cL\x02\xce\x0f\x94\x19\xd7\x12PA[\x99\xc9"
-        b"U\tv\xfeO\xe0%X\xefC\x02\xce\xdf\xff\xa6\xf7\x05me&W%`\xfc\x03\x80,\xfb="
+        == b"x\x9cc`\x06\x02F `\x02\x02\x06 @\xe7c\x08\xd0@\x01\x9d\xac\xc1\xab\x00\x97."
+        b"\x18\x9f\x1e\n\xf0\xb9\x1e\xc4\xa7\x87\x82\x81\x8e\x87\xd1\xf40\xa8\xd2\x03\x00d\xd4\x06\x01"
     )
 
 

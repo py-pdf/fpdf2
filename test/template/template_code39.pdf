@@ -39,7 +39,7 @@ endobj
 6 0 obj
 <<
 /Title (Sample Code 39 barcode)
-/CreationDate (D:19691231190000)
+/CreationDate (D:19691231190000Z19'00')
 >>
 endobj
 7 0 obj
@@ -59,7 +59,7 @@ xref
 0000000087 00000 n 
 0000000697 00000 n 
 0000000902 00000 n 
-0000000988 00000 n 
+0000000995 00000 n 
 trailer
 <<
 /Size 8
@@ -67,5 +67,5 @@ trailer
 /Info 6 0 R
 >>
 startxref
-1091
+1098
 %%EOF

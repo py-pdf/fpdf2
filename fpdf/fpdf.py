@@ -26,7 +26,7 @@ import zlib
 from collections import OrderedDict, defaultdict
 from collections.abc import Sequence
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import wraps
 from math import isclose
 from os.path import splitext
@@ -435,15 +435,15 @@ class FPDF(GraphicsStateMixin):
         self.viewer_preferences = None
         self.compress = True  # Enable compression by default
         self.pdf_version = "1.3"  # Set default PDF version No.
+        self.creation_date = True
 
         self._current_draw_context = None
         self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
         self._graphics_state_obj_refs = OrderedDict()
 
         self.record_text_quad_points = False
-        self.text_quad_points = defaultdict(
-            list
-        )  # page number -> array of 8 × n numbers
+        # page number -> array of 8 × n numbers:
+        self.text_quad_points = defaultdict(list)
 
     def _set_min_pdf_version(self, version):
         self.pdf_version = max(self.pdf_version, version)
@@ -682,7 +682,7 @@ class FPDF(GraphicsStateMixin):
 
     def set_creation_date(self, date=None):
         """Sets Creation of Date time, or current time if None given."""
-        self.creation_date = datetime.now() if date is None else date
+        self.creation_date = date
 
     def set_xmp_metadata(self, xmp_metadata):
         if "<?xpacket" in xmp_metadata[:50]:
@@ -2524,6 +2524,7 @@ class FPDF(GraphicsStateMixin):
                 text_width=0.0,
                 number_of_spaces_between_words=0,
                 justify=False,
+                trailing_nl=False,
             ),
             w,
             h,
@@ -3100,6 +3101,7 @@ class FPDF(GraphicsStateMixin):
                     text_width=0,
                     number_of_spaces_between_words=0,
                     justify=False,
+                    trailing_nl=False,
                 )
             ]
         if align == Align.X:
@@ -3139,6 +3141,13 @@ class FPDF(GraphicsStateMixin):
             if not is_last_line and align == Align.X:
                 # prevent cumulative shift to the left
                 self.x = prev_x
+            if (
+                is_last_line
+                and text_line.trailing_nl
+                and new_y in (YPos.LAST, YPos.NEXT)
+            ):
+                # The line renderer can't handle trailing newlines in the text.
+                self.ln()
 
         if new_y == YPos.TOP:  # We may have jumped a few lines -> reset
             self.y = prev_y
@@ -3240,7 +3249,9 @@ class FPDF(GraphicsStateMixin):
                 link=link,
             )
             page_break_triggered = page_break_triggered or new_page
-
+        if text_line.trailing_nl:
+            # The line renderer can't handle trailing newlines in the text.
+            self.ln()
         return page_break_triggered
 
     @check_page
@@ -3307,7 +3318,7 @@ class FPDF(GraphicsStateMixin):
             # disabling bandit rule as we just build a cache key, this is secure
             name, img = hashlib.md5(bytes).hexdigest(), name  # nosec B303 B324
         elif isinstance(name, io.BytesIO):
-            bytes = name.getvalue()
+            bytes = name.getvalue().strip()
             if _is_svg(bytes):
                 return self._vector_image(name, x, y, w, h, link, title, alt_text)
             # disabling bandit rule as we just build a cache key, this is secure
@@ -4088,9 +4099,14 @@ class FPDF(GraphicsStateMixin):
         self._out(f"/Height {info['h']}")
 
         if info["cs"] == "Indexed":
+            palette_ref = (
+                pdf_ref(self.n + 2)
+                if self.allow_images_transparency and "smask" in info
+                else pdf_ref(self.n + 1)
+            )
             self._out(
                 f"/ColorSpace [/Indexed /DeviceRGB "
-                f"{len(info['pal']) // 3 - 1} {pdf_ref(self.n + 1)}]"
+                f"{len(info['pal']) // 3 - 1} {palette_ref}]"
             )
         else:
             self._out(f"/ColorSpace /{info['cs']}")
@@ -4132,11 +4148,10 @@ class FPDF(GraphicsStateMixin):
         # Palette
         if info["cs"] == "Indexed":
             self._newobj()
-            filter, pal = (
-                ("/Filter /FlateDecode ", zlib.compress(info["pal"]))
-                if self.compress
-                else ("", info["pal"])
-            )
+            if self.compress:
+                filter, pal = ("/Filter /FlateDecode ", zlib.compress(info["pal"]))
+            else:
+                filter, pal = ("", info["pal"])
             self._out(f"<<{filter}/Length {len(pal)}>>")
             self._out(pdf_stream(pal))
             self._out("endobj")
@@ -4235,17 +4250,18 @@ class FPDF(GraphicsStateMixin):
             "/Producer": enclose_in_parens(getattr(self, "producer", None)),
         }
 
-        if hasattr(self, "creation_date"):
+        if self.creation_date is True:
+            # => no date has been specified, we use the current time by default:
+            self.creation_date = datetime.now(timezone.utc)
+        if self.creation_date:
             try:
-                creation_date = self.creation_date
-                date_string = f"{creation_date:%Y%m%d%H%M%S}"
+                info_d["/CreationDate"] = enclose_in_parens(
+                    f"D:{self.creation_date:%Y%m%d%H%M%SZ%H'%M'}"
+                )
             except Exception as error:
                 raise FPDFException(
-                    f"Could not format date: {creation_date}"
+                    f"Could not format date: {self.creation_date}"
                 ) from error
-        else:
-            date_string = f"{datetime.now():%Y%m%d%H%M%S}"
-        info_d["/CreationDate"] = enclose_in_parens(f"D:{date_string}")
 
         self._out(pdf_dict(info_d, open_dict="", close_dict="", has_empty_fields=True))
 

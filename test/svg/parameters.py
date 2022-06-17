@@ -1,4 +1,4 @@
-# pylint: disable=redefined-outer-name, no-self-use, protected-access
+# pylint: disable=redefined-outer-name, protected-access, unnecessary-lambda-assignment
 import pytest
 
 from contextlib import contextmanager
@@ -760,6 +760,7 @@ test_svg_sources = (
     pytest.param(svgfile("issue_358.svg"), id="arc start & initial point"),  # issue 358
     pytest.param(svgfile("Ghostscript_colorcircle.svg"), id="ghostscript colorcircle"),
     pytest.param(svgfile("Ghostscript_escher.svg"), id="ghostscript escher"),
+    pytest.param(svgfile("use-xlink-href.svg"), id="use xlink:href - issue #446"),
 )
 
 svg_path_edge_cases = (

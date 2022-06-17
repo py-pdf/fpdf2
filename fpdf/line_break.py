@@ -41,6 +41,7 @@ class TextLine(NamedTuple):
     text_width: float
     number_of_spaces_between_words: int
     justify: bool
+    trailing_nl: bool
 
 
 class SpaceHint(NamedTuple):
@@ -157,12 +158,13 @@ class CurrentLine:
         self.number_of_spaces = break_hint.number_of_spaces
         self.width = break_hint.width
 
-    def manual_break(self, justify: bool = False):
+    def manual_break(self, justify: bool = False, trailing_nl: bool = False):
         return TextLine(
             fragments=self.fragments,
             text_width=self.width,
             number_of_spaces_between_words=self.number_of_spaces,
             justify=(self.number_of_spaces > 0) and justify,
+            trailing_nl=trailing_nl,
         )
 
     def automatic_break_possible(self):
@@ -249,7 +251,7 @@ class MultiLineBreak:
 
             if character == NEWLINE:
                 self.character_index += 1
-                return current_line.manual_break()
+                return current_line.manual_break(trailing_nl=True)
 
             if current_line.width + character_width > maximum_width:
                 if character == SPACE:

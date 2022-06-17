@@ -1020,8 +1020,8 @@ class SVGObject:
             if child.tag in xmlns_lookup("svg", "path"):
                 self.build_path(child)
 
-    # this assumes xrefs only reference already-defined ids. I don't know if this is
-    # required by the SVG spec.
+    # this assumes xrefs only reference already-defined ids.
+    # I don't know if this is required by the SVG spec.
     @force_nodocument
     def build_xref(self, xref):
         """Resolve a cross-reference to an already-seen SVG element by ID."""
@@ -1043,6 +1043,13 @@ class SVGObject:
             raise ValueError(
                 f"use {xref} references nonexistent ref id {ref}"
             ) from None
+
+        if "x" in xref.attrib or "y" in xref.attrib:
+            # Quoting the SVG spec - 5.6.2. Layout of re-used graphics:
+            # > The x and y properties define an additional transformation translate(x,y)
+            x, y = float(xref.attrib.get("x", 0)), float(xref.attrib.get("y", 0))
+            pdf_group.transform = drawing.Transform.translation(x=x, y=y)
+        # Note that we currently do not support "width" & "height" in <use>
 
         return pdf_group
 

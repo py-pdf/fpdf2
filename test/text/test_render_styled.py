@@ -90,6 +90,7 @@ def test_render_styled_newpos(tmp_path):
             text_width=line.text_width,
             number_of_spaces_between_words=line.number_of_spaces_between_words,
             justify=align == Align.J,
+            trailing_nl=False,
         )
         doc._render_styled_text_line(
             line,

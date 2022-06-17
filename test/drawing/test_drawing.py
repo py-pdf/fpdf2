@@ -1,4 +1,4 @@
-# pylint: disable=redefined-outer-name, no-self-use, protected-access, unused-argument
+# pylint: disable=redefined-outer-name, protected-access, unused-argument
 
 import copy
 import io

@@ -66,7 +66,10 @@ def assert_pdf_equal(actual, expected, tmp_path, generate=False):
         actual_pdf = actual.pdf
     else:
         actual_pdf = actual
-    actual_pdf.set_creation_date(EPOCH)
+    if (
+        actual_pdf.creation_date is True
+    ):  # default value, meaning we are not testing .creation_date behaviour:
+        actual_pdf.set_creation_date(EPOCH)
     if generate:
         assert isinstance(expected, pathlib.Path), (
             "When passing `True` to `generate`"

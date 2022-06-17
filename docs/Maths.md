@@ -51,6 +51,25 @@ Result:
 
 ![](matplotlib.png)
 
+You can also embed a figure as [SVG](SVG.md):
+
+```python
+from fpdf import FPDF
+import matplotlib.pyplot as plt
+import numpy as np
+
+plt.figure(figsize=[2, 2])
+x = np.arange(0, 10, 0.00001)
+y = x*np.sin(2* np.pi * x)
+plt.plot(y)
+plt.savefig("figure.svg", format="svg")
+
+pdf = FPDF()
+pdf.add_page()
+pdf.image("figure.svg")
+pdf.output("doc-with-figure.pdf")
+```
+
 ### Using Pandas ###
 The dependencies required for the following examples can be installed using this command:
 ```
