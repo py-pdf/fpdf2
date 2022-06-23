@@ -42,6 +42,18 @@ more information.
 Then, to use a Unicode font in your script, pass `True` as the fourth parameter 
 of [`add_font`](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font).
 
+**Notes on Thai Fonts**
+
+Some users may encounter a problem where the accent characters (สระ) 
+were not displayed correctly like example below when using some well known fonts like Prompt, Kanit.
+
+![thai-font-problem](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/tutorial/thai-accent-error.png)
+
+The solution is to use fonts from the [Fonts-TLWG](http://linux.thai.net/projects/fonts-tlwg/) which can be downloaded from
+[this link](https://linux.thai.net/pub/thailinux/software/fonts-tlwg/fonts/). The example shown below.
+
+![thai-font-working](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/tutorial/thai-accent-working.png)
+
 ## Example ##
 
 This example uses several free fonts to display some Unicode strings. Be sure to
