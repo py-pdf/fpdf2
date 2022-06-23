@@ -172,6 +172,9 @@ This library could only exist thanks to the dedication of many volunteers around
     <td align="center"><a href="https://rysta.io"><img src="https://avatars.githubusercontent.com/u/4029642?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Sven Eliasson</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=comino" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/gonzalobarbaran"><img src="https://avatars.githubusercontent.com/u/59395855?v=4?s=100" width="100px;" alt=""/><br /><sub><b>gonzalobarbaran</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=gonzalobarbaran" title="Code">💻</a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://www.nuttapat.me"><img src="https://avatars.githubusercontent.com/u/2115896?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nuttapat Koonarangsri</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=hackinteach" title="Documentation">📖</a></td>
+  </tr>
 </table>
 
 <!-- markdownlint-restore -->
