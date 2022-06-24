@@ -48,8 +48,8 @@ Some users may encounter a problem where some characters displayed incorrectly. 
 
 ![thai-font-problem](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/tutorial/thai-accent-error.png)
 
-The solution is to find the font that supports non-latin or your language as well.
-From the error in image above, Thai characters can be fixed using fonts from  [Fonts-TLWG](http://linux.thai.net/projects/fonts-tlwg/) which can be downloaded from
+The solution is to find and use a font that covers the characters of your language.
+From the error in the image above, Thai characters can be fixed using fonts from  [Fonts-TLWG](http://linux.thai.net/projects/fonts-tlwg/) which can be downloaded from
 [this link](https://linux.thai.net/pub/thailinux/software/fonts-tlwg/fonts/). The example shown below.
 
 ![thai-font-working](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/tutorial/thai-accent-working.png)
