@@ -3004,7 +3004,7 @@ class FPDF(GraphicsStateMixin):
             link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
             new_x (fpdf.enums.XPos, str): New current position in x after the call. Default: RIGHT
-            new_y (fpdf.enums.XPos, str): New current position in y after the call. Default: NEXT
+            new_y (fpdf.enums.YPos, str): New current position in y after the call. Default: NEXT
             ln (int): **DEPRECATED since 2.5.1**: Use `new_x` and `new_y` instead.
             max_line_height (float): optional maximum height of each sub-cell generated
             markdown (bool): enable minimal markdown-like markup to render part
