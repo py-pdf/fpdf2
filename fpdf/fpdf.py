@@ -4191,6 +4191,7 @@ class FPDF(GraphicsStateMixin):
             self._out(f"/F{idx} {pdf_ref(n)}")
         self._out(">>")
 
+        # if self.images: [TODO] uncomment this & indent the next 3 lines in order to save 15 bytes / page without image
         self._out("/XObject <<")
         self._putxobjectdict()
         self._out(">>")

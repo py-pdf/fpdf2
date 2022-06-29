@@ -67,6 +67,8 @@ As of this writing, I am not sure how length is actually calculated, so this
 remains something to be looked into.
 """
 from abc import ABC
+from binascii import hexlify
+from codecs import BOM_UTF16_BE
 import re
 
 from .util import object_id_for_page
@@ -232,7 +234,13 @@ def camel_case(snake_case):
 
 
 class PDFString(str):
+    USE_HEX_ENCODING = True
+    "Setting this to False can reduce the encoded strings size, but then there can be a risk of badly encoding some unicode strings - cf. issue #458"
     def serialize(self):
+        if self.USE_HEX_ENCODING:
+            # Using the "Hexadecimal String" format defined in the PDF spec:
+            hex_str = hexlify(BOM_UTF16_BE + self.encode("utf-16-be")).decode("latin-1")
+            return f"<{hex_str}>"
         return f'({self.encode("UTF-16").decode("latin-1")})'
 
 

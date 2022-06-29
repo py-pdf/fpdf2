@@ -187,6 +187,19 @@ def test_russian_heading(tmp_path):  # issue-320
     assert_pdf_equal(pdf, HERE / "russian_heading.pdf", tmp_path)
 
 
+def test_thai_headings(tmp_path):  # issue-458
+    pdf = FPDF()
+    for txt in [
+        "ลักษณะเฉพาะของคุณ",
+        "ระดับฮอร์โมนเพศชาย",
+        "ระดับฮอร์โมนเพศหญิง",
+        "hello",
+    ]:
+        pdf.add_page()
+        pdf.start_section(txt)
+    assert_pdf_equal(pdf, HERE / "thai_headings.pdf", tmp_path)
+
+
 def test_self_refering_outline(tmp_path):
     """
     Based on Jens Müller talk at NDSS: Processing Dangerous Paths.

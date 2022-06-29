@@ -18,9 +18,10 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.5.6] - not released yet
 ### Changed
-- the [svg.path](https://pypi.org/project/svg.path/) package was added as dependency to better parse SVG files
+- the [svg.path](https://pypi.org/project/svg.path/) package was added as a dependency to better parse SVG images
 ### Fixed
 - properly parsing single-digits arguments in SVG paths - _cf._ [#450](https://github.com/PyFPDF/fpdf2/issues/450)
+- document outline encoding: it was found to be broken when using a thai font - _cf._ [#458](https://github.com/PyFPDF/fpdf2/issues/458)
 
 ## [2.5.5] - 2022-06-17
 ### Added
@@ -35,7 +36,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - allowing to change appearance of [highlight annotations](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.highlight) by specifying a [`TextMarkupType`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TextMarkupType)
 - documentation on how to control objects transparency: [link to docs](https://pyfpdf.github.io/fpdf2/Transparency.html)
 - documentation on how to create tables and charts using [pandas](https://pandas.pydata.org/) DataFrames: [link to docs](https://pyfpdf.github.io/fpdf2/Maths.html), thanks to @iwayankurniawan
-- added argument `round_corners` to `FPDF.rect()` that allows to draw rectangles with round corners: [link to docs](https://pyfpdf.github.io/fpdf2/Shapes.html#rectangle)
+- added argument `round_corners` to `FPDF.rect()` that allows to draw rectangles with round corners: [link to docs](https://pyfpdf.github.io/fpdf2/Shapes.html#rectangle) - thanks to @gonzalobarbaran
 ### Fixed
 - support for `"x"` & `"y"` attributes in SVG `<use>` tags - _cf._ [#446](https://github.com/PyFPDF/fpdf2/issues/446)
 - `CreationDate` of PDFs generated, that was broken - _cf._ [#451](https://github.com/PyFPDF/fpdf2/issues/451)
