@@ -1,5 +1,5 @@
 from fpdf.outline import OutlineSection, serialize_outline
-from fpdf.syntax import DestinationXYZ
+from fpdf.syntax import DestinationXYZ, PDFString
 
 
 def test_serialize_outline():
@@ -18,7 +18,7 @@ def test_serialize_outline():
     )
     assert (
         serialize_outline(sections, first_object_id=6)
-        == f"""\
+        == """\
 6 0 obj
 <<
 /Count 2
@@ -35,7 +35,7 @@ endobj
 /Last 8 0 R
 /Next 9 0 R
 /Parent 6 0 R
-/Title ({'Title 1'.encode('UTF-16').decode('latin-1')})
+/Title <feff005400690074006c006500200031>
 >>
 endobj
 8 0 obj
@@ -43,7 +43,7 @@ endobj
 /Count 0
 /Dest [5 0 R /XYZ 0 0 null]
 /Parent 7 0 R
-/Title ({'Subtitle 1.1'.encode('UTF-16').decode('latin-1')})
+/Title <feff005300750062007400690074006c006500200031002e0031>
 >>
 endobj
 9 0 obj
@@ -54,7 +54,7 @@ endobj
 /Last 11 0 R
 /Parent 6 0 R
 /Prev 7 0 R
-/Title ({'Title 2'.encode('UTF-16').decode('latin-1')})
+/Title <feff005400690074006c006500200032>
 >>
 endobj
 10 0 obj
@@ -63,7 +63,7 @@ endobj
 /Dest [9 0 R /XYZ 0 0 null]
 /Next 11 0 R
 /Parent 9 0 R
-/Title ({'Subtitle 2.1'.encode('UTF-16').decode('latin-1')})
+/Title <feff005300750062007400690074006c006500200032002e0031>
 >>
 endobj
 11 0 obj
@@ -72,7 +72,7 @@ endobj
 /Dest [11 0 R /XYZ 0 0 null]
 /Parent 9 0 R
 /Prev 10 0 R
-/Title ({'Subtitle 2.2'.encode('UTF-16').decode('latin-1')})
+/Title <feff005300750062007400690074006c006500200032002e0032>
 >>
 endobj"""
     )
@@ -88,7 +88,7 @@ def test_serialize_outline_with_headless_hierarchy():  # issues 239
     )
     assert (
         serialize_outline(sections, first_object_id=6)
-        == f"""\
+        == """\
 6 0 obj
 <<
 /Count 2
@@ -104,7 +104,7 @@ endobj
 /First 8 0 R
 /Last 8 0 R
 /Parent 6 0 R
-/Title ({'?-1'.encode('UTF-16').decode('latin-1')})
+/Title <feff003f002d0031>
 >>
 endobj
 8 0 obj
@@ -112,7 +112,7 @@ endobj
 /Count 0
 /Dest [5 0 R /XYZ 0 0 null]
 /Parent 7 0 R
-/Title ({'?-1-1'.encode('UTF-16').decode('latin-1')})
+/Title <feff003f002d0031002d0031>
 >>
 endobj
 9 0 obj
@@ -122,7 +122,7 @@ endobj
 /First 10 0 R
 /Last 10 0 R
 /Parent 6 0 R
-/Title ({'1'.encode('UTF-16').decode('latin-1')})
+/Title <feff0031>
 >>
 endobj
 10 0 obj
@@ -132,7 +132,7 @@ endobj
 /First 11 0 R
 /Last 11 0 R
 /Parent 9 0 R
-/Title ({'1-1'.encode('UTF-16').decode('latin-1')})
+/Title <feff0031002d0031>
 >>
 endobj
 11 0 obj
@@ -140,7 +140,39 @@ endobj
 /Count 0
 /Dest [5 0 R /XYZ 0 0 null]
 /Parent 10 0 R
-/Title ({'1-1-1'.encode('UTF-16').decode('latin-1')})
+/Title <feff0031002d0031002d0031>
 >>
 endobj"""
     )
+
+
+def test_serialize_outline_without_hex_encoding():  # issue-458
+    PDFString.USE_HEX_ENCODING = False
+    try:
+        sections = (
+            OutlineSection(
+                "Title", level=0, page_number=1, dest=DestinationXYZ(page=1)
+            ),
+        )
+        assert (
+            serialize_outline(sections, first_object_id=1)
+            == f"""\
+1 0 obj
+<<
+/Count 1
+/First 2 0 R
+/Last 2 0 R
+/Type /Outlines
+>>
+endobj
+2 0 obj
+<<
+/Count 0
+/Dest [3 0 R /XYZ 0 0 null]
+/Parent 1 0 R
+/Title ({'Title'.encode('UTF-16').decode('latin-1')})
+>>
+endobj"""
+        )
+    finally:
+        PDFString.USE_HEX_ENCODING = True  # restore default value

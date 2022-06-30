@@ -235,7 +235,11 @@ def camel_case(snake_case):
 
 class PDFString(str):
     USE_HEX_ENCODING = True
-    "Setting this to False can reduce the encoded strings size, but then there can be a risk of badly encoding some unicode strings - cf. issue #458"
+    """
+    Setting this to False can reduce the encoded strings size,
+    but then there can be a risk of badly encoding some unicode strings - cf. issue #458
+    """
+
     def serialize(self):
         if self.USE_HEX_ENCODING:
             # Using the "Hexadecimal String" format defined in the PDF spec:

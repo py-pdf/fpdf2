@@ -83,7 +83,7 @@ def test_single_image_structure_tree():
     )
     assert (
         struct_builder.serialize(first_object_id=3)
-        == f"""\
+        == """\
 3 0 obj
 <<
 /K [4 0 R]
@@ -106,12 +106,12 @@ endobj
 endobj
 6 0 obj
 <<
-/Alt ({'Image description'.encode('UTF-16').decode('latin-1')})
+/Alt <feff0049006d0061006700650020006400650073006300720069007000740069006f006e>
 /K [0]
 /P 4 0 R
 /Pg 1 0 R
 /S /Figure
-/T ({'Image title'.encode('UTF-16').decode('latin-1')})
+/T <feff0049006d0061006700650020007400690074006c0065>
 /Type /StructElem
 >>
 endobj"""
