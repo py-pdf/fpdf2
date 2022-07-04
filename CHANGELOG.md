@@ -18,6 +18,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.5.6] - not released yet
 ### Changed
+- an `/ID` is now inserted in the trailer dictionary of all PDF documents generated.
+  This ID can be controlled through the new [file_id()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.file_id) method.
 - the [svg.path](https://pypi.org/project/svg.path/) package was added as a dependency to better parse SVG images
 ### Fixed
 - properly parsing single-digits arguments in SVG paths - _cf._ [#450](https://github.com/PyFPDF/fpdf2/issues/450)

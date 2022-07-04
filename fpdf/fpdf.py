@@ -3315,14 +3315,16 @@ class FPDF(GraphicsStateMixin):
             img = None
         elif isinstance(name, Image):
             bytes = name.tobytes()
-            # disabling bandit rule as we just build a cache key, this is secure
-            name, img = hashlib.md5(bytes).hexdigest(), name  # nosec B303 B324
+            hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
+            hash.update(bytes)
+            name, img = hash.hexdigest(), name
         elif isinstance(name, io.BytesIO):
             bytes = name.getvalue().strip()
             if _is_svg(bytes):
                 return self._vector_image(name, x, y, w, h, link, title, alt_text)
-            # disabling bandit rule as we just build a cache key, this is secure
-            name, img = hashlib.md5(bytes).hexdigest(), name  # nosec B303 B324
+            hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
+            hash.update(bytes)
+            name, img = hash.hexdigest(), name
         else:
             name, img = str(name), name
         info = self.images.get(name)
@@ -4314,6 +4316,31 @@ class FPDF(GraphicsStateMixin):
         self._out(f"/Size {self.n + 1}")
         self._out(f"/Root {pdf_ref(self.n)}")  # Catalog object index
         self._out(f"/Info {pdf_ref(self.n - 1)}")  # Info object index
+        file_id = self.file_id()
+        if file_id:
+            self._out(f"/ID [{file_id}]")
+
+    def file_id(self):
+        """
+        This method can be overridden in inherited classes
+        in order to define a custom file identifier.
+        Its output must have the format "<hex_string1><hex_string2>".
+        If this method returns a falsy value (None, empty string),
+        no /ID will be inserted in the generated PDF document.
+        """
+        # Quoting the PDF 1.7 spec, section 14.4 File Identifiers:
+        # > The value of this entry shall be an array of two byte strings.
+        # > The first byte string shall be a permanent identifier
+        # > based on the contents of the file at the time it was originally created
+        # > and shall not change when the file is incrementally updated.
+        # > The second byte string shall be a changing identifier
+        # > based on the file’s contents at the time it was last updated.
+        # > When a file is first written, both identifiers shall be set to the same value.
+        bytes = self.buffer + self.creation_date.strftime("%Y%m%d%H%M%S").encode("utf8")
+        hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
+        hash.update(bytes)
+        hash_hex = hash.hexdigest().upper()
+        return f"<{hash_hex}><{hash_hex}>"
 
     def _enddoc(self):
         LOGGER.debug("Final doc sections size summary:")

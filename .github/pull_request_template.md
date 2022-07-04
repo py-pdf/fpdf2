@@ -37,3 +37,5 @@ e.g. Fixes #0 <!-- This will automatically close issue #0 once the PR is merged:
 Once a PR is merged, maintainers will add your name to the contributors table in README.md.
 If they forget, or you do not wish this to happen, please mention it.
 -->
+
+By submitting this pull request, I confirm that my contribution is made under the terms of the [GNU LGPL 3.0 license](https://github.com/PyFPDF/fpdf2/blob/master/LICENSE).
