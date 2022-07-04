@@ -22,10 +22,10 @@ def test_multi_cell_table_unbreakable(tmp_path):  # issue 111
     line_height = pdf.font_size * 2
     col_width = pdf.epw / 4  # distribute content evenly
     for i in range(5):  # repeat table 5 times
-        with pdf.unbreakable() as pdf:
+        with pdf.unbreakable() as doc:
             for row in TABLE_DATA:
                 for datum in row:
-                    pdf.multi_cell(
+                    doc.multi_cell(
                         col_width,
                         line_height,
                         f"{datum} ({i})",
@@ -33,7 +33,7 @@ def test_multi_cell_table_unbreakable(tmp_path):  # issue 111
                         new_x="RIGHT",
                         new_y="TOP",
                     )
-                pdf.ln(line_height)
+                doc.ln(line_height)
         pdf.ln(line_height * 2)
     assert_pdf_equal(pdf, HERE / "multi_cell_table_unbreakable.pdf", tmp_path)
 
@@ -162,12 +162,12 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
 
     pdf.ln()
 
-    with pdf.unbreakable() as pdf:
+    with pdf.unbreakable() as doc:
         for _ in range(4):
             for row in data:
                 max_no_of_lines_in_cell = 1
                 for cell in row:
-                    result = pdf.multi_cell(
+                    result = doc.multi_cell(
                         cell_width,
                         l_height,
                         cell,
@@ -187,7 +187,7 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
                 cell_height = no_of_lines_list[j] * l_height
                 for cell in row:
                     if j == 0:
-                        pdf.multi_cell(
+                        doc.multi_cell(
                             cell_width,
                             cell_height,
                             "**" + cell + "**",
@@ -200,7 +200,7 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
                             markdown=False,
                         )
                     else:
-                        pdf.multi_cell(
+                        doc.multi_cell(
                             cell_width,
                             cell_height,
                             cell,
@@ -210,7 +210,7 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
                             new_y="TOP",
                             max_line_height=l_height,
                         )
-                pdf.ln(cell_height)
+                doc.ln(cell_height)
 
     assert_pdf_equal(
         pdf, HERE / "multi_cell_table_unbreakable_with_split_only.pdf", tmp_path

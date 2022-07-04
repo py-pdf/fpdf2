@@ -40,11 +40,11 @@ pdf.set_font("Times", size=16)
 line_height = pdf.font_size * 2
 col_width = pdf.epw / 4  # distribute content evenly
 for i in range(4):  # repeat table 4 times
-    with pdf.unbreakable() as pdf:
+    with pdf.unbreakable() as doc:
         for row in data:  # data comes from snippets on the Tables documentation page
             for datum in row:
-                pdf.cell(col_width, line_height, f"{datum} ({i})", border=1)
-            pdf.ln(line_height)
+                doc.cell(col_width, line_height, f"{datum} ({i})", border=1)
+            doc.ln(line_height)
      print('page_break_triggered:', pdf.page_break_triggered)
     pdf.ln(line_height * 2)
 pdf.("unbreakable_tables.pdf")

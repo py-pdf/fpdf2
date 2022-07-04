@@ -22,6 +22,5 @@ def test_setting_old_date(tmp_path):
     doc = fpdf.FPDF()
     doc.add_page()
     # 2017, April 18th, almost 7:09a
-    date = datetime(2017, 4, 18, 7, 8, 55)
-    doc.set_creation_date(date)
-    assert_pdf_equal(doc, HERE / "setting_old_date.pdf", tmp_path)
+    doc.set_creation_date(datetime(2017, 4, 18, 7, 8, 55))
+    assert_pdf_equal(doc, HERE / "setting_old_date.pdf", tmp_path, at_epoch=False)

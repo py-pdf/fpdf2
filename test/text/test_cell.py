@@ -95,11 +95,11 @@ def test_cell_table_unbreakable(tmp_path):
     line_height = pdf.font_size * 2
     col_width = pdf.epw / 4  # distribute content evenly
     for i in range(5):  # repeat table 5 times
-        with pdf.unbreakable() as pdf:
+        with pdf.unbreakable() as doc:
             for row in TABLE_DATA:
                 for datum in row:
-                    pdf.cell(col_width, line_height, f"{datum} ({i})", border=1)
-                pdf.ln(line_height)
+                    doc.cell(col_width, line_height, f"{datum} ({i})", border=1)
+                doc.ln(line_height)
         pdf.ln(line_height * 2)
     assert_pdf_equal(pdf, HERE / "cell_table_unbreakable.pdf", tmp_path)
 

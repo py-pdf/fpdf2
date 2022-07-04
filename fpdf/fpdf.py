@@ -190,7 +190,7 @@ class Annotation(NamedTuple):
             out += f" /T ({escape_parens(self.title)})"
 
         if self.modification_time:
-            out += f" /M ({format_date(self.modification_time)})"
+            out += f" /M {format_date(self.modification_time)}"
 
         if self.quad_points:
             # pylint: disable=not-an-iterable
@@ -411,6 +411,7 @@ class FPDF(GraphicsStateMixin):
         self._outlines_obj_id = None
         self._toc_placeholder = None  # ToCPlaceholder
         self._outline = []  # list of OutlineSection
+        self._sign_key = None
         self.section_title_styles = {}  # level -> TitleStyle
 
         # Standard fonts
@@ -473,7 +474,7 @@ class FPDF(GraphicsStateMixin):
         self.viewer_preferences = None
         self.compress = True  # Enable compression by default
         self.pdf_version = "1.3"  # Set default PDF version No.
-        self.creation_date = True
+        self.creation_date = datetime.now(timezone.utc)
 
         self._current_draw_context = None
         self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
@@ -720,6 +721,10 @@ class FPDF(GraphicsStateMixin):
 
     def set_creation_date(self, date=None):
         """Sets Creation of Date time, or current time if None given."""
+        if self._sign_key:
+            raise FPDFException(
+                ".set_creation_date() must always be called before .sign*() methods"
+            )
         self.creation_date = date
 
     def set_xmp_metadata(self, xmp_metadata):
@@ -2141,7 +2146,7 @@ class FPDF(GraphicsStateMixin):
         """
         type = TextMarkupType.coerce(type).value
         if modification_time is None:
-            modification_time = datetime.now()
+            modification_time = self.creation_date
         if page is None:
             page = self.page
         x_min = min(quad_points[0::2])
@@ -4404,9 +4409,6 @@ class FPDF(GraphicsStateMixin):
             "/Producer": enclose_in_parens(getattr(self, "producer", None)),
         }
 
-        if self.creation_date is True:
-            # => no date has been specified, we use the current time by default:
-            self.creation_date = datetime.now(timezone.utc)
         if self.creation_date:
             try:
                 info_d["/CreationDate"] = format_date(self.creation_date, with_tz=True)

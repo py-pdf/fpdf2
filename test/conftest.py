@@ -39,7 +39,7 @@ LOREM_IPSUM = (
 )
 
 
-def assert_pdf_equal(actual, expected, tmp_path, generate=False):
+def assert_pdf_equal(actual, expected, tmp_path, at_epoch=True, generate=False):
     """
     This compare the output of a `FPDF` instance (or `Template` instance),
     with the provided PDF file.
@@ -66,10 +66,8 @@ def assert_pdf_equal(actual, expected, tmp_path, generate=False):
         actual_pdf = actual.pdf
     else:
         actual_pdf = actual
-    if (
-        actual_pdf.creation_date is True
-    ):  # default value, meaning we are not testing .creation_date behaviour:
-        actual_pdf.set_creation_date(EPOCH)
+    if at_epoch:
+        actual_pdf.creation_date = EPOCH
     if generate:
         assert isinstance(expected, pathlib.Path), (
             "When passing `True` to `generate`"
@@ -108,6 +106,20 @@ def assert_pdf_equal(actual, expected, tmp_path, generate=False):
         actual_hash = hashlib.md5(actual_pdf_path.read_bytes()).hexdigest()
         expected_hash = hashlib.md5(expected_pdf_path.read_bytes()).hexdigest()
         assert actual_hash == expected_hash, f"{actual_hash} != {expected_hash}"
+
+
+def check_signature(pdf, trusted_cert_paths):
+    # pylint: disable=import-outside-toplevel
+    from endesive import pdf as endesive_pdf
+
+    trusted_certs = []
+    for cert_filepath in trusted_cert_paths:
+        with open(cert_filepath, encoding="utf8") as cert_file:
+            trusted_certs.append(cert_file.read())
+    hash_ok, signature_ok, cert_ok = endesive_pdf.verify(pdf.output(), trusted_certs)
+    assert signature_ok
+    assert hash_ok
+    assert cert_ok
 
 
 def subst_streams_with_hashes(in_lines):
