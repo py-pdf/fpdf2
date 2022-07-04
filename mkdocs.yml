@@ -87,6 +87,7 @@ nav:
   - 'Annotations':                    'Annotations.md'
   - 'Presentation Mode':              'Presentations.md'
   - 'Document outline & table of contents': 'DocumentOutlineAndTableOfContents.md'
+  - 'Signing':                        'Signing.md'
 - 'Mixing other libs':
   - 'Existing PDFs':                  'ExistingPDFs.md'
   - 'Usage in web APIs':              'UsageInWebAPI.md'

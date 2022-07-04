@@ -44,6 +44,12 @@ except ImportError:
         pass
 
 
+try:
+    from endesive import signer
+    from cryptography.hazmat.primitives.serialization import pkcs12
+except ImportError:
+    signer = False
+
 from . import drawing
 from .actions import Action
 from .deprecation import WarnOnDeprecatedModuleAttributes
@@ -72,6 +78,7 @@ from .recorder import FPDFRecorder
 from .structure_tree import MarkedContent, StructureTreeBuilder
 from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ
+from .syntax import build_obj_dict
 from .syntax import create_dictionary_string as pdf_dict
 from .syntax import create_list_string as pdf_list
 from .syntax import create_stream as pdf_stream
@@ -80,6 +87,7 @@ from .ttfonts import TTFontFile
 from .util import (
     enclose_in_parens,
     escape_parens,
+    format_date,
     get_scale_factor,
     object_id_for_page,
     substr,
@@ -135,6 +143,8 @@ class Annotation(NamedTuple):
     border_width: int = 0  # PDF readers support: displayed by Acrobat but not Sumatra
     name: Optional[AnnotationName] = None  # for text annotations
     ink_list: Tuple[int] = ()  # for ink annotations
+    field_type: Optional[str] = None
+    value: Optional[str] = None
 
     def serialize(self, fpdf):
         "Convert this object dictionnary to a string"
@@ -147,6 +157,12 @@ class Annotation(NamedTuple):
             f"<</Type /Annot /Subtype /{self.type}"
             f" /Rect [{rect}] /Border [0 0 {self.border_width}]"
         )
+
+        if self.field_type:
+            out += f" /FT /{self.field_type}"
+
+        if self.value:
+            out += f" /V {self.value.serialize()}"
 
         if self.flags:
             out += f" /F {sum(self.flags)}"
@@ -174,7 +190,7 @@ class Annotation(NamedTuple):
             out += f" /T ({escape_parens(self.title)})"
 
         if self.modification_time:
-            out += f" /M (D:{self.modification_time:%Y%m%d%H%M%S})"
+            out += f" /M ({format_date(self.modification_time)})"
 
         if self.quad_points:
             # pylint: disable=not-an-iterable
@@ -194,6 +210,28 @@ class Annotation(NamedTuple):
             out += f" /InkList [{ink_list}]"
 
         return out + ">>"
+
+
+class Signature:
+    def __init__(self, contact_info=None, location=None, m=None, reason=None, **kwargs):
+        super().__init__(**kwargs)
+        self.type = "/Sig"
+        self.filter = "/Adobe.PPKLite"
+        self.sub_filter = "/adbe.pkcs7.detached"
+        self.contact_info = contact_info
+        "Information provided by the signer to enable a recipient to contact the signer to verify the signature"
+        self.location = location
+        "The CPU host name or physical location of the signing"
+        self.m = m
+        "The time of signing"
+        self.reason = reason
+        "The reason for the signing"
+        self.byte_range = _SIGNATURE_BYTERANGE_PLACEHOLDER
+        self.contents = "<" + _SIGNATURE_CONTENTS_PLACEHOLDER + ">"
+
+    def serialize(self):
+        obj_dict = build_obj_dict({key: getattr(self, key) for key in dir(self)})
+        return pdf_dict(obj_dict)
 
 
 class TitleStyle(NamedTuple):
@@ -3637,6 +3675,119 @@ class FPDF(GraphicsStateMixin):
                 ) from error
         return txt
 
+    def sign_pkcs12(
+        self,
+        pkcs_filepath,
+        password,
+        algomd="sha256",
+        contact_info=None,
+        location=None,
+        signing_time=None,
+        reason=None,
+        flags=(AnnotationFlag.PRINT, AnnotationFlag.LOCKED),
+    ):
+        """
+        Args:
+            pkcs_filepath (str): file path to a .pfx or .p12 PKCS12,
+                in the binary format described by RFC 7292
+            password (bytes-like): the password to use to decrypt the data.
+                `None` if the PKCS12 is not encrypted.
+        """
+        with open(pkcs_filepath, "rb") as pkcs_file:
+            key, cert, extra_certs = pkcs12.load_key_and_certificates(
+                pkcs_file.read(), password
+            )
+        self.sign(
+            key=key,
+            cert=cert,
+            extra_certs=extra_certs,
+            algomd=algomd,
+            contact_info=contact_info,
+            location=location,
+            signing_time=signing_time,
+            reason=reason,
+            flags=flags,
+        )
+
+    @check_page
+    def sign(
+        self,
+        key,
+        cert,
+        extra_certs=(),
+        algomd="sha256",
+        contact_info=None,
+        location=None,
+        signing_time=None,
+        reason=None,
+        flags=(AnnotationFlag.PRINT, AnnotationFlag.LOCKED),
+    ):
+        """
+        Args:
+            key: certificate private key
+            cert (cryptography.x509.Certificate): certificate
+            extra_certs (list[cryptography.x509.Certificate]): list of additional PKCS12 certificates
+            flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
+        """
+        if not signer:
+            raise EnvironmentError(
+                "endesive.signer not available - PDF cannot be signed - Try: pip install endesive"
+            )
+
+        self._sign_key = key
+        self._sign_cert = cert
+        self._sign_extra_certs = extra_certs
+        self._sign_algomd = algomd
+
+        self.annots[self.page].append(
+            Annotation(
+                "Widget",
+                field_type="Sig",
+                x=0,
+                y=0,
+                width=0,
+                height=0,
+                flags=flags,
+                title="signature",
+                value=Signature(
+                    contact_info=contact_info,
+                    location=location,
+                    m=format_date(signing_time) if signing_time else None,
+                    reason=reason,
+                ),
+            )
+        )
+
+    def _pkcs11_sign(self):
+        """
+        Perform PDF signing based on ._sign_* properties
+        and the content of the .buffer, performing substitutions in it.
+        """
+        zeros = _SIGNATURE_CONTENTS_PLACEHOLDER.encode("latin1")
+        pdfbr1 = self.buffer.find(zeros)
+        pdfbr2 = pdfbr1 + len(zeros)
+        br = (0, pdfbr1 - 1, pdfbr2 + 1, len(self.buffer) - pdfbr2 - 1)
+        sbr = _SIGNATURE_BYTERANGE_PLACEHOLDER.encode()
+        dbr = b"[%010d %010d %010d %010d]" % br
+        self.buffer = self.buffer.replace(sbr, dbr, 1)
+        b1 = self.buffer[: br[1]]
+        b2 = self.buffer[br[2] :]
+        hash = hashlib.new(self._sign_algomd)
+        hash.update(b1)
+        hash.update(b2)
+        contents = signer.sign(
+            None,
+            self._sign_key,
+            self._sign_cert,
+            self._sign_extra_certs,
+            self._sign_algomd,
+            True,
+            hash.digest(),
+        )
+        self.buffer = self.buffer.replace(
+            zeros, _pkcs11_aligned(contents).encode("latin1"), 1
+        )
+
     def _putpages(self):
         nb = self.pages_count  # total number of pages
         if self.str_alias_nb_pages:
@@ -4258,9 +4409,7 @@ class FPDF(GraphicsStateMixin):
             self.creation_date = datetime.now(timezone.utc)
         if self.creation_date:
             try:
-                info_d["/CreationDate"] = enclose_in_parens(
-                    f"D:{self.creation_date:%Y%m%d%H%M%SZ%H'%M'}"
-                )
+                info_d["/CreationDate"] = format_date(self.creation_date, with_tz=True)
             except Exception as error:
                 raise FPDFException(
                     f"Could not format date: {self.creation_date}"
@@ -4388,6 +4537,8 @@ class FPDF(GraphicsStateMixin):
             self._out("startxref")
             self._out(o)
         self._out("%%EOF")
+        if self._sign_key:
+            self._pkcs11_sign()
         self.state = DocumentState.CLOSED
 
     def _beginpage(
@@ -4852,6 +5003,15 @@ def _sizeof_fmt(num, suffix="B"):
 
 def _is_svg(bytes):
     return bytes.startswith(b"<?xml ") or bytes.startswith(b"<svg ")
+
+
+def _pkcs11_aligned(data):
+    data = "".join(f"{i:02x}" for i in data)
+    return data + "0" * (0x4000 - len(data))
+
+
+_SIGNATURE_BYTERANGE_PLACEHOLDER = "[0000000000 0000000000 0000000000 0000000000]"
+_SIGNATURE_CONTENTS_PLACEHOLDER = _pkcs11_aligned((0,))
 
 
 sys.modules[__name__].__class__ = WarnOnDeprecatedModuleAttributes

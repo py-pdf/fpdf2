@@ -1,4 +1,5 @@
 import locale
+from datetime import datetime
 from typing import Union, Iterable
 
 
@@ -11,6 +12,12 @@ def substr(s, start, length=-1):
     if length < 0:
         length = len(s) - start
     return s[start : start + length]
+
+
+def format_date(date: datetime, with_tz=False) -> str:
+    if with_tz:
+        return enclose_in_parens(f"D:{date:%Y%m%d%H%M%SZ%H'%M'}")
+    return enclose_in_parens(f"D:{date:%Y%m%d%H%M%S}")
 
 
 def enclose_in_parens(s):

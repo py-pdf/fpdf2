@@ -1,5 +1,6 @@
 bandit
 black
+endesive
 pylint
 pytest
 pytest-cov
