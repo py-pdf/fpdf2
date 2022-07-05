@@ -3683,8 +3683,8 @@ class FPDF(GraphicsStateMixin):
     def sign_pkcs12(
         self,
         pkcs_filepath,
-        password,
-        algomd="sha256",
+        password=None,
+        hashalgo="sha256",
         contact_info=None,
         location=None,
         signing_time=None,
@@ -3697,6 +3697,13 @@ class FPDF(GraphicsStateMixin):
                 in the binary format described by RFC 7292
             password (bytes-like): the password to use to decrypt the data.
                 `None` if the PKCS12 is not encrypted.
+            hashalgo (str): hashing algorithm used, passed to `hashlib.new`
+            contact_info (str): optional information provided by the signer to enable
+                a recipient to contact the signer to verify the signature
+            location (str): optional CPU host name or physical location of the signing
+            signing_time (datetime): optional time of signing
+            reason (str): optional signing reason
+            flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
         """
         with open(pkcs_filepath, "rb") as pkcs_file:
             key, cert, extra_certs = pkcs12.load_key_and_certificates(
@@ -3706,7 +3713,7 @@ class FPDF(GraphicsStateMixin):
             key=key,
             cert=cert,
             extra_certs=extra_certs,
-            algomd=algomd,
+            hashalgo=hashalgo,
             contact_info=contact_info,
             location=location,
             signing_time=signing_time,
@@ -3720,7 +3727,7 @@ class FPDF(GraphicsStateMixin):
         key,
         cert,
         extra_certs=(),
-        algomd="sha256",
+        hashalgo="sha256",
         contact_info=None,
         location=None,
         signing_time=None,
@@ -3732,6 +3739,12 @@ class FPDF(GraphicsStateMixin):
             key: certificate private key
             cert (cryptography.x509.Certificate): certificate
             extra_certs (list[cryptography.x509.Certificate]): list of additional PKCS12 certificates
+            hashalgo (str): hashing algorithm used, passed to `hashlib.new`
+            contact_info (str): optional information provided by the signer to enable
+                a recipient to contact the signer to verify the signature
+            location (str): optional CPU host name or physical location of the signing
+            signing_time (datetime): optional time of signing
+            reason (str): optional signing reason
             flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
         """
         if not signer:
@@ -3742,7 +3755,7 @@ class FPDF(GraphicsStateMixin):
         self._sign_key = key
         self._sign_cert = cert
         self._sign_extra_certs = extra_certs
-        self._sign_algomd = algomd
+        self._sign_hashalgo = hashalgo
 
         self.annots[self.page].append(
             Annotation(
@@ -3763,35 +3776,33 @@ class FPDF(GraphicsStateMixin):
             )
         )
 
-    def _pkcs11_sign(self):
+    def _sign_content(self):
         """
         Perform PDF signing based on ._sign_* properties
         and the content of the .buffer, performing substitutions in it.
         """
-        zeros = _SIGNATURE_CONTENTS_PLACEHOLDER.encode("latin1")
-        pdfbr1 = self.buffer.find(zeros)
-        pdfbr2 = pdfbr1 + len(zeros)
-        br = (0, pdfbr1 - 1, pdfbr2 + 1, len(self.buffer) - pdfbr2 - 1)
-        sbr = _SIGNATURE_BYTERANGE_PLACEHOLDER.encode()
-        dbr = b"[%010d %010d %010d %010d]" % br
-        self.buffer = self.buffer.replace(sbr, dbr, 1)
-        b1 = self.buffer[: br[1]]
-        b2 = self.buffer[br[2] :]
-        hash = hashlib.new(self._sign_algomd)
-        hash.update(b1)
-        hash.update(b2)
+        contents_placeholder = _SIGNATURE_CONTENTS_PLACEHOLDER.encode("latin1")
+        start_index = self.buffer.find(contents_placeholder)
+        end_index = start_index + len(contents_placeholder)
+        range = (0, start_index - 1, end_index + 1, len(self.buffer) - end_index - 1)
+        br_placeholder = _SIGNATURE_BYTERANGE_PLACEHOLDER.encode()
+        byte_range = b"[%010d %010d %010d %010d]" % range
+        self.buffer = self.buffer.replace(br_placeholder, byte_range, 1)
+        # We compute the ByteRange hash, of everything before & after the placeholder:
+        hash = hashlib.new(self._sign_hashalgo)
+        hash.update(self.buffer[: range[1]])  # before
+        hash.update(self.buffer[range[2] :])  # after
         contents = signer.sign(
-            None,
-            self._sign_key,
-            self._sign_cert,
-            self._sign_extra_certs,
-            self._sign_algomd,
-            True,
-            hash.digest(),
+            datau=None,
+            key=self._sign_key,
+            cert=self._sign_cert,
+            othercerts=self._sign_extra_certs,
+            hashalgo=self._sign_hashalgo,
+            attrs=True,
+            signed_value=hash.digest(),
         )
-        self.buffer = self.buffer.replace(
-            zeros, _pkcs11_aligned(contents).encode("latin1"), 1
-        )
+        contents = _pkcs11_aligned(contents).encode("latin1")
+        self.buffer = self.buffer.replace(contents_placeholder, contents, 1)
 
     def _putpages(self):
         nb = self.pages_count  # total number of pages
@@ -4540,7 +4551,7 @@ class FPDF(GraphicsStateMixin):
             self._out(o)
         self._out("%%EOF")
         if self._sign_key:
-            self._pkcs11_sign()
+            self._sign_content()
         self.state = DocumentState.CLOSED
 
     def _beginpage(

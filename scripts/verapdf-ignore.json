@@ -17,6 +17,7 @@
         "6.6.1-1": "REASON: fpdf2 allows to create Launch actions that VeraPDF forbid arbitrarily",
         "6.7.2-1": "REASON: setting XML/XMP metadata is entirely optional with fpdf2",
         "6.7.3-1": "REASON: setting XML/XMP metadata is entirely optional with fpdf2",
-        "6.7.11-1": "REASON: up to fpdf2 v2.3.2, test_xmp_metadata included the PDF/A version and conformance level of the file, but then it started to break PDF Checker does-not-conform-to-claimed-pdfa-type rule. PENDING proper support for PDF/A"
+        "6.7.11-1": "REASON: up to fpdf2 v2.3.2, test_xmp_metadata included the PDF/A version and conformance level of the file, but then it started to break PDF Checker does-not-conform-to-claimed-pdfa-type rule. PENDING proper support for PDF/A",
+        "6.9-2": "REASON: false positive on test/signing/sign_pkcs12.pdf"
     }
 }
