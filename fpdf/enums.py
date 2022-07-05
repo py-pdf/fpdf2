@@ -11,6 +11,17 @@ class DocumentState(IntEnum):
     CLOSED = 3  # EOF printed
 
 
+class SignatureFlag(IntEnum):
+    SIGNATURES_EXIST = 1
+    "If set, the document contains at least one signature field."
+    APPEND_ONLY = 2
+    """
+    If set, the document contains signatures that may be invalidated
+    if the file is saved (written) in a way that alters its previous contents,
+    as opposed to an incremental update.
+    """
+
+
 class CoerciveEnum(Enum):
     """
     An enumeration that provides a helper to coerce strings into enumeration members.

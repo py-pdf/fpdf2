@@ -14,6 +14,8 @@ pdf.sign_pkcs12("certs.p12", password=b"1234")
 pdf.output("signed_doc.pdf")
 ```
 
+![](signature-valid-in-acrobat.png)
+
 The lower-level [sign()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.sign) method
 allows to add a signature based on arbitrary key & certificates, not necessarily from a PKCS#12 file.
 

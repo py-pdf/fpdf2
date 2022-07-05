@@ -62,6 +62,7 @@ from .enums import (
     PageMode,
     PathPaintRule,
     RenderStyle,
+    SignatureFlag,
     TextMarkupType,
     TextMode,
     XPos,
@@ -389,7 +390,8 @@ class FPDF(GraphicsStateMixin):
         self._outlines_obj_id = None
         self._toc_placeholder = None  # ToCPlaceholder
         self._outline = []  # list of OutlineSection
-        self._sign_key = None
+        self._sig_annotation = None
+        self._sig_annotation_obj_id = None
         self.section_title_styles = {}  # level -> TitleStyle
 
         # Standard fonts
@@ -699,7 +701,7 @@ class FPDF(GraphicsStateMixin):
 
     def set_creation_date(self, date=None):
         """Sets Creation of Date time, or current time if None given."""
-        if self._sign_key:
+        if self._sig_annotation:
             raise FPDFException(
                 ".set_creation_date() must always be called before .sign*() methods"
             )
@@ -3729,7 +3731,7 @@ class FPDF(GraphicsStateMixin):
             raise EnvironmentError(
                 "endesive.signer not available - PDF cannot be signed - Try: pip install endesive"
             )
-        if self._sign_key:
+        if self._sig_annotation:
             raise FPDFException(".sign* methods should be called only once")
 
         self._sign_key = key
@@ -3738,23 +3740,21 @@ class FPDF(GraphicsStateMixin):
         self._sign_hashalgo = hashalgo
         self._sign_time = signing_time or self.creation_date
 
-        self.annots[self.page].append(
-            Annotation(
-                "Widget",
-                field_type="Sig",
-                x=0,
-                y=0,
-                width=0,
-                height=0,
-                flags=flags,
-                title="signature",
-                value=Signature(
-                    contact_info=contact_info,
-                    location=location,
-                    m=format_date(self._sign_time),
-                    reason=reason,
-                ),
-            )
+        self._sig_annotation = Annotation(
+            "Widget",
+            field_type="Sig",
+            x=0,
+            y=0,
+            width=0,
+            height=0,
+            flags=flags,
+            title="signature",
+            value=Signature(
+                contact_info=contact_info,
+                location=location,
+                m=format_date(self._sign_time),
+                reason=reason,
+            ),
         )
 
     def _putpages(self):
@@ -3786,7 +3786,9 @@ class FPDF(GraphicsStateMixin):
             self._out(f"/Resources {pdf_ref(2)}")
 
             page_annots = self.annots[n]
-            if page_annots:  # Annotations, e.g. links:
+            should_insert_sig_annotation = n == 1 and self._sig_annotation
+            if page_annots or should_insert_sig_annotation:
+                # Annotations, e.g. links:
                 annots = ""
                 for annot in page_annots:
                     annots += annot.serialize(self)
@@ -3799,6 +3801,10 @@ class FPDF(GraphicsStateMixin):
                         )
                     if annot.quad_points:
                         self._set_min_pdf_version("1.6")
+                if should_insert_sig_annotation:
+                    annots += (
+                        " " if annots else ""
+                    ) + "5 0 R"  # cf. _put_signature_annotation
                 self._out(f"/Annots [{annots}]")
             if self.pdf_version > "1.3":
                 self._out("/Group <</Type /Group /S /Transparency /CS /DeviceRGB>>")
@@ -4348,6 +4354,14 @@ class FPDF(GraphicsStateMixin):
             first_object_id=self._struct_tree_root_obj_id, fpdf=self
         )
 
+    def _put_signature_annotation(self):
+        self._newobj()
+        self._out(self._sig_annotation.serialize(self))
+        self._out("endobj")
+        self._sig_annotation_obj_id = self.n
+        # For now, this constant is fixed in _putpages:
+        assert self._sig_annotation_obj_id == 5
+
     def _put_document_outline(self):
         # This property is later used by _putcatalog to insert a reference to the Outlines:
         self._outlines_obj_id = self.n + 1
@@ -4392,6 +4406,11 @@ class FPDF(GraphicsStateMixin):
         lang = enclose_in_parens(getattr(self, "lang", None))
         if lang:
             catalog_d["/Lang"] = lang
+        if self._sig_annotation_obj_id:
+            flags = SignatureFlag.SIGNATURES_EXIST + SignatureFlag.APPEND_ONLY
+            self._out(
+                f"/AcroForm <</Fields [{self._sig_annotation_obj_id} 0 R] /SigFlags {flags}>>"
+            )
 
         if self.zoom_mode in ZOOM_CONFIGS:
             zoom_config = [
@@ -4463,6 +4482,8 @@ class FPDF(GraphicsStateMixin):
             self._putheader()
         with self._trace_size("pages"):
             self._putpages()
+        if self._sig_annotation:
+            self._put_signature_annotation()
         self._putresources()  # trace_size is performed inside
         if not self.struct_builder.empty():
             with self._trace_size("structure_tree"):
@@ -4503,7 +4524,7 @@ class FPDF(GraphicsStateMixin):
             self._out("startxref")
             self._out(o)
         self._out("%%EOF")
-        if self._sign_key:
+        if self._sig_annotation:
             self.buffer = sign_content(
                 signer,
                 self.buffer,
