@@ -1,4 +1,4 @@
-import datetime as dt
+from datetime import datetime, timezone
 import hashlib
 import pathlib
 import shutil
@@ -15,7 +15,7 @@ if not QPDF_AVAILABLE:
         "comparisons in tests"
     )
 
-EPOCH = dt.datetime(1969, 12, 31, 19, 00, 00)
+EPOCH = datetime(1969, 12, 31, 19, 00, 00).replace(tzinfo=timezone.utc)
 
 LOREM_IPSUM = (
     "Lorem ipsum Ut nostrud irure reprehenderit anim nostrud dolore sed "
