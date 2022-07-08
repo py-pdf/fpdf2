@@ -19,7 +19,7 @@ pdf.output("signed_doc.pdf")
 The lower-level [sign()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.sign) method
 allows to add a signature based on arbitrary key & certificates, not necessarily from a PKCS#12 file.
 
-`endesive` also provides code to check PDFs signatures.
+`endesive` also provides basic code to check PDFs signatures.
 [examples/pdf-verify.py](https://github.com/m32/endesive/blob/master/examples/pdf-verify.py)
 or the [`check_signature()`](https://github.com/PyFPDF/fpdf2/blob/master/test/conftest.py#L111) function
 used in `fpdf2` unit tests can be good starting points for you, if you want to perform PDF signature control.
