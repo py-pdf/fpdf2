@@ -219,7 +219,7 @@ To preview the API documentation, launch a local rendering server with:
 ## PDF spec & new features ##
 
 The **PDF 1.7 spec** is available on Adobe website:
-[PDF32000_2008.pdf](https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/PDF32000_2008.pdf).
+[PDF32000_2008.pdf](https://opensource.adobe.com/dc-acrobat-sdk-docs/standards/pdfstandards/pdf/PDF32000_2008.pdf).
 
 It may be intimidating at first, but while technical, it is usually quite clear and understandable.
 
