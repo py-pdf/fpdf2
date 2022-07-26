@@ -24,6 +24,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
   This ID can be controlled through the new [file_id()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.file_id) method.
 - the [svg.path](https://pypi.org/project/svg.path/) package was added as a dependency to better parse SVG images
 ### Fixed
+- local_context() now always restores the correct font settings after finishing, thanks to @gmischler
 - properly parsing single-digits arguments in SVG paths - _cf._ [#450](https://github.com/PyFPDF/fpdf2/issues/450)
 - document outline encoding: it was found to be broken when using a thai font - _cf._ [#458](https://github.com/PyFPDF/fpdf2/issues/458)
 

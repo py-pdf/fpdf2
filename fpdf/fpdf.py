@@ -4608,8 +4608,8 @@ class FPDF(GraphicsStateMixin):
         "Draw an horizontal line starting from (x, y) with a length equal to 'txt' width"
         if current_font is None:
             current_font = self.current_font
-        up = self.current_font["up"]
-        ut = self.current_font["ut"]
+        up = current_font["up"]
+        ut = current_font["ut"]
         w = self.get_string_width(txt, True) + self.ws * txt.count(" ")
         return (
             f"{x * self.k:.2f} "
