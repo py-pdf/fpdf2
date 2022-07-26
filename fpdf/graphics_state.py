@@ -29,7 +29,7 @@ class GraphicsStateMixin:
                 font_stretching=100,
                 font_family="",
                 font_size_pt=0,
-                font_size=0,
+                current_font={},
                 dash_pattern=dict(dash=0, gap=0, phase=0),
                 line_width=0,
                 text_mode=TextMode.FILL,
@@ -109,11 +109,19 @@ class GraphicsStateMixin:
 
     @property
     def font_size(self):
-        return self.__statestack[-1]["font_size"]
+        return self.__statestack[-1]["font_size_pt"] / self.k
 
     @font_size.setter
     def font_size(self, v):
-        self.__statestack[-1]["font_size"] = v
+        self.__statestack[-1]["font_size_pt"] = v * self.k
+
+    @property
+    def current_font(self):
+        return self.__statestack[-1]["current_font"]
+
+    @current_font.setter
+    def current_font(self, v):
+        self.__statestack[-1]["current_font"] = v
 
     @property
     def dash_pattern(self):

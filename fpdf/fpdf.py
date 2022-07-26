@@ -373,7 +373,6 @@ class FPDF(GraphicsStateMixin):
         self.links = {}  # array of Destination
         self.in_footer = 0  # flag set when processing footer
         self.lasth = 0  # height of last cell printed
-        self.current_font = {}  # current font
         self.str_alias_nb_pages = "{nb}"
 
         self.ws = 0  # word spacing
@@ -430,9 +429,10 @@ class FPDF(GraphicsStateMixin):
         # We set their default values here.
         self.font_family = ""  # current font family
         self.font_style = ""  # current font style
-        self.font_size = 12 / self.k
+        self.font_size_pt = 12
         self.font_stretching = 100  # current font stretching
         self.underline = 0  # underlining flag
+        self.current_font = {}  # current font
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
         self.text_color = self.DEFAULT_TEXT_COLOR
@@ -470,10 +470,6 @@ class FPDF(GraphicsStateMixin):
 
     def _set_min_pdf_version(self, version):
         self.pdf_version = max(self.pdf_version, version)
-
-    @property
-    def font_size_pt(self):
-        return self.font_size * self.k
 
     @property
     def unifontsubset(self):
@@ -1914,7 +1910,7 @@ class FPDF(GraphicsStateMixin):
         # Select it
         self.font_family = family
         self.font_style = style
-        self.font_size = size / self.k
+        self.font_size_pt = size
         self.current_font = self.fonts[fontkey]
         if self.page > 0:
             self._out(f"BT /F{self.current_font['i']} {self.font_size_pt:.2f} Tf ET")
@@ -1928,7 +1924,7 @@ class FPDF(GraphicsStateMixin):
         """
         if isclose(self.font_size_pt, size):
             return
-        self.font_size = size / self.k
+        self.font_size_pt = size
         if self.page > 0:
             if not self.current_font:
                 raise FPDFException(

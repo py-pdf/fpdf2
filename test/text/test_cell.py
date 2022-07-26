@@ -243,3 +243,23 @@ def test_cell_newpos_badinput():
         pdf.cell(w=0, new_y=None)
     with pytest.raises(ValueError):
         pdf.cell(w=0, align="J")
+
+
+def test_cell_curfont_leak(tmp_path): # issue #475
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf")
+    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf")
+    with pdf.local_context():
+        pdf.set_font('Roboto', 'B', 10)
+        pdf.cell(txt='ABCDEFGH', new_x='LEFT', new_y='NEXT')
+    pdf.set_font('Roboto', '', 10)
+    pdf.cell(txt='IJKLMNOP', new_x='LEFT', new_y='NEXT')
+    with pdf.local_context():
+        pdf.set_font('Roboto', 'B', 10)
+        pdf.cell(txt='QRSTUVW', new_x='LEFT', new_y='NEXT')
+    pdf.set_font('Roboto', '', 10)
+    pdf.cell(txt='XYZ012abc,-', new_x='LEFT', new_y='NEXT')
+    pdf.cell(txt='3,7E-05', new_x='LEFT', new_y='NEXT')
+    assert_pdf_equal(pdf, HERE / "cell_curfont_leak.pdf", tmp_path)
+
