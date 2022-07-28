@@ -4076,7 +4076,10 @@ class FPDF(GraphicsStateMixin):
                 fontname = f"MPDFAA+{font['name']}"
                 subset = font["subset"].dict()
                 del subset[0]
-                ttfontstream = ttf.makeSubset(font["ttffile"], subset)
+
+                ft = ttLib.TTFont(font["ttffile"])
+
+                ttfontstream = ttf.makeSubset(font["ttffile"], subset, ft)
                 ttfontsize = len(ttfontstream)
                 fontstream = zlib.compress(ttfontstream)
                 codeToGlyph = ttf.codeToGlyph
