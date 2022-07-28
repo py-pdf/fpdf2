@@ -416,7 +416,7 @@ class TTFontFile:
         # hmtx - Horizontal metrics table
         self.getHMTX(numberOfHMetrics, numGlyphs, glyphToChar, scale)
 
-    def makeSubset(self, file, subset):
+    def makeSubset(self, file, subset, ft):
         self.filename = file
         with open(file, "rb") as self.fh:
             self._pos = 0
@@ -432,30 +432,25 @@ class TTFontFile:
             self.readTableDirectory()
 
             # head - Font header table
-            self.seek_table("head")
-            self.skip(50)
-            indexToLocFormat = self.read_ushort()
+            indexToLocFormat = ft["head"].indexToLocFormat
             # pylint: disable=unused-variable
-            glyphDataFormat = self.read_ushort()
+            glyphDataFormat = ft["head"].glyphDataFormat
 
             # hhea - Horizontal header table
-            self.seek_table("hhea")
-            self.skip(32)
-            metricDataFormat = self.read_ushort()
-            orignHmetrics = numberOfHMetrics = self.read_ushort()
+            metricDataFormat = ft["hhea"].metricDataFormat
+            orignHmetrics = numberOfHMetrics = ft["hhea"].numberOfHMetrics
 
             # maxp - Maximum profile table
-            self.seek_table("maxp")
-            self.skip(4)
-            numGlyphs = self.read_ushort()
+            numGlyphs = ft["maxp"].numGlyphs
 
             # cmap - Character to glyph index mapping table
             cmap_offset = self.seek_table("cmap")
             self.skip(2)
             cmapTableCount = self.read_ushort()
+
             unicode_cmap_offset = 0
             unicode_cmap_offset12 = 0
-            for _ in range(cmapTableCount):
+            for table in ft["cmap"].tables:
                 platformID = self.read_ushort()
                 encodingID = self.read_ushort()
                 offset = self.read_ulong()
@@ -494,6 +489,14 @@ class TTFontFile:
             else:
                 self.getCMAP4(unicode_cmap_offset, glyphToChar, charToGlyph)
 
+            # CMAP - FontTools
+            # take the cmap with platformID and encodingID in this order:
+            # (3, 10), (0, 6), (0, 4), (3, 1), (0, 3), (0, 2), (0, 1), (0, 0)
+            cmap = ft["cmap"].getBestCmap()
+
+            # translate glyph name with glyph id
+            charToGlyph = {k: ft.getGlyphID(v) for k, v in cmap.items()}
+
             self.charToGlyph = charToGlyph
 
             # hmtx - Horizontal metrics table
@@ -507,19 +510,24 @@ class TTFontFile:
             subsetCharToGlyph = {}
             for code in subset:
                 target = subset[code] if isinstance(subset, dict) else code
+
                 if target > 65535:
                     raise Exception(
                         f"Character U+{target:X} must be remapped since it cannot be indexed in CMAP4 table"
                     )
+
                 if code in self.charToGlyph:
                     if (self.charToGlyph[code], target) not in subsetglyphs:
                         subsetglyphs.append(
                             (self.charToGlyph[code], target)
                         )  # Old Glyph ID => Unicode
+
                     subsetCharToGlyph[target] = self.charToGlyph[
                         code
                     ]  # Unicode to old GlyphID
+
                 self.maxUni = max(self.maxUni, code)
+
             (start, _) = self.get_table_pos("glyf")
 
             subsetglyphs.sort()
