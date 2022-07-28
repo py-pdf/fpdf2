@@ -501,7 +501,7 @@ class TTFontFile:
 
             # hmtx - Horizontal metrics table
             scale = 1  # not used
-            self.getHMTX(numberOfHMetrics, numGlyphs, glyphToChar, scale)
+            self.getHMTX(numberOfHMetrics, numGlyphs, glyphToChar, scale, ft)
 
             # loca - Index to location
             self.getLOCA(indexToLocFormat, numGlyphs)
@@ -831,23 +831,23 @@ class TTFontFile:
                 elif flags & GF_TWOBYTWO:
                     self.skip(8)
 
-    def getHMTX(self, numberOfHMetrics, numGlyphs, glyphToChar, scale):
-        start = self.seek_table("hmtx")
-        aw = 0
-        self.charWidths = []
-
+    def getHMTX(self, numberOfHMetrics, numGlyphs, glyphToChar, scale, ft=None):
         def resize_cw(size, default):
             size = (((size + 1) // 1024) + 1) * 1024
             delta = size - len(self.charWidths)
             if delta > 0:
                 self.charWidths += [default] * delta
 
-        nCharWidths = 0
+        start = self.seek_table("hmtx")
         if (numberOfHMetrics * 4) < self.maxStrLenRead:
             data = self.get_chunk(start, (numberOfHMetrics * 4))
             arr = unpack(f">{len(data) // 2}H", data)
         else:
             self.seek(start)
+
+        aw = 0
+        nCharWidths = 0
+        self.charWidths = []
         for glyph in range(numberOfHMetrics):
             if (numberOfHMetrics * 4) < self.maxStrLenRead:
                 aw = arr[(glyph * 2)]  # PHP starts arrays from index 0!? +1
@@ -865,37 +865,47 @@ class TTFontFile:
                     self.defaultWidth = scale * aw
                     continue
 
+                # print(glyph, glyphToChar[glyph])
                 for char in glyphToChar[glyph]:
-                    if char not in (0, 65535):
-                        w = round(scale * aw + 0.001)  # ROUND_HALF_UP
-                        if w == 0:
-                            w = 65535
-                        if char < 196608:
-                            if char >= len(self.charWidths):
-                                resize_cw(char, self.defaultWidth)
-                            self.charWidths[char] = w
-                            nCharWidths += 1
+                    if char in (0, 65535) or char >= 196608:
+                        continue
+
+                    if char >= len(self.charWidths):
+                        size = (((char + 1) // 1024) + 1) * 1024
+                        delta = size - len(self.charWidths)
+                        # print(delta)
+                        if delta > 0:
+                            self.charWidths += [self.defaultWidth] * delta
+
+                    w = round(scale * aw + 0.001) or 65535  # ROUND_HALF_UP
+                    self.charWidths[char] = w
+                    nCharWidths += 1
 
         data = self.get_chunk((start + numberOfHMetrics * 4), (numGlyphs * 2))
         arr = unpack(f">{len(data) // 2}H", data)
         diff = numGlyphs - numberOfHMetrics
         for pos in range(diff):
             glyph = pos + numberOfHMetrics
+
             if glyph in glyphToChar:
                 for char in glyphToChar[glyph]:
-                    if char not in (0, 65535):
-                        w = round(scale * aw + 0.001)  # ROUND_HALF_UP
-                        if w == 0:
-                            w = 65535
-                        if char < 196608:
-                            if char >= len(self.charWidths):
-                                resize_cw(char, self.defaultWidth)
-                            self.charWidths[char] = w
-                            nCharWidths += 1
+                    if char in (0, 65535) or char >= 196608:
+                        continue
+
+                    if char >= len(self.charWidths):
+                        resize_cw(char, self.defaultWidth)
+
+                    w = round(scale * aw + 0.001) or 65535  # ROUND_HALF_UP
+                    self.charWidths[char] = w
+                    nCharWidths += 1
 
         # NB 65535 is a set width of 0
         # First bytes define number of chars in font
         self.charWidths[0] = nCharWidths
+
+        if ft:
+            print(len(self.charWidths))
+            print(len(ft["hmtx"].metrics))
 
     def getHMetric(self, numberOfHMetrics, gid):
         start = self.seek_table("hmtx")
