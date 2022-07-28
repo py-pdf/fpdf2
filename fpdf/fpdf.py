@@ -32,6 +32,7 @@ from math import isclose
 from os.path import splitext
 from pathlib import Path
 from typing import Callable, List, NamedTuple, Optional, Tuple, Union
+from fontTools import ttLib
 
 try:
     from PIL.Image import Image
@@ -1738,6 +1739,7 @@ class FPDF(GraphicsStateMixin):
         """
         if not fname:
             raise ValueError('"fname" parameter is required')
+
         ext = splitext(str(fname))[1]
         if ext not in (".otf", ".otc", ".ttf", ".ttc"):
             raise ValueError(
@@ -1745,12 +1747,14 @@ class FPDF(GraphicsStateMixin):
                 " add_font() used to accept .pkl file as input, but for security reasons"
                 " this feature is deprecated since v2.5.1 and has been removed in v2.5.3."
             )
+
         if uni != "DEPRECATED":
             warnings.warn(
                 '"uni" parameter is deprecated, unused and will soon be removed',
                 DeprecationWarning,
                 stacklevel=2,
             )
+
         style = "".join(sorted(style.upper()))
         if any(letter not in "BI" for letter in style):
             raise ValueError(
@@ -1762,14 +1766,117 @@ class FPDF(GraphicsStateMixin):
         if fontkey in self.fonts or fontkey in self.core_fonts:
             warnings.warn(f"Core font or font already added '{fontkey}': doing nothing")
             return
+
         for parent in (".", FPDF_FONT_DIR):
             if not parent:
                 continue
+
             if (Path(parent) / fname).exists():
                 ttffilename = Path(parent) / fname
                 break
         else:
             raise FileNotFoundError(f"TTF Font file not found: {fname}")
+
+        # font tools
+        ft = ttLib.TTFont(ttffilename)
+
+        scale = 1000 / ft["head"].unitsPerEm
+        ascent = ft["hhea"].ascent * scale
+        descent = ft["hhea"].descent * scale
+        try:
+            capHeight = ft["OS/2"].sCapHeight * scale
+        except AttributeError:
+            capHeight = ascent
+        bbox = (
+            f"[{ft['head'].xMin * scale:.0f} {ft['head'].yMin * scale:.0f}"
+            f" {ft['head'].xMax * scale:.0f} {ft['head'].yMax * scale:.0f}]"
+        )
+        stemV = 50 + int(pow((ft["OS/2"].usWeightClass / 65), 2))
+        italicAngle = ft["post"].italicAngle
+        underlinePosition = ft["post"].underlinePosition * scale
+        underlineThickness = ft["post"].underlineThickness * scale
+
+        flags = 4
+        if ft["post"].isFixedPitch:
+            flags |= 1
+        if ft["post"].italicAngle != 0:
+            flags |= 64
+        if ft["OS/2"].usWeightClass >= 600:
+            flags |= 262144
+
+        aw = ft["hmtx"].metrics[".notdef"][0]
+        defaultWidth = scale * aw
+
+        # name = ft["name"].getBestFullName()
+
+        charWidths = [len(ft.getBestCmap().keys()) - 1]
+        for char in ft.getBestCmap().keys():
+            if char in (0, 65535) or char >= 196608:
+                continue
+
+            glyph = ft.getBestCmap()[char]
+            aw = ft["hmtx"].metrics[glyph][0]
+
+            if char >= len(charWidths):
+                size = (((char + 1) // 1024) + 1) * 1024
+                delta = size - len(charWidths)
+                if delta > 0:
+                    charWidths += [defaultWidth] * delta
+
+            w = round(scale * aw + 0.001) or 65535  # ROUND_HALF_UP
+            charWidths[char] = w
+
+        ttf = TTFontFile()
+        ttf.getMetrics(ttffilename)
+
+        assert ascent == ttf.ascent
+        assert descent == ttf.descent
+        assert capHeight == ttf.capHeight
+        assert bbox == (
+            f"[{ttf.bbox[0]:.0f} {ttf.bbox[1]:.0f}"
+            f" {ttf.bbox[2]:.0f} {ttf.bbox[3]:.0f}]"
+        )
+        assert italicAngle == ttf.italicAngle
+        assert stemV == ttf.stemV
+        assert underlinePosition == ttf.underlinePosition
+        assert underlineThickness == ttf.underlineThickness
+        assert flags == ttf.flags
+        assert defaultWidth == ttf.defaultWidth
+
+        desc = {
+            "Ascent": round(ascent),
+            "Descent": round(descent),
+            "CapHeight": round(capHeight),
+            "Flags": flags,
+            "FontBBox": bbox,
+            "ItalicAngle": int(italicAngle),
+            "StemV": round(stemV),
+            "MissingWidth": round(defaultWidth),
+        }
+
+        # for i, w in enumerate(ttf.charWidths):
+        #    if w != charWidths[i]:
+        #        print(i, w, charWidths[i])
+
+        # assert ttf.charWidths == charWidths
+
+        font_dict = {
+            "type": "TTF",
+            "name": re.sub("[ ()]", "", ttf.fullName),
+            "desc": desc,
+            "up": round(underlinePosition),
+            "ut": round(underlineThickness),
+            "ttffile": ttffilename,
+            "fontkey": fontkey,
+            "originalsize": os.stat(ttffilename).st_size,
+            "cw": charWidths,
+        }
+
+        self.font_files[fontkey] = {
+            "length1": font_dict["originalsize"],
+            "type": "TTF",
+            "ttffile": ttffilename,
+        }
 
         # include numbers in the subset! (if alias present)
         # ensure that alias is mapped 1-by-1 additionally (must be replaceable)
@@ -1778,33 +1885,6 @@ class FPDF(GraphicsStateMixin):
             sbarr += "0123456789"
             sbarr += self.str_alias_nb_pages
 
-        ttf = TTFontFile()
-        ttf.getMetrics(ttffilename)
-        desc = {
-            "Ascent": round(ttf.ascent),
-            "Descent": round(ttf.descent),
-            "CapHeight": round(ttf.capHeight),
-            "Flags": ttf.flags,
-            "FontBBox": (
-                f"[{ttf.bbox[0]:.0f} {ttf.bbox[1]:.0f}"
-                f" {ttf.bbox[2]:.0f} {ttf.bbox[3]:.0f}]"
-            ),
-            "ItalicAngle": int(ttf.italicAngle),
-            "StemV": round(ttf.stemV),
-            "MissingWidth": round(ttf.defaultWidth),
-        }
-
-        font_dict = {
-            "type": "TTF",
-            "name": re.sub("[ ()]", "", ttf.fullName),
-            "desc": desc,
-            "up": round(ttf.underlinePosition),
-            "ut": round(ttf.underlineThickness),
-            "ttffile": ttffilename,
-            "fontkey": fontkey,
-            "originalsize": os.stat(ttffilename).st_size,
-            "cw": ttf.charWidths,
-        }
         self.fonts[fontkey] = {
             "i": len(self.fonts) + 1,
             "type": font_dict["type"],
@@ -1816,11 +1896,6 @@ class FPDF(GraphicsStateMixin):
             "ttffile": font_dict["ttffile"],
             "fontkey": fontkey,
             "subset": SubsetMap(map(ord, sbarr)),
-        }
-        self.font_files[fontkey] = {
-            "length1": font_dict["originalsize"],
-            "type": "TTF",
-            "ttffile": ttffilename,
         }
 
     def set_font(self, family=None, style="", size=0):
