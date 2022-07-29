@@ -443,68 +443,19 @@ class TTFontFile:
             # maxp - Maximum profile table
             numGlyphs = ft["maxp"].numGlyphs
 
-            # cmap - Character to glyph index mapping table
-            cmap_offset = self.seek_table("cmap")
-            self.skip(2)
-            cmapTableCount = self.read_ushort()
-
-            unicode_cmap_offset = 0
-            unicode_cmap_offset12 = 0
-            for table in ft["cmap"].tables:
-                platformID = self.read_ushort()
-                encodingID = self.read_ushort()
-                offset = self.read_ulong()
-                save_pos = self._pos
-                if platformID == 3 and encodingID == 10:  # Microsoft, UCS-4
-                    fmt = self.get_ushort(cmap_offset + offset)
-                    if fmt == 12:
-                        if not unicode_cmap_offset12:
-                            unicode_cmap_offset12 = cmap_offset + offset
-                        break
-                if (
-                    platformID == 3 and encodingID == 1
-                ) or platformID == 0:  # Microsoft, Unicode
-                    fmt = self.get_ushort(cmap_offset + offset)
-                    if fmt == 4:
-                        unicode_cmap_offset = cmap_offset + offset
-                        # Don't break here since we might later get
-                        # unicode_cmap_offset12 which is needed for
-                        # characters => 0x10000 (CMAP12)
-                        #
-                        # break
-
-                self.seek(save_pos)
-
-            if not unicode_cmap_offset and not unicode_cmap_offset12:
-                raise RuntimeError(
-                    f"Font ({self.filename}) does not have cmap for Unicode "
-                    f"(platform 3, encoding 1, format 4, or platform 3, encoding 10, "
-                    f"format 12, or platform 0, any encoding, format 4)"
-                )
-
-            glyphToChar = {}
-            charToGlyph = {}
-            if unicode_cmap_offset12:
-                self.getCMAP12(unicode_cmap_offset12, glyphToChar, charToGlyph)
-            else:
-                self.getCMAP4(unicode_cmap_offset, glyphToChar, charToGlyph)
-
-            # CMAP - FontTools
+            # cmap
             # take the cmap with platformID and encodingID in this order:
             # (3, 10), (0, 6), (0, 4), (3, 1), (0, 3), (0, 2), (0, 1), (0, 0)
             cmap = ft["cmap"].getBestCmap()
+            # translate glyph name to glyph id
+            self.charToGlyph = {k: ft.getGlyphID(v) for k, v in cmap.items()}
 
-            # translate glyph name with glyph id
-            charToGlyph = {k: ft.getGlyphID(v) for k, v in cmap.items()}
-
-            self.charToGlyph = charToGlyph
-
-            # hmtx - Horizontal metrics table
-            scale = 1  # not used
-            self.getHMTX(numberOfHMetrics, numGlyphs, glyphToChar, scale, ft)
+            # hmtx - Horizontal metrics table - Not used
+            # scale = 1  # not used
+            # self.getHMTX(numberOfHMetrics, numGlyphs, glyphToChar, scale, ft)
 
             # loca - Index to location
-            self.getLOCA(indexToLocFormat, numGlyphs)
+            self.glyphPos = ft["loca"].locations
 
             subsetglyphs = [(0, 0)]  # special "sorted dict"!
             subsetCharToGlyph = {}
@@ -906,6 +857,8 @@ class TTFontFile:
         if ft:
             print(len(self.charWidths))
             print(len(ft["hmtx"].metrics))
+            print(ft["hmtx"].metrics)
+            print(ft.getGlyphID("glyph00865"))
 
     def getHMetric(self, numberOfHMetrics, gid):
         start = self.seek_table("hmtx")
