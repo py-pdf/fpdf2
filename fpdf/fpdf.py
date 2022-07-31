@@ -2629,6 +2629,9 @@ class FPDF(GraphicsStateMixin):
                 if self.font_stretching != 100:
                     unscaled_width *= self.font_stretching / 100
                 styled_txt_width += unscaled_width * self.font_size / 1000
+        elif self.font_stretching != 100:
+            styled_txt_width *= self.font_stretching / 100
+
         if w == 0:
             w = self.w - self.r_margin - self.x
         elif w is None:
@@ -2732,6 +2735,9 @@ class FPDF(GraphicsStateMixin):
                 word_spacing = (
                     w - self.c_margin - self.c_margin - styled_txt_width
                 ) / text_line.number_of_spaces_between_words
+            if self.font_stretching != 100:
+                # Space character is already stretched, extra spacing is absolute.
+                word_spacing *= 100 / self.font_stretching
             if word_spacing and self.unifontsubset:
                 # If multibyte, Tw has no effect - do word spacing using an
                 # adjustment before each space
@@ -3089,6 +3095,8 @@ class FPDF(GraphicsStateMixin):
         if w == 0:
             w = self.w - self.r_margin - self.x
         maximum_allowed_emwidth = (w - 2 * self.c_margin) * 1000 / self.font_size
+        if self.font_stretching != 100:
+            maximum_allowed_emwidth *= 100 / self.font_stretching
 
         # Calculate text length
         txt = self.normalize_text(txt)
@@ -3239,12 +3247,16 @@ class FPDF(GraphicsStateMixin):
         # first line from current x position to right margin
         first_width = self.w - prev_x - self.r_margin
         first_emwidth = (first_width - 2 * self.c_margin) * 1000 / self.font_size
+        if self.font_stretching != 100:
+            first_emwidth *= 100 / self.font_stretching
         text_line = multi_line_break.get_line_of_given_width(
             first_emwidth, wordsplit=False
         )
         # remaining lines fill between margins
         full_width = self.w - self.l_margin - self.r_margin
         full_emwidth = (full_width - 2 * self.c_margin) * 1000 / self.font_size
+        if self.font_stretching != 100:
+            full_emwidth *= 100 / self.font_stretching
         while (text_line) is not None:
             text_lines.append(text_line)
             text_line = multi_line_break.get_line_of_given_width(full_emwidth)
