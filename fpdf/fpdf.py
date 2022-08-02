@@ -33,6 +33,8 @@ from os.path import splitext
 from pathlib import Path
 from typing import Callable, List, NamedTuple, Optional, Tuple, Union
 from fontTools import ttLib
+from fontTools import subset as ftsubset
+from io import BytesIO
 
 try:
     from PIL.Image import Image
@@ -4091,10 +4093,37 @@ class FPDF(GraphicsStateMixin):
 
                 ft = ttLib.TTFont(font["ttffile"])
 
-                ttfontstream = ttf.makeSubset(font["ttffile"], subset, ft)
+                # ---- FONTTOOLS SUBSETTER ----
+                cmap = ft["cmap"].getBestCmap()
+                # 1. get all glyphs in PDF
+                glyph_names = [cmap[code] for code in subset if code in cmap]
+
+                # 2. make a subset
+                subsetter = ftsubset.Subsetter()
+                subsetter.populate(glyphs=glyph_names)
+
+                # font = ftsubset.load_font(file, ftsubset.Options())
+                subsetter.subset(ft)
+
+                # 3. make codeToGlyph
+                codeToGlyph = {
+                    code: ft.getGlyphID(name)
+                    for code, name in cmap.items()
+                    if code in subset
+                }
+
+                # check: what is the usage of max_unicode?
+                max_unicode = max(subset)
+
+                # 4. return the ttfile
+                output = BytesIO()
+                ft.save(output, reorderTables=False)
+                ttfontstream = output.read()
+
+                # ttfontstream = ttf.makeSubset(font["ttffile"], subset, ft)
                 ttfontsize = len(ttfontstream)
                 fontstream = zlib.compress(ttfontstream)
-                codeToGlyph = ttf.codeToGlyph
+                # codeToGlyph = ttf.codeToGlyph
                 # del codeToGlyph[0]
 
                 # Type0 Font
@@ -4121,7 +4150,7 @@ class FPDF(GraphicsStateMixin):
                 self._out(f"/FontDescriptor {pdf_ref(self.n + 3)}")
                 if font["desc"].get("MissingWidth"):
                     self._out(f"/DW {font['desc']['MissingWidth']}")
-                self._putTTfontwidths(font, ttf.maxUni)
+                self._putTTfontwidths(font, max_unicode)
                 self._out(f"/CIDToGIDMap {pdf_ref(self.n + 4)}")
                 self._out(">>")
                 self._out("endobj")

@@ -416,7 +416,7 @@ class TTFontFile:
         # hmtx - Horizontal metrics table
         self.getHMTX(numberOfHMetrics, numGlyphs, glyphToChar, scale)
 
-    def makeSubset(self, file, subset, ft):
+    def makeSubset(self, file, subset):
         self.filename = file
         with open(file, "rb") as self.fh:
             self._pos = 0
@@ -432,53 +432,94 @@ class TTFontFile:
             self.readTableDirectory()
 
             # head - Font header table
-            indexToLocFormat = ft["head"].indexToLocFormat
+            self.seek_table("head")
+            self.skip(50)
+            indexToLocFormat = self.read_ushort()
             # pylint: disable=unused-variable
-            glyphDataFormat = ft["head"].glyphDataFormat
+            glyphDataFormat = self.read_ushort()
 
             # hhea - Horizontal header table
-            metricDataFormat = ft["hhea"].metricDataFormat
-            orignHmetrics = numberOfHMetrics = ft["hhea"].numberOfHMetrics
+            self.seek_table("hhea")
+            self.skip(32)
+            metricDataFormat = self.read_ushort()
+            orignHmetrics = numberOfHMetrics = self.read_ushort()
 
             # maxp - Maximum profile table
-            numGlyphs = ft["maxp"].numGlyphs
+            self.seek_table("maxp")
+            self.skip(4)
+            numGlyphs = self.read_ushort()
 
-            # cmap
-            # take the cmap with platformID and encodingID in this order:
-            # (3, 10), (0, 6), (0, 4), (3, 1), (0, 3), (0, 2), (0, 1), (0, 0)
-            cmap = ft["cmap"].getBestCmap()
-            # translate glyph name to glyph id
-            self.charToGlyph = {k: ft.getGlyphID(v) for k, v in cmap.items()}
+            # cmap - Character to glyph index mapping table
+            cmap_offset = self.seek_table("cmap")
+            self.skip(2)
+            cmapTableCount = self.read_ushort()
+            unicode_cmap_offset = 0
+            unicode_cmap_offset12 = 0
+            for _ in range(cmapTableCount):
+                platformID = self.read_ushort()
+                encodingID = self.read_ushort()
+                offset = self.read_ulong()
+                save_pos = self._pos
+                if platformID == 3 and encodingID == 10:  # Microsoft, UCS-4
+                    fmt = self.get_ushort(cmap_offset + offset)
+                    if fmt == 12:
+                        if not unicode_cmap_offset12:
+                            unicode_cmap_offset12 = cmap_offset + offset
+                        break
+                if (
+                    platformID == 3 and encodingID == 1
+                ) or platformID == 0:  # Microsoft, Unicode
+                    fmt = self.get_ushort(cmap_offset + offset)
+                    if fmt == 4:
+                        unicode_cmap_offset = cmap_offset + offset
+                        # Don't break here since we might later get
+                        # unicode_cmap_offset12 which is needed for
+                        # characters => 0x10000 (CMAP12)
+                        #
+                        # break
 
-            # hmtx - Horizontal metrics table - Not used
-            # scale = 1  # not used
-            # self.getHMTX(numberOfHMetrics, numGlyphs, glyphToChar, scale, ft)
+                self.seek(save_pos)
+
+            if not unicode_cmap_offset and not unicode_cmap_offset12:
+                raise RuntimeError(
+                    f"Font ({self.filename}) does not have cmap for Unicode "
+                    f"(platform 3, encoding 1, format 4, or platform 3, encoding 10, "
+                    f"format 12, or platform 0, any encoding, format 4)"
+                )
+
+            glyphToChar = {}
+            charToGlyph = {}
+            if unicode_cmap_offset12:
+                self.getCMAP12(unicode_cmap_offset12, glyphToChar, charToGlyph)
+            else:
+                self.getCMAP4(unicode_cmap_offset, glyphToChar, charToGlyph)
+
+            self.charToGlyph = charToGlyph
+
+            # hmtx - Horizontal metrics table
+            scale = 1  # not used
+            self.getHMTX(numberOfHMetrics, numGlyphs, glyphToChar, scale)
 
             # loca - Index to location
-            self.glyphPos = ft["loca"].locations
+            self.getLOCA(indexToLocFormat, numGlyphs)
 
             subsetglyphs = [(0, 0)]  # special "sorted dict"!
             subsetCharToGlyph = {}
             for code in subset:
                 target = subset[code] if isinstance(subset, dict) else code
-
                 if target > 65535:
                     raise Exception(
                         f"Character U+{target:X} must be remapped since it cannot be indexed in CMAP4 table"
                     )
-
                 if code in self.charToGlyph:
                     if (self.charToGlyph[code], target) not in subsetglyphs:
                         subsetglyphs.append(
                             (self.charToGlyph[code], target)
                         )  # Old Glyph ID => Unicode
-
                     subsetCharToGlyph[target] = self.charToGlyph[
                         code
                     ]  # Unicode to old GlyphID
-
                 self.maxUni = max(self.maxUni, code)
-
             (start, _) = self.get_table_pos("glyf")
 
             subsetglyphs.sort()
@@ -782,23 +823,23 @@ class TTFontFile:
                 elif flags & GF_TWOBYTWO:
                     self.skip(8)
 
-    def getHMTX(self, numberOfHMetrics, numGlyphs, glyphToChar, scale, ft=None):
+    def getHMTX(self, numberOfHMetrics, numGlyphs, glyphToChar, scale):
+        start = self.seek_table("hmtx")
+        aw = 0
+        self.charWidths = []
+
         def resize_cw(size, default):
             size = (((size + 1) // 1024) + 1) * 1024
             delta = size - len(self.charWidths)
             if delta > 0:
                 self.charWidths += [default] * delta
 
-        start = self.seek_table("hmtx")
+        nCharWidths = 0
         if (numberOfHMetrics * 4) < self.maxStrLenRead:
             data = self.get_chunk(start, (numberOfHMetrics * 4))
             arr = unpack(f">{len(data) // 2}H", data)
         else:
             self.seek(start)
-
-        aw = 0
-        nCharWidths = 0
-        self.charWidths = []
         for glyph in range(numberOfHMetrics):
             if (numberOfHMetrics * 4) < self.maxStrLenRead:
                 aw = arr[(glyph * 2)]  # PHP starts arrays from index 0!? +1
@@ -816,49 +857,37 @@ class TTFontFile:
                     self.defaultWidth = scale * aw
                     continue
 
-                # print(glyph, glyphToChar[glyph])
                 for char in glyphToChar[glyph]:
-                    if char in (0, 65535) or char >= 196608:
-                        continue
-
-                    if char >= len(self.charWidths):
-                        size = (((char + 1) // 1024) + 1) * 1024
-                        delta = size - len(self.charWidths)
-                        # print(delta)
-                        if delta > 0:
-                            self.charWidths += [self.defaultWidth] * delta
-
-                    w = round(scale * aw + 0.001) or 65535  # ROUND_HALF_UP
-                    self.charWidths[char] = w
-                    nCharWidths += 1
+                    if char not in (0, 65535):
+                        w = round(scale * aw + 0.001)  # ROUND_HALF_UP
+                        if w == 0:
+                            w = 65535
+                        if char < 196608:
+                            if char >= len(self.charWidths):
+                                resize_cw(char, self.defaultWidth)
+                            self.charWidths[char] = w
+                            nCharWidths += 1
 
         data = self.get_chunk((start + numberOfHMetrics * 4), (numGlyphs * 2))
         arr = unpack(f">{len(data) // 2}H", data)
         diff = numGlyphs - numberOfHMetrics
         for pos in range(diff):
             glyph = pos + numberOfHMetrics
-
             if glyph in glyphToChar:
                 for char in glyphToChar[glyph]:
-                    if char in (0, 65535) or char >= 196608:
-                        continue
-
-                    if char >= len(self.charWidths):
-                        resize_cw(char, self.defaultWidth)
-
-                    w = round(scale * aw + 0.001) or 65535  # ROUND_HALF_UP
-                    self.charWidths[char] = w
-                    nCharWidths += 1
+                    if char not in (0, 65535):
+                        w = round(scale * aw + 0.001)  # ROUND_HALF_UP
+                        if w == 0:
+                            w = 65535
+                        if char < 196608:
+                            if char >= len(self.charWidths):
+                                resize_cw(char, self.defaultWidth)
+                            self.charWidths[char] = w
+                            nCharWidths += 1
 
         # NB 65535 is a set width of 0
         # First bytes define number of chars in font
         self.charWidths[0] = nCharWidths
-
-        if ft:
-            print(len(self.charWidths))
-            print(len(ft["hmtx"].metrics))
-            print(ft["hmtx"].metrics)
-            print(ft.getGlyphID("glyph00865"))
 
     def getHMetric(self, numberOfHMetrics, gid):
         start = self.seek_table("hmtx")
