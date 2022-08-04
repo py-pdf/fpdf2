@@ -19,6 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.5.6] - not released yet
 ### Added
 - new methods to allow signing PDF documents: [link to docs](https://pyfpdf.github.io/fpdf2/Signing.html)
+- support for colors defined with the `rgb()` syntax in SVG images - _cf._ [#480](https://github.com/PyFPDF/fpdf2/issues/480)
 ### Changed
 - an `/ID` is now inserted in the trailer dictionary of all PDF documents generated.
   This ID can be controlled through the new [file_id()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.file_id) method.

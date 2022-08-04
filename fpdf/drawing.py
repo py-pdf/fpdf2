@@ -439,6 +439,36 @@ def color_from_hex_string(hexstr):
     raise ValueError(f"{hexstr} could not be interpreted as a RGB(A) hex string")
 
 
+def color_from_rgb_string(rgbstr):
+    """
+    Parse an RGB color from a css-style rgb(R, G, B, A) color string.
+
+    Args:
+        rgbstr (str): of the form `rgb(R, G, B)` or `rgb(R, G, B, A)`.
+
+    Returns:
+        DeviceRGB representation of the color.
+    """
+    if not isinstance(rgbstr, str):
+        raise TypeError(f"{rgbstr} is not of type str")
+
+    rgbstr = rgbstr.replace(" ", "")
+
+    if not rgbstr.startswith("rgb(") or not rgbstr.endswith(")"):
+        raise ValueError(f"{rgbstr} does not follow the expected rgb(...) format")
+
+    rgbstr = rgbstr[4:-1]
+    colors = rgbstr.split(",")
+
+    if len(colors) == 3:
+        return rgb8(*[int(c) for c in colors], a=None)
+
+    if len(colors) == 4:
+        return rgb8(*[int(c) for c in colors])
+
+    raise ValueError(f"{rgbstr} could not be interpreted as a rgb(R, G, B[, A]) color")
+
+
 class Point(NamedTuple):
     """
     An x-y coordinate pair within the two-dimensional coordinate frame.

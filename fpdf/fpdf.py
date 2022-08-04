@@ -3807,30 +3807,7 @@ class FPDF(GraphicsStateMixin):
             if w_pt != dw_pt or h_pt != dh_pt:
                 self._out(f"/MediaBox [0 0 {w_pt:.2f} {h_pt:.2f}]")
             self._out(f"/Resources {pdf_ref(2)}")
-
-            page_annots = self.annots[n]
-            page_annots_as_obj = self.annots_as_obj[n]
-            if page_annots or page_annots_as_obj:
-                # Annotations, e.g. links:
-                annots = ""
-                for annot in page_annots:
-                    annots += annot.serialize(self)
-                    if annot.alt_text is not None:
-                        # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
-                        # but tests with Adobe Acrobat Reader reveal that the page /StructParents inserted below
-                        # is enough to link the marked content in the hierarchy tree with this annotation link.
-                        self._add_marked_content(
-                            self.n, struct_type="/Link", alt_text=annot.alt_text
-                        )
-                    if annot.quad_points:
-                        self._set_min_pdf_version("1.6")
-                if page_annots and page_annots_as_obj:
-                    annots += " "
-                annots += " ".join(
-                    f"{annot_obj_id + i} 0 R" for i in range(len(page_annots_as_obj))
-                )
-                annot_obj_id += len(page_annots_as_obj)
-                self._out(f"/Annots [{annots}]")
+            annot_obj_id = self._put_page_annotations(n, annot_obj_id)
             if self.pdf_version > "1.3":
                 self._out("/Group <</Type /Group /S /Transparency /CS /DeviceRGB>>")
             spid = self._struct_parents_id_per_page.get(self.n)
@@ -3859,6 +3836,32 @@ class FPDF(GraphicsStateMixin):
         self._out(f"/MediaBox [0 0 {dw_pt:.2f} {dh_pt:.2f}]")
         self._out(">>")
         self._out("endobj")
+
+    def _put_page_annotations(self, page_number, annot_obj_id):
+        page_annots = self.annots[page_number]
+        page_annots_as_obj = self.annots_as_obj[page_number]
+        if page_annots or page_annots_as_obj:
+            # Annotations, e.g. links:
+            annots = ""
+            for annot in page_annots:
+                annots += annot.serialize(self)
+                if annot.alt_text is not None:
+                    # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
+                    # but tests with Adobe Acrobat Reader reveal that the page /StructParents inserted below
+                    # is enough to link the marked content in the hierarchy tree with this annotation link.
+                    self._add_marked_content(
+                        self.n, struct_type="/Link", alt_text=annot.alt_text
+                    )
+                if annot.quad_points:
+                    self._set_min_pdf_version("1.6")
+            if page_annots and page_annots_as_obj:
+                annots += " "
+            annots += " ".join(
+                f"{annot_obj_id + i} 0 R" for i in range(len(page_annots_as_obj))
+            )
+            annot_obj_id += len(page_annots_as_obj)
+            self._out(f"/Annots [{annots}]")
+        return annot_obj_id
 
     def _substitute_page_number(self):
         nb = self.pages_count  # total number of pages
