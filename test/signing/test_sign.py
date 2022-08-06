@@ -24,7 +24,10 @@ def test_sign_pkcs12_with_link(tmp_path):
     pdf.set_creation_date(EPOCH)
     pdf.set_font("Helvetica", size=30)
     pdf.add_page()
+    pdf.text(x=80, y=50, txt="Page 1/2")
+    pdf.add_page()
     pdf.set_xy(80, 50)
+    pdf.sign_pkcs12(HERE / "certs.p12", password=b"1234")
     pdf.cell(
         w=50,
         h=20,
@@ -33,6 +36,5 @@ def test_sign_pkcs12_with_link(tmp_path):
         align="C",
         link="https://github.com/PyFPDF/fpdf2",
     )
-    pdf.sign_pkcs12(HERE / "certs.p12", password=b"1234")
     assert_pdf_equal(pdf, HERE / "sign_pkcs12_with_link.pdf", tmp_path)
     check_signature(pdf, TRUSTED_CERT_PEMS)

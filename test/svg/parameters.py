@@ -303,6 +303,12 @@ test_svg_shape_tags = (
         pytest.raises(KeyError),
         id="polygon no points",
     ),
+    pytest.param(
+        '<circle r="10" fill="rgb(100, 200)"/>',
+        [],
+        pytest.raises(ValueError),
+        id="invalid rgb() color",
+    ),
 )
 
 test_svg_transforms = (
@@ -736,6 +742,12 @@ test_svg_attribute_conversion = (
         pytest.raises(ValueError),
         id="stroke-opacity invalid",
     ),
+    pytest.param(
+        '<path stroke-dasharray="" opacity="" transform=""/>',
+        Gs(),
+        no_error(),
+        id="empty attribute values",
+    ),
 )
 
 test_svg_sources = (
@@ -761,6 +773,7 @@ test_svg_sources = (
     pytest.param(svgfile("Ghostscript_colorcircle.svg"), id="ghostscript colorcircle"),
     pytest.param(svgfile("Ghostscript_escher.svg"), id="ghostscript escher"),
     pytest.param(svgfile("use-xlink-href.svg"), id="use xlink:href - issue #446"),
+    pytest.param(svgfile("rgb-color-issue-480.svg"), id="rgb() color - issue #480"),
 )
 
 svg_path_edge_cases = (
