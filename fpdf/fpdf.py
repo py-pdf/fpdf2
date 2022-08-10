@@ -87,7 +87,6 @@ from .syntax import create_dictionary_string as pdf_dict
 from .syntax import create_list_string as pdf_list
 from .syntax import create_stream as pdf_stream
 from .syntax import iobj_ref as pdf_ref
-from .ttfonts import TTFontFile
 from .util import (
     enclose_in_parens,
     escape_parens,
@@ -1809,8 +1808,6 @@ class FPDF(GraphicsStateMixin):
         aw = ft["hmtx"].metrics[".notdef"][0]
         defaultWidth = scale * aw
 
-        # name = ft["name"].getBestFullName()
-
         charWidths = [len(ft.getBestCmap().keys()) - 1]
         for char in ft.getBestCmap().keys():
             if char in (0, 65535) or char >= 196608:
@@ -1828,23 +1825,6 @@ class FPDF(GraphicsStateMixin):
             w = round(scale * aw + 0.001) or 65535  # ROUND_HALF_UP
             charWidths[char] = w
 
-        ttf = TTFontFile()
-        ttf.getMetrics(ttffilename)
-
-        assert ascent == ttf.ascent
-        assert descent == ttf.descent
-        assert capHeight == ttf.capHeight
-        assert bbox == (
-            f"[{ttf.bbox[0]:.0f} {ttf.bbox[1]:.0f}"
-            f" {ttf.bbox[2]:.0f} {ttf.bbox[3]:.0f}]"
-        )
-        assert italicAngle == ttf.italicAngle
-        assert stemV == ttf.stemV
-        assert underlinePosition == ttf.underlinePosition
-        assert underlineThickness == ttf.underlineThickness
-        assert flags == ttf.flags
-        assert defaultWidth == ttf.defaultWidth
-
         desc = {
             "Ascent": round(ascent),
             "Descent": round(descent),
@@ -1856,15 +1836,9 @@ class FPDF(GraphicsStateMixin):
             "MissingWidth": round(defaultWidth),
         }
 
-        # for i, w in enumerate(ttf.charWidths):
-        #    if w != charWidths[i]:
-        #        print(i, w, charWidths[i])
-
-        # assert ttf.charWidths == charWidths
-
         font_dict = {
             "type": "TTF",
-            "name": re.sub("[ ()]", "", ttf.fullName),
+            "name": re.sub("[ ()]", "", ft["name"].getBestFullName()),
             "desc": desc,
             "up": round(underlinePosition),
             "ut": round(underlineThickness),
@@ -4089,45 +4063,49 @@ class FPDF(GraphicsStateMixin):
                 self._out("endobj")
             elif my_type == "TTF":
                 self.fonts[font_name]["n"] = self.n + 1
-                ttf = TTFontFile()
                 fontname = f"MPDFAA+{font['name']}"
                 subset = font["subset"].dict()
+
+                # why we delete 0-element?
                 del subset[0]
 
+                # ---- FONTTOOLS SUBSETTER ----
                 ft = ttLib.TTFont(font["ttffile"])
 
-                # ---- FONTTOOLS SUBSETTER ----
-                cmap = ft["cmap"].getBestCmap()
                 # 1. get all glyphs in PDF
+                cmap = ft["cmap"].getBestCmap()
                 glyph_names = [cmap[code] for code in subset if code in cmap]
 
                 # 2. make a subset
-                subsetter = ftsubset.Subsetter()
+                # notdef_outline=True means that keeps the white box for the .notdef glyph
+                # recommended_glyphs=True means that adds the .notdef, .null, CR, and space glyphs
+                options = ftsubset.Options(notdef_outline=True, recommended_glyphs=True)
+                subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)
-
-                # font = ftsubset.load_font(file, ftsubset.Options())
                 subsetter.subset(ft)
 
                 # 3. make codeToGlyph
-                codeToGlyph = {
-                    code: ft.getGlyphID(name)
-                    for code, name in cmap.items()
-                    if code in subset
-                }
+                # is a map Character_ID -> Glyph_ID
+                codeToGlyph = {}
+                for code, new_code_mapped in subset.items():
+                    if code in cmap:
+                        glyph_name = cmap[code]
+                        codeToGlyph[new_code_mapped] = ft.getGlyphID(glyph_name)
+                    else:
+                        # it's not necessary to specificy the notdef glyph for codes not present in cmap
+                        codeToGlyph[new_code_mapped] = ft.getGlyphID(".notdef")
 
                 # check: what is the usage of max_unicode?
                 max_unicode = max(subset)
 
                 # 4. return the ttfile
                 output = BytesIO()
-                ft.save(output, reorderTables=False)
-                ttfontstream = output.read()
+                ft.save(output)
 
-                # ttfontstream = ttf.makeSubset(font["ttffile"], subset, ft)
+                output.seek(0)
+                ttfontstream = output.read()
                 ttfontsize = len(ttfontstream)
                 fontstream = zlib.compress(ttfontstream)
-                # codeToGlyph = ttf.codeToGlyph
-                # del codeToGlyph[0]
 
                 # Type0 Font
                 # A composite font - a font composed of other fonts,
@@ -4242,8 +4220,10 @@ class FPDF(GraphicsStateMixin):
                     cidtogidmap[cc * 2] = chr(glyph >> 8)
                     cidtogidmap[cc * 2 + 1] = chr(glyph & 0xFF)
                 cidtogidmap = "".join(cidtogidmap)
+
                 # manage binary data as latin1 until PEP461-like function is implemented
                 cidtogidmap = zlib.compress(cidtogidmap.encode("latin1"))
+
                 self._newobj()
                 self._out(f"<</Length {len(cidtogidmap)}")
                 self._out("/Filter /FlateDecode")
@@ -4259,7 +4239,6 @@ class FPDF(GraphicsStateMixin):
                 self._out(">>")
                 self._out(pdf_stream(fontstream))
                 self._out("endobj")
-                del ttf
             else:
                 # Allow for additional types
                 mtd = f"_put{my_type.lower()}"
