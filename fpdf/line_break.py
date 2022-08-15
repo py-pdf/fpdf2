@@ -13,7 +13,7 @@ class Fragment:
     A fragment of text with a text style, and possibly more font details.
 
     This is an internal class of fpdf, and not part of the public API.
-    It may change at any time without notice or any deprecation period.
+    It may change at any time without notice or deprecation period.
     """
 
     def __init__(
@@ -53,7 +53,7 @@ class Fragment:
             font_stretching=pdf.font_stretching,
         )
 
-    def trim(self, index: int):
+    def rtrim(self, index: int):
         self.characters = self.characters[:index]
 
     @property
@@ -69,6 +69,20 @@ class Fragment:
             and self.underline == other.underline
             and self.font_stretching == other.font_stretching
         )
+
+    def get_character_width(self, character: str, size_by_style, print_sh=False):
+        if character == SOFT_HYPHEN and not print_sh:
+            # HYPHEN is inserted instead of SOFT_HYPHEN
+            character = HYPHEN
+        gs_size = size_by_style(
+            character,
+            self.font_style,
+            font_size=self.font_size_pt,
+            font_family=self.font_family,
+            font_stretching=self.font_stretching,
+        )
+        # convert glyph space units
+        return gs_size
 
 
 class TextLine(NamedTuple):
@@ -216,7 +230,7 @@ class CurrentLine:
         """
         self.fragments = self.fragments[: break_hint.current_line_fragment_index]
         if self.fragments:
-            self.fragments[-1].trim(break_hint.current_line_character_index)
+            self.fragments[-1].rtrim(break_hint.current_line_character_index)
         self.number_of_spaces = break_hint.number_of_spaces
         self.width = break_hint.width
 
@@ -279,12 +293,6 @@ class MultiLineBreak:
         self.character_index = 0
         self.char_index_for_last_forced_manual_break = None
 
-    def _get_character_width(self, character: str, style: str = ""):
-        if character == SOFT_HYPHEN and not self.print_sh:
-            # HYPHEN is inserted instead of SOFT_HYPHEN
-            character = HYPHEN
-        return self.size_by_style(character, style)
-
     # pylint: disable=too-many-return-statements
     def get_line_of_given_width(self, maximum_width: float, wordsplit: bool = True):
         char_index_for_last_forced_manual_break = (
@@ -310,8 +318,8 @@ class MultiLineBreak:
                 continue
 
             character = current_fragment.characters[self.character_index]
-            character_width = self._get_character_width(
-                character, current_fragment.font_style
+            character_width = current_fragment.get_character_width(
+                character, self.size_by_style, self.print_sh
             )
 
             if character == NEWLINE:
@@ -363,13 +371,3 @@ class MultiLineBreak:
         if current_line.width:
             return current_line.manual_break()
 
-    def get_line_of_dynamic_limits(
-        self,
-        y,
-        get_limits,
-        wordsplit: bool = True,
-        final_width: bool = True,
-    ):
-        limits = get_limits(y_top, y_bottom, self.styled_text_fragments)
-        current_width = limits[1] - limits[0]
-        return self.get_line_of_given_width(self, current_width, wordsplit=wordsplit)

@@ -79,7 +79,7 @@ def test_render_styled_newpos(tmp_path):
         frags = doc._preload_font_styles(s, False)
         mlb = MultiLineBreak(
             frags,
-            doc.get_normalized_string_width_with_style,
+            doc.get_width_of_styled_string,
             justify=(align == Align.J),
         )
         line = mlb.get_line_of_given_width(twidth * 1000 / doc.font_size)

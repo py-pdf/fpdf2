@@ -10,12 +10,19 @@ def test_no_fragments():
     expected behavior ->
         - call to `get_line_of_given_width` always returns None
     """
+    char_width = 6
+    test_width = char_width * 200
     alphabet = {
         "normal": {},
     }
-    multi_line_break = MultiLineBreak([], lambda a, b: alphabet[b][a])
-    assert multi_line_break.get_line_of_given_width(100000) is None
-    assert multi_line_break.get_line_of_given_width(1) is None
+    multi_line_break = MultiLineBreak(
+        [],
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+    )
+    assert multi_line_break.get_line_of_given_width(test_width) is None
+    assert multi_line_break.get_line_of_given_width(char_width) is None
 
 
 def test_width_calculation():
@@ -23,58 +30,53 @@ def test_width_calculation():
     Every character has different width
     """
     text = "abcd"
+    char_width = 2
     alphabet = {
         "normal": {},
     }
-    for width, char in enumerate(text):
-        alphabet["normal"][char] = width + 2
+    for i, char in enumerate(text):
+        alphabet["normal"][char] = char_width + i
     fragments = [
         Fragment(text, "normal", False),
     ]
-    multi_line_break = MultiLineBreak(fragments, lambda a, b: alphabet[b][a])
+    multi_line_break = MultiLineBreak(
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+    )
 
     # zero width returns empty line
-    assert multi_line_break.get_line_of_given_width(0) == TextLine(
+    res = multi_line_break.get_line_of_given_width(0)
+    exp = TextLine(
         fragments=[],
         text_width=0,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    # the first character has width of 2 units.
+    assert res == exp
+
+    # the first character has width of char_width.
     # request of 1 unit line raises an exception
     with pytest.raises(FPDFException):
-        multi_line_break.get_line_of_given_width(1)
+        res = multi_line_break.get_line_of_given_width(1)
+
     # get other characters one by one
-    assert multi_line_break.get_line_of_given_width(2) == TextLine(
-        fragments=[Fragment("a", "normal", False)],
-        text_width=2,
-        number_of_spaces_between_words=0,
-        justify=False,
-        trailing_nl=False,
-    )
-    assert multi_line_break.get_line_of_given_width(3) == TextLine(
-        fragments=[Fragment("b", "normal", False)],
-        text_width=3,
-        number_of_spaces_between_words=0,
-        justify=False,
-        trailing_nl=False,
-    )
-    assert multi_line_break.get_line_of_given_width(4) == TextLine(
-        fragments=[Fragment("c", "normal", False)],
-        text_width=4,
-        number_of_spaces_between_words=0,
-        justify=False,
-        trailing_nl=False,
-    )
-    assert multi_line_break.get_line_of_given_width(5) == TextLine(
-        fragments=[Fragment("d", "normal", False)],
-        text_width=5,
-        number_of_spaces_between_words=0,
-        justify=False,
-        trailing_nl=False,
-    )
-    assert multi_line_break.get_line_of_given_width(100000) is None
+    for i, char in enumerate(text):
+        res = multi_line_break.get_line_of_given_width(char_width + i)
+        exp = TextLine(
+            fragments=[Fragment(char, "normal", False)],
+            text_width=char_width + i,
+            number_of_spaces_between_words=0,
+            justify=False,
+            trailing_nl=False,
+        )
+        assert res == exp
+
+    res = multi_line_break.get_line_of_given_width(100000)
+    exp = None
+    assert res == exp
 
 
 def test_single_space_in_fragment():
@@ -86,6 +88,8 @@ def test_single_space_in_fragment():
             text left.
     """
     text = " "
+    char_width = 6
+    test_width = char_width * 10
     fragments = [
         Fragment(text, "normal", False),
     ]
@@ -93,16 +97,25 @@ def test_single_space_in_fragment():
         "normal": {},
     }
     for char in text:
-        alphabet["normal"][char] = 500
-    multi_line_break = MultiLineBreak(fragments, lambda a, b: alphabet[b][a])
-    assert multi_line_break.get_line_of_given_width(5000) == TextLine(
+        alphabet["normal"][char] = char_width
+    multi_line_break = MultiLineBreak(
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+    )
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=fragments,
-        text_width=500,
+        text_width=char_width,
         number_of_spaces_between_words=1,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(100000) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(100000)
+    exp = None
+    assert res == exp
 
 
 def test_single_soft_hyphen_in_fragment():
@@ -116,13 +129,22 @@ def test_single_soft_hyphen_in_fragment():
         "normal": {"\u002d": 500},
     }
     text = "\u00ad"
+    char_width = 6
+    test_width = char_width * 200
     fragments = [
         Fragment(text, "normal", False),
     ]
     for char in text:
-        alphabet["normal"][char] = 500
-    multi_line_break = MultiLineBreak(fragments, lambda a, b: alphabet[b][a])
-    assert multi_line_break.get_line_of_given_width(100000) is None
+        alphabet["normal"][char] = char_width
+    multi_line_break = MultiLineBreak(
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+    )
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = None
+    assert res == exp
 
 
 def test_single_hard_hyphen_in_fragment():
@@ -136,45 +158,62 @@ def test_single_hard_hyphen_in_fragment():
         "normal": {"\u002d": 500},
     }
     text = "\u002d"
+    char_width = 6
+    test_width = char_width * 4
     fragments = [
         Fragment(text, "normal", False),
     ]
     for char in text:
-        alphabet["normal"][char] = 500
-    multi_line_break = MultiLineBreak(fragments, lambda a, b: alphabet[b][a])
-    assert multi_line_break.get_line_of_given_width(5000) == TextLine(
+        alphabet["normal"][char] = char_width
+    multi_line_break = MultiLineBreak(
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+    )
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=fragments,
-        text_width=500,
+        text_width=char_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(100000) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = None
+    assert res == exp
 
 
 def test_real_hyphen_acts_differently_from_soft_hyphen():
     words = ["a", "b", "c", "d"]
+    char_width = 6
+    test_width = char_width * 4
     alphabet = {
-        "normal": {"\u002d": 500},
+        "normal": {"\u002d": char_width},
     }
     words_separated_by_soft_hyphen = "\u00ad".join(words)
     words_separated_by_hard_hyphen = "\u002d".join(words)
     for char in words_separated_by_soft_hyphen:
-        alphabet["normal"][char] = 500
+        alphabet["normal"][char] = char_width
     soft_hyphen_line_break = MultiLineBreak(
         [Fragment(words_separated_by_soft_hyphen, "normal", False)],
-        lambda a, b: alphabet[b][a],
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
     )
     hard_hyphen_line_break = MultiLineBreak(
         [Fragment(words_separated_by_hard_hyphen, "normal", False)],
-        lambda a, b: alphabet[b][a],
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
     )
-    assert soft_hyphen_line_break.get_line_of_given_width(
-        2000
-    ) != hard_hyphen_line_break.get_line_of_given_width(2000)
-    assert soft_hyphen_line_break.get_line_of_given_width(
-        2000
-    ) != hard_hyphen_line_break.get_line_of_given_width(2000)
+    hh_res = soft_hyphen_line_break.get_line_of_given_width(test_width)
+    sh_res = hard_hyphen_line_break.get_line_of_given_width(test_width)
+    assert hh_res != sh_res
+    hh_res = soft_hyphen_line_break.get_line_of_given_width(test_width)
+    sh_res = hard_hyphen_line_break.get_line_of_given_width(test_width)
+    assert hh_res != sh_res
 
 
 def test_trailing_soft_hyphen():
@@ -187,23 +226,35 @@ def test_trailing_soft_hyphen():
             text left.
     """
     text = "hello\u00ad"
+    char_width = 6
+    test_width = char_width * 10
+    test_width_B = char_width * 5
     fragments = [
         Fragment(text, "normal", False),
     ]
     alphabet = {
-        "normal": {"\u002d": 500},
+        "normal": {"\u002d": char_width},
     }
     for char in text:
-        alphabet["normal"][char] = 500
-    multi_line_break = MultiLineBreak(fragments, lambda a, b: alphabet[b][a])
-    assert multi_line_break.get_line_of_given_width(5000) == TextLine(
+        alphabet["normal"][char] = char_width
+    multi_line_break = MultiLineBreak(
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+    )
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("hello", "normal", False)],
-        text_width=2500,
+        text_width=test_width_B,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(100000) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = None
+    assert res == exp
 
 
 def test_trailing_whitespace():
@@ -215,6 +266,9 @@ def test_trailing_whitespace():
             text left.
     """
     text = "hello "
+    char_width = 6
+    test_width = char_width * 10
+    test_width_B = char_width * 6
     fragments = [
         Fragment(text, "normal", False),
     ]
@@ -222,16 +276,25 @@ def test_trailing_whitespace():
         "normal": {},
     }
     for char in text:
-        alphabet["normal"][char] = 500
-    multi_line_break = MultiLineBreak(fragments, lambda a, b: alphabet[b][a])
-    assert multi_line_break.get_line_of_given_width(5000) == TextLine(
+        alphabet["normal"][char] = char_width
+    multi_line_break = MultiLineBreak(
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+    )
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=fragments,
-        text_width=3000,
+        text_width=test_width_B,
         number_of_spaces_between_words=1,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(100000) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = None
+    assert res == exp
 
 
 def test_two_words_one_line():
@@ -243,6 +306,9 @@ def test_two_words_one_line():
             text left.
     """
     text = "hello world"
+    char_width = 6
+    test_width = char_width * 200
+    test_width_B = char_width * 11
     fragments = [
         Fragment(text, "normal", False),
     ]
@@ -250,16 +316,25 @@ def test_two_words_one_line():
         "normal": {},
     }
     for char in text:
-        alphabet["normal"][char] = 500
-    multi_line_break = MultiLineBreak(fragments, lambda a, b: alphabet[b][a])
-    assert multi_line_break.get_line_of_given_width(100000) == TextLine(
+        alphabet["normal"][char] = char_width
+    multi_line_break = MultiLineBreak(
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+    )
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=fragments,
-        text_width=5500,
+        text_width=test_width_B,
         number_of_spaces_between_words=1,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(100000) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = None
+    assert res == exp
 
 
 def test_two_words_one_line_justify():
@@ -273,6 +348,9 @@ def test_two_words_one_line_justify():
             text left.
     """
     text = "hello world"
+    char_width = 6
+    test_width = char_width * 200
+    test_width_B = char_width * 11
     fragments = [
         Fragment(text, "normal", False),
     ]
@@ -280,18 +358,26 @@ def test_two_words_one_line_justify():
         "normal": {},
     }
     for char in text:
-        alphabet["normal"][char] = 500
+        alphabet["normal"][char] = char_width
     multi_line_break = MultiLineBreak(
-        fragments, lambda a, b: alphabet[b][a], justify=True
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+        justify=True,
     )
-    assert multi_line_break.get_line_of_given_width(100000) == TextLine(
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=fragments,
-        text_width=5500,
+        text_width=test_width_B,
         number_of_spaces_between_words=1,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(100000) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = None
+    assert res == exp
 
 
 def test_two_words_two_lines_break_by_space():
@@ -304,6 +390,8 @@ def test_two_words_two_lines_break_by_space():
             text left.
     """
     text = "hello world"
+    char_width = 6
+    test_width = char_width * 5
     fragments = [
         Fragment(text, "normal", False),
     ]
@@ -311,24 +399,35 @@ def test_two_words_two_lines_break_by_space():
         "normal": {},
     }
     for char in text:
-        alphabet["normal"][char] = 500
+        alphabet["normal"][char] = char_width
 
-    multi_line_break = MultiLineBreak(fragments, lambda a, b: alphabet[b][a])
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    multi_line_break = MultiLineBreak(
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+    )
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("hello", "normal", False)],
-        text_width=2500,
+        text_width=test_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("world", "normal", False)],
-        text_width=2500,
+        text_width=test_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(2500) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = None
+    assert res == exp
 
 
 def test_two_words_two_lines_break_by_space_justify():
@@ -344,30 +443,44 @@ def test_two_words_two_lines_break_by_space_justify():
             text left.
     """
     text = "hello world"
+    char_width = 6
+    test_width = char_width * 5
     fragments = [
         Fragment(text, "normal", False),
     ]
-    multi_line_break = MultiLineBreak(fragments, lambda a, b: alphabet[b][a])
     alphabet = {
         "normal": {},
     }
     for char in text:
-        alphabet["normal"][char] = 500
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+        alphabet["normal"][char] = char_width
+    multi_line_break = MultiLineBreak(
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+    )
+
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("hello", "normal", False)],
-        text_width=2500,
+        text_width=test_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("world", "normal", False)],
-        text_width=2500,
+        text_width=test_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(2500) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = None
+    assert res == exp
 
 
 def test_four_words_two_lines_break_by_space():
@@ -381,6 +494,9 @@ def test_four_words_two_lines_break_by_space():
     """
     first_line_text = "hello world"
     second_line_text = "hello world"
+    char_width = 6
+    test_width_A = char_width * 12
+    test_width_AA = char_width * 11
     text = " ".join([first_line_text, second_line_text])
     fragments = [
         Fragment(text, "normal", False),
@@ -389,24 +505,35 @@ def test_four_words_two_lines_break_by_space():
         "normal": {},
     }
     for char in text:
-        alphabet["normal"][char] = 500
+        alphabet["normal"][char] = char_width
 
-    multi_line_break = MultiLineBreak(fragments, lambda a, b: alphabet[b][a])
-    assert multi_line_break.get_line_of_given_width(6000) == TextLine(
+    multi_line_break = MultiLineBreak(
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+    )
+    res = multi_line_break.get_line_of_given_width(test_width_A)
+    exp = TextLine(
         fragments=[Fragment(first_line_text, "normal", False)],
-        text_width=5500,
+        text_width=test_width_AA,
         number_of_spaces_between_words=1,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(6000) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width_A)
+    exp = TextLine(
         fragments=[Fragment(second_line_text, "normal", False)],
-        text_width=5500,
+        text_width=test_width_AA,
         number_of_spaces_between_words=1,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(2500) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width_A)
+    exp = None
+    assert res == exp
 
 
 def test_four_words_two_lines_break_by_space_justify():
@@ -422,6 +549,9 @@ def test_four_words_two_lines_break_by_space_justify():
     """
     first_line_text = "hello world"
     second_line_text = "hello world"
+    char_width = 6
+    test_width_A = char_width * 12
+    test_width_AA = char_width * 11
     text = " ".join((first_line_text, second_line_text))
     fragments = [
         Fragment(text, "normal", False),
@@ -430,26 +560,36 @@ def test_four_words_two_lines_break_by_space_justify():
         "normal": {},
     }
     for char in text:
-        alphabet["normal"][char] = 500
+        alphabet["normal"][char] = char_width
 
     multi_line_break = MultiLineBreak(
-        fragments, lambda a, b: alphabet[b][a], justify=True
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+        justify=True,
     )
-    assert multi_line_break.get_line_of_given_width(6000) == TextLine(
+    res = multi_line_break.get_line_of_given_width(test_width_A)
+    exp = TextLine(
         fragments=[Fragment(first_line_text, "normal", False)],
-        text_width=5500,
+        text_width=test_width_AA,
         number_of_spaces_between_words=1,
         justify=True,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(6000) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width_A)
+    exp = TextLine(
         fragments=[Fragment(second_line_text, "normal", False)],
-        text_width=5500,
+        text_width=test_width_AA,
         number_of_spaces_between_words=1,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(2500) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width_A)
+    exp = None
+    assert res == exp
 
 
 def test_break_fragment_into_two_lines():
@@ -457,6 +597,11 @@ def test_break_fragment_into_two_lines():
     There are multiple fragments with different styles.
     This test breaks one fragment between two lines.
     """
+    char_width = 6
+    charB_width = 12
+    test_width_A = char_width * 10
+    test_width_B = char_width * 16
+    test_width_BB = char_width * 15
     alphabet = {
         "normal": {},
         "bold": {},
@@ -466,54 +611,8 @@ def test_break_fragment_into_two_lines():
     third_line_text = " four"
     text = "".join((first_line_text, second_line_text, third_line_text))
     for char in text:
-        alphabet["normal"][char] = 500
-        alphabet["bold"][char] = 1000
-
-    fragments = [
-        Fragment(first_line_text, "normal", False),
-        Fragment(second_line_text, "bold", False),
-        Fragment(third_line_text, "normal", False),
-    ]
-    multi_line_break = MultiLineBreak(fragments, lambda a, b: alphabet[b][a])
-    assert multi_line_break.get_line_of_given_width(5000) == TextLine(
-        fragments=[
-            Fragment(first_line_text, "normal", False),
-            Fragment("two", "bold", False),
-        ],
-        text_width=5000,
-        number_of_spaces_between_words=1,
-        justify=False,
-        trailing_nl=False,
-    )
-    assert multi_line_break.get_line_of_given_width(8000) == TextLine(
-        fragments=[
-            Fragment("three", "bold", False),
-            Fragment(third_line_text, "normal", False),
-        ],
-        text_width=7500,
-        number_of_spaces_between_words=1,
-        justify=False,
-        trailing_nl=False,
-    )
-    assert multi_line_break.get_line_of_given_width(6000) is None
-
-
-def test_break_fragment_into_two_lines_justify():
-    """
-    There are multiple fragments with different styles.
-    This test breaks one fragment between two lines.
-    """
-    alphabet = {
-        "normal": {},
-        "bold": {},
-    }
-    first_line_text = "one "
-    second_line_text = "two three"
-    third_line_text = " four"
-    text = "".join((first_line_text, second_line_text, third_line_text))
-    for char in text:
-        alphabet["normal"][char] = 500
-        alphabet["bold"][char] = 1000
+        alphabet["normal"][char] = char_width
+        alphabet["bold"][char] = charB_width
 
     fragments = [
         Fragment(first_line_text, "normal", False),
@@ -521,29 +620,101 @@ def test_break_fragment_into_two_lines_justify():
         Fragment(third_line_text, "normal", False),
     ]
     multi_line_break = MultiLineBreak(
-        fragments, lambda a, b: alphabet[b][a], justify=True
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
     )
-    assert multi_line_break.get_line_of_given_width(5000) == TextLine(
+    res = multi_line_break.get_line_of_given_width(test_width_A)
+    exp = TextLine(
         fragments=[
             Fragment(first_line_text, "normal", False),
             Fragment("two", "bold", False),
         ],
-        text_width=5000,
-        number_of_spaces_between_words=1,
-        justify=True,
-        trailing_nl=False,
-    )
-    assert multi_line_break.get_line_of_given_width(8000) == TextLine(
-        fragments=[
-            Fragment("three", "bold", False),
-            Fragment(third_line_text, "normal", False),
-        ],
-        text_width=7500,
+        text_width=test_width_A,
         number_of_spaces_between_words=1,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(6000) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width_B)
+    exp = TextLine(
+        fragments=[
+            Fragment("three", "bold", False),
+            Fragment(third_line_text, "normal", False),
+        ],
+        text_width=test_width_BB,
+        number_of_spaces_between_words=1,
+        justify=False,
+        trailing_nl=False,
+    )
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width_B)
+    exp = None
+    assert res == exp
+
+
+def test_break_fragment_into_two_lines_justify():
+    """
+    There are multiple fragments with different styles.
+    This test breaks one fragment between two lines.
+    """
+    char_width = 6
+    charB_width = 12
+    test_width_A = char_width * 10
+    test_width_B = char_width * 16
+    test_width_BB = char_width * 15
+    alphabet = {
+        "normal": {},
+        "bold": {},
+    }
+    first_line_text = "one "
+    second_line_text = "two three"
+    third_line_text = " four"
+    text = "".join((first_line_text, second_line_text, third_line_text))
+    for char in text:
+        alphabet["normal"][char] = char_width
+        alphabet["bold"][char] = charB_width
+
+    fragments = [
+        Fragment(first_line_text, "normal", False),
+        Fragment(second_line_text, "bold", False),
+        Fragment(third_line_text, "normal", False),
+    ]
+    multi_line_break = MultiLineBreak(
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+        justify=True,
+    )
+    res = multi_line_break.get_line_of_given_width(test_width_A)
+    exp = TextLine(
+        fragments=[
+            Fragment(first_line_text, "normal", False),
+            Fragment("two", "bold", False),
+        ],
+        text_width=test_width_A,
+        number_of_spaces_between_words=1,
+        justify=True,
+        trailing_nl=False,
+    )
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width_B)
+    exp = TextLine(
+        fragments=[
+            Fragment("three", "bold", False),
+            Fragment(third_line_text, "normal", False),
+        ],
+        text_width=test_width_BB,
+        number_of_spaces_between_words=1,
+        justify=False,
+        trailing_nl=False,
+    )
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width_A)
+    exp = None
+    assert res == exp
 
 
 def test_soft_hyphen_break():
@@ -552,67 +723,91 @@ def test_soft_hyphen_break():
     expected behavior - there is a hard hyphen at the end of every line,
     except of the last one
     """
-    alphabet = {
-        "normal": {"\u002d": 500},
-    }
+    char_width = 6
+    test_width = char_width * 5
+    test_width_A = char_width * 4.4
+    test_width_AA = char_width * 4
+    test_width_B = char_width * 2
+    alphabet = {"normal": {"\u002d": char_width}}
     long_string = "\u00ad".join("abcdefghijklmnop")
     for char in long_string:
-        alphabet["normal"][char] = 500
+        alphabet["normal"][char] = char_width
 
     fragments = [
         Fragment(long_string, "normal", False),
     ]
-    multi_line_break = MultiLineBreak(fragments, lambda a, b: alphabet[b][a])
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    multi_line_break = MultiLineBreak(
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+    )
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("abcd\u002d", "normal", False)],
-        text_width=2500,
+        text_width=test_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("efgh\u002d", "normal", False)],
-        text_width=2500,
+        text_width=test_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(2200) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width_A)
+    exp = TextLine(
         fragments=[Fragment("ijk\u002d", "normal", False)],
-        text_width=2000,
+        text_width=test_width_AA,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(1000) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width_B)
+    exp = TextLine(
         fragments=[Fragment("l\u002d", "normal", False)],
-        text_width=1000,
+        text_width=test_width_B,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(1000) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width_B)
+    exp = TextLine(
         fragments=[Fragment("m\u002d", "normal", False)],
-        text_width=1000,
+        text_width=test_width_B,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(1000) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width_B)
+    exp = TextLine(
         fragments=[Fragment("n\u002d", "normal", False)],
-        text_width=1000,
+        text_width=test_width_B,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(1000) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width_B)
+    exp = TextLine(
         fragments=[Fragment("op", "normal", False)],
-        text_width=1000,
+        text_width=test_width_B,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(1000) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width_B)
+    exp = None
+    assert res == exp
 
 
 def test_soft_hyphen_break_justify():
@@ -621,42 +816,55 @@ def test_soft_hyphen_break_justify():
     expected behavior - there is a hard hyphen at the end of every line,
     except of the last one
     """
-    alphabet = {
-        "normal": {"\u002d": 500},
-    }
+    char_width = 6
+    test_width = char_width * 6
+    last_width = char_width * 5
+    alphabet = {"normal": {"\u002d": char_width}}
     words = ["ab cd", "ef gh", "kl mn"]
     long_string = "\u00ad".join(words)
     for char in long_string:
-        alphabet["normal"][char] = 500
+        alphabet["normal"][char] = char_width
 
     fragments = [
         Fragment(long_string, "normal", False),
     ]
     multi_line_break = MultiLineBreak(
-        fragments, lambda a, b: alphabet[b][a], justify=True
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+        justify=True,
     )
-    assert multi_line_break.get_line_of_given_width(3000) == TextLine(
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("ab cd\u002d", "normal", False)],
-        text_width=3000,
+        text_width=test_width,
         number_of_spaces_between_words=1,
         justify=True,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(3000) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("ef gh\u002d", "normal", False)],
-        text_width=3000,
+        text_width=test_width,
         number_of_spaces_between_words=1,
         justify=True,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(3000) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("kl mn", "normal", False)],
-        text_width=2500,
+        text_width=last_width,
         number_of_spaces_between_words=1,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(1000) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = None
+    assert res == exp
 
 
 def test_explicit_break():
@@ -665,46 +873,63 @@ def test_explicit_break():
     Expected behavior:
         `get_line_of_given_width` returns single character on every call
     """
+    char_width = 6
+    test_width = char_width * 5
     alphabet = {
         "normal": {},
     }
     long_string = "\n".join("abcd")
     for char in long_string:
-        alphabet["normal"][char] = 500
+        alphabet["normal"][char] = char_width
 
     fragments = [
         Fragment(long_string, "normal", False),
     ]
-    multi_line_break = MultiLineBreak(fragments, lambda a, b: alphabet[b][a])
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    multi_line_break = MultiLineBreak(
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+    )
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("a", "normal", False)],
-        text_width=500,
+        text_width=char_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=True,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("b", "normal", False)],
-        text_width=500,
+        text_width=char_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=True,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("c", "normal", False)],
-        text_width=500,
+        text_width=char_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=True,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("d", "normal", False)],
-        text_width=500,
+        text_width=char_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(1000) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = None
+    assert res == exp
 
 
 def test_explicit_break_justify():
@@ -714,51 +939,67 @@ def test_explicit_break_justify():
         `get_line_of_given_width` returns single character on every call,
         returned lines are expected to be unjustified
     """
+    char_width = 6
+    test_width = char_width * 5
     alphabet = {
         "normal": {},
     }
     long_string = "\n".join("abcd")
     for char in long_string:
-        alphabet["normal"][char] = 500
+        alphabet["normal"][char] = char_width
 
     fragments = [
         Fragment(long_string, "normal", False),
     ]
     multi_line_break = MultiLineBreak(
-        fragments, lambda a, b: alphabet[b][a], justify=True
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+        justify=True,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("a", "normal", False)],
-        text_width=500,
+        text_width=char_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=True,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("b", "normal", False)],
-        text_width=500,
+        text_width=char_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=True,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("c", "normal", False)],
-        text_width=500,
+        text_width=char_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=True,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("d", "normal", False)],
-        text_width=500,
+        text_width=char_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(1000) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = None
+    assert res == exp
 
 
-def test_single_world_doesnt_fit_into_width():
+def test_single_word_doesnt_fit_into_width():
     """
     There is a single word that doesn't fit into requested line
     Expected behavior:
@@ -769,93 +1010,126 @@ def test_single_world_doesnt_fit_into_width():
         "normal": {},
     }
     long_string = "abcdefghijklmnop"
+    char_width = 6
+    test_width = char_width * 5
     for char in long_string:
-        alphabet["normal"][char] = 500
+        # glyph space units
+        alphabet["normal"][char] = char_width
 
     fragments = [
         Fragment(long_string, "normal", False),
     ]
-    multi_line_break = MultiLineBreak(fragments, lambda a, b: alphabet[b][a])
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    multi_line_break = MultiLineBreak(
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][
+            a
+        ],
+    )
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("abcde", "normal", False)],
-        text_width=2500,
+        text_width=test_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("fghij", "normal", False)],
-        text_width=2500,
+        text_width=test_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("klmno", "normal", False)],
-        text_width=2500,
+        text_width=test_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("p", "normal", False)],
-        text_width=500,
+        text_width=char_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(1000) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(1000)
+    exp = None
+    assert res == exp
 
 
-def test_single_world_doesnt_fit_into_width_justify():
+def test_single_word_doesnt_fit_into_width_justify():
     """
     There is a single word that doesn't fit into requested line
     Expected behavior:
         `get_line_of_given_width` as much characters as can fit into user
         provided width. returned lines are expected to be unjustified
     """
+    char_width = 6
+    test_width = char_width * 5
     alphabet = {
         "normal": {},
     }
     long_string = "abcdefghijklmnop"
     for char in long_string:
-        alphabet["normal"][char] = 500
+        # glyph space units
+        alphabet["normal"][char] = char_width
 
     fragments = [
         Fragment(long_string, "normal", False),
     ]
     multi_line_break = MultiLineBreak(
-        fragments, lambda a, b: alphabet[b][a], justify=True
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][a],
+        justify=True,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("abcde", "normal", False)],
-        text_width=2500,
+        text_width=test_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("fghij", "normal", False)],
-        text_width=2500,
+        text_width=test_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("klmno", "normal", False)],
-        text_width=2500,
+        text_width=test_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = TextLine(
         fragments=[Fragment("p", "normal", False)],
-        text_width=500,
+        text_width=char_width,
         number_of_spaces_between_words=0,
         justify=False,
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(1000) is None
+    res = multi_line_break.get_line_of_given_width(test_width)
+    exp = None
+    assert res == exp
 
 
 def test_last_line_no_justify():
@@ -866,20 +1140,32 @@ def test_last_line_no_justify():
         "normal": {},
     }
     long_string = "a"
+    char_width = 6
     for char in long_string:
-        alphabet["normal"][char] = 500
+        # glyph space units
+        alphabet["normal"][char] = char_width
 
     fragments = [
         Fragment(long_string, "normal", False),
     ]
     multi_line_break = MultiLineBreak(
-        fragments, lambda a, b: alphabet[b][a], justify=True
+        fragments,
+        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+            b
+        ][
+            a
+        ],
+        justify=True,
     )
-    assert multi_line_break.get_line_of_given_width(2500) == TextLine(
+    res = multi_line_break.get_line_of_given_width(char_width * 5)
+    exp = TextLine(
         fragments=fragments,
-        text_width=500,
+        text_width=char_width,
         number_of_spaces_between_words=0,
-        justify=False,
+        justify=False,  # !
         trailing_nl=False,
     )
-    assert multi_line_break.get_line_of_given_width(1000) is None
+    assert res == exp
+    res = multi_line_break.get_line_of_given_width(char_width)
+    exp = None
+    assert res == exp
