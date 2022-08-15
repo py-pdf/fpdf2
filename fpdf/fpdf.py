@@ -502,6 +502,20 @@ class FPDF(GraphicsStateMixin):
         # page number -> array of 8 × n numbers:
         self.text_quad_points = defaultdict(list)
 
+    def _add_quad_points(self, x, y, w, h):
+        self.text_quad_points[self.page].extend(
+            [
+                x * self.k,
+                (self.h - y) * self.k,
+                (x + w) * self.k,
+                (self.h - y) * self.k,
+                x * self.k,
+                (self.h - y - h) * self.k,
+                (x + w) * self.k,
+                (self.h - y - h) * self.k,
+            ]
+        )
+
     def _set_min_pdf_version(self, version):
         self.pdf_version = max(self.pdf_version, version)
 
@@ -2417,18 +2431,7 @@ class FPDF(GraphicsStateMixin):
             )
             h = self.font_size
             y -= 0.8 * h  # same coefficient as in _render_styled_text_line()
-            self.text_quad_points[self.page].extend(
-                [
-                    x * self.k,
-                    (self.h - y) * self.k,
-                    (x + w) * self.k,
-                    (self.h - y) * self.k,
-                    x * self.k,
-                    (self.h - y - h) * self.k,
-                    (x + w) * self.k,
-                    (self.h - y - h) * self.k,
-                ]
-            )
+            self._add_quad_points(x, y, w, h)
 
     @check_page
     def rotate(self, angle, x=None, y=None):
@@ -2881,18 +2884,7 @@ class FPDF(GraphicsStateMixin):
         if self.record_text_quad_points:
             x = self.x
             y = self.y
-            self.text_quad_points[self.page].extend(
-                [
-                    x * self.k,
-                    (self.h - y) * self.k,
-                    (x + w) * self.k,
-                    (self.h - y) * self.k,
-                    x * self.k,
-                    (self.h - y - h) * self.k,
-                    (x + w) * self.k,
-                    (self.h - y - h) * self.k,
-                ]
-            )
+            self._add_quad_points(x, y, w, h)
 
         s_start = self.x
         s_width, underlines = 0, []
