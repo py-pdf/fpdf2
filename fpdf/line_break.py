@@ -70,12 +70,25 @@ class Fragment:
             and self.font_stretching == other.font_stretching
         )
 
+    def get_character_width(self, character: str, size_by_style, print_sh):
+        if character == SOFT_HYPHEN and not print_sh:
+            # HYPHEN is inserted instead of SOFT_HYPHEN
+            character = HYPHEN
+        return size_by_style(
+            character,
+            self.font_style,
+            self.font_size_pt,
+            self.font_family,
+            self.font_stretching,
+        )
+
 
 class TextLine(NamedTuple):
     fragments: tuple
     text_width: float
     number_of_spaces_between_words: int
     justify: bool
+    trailing_nl: bool = False
 
 
 class SpaceHint(NamedTuple):
@@ -219,12 +232,13 @@ class CurrentLine:
         self.number_of_spaces = break_hint.number_of_spaces
         self.width = break_hint.width
 
-    def manual_break(self, justify: bool = False):
+    def manual_break(self, justify: bool = False, trailing_nl: bool = False):
         return TextLine(
             fragments=self.fragments,
             text_width=self.width,
             number_of_spaces_between_words=self.number_of_spaces,
             justify=(self.number_of_spaces > 0) and justify,
+            trailing_nl=trailing_nl,
         )
 
     def automatic_break_possible(self):
@@ -275,20 +289,12 @@ class MultiLineBreak:
         self.print_sh = print_sh
         self.fragment_index = 0
         self.character_index = 0
-        self.char_index_for_last_forced_manual_break = None
-
-    def _get_character_width(self, character: str, style: str = ""):
-        if character == SOFT_HYPHEN and not self.print_sh:
-            # HYPHEN is inserted instead of SOFT_HYPHEN
-            character = HYPHEN
-        return self.size_by_style(character, style)
+        self.idx_last_forced_break = None
 
     # pylint: disable=too-many-return-statements
     def get_line_of_given_width(self, maximum_width: float, wordsplit: bool = True):
-        char_index_for_last_forced_manual_break = (
-            self.char_index_for_last_forced_manual_break
-        )
-        self.char_index_for_last_forced_manual_break = None
+        idx_last_forced_break = self.idx_last_forced_break
+        self.idx_last_forced_break = None
 
         if self.fragment_index == len(self.styled_text_fragments):
             return None
@@ -308,13 +314,13 @@ class MultiLineBreak:
                 continue
 
             character = current_fragment.characters[self.character_index]
-            character_width = self._get_character_width(
-                character, current_fragment.font_style
+            character_width = current_fragment.get_character_width(
+                character, self.size_by_style, self.print_sh
             )
 
             if character == NEWLINE:
                 self.character_index += 1
-                return current_line.manual_break()
+                return current_line.manual_break(trailing_nl=True)
 
             if current_line.width + character_width > maximum_width:
                 if character == SPACE:
@@ -331,11 +337,11 @@ class MultiLineBreak:
                 if not wordsplit:
                     line_full = True
                     break
-                if char_index_for_last_forced_manual_break == self.character_index:
+                if idx_last_forced_break == self.character_index:
                     raise FPDFException(
                         "Not enough horizontal space to render a single character"
                     )
-                self.char_index_for_last_forced_manual_break = self.character_index
+                self.idx_last_forced_break = self.character_index
                 return current_line.manual_break()
 
             current_line.add_character(
@@ -360,14 +366,3 @@ class MultiLineBreak:
             return CurrentLine().manual_break(self.justify)
         if current_line.width:
             return current_line.manual_break()
-
-    def get_line_of_dynamic_limits(
-        self,
-        y,
-        get_limits,
-        wordsplit: bool = True,
-        final_width: bool = True,
-    ):
-        limits = get_limits(y_top, y_bottom, self.styled_text_fragments)
-        current_width = limits[1] - limits[0]
-        return self.get_line_of_given_width(self, current_width, wordsplit=wordsplit)
