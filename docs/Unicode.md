@@ -54,6 +54,15 @@ From the error in the image above, Thai characters can be fixed using fonts from
 
 ![thai-font-working](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/tutorial/thai-accent-working.png)
 
+*Scripts with automatic ligatures and contextual forms (eg. Indic scripts and Abjads like Devanagari, Hebrew, Arabic) currently have limited support. For the Arabic script there is a temporary solution (using two additional libraries) that works for most languages; only a few (rare) characters aren't supported. Using it on other scripts(eg. when the input is unknown or mixed scripts) does not affect them:
+```python
+from arabic_reshaper import reshape
+from bidi.algorithm import get_display
+
+some_text = 'اَلْعَرَبِيَّةُ'
+fixed_text = get_display(reshape(some_text))
+```
+
 ## Example ##
 
 This example uses several free fonts to display some Unicode strings. Be sure to
