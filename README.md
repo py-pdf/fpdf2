@@ -176,6 +176,7 @@ This library could only exist thanks to the dedication of many volunteers around
   <tr>
     <td align="center"><a href="https://www.nuttapat.me"><img src="https://avatars.githubusercontent.com/u/2115896?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nuttapat Koonarangsri</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=hackinteach" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/sokratisvas"><img src="https://avatars.githubusercontent.com/u/77175483?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Sokratis Vasiliou</b></sub></a><br /><a href="#translation-sokratisvas" title="Translation">🌍</a></td>
+    <td align="center"><a href="https://github.com/semaeostomea"><img src="https://avatars.githubusercontent.com/u/100974908?v=4?s=100" width="100px;" alt=""/><br /><sub><b>semaeostomea</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=semaeostomea" title="Documentation">📖</a></td>
   </tr>
 </table>
 
