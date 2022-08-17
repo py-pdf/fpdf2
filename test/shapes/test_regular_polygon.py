@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import fpdf
+from fpdf.enums import StrokeJoinStyle
 from test.conftest import assert_pdf_equal
 
 
@@ -10,7 +11,27 @@ HERE = Path(__file__).resolve().parent
 def test_regular_polygon(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
+    draw_regular_polygon(pdf)
+    assert_pdf_equal(pdf, HERE / "regular_polygon.pdf", tmp_path)
 
+
+def test_regular_polygon_with_round_joins(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    with pdf.local_context(stroke_join_style=StrokeJoinStyle.ROUND):
+        draw_regular_polygon(pdf)
+    assert_pdf_equal(pdf, HERE / "regular_polygon_with_round_joins.pdf", tmp_path)
+
+
+def test_regular_polygon_with_bevel_joins(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    with pdf.local_context(stroke_join_style=StrokeJoinStyle.BEVEL):
+        draw_regular_polygon(pdf)
+    assert_pdf_equal(pdf, HERE / "regular_polygon_with_bevel_joins.pdf", tmp_path)
+
+
+def draw_regular_polygon(pdf):
     # no fill with line
     pdf.regular_polygon(10, 35, 3, 25)
     pdf.regular_polygon(40, 35, 4, 25)
@@ -72,5 +93,3 @@ def test_regular_polygon(tmp_path):
     pdf.regular_polygon(100, 275, 6, 25, style="f")
     pdf.regular_polygon(130, 275, 7, 25, style="f")
     pdf.regular_polygon(160, 275, 8, 25, style="f")
-
-    assert_pdf_equal(pdf, HERE / "regular_polygon.pdf", tmp_path)

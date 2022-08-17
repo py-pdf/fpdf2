@@ -2394,7 +2394,7 @@ class FPDF(GraphicsStateMixin):
             self._out(f"q /{gs_name} gs")
         else:
             self._out("q")
-        # All the folling calls to .set*() methods invoke .out() and write to the stream buffer:
+        # All the following calls to .set*() methods invoke .out() and write to the stream buffer:
         if font_family is not None or font_style is not None or font_size is not None:
             self.set_font(
                 font_family or self.font_family,

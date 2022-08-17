@@ -212,3 +212,48 @@ pdf.star(x=160, y=80, r_in=5, r_out=15, rotate_degrees=270, corners=6, style="FD
 pdf.output("star.pdf")
 ```
 ![](star.png)
+
+
+## Path styling ##
+
+* [`line_width`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width)
+  specifies the thickness of the line used to stroke a path
+
+* [`stroke_join_style`](fpdf/enums.html#fpdf.enums.StrokeJoinStyle)
+  defines how the corner joining two path components should be rendered:
+
+```python
+from fpdf import FPDF
+from fpdf.enums import StrokeJoinStyle
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_line_width(5)
+pdf.set_fill_color(r=255, g=128, b=0)
+with pdf.local_context(stroke_join_style=StrokeJoinStyle.ROUND):
+    pdf.regular_polygon(x=50, y=120, polyWidth=100, numSides=8, style="FD")
+pdf.output("regular_polygon_rounded.pdf")
+```
+
+![](regular_polygon_rounded.png)
+
+* [`stroke_cap_style`](fpdf/enums.html#fpdf.enums.StrokeCapStyle)
+  defines how the end of a stroke should be rendered.
+  This affects the ends of the segments of dashed strokes, as well.
+
+```python
+from fpdf import FPDF
+from fpdf.enums import StrokeCapStyle
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_line_width(5)
+pdf.set_fill_color(r=255, g=128, b=0)
+with pdf.local_context(stroke_cap_style=StrokeCapStyle.ROUND):
+    pdf.line(x1=50, y1=50, x2=150, y2=100)
+pdf.output("line_with_round_ends.pdf")
+```
+
+There are even more specific path styling settings supported: [`dash_pattern`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_dash_pattern), `stroke_opacity`, `stroke_miter_limit`...
+
+All of those settings can be set in a [`local_context()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.local_context).
