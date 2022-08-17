@@ -394,3 +394,7 @@ prevented strings passed first to the text-rendering methods to be displayed.
 * turned `accept_page_break` into a property
 * unit tests now use the standard `unittest` lib
 * massive code cleanup using `flake8`
+
+## [2.5.7] - not released yet
+### Added
+- workaround by @semaeostomea to support the arabic script: [link to documentation](https://pyfpdf.github.io/fpdf2/Unicode.html#arabic-script-workaround)
