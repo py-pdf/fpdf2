@@ -17,8 +17,10 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.5.7] - not released yet
+### Fixed
+- `arc()` not longer renders artefacts at intersection point, thanks to @Jmillan-Dev; [#488](https://github.com/PyFPDF/fpdf2/issues/488)
 ### Added
-- workaround by @semaeostomea to support the arabic script: [link to documentation](https://pyfpdf.github.io/fpdf2/Unicode.html#arabic-script-workaround)
+- workaround by @semaeostomea to support arabic and right-to-left scripts: [link to documentation](https://pyfpdf.github.io/fpdf2/Unicode.html#arabic-script-workaround)
 
 ## [2.5.6] - 2022-08-16
 ### Added
