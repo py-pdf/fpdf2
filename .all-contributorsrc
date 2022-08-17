@@ -586,6 +586,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "Jmillan-Dev",
+      "name": "Josué Millán Zamora",
+      "avatar_url": "https://avatars.githubusercontent.com/u/39383390?v=4",
+      "profile": "https://github.com/Jmillan-Dev",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
