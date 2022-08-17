@@ -1672,9 +1672,12 @@ class FPDF(GraphicsStateMixin):
             )
 
         if end_at_center:
-            self._out(
-                f"{cx * self.k:.2f} {(self.h - cy) * self.k:.2f} l {style.operator}"
-            )
+            if start_from_center:
+                self._out(f"h {style.operator}")
+            else:
+                self._out(
+                    f"{cx * self.k:.2f} {(self.h - cy) * self.k:.2f} l {style.operator}"
+                )
 
     @check_page
     def solid_arc(
