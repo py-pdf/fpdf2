@@ -436,6 +436,7 @@ class FPDF(GraphicsStateMixin):
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
         self.text_color = self.DEFAULT_TEXT_COLOR
+        self.background = None
         self.dash_pattern = dict(dash=0, gap=0, phase=0)
         self.line_width = 0.567 / self.k  # line width (0.2 mm)
         self.text_mode = TextMode.FILL
@@ -867,6 +868,13 @@ class FPDF(GraphicsStateMixin):
             new_page=not self._has_next_page(),
         )
 
+        if self.background:
+            if isinstance(self.background, tuple):
+                self.set_fill_color(*self.background)
+                self.rect(0, 0, self.w, self.h, style='F')
+            else:
+                self.image(self.background, 0, 0, self.w, self.h)
+                
         self._out("2 J")  # Set line cap style to square
         self.line_width = lw  # Set line width
         self._out(f"{lw * self.k:.2f} w")
@@ -1037,6 +1045,19 @@ class FPDF(GraphicsStateMixin):
         self.line_width = width
         if self.page > 0:
             self._out(f"{width * self.k:.2f} w")
+
+    def set_background(self, background):
+        """
+        Sets a background color or image to be drawn every time add_page() is called.
+        The method can be called before the first page is created and the value is retained from page to page.
+
+        Args:
+            background: either a string representing a file path to an image, an URL to an image,
+                an io.BytesIO, an instance of `PIL.Image.Image` or an RGB tuple representing a color to fill the background with
+        """
+        self.background = background
+        
+
 
     @contextmanager
     @check_page
