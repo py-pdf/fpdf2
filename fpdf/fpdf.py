@@ -1064,25 +1064,22 @@ class FPDF(GraphicsStateMixin):
             w += self.get_width_of_styled_string(
                 frag.string,
                 frag.font_style,
-                font_size=frag.font_size_pt,
+                font_size_pt=frag.font_size_pt,
                 font_family=frag.font_family,
                 font_stretching=frag.font_stretching,
             )
-        return w / self.k
+        return w
 
     def get_width_of_styled_string(
-        self, string, style, font_size=0, font_family=None, font_stretching=None
+        self, string, style, font_size_pt=0, font_family=None, font_stretching=None
     ):
         """
         Return the horizontal dimension of a string with a given font and style.
-        The unit returned depends on the font_size argument.
 
         Args:
             string (str): the string whose length is to be computed.
             style (str) : The style of the text (string combination of ["", "B", "I"]).
-            font_size (float): The size of the font to scale the result with.
-                The return value will be in the same unit as this argument,
-                or in glyph space units if omitted.
+            font_size_pt (float): The size of the font to scale the result with (in Points).
             font_family (str): the font family to use (if not given, use the current font).
             font_stretching (int): the percentage of stretch (if not given, use the current value).
         """
@@ -1099,9 +1096,9 @@ class FPDF(GraphicsStateMixin):
             w += sum(_char_width(font, char) for char in string)
         if font_stretching != 100:
             w *= font_stretching * 0.01
-        if font_size:
-            w *= font_size * 0.001
-        return w
+        if font_size_pt:
+            w *= font_size_pt * 0.001
+        return w / self.k
 
     def set_line_width(self, width):
         """
@@ -2423,11 +2420,10 @@ class FPDF(GraphicsStateMixin):
                 self.get_width_of_styled_string(
                     txt,
                     self.font_style,
-                    font_size=self.font_size_pt,
+                    font_size_pt=self.font_size_pt,
                     font_family=self.font_family,
                     font_stretching=self.font_stretching,
                 )
-                / self.k
             )
             h = self.font_size
             y -= 0.8 * h  # same coefficient as in _render_styled_text_line()
@@ -2810,18 +2806,17 @@ class FPDF(GraphicsStateMixin):
                 "ignored"
             )
             border = 1
-        styled_txt_width = text_line.text_width / self.k
+        styled_txt_width = text_line.text_width
         if not styled_txt_width:
             for styled_txt_frag in text_line.fragments:
                 unscaled_width = (
                     self.get_width_of_styled_string(
                         styled_txt_frag.string,
                         styled_txt_frag.font_style,
-                        font_size=styled_txt_frag.font_size_pt,
+                        font_size_pt=styled_txt_frag.font_size_pt,
                         font_family=styled_txt_frag.font_family,
                         font_stretching=styled_txt_frag.font_stretching,
                     )
-                    / self.k
                 )
                 styled_txt_width += unscaled_width
 
@@ -2958,11 +2953,10 @@ class FPDF(GraphicsStateMixin):
                         self.get_width_of_styled_string(
                             frag.string,
                             frag.font_style,
-                            font_size=frag.font_size_pt,
+                            font_size_pt=frag.font_size_pt,
                             font_family=frag.font_family,
                             font_stretching=frag.font_stretching,
                         )
-                        / self.k
                     )
                     s_width += frag_width + self.ws * frag.string.count(" ")
             else:
@@ -2994,11 +2988,10 @@ class FPDF(GraphicsStateMixin):
                         self.get_width_of_styled_string(
                             frag.string,
                             frag.font_style,
-                            font_size=frag.font_size_pt,
+                            font_size_pt=frag.font_size_pt,
                             font_family=frag.font_family,
                             font_stretching=frag.font_stretching,
                         )
-                        / self.k
                     )
                     s_width += frag_width + self.ws * frag.string.count(" ")
             sl.append("ET")
@@ -3312,14 +3305,10 @@ class FPDF(GraphicsStateMixin):
             justify=(align == Align.J),
             print_sh=print_sh,
         )
-        text_line = multi_line_break.get_line_of_given_width(
-            maximum_allowed_width * self.k
-        )
+        text_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
         while (text_line) is not None:
             text_lines.append(text_line)
-            text_line = multi_line_break.get_line_of_given_width(
-                maximum_allowed_width * self.k
-            )
+            text_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
 
         if not text_lines:  # ensure we display at least one cell - cf. issue #349
             text_lines = [
@@ -3442,11 +3431,11 @@ class FPDF(GraphicsStateMixin):
         # first line from current x position to right margin
         first_width = self.w - self.x - self.r_margin
         text_line = multi_line_break.get_line_of_given_width(
-            (first_width - 2 * self.c_margin) * self.k, wordsplit=False
+            first_width - 2 * self.c_margin, wordsplit=False
         )
         # remaining lines fill between margins
         full_width = self.w - self.l_margin - self.r_margin
-        fit_width = (full_width - 2 * self.c_margin) * self.k
+        fit_width = (full_width - 2 * self.c_margin)
         while (text_line) is not None:
             text_lines.append(text_line)
             text_line = multi_line_break.get_line_of_given_width(fit_width)
