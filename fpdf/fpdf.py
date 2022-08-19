@@ -874,7 +874,7 @@ class FPDF(GraphicsStateMixin):
                 self.rect(0, 0, self.w, self.h, style='F')
             else:
                 self.image(self.background, 0, 0, self.w, self.h)
-                
+
         self._out("2 J")  # Set line cap style to square
         self.line_width = lw  # Set line width
         self._out(f"{lw * self.k:.2f} w")
@@ -1056,7 +1056,6 @@ class FPDF(GraphicsStateMixin):
                 an io.BytesIO, an instance of `PIL.Image.Image` or an RGB tuple representing a color to fill the background with
         """
         self.background = background
-        
 
 
     @contextmanager
