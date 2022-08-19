@@ -22,6 +22,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 - workaround by @semaeostomea to support arabic and right-to-left scripts: [link to documentation](https://pyfpdf.github.io/fpdf2/Unicode.html#arabic-script-workaround)
 - documentation on shapes styling [link to documentation](https://pyfpdf.github.io/fpdf2/Shapes.html#path-styling)
+- new function `set_background()` added by @semaeostomea
 
 ## [2.5.6] - 2022-08-16
 ### Added
