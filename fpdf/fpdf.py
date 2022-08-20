@@ -871,7 +871,7 @@ class FPDF(GraphicsStateMixin):
         if self.page_background:
             if isinstance(self.page_background, tuple):
                 self.set_fill_color(*self.page_background)
-                self.rect(0, 0, self.w, self.h, style='F')
+                self.rect(0, 0, self.w, self.h, style="F")
                 self.set_fill_color(*(255 * v for v in fc.colors))
             else:
                 self.image(self.page_background, 0, 0, self.w, self.h)
