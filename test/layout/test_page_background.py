@@ -3,6 +3,7 @@ from PIL import Image
 import io
 from pathlib import Path
 from test.conftest import assert_pdf_equal
+from datetime import datetime
 
 
 HERE = Path(__file__).resolve().parent
@@ -97,5 +98,7 @@ def test_page_background(tmp_path):
     pdf.set_fill_color(255, 200, 210)
     rgb_tuple_multi_page(pdf, fill_set=True)
     imgpath_str_page(pdf)
+
+    pdf.set_creation_date(datetime(2022, 8, 20))
 
     assert_pdf_equal(pdf, HERE / "page_background.pdf", tmp_path)
