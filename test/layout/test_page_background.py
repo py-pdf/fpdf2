@@ -99,6 +99,4 @@ def test_page_background(tmp_path):
     rgb_tuple_multi_page(pdf, fill_set=True)
     imgpath_str_page(pdf)
 
-    pdf.set_creation_date(datetime(2022, 8, 20))
-
     assert_pdf_equal(pdf, HERE / "page_background.pdf", tmp_path)
