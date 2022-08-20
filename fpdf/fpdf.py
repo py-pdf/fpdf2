@@ -1054,11 +1054,15 @@ class FPDF(GraphicsStateMixin):
 
         Args:
             background: either a string representing a file path or URL to an image,
-                an io.BytesIO, an instance of `PIL.Image.Image`, drawing.DeviceRGB or a RGB tuple representing a color to fill the background with
+                an io.BytesIO, an instance of `PIL.Image.Image`, drawing.DeviceRGB
+                or a RGB tuple representing a color to fill the background with
         """
 
         if isinstance(background, (str, io.BytesIO, Image, drawing.DeviceRGB, tuple)):
-            self.page_background = background if not isinstance(background, drawing.DeviceRGB) else tuple(255 * v for v in background.colors)
+            if isinstance(background, drawing.DeviceRGB):
+                self.page_background = tuple(255 * v for v in background.colors)
+            else:
+                self.page_background = background
         else:
             raise TypeError(
                 f"background must be of type str, io.BytesIO, PIL.Image.Image, drawing.DeviceRGB or tuple, got: {type(background)}"
