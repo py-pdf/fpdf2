@@ -6,6 +6,7 @@ from test.conftest import assert_pdf_equal
 
 
 HERE = Path(__file__).resolve().parent
+imgpath = str(HERE / "../image/image_types/insert_images_insert_jpg.jpg")
 
 
 def rgb_tuple_multi_page(pdf, fill_set=None):
@@ -37,7 +38,7 @@ def imgpath_str_page(pdf, fill_set=None):
     sets the background to an image specified with a path and adds a page with text and a small rectangle,
     then writes multi-line text to trigger a page break to test if the background image is retained
     """
-    pdf.set_page_background(HERE / "../image/image_types/insert_images_insert_jpg.jpg")
+    pdf.set_page_background(imgpath)
     pdf.add_page()
     pdf.rect(20, 20, 60, 60, style='F')
     pdf.cell(0, 10, 'Image file path', align='R', border=1)
@@ -53,7 +54,7 @@ def imglink_str_page(pdf):
 
 def PILimg_page(pdf):
     """sets the background using an instance of PIL.Image.Image and adds a page with text and a small rectangle"""
-    img = Image.open(HERE / "../image/image_types/insert_images_insert_jpg.jpg")
+    img = Image.open(imgpath)
     pdf.set_page_background(img)
     pdf.add_page()
     pdf.rect(20, 20, 60, 60, style='F')
@@ -61,7 +62,7 @@ def PILimg_page(pdf):
 
 def ioBytesIO_page(pdf):
     """sets the background using an instance of io.BytesIO of an image and adds a page with text and a small rectangle"""
-    with open(HERE / "../image/image_types/insert_images_insert_jpg.jpg", 'rb') as f:
+    with open(imgpath, 'rb') as f:
         buffer = io.BytesIO(f.read())
     pdf.set_page_background(buffer)
     pdf.add_page()
