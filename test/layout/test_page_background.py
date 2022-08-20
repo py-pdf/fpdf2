@@ -92,4 +92,4 @@ def test_page_background(tmp_path):
     rgb_tuple_multi_page(pdf, fill_set=True)
     imgpath_str_page(pdf)
 
-    assert_pdf_equal(pdf, HERE / "page_background.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "page_background.pdf", tmp_path, generate=True)
