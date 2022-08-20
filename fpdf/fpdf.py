@@ -872,7 +872,7 @@ class FPDF(GraphicsStateMixin):
             if isinstance(self.page_background, tuple):
                 self.set_fill_color(*self.page_background)
                 self.rect(0, 0, self.w, self.h, style='F')
-                self.set_fill_color(*fc.colors)
+                self.set_fill_color(*(255 * v for v in fc.colors))
             else:
                 self.image(self.page_background, 0, 0, self.w, self.h)
 
@@ -1053,11 +1053,16 @@ class FPDF(GraphicsStateMixin):
         The method can be called before the first page is created and the value is retained from page to page.
 
         Args:
-            background: either a string representing a file path to an image, an URL to an image,
-                an io.BytesIO, an instance of `PIL.Image.Image` or an RGB tuple representing a color to fill the background with
+            background: either a string representing a file path or URL to an image,
+                an io.BytesIO, an instance of `PIL.Image.Image`, drawing.DeviceRGB or a RGB tuple representing a color to fill the background with
         """
-        self.page_background = background
 
+        if isinstance(background, (str, io.BytesIO, Image, drawing.DeviceRGB, tuple)):
+            self.page_background = background if not isinstance(background, drawing.DeviceRGB) else tuple(255 * v for v in background.colors)
+        else:
+            raise TypeError(
+                f"background must be of type str, io.BytesIO, PIL.Image.Image, drawing.DeviceRGB or tuple, got: {type(background)}"
+            )
 
     @contextmanager
     @check_page
