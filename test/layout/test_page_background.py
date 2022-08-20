@@ -33,7 +33,7 @@ def DeviceRGB_page(pdf):
     pdf.rect(20, 20, 60, 60, style='F')
     pdf.cell(0, 10, 'DeviceRGB', align='R', border=1)
 
-def imgpath_str_page(pdf, fill_set=None):
+def imgpath_str_page(pdf):
     """
     sets the background to an image specified with a path and adds a page with text and a small rectangle,
     then writes multi-line text to trigger a page break to test if the background image is retained
@@ -69,7 +69,6 @@ def ioBytesIO_page(pdf):
     pdf.rect(20, 20, 60, 60, style='F')
     pdf.cell(0, 10, 'io.BytesIO', align='R', border=1)
 
-
 def test_page_background(tmp_path):
     """
     Test creating a PDF with multiple pages using all possible inputs to set a page background,
@@ -87,9 +86,8 @@ def test_page_background(tmp_path):
     PILimg_page(pdf)
     ioBytesIO_page(pdf) 
 
-
     pdf.set_fill_color(255, 200, 210)
     rgb_tuple_multi_page(pdf, fill_set=True)
     imgpath_str_page(pdf)
 
-    assert_pdf_equal(pdf, HERE / "page_background.pdf", tmp_path, generate=True)
+    assert_pdf_equal(pdf, HERE / "page_background.pdf", tmp_path)
