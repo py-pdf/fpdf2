@@ -73,7 +73,8 @@ Note that `HTMLMixin` has [some limitations, notably regarding multi-lines cells
 ## Recipes ##
 
 - our 5th tutorial provides examples on how to build tables: [Tuto 5 - Creating Tables](Tutorial.md#tuto-5-creating-tables)
-- `@bvalgard` wrote a custom `table()` method: [YouTube video](https://www.youtube.com/watch?v=euNvxWaRQMY) - [source code](https://github.com/bvalgard/create-pdf-with-python-fpdf2/blob/main/create_table_fpdf2.py)
+- `@bvalgard` wrote a custom `table()` method: [YouTube video](https://www.youtube.com/watch?v=euNvxWaRQMY) - [`create_table()` source code](https://github.com/bvalgard/create-pdf-with-python-fpdf2/blob/main/create_table_fpdf2.py)
+- [code snippet by @RubendeBruin to adapt row height to the highest cell](https://github.com/PyFPDF/fpdf2/issues/91#issuecomment-813033012)
 
 
 ## Repeat table header on each page ##

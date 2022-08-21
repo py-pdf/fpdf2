@@ -14,9 +14,21 @@ There are several ways in fpdf to add text to a PDF document, each of which come
 
 There are a few advanced typesetting features that fpdf doesn't currently support.
 
-* Automatic ligatures - Some writing systems (eg. most hindic scripts such as Devaganari, Hangul) frequently combine a number of written characters into a single glyph. This would require advanced font analysis capabilities, which aren't currently implemented.
-* Contextual forms - In some writing systems (eg. Arabic, Hebrew, Mongolian, etc.), characters may take a different shape, depending on whether they appear at the beginning, in the middle, or at the end of a word, or isolated. Fpdf will always use the same standard shape in those cases.
+* Automatic ligatures - Some writing systems (eg. most Indic scripts such as Devaganari, Tamil, Kannada) frequently combine a number of written characters into a single glyph. This would require advanced font analysis capabilities, which aren't currently implemented.
+* Contextual forms - In some writing systems (eg. Arabic, Mongolian, etc.), characters may take a different shape, depending on whether they appear at the beginning, in the middle, or at the end of a word, or isolated. Fpdf will always use the same standard shape in those cases.
 * Vertical writing - Some writing systems are meant to be written vertically. Doing so is not directly supported. In cases where this just means to stack characters on top of each other (eg. Chinese, Japanese, etc.), client software can implement this by placing each character individuall at the correct location. In cases where the characters are connected with each other (eg. Mongolian), this may be more difficult, if possible at all.
+* Right-to-Left writing - Letters of scripts that are written right to left(eg. Arabic, Hebrew) appear in the wrong order
+* Special Diacritics - Special diacritics that use separate code points (eg. in Diné Bizaad, Hebrew) appear displaced
+
+### Right-to-Left & Arabic Script workaround
+For Arabic and RTL scripts there is a temporary solution (using two additional libraries `python-bidi` and `arabic-reshaper`) that works for most languages; only a few (rare) Arabic characters aren't supported. Using it on other scripts(eg. when the input is unknown or mixed scripts) does not affect them:
+```python
+from arabic_reshaper import reshape
+from bidi.algorithm import get_display
+
+some_text = 'اَلْعَرَبِيَّةُכַּף סוֹפִית'
+fixed_text = get_display(reshape(some_text))
+```
 
 ## Text Formatting
 For all text insertion methods, the relevant font related properties (eg. font/style and foreground/background color) must be set before invoking them. This includes using:

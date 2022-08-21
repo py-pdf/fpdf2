@@ -252,3 +252,39 @@ def test_arc_end_at_center(tmp_path):
         next_row(pdf)
 
     assert_pdf_equal(pdf, HERE / "class_arc_end_at_center.pdf", tmp_path)
+
+
+def test_arc_start_from_center_and_end_at_center(tmp_path):
+    pdf = fpdf.FPDF(unit="mm")
+    pdf.add_page()
+    pdf.set_line_width(6)  # make artifact visible
+
+    for angle_distance in [0, 30, 90, 120]:
+        pdf.arc(
+            x=pdf.get_x(),
+            y=pdf.get_y(),
+            a=size,
+            b=size,
+            start_angle=angle_distance,
+            end_angle=end_angle,
+            inclination=0,
+            style=None,
+        )
+        pdf.set_x(pdf.get_x() + size + margin)
+        pdf.arc(
+            x=pdf.get_x(),
+            y=pdf.get_y(),
+            a=size,
+            b=size,
+            start_angle=angle_distance,
+            end_angle=end_angle,
+            inclination=0,
+            start_from_center=True,
+            end_at_center=True,
+            style=None,
+        )
+        next_row(pdf)
+
+    assert_pdf_equal(
+        pdf, HERE / "class_arc_start_from_center_and_end_at_center.pdf", tmp_path
+    )

@@ -97,7 +97,7 @@ from .util import (
 )
 
 # Public global variables:
-FPDF_VERSION = "2.5.5"
+FPDF_VERSION = "2.5.6"
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),
     "a4": (595.28, 841.89),
@@ -1674,9 +1674,12 @@ class FPDF(GraphicsStateMixin):
             )
 
         if end_at_center:
-            self._out(
-                f"{cx * self.k:.2f} {(self.h - cy) * self.k:.2f} l {style.operator}"
-            )
+            if start_from_center:
+                self._out(f"h {style.operator}")
+            else:
+                self._out(
+                    f"{cx * self.k:.2f} {(self.h - cy) * self.k:.2f} l {style.operator}"
+                )
 
     @check_page
     def solid_arc(
@@ -2442,7 +2445,7 @@ class FPDF(GraphicsStateMixin):
             self._out(f"q /{gs_name} gs")
         else:
             self._out("q")
-        # All the folling calls to .set*() methods invoke .out() and write to the stream buffer:
+        # All the following calls to .set*() methods invoke .out() and write to the stream buffer:
         if font_family is not None or font_style is not None or font_size is not None:
             self.set_font(
                 font_family or self.font_family,

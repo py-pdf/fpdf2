@@ -568,6 +568,33 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "sokratisvas",
+      "name": "Sokratis Vasiliou",
+      "avatar_url": "https://avatars.githubusercontent.com/u/77175483?v=4",
+      "profile": "https://github.com/sokratisvas",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "semaeostomea",
+      "name": "semaeostomea",
+      "avatar_url": "https://avatars.githubusercontent.com/u/100974908?v=4",
+      "profile": "https://github.com/semaeostomea",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "Jmillan-Dev",
+      "name": "Josué Millán Zamora",
+      "avatar_url": "https://avatars.githubusercontent.com/u/39383390?v=4",
+      "profile": "https://github.com/Jmillan-Dev",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
