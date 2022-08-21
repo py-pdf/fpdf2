@@ -4070,7 +4070,9 @@ class FPDF(GraphicsStateMixin):
                 del subset[0]
 
                 # ---- FONTTOOLS SUBSETTER ----
-                ft = ttLib.TTFont(font["ttffile"])
+                # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
+                # if we leave recalcTimestamp=True the tests will break every time
+                ft = ttLib.TTFont(file=font["ttffile"], recalcTimestamp=False)
 
                 # 1. get all glyphs in PDF
                 cmap = ft["cmap"].getBestCmap()
@@ -4086,13 +4088,18 @@ class FPDF(GraphicsStateMixin):
 
                 # 3. make codeToGlyph
                 # is a map Character_ID -> Glyph_ID
+                # it's used for associating glyphs to new codes
+                # this basically takes the old code of the character
+                # take the glyph associated with it
+                # and then associate to the new code the glyph associated with the old code
                 codeToGlyph = {}
                 for code, new_code_mapped in subset.items():
                     if code in cmap:
                         glyph_name = cmap[code]
                         codeToGlyph[new_code_mapped] = ft.getGlyphID(glyph_name)
                     else:
-                        # it's not necessary to specificy the notdef glyph for codes not present in cmap
+                        # notdef is associated if no glyph was associated to the old code
+                        # it's not necessary to do this, it seems to be done by default
                         codeToGlyph[new_code_mapped] = ft.getGlyphID(".notdef")
 
                 # check: what is the usage of max_unicode?
