@@ -1049,12 +1049,12 @@ class FPDF(GraphicsStateMixin):
 
     def set_page_background(self, background):
         """
-        Sets a background color or image to be drawn every time add_page() is called.
+        Sets a background color or image to be drawn every time `FPDF.add_page()` is called.
         The method can be called before the first page is created and the value is retained from page to page.
 
         Args:
             background: either a string representing a file path or URL to an image,
-                an io.BytesIO, an instance of `PIL.Image.Image`, drawing.DeviceRGB
+                an io.BytesIO containg an image as bytes, an instance of `PIL.Image.Image`, drawing.DeviceRGB
                 or a RGB tuple representing a color to fill the background with
         """
 
