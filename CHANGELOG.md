@@ -19,6 +19,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.5.7] - not released yet
 ### Fixed
 - `arc()` not longer renders artefacts at intersection point, thanks to @Jmillan-Dev; [#488](https://github.com/PyFPDF/fpdf2/issues/488)
+- `write_html`: `<em>` & `<strong>` HTML tags are now properly supported - they were ignored previously; [#498](https://github.com/PyFPDF/fpdf2/issues/498)
+
 ### Added
 - workaround by @semaeostomea to support arabic and right-to-left scripts: [link to documentation](https://pyfpdf.github.io/fpdf2/Unicode.html#arabic-script-workaround)
 - documentation on shapes styling [link to documentation](https://pyfpdf.github.io/fpdf2/Shapes.html#path-styling)
