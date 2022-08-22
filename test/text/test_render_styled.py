@@ -194,6 +194,93 @@ def test_cell_newpos_stretched(tmp_path):
     assert_pdf_equal(doc, HERE / "cell_newpos_stretched.pdf", tmp_path)
 
 
+def test_cell_newpos_charspaced(tmp_path):
+    """
+    Verify that cell() places the new position
+    in the right places in all possible combinations of alignment,
+    new_x, and new_y.
+
+    Note:
+        cell() doesn't process align="J", and uses "L" instead.
+    """
+    doc = fpdf.FPDF()
+    doc.set_font("helvetica", style="U", size=20)
+    doc.set_char_spacing(15)
+    twidth = 120
+
+    for i, item in enumerate(CELLDATA):
+        i = i % 5
+        if i == 0:
+            doc.add_page()
+        doc.x = 70
+        doc.y = 20 + (i * 20)
+        s = item[0]
+        align = item[1]
+        if align == "J":
+            continue
+        newx = item[2]
+        newy = item[3]
+        doc.cell(
+            twidth,
+            txt=s,
+            border=1,
+            align=align,
+            new_x=newx,
+            new_y=newy,
+        )
+        # mark the new position in the file with crosshairs for verification
+        with doc.rotation(i * -15, doc.x, doc.y):
+            doc.circle(doc.x - 3, doc.y - 3, 6)
+            doc.line(doc.x - 3, doc.y, doc.x + 3, doc.y)
+            doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
+
+    assert_pdf_equal(doc, HERE / "cell_newpos_charspaced.pdf", tmp_path)
+
+
+def test_cell_newpos_combined(tmp_path):
+    """
+    Verify that cell() places the new position
+    in the right places in all possible combinations of alignment,
+    new_x, and new_y.
+
+    Note:
+        cell() doesn't process align="J", and uses "L" instead.
+    """
+    doc = fpdf.FPDF()
+    doc.set_font("helvetica", style="U", size=20)
+    doc.set_stretching(130)
+    doc.set_char_spacing(10)
+    twidth = 120
+
+    for i, item in enumerate(CELLDATA):
+        i = i % 5
+        if i == 0:
+            doc.add_page()
+        doc.x = 70
+        doc.y = 20 + (i * 20)
+        s = item[0]
+        align = item[1]
+        if align == "J":
+            continue
+        newx = item[2]
+        newy = item[3]
+        doc.cell(
+            twidth,
+            txt=s,
+            border=1,
+            align=align,
+            new_x=newx,
+            new_y=newy,
+        )
+        # mark the new position in the file with crosshairs for verification
+        with doc.rotation(i * -15, doc.x, doc.y):
+            doc.circle(doc.x - 3, doc.y - 3, 6)
+            doc.line(doc.x - 3, doc.y, doc.x + 3, doc.y)
+            doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
+
+    assert_pdf_equal(doc, HERE / "cell_newpos_combined.pdf", tmp_path)
+
+
 def test_multi_cell_newpos(tmp_path):
     """
     Verify that multi_cell() places the new position

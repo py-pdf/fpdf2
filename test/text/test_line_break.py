@@ -17,7 +17,7 @@ def test_no_fragments():
     }
     multi_line_break = MultiLineBreak(
         [],
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -41,7 +41,7 @@ def test_width_calculation():
     ]
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -100,7 +100,7 @@ def test_single_space_in_fragment():
         alphabet["normal"][char] = char_width
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -138,7 +138,7 @@ def test_single_soft_hyphen_in_fragment():
         alphabet["normal"][char] = char_width
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -167,7 +167,7 @@ def test_single_hard_hyphen_in_fragment():
         alphabet["normal"][char] = char_width
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -198,13 +198,13 @@ def test_real_hyphen_acts_differently_from_soft_hyphen():
         alphabet["normal"][char] = char_width
     soft_hyphen_line_break = MultiLineBreak(
         [Fragment(words_separated_by_soft_hyphen, "normal", False)],
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
     hard_hyphen_line_break = MultiLineBreak(
         [Fragment(words_separated_by_hard_hyphen, "normal", False)],
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -239,7 +239,7 @@ def test_trailing_soft_hyphen():
         alphabet["normal"][char] = char_width
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -279,7 +279,7 @@ def test_trailing_whitespace():
         alphabet["normal"][char] = char_width
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -319,7 +319,7 @@ def test_two_words_one_line():
         alphabet["normal"][char] = char_width
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -361,7 +361,7 @@ def test_two_words_one_line_justify():
         alphabet["normal"][char] = char_width
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
         justify=True,
@@ -403,7 +403,7 @@ def test_two_words_two_lines_break_by_space():
 
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -455,7 +455,7 @@ def test_two_words_two_lines_break_by_space_justify():
         alphabet["normal"][char] = char_width
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -509,7 +509,7 @@ def test_four_words_two_lines_break_by_space():
 
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -564,7 +564,7 @@ def test_four_words_two_lines_break_by_space_justify():
 
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
         justify=True,
@@ -621,7 +621,7 @@ def test_break_fragment_into_two_lines():
     ]
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -683,7 +683,7 @@ def test_break_fragment_into_two_lines_justify():
     ]
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
         justify=True,
@@ -738,7 +738,7 @@ def test_soft_hyphen_break():
     ]
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -830,7 +830,7 @@ def test_soft_hyphen_break_justify():
     ]
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
         justify=True,
@@ -887,7 +887,7 @@ def test_explicit_break():
     ]
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -953,7 +953,7 @@ def test_explicit_break_justify():
     ]
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
         justify=True,
@@ -1021,7 +1021,7 @@ def test_single_word_doesnt_fit_into_width():
     ]
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
     )
@@ -1088,7 +1088,7 @@ def test_single_word_doesnt_fit_into_width_justify():
     ]
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
         justify=True,
@@ -1148,7 +1148,7 @@ def test_last_line_no_justify():
     ]
     multi_line_break = MultiLineBreak(
         fragments,
-        lambda a, b, font_size=None, font_family=None, font_stretching=None: alphabet[
+        lambda a, b, font_size=None, font_family=None, font_stretching=None, char_spacing=None: alphabet[
             b
         ][a],
         justify=True,

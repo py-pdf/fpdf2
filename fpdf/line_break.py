@@ -24,6 +24,7 @@ class Fragment:
         font_family: str = "",
         font_size_pt: float = 12,
         font_stretching: float = 100,
+        char_spacing: float = 0,
     ):
         if isinstance(characters, str):
             self.characters = list(characters)
@@ -34,11 +35,12 @@ class Fragment:
         self.font_family = font_family
         self.font_size_pt = font_size_pt
         self.font_stretching = font_stretching
+        self.char_spacing = char_spacing
 
     def __repr__(self):
         return (
             f"Fragment(characters={self.characters}, {self.font_style}, {self.underline}, "
-            f"font=[{self.font_family}, {self.font_size_pt}, {self.font_stretching}], )"
+            f"font=[{self.font_family}, {self.font_size_pt}, {self.font_stretching}], {self.char_spacing}, )"
         )
 
     @classmethod
@@ -51,6 +53,7 @@ class Fragment:
             font_family=pdf.font_family,
             font_size_pt=pdf.font_size_pt,
             font_stretching=pdf.font_stretching,
+            char_spacing=pdf.char_spacing,
         )
 
     def trim(self, index: int):
@@ -63,14 +66,16 @@ class Fragment:
     def __eq__(self, other: Any):
         return (
             self.characters == other.characters
-            and self.font_family == other.font_family
-            and self.font_size_pt == other.font_size_pt
             and self.font_style == other.font_style
+            and self.font_size_pt == other.font_size_pt
+            and self.font_family == other.font_family
             and self.underline == other.underline
             and self.font_stretching == other.font_stretching
+            and self.char_spacing == other.char_spacing
         )
 
-    def get_character_width(self, character: str, size_by_style, print_sh):
+    def get_character_width(self, idx: int, size_by_style, print_sh):
+        character = self.characters[idx]
         if character == SOFT_HYPHEN and not print_sh:
             # HYPHEN is inserted instead of SOFT_HYPHEN
             character = HYPHEN
@@ -80,7 +85,15 @@ class Fragment:
             self.font_size_pt,
             self.font_family,
             self.font_stretching,
+            #self.char_spacing,
+            0 if idx == 0 else self.char_spacing,
         )
+
+    def get_total_width(self, size_by_style, print_sh):
+        w = 0
+        for idx in range(len(self.characters)):
+            w += self.get_character_width(idx, size_by_style, print_sh)
+        return w
 
 
 class TextLine(NamedTuple):
@@ -113,7 +126,8 @@ class HyphenHint(NamedTuple):
     curchar_font_size_pt: float
     curchar_font_style: str
     curchar_underline: bool
-    curchar_font_stretching: bool
+    curchar_font_stretching: float
+    curchar_char_spacing: float
 
 
 class CurrentLine:
@@ -152,11 +166,11 @@ class CurrentLine:
         font_style: str,
         underline: bool,
         font_stretching: float,
+        char_spacing: float,
         original_fragment_index: int,
         original_character_index: int,
     ):
         assert character != NEWLINE
-
         if not self.fragments:
             self.fragments.append(
                 Fragment(
@@ -166,16 +180,20 @@ class CurrentLine:
                     font_family,
                     font_size_pt,
                     font_stretching,
+                    char_spacing,
                 )
             )
 
-        # characters are expected to be grouped into fragments by styles and
-        # underline attributes. If the last existing fragment doesn't match
-        # the (font_style, underline) of pending character ->
-        # create a new fragment with matching (font_style, underline)
+        # characters are expected to be grouped into fragments by font and
+        # character attributes. If the last existing fragment doesn't match
+        # the properties of the pending character -> add a new fragment.
         elif (
             font_style != self.fragments[-1].font_style
             or underline != self.fragments[-1].underline
+            or font_family != self.fragments[-1].font_family
+            or font_size_pt != self.fragments[-1].font_size_pt
+            or font_stretching != self.fragments[-1].font_stretching
+            or char_spacing != self.fragments[-1].char_spacing
         ):
             self.fragments.append(
                 Fragment(
@@ -185,6 +203,7 @@ class CurrentLine:
                     font_family,
                     font_size_pt,
                     font_stretching,
+                    char_spacing,
                 )
             )
         active_fragment = self.fragments[-1]
@@ -214,6 +233,7 @@ class CurrentLine:
                 font_style,
                 underline,
                 font_stretching,
+                char_spacing
             )
 
         if character != SOFT_HYPHEN or self.print_sh:
@@ -233,9 +253,15 @@ class CurrentLine:
         self.width = break_hint.width
 
     def manual_break(self, justify: bool = False, trailing_nl: bool = False):
+        # The first character per fragment doesn't get a spacing displacement.
+        # We need to reduce
+        first_char_spacing = 0
+#        for frag in self.fragments:
+#            if frag.char_spacing:
+#                first_char_spacing -= frag.char_spacing * frag.font_stretching * 0.01
         return TextLine(
             fragments=self.fragments,
-            text_width=self.width,
+            text_width=self.width - first_char_spacing,
             number_of_spaces_between_words=self.number_of_spaces,
             justify=(self.number_of_spaces > 0) and justify,
             trailing_nl=trailing_nl,
@@ -259,6 +285,7 @@ class CurrentLine:
                 self.hyphen_break_hint.curchar_font_style,
                 self.hyphen_break_hint.curchar_underline,
                 self.hyphen_break_hint.curchar_font_stretching,
+                self.hyphen_break_hint.curchar_char_spacing,
                 self.hyphen_break_hint.original_fragment_index,
                 self.hyphen_break_hint.original_character_index,
             )
@@ -315,7 +342,7 @@ class MultiLineBreak:
 
             character = current_fragment.characters[self.character_index]
             character_width = current_fragment.get_character_width(
-                character, self.size_by_style, self.print_sh
+                self.character_index, self.size_by_style, self.print_sh
             )
 
             if character == NEWLINE:
@@ -352,6 +379,7 @@ class MultiLineBreak:
                 current_fragment.font_style,
                 current_fragment.underline,
                 current_fragment.font_stretching,
+                current_fragment.char_spacing,
                 self.fragment_index,
                 self.character_index,
             )

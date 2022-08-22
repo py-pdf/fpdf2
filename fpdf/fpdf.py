@@ -464,6 +464,7 @@ class FPDF(GraphicsStateMixin):
         self.font_style = ""  # current font style
         self.font_size_pt = 12  # current font size in points
         self.font_stretching = 100  # current font stretching
+        self.char_spacing = 0  # current character spacing
         self.underline = 0  # underlining flag
         self.current_font = {}  # current font
         self.draw_color = self.DEFAULT_DRAW_COLOR
@@ -900,6 +901,7 @@ class FPDF(GraphicsStateMixin):
         fc = self.fill_color
         tc = self.text_color
         stretching = self.font_stretching
+        char_spacing = self.char_spacing
 
         if self.page > 0:
             # Page footer
@@ -964,6 +966,8 @@ class FPDF(GraphicsStateMixin):
 
         if stretching != 100:  # Restore stretching
             self.set_stretching(stretching)
+        if char_spacing != 0:
+            self.set_char_spacing(char_spacing)
         # END Page header
 
     def header(self):
@@ -1061,17 +1065,19 @@ class FPDF(GraphicsStateMixin):
         for frag in (
             self._markdown_parse(s) if markdown else (Fragment.from_curfont(s, self),)
         ):
+            #w += frag.get_total_width()
             w += self.get_width_of_styled_string(
                 frag.string,
                 frag.font_style,
                 font_size_pt=frag.font_size_pt,
                 font_family=frag.font_family,
                 font_stretching=frag.font_stretching,
+                char_spacing=frag.char_spacing,
             )
         return w
 
     def get_width_of_styled_string(
-        self, string, style, font_size_pt=0, font_family=None, font_stretching=None
+        self, string, style, font_size_pt=0, font_family=None, font_stretching=None, char_spacing=None
     ):
         """
         Return the horizontal dimension of a string with a given font and style.
@@ -1081,12 +1087,15 @@ class FPDF(GraphicsStateMixin):
             style (str) : The style of the text (string combination of ["", "B", "I"]).
             font_size_pt (float): The size of the font to scale the result with (in Points).
             font_family (str): the font family to use (if not given, use the current font).
-            font_stretching (int): the percentage of stretch (if not given, use the current value).
+            font_stretching (float): the percentage of stretch (if not given, use the current value).
+            char_spacing (float): changes the space between characters (if not given, use the current value).
         """
         if font_family is None:
             font_family = self.font_family
         if font_stretching is None:
             font_stretching = self.font_stretching
+        if char_spacing is None:
+            char_spacing = self.char_spacing
         w = 0
         font = self.fonts[font_family + style]
         if self.unifontsubset:
@@ -1096,8 +1105,14 @@ class FPDF(GraphicsStateMixin):
             w += sum(_char_width(font, char) for char in string)
         if font_stretching != 100:
             w *= font_stretching * 0.01
+            char_spacing *= font_stretching * 0.01
         if font_size_pt:
             w *= font_size_pt * 0.001
+        if char_spacing != 0:
+            # Make sure a single character is calculated with spacing as well.
+            # Fragment.get_character_width() will request its first character with char_spacing=0.
+            w += char_spacing * max(1, (len(string) - 1))
+        #print(len(string), char_spacing * max(1, (len(string) - 1)))
         return w / self.k
 
     def set_line_width(self, width):
@@ -2034,6 +2049,22 @@ class FPDF(GraphicsStateMixin):
                 )
             self._out(f"BT /F{self.current_font['i']} {self.font_size_pt:.2f} Tf ET")
 
+    def set_char_spacing(self, spacing):
+        """
+        Sets horizontal character spacing.
+        A positive value increases the space between characters, a negative value
+        reduces it (which may result in glyph overlap).
+        By default, no spacing is set (which is equivalent to a value of 0).
+
+        Args:
+            spacing (float): horizontal spacing in document units
+        """
+        if self.char_spacing == spacing:
+            return
+        self.char_spacing = spacing
+        if self.page > 0:
+            self._out(f"BT {spacing:.2f} Tc ET")
+
     def set_stretching(self, stretching):
         """
         Sets horizontal font stretching.
@@ -2046,7 +2077,7 @@ class FPDF(GraphicsStateMixin):
             return
         self.font_stretching = stretching
         if self.page > 0:
-            self._out(f"BT {self.font_stretching:.2f} Tz ET")
+            self._out(f"BT {stretching:.2f} Tz ET")
 
     def add_link(self):
         """
@@ -2423,6 +2454,7 @@ class FPDF(GraphicsStateMixin):
                     font_size_pt=self.font_size_pt,
                     font_family=self.font_family,
                     font_stretching=self.font_stretching,
+                    char_spacing=self.char_spacing,
                 )
             )
             h = self.font_size
@@ -2816,6 +2848,7 @@ class FPDF(GraphicsStateMixin):
                         font_size_pt=styled_txt_frag.font_size_pt,
                         font_family=styled_txt_frag.font_family,
                         font_stretching=styled_txt_frag.font_stretching,
+                        char_spacing=styled_txt_frag.char_spacing,
                     )
                 )
                 styled_txt_width += unscaled_width
@@ -2912,9 +2945,9 @@ class FPDF(GraphicsStateMixin):
                 word_spacing = (
                     w - self.c_margin - self.c_margin - styled_txt_width
                 ) / text_line.number_of_spaces_between_words
-            if self.font_stretching != 100:
-                # Space character is already stretched, extra spacing is absolute.
-                word_spacing *= 100 / self.font_stretching
+#                if frag.font_stretching != 100:
+#                    # Space character is already stretched, extra spacing is absolute.
+#                    word_spacing *= 100 / frag.font_stretching
             if word_spacing and self.unifontsubset:
                 # If multibyte, Tw has no effect - do word spacing using an
                 # adjustment before each space
@@ -2925,8 +2958,8 @@ class FPDF(GraphicsStateMixin):
                 for frag in text_line.fragments:
                     if current_font_style != frag.font_style:
                         current_font_style = frag.font_style
-                        current_font = self.fonts[self.font_family + current_font_style]
-                        sl.append(f"/F{current_font['i']} {self.font_size_pt:.2f} Tf")
+                        current_font = self.fonts[frag.font_family + current_font_style]
+                        sl.append(f"/F{current_font['i']} {frag.font_size_pt:.2f} Tf")
                     txt_frag_mapped = ""
                     for char in frag.string:
                         uni = ord(char)
@@ -2944,7 +2977,7 @@ class FPDF(GraphicsStateMixin):
                         if i == 0:
                             words_strl.append(f"({word})")
                         else:
-                            adj = -(word_spacing * self.k) * 1000 / self.font_size_pt
+                            adj = -(word_spacing * self.k) * 1000 / frag.font_size_pt
                             words_strl.append(f"{adj:.3f}({space}{word})")
                     sl.append(f"[{' '.join(words_strl)}] TJ")
                     if frag.underline:
@@ -2956,6 +2989,7 @@ class FPDF(GraphicsStateMixin):
                             font_size_pt=frag.font_size_pt,
                             font_family=frag.font_family,
                             font_stretching=frag.font_stretching,
+                            char_spacing=frag.char_spacing,
                         )
                     )
                     s_width += frag_width + self.ws * frag.string.count(" ")
@@ -2969,8 +3003,8 @@ class FPDF(GraphicsStateMixin):
                 for frag in text_line.fragments:
                     if current_font_style != frag.font_style:
                         current_font_style = frag.font_style
-                        current_font = self.fonts[self.font_family + current_font_style]
-                        sl.append(f"/F{current_font['i']} {self.font_size_pt:.2f} Tf")
+                        current_font = self.fonts[frag.font_family + current_font_style]
+                        sl.append(f"/F{current_font['i']} {frag.font_size_pt:.2f} Tf")
                     if self.unifontsubset:
                         txt_frag_mapped = ""
                         for char in frag.string:
@@ -2991,6 +3025,7 @@ class FPDF(GraphicsStateMixin):
                             font_size_pt=frag.font_size_pt,
                             font_family=frag.font_family,
                             font_stretching=frag.font_stretching,
+                            char_spacing=frag.char_spacing,
                         )
                     )
                     s_width += frag_width + self.ws * frag.string.count(" ")
@@ -3000,7 +3035,7 @@ class FPDF(GraphicsStateMixin):
                 sl.append(
                     self._do_underline(
                         start_x,
-                        self.y + (0.5 * h) + (0.3 * self.font_size),
+                        self.y + (0.5 * h) + (0.3 * frag.font_size),
                         txt_frag,
                         current_font,
                     )
@@ -3008,15 +3043,15 @@ class FPDF(GraphicsStateMixin):
             if link:
                 self.link(
                     self.x + dx,
-                    self.y + (0.5 * h) - (0.5 * self.font_size),
+                    self.y + (0.5 * h) - (0.5 * frag.font_size),
                     styled_txt_width,
-                    self.font_size,
+                    frag.font_size,
                     link,
                 )
         if sl:
             # If any PDF settings have been left modified, wrap the line in a local context.
             if (
-                current_font_style != self.font_style
+                current_font_style != frag.font_style
                 or self.fill_color != self.text_color
             ):
                 s = f"q {' '.join(sl)} Q"
@@ -3111,6 +3146,7 @@ class FPDF(GraphicsStateMixin):
                         self.font_family,
                         self.font_size_pt,
                         self.font_stretching,
+                        self.char_spacing,
                     )
                 if txt[:2] == self.MARKDOWN_BOLD_MARKER:
                     in_bold = not in_bold
@@ -3131,6 +3167,7 @@ class FPDF(GraphicsStateMixin):
                 self.font_family,
                 self.font_size_pt,
                 self.font_stretching,
+                self.char_spacing,
             )
 
     def will_page_break(self, height):
@@ -4825,6 +4862,7 @@ class FPDF(GraphicsStateMixin):
         self.y = self.t_margin
         self.font_family = ""
         self.font_stretching = 100
+        self.char_spacing = 0
         if same:
             if orientation or format:
                 raise ValueError(

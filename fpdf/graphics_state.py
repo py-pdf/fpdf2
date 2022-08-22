@@ -27,6 +27,7 @@ class GraphicsStateMixin:
                 underline=False,
                 font_style="",
                 font_stretching=100,
+                char_spacing=0,
                 font_family="",
                 font_size_pt=0,
                 current_font={},
@@ -90,6 +91,14 @@ class GraphicsStateMixin:
     @font_stretching.setter
     def font_stretching(self, v):
         self.__statestack[-1]["font_stretching"] = v
+
+    @property
+    def char_spacing(self):
+        return self.__statestack[-1]["char_spacing"]
+
+    @char_spacing.setter
+    def char_spacing(self, v):
+        self.__statestack[-1]["char_spacing"] = v
 
     @property
     def font_family(self):
