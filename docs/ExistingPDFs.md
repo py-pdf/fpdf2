@@ -30,7 +30,9 @@ def new_content():
     reader = PdfReader(fdata=bytes(fpdf.output()))
     return reader.pages[0]
 
-writer = PdfWriter(trailer=PdfReader(IN_FILEPATH))
+reader = PdfReader(IN_FILEPATH)
+writer = PdfWriter()
+writer.pagearray = reader.Root.Pages.Kids
 PageMerge(writer.pagearray[ON_PAGE_INDEX]).add(new_content(), prepend=UNDERNEATH).render()
 writer.write(OUT_FILEPATH)
 ```
