@@ -1781,43 +1781,42 @@ class FPDF(GraphicsStateMixin):
         else:
             raise FileNotFoundError(f"TTF Font file not found: {fname}")
 
-        # font tools
-        ft = ttLib.TTFont(ttffilename)
+        font = ttLib.TTFont(ttffilename)
 
-        scale = 1000 / ft["head"].unitsPerEm
-        ascent = ft["hhea"].ascent * scale
-        descent = ft["hhea"].descent * scale
+        scale = 1000 / font["head"].unitsPerEm
+        ascent = font["hhea"].ascent * scale
+        descent = font["hhea"].descent * scale
         try:
-            capHeight = ft["OS/2"].sCapHeight * scale
+            capHeight = font["OS/2"].sCapHeight * scale
         except AttributeError:
             capHeight = ascent
         bbox = (
-            f"[{ft['head'].xMin * scale:.0f} {ft['head'].yMin * scale:.0f}"
-            f" {ft['head'].xMax * scale:.0f} {ft['head'].yMax * scale:.0f}]"
+            f"[{font['head'].xMin * scale:.0f} {font['head'].yMin * scale:.0f}"
+            f" {font['head'].xMax * scale:.0f} {font['head'].yMax * scale:.0f}]"
         )
-        stemV = 50 + int(pow((ft["OS/2"].usWeightClass / 65), 2))
-        italicAngle = ft["post"].italicAngle
-        underlinePosition = ft["post"].underlinePosition * scale
-        underlineThickness = ft["post"].underlineThickness * scale
+        stemV = 50 + int(pow((font["OS/2"].usWeightClass / 65), 2))
+        italicAngle = font["post"].italicAngle
+        underlinePosition = font["post"].underlinePosition * scale
+        underlineThickness = font["post"].underlineThickness * scale
 
         flags = 4
-        if ft["post"].isFixedPitch:
+        if font["post"].isFixedPitch:
             flags |= 1
-        if ft["post"].italicAngle != 0:
+        if font["post"].italicAngle != 0:
             flags |= 64
-        if ft["OS/2"].usWeightClass >= 600:
+        if font["OS/2"].usWeightClass >= 600:
             flags |= 262144
 
-        aw = ft["hmtx"].metrics[".notdef"][0]
+        aw = font["hmtx"].metrics[".notdef"][0]
         defaultWidth = scale * aw
 
-        charWidths = [len(ft.getBestCmap().keys()) - 1]
-        for char in ft.getBestCmap().keys():
+        charWidths = [len(font.getBestCmap().keys()) - 1]
+        for char in font.getBestCmap().keys():
             if char in (0, 65535) or char >= 196608:
                 continue
 
-            glyph = ft.getBestCmap()[char]
-            aw = ft["hmtx"].metrics[glyph][0]
+            glyph = font.getBestCmap()[char]
+            aw = font["hmtx"].metrics[glyph][0]
 
             if char >= len(charWidths):
                 size = (((char + 1) // 1024) + 1) * 1024
@@ -1841,7 +1840,7 @@ class FPDF(GraphicsStateMixin):
 
         font_dict = {
             "type": "TTF",
-            "name": re.sub("[ ()]", "", ft["name"].getBestFullName()),
+            "name": re.sub("[ ()]", "", font["name"].getBestFullName()),
             "desc": desc,
             "up": round(underlinePosition),
             "ut": round(underlineThickness),
@@ -4075,10 +4074,10 @@ class FPDF(GraphicsStateMixin):
                 # ---- FONTTOOLS SUBSETTER ----
                 # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
                 # if we leave recalcTimestamp=True the tests will break every time
-                ft = ttLib.TTFont(file=font["ttffile"], recalcTimestamp=False)
+                font = ttLib.TTFont(file=font["ttffile"], recalcTimestamp=False)
 
                 # 1. get all glyphs in PDF
-                cmap = ft["cmap"].getBestCmap()
+                cmap = font["cmap"].getBestCmap()
                 glyph_names = [cmap[code] for code in subset if code in cmap]
 
                 # 2. make a subset
@@ -4087,7 +4086,7 @@ class FPDF(GraphicsStateMixin):
                 options = ftsubset.Options(notdef_outline=True, recommended_glyphs=True)
                 subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)
-                subsetter.subset(ft)
+                subsetter.subset(font)
 
                 # 3. make codeToGlyph
                 # is a map Character_ID -> Glyph_ID
@@ -4095,22 +4094,22 @@ class FPDF(GraphicsStateMixin):
                 # this basically takes the old code of the character
                 # take the glyph associated with it
                 # and then associate to the new code the glyph associated with the old code
-                codeToGlyph = {}
+                code_to_glyph = {}
                 for code, new_code_mapped in subset.items():
                     if code in cmap:
                         glyph_name = cmap[code]
-                        codeToGlyph[new_code_mapped] = ft.getGlyphID(glyph_name)
+                        code_to_glyph[new_code_mapped] = font.getGlyphID(glyph_name)
                     else:
                         # notdef is associated if no glyph was associated to the old code
                         # it's not necessary to do this, it seems to be done by default
-                        codeToGlyph[new_code_mapped] = ft.getGlyphID(".notdef")
+                        code_to_glyph[new_code_mapped] = font.getGlyphID(".notdef")
 
                 # check: what is the usage of max_unicode?
                 max_unicode = max(subset)
 
                 # 4. return the ttfile
                 output = BytesIO()
-                ft.save(output)
+                font.save(output)
 
                 output.seek(0)
                 ttfontstream = output.read()
@@ -4225,20 +4224,20 @@ class FPDF(GraphicsStateMixin):
 
                 # Embed CIDToGIDMap
                 # A specification of the mapping from CIDs to glyph indices
-                cidtogidmap = ["\x00"] * 256 * 256 * 2
-                for cc, glyph in codeToGlyph.items():
-                    cidtogidmap[cc * 2] = chr(glyph >> 8)
-                    cidtogidmap[cc * 2 + 1] = chr(glyph & 0xFF)
-                cidtogidmap = "".join(cidtogidmap)
+                cid_to_gid_map = ["\x00"] * 256 * 256 * 2
+                for cc, glyph in code_to_glyph.items():
+                    cid_to_gid_map[cc * 2] = chr(glyph >> 8)
+                    cid_to_gid_map[cc * 2 + 1] = chr(glyph & 0xFF)
+                cid_to_gid_map = "".join(cid_to_gid_map)
 
                 # manage binary data as latin1 until PEP461-like function is implemented
-                cidtogidmap = zlib.compress(cidtogidmap.encode("latin1"))
+                cid_to_gid_map = zlib.compress(cid_to_gid_map.encode("latin1"))
 
                 self._newobj()
-                self._out(f"<</Length {len(cidtogidmap)}")
+                self._out(f"<</Length {len(cid_to_gid_map)}")
                 self._out("/Filter /FlateDecode")
                 self._out(">>")
-                self._out(pdf_stream(cidtogidmap))
+                self._out(pdf_stream(cid_to_gid_map))
                 self._out("endobj")
 
                 # Font file
