@@ -437,6 +437,10 @@ class HTML2FPDF(HTMLParser):
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         LOGGER.debug("STARTTAG %s %s", tag, attrs)
+        if tag == "strong":
+            tag = "b"
+        if tag == "em":
+            tag = "i"
         if tag in ("b", "i", "u"):
             self.set_style(tag, True)
         if tag == "a":

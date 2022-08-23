@@ -595,6 +595,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "me-suzy",
+      "name": "me-suzy",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2770489?v=4",
+      "profile": "https://github.com/me-suzy",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,

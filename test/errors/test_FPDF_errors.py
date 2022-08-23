@@ -122,3 +122,13 @@ def test_incorrent_number_of_pages_toc():
     pdf.insert_toc_placeholder(lambda a, b: None, 10)
     with pytest.raises(FPDFException):
         pdf.close()
+
+
+def test_invalid_page_background():
+    pdf = fpdf.FPDF()
+    i = 0
+    with pytest.raises(TypeError) as error:
+        pdf.set_page_background(i)
+
+    msg = f"background must be of type str, io.BytesIO, PIL.Image.Image, drawing.DeviceRGB or tuple, got: {type(i)}"
+    assert str(error.value) == msg
