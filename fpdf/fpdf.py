@@ -4105,10 +4105,12 @@ class FPDF(GraphicsStateMixin):
                 # ---- FONTTOOLS SUBSETTER ----
                 # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
                 # if we leave recalcTimestamp=True the tests will break every time
-                font = ttLib.TTFont(file=font["ttffile"], recalcTimestamp=False)
+                fonttools_font = ttLib.TTFont(
+                    file=font["ttffile"], recalcTimestamp=False
+                )
 
                 # 1. get all glyphs in PDF
-                cmap = font["cmap"].getBestCmap()
+                cmap = fonttools_font["cmap"].getBestCmap()
                 glyph_names = [cmap[code] for code in subset if code in cmap]
 
                 # 2. make a subset
@@ -4117,7 +4119,7 @@ class FPDF(GraphicsStateMixin):
                 options = ftsubset.Options(notdef_outline=True, recommended_glyphs=True)
                 subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)
-                subsetter.subset(font)
+                subsetter.subset(fonttools_font)
 
                 # 3. make codeToGlyph
                 # is a map Character_ID -> Glyph_ID
@@ -4129,18 +4131,22 @@ class FPDF(GraphicsStateMixin):
                 for code, new_code_mapped in subset.items():
                     if code in cmap:
                         glyph_name = cmap[code]
-                        code_to_glyph[new_code_mapped] = font.getGlyphID(glyph_name)
+                        code_to_glyph[new_code_mapped] = fonttools_font.getGlyphID(
+                            glyph_name
+                        )
                     else:
                         # notdef is associated if no glyph was associated to the old code
                         # it's not necessary to do this, it seems to be done by default
-                        code_to_glyph[new_code_mapped] = font.getGlyphID(".notdef")
+                        code_to_glyph[new_code_mapped] = fonttools_font.getGlyphID(
+                            ".notdef"
+                        )
 
                 # check: what is the usage of max_unicode?
                 max_unicode = max(subset)
 
                 # 4. return the ttfile
                 output = BytesIO()
-                font.save(output)
+                fonttools_font.save(output)
 
                 output.seek(0)
                 ttfontstream = output.read()
