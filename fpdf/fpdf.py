@@ -1069,8 +1069,7 @@ class FPDF(GraphicsStateMixin):
             raise TypeError(
                 f"""
         background must be of type str, io.BytesIO, PIL.Image.Image, drawing.DeviceRGB, tuple or None
-        got: {type(background)}
-                """
+        got: {type(background)}"""
             )
 
     @contextmanager
