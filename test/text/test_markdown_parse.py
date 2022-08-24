@@ -2,45 +2,61 @@
 from fpdf import FPDF
 from fpdf.line_break import Fragment
 
+PDF = FPDF()
+GSTATE = PDF.get_current_graphics_state()
+GSTATE_B = GSTATE.copy()
+GSTATE_B["font_style"] = "B"
+GSTATE_I = GSTATE.copy()
+GSTATE_I["font_style"] = "I"
+GSTATE_U = GSTATE.copy()
+GSTATE_U["underline"] = True
+GSTATE_BI = GSTATE.copy()
+GSTATE_BI["font_style"] = "BI"
+
 
 def test_markdown_parse_simple_ok():
-    assert tuple(
-        FPDF()._markdown_parse("**bold**, __italics__ and --underlined--")
-    ) == (
-        Fragment("bold", "B", False),
-        Fragment(", ", "", False),
-        Fragment("italics", "I", False),
-        Fragment(" and ", "", False),
-        Fragment("underlined", "", True),
+    res = tuple(FPDF()._markdown_parse("**bold**, __italics__ and --underlined--"))
+    exp = (
+        Fragment("bold", GSTATE_B, k=PDF.k),
+        Fragment(", ", GSTATE, k=PDF.k),
+        Fragment("italics", GSTATE_I, k=PDF.k),
+        Fragment(" and ", GSTATE, k=PDF.k),
+        Fragment("underlined", GSTATE_U, k=PDF.k),
     )
+    assert res == exp
 
 
 def test_markdown_parse_overlapping():
-    assert tuple(FPDF()._markdown_parse("**bold __italics__**")) == (
-        Fragment("bold ", "B", False),
-        Fragment("italics", "BI", False),
+    res = tuple(FPDF()._markdown_parse("**bold __italics__**"))
+    exp = (
+        Fragment("bold ", GSTATE_B, k=PDF.k),
+        Fragment("italics", GSTATE_BI, k=PDF.k),
     )
+    assert res == exp
 
 
 def test_markdown_parse_crossing_markers():
-    assert tuple(FPDF()._markdown_parse("**bold __and** italics__")) == (
-        Fragment("bold ", "B", False),
-        Fragment("and", "BI", False),
-        Fragment(" italics", "I", False),
+    res = tuple(FPDF()._markdown_parse("**bold __and** italics__"))
+    exp = (
+        Fragment("bold ", GSTATE_B, k=PDF.k),
+        Fragment("and", GSTATE_BI, k=PDF.k),
+        Fragment(" italics", GSTATE_I, k=PDF.k),
     )
+    assert res == exp
 
 
 def test_markdown_parse_unterminated():
-    assert tuple(FPDF()._markdown_parse("**bold __italics__")) == (
-        Fragment("bold ", "B", False),
-        Fragment("italics", "BI", False),
+    res = tuple(FPDF()._markdown_parse("**bold __italics__"))
+    exp = (
+        Fragment("bold ", GSTATE_B, k=PDF.k),
+        Fragment("italics", GSTATE_BI, k=PDF.k),
     )
+    assert res == exp
 
 
 def test_markdown_parse_line_of_markers():
-    assert tuple(FPDF()._markdown_parse("*** woops")) == (
-        Fragment("*** woops", "", False),
-    )
-    assert tuple(FPDF()._markdown_parse("----------")) == (
-        Fragment("----------", "", False),
-    )
+    res = tuple(FPDF()._markdown_parse("*** woops"))
+    exp = (Fragment("*** woops", GSTATE, k=PDF.k),)
+    res = tuple(FPDF()._markdown_parse("----------"))
+    exp = (Fragment("----------", GSTATE, k=PDF.k),)
+    assert res == exp

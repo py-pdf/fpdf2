@@ -205,7 +205,7 @@ def test_cell_newpos_charspaced(tmp_path):
     """
     doc = fpdf.FPDF()
     doc.set_font("helvetica", style="U", size=20)
-    doc.set_char_spacing(15)
+    doc.set_char_spacing(10)
     twidth = 120
 
     for i, item in enumerate(CELLDATA):
@@ -249,7 +249,7 @@ def test_cell_newpos_combined(tmp_path):
     doc = fpdf.FPDF()
     doc.set_font("helvetica", style="U", size=20)
     doc.set_stretching(130)
-    doc.set_char_spacing(10)
+    doc.set_char_spacing(5)
     twidth = 120
 
     for i, item in enumerate(CELLDATA):
