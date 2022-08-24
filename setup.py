@@ -33,6 +33,7 @@ if __name__ == "__main__":
             "defusedxml",
             "svg.path",
             "Pillow>=6.2.2",  # minimum version tested there: https://github.com/PyFPDF/fpdf2/actions/runs/2295868575
+            "fonttools",
         ],
         classifiers=[
             "Development Status :: 5 - Production/Stable",
