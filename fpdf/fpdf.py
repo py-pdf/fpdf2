@@ -4274,12 +4274,8 @@ class FPDF(GraphicsStateMixin):
         for img_info in sorted(
             self.images.values(), key=lambda img_info: img_info["i"]
         ):
-            if img_info["usages"] == 0:
-                continue
-            self._putimage(img_info)
-            del img_info["data"]
-            if "smask" in img_info:
-                del img_info["smask"]
+            if img_info["usages"] > 0:
+                self._putimage(img_info)
 
     def _putimage(self, info):
         if "data" not in info:
