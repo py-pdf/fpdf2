@@ -130,5 +130,5 @@ def test_invalid_page_background():
     with pytest.raises(TypeError) as error:
         pdf.set_page_background(i)
 
-    msg = f"background must be of type str, io.BytesIO, PIL.Image.Image, drawing.DeviceRGB or tuple, got: {type(i)}"
+    msg = f"background must be of type str, io.BytesIO, PIL.Image.Image, drawing.DeviceRGB, tuple or None, got: {type(i)}"
     assert str(error.value) == msg
