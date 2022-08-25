@@ -1051,23 +1051,26 @@ class FPDF(GraphicsStateMixin):
 
     def set_page_background(self, background):
         """
-        Sets a background color or image to be drawn every time `FPDF.add_page()` is called.
+        Sets a background color or image to be drawn every time `FPDF.add_page()` is called, or removes a previously set background.
         The method can be called before the first page is created and the value is retained from page to page.
 
         Args:
             background: either a string representing a file path or URL to an image,
                 an io.BytesIO containg an image as bytes, an instance of `PIL.Image.Image`, drawing.DeviceRGB
-                or a RGB tuple representing a color to fill the background with
+                or a RGB tuple representing a color to fill the background with or `None` to remove the background
         """
 
-        if isinstance(background, (str, io.BytesIO, Image, drawing.DeviceRGB, tuple)):
+        if isinstance(
+            background, (str, io.BytesIO, Image, drawing.DeviceRGB, tuple, type(None))
+        ):
             if isinstance(background, drawing.DeviceRGB):
                 self.page_background = tuple(255 * v for v in background.colors)
             else:
                 self.page_background = background
         else:
             raise TypeError(
-                f"background must be of type str, io.BytesIO, PIL.Image.Image, drawing.DeviceRGB or tuple, got: {type(background)}"
+                f"""background must be of type str, io.BytesIO, PIL.Image.Image, drawing.DeviceRGB, tuple or None
+        got: {type(background)}"""
             )
 
     @contextmanager
@@ -4369,12 +4372,8 @@ class FPDF(GraphicsStateMixin):
         for img_info in sorted(
             self.images.values(), key=lambda img_info: img_info["i"]
         ):
-            if img_info["usages"] == 0:
-                continue
-            self._putimage(img_info)
-            del img_info["data"]
-            if "smask" in img_info:
-                del img_info["smask"]
+            if img_info["usages"] > 0:
+                self._putimage(img_info)
 
     def _putimage(self, info):
         if "data" not in info:

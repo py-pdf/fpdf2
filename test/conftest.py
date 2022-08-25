@@ -1,10 +1,16 @@
+from contextlib import contextmanager
 from datetime import datetime, timezone
+from time import perf_counter
+from types import SimpleNamespace
 import hashlib
 import pathlib
+import signal
 import shutil
 import sys
 import warnings
 from subprocess import check_output, CalledProcessError, PIPE
+
+import pytest
 
 from fpdf.template import Template
 
@@ -174,3 +180,32 @@ def _qpdf(input_pdf_filepath):
     except CalledProcessError as error:
         print(f"\nqpdf STDERR: {error.stderr.decode().strip()}")
         raise
+
+
+@contextmanager
+def time_execution():
+    """
+    Usage:
+
+        with time_execution() as duration:
+            ...
+        assert duration.seconds < 10
+    """
+    ctx = SimpleNamespace()
+    start = perf_counter()
+    yield ctx
+    ctx.seconds = perf_counter() - start
+
+
+@contextmanager
+def timeout_after(seconds):
+    def handler(_, __):
+        pytest.fail(f"Test duration >{seconds}s")
+
+    signal.signal(signal.SIGALRM, handler)
+    signal.setitimer(signal.ITIMER_REAL, seconds)
+    try:
+        yield
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, signal.SIG_DFL)

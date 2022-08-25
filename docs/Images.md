@@ -201,3 +201,28 @@ pdf.output("pdf-including-image-without-transparency.pdf")
 This will fill transparent areas of your images with color (usually black).
 
 _cf._ also documentation on [controlling transparency](Transparency.md).
+
+
+## Sharing the image cache among FPDF instances ##
+
+Image parsing is often the most CPU & memory intensive step when inserting pictures in a PDF.
+
+If you create several PDF files that use the same illustrations,
+you can share the images cache among FPDF instances:
+
+```python
+images_cache = {}
+
+for ... # loop
+    pdf = FPDF()
+    pdf.images = images_cache
+    ... # build the PDF
+    pdf.output(...)
+    # Reset the "usages" count, to avoid ALL images to be inserted in subsequent PDFs:
+    for img in images_cache.values():
+        img["usages"] = 0
+```
+
+This recipe is valid for `fpdf2` v2.5.7+.
+For previous versions of `fpdf2`, a _deepcopy_ of `.images` must be made,
+(_cf._ [issue #501](https://github.com/PyFPDF/fpdf2/issues/501)).

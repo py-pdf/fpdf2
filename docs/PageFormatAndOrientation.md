@@ -11,18 +11,24 @@ pdf = fpdf.FPDF(orientation="landscape", format="A5")
 Currently supported formats are `a3`, `a4`, `a5`, `letter`, `legal` or a tuple `(width, height)`.
 Additional standard formats are welcome and can be suggested through pull requests.
 
-## Per-page format and orientation
+## Per-page format, orientation and background
+`.set_page_background()` lets you set a background for all pages following this call until the background is removed.
+The value must be of type `str`, `io.BytesIO`, `PIL.Image.Image`, `drawing.DeviceRGB`, `tuple` or `None`
 
-The following code snippet illustrate how to configure different page formats for specific pages:
+The following code snippet illustrates how to configure different page formats for specific pages as well as setting different backgrounds and then removing it:
 
 ```python
 from fpdf import FPDF
 
 pdf = FPDF()
 pdf.set_font("Helvetica")
+pdf.set_page_background((252,212,255))
 for i in range(9):
+    if i == 6:
+        pdf.set_page_background('image_path.png')
     pdf.add_page(format=(210 * (1 - i/10), 297 * (1 - i/10)))
     pdf.cell(txt=str(i))
+pdf.set_page_background(None)
 pdf.add_page(same=True)
 pdf.cell(txt="9")
 pdf.output("varying_format.pdf")
