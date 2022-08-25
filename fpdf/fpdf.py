@@ -1816,22 +1816,19 @@ class FPDF(GraphicsStateMixin):
             raise FileNotFoundError(f"TTF Font file not found: {fname}")
 
         font = ttLib.TTFont(ttffilename)
+        self.font_files[fontkey] = {
+            "length1": os.stat(ttffilename).st_size,
+            "type": "TTF",
+            "ttffile": ttffilename,
+        }
 
         scale = 1000 / font["head"].unitsPerEm
-        ascent = font["hhea"].ascent * scale
-        descent = font["hhea"].descent * scale
+        default_width = scale * font["hmtx"].metrics[".notdef"][0]
+
         try:
-            capHeight = font["OS/2"].sCapHeight * scale
+            cap_height = font["OS/2"].sCapHeight
         except AttributeError:
-            capHeight = ascent
-        bbox = (
-            f"[{font['head'].xMin * scale:.0f} {font['head'].yMin * scale:.0f}"
-            f" {font['head'].xMax * scale:.0f} {font['head'].yMax * scale:.0f}]"
-        )
-        stemV = 50 + int(pow((font["OS/2"].usWeightClass / 65), 2))
-        italicAngle = font["post"].italicAngle
-        underlinePosition = font["post"].underlinePosition * scale
-        underlineThickness = font["post"].underlineThickness * scale
+            cap_height = font["hhea"].ascent
 
         # entry for the PDF font descriptor specifying various characteristics of the font
         flags = FontDescriptorFlags.SYMBOLIC
@@ -1842,54 +1839,30 @@ class FPDF(GraphicsStateMixin):
         if font["OS/2"].usWeightClass >= 600:
             flags |= FontDescriptorFlags.FORCE_BOLD
 
-        aw = font["hmtx"].metrics[".notdef"][0]
-        defaultWidth = scale * aw
-
-        charWidths = [len(font.getBestCmap().keys()) - 1]
-        for char in font.getBestCmap().keys():
-            if char in (0, 65535) or char >= 196608:
-                continue
-
-            glyph = font.getBestCmap()[char]
-            aw = font["hmtx"].metrics[glyph][0]
-
-            if char >= len(charWidths):
-                size = (((char + 1) // 1024) + 1) * 1024
-                delta = size - len(charWidths)
-                if delta > 0:
-                    charWidths += [defaultWidth] * delta
-
-            w = round(scale * aw + 0.001) or 65535  # ROUND_HALF_UP
-            charWidths[char] = w
-
         desc = {
-            "Ascent": round(ascent),
-            "Descent": round(descent),
-            "CapHeight": round(capHeight),
+            "Ascent": round(font["hhea"].ascent * scale),
+            "Descent": round(font["hhea"].descent * scale),
+            "CapHeight": round(cap_height * scale),
             "Flags": flags.value,
-            "FontBBox": bbox,
-            "ItalicAngle": int(italicAngle),
-            "StemV": round(stemV),
-            "MissingWidth": round(defaultWidth),
+            "FontBBox": (
+                f"[{font['head'].xMin * scale:.0f} {font['head'].yMin * scale:.0f}"
+                f" {font['head'].xMax * scale:.0f} {font['head'].yMax * scale:.0f}]"
+            ),
+            "ItalicAngle": int(font["post"].italicAngle),
+            "StemV": round(50 + int(pow((font["OS/2"].usWeightClass / 65), 2))),
+            "MissingWidth": round(default_width),
         }
 
-        font_dict = {
-            "type": "TTF",
-            "name": re.sub("[ ()]", "", font["name"].getBestFullName()),
-            "desc": desc,
-            "up": round(underlinePosition),
-            "ut": round(underlineThickness),
-            "ttffile": ttffilename,
-            "fontkey": fontkey,
-            "originalsize": os.stat(ttffilename).st_size,
-            "cw": charWidths,
-        }
+        # a map unicode_char -> char_width
+        char_widths = defaultdict(lambda: default_width)
+        for char in font.getBestCmap().keys():
+            # take glyph associated to char
+            glyph = font.getBestCmap()[char]
 
-        self.font_files[fontkey] = {
-            "length1": font_dict["originalsize"],
-            "type": "TTF",
-            "ttffile": ttffilename,
-        }
+            # take width associated to glyph
+            w = font["hmtx"].metrics[glyph][0]
+
+            char_widths[char] = round(scale * w + 0.001)  # ROUND_HALF_UP
 
         # include numbers in the subset! (if alias present)
         # ensure that alias is mapped 1-by-1 additionally (must be replaceable)
@@ -1900,13 +1873,13 @@ class FPDF(GraphicsStateMixin):
 
         self.fonts[fontkey] = {
             "i": len(self.fonts) + 1,
-            "type": font_dict["type"],
-            "name": font_dict["name"],
-            "desc": font_dict["desc"],
-            "up": font_dict["up"],
-            "ut": font_dict["ut"],
-            "cw": font_dict["cw"],
-            "ttffile": font_dict["ttffile"],
+            "type": "TTF",
+            "name": re.sub("[ ()]", "", font["name"].getBestFullName()),
+            "desc": desc,
+            "up": round(font["post"].underlinePosition * scale),
+            "ut": round(font["post"].underlineThickness * scale),
+            "cw": char_widths,
+            "ttffile": ttffilename,
             "fontkey": fontkey,
             "subset": SubsetMap(map(ord, sbarr)),
         }
