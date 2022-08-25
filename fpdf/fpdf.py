@@ -71,6 +71,7 @@ from .enums import (
     XPos,
     YPos,
     Corner,
+    FontDescriptorFlags,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
 from .fonts import fpdf_charwidths
@@ -1832,13 +1833,14 @@ class FPDF(GraphicsStateMixin):
         underlinePosition = font["post"].underlinePosition * scale
         underlineThickness = font["post"].underlineThickness * scale
 
-        flags = 4
+        # entry for the PDF font descriptor specifying various characteristics of the font
+        flags = FontDescriptorFlags.SYMBOLIC
         if font["post"].isFixedPitch:
-            flags |= 1
+            flags |= FontDescriptorFlags.FIXED_PITCH
         if font["post"].italicAngle != 0:
-            flags |= 64
+            flags |= FontDescriptorFlags.ITALIC
         if font["OS/2"].usWeightClass >= 600:
-            flags |= 262144
+            flags |= FontDescriptorFlags.FORCE_BOLD
 
         aw = font["hmtx"].metrics[".notdef"][0]
         defaultWidth = scale * aw
@@ -1864,7 +1866,7 @@ class FPDF(GraphicsStateMixin):
             "Ascent": round(ascent),
             "Descent": round(descent),
             "CapHeight": round(capHeight),
-            "Flags": flags,
+            "Flags": flags.value,
             "FontBBox": bbox,
             "ItalicAngle": int(italicAngle),
             "StemV": round(stemV),

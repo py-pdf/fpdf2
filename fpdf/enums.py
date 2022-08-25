@@ -1,4 +1,4 @@
-from enum import Enum, IntEnum
+from enum import Enum, IntEnum, Flag
 from sys import intern
 
 from .syntax import Name
@@ -590,6 +590,35 @@ class Corner(CoerciveEnum):
     TOP_LEFT = "TOP_LEFT"
     BOTTOM_RIGHT = "BOTTOM_RIGHT"
     BOTTOM_LEFT = "BOTTOM_LEFT"
+
+
+class FontDescriptorFlags(Flag):
+    """An enumeration of the flags for the unsigned 32-bit integer entry in the font descriptor specifying various
+    characteristics of the font. Bit positions are numbered from 1 (low-order) to 32 (high-order)."""
+
+    FIXED_PITCH = 0x0000001
+    """
+    "All glyphs have the same width (as opposed to proportional or
+    variable-pitch fonts, which have different widths"
+    """
+
+    SYMBOLIC = 0x0000004
+    """
+    "Font contains glyphs outside the Adobe standard Latin character set.
+    This flag and the Nonsymbolic flag shall not both be set or both be clear."
+    """
+
+    ITALIC = 0x0000040
+    """
+    "Glyphs have dominant vertical strokes that are slanted"
+    """
+
+    FORCE_BOLD = 0x0040000
+    """
+    "The flag shall determine whether bold glyphs shall be painted with extra pixels even at very
+    small text sizes by a conforming reader. If set, features of bold glyphs may be thickened at
+    small text sizes."
+    """
 
 
 # This enum is only used internally:
