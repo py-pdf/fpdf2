@@ -3,7 +3,6 @@ from PIL import Image
 import io
 from pathlib import Path
 from test.conftest import assert_pdf_equal
-from datetime import datetime
 import os
 import pytest
 
@@ -83,6 +82,14 @@ def add_page_with_BytesIO_background(pdf):
     pdf.cell(0, 10, "io.BytesIO", align="R", border=1)
 
 
+def add_page_without_background(pdf):
+    """sets the background to None (=removes the background) and adds a page with text and a small rectangle"""
+    pdf.set_page_background(None)
+    pdf.add_page()
+    pdf.rect(20, 20, 60, 60, style="F")
+    pdf.cell(0, 10, "No background", align="R", border=1)
+
+
 def test_page_background(tmp_path):
     """
     Test creating a PDF with multiple pages using all possible inputs to set a page background,
@@ -99,9 +106,11 @@ def test_page_background(tmp_path):
     add_page_with_image_url_background(pdf)
     add_page_with_Pillow_image_background(pdf)
     add_page_with_BytesIO_background(pdf)
+    add_page_without_background(pdf)
 
     pdf.set_fill_color(255, 200, 210)
     add_pages_with_rgb_tuple_background(pdf, fill_set=True)
     _add_pages_with_image_background(pdf)
+    add_page_without_background(pdf)
 
     assert_pdf_equal(pdf, HERE / "page_background.pdf", tmp_path)

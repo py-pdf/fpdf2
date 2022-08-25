@@ -1,11 +1,12 @@
 import binascii
+from glob import glob
 from pathlib import Path
 
 import pytest
 
 import fpdf
 
-from test.conftest import assert_pdf_equal
+from test.conftest import assert_pdf_equal, time_execution
 
 
 HERE = Path(__file__).resolve().parent
@@ -38,3 +39,27 @@ def test_load_invalid_base64_data():
     pdf.add_page()
     with pytest.raises(binascii.Error):
         pdf.image("data:image/png;base64,GARBAGE")
+
+
+def test_share_images_cache(tmp_path):
+    images_cache = {}
+
+    def build_pdf_with_big_images():
+        pdf = fpdf.FPDF()
+        pdf.images = images_cache
+        pdf.add_page()
+        for img_path in glob(f"{HERE}/png_images/*.png"):
+            pdf.image(img_path, h=pdf.eph)
+        with (tmp_path / "out.pdf").open("wb") as pdf_file:
+            pdf.output(pdf_file)
+        # Reset the "usages" count:
+        for img in images_cache.values():
+            img["usages"] = 0
+
+    with time_execution() as duration:
+        build_pdf_with_big_images()
+    assert duration.seconds > 0.3
+
+    with time_execution() as duration:
+        build_pdf_with_big_images()
+    assert duration.seconds < 0.3
