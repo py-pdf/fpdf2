@@ -213,6 +213,16 @@ class Annotation(NamedTuple):
         return out + ">>"
 
 
+class EmbeddedFile(NamedTuple):
+    basename: str
+    bytes: bytes
+    desc: str = ""
+    creation_date: Optional[datetime] = None
+    modification_date: Optional[datetime] = None
+    compress: bool = False
+    checksum: bool = False
+
+
 class TitleStyle(NamedTuple):
     font_family: Optional[str] = None
     font_style: Optional[str] = None
@@ -371,6 +381,7 @@ class FPDF(GraphicsStateMixin):
             list
         )  # map page numbers to a list of pairs (Annotations, obj_id); they will be embedded in the doc as separated objects
         self.links = {}  # array of Destination
+        self.embedded_files = []
         self.in_footer = 0  # flag set when processing footer
         self.lasth = 0  # height of last cell printed
         self.str_alias_nb_pages = "{nb}"
@@ -2044,6 +2055,58 @@ class FPDF(GraphicsStateMixin):
         )
         self.annots[self.page].append(link)
         return link
+
+    def embed_file(
+        self,
+        file_path=None,
+        bytes=None,
+        basename=None,
+        modification_date=None,
+        **kwargs,
+    ):
+        """
+        Embed a file into the PDF document
+
+        Args:
+            file_path (str or Path): filesystem path to the existing file to embed
+            bytes (bytes): optional, as an alternative to file_path, bytes content of the file to embed
+            basename (str): optional, required if bytes is provided, file base name
+            creation_date (datetime): date and time when the file was created
+            modification_date (datetime): date and time when the file was last modified
+            desc (str): optional description of the file
+            compress (bool): enabled zlib compression of the file - False by default
+            checksum (bool): insert a MD5 checksum of the file content - False by default
+        """
+        if file_path:
+            if bytes:
+                raise ValueError("'bytes' cannot be provided with 'file_path'")
+            if basename:
+                raise ValueError("'basename' cannot be provided with 'file_path'")
+            file_path = Path(file_path)
+            with file_path.open("rb") as input_file:
+                bytes = input_file.read()
+            basename = file_path.name
+            stats = file_path.stat()
+            if modification_date is None:
+                modification_date = datetime.fromtimestamp(stats.st_mtime).astimezone()
+        else:
+            if not bytes:
+                raise ValueError("'bytes' is required if 'file_path' is not provided")
+            if not basename:
+                raise ValueError(
+                    "'basename' is required if 'file_path' is not provided"
+                )
+        already_embedded_basenames = set(file.basename for file in self.embedded_files)
+        if basename in already_embedded_basenames:
+            raise ValueError(f"{basename} has already been embedded in this file")
+        self.embedded_files.append(
+            EmbeddedFile(
+                basename=basename,
+                bytes=bytes,
+                modification_date=modification_date,
+                **kwargs,
+            )
+        )
 
     @check_page
     def text_annotation(
@@ -4429,6 +4492,41 @@ class FPDF(GraphicsStateMixin):
                     sig_annotation_obj_id = self.n
         return sig_annotation_obj_id
 
+    def _put_embedded_files(self):
+        embedded_files_per_pdf_ref = {}
+        for embedd_file in self.embedded_files:
+            stream_dict = {
+                "/Type": "/EmbeddedFile",
+            }
+            stream_content = embedd_file.bytes
+            if embedd_file.compress:
+                stream_dict["/Filter"] = "/FlateDecode"
+                stream_content = zlib.compress(stream_content)
+            stream_dict["/Length"] = len(stream_content)
+            params = {
+                "/Size": len(embedd_file.bytes),
+            }
+            if embedd_file.creation_date:
+                params["/CreationDate"] = format_date(
+                    embedd_file.creation_date, with_tz=True
+                )
+            if embedd_file.modification_date:
+                params["/ModDate"] = format_date(
+                    embedd_file.modification_date, with_tz=True
+                )
+            if embedd_file.checksum:
+                file_hash = hashlib.new("md5", usedforsecurity=False)
+                file_hash.update(stream_content)
+                hash_hex = file_hash.hexdigest()
+                params["/CheckSum"] = f"<{hash_hex}>"
+            stream_dict["/Params"] = pdf_dict(params)
+            self._newobj()
+            self._out(pdf_dict(stream_dict))
+            self._out(pdf_stream(stream_content))
+            self._out("endobj")
+            embedded_files_per_pdf_ref[pdf_ref(self.n)] = embedd_file
+        return embedded_files_per_pdf_ref
+
     def _put_document_outline(self):
         # This property is later used by _putcatalog to insert a reference to the Outlines:
         self._outlines_obj_id = self.n + 1
@@ -4464,7 +4562,7 @@ class FPDF(GraphicsStateMixin):
 
         self._out(pdf_dict(info_d, open_dict="", close_dict="", has_empty_fields=True))
 
-    def _putcatalog(self, sig_annotation_obj_id=None):
+    def _putcatalog(self, sig_annotation_obj_id=None, embedded_files_per_pdf_ref=()):
         catalog_d = {
             "/Type": "/Catalog",
             # Pages is always the 1st object of the document, cf. the end of _putpages:
@@ -4501,6 +4599,25 @@ class FPDF(GraphicsStateMixin):
             catalog_d["/StructTreeRoot"] = pdf_ref(self._struct_tree_root_obj_id)
         if self._outlines_obj_id:
             catalog_d["/Outlines"] = pdf_ref(self._outlines_obj_id)
+        if embedded_files_per_pdf_ref:
+            names = [
+                (
+                    enclose_in_parens(file.basename),
+                    pdf_dict(
+                        {
+                            "/Type": "/Filespec",
+                            "/F": enclose_in_parens(file.basename),
+                            "/EF": pdf_dict({"/F": pdf_ref}),
+                            "/Desc": f"({escape_parens(file.desc)})",
+                        }
+                    ),
+                )
+                for pdf_ref, file in embedded_files_per_pdf_ref.items()
+            ]
+            flat_names = [item for sublist in names for item in sublist]
+            catalog_d["/Names"] = pdf_dict(
+                {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(flat_names)})}
+            )
 
         self._out(pdf_dict(catalog_d, open_dict="", close_dict=""))
 
@@ -4553,6 +4670,7 @@ class FPDF(GraphicsStateMixin):
         with self._trace_size("pages"):
             self._putpages()
         sig_annotation_obj_id = self._put_annotations_as_objects()
+        embedded_files_per_pdf_ref = self._put_embedded_files()
         self._putresources()  # trace_size is performed inside
         if not self.struct_builder.empty():
             with self._trace_size("structure_tree"):
@@ -4573,7 +4691,7 @@ class FPDF(GraphicsStateMixin):
         with self._trace_size("catalog"):
             self._newobj()
             self._out("<<")
-            self._putcatalog(sig_annotation_obj_id)
+            self._putcatalog(sig_annotation_obj_id, embedded_files_per_pdf_ref)
             self._out(">>")
             self._out("endobj")
         # Cross-ref

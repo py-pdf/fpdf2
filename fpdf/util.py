@@ -16,7 +16,10 @@ def substr(s, start, length=-1):
 
 def format_date(date: datetime, with_tz=False) -> str:
     if with_tz:
-        return enclose_in_parens(f"D:{date:%Y%m%d%H%M%SZ%H'%M'}")
+        assert date.tzinfo
+        str_date = f"D:{date:%Y%m%d%H%M%S%z}"
+        str_date = str_date[:-2] + "'" + str_date[-2:] + "'"
+        return enclose_in_parens(str_date)
     return enclose_in_parens(f"D:{date:%Y%m%d%H%M%S}")
 
 
