@@ -117,6 +117,6 @@ for _ in range(10):  # repeat data rows
 pdf.output("table_with_headers_on_every_page.pdf")
 ```
 
-Note that if you want to use [`multi_cell()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) method instead of `cell()`,
+Note that if you want to use [`multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) method instead of `cell()`,
 some extra code will be required: an initial call to `multi_cell` with `split_only=True`
 will be needed in order to compute the number of lines in the cell.
