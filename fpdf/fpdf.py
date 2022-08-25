@@ -1063,7 +1063,9 @@ class FPDF(GraphicsStateMixin):
         s = s if normalized else self.normalize_text(s)
         w = 0
         for frag in (
-            self._markdown_parse(s) if markdown else (Fragment.from_pdf(s, self),)
+            self._markdown_parse(s)
+            if markdown
+            else (Fragment(s, self._get_current_graphics_state(), self.k),)
         ):
             w += frag.get_total_width(self.get_width_of_styled_string, False)
         return w
@@ -2439,12 +2441,7 @@ class FPDF(GraphicsStateMixin):
         if self.text_mode != TextMode.FILL:
             s += f" {self.text_mode} Tr {self.line_width:.2f} w"
         s += f" ({txt2}) Tj ET"
-        if self.underline and txt != "":
-            s += " " + self._do_underline(x, y, txt)
-        if self.fill_color != self.text_color:
-            s = f"q {self.text_color.pdf_repr().lower()} {s} Q"
-        self._out(s)
-        if self.record_text_quad_points:
+        if (self.underline and txt != "") or self.record_text_quad_points:
             w = self.get_width_of_styled_string(
                 txt,
                 self.font_style,
@@ -2453,9 +2450,15 @@ class FPDF(GraphicsStateMixin):
                 font_stretching=self.font_stretching,
                 char_spacing=self.char_spacing,
             )
-            h = self.font_size
-            y -= 0.8 * h  # same coefficient as in _render_styled_text_line()
-            self._add_quad_points(x, y, w, h)
+            if self.underline and txt != "":
+                s += " " + self._do_underline(x, y, w)  # txt)
+            if self.record_text_quad_points:
+                h = self.font_size
+                y -= 0.8 * h  # same coefficient as in _render_styled_text_line()
+                self._add_quad_points(x, y, w, h)
+        if self.fill_color != self.text_color:
+            s = f"q {self.text_color.pdf_repr().lower()} {s} Q"
+        self._out(s)
 
     @check_page
     def rotate(self, angle, x=None, y=None):
@@ -2973,12 +2976,19 @@ class FPDF(GraphicsStateMixin):
                             )
                             words_strl.append(f"{adj:.3f}({space}{word})")
                     sl.append(f"[{' '.join(words_strl)}] TJ")
-                    if frag.underline:
-                        underlines.append((self.x + dx + s_width, frag.string))
                     frag_width = frag.get_total_width(
-                        self.get_width_of_styled_string, False
-                    )
-                    s_width += frag_width + self.ws * frag.string.count(" ")
+                        self.get_width_of_styled_string
+                    ) + self.ws * frag.string.count(" ")
+                    if frag.underline:
+                        underlines.append(
+                            (
+                                self.x + dx + s_width,
+                                frag_width,
+                                frag.font,
+                                frag.font_size,
+                            )
+                        )
+                    s_width += frag_width
             else:
 
                 for frag in text_line.fragments:
@@ -3008,21 +3018,28 @@ class FPDF(GraphicsStateMixin):
                     else:
                         txt_frag_escaped = escape_parens(frag.string)
                     sl.append(f"({txt_frag_escaped}) Tj")
-                    if frag.underline:
-                        underlines.append((self.x + dx + s_width, frag.string))
                     frag_width = frag.get_total_width(
-                        self.get_width_of_styled_string, False
-                    )
-                    s_width += frag_width + self.ws * frag.string.count(" ")
+                        self.get_width_of_styled_string
+                    ) + self.ws * frag.string.count(" ")
+                    if frag.underline:
+                        underlines.append(
+                            (
+                                self.x + dx + s_width,
+                                frag_width,
+                                frag.font,
+                                frag.font_size,
+                            )
+                        )
+                    s_width += frag_width
             sl.append("ET")
 
-            for start_x, txt_frag in underlines:
+            for start_x, ul_w, ul_font, ul_font_size in underlines:
                 sl.append(
                     self._do_underline(
                         start_x,
-                        self.y + (0.5 * h) + (0.3 * frag.font_size),
-                        txt_frag,
-                        current_font,
+                        self.y + (0.5 * h) + (0.3 * ul_font_size),
+                        ul_w,
+                        ul_font,
                     )
                 )
             if link:
@@ -3084,7 +3101,7 @@ class FPDF(GraphicsStateMixin):
         if not txt:
             return tuple()
         if not markdown:
-            return tuple([Fragment.from_pdf(txt, self)])
+            return tuple([Fragment(txt, self._get_current_graphics_state(), self.k)])
         prev_font_style = self.font_style
         styled_txt_frags = tuple(self._markdown_parse(txt))
         page = self.page
@@ -3127,7 +3144,7 @@ class FPDF(GraphicsStateMixin):
                 and (len(txt) < 3 or txt[2] != half_marker)
             ):
                 if txt_frag:
-                    gstate = self.get_current_graphics_state()
+                    gstate = self._get_current_graphics_state()
                     gstate["font_style"] = ("B" if in_bold else "") + (
                         "I" if in_italics else ""
                     )
@@ -3145,7 +3162,7 @@ class FPDF(GraphicsStateMixin):
                 txt_frag.append(txt[0])
                 txt = txt[1:]
         if txt_frag:
-            gstate = self.get_current_graphics_state()
+            gstate = self._get_current_graphics_state()
             gstate["font_style"] = ("B" if in_bold else "") + (
                 "I" if in_italics else ""
             )
@@ -4872,13 +4889,12 @@ class FPDF(GraphicsStateMixin):
         self._out(f"{self.n} 0 obj")
         return self.n
 
-    def _do_underline(self, x, y, txt, current_font=None):
+    def _do_underline(self, x, y, w, current_font=None):
         "Draw an horizontal line starting from (x, y) with a length equal to 'txt' width"
         if current_font is None:
             current_font = self.current_font
         up = current_font["up"]
         ut = current_font["ut"]
-        w = self.get_string_width(txt, True) + self.ws * txt.count(" ")
         return (
             f"{x * self.k:.2f} "
             f"{(self.h - y + up / 1000 * self.font_size) * self.k:.2f} "

@@ -44,7 +44,7 @@ class GraphicsStateMixin:
     def _pop_local_stack(self):
         del self.__statestack[-1]
 
-    def get_current_graphics_state(self):
+    def _get_current_graphics_state(self):
         return self.__statestack[-1].copy()
 
     @property
