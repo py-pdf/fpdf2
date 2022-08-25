@@ -69,11 +69,6 @@ class Fragment:
     def underline(self):
         return self.graphics_state["underline"]
 
-    @classmethod
-    def from_pdf(cls, characters: Union[list, str], pdf):
-        """Alternative constructor: Take current font properties from FPDF instance."""
-        return cls(characters, pdf.get_current_graphics_state(), pdf.k)
-
     def trim(self, index: int):
         self.characters = self.characters[:index]
 
