@@ -4117,6 +4117,7 @@ class FPDF(GraphicsStateMixin):
                 # notdef_outline=True means that keeps the white box for the .notdef glyph
                 # recommended_glyphs=True means that adds the .notdef, .null, CR, and space glyphs
                 options = ftsubset.Options(notdef_outline=True, recommended_glyphs=True)
+                options.drop_tables += ["GDEF", "GSUB", "GPOS", "MATH", "hdmx"]
                 subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)
                 subsetter.subset(fonttools_font)
