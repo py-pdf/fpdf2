@@ -717,6 +717,10 @@ class FPDF(GraphicsStateMixin):
             raise FPDFException(
                 ".set_creation_date() must always be called before .sign*() methods"
             )
+        if not isinstance(date, datetime):
+            raise TypeError(f"date should be a datetime but is a {type(date)}")
+        if not date.tzinfo:
+            date = date.astimezone()
         self.creation_date = date
 
     def set_xmp_metadata(self, xmp_metadata):
@@ -4622,12 +4626,14 @@ class FPDF(GraphicsStateMixin):
         self._out(pdf_dict(catalog_d, open_dict="", close_dict=""))
 
     def _putheader(self):
-        if self.page_layout in (PageLayout.TWO_PAGE_LEFT, PageLayout.TWO_PAGE_RIGHT):
-            self._set_min_pdf_version("1.5")
-        if self.page_mode == PageMode.USE_OC:
-            self._set_min_pdf_version("1.5")
         if self.page_mode == PageMode.USE_ATTACHMENTS:
             self._set_min_pdf_version("1.6")
+        elif self.page_layout in (PageLayout.TWO_PAGE_LEFT, PageLayout.TWO_PAGE_RIGHT):
+            self._set_min_pdf_version("1.5")
+        elif self.page_mode == PageMode.USE_OC:
+            self._set_min_pdf_version("1.5")
+        elif self.embedded_files:
+            self._set_min_pdf_version("1.4")
         self._out(f"%PDF-{self.pdf_version}")
 
     def _puttrailer(self):
