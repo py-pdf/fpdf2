@@ -32,7 +32,7 @@ If the argument is less than 100, then all characters are rendered proportionall
 If it is larger than 100, then the width of all characters will be expanded accordingly.
 
 The illustration shows the same text justified to the same width, with stretching values of 100 and 150.
-![](font_stretching.jpg)
+![](font_stretching.png)
 
 
 ## .set_char_spacing(spacing=0) ##
@@ -43,6 +43,8 @@ Character spacing works best for formatting single line text created by any meth
 
 Limitations: Spacing will only be changed *within* a sequence of characters that fpdf adds to the PDF in one go. This means that there will be no extra distance eg. between text parts that are placed successivly with `write()`. Also, if you apply different font styles using the markdown functionality of `.cell()` and `.multi_cell()` or by using `html_write()`, then any parts given different styles will have the original distance between them. This is so because fpdf has to add each styled fragment to the PDF file seperately.
 
+The illustration shows the same text justified to the same width, with char_spacing values of 0 and 10 (font size 8 pt).
+![](char_spacing.png)
 
 ## .text_mode ##
 

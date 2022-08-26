@@ -1067,53 +1067,8 @@ class FPDF(GraphicsStateMixin):
             if markdown
             else (Fragment(s, self._get_current_graphics_state(), self.k),)
         ):
-            w += frag.get_total_width(self.get_width_of_styled_string, False)
+            w += frag.get_width()
         return w
-
-    def get_width_of_styled_string(
-        self,
-        string,
-        style,
-        font_size_pt=0,
-        font_family=None,
-        font_stretching=None,
-        char_spacing=None,
-    ):
-        """
-        Return the horizontal dimension of a string with a given font and style.
-
-        Args:
-            string (str): the string whose length is to be computed.
-            style (str) : The style of the text (string combination of ["", "B", "I"]).
-            font_size_pt (float): The size of the font to scale the result with (in Points).
-            font_family (str): the font family to use (if not given, use the current font).
-            font_stretching (float): the percentage of stretch (if not given, use the current value).
-            char_spacing (float): changes the space between characters (if not given, use the current value).
-        """
-        if font_family is None:
-            font_family = self.font_family
-        if font_stretching is None:
-            font_stretching = self.font_stretching
-        if char_spacing is None:
-            char_spacing = self.char_spacing
-        w = 0
-        font = self.fonts[font_family + style]
-        if self.unifontsubset:
-            for char in string:
-                w += _char_width(font, ord(char))
-        else:
-            w += sum(_char_width(font, char) for char in string)
-        if font_stretching != 100:
-            w *= font_stretching * 0.01
-            char_spacing *= font_stretching * 0.01
-        if font_size_pt:
-            w *= font_size_pt * 0.001
-        if char_spacing != 0:
-            # Make sure a single character is calculated with spacing as well.
-            # Fragment.get_character_width() will request its first character with char_spacing=0.
-            w += char_spacing * max(1, (len(string) - 1))
-        # print(len(string), char_spacing * max(1, (len(string) - 1)))
-        return w / self.k
 
     def set_line_width(self, width):
         """
@@ -2442,16 +2397,9 @@ class FPDF(GraphicsStateMixin):
             s += f" {self.text_mode} Tr {self.line_width:.2f} w"
         s += f" ({txt2}) Tj ET"
         if (self.underline and txt != "") or self.record_text_quad_points:
-            w = self.get_width_of_styled_string(
-                txt,
-                self.font_style,
-                font_size_pt=self.font_size_pt,
-                font_family=self.font_family,
-                font_stretching=self.font_stretching,
-                char_spacing=self.char_spacing,
-            )
+            w = self.get_string_width(txt, normalized=True, markdown=False)
             if self.underline and txt != "":
-                s += " " + self._do_underline(x, y, w)  # txt)
+                s += " " + self._do_underline(x, y, w)
             if self.record_text_quad_points:
                 h = self.font_size
                 y -= 0.8 * h  # same coefficient as in _render_styled_text_line()
@@ -2842,7 +2790,7 @@ class FPDF(GraphicsStateMixin):
         styled_txt_width = text_line.text_width
         if not styled_txt_width:
             for frag in text_line.fragments:
-                unscaled_width = frag.get_total_width(self.get_width_of_styled_string)
+                unscaled_width = frag.get_width()
                 styled_txt_width += unscaled_width
 
         if w == 0:
@@ -2902,9 +2850,7 @@ class FPDF(GraphicsStateMixin):
                 )
 
         if self.record_text_quad_points:
-            x = self.x
-            y = self.y
-            self._add_quad_points(x, y, w, h)
+            self._add_quad_points(self.x, self.y, w, h)
 
         s_start = self.x
         s_width, underlines = 0, []
@@ -2976,9 +2922,7 @@ class FPDF(GraphicsStateMixin):
                             )
                             words_strl.append(f"{adj:.3f}({space}{word})")
                     sl.append(f"[{' '.join(words_strl)}] TJ")
-                    frag_width = frag.get_total_width(
-                        self.get_width_of_styled_string
-                    ) + self.ws * frag.string.count(" ")
+                    frag_width = frag.get_width() + self.ws * frag.string.count(" ")
                     if frag.underline:
                         underlines.append(
                             (
@@ -3018,9 +2962,7 @@ class FPDF(GraphicsStateMixin):
                     else:
                         txt_frag_escaped = escape_parens(frag.string)
                     sl.append(f"({txt_frag_escaped}) Tj")
-                    frag_width = frag.get_total_width(
-                        self.get_width_of_styled_string
-                    ) + self.ws * frag.string.count(" ")
+                    frag_width = frag.get_width() + self.ws * frag.string.count(" ")
                     if frag.underline:
                         underlines.append(
                             (
@@ -3337,7 +3279,6 @@ class FPDF(GraphicsStateMixin):
         text_lines = []
         multi_line_break = MultiLineBreak(
             styled_text_fragments,
-            self.get_width_of_styled_string,
             justify=(align == Align.J),
             print_sh=print_sh,
         )
@@ -3461,7 +3402,6 @@ class FPDF(GraphicsStateMixin):
         text_lines = []
         multi_line_break = MultiLineBreak(
             styled_text_fragments,
-            self.get_width_of_styled_string,
             print_sh=print_sh,
         )
         # first line from current x position to right margin

@@ -3,7 +3,7 @@ from fpdf import FPDF
 from fpdf.line_break import Fragment
 
 PDF = FPDF()
-GSTATE = PDF.get_current_graphics_state()
+GSTATE = PDF._get_current_graphics_state()
 GSTATE_B = GSTATE.copy()
 GSTATE_B["font_style"] = "B"
 GSTATE_I = GSTATE.copy()

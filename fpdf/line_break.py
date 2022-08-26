@@ -1,3 +1,11 @@
+"""
+Routines for organizing lines and larger blocks of text, with manual and
+automatic line wrapping.
+
+The contents of this file are internal to fpdf, and not part of the public API.
+They may change at any time without prior warning or any deprecation period.
+"""
+
 from typing import NamedTuple, Any, Union, Sequence
 
 from .errors import FPDFException
@@ -10,10 +18,7 @@ NEWLINE = "\n"
 
 class Fragment:
     """
-    A fragment of text with a text style, and possibly more font details.
-
-    This is an internal class of fpdf, and not part of the public API.
-    It may change at any time without notice or any deprecation period.
+    A fragment of text with font/size/style and other associated information.
     """
 
     def __init__(self, characters: Union[list, str], graphics_state: dict, k: float):
@@ -40,6 +45,10 @@ class Fragment:
     @font.setter
     def font(self, v):
         self.graphics_state["current_font"] = v
+
+    @property
+    def unicode_font(self):
+        return self.font.get("type") == "TTF"
 
     @property
     def font_style(self):
@@ -69,12 +78,12 @@ class Fragment:
     def underline(self):
         return self.graphics_state["underline"]
 
-    def trim(self, index: int):
-        self.characters = self.characters[:index]
-
     @property
     def string(self):
         return "".join(self.characters)
+
+    def trim(self, index: int):
+        self.characters = self.characters[:index]
 
     def __eq__(self, other: Any):
         return (
@@ -83,29 +92,53 @@ class Fragment:
             and self.k == other.k
         )
 
-    def get_character_width(self, idx: int, size_by_style, print_sh):
-        character = self.characters[idx]
+    def get_width(self, start: int = 0, end: int = None, chars: str = None):
+        """
+        Return the witdth of the string with the given font/size/style/etc.
+
+        Args:
+            start (int): Index of the start character. Default start of fragment.
+            end (int): Index of the end character. Default end of fragment.
+            chars (str): Specific text to get the width for (not necessarily the
+                same as the contents of the fragment). If given, this takes
+                precedence over the start/end arguments.
+        """
+
+        def char_width(char):
+            try:
+                width = self.font["cw"][char]
+            except (IndexError, KeyError):
+                width = self.font.get("desc", {}).get("MissingWidth") or 500
+            if width == 65535:
+                return 0
+            return width
+
+        if chars is None:
+            chars = self.characters[start:end]
+        if self.unicode_font:
+            w = sum(char_width(ord(c)) for c in chars)
+        else:
+            w = sum(char_width(c) for c in chars)
+        char_spacing = self.char_spacing
+        if self.font_stretching != 100:
+            w *= self.font_stretching * 0.01
+            char_spacing *= self.font_stretching * 0.01
+        if self.font_size_pt:
+            w *= self.font_size_pt * 0.001
+        if self.char_spacing != 0:
+            # Make sure a single character is calculated with spacing as well.
+            # CurrentLine.automatic_break() will remove one for each fragment start.
+            w += char_spacing * max(1, (len(chars) - 1))
+        return w / self.k
+
+    def get_character_width(self, character: str, print_sh=False):
+        """
+        Return the width of a single character out of the stored text.
+        """
         if character == SOFT_HYPHEN and not print_sh:
             # HYPHEN is inserted instead of SOFT_HYPHEN
             character = HYPHEN
-        # print(self.graphics_state)
-        return size_by_style(
-            character,
-            self.font_style,
-            self.font_size_pt,
-            self.font_family,
-            self.font_stretching,
-            self.char_spacing,
-            # 0 if idx == 0 else self.char_spacing,
-        )
-
-    def get_total_width(self, size_by_style, print_sh=False):
-        w = 0
-        for idx in range(len(self.characters)):
-            w += self.get_character_width(idx, size_by_style, print_sh)
-        if self.char_spacing:
-            w -= self.char_spacing / self.k * self.font_stretching * 0.01
-        return w
+        return self.get_width(chars=character)
 
 
 class TextLine(NamedTuple):
@@ -280,12 +313,10 @@ class MultiLineBreak:
     def __init__(
         self,
         styled_text_fragments: Sequence,
-        size_by_style: Sequence,
         justify: bool = False,
         print_sh: bool = False,
     ):
         self.styled_text_fragments = styled_text_fragments
-        self.size_by_style = size_by_style
         self.justify = justify
         self.print_sh = print_sh
         self.fragment_index = 0
@@ -316,7 +347,8 @@ class MultiLineBreak:
 
             character = current_fragment.characters[self.character_index]
             character_width = current_fragment.get_character_width(
-                self.character_index, self.size_by_style, self.print_sh
+                character,
+                self.print_sh,
             )
 
             if character == NEWLINE:
