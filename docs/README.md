@@ -1,3 +1,5 @@
+This documentation is published online at https://pyfpdf.github.io/fpdf2/
+
 Docs generation & publication on GitHub Pages is performed for every new commit on the `master` branch
 throught the GitHub Actions pipeline.
 

@@ -225,4 +225,4 @@ for ... # loop
 
 This recipe is valid for `fpdf2` v2.5.7+.
 For previous versions of `fpdf2`, a _deepcopy_ of `.images` must be made,
-(_cf._ [issue #501](https://github.com/PyFPDF/fpdf2/issues/501)).
+(_cf._ [issue #501](https://github.com/PyFPDF/fpdf2/issues/501#issuecomment-1224310277)).
