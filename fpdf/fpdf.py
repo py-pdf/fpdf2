@@ -4120,7 +4120,6 @@ class FPDF(GraphicsStateMixin):
                             ".notdef"
                         )
 
-                # check: what is the usage of max_unicode?
                 max_unicode = max(subset)
 
                 # 4. return the ttfile
