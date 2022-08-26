@@ -4218,21 +4218,8 @@ class FPDF(GraphicsStateMixin):
                 self._newobj()
                 self._out("<</Type /FontDescriptor")
                 self._out("/FontName /" + fontname)
-                for kd in (
-                    "Ascent",
-                    "Descent",
-                    "CapHeight",
-                    "Flags",
-                    "FontBBox",
-                    "ItalicAngle",
-                    "StemV",
-                    "MissingWidth",
-                ):
-                    v = font["desc"][kd]
-                    if kd == "Flags":
-                        v = v | 4
-                        v = v & ~32  # SYMBOLIC font flag
-                    self._out(f" /{kd} {v}")
+                for key, value in font["desc"].items():
+                    self._out(f" /{key} {value}")
                 self._out(f"/FontFile2 {pdf_ref(self.n + 2)}")
                 self._out(">>")
                 self._out("endobj")
