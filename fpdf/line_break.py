@@ -75,8 +75,24 @@ class Fragment:
         return self.graphics_state["char_spacing"]
 
     @property
+    def text_mode(self):
+        return self.graphics_state["text_mode"]
+
+    @property
     def underline(self):
         return self.graphics_state["underline"]
+
+    @property
+    def draw_color(self):
+        return self.graphics_state["draw_color"]
+
+    @property
+    def fill_color(self):
+        return self.graphics_state["fill_color"]
+
+    @property
+    def text_color(self):
+        return self.graphics_state["text_color"]
 
     @property
     def string(self):
@@ -144,7 +160,7 @@ class Fragment:
 class TextLine(NamedTuple):
     fragments: tuple
     text_width: float
-    number_of_spaces_between_words: int
+    number_of_spaces: int
     justify: bool
     trailing_nl: bool = False
 
@@ -273,7 +289,7 @@ class CurrentLine:
         return TextLine(
             fragments=self.fragments,
             text_width=self.width + frag_start_spacing,
-            number_of_spaces_between_words=self.number_of_spaces,
+            number_of_spaces=self.number_of_spaces,
             justify=(self.number_of_spaces > 0) and justify,
             trailing_nl=trailing_nl,
         )

@@ -2712,7 +2712,7 @@ class FPDF(GraphicsStateMixin):
             TextLine(
                 styled_txt_frags,
                 text_width=0.0,
-                number_of_spaces_between_words=0,
+                number_of_spaces=0,
                 justify=False,
                 trailing_nl=False,
             ),
@@ -2868,111 +2868,82 @@ class FPDF(GraphicsStateMixin):
 
             if self.fill_color != self.text_color:
                 sl.append(self.text_color.pdf_repr().lower())
-
             sl.append(
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2f} Td"
             )
-
             if self.text_mode != TextMode.FILL:
                 sl.append(f"{self.text_mode} Tr {self.line_width:.2f} w")
 
-            # precursor to self.ws, or manual spacing of unicode fonts/
+            # do this once in advance
+            u_space = escape_parens(" ".encode("utf-16-be").decode("latin-1"))
+            # precursor to self.ws, or manual spacing of unicode fonts
             word_spacing = 0
             if text_line.justify:
                 word_spacing = (
                     w - self.c_margin - self.c_margin - styled_txt_width
-                ) / text_line.number_of_spaces_between_words
-            if word_spacing and self.unifontsubset:
-                # If multibyte, Tw has no effect - do word spacing using an
-                # adjustment before each space
-                space = escape_parens(" ".encode("utf-16-be").decode("latin-1"))
-                if self.ws > 0:
-                    sl.append("0 Tw")
-                    self.ws = 0
-                for frag in text_line.fragments:
-                    if frag.font_stretching != 100:
-                        # Space character is already stretched, extra spacing is absolute.
-                        frag_word_spacing = word_spacing * 100 / frag.font_stretching
-                    else:
-                        frag_word_spacing = word_spacing
-                    if current_font_style != frag.font_style:
-                        current_font_style = frag.font_style
-                        current_font = frag.font
-                        sl.append(f"/F{current_font['i']} {frag.font_size_pt:.2f} Tf")
-                    txt_frag_mapped = ""
+                ) / text_line.number_of_spaces
+
+            for frag in text_line.fragments:
+                if word_spacing and frag.font_stretching != 100:
+                    # Space character is already stretched, extra spacing is absolute.
+                    frag_ws = word_spacing * 100 / frag.font_stretching
+                else:
+                    frag_ws = word_spacing
+                if current_font_style != frag.font_style or current_font != frag.font:
+                    current_font_style = frag.font_style
+                    current_font = frag.font
+                    sl.append(f"/F{current_font['i']} {frag.font_size_pt:.2f} Tf")
+
+                if frag.unicode_font:
+                    mapped_text = ""
                     for char in frag.string:
                         uni = ord(char)
-                        txt_frag_mapped += chr(current_font["subset"].pick(uni))
-
-                    # Determine the position of space (" ") in the current subset and
-                    # split words whenever this mapping code is found
-                    words = txt_frag_mapped.split(
-                        chr(current_font["subset"].pick(ord(" ")))
-                    )
-
-                    words_strl = []
-                    for i, word in enumerate(words):
-                        word = escape_parens(word.encode("utf-16-be").decode("latin-1"))
-                        if i == 0:
-                            words_strl.append(f"({word})")
-                        else:
-                            adj = (
-                                -(frag_word_spacing * self.k) * 1000 / frag.font_size_pt
-                            )
-                            words_strl.append(f"{adj:.3f}({space}{word})")
-                    sl.append(f"[{' '.join(words_strl)}] TJ")
-                    frag_width = frag.get_width() + self.ws * frag.string.count(" ")
-                    if frag.underline:
-                        underlines.append(
-                            (
-                                self.x + dx + s_width,
-                                frag_width,
-                                frag.font,
-                                frag.font_size,
-                            )
+                        mapped_text += chr(frag.font["subset"].pick(uni))
+                    if word_spacing:
+                        # "Tw" only has an effect on the ASCII space character and ignores
+                        # space characters from unicode (TTF) fonts. As a workaround,
+                        # we do word spacing using an adjustment before each space.
+                        if self.ws > 0:
+                            sl.append("0 Tw")
+                            self.ws = 0
+                        # Determine the position of space (" ") in the current subset and
+                        # split words whenever this mapping code is found
+                        words = mapped_text.split(
+                            chr(frag.font["subset"].pick(ord(" ")))
                         )
-                    s_width += frag_width
-            else:
-
-                for frag in text_line.fragments:
-                    if frag.font_stretching != 100:
-                        # Space character is already stretched, extra spacing is absolute.
-                        frag_word_spacing = word_spacing * 100 / frag.font_stretching
+                        words_strl = []
+                        for i, word in enumerate(words):
+                            word = escape_parens(
+                                word.encode("utf-16-be").decode("latin-1")
+                            )
+                            if i == 0:
+                                words_strl.append(f"({word})")
+                            else:
+                                adj = -(frag_ws * frag.k) * 1000 / frag.font_size_pt
+                                words_strl.append(f"{adj:.3f}({u_space}{word})")
+                        escaped_text = " ".join(words_strl)
+                        sl.append(f"[{escaped_text}] TJ")
                     else:
-                        frag_word_spacing = word_spacing
-                    if frag_word_spacing and frag_word_spacing != self.ws:
-                        sl.append(f"{frag_word_spacing * self.k:.3f} Tw")
-                    elif frag_word_spacing == 0 and self.ws > 0:
+                        escaped_text = escape_parens(
+                            mapped_text.encode("utf-16-be").decode("latin-1")
+                        )
+                        sl.append(f"({escaped_text}) Tj")
+                else:  # core fonts
+                    if frag_ws and frag_ws != self.ws:
+                        sl.append(f"{frag_ws * frag.k:.3f} Tw")
+                    elif frag_ws == 0 and self.ws > 0:
                         sl.append("0 Tw")
-                    self.ws = frag_word_spacing
+                    self.ws = frag_ws
+                    escaped_text = escape_parens(frag.string)
+                    sl.append(f"({escaped_text}) Tj")
+                frag_width = frag.get_width() + self.ws * frag.string.count(" ")
+                if frag.underline:
+                    underlines.append(
+                        (self.x + dx + s_width, frag_width, frag.font, frag.font_size)
+                    )
+                s_width += frag_width
 
-                    if current_font_style != frag.font_style:
-                        current_font_style = frag.font_style
-                        current_font = frag.font
-                        sl.append(f"/F{current_font['i']} {frag.font_size_pt:.2f} Tf")
-                    if self.unifontsubset:
-                        txt_frag_mapped = ""
-                        for char in frag.string:
-                            uni = ord(char)
-                            txt_frag_mapped += chr(current_font["subset"].pick(uni))
-                        txt_frag_escaped = escape_parens(
-                            txt_frag_mapped.encode("utf-16-be").decode("latin-1")
-                        )
-                    else:
-                        txt_frag_escaped = escape_parens(frag.string)
-                    sl.append(f"({txt_frag_escaped}) Tj")
-                    frag_width = frag.get_width() + self.ws * frag.string.count(" ")
-                    if frag.underline:
-                        underlines.append(
-                            (
-                                self.x + dx + s_width,
-                                frag_width,
-                                frag.font,
-                                frag.font_size,
-                            )
-                        )
-                    s_width += frag_width
             sl.append("ET")
 
             for start_x, ul_w, ul_font, ul_font_size in underlines:
@@ -2992,6 +2963,7 @@ class FPDF(GraphicsStateMixin):
                     frag.font_size,
                     link,
                 )
+
         if sl:
             # If any PDF settings have been left modified, wrap the line in a local context.
             if (
@@ -3292,7 +3264,7 @@ class FPDF(GraphicsStateMixin):
                 TextLine(
                     "",
                     text_width=0,
-                    number_of_spaces_between_words=0,
+                    number_of_spaces=0,
                     justify=False,
                     trailing_nl=False,
                 )

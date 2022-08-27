@@ -84,7 +84,7 @@ def test_render_styled_newpos(tmp_path):
         line = TextLine(
             fragments=line.fragments,
             text_width=line.text_width,
-            number_of_spaces_between_words=line.number_of_spaces_between_words,
+            number_of_spaces=line.number_of_spaces,
             justify=align == Align.J,
             trailing_nl=False,
         )
