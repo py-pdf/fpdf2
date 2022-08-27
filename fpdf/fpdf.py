@@ -2855,8 +2855,8 @@ class FPDF(GraphicsStateMixin):
         s_start = self.x
         s_width, underlines = 0, []
         # We try to avoid modifying global settings for temporary changes.
-        current_font_style = self.font_style
         current_font = self.current_font
+        current_text_mode = self.text_mode
         if text_line.fragments:
             if align == Align.R:
                 dx = w - self.c_margin - styled_txt_width
@@ -2872,8 +2872,6 @@ class FPDF(GraphicsStateMixin):
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2f} Td"
             )
-            if self.text_mode != TextMode.FILL:
-                sl.append(f"{self.text_mode} Tr {self.line_width:.2f} w")
 
             # do this once in advance
             u_space = escape_parens(" ".encode("utf-16-be").decode("latin-1"))
@@ -2890,10 +2888,15 @@ class FPDF(GraphicsStateMixin):
                     frag_ws = word_spacing * 100 / frag.font_stretching
                 else:
                     frag_ws = word_spacing
-                if current_font_style != frag.font_style or current_font != frag.font:
-                    current_font_style = frag.font_style
+                if current_font != frag.font:
                     current_font = frag.font
                     sl.append(f"/F{current_font['i']} {frag.font_size_pt:.2f} Tf")
+                if (
+                    frag.text_mode != TextMode.FILL
+                    or frag.text_mode != current_text_mode
+                ):
+                    current_text_mode = frag.text_mode
+                    sl.append(f"{frag.text_mode} Tr {frag.line_width:.2f} w")
 
                 if frag.unicode_font:
                     mapped_text = ""
@@ -2967,7 +2970,8 @@ class FPDF(GraphicsStateMixin):
         if sl:
             # If any PDF settings have been left modified, wrap the line in a local context.
             if (
-                current_font_style != self.font_style
+                current_font != self.current_font
+                or current_text_mode != self.text_mode
                 or self.fill_color != self.text_color
             ):
                 s = f"q {' '.join(sl)} Q"

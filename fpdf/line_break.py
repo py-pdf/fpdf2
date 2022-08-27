@@ -95,6 +95,10 @@ class Fragment:
         return self.graphics_state["text_color"]
 
     @property
+    def line_width(self):
+        return self.graphics_state["line_width"]
+
+    @property
     def string(self):
         return "".join(self.characters)
 
