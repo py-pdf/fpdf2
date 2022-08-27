@@ -1823,7 +1823,7 @@ class FPDF(GraphicsStateMixin):
         }
 
         scale = 1000 / font["head"].unitsPerEm
-        default_width = scale * font["hmtx"].metrics[".notdef"][0]
+        default_width = round(scale * font["hmtx"].metrics[".notdef"][0])
 
         try:
             cap_height = font["OS/2"].sCapHeight
@@ -1850,7 +1850,7 @@ class FPDF(GraphicsStateMixin):
             ),
             "ItalicAngle": int(font["post"].italicAngle),
             "StemV": round(50 + int(pow((font["OS/2"].usWeightClass / 65), 2))),
-            "MissingWidth": round(default_width),
+            "MissingWidth": default_width,
         }
 
         # a map unicode_char -> char_width
@@ -1861,6 +1861,10 @@ class FPDF(GraphicsStateMixin):
 
             # take width associated to glyph
             w = font["hmtx"].metrics[glyph][0]
+
+            # why we do this?
+            if w == 65535:
+                w = 0
 
             char_widths[char] = round(scale * w + 0.001)  # ROUND_HALF_UP
 
@@ -5109,14 +5113,7 @@ class FPDF(GraphicsStateMixin):
 
 
 def _char_width(font, char):
-    cw = font["cw"]
-    try:
-        width = cw[char]
-    except (IndexError, KeyError):
-        width = font.get("desc", {}).get("MissingWidth") or 500
-    if width == 65535:
-        width = 0
-    return width
+    return font["cw"][char]
 
 
 def _sizeof_fmt(num, suffix="B"):
