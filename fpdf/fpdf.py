@@ -4075,10 +4075,12 @@ class FPDF(GraphicsStateMixin):
             elif my_type == "TTF":
                 self.fonts[font_name]["n"] = self.n + 1
                 fontname = f"MPDFAA+{font['name']}"
-                subset = font["subset"].dict()
+
+                # unicode_char -> new_code_char map for chars embedded in the PDF
+                uni_to_new_code_char = font["subset"].dict()
 
                 # why we delete 0-element?
-                del subset[0]
+                del uni_to_new_code_char[0]
 
                 # ---- FONTTOOLS SUBSETTER ----
                 # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
@@ -4089,12 +4091,15 @@ class FPDF(GraphicsStateMixin):
 
                 # 1. get all glyphs in PDF
                 cmap = fonttools_font["cmap"].getBestCmap()
-                glyph_names = [cmap[code] for code in subset if code in cmap]
+                glyph_names = [
+                    cmap[unicode] for unicode in uni_to_new_code_char if unicode in cmap
+                ]
 
                 # 2. make a subset
                 # notdef_outline=True means that keeps the white box for the .notdef glyph
                 # recommended_glyphs=True means that adds the .notdef, .null, CR, and space glyphs
                 options = ftsubset.Options(notdef_outline=True, recommended_glyphs=True)
+                # dropping the tables previous dropped in the old code #issue 418
                 options.drop_tables += ["GDEF", "GSUB", "GPOS", "MATH", "hdmx"]
                 subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)
@@ -4107,7 +4112,7 @@ class FPDF(GraphicsStateMixin):
                 # take the glyph associated with it
                 # and then associate to the new code the glyph associated with the old code
                 code_to_glyph = {}
-                for code, new_code_mapped in subset.items():
+                for code, new_code_mapped in uni_to_new_code_char.items():
                     if code in cmap:
                         glyph_name = cmap[code]
                         code_to_glyph[new_code_mapped] = fonttools_font.getGlyphID(
@@ -4119,8 +4124,6 @@ class FPDF(GraphicsStateMixin):
                         code_to_glyph[new_code_mapped] = fonttools_font.getGlyphID(
                             ".notdef"
                         )
-
-                max_unicode = max(subset)
 
                 # 4. return the ttfile
                 output = BytesIO()
@@ -4155,7 +4158,7 @@ class FPDF(GraphicsStateMixin):
                 self._out(f"/FontDescriptor {pdf_ref(self.n + 3)}")
                 if font["desc"].get("MissingWidth"):
                     self._out(f"/DW {font['desc']['MissingWidth']}")
-                self._putTTfontwidths(font, max_unicode)
+                self._putTTfontwidths(font, max(uni_to_new_code_char))
                 self._out(f"/CIDToGIDMap {pdf_ref(self.n + 4)}")
                 self._out(">>")
                 self._out("endobj")
@@ -4165,9 +4168,9 @@ class FPDF(GraphicsStateMixin):
                 # character that each used 16-bit code belongs to. It
                 # allows searching the file and copying text from it.
                 bfChar = []
-                subset = font["subset"].dict()
-                for code in subset:
-                    code_mapped = subset.get(code)
+                uni_to_new_code_char = font["subset"].dict()
+                for code in uni_to_new_code_char:
+                    code_mapped = uni_to_new_code_char.get(code)
                     if code > 0xFFFF:
                         # Calculate surrogate pair
                         code_high = 0xD800 | (code - 0x10000) >> 10
