@@ -606,6 +606,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "dmail00",
+      "name": "dmail00",
+      "avatar_url": "https://avatars.githubusercontent.com/u/79044603?v=4",
+      "profile": "https://github.com/dmail00",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
