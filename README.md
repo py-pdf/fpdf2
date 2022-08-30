@@ -63,7 +63,7 @@ pip install git+https://github.com/PyFPDF/fpdf2.git@master
  * Images & links alternative descriptions, for accessibility
  * Table of contents & [document outline](https://pyfpdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html)
  * [Document signing](https://pyfpdf.github.io/fpdf2/Signing.html)
- * [Annotations](https://pyfpdf.github.io/fpdf2/Annotations.html), including text highlights
+ * [Annotations](https://pyfpdf.github.io/fpdf2/Annotations.html), including text highlights, and [file attachments](FileAttachments.md)
  * [Presentation mode](https://pyfpdf.github.io/fpdf2/Presentations.html) with control over page display duration & transitions
  * Unit tests with `qpdf`-based PDF diffing and a high code coverage
  * Optional basic Markdown-like styling: `**bold**, __italics__`
