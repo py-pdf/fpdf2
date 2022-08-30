@@ -22,7 +22,7 @@ pdf.output("hello_world.pdf")
 ## Main features ##
 
 * Easy to use, with a user-friendly [API](https://pyfpdf.github.io/fpdf2/fpdf/), and easy to extend
-* Python 3.6+ support
+* Python 3.7+ support
 * [Unicode](Unicode.md) (UTF-8) TrueType font subset embedding (Central European, Cyrillic, Greek, Baltic, Thai, Chinese, Japanese, Korean, Hindi and almost any other language in the world)
 * Internal / external [links](Links.md)
 * Embedding images, including transparency and alpha channel, using [Pillow (Python Imaging Library)](https://pillow.readthedocs.io/en/stable/)

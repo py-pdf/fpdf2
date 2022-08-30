@@ -50,7 +50,7 @@ pip install git+https://github.com/PyFPDF/fpdf2.git@master
 
 ## Features
 
- * Python 3.6+ support
+ * Python 3.7+ support
  * [Unicode](https://pyfpdf.github.io/fpdf2/Unicode.html) (UTF-8) TrueType font subset embedding
  * Internal / external [links](https://pyfpdf.github.io/fpdf2/Links.html)
  * Embedding images, including transparency and alpha channel

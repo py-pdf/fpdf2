@@ -408,6 +408,14 @@ class AnnotationName(CoerciveEnum):
     INSERT = Name("Insert")
 
 
+class FileAttachmentAnnotationName(CoerciveEnum):
+    "The name of an icon that shall be used in displaying the annotation"
+
+    PUSH_PIN = Name("PushPin")
+    GRAPH_PUSH_PIN = Name("GraphPushPin")
+    PAPERCLIP_TAG = Name("PaperclipTag")
+
+
 class IntersectionRule(CoerciveEnum):
     """
     An enumeration representing the two possible PDF intersection rules.

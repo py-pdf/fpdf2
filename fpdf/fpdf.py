@@ -58,6 +58,7 @@ from .enums import (
     AnnotationName,
     AnnotationFlag,
     DocumentState,
+    FileAttachmentAnnotationName,
     PageLayout,
     PageMode,
     PathPaintRule,
@@ -144,6 +145,7 @@ class Annotation(NamedTuple):
     border_width: int = 0  # PDF readers support: displayed by Acrobat but not Sumatra
     name: Optional[AnnotationName] = None  # for text annotations
     ink_list: Tuple[int] = ()  # for ink annotations
+    embedded_file_name: Optional[str] = None
     field_type: Optional[str] = None
     value: Optional[str] = None
 
@@ -210,6 +212,17 @@ class Annotation(NamedTuple):
             ink_list = pdf_list(f"{coord:.2f}" for coord in self.ink_list)
             out += f" /InkList [{ink_list}]"
 
+        if self.embedded_file_name:
+            assert (
+                fpdf.embedded_files_per_pdf_ref
+            ), "_build_embedded_files_per_pdf_ref() must be called beforehand to know PDF IDs of /EmbeddedFile objects"
+            embedded_file_ref, embedded_file = next(
+                (file_ref, file)
+                for file_ref, file in fpdf.embedded_files_per_pdf_ref.items()
+                if file.basename == self.embedded_file_name
+            )
+            out += f" /FS {embedded_file.file_spec(embedded_file_ref)}"
+
         return out + ">>"
 
 
@@ -221,6 +234,16 @@ class EmbeddedFile(NamedTuple):
     modification_date: Optional[datetime] = None
     compress: bool = False
     checksum: bool = False
+
+    def file_spec(self, embedded_file_ref):
+        return pdf_dict(
+            {
+                "/Type": "/Filespec",
+                "/F": enclose_in_parens(self.basename),
+                "/EF": pdf_dict({"/F": embedded_file_ref}),
+                "/Desc": f"({escape_parens(self.desc)})",
+            }
+        )
 
 
 class TitleStyle(NamedTuple):
@@ -374,14 +397,13 @@ class FPDF(GraphicsStateMixin):
         self.font_files = {}  # array of font files
         self.diffs = {}  # array of encoding differences
         self.images = {}  # array of used images
-        self.annots = defaultdict(
-            list
-        )  # map page numbers to a list of Annotations; they will be inlined in the Page object
-        self.annots_as_obj = defaultdict(
-            list
-        )  # map page numbers to a list of pairs (Annotations, obj_id); they will be embedded in the doc as separated objects
+        # map page numbers to a list of Annotations; they will be inlined in the Page object:
+        self.annots = defaultdict(list)
+        # map page numbers to a list of pairs (Annotations, obj_id); they will be embedded in the doc as separated objects:
+        self.annots_as_obj = defaultdict(list)
         self.links = {}  # array of Destination
         self.embedded_files = []
+        self.embedded_files_per_pdf_ref = {}
         self.in_footer = 0  # flag set when processing footer
         self.lasth = 0  # height of last cell printed
         self.str_alias_nb_pages = "{nb}"
@@ -2080,6 +2102,8 @@ class FPDF(GraphicsStateMixin):
             desc (str): optional description of the file
             compress (bool): enabled zlib compression of the file - False by default
             checksum (bool): insert a MD5 checksum of the file content - False by default
+
+        Returns: a string representing the internal file name
         """
         if file_path:
             if bytes:
@@ -2111,6 +2135,44 @@ class FPDF(GraphicsStateMixin):
                 **kwargs,
             )
         )
+        return basename
+
+    @check_page
+    def file_attachment_annotation(
+        self, file_path, x, y, w=1, h=1, name=None, flags=DEFAULT_ANNOT_FLAGS, **kwargs
+    ):
+        """
+        Puts a file attachment annotation on a rectangular area of the page.
+
+        Args:
+            file_path (str or Path): filesystem path to the existing file to embed
+            x (float): horizontal position (from the left) to the left side of the link rectangle
+            y (float): vertical position (from the top) to the bottom side of the link rectangle
+            w (float): optional width of the link rectangle
+            h (float): optional height of the link rectangle
+            name (fpdf.enums.FileAttachmentAnnotationName, str): optional icon that shall be used in displaying the annotation
+            flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
+            bytes (bytes): optional, as an alternative to file_path, bytes content of the file to embed
+            basename (str): optional, required if bytes is provided, file base name
+            creation_date (datetime): date and time when the file was created
+            modification_date (datetime): date and time when the file was last modified
+            desc (str): optional description of the file
+            compress (bool): enabled zlib compression of the file - False by default
+            checksum (bool): insert a MD5 checksum of the file content - False by default
+        """
+        embedded_file_name = self.embed_file(file_path, **kwargs)
+        annotation = Annotation(
+            "FileAttachment",
+            x * self.k,
+            self.h_pt - y * self.k,
+            w * self.k,
+            h * self.k,
+            embedded_file_name=embedded_file_name,
+            name=FileAttachmentAnnotationName.coerce(name) if name else None,
+            flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
+        )
+        self.annots[self.page].append(annotation)
+        return annotation
 
     @check_page
     def text_annotation(
@@ -4496,8 +4558,18 @@ class FPDF(GraphicsStateMixin):
                     sig_annotation_obj_id = self.n
         return sig_annotation_obj_id
 
+    def _build_embedded_files_per_pdf_ref(self):
+        first_annot_obj_id = object_id_for_page(self.pages_count) + 2
+        annotations_count = sum(
+            len(page_annots_as_obj)
+            for page_annots_as_obj in self.annots_as_obj.values()
+        )
+        for n, embedd_file in enumerate(
+            self.embedded_files, start=first_annot_obj_id + annotations_count
+        ):
+            self.embedded_files_per_pdf_ref[pdf_ref(n)] = embedd_file
+
     def _put_embedded_files(self):
-        embedded_files_per_pdf_ref = {}
         for embedd_file in self.embedded_files:
             stream_dict = {
                 "/Type": "/EmbeddedFile",
@@ -4528,8 +4600,7 @@ class FPDF(GraphicsStateMixin):
             self._out(pdf_dict(stream_dict))
             self._out(pdf_stream(stream_content))
             self._out("endobj")
-            embedded_files_per_pdf_ref[pdf_ref(self.n)] = embedd_file
-        return embedded_files_per_pdf_ref
+            assert self.embedded_files_per_pdf_ref[pdf_ref(self.n)] == embedd_file
 
     def _put_document_outline(self):
         # This property is later used by _putcatalog to insert a reference to the Outlines:
@@ -4566,7 +4637,7 @@ class FPDF(GraphicsStateMixin):
 
         self._out(pdf_dict(info_d, open_dict="", close_dict="", has_empty_fields=True))
 
-    def _putcatalog(self, sig_annotation_obj_id=None, embedded_files_per_pdf_ref=()):
+    def _putcatalog(self, sig_annotation_obj_id=None):
         catalog_d = {
             "/Type": "/Catalog",
             # Pages is always the 1st object of the document, cf. the end of _putpages:
@@ -4603,24 +4674,13 @@ class FPDF(GraphicsStateMixin):
             catalog_d["/StructTreeRoot"] = pdf_ref(self._struct_tree_root_obj_id)
         if self._outlines_obj_id:
             catalog_d["/Outlines"] = pdf_ref(self._outlines_obj_id)
-        if embedded_files_per_pdf_ref:
-            names = [
-                (
-                    enclose_in_parens(file.basename),
-                    pdf_dict(
-                        {
-                            "/Type": "/Filespec",
-                            "/F": enclose_in_parens(file.basename),
-                            "/EF": pdf_dict({"/F": pdf_ref}),
-                            "/Desc": f"({escape_parens(file.desc)})",
-                        }
-                    ),
-                )
-                for pdf_ref, file in embedded_files_per_pdf_ref.items()
+        if self.embedded_files_per_pdf_ref:
+            file_spec_names = [
+                f"{enclose_in_parens(file.basename)} {file.file_spec(pdf_ref)}"
+                for pdf_ref, file in self.embedded_files_per_pdf_ref.items()
             ]
-            flat_names = [item for sublist in names for item in sublist]
             catalog_d["/Names"] = pdf_dict(
-                {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(flat_names)})}
+                {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(file_spec_names)})}
             )
 
         self._out(pdf_dict(catalog_d, open_dict="", close_dict=""))
@@ -4670,13 +4730,16 @@ class FPDF(GraphicsStateMixin):
         LOGGER.debug("Final doc sections size summary:")
         with self._trace_size("header"):
             self._putheader()
+        self._build_embedded_files_per_pdf_ref()
         # It is important that pages are the first PDF objects inserted in the document,
-        # followed immediately by annotations: some parts of fpdf2 currently relies on that
+        # followed immediately by annotations: some parts of fpdf2 currently rely on that
         # order of insertion (e.g. util.object_id_for_page):
         with self._trace_size("pages"):
             self._putpages()
-        sig_annotation_obj_id = self._put_annotations_as_objects()
-        embedded_files_per_pdf_ref = self._put_embedded_files()
+        with self._trace_size("annotations_objects"):
+            sig_annotation_obj_id = self._put_annotations_as_objects()
+        with self._trace_size("embedded_files"):
+            self._put_embedded_files()
         self._putresources()  # trace_size is performed inside
         if not self.struct_builder.empty():
             with self._trace_size("structure_tree"):
@@ -4697,7 +4760,7 @@ class FPDF(GraphicsStateMixin):
         with self._trace_size("catalog"):
             self._newobj()
             self._out("<<")
-            self._putcatalog(sig_annotation_obj_id, embedded_files_per_pdf_ref)
+            self._putcatalog(sig_annotation_obj_id)
             self._out(">>")
             self._out("endobj")
         # Cross-ref

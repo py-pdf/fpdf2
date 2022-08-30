@@ -37,17 +37,24 @@ def test_embed_file_from_bytes(tmp_path):
     assert_pdf_equal(pdf, HERE / "embed_file_from_bytes.pdf", tmp_path)
 
 
+def test_file_attachment_annotation(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.file_attachment_annotation(EMBEDDED_FILE, x=50, y=50)
+    assert_pdf_equal(pdf, HERE / "file_attachment_annotation.pdf", tmp_path)
+
+
 def test_embed_file_invalid_params():
     pdf = FPDF()
     pdf.add_page()
     with pytest.raises(ValueError):
         pdf.embed_file(__file__, bytes=b"...")
     with pytest.raises(ValueError):
-        pdf.embed_file(__file__, basename=b"file.txt")
+        pdf.embed_file(__file__, basename="file.txt")
     with pytest.raises(ValueError):
         pdf.embed_file(bytes=b"...")
     with pytest.raises(ValueError):
-        pdf.embed_file(basename=b"file.txt")
+        pdf.embed_file(basename="file.txt")
 
 
 def test_embed_file_duplicate():
