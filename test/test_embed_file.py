@@ -40,7 +40,7 @@ def test_embed_file_from_bytes(tmp_path):
 def test_file_attachment_annotation(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.file_attachment_annotation(EMBEDDED_FILE, x=50, y=50)
+    pdf.file_attachment_annotation(EMBEDDED_FILE, modification_date=False, x=50, y=50)
     assert_pdf_equal(pdf, HERE / "file_attachment_annotation.pdf", tmp_path)
 
 
