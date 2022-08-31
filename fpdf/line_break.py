@@ -112,7 +112,13 @@ class Fragment:
             and self.k == other.k
         )
 
-    def get_width(self, start: int = 0, end: int = None, chars: str = None):
+    def get_width(
+        self,
+        start: int = 0,
+        end: int = None,
+        chars: str = None,
+        initial_cs: bool = True,
+    ):
         """
         Return the witdth of the string with the given font/size/style/etc.
 
@@ -146,19 +152,22 @@ class Fragment:
         if self.font_size_pt:
             w *= self.font_size_pt * 0.001
         if self.char_spacing != 0:
-            # Make sure a single character is calculated with spacing as well.
-            # CurrentLine.automatic_break() will remove one for each fragment start.
-            w += char_spacing * max(1, (len(chars) - 1))
+            # initial_cs must be False if the fragment is located at the
+            # beginning of a text object, because the first char won't get spaced.
+            if initial_cs:
+                w += char_spacing * len(chars)
+            else:
+                w += char_spacing * (len(chars) - 1)
         return w / self.k
 
-    def get_character_width(self, character: str, print_sh=False):
+    def get_character_width(self, character: str, print_sh=False, initial_cs=True):
         """
         Return the width of a single character out of the stored text.
         """
         if character == SOFT_HYPHEN and not print_sh:
             # HYPHEN is inserted instead of SOFT_HYPHEN
             character = HYPHEN
-        return self.get_width(chars=character)
+        return self.get_width(chars=character, initial_cs=initial_cs)
 
 
 class TextLine(NamedTuple):
@@ -282,17 +291,9 @@ class CurrentLine:
         self.width = break_hint.line_width
 
     def manual_break(self, justify: bool = False, trailing_nl: bool = False):
-        # The first character per fragment doesn't get a spacing displacement.
-        # We need to reduce the total width of the line accordingly.
-        frag_start_spacing = 0
-        for frag in self.fragments:
-            if frag.char_spacing:
-                frag_start_spacing -= (
-                    frag.char_spacing / frag.k * frag.font_stretching * 0.01
-                )
         return TextLine(
             fragments=self.fragments,
-            text_width=self.width + frag_start_spacing,
+            text_width=self.width,
             number_of_spaces=self.number_of_spaces,
             justify=(self.number_of_spaces > 0) and justify,
             trailing_nl=trailing_nl,
@@ -345,6 +346,7 @@ class MultiLineBreak:
 
     # pylint: disable=too-many-return-statements
     def get_line_of_given_width(self, maximum_width: float, wordsplit: bool = True):
+        first_char = True  # "Tw" ignores the first character in a text object.
         idx_last_forced_break = self.idx_last_forced_break
         self.idx_last_forced_break = None
 
@@ -367,9 +369,9 @@ class MultiLineBreak:
 
             character = current_fragment.characters[self.character_index]
             character_width = current_fragment.get_character_width(
-                character,
-                self.print_sh,
+                character, self.print_sh, initial_cs=not first_char
             )
+            first_char = False
 
             if character == NEWLINE:
                 self.character_index += 1

@@ -14,7 +14,7 @@ class FxFragment(Fragment):
         self.wdict = wdict
         super().__init__(*args, **kwargs)
 
-    def get_character_width(self, character, print_sh=False):
+    def get_character_width(self, character, print_sh=False, initial_cs=True):
         """Return the relevant width from "wdict"."""
         cw = self.wdict[self.font_style]
         return cw[character]
