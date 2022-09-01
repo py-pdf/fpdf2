@@ -408,7 +408,6 @@ class FPDF(GraphicsStateMixin):
         self.lasth = 0  # height of last cell printed
         self.str_alias_nb_pages = "{nb}"
 
-        self.ws = 0  # word spacing
         self.angle = 0  # used by deprecated method: rotate()
         self.xmp_metadata = None
         self.image_filter = "AUTO"
@@ -2863,7 +2862,7 @@ class FPDF(GraphicsStateMixin):
         s_start = self.x
         s_width, underlines = 0, []
         # We try to avoid modifying global settings for temporary changes.
-        current_ws = frag_ws = self.ws
+        current_ws = frag_ws = 0.0
         current_font = self.current_font
         current_text_mode = self.text_mode
         current_font_stretching = self.font_stretching
@@ -2926,9 +2925,6 @@ class FPDF(GraphicsStateMixin):
                         # "Tw" only has an effect on the ASCII space character and ignores
                         # space characters from unicode (TTF) fonts. As a workaround,
                         # we do word spacing using an adjustment before each space.
-                        if self.ws != 0:
-                            sl.append("0 Tw")
-                            current_ws = 0
                         # Determine the index of the space character (" ") in the current
                         # subset and split words whenever this mapping code is found
                         words = mapped_text.split(
@@ -2989,7 +2985,7 @@ class FPDF(GraphicsStateMixin):
         if sl:
             # If any PDF settings have been left modified, wrap the line in a local context.
             if (
-                current_ws != self.ws
+                current_ws != 0.0
                 or current_font != self.current_font
                 or current_text_mode != self.text_mode
                 or self.fill_color != self.text_color
@@ -3139,13 +3135,7 @@ class FPDF(GraphicsStateMixin):
         return False
 
     def _perform_page_break(self):
-        x, ws = self.x, self.ws
-        # Reset word spacing
-        # We want each page to start with the default value, so that splitting
-        # the document between pages later doesn't cause any trouble.
-        if ws > 0:
-            self.ws = 0
-            self._out("0 Tw")
+        x = self.x
         self.add_page(same=True)
         self.x = x  # restore x but not y after drawing header
 
@@ -3416,7 +3406,6 @@ class FPDF(GraphicsStateMixin):
         if not text_lines:
             return False
 
-        self.ws = 0  # currently only left aligned, so no word spacing
         for text_line_index, text_line in enumerate(text_lines):
             if text_line_index == 0:
                 line_width = first_width
