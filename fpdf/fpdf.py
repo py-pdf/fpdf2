@@ -2706,8 +2706,6 @@ class FPDF(GraphicsStateMixin):
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
         txt = self.normalize_text(txt)
         styled_txt_frags = self._preload_font_styles(txt, markdown)
-        #        for frag in styled_txt_frags:
-        #            print(frag)
         return self._render_styled_text_line(
             TextLine(
                 styled_txt_frags,
@@ -3057,7 +3055,6 @@ class FPDF(GraphicsStateMixin):
             # Ensuring italics font is supported:
             self.set_font(style="I")
         for frag in styled_txt_frags:
-            # print(frag, frag.font['name'], frag.font['type'])
             frag.font = self.fonts[frag.font_family + frag.font_style]
         # Restoring initial style:
         self.set_font(style=prev_font_style)
