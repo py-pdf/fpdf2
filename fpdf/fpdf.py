@@ -2708,8 +2708,6 @@ class FPDF(GraphicsStateMixin):
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
         txt = self.normalize_text(txt)
         styled_txt_frags = self._preload_font_styles(txt, markdown)
-        #        for frag in styled_txt_frags:
-        #            print(frag)
         return self._render_styled_text_line(
             TextLine(
                 styled_txt_frags,
