@@ -84,7 +84,7 @@ def test_render_styled_newpos(tmp_path):
         line = TextLine(
             fragments=line.fragments,
             text_width=line.text_width,
-            number_of_spaces_between_words=line.number_of_spaces_between_words,
+            number_of_spaces=line.number_of_spaces,
             justify=align == Align.J,
             trailing_nl=False,
         )
@@ -284,7 +284,7 @@ def test_multi_cell_newpos(tmp_path):
     new_x, and new_y, for unadorned text.
 
     Note:
-        multi_cell() doesn't use align="J" on the first line, and
+        multi_cell() doesn't use align="J" on the last line, and
         uses "L" instead. new_x is relative to the last line.
     """
     doc = fpdf.FPDF()
@@ -325,7 +325,7 @@ def test_multi_cell_newpos_stretched(tmp_path):
     new_x, and new_y, for stretched text.
 
     Note:
-        multi_cell() doesn't use align="J" on the first line, and
+        multi_cell() doesn't use align="J" on the last line, and
         uses "L" instead. new_x is relative to the last line.
     """
     doc = fpdf.FPDF()
@@ -360,14 +360,54 @@ def test_multi_cell_newpos_stretched(tmp_path):
     assert_pdf_equal(doc, HERE / "multi_cell_newpos_stretched.pdf", tmp_path)
 
 
+def test_multi_cell_newpos_charspaced(tmp_path):
+    """
+    Verify that multi_cell() places the new position
+    in the right places in all possible combinations of alignment,
+    new_x, and new_y, for text with stretching and character spacing.
+    Note:
+        multi_cell() doesn't use align="J" on the last line, and
+        uses "L" instead. new_x is relative to the last line.
+    """
+    doc = fpdf.FPDF()
+    doc.set_font("helvetica", style="U", size=20)
+    doc.set_char_spacing(7)
+    twidth = 120
+
+    for i, item in enumerate(CELLDATA):
+        i = i % 5
+        if i == 0:
+            doc.add_page()
+        doc.x = 70
+        doc.y = 20 + (i * 20)
+        s = item[0]
+        align = item[1]
+        newx = item[2]
+        newy = item[3]
+        doc.multi_cell(
+            twidth,
+            txt=s + " xxxxxxxxxxxx",  # force auto break
+            border=1,
+            align=align,
+            new_x=newx,
+            new_y=newy,
+        )
+        # mark the new position in the file with crosshairs for verification
+        with doc.rotation(i * -15, doc.x, doc.y):
+            doc.circle(doc.x - 3, doc.y - 3, 6)
+            doc.line(doc.x - 3, doc.y, doc.x + 3, doc.y)
+            doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
+
+    assert_pdf_equal(doc, HERE / "multi_cell_newpos_charspaced.pdf", tmp_path)
+
+
 def test_multi_cell_newpos_combined(tmp_path):
     """
     Verify that multi_cell() places the new position
     in the right places in all possible combinations of alignment,
     new_x, and new_y, for text with stretching and character spacing.
-
     Note:
-        multi_cell() doesn't use align="J" on the first line, and
+        multi_cell() doesn't use align="J" on the last line, and
         uses "L" instead. new_x is relative to the last line.
     """
     doc = fpdf.FPDF()
@@ -474,7 +514,7 @@ def test_multi_cell_ln_newpos(tmp_path):
     and (deprecated) ln=#.
 
     Note:
-        multi_cell() doesn't use align="J" on the first line, and
+        multi_cell() doesn't use align="J" on the last line, and
         uses "L" instead. new_x is relative to the last line.
     """
     doc = fpdf.FPDF()

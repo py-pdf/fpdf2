@@ -408,7 +408,6 @@ class FPDF(GraphicsStateMixin):
         self.lasth = 0  # height of last cell printed
         self.str_alias_nb_pages = "{nb}"
 
-        self.ws = 0  # word spacing
         self.angle = 0  # used by deprecated method: rotate()
         self.xmp_metadata = None
         self.image_filter = "AUTO"
@@ -2392,21 +2391,24 @@ class FPDF(GraphicsStateMixin):
             txt2 = escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))
         else:
             txt2 = escape_parens(txt)
-        s = f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td"
+        sl = [f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td"]
         if self.text_mode != TextMode.FILL:
-            s += f" {self.text_mode} Tr {self.line_width:.2f} w"
-        s += f" ({txt2}) Tj ET"
+            sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
+        sl.append(f"({txt2}) Tj ET")
         if (self.underline and txt != "") or self.record_text_quad_points:
             w = self.get_string_width(txt, normalized=True, markdown=False)
             if self.underline and txt != "":
-                s += " " + self._do_underline(x, y, w)
+                sl.append(self._do_underline(x, y, w))
             if self.record_text_quad_points:
                 h = self.font_size
                 y -= 0.8 * h  # same coefficient as in _render_styled_text_line()
                 self._add_quad_points(x, y, w, h)
+        attr_l = []
         if self.fill_color != self.text_color:
-            s = f"q {self.text_color.pdf_repr().lower()} {s} Q"
-        self._out(s)
+            attr_l.append(f"{self.text_color.pdf_repr().lower()}")
+        if attr_l:
+            sl = ["q"] + attr_l + sl + ["Q"]
+        self._out(" ".join(sl))
 
     @check_page
     def rotate(self, angle, x=None, y=None):
@@ -2710,7 +2712,7 @@ class FPDF(GraphicsStateMixin):
             TextLine(
                 styled_txt_frags,
                 text_width=0.0,
-                number_of_spaces_between_words=0,
+                number_of_spaces=0,
                 justify=False,
                 trailing_nl=False,
             ),
@@ -2787,8 +2789,8 @@ class FPDF(GraphicsStateMixin):
             border = 1
         styled_txt_width = text_line.text_width
         if not styled_txt_width:
-            for frag in text_line.fragments:
-                unscaled_width = frag.get_width()
+            for i, frag in enumerate(text_line.fragments):
+                unscaled_width = frag.get_width(initial_cs=i != 0)
                 styled_txt_width += unscaled_width
 
         if w == 0:
@@ -2799,8 +2801,13 @@ class FPDF(GraphicsStateMixin):
                     "A 'text_line' parameter with fragments must be provided if 'w' is None"
                 )
             w = styled_txt_width + self.c_margin + self.c_margin
+        max_font_size = 0  # how much height we need to accomodate.
+        # currently all font sizes within a line are vertically aligned on the baseline.
+        for frag in text_line.fragments:
+            if frag.font_size > max_font_size:
+                max_font_size = frag.font_size
         if h is None:
-            h = self.font_size
+            h = max_font_size
         if align == Align.X:
             self.x -= w / 2
         if center:
@@ -2853,8 +2860,11 @@ class FPDF(GraphicsStateMixin):
         s_start = self.x
         s_width, underlines = 0, []
         # We try to avoid modifying global settings for temporary changes.
-        current_font_style = self.font_style
+        current_ws = frag_ws = 0.0
         current_font = self.current_font
+        current_text_mode = self.text_mode
+        current_font_stretching = self.font_stretching
+        current_char_spacing = self.char_spacing
         if text_line.fragments:
             if align == Align.R:
                 dx = w - self.c_margin - styled_txt_width
@@ -2867,110 +2877,89 @@ class FPDF(GraphicsStateMixin):
             if self.fill_color != self.text_color:
                 sl.append(self.text_color.pdf_repr().lower())
 
-            sl.append(
-                f"BT {(self.x + dx) * k:.2f} "
-                f"{(self.h - self.y - 0.5 * h - 0.3 * self.font_size) * k:.2f} Td"
-            )
-
-            if self.text_mode != TextMode.FILL:
-                sl.append(f"{self.text_mode} Tr {self.line_width:.2f} w")
-
-            # precursor to self.ws, or manual spacing of unicode fonts/
+            # do this once in advance
+            u_space = escape_parens(" ".encode("utf-16-be").decode("latin-1"))
             word_spacing = 0
             if text_line.justify:
+                # Don't rely on align==Align.J here.
+                # If a line gets broken by an explicit '\n', then MultiLineBreak
+                # will set its justify to False (end of paragraph).
                 word_spacing = (
                     w - self.c_margin - self.c_margin - styled_txt_width
-                ) / text_line.number_of_spaces_between_words
-            if word_spacing and self.unifontsubset:
-                # If multibyte, Tw has no effect - do word spacing using an
-                # adjustment before each space
-                space = escape_parens(" ".encode("utf-16-be").decode("latin-1"))
-                if self.ws > 0:
-                    sl.append("0 Tw")
-                    self.ws = 0
-                for frag in text_line.fragments:
-                    if frag.font_stretching != 100:
-                        # Space character is already stretched, extra spacing is absolute.
-                        frag_word_spacing = word_spacing * 100 / frag.font_stretching
-                    else:
-                        frag_word_spacing = word_spacing
-                    if current_font_style != frag.font_style:
-                        current_font_style = frag.font_style
-                        current_font = frag.font
-                        sl.append(f"/F{current_font['i']} {frag.font_size_pt:.2f} Tf")
-                    txt_frag_mapped = ""
+                ) / text_line.number_of_spaces
+
+            sl.append(
+                f"BT {(self.x + dx) * k:.2f} "
+                f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
+            )
+            for i, frag in enumerate(text_line.fragments):
+                if word_spacing and frag.font_stretching != 100:
+                    # Space character is already stretched, extra spacing is absolute.
+                    frag_ws = word_spacing * 100 / frag.font_stretching
+                else:
+                    frag_ws = word_spacing
+                if current_font_stretching != frag.font_stretching:
+                    current_font_stretching = frag.font_stretching
+                    sl.append(f"{frag.font_stretching:.2f} Tz")
+                if current_char_spacing != frag.char_spacing:
+                    current_char_spacing = frag.char_spacing
+                    sl.append(f"{frag.char_spacing:.2f} Tc")
+                if current_font != frag.font:
+                    current_font = frag.font
+                    sl.append(f"/F{frag.font['i']} {frag.font_size_pt:.2f} Tf")
+                if (
+                    frag.text_mode != TextMode.FILL
+                    or frag.text_mode != current_text_mode
+                ):
+                    current_text_mode = frag.text_mode
+                    sl.append(f"{frag.text_mode} Tr {frag.line_width:.2f} w")
+
+                if frag.unicode_font:
+                    mapped_text = ""
                     for char in frag.string:
                         uni = ord(char)
-                        txt_frag_mapped += chr(current_font["subset"].pick(uni))
-
-                    # Determine the position of space (" ") in the current subset and
-                    # split words whenever this mapping code is found
-                    words = txt_frag_mapped.split(
-                        chr(current_font["subset"].pick(ord(" ")))
+                        mapped_text += chr(frag.font["subset"].pick(uni))
+                    if word_spacing:
+                        # "Tw" only has an effect on the ASCII space character and ignores
+                        # space characters from unicode (TTF) fonts. As a workaround,
+                        # we do word spacing using an adjustment before each space.
+                        # Determine the index of the space character (" ") in the current
+                        # subset and split words whenever this mapping code is found
+                        words = mapped_text.split(
+                            chr(frag.font["subset"].pick(ord(" ")))
+                        )
+                        words_strl = []
+                        for i, word in enumerate(words):
+                            word = escape_parens(
+                                word.encode("utf-16-be").decode("latin-1")
+                            )
+                            if i == 0:
+                                words_strl.append(f"({word})")
+                            else:
+                                adj = -(frag_ws * frag.k) * 1000 / frag.font_size_pt
+                                words_strl.append(f"{adj:.3f}({u_space}{word})")
+                        escaped_text = " ".join(words_strl)
+                        sl.append(f"[{escaped_text}] TJ")
+                    else:
+                        escaped_text = escape_parens(
+                            mapped_text.encode("utf-16-be").decode("latin-1")
+                        )
+                        sl.append(f"({escaped_text}) Tj")
+                else:  # core fonts
+                    if frag_ws != current_ws:
+                        sl.append(f"{frag_ws * frag.k:.3f} Tw")
+                        current_ws = frag_ws
+                    escaped_text = escape_parens(frag.string)
+                    sl.append(f"({escaped_text}) Tj")
+                frag_width = frag.get_width(
+                    initial_cs=i != 0
+                ) + word_spacing * frag.characters.count(" ")
+                if frag.underline:
+                    underlines.append(
+                        (self.x + dx + s_width, frag_width, frag.font, frag.font_size)
                     )
+                s_width += frag_width
 
-                    words_strl = []
-                    for i, word in enumerate(words):
-                        word = escape_parens(word.encode("utf-16-be").decode("latin-1"))
-                        if i == 0:
-                            words_strl.append(f"({word})")
-                        else:
-                            adj = (
-                                -(frag_word_spacing * self.k) * 1000 / frag.font_size_pt
-                            )
-                            words_strl.append(f"{adj:.3f}({space}{word})")
-                    sl.append(f"[{' '.join(words_strl)}] TJ")
-                    frag_width = frag.get_width() + self.ws * frag.string.count(" ")
-                    if frag.underline:
-                        underlines.append(
-                            (
-                                self.x + dx + s_width,
-                                frag_width,
-                                frag.font,
-                                frag.font_size,
-                            )
-                        )
-                    s_width += frag_width
-            else:
-
-                for frag in text_line.fragments:
-                    if frag.font_stretching != 100:
-                        # Space character is already stretched, extra spacing is absolute.
-                        frag_word_spacing = word_spacing * 100 / frag.font_stretching
-                    else:
-                        frag_word_spacing = word_spacing
-                    if frag_word_spacing and frag_word_spacing != self.ws:
-                        sl.append(f"{frag_word_spacing * self.k:.3f} Tw")
-                    elif frag_word_spacing == 0 and self.ws > 0:
-                        sl.append("0 Tw")
-                    self.ws = frag_word_spacing
-
-                    if current_font_style != frag.font_style:
-                        current_font_style = frag.font_style
-                        current_font = frag.font
-                        sl.append(f"/F{current_font['i']} {frag.font_size_pt:.2f} Tf")
-                    if self.unifontsubset:
-                        txt_frag_mapped = ""
-                        for char in frag.string:
-                            uni = ord(char)
-                            txt_frag_mapped += chr(current_font["subset"].pick(uni))
-                        txt_frag_escaped = escape_parens(
-                            txt_frag_mapped.encode("utf-16-be").decode("latin-1")
-                        )
-                    else:
-                        txt_frag_escaped = escape_parens(frag.string)
-                    sl.append(f"({txt_frag_escaped}) Tj")
-                    frag_width = frag.get_width() + self.ws * frag.string.count(" ")
-                    if frag.underline:
-                        underlines.append(
-                            (
-                                self.x + dx + s_width,
-                                frag_width,
-                                frag.font,
-                                frag.font_size,
-                            )
-                        )
-                    s_width += frag_width
             sl.append("ET")
 
             for start_x, ul_w, ul_font, ul_font_size in underlines:
@@ -2990,11 +2979,16 @@ class FPDF(GraphicsStateMixin):
                     frag.font_size,
                     link,
                 )
+
         if sl:
             # If any PDF settings have been left modified, wrap the line in a local context.
             if (
-                current_font_style != self.font_style
+                current_ws != 0.0
+                or current_font != self.current_font
+                or current_text_mode != self.text_mode
                 or self.fill_color != self.text_color
+                or current_font_stretching != self.font_stretching
+                # or current_char_spacing != self.char_spacing
             ):
                 s = f"q {' '.join(sl)} Q"
             else:
@@ -3055,6 +3049,7 @@ class FPDF(GraphicsStateMixin):
             # Ensuring italics font is supported:
             self.set_font(style="I")
         for frag in styled_txt_frags:
+            # print(frag, frag.font['name'], frag.font['type'])
             frag.font = self.fonts[frag.font_family + frag.font_style]
         # Restoring initial style:
         self.set_font(style=prev_font_style)
@@ -3138,13 +3133,7 @@ class FPDF(GraphicsStateMixin):
         return False
 
     def _perform_page_break(self):
-        x, ws = self.x, self.ws
-        # Reset word spacing
-        # We want each page to start with the default value, so that splitting
-        # the document between pages later doesn't cause any trouble.
-        if ws > 0:
-            self.ws = 0
-            self._out("0 Tw")
+        x = self.x
         self.add_page(same=True)
         self.x = x  # restore x but not y after drawing header
 
@@ -3289,7 +3278,7 @@ class FPDF(GraphicsStateMixin):
                 TextLine(
                     "",
                     text_width=0,
-                    number_of_spaces_between_words=0,
+                    number_of_spaces=0,
                     justify=False,
                     trailing_nl=False,
                 )
@@ -3412,12 +3401,9 @@ class FPDF(GraphicsStateMixin):
         while (text_line) is not None:
             text_lines.append(text_line)
             text_line = multi_line_break.get_line_of_given_width(fit_width)
-        if text_line:
-            text_lines.append(text_line)
         if not text_lines:
             return False
 
-        self.ws = 0  # currently only left aligned, so no word spacing
         for text_line_index, text_line in enumerate(text_lines):
             if text_line_index == 0:
                 line_width = first_width
@@ -4827,7 +4813,7 @@ class FPDF(GraphicsStateMixin):
         return self.n
 
     def _do_underline(self, x, y, w, current_font=None):
-        "Draw an horizontal line starting from (x, y) with a length equal to 'txt' width"
+        "Draw an horizontal line starting from (x, y) with a length equal to 'w'"
         if current_font is None:
             current_font = self.current_font
         up = current_font["up"]
