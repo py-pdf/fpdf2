@@ -46,18 +46,18 @@ def test_change_settings():
     # verify default
     tgt_draw_color = pdf.DEFAULT_DRAW_COLOR
     assert pdf.draw_color == tgt_draw_color, (
-        f"pdf.draw_color ({pdf.draw_color})" f" != tgt_draw_color ({tgt_draw_color})"
+        f"pdf.draw_color ({pdf.draw_color}) != tgt_draw_color ({tgt_draw_color})"
     )
     # change to red
     tgt_draw_color = drawing.DeviceRGB(*[c / 255 for c in red])
     pdf.set_draw_color(*red)
     assert pdf.draw_color == tgt_draw_color, (
-        f"pdf.draw_color ({pdf.draw_color})" f" != tgt_draw_color ({tgt_draw_color})"
+        f"pdf.draw_color ({pdf.draw_color}) != tgt_draw_color ({tgt_draw_color})"
     )
     # stays the same
     pdf.set_draw_color(*red)
     assert pdf.draw_color == tgt_draw_color, (
-        f"pdf.draw_color ({pdf.draw_color})" f" != tgt_draw_color ({tgt_draw_color})"
+        f"pdf.draw_color ({pdf.draw_color}) != tgt_draw_color ({tgt_draw_color})"
     )
 
     # fill color
@@ -65,18 +65,18 @@ def test_change_settings():
     # verify default
     tgt_fill_color = pdf.DEFAULT_FILL_COLOR
     assert pdf.fill_color == tgt_fill_color, (
-        f"pdf.fill_color ({pdf.fill_color})" f" != tgt_fill_color ({tgt_fill_color})"
+        f"pdf.fill_color ({pdf.fill_color}) != tgt_fill_color ({tgt_fill_color})"
     )
     # change to green
     tgt_fill_color = drawing.DeviceRGB(*[c / 255 for c in green])
     pdf.set_fill_color(*green)
     assert pdf.fill_color == tgt_fill_color, (
-        f"pdf.fill_color ({pdf.fill_color})" f" != tgt_fill_color ({tgt_fill_color})"
+        f"pdf.fill_color ({pdf.fill_color}) != tgt_fill_color ({tgt_fill_color})"
     )
     # stays the same
     pdf.set_fill_color(*green)
     assert pdf.fill_color == tgt_fill_color, (
-        f"pdf.fill_color ({pdf.fill_color})" f" != tgt_fill_color ({tgt_fill_color})"
+        f"pdf.fill_color ({pdf.fill_color}) != tgt_fill_color ({tgt_fill_color})"
     )
 
     # text color
@@ -84,18 +84,18 @@ def test_change_settings():
     # verify default
     tgt_text_color = pdf.DEFAULT_TEXT_COLOR
     assert pdf.text_color == tgt_text_color, (
-        f"pdf.text_color ({pdf.text_color})" f" != tgt_text_color ({tgt_text_color})"
+        f"pdf.text_color ({pdf.text_color}) != tgt_text_color ({tgt_text_color})"
     )
     # change to blue
     tgt_text_color = drawing.DeviceRGB(*[c / 255 for c in blue])
     pdf.set_text_color(*blue)
     assert pdf.text_color == tgt_text_color, (
-        f"pdf.text_color ({pdf.text_color})" f" != tgt_text_color ({tgt_text_color})"
+        f"pdf.text_color ({pdf.text_color}) != tgt_text_color ({tgt_text_color})"
     )
     # stays the same
     pdf.set_text_color(*blue)
     assert pdf.text_color == tgt_text_color, (
-        f"pdf.text_color ({pdf.text_color})" f" != tgt_text_color ({tgt_text_color})"
+        f"pdf.text_color ({pdf.text_color}) != tgt_text_color ({tgt_text_color})"
     )
 
     # underline
@@ -172,18 +172,18 @@ def test_change_settings():
     # verify default
     tgt_line_width = 0.567 / pdf.k
     assert pdf.line_width == tgt_line_width, (
-        f"pdf.line_width ({pdf.line_width})" f" != tgt_line_width ({tgt_line_width})"
+        f"pdf.line_width ({pdf.line_width}) != tgt_line_width ({tgt_line_width})"
     )
     # change
     tgt_line_width = 0.5
     pdf.set_line_width(tgt_line_width)
     assert pdf.line_width == tgt_line_width, (
-        f"pdf.line_width ({pdf.line_width})" f" != tgt_line_width ({tgt_line_width})"
+        f"pdf.line_width ({pdf.line_width}) != tgt_line_width ({tgt_line_width})"
     )
     # stays the same
     pdf.set_line_width(tgt_line_width)
     assert pdf.line_width == tgt_line_width, (
-        f"pdf.line_width ({pdf.line_width})" f" != tgt_line_width ({tgt_line_width})"
+        f"pdf.line_width ({pdf.line_width}) != tgt_line_width ({tgt_line_width})"
     )
 
     # text_mode
@@ -199,7 +199,7 @@ def test_change_settings():
         f" != tgt_font_size_pt ({tgt_font_size_pt})"
     )
     assert pdf.font_size == tgt_font_size, (
-        f"pdf.font_size ({pdf.font_size})" f" != tgt_font_size ({tgt_font_size})"
+        f"pdf.font_size ({pdf.font_size}) != tgt_font_size ({tgt_font_size})"
     )
     # change
     tgt_font_size_pt = 14
@@ -210,7 +210,7 @@ def test_change_settings():
         f" != tgt_font_size_pt ({tgt_font_size_pt})"
     )
     assert pdf.font_size == tgt_font_size, (
-        f"pdf.font_size ({pdf.font_size})" f" != tgt_font_size ({tgt_font_size})"
+        f"pdf.font_size ({pdf.font_size}) != tgt_font_size ({tgt_font_size})"
     )
     # stays the same
     pdf.set_font_size(tgt_font_size_pt)
@@ -219,7 +219,7 @@ def test_change_settings():
         f" != tgt_font_size_pt ({tgt_font_size_pt})"
     )
     assert pdf.font_size == tgt_font_size, (
-        f"pdf.font_size ({pdf.font_size})" f" != tgt_font_size ({tgt_font_size})"
+        f"pdf.font_size ({pdf.font_size}) != tgt_font_size ({tgt_font_size})"
     )
 
     # font
@@ -227,13 +227,13 @@ def test_change_settings():
     # verify default
     tgt_font = ("", "", 12)
     assert pdf.font_family == tgt_font[0], (
-        f"pdf.font_family ({pdf.font_family})" f" != tgt_font[0] ({tgt_font[0]})"
+        f"pdf.font_family ({pdf.font_family}) != tgt_font[0] ({tgt_font[0]})"
     )
     assert pdf.font_style == tgt_font[1], (
-        f"pdf.font_style ({pdf.font_style})" f" != tgt_font[1] ({tgt_font[1]})"
+        f"pdf.font_style ({pdf.font_style}) != tgt_font[1] ({tgt_font[1]})"
     )
     assert pdf.font_size_pt == tgt_font[2], (
-        f"pdf.font_size_pt ({pdf.font_size_pt})" f" != tgt_font[2] ({tgt_font[2]})"
+        f"pdf.font_size_pt ({pdf.font_size_pt}) != tgt_font[2] ({tgt_font[2]})"
     )
     # change
     for tgt_font in (
