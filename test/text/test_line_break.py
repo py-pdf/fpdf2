@@ -25,6 +25,7 @@ def test_fragment_properties():
     Make sure the accessor properties in Fragment() return the correct
     value as of the originating graphics state.
     """
+	# pylint: disable=protected-access
     pdf = FPDF()
     font_family = "helvetica"
     font_style = "I"
