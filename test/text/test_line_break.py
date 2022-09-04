@@ -25,7 +25,7 @@ def test_fragment_properties():
     Make sure the accessor properties in Fragment() return the correct
     value as of the originating graphics state.
     """
-	# pylint: disable=protected-access
+    # pylint: disable=protected-access
     pdf = FPDF()
     font_family = "helvetica"
     font_style = "I"
@@ -44,20 +44,20 @@ def test_fragment_properties():
         f"frag.font_family ({frag.font_family})"
         f" != pdf.font_family ({pdf.font_family})"
     )
-    assert frag.font_style == pdf.font_style, (
-        f"frag.font_style ({frag.font_style}) != pdf.font_style ({pdf.font_style})"
-    )
-    assert frag.font_size == pdf.font_size, (
-        f"frag.font_size ({frag.font_size}) != pdf.font_size ({pdf.font_size})"
-    )
-    assert frag.underline == pdf.underline, (
-        f"frag.underline ({frag.underline}) != pdf.underline ({pdf.underline})"
-    )
+    assert (
+        frag.font_style == pdf.font_style
+    ), f"frag.font_style ({frag.font_style}) != pdf.font_style ({pdf.font_style})"
+    assert (
+        frag.font_size == pdf.font_size
+    ), f"frag.font_size ({frag.font_size}) != pdf.font_size ({pdf.font_size})"
+    assert (
+        frag.underline == pdf.underline
+    ), f"frag.underline ({frag.underline}) != pdf.underline ({pdf.underline})"
     pdf.set_font_size(44)
     frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
-    assert frag.font_size == pdf.font_size, (
-        f"frag.font_size ({frag.font_size}) != pdf.font_size ({pdf.font_size})"
-    )
+    assert (
+        frag.font_size == pdf.font_size
+    ), f"frag.font_size ({frag.font_size}) != pdf.font_size ({pdf.font_size})"
     pdf.set_stretching(120)
     frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
     assert frag.font_stretching == pdf.font_stretching, (
@@ -72,34 +72,34 @@ def test_fragment_properties():
     )
     pdf.text_mode = TextMode.STROKE
     frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
-    assert frag.text_mode == pdf.text_mode, (
-        f"frag.text_mode ({frag.text_mode}) != pdf.text_mode ({pdf.text_mode})"
-    )
+    assert (
+        frag.text_mode == pdf.text_mode
+    ), f"frag.text_mode ({frag.text_mode}) != pdf.text_mode ({pdf.text_mode})"
     pdf.underline = True
     frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
-    assert frag.underline == pdf.underline, (
-        f"frag.underline ({frag.underline}) != pdf.underline ({pdf.underline})"
-    )
+    assert (
+        frag.underline == pdf.underline
+    ), f"frag.underline ({frag.underline}) != pdf.underline ({pdf.underline})"
     pdf.set_draw_color(0.1, 0.2, 0.3)
     frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
-    assert frag.draw_color == pdf.draw_color, (
-        f"frag.draw_color ({frag.draw_color}) != pdf.draw_color ({pdf.draw_color})"
-    )
+    assert (
+        frag.draw_color == pdf.draw_color
+    ), f"frag.draw_color ({frag.draw_color}) != pdf.draw_color ({pdf.draw_color})"
     pdf.set_fill_color(0.3, 0.2, 0.1)
     frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
-    assert frag.fill_color == pdf.fill_color, (
-        f"frag.fill_color ({frag.fill_color}) != pdf.fill_color ({pdf.fill_color})"
-    )
+    assert (
+        frag.fill_color == pdf.fill_color
+    ), f"frag.fill_color ({frag.fill_color}) != pdf.fill_color ({pdf.fill_color})"
     pdf.set_text_color(0.5)
     frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
-    assert frag.text_color == pdf.text_color, (
-        f"frag.text_color ({frag.text_color}) != pdf.text_color ({pdf.text_color})"
-    )
+    assert (
+        frag.text_color == pdf.text_color
+    ), f"frag.text_color ({frag.text_color}) != pdf.text_color ({pdf.text_color})"
     pdf.set_line_width(0.5)
     frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
-    assert frag.line_width == pdf.line_width, (
-        f"frag.line_width ({frag.line_width}) != pdf.line_width ({pdf.line_width})"
-    )
+    assert (
+        frag.line_width == pdf.line_width
+    ), f"frag.line_width ({frag.line_width}) != pdf.line_width ({pdf.line_width})"
 
 
 def test_no_fragments():
