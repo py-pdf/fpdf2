@@ -73,6 +73,7 @@ from .enums import (
     YPos,
     Corner,
     FontDescriptorFlags,
+    CharVPos,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
 from .fonts import fpdf_charwidths
@@ -2889,6 +2890,7 @@ class FPDF(GraphicsStateMixin):
         s_width, underlines = 0, []
         # We try to avoid modifying global settings for temporary changes.
         current_ws = frag_ws = 0.0
+        current_char_vpos = CharVPos.LINE
         current_font = self.current_font
         current_text_mode = self.text_mode
         current_font_stretching = self.font_stretching
@@ -2932,9 +2934,14 @@ class FPDF(GraphicsStateMixin):
                 if current_char_spacing != frag.char_spacing:
                     current_char_spacing = frag.char_spacing
                     sl.append(f"{frag.char_spacing:.2f} Tc")
-                if current_font != frag.font:
+                if current_font != frag.font or current_char_vpos != frag.char_vpos:
+                    if current_char_vpos != frag.char_vpos:
+                        current_char_vpos = frag.char_vpos
                     current_font = frag.font
                     sl.append(f"/F{frag.font['i']} {frag.font_size_pt:.2f} Tf")
+                lift = frag.lift
+                if lift != 0.0:
+                    sl.append(f"{lift:.2f} Ts")
                 if (
                     frag.text_mode != TextMode.FILL
                     or frag.text_mode != current_text_mode
@@ -3009,10 +3016,12 @@ class FPDF(GraphicsStateMixin):
                 )
 
         if sl:
-            # If any PDF settings have been left modified, wrap the line in a local context.
+            # If any PDF settings have been left modified, wrap the line
+            # in a local context.
             # pylint: disable=too-many-boolean-expressions
             if (
                 current_ws != 0.0
+                or current_char_vpos != CharVPos.LINE
                 or current_font != self.current_font
                 or current_text_mode != self.text_mode
                 or self.fill_color != self.text_color
@@ -3022,8 +3031,8 @@ class FPDF(GraphicsStateMixin):
                 s = f"q {' '.join(sl)} Q"
             else:
                 s = " ".join(sl)
-            self._out(s)
             # pylint: enable=too-many-boolean-expressions
+            self._out(s)
         self.lasth = h
 
         # XPos.LEFT -> self.x stays the same

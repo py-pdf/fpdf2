@@ -518,3 +518,13 @@ def test_bgcolor_in_table(tmp_path):  # issue-512
 </table>"""
     )
     assert_pdf_equal(pdf, HERE / "bgcolor_in_table.pdf", tmp_path)
+
+
+def test_html_superscript(tmp_path):
+    pdf = MyFPDF()
+    pdf.add_page()
+    pdf.write_html(
+        "<h1>Superscript/Subscript test</h1>"
+        "2<sup>56</sup> more line text<sub>(idx)</sub>"
+    )
+    assert_pdf_equal(pdf, HERE / "html_superscript.pdf", tmp_path)

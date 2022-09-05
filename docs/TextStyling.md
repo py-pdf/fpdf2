@@ -66,6 +66,69 @@ pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
 ```
 ![](char_spacing.png)
 
+
+## Subscript, Superscript, and Fractional Numbers
+
+The class attribute `.char_vpos` controls special vertical positioning modes for text:
+
+* "LINE" - normal line text (default)
+* "SUP" - superscript (exponent)
+* "SUB" - subscript (index)
+* "NOM" - nominator of a fraction with "/"
+* "DENOM" - denominator of a fraction with "/"
+
+For each positioning mode there are two parameters that can be configured.
+The defaults have been set to result in a decent layout with most fonts, and are given in parens.
+
+The size multiplier for the font size:
+
+* `.sup_scale` (0.7)
+* `.sub_scale` (0.7)
+* `.nom_scale` (0.75)
+* `.denom_scale` (0.75)
+
+The lift is given as fraction of the font size and indicates how much the glyph gets lifted above the base line (negative for below):
+
+* `.sup_lift` (0.4)
+* `.sub_lift` (-0.15)
+* `.nom_lift` (0.2)
+* `.denom_lift` (0.0)
+
+**Limitations:** The individual glyphs will be scaled down as configured. This is not typographically correct, as it will also reduce the stroke width, making them look lighter than the normal text.
+Unicode fonts may include characters in the [subscripts and superscripts range](https://en.wikipedia.org/wiki/Unicode_subscripts_and_superscripts). In a high quality font, those glyphs will be smaller than the normal ones, but have a proportionally stronger stroke width in order to maintain the same visual density. If available in good quality, using Characters from this range is preferred and will look better. Unfortunately, many fonts either don't (fully) cover this range, or the glyphs are of unsatisfactory quality. In those cases, this feature of `fpdf2` offers a reliable workaround with suboptimal but consistent output quality.
+
+Practical use is essentially limited to `.write()` and `html_write()`.
+The feature does technically work with `.cell()` and `.multi_cell`, but is of limited usefulness there. It currently gets completely ignored by `.text()`.
+
+The example shows the most common use cases:
+
+```python
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "", 20)
+    pdf.write(txt="2")
+    pdf.char_vpos = "SUP"
+    pdf.write(txt="56")
+    pdf.char_vpos = "LINE"
+    pdf.write(txt=" more line text")
+    pdf.char_vpos = "SUB"
+    pdf.write(txt="(idx)")
+    pdf.char_vpos = "LINE"
+    pdf.write(txt=" end")
+    pdf.ln()
+    pdf.write(txt="1234 + ")
+    pdf.char_vpos = "NOM"
+    pdf.write(txt="5")
+    pdf.char_vpos = "LINE"
+    pdf.write(txt="/")
+    pdf.char_vpos = "DENOM"
+    pdf.write(txt="16")
+    pdf.char_vpos = "LINE"
+    pdf.write(txt=" + 987 = x")
+```
+![](char_vpos.png)
+
+
 ## .text_mode ##
 
 The PDF spec defines several text modes:

@@ -456,8 +456,8 @@ class HTML2FPDF(HTMLParser):
             self.heading_level = int(tag[1:])
             hsize = self.heading_sizes[tag]
             self.pdf.set_text_color(150, 0, 0)
+            self.pdf.ln(self.h + 0.2 * hsize)  # 20 % more space above heading
             self.set_font(size=hsize)
-            self.pdf.ln(self.h)
             if attrs:
                 self.align = attrs.get("align")
         if tag == "hr":
@@ -595,6 +595,10 @@ class HTML2FPDF(HTMLParser):
             self.pdf.insert_toc_placeholder(
                 self.render_toc, pages=int(attrs.get("pages", 1))
             )
+        if tag == "sup":
+            self.pdf.char_vpos = "SUP"
+        if tag == "sub":
+            self.pdf.char_vpos = "SUB"
 
     def handle_endtag(self, tag):
         # Closing tag
@@ -602,9 +606,9 @@ class HTML2FPDF(HTMLParser):
         if tag in self.heading_sizes:
             self.heading_level = None
             face, size, color = self.font_stack.pop()
+            self.pdf.ln(self.h * 1.2)  # 20 % more space below heading
             self.set_font(face, size)
             self.set_text_color(*color)
-            self.pdf.ln(self.h)
             self.align = None
         if tag == "pre":
             face, size, color = self.font_stack.pop()
@@ -668,6 +672,10 @@ class HTML2FPDF(HTMLParser):
             self.set_text_color(*self.font_color)
         if tag == "center":
             self.align = None
+        if tag == "sup":
+            self.pdf.char_vpos = "LINE"
+        if tag == "sub":
+            self.pdf.char_vpos = "LINE"
 
     def set_font(self, face=None, size=None):
         if face:

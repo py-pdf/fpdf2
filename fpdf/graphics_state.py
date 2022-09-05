@@ -1,5 +1,5 @@
 from .drawing import DeviceGray
-from .enums import TextMode
+from .enums import TextMode, CharVPos
 
 
 class GraphicsStateMixin:
@@ -34,6 +34,15 @@ class GraphicsStateMixin:
                 dash_pattern=dict(dash=0, gap=0, phase=0),
                 line_width=0,
                 text_mode=TextMode.FILL,
+                char_vpos=CharVPos.LINE,
+                sub_scale=0.7,
+                sup_scale=0.7,
+                nom_scale=0.75,
+                denom_scale=0.75,
+                sub_lift=-0.15,
+                sup_lift=0.4,
+                nom_lift=0.2,
+                denom_lift=0.0,
             ),
         ]
         super().__init__(*args, **kwargs)
@@ -158,3 +167,75 @@ class GraphicsStateMixin:
     @text_mode.setter
     def text_mode(self, v):
         self.__statestack[-1]["text_mode"] = TextMode.coerce(v)
+
+    @property
+    def char_vpos(self):
+        return self.__statestack[-1]["char_vpos"]
+
+    @char_vpos.setter
+    def char_vpos(self, v):
+        self.__statestack[-1]["char_vpos"] = CharVPos.coerce(v)
+
+    @property
+    def sub_scale(self):
+        return self.__statestack[-1]["sub_scale"]
+
+    @sub_scale.setter
+    def sub_scale(self, v):
+        self.__statestack[-1]["sub_scale"] = float(v)
+
+    @property
+    def sup_scale(self):
+        return self.__statestack[-1]["sup_scale"]
+
+    @sup_scale.setter
+    def sup_scale(self, v):
+        self.__statestack[-1]["sup_scale"] = float(v)
+
+    @property
+    def nom_scale(self):
+        return self.__statestack[-1]["nom_scale"]
+
+    @nom_scale.setter
+    def nom_scale(self, v):
+        self.__statestack[-1]["nom_scale"] = float(v)
+
+    @property
+    def denom_scale(self):
+        return self.__statestack[-1]["denom_scale"]
+
+    @denom_scale.setter
+    def denom_scale(self, v):
+        self.__statestack[-1]["denom_scale"] = float(v)
+
+    @property
+    def sub_lift(self):
+        return self.__statestack[-1]["sub_lift"]
+
+    @sub_lift.setter
+    def sub_lift(self, v):
+        self.__statestack[-1]["sub_lift"] = float(v)
+
+    @property
+    def sup_lift(self):
+        return self.__statestack[-1]["sup_lift"]
+
+    @sup_lift.setter
+    def sup_lift(self, v):
+        self.__statestack[-1]["sup_lift"] = float(v)
+
+    @property
+    def nom_lift(self):
+        return self.__statestack[-1]["nom_lift"]
+
+    @nom_lift.setter
+    def nom_lift(self, v):
+        self.__statestack[-1]["nom_lift"] = float(v)
+
+    @property
+    def denom_lift(self):
+        return self.__statestack[-1]["denom_lift"]
+
+    @denom_lift.setter
+    def denom_lift(self, v):
+        self.__statestack[-1]["denom_lift"] = float(v)

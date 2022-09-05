@@ -100,6 +100,11 @@ def test_fragment_properties():
     assert (
         frag.line_width == pdf.line_width
     ), f"frag.line_width ({frag.line_width}) != pdf.line_width ({pdf.line_width})"
+    pdf.char_vpos = "SUP"
+    frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
+    assert (
+        frag.char_vpos == pdf.char_vpos
+    ), f"frag.char_vpos ({frag.char_vpos}) != pdf.char_vpos ({pdf.char_vpos})"
 
 
 def test_no_fragments():

@@ -81,6 +81,7 @@ pdf.output("html.pdf")
 * `<a>`: links (and `href` attribute)
 * `<img>`: images (and `src`, `width`, `height` attributes)
 * `<ol>`, `<ul>`, `<li>`: ordered, unordered and list items (can be nested)
+* `<sup>`, `<sub>`: superscript and subscript text
 * `<table>`: (and `border`, `width` attributes)
     + `<thead>`: header (opens each page)
     + `<tfoot>`: footer (closes each page)

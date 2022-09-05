@@ -108,6 +108,24 @@ class CoerciveIntEnum(IntEnum):
         raise TypeError(f"{value} cannot convert to a {cls.__name__}")
 
 
+class CharVPos(CoerciveEnum):
+    "Defines the vertical position of text relative to the line."
+    SUP = intern("SUP")
+    "Superscript"
+
+    SUB = intern("SUB")
+    "Subscript"
+
+    NOM = intern("NOM")
+    "Nominator of a fraction"
+
+    DENOM = intern("DENOM")
+    "Denominator of a fraction"
+
+    LINE = intern("LINE")
+    "Default line position"
+
+
 class Align(CoerciveEnum):
     "Defines how to render text in a cell"
 

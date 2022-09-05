@@ -8,6 +8,7 @@ They may change at any time without prior warning or any deprecation period.
 
 from typing import NamedTuple, Any, Union, Sequence
 
+from .enums import CharVPos
 from .errors import FPDFException
 
 SOFT_HYPHEN = "\u00ad"
@@ -60,7 +61,17 @@ class Fragment:
 
     @property
     def font_size_pt(self):
-        return self.graphics_state["font_size_pt"]
+        size = self.graphics_state["font_size_pt"]
+        vpos = self.graphics_state["char_vpos"]
+        if vpos == CharVPos.SUB:
+            size *= self.graphics_state["sub_scale"]
+        elif vpos == CharVPos.SUP:
+            size *= self.graphics_state["sup_scale"]
+        elif vpos == CharVPos.NOM:
+            size *= self.graphics_state["nom_scale"]
+        elif vpos == CharVPos.DENOM:
+            size *= self.graphics_state["denom_scale"]
+        return size
 
     @property
     def font_size(self):
@@ -97,6 +108,25 @@ class Fragment:
     @property
     def line_width(self):
         return self.graphics_state["line_width"]
+
+    @property
+    def char_vpos(self):
+        return self.graphics_state["char_vpos"]
+
+    @property
+    def lift(self):
+        vpos = self.graphics_state["char_vpos"]
+        if vpos == CharVPos.SUB:
+            lift = self.graphics_state["sub_lift"]
+        elif vpos == CharVPos.SUP:
+            lift = self.graphics_state["sup_lift"]
+        elif vpos == CharVPos.NOM:
+            lift = self.graphics_state["nom_lift"]
+        elif vpos == CharVPos.DENOM:
+            lift = self.graphics_state["denom_lift"]
+        else:
+            lift = 0.0
+        return lift * self.graphics_state["font_size_pt"]
 
     @property
     def string(self):
@@ -140,8 +170,7 @@ class Fragment:
         if self.font_stretching != 100:
             w *= self.font_stretching * 0.01
             char_spacing *= self.font_stretching * 0.01
-        if self.font_size_pt:
-            w *= self.font_size_pt * 0.001
+        w *= self.font_size_pt * 0.001
         if self.char_spacing != 0:
             # initial_cs must be False if the fragment is located at the
             # beginning of a text object, because the first char won't get spaced.
