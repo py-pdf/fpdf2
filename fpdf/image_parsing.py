@@ -70,12 +70,15 @@ def get_img_info(img, image_filter="AUTO", dims=None):
     if img.mode in ("P", "PA") and image_filter != "FlateDecode":
         img = img.convert("RGBA")
 
-    if img.mode not in ("L", "LA", "RGB", "RGBA", "P", "PA"):
+    if img.mode not in ("1", "L", "LA", "RGB", "RGBA", "P", "PA"):
         img = img.convert("RGBA")
 
     w, h = img.size
     info = {}
-    if img.mode == "L":
+    if img.mode == "1":
+        dpn, bpc, colspace = 1, 1, "DeviceGray"
+        info["data"] = _to_data(img, image_filter)
+    elif img.mode == "L":
         dpn, bpc, colspace = 1, 8, "DeviceGray"
         info["data"] = _to_data(img, image_filter)
     elif img.mode == "LA":
@@ -171,8 +174,13 @@ def _to_zdata(img, remove_slice=None, select_slice=None):
     if select_slice:
         data = data[select_slice]
     # Left-padding every row with a single zero:
+    if img.mode == '1':
+        import math
+        loop_incr = math.ceil(img.size[0] / 8) + 1
+    else:
+        channels_count = len(data) // (img.size[0] * img.size[1])
+        loop_incr = img.size[0] * channels_count + 1
     channels_count = len(data) // (img.size[0] * img.size[1])
-    loop_incr = img.size[0] * channels_count + 1
     i = 0
     while i < len(data):
         data[i:i] = b"\0"
