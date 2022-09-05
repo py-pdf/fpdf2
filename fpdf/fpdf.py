@@ -1896,7 +1896,6 @@ class FPDF(GraphicsStateMixin):
 
             # take width associated to glyph
             w = font["hmtx"].metrics[glyph][0]
-
             char_widths[char] = round(scale * w + 0.001)  # ROUND_HALF_UP
 
         # include numbers in the subset! (if alias present)
