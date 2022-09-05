@@ -61,6 +61,7 @@ from .enums import (
     AnnotationName,
     AnnotationFlag,
     DocumentState,
+    FileAttachmentAnnotationName,
     PageLayout,
     PageMode,
     PathPaintRule,
@@ -147,6 +148,7 @@ class Annotation(NamedTuple):
     border_width: int = 0  # PDF readers support: displayed by Acrobat but not Sumatra
     name: Optional[AnnotationName] = None  # for text annotations
     ink_list: Tuple[int] = ()  # for ink annotations
+    embedded_file_name: Optional[str] = None
     field_type: Optional[str] = None
     value: Optional[str] = None
 
@@ -213,7 +215,38 @@ class Annotation(NamedTuple):
             ink_list = pdf_list(f"{coord:.2f}" for coord in self.ink_list)
             out += f" /InkList [{ink_list}]"
 
+        if self.embedded_file_name:
+            assert (
+                fpdf.embedded_files_per_pdf_ref
+            ), "_build_embedded_files_per_pdf_ref() must be called beforehand to know PDF IDs of /EmbeddedFile objects"
+            embedded_file_ref, embedded_file = next(
+                (file_ref, file)
+                for file_ref, file in fpdf.embedded_files_per_pdf_ref.items()
+                if file.basename == self.embedded_file_name
+            )
+            out += f" /FS {embedded_file.file_spec(embedded_file_ref)}"
+
         return out + ">>"
+
+
+class EmbeddedFile(NamedTuple):
+    basename: str
+    bytes: bytes
+    desc: str = ""
+    creation_date: Optional[datetime] = None
+    modification_date: Optional[datetime] = None
+    compress: bool = False
+    checksum: bool = False
+
+    def file_spec(self, embedded_file_ref):
+        return pdf_dict(
+            {
+                "/Type": "/Filespec",
+                "/F": enclose_in_parens(self.basename),
+                "/EF": pdf_dict({"/F": embedded_file_ref}),
+                "/Desc": f"({escape_parens(self.desc)})",
+            }
+        )
 
 
 class TitleStyle(NamedTuple):
@@ -367,13 +400,13 @@ class FPDF(GraphicsStateMixin):
         self.font_files = {}  # array of font files
         self.diffs = {}  # array of encoding differences
         self.images = {}  # array of used images
-        self.annots = defaultdict(
-            list
-        )  # map page numbers to a list of Annotations; they will be inlined in the Page object
-        self.annots_as_obj = defaultdict(
-            list
-        )  # map page numbers to a list of pairs (Annotations, obj_id); they will be embedded in the doc as separated objects
+        # map page numbers to a list of Annotations; they will be inlined in the Page object:
+        self.annots = defaultdict(list)
+        # map page numbers to a list of pairs (Annotations, obj_id); they will be embedded in the doc as separated objects:
+        self.annots_as_obj = defaultdict(list)
         self.links = {}  # array of Destination
+        self.embedded_files = []
+        self.embedded_files_per_pdf_ref = {}
         self.in_footer = 0  # flag set when processing footer
         self.lasth = 0  # height of last cell printed
         self.str_alias_nb_pages = "{nb}"
@@ -432,9 +465,10 @@ class FPDF(GraphicsStateMixin):
         # We set their default values here.
         self.font_family = ""  # current font family
         self.font_style = ""  # current font style
-        self.font_size_pt = 12
+        self.font_size_pt = 12  # current font size in points
         self.font_stretching = 100  # current font stretching
-        self.underline = 0  # underlining flag
+        self.char_spacing = 0  # current character spacing
+        self.underline = False  # underlining flag
         self.current_font = {}  # current font
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
@@ -471,6 +505,20 @@ class FPDF(GraphicsStateMixin):
         self.record_text_quad_points = False
         # page number -> array of 8 × n numbers:
         self.text_quad_points = defaultdict(list)
+
+    def _add_quad_points(self, x, y, w, h):
+        self.text_quad_points[self.page].extend(
+            [
+                x * self.k,
+                (self.h - y) * self.k,
+                (x + w) * self.k,
+                (self.h - y) * self.k,
+                x * self.k,
+                (self.h - y - h) * self.k,
+                (x + w) * self.k,
+                (self.h - y - h) * self.k,
+            ]
+        )
 
     def _set_min_pdf_version(self, version):
         self.pdf_version = max(self.pdf_version, version)
@@ -709,6 +757,10 @@ class FPDF(GraphicsStateMixin):
             raise FPDFException(
                 ".set_creation_date() must always be called before .sign*() methods"
             )
+        if not isinstance(date, datetime):
+            raise TypeError(f"date should be a datetime but is a {type(date)}")
+        if not date.tzinfo:
+            date = date.astimezone()
         self.creation_date = date
 
     def set_xmp_metadata(self, xmp_metadata):
@@ -852,6 +904,7 @@ class FPDF(GraphicsStateMixin):
         fc = self.fill_color
         tc = self.text_color
         stretching = self.font_stretching
+        char_spacing = self.char_spacing
 
         if self.page > 0:
             # Page footer
@@ -916,6 +969,8 @@ class FPDF(GraphicsStateMixin):
 
         if stretching != 100:  # Restore stretching
             self.set_stretching(stretching)
+        if char_spacing != 0:
+            self.set_char_spacing(char_spacing)
         # END Page header
 
     def header(self):
@@ -1013,28 +1068,9 @@ class FPDF(GraphicsStateMixin):
         for frag in (
             self._markdown_parse(s)
             if markdown
-            else (Fragment.from_string(s, self.font_style, bool(self.underline)),)
+            else (Fragment(s, self._get_current_graphics_state(), self.k),)
         ):
-            w += self.get_normalized_string_width_with_style(frag.string, frag.style)
-        if self.font_stretching != 100:
-            w *= self.font_stretching / 100
-        return w * self.font_size / 1000
-
-    def get_normalized_string_width_with_style(self, string, style):
-        """
-        Returns the length of a string with given style
-
-        Args:
-            string (str): the string whose length is to be computed.
-            style (str) : the string representing the style
-        """
-        w = 0
-        font = self.fonts[self.font_family + style]
-        if self.unifontsubset:
-            for char in string:
-                w += _char_width(font, ord(char))
-        else:
-            w += sum(_char_width(font, char) for char in string)
+            w += frag.get_width()
         return w
 
     def set_line_width(self, width):
@@ -1997,6 +2033,22 @@ class FPDF(GraphicsStateMixin):
                 )
             self._out(f"BT /F{self.current_font['i']} {self.font_size_pt:.2f} Tf ET")
 
+    def set_char_spacing(self, spacing):
+        """
+        Sets horizontal character spacing.
+        A positive value increases the space between characters, a negative value
+        reduces it (which may result in glyph overlap).
+        By default, no spacing is set (which is equivalent to a value of 0).
+
+        Args:
+            spacing (float): horizontal spacing in document units
+        """
+        if self.char_spacing == spacing:
+            return
+        self.char_spacing = spacing
+        if self.page > 0:
+            self._out(f"BT {spacing:.2f} Tc ET")
+
     def set_stretching(self, stretching):
         """
         Sets horizontal font stretching.
@@ -2009,7 +2061,7 @@ class FPDF(GraphicsStateMixin):
             return
         self.font_stretching = stretching
         if self.page > 0:
-            self._out(f"BT {self.font_stretching:.2f} Tz ET")
+            self._out(f"BT {stretching:.2f} Tz ET")
 
     def add_link(self):
         """
@@ -2073,6 +2125,98 @@ class FPDF(GraphicsStateMixin):
         )
         self.annots[self.page].append(link)
         return link
+
+    def embed_file(
+        self,
+        file_path=None,
+        bytes=None,
+        basename=None,
+        modification_date=None,
+        **kwargs,
+    ):
+        """
+        Embed a file into the PDF document
+
+        Args:
+            file_path (str or Path): filesystem path to the existing file to embed
+            bytes (bytes): optional, as an alternative to file_path, bytes content of the file to embed
+            basename (str): optional, required if bytes is provided, file base name
+            creation_date (datetime): date and time when the file was created
+            modification_date (datetime): date and time when the file was last modified
+            desc (str): optional description of the file
+            compress (bool): enabled zlib compression of the file - False by default
+            checksum (bool): insert a MD5 checksum of the file content - False by default
+
+        Returns: a string representing the internal file name
+        """
+        if file_path:
+            if bytes:
+                raise ValueError("'bytes' cannot be provided with 'file_path'")
+            if basename:
+                raise ValueError("'basename' cannot be provided with 'file_path'")
+            file_path = Path(file_path)
+            with file_path.open("rb") as input_file:
+                bytes = input_file.read()
+            basename = file_path.name
+            stats = file_path.stat()
+            if modification_date is None:
+                modification_date = datetime.fromtimestamp(stats.st_mtime).astimezone()
+        else:
+            if not bytes:
+                raise ValueError("'bytes' is required if 'file_path' is not provided")
+            if not basename:
+                raise ValueError(
+                    "'basename' is required if 'file_path' is not provided"
+                )
+        already_embedded_basenames = set(file.basename for file in self.embedded_files)
+        if basename in already_embedded_basenames:
+            raise ValueError(f"{basename} has already been embedded in this file")
+        self.embedded_files.append(
+            EmbeddedFile(
+                basename=basename,
+                bytes=bytes,
+                modification_date=modification_date,
+                **kwargs,
+            )
+        )
+        return basename
+
+    @check_page
+    def file_attachment_annotation(
+        self, file_path, x, y, w=1, h=1, name=None, flags=DEFAULT_ANNOT_FLAGS, **kwargs
+    ):
+        """
+        Puts a file attachment annotation on a rectangular area of the page.
+
+        Args:
+            file_path (str or Path): filesystem path to the existing file to embed
+            x (float): horizontal position (from the left) to the left side of the link rectangle
+            y (float): vertical position (from the top) to the bottom side of the link rectangle
+            w (float): optional width of the link rectangle
+            h (float): optional height of the link rectangle
+            name (fpdf.enums.FileAttachmentAnnotationName, str): optional icon that shall be used in displaying the annotation
+            flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
+            bytes (bytes): optional, as an alternative to file_path, bytes content of the file to embed
+            basename (str): optional, required if bytes is provided, file base name
+            creation_date (datetime): date and time when the file was created
+            modification_date (datetime): date and time when the file was last modified
+            desc (str): optional description of the file
+            compress (bool): enabled zlib compression of the file - False by default
+            checksum (bool): insert a MD5 checksum of the file content - False by default
+        """
+        embedded_file_name = self.embed_file(file_path, **kwargs)
+        annotation = Annotation(
+            "FileAttachment",
+            x * self.k,
+            self.h_pt - y * self.k,
+            w * self.k,
+            h * self.k,
+            embedded_file_name=embedded_file_name,
+            name=FileAttachmentAnnotationName.coerce(name) if name else None,
+            flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
+        )
+        self.annots[self.page].append(annotation)
+        return annotation
 
     @check_page
     def text_annotation(
@@ -2281,33 +2425,17 @@ class FPDF(GraphicsStateMixin):
         if self.text_mode != TextMode.FILL:
             s += f" {self.text_mode} Tr {self.line_width:.2f} w"
         s += f" ({txt2}) Tj ET"
-        if self.underline and txt != "":
-            s += " " + self._do_underline(x, y, txt)
+        if (self.underline and txt != "") or self.record_text_quad_points:
+            w = self.get_string_width(txt, normalized=True, markdown=False)
+            if self.underline and txt != "":
+                s += " " + self._do_underline(x, y, w)
+            if self.record_text_quad_points:
+                h = self.font_size
+                y -= 0.8 * h  # same coefficient as in _render_styled_text_line()
+                self._add_quad_points(x, y, w, h)
         if self.fill_color != self.text_color:
             s = f"q {self.text_color.pdf_repr().lower()} {s} Q"
         self._out(s)
-        if self.record_text_quad_points:
-            w = (
-                self.get_normalized_string_width_with_style(txt, self.font_style)
-                * self.font_stretching
-                / 100
-                * self.font_size
-                / 1000
-            )
-            h = self.font_size
-            y -= 0.8 * h  # same coefficient as in _render_styled_text_line()
-            self.text_quad_points[self.page].extend(
-                [
-                    x * self.k,
-                    (self.h - y) * self.k,
-                    (x + w) * self.k,
-                    (self.h - y) * self.k,
-                    x * self.k,
-                    (self.h - y - h) * self.k,
-                    (x + w) * self.k,
-                    (self.h - y - h) * self.k,
-                ]
-            )
 
     @check_page
     def rotate(self, angle, x=None, y=None):
@@ -2686,17 +2814,11 @@ class FPDF(GraphicsStateMixin):
                 "ignored"
             )
             border = 1
-        styled_txt_width = text_line.text_width / 1000 * self.font_size
+        styled_txt_width = text_line.text_width
         if not styled_txt_width:
-            for styled_txt_frag in text_line.fragments:
-                unscaled_width = self.get_normalized_string_width_with_style(
-                    styled_txt_frag.string, styled_txt_frag.style
-                )
-                if self.font_stretching != 100:
-                    unscaled_width *= self.font_stretching / 100
-                styled_txt_width += unscaled_width * self.font_size / 1000
-        elif self.font_stretching != 100:
-            styled_txt_width *= self.font_stretching / 100
+            for frag in text_line.fragments:
+                unscaled_width = frag.get_width()
+                styled_txt_width += unscaled_width
 
         if w == 0:
             w = self.w - self.r_margin - self.x
@@ -2755,20 +2877,7 @@ class FPDF(GraphicsStateMixin):
                 )
 
         if self.record_text_quad_points:
-            x = self.x
-            y = self.y
-            self.text_quad_points[self.page].extend(
-                [
-                    x * self.k,
-                    (self.h - y) * self.k,
-                    (x + w) * self.k,
-                    (self.h - y) * self.k,
-                    x * self.k,
-                    (self.h - y - h) * self.k,
-                    (x + w) * self.k,
-                    (self.h - y - h) * self.k,
-                ]
-            )
+            self._add_quad_points(self.x, self.y, w, h)
 
         s_start = self.x
         s_width, underlines = 0, []
@@ -2801,9 +2910,6 @@ class FPDF(GraphicsStateMixin):
                 word_spacing = (
                     w - self.c_margin - self.c_margin - styled_txt_width
                 ) / text_line.number_of_spaces_between_words
-            if self.font_stretching != 100:
-                # Space character is already stretched, extra spacing is absolute.
-                word_spacing *= 100 / self.font_stretching
             if word_spacing and self.unifontsubset:
                 # If multibyte, Tw has no effect - do word spacing using an
                 # adjustment before each space
@@ -2812,10 +2918,15 @@ class FPDF(GraphicsStateMixin):
                     sl.append("0 Tw")
                     self.ws = 0
                 for frag in text_line.fragments:
-                    if current_font_style != frag.style:
-                        current_font_style = frag.style
-                        current_font = self.fonts[self.font_family + current_font_style]
-                        sl.append(f"/F{current_font['i']} {self.font_size_pt:.2f} Tf")
+                    if frag.font_stretching != 100:
+                        # Space character is already stretched, extra spacing is absolute.
+                        frag_word_spacing = word_spacing * 100 / frag.font_stretching
+                    else:
+                        frag_word_spacing = word_spacing
+                    if current_font_style != frag.font_style:
+                        current_font_style = frag.font_style
+                        current_font = frag.font
+                        sl.append(f"/F{current_font['i']} {frag.font_size_pt:.2f} Tf")
                     txt_frag_mapped = ""
                     for char in frag.string:
                         uni = ord(char)
@@ -2833,29 +2944,40 @@ class FPDF(GraphicsStateMixin):
                         if i == 0:
                             words_strl.append(f"({word})")
                         else:
-                            adj = -(word_spacing * self.k) * 1000 / self.font_size_pt
+                            adj = (
+                                -(frag_word_spacing * self.k) * 1000 / frag.font_size_pt
+                            )
                             words_strl.append(f"{adj:.3f}({space}{word})")
                     sl.append(f"[{' '.join(words_strl)}] TJ")
+                    frag_width = frag.get_width() + self.ws * frag.string.count(" ")
                     if frag.underline:
-                        underlines.append((self.x + dx + s_width, frag.string))
-                    frag_width = self.get_normalized_string_width_with_style(
-                        frag.string, current_font_style
-                    )
-                    # /1000 for font space conversion, /100 for percentage -> *0.00001
-                    frag_width *= self.font_stretching * self.font_size * 0.00001
-                    s_width += frag_width + self.ws * frag.string.count(" ")
+                        underlines.append(
+                            (
+                                self.x + dx + s_width,
+                                frag_width,
+                                frag.font,
+                                frag.font_size,
+                            )
+                        )
+                    s_width += frag_width
             else:
-                if word_spacing and word_spacing != self.ws:
-                    sl.append(f"{word_spacing * self.k:.3f} Tw")
-                elif self.ws > 0:
-                    sl.append("0 Tw")
-                self.ws = word_spacing
 
                 for frag in text_line.fragments:
-                    if current_font_style != frag.style:
-                        current_font_style = frag.style
-                        current_font = self.fonts[self.font_family + current_font_style]
-                        sl.append(f"/F{current_font['i']} {self.font_size_pt:.2f} Tf")
+                    if frag.font_stretching != 100:
+                        # Space character is already stretched, extra spacing is absolute.
+                        frag_word_spacing = word_spacing * 100 / frag.font_stretching
+                    else:
+                        frag_word_spacing = word_spacing
+                    if frag_word_spacing and frag_word_spacing != self.ws:
+                        sl.append(f"{frag_word_spacing * self.k:.3f} Tw")
+                    elif frag_word_spacing == 0 and self.ws > 0:
+                        sl.append("0 Tw")
+                    self.ws = frag_word_spacing
+
+                    if current_font_style != frag.font_style:
+                        current_font_style = frag.font_style
+                        current_font = frag.font
+                        sl.append(f"/F{current_font['i']} {frag.font_size_pt:.2f} Tf")
                     if self.unifontsubset:
                         txt_frag_mapped = ""
                         for char in frag.string:
@@ -2867,31 +2989,34 @@ class FPDF(GraphicsStateMixin):
                     else:
                         txt_frag_escaped = escape_parens(frag.string)
                     sl.append(f"({txt_frag_escaped}) Tj")
+                    frag_width = frag.get_width() + self.ws * frag.string.count(" ")
                     if frag.underline:
-                        underlines.append((self.x + dx + s_width, frag.string))
-                    frag_width = self.get_normalized_string_width_with_style(
-                        frag.string, current_font_style
-                    )
-                    # /1000 for font space conversion, /100 for percentage -> *0.00001
-                    frag_width *= self.font_stretching * self.font_size * 0.00001
-                    s_width += frag_width + self.ws * frag.string.count(" ")
+                        underlines.append(
+                            (
+                                self.x + dx + s_width,
+                                frag_width,
+                                frag.font,
+                                frag.font_size,
+                            )
+                        )
+                    s_width += frag_width
             sl.append("ET")
 
-            for start_x, txt_frag in underlines:
+            for start_x, ul_w, ul_font, ul_font_size in underlines:
                 sl.append(
                     self._do_underline(
                         start_x,
-                        self.y + (0.5 * h) + (0.3 * self.font_size),
-                        txt_frag,
-                        current_font,
+                        self.y + (0.5 * h) + (0.3 * ul_font_size),
+                        ul_w,
+                        ul_font,
                     )
                 )
             if link:
                 self.link(
                     self.x + dx,
-                    self.y + (0.5 * h) - (0.5 * self.font_size),
+                    self.y + (0.5 * h) - (0.5 * frag.font_size),
                     styled_txt_width,
-                    self.font_size,
+                    frag.font_size,
                     link,
                 )
         if sl:
@@ -2945,21 +3070,21 @@ class FPDF(GraphicsStateMixin):
         if not txt:
             return tuple()
         if not markdown:
-            return tuple(
-                [Fragment.from_string(txt, self.font_style, bool(self.underline))]
-            )
+            return tuple([Fragment(txt, self._get_current_graphics_state(), self.k)])
         prev_font_style = self.font_style
         styled_txt_frags = tuple(self._markdown_parse(txt))
         page = self.page
         # We set the current to page to zero so that
         # set_font() does not produce any text object on the stream buffer:
         self.page = 0
-        if any("B" in frag.style for frag in styled_txt_frags):
+        if any("B" in frag.font_style for frag in styled_txt_frags):
             # Ensuring bold font is supported:
             self.set_font(style="B")
-        if any("I" in frag.style for frag in styled_txt_frags):
+        if any("I" in frag.font_style for frag in styled_txt_frags):
             # Ensuring italics font is supported:
             self.set_font(style="I")
+        for frag in styled_txt_frags:
+            frag.font = self.fonts[frag.font_family + frag.font_style]
         # Restoring initial style:
         self.set_font(style=prev_font_style)
         self.page = page
@@ -2987,11 +3112,12 @@ class FPDF(GraphicsStateMixin):
                 and (len(txt) < 3 or txt[2] != half_marker)
             ):
                 if txt_frag:
-                    yield Fragment(
-                        ("B" if in_bold else "") + ("I" if in_italics else ""),
-                        in_underline,
-                        txt_frag,
+                    gstate = self._get_current_graphics_state()
+                    gstate["font_style"] = ("B" if in_bold else "") + (
+                        "I" if in_italics else ""
                     )
+                    gstate["underline"] = in_underline
+                    yield Fragment(txt_frag, gstate, self.k)
                 if txt[:2] == self.MARKDOWN_BOLD_MARKER:
                     in_bold = not in_bold
                 if txt[:2] == self.MARKDOWN_ITALICS_MARKER:
@@ -3004,11 +3130,12 @@ class FPDF(GraphicsStateMixin):
                 txt_frag.append(txt[0])
                 txt = txt[1:]
         if txt_frag:
-            yield Fragment(
-                ("B" if in_bold else "") + ("I" if in_italics else ""),
-                in_underline,
-                txt_frag,
+            gstate = self._get_current_graphics_state()
+            gstate["font_style"] = ("B" if in_bold else "") + (
+                "I" if in_italics else ""
             )
+            gstate["underline"] = in_underline
+            yield Fragment(txt_frag, gstate, self.k)
 
     def will_page_break(self, height):
         """
@@ -3160,9 +3287,7 @@ class FPDF(GraphicsStateMixin):
         # If width is 0, set width to available width between margins
         if w == 0:
             w = self.w - self.r_margin - self.x
-        maximum_allowed_emwidth = (w - 2 * self.c_margin) * 1000 / self.font_size
-        if self.font_stretching != 100:
-            maximum_allowed_emwidth *= 100 / self.font_stretching
+        maximum_allowed_width = w - 2 * self.c_margin
 
         # Calculate text length
         txt = self.normalize_text(txt)
@@ -3180,16 +3305,13 @@ class FPDF(GraphicsStateMixin):
         text_lines = []
         multi_line_break = MultiLineBreak(
             styled_text_fragments,
-            self.get_normalized_string_width_with_style,
             justify=(align == Align.J),
             print_sh=print_sh,
         )
-        text_line = multi_line_break.get_line_of_given_width(maximum_allowed_emwidth)
+        text_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
         while (text_line) is not None:
             text_lines.append(text_line)
-            text_line = multi_line_break.get_line_of_given_width(
-                maximum_allowed_emwidth
-            )
+            text_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
 
         if not text_lines:  # ensure we display at least one cell - cf. issue #349
             text_lines = [
@@ -3306,26 +3428,19 @@ class FPDF(GraphicsStateMixin):
         text_lines = []
         multi_line_break = MultiLineBreak(
             styled_text_fragments,
-            self.get_normalized_string_width_with_style,
             print_sh=print_sh,
         )
-        prev_x = self.x
         # first line from current x position to right margin
-        first_width = self.w - prev_x - self.r_margin
-        first_emwidth = (first_width - 2 * self.c_margin) * 1000 / self.font_size
-        if self.font_stretching != 100:
-            first_emwidth *= 100 / self.font_stretching
+        first_width = self.w - self.x - self.r_margin
         text_line = multi_line_break.get_line_of_given_width(
-            first_emwidth, wordsplit=False
+            first_width - 2 * self.c_margin, wordsplit=False
         )
         # remaining lines fill between margins
         full_width = self.w - self.l_margin - self.r_margin
-        full_emwidth = (full_width - 2 * self.c_margin) * 1000 / self.font_size
-        if self.font_stretching != 100:
-            full_emwidth *= 100 / self.font_stretching
+        fit_width = full_width - 2 * self.c_margin
         while (text_line) is not None:
             text_lines.append(text_line)
-            text_line = multi_line_break.get_line_of_given_width(full_emwidth)
+            text_line = multi_line_break.get_line_of_given_width(fit_width)
         if text_line:
             text_lines.append(text_line)
         if not text_lines:
@@ -4496,6 +4611,50 @@ class FPDF(GraphicsStateMixin):
                     sig_annotation_obj_id = self.n
         return sig_annotation_obj_id
 
+    def _build_embedded_files_per_pdf_ref(self):
+        first_annot_obj_id = object_id_for_page(self.pages_count) + 2
+        annotations_count = sum(
+            len(page_annots_as_obj)
+            for page_annots_as_obj in self.annots_as_obj.values()
+        )
+        for n, embedd_file in enumerate(
+            self.embedded_files, start=first_annot_obj_id + annotations_count
+        ):
+            self.embedded_files_per_pdf_ref[pdf_ref(n)] = embedd_file
+
+    def _put_embedded_files(self):
+        for embedd_file in self.embedded_files:
+            stream_dict = {
+                "/Type": "/EmbeddedFile",
+            }
+            stream_content = embedd_file.bytes
+            if embedd_file.compress:
+                stream_dict["/Filter"] = "/FlateDecode"
+                stream_content = zlib.compress(stream_content)
+            stream_dict["/Length"] = len(stream_content)
+            params = {
+                "/Size": len(embedd_file.bytes),
+            }
+            if embedd_file.creation_date:
+                params["/CreationDate"] = format_date(
+                    embedd_file.creation_date, with_tz=True
+                )
+            if embedd_file.modification_date:
+                params["/ModDate"] = format_date(
+                    embedd_file.modification_date, with_tz=True
+                )
+            if embedd_file.checksum:
+                file_hash = hashlib.new("md5", usedforsecurity=False)
+                file_hash.update(stream_content)
+                hash_hex = file_hash.hexdigest()
+                params["/CheckSum"] = f"<{hash_hex}>"
+            stream_dict["/Params"] = pdf_dict(params)
+            self._newobj()
+            self._out(pdf_dict(stream_dict))
+            self._out(pdf_stream(stream_content))
+            self._out("endobj")
+            assert self.embedded_files_per_pdf_ref[pdf_ref(self.n)] == embedd_file
+
     def _put_document_outline(self):
         # This property is later used by _putcatalog to insert a reference to the Outlines:
         self._outlines_obj_id = self.n + 1
@@ -4568,16 +4727,26 @@ class FPDF(GraphicsStateMixin):
             catalog_d["/StructTreeRoot"] = pdf_ref(self._struct_tree_root_obj_id)
         if self._outlines_obj_id:
             catalog_d["/Outlines"] = pdf_ref(self._outlines_obj_id)
+        if self.embedded_files_per_pdf_ref:
+            file_spec_names = [
+                f"{enclose_in_parens(file.basename)} {file.file_spec(pdf_ref)}"
+                for pdf_ref, file in self.embedded_files_per_pdf_ref.items()
+            ]
+            catalog_d["/Names"] = pdf_dict(
+                {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(file_spec_names)})}
+            )
 
         self._out(pdf_dict(catalog_d, open_dict="", close_dict=""))
 
     def _putheader(self):
-        if self.page_layout in (PageLayout.TWO_PAGE_LEFT, PageLayout.TWO_PAGE_RIGHT):
-            self._set_min_pdf_version("1.5")
-        if self.page_mode == PageMode.USE_OC:
-            self._set_min_pdf_version("1.5")
         if self.page_mode == PageMode.USE_ATTACHMENTS:
             self._set_min_pdf_version("1.6")
+        elif self.page_layout in (PageLayout.TWO_PAGE_LEFT, PageLayout.TWO_PAGE_RIGHT):
+            self._set_min_pdf_version("1.5")
+        elif self.page_mode == PageMode.USE_OC:
+            self._set_min_pdf_version("1.5")
+        elif self.embedded_files:
+            self._set_min_pdf_version("1.4")
         self._out(f"%PDF-{self.pdf_version}")
 
     def _puttrailer(self):
@@ -4614,12 +4783,16 @@ class FPDF(GraphicsStateMixin):
         LOGGER.debug("Final doc sections size summary:")
         with self._trace_size("header"):
             self._putheader()
+        self._build_embedded_files_per_pdf_ref()
         # It is important that pages are the first PDF objects inserted in the document,
-        # followed immediately by annotations: some parts of fpdf2 currently relies on that
+        # followed immediately by annotations: some parts of fpdf2 currently rely on that
         # order of insertion (e.g. util.object_id_for_page):
         with self._trace_size("pages"):
             self._putpages()
-        sig_annotation_obj_id = self._put_annotations_as_objects()
+        with self._trace_size("annotations_objects"):
+            sig_annotation_obj_id = self._put_annotations_as_objects()
+        with self._trace_size("embedded_files"):
+            self._put_embedded_files()
         self._putresources()  # trace_size is performed inside
         if not self.struct_builder.empty():
             with self._trace_size("structure_tree"):
@@ -4692,6 +4865,7 @@ class FPDF(GraphicsStateMixin):
         self.y = self.t_margin
         self.font_family = ""
         self.font_stretching = 100
+        self.char_spacing = 0
         if same:
             if orientation or format:
                 raise ValueError(
@@ -4719,13 +4893,12 @@ class FPDF(GraphicsStateMixin):
         self._out(f"{self.n} 0 obj")
         return self.n
 
-    def _do_underline(self, x, y, txt, current_font=None):
+    def _do_underline(self, x, y, w, current_font=None):
         "Draw an horizontal line starting from (x, y) with a length equal to 'txt' width"
         if current_font is None:
             current_font = self.current_font
         up = current_font["up"]
         ut = current_font["ut"]
-        w = self.get_string_width(txt, True) + self.ws * txt.count(" ")
         return (
             f"{x * self.k:.2f} "
             f"{(self.h - y + up / 1000 * self.font_size) * self.k:.2f} "
