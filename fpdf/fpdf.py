@@ -4096,34 +4096,6 @@ class FPDF(GraphicsStateMixin):
             )
             self._out("endobj")
 
-        for name, info in self.font_files.items():
-            if "type" in info and info["type"] != "TTF":
-                # Font file embedding
-                self._newobj()
-                info["n"] = self.n
-                font = (FPDF_FONT_DIR / name).read_bytes()
-                compressed = substr(name, -2) == ".z"
-                if not compressed and "length2" in info:
-                    header = ord(font[0]) == 128
-                    if header:
-                        # Strip first binary header
-                        font = substr(font, 6)
-                    if header and ord(font[info["length1"]]) == 128:
-                        # Strip second binary header
-                        font = substr(font, 0, info["length1"]) + substr(
-                            font, info["length1"] + 6
-                        )
-
-                self._out(f"<</Length {len(font)}")
-                if compressed:
-                    self._out("/Filter /FlateDecode")
-                self._out(f"/Length1 {info['length1']}")
-                if "length2" in info:
-                    self._out(f"/Length2 {info['length2']} /Length3 0")
-                self._out(">>")
-                self._out(pdf_stream(font))
-                self._out("endobj")
-
         # Font objects
         flist = [(x[1]["i"], x[0], x[1]) for x in self.fonts.items()]
         flist.sort()

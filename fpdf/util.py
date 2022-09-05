@@ -8,12 +8,6 @@ def object_id_for_page(page):
     return 2 * page + 1
 
 
-def substr(s, start, length=-1):
-    if length < 0:
-        length = len(s) - start
-    return s[start : start + length]
-
-
 def format_date(date: datetime, with_tz=False) -> str:
     if with_tz:
         assert date.tzinfo
