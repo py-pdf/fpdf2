@@ -2982,18 +2982,20 @@ class FPDF(GraphicsStateMixin):
 
         if sl:
             # If any PDF settings have been left modified, wrap the line in a local context.
+            # pylint: disable=too-many-boolean-expressions
             if (
                 current_ws != 0.0
                 or current_font != self.current_font
                 or current_text_mode != self.text_mode
                 or self.fill_color != self.text_color
                 or current_font_stretching != self.font_stretching
-                # or current_char_spacing != self.char_spacing
+                or current_char_spacing != self.char_spacing
             ):
                 s = f"q {' '.join(sl)} Q"
             else:
                 s = " ".join(sl)
             self._out(s)
+            # pylint: enable=too-many-boolean-expressions
         self.lasth = h
 
         # XPos.LEFT -> self.x stays the same
@@ -3049,7 +3051,6 @@ class FPDF(GraphicsStateMixin):
             # Ensuring italics font is supported:
             self.set_font(style="I")
         for frag in styled_txt_frags:
-            # print(frag, frag.font['name'], frag.font['type'])
             frag.font = self.fonts[frag.font_family + frag.font_style]
         # Restoring initial style:
         self.set_font(style=prev_font_style)
