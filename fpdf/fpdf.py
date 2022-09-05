@@ -4083,7 +4083,6 @@ class FPDF(GraphicsStateMixin):
         self.state = prev_state
 
     def _putfonts(self):
-        nf = self.n
         for diff in self.diffs.values():
             # Encodings
             self._newobj()
@@ -4100,70 +4099,17 @@ class FPDF(GraphicsStateMixin):
         flist.sort()
         for _, font_name, font in flist:
             self.fonts[font_name]["n"] = self.n + 1
-            my_type = font["type"]
-            name = font["name"]
             # Standard font
-            if my_type == "core":
+            if font["type"] == "core":
                 self._newobj()
                 self._out("<</Type /Font")
-                self._out(f"/BaseFont /{name}")
+                self._out(f"/BaseFont /{font['name']}")
                 self._out("/Subtype /Type1")
-                if name not in ("Symbol", "ZapfDingbats"):
+                if font["name"] not in ("Symbol", "ZapfDingbats"):
                     self._out("/Encoding /WinAnsiEncoding")
                 self._out(">>")
                 self._out("endobj")
-
-            # Additional Type1 or TrueType font
-            elif my_type in ("Type1", "TrueType"):
-                self._newobj()
-                self._out("<</Type /Font")
-                self._out(f"/BaseFont /{name}")
-                self._out(f"/Subtype /{my_type}")
-                self._out("/FirstChar 32 /LastChar 255")
-                self._out(f"/Widths {pdf_ref(self.n + 1)}")
-                self._out(f"/FontDescriptor {pdf_ref(self.n + 2)}")
-                if font["enc"]:
-                    if "diff" in font:
-                        self._out(f"/Encoding {pdf_ref(nf + font['diff'])}")
-                    else:
-                        self._out("/Encoding /WinAnsiEncoding")
-                self._out(">>")
-                self._out("endobj")
-
-                # Widths
-                self._newobj()
-                self._out(
-                    "["
-                    + " ".join(_char_width(font, chr(i)) for i in range(32, 256))
-                    + "]"
-                )
-                self._out("endobj")
-
-                # Descriptor
-                self._newobj()
-                s = f"<</Type /FontDescriptor /FontName /{name}"
-                for k in (
-                    "Ascent",
-                    "Descent",
-                    "CapHeight",
-                    "Flags",
-                    "FontBBox",
-                    "ItalicAngle",
-                    "StemV",
-                    "MissingWidth",
-                ):
-                    s += f" /{k} {font['desc'][k]}"
-
-                filename = font["file"]
-                if filename:
-                    s += " /FontFile"
-                    if my_type != "Type1":
-                        s += "2"
-                    s += " " + pdf_ref(self.font_files[filename]["n"])
-                self._out(f"{s}>>")
-                self._out("endobj")
-            elif my_type == "TTF":
-                self.fonts[font_name]["n"] = self.n + 1
+            elif font["type"] == "TTF":
                 fontname = f"MPDFAA+{font['name']}"
 
                 # unicode_char -> new_code_char map for chars embedded in the PDF
@@ -4343,13 +4289,6 @@ class FPDF(GraphicsStateMixin):
                 self._out(">>")
                 self._out(pdf_stream(fontstream))
                 self._out("endobj")
-            else:
-                # Allow for additional types
-                mtd = f"_put{my_type.lower()}"
-                # check if self has a attr mtd which is callable (method)
-                if not callable(getattr(self, mtd, None)):
-                    raise FPDFException(f"Unsupported font type: {my_type}")
-                self.mtd(font)  # pylint: disable=no-member
 
     def _putTTfontwidths(self, font, maxUni):
         rangeid = 0
