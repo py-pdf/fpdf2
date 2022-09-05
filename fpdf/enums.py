@@ -607,7 +607,7 @@ class FontDescriptorFlags(Flag):
     FIXED_PITCH = 0x0000001
     """
     "All glyphs have the same width (as opposed to proportional or
-    variable-pitch fonts, which have different widths"
+    variable-pitch fonts, which have different widths."
     """
 
     SYMBOLIC = 0x0000004
@@ -618,7 +618,7 @@ class FontDescriptorFlags(Flag):
 
     ITALIC = 0x0000040
     """
-    "Glyphs have dominant vertical strokes that are slanted"
+    "Glyphs have dominant vertical strokes that are slanted."
     """
 
     FORCE_BOLD = 0x0040000
