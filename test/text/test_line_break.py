@@ -1,4 +1,4 @@
-from fpdf import FPDFException
+from fpdf import FPDF, FPDFException, TextMode
 from fpdf.line_break import Fragment, MultiLineBreak, TextLine
 
 import pytest
@@ -14,10 +14,92 @@ class FxFragment(Fragment):
         self.wdict = wdict
         super().__init__(*args, **kwargs)
 
-    def get_character_width(self, character, print_sh=False):
+    def get_character_width(self, character, print_sh=False, initial_cs=True):
         """Return the relevant width from "wdict"."""
         cw = self.wdict[self.font_style]
         return cw[character]
+
+
+def test_fragment_properties():
+    """
+    Make sure the accessor properties in Fragment() return the correct
+    value as of the originating graphics state.
+    """
+    # pylint: disable=protected-access
+    pdf = FPDF()
+    font_family = "helvetica"
+    font_style = "I"
+    font_size = 22
+    pdf.set_font(font_family, font_style, font_size)
+    frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
+    assert frag.font == pdf.current_font, (
+        f"frag.font ({frag.font['name']}/{frag.font['fontkey']})"
+        f" != pdf.current_font ({pdf.current_font['name']}/{pdf.current_font['fontkey']})"
+    )
+    assert frag.unicode_font == pdf.unifontsubset, (
+        f"frag.unicode_font ({frag.unicode_font})"
+        f" != pdf.unifontsubset ({pdf.unifontsubset})"
+    )
+    assert frag.font_family == pdf.font_family, (
+        f"frag.font_family ({frag.font_family})"
+        f" != pdf.font_family ({pdf.font_family})"
+    )
+    assert (
+        frag.font_style == pdf.font_style
+    ), f"frag.font_style ({frag.font_style}) != pdf.font_style ({pdf.font_style})"
+    assert (
+        frag.font_size == pdf.font_size
+    ), f"frag.font_size ({frag.font_size}) != pdf.font_size ({pdf.font_size})"
+    assert (
+        frag.underline == pdf.underline
+    ), f"frag.underline ({frag.underline}) != pdf.underline ({pdf.underline})"
+    pdf.set_font_size(44)
+    frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
+    assert (
+        frag.font_size == pdf.font_size
+    ), f"frag.font_size ({frag.font_size}) != pdf.font_size ({pdf.font_size})"
+    pdf.set_stretching(120)
+    frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
+    assert frag.font_stretching == pdf.font_stretching, (
+        f"frag.font_stretching ({frag.font_stretching})"
+        f" != pdf.font_stretching ({pdf.font_stretching})"
+    )
+    pdf.set_char_spacing(4)
+    frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
+    assert frag.char_spacing == pdf.char_spacing, (
+        f"frag.char_spacing ({frag.char_spacing})"
+        f" != pdf.char_spacing ({pdf.char_spacing})"
+    )
+    pdf.text_mode = TextMode.STROKE
+    frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
+    assert (
+        frag.text_mode == pdf.text_mode
+    ), f"frag.text_mode ({frag.text_mode}) != pdf.text_mode ({pdf.text_mode})"
+    pdf.underline = True
+    frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
+    assert (
+        frag.underline == pdf.underline
+    ), f"frag.underline ({frag.underline}) != pdf.underline ({pdf.underline})"
+    pdf.set_draw_color(0.1, 0.2, 0.3)
+    frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
+    assert (
+        frag.draw_color == pdf.draw_color
+    ), f"frag.draw_color ({frag.draw_color}) != pdf.draw_color ({pdf.draw_color})"
+    pdf.set_fill_color(0.3, 0.2, 0.1)
+    frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
+    assert (
+        frag.fill_color == pdf.fill_color
+    ), f"frag.fill_color ({frag.fill_color}) != pdf.fill_color ({pdf.fill_color})"
+    pdf.set_text_color(0.5)
+    frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
+    assert (
+        frag.text_color == pdf.text_color
+    ), f"frag.text_color ({frag.text_color}) != pdf.text_color ({pdf.text_color})"
+    pdf.set_line_width(0.5)
+    frag = Fragment("example", pdf._get_current_graphics_state(), pdf.k)
+    assert (
+        frag.line_width == pdf.line_width
+    ), f"frag.line_width ({frag.line_width}) != pdf.line_width ({pdf.line_width})"
 
 
 def test_no_fragments():
@@ -70,7 +152,7 @@ def test_width_calculation():
     exp = TextLine(
         fragments=[],
         text_width=0,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -87,7 +169,7 @@ def test_width_calculation():
         exp = TextLine(
             fragments=[Fragment(char, _gs_normal, 1)],
             text_width=char_width + i,
-            number_of_spaces_between_words=0,
+            number_of_spaces=0,
             justify=False,
             trailing_nl=False,
         )
@@ -120,7 +202,7 @@ def test_single_space_in_fragment():
     exp = TextLine(
         fragments=fragments,
         text_width=char_width,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=False,
         trailing_nl=False,
     )
@@ -173,7 +255,7 @@ def test_single_hard_hyphen_in_fragment():
     exp = TextLine(
         fragments=fragments,
         text_width=char_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -232,7 +314,7 @@ def test_trailing_soft_hyphen():
     exp = TextLine(
         fragments=[Fragment("hello", _gs_normal, 1)],
         text_width=test_width_B,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -265,7 +347,7 @@ def test_trailing_whitespace():
     exp = TextLine(
         fragments=fragments,
         text_width=test_width_B,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=False,
         trailing_nl=False,
     )
@@ -298,7 +380,7 @@ def test_two_words_one_line():
     exp = TextLine(
         fragments=fragments,
         text_width=test_width_B,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=False,
         trailing_nl=False,
     )
@@ -333,7 +415,7 @@ def test_two_words_one_line_justify():
     exp = TextLine(
         fragments=fragments,
         text_width=test_width_B,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=False,
         trailing_nl=False,
     )
@@ -366,7 +448,7 @@ def test_two_words_two_lines_break_by_space():
     exp = TextLine(
         fragments=[Fragment("hello", _gs_normal, 1)],
         text_width=test_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -375,7 +457,7 @@ def test_two_words_two_lines_break_by_space():
     exp = TextLine(
         fragments=[Fragment("world", _gs_normal, 1)],
         text_width=test_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -412,7 +494,7 @@ def test_two_words_two_lines_break_by_space_justify():
     exp = TextLine(
         fragments=[Fragment("hello", _gs_normal, 1)],
         text_width=test_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -421,7 +503,7 @@ def test_two_words_two_lines_break_by_space_justify():
     exp = TextLine(
         fragments=[Fragment("world", _gs_normal, 1)],
         text_width=test_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -457,7 +539,7 @@ def test_four_words_two_lines_break_by_space():
     exp = TextLine(
         fragments=[Fragment(first_line_text, _gs_normal, 1)],
         text_width=test_width_AA,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=False,
         trailing_nl=False,
     )
@@ -466,7 +548,7 @@ def test_four_words_two_lines_break_by_space():
     exp = TextLine(
         fragments=[Fragment(second_line_text, _gs_normal, 1)],
         text_width=test_width_AA,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=False,
         trailing_nl=False,
     )
@@ -504,7 +586,7 @@ def test_four_words_two_lines_break_by_space_justify():
     exp = TextLine(
         fragments=[Fragment(first_line_text, _gs_normal, 1)],
         text_width=test_width_AA,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=True,
         trailing_nl=False,
     )
@@ -513,7 +595,7 @@ def test_four_words_two_lines_break_by_space_justify():
     exp = TextLine(
         fragments=[Fragment(second_line_text, _gs_normal, 1)],
         text_width=test_width_AA,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=False,
         trailing_nl=False,
     )
@@ -558,7 +640,7 @@ def test_break_fragment_into_two_lines():
             Fragment("two", _gs_bold, 1),
         ],
         text_width=test_width_A,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=False,
         trailing_nl=False,
     )
@@ -572,7 +654,7 @@ def test_break_fragment_into_two_lines():
             Fragment(third_line_text, _gs_normal, 1),
         ],
         text_width=test_width_BB,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=False,
         trailing_nl=False,
     )
@@ -617,7 +699,7 @@ def test_break_fragment_into_two_lines_justify():
             Fragment("two", _gs_bold, 1),
         ],
         text_width=test_width_A,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=True,
         trailing_nl=False,
     )
@@ -629,7 +711,7 @@ def test_break_fragment_into_two_lines_justify():
             Fragment(third_line_text, _gs_normal, 1),
         ],
         text_width=test_width_BB,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=False,
         trailing_nl=False,
     )
@@ -661,7 +743,7 @@ def test_soft_hyphen_break():
     exp = TextLine(
         fragments=[Fragment("abcd\u002d", _gs_normal, 1)],
         text_width=test_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -670,7 +752,7 @@ def test_soft_hyphen_break():
     exp = TextLine(
         fragments=[Fragment("efgh\u002d", _gs_normal, 1)],
         text_width=test_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -679,7 +761,7 @@ def test_soft_hyphen_break():
     exp = TextLine(
         fragments=[Fragment("ijk\u002d", _gs_normal, 1)],
         text_width=test_width_AA,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -688,7 +770,7 @@ def test_soft_hyphen_break():
     exp = TextLine(
         fragments=[Fragment("l\u002d", _gs_normal, 1)],
         text_width=test_width_B,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -697,7 +779,7 @@ def test_soft_hyphen_break():
     exp = TextLine(
         fragments=[Fragment("m\u002d", _gs_normal, 1)],
         text_width=test_width_B,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -706,7 +788,7 @@ def test_soft_hyphen_break():
     exp = TextLine(
         fragments=[Fragment("n\u002d", _gs_normal, 1)],
         text_width=test_width_B,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -715,7 +797,7 @@ def test_soft_hyphen_break():
     exp = TextLine(
         fragments=[Fragment("op", _gs_normal, 1)],
         text_width=test_width_B,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -745,7 +827,7 @@ def test_soft_hyphen_break_justify():
     exp = TextLine(
         fragments=[Fragment("ab cd\u002d", _gs_normal, 1)],
         text_width=test_width,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=True,
         trailing_nl=False,
     )
@@ -754,7 +836,7 @@ def test_soft_hyphen_break_justify():
     exp = TextLine(
         fragments=[Fragment("ef gh\u002d", _gs_normal, 1)],
         text_width=test_width,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=True,
         trailing_nl=False,
     )
@@ -763,7 +845,7 @@ def test_soft_hyphen_break_justify():
     exp = TextLine(
         fragments=[Fragment("kl mn", _gs_normal, 1)],
         text_width=last_width,
-        number_of_spaces_between_words=1,
+        number_of_spaces=1,
         justify=False,
         trailing_nl=False,
     )
@@ -793,7 +875,7 @@ def test_explicit_break():
     exp = TextLine(
         fragments=[Fragment("a", _gs_normal, 1)],
         text_width=char_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=True,
     )
@@ -802,7 +884,7 @@ def test_explicit_break():
     exp = TextLine(
         fragments=[Fragment("b", _gs_normal, 1)],
         text_width=char_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=True,
     )
@@ -811,7 +893,7 @@ def test_explicit_break():
     exp = TextLine(
         fragments=[Fragment("c", _gs_normal, 1)],
         text_width=char_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=True,
     )
@@ -820,7 +902,7 @@ def test_explicit_break():
     exp = TextLine(
         fragments=[Fragment("d", _gs_normal, 1)],
         text_width=char_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -851,7 +933,7 @@ def test_explicit_break_justify():
     exp = TextLine(
         fragments=[Fragment("a", _gs_normal, 1)],
         text_width=char_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=True,
     )
@@ -860,7 +942,7 @@ def test_explicit_break_justify():
     exp = TextLine(
         fragments=[Fragment("b", _gs_normal, 1)],
         text_width=char_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=True,
     )
@@ -869,7 +951,7 @@ def test_explicit_break_justify():
     exp = TextLine(
         fragments=[Fragment("c", _gs_normal, 1)],
         text_width=char_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=True,
     )
@@ -878,7 +960,7 @@ def test_explicit_break_justify():
     exp = TextLine(
         fragments=[Fragment("d", _gs_normal, 1)],
         text_width=char_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -910,7 +992,7 @@ def test_single_word_doesnt_fit_into_width():
     exp = TextLine(
         fragments=[Fragment("abcde", _gs_normal, 1)],
         text_width=test_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -919,7 +1001,7 @@ def test_single_word_doesnt_fit_into_width():
     exp = TextLine(
         fragments=[Fragment("fghij", _gs_normal, 1)],
         text_width=test_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -928,7 +1010,7 @@ def test_single_word_doesnt_fit_into_width():
     exp = TextLine(
         fragments=[Fragment("klmno", _gs_normal, 1)],
         text_width=test_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -937,7 +1019,7 @@ def test_single_word_doesnt_fit_into_width():
     exp = TextLine(
         fragments=[Fragment("p", _gs_normal, 1)],
         text_width=char_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -969,7 +1051,7 @@ def test_single_word_doesnt_fit_into_width_justify():
     exp = TextLine(
         fragments=[Fragment("abcde", _gs_normal, 1)],
         text_width=test_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -977,7 +1059,7 @@ def test_single_word_doesnt_fit_into_width_justify():
     exp = TextLine(
         fragments=[Fragment("fghij", _gs_normal, 1)],
         text_width=test_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -985,7 +1067,7 @@ def test_single_word_doesnt_fit_into_width_justify():
     exp = TextLine(
         fragments=[Fragment("klmno", _gs_normal, 1)],
         text_width=test_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -993,7 +1075,7 @@ def test_single_word_doesnt_fit_into_width_justify():
     exp = TextLine(
         fragments=[Fragment("p", _gs_normal, 1)],
         text_width=char_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,
         trailing_nl=False,
     )
@@ -1020,7 +1102,7 @@ def test_last_line_no_justify():
     exp = TextLine(
         fragments=fragments,
         text_width=char_width,
-        number_of_spaces_between_words=0,
+        number_of_spaces=0,
         justify=False,  # !
         trailing_nl=False,
     )

@@ -1,0 +1,13 @@
+# Enforce Unix newlines
+* text eol=lf
+
+# Binary files
+*.pdf binary
+*.p12 binary
+*.otf binary
+*.ttf binary
+*.bmp binary
+*.jpg binary
+*.gif binary
+*.png binary
+*.webp binary

@@ -104,7 +104,7 @@ img_buf.close()
 ```
 Result:
 
-![](chart-pandas.PNG)
+![](chart-pandas.png)
 
 
 Create a table with pandas [DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html):
@@ -149,7 +149,7 @@ pdf.output("table_with_cells.pdf")
 ```
 
 Result:
-![](table-pandas.PNG)
+![](table-pandas.png)
 
 
 ## Mathematical formulas ##
