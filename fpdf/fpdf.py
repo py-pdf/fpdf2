@@ -95,7 +95,6 @@ from .util import (
     format_date,
     get_scale_factor,
     object_id_for_page,
-    substr,
 )
 
 # Public global variables:
