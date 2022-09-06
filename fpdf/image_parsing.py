@@ -180,7 +180,6 @@ def _to_zdata(img, remove_slice=None, select_slice=None):
     else:
         channels_count = len(data) // (img.size[0] * img.size[1])
         loop_incr = img.size[0] * channels_count + 1
-    channels_count = len(data) // (img.size[0] * img.size[1])
     i = 0
     while i < len(data):
         data[i:i] = b"\0"
