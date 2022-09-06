@@ -98,7 +98,7 @@ The lift is given as fraction of the font size and indicates how much the glyph 
 Unicode fonts may include characters in the [subscripts and superscripts range](https://en.wikipedia.org/wiki/Unicode_subscripts_and_superscripts). In a high quality font, those glyphs will be smaller than the normal ones, but have a proportionally stronger stroke width in order to maintain the same visual density. If available in good quality, using Characters from this range is preferred and will look better. Unfortunately, many fonts either don't (fully) cover this range, or the glyphs are of unsatisfactory quality. In those cases, this feature of `fpdf2` offers a reliable workaround with suboptimal but consistent output quality.
 
 Practical use is essentially limited to `.write()` and `html_write()`.
-The feature does technically work with `.cell()` and `.multi_cell`, but is of limited usefulness there. It currently gets completely ignored by `.text()`.
+The feature does technically work with `.cell()` and `.multi_cell`, but is of limited usefulness there, since you can't change font properties in the middle of a line (there is no markdown support). It currently gets completely ignored by `.text()`.
 
 The example shows the most common use cases:
 
