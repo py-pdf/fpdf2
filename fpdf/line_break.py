@@ -130,21 +130,12 @@ class Fragment:
                 precedence over the start/end arguments.
         """
 
-        def char_width(char):
-            try:
-                width = self.font["cw"][char]
-            except (IndexError, KeyError):
-                width = self.font.get("desc", {}).get("MissingWidth") or 500
-            if width == 65535:
-                return 0
-            return width
-
         if chars is None:
             chars = self.characters[start:end]
         if self.is_ttf_font:
-            w = sum(char_width(ord(c)) for c in chars)
+            w = sum(self.font["cw"][ord(c)] for c in chars)
         else:
-            w = sum(char_width(c) for c in chars)
+            w = sum(self.font["cw"][c] for c in chars)
         char_spacing = self.char_spacing
         if self.font_stretching != 100:
             w *= self.font_stretching * 0.01
