@@ -359,3 +359,26 @@ def test_multi_cell_font_stretching(tmp_path):  # issue #478
     pdf.set_stretching(150)
     pdf.multi_cell(w=50, txt=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
     assert_pdf_equal(pdf, HERE / "multi_cell_font_stretching.pdf", tmp_path)
+
+
+def test_multi_cell_char_spacing(tmp_path):  # issue #489
+    pdf = FPDF()
+    pdf.add_page()
+    # built-in font
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_fill_color(255, 255, 0)
+    pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+    pdf.ln()
+    pdf.set_char_spacing(10)
+    pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+    pdf.ln()
+    # unicode font
+    pdf.set_char_spacing(0)
+    pdf.add_font("Droid", fname=FONTS_DIR / "DroidSansFallback.ttf")
+    pdf.set_font("Droid", "", 8)
+    pdf.set_fill_color(255, 255, 0)
+    pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+    pdf.ln()
+    pdf.set_char_spacing(10)
+    pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+    assert_pdf_equal(pdf, HERE / "multi_cell_char_spacing.pdf", tmp_path)

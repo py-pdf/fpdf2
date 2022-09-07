@@ -1,6 +1,6 @@
 # Text styling #
 
-## set_font ##
+## set_font() ##
 
 Setting emphasis on text can be controlled by using `set_font(style=...)`:
 
@@ -25,6 +25,46 @@ pdf.cell(txt="PDF")
 pdf.output("style.pdf")
 ```
 
+## .set_stretching(stretching=100) ##
+
+Text can be stretched horizontally with this setting, measured in percent.
+If the argument is less than 100, then all characters are rendered proportionally narrower and the text string will take less space.
+If it is larger than 100, then the width of all characters will be expanded accordingly.
+
+The example shows the same text justified to the same width, with stretching values of 100 and 150.
+```python
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Helvetica", "", 8)
+pdf.set_fill_color(255, 255, 0)
+pdf.multi_cell(w=50, txt=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
+pdf.ln()
+pdf.set_stretching(150)
+pdf.multi_cell(w=50, txt=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
+```
+![](font_stretching.png)
+
+
+## .set_char_spacing(spacing=0) ##
+
+This method changes the distance between individual characters of a test string. Normally, characters are placed at a given distance according the width information in the font file. If spacing is larger than 0, then their distance will be larger, creating a gap in between. If it is less than 0, then their distance will be smaller, possibly resulting in an overlap. The change in distance is given in typographic points (Pica), which makes it easy to adapt it relative to the current font size.
+
+Character spacing works best for formatting single line text created by any method, or for highlighting individual words included in a block of text with `.write()`.
+
+**Limitations**: Spacing will only be changed *within* a sequence of characters that `fpdf2` adds to the PDF in one go. This means that there will be no extra distance _eg._ between text parts that are placed successivly with `write()`. Also, if you apply different font styles using the Markdown functionality of `.cell()` and `.multi_cell()` or by using `html_write()`, then any parts given different styles will have the original distance between them. This is so because `fpdf2` has to add each styled fragment to the PDF file seperately.
+
+The example shows the same text justified to the same width, with char_spacing values of 0 and 10 (font size 8 pt).
+```python
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Helvetica", "", 8)
+pdf.set_fill_color(255, 255, 0)
+pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+pdf.ln()
+pdf.set_char_spacing(10)
+pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+```
+![](char_spacing.png)
 
 ## .text_mode ##
 

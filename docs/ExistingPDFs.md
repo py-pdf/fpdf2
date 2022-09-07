@@ -65,4 +65,4 @@ writer.write(OUT_FILEPATH)
 This example relies on [pdfrw _Pull Request_ #216](https://github.com/pmaupin/pdfrw/pull/216).
 Until it is merged, you can install a forked version of `pdfrw` including the required patch:
 
-    pip install git+https://github.com/PyPDF/pdfrw.git@addpage_at_index
+    pip install git+https://github.com/PyFPDF/pdfrw.git@addpage_at_index

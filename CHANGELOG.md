@@ -17,15 +17,21 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.5.7] - not released yet
+### Changed
+- `fpdf2` now uses [fontTools](https://fonttools.readthedocs.io/en/latest/) to read and embed fonts in the PDF, thanks to @gmischler and @RedShy
+
 ### Fixed
 - `arc()` not longer renders artefacts at intersection point, thanks to @Jmillan-Dev; [#488](https://github.com/PyFPDF/fpdf2/issues/488)
-- `write_html`: `<em>` & `<strong>` HTML tags are now properly supported - they were ignored previously; [#498](https://github.com/PyFPDF/fpdf2/issues/498)
+- [`write_html()`](https://pyfpdf.github.io/fpdf2/HTML.html): `<em>` & `<strong>` HTML tags are now properly supported - they were ignored previously; [#498](https://github.com/PyFPDF/fpdf2/issues/498)
+- the `CreationDate` of PDFs & embedded files now includes the system timezone
 
 ### Added
+- [`set_page_background()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_page_background): new method added by @semaeostomea: [link to documentation](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html#per-page-format-orientation-and-background)
+- [`embed_file()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.embed_file) & [`file_attachment_annotation()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.file_attachment_annotation): new methods to add file attachments - [link to documentation](https://pyfpdf.github.io/fpdf2/FileAttachments.html)
+- A new method [`set_char_spacing()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_char_spacing) allows to increase the spacing between individual characters, thanks to @gmischler: [link to documentation](https://pyfpdf.github.io/fpdf2/TextStyling.html)
 - workaround by @semaeostomea to support arabic and right-to-left scripts: [link to documentation](https://pyfpdf.github.io/fpdf2/Unicode.html#right-to-left-arabic-script-workaround)
 - documentation on shapes styling: [link to documentation](https://pyfpdf.github.io/fpdf2/Shapes.html#path-styling)
 - documentation on sharing the images cache among FPDF instances: [link to documentation](https://pyfpdf.github.io/fpdf2/Images.html#sharing-the-image-cache-among-fpdf-instances)
-- new function [`set_page_background()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_page_background) added by @semaeostomea: [link to documentation](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html#per-page-format-orientation-and-background)
 
 ## [2.5.6] - 2022-08-16
 ### Added
@@ -115,6 +121,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.5.1] - 2022-03-07
 ### Added
+- The documentation outline is revised, and a page about creating Text added, thanks to @gmischler
 - support for soft-hyphen (`\u00ad`) break in `write()`, `cell()` & `multi_cell()` calls - thanks @oleksii-shyman & @gmischler!
   Documentation: [Line breaks](https://pyfpdf.github.io/fpdf2/LineBreaks.html)
 - new documentation page on [Emojis, Symbols & Dingbats](https://pyfpdf.github.io/fpdf2/EmojisSymbolsDingbats.html)

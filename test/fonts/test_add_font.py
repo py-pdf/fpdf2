@@ -90,9 +90,18 @@ def test_render_en_dash(tmp_path):  # issue-166
     assert_pdf_equal(pdf, HERE / "render_en_dash.pdf", tmp_path)
 
 
-def test_add_font_otf():
+def test_add_font_otf(tmp_path):
     pdf = FPDF()
-    font_file_path = HERE / "Quicksand-Regular.otf"
-    with pytest.raises(RuntimeError) as error:
-        pdf.add_font("Quicksand", fname=font_file_path)
-    assert str(error.value) == "Postscript outlines are not supported"
+    pdf.add_page()
+    pdf.add_font("Quicksand", style="", fname=HERE / "Quicksand-Regular.otf")
+    pdf.add_font("Quicksand", style="B", fname=HERE / "Quicksand-Bold.otf")
+    pdf.add_font("Quicksand", style="I", fname=HERE / "Quicksand-Italic.otf")
+    pdf.set_font("Quicksand", size=32)
+    text = (
+        "Lorem ipsum dolor, **consectetur adipiscing** elit,"
+        " eiusmod __tempor incididunt__ ut labore et dolore --magna aliqua--."
+    )
+    pdf.multi_cell(w=pdf.epw, txt=text, markdown=True)
+    pdf.ln()
+    pdf.multi_cell(w=pdf.epw, txt=text, markdown=True, align="L")
+    assert_pdf_equal(pdf, HERE / "fonts_otf.pdf", tmp_path)

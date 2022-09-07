@@ -14,28 +14,10 @@ from pathlib import Path
 import pytest
 
 import fpdf
-from fpdf.ttfonts import TTFontFile
+from fontTools import ttLib
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
-
-
-class MyTTFontFile(TTFontFile):
-    """MyTTFontFile docstring
-
-    I clearly have no idea what this does. It'd be great if this class were
-    even a little bit better documented, so that it would be clearer what this
-    test is testing, otherwise this test isn't clearly testing one class or the
-    other.
-    """
-
-    def getCMAP4(self, unicode_cmap_offset, glyphToChar, charToGlyph):
-        TTFontFile.getCMAP4(self, unicode_cmap_offset, glyphToChar, charToGlyph)
-        self.saveChar = charToGlyph
-
-    def getCMAP12(self, unicode_cmap_offset, glyphToChar, charToGlyph):
-        TTFontFile.getCMAP12(self, unicode_cmap_offset, glyphToChar, charToGlyph)
-        self.saveChar = charToGlyph
 
 
 @pytest.mark.parametrize(
@@ -51,11 +33,11 @@ def test_first_999_chars(font_filename, tmp_path):
     pdf.add_font(font_name, fname=font_path)
     pdf.set_font(font_name, size=10)
 
-    ttf = MyTTFontFile()
-    ttf.getMetrics(font_path)
+    font = ttLib.TTFont(font_path)
+    cmap = font.getBestCmap()
 
     # Create a PDF with the first 999 charters defined in the font:
-    for counter, character in enumerate(ttf.saveChar, 0):
+    for counter, character in enumerate(cmap, 0):
         pdf.write(8, f"{counter:03}) {character:03x} - {character:c}", print_sh=True)
         pdf.ln()
         if counter >= 999:
