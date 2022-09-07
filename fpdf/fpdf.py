@@ -2937,7 +2937,7 @@ class FPDF(GraphicsStateMixin):
                     current_text_mode = frag.text_mode
                     sl.append(f"{frag.text_mode} Tr {frag.line_width:.2f} w")
 
-                if frag.unicode_font:
+                if frag.is_ttf_font:
                     mapped_text = ""
                     for char in frag.string:
                         uni = ord(char)
