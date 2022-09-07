@@ -2,6 +2,7 @@ import zlib
 from io import BytesIO
 import base64
 from urllib.request import urlopen
+import math
 
 try:
     from PIL import Image
@@ -175,7 +176,6 @@ def _to_zdata(img, remove_slice=None, select_slice=None):
         data = data[select_slice]
     # Left-padding every row with a single zero:
     if img.mode == '1':
-        import math
         loop_incr = math.ceil(img.size[0] / 8) + 1
     else:
         channels_count = len(data) // (img.size[0] * img.size[1])
