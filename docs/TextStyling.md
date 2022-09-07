@@ -87,7 +87,7 @@ The size multiplier for the font size:
 * `.nom_scale` (0.75)
 * `.denom_scale` (0.75)
 
-The lift is given as fraction of the font size and indicates how much the glyph gets lifted above the base line (negative for below):
+The lift is given as fraction of the unscaled font size and indicates how much the glyph gets lifted above the base line (negative for below):
 
 * `.sup_lift` (0.4)
 * `.sub_lift` (-0.15)

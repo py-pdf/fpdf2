@@ -2556,6 +2556,7 @@ class FPDF(GraphicsStateMixin):
             text_color
             text_mode
             underline
+            char_vpos
 
         Args:
             **kwargs: key-values settings to set at the beggining of this context.
@@ -2578,7 +2579,7 @@ class FPDF(GraphicsStateMixin):
                 setattr(gs, key, value)
                 if key == "blend_mode":
                     self._set_min_pdf_version("1.4")
-            elif key in ("font_stretching", "text_mode", "underline"):
+            elif key in ("font_stretching", "text_mode", "underline", "char_vpos"):
                 setattr(self, key, value)
             else:
                 raise ValueError(f"Unsupported setting: {key}")

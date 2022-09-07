@@ -354,11 +354,14 @@ def test_local_context_inherited_shared_props(tmp_path):
     pdf.set_fill_color(255, 128, 0)
     pdf.set_line_width(2)
     pdf.set_dash_pattern(dash=0.5, gap=9.5, phase=3.25)
+    pdf.write(txt="normal")
     with pdf.local_context(
-        fill_opacity=0.5
+        fill_opacity=0.5, char_vpos="SUP"
     ):  # => triggers creation of a local GraphicsStyle
         pdf.rect(x=60, y=60, w=60, h=60, style="DF")
+        pdf.write(txt="sup")
     pdf.rect(x=60, y=150, w=60, h=60, style="DF")
+    pdf.write(txt="normal")
     assert_pdf_equal(pdf, HERE / "local_context_inherited_shared_props.pdf", tmp_path)
 
 

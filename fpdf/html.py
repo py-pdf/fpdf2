@@ -245,6 +245,8 @@ class HTML2FPDF(HTMLParser):
         self.table_row_height = 0
         self.heading_level = None
         self.heading_sizes = dict(**DEFAULT_HEADING_SIZES)
+        self.heading_above = 0.2  # extra space above heading, relative to font size
+        self.heading_below = 0.2  # extra space below heading, relative to font size
         if heading_sizes:
             self.heading_sizes.update(heading_sizes)
         self._only_imgs_in_td = False
@@ -456,7 +458,7 @@ class HTML2FPDF(HTMLParser):
             self.heading_level = int(tag[1:])
             hsize = self.heading_sizes[tag]
             self.pdf.set_text_color(150, 0, 0)
-            self.pdf.ln(self.h + 0.2 * hsize)  # 20 % more space above heading
+            self.pdf.ln(self.h + self.heading_above * hsize)  # more space above heading
             self.set_font(size=hsize)
             if attrs:
                 self.align = attrs.get("align")
@@ -606,7 +608,9 @@ class HTML2FPDF(HTMLParser):
         if tag in self.heading_sizes:
             self.heading_level = None
             face, size, color = self.font_stack.pop()
-            self.pdf.ln(self.h * 1.2)  # 20 % more space below heading
+            self.pdf.ln(
+                self.h + self.h * self.heading_below
+            )  # more space below heading
             self.set_font(face, size)
             self.set_text_color(*color)
             self.align = None
