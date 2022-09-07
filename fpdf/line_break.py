@@ -47,7 +47,7 @@ class Fragment:
         self.graphics_state["current_font"] = v
 
     @property
-    def unicode_font(self):
+    def is_ttf_font(self):
         return self.font.get("type") == "TTF"
 
     @property
@@ -141,7 +141,7 @@ class Fragment:
 
         if chars is None:
             chars = self.characters[start:end]
-        if self.unicode_font:
+        if self.is_ttf_font:
             w = sum(char_width(ord(c)) for c in chars)
         else:
             w = sum(char_width(c) for c in chars)

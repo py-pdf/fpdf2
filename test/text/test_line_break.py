@@ -36,9 +36,9 @@ def test_fragment_properties():
         f"frag.font ({frag.font['name']}/{frag.font['fontkey']})"
         f" != pdf.current_font ({pdf.current_font['name']}/{pdf.current_font['fontkey']})"
     )
-    assert frag.unicode_font == pdf.unifontsubset, (
-        f"frag.unicode_font ({frag.unicode_font})"
-        f" != pdf.unifontsubset ({pdf.unifontsubset})"
+    assert frag.is_ttf_font == pdf.is_ttf_font, (
+        f"frag.unicode_font ({frag.is_ttf_font})"
+        f" != pdf.unifontsubset ({pdf.is_ttf_font})"
     )
     assert frag.font_family == pdf.font_family, (
         f"frag.font_family ({frag.font_family})"

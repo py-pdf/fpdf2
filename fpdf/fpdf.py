@@ -522,7 +522,7 @@ class FPDF(GraphicsStateMixin):
         self.pdf_version = max(self.pdf_version, version)
 
     @property
-    def unifontsubset(self):
+    def is_ttf_font(self):
         return self.current_font.get("type") == "TTF"
 
     @property
@@ -2404,7 +2404,7 @@ class FPDF(GraphicsStateMixin):
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         txt = self.normalize_text(txt)
-        if self.unifontsubset:
+        if self.is_ttf_font:
             txt_mapped = ""
             for char in txt:
                 uni = ord(char)
@@ -3823,7 +3823,7 @@ class FPDF(GraphicsStateMixin):
         """Check that text input is in the correct format/encoding"""
         # - for TTF unicode fonts: unicode object (utf8 encoding)
         # - for built-in fonts: string instances (encoding: latin-1, cp1252)
-        if not self.unifontsubset and self.core_fonts_encoding:
+        if not self.is_ttf_font and self.core_fonts_encoding:
             try:
                 return txt.encode(self.core_fonts_encoding).decode("latin-1")
             except UnicodeEncodeError as error:
@@ -4117,7 +4117,7 @@ class FPDF(GraphicsStateMixin):
                 # notdef_outline=True means that keeps the white box for the .notdef glyph
                 # recommended_glyphs=True means that adds the .notdef, .null, CR, and space glyphs
                 options = ftsubset.Options(notdef_outline=True, recommended_glyphs=True)
-                # dropping the tables previous dropped in the old code #issue 418
+                # dropping the tables previous dropped in the old ttfonts.py file #issue 418
                 options.drop_tables += ["GDEF", "GSUB", "GPOS", "MATH", "hdmx"]
                 subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)
