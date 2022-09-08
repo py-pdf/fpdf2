@@ -72,12 +72,14 @@ def test_add_core_fonts():
     font_file_path = HERE / "Roboto-Regular.ttf"
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("Helvetica", fname=font_file_path)
-    pdf.add_font("Helvetica", style="B", fname=font_file_path)
-    pdf.add_font("helvetica", style="IB", fname=font_file_path)
-    pdf.add_font("times", style="", fname=font_file_path)
-    pdf.add_font("courier", fname=font_file_path)
-    assert not pdf.fonts  # No fonts added, as all of them are core fonts
+
+    with pytest.warns(UserWarning):  # "already added".
+        pdf.add_font("Helvetica", fname=font_file_path)
+        pdf.add_font("Helvetica", style="B", fname=font_file_path)
+        pdf.add_font("helvetica", style="IB", fname=font_file_path)
+        pdf.add_font("times", style="", fname=font_file_path)
+        pdf.add_font("courier", fname=font_file_path)
+        assert not pdf.fonts  # No fonts added, as all of them are core fonts
 
 
 def test_render_en_dash(tmp_path):  # issue-166

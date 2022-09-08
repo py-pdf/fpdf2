@@ -73,14 +73,15 @@ def test_units():
 
 def test_doc_option_only_core_fonts_encoding():
     pdf = fpdf.FPDF()
-    pdf.set_doc_option("core_fonts_encoding", 4)
-    assert pdf.core_fonts_encoding == 4
+    with pytest.warns(DeprecationWarning):
+        pdf.set_doc_option("core_fonts_encoding", 4)
+        assert pdf.core_fonts_encoding == 4
 
-    with pytest.raises(FPDFException) as e:
-        pdf.set_doc_option("not core_fonts_encoding", None)
+        with pytest.raises(FPDFException) as e:
+            pdf.set_doc_option("not core_fonts_encoding", None)
 
-    msg = 'Unknown document option "not core_fonts_encoding"'
-    assert str(e.value) == msg
+        msg = 'Unknown document option "not core_fonts_encoding"'
+        assert str(e.value) == msg
 
 
 def test_adding_content_after_closing():

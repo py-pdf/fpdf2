@@ -28,15 +28,17 @@ def test_polyline_command_all_k(unit, factor):
     assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l S"
     data.clear()
 
-    pdf.polyline(scale_points(POLYLINE_COORDINATES, factor), fill=True)
-    assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l B"
-    data.clear()
+    with pytest.warns(DeprecationWarning):
+        # keep one "fill=True" to test the warning
+        pdf.polyline(scale_points(POLYLINE_COORDINATES, factor), fill=True)
+        assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l B"
+        data.clear()
 
     pdf.polyline(scale_points(POLYLINE_COORDINATES, factor), polygon=True)
     assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l h S"
     data.clear()
 
-    pdf.polyline(scale_points(POLYLINE_COORDINATES, factor), polygon=True, fill=True)
+    pdf.polyline(scale_points(POLYLINE_COORDINATES, factor), polygon=True, style="DF")
     assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l h B"
 
 
@@ -63,5 +65,5 @@ def test_filled_polygon(tmp_path):
     pdf.set_line_width(2)
     pdf.set_fill_color(r=255, g=0, b=0)
     coords = ((100, 0), (5, 69), (41, 181), (159, 181), (195, 69))
-    pdf.polygon(coords, fill=True)
+    pdf.polygon(coords, style="DF")
     assert_pdf_equal(pdf, HERE / "filled_polygon.pdf", tmp_path)
