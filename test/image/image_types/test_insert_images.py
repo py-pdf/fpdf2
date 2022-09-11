@@ -60,6 +60,13 @@ def test_insert_png(tmp_path):
     assert_pdf_equal(pdf, HERE / "image_types_insert_png.pdf", tmp_path)
 
 
+def test_insert_png_monochromatic(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.image(HERE / "../png_test_suite/basi0g01.png", x=15, y=15, h=140)
+    assert_pdf_equal(pdf, HERE / "image_types_insert_png_monochromatic.pdf", tmp_path)
+
+
 def test_insert_png_alpha(tmp_path):
     pdf = fpdf.FPDF()
     pdf.compress = False
