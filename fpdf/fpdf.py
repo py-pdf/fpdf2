@@ -3298,7 +3298,9 @@ class FPDF(GraphicsStateMixin):
             self._out = lambda *args, **kwargs: None
             self.add_page = lambda *args, **kwargs: None
             self._perform_page_break_if_need_be = lambda *args, **kwargs: None
-            page_body_has_content = self.page_body_has_content # saving to restore later
+            page_body_has_content = (
+                self.page_body_has_content
+            )  # saving to restore later
 
         if h is None:
             h = self.font_size
@@ -3394,7 +3396,7 @@ class FPDF(GraphicsStateMixin):
             del self.add_page
             del self._out
             del self._perform_page_break_if_need_be
-            self.page_body_has_content = page_body_has_content #restore content bool
+            self.page_body_has_content = page_body_has_content  # restore content bool
             self.set_xy(prev_x, prev_y)  # restore location
             result = []
             for text_line in text_lines:
