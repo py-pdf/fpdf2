@@ -391,6 +391,7 @@ class FPDF(GraphicsStateMixin):
         # Initialization of instance attributes
         self.offsets = {}  # array of object offsets
         self.page = 0  # current page number
+        self.page_body_has_content = None
         self.n = 2  # current object number
         self.buffer = bytearray()  # buffer holding in-memory PDF
         # Associative array from page number to dicts containing pages and metadata:
@@ -972,6 +973,8 @@ class FPDF(GraphicsStateMixin):
             self.set_char_spacing(char_spacing)
         # END Page header
 
+        self.page_body_has_content = None
+
     def header(self):
         """
         Header to be implemented in your own inherited class
@@ -1212,6 +1215,7 @@ class FPDF(GraphicsStateMixin):
         """
         with self.drawing_context(debug_stream=debug_stream) as ctxt:
             ctxt.add_item(path)
+        self.page_body_has_content = True
 
     def set_dash_pattern(self, dash=0, gap=0, phase=0):
         """
@@ -1267,6 +1271,7 @@ class FPDF(GraphicsStateMixin):
             f"{x1 * self.k:.2f} {(self.h - y1) * self.k:.2f} m {x2 * self.k:.2f} "
             f"{(self.h - y2) * self.k:.2f} l S"
         )
+        self.page_body_has_content = True
 
     @check_page
     def polyline(self, point_list, fill=False, polygon=False, style=None):
@@ -1307,6 +1312,7 @@ class FPDF(GraphicsStateMixin):
         if polygon:
             self._out(" h")
         self._out(f" {style.operator}")
+        self.page_body_has_content = True
 
     @check_page
     def polygon(self, point_list, fill=False, style=None):
@@ -1389,6 +1395,7 @@ class FPDF(GraphicsStateMixin):
                 f"{x * self.k:.2f} {(self.h - y) * self.k:.2f} {w * self.k:.2f} "
                 f"{-h * self.k:.2f} re {style.operator}"
             )
+        self.page_body_has_content = True
 
     def _draw_rounded_rect(self, x, y, w, h, style, round_corners, r):
         min = h
@@ -1479,6 +1486,7 @@ class FPDF(GraphicsStateMixin):
         """
         style = RenderStyle.coerce(style)
         self._draw_ellipse(x, y, w, h, style.operator)
+        self.page_body_has_content = True
 
     def _draw_ellipse(self, x, y, w, h, operator):
         cx = x + w / 2
@@ -1749,6 +1757,7 @@ class FPDF(GraphicsStateMixin):
                 self._out(
                     f"{cx * self.k:.2f} {(self.h - cy) * self.k:.2f} l {style.operator}"
                 )
+        self.page_body_has_content = True
 
     @check_page
     def solid_arc(
@@ -2123,6 +2132,7 @@ class FPDF(GraphicsStateMixin):
             border_width=border_width,
         )
         self.annots[self.page].append(link)
+        self.page_body_has_content = True
         return link
 
     def embed_file(
@@ -2215,6 +2225,7 @@ class FPDF(GraphicsStateMixin):
             flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
         )
         self.annots[self.page].append(annotation)
+        self.page_body_has_content = True
         return annotation
 
     @check_page
@@ -2244,6 +2255,7 @@ class FPDF(GraphicsStateMixin):
             flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
         )
         self.annots[self.page].append(annotation)
+        self.page_body_has_content = True
         return annotation
 
     @check_page
@@ -2267,6 +2279,7 @@ class FPDF(GraphicsStateMixin):
             action=action,
         )
         self.annots[self.page].append(annotation)
+        self.page_body_has_content = True
         return annotation
 
     @contextmanager
@@ -2356,6 +2369,7 @@ class FPDF(GraphicsStateMixin):
             page=page,
         )
         self.annots[page].append(annotation)
+        self.page_body_has_content = True
         return annotation
 
     @check_page
@@ -2393,6 +2407,7 @@ class FPDF(GraphicsStateMixin):
             title=title,
         )
         self.annots[self.page].append(annotation)
+        self.page_body_has_content = True
         return annotation
 
     @check_page
@@ -2438,6 +2453,7 @@ class FPDF(GraphicsStateMixin):
         if attr_l:
             sl = ["q"] + attr_l + sl + ["Q"]
         self._out(" ".join(sl))
+        self.page_body_has_content = True
 
     @check_page
     def rotate(self, angle, x=None, y=None):
@@ -3034,6 +3050,7 @@ class FPDF(GraphicsStateMixin):
                 s = " ".join(sl)
             # pylint: enable=too-many-boolean-expressions
             self._out(s)
+            self.page_body_has_content = True
         self.lasth = h
 
         # XPos.LEFT -> self.x stays the same
@@ -3155,6 +3172,7 @@ class FPDF(GraphicsStateMixin):
         return (
             self.y + height > self.page_break_trigger
             and not self.in_footer
+            and self.page_body_has_content
             and self.accept_page_break
         )
 
@@ -3280,6 +3298,7 @@ class FPDF(GraphicsStateMixin):
             self._out = lambda *args, **kwargs: None
             self.add_page = lambda *args, **kwargs: None
             self._perform_page_break_if_need_be = lambda *args, **kwargs: None
+            page_body_has_content = self.page_body_has_content # saving to restore later
 
         if h is None:
             h = self.font_size
@@ -3375,6 +3394,7 @@ class FPDF(GraphicsStateMixin):
             del self.add_page
             del self._out
             del self._perform_page_break_if_need_be
+            self.page_body_has_content = page_body_has_content #restore content bool
             self.set_xy(prev_x, prev_y)  # restore location
             result = []
             for text_line in text_lines:
@@ -3583,6 +3603,8 @@ class FPDF(GraphicsStateMixin):
             self._out(stream_content)
         if link:
             self.link(x, y, w, h, link)
+
+        self.page_body_has_content = True
 
         return info
 
