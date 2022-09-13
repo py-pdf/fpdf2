@@ -17,6 +17,8 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.5.8] - not released yet
+### Added
+- support for monochromatic images (PIL image.mode == '1')
 ### Fixed
 - adding elements to an empty page that would trigger a page break don't add a blank page anymore
 
