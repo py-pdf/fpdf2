@@ -7,7 +7,6 @@
 set -o pipefail -o errexit -o nounset -o xtrace
 
 BASE_URL=https://cdn.datalogics.com/www/pdflibinfo/grzqordg/che-lin64-MfeaURpvtQXzGKjY
-BASE_URL=https://www.datalogics.com/pdflibinfo/grzqordg/che-lin64-MfeaURpvtQXzGKjY
 DOWNLOADED_ZIP_FILENAME=PDF-CHECKER-Lin64.zip
 INSTALL_DIR_PATH=${1:-$PWD/PDF_Checker}
 export TMPDIR=$(mktemp -d /tmp/pdfchecker.XXXXXX)
