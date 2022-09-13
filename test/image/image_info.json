@@ -2,10 +2,10 @@
     "basi0g01.png": {
         "w": 32,
         "h": 32,
-        "cs": "DeviceRGB",
-        "bpc": 8,
+        "cs": "DeviceGray",
+        "bpc": 1,
         "f": "FlateDecode",
-        "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32",
+        "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 1 /Columns 32",
         "trns": ""
     },
     "basi0g02.png": {
@@ -145,10 +145,10 @@
     "basn0g01.png": {
         "w": 32,
         "h": 32,
-        "cs": "DeviceRGB",
-        "bpc": 8,
+        "cs": "DeviceGray",
+        "bpc": 1,
         "f": "FlateDecode",
-        "dp": "/Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns 32",
+        "dp": "/Predictor 15 /Colors 1 /BitsPerComponent 1 /Columns 32",
         "trns": ""
     },
     "basn0g02.png": {
