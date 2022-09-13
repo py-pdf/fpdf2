@@ -624,6 +624,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "nicholasjin",
+      "name": "Nicholas Jin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/15252734?v=4",
+      "profile": "https://nicholasjin.github.io/",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
