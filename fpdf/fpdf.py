@@ -39,7 +39,7 @@ from io import BytesIO
 
 if ftversion != '4.37.1':
     warnings.warn(
-        "fontTools version is other than 4.37.1 - update fontTools to v4.37.1"
+        "fontTools version is other than 4.37.1 - fpdf2 may generate a fontTools-related error"
     )
 
 try:
