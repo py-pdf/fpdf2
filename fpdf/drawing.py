@@ -231,12 +231,7 @@ transparency rather than specifying fully transparent or fully opaque.
 
 # this weird inheritance is used because for some reason normal NamedTuple usage doesn't
 # allow overriding __new__, even though it works just as expected this way.
-class DeviceGray(
-    NamedTuple(
-        "DeviceGray",
-        [("g", Number), ("a", Optional[Number])],
-    )
-):
+class DeviceGray(NamedTuple("DeviceGray", [("g", Number), ("a", Optional[Number])],)):
     """A class representing a PDF DeviceGray color."""
 
     OPERATOR = "g"
@@ -541,7 +536,7 @@ class Point(NamedTuple):
             The scalar result of the distance computation.
         """
 
-        return (self.x**2 + self.y**2) ** 0.5
+        return (self.x ** 2 + self.y ** 2) ** 0.5
 
     @force_document
     def __add__(self, other):
@@ -1308,8 +1303,7 @@ class GraphicsStyle:
     @stroke_width.setter
     def stroke_width(self, width):
         if not isinstance(
-            width,
-            (int, float, decimal.Decimal, type(None), type(self.INHERIT)),
+            width, (int, float, decimal.Decimal, type(None), type(self.INHERIT)),
         ):
             raise TypeError(f"stroke_width must be a number, not {type(width)}")
 
@@ -1340,8 +1334,7 @@ class GraphicsStyle:
             super().__setattr__(PDFStyleKeys.STROKE_JOIN_STYLE.value, value)
         else:
             super().__setattr__(
-                PDFStyleKeys.STROKE_JOIN_STYLE.value,
-                StrokeJoinStyle.coerce(value),
+                PDFStyleKeys.STROKE_JOIN_STYLE.value, StrokeJoinStyle.coerce(value),
             )
 
     @property
@@ -2196,8 +2189,7 @@ class QuadraticBezierCurve(NamedTuple):
             y=start_point.y + 2 * (ctrl.y - start_point.y) / 3,
         )
         ctrl2 = Point(
-            x=end.x + 2 * (ctrl.x - end.x) / 3,
-            y=end.y + 2 * (ctrl.y - end.y) / 3,
+            x=end.x + 2 * (ctrl.x - end.x) / 3, y=end.y + 2 * (ctrl.y - end.y) / 3,
         )
 
         return BezierCurve(ctrl1, ctrl2, end)
@@ -2423,7 +2415,7 @@ class Arc(NamedTuple):
         lam_da = (prime.x / radii.x) ** 2 + (prime.y / radii.y) ** 2
 
         if lam_da > 1:
-            radii = Point(x=(lam_da**0.5) * radii.x, y=(lam_da**0.5) * radii.y)
+            radii = Point(x=(lam_da ** 0.5) * radii.x, y=(lam_da ** 0.5) * radii.y)
 
         sign = (self.large != self.sweep) - (self.large == self.sweep)
         rxry2 = (radii.x * radii.y) ** 2
@@ -2433,10 +2425,7 @@ class Arc(NamedTuple):
         centerprime = (
             sign
             * math.sqrt(round(rxry2 - rxpy2 - rypx2, 8) / (rxpy2 + rypx2))
-            * Point(
-                x=radii.x * prime.y / radii.y,
-                y=-radii.y * prime.x / radii.x,
-            )
+            * Point(x=radii.x * prime.y / radii.y, y=-radii.y * prime.x / radii.x,)
         )
 
         center = (centerprime @ forward) + ((last_item.end_point + self.end) * 0.5)

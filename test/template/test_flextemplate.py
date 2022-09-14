@@ -10,30 +10,9 @@ HERE = Path(__file__).resolve().parent
 
 def test_flextemplate_offset(tmp_path):
     elements = [
-        {
-            "name": "box",
-            "type": "B",
-            "x1": 0,
-            "y1": 0,
-            "x2": 50,
-            "y2": 50,
-        },
-        {
-            "name": "d1",
-            "type": "L",
-            "x1": 0,
-            "y1": 0,
-            "x2": 50,
-            "y2": 50,
-        },
-        {
-            "name": "d2",
-            "type": "L",
-            "x1": 0,
-            "y1": 50,
-            "x2": 50,
-            "y2": 0,
-        },
+        {"name": "box", "type": "B", "x1": 0, "y1": 0, "x2": 50, "y2": 50,},
+        {"name": "d1", "type": "L", "x1": 0, "y1": 0, "x2": 50, "y2": 50,},
+        {"name": "d2", "type": "L", "x1": 0, "y1": 50, "x2": 50, "y2": 0,},
         {
             "name": "label",
             "type": "T",
@@ -61,38 +40,10 @@ def test_flextemplate_offset(tmp_path):
 def test_flextemplate_multipage(tmp_path):
 
     elements = [
-        {
-            "name": "box",
-            "type": "B",
-            "x1": 0,
-            "y1": 0,
-            "x2": 50,
-            "y2": 50,
-        },
-        {
-            "name": "d1",
-            "type": "L",
-            "x1": 0,
-            "y1": 0,
-            "x2": 50,
-            "y2": 50,
-        },
-        {
-            "name": "d2",
-            "type": "L",
-            "x1": 0,
-            "y1": 50,
-            "x2": 50,
-            "y2": 0,
-        },
-        {
-            "name": "e",
-            "type": "E",
-            "x1": 0,
-            "y1": 50,
-            "x2": 50,
-            "y2": 0,
-        },
+        {"name": "box", "type": "B", "x1": 0, "y1": 0, "x2": 50, "y2": 50,},
+        {"name": "d1", "type": "L", "x1": 0, "y1": 0, "x2": 50, "y2": 50,},
+        {"name": "d2", "type": "L", "x1": 0, "y1": 50, "x2": 50, "y2": 0,},
+        {"name": "e", "type": "E", "x1": 0, "y1": 50, "x2": 50, "y2": 0,},
         {
             "name": "label",
             "type": "T",

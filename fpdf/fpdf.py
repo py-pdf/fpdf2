@@ -32,12 +32,12 @@ from math import isclose
 from os.path import splitext
 from pathlib import Path
 from typing import Callable, List, NamedTuple, Optional, Tuple, Union
-from fontTools import ttLib                 
+from fontTools import ttLib
 from fontTools import subset as ftsubset
-from fontTools import version as ftversion       
+from fontTools import version as ftversion
 from io import BytesIO
 
-if ftversion != '4.37.1':
+if ftversion != "4.37.1":
     warnings.warn(
         "fontTools version is other than 4.37.1 - fpdf2 may generate a fontTools-related error"
     )
@@ -1568,10 +1568,17 @@ class FPDF(GraphicsStateMixin):
         # center point is (centerX, centerY)
         points = []
         for i in range(1, numSides + 1):
-            point = centerX + radius * math.cos(
-                math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
-            ), centerY + radius * math.sin(
-                math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
+            point = (
+                centerX
+                + radius
+                * math.cos(
+                    math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
+                ),
+                centerY
+                + radius
+                * math.sin(
+                    math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
+                ),
             )
             points.append(point)
         # creates list of touples containing cordinate points of vertices
@@ -3311,9 +3318,7 @@ class FPDF(GraphicsStateMixin):
 
         text_lines = []
         multi_line_break = MultiLineBreak(
-            styled_text_fragments,
-            justify=(align == Align.J),
-            print_sh=print_sh,
+            styled_text_fragments, justify=(align == Align.J), print_sh=print_sh,
         )
         text_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
         while (text_line) is not None:
@@ -3433,10 +3438,7 @@ class FPDF(GraphicsStateMixin):
         styled_text_fragments = self._preload_font_styles(normalized_string, False)
 
         text_lines = []
-        multi_line_break = MultiLineBreak(
-            styled_text_fragments,
-            print_sh=print_sh,
-        )
+        multi_line_break = MultiLineBreak(styled_text_fragments, print_sh=print_sh,)
         # first line from current x position to right margin
         first_width = self.w - self.x - self.r_margin
         text_line = multi_line_break.get_line_of_given_width(

@@ -376,14 +376,7 @@ def test_template_badinput():
         tmpl = Template(elements=elements)
         tmpl.render()
     elements = [  # missing mandatory x2
-        {
-            "name": "n",
-            "type": "T",
-            "x1": 0,
-            "y1": 0,
-            "y2": 0,
-            "text": "Hello!",
-        }
+        {"name": "n", "type": "T", "x1": 0, "y1": 0, "y2": 0, "text": "Hello!",}
     ]
     with raises(KeyError):
         tmpl = Template(elements=elements)

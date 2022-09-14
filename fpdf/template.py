@@ -365,16 +365,7 @@ class FlexTemplate:
             pdf.cell(w=width, h=height, txt=text, border=0, align=align, fill=fill)
 
     def _line(
-        self,
-        *_,
-        x1=0,
-        y1=0,
-        x2=0,
-        y2=0,
-        size=0,
-        scale=1.0,
-        foreground=0,
-        **__,
+        self, *_, x1=0, y1=0, x2=0, y2=0, size=0, scale=1.0, foreground=0, **__,
     ):
         if self.pdf.draw_color.pdf_repr().lower() != _rgb_as_str(foreground):
             self.pdf.set_draw_color(*_rgb(foreground))
