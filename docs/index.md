@@ -19,6 +19,8 @@ pdf.cell(txt="hello world")
 pdf.output("hello_world.pdf")
 ```
 
+Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PyFPDF/fpdf2/blob/master/tutorial/notebook.ipynb) or [![Open In nbviewer](https://img.shields.io/badge/Open_In-nbviewer-blue?logo=jupyter)](https://nbviewer.org/github/PyFPDF/fpdf2/blob/master/tutorial/notebook.ipynb)
+
 ## Main features ##
 
 * Easy to use, with a user-friendly [API](https://pyfpdf.github.io/fpdf2/fpdf/), and easy to extend

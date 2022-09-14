@@ -145,6 +145,9 @@ st.download_button(
 )
 ```
 
+## Jupyter ##
+Check [tutorial/notebook.ipynb](https://github.com/PyFPDF/fpdf2/blob/master/tutorial/notebook.ipynb)
+
 ## web2py ##
 Usage of the original PyFPDF lib with [web2py](http://www.web2py.com/) is described here: <https://github.com/reingart/pyfpdf/blob/master/docs/Web2Py.md>
 
