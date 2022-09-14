@@ -63,7 +63,7 @@ pdf.output("html_toc.pdf")
 
 The regression tests are a good place to find code samples.
 
-For example, the [`test_simple_outline`](https://github.com/PyFPDF/fpdf2/blob/master/test/outline/test_outline.py) test function generates the PDF document [test_simple_outline.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/outline/test_simple_outline.pdf).
+For example, the [`test_simple_outline`](https://github.com/PyFPDF/fpdf2/blob/master/test/outline/test_outline.py) test function generates the PDF document [simple_outline.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/outline/simple_outline.pdf).
 
 Similarly, [`test_html_toc`](https://github.com/PyFPDF/fpdf2/blob/master/test/outline/test_outline_html.py)
 generates [test_html_toc.pdf](https://github.com/PyFPDF/fpdf2/blob/5453422bf560a909229c82e53eb516e44fea1817/test/outline/test_html_toc.pdf).

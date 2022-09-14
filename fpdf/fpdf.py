@@ -1612,6 +1612,7 @@ class FPDF(GraphicsStateMixin):
 
         self.polyline(point_list, polygon=True, style=style)
 
+    @check_page
     def arc(
         self,
         x,
@@ -1759,7 +1760,6 @@ class FPDF(GraphicsStateMixin):
                 )
         self.page_body_has_content = True
 
-    @check_page
     def solid_arc(
         self,
         x,
@@ -3170,7 +3170,9 @@ class FPDF(GraphicsStateMixin):
         Returns: a boolean indicating if a page break would occur
         """
         return (
-            self.y + height > self.page_break_trigger
+            # ensure that there is already some content on the page:
+            self.y > self.t_margin
+            and self.y + height > self.page_break_trigger
             and not self.in_footer
             and self.page_body_has_content
             and self.accept_page_break

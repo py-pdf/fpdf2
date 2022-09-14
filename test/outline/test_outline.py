@@ -76,6 +76,7 @@ def test_simple_outline(tmp_path):
 
 
 def p(pdf, text, **kwargs):
+    "Inserts a paragraph"
     pdf.multi_cell(
         w=pdf.epw,
         h=pdf.font_size,
@@ -98,16 +99,9 @@ def render_toc(pdf, outline):
     for section in outline:
         link = pdf.add_link()
         pdf.set_link(link, page=section.page_number)
-        text = f'{" " * section.level * 2} {section.name}'
-        text += (
-            f' {"." * (60 - section.level*2 - len(section.name))} {section.page_number}'
-        )
-        pdf.multi_cell(
-            w=pdf.epw,
-            h=pdf.font_size,
-            txt=text,
-            new_x="LMARGIN",
-            new_y="NEXT",
+        p(
+            pdf,
+            f'{" " * section.level * 2} {section.name} {"." * (60 - section.level*2 - len(section.name))} {section.page_number}',
             align="C",
             link=link,
         )
