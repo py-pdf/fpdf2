@@ -78,12 +78,7 @@ def test_simple_outline(tmp_path):
 def p(pdf, text, **kwargs):
     "Inserts a paragraph"
     pdf.multi_cell(
-        w=pdf.epw,
-        h=pdf.font_size,
-        txt=text,
-        new_x="LMARGIN",
-        new_y="NEXT",
-        **kwargs,
+        w=pdf.epw, h=pdf.font_size, txt=text, new_x="LMARGIN", new_y="NEXT", **kwargs,
     )
 
 

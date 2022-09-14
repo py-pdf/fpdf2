@@ -89,12 +89,7 @@ def test_render_styled_newpos(tmp_path):
             trailing_nl=False,
         )
         doc._render_styled_text_line(
-            line,
-            twidth,
-            border=1,
-            align=align,
-            new_x=newx,
-            new_y=newy,
+            line, twidth, border=1, align=align, new_x=newx, new_y=newy,
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
@@ -131,12 +126,7 @@ def test_cell_newpos(tmp_path):
         newx = item[2]
         newy = item[3]
         doc.cell(
-            twidth,
-            txt=s,
-            border=1,
-            align=align,
-            new_x=newx,
-            new_y=newy,
+            twidth, txt=s, border=1, align=align, new_x=newx, new_y=newy,
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
@@ -174,12 +164,7 @@ def test_cell_newpos_stretched(tmp_path):
         newx = item[2]
         newy = item[3]
         doc.cell(
-            twidth,
-            txt=s,
-            border=1,
-            align=align,
-            new_x=newx,
-            new_y=newy,
+            twidth, txt=s, border=1, align=align, new_x=newx, new_y=newy,
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
@@ -217,12 +202,7 @@ def test_cell_newpos_charspaced(tmp_path):
         newx = item[2]
         newy = item[3]
         doc.cell(
-            twidth,
-            txt=s,
-            border=1,
-            align=align,
-            new_x=newx,
-            new_y=newy,
+            twidth, txt=s, border=1, align=align, new_x=newx, new_y=newy,
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
@@ -261,12 +241,7 @@ def test_cell_newpos_combined(tmp_path):
         newx = item[2]
         newy = item[3]
         doc.cell(
-            twidth,
-            txt=s,
-            border=1,
-            align=align,
-            new_x=newx,
-            new_y=newy,
+            twidth, txt=s, border=1, align=align, new_x=newx, new_y=newy,
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
@@ -492,11 +467,7 @@ def test_cell_lnpos(tmp_path):
             continue
         with pytest.warns(DeprecationWarning):
             doc.cell(
-                twidth,
-                txt=s,
-                border=1,
-                align=align,
-                ln=ln,
+                twidth, txt=s, border=1, align=align, ln=ln,
             )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
