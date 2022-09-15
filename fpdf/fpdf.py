@@ -36,7 +36,6 @@ from fontTools import ttLib
 from fontTools import subset as ftsubset
 from io import BytesIO
 
-
 try:
     from PIL.Image import Image
 except ImportError:
@@ -1563,17 +1562,10 @@ class FPDF(GraphicsStateMixin):
         # center point is (centerX, centerY)
         points = []
         for i in range(1, numSides + 1):
-            point = (
-                centerX
-                + radius
-                * math.cos(
-                    math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
-                ),
-                centerY
-                + radius
-                * math.sin(
-                    math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
-                ),
+            point = centerX + radius * math.cos(
+                math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
+            ), centerY + radius * math.sin(
+                math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
             )
             points.append(point)
         # creates list of touples containing cordinate points of vertices
