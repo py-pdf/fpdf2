@@ -23,7 +23,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - automatic page break is never performed on an empty page (when the Y position is at the top margin)
 
 ### Added
-- [fontTools](https://fonttools.readthedocs.io/en/latest/) version requirement fixed to 4.37.1 (latest version tested), warning added to `fpdf.py` if the version does not match this specific version; [#524](https://github.com/PyFPDF/fpdf2/issues/524)
+- [fontTools](https://fonttools.readthedocs.io/en/latest/) minimal version requirement set to 4.30.0; [#524](https://github.com/PyFPDF/fpdf2/issues/524)
 
 ## [2.5.7] - 2022-09-08
 ### Changed
