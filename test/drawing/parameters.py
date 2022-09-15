@@ -594,7 +594,12 @@ path_elements = (
         id="implicit close",
     ),
     pytest.param(
-        P(1, 1), fpdf.drawing.Close(), "h", P(1, 1), fpdf.drawing.Move, id="close",
+        P(1, 1),
+        fpdf.drawing.Close(),
+        "h",
+        P(1, 1),
+        fpdf.drawing.Move,
+        id="close",
     ),
 )
 

@@ -18,7 +18,12 @@ def test_setting_all_zoom(zoom, tmp_path):
     doc.add_page()
     doc.set_font("helvetica", size=12)
     doc.cell(
-        w=72, h=0, border=1, txt="hello world", new_x="LMARGIN", new_y="NEXT",
+        w=72,
+        h=0,
+        border=1,
+        txt="hello world",
+        new_x="LMARGIN",
+        new_y="NEXT",
     )
     doc.set_display_mode(zoom=zoom)
     assert_pdf_equal(doc, HERE / f"zoom-{zoom}.pdf", tmp_path)

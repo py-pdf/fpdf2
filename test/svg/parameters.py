@@ -231,7 +231,12 @@ test_svg_shape_tags = (
         no_error(),
         id="ellipse no cx no cy rx auto",
     ),
-    pytest.param("<ellipse/>", [], no_error(), id="ellipse empty",),
+    pytest.param(
+        "<ellipse/>",
+        [],
+        no_error(),
+        id="ellipse empty",
+    ),
     pytest.param(
         '<ellipse cx="10" rx="10"/>',
         [M(0, 0), El(10, 10, 10, 0)],
@@ -269,7 +274,10 @@ test_svg_shape_tags = (
         id="line",
     ),
     pytest.param(
-        '<line y1="0" x2="10" y2="10"/>', [], pytest.raises(KeyError), id="line no x1",
+        '<line y1="0" x2="10" y2="10"/>',
+        [],
+        pytest.raises(KeyError),
+        id="line no x1",
     ),
     pytest.param(
         '<polyline points="1, 0 10, 10, -20, -50"/>',
@@ -277,14 +285,24 @@ test_svg_shape_tags = (
         no_error(),
         id="polyline",
     ),
-    pytest.param("<polyline/>", [], pytest.raises(KeyError), id="polyline no points",),
+    pytest.param(
+        "<polyline/>",
+        [],
+        pytest.raises(KeyError),
+        id="polyline no points",
+    ),
     pytest.param(
         '<polygon points="1, 0 10, 10, -20, -50"/>',
         [M(1, 0), L(10, 10), L(-20, -50), Z()],
         no_error(),
         id="polygon",
     ),
-    pytest.param("<polygon/>", [], pytest.raises(KeyError), id="polygon no points",),
+    pytest.param(
+        "<polygon/>",
+        [],
+        pytest.raises(KeyError),
+        id="polygon no points",
+    ),
     pytest.param(
         '<circle r="10" fill="rgb(100, 200)"/>',
         [],
@@ -295,9 +313,17 @@ test_svg_shape_tags = (
 
 test_svg_transforms = (
     pytest.param(
-        "matrix(1,2,3,4,5,6)", Transform(1, 2, 3, 4, 5, 6), no_error(), id="matrix",
+        "matrix(1,2,3,4,5,6)",
+        Transform(1, 2, 3, 4, 5, 6),
+        no_error(),
+        id="matrix",
     ),
-    pytest.param("rotate(30)", Transform.rotation_d(30), no_error(), id="rotate",),
+    pytest.param(
+        "rotate(30)",
+        Transform.rotation_d(30),
+        no_error(),
+        id="rotate",
+    ),
     pytest.param(
         "rotate(30, 10, 10)",
         Transform.rotation_d(30).about(10, 10),
@@ -311,18 +337,41 @@ test_svg_transforms = (
         id="rotate bad syntax",
     ),
     pytest.param(
-        "scale(2)", Transform.scaling(x=2, y=2), no_error(), id="scale combined",
+        "scale(2)",
+        Transform.scaling(x=2, y=2),
+        no_error(),
+        id="scale combined",
     ),
-    pytest.param("scale(2, 1)", Transform.scaling(x=2, y=1), no_error(), id="scale x",),
-    pytest.param("scale(1 2)", Transform.scaling(x=1, y=2), no_error(), id="scale y",),
+    pytest.param(
+        "scale(2, 1)",
+        Transform.scaling(x=2, y=1),
+        no_error(),
+        id="scale x",
+    ),
+    pytest.param(
+        "scale(1 2)",
+        Transform.scaling(x=1, y=2),
+        no_error(),
+        id="scale y",
+    ),
     pytest.param(
         "scale(1 2 3)",
         Transform.identity(),
         pytest.raises(ValueError),
         id="scale bad syntax",
     ),
-    pytest.param("scaleX(2)", Transform.scaling(x=2, y=1), no_error(), id="scaleX",),
-    pytest.param("scaleY(2)", Transform.scaling(x=1, y=2), no_error(), id="scaleY",),
+    pytest.param(
+        "scaleX(2)",
+        Transform.scaling(x=2, y=1),
+        no_error(),
+        id="scaleX",
+    ),
+    pytest.param(
+        "scaleY(2)",
+        Transform.scaling(x=1, y=2),
+        no_error(),
+        id="scaleY",
+    ),
     pytest.param(
         "skew(2)",
         Transform.shearing(x=math.tan(math.radians(2)), y=0),
@@ -336,7 +385,10 @@ test_svg_transforms = (
         id="skew x and y",
     ),
     pytest.param(
-        "skew(2, 3, 4, 5, 6)", None, pytest.raises(ValueError), id="skew too many args",
+        "skew(2, 3, 4, 5, 6)",
+        None,
+        pytest.raises(ValueError),
+        id="skew too many args",
     ),
     pytest.param(
         "skewX(2)",
@@ -369,10 +421,16 @@ test_svg_transforms = (
         id="translate too many args",
     ),
     pytest.param(
-        "translateX(10)", Transform.translation(x=10, y=0), no_error(), id="translateX",
+        "translateX(10)",
+        Transform.translation(x=10, y=0),
+        no_error(),
+        id="translateX",
     ),
     pytest.param(
-        "translateY(10)", Transform.translation(x=0, y=10), no_error(), id="translateY",
+        "translateY(10)",
+        Transform.translation(x=0, y=10),
+        no_error(),
+        id="translateY",
     ),
     pytest.param(
         "skewX(30) scale(1, 1.25) translate(200, 200) rotate(45) translate(-500, -500)",
@@ -397,7 +455,10 @@ test_svg_transform_documents = (
 
 test_svg_attribute_conversion = (
     pytest.param(
-        '<path fill="none"/>', Gs(fill_color=None), no_error(), id="fill color none",
+        '<path fill="none"/>',
+        Gs(fill_color=None),
+        no_error(),
+        id="fill color none",
     ),
     pytest.param(
         '<path fill="inherit"/>',
@@ -406,7 +467,10 @@ test_svg_attribute_conversion = (
         id="fill color inherit",
     ),
     pytest.param(
-        '<path fill="black"/>', Gs(fill_color="#000"), no_error(), id="fill color name",
+        '<path fill="black"/>',
+        Gs(fill_color="#000"),
+        no_error(),
+        id="fill color name",
     ),
     pytest.param(
         '<path fill="#0007"/>',
@@ -415,7 +479,10 @@ test_svg_attribute_conversion = (
         id="fill color rgba",
     ),
     pytest.param(
-        '<path fill="1"/>', Gs(), pytest.raises(ValueError), id="fill color invalid",
+        '<path fill="1"/>',
+        Gs(),
+        pytest.raises(ValueError),
+        id="fill color invalid",
     ),
     pytest.param(
         '<path fill-rule="inherit"/>',
@@ -520,7 +587,10 @@ test_svg_attribute_conversion = (
         id="stroke-width number",
     ),
     pytest.param(
-        '<path stroke-width="inherit"/>', Gs(), no_error(), id="stroke-width inherit",
+        '<path stroke-width="inherit"/>',
+        Gs(),
+        no_error(),
+        id="stroke-width inherit",
     ),
     pytest.param(
         '<path stroke-width="-2"/>',

@@ -3318,7 +3318,9 @@ class FPDF(GraphicsStateMixin):
 
         text_lines = []
         multi_line_break = MultiLineBreak(
-            styled_text_fragments, justify=(align == Align.J), print_sh=print_sh,
+            styled_text_fragments,
+            justify=(align == Align.J),
+            print_sh=print_sh,
         )
         text_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
         while (text_line) is not None:
@@ -3438,7 +3440,10 @@ class FPDF(GraphicsStateMixin):
         styled_text_fragments = self._preload_font_styles(normalized_string, False)
 
         text_lines = []
-        multi_line_break = MultiLineBreak(styled_text_fragments, print_sh=print_sh,)
+        multi_line_break = MultiLineBreak(
+            styled_text_fragments,
+            print_sh=print_sh,
+        )
         # first line from current x position to right margin
         first_width = self.w - self.x - self.r_margin
         text_line = multi_line_break.get_line_of_given_width(
