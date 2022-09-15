@@ -39,7 +39,15 @@ def test_text_stretch_spacing(tmp_path):
     doc.add_page()
     doc.set_font("helvetica", size=20)
     for i, (stretch, spacing) in enumerate(
-        ((100, 0), (150, 0), (100, 10), (130, 5), (70, 0), (100, -5), (80, -2),)
+        (
+            (100, 0),
+            (150, 0),
+            (100, 10),
+            (130, 5),
+            (70, 0),
+            (100, -5),
+            (80, -2),
+        )
     ):
         doc.set_stretching(stretch)
         doc.set_char_spacing(spacing)
@@ -53,7 +61,13 @@ def test_text_text_mode(tmp_path):
     doc.set_font("helvetica", size=40)
     doc.set_draw_color(255, 100, 0)
     doc.line_width = 2
-    for i, mode in enumerate(("FILL", "STROKE", "FILL_STROKE",)):
+    for i, mode in enumerate(
+        (
+            "FILL",
+            "STROKE",
+            "FILL_STROKE",
+        )
+    ):
         doc.text_mode = mode
         doc.text(20, 20 + 20 * i, f"Text mode: {mode}")
     assert_pdf_equal(doc, HERE / "text_text_mode.pdf", tmp_path)
@@ -64,7 +78,13 @@ def test_text_color(tmp_path):
     doc.add_page()
     doc.set_font("helvetica", size=20)
     for i, color in enumerate(
-        ((255, 100, 100), (255, 255, 100), (255, 100, 255), (250, 250, 250), (0, 0, 0),)
+        (
+            (255, 100, 100),
+            (255, 255, 100),
+            (255, 100, 255),
+            (250, 250, 250),
+            (0, 0, 0),
+        )
     ):
         doc.set_text_color(*color)
         doc.text(20, 20 + 10 * i, f"{color}")

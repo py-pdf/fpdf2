@@ -21,7 +21,13 @@ BAT_EXT = ".bat" if sys.platform in ("cygwin", "win32") else ""
 
 def analyze_pdf_file(pdf_filepath):
     output = run(
-        ["verapdf/verapdf" + BAT_EXT, "--format", "text", "-v", pdf_filepath,],
+        [
+            "verapdf/verapdf" + BAT_EXT,
+            "--format",
+            "text",
+            "-v",
+            pdf_filepath,
+        ],
         stdout=PIPE,
     ).stdout.decode()
     report = parse_output(output)
