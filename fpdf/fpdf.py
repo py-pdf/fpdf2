@@ -34,13 +34,8 @@ from pathlib import Path
 from typing import Callable, List, NamedTuple, Optional, Tuple, Union
 from fontTools import ttLib
 from fontTools import subset as ftsubset
-from fontTools import version as ftversion
 from io import BytesIO
 
-if ftversion != "4.37.1":
-    warnings.warn(
-        "fontTools version is other than 4.37.1 - fpdf2 may generate a fontTools-related error"
-    )
 
 try:
     from PIL.Image import Image
