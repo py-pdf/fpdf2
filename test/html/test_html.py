@@ -64,6 +64,7 @@ def test_html_features(tmp_path):
     pdf.write_html("<blockquote>hello blockquote</blockquote>")
     pdf.write_html("<ul><li>li1</li><li>another</li><li>l item</li></ul>")
     pdf.write_html("<ol><li>li1</li><li>another</li><li>l item</li></ol>")
+    pdf.write_html("<dl><dt>description title</dt><dd>description details</dd></dl>")
     pdf.write_html('<table width="50"></table>')
     pdf.write_html("<img></img>")
     pdf.write_html(
@@ -528,3 +529,19 @@ def test_html_superscript(tmp_path):
         "2<sup>56</sup> more line text<sub>(idx)</sub>"
     )
     assert_pdf_equal(pdf, HERE / "html_superscript.pdf", tmp_path)
+
+
+def test_html_description(tmp_path):
+    pdf = MyFPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """
+           <dt>description titile</dt>
+           <dd>description details</dd> 
+            <dl>
+                <dt>description titile</dt>
+                <dd>description details</dd>
+            </dl>
+        """
+    )
+    assert_pdf_equal(pdf, HERE / "html_description.pdf", tmp_path)

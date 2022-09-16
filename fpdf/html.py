@@ -439,6 +439,14 @@ class HTML2FPDF(HTMLParser):
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         LOGGER.debug("STARTTAG %s %s", tag, attrs)
+        # if tag == "dl":
+        #     self.pdf.ln()
+        if tag == "dt":
+            self.pdf.ln(self.h + 2)
+        if tag == "dd":
+            self.pdf.ln(self.h + 2)
+            self.indent += 2
+            self.pdf.write(self.h, f"{' ' * self.li_tag_indent * self.indent}")
         if tag == "strong":
             tag = "b"
         if tag == "em":
@@ -614,6 +622,8 @@ class HTML2FPDF(HTMLParser):
             self.set_font(face, size)
             self.set_text_color(*color)
             self.align = None
+        if tag == "dd":
+            self.indent -= 2
         if tag == "pre":
             face, size, color = self.font_stack.pop()
             self.set_font(face, size)
