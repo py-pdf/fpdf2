@@ -29,6 +29,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - `fpdf2` now uses [fontTools](https://fonttools.readthedocs.io/en/latest/) to read and embed fonts in the PDF, thanks to @gmischler and @RedShy
 
 ### Fixed
+- The SVG parser now accepts stroke-width attribute values with an explicit unit, thanks to @gmischler; [#526](https://github.com/PyFPDF/fpdf2/issues/526)
 - Text following a HTML heading can't overlap with that heading anymore, thanks to @gmischler
 - `arc()` not longer renders artefacts at intersection point, thanks to @Jmillan-Dev; [#488](https://github.com/PyFPDF/fpdf2/issues/488)
 - [`write_html()`](https://pyfpdf.github.io/fpdf2/HTML.html):
