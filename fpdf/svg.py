@@ -120,7 +120,7 @@ angle_units = {
 def resolve_length(length_str, default_unit="pt"):
     """Convert a length unit to our canonical length unit, pt."""
     match = unit_splitter.match(length_str)
-    if match == None:
+    if match is None:
         raise ValueError(f"Unable to parse '{length_str}' as a length") from None
     value, unit = match.groups()
     if not unit:
