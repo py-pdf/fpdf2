@@ -743,16 +743,3 @@ class HTML2FPDF(HTMLParser):
     # Subclasses of _markupbase.ParserBase must implement this:
     def error(self, message):
         raise RuntimeError(message)
-
-
-class HTMLMixin:
-    HTML2FPDF_CLASS = HTML2FPDF
-
-    def write_html(self, text, *args, **kwargs):
-        """Parse HTML and convert it to PDF"""
-        kwargs2 = vars(self)
-        # Method arguments must override class & instance attributes:
-        kwargs2.update(kwargs)
-        h2p = self.HTML2FPDF_CLASS(self, *args, **kwargs2)
-        text = html.unescape(text)  # To deal with HTML entities
-        h2p.feed(text)

@@ -1,12 +1,12 @@
 from pathlib import Path
 
-from fpdf import FPDF, HTMLMixin
+from fpdf import FPDF
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
 
 
-class PDF(FPDF, HTMLMixin):
+class PDF(FPDF):
     pass
 
 
