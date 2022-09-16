@@ -18,12 +18,9 @@ HTML rendering require the use of `fpdf.HTMLMixin`,
 that provides a new `write_html` method:
 
 ```python
-from fpdf import FPDF, HTMLMixin
+from fpdf import FPDF
 
-class PDF(FPDF, HTMLMixin):
-    pass
-
-pdf = PDF()
+pdf = FPDF()
 pdf.add_page()
 pdf.write_html("""
   <dl>
