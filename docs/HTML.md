@@ -26,6 +26,10 @@ class PDF(FPDF, HTMLMixin):
 pdf = PDF()
 pdf.add_page()
 pdf.write_html("""
+  <dl>
+      <dt>Description title</dt>
+      <dd>Description Detail</dd>
+  </dl>
   <h1>Big title</h1>
   <section>
     <h2>Section title</h2>
@@ -81,6 +85,7 @@ pdf.output("html.pdf")
 * `<a>`: links (and `href` attribute)
 * `<img>`: images (and `src`, `width`, `height` attributes)
 * `<ol>`, `<ul>`, `<li>`: ordered, unordered and list items (can be nested)
+* `<dl>`, `<dt>`, `<dd>`: description list, title, details (can be nested)
 * `<sup>`, `<sub>`: superscript and subscript text
 * `<table>`: (and `border`, `width` attributes)
     + `<thead>`: header (opens each page)
