@@ -3356,6 +3356,9 @@ class PaintedPath:
 
         self._graphics_context.add_item(item, _copy=_copy)
 
+    def remove_last_path_element(self):
+        self._graphics_context.remove_last_item()
+
     def rectangle(self, x, y, w, h, rx=0, ry=0):
         """
         Append a rectangle as a closed subpath to the current path.
@@ -3962,6 +3965,9 @@ class GraphicsContext:
             item = copy.deepcopy(item)
 
         self.path_items.append(item)
+
+    def remove_last_item(self):
+        del self.path_items[-1]
 
     def merge(self, other_context):
         """Copy another `GraphicsContext`'s path items into this one."""

@@ -40,7 +40,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * [Annotations](Annotations.md), including text highlights, and [file attachments](FileAttachments.md)
 * [Presentation mode](Presentations.md) with control over page display duration & transitions
 * Optional basic Markdown-like styling: `**bold**, __italics__`
-* It has very few dependencies: [Pillow](https://pillow.readthedocs.io/en/stable/), [defusedxml](https://pypi.org/project/defusedxml/), [svg.path](https://pypi.org/project/svg.path/) & [fonttools](https://pypi.org/project/fonttools/)
+* It has very few dependencies: [Pillow](https://pillow.readthedocs.io/en/stable/), [defusedxml](https://pypi.org/project/defusedxml/), & [fonttools](https://pypi.org/project/fonttools/)
 * Can render [mathematical equations & charts](https://pyfpdf.github.io/fpdf2/Maths.html)
 * Many example scripts available throughout this documentation, including usage examples with [Django](https://www.djangoproject.com/), [Flask](https://flask.palletsprojects.com), [streamlit](https://streamlit.io/), AWS lambdas... : [Usage in web APIs](UsageInWebAPI.md)
 * Unit tests with `qpdf`-based PDF diffing, and PDF samples validation using 3 different checkers:

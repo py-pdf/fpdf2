@@ -1,23 +1,8 @@
 import math
 import re
 import warnings
-from typing import NamedTuple
 
-try:
-    from svg.path import (
-        parse_path,
-        Move,
-        Close,
-        Line,
-        CubicBezier,
-        QuadraticBezier,
-        Arc,
-    )
-except ImportError:
-    warnings.warn(
-        "svg.path could not be imported - fpdf2 will not be able to render SVG images"
-    )
-    parse_path = None
+from fontTools.svgLib.path import parse_path
 
 try:
     from defusedxml.ElementTree import fromstring as parse_xml_str
@@ -31,12 +16,9 @@ from . import html
 from .drawing import (
     color_from_hex_string,
     color_from_rgb_string,
-    BezierCurve,
     GraphicsContext,
     GraphicsStyle,
     PaintedPath,
-    Point,
-    QuadraticBezierCurve,
     Transform,
 )
 
@@ -566,293 +548,82 @@ def convert_transforms(tfstr):
     return transform
 
 
-@force_nodocument
-class SVGSmoothCubicCurve(NamedTuple):
-    """SVG chained cubic Bézier curve path element."""
+class PathPen:
+    def __init__(self, pdf_path):
+        self.pdf_path = pdf_path
+        self.last_was_line_to = False
+        self.first_is_move = None
 
-    c2: Point
-    end: Point
+    def moveTo(self, end):
+        PaintedPath.move_to(self.pdf_path, end[0], end[1])
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = True
 
-    @classmethod
-    def from_path_points(cls, path, c2x, c2y, ex, ey):
-        return path.add_path_element(cls(c2=Point(x=c2x, y=c2y), end=Point(x=ex, y=ey)))
+    def lineTo(self, end):
+        PaintedPath.line_to(self.pdf_path, end[0], end[1])
+        self.last_was_line_to = True
+        if self.first_is_move is None:
+            self.first_is_move = False
 
-    def render(self, path_gsds, style, last_item, initial_point):
-        # technically, it would also be possible to chain on from a quadratic Bézier,
-        # since we can convert those to cubic curves and then retrieve the appropriate
-        # control point. However, the SVG specification states in
-        # https://www.w3.org/TR/SVG/paths.html#PathDataCubicBezierCommands
-        # "if the previous command was not an C, c, S or s, assume the first control
-        # point is coincident with the current point."
-        if isinstance(last_item, BezierCurve):
-            c1 = (2 * last_item.end) - last_item.c2
-        else:
-            c1 = last_item.end_point
-
-        return BezierCurve(c1, self.c2, self.end).render(
-            path_gsds, style, last_item, initial_point
+    def curveTo(self, ctrl_1, ctrl_2, end):
+        PaintedPath.curve_to(
+            self.pdf_path,
+            x1=ctrl_1[0],
+            y1=ctrl_1[1],
+            x2=ctrl_2[0],
+            y2=ctrl_2[1],
+            x3=end[0],
+            y3=end[1],
         )
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = False
 
-    def render_debug(
-        self, path_gsds, style, last_item, initial_point, debug_stream, pfx
-    ):
-        # pylint: disable=unused-argument
-        rendered, resolved, initial_point = self.render(
-            path_gsds, style, last_item, initial_point
+    def qCurveTo(self, ctrl, end):
+        PaintedPath.quadratic_curve_to(
+            self.pdf_path,
+            x1=ctrl[0],
+            y1=ctrl[1],
+            x2=end[0],
+            y2=end[1],
         )
-        debug_stream.write(f"{self} resolved to {resolved}\n")
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = False
 
-        return rendered, resolved, initial_point
-
-
-@force_nodocument
-class SVGRelativeSmoothCubicCurve(NamedTuple):
-    """SVG chained relative cubic Bézier curve path element."""
-
-    c2: Point
-    end: Point
-
-    @classmethod
-    def from_path_points(cls, path, c2x, c2y, ex, ey):
-        return path.add_path_element(cls(c2=Point(x=c2x, y=c2y), end=Point(x=ex, y=ey)))
-
-    def render(self, path_gsds, style, last_item, initial_point):
-        last_point = last_item.end_point
-
-        if isinstance(last_item, BezierCurve):
-            c1 = (2 * last_item.end) - last_item.c2
-        else:
-            c1 = last_point
-
-        c2 = last_point + self.c2
-        end = last_point + self.end
-
-        return BezierCurve(c1, c2, end).render(
-            path_gsds, style, last_item, initial_point
+    def arcTo(self, rx, ry, rotation, arc, sweep, end):
+        PaintedPath.arc_to(
+            self.pdf_path,
+            rx=rx,
+            ry=ry,
+            rotation=rotation,
+            large_arc=arc,
+            positive_sweep=sweep,
+            x=end[0],
+            y=end[1],
         )
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = False
 
-    def render_debug(
-        self, path_gsds, style, last_item, initial_point, debug_stream, pfx
-    ):
-        # pylint: disable=unused-argument
-        rendered, resolved, initial_point = self.render(
-            path_gsds, style, last_item, initial_point
-        )
-        debug_stream.write(f"{self} resolved to {resolved}\n")
+    def closePath(self):
+        # The fonttools parser inserts an unnecessary explicit line back to the start
+        # point of the path before actually closing it. Let's get rid of that again.
+        if self.last_was_line_to:
+            self.pdf_path.remove_last_path_element()
+        PaintedPath.close(self.pdf_path)
 
-        return rendered, resolved, initial_point
-
-
-@force_nodocument
-class SVGSmoothQuadraticCurve(NamedTuple):
-    """SVG chained quadratic Bézier curve path element."""
-
-    end: Point
-
-    @classmethod
-    def from_path_points(cls, path, ex, ey):
-        return path.add_path_element(cls(end=Point(x=ex, y=ey)))
-
-    def render(self, path_gsds, style, last_item, initial_point):
-        if isinstance(last_item, QuadraticBezierCurve):
-            ctrl = (2 * last_item.end) - last_item.ctrl
-        else:
-            ctrl = last_item.end_point
-
-        return QuadraticBezierCurve(ctrl, self.end).render(
-            path_gsds, style, last_item, initial_point
-        )
-
-    def render_debug(
-        self, path_gsds, style, last_item, initial_point, debug_stream, pfx
-    ):
-        # pylint: disable=unused-argument
-        rendered, resolved, initial_point = self.render(
-            path_gsds, style, last_item, initial_point
-        )
-        debug_stream.write(f"{self} resolved to {resolved}\n")
-
-        return rendered, resolved, initial_point
-
-
-@force_nodocument
-class SVGRelativeSmoothQuadraticCurve(NamedTuple):
-    """SVG chained relative quadratic Bézier curve path element."""
-
-    end: Point
-
-    @classmethod
-    def from_path_points(cls, path, ex, ey):
-        return path.add_path_element(cls(end=Point(x=ex, y=ey)))
-
-    def render(self, path_gsds, style, last_item, initial_point):
-        last_point = last_item.end_point
-
-        if isinstance(last_item, QuadraticBezierCurve):
-            ctrl = (2 * last_item.end) - last_item.ctrl
-        else:
-            ctrl = last_point
-
-        end = last_point + self.end
-
-        return QuadraticBezierCurve(ctrl, end).render(
-            path_gsds, style, last_item, initial_point
-        )
-
-    def render_debug(
-        self, path_gsds, style, last_item, initial_point, debug_stream, pfx
-    ):
-        # pylint: disable=unused-argument
-        rendered, resolved, initial_point = self.render(
-            path_gsds, style, last_item, initial_point
-        )
-        debug_stream.write(f"{self} resolved to {resolved}\n")
-
-        return rendered, resolved, initial_point
+    def endPath(self):
+        pass
 
 
 @force_nodocument
 def svg_path_converter(pdf_path, svg_path):
-    """Convert an SVG path string into a structured PDF path object"""
-    if parse_path is None:
-        raise EnvironmentError(
-            "svg?path not available - fpdf2 cannot insert SVG images"
-        )
-
-    svg_path = svg_path.strip()
-    if svg_path[0] not in {"M", "m"}:
-        raise ValueError(f"SVG path does not start with moveto command: {svg_path}")
-
-    current_pos = 0
-    for cmd in parse_path(svg_path):
-        if isinstance(cmd, Move):
-            if cmd.relative:
-                end = cmd.end - current_pos
-                PaintedPath.move_relative(pdf_path, x=end.real, y=end.imag)
-            else:
-                PaintedPath.move_to(pdf_path, x=cmd.end.real, y=cmd.end.imag)
-        elif isinstance(cmd, Line):
-            if cmd.horizontal:
-                if cmd.relative:
-                    delta = cmd.end - current_pos
-                    PaintedPath.horizontal_line_relative(pdf_path, dx=delta.real)
-                else:
-                    PaintedPath.horizontal_line_to(pdf_path, x=cmd.end.real)
-            elif cmd.vertical:
-                if cmd.relative:
-                    delta = cmd.end - current_pos
-                    PaintedPath.vertical_line_relative(pdf_path, dy=delta.imag)
-                else:
-                    PaintedPath.vertical_line_to(pdf_path, y=cmd.end.imag)
-            else:
-                if cmd.relative:
-                    delta = cmd.end - current_pos
-                    PaintedPath.line_relative(pdf_path, dx=delta.real, dy=delta.imag)
-                else:
-                    PaintedPath.line_to(pdf_path, x=cmd.end.real, y=cmd.end.imag)
-        elif isinstance(cmd, Arc):
-            if cmd.relative:
-                end = cmd.end - current_pos
-                PaintedPath.arc_relative(
-                    pdf_path,
-                    rx=cmd.radius.real,
-                    ry=cmd.radius.imag,
-                    rotation=cmd.rotation,
-                    large_arc=cmd.arc,
-                    positive_sweep=cmd.sweep,
-                    dx=end.real,
-                    dy=end.imag,
-                )
-            else:
-                PaintedPath.arc_to(
-                    pdf_path,
-                    rx=cmd.radius.real,
-                    ry=cmd.radius.imag,
-                    rotation=cmd.rotation,
-                    large_arc=cmd.arc,
-                    positive_sweep=cmd.sweep,
-                    x=cmd.end.real,
-                    y=cmd.end.imag,
-                )
-        elif isinstance(cmd, CubicBezier):
-            if cmd.smooth:
-                if cmd.relative:
-                    control2 = cmd.control2 - current_pos
-                    end = cmd.end - current_pos
-                    SVGRelativeSmoothCubicCurve.from_path_points(
-                        pdf_path,
-                        c2x=control2.real,
-                        c2y=control2.imag,
-                        ex=end.real,
-                        ey=end.imag,
-                    )
-                else:
-                    SVGSmoothCubicCurve.from_path_points(
-                        pdf_path,
-                        c2x=cmd.control2.real,
-                        c2y=cmd.control2.imag,
-                        ex=cmd.end.real,
-                        ey=cmd.end.imag,
-                    )
-            else:
-                if cmd.relative:
-                    control1 = cmd.control1 - current_pos
-                    control2 = cmd.control2 - current_pos
-                    end = cmd.end - current_pos
-                    PaintedPath.curve_relative(
-                        pdf_path,
-                        dx1=control1.real,
-                        dy1=control1.imag,
-                        dx2=control2.real,
-                        dy2=control2.imag,
-                        dx3=end.real,
-                        dy3=end.imag,
-                    )
-                else:
-                    PaintedPath.curve_to(
-                        pdf_path,
-                        x1=cmd.control1.real,
-                        y1=cmd.control1.imag,
-                        x2=cmd.control2.real,
-                        y2=cmd.control2.imag,
-                        x3=cmd.end.real,
-                        y3=cmd.end.imag,
-                    )
-        elif isinstance(cmd, QuadraticBezier):
-            if cmd.smooth:
-                if cmd.relative:
-                    end = cmd.end - current_pos
-                    SVGRelativeSmoothQuadraticCurve.from_path_points(
-                        pdf_path, ex=end.real, ey=end.imag
-                    )
-                else:
-                    SVGSmoothQuadraticCurve.from_path_points(
-                        pdf_path, ex=cmd.end.real, ey=cmd.end.imag
-                    )
-            else:
-                if cmd.relative:
-                    control = cmd.control - current_pos
-                    end = cmd.end - current_pos
-                    PaintedPath.quadratic_curve_relative(
-                        pdf_path,
-                        dx1=control.real,
-                        dy1=control.imag,
-                        dx2=end.real,
-                        dy2=end.imag,
-                    )
-                else:
-                    PaintedPath.quadratic_curve_to(
-                        pdf_path,
-                        x1=cmd.control.real,
-                        y1=cmd.control.imag,
-                        x2=cmd.end.real,
-                        y2=cmd.end.imag,
-                    )
-        elif isinstance(cmd, Close):
-            PaintedPath.close(pdf_path)
-        else:
-            raise NotImplementedError(f"Unsupported svg.path command type: {cmd}")
-        current_pos = cmd.end
+    pen = PathPen(pdf_path)
+    parse_path(svg_path, pen)
+    if not pen.first_is_move:
+        raise ValueError("Path does not start with move item")
 
 
 class SVGObject:

@@ -36,6 +36,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.5.7] - 2022-09-08
 ### Changed
+- Since the fonttools library offers similar functionality, the dependency to "svg.path" is gone again, thanks to @gmischler; [#525](https://github.com/PyFPDF/fpdf2/issues/525)
 - HTML headings are now rendered with an additional leading of 20% the font size above and below them; [#520](https://github.com/PyFPDF/fpdf2/issues/520)
 - `fpdf2` now uses [fontTools](https://fonttools.readthedocs.io/en/latest/) to read and embed fonts in the PDF, thanks to @gmischler and @RedShy
 
