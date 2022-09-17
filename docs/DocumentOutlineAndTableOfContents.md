@@ -33,18 +33,15 @@ When using [`FPDF.write_html`](HTML.md), a document outline is automatically bui
 You can insert a table of content with the special `<toc>` tag.
 
 Custom styling of the table of contents can be achieved by overriding the `render_toc` method
-in a subclass of `fpdf.html.HTML2FPDF`:
+in a subclass of `FPDF`:
 ```python
-from fpdf import FPDF, HTML2FPDF
+from fpdf import FPDF
 
-class CustomHTML2FPDF(HTML2FPDF):
+class PDF(FPDF):
     def render_toc(self, pdf, outline):
         pdf.cell(txt='Table of contents:', new_x="LMARGIN", new_y="NEXT")
         for section in outline:
             pdf.cell(txt=f'* {section.name} (page {section.page_number})', new_x="LMARGIN", new_y="NEXT")
-
-class PDF(FPDF):
-    HTML2FPDF_CLASS = CustomHTML2FPDF
 
 pdf = PDF()
 pdf.add_page()

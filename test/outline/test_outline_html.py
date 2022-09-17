@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from fpdf import FPDF, HTML2FPDF
+from fpdf import FPDF
 from test.conftest import assert_pdf_equal
 
 
@@ -238,7 +238,7 @@ def test_html_toc_with_h1_as_2nd_heading(tmp_path):  # issue 239
 
 
 def test_custom_HTML2FPDF(tmp_path):  # issue 240
-    class CustomHTML2FPDF(HTML2FPDF):
+    class CustomPDF(FPDF):
         def render_toc(self, pdf, outline):
             pdf.cell(txt="Table of contents:", new_x="LMARGIN", new_y="NEXT")
             for section in outline:
@@ -247,9 +247,6 @@ def test_custom_HTML2FPDF(tmp_path):  # issue 240
                     new_x="LMARGIN",
                     new_y="NEXT",
                 )
-
-    class CustomPDF(FPDF):
-        HTML2FPDF_CLASS = CustomHTML2FPDF
 
     pdf = CustomPDF()
     pdf.add_page()
