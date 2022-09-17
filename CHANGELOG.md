@@ -18,10 +18,11 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.5.8] - not released yet
 ### Added
-- support for monochromatic images (PIL `image.mode == '1'`)
+- support for monochromatic images (PIL `image.mode == '1'`) thanks to @GerardoAllende
 - demonstration Jupyter notebook: [tutorial/notebook.ipynb](https://github.com/PyFPDF/fpdf2/blob/master/tutorial/notebook.ipynb)
 ### Fixed
 - automatic page break is never performed on an empty page (when the Y position is at the top margin)
+- The SVG parser now accepts stroke-width attribute values with an explicit unit, thanks to @gmischler; [#526](https://github.com/PyFPDF/fpdf2/issues/526)
 
 ## [2.5.7] - 2022-09-08
 ### Changed

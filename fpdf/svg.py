@@ -119,7 +119,10 @@ angle_units = {
 @force_nodocument
 def resolve_length(length_str, default_unit="pt"):
     """Convert a length unit to our canonical length unit, pt."""
-    value, unit = unit_splitter.match(length_str).groups()
+    match = unit_splitter.match(length_str)
+    if match is None:
+        raise ValueError(f"Unable to parse '{length_str}' as a length") from None
+    value, unit = match.groups()
     if not unit:
         unit = default_unit
 
@@ -193,7 +196,7 @@ def svgcolor(colorstr):
 
 @force_nodocument
 def convert_stroke_width(incoming):
-    val = float(incoming)
+    val = resolve_length(incoming)
     if val < 0:
         raise ValueError(f"stroke width {incoming} cannot be negative")
     if val == 0:

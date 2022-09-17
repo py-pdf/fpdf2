@@ -580,6 +580,12 @@ test_svg_attribute_conversion = (
         no_error(),
         id="stroke-width number",
     ),
+    pytest.param(  # issue #526
+        '<path stroke-width="2px"/>',
+        Gs(stroke_width=2 * 0.75),
+        no_error(),
+        id="stroke-width number",
+    ),
     pytest.param(
         '<path stroke-width="inherit"/>',
         Gs(),
