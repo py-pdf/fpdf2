@@ -200,6 +200,7 @@ class HTML2FPDF(HTMLParser):
         pdf,
         image_map=None,
         li_tag_indent=5,
+        dd_tag_indent=10,
         table_line_separators=False,
         ul_bullet_char=BULLET_WIN1252,
         heading_sizes=None,
@@ -211,6 +212,7 @@ class HTML2FPDF(HTMLParser):
             image_map (function): an optional one-argument function that map <img> "src"
                 to new image URLs
             li_tag_indent (int): numeric indentation of <li> elements
+            dd_tag_indent (int): numeric indentation of <dd> elements
             table_line_separators (bool): enable horizontal line separators in <table>
             ul_bullet_char (str): bullet character for <ul> elements
         """
@@ -218,6 +220,7 @@ class HTML2FPDF(HTMLParser):
         self.pdf = pdf
         self.image_map = image_map or (lambda src: src)
         self.li_tag_indent = li_tag_indent
+        self.dd_tag_indent = dd_tag_indent
         self.table_line_separators = table_line_separators
         self.ul_bullet_char = ul_bullet_char
         self.style = dict(b=False, i=False, u=False)
@@ -439,14 +442,12 @@ class HTML2FPDF(HTMLParser):
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         LOGGER.debug("STARTTAG %s %s", tag, attrs)
-        # if tag == "dl":
-        #     self.pdf.ln()
         if tag == "dt":
-            self.pdf.ln(self.h + 2)
+            self.pdf.ln(self.h)
+            tag = "b"
         if tag == "dd":
-            self.pdf.ln(self.h + 2)
-            self.indent += 2
-            self.pdf.write(self.h, f"{' ' * self.li_tag_indent * self.indent}")
+            self.pdf.ln(self.h)
+            self.pdf.write(self.h, " " * self.dd_tag_indent)
         if tag == "strong":
             tag = "b"
         if tag == "em":
@@ -622,8 +623,6 @@ class HTML2FPDF(HTMLParser):
             self.set_font(face, size)
             self.set_text_color(*color)
             self.align = None
-        if tag == "dd":
-            self.indent -= 2
         if tag == "pre":
             face, size, color = self.font_stack.pop()
             self.set_font(face, size)
@@ -632,7 +631,7 @@ class HTML2FPDF(HTMLParser):
             self.set_text_color(*self.font_color)
             self.indent -= 1
             self.pdf.ln(3)
-        if tag == "strong":
+        if tag in ("strong", "dt"):
             tag = "b"
         if tag == "em":
             tag = "i"
