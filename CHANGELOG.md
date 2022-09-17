@@ -18,11 +18,11 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.5.8] - not released yet
 ### Added
-- support for description list (`<dl>`), description titles (`<dt>`), and description details (`<dd>`).
+- support for description list (`<dl>`), description titles (`<dt>`), and description details (`<dd>`) in `write_html()` - thanks to @yk-jp
 - support for monochromatic images (PIL `image.mode == '1'`) thanks to @GerardoAllende
 - demonstration Jupyter notebook: [tutorial/notebook.ipynb](https://github.com/PyFPDF/fpdf2/blob/master/tutorial/notebook.ipynb)
 ### Fixed
-- `HTMLMixin` is deprecated. `write_html` method is now available in `FPDF` class
+- `HTMLMixin` is deprecated, and not needed anymore: the `write_html()` method is now natively available in the `FPDF` class - thanks to @yk-jp
 - automatic page break is never performed on an empty page (when the Y position is at the top margin)
 - The SVG parser now accepts stroke-width attribute values with an explicit unit, thanks to @gmischler; [#526](https://github.com/PyFPDF/fpdf2/issues/526)
 
