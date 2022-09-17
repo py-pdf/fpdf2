@@ -42,15 +42,12 @@ pdf.output("hyperlink.pdf")
 
 ## Hyperlink with write_html ##
 
-An alternative method using [`fpdf.HTMLMixin`](HTML.md):
+An alternative method using [`FPDF.write_html`](HTML.md):
 
 ```python
-from fpdf import FPDF, HTMLMixin
+from fpdf import FPDF
 
-class PDF(FPDF, HTMLMixin):
-    pass
-
-pdf = PDF()
+pdf = FPDF()
 pdf.set_font_size(16)
 pdf.add_page()
 pdf.write_html('<a href="https://github.com/PyFPDF/fpdf2">Link defined as HTML</a>')

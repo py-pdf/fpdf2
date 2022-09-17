@@ -14,8 +14,7 @@ or [borb](https://github.com/jorisschellekens/borb-examples/#76-exporting-html-a
 
 ## write_html usage example ##
 
-HTML rendering require the use of `fpdf.HTMLMixin`,
-that provides a new `write_html` method:
+HTML rendering require the use of `write_html` method:
 
 ```python
 from fpdf import FPDF

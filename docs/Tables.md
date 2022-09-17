@@ -35,16 +35,13 @@ pdf.output('table_with_cells.pdf')
 
 ## Using write_html ##
 
-An alternative method using [`fpdf.HTMLMixin`](HTML.md),
+An alternative method using [`FPDF.write_html`](HTML.md),
 with the same `data` as above, and column widths defined as percent of the effective width:
 
 ```python
-from fpdf import FPDF, HTMLMixin
+from fpdf import FPDF
 
-class PDF(FPDF, HTMLMixin):
-    pass
-
-pdf = PDF()
+pdf = FPDF()
 pdf.set_font_size(16)
 pdf.add_page()
 pdf.write_html(
@@ -67,7 +64,7 @@ pdf.write_html(
 pdf.output('table_html.pdf')
 ```
 
-Note that `HTMLMixin` has [some limitations, notably regarding multi-lines cells](HTML.html#supported-html-features).
+Note that `write_html` has [some limitations, notably regarding multi-lines cells](HTML.html#supported-html-features).
 
 
 ## Recipes ##

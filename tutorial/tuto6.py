@@ -1,11 +1,7 @@
-from fpdf import FPDF, HTMLMixin
+from fpdf import FPDF
 
 
-class MyFPDF(FPDF, HTMLMixin):
-    pass
-
-
-pdf = MyFPDF()
+pdf = FPDF()
 
 # First page:
 pdf.add_page()
