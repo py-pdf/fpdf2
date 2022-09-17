@@ -6,7 +6,7 @@ __license__ = "LGPL 3.0"
 
 # Inspired by tuto5.py and several examples from fpdf.org, html2fpdf, etc.
 
-import html
+import warnings
 import logging
 from html.parser import HTMLParser
 
@@ -743,3 +743,15 @@ class HTML2FPDF(HTMLParser):
     # Subclasses of _markupbase.ParserBase must implement this:
     def error(self, message):
         raise RuntimeError(message)
+
+
+class HTMLMixin:
+    HTML2FPDF_CLASS = HTML2FPDF
+
+    def __init__(self):
+        warnings.warn(
+            "The HTMLMixin class is deprecated. "
+            "Simply use the FPDF class as a replacement.",
+            DeprecationWarning,
+            stacklevel=2,
+        )

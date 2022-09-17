@@ -9,7 +9,7 @@ from .fpdf import (
     FPDF_FONT_DIR as _FPDF_FONT_DIR,
     FPDF_VERSION as _FPDF_VERSION,
 )
-from .html import HTML2FPDF
+from .html import HTMLMixin, HTML2FPDF
 from .prefs import ViewerPreferences
 from .template import Template, FlexTemplate
 from . import svg
@@ -40,6 +40,7 @@ __all__ = [
     "FlexTemplate",
     "TitleStyle",
     "ViewerPreferences",
+    "HTMLMixin",
     "HTML2FPDF",
     # FPDF Constants
     "FPDF_VERSION",
