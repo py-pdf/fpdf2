@@ -100,7 +100,7 @@ The primary purpose of this method is to print continuously wrapping text, where
 
 
 ## .write_html()
-This method can be accessed by using the class `FPDF` from "[fpdf.py](HTML.html)". It is very similar to `.write()`, but accepts basic HTML formatted text as input. See [html.py](HTML.html) for more details and the supported HTML tags.
+This method is very similar to `.write()`, but accepts basic HTML formatted text as input. See [html.py](HTML.html) for more details and the supported HTML tags.
 
 Note that when using data from actual web pages, the result may not look exactly as expected, because `.write_html()` prints all whitespace unchanged as it finds them, while webbrowsers rather collapse each run of consequitive whitespace into a single space character.
 
