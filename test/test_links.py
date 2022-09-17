@@ -6,12 +6,8 @@ from test.conftest import assert_pdf_equal
 HERE = Path(__file__).resolve().parent
 
 
-class PDF(FPDF):
-    pass
-
-
 def test_links(tmp_path):
-    pdf = PDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("helvetica", size=24)
     line_height = 10
@@ -108,7 +104,7 @@ def test_link_with_zoom_and_shift(tmp_path):
 
 def test_link_border(tmp_path):
     "Acrobat renders this border it but not Sumatra"
-    pdf = PDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=24)
 

@@ -11,12 +11,8 @@ from test.conftest import assert_pdf_equal
 HERE = Path(__file__).resolve().parent
 
 
-class MyFPDF(FPDF):
-    pass
-
-
 def test_html_images(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
 
     initial = 10
@@ -38,7 +34,7 @@ def test_html_images(tmp_path):
 
 
 def test_html_features(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html("<p><b>hello</b> world. i am <i>tired</i>.</p>")
     pdf.write_html("<p><u><b>hello</b> world. i am <i>tired</i>.</u></p>")
@@ -180,7 +176,7 @@ def test_html_features(tmp_path):
 
 
 def test_html_simple_table(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.set_font_size(30)
     pdf.add_page()
     pdf.write_html(
@@ -196,7 +192,7 @@ def test_html_simple_table(tmp_path):
 
 
 def test_html_table_line_separators(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.set_font_size(30)
     pdf.add_page()
     pdf.write_html(
@@ -213,7 +209,7 @@ def test_html_table_line_separators(tmp_path):
 
 
 def test_html_table_th_inside_tr_issue_137(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         """<table border="1">
@@ -231,7 +227,7 @@ def test_html_table_th_inside_tr_issue_137(tmp_path):
 
 
 def test_html_table_with_border(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.set_font_size(30)
     pdf.add_page()
     pdf.write_html(
@@ -247,7 +243,7 @@ def test_html_table_with_border(tmp_path):
 
 
 def test_html_bold_italic_underline(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.set_font_size(30)
     pdf.add_page()
     pdf.write_html(
@@ -287,7 +283,7 @@ def test_customize_ul(tmp_path):
 
 
 def test_img_inside_html_table(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         """<table>
@@ -305,7 +301,7 @@ def test_img_inside_html_table(tmp_path):
 
 
 def test_img_inside_html_table_without_explicit_dimensions(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         """<table>
@@ -327,7 +323,7 @@ def test_img_inside_html_table_without_explicit_dimensions(tmp_path):
 
 
 def test_img_inside_html_table_centered(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         """<table>
@@ -345,7 +341,7 @@ def test_img_inside_html_table_centered(tmp_path):
 
 
 def test_img_inside_html_table_centered_with_align(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         """<table>
@@ -365,7 +361,7 @@ def test_img_inside_html_table_centered_with_align(tmp_path):
 
 
 def test_img_inside_html_table_centered_with_caption(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         """<table border="1">
@@ -388,7 +384,7 @@ def test_img_inside_html_table_centered_with_caption(tmp_path):
 
 
 def test_html_table_with_empty_cell_contents(tmp_path):  # issue 349
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.set_font_size(30)
     pdf.add_page()
     # Reference table cells positions:
@@ -415,7 +411,7 @@ def test_html_table_with_empty_cell_contents(tmp_path):  # issue 349
 
 
 def test_html_justify_paragraph(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         '<p align="justify">'
@@ -429,7 +425,7 @@ def test_html_justify_paragraph(tmp_path):
 
 
 def test_issue_156(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_font("Roboto", style="B", fname="test/fonts/Roboto-Bold.ttf")
     pdf.set_font("Roboto", style="B")
     pdf.add_page()
@@ -445,7 +441,7 @@ def test_issue_156(tmp_path):
 
 
 def test_html_font_color_name(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         '<font color="crimson"><p>hello in crimson</p></font>'
@@ -459,7 +455,7 @@ def test_html_font_color_name(tmp_path):
 
 
 def test_html_heading_hebrew(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_font("DejaVuSans", fname=HERE / "../fonts/DejaVuSans.ttf")
     pdf.set_font("DejaVuSans")
     pdf.add_page()
@@ -468,7 +464,7 @@ def test_html_heading_hebrew(tmp_path):
 
 
 def test_html_headings_line_height(tmp_path):  # issue-223
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     long_title = "The Quick Brown Fox Jumped Over The Lazy Dog "
     pdf.write_html(
@@ -485,7 +481,7 @@ def test_html_headings_line_height(tmp_path):  # issue-223
 
 
 def test_html_custom_heading_sizes(tmp_path):  # issue-223
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         """<h1>This is a H1</h1>
@@ -500,7 +496,7 @@ def test_html_custom_heading_sizes(tmp_path):  # issue-223
 
 
 def test_bgcolor_in_table(tmp_path):  # issue-512
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         """<table>
@@ -522,7 +518,7 @@ def test_bgcolor_in_table(tmp_path):  # issue-512
 
 
 def test_html_superscript(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         "<h1>Superscript/Subscript test</h1>"
@@ -532,14 +528,14 @@ def test_html_superscript(tmp_path):
 
 
 def test_html_description(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         """
-           <dt>description titile</dt>
+           <dt>description title</dt>
            <dd>description details</dd> 
             <dl>
-                <dt>description titile</dt>
+                <dt>description title</dt>
                 <dd>description details</dd>
             </dl>
         """

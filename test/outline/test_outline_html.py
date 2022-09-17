@@ -7,12 +7,8 @@ from test.conftest import assert_pdf_equal
 HERE = Path(__file__).resolve().parent
 
 
-class MyFPDF(FPDF):
-    pass
-
-
 def test_html_toc(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         """<h1>Document title</h1>
@@ -46,7 +42,7 @@ def test_html_toc(tmp_path):
 
 
 def test_html_toc_2_pages(tmp_path):
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         """<h1>Document title</h1>
@@ -228,7 +224,7 @@ def test_html_toc_2_pages(tmp_path):
 
 
 def test_html_toc_with_h1_as_2nd_heading(tmp_path):  # issue 239
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
         """<toc></toc>
@@ -252,7 +248,7 @@ def test_custom_HTML2FPDF(tmp_path):  # issue 240
                     new_y="NEXT",
                 )
 
-    class CustomPDF(FPDF, HTMLMixin):
+    class CustomPDF(FPDF):
         HTML2FPDF_CLASS = CustomHTML2FPDF
 
     pdf = CustomPDF()
