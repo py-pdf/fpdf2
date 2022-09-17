@@ -515,11 +515,12 @@ class FPDF(GraphicsStateMixin):
         # Method arguments must override class & instance attributes:
         kwargs2.update(kwargs)
         h2p = self.HTML2FPDF_CLASS(self, *args, **kwargs2)
-        warnings.warn(
-            "The HTML2FPDF_CLASS is deprecated. It will be removed in a future release.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
+        if self.HTML2FPDF_CLASS != HTML2FPDF:
+            warnings.warn(
+                "The HTML2FPDF_CLASS is deprecated. It will be removed in a future release.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         text = html.unescape(text)  # To deal with HTML entities
         h2p.feed(text)
 

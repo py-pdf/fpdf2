@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF
+from fpdf import FPDF, HTMLMixin
 from fpdf.errors import FPDFException
 from fpdf.html import px2mm
 from test.conftest import assert_pdf_equal
@@ -541,3 +541,16 @@ def test_html_description(tmp_path):
         """
     )
     assert_pdf_equal(pdf, HERE / "html_description.pdf", tmp_path)
+
+
+def test_html_HTMLMixin_deprecation_warning(tmp_path):
+    class PDF(FPDF, HTMLMixin):
+        pass
+
+    msg = (
+        "The HTMLMixin class is deprecated. "
+        "Simply use the FPDF class as a replacement."
+    )
+
+    with pytest.warns(DeprecationWarning, match=msg):
+        pdf = PDF()

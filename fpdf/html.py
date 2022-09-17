@@ -747,7 +747,8 @@ class HTML2FPDF(HTMLParser):
 class HTMLMixin:
     HTML2FPDF_CLASS = HTML2FPDF
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         warnings.warn(
             "The HTMLMixin class is deprecated. "
             "Simply use the FPDF class as a replacement.",
