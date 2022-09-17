@@ -100,9 +100,14 @@ class TestSVGPathParsing:
 
     def test_bad_path_start(self):
         pdf_path = fpdf.drawing.PaintedPath()
-
         with pytest.raises(ValueError):
             fpdf.svg.svg_path_converter(pdf_path, "L 1 2")
+        with pytest.raises(ValueError):
+            fpdf.svg.svg_path_converter(pdf_path, "C 1 2 3 4 5 6")
+        with pytest.raises(ValueError):
+            fpdf.svg.svg_path_converter(pdf_path, "Q 1 2 3 4")
+        with pytest.raises(ValueError):
+            fpdf.svg.svg_path_converter(pdf_path, "A 1 2 0 1 0 4 5")
 
     @pytest.mark.parametrize(
         "debug", (pytest.param(False, id="no debug"), pytest.param(True, id="debug"))
