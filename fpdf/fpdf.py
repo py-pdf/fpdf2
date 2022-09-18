@@ -23,7 +23,6 @@ import re
 import sys
 import warnings
 import zlib
-import html
 from collections import OrderedDict, defaultdict
 from collections.abc import Sequence
 from contextlib import contextmanager
@@ -37,6 +36,7 @@ from fontTools import ttLib
 from fontTools import subset as ftsubset
 from io import BytesIO
 from fpdf.html import HTML2FPDF
+from html import unescape
 
 try:
     from PIL.Image import Image
@@ -521,7 +521,7 @@ class FPDF(GraphicsStateMixin):
                 DeprecationWarning,
                 stacklevel=2,
             )
-        text = html.unescape(text)  # To deal with HTML entities
+        text = unescape(text)  # To deal with HTML entities
         h2p.feed(text)
 
     def _add_quad_points(self, x, y, w, h):
