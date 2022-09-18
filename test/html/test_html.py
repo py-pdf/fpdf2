@@ -533,7 +533,7 @@ def test_html_description(tmp_path):
     pdf.write_html(
         """
            <dt>description title</dt>
-           <dd>description details</dd> 
+           <dd>description details</dd>
             <dl>
                 <dt>description title</dt>
                 <dd>description details</dd>
@@ -554,3 +554,15 @@ def test_html_HTMLMixin_deprecation_warning(tmp_path):
 
     with pytest.warns(DeprecationWarning, match=msg):
         pdf = PDF()
+        pdf.add_page()
+        pdf.write_html(
+            """
+           <dt>description title</dt>
+           <dd>description details</dd>
+            <dl>
+                <dt>description title</dt>
+                <dd>description details</dd>
+            </dl>
+        """
+        )
+        assert_pdf_equal(pdf, HERE / "html_description.pdf", tmp_path)
