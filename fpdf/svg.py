@@ -3,6 +3,7 @@ import re
 import warnings
 
 from fontTools.svgLib.path import parse_path
+from fontTools.pens.basePen import AbstractPen
 
 try:
     from defusedxml.ElementTree import fromstring as parse_xml_str
@@ -548,7 +549,7 @@ def convert_transforms(tfstr):
     return transform
 
 
-class PathPen:
+class PathPen(AbstractPen):
     def __init__(self, pdf_path):
         self.pdf_path = pdf_path
         self.last_was_line_to = False
