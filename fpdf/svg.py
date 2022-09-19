@@ -3,7 +3,7 @@ import re
 import warnings
 
 from fontTools.svgLib.path import parse_path
-from fontTools.pens.basePen import AbstractPen
+from fontTools.pens.basePen import BasePen
 
 try:
     from defusedxml.ElementTree import fromstring as parse_xml_str
@@ -549,39 +549,35 @@ def convert_transforms(tfstr):
     return transform
 
 
-class PathPen(AbstractPen):
-    def __init__(self, pdf_path):
+class PathPen(BasePen):
+    def __init__(self, pdf_path, *args, **kwargs):
         self.pdf_path = pdf_path
         self.last_was_line_to = False
         self.first_is_move = None
+        super().__init__(*args, **kwargs)
 
-    def moveTo(self, end):
-        self.pdf_path.move_to(*end)
+    def _moveTo(self, pt):
+        self.pdf_path.move_to(*pt)
         self.last_was_line_to = False
         if self.first_is_move is None:
             self.first_is_move = True
 
-    def lineTo(self, end):
-        self.pdf_path.line_to(*end)
+    def _lineTo(self, pt):
+        self.pdf_path.line_to(*pt)
         self.last_was_line_to = True
         if self.first_is_move is None:
             self.first_is_move = False
 
-    def curveTo(self, ctrl_1, ctrl_2, end):
+    def _curveToOne(self, pt1, pt2, pt3):
         self.pdf_path.curve_to(
-            x1=ctrl_1[0],
-            y1=ctrl_1[1],
-            x2=ctrl_2[0],
-            y2=ctrl_2[1],
-            x3=end[0],
-            y3=end[1],
+            x1=pt1[0], y1=pt1[1], x2=pt2[0], y2=pt2[1], x3=pt3[0], y3=pt3[1]
         )
         self.last_was_line_to = False
         if self.first_is_move is None:
             self.first_is_move = False
 
-    def qCurveTo(self, ctrl, end):
-        self.pdf_path.quadratic_curve_to(x1=ctrl[0], y1=ctrl[1], x2=end[0], y2=end[1])
+    def _qCurveToOne(self, pt1, pt2):
+        self.pdf_path.quadratic_curve_to(x1=pt1[0], y1=pt1[1], x2=pt2[0], y2=pt2[1])
         self.last_was_line_to = False
         if self.first_is_move is None:
             self.first_is_move = False
@@ -600,15 +596,12 @@ class PathPen(AbstractPen):
         if self.first_is_move is None:
             self.first_is_move = False
 
-    def closePath(self):
+    def _closePath(self):
         # The fonttools parser inserts an unnecessary explicit line back to the start
         # point of the path before actually closing it. Let's get rid of that again.
         if self.last_was_line_to:
             self.pdf_path.remove_last_path_element()
         self.pdf_path.close()
-
-    def endPath(self):
-        pass
 
 
 @force_nodocument
