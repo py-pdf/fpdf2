@@ -555,20 +555,19 @@ class PathPen:
         self.first_is_move = None
 
     def moveTo(self, end):
-        PaintedPath.move_to(self.pdf_path, end[0], end[1])
+        self.pdf_path.move_to(*end)
         self.last_was_line_to = False
         if self.first_is_move is None:
             self.first_is_move = True
 
     def lineTo(self, end):
-        PaintedPath.line_to(self.pdf_path, end[0], end[1])
+        self.pdf_path.line_to(*end)
         self.last_was_line_to = True
         if self.first_is_move is None:
             self.first_is_move = False
 
     def curveTo(self, ctrl_1, ctrl_2, end):
-        PaintedPath.curve_to(
-            self.pdf_path,
+        self.pdf_path.curve_to(
             x1=ctrl_1[0],
             y1=ctrl_1[1],
             x2=ctrl_2[0],
@@ -581,20 +580,13 @@ class PathPen:
             self.first_is_move = False
 
     def qCurveTo(self, ctrl, end):
-        PaintedPath.quadratic_curve_to(
-            self.pdf_path,
-            x1=ctrl[0],
-            y1=ctrl[1],
-            x2=end[0],
-            y2=end[1],
-        )
+        self.pdf_path.quadratic_curve_to(x1=ctrl[0], y1=ctrl[1], x2=end[0], y2=end[1])
         self.last_was_line_to = False
         if self.first_is_move is None:
             self.first_is_move = False
 
     def arcTo(self, rx, ry, rotation, arc, sweep, end):
-        PaintedPath.arc_to(
-            self.pdf_path,
+        self.pdf_path.arc_to(
             rx=rx,
             ry=ry,
             rotation=rotation,
@@ -612,7 +604,7 @@ class PathPen:
         # point of the path before actually closing it. Let's get rid of that again.
         if self.last_was_line_to:
             self.pdf_path.remove_last_path_element()
-        PaintedPath.close(self.pdf_path)
+        self.pdf_path.close()
 
     def endPath(self):
         pass
