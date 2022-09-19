@@ -489,6 +489,22 @@ class TestStyles:
         assert style.fill_opacity != copied.fill_opacity
 
 
+def test_path_start_relative():
+    """
+    Test starting a path with a relative move.
+    The parametrized series below can't cover that case.
+    """
+    point = fpdf.drawing.Point(1, 2)
+    start = fpdf.drawing.Move(point)
+    element = fpdf.drawing.RelativeLine(fpdf.drawing.Point(3, 4))
+    expected = "4 6 l"
+    style = fpdf.drawing.GraphicsStyle()
+    style.auto_close = False
+    rendered, last_item, _ = element.render({}, style, start, point)
+    assert rendered == expected
+    assert isinstance(last_item, fpdf.drawing.Line)
+
+
 class TestPathElements:
     @pytest.mark.parametrize(
         "point, element, expected, end_point, end_class", parameters.path_elements
