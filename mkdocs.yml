@@ -122,6 +122,7 @@ nav:
   - 'Page Format and Orientation':    'PageFormatAndOrientation.md'
   - 'Margins':                        'Margins.md'
   - 'Templates':                      'Templates.md'
+  - 'Text Flow Regions':              'TextRegion.md'
   - 'Tables':                         'Tables.md'
 - 'Text Content':
   - 'Adding Text':                    'Text.md'

@@ -75,6 +75,7 @@ from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingE
 from .fonts import CoreFont, CORE_FONTS, FontFace, TTFFont
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
+from .text_region import TextRegionMixin, TextColumns
 from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
 from .line_break import Fragment, MultiLineBreak, TextLine
 from .linearization import LinearizedOutputProducer
@@ -219,7 +220,7 @@ def check_page(fn):
     return wrapper
 
 
-class FPDF(GraphicsStateMixin):
+class FPDF(GraphicsStateMixin, TextRegionMixin):
     "PDF Generation class"
     MARKDOWN_BOLD_MARKER = "**"
     MARKDOWN_ITALICS_MARKER = "__"
@@ -2868,20 +2869,15 @@ class FPDF(GraphicsStateMixin):
                 unscaled_width = frag.get_width(initial_cs=i != 0)
                 styled_txt_width += unscaled_width
 
-        if w == 0:
-            w = self.w - self.r_margin - self.x
-        elif w is None:
-            if not text_line.fragments:
-                raise ValueError(
-                    "A 'text_line' parameter with fragments must be provided if 'w' is None"
-                )
-            w = styled_txt_width + horizontal_margin + horizontal_margin
+
+        w = text_line.max_width
         if center:
             self.x = (
                 self.w / 2 if align == Align.X else self.l_margin + (self.epw - w) / 2
             )
         if align == Align.X:
             self.x -= w / 2
+
         max_font_size = 0  # how much height we need to accomodate.
         # currently all font sizes within a line are vertically aligned on the baseline.
         for frag in text_line.fragments:
@@ -2928,6 +2924,7 @@ class FPDF(GraphicsStateMixin):
         current_lift = 0.0
         current_char_vpos = CharVPos.LINE
         current_font = self.current_font
+        current_font_size_pt = self.font_size_pt
         current_text_mode = self.text_mode
         current_font_stretching = self.font_stretching
         current_char_spacing = self.char_spacing
@@ -2967,9 +2964,13 @@ class FPDF(GraphicsStateMixin):
                 if current_char_spacing != frag.char_spacing:
                     current_char_spacing = frag.char_spacing
                     sl.append(f"{frag.char_spacing:.2f} Tc")
-                if current_font != frag.font or current_char_vpos != frag.char_vpos:
+                if (current_font != frag.font
+                        or current_font_size_pt != frag.font_size_pt
+                        or current_char_vpos != frag.char_vpos):
                     if current_char_vpos != frag.char_vpos:
                         current_char_vpos = frag.char_vpos
+                    if current_font_size_pt != frag.font_size_pt:
+                        current_font_size_pt = frag.font_size_pt
                     current_font = frag.font
                     sl.append(f"/F{frag.font.i} {frag.font_size_pt:.2f} Tf")
                 lift = frag.lift
@@ -3048,6 +3049,7 @@ class FPDF(GraphicsStateMixin):
                 or current_lift != 0.0
                 or current_char_vpos != CharVPos.LINE
                 or current_font != self.current_font
+                or current_font_size_pt != self.font_size_pt
                 or current_text_mode != self.text_mode
                 or self.fill_color != self.text_color
                 or current_font_stretching != self.font_stretching

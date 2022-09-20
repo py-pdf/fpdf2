@@ -27,6 +27,7 @@ from .fpdf import (
 from .html import HTMLMixin, HTML2FPDF
 from .prefs import ViewerPreferences
 from .template import Template, FlexTemplate
+from .text_region import TextColumns
 from .deprecation import WarnOnDeprecatedModuleAttributes
 
 FPDF_VERSION = _FPDF_VERSION
@@ -65,6 +66,7 @@ __all__ = [
     # FPDF constants:
     "FPDF_VERSION",
     "FPDF_FONT_DIR",
+    "TextColumns",
 ]
 
 __pdoc__ = {name: name.startswith("FPDF_") for name in __all__}
