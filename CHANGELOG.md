@@ -27,6 +27,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 - [fontTools](https://fonttools.readthedocs.io/en/latest/) minimal version requirement set to 4.30.0; [#524](https://github.com/PyFPDF/fpdf2/issues/524)
 
+### Added
+- [fontTools](https://fonttools.readthedocs.io/en/latest/) minimal version requirement set to 4.30.0; [#524](https://github.com/PyFPDF/fpdf2/issues/524)
+
 ## [2.5.7] - 2022-09-08
 ### Changed
 - HTML headings are now rendered with an additional leading of 20% the font size above and below them; [#520](https://github.com/PyFPDF/fpdf2/issues/520)
