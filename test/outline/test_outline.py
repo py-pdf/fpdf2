@@ -171,6 +171,33 @@ def test_2_pages_outline(tmp_path):
     assert_pdf_equal(pdf, HERE / "2_pages_outline.pdf", tmp_path)
 
 
+def test_toc_with_nb_and_footer(tmp_path):  # issue-548
+    class TestPDF(FPDF):
+        def render_toc(self, outline):
+            self.x = self.l_margin
+            self.set_font(style="", size=12)
+            for section in outline:
+                self.ln()
+                self.cell(txt=section.name)
+
+        def footer(self):
+            self.set_y(-15)
+            self.set_font("helvetica", "I", 8)
+            self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", align="C")
+
+    pdf = TestPDF()
+    pdf.set_font(family="helvetica", size=12)
+    pdf.add_page()
+    pdf.insert_toc_placeholder(TestPDF.render_toc, pages=2)
+    for i in range(1, 80):
+        pdf.set_font(style="B")
+        pdf.start_section(f"Section {i}")
+        pdf.cell(txt=f"Section {i}")
+        pdf.ln()
+
+    assert_pdf_equal(pdf, HERE / "toc_with_nb_and_footer.pdf", tmp_path)
+
+
 def test_russian_heading(tmp_path):  # issue-320
     pdf = FPDF()
     pdf.add_font("Roboto", style="B", fname="test/fonts/Roboto-Regular.ttf")

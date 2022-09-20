@@ -3974,10 +3974,10 @@ class FPDF(GraphicsStateMixin):
 
     def _putpages(self):
         nb = self.pages_count  # total number of pages
-        if self.str_alias_nb_pages:
-            self._substitute_page_number()
         if self._toc_placeholder:
             self._insert_table_of_contents()
+        if self.str_alias_nb_pages:
+            self._substitute_page_number()
         if self.def_orientation == "P":
             dw_pt = self.dw_pt
             dh_pt = self.dh_pt
@@ -4091,6 +4091,9 @@ class FPDF(GraphicsStateMixin):
         # Doc has been closed but we want to write to self.pages[self.page] instead of self.buffer:
         self.state = DocumentState.GENERATING_PAGE
         self.y = tocp.y
+        # Disabling footer & header, as they have already been called:
+        self.footer = lambda *args, **kwargs: None
+        self.header = lambda *args, **kwargs: None
         tocp.render_function(self, self._outline)
         expected_final_page = tocp.start_page + tocp.pages - 1
         if self.page != expected_final_page:
