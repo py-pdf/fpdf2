@@ -79,6 +79,7 @@ from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingE
 from .fonts import CoreFont, CORE_FONTS, FontFace, TTFFont
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
+from .text_region import TextRegionMixin, TextColumns
 from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
 from .linearization import LinearizedOutputProducer
 from .line_break import Fragment, MultiLineBreak, TextLine
