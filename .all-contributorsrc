@@ -652,6 +652,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "darioackermann",
+      "name": "Dario Ackermann",
+      "avatar_url": "https://avatars.githubusercontent.com/u/35274810?v=4",
+      "profile": "http://dario.icu/",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
