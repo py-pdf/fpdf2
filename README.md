@@ -209,6 +209,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center"><a href="https://nicholasjin.github.io/"><img src="https://avatars.githubusercontent.com/u/15252734?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nicholas Jin</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Anicholasjin" title="Bug reports">🐛</a></td>
       <td align="center"><a href="https://portfolio-yk-jp.vercel.app/"><img src="https://avatars.githubusercontent.com/u/69574727?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Yusuke</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=yk-jp" title="Code">💻</a></td>
       <td align="center"><a href="https://github.com/Tillrzhtgrfho"><img src="https://avatars.githubusercontent.com/u/86628355?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Tillrzhtgrfho</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3ATillrzhtgrfho" title="Bug reports">🐛</a></td>
+      <td align="center"><a href="http://dario.icu/"><img src="https://avatars.githubusercontent.com/u/35274810?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Dario Ackermann</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Adarioackermann" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
