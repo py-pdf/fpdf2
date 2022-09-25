@@ -337,8 +337,8 @@ class ShapeBuilder:
         # svg rect is wound clockwise
         x = float(tag.attrib.get("x", 0))
         y = float(tag.attrib.get("y", 0))
-        width = float(tag.attrib.get("width", 0))
-        height = float(tag.attrib.get("height", 0))
+        width = resolve_length(tag.attrib.get("width", 0))
+        height = resolve_length(tag.attrib.get("height", 0))
         rx = tag.attrib.get("rx", "auto")
         ry = tag.attrib.get("ry", "auto")
 
