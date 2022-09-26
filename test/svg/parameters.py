@@ -72,6 +72,12 @@ def Gs(**kwargs):
 
 test_svg_shape_tags = (
     pytest.param(
+        '<rect x="20" y="20" width="25.4mm" height="2.54 cm"/>',
+        [M(0, 0), Re(20, 20, 72, 72, 0, 0)],
+        no_error(),
+        id="rect",
+    ),
+    pytest.param(
         '<rect x="20" y="20" width="60" height="60"/>',
         [M(0, 0), Re(20, 20, 60, 60, 0, 0)],
         no_error(),
