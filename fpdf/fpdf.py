@@ -9,11 +9,6 @@
 # * Maintainer:  David Alexander (daveankin@gmail.com) et al since 2017 est. *
 # * Maintainer:  Lucas Cimon et al since 2021 est.                           *
 # ****************************************************************************
-"""fpdf module (in fpdf package housing FPDF class)
-
-This module contains FPDF class inspiring this library.
-"""
-
 import hashlib
 import io
 import logging
@@ -392,14 +387,13 @@ class FPDF(GraphicsStateMixin):
                 stacklevel=2,
             )
         super().__init__()
-        # Initialization of instance attributes
-        self.offsets = {}  # array of object offsets
         self.page = 0  # current page number
-        self.n = 2  # current object number
+        self.n = 2  # current PDF object number
         self.buffer = bytearray()  # buffer holding in-memory PDF
+        self.offsets = {}  # array of object offsets used to build the xref table
         # Associative array from page number to dicts containing pages and metadata:
         self.pages = {}
-        self.state = DocumentState.UNINITIALIZED  # current document state
+        self._state = DocumentState.GENERATING  # initial document state
         self.fonts = {}  # array of used fonts
         self.font_files = {}  # array of font files
         self.diffs = {}  # array of encoding differences
@@ -411,7 +405,7 @@ class FPDF(GraphicsStateMixin):
         self.links = {}  # array of Destination
         self.embedded_files = []
         self.embedded_files_per_pdf_ref = {}
-        self.in_footer = 0  # flag set when processing footer
+        self.in_footer = False  # flag set when processing footer
         self.lasth = 0  # height of last cell printed
         self.str_alias_nb_pages = "{nb}"
 
@@ -849,38 +843,6 @@ class FPDF(GraphicsStateMixin):
         """
         self.str_alias_nb_pages = alias
 
-    def open(self):
-        """
-        Starts the generation of the PDF document.
-        It is not necessary to call it explicitly because `FPDF.add_page()` does it automatically.
-
-        Notes
-        -----
-
-        This method does not add any page.
-        """
-        self.state = DocumentState.READY
-
-    def close(self):
-        """
-        Terminates the PDF document.
-
-        It is not necessary to call this method explicitly because `FPDF.output()` does it automatically.
-        If the document contains no page, `FPDF.add_page()` is called to prevent from generating an invalid document.
-        """
-        if self.state == DocumentState.CLOSED:
-            return
-        if self.page == 0:
-            self.add_page()
-
-        # Page footer
-        self.in_footer = 1
-        self.footer()
-        self.in_footer = 0
-
-        self._endpage()  # close page
-        self._enddoc()  # close document
-
     def add_page(
         self, orientation="", format="", same=False, duration=0, transition=None
     ):
@@ -907,13 +869,10 @@ class FPDF(GraphicsStateMixin):
                 Can be configured globally through the `.page_transition` FPDF property.
                 As of june 2021, onored by Adobe Acrobat reader, but ignored by Sumatra PDF reader.
         """
-        if self.state == DocumentState.CLOSED:
+        if self._state == DocumentState.CLOSED:
             raise FPDFException(
                 "A page cannot be added on a closed document, after calling output()"
             )
-        if self.state == DocumentState.UNINITIALIZED:
-            self.open()
-
         family = self.font_family
         style = f"{self.font_style}U" if self.underline else self.font_style
         size = self.font_size_pt
@@ -926,11 +885,9 @@ class FPDF(GraphicsStateMixin):
 
         if self.page > 0:
             # Page footer
-            self.in_footer = 1
+            self.in_footer = True
             self.footer()
-            self.in_footer = 0
-            # close page
-            self._endpage()
+            self.in_footer = False
 
         # Start new page
         self._beginpage(
@@ -3843,8 +3800,17 @@ class FPDF(GraphicsStateMixin):
                 stacklevel=2,
             )
         # Finish document if necessary:
-        if self.state < DocumentState.CLOSED:
-            self.close()
+        if self._state == DocumentState.GENERATING:
+            if self.page == 0:
+                self.add_page()
+            # Generating final page footer:
+            self.in_footer = True
+            self.footer()
+            self.in_footer = False
+            # Generating .buffer based on .pages:
+            self._state = DocumentState.CLOSING
+            self._enddoc()
+            self._state = DocumentState.CLOSED
         if name:
             if isinstance(name, os.PathLike):
                 name.write_bytes(self.buffer)
@@ -4085,11 +4051,11 @@ class FPDF(GraphicsStateMixin):
             )
 
     def _insert_table_of_contents(self):
-        prev_state = self.state
+        prev_state = self._state
         tocp = self._toc_placeholder
         self.page = tocp.start_page
         # Doc has been closed but we want to write to self.pages[self.page] instead of self.buffer:
-        self.state = DocumentState.GENERATING_PAGE
+        self._state = DocumentState.GENERATING
         self.y = tocp.y
         # Disabling footer & header, as they have already been called:
         self.footer = lambda *args, **kwargs: None
@@ -4101,7 +4067,7 @@ class FPDF(GraphicsStateMixin):
             error_msg = f"The rendering function passed to FPDF.insert_toc_placeholder triggered too {too} page breaks: "
             error_msg += f"ToC ended on page {self.page} while it was expected to span exactly {tocp.pages} pages"
             raise FPDFException(error_msg)
-        self.state = prev_state
+        self._state = prev_state
 
     def _putfonts(self):
         for diff in self.diffs.values():
@@ -4774,7 +4740,6 @@ class FPDF(GraphicsStateMixin):
                 self._sign_hashalgo,
                 self._sign_time,
             )
-        self.state = DocumentState.CLOSED
 
     def _beginpage(
         self, orientation, format, same, duration, transition, new_page=True
@@ -4791,7 +4756,7 @@ class FPDF(GraphicsStateMixin):
                 self._set_min_pdf_version("1.5")
         else:
             page = self.pages[self.page]
-        self.state = DocumentState.GENERATING_PAGE
+        self._state = DocumentState.GENERATING
         self.x = self.l_margin
         self.y = self.t_margin
         self.font_family = ""
@@ -4813,10 +4778,6 @@ class FPDF(GraphicsStateMixin):
             self.page_break_trigger = self.h - self.b_margin
         page["w_pt"], page["h_pt"] = self.w_pt, self.h_pt
 
-    def _endpage(self):
-        # End of page contents
-        self.state = DocumentState.READY
-
     def _newobj(self):
         # Begin a new object
         self.n += 1
@@ -4837,7 +4798,7 @@ class FPDF(GraphicsStateMixin):
         )
 
     def _out(self, s):
-        if self.state == DocumentState.CLOSED:
+        if self._state == DocumentState.CLOSED:
             raise FPDFException(
                 "Content cannot be added on a closed document, after calling output()"
             )
@@ -4845,9 +4806,11 @@ class FPDF(GraphicsStateMixin):
             if not isinstance(s, str):
                 s = str(s)
             s = s.encode("latin1")
-        if self.state == DocumentState.GENERATING_PAGE:
+        if self._state == DocumentState.GENERATING:
+            if not self.page:
+                raise FPDFException("No page open, you need to call add_page() first")
             self.pages[self.page]["content"] += s + b"\n"
-        else:
+        else:  # self._state == DocumentState.CLOSING
             self.buffer += s + b"\n"
 
     @check_page

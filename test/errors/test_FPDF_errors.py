@@ -122,7 +122,7 @@ def test_incorrent_number_of_pages_toc():
     pdf.add_page()
     pdf.insert_toc_placeholder(lambda a, b: None, 10)
     with pytest.raises(FPDFException):
-        pdf.close()
+        pdf.output()
 
 
 def test_invalid_page_background():

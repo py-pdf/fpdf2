@@ -16,12 +16,14 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.5.8] - not released yet
+## [2.6.0] - not released yet
 ### Added
 - demonstration Jupyter notebook: [tutorial/notebook.ipynb](https://github.com/PyFPDF/fpdf2/blob/master/tutorial/notebook.ipynb)
 - support for description list (`<dl>`), description titles (`<dt>`), and description details (`<dd>`) in `write_html()` - thanks to @yk-jp
 - support for monochromatic images (PIL `image.mode == '1'`) thanks to @GerardoAllende
 - [fontTools](https://fonttools.readthedocs.io/en/latest/) minimal version requirement set to 4.34.0; [#524](https://github.com/PyFPDF/fpdf2/issues/524)
+### Removed
+- `open()` & `close()` methods, that were only used internally and should never have been called by end-user code
 ### Deprecated
 - `HTMLMixin` is deprecated, and not needed anymore: the `write_html()` method is now natively available in the `FPDF` class - thanks to @yk-jp
 ### Fixed

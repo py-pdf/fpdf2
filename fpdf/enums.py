@@ -4,11 +4,10 @@ from sys import intern
 from .syntax import Name
 
 
-class DocumentState(IntEnum):
-    UNINITIALIZED = 0
-    READY = 1  # page not started yet
-    GENERATING_PAGE = 2
-    CLOSED = 3  # EOF printed
+class DocumentState(IntEnum):  # internal/private enum
+    GENERATING = 0  # default state while building the PDF document
+    CLOSING = 1  # while calling .output() and converting the internal .pages dict to a .buffer
+    CLOSED = 2  # = .output() has been called once and has finished
 
 
 class SignatureFlag(IntEnum):

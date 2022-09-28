@@ -147,6 +147,7 @@ def test_change_settings():
 
     # dash_pattern
     pdf = FPDF()
+    pdf.add_page()
     # verify default
     tgt_dash_pattern = dict(dash=0, gap=0, phase=0)
     assert pdf.dash_pattern == tgt_dash_pattern, (
