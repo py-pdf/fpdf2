@@ -3,6 +3,8 @@ from pathlib import Path
 import fpdf
 from test.conftest import assert_pdf_equal
 
+import pytest
+
 
 HERE = Path(__file__).resolve().parent
 
@@ -215,3 +217,29 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
     assert_pdf_equal(
         pdf, HERE / "multi_cell_table_unbreakable_with_split_only.pdf", tmp_path
     )
+
+
+def test_unbreakable_with_local_context():  # discussion 557
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica", "", 10)
+    pdf.add_page()
+    pdf.set_y(270)  # Set position so that adding a cell triggers a page break
+    with pytest.raises(fpdf.FPDFException):
+        with pdf.unbreakable() as doc:
+            with doc.local_context(fill_opacity=0.3):
+                doc.cell(doc.epw, 10, "Cell text content", border=1, fill=True)
+    pdf.set_y(270)  # Set position so that adding a cell triggers a page break
+    with pytest.raises(fpdf.FPDFException):
+        with pdf.unbreakable() as doc:
+            with doc.local_context(text_color=(255, 0, 0)):
+                doc.cell(doc.epw, 10, "Cell text content", border=1)
+
+
+def test_unbreakable_with_get_y():  # discussion 557
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica", "", 10)
+    pdf.add_page()
+    pdf.set_y(270)  # Set position so that adding a cell triggers a page break
+    with pytest.raises(fpdf.FPDFException):
+        with pdf.unbreakable() as doc:
+            doc.cell(doc.epw, 10, f"doc.get_y(): {doc.get_y()}", border=1)

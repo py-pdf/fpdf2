@@ -27,8 +27,10 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Fixed
 - automatic page break is never performed on an empty page (when the Y position is at the top margin)
 - fixed [`insert_toc_placeholder()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.insert_toc_placeholder) usage with [`footer()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) and `{{nb}}`; [#548](https://github.com/PyFPDF/fpdf2/issues/548)
-- the SVG parser now accepts stroke-width attribute values with an explicit unit, thanks to @gmischler; [#526](https://github.com/PyFPDF/fpdf2/issues/526)
+- the SVG parser now accepts `stroke-width` attribute values with an explicit unit, thanks to @gmischler; [#526](https://github.com/PyFPDF/fpdf2/issues/526)
 - the SVG parser now accepts absolute units for `width` and `height` attributes, thanks to @darioackermann; [#555](https://github.com/PyFPDF/fpdf2/issues/555)
+### Changed
+- forbid use of `get_y()` & `local_context()` inside `unbreakable()` as it is currently not supported; [#557](https://github.com/PyFPDF/fpdf2/discussions/557)
 
 ## [2.5.7] - 2022-09-08
 ### Changed

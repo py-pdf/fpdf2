@@ -509,6 +509,10 @@ class FPDF(GraphicsStateMixin):
         # page number -> array of 8 × n numbers:
         self.text_quad_points = defaultdict(list)
 
+        self._is_unbreakable = (
+            False  # indicates that we are inside an .unbreakable() code block
+        )
+
     def write_html(self, text, *args, **kwargs):
         """Parse HTML and convert it to PDF"""
         kwargs2 = vars(self)
@@ -2580,6 +2584,10 @@ class FPDF(GraphicsStateMixin):
         Args:
             **kwargs: key-values settings to set at the beggining of this context.
         """
+        if self._is_unbreakable:
+            raise FPDFException(
+                "cannot create a local context inside an unbreakable() code block"
+            )
         self._push_local_stack()
         gs = None
         for key, value in kwargs.items():
@@ -3798,6 +3806,10 @@ class FPDF(GraphicsStateMixin):
 
     def get_y(self):
         """Returns the ordinate of the current position."""
+        if self._is_unbreakable:
+            raise FPDFException(
+                "Using get_y() inside an unbreakable() code block is error-prone"
+            )
         return self.y
 
     def set_y(self, y):
@@ -5048,6 +5060,7 @@ class FPDF(GraphicsStateMixin):
         prev_page, prev_y = self.page, self.y
         recorder = FPDFRecorder(self, accept_page_break=False)
         recorder.page_break_triggered = False
+        self._is_unbreakable = True
         LOGGER.debug("Starting unbreakable block")
         yield recorder
         y_scroll = recorder.y - prev_y + (recorder.page - prev_page) * self.eph
@@ -5059,6 +5072,7 @@ class FPDF(GraphicsStateMixin):
             recorder.pdf._perform_page_break()
             recorder.replay()
             recorder.page_break_triggered = True
+        self._is_unbreakable = False
         LOGGER.debug("Ending unbreakable block")
 
     @contextmanager
