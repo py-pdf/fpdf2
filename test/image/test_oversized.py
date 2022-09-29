@@ -1,4 +1,4 @@
-import logging, sys
+import logging
 from pathlib import Path
 
 import memunit
@@ -9,8 +9,7 @@ from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
 IMAGE_PATH = HERE / "png_images/6c853ed9dacd5716bc54eb59cec30889.png"
-# memory usage depends on Python version (3.7 uses ~40MB more than 3.8 here):
-MAX_MEMORY_MB = 162 if sys.version_info < (3, 8) else 122
+MAX_MEMORY_MB = 122  # memory usage depends on Python version
 
 
 def test_oversized_images_warn(caplog):

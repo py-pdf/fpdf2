@@ -41,8 +41,8 @@ def test_load_invalid_base64_data():
         pdf.image("data:image/png;base64,GARBAGE")
 
 
-# memory usage depends on Python version (3.7 uses ~40MB more than 3.8 here):
-@memunit.assert_lt_mb(125)  # ensure memory usage does not get too high
+# ensure memory usage does not get too high - this value depends on Python version:
+@memunit.assert_lt_mb(125)
 def test_share_images_cache(tmp_path):
     images_cache = {}
 
