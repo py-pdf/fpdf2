@@ -137,7 +137,6 @@ class Annotation(NamedTuple):
     flags: Tuple[AnnotationFlag] = DEFAULT_ANNOT_FLAGS
     contents: str = None
     link: Union[str, int] = None
-    alt_text: Optional[str] = None
     action: Optional[Action] = None
     color: Optional[int] = None
     modification_time: Optional[datetime] = None
@@ -151,7 +150,7 @@ class Annotation(NamedTuple):
     field_type: Optional[str] = None
     value: Optional[str] = None
 
-    def serialize(self, fpdf):
+    def serialize(self, fpdf, embedded_files_per_pdf_ref=None):
         "Convert this object dictionnary to a string"
         rect = (
             f"{self.x:.2f} {self.y:.2f} "
@@ -217,11 +216,11 @@ class Annotation(NamedTuple):
         if self.embedded_file_name:
             # pylint: disable=protected-access
             assert (
-                fpdf._embedded_files_per_pdf_ref
+                embedded_files_per_pdf_ref
             ), "_build_embedded_files_per_pdf_ref() must be called beforehand to know PDF IDs of /EmbeddedFile objects"
             embedded_file_ref, embedded_file = next(
                 (file_ref, file)
-                for file_ref, file in fpdf._embedded_files_per_pdf_ref.items()
+                for file_ref, file in embedded_files_per_pdf_ref.items()
                 if file.basename == self.embedded_file_name
             )
             out += f" /FS {embedded_file.file_spec(embedded_file_ref)}"
@@ -2098,10 +2097,17 @@ class FPDF(GraphicsStateMixin):
             width=w * self.k,
             height=h * self.k,
             link=link,
-            alt_text=alt_text,
             border_width=border_width,
         )
         self.annots[self.page].append(link)
+        if alt_text is not None:
+            # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
+            # but tests with Adobe Acrobat Reader reveal that the page /StructParents inserted below
+            # is enough to link the marked content in the hierarchy tree with this annotation link.
+            page_object_id = object_id_for_page(self.page)
+            self._add_marked_content(
+                page_object_id, struct_type="/Link", alt_text=alt_text
+            )
         return link
 
     def embed_file(
@@ -3821,15 +3827,14 @@ class FPDF(GraphicsStateMixin):
             # Generating .buffer based on .pages:
             self._state = DocumentState.CLOSING
             output_producer = OutputProducer(self)
-            self.buffer = output_producer.bufferize()
+            self.buffer, sig_annotation_obj_id = output_producer.bufferize()
             # WIP/refactoring: the following lines should be deleted in the end
             self.offsets = output_producer.offsets
             self.n = output_producer.n
             # pylint: disable=protected-access
-            self._embedded_files_per_pdf_ref = (
-                output_producer._embedded_files_per_pdf_ref
+            self._enddoc(
+                output_producer._embedded_files_per_pdf_ref, sig_annotation_obj_id
             )
-            self._enddoc()
 
             self._state = DocumentState.CLOSED
         if name:
@@ -3959,94 +3964,21 @@ class FPDF(GraphicsStateMixin):
         )
         self.annots_as_obj[self.page].append(annotation)
 
-    def _putpages(self):
-        nb = self.pages_count  # total number of pages
-        if self._toc_placeholder:
-            self._insert_table_of_contents()
-        if self.str_alias_nb_pages:
-            self._substitute_page_number()
-        if self.def_orientation == "P":
-            dw_pt = self.dw_pt
-            dh_pt = self.dh_pt
-        else:
-            dw_pt = self.dh_pt
-            dh_pt = self.dw_pt
-        filter = "/Filter /FlateDecode " if self.compress else ""
-
-        # The Annotations embedded as PDF objects
-        # are added to the document just after all the pages,
-        # hence we can deduce their object IDs:
-        annot_obj_id = object_id_for_page(nb) + 2
-
-        for n in range(1, nb + 1):
-            # Page
-            self._newobj()
-            self._out("<</Type /Page")
-            self._out(f"/Parent {pdf_ref(1)}")
-            page = self.pages[n]
-            if page["duration"]:
-                self._out(f"/Dur {page['duration']}")
-            if page["transition"]:
-                self._out(f"/Trans {page['transition'].dict_as_string()}")
-            w_pt, h_pt = page["w_pt"], page["h_pt"]
-            if w_pt != dw_pt or h_pt != dh_pt:
-                self._out(f"/MediaBox [0 0 {w_pt:.2f} {h_pt:.2f}]")
-            self._out(f"/Resources {pdf_ref(2)}")
-            annot_obj_id = self._put_page_annotations(n, annot_obj_id)
-            if self.pdf_version > "1.3":
-                self._out("/Group <</Type /Group /S /Transparency /CS /DeviceRGB>>")
-            spid = self._struct_parents_id_per_page.get(self.n)
-            if spid is not None:
-                self._out(f"/StructParents {spid}")
-            self._out(f"/Contents {pdf_ref(self.n + 1)}>>")
-            self._out("endobj")
-
-            # Page content
-            content = page["content"]
-            p = zlib.compress(content) if self.compress else content
-            self._newobj()
-            self._out(f"<<{filter}/Length {len(p)}>>")
-            self._out(pdf_stream(p))
-            self._out("endobj")
-        # Pages root
-        self.offsets[1] = len(self.buffer)
-        self._out("1 0 obj")
-        self._out("<</Type /Pages")
-        self._out(
-            "/Kids ["
-            + " ".join(pdf_ref(object_id_for_page(page)) for page in range(1, nb + 1))
-            + "]"
-        )
-        self._out(f"/Count {nb}")
-        self._out(f"/MediaBox [0 0 {dw_pt:.2f} {dh_pt:.2f}]")
-        self._out(">>")
-        self._out("endobj")
-
-    def _put_page_annotations(self, page_number, annot_obj_id):
-        page_annots = self.annots[page_number]
-        page_annots_as_obj = self.annots_as_obj[page_number]
-        if page_annots or page_annots_as_obj:
-            # Annotations, e.g. links:
-            annots = ""
-            for annot in page_annots:
-                annots += annot.serialize(self)
-                if annot.alt_text is not None:
-                    # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
-                    # but tests with Adobe Acrobat Reader reveal that the page /StructParents inserted below
-                    # is enough to link the marked content in the hierarchy tree with this annotation link.
-                    self._add_marked_content(
-                        self.n, struct_type="/Link", alt_text=annot.alt_text
-                    )
-                if annot.quad_points:
-                    self._set_min_pdf_version("1.6")
-            if page_annots and page_annots_as_obj:
-                annots += " "
-            annots += " ".join(
-                f"{annot_obj_id + i} 0 R" for i in range(len(page_annots_as_obj))
-            )
-            annot_obj_id += len(page_annots_as_obj)
-            self._out(f"/Annots [{annots}]")
-        return annot_obj_id
+    def _final_pdf_version(self):
+        """
+        Internal method used to compute the final 1.X PDF version
+        once the document has been finalized, based on the PDF features used.
+        """
+        assert self._state != DocumentState.GENERATING
+        if self.page_mode == PageMode.USE_ATTACHMENTS:
+            self._set_min_pdf_version("1.6")
+        elif self.page_layout in (PageLayout.TWO_PAGE_LEFT, PageLayout.TWO_PAGE_RIGHT):
+            self._set_min_pdf_version("1.5")
+        elif self.page_mode == PageMode.USE_OC:
+            self._set_min_pdf_version("1.5")
+        elif self.embedded_files:
+            self._set_min_pdf_version("1.4")
+        return self.pdf_version
 
     def _substitute_page_number(self):
         nb = self.pages_count  # total number of pages
@@ -4072,12 +4004,14 @@ class FPDF(GraphicsStateMixin):
             )
 
     def _insert_table_of_contents(self):
-        prev_state = self._state
-        tocp = self._toc_placeholder
-        self.page = tocp.start_page
         # Doc has been closed but we want to write to self.pages[self.page] instead of self.buffer:
-        self._state = DocumentState.GENERATING
-        self.y = tocp.y
+        tocp = self._toc_placeholder
+        prev_state, prev_page, prev_y = self._state, self.page, self.y
+        self._state, self.page, self.y = (
+            DocumentState.GENERATING,
+            tocp.start_page,
+            tocp.y,
+        )
         # Disabling footer & header, as they have already been called:
         self.footer = lambda *args, **kwargs: None
         self.header = lambda *args, **kwargs: None
@@ -4088,7 +4022,80 @@ class FPDF(GraphicsStateMixin):
             error_msg = f"The rendering function passed to FPDF.insert_toc_placeholder triggered too {too} page breaks: "
             error_msg += f"ToC ended on page {self.page} while it was expected to span exactly {tocp.pages} pages"
             raise FPDFException(error_msg)
-        self._state = prev_state
+        self._state, self.page, self.y = prev_state, prev_page, prev_y
+        del self.footer
+        del self.header
+
+    def _enddoc(self, embedded_files_per_pdf_ref, sig_annotation_obj_id):
+        self._putresources()  # trace_size is performed inside
+        if not self.struct_builder.empty():
+            with self._trace_size("structure_tree"):
+                self._put_structure_tree()
+        else:
+            self._struct_tree_root_obj_id = False
+        if self._outline:
+            with self._trace_size("document_outline"):
+                self._put_document_outline()
+        else:
+            self._outlines_obj_id = False
+        if self.xmp_metadata:
+            self._put_xmp_metadata()
+        else:
+            self._xmp_metadata_obj_id = False
+        with self._trace_size("info"):
+            info_obj_id = self._newobj()
+            self._out("<<")
+            self._putinfo()
+            self._out(">>")
+            self._out("endobj")
+        with self._trace_size("catalog"):
+            catalog_obj_id = self._newobj()
+            self._out("<<")
+            self._putcatalog(embedded_files_per_pdf_ref, sig_annotation_obj_id)
+            self._out(">>")
+            self._out("endobj")
+        with self._trace_size("xref"):  #  cross-reference table
+            startxref = len(self.buffer)
+            self._out("xref")
+            self._out(f"0 {self.n + 1}")
+            self._out("0000000000 65535 f ")
+            for i in range(1, self.n + 1):
+                self._out(f"{self.offsets[i]:010} 00000 n ")
+        with self._trace_size("trailer"):
+            self._out("trailer")
+            self._out("<<")
+            self._puttrailer(info_obj_id, catalog_obj_id)
+            self._out(">>")
+            self._out("startxref")
+            self._out(startxref)
+        self._out("%%EOF")
+        if self._sign_key:
+            self.buffer = sign_content(
+                signer,
+                self.buffer,
+                self._sign_key,
+                self._sign_cert,
+                self._sign_extra_certs,
+                self._sign_hashalgo,
+                self._sign_time,
+            )
+
+    def _putresources(self):
+        with self._trace_size("resources.fonts"):
+            self._putfonts()
+        with self._trace_size("resources.images"):
+            self._putimages()
+        with self._trace_size("resources.gfxstate"):
+            self._put_graphics_state_dicts()
+
+        # Resource dictionary
+        with self._trace_size("resources.dict"):
+            self.offsets[2] = len(self.buffer)
+            self._out("2 0 obj")
+            self._out("<<")
+            self._putresourcedict()
+            self._out(">>")
+            self._out("endobj")
 
     def _putfonts(self):
         # Font objects
@@ -4483,23 +4490,6 @@ class FPDF(GraphicsStateMixin):
             self._put_graphics_state_refs()
             self._out(">>")
 
-    def _putresources(self):
-        with self._trace_size("resources.fonts"):
-            self._putfonts()
-        with self._trace_size("resources.images"):
-            self._putimages()
-        with self._trace_size("resources.gfxstate"):
-            self._put_graphics_state_dicts()
-
-        # Resource dictionary
-        with self._trace_size("resources.dict"):
-            self.offsets[2] = len(self.buffer)
-            self._out("2 0 obj")
-            self._out("<<")
-            self._putresourcedict()
-            self._out(">>")
-            self._out("endobj")
-
     def _put_structure_tree(self):
         "Builds a Structure Hierarchy, including image alternate descriptions"
         # This property is later used by _putcatalog to insert a reference to the StructTreeRoot:
@@ -4507,53 +4497,6 @@ class FPDF(GraphicsStateMixin):
         self.struct_builder.serialize(
             first_object_id=self._struct_tree_root_obj_id, fpdf=self
         )
-
-    def _put_annotations_as_objects(self):
-        sig_annotation_obj_id = None
-        # The following code inserts annotations in the order
-        # they have been inserted in the pages / .annots_as_obj dict;
-        # this relies on a property of Python dicts since v3.7:
-        for page_annots_as_obj in self.annots_as_obj.values():
-            for annot in page_annots_as_obj:
-                self._newobj()
-                self._out(annot.serialize(self))
-                self._out("endobj")
-                if isinstance(annot.value, Signature):
-                    sig_annotation_obj_id = self.n
-        return sig_annotation_obj_id
-
-    def _put_embedded_files(self):
-        for embedd_file in self.embedded_files:
-            stream_dict = {
-                "/Type": "/EmbeddedFile",
-            }
-            stream_content = embedd_file.bytes
-            if embedd_file.compress:
-                stream_dict["/Filter"] = "/FlateDecode"
-                stream_content = zlib.compress(stream_content)
-            stream_dict["/Length"] = len(stream_content)
-            params = {
-                "/Size": len(embedd_file.bytes),
-            }
-            if embedd_file.creation_date:
-                params["/CreationDate"] = format_date(
-                    embedd_file.creation_date, with_tz=True
-                )
-            if embedd_file.modification_date:
-                params["/ModDate"] = format_date(
-                    embedd_file.modification_date, with_tz=True
-                )
-            if embedd_file.checksum:
-                file_hash = hashlib.new("md5", usedforsecurity=False)
-                file_hash.update(stream_content)
-                hash_hex = file_hash.hexdigest()
-                params["/CheckSum"] = f"<{hash_hex}>"
-            stream_dict["/Params"] = pdf_dict(params)
-            self._newobj()
-            self._out(pdf_dict(stream_dict))
-            self._out(pdf_stream(stream_content))
-            self._out("endobj")
-            assert self._embedded_files_per_pdf_ref[pdf_ref(self.n)] == embedd_file
 
     def _put_document_outline(self):
         # This property is later used by _putcatalog to insert a reference to the Outlines:
@@ -4590,7 +4533,7 @@ class FPDF(GraphicsStateMixin):
 
         self._out(pdf_dict(info_d, open_dict="", close_dict="", has_empty_fields=True))
 
-    def _putcatalog(self, sig_annotation_obj_id=None):
+    def _putcatalog(self, embedded_files_per_pdf_ref, sig_annotation_obj_id=None):
         catalog_d = {
             "/Type": "/Catalog",
             # Pages is always the 1st object of the document, cf. _putpages:
@@ -4637,34 +4580,18 @@ class FPDF(GraphicsStateMixin):
         if self._outlines_obj_id:
             catalog_d["/Outlines"] = pdf_ref(self._outlines_obj_id)
         assert (
-            self._embedded_files_per_pdf_ref is not None
+            embedded_files_per_pdf_ref is not None
         ), "ID of Embedded files must be known"
-        if self._embedded_files_per_pdf_ref:
+        if embedded_files_per_pdf_ref:
             file_spec_names = [
                 f"{enclose_in_parens(file.basename)} {file.file_spec(pdf_ref)}"
-                for pdf_ref, file in self._embedded_files_per_pdf_ref.items()
+                for pdf_ref, file in embedded_files_per_pdf_ref.items()
             ]
             catalog_d["/Names"] = pdf_dict(
                 {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(file_spec_names)})}
             )
 
         self._out(pdf_dict(catalog_d, open_dict="", close_dict=""))
-
-    def _final_pdf_version(self):
-        """
-        Internal method used to compute the final 1.X PDF version
-        once the document has been finalized, based on the PDF features used.
-        """
-        assert self._state != DocumentState.GENERATING
-        if self.page_mode == PageMode.USE_ATTACHMENTS:
-            self._set_min_pdf_version("1.6")
-        elif self.page_layout in (PageLayout.TWO_PAGE_LEFT, PageLayout.TWO_PAGE_RIGHT):
-            self._set_min_pdf_version("1.5")
-        elif self.page_mode == PageMode.USE_OC:
-            self._set_min_pdf_version("1.5")
-        elif self.embedded_files:
-            self._set_min_pdf_version("1.4")
-        return self.pdf_version
 
     def _puttrailer(self, info_obj_id, catalog_obj_id):
         self._out(f"/Size {self.n + 1}")
@@ -4674,7 +4601,7 @@ class FPDF(GraphicsStateMixin):
         if file_id:
             self._out(f"/ID [{file_id}]")
 
-    def file_id(self, buffer=b"", creation_date=None):
+    def file_id(self, buffer, creation_date):
         """
         Args:
             buffer (bytearray): resulting output buffer
@@ -4700,69 +4627,6 @@ class FPDF(GraphicsStateMixin):
             id_hash.update(creation_date.strftime("%Y%m%d%H%M%S").encode("utf8"))
         hash_hex = id_hash.hexdigest().upper()
         return f"<{hash_hex}><{hash_hex}>"
-
-    def _enddoc(self):
-        # It is important that pages are the first PDF objects inserted in the document,
-        # followed immediately by annotations: some parts of fpdf2 currently rely on that
-        # order of insertion (e.g. util.object_id_for_page):
-        with self._trace_size("pages"):
-            self._putpages()
-        with self._trace_size("annotations_objects"):
-            sig_annotation_obj_id = self._put_annotations_as_objects()
-        with self._trace_size("embedded_files"):
-            self._put_embedded_files()
-        self._putresources()  # trace_size is performed inside
-        if not self.struct_builder.empty():
-            with self._trace_size("structure_tree"):
-                self._put_structure_tree()
-        else:
-            self._struct_tree_root_obj_id = False
-        if self._outline:
-            with self._trace_size("document_outline"):
-                self._put_document_outline()
-        else:
-            self._outlines_obj_id = False
-        if self.xmp_metadata:
-            self._put_xmp_metadata()
-        else:
-            self._xmp_metadata_obj_id = False
-        with self._trace_size("info"):
-            info_obj_id = self._newobj()
-            self._out("<<")
-            self._putinfo()
-            self._out(">>")
-            self._out("endobj")
-        with self._trace_size("catalog"):
-            catalog_obj_id = self._newobj()
-            self._out("<<")
-            self._putcatalog(sig_annotation_obj_id)
-            self._out(">>")
-            self._out("endobj")
-        with self._trace_size("xref"):  #  cross-reference table
-            startxref = len(self.buffer)
-            self._out("xref")
-            self._out(f"0 {self.n + 1}")
-            self._out("0000000000 65535 f ")
-            for i in range(1, self.n + 1):
-                self._out(f"{self.offsets[i]:010} 00000 n ")
-        with self._trace_size("trailer"):
-            self._out("trailer")
-            self._out("<<")
-            self._puttrailer(info_obj_id, catalog_obj_id)
-            self._out(">>")
-            self._out("startxref")
-            self._out(startxref)
-        self._out("%%EOF")
-        if self._sign_key:
-            self.buffer = sign_content(
-                signer,
-                self.buffer,
-                self._sign_key,
-                self._sign_cert,
-                self._sign_extra_certs,
-                self._sign_hashalgo,
-                self._sign_time,
-            )
 
     def _beginpage(
         self, orientation, format, same, duration, transition, new_page=True
