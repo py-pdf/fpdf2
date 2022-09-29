@@ -1,6 +1,7 @@
 bandit
 black
 endesive
+memunit
 pylint
 pytest
 pytest-cov

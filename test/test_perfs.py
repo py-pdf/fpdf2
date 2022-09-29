@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import pytest
+import memunit, pytest
 
 from fpdf import FPDF
 
@@ -8,6 +8,7 @@ HERE = Path(__file__).resolve().parent
 
 
 @pytest.mark.timeout(40)
+@memunit.assert_lt_mb(165)  # ensure memory usage does not get too high
 def test_intense_image_rendering():
     png_file_paths = []
     for png_file_path in (HERE / "image/png_images/").glob("*.png"):

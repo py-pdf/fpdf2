@@ -812,12 +812,17 @@ class FPDF(GraphicsStateMixin):
     def set_image_filter(self, image_filter):
         """
         Args:
-            image_filter (str): name of a supported image filter or "AUTO",
+            image_filter (str): name of a the image filter to use
+                when embedding images images in the document, or "AUTO",
                 meaning to use the best image filter given the images provided.
+                Allowed values: `FlateDecode` (lossless zlib/deflate compression),
+                `DCTDecode` (lossy compression with JPEG)
+                and `JPXDecode` (lossy compression with JPEG2000).
         """
         if image_filter not in SUPPORTED_IMAGE_FILTERS:
             raise ValueError(
-                f"'{image_filter}' is not a supported image filter: {''.join(SUPPORTED_IMAGE_FILTERS)}"
+                f"'{image_filter}' is not a supported image filter"
+                f" - Allowed values: {''.join(SUPPORTED_IMAGE_FILTERS)}"
             )
         self.image_filter = image_filter
         if image_filter == "JPXDecode":

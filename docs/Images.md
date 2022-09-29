@@ -141,7 +141,8 @@ pdf.image("https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png")
 By default, `fpdf2` will avoid altering your images :
 no image conversion from / to PNG / JPEG is performed.
 
-However, you can easily tell `fpdf2` to convert and embed all images as JPEGs in order to reduce your PDF size:
+However, you can easily tell `fpdf2` to embed all images as JPEGs in order to reduce your PDF size,
+using [`set_image_filter()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_image_filter):
 
 ```python
 from fpdf import FPDF
@@ -153,7 +154,7 @@ pdf.image("docs/fpdf2-logo.png", x=20, y=60)
 pdf.output("pdf-with-image.pdf")
 ```
 
-Beware that "flattening" images this way will fill transparent areas of your images with color (usually black).
+Beware that "flattening" images into JPEGs this way will fill transparent areas of your images with color (usually black).
 
 The allowed `image_filter` values are listed in the [image_parsing]( https://github.com/PyFPDF/fpdf2/blob/master/fpdf/image_parsing.py) module and are currently:
 `FlateDecode` (lossless zlib/deflate compression), `DCTDecode` (lossy compression with JPEG) and `JPXDecode` (lossy compression with JPEG2000).

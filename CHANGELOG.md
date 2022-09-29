@@ -36,12 +36,12 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.5.7] - 2022-09-08
 ### Changed
-- Since the fonttools library offers similar functionality, the dependency to "svg.path" is gone again, thanks to @gmischler; [#525](https://github.com/PyFPDF/fpdf2/issues/525)
 - HTML headings are now rendered with an additional leading of 20% the font size above and below them; [#520](https://github.com/PyFPDF/fpdf2/issues/520)
 - `fpdf2` now uses [fontTools](https://fonttools.readthedocs.io/en/latest/) to read and embed fonts in the PDF, thanks to @gmischler and @RedShy
+- since the fonttools library offers similar functionality, the dependency to "svg.path" is gone again, thanks to @gmischler; [#525](https://github.com/PyFPDF/fpdf2/issues/525)
 
 ### Fixed
-- Text following a HTML heading can't overlap with that heading anymore, thanks to @gmischler
+- text following a HTML heading can't overlap with that heading anymore, thanks to @gmischler
 - `arc()` not longer renders artefacts at intersection point, thanks to @Jmillan-Dev; [#488](https://github.com/PyFPDF/fpdf2/issues/488)
 - [`write_html()`](https://pyfpdf.github.io/fpdf2/HTML.html):
     * `<em>` & `<strong>` HTML tags are now properly supported - they were ignored previously; [#498](https://github.com/PyFPDF/fpdf2/issues/498)
@@ -49,10 +49,10 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - the `CreationDate` of PDFs & embedded files now includes the system timezone
 
 ### Added
-- Added support for subscript, superscript, nominator and denominator char positioning as well as `<sub>` and `<sup>` HTML tags, thanks to @gmischler: [link to documentation](https://pyfpdf.github.io/fpdf2/TextStyling.html#subscript-superscript-and-fractional-numbers)
+- support for subscript, superscript, nominator and denominator char positioning as well as `<sub>` and `<sup>` HTML tags, thanks to @gmischler: [link to documentation](https://pyfpdf.github.io/fpdf2/TextStyling.html#subscript-superscript-and-fractional-numbers)
 - [`set_page_background()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_page_background): new method added by @semaeostomea: [link to documentation](https://pyfpdf.github.io/fpdf2/PageFormatAndOrientation.html#per-page-format-orientation-and-background)
 - [`embed_file()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.embed_file) & [`file_attachment_annotation()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.file_attachment_annotation): new methods to add file attachments - [link to documentation](https://pyfpdf.github.io/fpdf2/FileAttachments.html)
-- A new method [`set_char_spacing()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_char_spacing) allows to increase the spacing between individual characters, thanks to @gmischler: [link to documentation](https://pyfpdf.github.io/fpdf2/TextStyling.html)
+- a new method [`set_char_spacing()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_char_spacing) allows to increase the spacing between individual characters, thanks to @gmischler: [link to documentation](https://pyfpdf.github.io/fpdf2/TextStyling.html)
 - workaround by @semaeostomea to support arabic and right-to-left scripts: [link to documentation](https://pyfpdf.github.io/fpdf2/Unicode.html#right-to-left-arabic-script-workaround)
 - documentation on shapes styling: [link to documentation](https://pyfpdf.github.io/fpdf2/Shapes.html#path-styling)
 - documentation on sharing the images cache among FPDF instances: [link to documentation](https://pyfpdf.github.io/fpdf2/Images.html#sharing-the-image-cache-among-fpdf-instances)
