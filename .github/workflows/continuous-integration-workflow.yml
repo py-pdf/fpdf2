@@ -17,19 +17,21 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }} 🔧
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies ⚙️
+      - name: Install system dependencies ⚙️
+        if: matrix.platform == 'ubuntu-latest'
+        run: sudo apt-get install libjpeg-dev
+      - name: Install qpdf ⚙️
+        if: matrix.platform == 'ubuntu-latest' && matrix.python-version != '3.9'  # This allows us to run the unit tests WITHOUT qpdf in just one parallel execution
+        run: sudo apt-get install qpdf
+      - name: Install Python dependencies ⚙️
         run: |
-          sudo apt-get install libjpeg-dev
           python -m pip install --upgrade pip setuptools
           pip install --upgrade . -r test/requirements.txt -r docs/requirements.txt -r contributors/requirements.txt
-      - name: Install qpdf ⚙️
-        if: matrix.python-version != '3.9'  # This allows us to run the unit tests WITHOUT qpdf in just one parallel execution
-        run: sudo apt-get install qpdf
       - name: Statically checking code 🔎
         if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: |
@@ -56,9 +58,10 @@ jobs:
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
           # Executing all tests:
-          RUN_NETWORK_TESTS=1 pytest -vv
-          # Uploading coverage report to codecov.io
-          bash <(curl -s https://codecov.io/bash)
+          pytest -vv
+      - name: Uploading coverage report to codecov.io ☑
+        if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
+        run: bash <(curl -s https://codecov.io/bash)
       - name: Generating HTML documentation 🏗️
         # As build_contributors_html_page.py can hang due to GitHub rate-limiting,
         # we only execute this on master for now. And it should always be executed for one Python version only.

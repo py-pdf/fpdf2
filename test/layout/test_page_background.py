@@ -1,10 +1,10 @@
-from fpdf import FPDF, drawing
-from PIL import Image
 import io
 from pathlib import Path
+
+from PIL import Image
+
+from fpdf import FPDF, drawing
 from test.conftest import assert_pdf_equal
-import os
-import pytest
 
 
 HERE = Path(__file__).resolve().parent
@@ -50,9 +50,6 @@ def _add_pages_with_image_background(pdf):
     pdf.multi_cell(0, pdf.h / 2, "PAGE 1\nPAGE 2")
 
 
-@pytest.mark.skipif(
-    "RUN_NETWORK_TESTS" not in os.environ, reason="skip network tests by default"
-)
 def add_page_with_image_url_background(pdf):
     """sets the background to an image specified with a link and adds a page with text and a small rectangle"""
     pdf.set_page_background(
@@ -92,7 +89,7 @@ def add_page_without_background(pdf):
 
 def test_page_background(tmp_path):
     """
-    Test creating a PDF with multiple pages using all possible inputs to set a page background,
+    Test creating a PDF with multiple pages using all pfsible inputs to set a page background,
     drawing a rectangle and writing text on every page, testing if any other color is overwritten,
     writing a multi-line text to test if the background is retained on an automatic page break,
     then setting a fill color, testing if the background color gets overriden and vice versa
