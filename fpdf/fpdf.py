@@ -74,6 +74,7 @@ from .enums import (
     CharVPos,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
+from .finalizer import OutputProducer
 from .fonts import fpdf_charwidths
 from .graphics_state import GraphicsStateMixin
 from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
@@ -390,9 +391,7 @@ class FPDF(GraphicsStateMixin):
             )
         super().__init__()
         self.page = 0  # current page number
-        self.n = 2  # current PDF object number
-        self.buffer = bytearray()  # buffer holding in-memory PDF
-        self.offsets = {}  # array of object offsets used to build the xref table
+        self.buffer = None  # final buffer holding the PDF document in-memory
         self._state = DocumentState.GENERATING  # initial document state
         # Associative array from page number to dicts containing pages and metadata:
         self.pages = {}
@@ -404,14 +403,14 @@ class FPDF(GraphicsStateMixin):
         self.annots_as_obj = defaultdict(list)
         self.links = {}  # map link indices (starting at 1) to Destination objects
         self.embedded_files = []
-        self._embedded_files_per_pdf_ref = None  # will be built later on
         self.in_footer = False  # flag set while rendering footer
         self._lasth = 0  # height of last cell printed
         self.str_alias_nb_pages = "{nb}"
 
         self._angle = 0  # used by deprecated method: rotate()
         self.xmp_metadata = None
-        self.image_filter = "AUTO"  # define the compression algorithm used when embedding images
+        # Define the compression algorithm used when embedding images:
+        self.image_filter = "AUTO"
         self.page_duration = 0  # optional pages display duration, cf. add_page()
         self.page_transition = None  # optional pages transition, cf. add_page()
         self.allow_images_transparency = True
@@ -3821,7 +3820,17 @@ class FPDF(GraphicsStateMixin):
             self.in_footer = False
             # Generating .buffer based on .pages:
             self._state = DocumentState.CLOSING
+            output_producer = OutputProducer(self)
+            self.buffer = output_producer.bufferize()
+            # WIP/refactoring: the following lines should be deleted in the end
+            self.offsets = output_producer.offsets
+            self.n = output_producer.n
+            # pylint: disable=protected-access
+            self._embedded_files_per_pdf_ref = (
+                output_producer._embedded_files_per_pdf_ref
+            )
             self._enddoc()
+
             self._state = DocumentState.CLOSED
         if name:
             if isinstance(name, os.PathLike):
@@ -4291,36 +4300,36 @@ class FPDF(GraphicsStateMixin):
         # for each character
         subset = font["subset"].dict()
         for cid in range(startcid, cwlen):
-            width = _char_width(font, cid)
-            if "dw" not in font or (font["dw"] and width != font["dw"]):
+            char_width = font["cw"][cid]
+            if "dw" not in font or (font["dw"] and char_width != font["dw"]):
                 cid_mapped = subset.get(cid)
                 if cid_mapped is None:
                     continue
                 if cid_mapped == (prevcid + 1):
-                    if width == prevwidth:
-                        if width == range_[rangeid][0]:
-                            range_.setdefault(rangeid, []).append(width)
+                    if char_width == prevwidth:
+                        if char_width == range_[rangeid][0]:
+                            range_.setdefault(rangeid, []).append(char_width)
                         else:
                             range_[rangeid].pop()
                             # new range
                             rangeid = prevcid
-                            range_[rangeid] = [prevwidth, width]
+                            range_[rangeid] = [prevwidth, char_width]
                         interval = True
                         range_interval[rangeid] = True
                     else:
                         if interval:
                             # new range
                             rangeid = cid_mapped
-                            range_[rangeid] = [width]
+                            range_[rangeid] = [char_width]
                         else:
-                            range_[rangeid].append(width)
+                            range_[rangeid].append(char_width)
                         interval = False
                 else:
                     rangeid = cid_mapped
-                    range_[rangeid] = [width]
+                    range_[rangeid] = [char_width]
                     interval = False
                 prevcid = cid_mapped
-                prevwidth = width
+                prevwidth = char_width
         prevk = -1
         nextk = -1
         prevint = False
@@ -4513,19 +4522,6 @@ class FPDF(GraphicsStateMixin):
                     sig_annotation_obj_id = self.n
         return sig_annotation_obj_id
 
-    def _build_embedded_files_per_pdf_ref(self):
-        assert self._embedded_files_per_pdf_ref is None
-        self._embedded_files_per_pdf_ref = {}
-        first_annot_obj_id = object_id_for_page(self.pages_count) + 2
-        annotations_count = sum(
-            len(page_annots_as_obj)
-            for page_annots_as_obj in self.annots_as_obj.values()
-        )
-        for n, embedd_file in enumerate(
-            self.embedded_files, start=first_annot_obj_id + annotations_count
-        ):
-            self._embedded_files_per_pdf_ref[pdf_ref(n)] = embedd_file
-
     def _put_embedded_files(self):
         for embedd_file in self.embedded_files:
             stream_dict = {
@@ -4654,7 +4650,12 @@ class FPDF(GraphicsStateMixin):
 
         self._out(pdf_dict(catalog_d, open_dict="", close_dict=""))
 
-    def _putheader(self):
+    def _final_pdf_version(self):
+        """
+        Internal method used to compute the final 1.X PDF version
+        once the document has been finalized, based on the PDF features used.
+        """
+        assert self._state != DocumentState.GENERATING
         if self.page_mode == PageMode.USE_ATTACHMENTS:
             self._set_min_pdf_version("1.6")
         elif self.page_layout in (PageLayout.TWO_PAGE_LEFT, PageLayout.TWO_PAGE_RIGHT):
@@ -4663,18 +4664,22 @@ class FPDF(GraphicsStateMixin):
             self._set_min_pdf_version("1.5")
         elif self.embedded_files:
             self._set_min_pdf_version("1.4")
-        self._out(f"%PDF-{self.pdf_version}")
+        return self.pdf_version
 
-    def _puttrailer(self):
+    def _puttrailer(self, info_obj_id, catalog_obj_id):
         self._out(f"/Size {self.n + 1}")
-        self._out(f"/Root {pdf_ref(self.n)}")  # Catalog object index
-        self._out(f"/Info {pdf_ref(self.n - 1)}")  # Info object index
-        file_id = self.file_id()
+        self._out(f"/Root {pdf_ref(catalog_obj_id)}")
+        self._out(f"/Info {pdf_ref(info_obj_id)}")
+        file_id = self.file_id(self.buffer, self.creation_date)
         if file_id:
             self._out(f"/ID [{file_id}]")
 
-    def file_id(self):
+    def file_id(self, buffer=b"", creation_date=None):
         """
+        Args:
+            buffer (bytearray): resulting output buffer
+            creation_date (datetime): PDF document creation date
+
         This method can be overridden in inherited classes
         in order to define a custom file identifier.
         Its output must have the format "<hex_string1><hex_string2>".
@@ -4689,20 +4694,14 @@ class FPDF(GraphicsStateMixin):
         # > The second byte string shall be a changing identifier
         # > based on the file’s contents at the time it was last updated.
         # > When a file is first written, both identifiers shall be set to the same value.
-        bytes = self.buffer + self.creation_date.strftime("%Y%m%d%H%M%S").encode("utf8")
         id_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
-        id_hash.update(bytes)
+        id_hash.update(buffer)
+        if creation_date:
+            id_hash.update(creation_date.strftime("%Y%m%d%H%M%S").encode("utf8"))
         hash_hex = id_hash.hexdigest().upper()
         return f"<{hash_hex}><{hash_hex}>"
 
     def _enddoc(self):
-        # * PDF object 1 is always the document catalog
-        # * PDF object 2 is always the resources dictionary
-        # Those objects are not inserted first in the document though
-        LOGGER.debug("Final doc sections size summary:")
-        with self._trace_size("header"):
-            self._putheader()
-        self._build_embedded_files_per_pdf_ref()
         # It is important that pages are the first PDF objects inserted in the document,
         # followed immediately by annotations: some parts of fpdf2 currently rely on that
         # order of insertion (e.g. util.object_id_for_page):
@@ -4728,19 +4727,19 @@ class FPDF(GraphicsStateMixin):
         else:
             self._xmp_metadata_obj_id = False
         with self._trace_size("info"):
-            self._newobj()
+            info_obj_id = self._newobj()
             self._out("<<")
             self._putinfo()
             self._out(">>")
             self._out("endobj")
         with self._trace_size("catalog"):
-            self._newobj()
+            catalog_obj_id = self._newobj()
             self._out("<<")
             self._putcatalog(sig_annotation_obj_id)
             self._out(">>")
             self._out("endobj")
         with self._trace_size("xref"):  #  cross-reference table
-            o = len(self.buffer)
+            startxref = len(self.buffer)
             self._out("xref")
             self._out(f"0 {self.n + 1}")
             self._out("0000000000 65535 f ")
@@ -4749,10 +4748,10 @@ class FPDF(GraphicsStateMixin):
         with self._trace_size("trailer"):
             self._out("trailer")
             self._out("<<")
-            self._puttrailer()
+            self._puttrailer(info_obj_id, catalog_obj_id)
             self._out(">>")
             self._out("startxref")
-            self._out(o)
+            self._out(startxref)
         self._out("%%EOF")
         if self._sign_key:
             self.buffer = sign_content(
@@ -4802,14 +4801,6 @@ class FPDF(GraphicsStateMixin):
             self.page_break_trigger = self.h - self.b_margin
         page["w_pt"], page["h_pt"] = self.w_pt, self.h_pt
 
-    def _newobj(self):
-        "Begin a new PDF object"
-        assert self._state == DocumentState.CLOSING
-        self.n += 1
-        self.offsets[self.n] = len(self.buffer)
-        self._out(f"{self.n} 0 obj")
-        return self.n
-
     def _do_underline(self, x, y, w, current_font=None):
         "Draw an horizontal line starting from (x, y) with a length equal to 'w'"
         if current_font is None:
@@ -4831,12 +4822,13 @@ class FPDF(GraphicsStateMixin):
             if not isinstance(s, str):
                 s = str(s)
             s = s.encode("latin1")
-        if self._state == DocumentState.GENERATING:
-            if not self.page:
-                raise FPDFException("No page open, you need to call add_page() first")
-            self.pages[self.page]["content"] += s + b"\n"
-        else:  # self._state == DocumentState.CLOSING
+        if self._state == DocumentState.CLOSING:
+            # WIP/refactoring: this conditional should be deleted in the end
             self.buffer += s + b"\n"
+            return
+        if not self.page:
+            raise FPDFException("No page open, you need to call add_page() first")
+        self.pages[self.page]["content"] += s + b"\n"
 
     @check_page
     def interleaved2of5(self, txt, x, y, w=1, h=10):
@@ -5014,12 +5006,6 @@ class FPDF(GraphicsStateMixin):
         """
         with self.elliptic_clip(x, y, r, r):
             yield
-
-    @contextmanager
-    def _trace_size(self, label):
-        prev_size = len(self.buffer)
-        yield
-        LOGGER.debug("- %s.size: %s", label, _sizeof_fmt(len(self.buffer) - prev_size))
 
     @contextmanager
     def unbreakable(self):
@@ -5205,18 +5191,22 @@ class FPDF(GraphicsStateMixin):
         self.text_color = prev_text_color
         self.underline = prev_underline
 
+    # WIP/refactoring: the following methods should be deleted in the end:
+    def _newobj(self):
+        "Begin a new PDF object"
+        self.n += 1
+        self.offsets[self.n] = len(self.buffer)
+        self._out(f"{self.n} 0 obj")
+        return self.n
 
-def _char_width(font, char):
-    return font["cw"][char]
+    @contextmanager
+    def _trace_size(self, label):
+        prev_size = len(self.buffer)
+        yield
+        # pylint: disable=import-outside-toplevel
+        from .finalizer import _sizeof_fmt
 
-
-def _sizeof_fmt(num, suffix="B"):
-    # Recipe from: https://stackoverflow.com/a/1094933/636849
-    for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
-        if abs(num) < 1024:
-            return f"{num:3.1f}{unit}{suffix}"
-        num /= 1024
-    return f"{num:.1f}Yi{suffix}"
+        LOGGER.debug("- %s.size: %s", label, _sizeof_fmt(len(self.buffer) - prev_size))
 
 
 def _is_svg(bytes):
