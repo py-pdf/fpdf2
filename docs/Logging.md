@@ -64,6 +64,6 @@ fontTools.subset [INFO] glyf pruned
 ```
 
 You can easily suppress those logs with this single line of code:
-```
+```python
 logging.getLogger('fontTools.subset').level = logging.WARN
 ```
