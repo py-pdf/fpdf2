@@ -29,7 +29,10 @@ class Signature:
 
 
 def sign_content(signer, buffer, key, cert, extra_certs, hashalgo, sign_time):
-    "Perform PDF signing based on the content of the buffer, performing substitutions on it."
+    """
+    Perform PDF signing based on the content of the buffer, performing substitutions on it.
+    The signing operation does not alter the buffer size
+    """
     # We start by substituting the ByteRange,
     # that defines which part of the document content the signature is based on.
     # This is basically ALL the content EXCEPT the signature content itself.

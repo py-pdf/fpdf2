@@ -41,6 +41,7 @@ except ImportError:
     )
 
     class Image:
+        # The class must exist for some isinstance checks below
         pass
 
 
@@ -213,12 +214,13 @@ class Annotation(NamedTuple):
             out += f" /InkList [{ink_list}]"
 
         if self.embedded_file_name:
+            # pylint: disable=protected-access
             assert (
-                fpdf.embedded_files_per_pdf_ref
+                fpdf._embedded_files_per_pdf_ref
             ), "_build_embedded_files_per_pdf_ref() must be called beforehand to know PDF IDs of /EmbeddedFile objects"
             embedded_file_ref, embedded_file = next(
                 (file_ref, file)
-                for file_ref, file in fpdf.embedded_files_per_pdf_ref.items()
+                for file_ref, file in fpdf._embedded_files_per_pdf_ref.items()
                 if file.basename == self.embedded_file_name
             )
             out += f" /FS {embedded_file.file_spec(embedded_file_ref)}"
@@ -391,41 +393,39 @@ class FPDF(GraphicsStateMixin):
         self.n = 2  # current PDF object number
         self.buffer = bytearray()  # buffer holding in-memory PDF
         self.offsets = {}  # array of object offsets used to build the xref table
+        self._state = DocumentState.GENERATING  # initial document state
         # Associative array from page number to dicts containing pages and metadata:
         self.pages = {}
-        self._state = DocumentState.GENERATING  # initial document state
         self.fonts = {}  # array of used fonts
-        self.font_files = {}  # array of font files
-        self.diffs = {}  # array of encoding differences
         self.images = {}  # array of used images
         # map page numbers to a list of Annotations; they will be inlined in the Page object:
         self.annots = defaultdict(list)
         # map page numbers to a list of pairs (Annotations, obj_id); they will be embedded in the doc as separated objects:
         self.annots_as_obj = defaultdict(list)
-        self.links = {}  # array of Destination
+        self.links = {}  # map link indices (starting at 1) to Destination objects
         self.embedded_files = []
-        self.embedded_files_per_pdf_ref = {}
-        self.in_footer = False  # flag set when processing footer
-        self.lasth = 0  # height of last cell printed
+        self._embedded_files_per_pdf_ref = None  # will be built later on
+        self.in_footer = False  # flag set while rendering footer
+        self._lasth = 0  # height of last cell printed
         self.str_alias_nb_pages = "{nb}"
 
-        self.angle = 0  # used by deprecated method: rotate()
+        self._angle = 0  # used by deprecated method: rotate()
         self.xmp_metadata = None
-        self.image_filter = "AUTO"
+        self.image_filter = "AUTO"  # define the compression algorithm used when embedding images
         self.page_duration = 0  # optional pages display duration, cf. add_page()
         self.page_transition = None  # optional pages transition, cf. add_page()
         self.allow_images_transparency = True
         # Do nothing by default. Allowed values: 'WARN', 'DOWNSCALE':
         self.oversized_images = None
         self.oversized_images_ratio = 2  # number of pixels per UserSpace point
-        # Only set if XMP metadata is added to the document:
+        # Truthy only if XMP metadata is added to the document:
         self._xmp_metadata_obj_id = None
         self.struct_builder = StructureTreeBuilder()
         self._struct_parents_id_per_page = {}  # {page_object_id -> StructParent(s) ID}
-        # Only set if a Structure Tree is added to the document:
+        # Truthy only if a Structure Tree is added to the document:
         self._struct_tree_root_obj_id = None
         self._outlines_obj_id = None
-        self._toc_placeholder = None  # ToCPlaceholder
+        self._toc_placeholder = None  # optional ToCPlaceholder instance
         self._outline = []  # list of OutlineSection
         self._sign_key = None
         self.section_title_styles = {}  # level -> TitleStyle
@@ -490,22 +490,22 @@ class FPDF(GraphicsStateMixin):
         self.set_auto_page_break(True, 2 * margin)
         self.set_display_mode("fullwidth")  # Full width display mode
         self._page_mode = None
-        self.viewer_preferences = None
-        self.compress = True  # Enable compression by default
+        self.viewer_preferences = None  # optional instance of ViewerPreferences
+        self.compress = True  # switch enabling pages content compression
         self.pdf_version = "1.3"  # Set default PDF version No.
         self.creation_date = datetime.now(timezone.utc)
 
         self._current_draw_context = None
         self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
-        self._graphics_state_obj_refs = OrderedDict()
+        self._graphics_state_obj_refs = None
 
-        self.record_text_quad_points = False
+        self._record_text_quad_points = False
+
         # page number -> array of 8 × n numbers:
-        self.text_quad_points = defaultdict(list)
+        self._text_quad_points = defaultdict(list)
 
-        self._is_unbreakable = (
-            False  # indicates that we are inside an .unbreakable() code block
-        )
+        # indicates that we are inside an .unbreakable() code block:
+        self._is_unbreakable = False
 
     def write_html(self, text, *args, **kwargs):
         """Parse HTML and convert it to PDF"""
@@ -523,7 +523,7 @@ class FPDF(GraphicsStateMixin):
         h2p.feed(text)
 
     def _add_quad_points(self, x, y, w, h):
-        self.text_quad_points[self.page].extend(
+        self._text_quad_points[self.page].extend(
             [
                 x * self.k,
                 (self.h - y) * self.k,
@@ -813,7 +813,7 @@ class FPDF(GraphicsStateMixin):
         """
         Args:
             image_filter (str): name of a the image filter to use
-                when embedding images images in the document, or "AUTO",
+                when embedding images in the document, or "AUTO",
                 meaning to use the best image filter given the images provided.
                 Allowed values: `FlateDecode` (lossless zlib/deflate compression),
                 `DCTDecode` (lossy compression with JPEG)
@@ -1836,11 +1836,6 @@ class FPDF(GraphicsStateMixin):
             raise FileNotFoundError(f"TTF Font file not found: {fname}")
 
         font = ttLib.TTFont(ttffilename)
-        self.font_files[fontkey] = {
-            "length1": os.stat(ttffilename).st_size,
-            "type": "TTF",
-            "ttffile": ttffilename,
-        }
 
         scale = 1000 / font["head"].unitsPerEm
         default_width = round(scale * font["hmtx"].metrics[".notdef"][0])
@@ -2056,9 +2051,9 @@ class FPDF(GraphicsStateMixin):
         or `FPDF.link()` methods.
         The destination must be defined using `FPDF.set_link()`.
         """
-        n = len(self.links) + 1
-        self.links[n] = DestinationXYZ(page=1)
-        return n
+        link_index = len(self.links) + 1
+        self.links[link_index] = DestinationXYZ(page=1)
+        return link_index
 
     def set_link(self, link, y=0, x=0, page=-1, zoom="null"):
         """
@@ -2271,11 +2266,11 @@ class FPDF(GraphicsStateMixin):
                 the title bar of the annotation’s pop-up window. Defaults to yellow.
             modification_time (datetime): date and time when the annotation was most recently modified
         """
-        if self.record_text_quad_points:
+        if self._record_text_quad_points:
             raise FPDFException("highlight() cannot be nested")
-        self.record_text_quad_points = True
+        self._record_text_quad_points = True
         yield
-        for page, quad_points in self.text_quad_points.items():
+        for page, quad_points in self._text_quad_points.items():
             self.add_text_markup_annotation(
                 type,
                 text,
@@ -2285,8 +2280,8 @@ class FPDF(GraphicsStateMixin):
                 modification_time=modification_time,
                 page=page,
             )
-            self.text_quad_points = defaultdict(list)
-        self.record_text_quad_points = False
+            self._text_quad_points = defaultdict(list)
+        self._record_text_quad_points = False
 
     add_highlight = highlight  # For backward compatibilty
 
@@ -2409,11 +2404,11 @@ class FPDF(GraphicsStateMixin):
         if self.text_mode != TextMode.FILL:
             sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
         sl.append(f"({txt2}) Tj ET")
-        if (self.underline and txt != "") or self.record_text_quad_points:
+        if (self.underline and txt != "") or self._record_text_quad_points:
             w = self.get_string_width(txt, normalized=True, markdown=False)
             if self.underline and txt != "":
                 sl.append(self._do_underline(x, y, w))
-            if self.record_text_quad_points:
+            if self._record_text_quad_points:
                 h = self.font_size
                 y -= 0.8 * h  # same coefficient as in _render_styled_text_line()
                 self._add_quad_points(x, y, w, h)
@@ -2441,9 +2436,9 @@ class FPDF(GraphicsStateMixin):
         if y is None:
             y = self.y
 
-        if self.angle != 0:
+        if self._angle != 0:
             self._out("Q")
-        self.angle = angle
+        self._angle = angle
         if angle != 0:
             angle *= math.pi / 180
             c = math.cos(angle)
@@ -2873,7 +2868,7 @@ class FPDF(GraphicsStateMixin):
                     f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S"
                 )
 
-        if self.record_text_quad_points:
+        if self._record_text_quad_points:
             self._add_quad_points(self.x, self.y, w, h)
 
         s_start = self.x
@@ -3023,7 +3018,7 @@ class FPDF(GraphicsStateMixin):
                 s = " ".join(sl)
             # pylint: enable=too-many-boolean-expressions
             self._out(s)
-        self.lasth = h
+        self._lasth = h
 
         # XPos.LEFT -> self.x stays the same
         if new_x == XPos.RIGHT:
@@ -3750,7 +3745,7 @@ class FPDF(GraphicsStateMixin):
                 By default, the value equals the height of the last printed cell.
         """
         self.x = self.l_margin
-        self.y += self.lasth if h is None else h
+        self.y += self._lasth if h is None else h
 
     def get_x(self):
         """Returns the abscissa of the current position."""
@@ -4087,17 +4082,6 @@ class FPDF(GraphicsStateMixin):
         self._state = prev_state
 
     def _putfonts(self):
-        for diff in self.diffs.values():
-            # Encodings
-            self._newobj()
-            self._out(
-                "<</Type /Encoding /BaseEncoding /WinAnsiEncoding "
-                + "/Differences ["
-                + diff
-                + "]>>"
-            )
-            self._out("endobj")
-
         # Font objects
         flist = [(x[1]["i"], x[0], x[1]) for x in self.fonts.items()]
         flist.sort()
@@ -4452,6 +4436,7 @@ class FPDF(GraphicsStateMixin):
             self._out(f"/I{idx} {pdf_ref(n)}")
 
     def _put_graphics_state_dicts(self):
+        self._graphics_state_obj_refs = OrderedDict()
         for state_dict, name in self._drawing_graphics_state_registry.items():
             self._newobj()
             self._graphics_state_obj_refs[name] = self.n
@@ -4459,6 +4444,9 @@ class FPDF(GraphicsStateMixin):
             self._out("endobj")
 
     def _put_graphics_state_refs(self):
+        assert (
+            self._graphics_state_obj_refs is not None
+        ), "Graphics state objects refs must have been generated"
         for name, obj_id in self._graphics_state_obj_refs.items():
             self._out(f"{drawing.render_pdf_primitive(name)} {pdf_ref(obj_id)}")
 
@@ -4526,6 +4514,8 @@ class FPDF(GraphicsStateMixin):
         return sig_annotation_obj_id
 
     def _build_embedded_files_per_pdf_ref(self):
+        assert self._embedded_files_per_pdf_ref is None
+        self._embedded_files_per_pdf_ref = {}
         first_annot_obj_id = object_id_for_page(self.pages_count) + 2
         annotations_count = sum(
             len(page_annots_as_obj)
@@ -4534,7 +4524,7 @@ class FPDF(GraphicsStateMixin):
         for n, embedd_file in enumerate(
             self.embedded_files, start=first_annot_obj_id + annotations_count
         ):
-            self.embedded_files_per_pdf_ref[pdf_ref(n)] = embedd_file
+            self._embedded_files_per_pdf_ref[pdf_ref(n)] = embedd_file
 
     def _put_embedded_files(self):
         for embedd_file in self.embedded_files:
@@ -4567,7 +4557,7 @@ class FPDF(GraphicsStateMixin):
             self._out(pdf_dict(stream_dict))
             self._out(pdf_stream(stream_content))
             self._out("endobj")
-            assert self.embedded_files_per_pdf_ref[pdf_ref(self.n)] == embedd_file
+            assert self._embedded_files_per_pdf_ref[pdf_ref(self.n)] == embedd_file
 
     def _put_document_outline(self):
         # This property is later used by _putcatalog to insert a reference to the Outlines:
@@ -4607,7 +4597,7 @@ class FPDF(GraphicsStateMixin):
     def _putcatalog(self, sig_annotation_obj_id=None):
         catalog_d = {
             "/Type": "/Catalog",
-            # Pages is always the 1st object of the document, cf. the end of _putpages:
+            # Pages is always the 1st object of the document, cf. _putpages:
             "/Pages": pdf_ref(1),
         }
         lang = enclose_in_parens(getattr(self, "lang", None))
@@ -4634,17 +4624,29 @@ class FPDF(GraphicsStateMixin):
             catalog_d["/PageMode"] = self.page_mode.value.pdf_repr()
         if self.viewer_preferences:
             catalog_d["/ViewerPreferences"] = self.viewer_preferences.serialize()
+        assert (
+            self._xmp_metadata_obj_id is not None
+        ), "ID of XMP metadata PDF object must be known"
         if self._xmp_metadata_obj_id:
             catalog_d["/Metadata"] = pdf_ref(self._xmp_metadata_obj_id)
+        assert (
+            self._struct_tree_root_obj_id is not None
+        ), "ID of root PDF object of the Structure Tree must be known"
         if self._struct_tree_root_obj_id:
             catalog_d["/MarkInfo"] = pdf_dict({"/Marked": "true"})
             catalog_d["/StructTreeRoot"] = pdf_ref(self._struct_tree_root_obj_id)
+        assert (
+            self._outlines_obj_id is not None
+        ), "ID of Outlines PDF object must be known"
         if self._outlines_obj_id:
             catalog_d["/Outlines"] = pdf_ref(self._outlines_obj_id)
-        if self.embedded_files_per_pdf_ref:
+        assert (
+            self._embedded_files_per_pdf_ref is not None
+        ), "ID of Embedded files must be known"
+        if self._embedded_files_per_pdf_ref:
             file_spec_names = [
                 f"{enclose_in_parens(file.basename)} {file.file_spec(pdf_ref)}"
-                for pdf_ref, file in self.embedded_files_per_pdf_ref.items()
+                for pdf_ref, file in self._embedded_files_per_pdf_ref.items()
             ]
             catalog_d["/Names"] = pdf_dict(
                 {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(file_spec_names)})}
@@ -4694,6 +4696,9 @@ class FPDF(GraphicsStateMixin):
         return f"<{hash_hex}><{hash_hex}>"
 
     def _enddoc(self):
+        # * PDF object 1 is always the document catalog
+        # * PDF object 2 is always the resources dictionary
+        # Those objects are not inserted first in the document though
         LOGGER.debug("Final doc sections size summary:")
         with self._trace_size("header"):
             self._putheader()
@@ -4711,34 +4716,36 @@ class FPDF(GraphicsStateMixin):
         if not self.struct_builder.empty():
             with self._trace_size("structure_tree"):
                 self._put_structure_tree()
+        else:
+            self._struct_tree_root_obj_id = False
         if self._outline:
             with self._trace_size("document_outline"):
                 self._put_document_outline()
+        else:
+            self._outlines_obj_id = False
         if self.xmp_metadata:
             self._put_xmp_metadata()
-        # Info
+        else:
+            self._xmp_metadata_obj_id = False
         with self._trace_size("info"):
             self._newobj()
             self._out("<<")
             self._putinfo()
             self._out(">>")
             self._out("endobj")
-        # Catalog
         with self._trace_size("catalog"):
             self._newobj()
             self._out("<<")
             self._putcatalog(sig_annotation_obj_id)
             self._out(">>")
             self._out("endobj")
-        # Cross-ref
-        with self._trace_size("xref"):
+        with self._trace_size("xref"):  #  cross-reference table
             o = len(self.buffer)
             self._out("xref")
             self._out(f"0 {self.n + 1}")
             self._out("0000000000 65535 f ")
             for i in range(1, self.n + 1):
                 self._out(f"{self.offsets[i]:010} 00000 n ")
-        # Trailer
         with self._trace_size("trailer"):
             self._out("trailer")
             self._out("<<")
@@ -4796,7 +4803,8 @@ class FPDF(GraphicsStateMixin):
         page["w_pt"], page["h_pt"] = self.w_pt, self.h_pt
 
     def _newobj(self):
-        # Begin a new object
+        "Begin a new PDF object"
+        assert self._state == DocumentState.CLOSING
         self.n += 1
         self.offsets[self.n] = len(self.buffer)
         self._out(f"{self.n} 0 obj")
