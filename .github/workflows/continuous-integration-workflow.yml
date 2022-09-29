@@ -10,11 +10,11 @@ on:  # cf. https://github.community/t/how-to-trigger-an-action-on-push-or-pull-r
 
 jobs:
   test:
-    runs-on: ubuntu-latest
     strategy:
-      max-parallel: 5
       matrix:
         python-version: [3.7, 3.8, 3.9, '3.10']
+        platform: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v2
@@ -31,15 +31,15 @@ jobs:
         if: matrix.python-version != '3.9'  # This allows us to run the unit tests WITHOUT qpdf in just one parallel execution
         run: sudo apt-get install qpdf
       - name: Statically checking code 🔎
-        if: matrix.python-version == '3.10'
+        if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: |
             pylint fpdf test tutorial/tuto*.py
             bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
       - name: Ensure code has been autoformatted with black 🖌️
-        if: matrix.python-version == '3.10'
+        if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: black --check .
       - name: Checking all PDF samples ☑
-        if: matrix.python-version == '3.10'
+        if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: |
           # Using qpdf
           find . -name '*.pdf' | xargs -n 1 qpdf --check
@@ -62,7 +62,7 @@ jobs:
       - name: Generating HTML documentation 🏗️
         # As build_contributors_html_page.py can hang due to GitHub rate-limiting,
         # we only execute this on master for now. And it should always be executed for one Python version only.
-        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.10'
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -77,14 +77,14 @@ jobs:
       - name: Deploy documentation 🚀
         # GitHub Pages deployment should not be done for all Python versions,
         # otherwise commits will conflict on the gh-pages branch:
-        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.10'
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: public/
       - name: Publish on Pypi 🚀
         # Similarly, we only publish a new version on Pypi once per pipeline running on master:
-        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.10'
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: |
           echo Versions already released on Pypi: $(curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]')
           echo Current code version: $(python setup.py -V)
