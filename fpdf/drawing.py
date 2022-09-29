@@ -1,9 +1,6 @@
+import copy, decimal, math, re
 from collections import OrderedDict
 from contextlib import contextmanager
-import copy
-import decimal
-import math
-import re
 from typing import Optional, NamedTuple, Union
 
 from .enums import (

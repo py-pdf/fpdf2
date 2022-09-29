@@ -9,29 +9,24 @@
 # * Maintainer:  David Alexander (daveankin@gmail.com) et al since 2017 est. *
 # * Maintainer:  Lucas Cimon et al since 2021 est.                           *
 # ****************************************************************************
-import hashlib
-import io
-import logging
-import math
-import os
-import re
-import sys
-import warnings
-import zlib
-from collections import OrderedDict, defaultdict
+import hashlib, io, logging, math, os, re, sys, warnings
+from collections import defaultdict
 from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from functools import wraps
+from html import unescape
 from math import isclose
 from os.path import splitext
 from pathlib import Path
-from typing import Callable, List, NamedTuple, Optional, Tuple, Union
+from typing import Callable, List, NamedTuple, Optional, Union
+
+try:
+    from endesive import signer
+    from cryptography.hazmat.primitives.serialization import pkcs12
+except ImportError:
+    pkcs12, signer = None, None
 from fontTools import ttLib
-from fontTools import subset as ftsubset
-from io import BytesIO
-from fpdf.html import HTML2FPDF
-from html import unescape
 
 try:
     from PIL.Image import Image
@@ -45,26 +40,18 @@ except ImportError:
         pass
 
 
-try:
-    from endesive import signer
-    from cryptography.hazmat.primitives.serialization import pkcs12
-except ImportError:
-    signer = False
-
 from . import drawing
-from .actions import Action
+from .annotations import Annotation, DEFAULT_ANNOT_FLAGS
 from .deprecation import WarnOnDeprecatedModuleAttributes
 from .enums import (
     Align,
-    AnnotationName,
     AnnotationFlag,
-    DocumentState,
+    AnnotationName,
     FileAttachmentAnnotationName,
     PageLayout,
     PageMode,
     PathPaintRule,
     RenderStyle,
-    SignatureFlag,
     TextMarkupType,
     TextMode,
     XPos,
@@ -74,21 +61,19 @@ from .enums import (
     CharVPos,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
-from .finalizer import OutputProducer
 from .fonts import fpdf_charwidths
 from .graphics_state import GraphicsStateMixin
+from .html import HTML2FPDF
 from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
 from .line_break import Fragment, MultiLineBreak, TextLine
-from .outline import OutlineSection, serialize_outline
+from .output import OutputProducer, ZOOM_CONFIGS
+from .outline import OutlineSection
 from .recorder import FPDFRecorder
 from .structure_tree import MarkedContent, StructureTreeBuilder
-from .sign import Signature, sign_content
+from .sign import Signature
 from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ
 from .syntax import create_dictionary_string as pdf_dict
-from .syntax import create_list_string as pdf_list
-from .syntax import create_stream as pdf_stream
-from .syntax import iobj_ref as pdf_ref
 from .util import (
     enclose_in_parens,
     escape_parens,
@@ -118,114 +103,6 @@ LAYOUT_ALIASES = {
     "continuous": PageLayout.ONE_COLUMN,
     "two": PageLayout.TWO_COLUMN_LEFT,
 }
-ZOOM_CONFIGS = {  # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
-    "fullpage": ("/Fit",),
-    "fullwidth": ("/FitH", "null"),
-    "real": ("/XYZ", "null", "null", "1"),
-}
-
-# cf. https://docs.verapdf.org/validation/pdfa-part1/#rule-653-2
-DEFAULT_ANNOT_FLAGS = (AnnotationFlag.PRINT,)
-
-
-class Annotation(NamedTuple):
-    type: str
-    x: int
-    y: int
-    width: int
-    height: int
-    flags: Tuple[AnnotationFlag] = DEFAULT_ANNOT_FLAGS
-    contents: str = None
-    link: Union[str, int] = None
-    action: Optional[Action] = None
-    color: Optional[int] = None
-    modification_time: Optional[datetime] = None
-    title: Optional[str] = None
-    quad_points: Optional[tuple] = None
-    page: Optional[int] = None
-    border_width: int = 0  # PDF readers support: displayed by Acrobat but not Sumatra
-    name: Optional[AnnotationName] = None  # for text annotations
-    ink_list: Tuple[int] = ()  # for ink annotations
-    embedded_file_name: Optional[str] = None
-    field_type: Optional[str] = None
-    value: Optional[str] = None
-
-    def serialize(self, fpdf, embedded_files_per_pdf_ref=None):
-        "Convert this object dictionnary to a string"
-        rect = (
-            f"{self.x:.2f} {self.y:.2f} "
-            f"{self.x + self.width:.2f} {self.y - self.height:.2f}"
-        )
-
-        out = (
-            f"<</Type /Annot /Subtype /{self.type}"
-            f" /Rect [{rect}] /Border [0 0 {self.border_width}]"
-        )
-
-        if self.field_type:
-            out += f" /FT /{self.field_type}"
-
-        if self.value:
-            out += f" /V {self.value.serialize()}"
-
-        if self.flags:
-            out += f" /F {sum(self.flags)}"
-
-        if self.contents:
-            out += f" /Contents {enclose_in_parens(self.contents)}"
-
-        if self.action:
-            out += f" /A {self.action.dict_as_string()}"
-
-        if self.link:
-            if isinstance(self.link, str):
-                out += f" /A <</S /URI /URI {enclose_in_parens(self.link)}>>"
-            else:  # Dest type ending of annotation entry
-                assert (
-                    self.link in fpdf.links
-                ), f"Link with an invalid index: {self.link} (doc #links={len(fpdf.links)})"
-                out += f" /Dest {fpdf.links[self.link].as_str(fpdf)}"
-
-        if self.color:
-            # pylint: disable=unsubscriptable-object
-            out += f" /C [{self.color[0]} {self.color[1]} {self.color[2]}]"
-
-        if self.title:
-            out += f" /T ({escape_parens(self.title)})"
-
-        if self.modification_time:
-            out += f" /M {format_date(self.modification_time)}"
-
-        if self.quad_points:
-            # pylint: disable=not-an-iterable
-            quad_points = pdf_list(
-                f"{quad_point:.2f}" for quad_point in self.quad_points
-            )
-            out += f" /QuadPoints {quad_points}"
-
-        if self.page:
-            out += f" /P {pdf_ref(object_id_for_page(self.page))}"
-
-        if self.name:
-            out += f" /Name {self.name.value.pdf_repr()}"
-
-        if self.ink_list:
-            ink_list = pdf_list(f"{coord:.2f}" for coord in self.ink_list)
-            out += f" /InkList [{ink_list}]"
-
-        if self.embedded_file_name:
-            # pylint: disable=protected-access
-            assert (
-                embedded_files_per_pdf_ref
-            ), "_build_embedded_files_per_pdf_ref() must be called beforehand to know PDF IDs of /EmbeddedFile objects"
-            embedded_file_ref, embedded_file = next(
-                (file_ref, file)
-                for file_ref, file in embedded_files_per_pdf_ref.items()
-                if file.basename == self.embedded_file_name
-            )
-            out += f" /FS {embedded_file.file_spec(embedded_file_ref)}"
-
-        return out + ">>"
 
 
 class EmbeddedFile(NamedTuple):
@@ -390,8 +267,6 @@ class FPDF(GraphicsStateMixin):
             )
         super().__init__()
         self.page = 0  # current page number
-        self.buffer = None  # final buffer holding the PDF document in-memory
-        self._state = DocumentState.GENERATING  # initial document state
         # Associative array from page number to dicts containing pages and metadata:
         self.pages = {}
         self.fonts = {}  # array of used fonts
@@ -402,7 +277,10 @@ class FPDF(GraphicsStateMixin):
         self.annots_as_obj = defaultdict(list)
         self.links = {}  # map link indices (starting at 1) to Destination objects
         self.embedded_files = []
+
         self.in_footer = False  # flag set while rendering footer
+        # indicates that we are inside an .unbreakable() code block:
+        self._in_unbreakable = False
         self._lasth = 0  # height of last cell printed
         self.str_alias_nb_pages = "{nb}"
 
@@ -416,13 +294,8 @@ class FPDF(GraphicsStateMixin):
         # Do nothing by default. Allowed values: 'WARN', 'DOWNSCALE':
         self.oversized_images = None
         self.oversized_images_ratio = 2  # number of pixels per UserSpace point
-        # Truthy only if XMP metadata is added to the document:
-        self._xmp_metadata_obj_id = None
         self.struct_builder = StructureTreeBuilder()
         self._struct_parents_id_per_page = {}  # {page_object_id -> StructParent(s) ID}
-        # Truthy only if a Structure Tree is added to the document:
-        self._struct_tree_root_obj_id = None
-        self._outlines_obj_id = None
         self._toc_placeholder = None  # optional ToCPlaceholder instance
         self._outline = []  # list of OutlineSection
         self._sign_key = None
@@ -495,15 +368,14 @@ class FPDF(GraphicsStateMixin):
 
         self._current_draw_context = None
         self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
-        self._graphics_state_obj_refs = None
 
         self._record_text_quad_points = False
 
         # page number -> array of 8 × n numbers:
         self._text_quad_points = defaultdict(list)
 
-        # indicates that we are inside an .unbreakable() code block:
-        self._is_unbreakable = False
+        # final buffer holding the PDF document in-memory - defined only after calling output():
+        self.buffer = None
 
     def write_html(self, text, *args, **kwargs):
         """Parse HTML and convert it to PDF"""
@@ -519,20 +391,6 @@ class FPDF(GraphicsStateMixin):
             )
         text = unescape(text)  # To deal with HTML entities
         h2p.feed(text)
-
-    def _add_quad_points(self, x, y, w, h):
-        self._text_quad_points[self.page].extend(
-            [
-                x * self.k,
-                (self.h - y) * self.k,
-                (x + w) * self.k,
-                (self.h - y) * self.k,
-                x * self.k,
-                (self.h - y - h) * self.k,
-                (x + w) * self.k,
-                (self.h - y - h) * self.k,
-            ]
-        )
 
     def _set_min_pdf_version(self, version):
         self.pdf_version = max(self.pdf_version, version)
@@ -876,7 +734,7 @@ class FPDF(GraphicsStateMixin):
                 Can be configured globally through the `.page_transition` FPDF property.
                 As of june 2021, onored by Adobe Acrobat reader, but ignored by Sumatra PDF reader.
         """
-        if self._state == DocumentState.CLOSED:
+        if self.buffer:
             raise FPDFException(
                 "A page cannot be added on a closed document, after calling output()"
             )
@@ -954,6 +812,42 @@ class FPDF(GraphicsStateMixin):
         if char_spacing != 0:
             self.set_char_spacing(char_spacing)
         # END Page header
+
+    def _beginpage(
+        self, orientation, format, same, duration, transition, new_page=True
+    ):
+        self.page += 1
+        if new_page:
+            page = {
+                "content": bytearray(),
+                "duration": duration,
+                "transition": transition,
+            }
+            self.pages[self.page] = page
+            if transition:
+                self._set_min_pdf_version("1.5")
+        else:
+            page = self.pages[self.page]
+        self.x = self.l_margin
+        self.y = self.t_margin
+        self.font_family = ""
+        self.font_stretching = 100
+        self.char_spacing = 0
+        if same:
+            if orientation or format:
+                raise ValueError(
+                    f"Inconsistent parameters: same={same} but orientation={orientation} format={format}"
+                )
+        else:
+            # Set page format if provided, else use default value:
+            page_width_pt, page_height_pt = (
+                get_page_format(format, self.k) if format else (self.dw_pt, self.dh_pt)
+            )
+            self._set_orientation(
+                orientation or self.def_orientation, page_width_pt, page_height_pt
+            )
+            self.page_break_trigger = self.h - self.b_margin
+        page["w_pt"], page["h_pt"] = self.w_pt, self.h_pt
 
     def header(self):
         """
@@ -2546,7 +2440,7 @@ class FPDF(GraphicsStateMixin):
         Args:
             **kwargs: key-values settings to set at the beggining of this context.
         """
-        if self._is_unbreakable:
+        if self._in_unbreakable:
             raise FPDFException(
                 "cannot create a local context inside an unbreakable() code block"
             )
@@ -3051,6 +2945,20 @@ class FPDF(GraphicsStateMixin):
             self.y = self.h - self.b_margin
 
         return page_break_triggered
+
+    def _add_quad_points(self, x, y, w, h):
+        self._text_quad_points[self.page].extend(
+            [
+                x * self.k,
+                (self.h - y) * self.k,
+                (x + w) * self.k,
+                (self.h - y) * self.k,
+                x * self.k,
+                (self.h - y - h) * self.k,
+                (x + w) * self.k,
+                (self.h - y - h) * self.k,
+            ]
+        )
 
     def _preload_font_styles(self, txt, markdown):
         """
@@ -3768,7 +3676,7 @@ class FPDF(GraphicsStateMixin):
 
     def get_y(self):
         """Returns the ordinate of the current position."""
-        if self._is_unbreakable:
+        if self._in_unbreakable:
             raise FPDFException(
                 "Using get_y() inside an unbreakable() code block is error-prone"
             )
@@ -3796,56 +3704,6 @@ class FPDF(GraphicsStateMixin):
         """
         self.set_y(y)
         self.set_x(x)
-
-    def output(self, name="", dest=""):
-        """
-        Output PDF to some destination.
-        The method first calls [close](close.md) if necessary to terminate the document.
-        After calling this method, content cannot be added to the document anymore.
-
-        By default the bytearray buffer is returned.
-        If a `name` is given, the PDF is written to a new file.
-
-        Args:
-            name (str): optional File object or file path where to save the PDF under
-            dest (str): [**DEPRECATED since 2.3.0**] unused, will be removed in a later version
-        """
-        if dest:
-            warnings.warn(
-                '"dest" parameter is deprecated, unused and will soon be removed',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-        # Finish document if necessary:
-        if self._state == DocumentState.GENERATING:
-            if self.page == 0:
-                self.add_page()
-            # Generating final page footer:
-            self.in_footer = True
-            self.footer()
-            self.in_footer = False
-            # Generating .buffer based on .pages:
-            self._state = DocumentState.CLOSING
-            output_producer = OutputProducer(self)
-            self.buffer, sig_annotation_obj_id = output_producer.bufferize()
-            # WIP/refactoring: the following lines should be deleted in the end
-            self.offsets = output_producer.offsets
-            self.n = output_producer.n
-            # pylint: disable=protected-access
-            self._enddoc(
-                output_producer._embedded_files_per_pdf_ref, sig_annotation_obj_id
-            )
-
-            self._state = DocumentState.CLOSED
-        if name:
-            if isinstance(name, os.PathLike):
-                name.write_bytes(self.buffer)
-            elif isinstance(name, str):
-                Path(name).write_bytes(self.buffer)
-            else:
-                name.write(self.buffer)
-            return None
-        return self.buffer
 
     def normalize_text(self, txt):
         """Check that text input is in the correct format/encoding"""
@@ -3969,7 +3827,6 @@ class FPDF(GraphicsStateMixin):
         Internal method used to compute the final 1.X PDF version
         once the document has been finalized, based on the PDF features used.
         """
-        assert self._state != DocumentState.GENERATING
         if self.page_mode == PageMode.USE_ATTACHMENTS:
             self._set_min_pdf_version("1.6")
         elif self.page_layout in (PageLayout.TWO_PAGE_LEFT, PageLayout.TWO_PAGE_RIGHT):
@@ -4006,12 +3863,8 @@ class FPDF(GraphicsStateMixin):
     def _insert_table_of_contents(self):
         # Doc has been closed but we want to write to self.pages[self.page] instead of self.buffer:
         tocp = self._toc_placeholder
-        prev_state, prev_page, prev_y = self._state, self.page, self.y
-        self._state, self.page, self.y = (
-            DocumentState.GENERATING,
-            tocp.start_page,
-            tocp.y,
-        )
+        prev_page, prev_y = self.page, self.y
+        self.page, self.y = tocp.start_page, tocp.y
         # Disabling footer & header, as they have already been called:
         self.footer = lambda *args, **kwargs: None
         self.header = lambda *args, **kwargs: None
@@ -4022,584 +3875,9 @@ class FPDF(GraphicsStateMixin):
             error_msg = f"The rendering function passed to FPDF.insert_toc_placeholder triggered too {too} page breaks: "
             error_msg += f"ToC ended on page {self.page} while it was expected to span exactly {tocp.pages} pages"
             raise FPDFException(error_msg)
-        self._state, self.page, self.y = prev_state, prev_page, prev_y
+        self.page, self.y = prev_page, prev_y
         del self.footer
         del self.header
-
-    def _enddoc(self, embedded_files_per_pdf_ref, sig_annotation_obj_id):
-        self._putresources()  # trace_size is performed inside
-        if not self.struct_builder.empty():
-            with self._trace_size("structure_tree"):
-                self._put_structure_tree()
-        else:
-            self._struct_tree_root_obj_id = False
-        if self._outline:
-            with self._trace_size("document_outline"):
-                self._put_document_outline()
-        else:
-            self._outlines_obj_id = False
-        if self.xmp_metadata:
-            self._put_xmp_metadata()
-        else:
-            self._xmp_metadata_obj_id = False
-        with self._trace_size("info"):
-            info_obj_id = self._newobj()
-            self._out("<<")
-            self._putinfo()
-            self._out(">>")
-            self._out("endobj")
-        with self._trace_size("catalog"):
-            catalog_obj_id = self._newobj()
-            self._out("<<")
-            self._putcatalog(embedded_files_per_pdf_ref, sig_annotation_obj_id)
-            self._out(">>")
-            self._out("endobj")
-        with self._trace_size("xref"):  #  cross-reference table
-            startxref = len(self.buffer)
-            self._out("xref")
-            self._out(f"0 {self.n + 1}")
-            self._out("0000000000 65535 f ")
-            for i in range(1, self.n + 1):
-                self._out(f"{self.offsets[i]:010} 00000 n ")
-        with self._trace_size("trailer"):
-            self._out("trailer")
-            self._out("<<")
-            self._puttrailer(info_obj_id, catalog_obj_id)
-            self._out(">>")
-            self._out("startxref")
-            self._out(startxref)
-        self._out("%%EOF")
-        if self._sign_key:
-            self.buffer = sign_content(
-                signer,
-                self.buffer,
-                self._sign_key,
-                self._sign_cert,
-                self._sign_extra_certs,
-                self._sign_hashalgo,
-                self._sign_time,
-            )
-
-    def _putresources(self):
-        with self._trace_size("resources.fonts"):
-            self._putfonts()
-        with self._trace_size("resources.images"):
-            self._putimages()
-        with self._trace_size("resources.gfxstate"):
-            self._put_graphics_state_dicts()
-
-        # Resource dictionary
-        with self._trace_size("resources.dict"):
-            self.offsets[2] = len(self.buffer)
-            self._out("2 0 obj")
-            self._out("<<")
-            self._putresourcedict()
-            self._out(">>")
-            self._out("endobj")
-
-    def _putfonts(self):
-        # Font objects
-        flist = [(x[1]["i"], x[0], x[1]) for x in self.fonts.items()]
-        flist.sort()
-        for _, font_name, font in flist:
-            self.fonts[font_name]["n"] = self.n + 1
-            # Standard font
-            if font["type"] == "core":
-                self._newobj()
-                self._out("<</Type /Font")
-                self._out(f"/BaseFont /{font['name']}")
-                self._out("/Subtype /Type1")
-                if font["name"] not in ("Symbol", "ZapfDingbats"):
-                    self._out("/Encoding /WinAnsiEncoding")
-                self._out(">>")
-                self._out("endobj")
-            elif font["type"] == "TTF":
-                fontname = f"MPDFAA+{font['name']}"
-
-                # unicode_char -> new_code_char map for chars embedded in the PDF
-                uni_to_new_code_char = font["subset"].dict()
-
-                # why we delete 0-element?
-                del uni_to_new_code_char[0]
-
-                # ---- FONTTOOLS SUBSETTER ----
-                # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
-                # if we leave recalcTimestamp=True the tests will break every time
-                fonttools_font = ttLib.TTFont(
-                    file=font["ttffile"], recalcTimestamp=False
-                )
-
-                # 1. get all glyphs in PDF
-                cmap = fonttools_font["cmap"].getBestCmap()
-                glyph_names = [
-                    cmap[unicode] for unicode in uni_to_new_code_char if unicode in cmap
-                ]
-
-                # 2. make a subset
-                # notdef_outline=True means that keeps the white box for the .notdef glyph
-                # recommended_glyphs=True means that adds the .notdef, .null, CR, and space glyphs
-                options = ftsubset.Options(notdef_outline=True, recommended_glyphs=True)
-                # dropping the tables previous dropped in the old ttfonts.py file #issue 418
-                options.drop_tables += ["GDEF", "GSUB", "GPOS", "MATH", "hdmx"]
-                subsetter = ftsubset.Subsetter(options)
-                subsetter.populate(glyphs=glyph_names)
-                subsetter.subset(fonttools_font)
-
-                # 3. make codeToGlyph
-                # is a map Character_ID -> Glyph_ID
-                # it's used for associating glyphs to new codes
-                # this basically takes the old code of the character
-                # take the glyph associated with it
-                # and then associate to the new code the glyph associated with the old code
-                code_to_glyph = {}
-                for code, new_code_mapped in uni_to_new_code_char.items():
-                    if code in cmap:
-                        glyph_name = cmap[code]
-                        code_to_glyph[new_code_mapped] = fonttools_font.getGlyphID(
-                            glyph_name
-                        )
-                    else:
-                        # notdef is associated if no glyph was associated to the old code
-                        # it's not necessary to do this, it seems to be done by default
-                        code_to_glyph[new_code_mapped] = fonttools_font.getGlyphID(
-                            ".notdef"
-                        )
-
-                # 4. return the ttfile
-                output = BytesIO()
-                fonttools_font.save(output)
-
-                output.seek(0)
-                ttfontstream = output.read()
-                ttfontsize = len(ttfontstream)
-                fontstream = zlib.compress(ttfontstream)
-
-                # Type0 Font
-                # A composite font - a font composed of other fonts,
-                # organized hierarchically
-                self._newobj()
-                self._out("<</Type /Font")
-                self._out("/Subtype /Type0")
-                self._out(f"/BaseFont /{fontname}")
-                self._out("/Encoding /Identity-H")
-                self._out(f"/DescendantFonts [{pdf_ref(self.n + 1)}]")
-                self._out(f"/ToUnicode {pdf_ref(self.n + 2)}")
-                self._out(">>")
-                self._out("endobj")
-
-                # CIDFontType2
-                # A CIDFont whose glyph descriptions are based on
-                # TrueType font technology
-                self._newobj()
-                self._out("<</Type /Font")
-                self._out("/Subtype /CIDFontType2")
-                self._out(f"/BaseFont /{fontname}")
-                self._out(f"/CIDSystemInfo {pdf_ref(self.n + 2)}")
-                self._out(f"/FontDescriptor {pdf_ref(self.n + 3)}")
-                if font["desc"].get("MissingWidth"):
-                    self._out(f"/DW {font['desc']['MissingWidth']}")
-                self._putTTfontwidths(font, max(uni_to_new_code_char))
-                self._out(f"/CIDToGIDMap {pdf_ref(self.n + 4)}")
-                self._out(">>")
-                self._out("endobj")
-
-                # bfChar
-                # This table informs the PDF reader about the unicode
-                # character that each used 16-bit code belongs to. It
-                # allows searching the file and copying text from it.
-                bfChar = []
-                uni_to_new_code_char = font["subset"].dict()
-                for code in uni_to_new_code_char:
-                    code_mapped = uni_to_new_code_char.get(code)
-                    if code > 0xFFFF:
-                        # Calculate surrogate pair
-                        code_high = 0xD800 | (code - 0x10000) >> 10
-                        code_low = 0xDC00 | (code & 0x3FF)
-                        bfChar.append(
-                            f"<{code_mapped:04X}> <{code_high:04X}{code_low:04X}>\n"
-                        )
-                    else:
-                        bfChar.append(f"<{code_mapped:04X}> <{code:04X}>\n")
-
-                # ToUnicode
-                self._newobj()
-                toUni = (
-                    "/CIDInit /ProcSet findresource begin\n"
-                    "12 dict begin\n"
-                    "begincmap\n"
-                    "/CIDSystemInfo\n"
-                    "<</Registry (Adobe)\n"
-                    "/Ordering (UCS)\n"
-                    "/Supplement 0\n"
-                    ">> def\n"
-                    "/CMapName /Adobe-Identity-UCS def\n"
-                    "/CMapType 2 def\n"
-                    "1 begincodespacerange\n"
-                    "<0000> <FFFF>\n"
-                    "endcodespacerange\n"
-                    f"{len(bfChar)} beginbfchar\n"
-                    f"{''.join(bfChar)}"
-                    "endbfchar\n"
-                    "endcmap\n"
-                    "CMapName currentdict /CMap defineresource pop\n"
-                    "end\n"
-                    "end"
-                )
-                self._out(f"<</Length {len(toUni)}>>")
-                self._out(pdf_stream(toUni))
-                self._out("endobj")
-
-                # CIDSystemInfo dictionary
-                self._newobj()
-                self._out("<</Registry (Adobe)")
-                self._out("/Ordering (UCS)")
-                self._out("/Supplement 0")
-                self._out(">>")
-                self._out("endobj")
-
-                # Font descriptor
-                self._newobj()
-                self._out("<</Type /FontDescriptor")
-                self._out("/FontName /" + fontname)
-                for key, value in font["desc"].items():
-                    self._out(f" /{key} {value}")
-                self._out(f"/FontFile2 {pdf_ref(self.n + 2)}")
-                self._out(">>")
-                self._out("endobj")
-
-                # Embed CIDToGIDMap
-                # A specification of the mapping from CIDs to glyph indices
-                cid_to_gid_map = ["\x00"] * 256 * 256 * 2
-                for cc, glyph in code_to_glyph.items():
-                    cid_to_gid_map[cc * 2] = chr(glyph >> 8)
-                    cid_to_gid_map[cc * 2 + 1] = chr(glyph & 0xFF)
-                cid_to_gid_map = "".join(cid_to_gid_map)
-
-                # manage binary data as latin1 until PEP461-like function is implemented
-                cid_to_gid_map = zlib.compress(cid_to_gid_map.encode("latin1"))
-
-                self._newobj()
-                self._out(f"<</Length {len(cid_to_gid_map)}")
-                self._out("/Filter /FlateDecode")
-                self._out(">>")
-                self._out(pdf_stream(cid_to_gid_map))
-                self._out("endobj")
-
-                # Font file
-                self._newobj()
-                self._out(f"<</Length {len(fontstream)}")
-                self._out("/Filter /FlateDecode")
-                self._out(f"/Length1 {ttfontsize}")
-                self._out(">>")
-                self._out(pdf_stream(fontstream))
-                self._out("endobj")
-
-    def _putTTfontwidths(self, font, maxUni):
-        rangeid = 0
-        range_ = {}
-        range_interval = {}
-        prevcid = -2
-        prevwidth = -1
-        interval = False
-        startcid = 1
-        cwlen = maxUni + 1
-
-        # for each character
-        subset = font["subset"].dict()
-        for cid in range(startcid, cwlen):
-            char_width = font["cw"][cid]
-            if "dw" not in font or (font["dw"] and char_width != font["dw"]):
-                cid_mapped = subset.get(cid)
-                if cid_mapped is None:
-                    continue
-                if cid_mapped == (prevcid + 1):
-                    if char_width == prevwidth:
-                        if char_width == range_[rangeid][0]:
-                            range_.setdefault(rangeid, []).append(char_width)
-                        else:
-                            range_[rangeid].pop()
-                            # new range
-                            rangeid = prevcid
-                            range_[rangeid] = [prevwidth, char_width]
-                        interval = True
-                        range_interval[rangeid] = True
-                    else:
-                        if interval:
-                            # new range
-                            rangeid = cid_mapped
-                            range_[rangeid] = [char_width]
-                        else:
-                            range_[rangeid].append(char_width)
-                        interval = False
-                else:
-                    rangeid = cid_mapped
-                    range_[rangeid] = [char_width]
-                    interval = False
-                prevcid = cid_mapped
-                prevwidth = char_width
-        prevk = -1
-        nextk = -1
-        prevint = False
-
-        ri = range_interval
-        for k, ws in sorted(range_.items()):
-            cws = len(ws)
-            if k == nextk and not prevint and (k not in ri or cws < 3):
-                if k in ri:
-                    del ri[k]
-                range_[prevk] = range_[prevk] + range_[k]
-                del range_[k]
-            else:
-                prevk = k
-            nextk = k + cws
-            if k in ri:
-                prevint = cws > 3
-                del ri[k]
-                nextk -= 1
-            else:
-                prevint = False
-        w = []
-        for k, ws in sorted(range_.items()):
-            if len(set(ws)) == 1:
-                w.append(f" {k} {k + len(ws) - 1} {ws[0]}")
-            else:
-                w.append(f" {k} [ {' '.join(str(int(h)) for h in ws)} ]\n")
-        self._out(f"/W [{''.join(w)}]")
-
-    def _putimages(self):
-        for img_info in sorted(
-            self.images.values(), key=lambda img_info: img_info["i"]
-        ):
-            if img_info["usages"] > 0:
-                self._putimage(img_info)
-
-    def _putimage(self, info):
-        if "data" not in info:
-            return
-        self._newobj()
-        info["n"] = self.n
-        self._out("<</Type /XObject")
-        self._out("/Subtype /Image")
-        self._out(f"/Width {info['w']}")
-        self._out(f"/Height {info['h']}")
-
-        if info["cs"] == "Indexed":
-            palette_ref = (
-                pdf_ref(self.n + 2)
-                if self.allow_images_transparency and "smask" in info
-                else pdf_ref(self.n + 1)
-            )
-            self._out(
-                f"/ColorSpace [/Indexed /DeviceRGB "
-                f"{len(info['pal']) // 3 - 1} {palette_ref}]"
-            )
-        else:
-            self._out(f"/ColorSpace /{info['cs']}")
-            if info["cs"] == "DeviceCMYK":
-                self._out("/Decode [1 0 1 0 1 0 1 0]")
-
-        self._out(f"/BitsPerComponent {info['bpc']}")
-
-        if "f" in info:
-            self._out(f"/Filter /{info['f']}")
-        if "dp" in info:
-            self._out(f"/DecodeParms <<{info['dp']}>>")
-
-        if "trns" in info and isinstance(info["trns"], list):
-            trns = " ".join(f"{x} {x}" for x in info["trns"])
-            self._out(f"/Mask [{trns}]")
-
-        if self.allow_images_transparency and "smask" in info:
-            self._out(f"/SMask {pdf_ref(self.n + 1)}")
-
-        self._out(f"/Length {len(info['data'])}>>")
-        self._out(pdf_stream(info["data"]))
-        self._out("endobj")
-
-        # Soft mask
-        if self.allow_images_transparency and "smask" in info:
-            dp = f"/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns {info['w']}"
-            smask = {
-                "w": info["w"],
-                "h": info["h"],
-                "cs": "DeviceGray",
-                "bpc": 8,
-                "f": info["f"],
-                "dp": dp,
-                "data": info["smask"],
-            }
-            self._putimage(smask)
-
-        # Palette
-        if info["cs"] == "Indexed":
-            self._newobj()
-            if self.compress:
-                filter, pal = ("/Filter /FlateDecode ", zlib.compress(info["pal"]))
-            else:
-                filter, pal = ("", info["pal"])
-            self._out(f"<<{filter}/Length {len(pal)}>>")
-            self._out(pdf_stream(pal))
-            self._out("endobj")
-
-    def _putxobjectdict(self):
-        img_ids = [
-            (img_info["i"], img_info["n"])
-            for img_info in self.images.values()
-            if img_info["usages"]
-        ]
-        img_ids.sort()
-        for idx, n in img_ids:
-            self._out(f"/I{idx} {pdf_ref(n)}")
-
-    def _put_graphics_state_dicts(self):
-        self._graphics_state_obj_refs = OrderedDict()
-        for state_dict, name in self._drawing_graphics_state_registry.items():
-            self._newobj()
-            self._graphics_state_obj_refs[name] = self.n
-            self._out(state_dict)
-            self._out("endobj")
-
-    def _put_graphics_state_refs(self):
-        assert (
-            self._graphics_state_obj_refs is not None
-        ), "Graphics state objects refs must have been generated"
-        for name, obj_id in self._graphics_state_obj_refs.items():
-            self._out(f"{drawing.render_pdf_primitive(name)} {pdf_ref(obj_id)}")
-
-    def _putresourcedict(self):
-        # From section 10.1, "Procedure Sets", of PDF 1.7 spec:
-        # > Beginning with PDF 1.4, this feature is considered obsolete.
-        # > For compatibility with existing consumer applications,
-        # > PDF producer applications should continue to specify procedure sets
-        # > (preferably, all of those listed in Table 10.1).
-        self._out("/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]")
-        self._out("/Font <<")
-        font_ids = [(x["i"], x["n"]) for x in self.fonts.values()]
-        font_ids.sort()
-        for idx, n in font_ids:
-            self._out(f"/F{idx} {pdf_ref(n)}")
-        self._out(">>")
-
-        # if self.images: [TODO] uncomment this & indent the next 3 lines in order to save 15 bytes / page without image
-        self._out("/XObject <<")
-        self._putxobjectdict()
-        self._out(">>")
-
-        if self._drawing_graphics_state_registry:
-            self._out("/ExtGState <<")
-            self._put_graphics_state_refs()
-            self._out(">>")
-
-    def _put_structure_tree(self):
-        "Builds a Structure Hierarchy, including image alternate descriptions"
-        # This property is later used by _putcatalog to insert a reference to the StructTreeRoot:
-        self._struct_tree_root_obj_id = self.n + 1
-        self.struct_builder.serialize(
-            first_object_id=self._struct_tree_root_obj_id, fpdf=self
-        )
-
-    def _put_document_outline(self):
-        # This property is later used by _putcatalog to insert a reference to the Outlines:
-        self._outlines_obj_id = self.n + 1
-        serialize_outline(
-            self._outline, first_object_id=self._outlines_obj_id, fpdf=self
-        )
-
-    def _put_xmp_metadata(self):
-        xpacket = f'<?xpacket begin="ï»¿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n{self.xmp_metadata}\n<?xpacket end="w"?>\n'
-        self._newobj()
-        self._out(f"<</Type /Metadata /Subtype /XML /Length {len(xpacket)}>>")
-        self._out(pdf_stream(xpacket))
-        self._out("endobj")
-        self._xmp_metadata_obj_id = self.n
-
-    def _putinfo(self):
-        info_d = {
-            "/Title": enclose_in_parens(getattr(self, "title", None)),
-            "/Subject": enclose_in_parens(getattr(self, "subject", None)),
-            "/Author": enclose_in_parens(getattr(self, "author", None)),
-            "/Keywords": enclose_in_parens(getattr(self, "keywords", None)),
-            "/Creator": enclose_in_parens(getattr(self, "creator", None)),
-            "/Producer": enclose_in_parens(getattr(self, "producer", None)),
-        }
-
-        if self.creation_date:
-            try:
-                info_d["/CreationDate"] = format_date(self.creation_date, with_tz=True)
-            except Exception as error:
-                raise FPDFException(
-                    f"Could not format date: {self.creation_date}"
-                ) from error
-
-        self._out(pdf_dict(info_d, open_dict="", close_dict="", has_empty_fields=True))
-
-    def _putcatalog(self, embedded_files_per_pdf_ref, sig_annotation_obj_id=None):
-        catalog_d = {
-            "/Type": "/Catalog",
-            # Pages is always the 1st object of the document, cf. _putpages:
-            "/Pages": pdf_ref(1),
-        }
-        lang = enclose_in_parens(getattr(self, "lang", None))
-        if lang:
-            catalog_d["/Lang"] = lang
-        if sig_annotation_obj_id:
-            flags = SignatureFlag.SIGNATURES_EXIST + SignatureFlag.APPEND_ONLY
-            self._out(
-                f"/AcroForm <</Fields [{sig_annotation_obj_id} 0 R] /SigFlags {flags}>>"
-            )
-
-        if self.zoom_mode in ZOOM_CONFIGS:
-            zoom_config = [
-                pdf_ref(3),  # reference to object ID of the 1st page
-                *ZOOM_CONFIGS[self.zoom_mode],
-            ]
-        else:  # zoom_mode is a number, not one of the allowed strings:
-            zoom_config = ["/XYZ", "null", "null", str(self.zoom_mode / 100)]
-        catalog_d["/OpenAction"] = pdf_list(zoom_config)
-
-        if self.page_layout:
-            catalog_d["/PageLayout"] = self.page_layout.value.pdf_repr()
-        if self.page_mode:
-            catalog_d["/PageMode"] = self.page_mode.value.pdf_repr()
-        if self.viewer_preferences:
-            catalog_d["/ViewerPreferences"] = self.viewer_preferences.serialize()
-        assert (
-            self._xmp_metadata_obj_id is not None
-        ), "ID of XMP metadata PDF object must be known"
-        if self._xmp_metadata_obj_id:
-            catalog_d["/Metadata"] = pdf_ref(self._xmp_metadata_obj_id)
-        assert (
-            self._struct_tree_root_obj_id is not None
-        ), "ID of root PDF object of the Structure Tree must be known"
-        if self._struct_tree_root_obj_id:
-            catalog_d["/MarkInfo"] = pdf_dict({"/Marked": "true"})
-            catalog_d["/StructTreeRoot"] = pdf_ref(self._struct_tree_root_obj_id)
-        assert (
-            self._outlines_obj_id is not None
-        ), "ID of Outlines PDF object must be known"
-        if self._outlines_obj_id:
-            catalog_d["/Outlines"] = pdf_ref(self._outlines_obj_id)
-        assert (
-            embedded_files_per_pdf_ref is not None
-        ), "ID of Embedded files must be known"
-        if embedded_files_per_pdf_ref:
-            file_spec_names = [
-                f"{enclose_in_parens(file.basename)} {file.file_spec(pdf_ref)}"
-                for pdf_ref, file in embedded_files_per_pdf_ref.items()
-            ]
-            catalog_d["/Names"] = pdf_dict(
-                {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(file_spec_names)})}
-            )
-
-        self._out(pdf_dict(catalog_d, open_dict="", close_dict=""))
-
-    def _puttrailer(self, info_obj_id, catalog_obj_id):
-        self._out(f"/Size {self.n + 1}")
-        self._out(f"/Root {pdf_ref(catalog_obj_id)}")
-        self._out(f"/Info {pdf_ref(info_obj_id)}")
-        file_id = self.file_id(self.buffer, self.creation_date)
-        if file_id:
-            self._out(f"/ID [{file_id}]")
 
     def file_id(self, buffer, creation_date):
         """
@@ -4628,43 +3906,6 @@ class FPDF(GraphicsStateMixin):
         hash_hex = id_hash.hexdigest().upper()
         return f"<{hash_hex}><{hash_hex}>"
 
-    def _beginpage(
-        self, orientation, format, same, duration, transition, new_page=True
-    ):
-        self.page += 1
-        if new_page:
-            page = {
-                "content": bytearray(),
-                "duration": duration,
-                "transition": transition,
-            }
-            self.pages[self.page] = page
-            if transition:
-                self._set_min_pdf_version("1.5")
-        else:
-            page = self.pages[self.page]
-        self._state = DocumentState.GENERATING
-        self.x = self.l_margin
-        self.y = self.t_margin
-        self.font_family = ""
-        self.font_stretching = 100
-        self.char_spacing = 0
-        if same:
-            if orientation or format:
-                raise ValueError(
-                    f"Inconsistent parameters: same={same} but orientation={orientation} format={format}"
-                )
-        else:
-            # Set page format if provided, else use default value:
-            page_width_pt, page_height_pt = (
-                get_page_format(format, self.k) if format else (self.dw_pt, self.dh_pt)
-            )
-            self._set_orientation(
-                orientation or self.def_orientation, page_width_pt, page_height_pt
-            )
-            self.page_break_trigger = self.h - self.b_margin
-        page["w_pt"], page["h_pt"] = self.w_pt, self.h_pt
-
     def _do_underline(self, x, y, w, current_font=None):
         "Draw an horizontal line starting from (x, y) with a length equal to 'w'"
         if current_font is None:
@@ -4678,18 +3919,14 @@ class FPDF(GraphicsStateMixin):
         )
 
     def _out(self, s):
-        if self._state == DocumentState.CLOSED:
+        if self.buffer:
             raise FPDFException(
-                "Content cannot be added on a closed document, after calling output()"
+                "Content cannot be added on a finalized document, after calling output()"
             )
         if not isinstance(s, bytes):
             if not isinstance(s, str):
                 s = str(s)
             s = s.encode("latin1")
-        if self._state == DocumentState.CLOSING:
-            # WIP/refactoring: this conditional should be deleted in the end
-            self.buffer += s + b"\n"
-            return
         if not self.page:
             raise FPDFException("No page open, you need to call add_page() first")
         self.pages[self.page]["content"] += s + b"\n"
@@ -4886,7 +4123,7 @@ class FPDF(GraphicsStateMixin):
         prev_page, prev_y = self.page, self.y
         recorder = FPDFRecorder(self, accept_page_break=False)
         recorder.page_break_triggered = False
-        self._is_unbreakable = True
+        self._in_unbreakable = True
         LOGGER.debug("Starting unbreakable block")
         yield recorder
         y_scroll = recorder.y - prev_y + (recorder.page - prev_page) * self.eph
@@ -4898,7 +4135,7 @@ class FPDF(GraphicsStateMixin):
             recorder.pdf._perform_page_break()
             recorder.replay()
             recorder.page_break_triggered = True
-        self._is_unbreakable = False
+        self._in_unbreakable = False
         LOGGER.debug("Ending unbreakable block")
 
     @contextmanager
@@ -5055,22 +4292,45 @@ class FPDF(GraphicsStateMixin):
         self.text_color = prev_text_color
         self.underline = prev_underline
 
-    # WIP/refactoring: the following methods should be deleted in the end:
-    def _newobj(self):
-        "Begin a new PDF object"
-        self.n += 1
-        self.offsets[self.n] = len(self.buffer)
-        self._out(f"{self.n} 0 obj")
-        return self.n
+    def output(self, name="", dest=""):
+        """
+        Output PDF to some destination.
+        The method first calls [close](close.md) if necessary to terminate the document.
+        After calling this method, content cannot be added to the document anymore.
 
-    @contextmanager
-    def _trace_size(self, label):
-        prev_size = len(self.buffer)
-        yield
-        # pylint: disable=import-outside-toplevel
-        from .finalizer import _sizeof_fmt
+        By default the bytearray buffer is returned.
+        If a `name` is given, the PDF is written to a new file.
 
-        LOGGER.debug("- %s.size: %s", label, _sizeof_fmt(len(self.buffer) - prev_size))
+        Args:
+            name (str): optional File object or file path where to save the PDF under
+            dest (str): [**DEPRECATED since 2.3.0**] unused, will be removed in a later version
+        """
+        if dest:
+            warnings.warn(
+                '"dest" parameter is deprecated, unused and will soon be removed',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        # Finish document if necessary:
+        if not self.buffer:
+            if self.page == 0:
+                self.add_page()
+            # Generating final page footer:
+            self.in_footer = True
+            self.footer()
+            self.in_footer = False
+            # Generating .buffer based on .pages:
+            output_producer = OutputProducer(self)
+            self.buffer = output_producer.bufferize()
+        if name:
+            if isinstance(name, os.PathLike):
+                name.write_bytes(self.buffer)
+            elif isinstance(name, str):
+                Path(name).write_bytes(self.buffer)
+            else:
+                name.write(self.buffer)
+            return None
+        return self.buffer
 
 
 def _is_svg(bytes):

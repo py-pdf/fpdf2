@@ -1,6 +1,4 @@
-import math
-import re
-import warnings
+import math, re, warnings
 
 from fontTools.svgLib.path import parse_path
 from fontTools.pens.basePen import BasePen

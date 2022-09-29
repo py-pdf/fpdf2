@@ -1,8 +1,7 @@
-import zlib
+import base64, zlib
 from io import BytesIO
-import base64
-from urllib.request import urlopen
 from math import ceil
+from urllib.request import urlopen
 
 try:
     from PIL import Image

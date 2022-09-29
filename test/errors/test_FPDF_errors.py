@@ -100,7 +100,7 @@ def test_adding_content_after_closing():
         pdf.cell(w=pdf.epw, txt="Hello again!", align="C")
     assert (
         str(error.value)
-        == "Content cannot be added on a closed document, after calling output()"
+        == "Content cannot be added on a finalized document, after calling output()"
     )
 
 

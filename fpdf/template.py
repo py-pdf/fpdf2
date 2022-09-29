@@ -4,9 +4,7 @@ __author__ = "Mariano Reingart <reingart@gmail.com>"
 __copyright__ = "Copyright (C) 2010 Mariano Reingart"
 __license__ = "LGPL 3.0"
 
-import csv
-import locale
-import warnings
+import csv, locale, warnings
 
 from .errors import FPDFException
 from .fpdf import FPDF

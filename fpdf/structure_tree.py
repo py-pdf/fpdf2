@@ -44,13 +44,13 @@ class NumberTree(PDFObject):
         super().__init__(**kwargs)
         self.nums = defaultdict(list)  # {struct_parent_id -> struct_elems}
 
-    def serialize(self, fpdf=None, obj_dict=None):
+    def serialize(self, output_producer=None, obj_dict=None):
         newline = "\n"
         serialized_nums = "\n".join(
             f"{struct_parent_id} [{newline.join(struct_elem.ref for struct_elem in struct_elems)}]"
             for struct_parent_id, struct_elems in self.nums.items()
         )
-        return super().serialize(fpdf, {"/Nums": f"[{serialized_nums}]"})
+        return super().serialize(output_producer, {"/Nums": f"[{serialized_nums}]"})
 
 
 class StructTreeRoot(PDFObject):
@@ -133,7 +133,7 @@ class StructureTreeBuilder:
     def empty(self):
         return not self.struct_elem_per_mc
 
-    def serialize(self, first_object_id=1, fpdf=None):
+    def serialize(self, first_object_id=1, output_producer=None):
         """
         Assign object IDs & output the whole hierarchy tree serialized
         as a multi-lines string in PDF syntax, ready to be embedded.
@@ -144,16 +144,16 @@ class StructureTreeBuilder:
         All PDF objects must have assigned IDs before proceeding to output
         generation though, as they have many references to each others.
 
-        If a FPDF instance provided, its `_newobj` & `_out` methods will be called
+        If a OutputProducer instance provided, its `_newobj` & `_out` methods will be called
         and this method output will be meaningless.
         """
         self.assign_ids(first_object_id)
         output = []
-        output.append(self.struct_tree_root.serialize(fpdf))
-        output.append(self.doc_struct_elem.serialize(fpdf))
-        output.append(self.struct_tree_root.parent_tree.serialize(fpdf))
+        output.append(self.struct_tree_root.serialize(output_producer))
+        output.append(self.doc_struct_elem.serialize(output_producer))
+        output.append(self.struct_tree_root.parent_tree.serialize(output_producer))
         for struct_elem in self.doc_struct_elem.k:
-            output.append(struct_elem.serialize(fpdf))
+            output.append(struct_elem.serialize(output_producer))
         return "\n".join(output)
 
     def assign_ids(self, n):

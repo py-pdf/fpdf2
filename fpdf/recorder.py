@@ -1,5 +1,4 @@
-import types
-import warnings
+import types, warnings
 from copy import deepcopy
 
 from .errors import FPDFException

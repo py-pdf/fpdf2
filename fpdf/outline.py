@@ -57,7 +57,7 @@ class OutlineDictionary(PDFObject):
         self.count = 0
 
 
-def serialize_outline(sections, first_object_id=1, fpdf=None):
+def serialize_outline(sections, first_object_id=1, output_producer=None):
     """
     Assign object IDs & output the whole outline hierarchy serialized
     as a multi-lines string in PDF syntax, ready to be embedded.
@@ -68,17 +68,17 @@ def serialize_outline(sections, first_object_id=1, fpdf=None):
     All PDF objects must have assigned IDs before proceeding to output
     generation though, as they have many references to each others.
 
-    If a FPDF instance provided, its `_newobj` & `_out` methods will be called
+    If a OutputProducer instance provided, its `_newobj` & `_out` methods will be called
     and this method output will be meaningless.
 
     Args:
         sections (sequence): list of OutlineSection
     """
-    outline, outline_items = build_outline(sections, first_object_id, fpdf)
-    return outline_as_str(outline, outline_items, fpdf)
+    outline, outline_items = build_outline(sections, first_object_id, output_producer)
+    return outline_as_str(outline, outline_items, output_producer)
 
 
-def build_outline(sections, first_object_id, fpdf):
+def build_outline(sections, first_object_id, output_producer):
     outline = OutlineDictionary(id=first_object_id)
     n = first_object_id + 1
     outline_items = []
@@ -86,7 +86,7 @@ def build_outline(sections, first_object_id, fpdf):
     for section in sections:
         outline_item = OutlineItemDictionary(
             title=section.name,
-            dest=section.dest.as_str(fpdf),
+            dest=section.dest.as_str(output_producer.fpdf if output_producer else None),
             struct_elem=section.struct_elem,
             id=n,
         )
@@ -114,9 +114,9 @@ def build_outline(sections, first_object_id, fpdf):
     return outline, outline_items
 
 
-def outline_as_str(outline, outline_items, fpdf):
+def outline_as_str(outline, outline_items, output_producer):
     output = []
-    output.append(outline.serialize(fpdf))
+    output.append(outline.serialize(output_producer))
     for outline_item in outline_items:
-        output.append(outline_item.serialize(fpdf))
+        output.append(outline_item.serialize(output_producer))
     return "\n".join(output)

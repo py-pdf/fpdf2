@@ -6,8 +6,7 @@ __license__ = "LGPL 3.0"
 
 # Inspired by tuto5.py and several examples from fpdf.org, html2fpdf, etc.
 
-import warnings
-import logging
+import logging, warnings
 from html.parser import HTMLParser
 
 from .enums import XPos, YPos

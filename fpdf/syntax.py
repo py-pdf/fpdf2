@@ -66,10 +66,10 @@ that string.
 As of this writing, I am not sure how length is actually calculated, so this
 remains something to be looked into.
 """
+import re
 from abc import ABC
 from binascii import hexlify
 from codecs import BOM_UTF16_BE
-import re
 
 from .util import object_id_for_page
 
@@ -171,13 +171,13 @@ class PDFObject:
     def ref(self):
         return iobj_ref(self.id)
 
-    def serialize(self, fpdf=None, obj_dict=None):
+    def serialize(self, output_producer=None, obj_dict=None):
         output = []
-        if fpdf:
+        if output_producer:
             # pylint: disable=protected-access
-            appender = fpdf._out
+            appender = output_producer._out
             assert (
-                fpdf._newobj() == self.id
+                output_producer._newobj() == self.id
             ), "Something went wrong in StructTree object IDs assignment"
         else:
             appender = output.append
