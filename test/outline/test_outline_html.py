@@ -2,6 +2,7 @@ from pathlib import Path
 
 from fpdf import FPDF, HTML2FPDF
 from test.conftest import assert_pdf_equal
+import pytest
 
 
 HERE = Path(__file__).resolve().parent
@@ -253,8 +254,9 @@ def test_custom_HTML2FPDF(tmp_path):  # issue 240
 
     pdf = CustomPDF()
     pdf.add_page()
-    pdf.write_html(
-        """<toc></toc>
+    with pytest.warns(DeprecationWarning):
+        pdf.write_html(
+            """<toc></toc>
         <h1>Level 1</h1>
         <h2>Level 2</h2>
         <h3>Level 3</h3>
@@ -262,5 +264,5 @@ def test_custom_HTML2FPDF(tmp_path):  # issue 240
         <h5>Level 5</h5>
         <h6>Level 6</h6>
         <p>paragraph<p>"""
-    )
+        )
     assert_pdf_equal(pdf, HERE / "custom_HTML2FPDF.pdf", tmp_path)

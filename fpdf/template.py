@@ -543,35 +543,36 @@ class FlexTemplate:
                 Scale the inserted template by this factor.
         """
         sorted_elements = sorted(self.elements, key=lambda x: x["priority"])
-        for element in sorted_elements:
-            ele = element.copy()  # don't want to modify the callers original
-            ele["text"] = self.texts.get(ele["name"].lower(), ele.get("text", ""))
-            if scale != 1.0:
-                ele["x1"] = ele["x1"] * scale
-                ele["y1"] = ele["y1"] * scale
-                ele["x2"] = ele["x1"] + ((ele["x2"] - element["x1"]) * scale)
-                ele["y2"] = ele["y1"] + ((ele["y2"] - element["y1"]) * scale)
-            if offsetx:
-                ele["x1"] = ele["x1"] + offsetx
-                ele["x2"] = ele["x2"] + offsetx
-            if offsety:
-                ele["y1"] = ele["y1"] + offsety
-                ele["y2"] = ele["y2"] + offsety
-            ele["scale"] = scale
-            handler_name = ele["type"].upper()
-            if rotate:  # don't rotate by 0.0 degrees
-                with self.pdf.rotation(rotate, offsetx, offsety):
+        with self.pdf.local_context():
+            for element in sorted_elements:
+                ele = element.copy()  # don't want to modify the callers original
+                ele["text"] = self.texts.get(ele["name"].lower(), ele.get("text", ""))
+                if scale != 1.0:
+                    ele["x1"] = ele["x1"] * scale
+                    ele["y1"] = ele["y1"] * scale
+                    ele["x2"] = ele["x1"] + ((ele["x2"] - element["x1"]) * scale)
+                    ele["y2"] = ele["y1"] + ((ele["y2"] - element["y1"]) * scale)
+                if offsetx:
+                    ele["x1"] = ele["x1"] + offsetx
+                    ele["x2"] = ele["x2"] + offsetx
+                if offsety:
+                    ele["y1"] = ele["y1"] + offsety
+                    ele["y2"] = ele["y2"] + offsety
+                ele["scale"] = scale
+                handler_name = ele["type"].upper()
+                if rotate:  # don't rotate by 0.0 degrees
+                    with self.pdf.rotation(rotate, offsetx, offsety):
+                        if "rotate" in ele and ele["rotate"]:
+                            with self.pdf.rotation(ele["rotate"], ele["x1"], ele["y1"]):
+                                self.handlers[handler_name](**ele)
+                        else:
+                            self.handlers[handler_name](**ele)
+                else:
                     if "rotate" in ele and ele["rotate"]:
                         with self.pdf.rotation(ele["rotate"], ele["x1"], ele["y1"]):
                             self.handlers[handler_name](**ele)
                     else:
                         self.handlers[handler_name](**ele)
-            else:
-                if "rotate" in ele and ele["rotate"]:
-                    with self.pdf.rotation(ele["rotate"], ele["x1"], ele["y1"]):
-                        self.handlers[handler_name](**ele)
-                else:
-                    self.handlers[handler_name](**ele)
         self.texts = {}  # reset modified entries for the next page
 
 

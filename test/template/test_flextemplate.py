@@ -482,5 +482,30 @@ def test_flextemplate_elements(tmp_path):
     img_t["i2"] = img
     img_t["i3"] = img
     img_t.render(offsetx=80, offsety=200, rotate=45)
-
     assert_pdf_equal(pdf, HERE / "flextemplate_elements.pdf", tmp_path)
+
+
+def test_flextemplate_leak(tmp_path):  # issue #570
+    # rendering a template should not change the current graphics context.
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica", "", 10)
+    pdf.cell(txt="before", new_x="LEFT", new_y="NEXT")
+    tmpldata = [
+        {
+            "name": "template",
+            "type": "T",
+            "x1": 0,
+            "y1": 0,
+            "x2": 50,
+            "y2": 10,
+            "bold": True,
+            "underline": True,
+            "text": "Template",
+        },
+    ]
+    templ = FlexTemplate(pdf, elements=tmpldata)
+    templ.render(offsetx=pdf.x, offsety=pdf.y)
+    pdf.ln()
+    pdf.cell(txt="after", new_x="LEFT", new_y="NEXT")
+    assert_pdf_equal(pdf, HERE / "flextemplate_leak.pdf", tmp_path)

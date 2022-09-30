@@ -405,6 +405,7 @@ def test_template_badinput():
         tmpl["n"] = "hello"
         tmpl.render()
     tmpl = Template()
+    tmpl.add_page()
     with raises(FPDFException):
         tmpl.parse_csv(HERE / "mandmissing.csv", delimiter=";")
     with raises(ValueError):
