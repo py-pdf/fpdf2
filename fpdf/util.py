@@ -3,9 +3,12 @@ from datetime import datetime, timezone
 from typing import Union, Iterable
 
 
+PERMANENT_INITIAL_OBJ_IDS_COUNT = 2
+
+
 def object_id_for_page(page):
-    # Predictable given that FPDF._putpages is invoked first in FPDF._enddoc:
-    return 2 * page + 1
+    # Predictable based on the logic in OutputProducer.bufferize():
+    return PERMANENT_INITIAL_OBJ_IDS_COUNT + 2 * page - 1
 
 
 def format_date(date: datetime, with_tz=False) -> str:

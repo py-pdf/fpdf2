@@ -66,7 +66,7 @@ that string.
 As of this writing, I am not sure how length is actually calculated, so this
 remains something to be looked into.
 """
-import re
+import re, zlib
 from abc import ABC
 from binascii import hexlify
 from codecs import BOM_UTF16_BE
@@ -176,9 +176,8 @@ class PDFObject:
         if output_producer:
             # pylint: disable=protected-access
             appender = output_producer._out
-            assert (
-                output_producer._newobj() == self.id
-            ), "Something went wrong in StructTree object IDs assignment"
+            new_obj_id = output_producer._newobj()
+            assert self.id == new_obj_id, f"Something went wrong in PDFObject ID assignment: .id={self.id} new_obj_id={new_obj_id}"
         else:
             appender = output.append
             appender(f"{self.id} 0 obj")
@@ -187,8 +186,15 @@ class PDFObject:
             obj_dict = self._build_obj_dict()
         appender(create_dictionary_string(obj_dict, open_dict="", close_dict=""))
         appender(">>")
+        content_stream = self.content_stream()
+        if content_stream:
+            appender(create_stream(content_stream))
         appender("endobj")
         return "\n".join(output)
+
+    def content_stream(self):
+        "Subclass can override this method to indicate the presence of a content stream"
+        return None
 
     def _build_obj_dict(self):
         """
@@ -198,6 +204,19 @@ class PDFObject:
         and prefixed with a slash character "/".
         """
         return build_obj_dict({key: getattr(self, key) for key in dir(self)})
+
+
+class PDFContentStream(PDFObject):
+    __slots__ = ("_id", "_contents", "filter", "length")
+
+    def __init__(self, contents, compress=False, **kwargs):
+        super().__init__(**kwargs)
+        self._contents = zlib.compress(contents) if compress else contents
+        self.filter = Name("FlateDecode") if compress else None
+        self.length = len(self._contents)
+
+    def content_stream(self):
+        return self._contents
 
 
 def build_obj_dict(key_values):

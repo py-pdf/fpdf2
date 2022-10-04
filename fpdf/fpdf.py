@@ -3919,18 +3919,17 @@ class FPDF(GraphicsStateMixin):
         del self.footer
         del self.header
 
-    def file_id(self, buffer, creation_date):
+    def file_id(self):
         """
-        Args:
-            buffer (bytearray): resulting output buffer
-            creation_date (datetime): PDF document creation date
-
         This method can be overridden in inherited classes
         in order to define a custom file identifier.
         Its output must have the format "<hex_string1><hex_string2>".
         If this method returns a falsy value (None, empty string),
         no /ID will be inserted in the generated PDF document.
         """
+        return -1
+
+    def _default_file_id(self, buffer):
         # Quoting the PDF 1.7 spec, section 14.4 File Identifiers:
         # > The value of this entry shall be an array of two byte strings.
         # > The first byte string shall be a permanent identifier
@@ -3941,8 +3940,8 @@ class FPDF(GraphicsStateMixin):
         # > When a file is first written, both identifiers shall be set to the same value.
         id_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
         id_hash.update(buffer)
-        if creation_date:
-            id_hash.update(creation_date.strftime("%Y%m%d%H%M%S").encode("utf8"))
+        if self.creation_date:
+            id_hash.update(self.creation_date.strftime("%Y%m%d%H%M%S").encode("utf8"))
         hash_hex = id_hash.hexdigest().upper()
         return f"<{hash_hex}><{hash_hex}>"
 

@@ -9,11 +9,18 @@ from .errors import FPDFException
 from .drawing import render_pdf_primitive
 from .outline import serialize_outline
 from .sign import Signature, sign_content
+from .syntax import Name, PDFArray, PDFContentStream, PDFObject
 from .syntax import create_dictionary_string as pdf_dict
 from .syntax import create_list_string as pdf_list
 from .syntax import create_stream as pdf_stream
 from .syntax import iobj_ref as pdf_ref
-from .util import enclose_in_parens, escape_parens, format_date, object_id_for_page
+from .util import (
+    enclose_in_parens,
+    escape_parens,
+    format_date,
+    object_id_for_page,
+    PERMANENT_INITIAL_OBJ_IDS_COUNT,
+)
 
 from fontTools import ttLib
 from fontTools import subset as ftsubset
@@ -26,11 +33,78 @@ except ImportError:
 
 LOGGER = logging.getLogger(__name__)
 
+SIG_ANNOT_OBJ_ID_PLACEHOLDER = "XX"
 ZOOM_CONFIGS = {  # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
     "fullpage": ("/Fit",),
     "fullwidth": ("/FitH", "null"),
     "real": ("/XYZ", "null", "null", "1"),
 }
+
+
+class LinearizationDictionary(PDFObject):
+    __slots__ = ("_id", "linearized", "l", "h", "o", "e", "n", "t")
+
+    def __init__(self, file_length, pages_count, first_page_obj_id, **kwargs):
+        super().__init__(**kwargs)
+        _ = float("inf")  # unknown value
+        self.linearized = "1.0"  # Version
+        self.l = file_length
+        self.h = [_]  # Primary hint stream offset and length (part 5)
+        self.o = first_page_obj_id  # Object number of first page’s page object (part 6)
+        self.e = _  # Offset of end of first page
+        self.n = pages_count
+        self.t = _  # Offset of first entry in main cross-reference table (part 11)
+
+
+class PageObject(PDFObject):
+    __slots__ = (
+        "_id",
+        "type",
+        "parent",
+        "dur",
+        "transition",
+        "media_box",
+        "resources",
+        "annots",
+        "group",
+        "struct_parents",
+        "contents",
+    )
+
+    def __init__(
+        self,
+        duration,
+        transition,
+        media_box,
+        resources_dict_obj_id,
+        annots,
+        group,
+        spid,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.type = Name("Page")
+        self.parent = None
+        self.dur = duration
+        self.transition = transition
+        self.media_box = media_box
+        # TODO: insert a direct /Resource PDF object, with only images / fonts / graphics states used on the page
+        self.resources = pdf_ref(resources_dict_obj_id)
+        self.annots = annots
+        self.group = group
+        self.struct_parents = spid
+        self.contents = None
+
+
+class PagesRoot(PDFObject):
+    __slots__ = ("_id", "type", "kids", "count", "media_box")
+
+    def __init__(self, kids, count, media_box, **kwargs):
+        super().__init__(**kwargs)
+        self.type = Name("Pages")
+        self.kids = kids
+        self.count = count
+        self.media_box = media_box
 
 
 class OutputProducer:
@@ -39,9 +113,10 @@ class OutputProducer:
     def __init__(self, fpdf):
         self.fpdf = fpdf
         self.buffer = bytearray()  # resulting output buffer
+        self._pdf_objs = []
         # array of PDF object offsets in self.buffer, used to build the xref table:
         self.offsets = {}
-        self.n = 2  # current PDF object number
+        self.n = 2  # current PDF object number - TODO: initialize this to 0
         self._graphics_state_obj_refs = None
         self._embedded_files_per_pdf_ref = None
         # Truthy only if a Structure Tree is added to the document:
@@ -57,24 +132,64 @@ class OutputProducer:
         through calls to ._insert_table_of_contents(), ._substitute_page_number(),
         _set_min_pdf_version() & _final_pdf_version()
         """
-        # * PDF object 1 is always the pages root
-        # * PDF object 2 is always the resources dictionary
-        # Those objects are not inserted first in the document though
         LOGGER.debug("Final doc sections size summary:")
         fpdf = self.fpdf
-        with self._trace_size("header"):
-            self._out(f"%PDF-{fpdf._final_pdf_version()}")
-        self._build_embedded_files_per_pdf_ref()
-        # It is important that pages are the first PDF objects inserted in the document,
-        # followed immediately by annotations: some parts of fpdf2 currently rely on that
-        # order of insertion (e.g. util.object_id_for_page):
-        with self._trace_size("pages"):
-            self._put_pages()
+        if fpdf._toc_placeholder:
+            fpdf._insert_table_of_contents()
+        if fpdf.str_alias_nb_pages:
+            fpdf._substitute_page_number()
+
+        resources_dict_obj_id = 2  # TODO: temporary, remove this line
+
+        # 1. Inserting all objects in the order required to build a linearized PDF:
+        # self._add_pdf_obj(LinearizationDictionary(
+        #     file_length=len(self.buffer),
+        #     pages_count=self.fpdf.pages_count,
+        #     first_page_obj_id=object_id_for_page(1),
+        # ))
+        self._build_embedded_files_per_pdf_ref()  # TODO: remove this and uncomment the lines above
+        page_objs = self._add_pages(resources_dict_obj_id)
+        pages_root_obj_id = self._add_pages_root(page_objs)  # TODO: move this before
+        assert pages_root_obj_id == 1  # TODO: remove this temporary assertion
+
+        # 2. Injecting all PDF object IDs required in some dictionaries:
+        for page_obj in page_objs:
+            page_obj.parent = pdf_ref(pages_root_obj_id)
+
+        # 3. Serializing - appending all PDF objects to the buffer:
+        assert not self.buffer
+        assert not self.offsets
+        self._out(f"%PDF-{fpdf._final_pdf_version()}")
+        for pdf_obj in self._pdf_objs:
+            self.offsets[pdf_obj.id] = len(self.buffer)
+            # TODO: insert call to: with self._trace_size("pages" / ...):
+            self._out(pdf_obj.serialize())
+
+        # self._put_xref_and_trailer(page=1)
+        # pages_root_obj_id = self._add_pages_root(page_objs)
+        # catalog_obj_id = self._put_catalog(pages_root_obj_id)
+        # resources_dict_obj_id = self._put_resources_dict()
+        # self._put_primary_hint_stream()
+
+        # Legacy code:
+
+        # It is important that after those permanent initial PDF objects,
+        # pages are the first PDF objects inserted in the document,
+        # followed immediately by annotations: some parts of fpdf2 currently rely
+        # on that order of insertion (e.g. util.object_id_for_page):
         with self._trace_size("annotations_objects"):
             sig_annotation_obj_id = self._put_annotations_as_objects()
+            if sig_annotation_obj_id:
+                assert False  # TODO: substitute SIG_ANNOT_OBJ_ID_PLACEHOLDER
         with self._trace_size("embedded_files"):
             self._put_embedded_files()
-        self._put_resources()  # trace_size is performed inside
+        with self._trace_size("resources.fonts"):
+            self._put_fonts()
+        with self._trace_size("resources.images"):
+            self._put_images()
+        with self._trace_size("resources.gfxstate"):
+            self._put_graphics_state_dicts()
+        resources_dict_obj_id = self._put_resources_dict()  # TODO: move this before
         if not fpdf.struct_builder.empty():
             with self._trace_size("structure_tree"):
                 self._put_structure_tree()
@@ -89,19 +204,9 @@ class OutputProducer:
             self._put_xmp_metadata()
         else:
             self._xmp_metadata_obj_id = False
-        with self._trace_size("info"):
-            info_obj_id = self._put_info()
-        with self._trace_size("catalog"):
-            catalog_obj_id = self._put_catalog(sig_annotation_obj_id)
-        with self._trace_size("xref"):  #  cross-reference table
-            startxref = len(self.buffer)
-            self._out("xref")
-            self._out(f"0 {self.n + 1}")
-            self._out("0000000000 65535 f ")
-            for i in range(1, self.n + 1):
-                self._out(f"{self.offsets[i]:010} 00000 n ")
-        with self._trace_size("trailer"):
-            self._put_trailer(info_obj_id, catalog_obj_id, startxref)
+        info_obj_id = self._put_info()
+        catalog_obj_id = self._put_catalog(pages_root_obj_id)  # TODO: move this before
+        self._put_xref_and_trailer(catalog_obj_id, info_obj_id)
         self._out("%%EOF")
         if fpdf._sign_key:
             self.buffer = sign_content(
@@ -115,12 +220,13 @@ class OutputProducer:
             )
         return self.buffer
 
-    def _out(self, s):
-        if not isinstance(s, bytes):
-            if not isinstance(s, str):
-                s = str(s)
-            s = s.encode("latin1")
-        self.buffer += s + b"\n"
+    def _out(self, data):
+        "Append data to the buffer"
+        if not isinstance(data, bytes):
+            if not isinstance(data, str):
+                data = str(data)
+            data = data.encode("latin1")
+        self.buffer += data + b"\n"
 
     def _newobj(self):
         "Begin a new PDF object"
@@ -129,11 +235,19 @@ class OutputProducer:
         self._out(f"{self.n} 0 obj")
         return self.n
 
+    def _add_pdf_obj(self, pdf_obj):
+        self.n += 1
+        pdf_obj.id = self.n
+        self._pdf_objs.append(pdf_obj)
+        return self.n
+
     def _build_embedded_files_per_pdf_ref(self):
         assert self._embedded_files_per_pdf_ref is None
         fpdf = self.fpdf
         self._embedded_files_per_pdf_ref = {}
-        first_annot_obj_id = object_id_for_page(fpdf.pages_count) + 2
+        first_annot_obj_id = (
+            object_id_for_page(fpdf.pages_count) + PERMANENT_INITIAL_OBJ_IDS_COUNT
+        )
         annotations_count = sum(
             len(page_annots_as_obj)
             for page_annots_as_obj in fpdf.annots_as_obj.values()
@@ -143,76 +257,87 @@ class OutputProducer:
         ):
             self._embedded_files_per_pdf_ref[pdf_ref(n)] = embedd_file
 
-    def _put_pages(self):
+    def _add_pages_root(self, page_objs):
         fpdf = self.fpdf
-        if fpdf._toc_placeholder:
-            fpdf._insert_table_of_contents()
-        if fpdf.str_alias_nb_pages:
-            fpdf._substitute_page_number()
         if fpdf.def_orientation == "P":
             dw_pt = fpdf.dw_pt
             dh_pt = fpdf.dh_pt
         else:
             dw_pt = fpdf.dh_pt
             dh_pt = fpdf.dw_pt
-        compression_filter = "/Filter /FlateDecode " if fpdf.compress else ""
+        pages_root_obj = PagesRoot(
+            kids=PDFArray(page_objs),
+            count=fpdf.pages_count,
+            media_box=f"[0 0 {dw_pt:.2f} {dh_pt:.2f}]",
+        )
+        pages_root_obj.id = 1
+        self._pdf_objs.append(pages_root_obj)
+        # self._add_pdf_obj(pages_root_obj)  # TODO: uncomment this and remove the 2 lines above
+        return pages_root_obj.id
+
+    def _add_pages(self, resources_dict_obj_id):
+        fpdf = self.fpdf
+        if fpdf.def_orientation == "P":
+            dw_pt = fpdf.dw_pt
+            dh_pt = fpdf.dh_pt
+        else:
+            dw_pt = fpdf.dh_pt
+            dh_pt = fpdf.dw_pt
 
         # The Annotations embedded as PDF objects
         # are added to the document just after all the pages,
         # hence we can deduce their object IDs:
-        annot_obj_id = object_id_for_page(fpdf.pages_count) + 2
-
-        for n in range(1, fpdf.pages_count + 1):
-            # Page
-            self._newobj()
-            self._out("<</Type /Page")
-            self._out(f"/Parent {pdf_ref(1)}")
-            page = fpdf.pages[n]
-            if page["duration"]:
-                self._out(f"/Dur {page['duration']}")
-            if page["transition"]:
-                self._out(f"/Trans {page['transition'].dict_as_string()}")
-            w_pt, h_pt = page["w_pt"], page["h_pt"]
-            if w_pt != dw_pt or h_pt != dh_pt:
-                self._out(f"/MediaBox [0 0 {w_pt:.2f} {h_pt:.2f}]")
-            self._out(f"/Resources {pdf_ref(2)}")
-            annot_obj_id = self._put_page_annotations(n, annot_obj_id)
-            if fpdf.pdf_version > "1.3":
-                self._out("/Group <</Type /Group /S /Transparency /CS /DeviceRGB>>")
-            spid = fpdf._struct_parents_id_per_page.get(self.n)
-            if spid is not None:
-                self._out(f"/StructParents {spid}")
-            self._out(f"/Contents {pdf_ref(self.n + 1)}>>")
-            self._out("endobj")
-
-            # Page content
-            content = page["content"]
-            p = zlib.compress(content) if fpdf.compress else content
-            self._newobj()
-            self._out(f"<<{compression_filter}/Length {len(p)}>>")
-            self._out(pdf_stream(p))
-            self._out("endobj")
-        # Pages root
-        self.offsets[1] = len(self.buffer)
-        self._out("1 0 obj")
-        self._out("<</Type /Pages")
-        self._out(
-            "/Kids ["
-            + " ".join(
-                pdf_ref(object_id_for_page(page))
-                for page in range(1, fpdf.pages_count + 1)
-            )
-            + "]"
+        annot_obj_id = (
+            object_id_for_page(fpdf.pages_count) + PERMANENT_INITIAL_OBJ_IDS_COUNT
         )
-        self._out(f"/Count {fpdf.pages_count}")
-        self._out(f"/MediaBox [0 0 {dw_pt:.2f} {dh_pt:.2f}]")
-        self._out(">>")
-        self._out("endobj")
 
-    def _put_page_annotations(self, page_number, annot_obj_id):
+        page_objs = []
+        for page_number in range(1, fpdf.pages_count + 1):
+            page_obj_id = self.n + 1
+            assert page_obj_id == object_id_for_page(page_number)
+            page = fpdf.pages[page_number]
+            w_pt, h_pt = page["w_pt"], page["h_pt"]
+            media_box = (
+                f"[0 0 {w_pt:.2f} {h_pt:.2f}]"
+                if w_pt != dw_pt or h_pt != dh_pt
+                else None
+            )
+            group = (
+                pdf_dict(
+                    {"/Type": "/Group", "/S": "/Transparency", "/CS": "/DeviceRGB"},
+                    field_join=" ",
+                )
+                if fpdf.pdf_version > "1.3"
+                else None
+            )
+            annots, annot_obj_id = self._build_page_annotations(
+                page_number, annot_obj_id
+            )
+            page_obj = PageObject(
+                media_box=media_box,
+                duration=page["duration"] or None,
+                transition=page["transition"].dict_as_string()
+                if page["transition"]
+                else None,
+                resources_dict_obj_id=resources_dict_obj_id,
+                annots=annots,
+                group=group,
+                spid=fpdf._struct_parents_id_per_page.get(page_obj_id),
+            )
+            self._add_pdf_obj(page_obj)
+            page_objs.append(page_obj)
+
+            cs_obj = PDFContentStream(contents=page["content"], compress=fpdf.compress)
+            cs_id = self._add_pdf_obj(cs_obj)
+            page_obj.contents = pdf_ref(cs_id)
+
+        return page_objs
+
+    def _build_page_annotations(self, page_number, annot_obj_id):
         fpdf = self.fpdf
         page_annots = fpdf.annots[page_number]
         page_annots_as_obj = fpdf.annots_as_obj[page_number]
+        annots = None
         if page_annots or page_annots_as_obj:
             # Annotations, e.g. links:
             annots = ""
@@ -228,8 +353,8 @@ class OutputProducer:
                 f"{annot_obj_id + i} 0 R" for i in range(len(page_annots_as_obj))
             )
             annot_obj_id += len(page_annots_as_obj)
-            self._out(f"/Annots [{annots}]")
-        return annot_obj_id
+            annots = f"/Annots [{annots}]"
+        return annots, annot_obj_id
 
     def _put_annotations_as_objects(self):
         fpdf = self.fpdf
@@ -245,6 +370,9 @@ class OutputProducer:
                 )
                 self._out("endobj")
                 if isinstance(annot.value, Signature):
+                    assert (
+                        sig_annotation_obj_id is None
+                    ), "A /Sig annotation is present on more than 1 page"
                     sig_annotation_obj_id = self.n
         return sig_annotation_obj_id
 
@@ -281,24 +409,12 @@ class OutputProducer:
             self._out("endobj")
             assert self._embedded_files_per_pdf_ref[pdf_ref(self.n)] == embedd_file
 
-    def _put_resources(self):
-        with self._trace_size("resources.fonts"):
-            self._put_fonts()
-        with self._trace_size("resources.images"):
-            self._put_images()
-        with self._trace_size("resources.gfxstate"):
-            self._put_graphics_state_dicts()
-
-        # Resource dictionary
-        with self._trace_size("resources.dict"):
-            self._put_resource_dict()
-
     def _put_fonts(self):
         fpdf = self.fpdf
-        flist = [(x[1]["i"], x[0], x[1]) for x in fpdf.fonts.items()]
+        flist = [(font["i"], font_name, font) for font_name, font in fpdf.fonts.items()]
         flist.sort()
         for _, font_name, font in flist:
-            fpdf.fonts[font_name]["n"] = self.n + 1
+            font["n"] = self.n + 1
             # Standard font
             if font["type"] == "core":
                 self._newobj()
@@ -576,9 +692,11 @@ class OutputProducer:
             self._out(state_dict)
             self._out("endobj")
 
-    def _put_resource_dict(self):
-        self.offsets[2] = len(self.buffer)
-        self._out("2 0 obj")
+    def _put_resources_dict(self):
+        # obj_id = self._newobj()  # TODO: uncomment this an remove the next 3 lines
+        obj_id = 2
+        self.offsets[obj_id] = len(self.buffer)
+        self._out(f"{obj_id} 0 obj")
         self._out("<<")
 
         # From section 10.1, "Procedure Sets", of PDF 1.7 spec:
@@ -588,20 +706,24 @@ class OutputProducer:
         # > (preferably, all of those listed in Table 10.1).
         self._out("/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]")
         self._out("/Font <<")
-        font_ids = [(x["i"], x["n"]) for x in self.fpdf.fonts.values()]
+        assert (
+            not self.fpdf.fonts or "n" in list(self.fpdf.fonts.values())[0]
+        ), "_put_fonts() must be called before _put_resources_dict()"
+        font_ids = [(font["i"], font["n"]) for font in self.fpdf.fonts.values()]
         font_ids.sort()
         for idx, n in font_ids:
             self._out(f"/F{idx} {pdf_ref(n)}")
         self._out(">>")
 
-        # if self.images: [TODO] uncomment this & indent the next 3 lines in order to save 15 bytes / page without image
-        self._put_xobjects()
+        if self.fpdf.images:
+            self._put_xobjects()
 
         if self.fpdf._drawing_graphics_state_registry:
             self._put_graphics_state_refs()
 
         self._out(">>")
         self._out("endobj")
+        return obj_id
 
     def _put_xobjects(self):
         self._out("/XObject <<")
@@ -673,28 +795,30 @@ class OutputProducer:
         self._out("endobj")
         return obj_id
 
-    def _put_catalog(self, sig_annotation_obj_id=None):
+    def _put_catalog(self, pages_root_obj_id):
         fpdf = self.fpdf
         obj_id = self._newobj()
         self._out("<<")
 
         catalog_d = {
             "/Type": "/Catalog",
-            # Pages is always the 1st object of the document, cf. _put_pages:
-            "/Pages": pdf_ref(1),
+            "/Pages": pdf_ref(pages_root_obj_id),
         }
         lang = enclose_in_parens(getattr(fpdf, "lang", None))
         if lang:
             catalog_d["/Lang"] = lang
-        if sig_annotation_obj_id:
+        if False:
+            assert False  # TODO: replace "if" by a check that a Signature annotation is defined
             flags = SignatureFlag.SIGNATURES_EXIST + SignatureFlag.APPEND_ONLY
             self._out(
-                f"/AcroForm <</Fields [{sig_annotation_obj_id} 0 R] /SigFlags {flags}>>"
+                f"/AcroForm <</Fields [{SIG_ANNOT_OBJ_ID_PLACEHOLDER} 0 R] /SigFlags {flags}>>"
             )
 
         if fpdf.zoom_mode in ZOOM_CONFIGS:
             zoom_config = [
-                pdf_ref(3),  # reference to object ID of the 1st page
+                pdf_ref(
+                    object_id_for_page(1)
+                ),  # reference to object ID of the 1st page
                 *ZOOM_CONFIGS[fpdf.zoom_mode],
             ]
         else:  # zoom_mode is a number, not one of the allowed strings:
@@ -707,25 +831,25 @@ class OutputProducer:
             catalog_d["/PageMode"] = fpdf.page_mode.value.pdf_repr()
         if fpdf.viewer_preferences:
             catalog_d["/ViewerPreferences"] = fpdf.viewer_preferences.serialize()
-        assert (
-            self._xmp_metadata_obj_id is not None
-        ), "ID of XMP metadata PDF object must be known"
+        # assert (
+        # self._xmp_metadata_obj_id is not None
+        # ), "ID of XMP metadata PDF object must be known"
         if self._xmp_metadata_obj_id:
             catalog_d["/Metadata"] = pdf_ref(self._xmp_metadata_obj_id)
-        assert (
-            self._struct_tree_root_obj_id is not None
-        ), "ID of root PDF object of the Structure Tree must be known"
+        # assert (
+        # self._struct_tree_root_obj_id is not None
+        # ), "ID of root PDF object of the Structure Tree must be known"
         if self._struct_tree_root_obj_id:
             catalog_d["/MarkInfo"] = pdf_dict({"/Marked": "true"})
             catalog_d["/StructTreeRoot"] = pdf_ref(self._struct_tree_root_obj_id)
-        assert (
-            self._outlines_obj_id is not None
-        ), "ID of Outlines PDF object must be known"
+        # assert (
+        # self._outlines_obj_id is not None
+        # ), "ID of Outlines PDF object must be known"
         if self._outlines_obj_id:
             catalog_d["/Outlines"] = pdf_ref(self._outlines_obj_id)
-        assert (
-            self._embedded_files_per_pdf_ref is not None
-        ), "ID of Embedded files must be known"
+        # assert (
+        # self._embedded_files_per_pdf_ref is not None
+        # ), "ID of Embedded files must be known"
         if self._embedded_files_per_pdf_ref:
             file_spec_names = [
                 f"{enclose_in_parens(file.basename)} {file.file_spec(pdf_ref)}"
@@ -740,13 +864,21 @@ class OutputProducer:
         self._out("endobj")
         return obj_id
 
-    def _put_trailer(self, info_obj_id, catalog_obj_id, startxref):
+    def _put_xref_and_trailer(self, catalog_obj_id, info_obj_id):
+        startxref = len(self.buffer)
+        self._out("xref")
+        self._out(f"0 {self.n + 1}")
+        self._out("0000000000 65535 f ")
+        for i in range(1, self.n + 1):
+            self._out(f"{self.offsets[i]:010} 00000 n")
         self._out("trailer")
         self._out("<<")
         self._out(f"/Size {self.n + 1}")
         self._out(f"/Root {pdf_ref(catalog_obj_id)}")
         self._out(f"/Info {pdf_ref(info_obj_id)}")
-        file_id = self.fpdf.file_id(self.buffer, self.fpdf.creation_date)
+        file_id = self.fpdf.file_id()
+        if file_id == -1:
+            file_id = self.fpdf._default_file_id(self.buffer)
         if file_id:
             self._out(f"/ID [{file_id}]")
         self._out(">>")
