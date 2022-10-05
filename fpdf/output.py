@@ -39,7 +39,7 @@ ZOOM_CONFIGS = {  # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
 }
 
 
-class LinearizationDictionary(PDFObject):
+class PDFLinearization(PDFObject):
     def __init__(self, file_length, pages_count, first_page_obj_id, **kwargs):
         super().__init__(**kwargs)
         _ = float("inf")  # unknown value
@@ -50,6 +50,62 @@ class LinearizationDictionary(PDFObject):
         self.e = _  # Offset of end of first page
         self.n = pages_count
         self.t = _  # Offset of first entry in main cross-reference table (part 11)
+
+
+class PDFFont(PDFObject):
+    def __init__(self, subtype, base_font, encoding=None, d_w=None, w=None, **kwargs):
+        super().__init__(**kwargs)
+        self.type = Name("Font")
+        self.subtype = Name(subtype)
+        self.base_font = Name(base_font)
+        self.encoding = Name(encoding) if encoding else None
+        self.d_w = d_w
+        self.w = w
+        self.descendant_fonts = None
+        self.to_unicode = None
+        self.c_i_d_system_info = None
+        self.font_descriptor = None
+        self.c_i_d_to_g_i_d_map = None
+
+
+class PDFFontDescriptor(PDFObject):
+    def __init__(
+        self,
+        ascent,
+        descent,
+        cap_height,
+        flags,
+        font_b_box,
+        italic_angle,
+        stem_v,
+        missing_width,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.type = Name("FontDescriptor")
+        self.ascent = ascent
+        self.descent = descent
+        self.cap_height = cap_height
+        self.flags = flags
+        self.font_b_box = font_b_box
+        self.italic_angle = italic_angle
+        self.stem_v = stem_v
+        self.missing_width = missing_width
+        self.font_name = None
+
+
+class CIDSystemInfo(PDFObject):
+    def __init__(self, registry, ordering, supplement, **kwargs):
+        super().__init__(**kwargs)
+        self.registry = enclose_in_parens(registry)
+        self.ordering = enclose_in_parens(ordering)
+        self.supplement = supplement
+
+
+class PDFFontStream(PDFContentStream):
+    def __init__(self, contents, **kwargs):
+        super().__init__(contents=contents, compress=True, **kwargs)
+        self.length1 = len(contents)
 
 
 class PageObject(PDFObject):
@@ -129,7 +185,7 @@ class OutputProducer:
 
         # 1. Insert all objects in the order required to build a linearized PDF,
         #    and assign IDs to those objects:
-        # self._add_pdf_obj(LinearizationDictionary(
+        # self._add_pdf_obj(PDFLinearization(
         #     file_length=len(self.buffer),
         #     pages_count=self.fpdf.pages_count,
         #     first_page_obj_id=object_id_for_page(1),
@@ -140,6 +196,7 @@ class OutputProducer:
         sig_annotation_obj_id = self._add_annotations_as_objects()
         for embedded_file in self.fpdf.embedded_files:
             self._add_pdf_obj(embedded_file, "embedded_files")
+        self._add_fonts()
 
         # 2. Inject all PDF object references required:
         for page_obj in page_objs:
@@ -169,11 +226,9 @@ class OutputProducer:
         # self._add_primary_hint_stream()
 
         # Legacy code being refactored (WIP):
-        with self._trace_size("resources.fonts"):
-            self._put_fonts()
-        with self._trace_size("resources.images"):
+        with self._trace_size("images"):
             self._put_images()
-        with self._trace_size("resources.gfxstate"):
+        with self._trace_size("gfxstate"):
             self._put_graphics_state_dicts()
         resources_dict_obj_id = self._put_resources_dict()  # TODO: move this before
         if not fpdf.struct_builder.empty():
@@ -316,22 +371,23 @@ class OutputProducer:
                     sig_annotation_obj_id = obj_id
         return sig_annotation_obj_id
 
-    def _put_fonts(self):
+    def _add_fonts(self):
         fpdf = self.fpdf
-        flist = [(font["i"], font_name, font) for font_name, font in fpdf.fonts.items()]
-        flist.sort()
-        for _, font_name, font in flist:
+        fonts = [(font["i"], font) for font in fpdf.fonts.values()]
+        fonts.sort()
+        for _, font in fonts:
             font["n"] = self.n + 1
             # Standard font
             if font["type"] == "core":
-                self._newobj()
-                self._out("<</Type /Font")
-                self._out(f"/BaseFont /{font['name']}")
-                self._out("/Subtype /Type1")
-                if font["name"] not in ("Symbol", "ZapfDingbats"):
-                    self._out("/Encoding /WinAnsiEncoding")
-                self._out(">>")
-                self._out("endobj")
+                encoding = (
+                    "WinAnsiEncoding"
+                    if font["name"] not in ("Symbol", "ZapfDingbats")
+                    else None
+                )
+                core_font_obj = PDFFont(
+                    subtype="Type1", base_font=font["name"], encoding=encoding
+                )
+                self._add_pdf_obj(core_font_obj, "fonts")
             elif font["type"] == "TTF":
                 fontname = f"MPDFAA+{font['name']}"
 
@@ -390,37 +446,24 @@ class OutputProducer:
 
                 output.seek(0)
                 ttfontstream = output.read()
-                ttfontsize = len(ttfontstream)
-                fontstream = zlib.compress(ttfontstream)
 
-                # Type0 Font
                 # A composite font - a font composed of other fonts,
                 # organized hierarchically
-                self._newobj()
-                self._out("<</Type /Font")
-                self._out("/Subtype /Type0")
-                self._out(f"/BaseFont /{fontname}")
-                self._out("/Encoding /Identity-H")
-                self._out(f"/DescendantFonts [{pdf_ref(self.n + 1)}]")
-                self._out(f"/ToUnicode {pdf_ref(self.n + 2)}")
-                self._out(">>")
-                self._out("endobj")
+                composite_font_obj = PDFFont(
+                    subtype="Type0", base_font=fontname, encoding="Identity-H"
+                )
+                self._add_pdf_obj(composite_font_obj, "fonts")
 
-                # CIDFontType2
                 # A CIDFont whose glyph descriptions are based on
                 # TrueType font technology
-                self._newobj()
-                self._out("<</Type /Font")
-                self._out("/Subtype /CIDFontType2")
-                self._out(f"/BaseFont /{fontname}")
-                self._out(f"/CIDSystemInfo {pdf_ref(self.n + 2)}")
-                self._out(f"/FontDescriptor {pdf_ref(self.n + 3)}")
-                if font["desc"].get("MissingWidth"):
-                    self._out(f"/DW {font['desc']['MissingWidth']}")
-                self._out(_put_TT_font_widths(font, max(uni_to_new_code_char)))
-                self._out(f"/CIDToGIDMap {pdf_ref(self.n + 4)}")
-                self._out(">>")
-                self._out("endobj")
+                cid_font_obj = PDFFont(
+                    subtype="CIDFontType2",
+                    base_font=fontname,
+                    d_w=font["desc"].missing_width,
+                    w=_tt_font_widths(font, max(uni_to_new_code_char)),
+                )
+                self._add_pdf_obj(cid_font_obj, "fonts")
+                composite_font_obj.descendant_fonts = PDFArray([cid_font_obj])
 
                 # bfChar
                 # This table informs the PDF reader about the unicode
@@ -440,9 +483,7 @@ class OutputProducer:
                     else:
                         bfChar.append(f"<{code_mapped:04X}> <{code:04X}>\n")
 
-                # ToUnicode
-                self._newobj()
-                toUni = (
+                to_unicode_obj = PDFContentStream(
                     "/CIDInit /ProcSet findresource begin\n"
                     "12 dict begin\n"
                     "begincmap\n"
@@ -464,27 +505,19 @@ class OutputProducer:
                     "end\n"
                     "end"
                 )
-                self._out(f"<</Length {len(toUni)}>>")
-                self._out(pdf_stream(toUni))
-                self._out("endobj")
+                self._add_pdf_obj(to_unicode_obj, "fonts")
+                composite_font_obj.to_unicode = pdf_ref(to_unicode_obj.id)
 
-                # CIDSystemInfo dictionary
-                self._newobj()
-                self._out("<</Registry (Adobe)")
-                self._out("/Ordering (UCS)")
-                self._out("/Supplement 0")
-                self._out(">>")
-                self._out("endobj")
+                cid_system_info_obj = CIDSystemInfo(
+                    registry="Adobe", ordering="UCS", supplement=0
+                )
+                self._add_pdf_obj(cid_system_info_obj, "fonts")
+                cid_font_obj.c_i_d_system_info = pdf_ref(cid_system_info_obj.id)
 
-                # Font descriptor
-                self._newobj()
-                self._out("<</Type /FontDescriptor")
-                self._out("/FontName /" + fontname)
-                for key, value in font["desc"].items():
-                    self._out(f" /{key} {value}")
-                self._out(f"/FontFile2 {pdf_ref(self.n + 2)}")
-                self._out(">>")
-                self._out("endobj")
+                font_descriptor_obj = font["desc"]
+                font_descriptor_obj.font_name = Name(fontname)
+                self._add_pdf_obj(font_descriptor_obj, "fonts")
+                cid_font_obj.font_descriptor = pdf_ref(font_descriptor_obj.id)
 
                 # Embed CIDToGIDMap
                 # A specification of the mapping from CIDs to glyph indices
@@ -495,23 +528,15 @@ class OutputProducer:
                 cid_to_gid_map = "".join(cid_to_gid_map)
 
                 # manage binary data as latin1 until PEP461-like function is implemented
-                cid_to_gid_map = zlib.compress(cid_to_gid_map.encode("latin1"))
+                cid_to_gid_map_obj = PDFContentStream(
+                    contents=cid_to_gid_map.encode("latin1"), compress=True
+                )
+                self._add_pdf_obj(cid_to_gid_map_obj, "fonts")
+                cid_font_obj.c_i_d_to_g_i_d_map = pdf_ref(cid_to_gid_map_obj.id)
 
-                self._newobj()
-                self._out(f"<</Length {len(cid_to_gid_map)}")
-                self._out("/Filter /FlateDecode")
-                self._out(">>")
-                self._out(pdf_stream(cid_to_gid_map))
-                self._out("endobj")
-
-                # Font file
-                self._newobj()
-                self._out(f"<</Length {len(fontstream)}")
-                self._out("/Filter /FlateDecode")
-                self._out(f"/Length1 {ttfontsize}")
-                self._out(">>")
-                self._out(pdf_stream(fontstream))
-                self._out("endobj")
+                font_file_cs_obj = PDFFontStream(contents=ttfontstream)
+                self._add_pdf_obj(font_file_cs_obj, "fonts")
+                font_descriptor_obj.font_file2 = pdf_ref(font_file_cs_obj.id)
 
     def _put_images(self):
         for img_info in sorted(
@@ -795,7 +820,7 @@ class OutputProducer:
         LOGGER.debug("- %s.size: %s", label, _sizeof_fmt(len(self.buffer) - prev_size))
 
 
-def _put_TT_font_widths(font, maxUni):
+def _tt_font_widths(font, maxUni):
     rangeid = 0
     range_ = {}
     range_interval = {}
@@ -865,7 +890,7 @@ def _put_TT_font_widths(font, maxUni):
             w.append(f" {k} {k + len(ws) - 1} {ws[0]}")
         else:
             w.append(f" {k} [ {' '.join(str(int(h)) for h in ws)} ]\n")
-    return f"/W [{''.join(w)}]"
+    return f"[{''.join(w)}]"
 
 
 def _sizeof_fmt(num, suffix="B"):

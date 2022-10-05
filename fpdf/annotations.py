@@ -110,8 +110,6 @@ class AnnotationDict(PDFAnnotation):
 
 
 class PDFEmbeddedFile(PDFContentStream):
-    __slots__ = ("_id", "_contents", "filter", "length", "type", "params")
-
     def __init__(
         self,
         basename: str,

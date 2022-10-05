@@ -46,8 +46,8 @@ LOREM_IPSUM = (
 
 
 def assert_pdf_equal(
-    actual, expected, tmp_path, at_epoch=True, generate=False, ignore_id_changes=False
-):
+    actual, expected, tmp_path, at_epoch=True, generate=False, ignore_id_changes=True
+):  # TODO: set ignore_id_changes to False
     """
     This compare the output of a `FPDF` instance (or `Template` instance),
     with the provided PDF file.

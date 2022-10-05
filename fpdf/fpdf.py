@@ -72,7 +72,7 @@ from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
 from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
 from .line_break import Fragment, MultiLineBreak, TextLine
-from .output import OutputProducer, ZOOM_CONFIGS
+from .output import OutputProducer, PDFFontDescriptor, ZOOM_CONFIGS
 from .outline import OutlineSection
 from .recorder import FPDFRecorder
 from .structure_tree import MarkedContent, StructureTreeBuilder
@@ -1752,19 +1752,19 @@ class FPDF(GraphicsStateMixin):
         if font["OS/2"].usWeightClass >= 600:
             flags |= FontDescriptorFlags.FORCE_BOLD
 
-        desc = {
-            "Ascent": round(font["hhea"].ascent * scale),
-            "Descent": round(font["hhea"].descent * scale),
-            "CapHeight": round(cap_height * scale),
-            "Flags": flags.value,
-            "FontBBox": (
+        desc = PDFFontDescriptor(
+            ascent=round(font["hhea"].ascent * scale),
+            descent=round(font["hhea"].descent * scale),
+            cap_height=round(cap_height * scale),
+            flags=flags,
+            font_b_box=(
                 f"[{font['head'].xMin * scale:.0f} {font['head'].yMin * scale:.0f}"
                 f" {font['head'].xMax * scale:.0f} {font['head'].yMax * scale:.0f}]"
             ),
-            "ItalicAngle": int(font["post"].italicAngle),
-            "StemV": round(50 + int(pow((font["OS/2"].usWeightClass / 65), 2))),
-            "MissingWidth": default_width,
-        }
+            italic_angle=int(font["post"].italicAngle),
+            stem_v=round(50 + int(pow((font["OS/2"].usWeightClass / 65), 2))),
+            missing_width=default_width,
+        )
 
         # a map unicode_char -> char_width
         char_widths = defaultdict(lambda: default_width)
