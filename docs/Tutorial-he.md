@@ -67,30 +67,15 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 הלוגו מודפס עם מתודת ה[image](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) ע"י ציון הנקודה השמאלית-עליונה ואת הרוחב. הגובה מחושב אוטומטית לפי מידות התמונה.
 
-To print the page number, a null value is passed as the cell width. It means
-that the cell should extend up to the right margin of the page; it is handy to
-center text. The current page number is returned by
-the [page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) method; as for
-the total number of pages, it is obtained by means of the special value `{nb}`
-which will be substituted on document closure (this special value can changed by 
-[alias_nb_pages()](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages)).
-Note the use of the [set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) method which allows to set
-position at an absolute location in the page, starting from the top or the
-bottom.
+על מנת להדפיס את מספר העמוד, ניתן להעביר ערך null כרוחב התא. כך התא יתרחב עד השול הימני של העמוד; זה שימושי כאשר צריך למרכז את הטקסט. מספר העמוד הנוכחי חוזר ממתודת ה[page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no); לגבי מספר העמודים הכולל, ניתן להשיג נתון זה מהערך המיוחד `{nb}` שיוחלף בסגירת המסמך (ניתן לשנות ערך זה ע"י שימוש ב[alias_nb_pages()](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages)).
+שימו לב למתודה [set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) שמאפשרת להגדיר פוזיציה אבסולוטית בדף, מראש או תחתית העמוד.
 
-Another interesting feature is used here: the automatic page breaking. As soon
-as a cell would cross a limit in the page (at 2 centimeters from the bottom by
-default), a break is performed and the font restored. Although the header and
-footer select their own font (`helvetica`), the body continues with `Times`.
-This mechanism of automatic restoration also applies to colors and line width.
-The limit which triggers page breaks can be set with 
-[set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
+נעשה גם שימוש  בפיצ'ק נוסף כאן: מעבר עמוד אוטומטי. ברגע שתא יחרוד מגבולות הדף (בברירת מחדל 2 סנטימטר מהסוף), מתתבצע מעבר עמוד והגופן חוזר להיות מה שהוגדר עבור גוף העמוד. למרות שהכותרת והכותרת תחתותנה משתמשות בגופן (`helvetica`), גוף העמוד ממשיך עם `Times`. המנגנון הזה תקף גם לגבי צבע ורוחב שורה. הגבול שמפעיל את מעבר העמוד האוטומטי ניתן לשינוי באמצעות [set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
 
 
-## Tuto 3 - Line breaks and colors ##
+## 3 - שורות רווח וצבעים ##
 
-Let's continue with an example which prints justified paragraphs. It also
-illustrates the use of colors.
+נמשיך עם דוגמא שמדפיסה פסקאות ומדגימה שימוש בצבעים.
 
 ```python
 {% include "../tutorial/tuto3.py" %}
@@ -100,30 +85,15 @@ illustrates the use of colors.
 
 [Jules Verne text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-The [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) method allows determining
-the length of a string in the current font, which is used here to calculate the
-position and the width of the frame surrounding the title. Then colors are set
-(via [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color),
-[set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) and 
-[set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) and the thickness of the line is set
-to 1 mm (against 0.2 by default) with
-[set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Finally, we output the cell (the
-last parameter to true indicates that the background must be filled).
+מתודת ה[get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) מאפשרת לקבוע אורך מחרוזת בגופן הנוכחי, שבדוגמא זו משמש כדי לחשב את הפוזיציה והרוחב של המסגרת המקיפה את הכותרת. לאחר מכן מוגדרים צבעים
+(באמצעות [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) ו [set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) and   ועובי השורה מוגזר למילימטר (בניגוד ל0.2 מילימטר כברירת מחדל) באמצעות [set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). לבסוף אנחנו מדפיסים את התא (הפרמטר האחרון true מעיד שהרקע צריך להיות מלא).
 
-The method used to print the paragraphs is [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). Text is justified by default.
-Each time a line reaches the right extremity of the cell or a carriage return character (`\n`) is met,
-a line break is issued and a new cell automatically created under the current one.
-An automatic break is performed at the location of the nearest space or soft-hyphen (`\u00ad`) character before the right limit.
-A soft-hyphen will be replaced by a normal hyphen when triggering a line break, and ignored otherwise.
 
-Two document properties are defined: the title 
-([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) and the author 
-([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Properties can be viewed by two means.
-First is to open the document directly with Acrobat Reader, go to the File menu
-and choose the Document Properties option. The second, also available from the
-plug-in, is to right-click and select Document Properties.
+המתודה בה משתמשים להדפסת הפסקא היא [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). טקסט נחתך אוטומטית בסוף השורה בברירת מחדל. בכל פעם ששורה מגיעה לקצה הימני של התא או שנמצא התו (`n\`), נוצרת שורה חדשה בתא חדש מתחת לנוכחי. הפסקת שורה אוטומטית נוצרת במיקום של הרווח הקרוב או תו בלתי-נראה (`u00ad\`) לפני סוף השורה. התו יוחלף במקף אם הופעלה הפסקת שורה.
 
-## Tuto 4 - Multi Columns ##
+שני תכונות מסמך הוגדרו: שם המסמך ([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) ויוצר ([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). ניתן לצפות בתכונות בשני אופנים. אופציה ראשונה היא לפתוח את המסמך בAdobe Reader ישירות, ואז ב'תפריט' לבחור 'תכונות מסמך'. אופציה שניה, זמינה גם באמצעות תוסף, זה לחצן ימני ואז לבחור תכונות מסמך.
+
+## 4 - עמודות מרובות ##
 
  This example is a variant of the previous one, showing how to lay the text across multiple columns.
 
