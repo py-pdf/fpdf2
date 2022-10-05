@@ -1,4 +1,5 @@
 <div dir="rtl">
+
 # מדריך #
 
 תיעוד מלא: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
@@ -15,7 +16,7 @@
 
 [תוצר](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
 
-אחרי שכללנו את קובץ הספריה, יצרנו אובייקט `FPDF`
+אחרי שכללנו את קובץ הספריה, יצרנו אובייקט `FPDF`.
 הבנאי של [FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF)  משתמש כאן בערכים דיפולטיביים:
 דפים בפורמט A4 לאורך והמידות במילימטרים. ניתן לציין זאת במפורש באמצעות:
 
@@ -160,4 +161,6 @@ This tutorial will explain several ways to insert links inside a pdf
 To create the external link using an image, we used
  [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
 
-ניתן גם להשתמש במתודה `write_html()` כדי לשנות סגנונות גופן ולהוסיף קישורים. זהו פרסר של html, שמאפשר להוסיף טקסט, לשנות את הסגנון ולהוסיף קישורים במאצעות html.
+ניתן גם להשתמש במתודה `write_html()` כדי לשנות סגנונות גופן ולהוסיף קישורים. זהו פרסר של html, שמאפשר להוסיף טקסט, לשנות את הסגנון ולהוסיף קישורים באמצעות html.
+
+</div>
