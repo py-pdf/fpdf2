@@ -113,10 +113,9 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 ## 5 - יצירת טבלאות ##
 
-This tutorial will explain how to create tables easily.
+דוגמא זו מסבירה איך ליצור טבלאות בקלות.
 
-The code will create three different tables to explain what
- can be achieved with some simple adjustments.
+הקוד ייצור שלוש טבלאות שונות על מנת להראות מה ניתן להשיג עם שינוים קלים.
 
 ```python
 {% include "../tutorial/tuto5.py" %}
@@ -125,33 +124,18 @@ The code will create three different tables to explain what
 [תוצר](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
 [Countries text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
 
-Since a table is just a collection of cells, it is natural to build one
- from them.
+מאחר וטבלה היא בסה"כ אוסף של תאים, טבעי שכך נבנה טבלאות.
 
-The first example is achieved in the most basic way possible: simple framed
- cells, all of the same size and left aligned. The result is rudimentary but
- very quick to obtain.
+הדוגמא הראשונה נוצרת באופן הבסיסי ביותר שאפשר: תאים בגדלים שווים עם מסגרות ומיושרים לשמאל.התוצאה היא בסיסית אבל קלה מאוד להשגה.
 
-The second table brings some improvements: each column has its own width,
- titles are centered and figures right aligned. Moreover, horizontal lines have
- been removed. This is done by means of the border parameter of the Cell()
- method, which specifies which sides of the cell must be drawn. Here we want
- the left (L) and right (R) ones. Now only the problem of the horizontal line
- to finish the table remains. There are two possibilities to solv it: check
- for the last line in the loop, in which case we use LRB for the border
- parameter; or, as done here, add the line once the loop is over.
+הטבלה השניה מציגה כמה שיפורים: לכל עמודה יש רוחב משלה, כותרות ממורכזות ותמונות מיושרות לימין. הוסרו קווים אופקיים. זה נעשה על ידי תכונות הגבול של המתודה ()Cell, שמציינת איזה גבולות של התא להדפיס. כאן אנחנו רוצים את הגבול השמאלי (L) והימני (R). כעת נותרה הבעיה של הקווים האופקיים. ישנן שתי אפשרויות לפתור בעיה זו: לבדוק את הקו האחרון בלולאה, במקרה זה נשתמש בLRB עבור פרמטר הגבול; או לחלופין, כמו שעשינו כאן, להוסיף את הקו בסוף הלולאה.
 
-The third table is similar to the second one but uses colors. Fill, text and
- line colors are simply specified. Alternate coloring for rows is obtained by
- using alternatively transparent and filled cells.
+הטבלה השלישית דומה לשניה אבל עושה שימוש בצבעים. צבעי המילוי, טקסט והקווים מצויינים במפורש. שינוי הצבעים נעשה על ידי שימוש בתאים שקופים ומלאים לסירוגין.
 
 ## 6 - יצירת קישורים וערבוב סגנונות טקסט ##
 
-This tutorial will explain several ways to insert links inside a pdf document,
- as well as adding links to external sources.
-
- It will also show several ways we can use different text styles,
- (bold, italic, underline) within the same text.
+דוגמא זו מציגה מספר דרכים להוסיף קישורים למסמך וקישורים חיצוניים. בנוסף הדוגמא ממחישה שימוש בסגנונות שונים של עיצוב טקסט (מודגש, נטוי, קו תחתון) באותו טקסט.
+This tutorial will explain several ways to insert links inside a pdf 
 
 ```python
 {% include "../tutorial/tuto6.py" %}
@@ -160,43 +144,20 @@ This tutorial will explain several ways to insert links inside a pdf document,
 [תוצר](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
 [fpdf2-logo](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
 
-The new method shown here to print text is
- [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
-. It is very similar to
- [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
- , the key differences being:
+המתודה החדשה שמשומשת כאן כדי להדפיס טקסט היא  [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). דומה מאוד ל[multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell), כאשר ההבדלים העיקריים הם:
 
-- The end of line is at the right margin and the next line begins at the left
- margin.
-- The current position moves to the end of the text.
+- סוף השורה הוא בגבול הימני והשורה הבאה מתחילה בגבול השמאלי
+- הפוזיציה הנוכחית זזה לסוף שורת הטקסט
 
-The method therefore allows us to write a chunk of text, alter the font style,
- and continue from the exact place we left off.
-On the other hand, its main drawback is that we cannot justify the text like
- we do with the
- [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
- method.
+לפיכך המתודה מאפשרת לנו לכתוב קטע טקסט, לשנות את סגנון הגופן, ולהמשיך מאותו מקום שעצרנו. מצד שני, החסרון העיקרי הוא שלא ניתן ליישר את הטקסט כמו ב[multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell).
 
-In the first page of the example, we used
- [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
- for this purpose. The beginning of the sentence is written in regular style
- text, then using the
- [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font)
- method, we switched to underline and finished the sentence.
+בעמוד הראשון של הדוגמא השתמשנו [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) למטרה זו. תחילת המשפט נכתב בסגנון טקסט רגיל ואז על ידי שימוש במתודה [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) החלפנו לטקסט עם קו תחתון לסיום המשפט.
 
-To add an internal link pointing to the second page, we used the
- [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link)
- method, which creates a clickable area which we named "link" that directs to
- another place within the document. On the second page, we used
- [set_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link)
- to define the destination area for the link we just created.
+כדי להוסיף קישור פנימי שמוביל לעמוד השני השתמשנו במתודה [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link) שוצרת איזור ניתן להקלקה שנתנו לו את השם "קישור" שמוביל לאיזור אחר באותו המסמך. בעמוד השני השתמשנו ב[set_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link) על מנת להגדיר את האיזור אליו הקישור שיצרנו מוביל.
+
+על מנת ליצור קישור חיצני באמצעות תמונה, השתמשנו במתודה [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). למתודה יש אופציה לקבל קישור כאחד הפרמטרים שלה. הקישור יכול להיות פנימי או חיצוני.
 
 To create the external link using an image, we used
  [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
-. The method has the
- option to pass a link as one of its arguments. The link can be both internal
- or external.
 
-As an alternative, another option to change the font style and add links is to
- use the `write_html()` method. It is an html parser, which allows adding text,
- changing font style and adding links using html.
+ניתן גם להשתמש במתודה `write_html()` כדי לשנות סגנונות גופן ולהוסיף קישורים. זהו פרסר של html, שמאפשר להוסיף טקסט, לשנות את הסגנון ולהוסיף קישורים במאצעות html.
