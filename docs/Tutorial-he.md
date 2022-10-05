@@ -144,12 +144,12 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 [תוצר](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
 [fpdf2-logo](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
 
-המתודה החדשה שמשומשת כאן כדי להדפיס טקסט היא  [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). דומה מאוד ל[multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell), כאשר ההבדלים העיקריים הם:
+המתודה החדשה שמשומשת כאן כדי להדפיס טקסט היא  [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). דומה מאוד ל<<[multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell), כאשר ההבדלים העיקריים הם:
 
 - סוף השורה הוא בגבול הימני והשורה הבאה מתחילה בגבול השמאלי
 - הפוזיציה הנוכחית זזה לסוף שורת הטקסט
 
-לפיכך המתודה מאפשרת לנו לכתוב קטע טקסט, לשנות את סגנון הגופן, ולהמשיך מאותו מקום שעצרנו. מצד שני, החסרון העיקרי הוא שלא ניתן ליישר את הטקסט כמו ב[multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell).
+לפיכך המתודה מאפשרת לנו לכתוב קטע טקסט, לשנות את סגנון הגופן, ולהמשיך מאותו מקום שעצרנו. מצד שני, החסרון העיקרי הוא שלא ניתן ליישר את הטקסט כמו ב<div dir="ltr">[multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)</div>.
 
 בעמוד הראשון של הדוגמא השתמשנו [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) למטרה זו. תחילת המשפט נכתב בסגנון טקסט רגיל ואז על ידי שימוש במתודה [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) החלפנו לטקסט עם קו תחתון לסיום המשפט.
 
