@@ -55,7 +55,7 @@ def test_transition_errors():
     pdf = FPDF()
     pdf.set_font("Helvetica", size=120)
     with pytest.raises(NotImplementedError):
-        Transition().dict_as_string()
+        Transition().serialize()
 
     with pytest.raises(ValueError):
         pdf.add_page(transition=SplitTransition("A", "B"))

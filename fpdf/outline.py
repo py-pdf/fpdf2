@@ -74,11 +74,11 @@ def serialize_outline(sections, first_object_id=1, output_producer=None):
     Args:
         sections (sequence): list of OutlineSection
     """
-    outline, outline_items = build_outline(sections, first_object_id, output_producer)
+    outline, outline_items = build_outline(sections, first_object_id)
     return outline_as_str(outline, outline_items, output_producer)
 
 
-def build_outline(sections, first_object_id, output_producer):
+def build_outline(sections, first_object_id):
     outline = OutlineDictionary(id=first_object_id)
     n = first_object_id + 1
     outline_items = []
@@ -86,7 +86,7 @@ def build_outline(sections, first_object_id, output_producer):
     for section in sections:
         outline_item = OutlineItemDictionary(
             title=section.name,
-            dest=section.dest.as_str(output_producer.fpdf if output_producer else None),
+            dest=section.dest.serialize(),
             struct_elem=section.struct_elem,
             id=n,
         )

@@ -2,7 +2,7 @@ from abc import ABC
 
 
 class Transition(ABC):
-    def dict_as_string(self):
+    def serialize(self):
         raise NotImplementedError
 
 
@@ -19,7 +19,7 @@ class SplitTransition(Transition):
             )
         self.direction = direction
 
-    def dict_as_string(self):
+    def serialize(self):
         return f"<</Type /Trans /S /Split /DM /{self.dimension} /M /{self.direction}>>"
 
 
@@ -31,7 +31,7 @@ class BlindsTransition(Transition):
             )
         self.dimension = dimension
 
-    def dict_as_string(self):
+    def serialize(self):
         return f"<</Type /Trans /S /Blinds /DM /{self.dimension}>>"
 
 
@@ -43,7 +43,7 @@ class BoxTransition(Transition):
             )
         self.direction = direction
 
-    def dict_as_string(self):
+    def serialize(self):
         return f"<</Type /Trans /S /Blinds /M /{self.direction}>>"
 
 
@@ -55,12 +55,12 @@ class WipeTransition(Transition):
             )
         self.direction = direction
 
-    def dict_as_string(self):
+    def serialize(self):
         return f"<</Type /Trans /S /Wipe /Di /{self.direction}>>"
 
 
 class DissolveTransition(Transition):
-    def dict_as_string(self):
+    def serialize(self):
         return "<</Type /Trans /S /Dissolve>>"
 
 
@@ -70,7 +70,7 @@ class GlitterTransition(Transition):
             raise ValueError(f"Unsupported direction '{direction}', must 0, 270 or 315")
         self.direction = direction
 
-    def dict_as_string(self):
+    def serialize(self):
         return f"<</Type /Trans /S /Glitter /Di /{self.direction}>>"
 
 
@@ -87,7 +87,7 @@ class FlyTransition(Transition):
             )
         self.direction = direction
 
-    def dict_as_string(self):
+    def serialize(self):
         return (
             f"<</Type /Trans /S /Glitter /M /{self.dimension} /Di /{self.direction}>>"
         )
@@ -99,7 +99,7 @@ class PushTransition(Transition):
             raise ValueError(f"Unsupported direction '{direction}', must 0 or 270")
         self.direction = direction
 
-    def dict_as_string(self):
+    def serialize(self):
         return f"<</Type /Trans /S /Push /Di /{self.direction}>>"
 
 
@@ -109,7 +109,7 @@ class CoverTransition(Transition):
             raise ValueError(f"Unsupported direction '{direction}', must 0 or 270")
         self.direction = direction
 
-    def dict_as_string(self):
+    def serialize(self):
         return f"<</Type /Trans /S /Cover /Di /{self.direction}>>"
 
 
@@ -119,10 +119,10 @@ class UncoverTransition(Transition):
             raise ValueError(f"Unsupported direction '{direction}', must 0 or 270")
         self.direction = direction
 
-    def dict_as_string(self):
+    def serialize(self):
         return f"<</Type /Trans /S /Uncover /Di /{self.direction}>>"
 
 
 class FadeTransition(Transition):
-    def dict_as_string(self):
+    def serialize(self):
         return "<</Type /Fade /S /Dissolve>>"

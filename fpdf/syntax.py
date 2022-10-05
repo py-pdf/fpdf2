@@ -146,9 +146,6 @@ class PDFObject:
     Main features of this class:
     * delay ID assignement
     * implement serializing
-
-    To ensure consistency on how the serialize() method operates,
-    child classes must define a __slots__ attribute.
     """
 
     # pylint: disable=redefined-builtin
@@ -172,12 +169,15 @@ class PDFObject:
         return iobj_ref(self.id)
 
     def serialize(self, output_producer=None, obj_dict=None):
+        "Serialize the PDF object as an obj<</>>endobj text block"
         output = []
-        if output_producer:
+        if output_producer:  # TODO: remove this parameter
             # pylint: disable=protected-access
             appender = output_producer._out
             new_obj_id = output_producer._newobj()
-            assert self.id == new_obj_id, f"Something went wrong in PDFObject ID assignment: .id={self.id} new_obj_id={new_obj_id}"
+            assert (
+                self.id == new_obj_id
+            ), f"Something went wrong in PDFObject ID assignment: .id={self.id} new_obj_id={new_obj_id}"
         else:
             appender = output.append
             appender(f"{self.id} 0 obj")
@@ -194,7 +194,7 @@ class PDFObject:
 
     def content_stream(self):
         "Subclass can override this method to indicate the presence of a content stream"
-        return None
+        return b""
 
     def _build_obj_dict(self):
         """
@@ -215,6 +215,7 @@ class PDFContentStream(PDFObject):
         self.filter = Name("FlateDecode") if compress else None
         self.length = len(self._contents)
 
+    # method override
     def content_stream(self):
         return self._contents
 
@@ -240,7 +241,9 @@ def build_obj_dict(key_values):
             value = value.ref
         elif hasattr(value, "pdf_repr"):  # e.g. Name
             value = value.pdf_repr()
-        elif hasattr(value, "serialize"):  # e.g. PDFArray & PDFString
+        elif hasattr(
+            value, "serialize"
+        ):  # e.g. PDFArray, PDFString, Destination, Action...
             value = value.serialize()
         elif isinstance(value, bool):
             value = str(value).lower()
@@ -280,28 +283,24 @@ class PDFArray(list):
 
 # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
 class Destination(ABC):
-    def as_str(self, pdf=None):
+    def serialize(self):
         raise NotImplementedError
 
 
 class DestinationXYZ(Destination):
-    def __init__(self, page, x=0, y=0, zoom="null", page_as_obj_id=True):
+    def __init__(self, page, top, left=0, zoom="null", page_as_obj_id=True):
         self.page = page
-        self.x = x
-        self.y = y
+        self.top = top
+        self.left = left
         self.zoom = zoom
         self.page_as_obj_id = page_as_obj_id
 
     def __repr__(self):
-        return f'DestinationXYZ(page={self.page}, x={self.x}, y={self.y}, zoom="{self.zoom}", page_as_obj_id={self.page_as_obj_id})'
+        return f'DestinationXYZ(page={self.page}, top={self.top}, left={self.left}, zoom="{self.zoom}", page_as_obj_id={self.page_as_obj_id})'
 
-    def as_str(self, pdf=None):
-        left = self.x * pdf.k if pdf else self.x
-        if isinstance(left, float):
-            left = round(left, 2)
-        top = (pdf.h_pt - self.y * pdf.k) if pdf else self.y
-        if isinstance(top, float):
-            top = round(top, 2)
+    def serialize(self):
+        left = round(self.left, 2) if isinstance(self.left, float) else self.left
+        top = round(self.top, 2) if isinstance(self.top, float) else self.top
         page = (
             iobj_ref(object_id_for_page(self.page))
             if self.page_as_obj_id
