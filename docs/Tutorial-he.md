@@ -149,9 +149,9 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 - סוף השורה הוא בגבול הימני והשורה הבאה מתחילה בגבול השמאלי
 - הפוזיציה הנוכחית זזה לסוף שורת הטקסט
 
-לפיכך המתודה מאפשרת לנו לכתוב קטע טקסט, לשנות את סגנון הגופן, ולהמשיך מאותו מקום שעצרנו. מצד שני, החסרון העיקרי הוא שלא ניתן ליישר את הטקסט כמו ב[multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell).
+לפיכך המתודה מאפשרת לנו לכתוב קטע טקסט, לשנות את סגנון הגופן, ולהמשיך מאותו מקום שעצרנו. מצד שני, החסרון העיקרי הוא שלא ניתן ליישר את הטקסט כמו ב[()multi_cell](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell).
 
-בעמוד הראשון של הדוגמא השתמשנו [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) למטרה זו. תחילת המשפט נכתב בסגנון טקסט רגיל ואז על ידי שימוש במתודה [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) החלפנו לטקסט עם קו תחתון לסיום המשפט.
+בעמוד הראשון של הדוגמא השתמשנו [()write](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) למטרה זו. תחילת המשפט נכתב בסגנון טקסט רגיל ואז על ידי שימוש במתודה [()set_font](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) החלפנו לטקסט עם קו תחתון לסיום המשפט.
 
 כדי להוסיף קישור פנימי שמוביל לעמוד השני השתמשנו במתודה [()add_link](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link) שוצרת איזור ניתן להקלקה שנתנו לו את השם "קישור" שמוביל לאיזור אחר באותו המסמך. בעמוד השני השתמשנו ב[()set_link](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link) על מנת להגדיר את האיזור אליו הקישור שיצרנו מוביל.
 
