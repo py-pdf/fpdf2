@@ -22,6 +22,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - support for description list (`<dl>`), description titles (`<dt>`), and description details (`<dd>`) in `write_html()` - thanks to @yk-jp
 - support for monochromatic images (PIL `image.mode == '1'`) thanks to @GerardoAllende
 - the 1000+ unit tests suite is now executed under Linux **<ins>and</ins>** Windows, with extra timing & memory usage checks ensuring we control `fpdf2` resource usage
+- New translation of the tutorial in [עברית](https://pyfpdf.github.io/fpdf2/Tutorial-he.html), thanks to @TzviGreenfeld
 ### Deprecated
 - `HTMLMixin` is deprecated, and not needed anymore: **the `write_html()` method is now natively available in the `FPDF` class** - thanks to @yk-jp
 ### Removed

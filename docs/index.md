@@ -60,6 +60,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * [português](Tutorial-pt.md)
 * [Русский](Tutorial-ru.md)
 * [Ελληνικά](Tutorial-gr.md)
+* [עברית](Tutorial-he.md)
 
 ## Installation ##
 
