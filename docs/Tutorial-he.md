@@ -34,7 +34,7 @@ pdf = FPDF(orientation="P", unit="mm", format="A4")
 pdf.set_font('helvetica', 'B', 16)
 ```
 
-יכולנו לבחור הטייה עם `I`, קו תחתון עם `U`, או גופן רגיל עם מחרוזת ריקה (או כל שילוב של הנ"ל). שימו לב שגודל הגופן הוא בנקודות ולא מילימטרים או כל יחידת מידה אחרת. זה יוצא הדופן היחיד. הגופנים המובנים האחרים הם `Times`, `Courier`, `Symbol` וּ `ZapfDingbats`.
+יכולנו לבחור הטייה עם `I`, קו תחתון עם `U`, או גופן רגיל עם מחרוזת ריקה (או כל שילוב של הנ"ל). שימו לב שגודל הגופן הוא בנקודות ולא מילימטרים או כל יחידת מידה אחרת. זה יוצא הדופן היחיד. הגופנים המובנים האחרים הם `Times`, `Courier`, `Symbol`, `ZapfDingbats`.
 
 כעת נוכל להדפיס תא עם [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell). תא הוא איזור מלבני, אולי ממוסגר, שמכיל טקסט. נוצר בפוזיציה הנוכחית. אנחנו מציינים את המידות שלו, טקסט (ממורכז או מיושר), האם לצייר גבולות, ולאן תזוז הפוזיציה הנוכחית לאחר התא (מימין, למטה או בתחילת השורה הבאה). כדי להוסיף מסגרת, נריץ:
 
@@ -49,7 +49,7 @@ pdf.cell(40, 10, 'Hello World!', 1)
 pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 ```
 
-**הערה**: אפשר ליצור שורה רווח גם בעזרת [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). השיטה הזו מאפשרת גם לציין את גובה הרווח
+**הערה**: אפשר ליצור שורה רווח גם בעזרת [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). השיטה הזו מאפשרת גם לציין את גובה הרווח.
 
 לבסוף, הקובץ נסגר ונשמר תחת הכתובת שסופקה באמצעות [output](fpdf/fpdf.html#fpdf.fpdf.FPDF.output).
 ללא פרמטרים נוספים, `output()` מחזיר את הבאפר `bytearray` של הPDF.
@@ -64,14 +64,14 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [תוצר](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
 
-הדוגמא משתמשת במתודות ה[header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) ו[footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer).
+הדוגמא משתמשת במתודות [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) ו[footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer).
 
 הלוגו מודפס עם מתודת ה[image](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) ע"י ציון הנקודה השמאלית-עליונה ואת הרוחב. הגובה מחושב אוטומטית לפי מידות התמונה.
 
 על מנת להדפיס את מספר העמוד, ניתן להעביר ערך null כרוחב התא. כך התא יתרחב עד השול הימני של העמוד; זה שימושי כאשר צריך למרכז את הטקסט. מספר העמוד הנוכחי חוזר ממתודת ה[page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no); לגבי מספר העמודים הכולל, ניתן להשיג נתון זה מהערך המיוחד `{nb}` שיוחלף בסגירת המסמך (ניתן לשנות ערך זה ע"י שימוש ב[alias_nb_pages()](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages)).
 שימו לב למתודה [set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) שמאפשרת להגדיר פוזיציה אבסולוטית בדף, מראש או תחתית העמוד.
 
-נעשה גם שימוש  בפיצ'ק נוסף כאן: מעבר עמוד אוטומטי. ברגע שתא יחרוד מגבולות הדף (בברירת מחדל 2 סנטימטר מהסוף), מתתבצע מעבר עמוד והגופן חוזר להיות מה שהוגדר עבור גוף העמוד. למרות שהכותרת והכותרת תחתותנה משתמשות בגופן (`helvetica`), גוף העמוד ממשיך עם `Times`. המנגנון הזה תקף גם לגבי צבע ורוחב שורה. הגבול שמפעיל את מעבר העמוד האוטומטי ניתן לשינוי באמצעות [set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
+נעשה גם שימוש  בפיצ'ר נוסף כאן: מעבר עמוד אוטומטי. ברגע שתא יחרוג מגבולות הדף (בברירת מחדל 2 סנטימטר מהסוף), מתתבצע מעבר עמוד והגופן חוזר להיות מה שהוגדר עבור גוף העמוד. למרות שהכותרת והכותרת התחתונה משתמשות בגופן (`helvetica`), גוף העמוד ממשיך עם `Times`. המנגנון הזה תקף גם לגבי צבע ורוחב שורה. הגבול שמפעיל את מעבר העמוד האוטומטי ניתן לשינוי באמצעות [set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
 
 
 ## 3 - שורות רווח וצבעים ##
@@ -87,12 +87,12 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 [Jules Verne text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 מתודת ה[get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) מאפשרת לקבוע אורך מחרוזת בגופן הנוכחי, שבדוגמא זו משמש כדי לחשב את הפוזיציה והרוחב של המסגרת המקיפה את הכותרת. לאחר מכן מוגדרים צבעים
-(באמצעות [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) ו [set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) and   ועובי השורה מוגזר למילימטר (בניגוד ל0.2 מילימטר כברירת מחדל) באמצעות [set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). לבסוף אנחנו מדפיסים את התא (הפרמטר האחרון true מעיד שהרקע צריך להיות מלא).
+(באמצעות [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) ו [set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) ועובי השורה מוגדר למילימטר (בניגוד ל0.2 מילימטר כברירת מחדל) באמצעות [set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). לבסוף אנחנו מדפיסים את התא (הפרמטר האחרון true מעיד שהרקע צריך להיות מלא).
 
 
-המתודה בה משתמשים להדפסת הפסקא היא [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). טקסט נחתך אוטומטית בסוף השורה בברירת מחדל. בכל פעם ששורה מגיעה לקצה הימני של התא או שנמצא התו (`n\`), נוצרת שורה חדשה בתא חדש מתחת לנוכחי. הפסקת שורה אוטומטית נוצרת במיקום של הרווח הקרוב או תו בלתי-נראה (`u00ad\`) לפני סוף השורה. התו יוחלף במקף אם הופעלה הפסקת שורה.
+המתודה בה משתמשים להדפסת הפסקא היא [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). טקסט נחתך אוטומטית בסוף השורה כברירת מחדל. בכל פעם ששורה מגיעה לקצה הימני של התא או שנמצא התו (`n\`), נוצרת שורה חדשה בתא חדש מתחת לנוכחי. הפסקת שורה אוטומטית נוצרת במיקום של הרווח הקרוב או תו בלתי-נראה (`u00ad\`) לפני סוף השורה. התו יוחלף במקף אם הופעלה הפסקת שורה.
 
-שני תכונות מסמך הוגדרו: שם המסמך ([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) ויוצר ([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). ניתן לצפות בתכונות בשני אופנים. אופציה ראשונה היא לפתוח את המסמך בAdobe Reader ישירות, ואז ב'תפריט' לבחור 'תכונות מסמך'. אופציה שניה, זמינה גם באמצעות תוסף, זה לחצן ימני ואז לבחור תכונות מסמך.
+שתי תכונות מסמך הוגדרו: שם המסמך ([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) ויוצר ([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). ניתן לצפות בתכונות בשני אופנים: אופציה ראשונה היא לפתוח את המסמך בAdobe Reader ישירות, ואז ב'תפריט' לבחור 'תכונות מסמך'. אופציה שניה, זמינה גם באמצעות תוסף, זה לחצן ימני ואז לבחור תכונות מסמך.
 
 ## 4 - עמודות מרובות ##
 
@@ -123,11 +123,11 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 ```
 
 [תוצר](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
-[Countries text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
+[טקסט מתמשך](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
 
 מאחר וטבלה היא בסה"כ אוסף של תאים, טבעי שכך נבנה טבלאות.
 
-הדוגמא הראשונה נוצרת באופן הבסיסי ביותר שאפשר: תאים בגדלים שווים עם מסגרות ומיושרים לשמאל.התוצאה היא בסיסית אבל קלה מאוד להשגה.
+הדוגמא הראשונה נוצרת באופן הבסיסי ביותר שאפשר:תאים ממוסגרים, מיושרים לשמאל ובגדלים שווים. התוצאה היא בסיסית אבל קלה מאוד להשגה.
 
 הטבלה השניה מציגה כמה שיפורים: לכל עמודה יש רוחב משלה, כותרות ממורכזות ותמונות מיושרות לימין. הוסרו קווים אופקיים. זה נעשה על ידי תכונות הגבול של המתודה ()Cell, שמציינת איזה גבולות של התא להדפיס. כאן אנחנו רוצים את הגבול השמאלי (L) והימני (R). כעת נותרה הבעיה של הקווים האופקיים. ישנן שתי אפשרויות לפתור בעיה זו: לבדוק את הקו האחרון בלולאה, במקרה זה נשתמש בLRB עבור פרמטר הגבול; או לחלופין, כמו שעשינו כאן, להוסיף את הקו בסוף הלולאה.
 
@@ -136,7 +136,6 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 ## 6 - יצירת קישורים וערבוב סגנונות טקסט ##
 
 דוגמא זו מציגה מספר דרכים להוסיף קישורים למסמך וקישורים חיצוניים. בנוסף הדוגמא ממחישה שימוש בסגנונות שונים של עיצוב טקסט (מודגש, נטוי, קו תחתון) באותו טקסט.
-This tutorial will explain several ways to insert links inside a pdf 
 
 ```python
 {% include "../tutorial/tuto6.py" %}
@@ -158,9 +157,6 @@ This tutorial will explain several ways to insert links inside a pdf
 
 על מנת ליצור קישור חיצני באמצעות תמונה, השתמשנו במתודה [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). למתודה יש אופציה לקבל קישור כאחד הפרמטרים שלה. הקישור יכול להיות פנימי או חיצוני.
 
-To create the external link using an image, we used
- [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
-
-ניתן גם להשתמש במתודה `write_html()` כדי לשנות סגנונות גופן ולהוסיף קישורים. זהו פרסר של html, שמאפשר להוסיף טקסט, לשנות את הסגנון ולהוסיף קישורים באמצעות html.
+ניתן גם להשתמש במתודה `write_html()` כדי לשנות סגנונות גופן ולהוסיף קישורים. זהו פארסר של html, שמאפשר להוסיף טקסט, לשנות את הסגנון ולהוסיף קישורים באמצעות html.
 
 </div>
