@@ -1,5 +1,5 @@
 # pylint: disable=protected-access
-import logging, zlib
+import logging
 from collections import OrderedDict
 from contextlib import contextmanager
 from io import BytesIO
@@ -108,6 +108,33 @@ class PDFFontStream(PDFContentStream):
         self.length1 = len(contents)
 
 
+class PDFXObject(PDFContentStream):
+    def __init__(
+        self,
+        contents,
+        subtype,
+        width,
+        height,
+        color_space,
+        bits_per_component,
+        img_filter=None,
+        decode=None,
+        decode_parms=None,
+        **kwargs,
+    ):
+        super().__init__(contents=contents, **kwargs)
+        self.type = Name("XObject")
+        self.subtype = Name(subtype)
+        self.width = width
+        self.height = height
+        self.color_space = color_space
+        self.bits_per_component = bits_per_component
+        self.filter = Name(img_filter)
+        self.decode = decode
+        self.decode_parms = decode_parms
+        self.s_mask = None
+
+
 class PageObject(PDFObject):
     __slots__ = (  # RAM usage optimization
         "_id",
@@ -196,7 +223,8 @@ class OutputProducer:
         sig_annotation_obj_id = self._add_annotations_as_objects()
         for embedded_file in self.fpdf.embedded_files:
             self._add_pdf_obj(embedded_file, "embedded_files")
-        self._add_fonts()
+        font_objs_per_index = self._add_fonts()
+        img_objs_per_index = self._add_images()
 
         # 2. Inject all PDF object references required:
         for page_obj in page_objs:
@@ -226,11 +254,11 @@ class OutputProducer:
         # self._add_primary_hint_stream()
 
         # Legacy code being refactored (WIP):
-        with self._trace_size("images"):
-            self._put_images()
         with self._trace_size("gfxstate"):
             self._put_graphics_state_dicts()
-        resources_dict_obj_id = self._put_resources_dict()  # TODO: move this before
+        resources_dict_obj_id = self._put_resources_dict(
+            font_objs_per_index, img_objs_per_index
+        )  # TODO: move this before
         if not fpdf.struct_builder.empty():
             with self._trace_size("structure_tree"):
                 self._put_structure_tree()
@@ -373,10 +401,8 @@ class OutputProducer:
 
     def _add_fonts(self):
         fpdf = self.fpdf
-        fonts = [(font["i"], font) for font in fpdf.fonts.values()]
-        fonts.sort()
-        for _, font in fonts:
-            font["n"] = self.n + 1
+        font_objs_per_index = {}
+        for font in sorted(fpdf.fonts.values(), key=lambda font: font["i"]):
             # Standard font
             if font["type"] == "core":
                 encoding = (
@@ -388,6 +414,7 @@ class OutputProducer:
                     subtype="Type1", base_font=font["name"], encoding=encoding
                 )
                 self._add_pdf_obj(core_font_obj, "fonts")
+                font_objs_per_index[font["i"]] = core_font_obj
             elif font["type"] == "TTF":
                 fontname = f"MPDFAA+{font['name']}"
 
@@ -453,6 +480,7 @@ class OutputProducer:
                     subtype="Type0", base_font=fontname, encoding="Identity-H"
                 )
                 self._add_pdf_obj(composite_font_obj, "fonts")
+                font_objs_per_index[font["i"]] = composite_font_obj
 
                 # A CIDFont whose glyph descriptions are based on
                 # TrueType font technology
@@ -538,83 +566,64 @@ class OutputProducer:
                 self._add_pdf_obj(font_file_cs_obj, "fonts")
                 font_descriptor_obj.font_file2 = pdf_ref(font_file_cs_obj.id)
 
-    def _put_images(self):
-        for img_info in sorted(
-            self.fpdf.images.values(), key=lambda img_info: img_info["i"]
-        ):
-            if img_info["usages"] > 0:
-                self._put_image(img_info)
+        return font_objs_per_index
 
-    def _put_image(self, info):
-        if "data" not in info:
-            return
-        self._newobj()
-        info["n"] = self.n
-        self._out("<</Type /XObject")
-        self._out("/Subtype /Image")
-        self._out(f"/Width {info['w']}")
-        self._out(f"/Height {info['h']}")
+    def _add_images(self):
+        img_objs_per_index = {}
+        for img in sorted(self.fpdf.images.values(), key=lambda img: img["i"]):
+            if img["usages"] > 0:
+                img_objs_per_index[img["i"]] = self._add_image(img)
+        return img_objs_per_index
 
-        if info["cs"] == "Indexed":
-            palette_ref = (
-                pdf_ref(self.n + 2)
-                if self.fpdf.allow_images_transparency and "smask" in info
-                else pdf_ref(self.n + 1)
+    def _add_image(self, info):
+        color_space = Name(info["cs"])
+        decode = None
+        if color_space == "Indexed":
+            color_space = PDFArray(
+                ["/Indexed", "/DeviceRGB", f"{len(info['pal']) // 3 - 1}"]
             )
-            self._out(
-                f"/ColorSpace [/Indexed /DeviceRGB "
-                f"{len(info['pal']) // 3 - 1} {palette_ref}]"
-            )
-        else:
-            self._out(f"/ColorSpace /{info['cs']}")
-            if info["cs"] == "DeviceCMYK":
-                self._out("/Decode [1 0 1 0 1 0 1 0]")
+        elif color_space == "DeviceCMYK":
+            decode = "[1 0 1 0 1 0 1 0]"
 
-        self._out(f"/BitsPerComponent {info['bpc']}")
-
-        if "f" in info:
-            self._out(f"/Filter /{info['f']}")
-        if "dp" in info:
-            self._out(f"/DecodeParms <<{info['dp']}>>")
-
-        if "trns" in info and isinstance(info["trns"], list):
-            trns = " ".join(f"{x} {x}" for x in info["trns"])
-            self._out(f"/Mask [{trns}]")
-
-        if self.fpdf.allow_images_transparency and "smask" in info:
-            self._out(f"/SMask {pdf_ref(self.n + 1)}")
-
-        self._out(f"/Length {len(info['data'])}>>")
-        self._out(pdf_stream(info["data"]))
-        self._out("endobj")
+        decode_parms = f"<<{info['dp']} /BitsPerComponent {info['bpc']}>>"
+        img_obj = PDFXObject(
+            subtype="Image",
+            contents=info["data"],
+            width=info["w"],
+            height=info["h"],
+            color_space=color_space,
+            bits_per_component=info["bpc"],
+            img_filter=info["f"],
+            decode=decode,
+            decode_parms=decode_parms,
+        )
+        self._add_pdf_obj(img_obj, "images")
 
         # Soft mask
         if self.fpdf.allow_images_transparency and "smask" in info:
-            dp = f"/Predictor 15 /Colors 1 /BitsPerComponent 8 /Columns {info['w']}"
-            smask = {
-                "w": info["w"],
-                "h": info["h"],
-                "cs": "DeviceGray",
-                "bpc": 8,
-                "f": info["f"],
-                "dp": dp,
-                "data": info["smask"],
-            }
-            self._put_image(smask)
+            dp = f"/Predictor 15 /Colors 1 /Columns {info['w']}"
+            smask_obj = self._add_image(
+                {
+                    "w": info["w"],
+                    "h": info["h"],
+                    "cs": "DeviceGray",
+                    "bpc": 8,
+                    "f": info["f"],
+                    "dp": dp,
+                    "data": info["smask"],
+                }
+            )
+            img_obj.s_mask = pdf_ref(smask_obj.id)
 
         # Palette
-        if info["cs"] == "Indexed":
-            self._newobj()
-            if self.fpdf.compress:
-                pal_filter, pal_data = (
-                    "/Filter /FlateDecode ",
-                    zlib.compress(info["pal"]),
-                )
-            else:
-                pal_filter, pal_data = ("", info["pal"])
-            self._out(f"<<{pal_filter}/Length {len(pal_data)}>>")
-            self._out(pdf_stream(pal_data))
-            self._out("endobj")
+        if "/Indexed" in color_space:
+            pal_cs_obj = PDFContentStream(
+                contents=info["pal"], compress=self.fpdf.compress
+            )
+            self._add_pdf_obj(pal_cs_obj, "images")
+            img_obj.color_space.append(pdf_ref(pal_cs_obj.id))
+
+        return img_obj
 
     def _put_graphics_state_dicts(self):
         self._graphics_state_obj_refs = OrderedDict()
@@ -624,7 +633,7 @@ class OutputProducer:
             self._out(state_dict)
             self._out("endobj")
 
-    def _put_resources_dict(self):
+    def _put_resources_dict(self, font_objs_per_index, img_objs_per_index):
         # obj_id = self._newobj()  # TODO: uncomment this an remove the next 3 lines
         obj_id = 2
         self.offsets[obj_id] = len(self.buffer)
@@ -638,17 +647,15 @@ class OutputProducer:
         # > (preferably, all of those listed in Table 10.1).
         self._out("/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]")
         self._out("/Font <<")
-        assert (
-            not self.fpdf.fonts or "n" in list(self.fpdf.fonts.values())[0]
-        ), "_put_fonts() must be called before _put_resources_dict()"
-        font_ids = [(font["i"], font["n"]) for font in self.fpdf.fonts.values()]
-        font_ids.sort()
-        for idx, n in font_ids:
-            self._out(f"/F{idx} {pdf_ref(n)}")
+        for index, font_obj in sorted(font_objs_per_index.items()):
+            self._out(f"/F{index} {pdf_ref(font_obj.id)}")
         self._out(">>")
 
         # if self.fpdf.images:  # TODO: restore this IF
-        self._put_xobjects()
+        self._out("/XObject <<")
+        for index, img_obj in sorted(img_objs_per_index.items()):
+            self._out(f"/I{index} {pdf_ref(img_obj.id)}")
+        self._out(">>")
 
         if self.fpdf._drawing_graphics_state_registry:
             self._put_graphics_state_refs()
@@ -656,18 +663,6 @@ class OutputProducer:
         self._out(">>")
         self._out("endobj")
         return obj_id
-
-    def _put_xobjects(self):
-        self._out("/XObject <<")
-        img_ids = [
-            (img_info["i"], img_info["n"])
-            for img_info in self.fpdf.images.values()
-            if img_info["usages"]
-        ]
-        img_ids.sort()
-        for idx, n in img_ids:
-            self._out(f"/I{idx} {pdf_ref(n)}")
-        self._out(">>")
 
     def _put_graphics_state_refs(self):
         assert (

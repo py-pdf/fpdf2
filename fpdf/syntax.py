@@ -276,6 +276,8 @@ class PDFArray(list):
             serialized_elems = "\n".join(elem.ref for elem in self)
         elif all(isinstance(elem, int) for elem in self):
             serialized_elems = " ".join(map(str, self))
+        elif all(isinstance(elem, str) for elem in self):
+            serialized_elems = " ".join(self)
         else:
             raise NotImplementedError(f"PDFArray.serialize with self={self}")
         return f"[{serialized_elems}]"

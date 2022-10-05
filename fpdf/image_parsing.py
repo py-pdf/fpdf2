@@ -127,8 +127,6 @@ def get_img_info(img, image_filter="AUTO", dims=None):
         ):
             info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
 
-    dp = f"/Predictor 15 /Colors {dpn} /BitsPerComponent {bpc} /Columns {w}"
-
     info.update(
         {
             "w": w,
@@ -136,8 +134,7 @@ def get_img_info(img, image_filter="AUTO", dims=None):
             "cs": colspace,
             "bpc": bpc,
             "f": image_filter,
-            "dp": dp,
-            "trns": "",
+            "dp": f"/Predictor 15 /Colors {dpn} /Columns {w}",
         }
     )
 
