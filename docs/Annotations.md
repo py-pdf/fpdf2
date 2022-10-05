@@ -71,6 +71,7 @@ Method documentation: [`FPDF.ink_annotation`](https://pyfpdf.github.io/fpdf2/fpd
 
 
 ## Named actions ##
+
 The four standard PDF named actions provide some basic navigation relative to the current page:
 `NextPage`, `PrevPage`, `FirstPage` and `LastPage`.
 
