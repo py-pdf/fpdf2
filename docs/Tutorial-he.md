@@ -95,7 +95,7 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 ## 4 - עמודות מרובות ##
 
- This example is a variant of the previous one, showing how to lay the text across multiple columns.
+הדוגמא הזו דומה לקודמת ומראה איך לפרוס טקסט על פני מספר עמודות.
 
 ```python
 {% include "../tutorial/tuto4.py" %}
@@ -105,19 +105,13 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [Jules Verne text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-The key difference from the previous tutorial is the use of the 
-[accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) and the set_col methods.
+ההבדל העיקרי בין דוגמא זו לקודמת הוא השימוש במתודות [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) וset_col
 
-Using the [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) method, once 
-the cell crosses the bottom limit of the page, it will check the current column number. If it 
-is less than 2 (we chose to divide the page in three columns) it will call the set_col method, 
-increasing the column number and altering the position of the next column so the text may continue there.
+ע"י שימוש במתודה [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break), ברגע שתא חורג מהגבול התחתון של הדף, המתודה בודקת את מספר העמודה הנוכחי. אם הוא קטן מ2 (בחרנו לחלק את הדף ל3 עמודות) תיקרא המתודה set_col, שמגדילה את מספר העמודה ומשנה את הפוזיציה של העמודה הבאה כך שהטקסט ימשיך בה.
 
-Once the bottom limit of the third column is reached, the 
-[accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) method will reset and go 
-back to the first column and trigger a page break.
+ברגע שהגענו לגבול התחתון של העמודה השלישית, המתודה [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) תאותחל, תחזור לעמודה הראשונה ותיצור מעבר עמוד.
 
-## Tuto 5 - Creating Tables ##
+## 5 - יצירת טבלאות ##
 
 This tutorial will explain how to create tables easily.
 
@@ -151,7 +145,7 @@ The third table is similar to the second one but uses colors. Fill, text and
  line colors are simply specified. Alternate coloring for rows is obtained by
  using alternatively transparent and filled cells.
 
-## Tuto 6 - Creating links and mixing text styles ##
+## 6 - יצירת קישורים וערבוב סגנונות טקסט ##
 
 This tutorial will explain several ways to insert links inside a pdf document,
  as well as adding links to external sources.
