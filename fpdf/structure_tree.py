@@ -44,13 +44,13 @@ class NumberTree(PDFObject):
         super().__init__(**kwargs)
         self.nums = defaultdict(list)  # {struct_parent_id -> struct_elems}
 
-    def serialize(self, output_producer=None, obj_dict=None):
+    def serialize(self, obj_dict=None):
         newline = "\n"
         serialized_nums = "\n".join(
             f"{struct_parent_id} [{newline.join(struct_elem.ref for struct_elem in struct_elems)}]"
             for struct_parent_id, struct_elems in self.nums.items()
         )
-        return super().serialize(output_producer, {"/Nums": f"[{serialized_nums}]"})
+        return super().serialize({"/Nums": f"[{serialized_nums}]"})
 
 
 class StructTreeRoot(PDFObject):
@@ -133,37 +133,9 @@ class StructureTreeBuilder:
     def empty(self):
         return not self.struct_elem_per_mc
 
-    def serialize(self, first_object_id=1, output_producer=None):
-        """
-        Assign object IDs & output the whole hierarchy tree serialized
-        as a multi-lines string in PDF syntax, ready to be embedded.
-
-        Objects ID assignement will start with the provided first ID,
-        that will be assigned to the StructTreeRoot.
-        Apart from that, assignement is made in an arbitrary order.
-        All PDF objects must have assigned IDs before proceeding to output
-        generation though, as they have many references to each others.
-
-        If a OutputProducer instance provided, its `_newobj` & `_out` methods will be called
-        and this method output will be meaningless.
-        """
-        self.assign_ids(first_object_id)
-        output = []
-        output.append(self.struct_tree_root.serialize(output_producer))
-        output.append(self.doc_struct_elem.serialize(output_producer))
-        output.append(self.struct_tree_root.parent_tree.serialize(output_producer))
-        for struct_elem in self.doc_struct_elem.k:
-            output.append(struct_elem.serialize(output_producer))
-        return "\n".join(output)
-
-    def assign_ids(self, n):
-        self.struct_tree_root.id = n
-        n += 1
-        self.doc_struct_elem.id = n
-        n += 1
-        self.struct_tree_root.parent_tree.id = n
-        n += 1
-        for struct_elem in self.doc_struct_elem.k:
-            struct_elem.id = n
-            n += 1
-        return n
+    def __iter__(self):
+        "Iterate all PDF objects in the tree, starting with the tree root"
+        yield self.struct_tree_root
+        yield self.doc_struct_elem
+        yield self.struct_tree_root.parent_tree
+        yield from self.doc_struct_elem.k

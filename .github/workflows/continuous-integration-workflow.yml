@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.7, 3.8, 3.9, '3.10']
-        platform: [ubuntu-latest, windows-latest]
+        platform: [ubuntu-latest] # TODO: uncomment  , windows-latest]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout 🛎️
@@ -26,7 +26,7 @@ jobs:
         if: matrix.platform == 'ubuntu-latest'
         run: sudo apt-get install libjpeg-dev
       - name: Install qpdf ⚙️
-        if: matrix.platform == 'ubuntu-latest' # TODO: uncomment && matrix.python-version != '3.9'  # This allows us to run the unit tests WITHOUT qpdf in just one parallel execution
+        if: matrix.platform == 'ubuntu-latest' # TODO: uncomment  && matrix.python-version != '3.9'  # This allows us to run the unit tests WITHOUT qpdf in just one parallel execution
         run: sudo apt-get install qpdf
       - name: Install Python dependencies ⚙️
         run: |

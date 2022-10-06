@@ -15,28 +15,7 @@ from .syntax import iobj_ref as pdf_ref
 DEFAULT_ANNOT_FLAGS = (AnnotationFlag.PRINT,)
 
 
-class PDFAnnotation(PDFObject):
-    __slots__ = (  # RAM usage optimization
-        "_id",
-        "type",
-        "subtype",
-        "rect",
-        "border",
-        "f_t",
-        "v",
-        "f",
-        "contents",
-        "a",
-        "dest",
-        "c",
-        "t",
-        "quad_points",
-        "p",
-        "name",
-        "ink_list",
-        "f_s",
-    )
-
+class AnnotationMixin:
     def __init__(
         self,
         subtype: str,
@@ -89,24 +68,38 @@ class PDFAnnotation(PDFObject):
         self.f_s = file_spec
 
 
-class AnnotationDict(PDFAnnotation):
-    """
-    A PDF annotation that get serialized as a simple <<dictionnary>>,
-    NOT as an obj<</>>endobj text block
-    """
+class PDFAnnotation(AnnotationMixin, PDFObject):
+    "A PDF annotation that get serialized as an obj<</>>endobj block"
 
-    # method override
-    def serialize(self):  # pylint: disable=arguments-differ
-        obj_dict = build_obj_dict(
-            {key: getattr(self, key) for key in dir(self) if key not in ("id", "ref")}
-        )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class AnnotationDict(AnnotationMixin):
+    "A PDF annotation that get serialized as an inline <<dictionnary>>"
+    __slots__ = (  # RAM usage optimization
+        "type",
+        "subtype",
+        "rect",
+        "border",
+        "f_t",
+        "v",
+        "f",
+        "contents",
+        "a",
+        "dest",
+        "c",
+        "t",
+        "quad_points",
+        "p",
+        "name",
+        "ink_list",
+        "f_s",
+    )
+
+    def serialize(self):
+        obj_dict = build_obj_dict({key: getattr(self, key) for key in dir(self)})
         return pdf_dict(obj_dict)
-
-    # method override
-    @property
-    def ref(self):
-        # This is a hack for PDFArray to properly serialize those PDFObjects:
-        return self.serialize()
 
 
 class PDFEmbeddedFile(PDFContentStream):

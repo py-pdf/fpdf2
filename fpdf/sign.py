@@ -3,15 +3,15 @@ import hashlib
 from datetime import timezone
 from unittest.mock import patch
 
-from .syntax import build_obj_dict
-from .syntax import create_dictionary_string
+from .syntax import build_obj_dict, Name
+from .syntax import create_dictionary_string as pdf_dict
 
 
 class Signature:
     def __init__(self, contact_info=None, location=None, m=None, reason=None):
-        self.type = "/Sig"
-        self.filter = "/Adobe.PPKLite"
-        self.sub_filter = "/adbe.pkcs7.detached"
+        self.type = Name("Sig")
+        self.filter = Name("Adobe.PPKLite")
+        self.sub_filter = Name("adbe.pkcs7.detached")
         self.contact_info = contact_info
         "Information provided by the signer to enable a recipient to contact the signer to verify the signature"
         self.location = location
@@ -25,7 +25,7 @@ class Signature:
 
     def serialize(self):
         obj_dict = build_obj_dict({key: getattr(self, key) for key in dir(self)})
-        return create_dictionary_string(obj_dict)
+        return pdf_dict(obj_dict)
 
 
 def sign_content(signer, buffer, key, cert, extra_certs, hashalgo, sign_time):

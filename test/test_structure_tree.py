@@ -48,10 +48,18 @@ endobj"""
     )
 
 
+def _serialize(struct_builder, first_object_id=1):
+    n = first_object_id
+    for obj in struct_builder:
+        obj.id = n
+        n += 1
+    return "\n".join(obj.serialize() for obj in struct_builder)
+
+
 def test_empty_structure_tree():
     struct_builder = StructureTreeBuilder()
     assert (
-        struct_builder.serialize()
+        _serialize(struct_builder)
         == """\
 1 0 obj
 <<
@@ -82,7 +90,7 @@ def test_single_image_structure_tree():
         MarkedContent(1, 0, "/Figure", 0, "Image title", "Image description")
     )
     assert (
-        struct_builder.serialize(first_object_id=3)
+        _serialize(struct_builder, first_object_id=3)
         == """\
 3 0 obj
 <<

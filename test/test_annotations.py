@@ -148,7 +148,7 @@ def test_goto_remote_action(tmp_path):
     pdf.add_page()
     x, y, text = 80, 140, "GoTo-Remote action"
     pdf.text(x=x, y=y, txt=text)
-    dest = DestinationXYZ(page=1, top=pdf.h_pt, page_as_obj_id=False)
+    dest = DestinationXYZ(page=1, top=pdf.h_pt)
     pdf.add_action(
         GoToRemoteAction("goto_action.pdf", dest=dest),
         x=x,

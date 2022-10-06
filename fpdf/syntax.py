@@ -71,8 +71,6 @@ from abc import ABC
 from binascii import hexlify
 from codecs import BOM_UTF16_BE
 
-from .util import object_id_for_page
-
 
 def clear_empty_fields(d):
     return {k: v for k, v in d.items() if v}
@@ -168,28 +166,19 @@ class PDFObject:
     def ref(self):
         return iobj_ref(self.id)
 
-    def serialize(self, output_producer=None, obj_dict=None):
+    def serialize(self, obj_dict=None):
         "Serialize the PDF object as an obj<</>>endobj text block"
         output = []
-        if output_producer:  # TODO: remove this parameter
-            # pylint: disable=protected-access
-            appender = output_producer._out
-            new_obj_id = output_producer._newobj()
-            assert (
-                self.id == new_obj_id
-            ), f"Something went wrong in PDFObject ID assignment: .id={self.id} new_obj_id={new_obj_id}"
-        else:
-            appender = output.append
-            appender(f"{self.id} 0 obj")
-        appender("<<")
+        output.append(f"{self.id} 0 obj")
+        output.append("<<")
         if not obj_dict:
             obj_dict = self._build_obj_dict()
-        appender(create_dictionary_string(obj_dict, open_dict="", close_dict=""))
-        appender(">>")
+        output.append(create_dictionary_string(obj_dict, open_dict="", close_dict=""))
+        output.append(">>")
         content_stream = self.content_stream()
         if content_stream:
-            appender(create_stream(content_stream))
-        appender("endobj")
+            output.append(create_stream(content_stream))
+        output.append("endobj")
         return "\n".join(output)
 
     def content_stream(self):
@@ -207,8 +196,6 @@ class PDFObject:
 
 
 class PDFContentStream(PDFObject):
-    __slots__ = ("_id", "_contents", "filter", "length")
-
     def __init__(self, contents, compress=False, **kwargs):
         super().__init__(**kwargs)
         self._contents = zlib.compress(contents) if compress else contents
@@ -239,11 +226,12 @@ def build_obj_dict(key_values):
             value = value.value
         if isinstance(value, PDFObject):  # indirect object reference
             value = value.ref
-        elif hasattr(value, "pdf_repr"):  # e.g. Name
-            value = value.pdf_repr()
         elif hasattr(
-            value, "serialize"
-        ):  # e.g. PDFArray, PDFString, Destination, Action...
+            value, "pdf_repr"
+        ):  # e.g. Name - TODO: rename all occurences to serialize
+            value = value.pdf_repr()
+        elif hasattr(value, "serialize"):
+            # e.g. PDFArray, PDFString, Destination, Action...
             value = value.serialize()
         elif isinstance(value, bool):
             value = str(value).lower()
@@ -272,14 +260,15 @@ class PDFString(str):
 
 class PDFArray(list):
     def serialize(self):
-        if all(isinstance(elem, PDFObject) for elem in self):
-            serialized_elems = "\n".join(elem.ref for elem in self)
+        if all(isinstance(elem, str) for elem in self):
+            serialized_elems = " ".join(self)
         elif all(isinstance(elem, int) for elem in self):
             serialized_elems = " ".join(map(str, self))
-        elif all(isinstance(elem, str) for elem in self):
-            serialized_elems = " ".join(self)
         else:
-            raise NotImplementedError(f"PDFArray.serialize with self={self}")
+            serialized_elems = "\n".join(
+                elem.ref if isinstance(elem, PDFObject) else elem.serialize()
+                for elem in self
+            )
         return f"[{serialized_elems}]"
 
 
@@ -290,22 +279,18 @@ class Destination(ABC):
 
 
 class DestinationXYZ(Destination):
-    def __init__(self, page, top, left=0, zoom="null", page_as_obj_id=True):
-        self.page = page
+    def __init__(self, page, top, left=0, zoom="null"):
+        self.page_number = page
         self.top = top
         self.left = left
         self.zoom = zoom
-        self.page_as_obj_id = page_as_obj_id
+        self.page_ref = None
 
     def __repr__(self):
-        return f'DestinationXYZ(page={self.page}, top={self.top}, left={self.left}, zoom="{self.zoom}", page_as_obj_id={self.page_as_obj_id})'
+        return f'DestinationXYZ(page_number={self.page_number}, top={self.top}, left={self.left}, zoom="{self.zoom}", page_ref={self.page_ref})'
 
     def serialize(self):
         left = round(self.left, 2) if isinstance(self.left, float) else self.left
         top = round(self.top, 2) if isinstance(self.top, float) else self.top
-        page = (
-            iobj_ref(object_id_for_page(self.page))
-            if self.page_as_obj_id
-            else self.page
-        )
-        return f"[{page} /XYZ {left} {top} {self.zoom}]"
+        assert self.page_ref
+        return f"[{self.page_ref} /XYZ {left} {top} {self.zoom}]"

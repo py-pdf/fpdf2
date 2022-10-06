@@ -421,7 +421,7 @@ class TestStyles:
 
         auto_pdf_cmp.draw_path(open_path_drawing)
 
-    def test_dictionary_generation(self):
+    def test_serialize_to_pdf_dict(self):
         style = fpdf.drawing.GraphicsStyle()
 
         style.fill_opacity = 0.5
@@ -432,7 +432,7 @@ class TestStyles:
         style.stroke_cap_style = "butt"
 
         assert (
-            style.to_pdf_dict()
+            style.serialize()
             == "<< /Type /ExtGState\n/ca 0.5\n/BM /Lighten\n/CA 0.75\n/LW 2\n/LC 0\n/LJ 1 >>"
         )
 

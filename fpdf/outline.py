@@ -6,6 +6,7 @@ Quoting section 8.2.2 "Document Outline" of the 2006 PDF spec 1.7:
 from typing import NamedTuple, Optional
 
 from .syntax import Destination, PDFObject, PDFString
+from .syntax import iobj_ref as pdf_ref
 from .structure_tree import StructElem
 
 
@@ -32,7 +33,11 @@ class OutlineItemDictionary(PDFObject):
     )
 
     def __init__(
-        self, title: str, dest: str = None, struct_elem: StructElem = None, **kwargs
+        self,
+        title: str,
+        dest: Destination = None,
+        struct_elem: StructElem = None,
+        **kwargs
     ):
         super().__init__(**kwargs)
         self.title = PDFString(title)
@@ -57,40 +62,23 @@ class OutlineDictionary(PDFObject):
         self.count = 0
 
 
-def serialize_outline(sections, first_object_id=1, output_producer=None):
+def build_outline_objs(sections, page_objs):
     """
-    Assign object IDs & output the whole outline hierarchy serialized
-    as a multi-lines string in PDF syntax, ready to be embedded.
-
-    Objects ID assignement will start with the provided first ID,
-    that will be assigned to the Outlines object.
-    Apart from that, assignement is made in an arbitrary order.
-    All PDF objects must have assigned IDs before proceeding to output
-    generation though, as they have many references to each others.
-
-    If a OutputProducer instance provided, its `_newobj` & `_out` methods will be called
-    and this method output will be meaningless.
-
-    Args:
-        sections (sequence): list of OutlineSection
+    Build PDF objects constitutive of the documents outline,
+    and yield them one by one, starting with the outline dictionary
     """
-    outline, outline_items = build_outline(sections, first_object_id)
-    return outline_as_str(outline, outline_items, output_producer)
-
-
-def build_outline(sections, first_object_id):
-    outline = OutlineDictionary(id=first_object_id)
-    n = first_object_id + 1
+    outline = OutlineDictionary()
+    yield outline
     outline_items = []
     last_outline_item_per_level = {}
     for section in sections:
+        section.dest.page_ref = pdf_ref(page_objs[section.dest.page_number - 1].id)
         outline_item = OutlineItemDictionary(
             title=section.name,
-            dest=section.dest.serialize(),
+            dest=section.dest,
             struct_elem=section.struct_elem,
-            id=n,
         )
-        n += 1
+        yield outline_item
         if section.level in last_outline_item_per_level:
             last_outline_item_at_level = last_outline_item_per_level[section.level]
             last_outline_item_at_level.next = outline_item
@@ -111,12 +99,4 @@ def build_outline(sections, first_object_id):
             for level, oitem in last_outline_item_per_level.items()
             if level <= section.level
         }
-    return outline, outline_items
-
-
-def outline_as_str(outline, outline_items, output_producer):
-    output = []
-    output.append(outline.serialize(output_producer))
-    for outline_item in outline_items:
-        output.append(outline_item.serialize(output_producer))
-    return "\n".join(output)
+    return [outline] + outline_items

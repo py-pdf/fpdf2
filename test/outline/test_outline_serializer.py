@@ -1,5 +1,22 @@
-from fpdf.outline import OutlineSection, serialize_outline
+from typing import NamedTuple
+
+from fpdf.outline import OutlineSection, build_outline_objs
 from fpdf.syntax import DestinationXYZ, PDFString
+
+
+class DummyWithId(NamedTuple):
+    id: int
+
+
+def _serialize_outline(sections, first_object_id=1):
+    n = first_object_id
+    page_objs = {i: DummyWithId(2 * i + 3) for i in range(len(sections))}
+    outline_objs = list(build_outline_objs(sections, page_objs))
+    for obj in outline_objs:
+        obj.id = n
+        n += 1
+    output = "\n".join(obj.serialize() for obj in outline_objs)
+    return output
 
 
 def test_serialize_outline():
@@ -21,7 +38,7 @@ def test_serialize_outline():
         ),
     )
     assert (
-        serialize_outline(sections, first_object_id=6)
+        _serialize_outline(sections, first_object_id=6)
         == """\
 6 0 obj
 <<
@@ -82,7 +99,7 @@ endobj"""
     )
 
 
-def test_serialize_outline_with_headless_hierarchy():  # issues 239
+def test__serialize_outline_with_headless_hierarchy():  # issues 239
     sections = (
         OutlineSection(
             "?-1", level=1, page_number=2, dest=DestinationXYZ(page=2, top=0)
@@ -99,7 +116,7 @@ def test_serialize_outline_with_headless_hierarchy():  # issues 239
         ),
     )
     assert (
-        serialize_outline(sections, first_object_id=6)
+        _serialize_outline(sections, first_object_id=6)
         == """\
 6 0 obj
 <<
@@ -158,7 +175,7 @@ endobj"""
     )
 
 
-def test_serialize_outline_without_hex_encoding():  # issue-458
+def test__serialize_outline_without_hex_encoding():  # issue-458
     PDFString.USE_HEX_ENCODING = False
     try:
         sections = (
@@ -167,7 +184,7 @@ def test_serialize_outline_without_hex_encoding():  # issue-458
             ),
         )
         assert (
-            serialize_outline(sections, first_object_id=1)
+            _serialize_outline(sections, first_object_id=1)
             == f"""\
 1 0 obj
 <<

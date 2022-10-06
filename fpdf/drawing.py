@@ -63,7 +63,7 @@ class GraphicsStateDictRegistry(OrderedDict):
     """
 
     def register_style(self, style: "GraphicsStyle"):
-        sdict = style.to_pdf_dict()
+        sdict = style.serialize()
 
         # empty style does not need a dictionary
         if not sdict:
@@ -1396,7 +1396,7 @@ class GraphicsStyle:
 
         raise TypeError(f"{value} isn't a number or GraphicsStyle.INHERIT")
 
-    def to_pdf_dict(self):
+    def serialize(self):
         """
         Convert this style object to a PDF dictionary with appropriate style keys.
 
