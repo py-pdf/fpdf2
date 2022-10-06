@@ -1,10 +1,26 @@
 %PDF-1.4
+1 0 obj
+<<
+/Count 1
+/Kids [3 0 R]
+/MediaBox [0 0 283.46 283.46]
+/Type /Pages
+>>
+endobj
+2 0 obj
+<<
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+/Pages 1 0 R
+/Type /Catalog
+>>
+endobj
 3 0 obj
 <<
 /Contents 4 0 R
 /Group <</Type /Group /S /Transparency /CS /DeviceRGB>>
 /Parent 1 0 R
-/Resources 2 0 R
+/Resources 8 0 R
 /Type /Page
 >>
 endobj
@@ -17,14 +33,6 @@ stream
 xúMå;
 Ä@D˚=≈\`◊∏?ΩÅ`ßñb•bµÖZx}ìUAÜGÛãVë	.µ£q¥[;„£èòäf∞ÿNåvê·:d˘∑>&â)Jêéqåá–ﬂ≥Rî|åæ…#¡eÏÀ±b@'Q7›s!Ô
 endstream
-endobj
-1 0 obj
-<<
-/Count 1
-/Kids [3 0 R]
-/MediaBox [0 0 283.46 283.46]
-/Type /Pages
->>
 endobj
 5 0 obj
 << /Type /ExtGState
@@ -39,52 +47,38 @@ endobj
 /LW 0.567
 /D [[] 0] >>
 endobj
-2 0 obj
-<<
-/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
-/Font <<
->>
-/XObject <<
->>
-/ExtGState <<
-/GS0 5 0 R
-/GS1 6 0 R
-/GS2 7 0 R
->>
->>
-endobj
 8 0 obj
 <<
-/CreationDate (D:19691231190000Z19'00')
+/ExtGState <</GS0 5 0 R
+/GS1 6 0 R
+/GS2 7 0 R>>
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
 >>
 endobj
 9 0 obj
 <<
-/Type /Catalog
-/Pages 1 0 R
-/OpenAction [3 0 R /FitH null]
-/PageLayout /OneColumn
+/CreationDate (D:19691231190000Z19'00')
 >>
 endobj
 xref
 0 10
 0000000000 65535 f 
-0000000327 00000 n 
-0000000561 00000 n 
 0000000009 00000 n 
-0000000145 00000 n 
-0000000414 00000 n 
-0000000458 00000 n 
-0000000503 00000 n 
-0000000705 00000 n 
-0000000766 00000 n 
+0000000096 00000 n 
+0000000199 00000 n 
+0000000335 00000 n 
+0000000517 00000 n 
+0000000561 00000 n 
+0000000606 00000 n 
+0000000664 00000 n 
+0000000779 00000 n 
 trailer
 <<
 /Size 10
-/Root 9 0 R
-/Info 8 0 R
-/ID [<E7F9FD414F7976B8DFB6F44D791A9E2E><E7F9FD414F7976B8DFB6F44D791A9E2E>]
+/Root 2 0 R
+/Info 9 0 R
+/ID [<21A23D900D0F5677DD89E5A74360B5E0><21A23D900D0F5677DD89E5A74360B5E0>]
 >>
 startxref
-869
+840
 %%EOF

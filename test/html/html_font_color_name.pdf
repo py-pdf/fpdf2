@@ -1,9 +1,25 @@
 %PDF-1.3
+1 0 obj
+<<
+/Count 1
+/Kids [3 0 R]
+/MediaBox [0 0 595.28 841.89]
+/Type /Pages
+>>
+endobj
+2 0 obj
+<<
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+/Pages 1 0 R
+/Type /Catalog
+>>
+endobj
 3 0 obj
 <<
 /Contents 4 0 R
 /Parent 1 0 R
-/Resources 2 0 R
+/Resources 8 0 R
 /Type /Page
 >>
 endobj
@@ -17,79 +33,62 @@ xúeëªR√0E{≈-°zYè63°†Àå~¿vå#P¨â	√‰ÔŸƒcTm≥˜ÏŸ]âóä≥⁄‚´⁄<=…8Gx≈6T'pÊå¥T∏uöäTµ
 o∏[ Ì=åΩü?ûõªeŸ∂è≈%◊{~+4}á
 endstream
 endobj
-1 0 obj
-<<
-/Count 1
-/Kids [3 0 R]
-/MediaBox [0 0 595.28 841.89]
-/Type /Pages
->>
-endobj
 5 0 obj
-<</Type /Font
+<<
 /BaseFont /Times-Roman
-/Subtype /Type1
 /Encoding /WinAnsiEncoding
+/Subtype /Type1
+/Type /Font
 >>
 endobj
 6 0 obj
-<</Type /Font
+<<
 /BaseFont /Times-Bold
-/Subtype /Type1
 /Encoding /WinAnsiEncoding
+/Subtype /Type1
+/Type /Font
 >>
 endobj
 7 0 obj
-<</Type /Font
-/BaseFont /Times-Italic
-/Subtype /Type1
-/Encoding /WinAnsiEncoding
->>
-endobj
-2 0 obj
 <<
-/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
-/Font <<
-/F1 5 0 R
-/F2 6 0 R
-/F3 7 0 R
->>
-/XObject <<
->>
+/BaseFont /Times-Italic
+/Encoding /WinAnsiEncoding
+/Subtype /Type1
+/Type /Font
 >>
 endobj
 8 0 obj
 <<
-/CreationDate (D:19691231190000Z19'00')
+/Font <</F1 5 0 R
+/F2 6 0 R
+/F3 7 0 R>>
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
 >>
 endobj
 9 0 obj
 <<
-/Type /Catalog
-/Pages 1 0 R
-/OpenAction [3 0 R /FitH null]
-/PageLayout /OneColumn
+/CreationDate (D:19691231190000Z19'00')
 >>
 endobj
 xref
 0 10
 0000000000 65535 f 
-0000000386 00000 n 
-0000000767 00000 n 
 0000000009 00000 n 
-0000000089 00000 n 
-0000000473 00000 n 
-0000000571 00000 n 
-0000000668 00000 n 
-0000000891 00000 n 
-0000000952 00000 n 
+0000000096 00000 n 
+0000000199 00000 n 
+0000000279 00000 n 
+0000000576 00000 n 
+0000000675 00000 n 
+0000000773 00000 n 
+0000000873 00000 n 
+0000000980 00000 n 
 trailer
 <<
 /Size 10
-/Root 9 0 R
-/Info 8 0 R
-/ID [<D8031733892445A96DB6601A668B372A><D8031733892445A96DB6601A668B372A>]
+/Root 2 0 R
+/Info 9 0 R
+/ID [<53C004517CF430D2317B2203FDDBD69F><53C004517CF430D2317B2203FDDBD69F>]
 >>
 startxref
-1055
+1041
 %%EOF
