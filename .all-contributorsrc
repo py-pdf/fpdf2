@@ -661,6 +661,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "TzviGreenfeld",
+      "name": "Tzvi Greenfeld",
+      "avatar_url": "https://avatars.githubusercontent.com/u/43534411?v=4",
+      "profile": "https://github.com/TzviGreenfeld",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
