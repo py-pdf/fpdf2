@@ -4,6 +4,7 @@ from collections import defaultdict, OrderedDict
 from contextlib import contextmanager
 from io import BytesIO
 
+from .annotations import PDFAnnotation
 from .enums import SignatureFlag
 from .errors import FPDFException
 from .outline import build_outline_objs
@@ -229,39 +230,42 @@ class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
         "_id",
         "type",
-        "parent",
+        "contents",
         "dur",
         "trans",
         "media_box",
-        "resources",
         "annots",
         "group",
         "struct_parents",
-        "contents",
+        "resources",
+        "parent",
     )
 
     def __init__(
         self,
         duration,
         transition,
-        media_box,
-        annots,
-        group,
-        spid,
-        **kwargs,
+        contents,
     ):
-        super().__init__(**kwargs)
+        super().__init__()
         self.type = Name("Page")
-        self.parent = None  # must always be set before calling .serialize()
-        self.dur = duration
+        self.contents = contents
+        self.dur = duration if duration else None
         self.trans = transition
-        self.media_box = media_box
-        self.annots = annots
-        self.group = group
-        self.struct_parents = spid
-        self.contents = None  # must always be set before calling .serialize()
+        self.annots = PDFArray()  # list of PDFAnnotation
+        self.group = None
+        self.media_box = None
+        self.struct_parents = None
         # TODO: insert a direct /Resource PDF object, with only images / fonts / graphics states used on the page
         self.resources = None  # must always be set before calling .serialize()
+        self.parent = None  # must always be set before calling .serialize()
+        self._width_pt, self._height_pt = None, None
+
+    def dimensions(self):
+        return self._width_pt, self._height_pt
+
+    def set_dimensions(self, width_pt, height_pt):
+        self._width_pt, self._height_pt = width_pt, height_pt
 
 
 class PDFPagesRoot(PDFObject):
@@ -337,6 +341,9 @@ class OutputProducer:
         for page_obj in page_objs:
             page_obj.parent = pdf_ref(pages_root_obj.id)
             page_obj.resources = resources_dict_obj
+            if not page_obj.annots:
+                # Avoid serializing an empty PDFArray:
+                page_obj.annots = None
         for struct_elem in fpdf.struct_builder.doc_struct_elem.k:
             struct_elem.pg = page_objs[struct_elem.page_number() - 1]
 
@@ -391,12 +398,7 @@ class OutputProducer:
 
     def _add_pages_root(self):
         fpdf = self.fpdf
-        if fpdf.def_orientation == "P":
-            dw_pt = fpdf.dw_pt
-            dh_pt = fpdf.dh_pt
-        else:
-            dw_pt = fpdf.dh_pt
-            dh_pt = fpdf.dw_pt
+        dw_pt, dh_pt = self._get_dw_dh_pt()
         pages_root_obj = PDFPagesRoot(
             count=fpdf.pages_count,
             media_box=f"[0 0 {dw_pt:.2f} {dh_pt:.2f}]",
@@ -406,53 +408,23 @@ class OutputProducer:
 
     def _add_pages(self):
         fpdf = self.fpdf
-        if fpdf.def_orientation == "P":
-            dw_pt = fpdf.dw_pt
-            dh_pt = fpdf.dh_pt
-        else:
-            dw_pt = fpdf.dh_pt
-            dh_pt = fpdf.dw_pt
-
         page_objs = []
-        for page_number in range(1, fpdf.pages_count + 1):
-            page_obj_id = self.obj_id + 1
-            # TODO: FPDF.add_page could directly store PDFPage intances in .pages,
-            #       to limit Python object allocations in memory
-            page = fpdf.pages[page_number]
-            w_pt, h_pt = page["w_pt"], page["h_pt"]
-            media_box = (
-                f"[0 0 {w_pt:.2f} {h_pt:.2f}]"
-                if w_pt != dw_pt or h_pt != dh_pt
-                else None
-            )
-            group = (
-                pdf_dict(
+        for page_obj in fpdf.pages.values():
+            if fpdf.pdf_version > "1.3":
+                page_obj.group = pdf_dict(
                     {"/Type": "/Group", "/S": "/Transparency", "/CS": "/DeviceRGB"},
                     field_join=" ",
                 )
-                if fpdf.pdf_version > "1.3"
-                else None
-            )
-            annots = None
-            page_annots = fpdf.annots[page_number]
-            page_annots_as_obj = fpdf.annots_as_obj[page_number]
-            if page_annots or page_annots_as_obj:
-                annots = PDFArray(page_annots + page_annots_as_obj)
-                for annot in annots:
-                    if annot.dest:
-                        annot.dest.page_ref = pdf_ref(page_obj_id)
-            page_obj = PDFPage(
-                media_box=media_box,
-                duration=page["duration"] or None,
-                transition=page["transition"] if page["transition"] else None,
-                annots=annots,
-                group=group,
-                spid=fpdf.struct_builder.spid_per_page_number.get(page_number),
-            )
+            if page_obj.dimensions() != self._get_dw_dh_pt():
+                w_pt, h_pt = page_obj.dimensions()
+                page_obj.media_box = f"[0 0 {w_pt:.2f} {h_pt:.2f}]"
             self._add_pdf_obj(page_obj, "pages")
             page_objs.append(page_obj)
 
-            cs_obj = PDFContentStream(contents=page["content"], compress=fpdf.compress)
+            # Extracting the page contents to insert as a content stream:
+            cs_obj = PDFContentStream(
+                contents=page_obj.contents, compress=fpdf.compress
+            )
             self._add_pdf_obj(cs_obj, "pages")
             page_obj.contents = cs_obj
 
@@ -469,16 +441,25 @@ class OutputProducer:
 
         return page_objs
 
+    def _get_dw_dh_pt(self):
+        fpdf = self.fpdf
+        return (
+            (fpdf.dw_pt, fpdf.dh_pt)
+            if fpdf.def_orientation == "P"
+            else (fpdf.dh_pt, fpdf.dw_pt)
+        )
+
     def _add_annotations_as_objects(self):
         sig_annotation_obj = None
-        for page_annots_as_obj in self.fpdf.annots_as_obj.values():
-            for annot_obj in page_annots_as_obj:
-                self._add_pdf_obj(annot_obj, "annotations_objects")
-                if isinstance(annot_obj.v, Signature):
-                    assert (
-                        sig_annotation_obj is None
-                    ), "A /Sig annotation is present on more than 1 page"
-                    sig_annotation_obj = annot_obj
+        for page_obj in self.fpdf.pages.values():
+            for annot_obj in page_obj.annots:
+                if isinstance(annot_obj, PDFAnnotation):  # distinct from AnnotationDict
+                    self._add_pdf_obj(annot_obj)
+                    if isinstance(annot_obj.v, Signature):
+                        assert (
+                            sig_annotation_obj is None
+                        ), "A /Sig annotation is present on more than 1 page"
+                        sig_annotation_obj = annot_obj
         return sig_annotation_obj
 
     def _add_fonts(self):

@@ -118,7 +118,7 @@ class StructureTreeBuilder:
         )
         self.doc_struct_elem.k.append(struct_elem)
         self.struct_tree_root.parent_tree.nums[struct_parents_id].append(struct_elem)
-        return struct_elem
+        return struct_elem, struct_parents_id
 
     def next_mcid_for_page(self, page_number):
         return sum(

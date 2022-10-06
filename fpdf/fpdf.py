@@ -72,7 +72,7 @@ from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
 from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
 from .line_break import Fragment, MultiLineBreak, TextLine
-from .output import OutputProducer, PDFFontDescriptor, ZOOM_CONFIGS
+from .output import OutputProducer, PDFFontDescriptor, PDFPage, ZOOM_CONFIGS
 from .outline import OutlineSection
 from .recorder import FPDFRecorder
 from .structure_tree import StructureTreeBuilder
@@ -250,16 +250,11 @@ class FPDF(GraphicsStateMixin):
             )
         super().__init__()
         self.page = 0  # current page number
-        # Associative array from page number to dicts containing pages and metadata:
-        self.pages = {}
-        self.fonts = {}  # array of used fonts
-        self.images = {}  # array of used images
-        # map page numbers to a list of PDFAnnotation; they will be inlined in the Page object:
-        self.annots = defaultdict(list)
-        # map page numbers to a list of PDFAnnotation; they will be embedded in the doc as separated objects:
-        self.annots_as_obj = defaultdict(list)
-        self.links = {}  # map link indices (starting at 1) to Destination objects
-        self.embedded_files = []
+        self.pages = {}  # array of PDFPage objects starting at index 1
+        self.fonts = {}  # map font string keys to dicts describing the fonts used
+        self.images = {}  # map image identifiers to dicts describing the images
+        self.links = {}  # array of Destination objects starting at index 1
+        self.embedded_files = []  # array of PDFEmbeddedFile
 
         self.in_footer = False  # flag set while rendering footer
         # indicates that we are inside an .unbreakable() code block:
@@ -822,11 +817,11 @@ class FPDF(GraphicsStateMixin):
     ):
         self.page += 1
         if new_page:
-            page = {
-                "content": bytearray(),
-                "duration": duration,
-                "transition": transition,
-            }
+            page = PDFPage(
+                contents=bytearray(),
+                duration=duration,
+                transition=transition,
+            )
             self.pages[self.page] = page
             if transition:
                 self._set_min_pdf_version("1.5")
@@ -851,7 +846,7 @@ class FPDF(GraphicsStateMixin):
                 orientation or self.def_orientation, page_width_pt, page_height_pt
             )
             self.page_break_trigger = self.h - self.b_margin
-        page["w_pt"], page["h_pt"] = self.w_pt, self.h_pt
+        page.set_dimensions(self.w_pt, self.h_pt)
 
     def header(self):
         """
@@ -2013,14 +2008,12 @@ class FPDF(GraphicsStateMixin):
             dest=dest,
             border_width=border_width,
         )
-        self.annots[self.page].append(link_annot)
+        self.pages[self.page].annots.append(link_annot)
         if alt_text is not None:
             # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
             # but tests with Adobe Acrobat Reader reveal that the page /StructParents inserted below
             # is enough to link the marked content in the hierarchy tree with this annotation link.
-            self._add_marked_content(
-                page_number=self.page, struct_type="/Link", alt_text=alt_text
-            )
+            self._add_marked_content(struct_type="/Link", alt_text=alt_text)
         return link_annot
 
     def embed_file(
@@ -2114,7 +2107,7 @@ class FPDF(GraphicsStateMixin):
             name=FileAttachmentAnnotationName.coerce(name) if name else None,
             flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
         )
-        self.annots[self.page].append(annotation)
+        self.pages[self.page].annots.append(annotation)
         return annotation
 
     @check_page
@@ -2143,7 +2136,7 @@ class FPDF(GraphicsStateMixin):
             name=AnnotationName.coerce(name) if name else None,
             flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
         )
-        self.annots[self.page].append(annotation)
+        self.pages[self.page].annots.append(annotation)
         return annotation
 
     @check_page
@@ -2166,7 +2159,7 @@ class FPDF(GraphicsStateMixin):
             h * self.k,
             action=action,
         )
-        self.annots[self.page].append(annotation)
+        self.pages[self.page].annots.append(annotation)
         return annotation
 
     @contextmanager
@@ -2200,7 +2193,7 @@ class FPDF(GraphicsStateMixin):
                 modification_time=modification_time,
                 page=page,
             )
-            self._text_quad_points = defaultdict(list)
+        self._text_quad_points = defaultdict(list)
         self._record_text_quad_points = False
 
     add_highlight = highlight  # For backward compatibilty
@@ -2255,7 +2248,7 @@ class FPDF(GraphicsStateMixin):
             title=title,
             quad_points=quad_points,
         )
-        self.annots[page].append(annotation)
+        self.pages[page].annots.append(annotation)
         return annotation
 
     @check_page
@@ -2291,7 +2284,7 @@ class FPDF(GraphicsStateMixin):
             contents=contents,
             title=title,
         )
-        self.annots[self.page].append(annotation)
+        self.pages[self.page].annots.append(annotation)
         return annotation
 
     @check_page
@@ -3670,7 +3663,7 @@ class FPDF(GraphicsStateMixin):
         """
         mcid = self.struct_builder.next_mcid_for_page(self.page)
         struct_elem = self._add_marked_content(
-            page_number=self.page, struct_type="/Figure", mcid=mcid, **kwargs
+            struct_type="/Figure", mcid=mcid, **kwargs
         )
         start_page = self.page
         self._out(f"/P <</MCID {mcid}>> BDC")
@@ -3684,7 +3677,10 @@ class FPDF(GraphicsStateMixin):
         Can receive as named arguments any of the entries described in section 14.7.2 'Structure Hierarchy'
         of the PDF spec: iD, a, c, r, lang, e, actualText
         """
-        struct_elem = self.struct_builder.add_marked_content(**kwargs)
+        struct_elem, spid = self.struct_builder.add_marked_content(
+            page_number=self.page, **kwargs
+        )
+        self.pages[self.page].struct_parents = spid
         self._set_min_pdf_version("1.4")  # due to using /MarkInfo
         return struct_elem
 
@@ -3862,25 +3858,22 @@ class FPDF(GraphicsStateMixin):
                 reason=reason,
             ),
         )
-        self.annots_as_obj[self.page].append(annotation)
+        self.pages[self.page].annots.append(annotation)
 
     def _substitute_page_number(self):
-        nb = self.pages_count  # total number of pages
         substituted = False
         # Replace number of pages in fonts using subsets (unicode)
         alias = self.str_alias_nb_pages.encode("utf-16-be")
-        encoded_nb = str(nb).encode("utf-16-be")
+        encoded_nb = str(self.pages_count).encode("utf-16-be")
         for page in self.pages.values():
-            new_content = page["content"].replace(alias, encoded_nb)
-            substituted |= page["content"] != new_content
-            page["content"] = new_content
+            substituted |= alias in page.contents
+            page.contents = page.contents.replace(alias, encoded_nb)
         # Now repeat for no pages in non-subset fonts
         alias = self.str_alias_nb_pages.encode("latin-1")
-        encoded_nb = str(nb).encode("latin-1")
+        encoded_nb = str(self.pages_count).encode("latin-1")
         for page in self.pages.values():
-            new_content = page["content"].replace(alias, encoded_nb)
-            substituted |= page["content"] != new_content
-            page["content"] = new_content
+            substituted |= alias in page.contents
+            page.contents = page.contents.replace(alias, encoded_nb)
         if substituted:
             LOGGER.debug(
                 "Substitution of '%s' was performed in the document",
@@ -3955,7 +3948,7 @@ class FPDF(GraphicsStateMixin):
             s = s.encode("latin1")
         if not self.page:
             raise FPDFException("No page open, you need to call add_page() first")
-        self.pages[self.page]["content"] += s + b"\n"
+        self.pages[self.page].contents += s + b"\n"
 
     @check_page
     def interleaved2of5(self, txt, x, y, w=1, h=10):
