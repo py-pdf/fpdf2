@@ -1,23 +1,21 @@
-"""PDF Syntax Helpers
+"""**PDF Syntax Helpers**
 
-Functions in this module take variable input and produce PDF Syntax features
-as they are described in the Adobe PDF Reference Manual, found here:
-http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf
+Functions in this module take variable input and produce PDF Syntax features.
 
 Most of what happens in a PDF happens in objects, which are formatted like so:
-<pre>
+```
 3 0 obj
 <</Type /Page
 /Parent 1 0 R
 /Resources 2 0 R
 /Contents 4 0 R>>
 endobj
-</pre>
+```
 
-The first line says that this is the third object in the structure of the
-document.
+The first line says that this is the third object in the structure of the document.
 
 There are 8 kinds of objects (Adobe Reference, 51):
+
 * Boolean values
 * Integer and real numbers
 * Strings
@@ -30,41 +28,36 @@ There are 8 kinds of objects (Adobe Reference, 51):
 The `<<` in the second line and the `>>` in the line preceding `endobj` denote
 that it is a dictionary object. Dictionaries map Names to other objects.
 
-Names are the strings preceded by '/', valid Names do not have to start with a
+Names are the strings preceded by `/`, valid Names do not have to start with a
 capital letter, they can be any ascii characters, # and two characters can
 escape non-printable ascii characters, described on page 57.
 
 `3 0 obj` means what follows here is the third object, but the name Type
 (represented here by `/Type`) is mapped to an indirect object reference:
-`0 obj` vs `0 R`. (Page 64 of Adobe Reference)
+`0 obj` vs `0 R`.
 
 The structure of this data, in python/dict form, is thus:
+```
 third_obj = {
   '/Type': '/Page'),
   '/Parent': iobj_ref(1),
   '/Resources': iobj_ref(2),
   '/Contents': iobj_ref(4),
 }
+```
 
-Some additional notes:
-
-Streams are of the form:
-
-<pre>
+Content streams are of the form:
+```
 4 0 obj
 <</Filter /ASCIIHexDecode /Length 22>>
 stream
 68656c6c6f20776f726c64
 endstream
 endobj
-</pre>
+```
 
 In this case, the ASCIIHexDecode filter is used because
-"68656c6c6f20776f726c64" is "hello world" in ascii, and 22 is the length of
-that string.
-
-As of this writing, I am not sure how length is actually calculated, so this
-remains something to be looked into.
+"68656c6c6f20776f726c64" is "hello world" in ascii, and 22 is the length of that string.
 """
 import re, zlib
 from abc import ABC

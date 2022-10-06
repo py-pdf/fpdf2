@@ -75,7 +75,7 @@ from .line_break import Fragment, MultiLineBreak, TextLine
 from .output import OutputProducer, PDFFontDescriptor, ZOOM_CONFIGS
 from .outline import OutlineSection
 from .recorder import FPDFRecorder
-from .structure_tree import MarkedContent, StructureTreeBuilder
+from .structure_tree import StructureTreeBuilder
 from .sign import Signature
 from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ
@@ -83,7 +83,6 @@ from .util import (
     escape_parens,
     format_date,
     get_scale_factor,
-    object_id_for_page,
 )
 
 # Public global variables:
@@ -279,7 +278,6 @@ class FPDF(GraphicsStateMixin):
         self.oversized_images = None
         self.oversized_images_ratio = 2  # number of pixels per UserSpace point
         self.struct_builder = StructureTreeBuilder()
-        self._struct_parents_id_per_page = {}  # {page_object_id -> StructParent(s) ID}
         self._toc_placeholder = None  # optional ToCPlaceholder instance
         self._outline = []  # list of OutlineSection
         self._sign_key = None
@@ -362,7 +360,10 @@ class FPDF(GraphicsStateMixin):
         self.buffer = None
 
     def write_html(self, text, *args, **kwargs):
-        """Parse HTML and convert it to PDF"""
+        """
+        Parse HTML and convert it to PDF.
+        cf. https://pyfpdf.github.io/fpdf2/HTML.html
+        """
         kwargs2 = vars(self)
         # Method arguments must override class & instance attributes:
         kwargs2.update(kwargs)
@@ -2017,9 +2018,8 @@ class FPDF(GraphicsStateMixin):
             # Note: the spec indicates that a /StructParent could be added **inside* this /Annot,
             # but tests with Adobe Acrobat Reader reveal that the page /StructParents inserted below
             # is enough to link the marked content in the hierarchy tree with this annotation link.
-            page_object_id = object_id_for_page(self.page)
             self._add_marked_content(
-                page_object_id, struct_type="/Link", alt_text=alt_text
+                page_number=self.page, struct_type="/Link", alt_text=alt_text
             )
         return link_annot
 
@@ -3668,31 +3668,25 @@ class FPDF(GraphicsStateMixin):
         Can receive as named arguments any of the entries described in section 14.7.2 'Structure Hierarchy'
         of the PDF spec: iD, a, c, r, lang, e, actualText
         """
-        page_object_id = object_id_for_page(self.page)
-        mcid = self.struct_builder.next_mcid_for_page(page_object_id)
-        marked_content = self._add_marked_content(
-            page_object_id, struct_type="/Figure", mcid=mcid, **kwargs
+        mcid = self.struct_builder.next_mcid_for_page(self.page)
+        struct_elem = self._add_marked_content(
+            page_number=self.page, struct_type="/Figure", mcid=mcid, **kwargs
         )
         start_page = self.page
         self._out(f"/P <</MCID {mcid}>> BDC")
-        yield marked_content
+        yield struct_elem
         if self.page != start_page:
             raise FPDFException("A page jump occured inside a marked sequence")
         self._out("EMC")
 
-    def _add_marked_content(self, page_object_id, **kwargs):
+    def _add_marked_content(self, **kwargs):
         """
         Can receive as named arguments any of the entries described in section 14.7.2 'Structure Hierarchy'
         of the PDF spec: iD, a, c, r, lang, e, actualText
         """
-        struct_parents_id = self._struct_parents_id_per_page.get(page_object_id)
-        if struct_parents_id is None:
-            struct_parents_id = len(self._struct_parents_id_per_page)
-            self._struct_parents_id_per_page[page_object_id] = struct_parents_id
-        marked_content = MarkedContent(page_object_id, struct_parents_id, **kwargs)
-        self.struct_builder.add_marked_content(marked_content)
+        struct_elem = self.struct_builder.add_marked_content(**kwargs)
         self._set_min_pdf_version("1.4")  # due to using /MarkInfo
-        return marked_content
+        return struct_elem
 
     @check_page
     def ln(self, h=None):
@@ -4271,7 +4265,7 @@ class FPDF(GraphicsStateMixin):
                 f"Incoherent hierarchy: cannot start a level {level} section after a level {self._outline[-1].level} one"
             )
         dest = DestinationXYZ(self.page, top=self.h_pt - self.y * self.k)
-        struct_elem = None
+        outline_struct_elem = None
         if self.section_title_styles:
             # We first check if adding this multi-cell will trigger a page break:
             with self.offset_rendering() as pdf:
@@ -4287,8 +4281,8 @@ class FPDF(GraphicsStateMixin):
             if pdf.page_break_triggered:
                 # If so, we trigger a page break manually beforehand:
                 self.add_page()
-            with self._marked_sequence(title=name) as marked_content:
-                struct_elem = self.struct_builder.struct_elem_per_mc[marked_content]
+            with self._marked_sequence(title=name) as struct_elem:
+                outline_struct_elem = struct_elem
                 with self._apply_style(self.section_title_styles[level]):
                     self.multi_cell(
                         w=self.epw,
@@ -4297,7 +4291,9 @@ class FPDF(GraphicsStateMixin):
                         new_x=XPos.LMARGIN,
                         new_y=YPos.NEXT,
                     )
-        self._outline.append(OutlineSection(name, level, self.page, dest, struct_elem))
+        self._outline.append(
+            OutlineSection(name, level, self.page, dest, outline_struct_elem)
+        )
 
     @contextmanager
     def _apply_style(self, title_style):

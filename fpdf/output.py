@@ -1,6 +1,6 @@
 # pylint: disable=protected-access
 import logging
-from collections import OrderedDict
+from collections import defaultdict, OrderedDict
 from contextlib import contextmanager
 from io import BytesIO
 
@@ -15,7 +15,6 @@ from .syntax import iobj_ref as pdf_ref
 from .util import (
     enclose_in_parens,
     format_date,
-    PERMANENT_INITIAL_OBJ_IDS_COUNT,
 )
 
 from fontTools import ttLib
@@ -295,18 +294,17 @@ class OutputProducer:
     def __init__(self, fpdf):
         self.fpdf = fpdf
         self.pdf_objs = []
-        self.n = PERMANENT_INITIAL_OBJ_IDS_COUNT  # current PDF object number - TODO: initialize this to 0 & rename it
+        self.n = 2  # current PDF object number - TODO: initialize this to 0 & rename it
         # array of PDF object offsets in self.buffer, used to build the xref table:
         self.offsets = {}
         self.trace_labels_per_obj_id = {}
+        self.sections_size_per_trace_label = defaultdict(int)
         self.buffer = bytearray()  # resulting output buffer
 
     def bufferize(self):
         "This method DOES NOT alter the target FPDF instance in any way"
-        LOGGER.debug("Final doc sections size summary:")
         fpdf = self.fpdf
-        # TODO: temporary, remove this line:
-        resources_dict_obj_id = PERMANENT_INITIAL_OBJ_IDS_COUNT
+        resources_dict_obj_id = self.n  # TODO: temporary, remove this line
 
         # 1. Insert all objects in the order required to build a linearized PDF,
         #    and assign IDs to those objects:
@@ -342,6 +340,8 @@ class OutputProducer:
         # 2. Inject all PDF object references required:
         for page_obj in page_objs:
             page_obj.parent = pdf_ref(pages_root_obj.id)
+        for struct_elem in fpdf.struct_builder.doc_struct_elem.k:
+            struct_elem.pg = page_objs[struct_elem.page_number() - 1]
 
         # WIP: linearized order
         # self._add_xref_and_trailer(page=1)
@@ -368,6 +368,7 @@ class OutputProducer:
                 self._out(pdf_obj.serialize())
         self._put_xref_and_trailer(catalog_obj_id, info_obj_id)
         self._out("%%EOF")
+        self._log_final_sections_sizes()
 
         if fpdf._sign_key:
             self.buffer = sign_content(
@@ -460,7 +461,7 @@ class OutputProducer:
                 resources_dict_obj_id=resources_dict_obj_id,
                 annots=annots,
                 group=group,
-                spid=fpdf._struct_parents_id_per_page.get(page_obj_id),
+                spid=fpdf.struct_builder.spid_per_page_number.get(page_number),
             )
             self._add_pdf_obj(page_obj, "pages")
             page_objs.append(page_obj)
@@ -897,7 +898,12 @@ class OutputProducer:
     def _trace_size(self, label):
         prev_size = len(self.buffer)
         yield
-        LOGGER.debug("- %s.size: %s", label, _sizeof_fmt(len(self.buffer) - prev_size))
+        self.sections_size_per_trace_label[label] += len(self.buffer) - prev_size
+
+    def _log_final_sections_sizes(self):
+        LOGGER.debug("Final size summary of the biggest document sections:")
+        for label, section_size in self.sections_size_per_trace_label.items():
+            LOGGER.debug("- %s: %s", label, _sizeof_fmt(section_size))
 
 
 def _tt_font_widths(font, maxUni):

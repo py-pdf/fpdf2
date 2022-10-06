@@ -1,4 +1,4 @@
-from fpdf.structure_tree import MarkedContent, PDFObject, StructureTreeBuilder
+from fpdf.structure_tree import PDFObject, StructureTreeBuilder
 
 
 def test_pdf_object_serialize():
@@ -87,7 +87,7 @@ endobj"""
 def test_single_image_structure_tree():
     struct_builder = StructureTreeBuilder()
     struct_builder.add_marked_content(
-        MarkedContent(1, 0, "/Figure", 0, "Image title", "Image description")
+        1, "/Figure", 0, "Image title", "Image description"
     )
     assert (
         _serialize(struct_builder, first_object_id=3)
@@ -117,7 +117,6 @@ endobj
 /Alt <feff0049006d0061006700650020006400650073006300720069007000740069006f006e>
 /K [0]
 /P 4 0 R
-/Pg 1 0 R
 /S /Figure
 /T <feff0049006d0061006700650020007400690074006c0065>
 /Type /StructElem
