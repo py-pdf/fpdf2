@@ -787,10 +787,10 @@ class FPDF(GraphicsStateMixin):
         # Set colors
         self.draw_color = dc
         if dc != self.DEFAULT_DRAW_COLOR:
-            self._out(dc.pdf_repr().upper())
+            self._out(dc.serialize().upper())
         self.fill_color = fc
         if fc != self.DEFAULT_FILL_COLOR:
-            self._out(fc.pdf_repr().lower())
+            self._out(fc.serialize().lower())
         self.text_color = tc
 
         # BEGIN Page header
@@ -805,10 +805,10 @@ class FPDF(GraphicsStateMixin):
 
         if self.draw_color != dc:  # Restore colors
             self.draw_color = dc
-            self._out(dc.pdf_repr().upper())
+            self._out(dc.serialize().upper())
         if self.fill_color != fc:
             self.fill_color = fc
-            self._out(fc.pdf_repr().lower())
+            self._out(fc.serialize().lower())
         self.text_color = tc
 
         if stretching != 100:  # Restore stretching
@@ -894,7 +894,7 @@ class FPDF(GraphicsStateMixin):
         else:
             self.draw_color = drawing.DeviceRGB(r / 255, g / 255, b / 255)
         if self.page > 0:
-            self._out(self.draw_color.pdf_repr().upper())
+            self._out(self.draw_color.serialize().upper())
 
     def set_fill_color(self, r, g=-1, b=-1):
         """
@@ -913,7 +913,7 @@ class FPDF(GraphicsStateMixin):
         else:
             self.fill_color = drawing.DeviceRGB(r / 255, g / 255, b / 255)
         if self.page > 0:
-            self._out(self.fill_color.pdf_repr().lower())
+            self._out(self.fill_color.serialize().lower())
 
     def set_text_color(self, r, g=-1, b=-1):
         """
@@ -2333,7 +2333,7 @@ class FPDF(GraphicsStateMixin):
                 self._add_quad_points(x, y, w, h)
         attr_l = []
         if self.fill_color != self.text_color:
-            attr_l.append(f"{self.text_color.pdf_repr().lower()}")
+            attr_l.append(f"{self.text_color.serialize().lower()}")
         if attr_l:
             sl = ["q"] + attr_l + sl + ["Q"]
         self._out(" ".join(sl))
@@ -2809,7 +2809,7 @@ class FPDF(GraphicsStateMixin):
             s_start += dx
 
             if self.fill_color != self.text_color:
-                sl.append(self.text_color.pdf_repr().lower())
+                sl.append(self.text_color.serialize().lower())
 
             # do this once in advance
             u_space = escape_parens(" ".encode("utf-16-be").decode("latin-1"))

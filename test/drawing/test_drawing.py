@@ -82,7 +82,7 @@ class TestUtilities:
     def test_render_primitive(self, primitive, result):
         assert fpdf.drawing.render_pdf_primitive(primitive) == result
 
-    # Add check for bad primitives: class without pdf_repr, dict with non-Name
+    # Add check for bad primitives: class without serialize, dict with non-Name
     # keys. Check for proper escaping of Name and string edge cases
     @pytest.mark.parametrize("primitive, error_type", parameters.pdf_bad_primitives)
     def test_error_on_bad_primitive(self, primitive, error_type):

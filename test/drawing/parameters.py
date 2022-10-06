@@ -73,7 +73,7 @@ r = fpdf.drawing.Raw
 
 
 class CustomPrimitive:
-    def pdf_repr(self):
+    def serialize(self):
         return "custom primitive"
 
 

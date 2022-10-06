@@ -125,7 +125,7 @@ class Name(str):
         b"[^" + bytes(v for v in range(33, 127) if v not in b"()<>[]{}/%#\\") + b"]"
     )
 
-    def pdf_repr(self) -> str:
+    def serialize(self) -> str:
         escaped = self.NAME_ESC.sub(
             lambda m: b"#%02X" % m[0][0], self.encode()
         ).decode()
@@ -219,12 +219,8 @@ def build_obj_dict(key_values):
             value = value.value
         if isinstance(value, PDFObject):  # indirect object reference
             value = value.ref
-        elif hasattr(
-            value, "pdf_repr"
-        ):  # e.g. Name - TODO: rename all occurences to serialize
-            value = value.pdf_repr()
         elif hasattr(value, "serialize"):
-            # e.g. PDFArray, PDFString, Destination, Action...
+            # e.g. PDFArray, PDFString, Name, Destination, Action...
             value = value.serialize()
         elif isinstance(value, bool):
             value = str(value).lower()
