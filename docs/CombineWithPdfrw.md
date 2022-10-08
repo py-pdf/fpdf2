@@ -1,16 +1,10 @@
-# Existing PDFs #
+# Combine with Pdfrw
 
-`fpdf2` cannot **parse** existing PDF files.
-
-However, other Python libraries can be combined with `fpdf2`
-in order to add new content to existing PDF files.
-
-This page provides several examples of doing so using [`pdfrw`](https://github.com/pmaupin/pdfrw),
+This page provides several examples of using fpdf with [`pdfrw`](https://github.com/pmaupin/pdfrw),
 a great zero-dependency pure Python library dedicated to reading & writing PDFs,
 with numerous examples and a very clean set of classes modelling the PDF internal syntax.
 
-
-## Adding content onto an existing PDF page ##
+## Adding content onto an existing PDF page
 
 ```python
 import sys
@@ -37,8 +31,7 @@ PageMerge(writer.pagearray[ON_PAGE_INDEX]).add(new_content(), prepend=UNDERNEATH
 writer.write(OUT_FILEPATH)
 ```
 
-
-## Adding a page to an existing PDF ##
+## Adding a page to an existing PDF
 
 ```python
 import sys
