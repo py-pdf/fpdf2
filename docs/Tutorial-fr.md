@@ -93,7 +93,21 @@ Chaque fois qu'une ligne atteint le bord d'une cellule ou qu'un caractère de re
 Deux propriétés sont définies pour le document : le titre ([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) et l'auteur ([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Les propriétés peuvent être trouvées en ouvrant le document PDF avec Acrobat Reader. Elles sont alors visibles dans le menu Fichier -> Propriétés du document.
 
 ## Tuto 4 - Colonnes multiples ##
-En cours de traduction.
+Cet exemple est une variante du précédent qui montre comment répartir le texte sur plusieurs colonnes.
+
+```python
+{% include "../tutorial/tuto4.py" %}
+```
+
+[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
+
+[Jules Verne text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+
+La principale différence avec le tutoriel précédent est l'utilisation des méthodes [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) et set_col.
+
+En utilisant la méthode [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break), une fois que la cellule franchit la limite inférieure de la page, elle vérifie le numéro de la colonne actuelle. Si celui-ci est inférieur à 2 (nous avons choisi de diviser la page en trois colonnes), il appelle la méthode set_col, en augmentant le numéro de la colonne et en modifiant la position de la colonne suivante pour que le texte puisse s'y poursuivre.
+
+Une fois que la limite inférieure de la troisième colonne est atteinte, la méthode [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) sera réinitialisée et retournera à la première colonne. Cela déclenchera un saut de page.
 
 ## Tuto 5 - Créer des tables ##
 En cours de traduction.
