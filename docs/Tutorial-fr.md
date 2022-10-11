@@ -130,4 +130,29 @@ Le deuxième tableau apporte quelques améliorations : chaque colonne a sa propr
 Le troisième tableau est similaire au deuxième mais utilise des couleurs. Les couleurs de remplissage, de texte et de ligne sont simplement spécifiées. Une coloration alternative pour les lignes est obtenue en utilisant des cellules alternativement transparentes et remplies.
 
 ## Tuto 6 - Créer des liens et mélanger différents styles de textes ##
-En cours de traduction.
+Ce tutoriel explique plusieurs façons d'insérer des liens à l'intérieur d'un document pdf, ainsi que l'ajout de liens vers des sources externes.
+
+Il montrera également plusieurs façons d'utiliser différents styles de texte (gras, italique, souligné) dans un même texte.
+
+```python
+{% include "../tutorial/tuto6.py" %}
+```
+
+[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
+[fpdf2-logo](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
+
+La nouvelle méthode présentée ici pour imprimer du texte est [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). Elle est très similaire à [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). Les principales différences sont les suivantes :
+
+- La fin de la ligne se trouve dans la marge de droite et la ligne suivante commence dans la marge de gauche.
+- La position actuelle se déplace à la fin du texte.
+
+Cette méthode nous permet donc d'écrire un morceau de texte, de modifier le style de police et de reprendre exactement là où nous nous sommes arrêtés.
+En revanche, son principal inconvénient est que nous ne pouvons pas justifier le texte comme nous le faisons avec la méthode [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell).
+
+Dans la première page de l'exemple, nous avons utilisé [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) à cette fin. Le début de la phrase est écrit en style normal, puis en utilisant la méthode [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), nous sommes passés au soulignement et avons terminé la phrase.
+
+Pour ajouter un lien interne pointant vers la deuxième page, nous avons utilisé la méthode [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link), qui crée une zone cliquable que nous avons nommée "lien" et qui dirige vers un autre endroit du document. Sur la deuxième page, nous avons utilisé [set_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link) pour définir la zone de destination du lien que nous venons de créer.
+
+Pour créer le lien externe à l'aide d'une image, nous avons utilisé [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). Cette méthode a la possibilité de transmettre un lien comme l'un de ses arguments. Le lien peut être interne ou externe.
+
+Comme alternative, une autre option pour changer le style de police et ajouter des liens est d'utiliser la méthode `write_html()`. Il s'agit d'un analyseur html qui permet d'ajouter du texte, de changer le style de police et d'ajouter des liens en utilisant le html.
