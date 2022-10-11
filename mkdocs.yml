@@ -130,10 +130,11 @@ nav:
   - 'Signing':                        'Signing.md'
   - 'File attachments':               'FileAttachments.md'
 - 'Mixing other libs':
-  - 'Existing PDFs':                  'ExistingPDFs.md'
+  - 'Combine with PyPDF2':            'CombineWithPyPDF2.md'
+  - 'Combine with Borb':              'CombineWithBorb.md'
+  - 'Combine with Pdfrw':             'CombineWithPdfrw.md'
   - 'Usage in web APIs':              'UsageInWebAPI.md'
   - 'Database storage':               'DatabaseStorage.md'
-  - 'borb':                           'borb.md'
 - 'Development':
   - 'Development Guidelines':         'Development.md'
   - 'Logging':                        'Logging.md'

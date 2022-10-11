@@ -31,7 +31,7 @@ def new_page(text):
 
 output = PdfWriter()
 
-page_mod = PdfReader(io.BytesIO(new_page('NYEH HEH HEH'))).getPage(0)
+page_mod = PdfReader(io.BytesIO(new_page('Hello World!'))).getPage(0)
 existing_page = PdfReader(IN_FILEPATH).getPage(0)
 existing_page.merge_page(page2=page_mod, expand=True)
 #The new content is added on top of the existing content. To adjust the position of the added content, use the in-built x,y parameters in fpdf.text
