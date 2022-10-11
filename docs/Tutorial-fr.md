@@ -110,7 +110,24 @@ En utilisant la méthode [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accep
 Une fois que la limite inférieure de la troisième colonne est atteinte, la méthode [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) sera réinitialisée et retournera à la première colonne. Cela déclenchera un saut de page.
 
 ## Tuto 5 - Créer des tables ##
-En cours de traduction.
+Ce tutoriel explique comment créer facilement des tableaux.
+
+Le code créera trois tableaux différents pour expliquer ce qui peut être réalisé avec quelques modifications.
+
+```python
+{% include "../tutorial/tuto5.py" %}
+```
+
+[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
+[Countries text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
+
+Comme un tableau n'est qu'une collection de cellules, il est naturel d'en construire un à partir de celles-ci.
+
+Le premier exemple est réalisé de la manière la plus basique qui soit : de simples cellules encadrées, toutes de même taille et alignées à gauche. Le résultat est rudimentaire mais très rapide à obtenir.
+
+Le deuxième tableau apporte quelques améliorations : chaque colonne a sa propre largeur, les titres sont centrés et les chiffres alignés à droite. De plus, les lignes horizontales ont été supprimées. C'est fait grâce au paramètre border de la méthode Cell() qui spécifie quels côtés de la cellule doivent être dessinés. Ici, nous voulons les côtés gauche (L) et droit (R). Il ne reste plus que le problème de la ligne horizontale pour terminer le tableau. Il y a deux possibilités pour le résoudre : vérifier la dernière ligne dans la boucle (dans ce cas nous utilisons LRB pour le paramètre de bordure) ou, comme fait ici, ajouter la ligne une fois la boucle terminée.
+
+Le troisième tableau est similaire au deuxième mais utilise des couleurs. Les couleurs de remplissage, de texte et de ligne sont simplement spécifiées. Une coloration alternative pour les lignes est obtenue en utilisant des cellules alternativement transparentes et remplies.
 
 ## Tuto 6 - Créer des liens et mélanger différents styles de textes ##
 En cours de traduction.
