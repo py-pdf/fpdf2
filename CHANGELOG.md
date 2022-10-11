@@ -23,7 +23,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - support for monochromatic images (PIL `image.mode == '1'`) thanks to @GerardoAllende
 - the 1000+ unit tests suite is now executed under Linux **<ins>and</ins>** Windows, with extra timing & memory usage checks ensuring we control `fpdf2` resource usage
 - New translation of the tutorial in [עברית](https://pyfpdf.github.io/fpdf2/Tutorial-he.html), thanks to @TzviGreenfeld
-- New documentation for using [PyPDF2](https://github.com/py-pdf/PyPDF2) with fpdf2 added
+- New documentation for using [PyPDF2](https://github.com/py-pdf/PyPDF2) with fpdf2 added, added by @devdev29: https://pyfpdf.github.io/fpdf2/CombineWithPyPDF2.html
 ### Deprecated
 - `HTMLMixin` is deprecated, and not needed anymore: **the `write_html()` method is now natively available in the `FPDF` class** - thanks to @yk-jp
 ### Removed

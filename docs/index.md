@@ -108,7 +108,7 @@ or [open a discussion](https://github.com/PyFPDF/fpdf2/discussions).
 
 * Looking for alternative libraries? Check out [this detailed list of PDF-related Python libs by Patrick Maupin (`pdfrw` author)](https://github.com/pmaupin/pdfrw#other-libraries).
   There is also [borb](https://github.com/jorisschellekens/borb), [PyPDF2](https://github.com/py-pdf/PyPDF2), [pikepdf](https://github.com/pikepdf/pikepdf), [WeasyPrint](https://github.com/Kozea/WeasyPrint) & [pydyf](https://pypi.org/project/pydyf/).
-  We have some documentations about combining `fpdf2` with [`borb`](borb.md) & [`pdfrw`](ExistingPDFs.md).
+  We have some documentations about combining `fpdf2` with [`borb`](CombineWithBorb.md), [`pdfrw`](CombineWithPdfrw.md), & [`PyPDF2`](CombineWithPyPDF2.md).
 * [Create PDFs with Python](https://www.youtube.com/playlist?list=PLjNQtX45f0dR9K2sMJ5ad9wVjqslNBIC0) : a series of tutorial videos by bvalgard
 * [digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2](https://github.com/digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2) : scripts ported from PHP to add transpareny to elements of the page or part of an image, allow to write circular text,
    draw pie charts and bar diagrams, embed JavaScript, draw rectangles with rounded corners, draw a star shape,
