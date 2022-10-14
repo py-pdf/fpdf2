@@ -103,7 +103,7 @@ Cet exemple est une variante du précédent qui montre comment répartir le text
 
 [Jules Verne text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-La principale différence avec le tutoriel précédent est l'utilisation des méthodes [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) et set_col.
+La principale différence avec le tutoriel précédent est l'utilisation des méthodes [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) et `set_col()`.
 
 En utilisant la méthode [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break), une fois que la cellule franchit la limite inférieure de la page, elle vérifie le numéro de la colonne actuelle. Si celui-ci est inférieur à 2 (nous avons choisi de diviser la page en trois colonnes), il appelle la méthode set_col, en augmentant le numéro de la colonne et en modifiant la position de la colonne suivante pour que le texte puisse s'y poursuivre.
 
