@@ -155,4 +155,4 @@ Pour ajouter un lien interne pointant vers la deuxième page, nous avons utilis�
 
 Pour créer le lien externe à l'aide d'une image, nous avons utilisé [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). Cette méthode a la possibilité de transmettre un lien comme l'un de ses arguments. Le lien peut être interne ou externe.
 
-Comme alternative, une autre option pour changer le style de police et ajouter des liens est d'utiliser la méthode `write_html()`. Il s'agit d'un analyseur html qui permet d'ajouter du texte, de changer le style de police et d'ajouter des liens en utilisant le html.
+Comme alternative, une autre option pour changer le style de police et ajouter des liens est d'utiliser la méthode `write_html()`. Celle-ci permet de lire du HTML pour produire du texte, changer le style de police ou encore ajouter des liens.
