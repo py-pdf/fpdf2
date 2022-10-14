@@ -151,7 +151,7 @@ En revanche, son principal inconvénient est que nous ne pouvons pas justifier l
 
 Dans la première page de l'exemple, nous avons utilisé [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) à cette fin. Le début de la phrase est écrit en style normal, puis en utilisant la méthode [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), nous sommes passés au soulignement et avons terminé la phrase.
 
-Pour ajouter un lien interne pointant vers la deuxième page, nous avons utilisé la méthode [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link), qui crée une zone cliquable que nous avons nommée "lien" et qui dirige vers un autre endroit du document. Sur la deuxième page, nous avons utilisé [set_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link) pour définir la zone de destination du lien que nous venons de créer.
+Pour ajouter un lien interne pointant vers la deuxième page, nous avons utilisé la méthode [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link), qui crée une zone cliquable que nous avons nommée `link` et qui dirige vers un autre endroit du document. Sur la deuxième page, nous avons utilisé [set_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link) pour définir la zone de destination du lien que nous venons de créer.
 
 Pour créer le lien externe à l'aide d'une image, nous avons utilisé [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). Cette méthode a la possibilité de transmettre un lien comme l'un de ses arguments. Le lien peut être interne ou externe.
 
