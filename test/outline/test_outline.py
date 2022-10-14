@@ -198,8 +198,8 @@ def test_toc_with_nb_and_footer(tmp_path):  # issue-548
 
 def test_russian_heading(tmp_path):  # issue-320
     pdf = FPDF()
-    pdf.add_font("Roboto", style="B", fname="test/fonts/Roboto-Regular.ttf")
-    pdf.set_font("Roboto", style="B")
+    pdf.add_font(fname="test/fonts/Roboto-Regular.ttf")
+    pdf.set_font("Roboto-Regular")
     pdf.add_page()
     pdf.start_section("Русский, English, 1 2 3...")
     pdf.write(8, "Русский текст в параграфе.")

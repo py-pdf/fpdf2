@@ -166,13 +166,11 @@ def test_cell_markdown_with_ttf_fonts(tmp_path):
 def test_cell_markdown_missing_ttf_font():
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf")
-    pdf.set_font("Roboto", size=60)
+    pdf.add_font(fname=HERE / "../fonts/Roboto-Regular.ttf")
+    pdf.set_font("Roboto-Regular", size=60)
     with pytest.raises(FPDFException) as error:
         pdf.cell(txt="**Lorem Ipsum**", markdown=True)
-    expected_msg = (
-        "Undefined font: robotoB - Use built-in fonts or FPDF.add_font() beforehand"
-    )
+    expected_msg = "Undefined font: roboto-regularB - Use built-in fonts or FPDF.add_font() beforehand"
     assert str(error.value) == expected_msg
 
 
@@ -192,8 +190,8 @@ def test_cell_markdown_bleeding(tmp_path):  # issue 241
 def test_cell_markdown_right_aligned(tmp_path):  # issue 333
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf")
-    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf")
+    pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf")
+    pdf.add_font("Roboto", style="B", fname=HERE / "../fonts/Roboto-Bold.ttf")
     pdf.set_font("Roboto", size=60)
     pdf.cell(
         0,
@@ -248,8 +246,8 @@ def test_cell_newpos_badinput():
 def test_cell_curfont_leak(tmp_path):  # issue #475
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf")
-    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf")
+    pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf")
+    pdf.add_font("Roboto", style="B", fname=HERE / "../fonts/Roboto-Bold.ttf")
     with pdf.local_context():
         pdf.set_font("Roboto", "B", 10)
         pdf.cell(txt="ABCDEFGH", new_x="LEFT", new_y="NEXT")

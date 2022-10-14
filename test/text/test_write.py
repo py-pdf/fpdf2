@@ -68,8 +68,8 @@ def test_write_font_stretching(tmp_path):  # issue #478
     pdf.ln()
     # unicode font
     pdf.set_stretching(100)
-    pdf.add_font("Droid", fname=FONTS_DIR / "DroidSansFallback.ttf")
-    pdf.set_font("Droid", "", 8)
+    pdf.add_font(fname=FONTS_DIR / "DroidSansFallback.ttf")
+    pdf.set_font("DroidSansFallback", "", 8)
     pdf.set_fill_color(255, 255, 0)
     pdf.write(txt=LOREM_IPSUM[:100])
     pdf.ln()

@@ -501,6 +501,15 @@ class FPDF(GraphicsStateMixin):
         self.b_margin = margin
         self.page_break_trigger = self.h - self.b_margin
 
+    @property
+    def default_page_dimensions(self):
+        "Return a pair (width, height) in the unit specified to FPDF constructor"
+        return (
+            (self.dw_pt, self.dh_pt)
+            if self.def_orientation == "P"
+            else (self.dh_pt, self.dw_pt)
+        )
+
     def _set_orientation(self, orientation, page_width_pt, page_height_pt):
         orientation = orientation.lower()
         if orientation in ("p", "portrait"):
@@ -1673,7 +1682,7 @@ class FPDF(GraphicsStateMixin):
             style,
         )
 
-    def add_font(self, family, style="", fname=None, uni="DEPRECATED"):
+    def add_font(self, family=None, style="", fname=None, uni="DEPRECATED"):
         """
         Imports a TrueType or OpenType font and makes it available
         for later calls to the `FPDF.set_font()` method.
@@ -1681,7 +1690,8 @@ class FPDF(GraphicsStateMixin):
         You will find more information on the "Unicode" documentation page.
 
         Args:
-            family (str): font family. Used as a reference for `FPDF.set_font()`
+            family (str): optional name of the font family. Used as a reference for `FPDF.set_font()`.
+                If not provided, use the base name of the `fname` font path, without extension.
             style (str): font style. "B" for bold, "I" for italic.
             fname (str): font file name. You can specify a relative or full path.
                 If the file is not found, it will be searched in `FPDF_FONT_DIR`.
@@ -1710,24 +1720,26 @@ class FPDF(GraphicsStateMixin):
             raise ValueError(
                 f"Unknown style provided (only B & I letters are allowed): {style}"
             )
-        fontkey = f"{family.lower()}{style}"
-
-        # Check if font already added or one of the core fonts
-        if fontkey in self.fonts or fontkey in self.core_fonts:
-            warnings.warn(f"Core font or font already added '{fontkey}': doing nothing")
-            return
 
         for parent in (".", FPDF_FONT_DIR):
             if not parent:
                 continue
 
             if (Path(parent) / fname).exists():
-                ttffilename = Path(parent) / fname
+                font_file_path = Path(parent) / fname
                 break
         else:
             raise FileNotFoundError(f"TTF Font file not found: {fname}")
 
-        font = ttLib.TTFont(ttffilename)
+        if family is None:
+            family = font_file_path.stem
+
+        fontkey = f"{family.lower()}{style}"
+        # Check if font already added or one of the core fonts
+        if fontkey in self.fonts or fontkey in self.core_fonts:
+            warnings.warn(f"Core font or font already added '{fontkey}': doing nothing")
+            return
+        font = ttLib.TTFont(font_file_path)
 
         scale = 1000 / font["head"].unitsPerEm
         default_width = round(scale * font["hmtx"].metrics[".notdef"][0])
@@ -1790,7 +1802,7 @@ class FPDF(GraphicsStateMixin):
             "up": round(font["post"].underlinePosition * scale),
             "ut": round(font["post"].underlineThickness * scale),
             "cw": char_widths,
-            "ttffile": ttffilename,
+            "ttffile": font_file_path,
             "fontkey": fontkey,
             "subset": SubsetMap(map(ord, sbarr)),
         }

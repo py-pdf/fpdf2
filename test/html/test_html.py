@@ -456,7 +456,7 @@ def test_html_font_color_name(tmp_path):
 
 def test_html_heading_hebrew(tmp_path):
     pdf = FPDF()
-    pdf.add_font("DejaVuSans", fname=HERE / "../fonts/DejaVuSans.ttf")
+    pdf.add_font(fname=HERE / "../fonts/DejaVuSans.ttf")
     pdf.set_font("DejaVuSans")
     pdf.add_page()
     pdf.write_html("<h1>Hebrew: שלום עולם</h1>")

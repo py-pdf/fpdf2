@@ -11,14 +11,14 @@ HERE = Path(__file__).resolve().parent
 def test_add_font_non_existing_file():
     pdf = FPDF()
     with pytest.raises(FileNotFoundError) as error:
-        pdf.add_font("MyFont", fname="non-existing-file.ttf")
+        pdf.add_font(fname="non-existing-file.ttf")
     assert str(error.value) == "TTF Font file not found: non-existing-file.ttf"
 
 
 def test_add_font_pkl():
     pdf = FPDF()
     with pytest.raises(ValueError) as error:
-        pdf.add_font("MyFont", fname="non-existing-file.pkl")
+        pdf.add_font(fname="non-existing-file.pkl")
     assert str(error.value) == (
         "Unsupported font file extension: .pkl. add_font() used to accept .pkl file as input, "
         "but for security reasons this feature is deprecated since v2.5.1 and has been removed in v2.5.3."
@@ -57,11 +57,11 @@ def test_deprecation_warning_for_FPDF_CACHE_DIR():
 
 
 def test_add_font_with_str_fname_ok(tmp_path):
-    font_file_path = HERE / "Roboto-Regular.ttf"
+    font_file_path = str(HERE / "Roboto-Regular.ttf")
     for font_cache_dir in (True, str(tmp_path), None):
         with pytest.warns(DeprecationWarning):
             pdf = FPDF(font_cache_dir=font_cache_dir)
-            pdf.add_font("Roboto-Regular", fname=str(font_file_path))
+            pdf.add_font(fname=font_file_path)
             pdf.set_font("Roboto-Regular", size=64)
             pdf.add_page()
             pdf.cell(txt="Hello World!")
@@ -84,8 +84,7 @@ def test_add_core_fonts():
 
 def test_render_en_dash(tmp_path):  # issue-166
     pdf = FPDF()
-    font_file_path = HERE / "Roboto-Regular.ttf"
-    pdf.add_font("Roboto-Regular", fname=str(font_file_path))
+    pdf.add_font(fname=HERE / "Roboto-Regular.ttf")
     pdf.set_font("Roboto-Regular", size=120)
     pdf.add_page()
     pdf.cell(w=pdf.epw, txt="–")  # U+2013

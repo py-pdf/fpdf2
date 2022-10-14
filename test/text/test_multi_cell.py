@@ -213,8 +213,8 @@ def test_multi_cell_table_with_automatic_page_break(tmp_path):  # issue 120
 def test_multi_cell_justified_with_unicode_font(tmp_path):  # issue 118
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("DejaVu", "", HERE / "../fonts/DejaVuSans.ttf")
-    pdf.set_font("DejaVu", "", 14)
+    pdf.add_font(fname=HERE / "../fonts/DejaVuSans.ttf")
+    pdf.set_font("DejaVuSans", size=14)
     text = 'Justified line containing "()" that is long enough to trigger wrapping and a line jump'
     pdf.multi_cell(w=0, h=8, txt=text, new_x="LMARGIN", new_y="NEXT")
     assert_pdf_equal(
@@ -263,8 +263,8 @@ def test_multicell_newpos_badinput():
 def test_multi_cell_j_paragraphs(tmp_path):  # issue 364
     pdf = FPDF(format="A5")
     pdf.add_page()
-    pdf.add_font("DejaVu", "", HERE / "../fonts/DejaVuSans.ttf")
-    pdf.set_font("DejaVu", "", 14)
+    pdf.add_font(fname=HERE / "../fonts/DejaVuSans.ttf")
+    pdf.set_font("DejaVuSans", size=14)
     pdf.set_margins(34, 55, 34)
     pdf.set_auto_page_break(auto=True, margin=55)
     # pylint: disable=line-too-long
@@ -351,8 +351,8 @@ def test_multi_cell_font_stretching(tmp_path):  # issue #478
     pdf.ln()
     # unicode font
     pdf.set_stretching(100)
-    pdf.add_font("Droid", fname=FONTS_DIR / "DroidSansFallback.ttf")
-    pdf.set_font("Droid", "", 8)
+    pdf.add_font(fname=FONTS_DIR / "DroidSansFallback.ttf")
+    pdf.set_font("DroidSansFallback", size=8)
     pdf.set_fill_color(255, 255, 0)
     pdf.multi_cell(w=50, txt=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
     pdf.ln()
@@ -374,8 +374,8 @@ def test_multi_cell_char_spacing(tmp_path):  # issue #489
     pdf.ln()
     # unicode font
     pdf.set_char_spacing(0)
-    pdf.add_font("Droid", fname=FONTS_DIR / "DroidSansFallback.ttf")
-    pdf.set_font("Droid", "", 8)
+    pdf.add_font(fname=FONTS_DIR / "DroidSansFallback.ttf")
+    pdf.set_font("DroidSansFallback", size=8)
     pdf.set_fill_color(255, 255, 0)
     pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
     pdf.ln()

@@ -19,6 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.6.0] - not released yet
 ### Added
 - demonstration Jupyter notebook: [tutorial/notebook.ipynb](https://github.com/PyFPDF/fpdf2/blob/master/tutorial/notebook.ipynb)
+- new [`.default_page_dimensions`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.default_page_dimensions) property on `FPDF` instances
 - support for description list (`<dl>`), description titles (`<dt>`), and description details (`<dd>`) in `write_html()` - thanks to @yk-jp
 - support for monochromatic images (PIL `image.mode == '1'`) thanks to @GerardoAllende
 - the 1000+ unit tests suite is now executed under Linux **<ins>and</ins>** Windows, with extra timing & memory usage checks ensuring we control `fpdf2` resource usage
@@ -35,6 +36,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - the SVG parser now accepts `stroke-width` attribute values with an explicit unit, thanks to @gmischler; [#526](https://github.com/PyFPDF/fpdf2/issues/526)
 - the SVG parser now accepts absolute units for `width` and `height` attributes, thanks to @darioackermann; [#555](https://github.com/PyFPDF/fpdf2/issues/555)
 ### Changed
+- the first parameter of `FPDF.add_font()` is now **optional**: if it is not provided, the base name of the `fname` font path is used to define the font family. Hence `pdf.add_font(fname="fonts/NotoSansArabic.ttf")` will define a font named `NotoSansArabic`.
 - forbid use of `get_y()` & `local_context()` inside `unbreakable()` as it is currently not supported; [#557](https://github.com/PyFPDF/fpdf2/discussions/557)
 - [fontTools](https://fonttools.readthedocs.io/en/latest/) minimal version requirement set to 4.34.0; [#524](https://github.com/PyFPDF/fpdf2/issues/524)
 

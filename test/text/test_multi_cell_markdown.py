@@ -46,13 +46,11 @@ def test_multi_cell_markdown_with_ttf_fonts(tmp_path):
 def test_multi_cell_markdown_missing_ttf_font():
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf")
-    pdf.set_font("Roboto", size=60)
+    pdf.add_font(fname=HERE / "../fonts/Roboto-Regular.ttf")
+    pdf.set_font("Roboto-Regular", size=60)
     with pytest.raises(fpdf.FPDFException) as error:
         pdf.multi_cell(w=pdf.epw, txt="**Lorem Ipsum**", markdown=True)
-    expected_msg = (
-        "Undefined font: robotoB - Use built-in fonts or FPDF.add_font() beforehand"
-    )
+    expected_msg = "Undefined font: roboto-regularB - Use built-in fonts or FPDF.add_font() beforehand"
     assert str(error.value) == expected_msg
 
 
