@@ -99,9 +99,9 @@ Cet exemple est une variante du précédent qui montre comment répartir le text
 {% include "../tutorial/tuto4.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
+[PDF généré](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
 
-[Jules Verne text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+[Extrait de Jules Verne](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 La principale différence avec le tutoriel précédent est l'utilisation des méthodes [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) et `set_col()`.
 
@@ -118,8 +118,8 @@ Le code créera trois tableaux différents pour expliquer ce qui peut être réa
 {% include "../tutorial/tuto5.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
-[Countries text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
+[PDF généré](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
+[Liste de pays](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
 
 Comme un tableau n'est qu'une collection de cellules, il est naturel d'en construire un à partir de celles-ci.
 
