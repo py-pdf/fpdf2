@@ -211,6 +211,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center"><a href="http://dario.icu/"><img src="https://avatars.githubusercontent.com/u/35274810?v=4?s=100" width="100px;" alt="Dario Ackermann"/><br /><sub><b>Dario Ackermann</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Adarioackermann" title="Bug reports">🐛</a></td>
       <td align="center"><a href="https://github.com/TzviGreenfeld"><img src="https://avatars.githubusercontent.com/u/43534411?v=4?s=100" width="100px;" alt="Tzvi Greenfeld"/><br /><sub><b>Tzvi Greenfeld</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=TzviGreenfeld" title="Documentation">📖</a></td>
       <td align="center"><a href="https://github.com/devdev29"><img src="https://avatars.githubusercontent.com/u/88680035?v=4?s=100" width="100px;" alt="devdev29"/><br /><sub><b>devdev29</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=devdev29" title="Documentation">📖</a></td>
+      <td align="center"><a href="https://github.com/Zenigata"><img src="https://avatars.githubusercontent.com/u/1022393?v=4?s=100" width="100px;" alt="Johan Bonneau"/><br /><sub><b>Johan Bonneau</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=Zenigata" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
