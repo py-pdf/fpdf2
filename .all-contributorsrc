@@ -679,6 +679,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "Zenigata",
+      "name": "Johan Bonneau",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1022393?v=4",
+      "profile": "https://github.com/Zenigata",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
