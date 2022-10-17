@@ -688,6 +688,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "jmunoz94",
+      "name": "Jesús Alberto Muñoz Mesa",
+      "avatar_url": "https://avatars.githubusercontent.com/u/48921408?v=4",
+      "profile": "https://github.com/jmunoz94",
+      "contributions": [
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
