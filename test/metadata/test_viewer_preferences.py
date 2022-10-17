@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from fpdf import FPDF, ViewerPreferences
 from test.conftest import assert_pdf_equal
 
@@ -35,3 +37,11 @@ def test_custom_viewer_preferences(tmp_path):
     pdf.add_page()
     pdf.cell(txt="page 2")
     assert_pdf_equal(pdf, HERE / "custom_viewer_preferences.pdf", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "non_full_screen_page_mode", ("FULL_SCREEN", "USE_ATTACHMENTS")
+)
+def test_invalid_viewer_preferences(non_full_screen_page_mode):
+    with pytest.raises(ValueError):
+        ViewerPreferences(non_full_screen_page_mode=non_full_screen_page_mode)

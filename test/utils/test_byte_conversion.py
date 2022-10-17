@@ -7,6 +7,11 @@ def test_string_to_bytes():
     assert b("foo") == expected
 
 
+def test_int_to_bytes():
+    expected = b"J"
+    assert b(74) == expected
+
+
 def test_bytes_conversion_error():
     with pytest.raises(ValueError) as error:
         b([1, 2, 3])

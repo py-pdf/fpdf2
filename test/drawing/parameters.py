@@ -39,6 +39,26 @@ hex_colors = (
     pytest.param(123, TypeError, id="bad type integer"),
 )
 
+rgb_colors = (
+    pytest.param(
+        "rgb(204, 170, 187)", fpdf.drawing.rgb8(r=204, g=170, b=187, a=None), id="RGB"
+    ),
+    pytest.param(
+        "rgb(13, 6, 240, 5)", fpdf.drawing.rgb8(r=13, g=6, b=240, a=5), id="RGBA"
+    ),
+    pytest.param(
+        "rgb( 192,  255 ,  238 )",
+        fpdf.drawing.rgb8(r=192, g=255, b=238, a=None),
+        id="rgb with extra spaces",
+    ),
+    pytest.param("rgb(a, s, d)", ValueError, id="bad characters"),
+    pytest.param("(240, 170, 187)", ValueError, id="missing rgb"),
+    pytest.param("rgb(10, 10, 10", ValueError, id="missing )"),
+    pytest.param("rgb(13, 6, 240, 5, 200)", ValueError, id="wrong length"),
+    pytest.param("rgba(13, 6, 240, 5)", ValueError, id="rgba instead of rgb"),
+    pytest.param(123, TypeError, id="bad type integer"),
+)
+
 numbers = (
     pytest.param(100, "100", id="integer"),
     pytest.param(Decimal("1.1"), "1.1", id="Decimal"),
@@ -84,6 +104,12 @@ pdf_primitives = (
         r("<< /key (value)\n/k2 true >>"),
         id="dict",
     ),
+)
+
+pdf_bad_primitives = (
+    pytest.param(type("EmptyClass", (), {}), TypeError, id="Class without bdf_repr"),
+    pytest.param({"element", 1, 2.0}, TypeError, id="unsupported (set)"),
+    pytest.param({"key": "value", "k2": True}, ValueError, id="dict with bad keys"),
 )
 
 T = fpdf.drawing.Transform
@@ -393,6 +419,7 @@ style_attributes = (
     pytest.param("stroke_join_style", "bevel", id="bevel stroke join"),
     pytest.param("stroke_cap_style", "butt", id="butt stroke cap"),
     pytest.param("stroke_cap_style", "square", id="square stroke cap"),
+    pytest.param("stroke_dash_pattern", 0.5, id="numeric stroke dash pattern"),
     pytest.param("stroke_dash_pattern", [0.5, 0.5], id="50-50 stroke dash pattern"),
     pytest.param("stroke_dash_pattern", [1, 2, 3, 1], id="complex stroke dash pattern"),
 )
@@ -430,6 +457,24 @@ invalid_styles = (
     pytest.param("fill_color", 2, TypeError, id="invalid numeric fill_color"),
     pytest.param("fill_opacity", "123123", TypeError, id="invalid string fill_opacity"),
     pytest.param("fill_opacity", 2, ValueError, id="invalid numeric fill_opacity"),
+    pytest.param("stroke_color", [2], TypeError, id="invalid stroke_color"),
+    pytest.param(
+        "stroke_dash_pattern", "123", TypeError, id="invalid string stroke_dash_pattern"
+    ),
+    pytest.param(
+        "stroke_dash_pattern",
+        [0.5, "0.5"],
+        TypeError,
+        id="invalid string in stroke_dash_pattern",
+    ),
+    pytest.param(
+        "stroke_dash_phase", "123", TypeError, id="invalid string stroke_dash_phase"
+    ),
+    pytest.param(
+        "stroke_miter_limit", "123", TypeError, id="invalid string stroke_miter_limit"
+    ),
+    pytest.param("stroke_width", [2], TypeError, id="invalid stroke_width"),
+    pytest.param("invalid_style_name", 2, AttributeError, id="invalid style name"),
 )
 
 
@@ -605,6 +650,21 @@ path_elements = (
 
 PP = fpdf.drawing.PaintedPath
 d = fpdf.drawing
+
+paint_rules = (
+    pytest.param(
+        fpdf.drawing.PathPaintRule.STROKE, fpdf.drawing.PathPaintRule.STROKE, id="Enum"
+    ),
+    pytest.param(
+        "FILL_EVENODD", fpdf.drawing.PathPaintRule.FILL_EVENODD, id="matching string"
+    ),
+    pytest.param(
+        "stroke_fill_nonzero",
+        fpdf.drawing.PathPaintRule.STROKE_FILL_NONZERO,
+        id="matching string after uppercasing",
+    ),
+    pytest.param(None, fpdf.drawing.PathPaintRule.DONT_PAINT, id="None"),
+)
 
 clipping_path_result = (
     pytest.param(

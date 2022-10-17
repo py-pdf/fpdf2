@@ -1175,7 +1175,7 @@ class GraphicsStyle:
     def paint_rule(self, new):
         if new is None:
             super().__setattr__("_paint_rule", PathPaintRule.DONT_PAINT)
-        if new is self.INHERIT:
+        elif new is self.INHERIT:
             super().__setattr__("_paint_rule", new)
         else:
             super().__setattr__("_paint_rule", PathPaintRule.coerce(new))

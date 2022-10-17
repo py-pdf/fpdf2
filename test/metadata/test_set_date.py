@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -23,3 +23,13 @@ def test_setting_old_date(tmp_path):
     # 2017, April 18th, almost 7:09a
     doc.set_creation_date(datetime(2017, 4, 18, 7, 8, 55).replace(tzinfo=timezone.utc))
     assert_pdf_equal(doc, HERE / "setting_old_date.pdf", tmp_path, at_epoch=False)
+
+
+def test_setting_non_utc_date(tmp_path):
+    doc = fpdf.FPDF()
+    doc.add_page()
+    # 2017, April 18th, almost 7:09a
+    doc.set_creation_date(
+        datetime(2017, 4, 18, 7, 8, 55).replace(tzinfo=timezone(timedelta(hours=5)))
+    )
+    assert_pdf_equal(doc, HERE / "setting_non_utc_date.pdf", tmp_path, at_epoch=False)

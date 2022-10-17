@@ -360,8 +360,8 @@ test_svg_transforms = (
         id="skew x-only",
     ),
     pytest.param(
-        "skew(2, 3)",
-        Transform.shearing(x=math.tan(math.radians(2)), y=math.tan(math.radians(3))),
+        "skew(3, 3)",
+        Transform.shearing(x=math.tan(math.radians(3))),
         no_error(),
         id="skew x and y",
     ),
@@ -583,7 +583,7 @@ test_svg_attribute_conversion = (
         '<path stroke-width="bad"/>',
         Gs(),
         pytest.raises(ValueError),
-        id="stroke-width number",
+        id="stroke-width invalid",
     ),
     pytest.param(
         '<path stroke-dasharray="1 2 3 4 5"/>',

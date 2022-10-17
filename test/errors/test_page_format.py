@@ -3,12 +3,19 @@ import pytest
 import fpdf
 
 
-def test_page_format_error_class():
+def test_page_format_error_both():
     with pytest.raises(TypeError) as e:
         fpdf.errors.FPDFPageFormatException(None, unknown=True, one=True)
 
     expected = "FPDF Page Format Exception cannot be both"
     assert expected in str(e.value)
+
+
+def test_page_format_error_other():
+    expected = "error message"
+    error = fpdf.errors.FPDFPageFormatException(expected)
+
+    assert expected in str(error)
 
 
 def test_page_format_error():

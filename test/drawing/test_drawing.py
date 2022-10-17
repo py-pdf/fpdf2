@@ -84,6 +84,10 @@ class TestUtilities:
 
     # Add check for bad primitives: class without pdf_repr, dict with non-Name
     # keys. Check for proper escaping of Name and string edge cases
+    @pytest.mark.parametrize("primitive, error_type", parameters.pdf_bad_primitives)
+    def test_error_on_bad_primitive(self, primitive, error_type):
+        with pytest.raises(error_type):
+            fpdf.drawing.render_pdf_primitive(primitive)
 
 
 class TestGraphicsStateDictRegistry:
@@ -158,6 +162,9 @@ class TestColors:
         assert cmyk.colors == (1, 1, 1, 0)
         assert cmyk_a.colors == (1, 1, 1, 0)
 
+        assert cmyk.pdf_repr() == "1 1 1 0 k"
+        assert cmyk_a.pdf_repr() == "1 1 1 0 k"
+
         with pytest.raises(ValueError):
             fpdf.drawing.DeviceCMYK(c=2, m=1, y=1, k=0)
 
@@ -195,6 +202,14 @@ class TestColors:
                 fpdf.drawing.color_from_hex_string(hex_string)
         else:
             assert fpdf.drawing.color_from_hex_string(hex_string) == result
+
+    @pytest.mark.parametrize("rgb_string, result", parameters.rgb_colors)
+    def test_rgb_string_parser(self, rgb_string, result):
+        if isinstance(result, type) and issubclass(result, Exception):
+            with pytest.raises(result):
+                fpdf.drawing.color_from_rgb_string(rgb_string)
+        else:
+            assert fpdf.drawing.color_from_rgb_string(rgb_string) == result
 
 
 class TestPoint:
@@ -451,6 +466,12 @@ class TestStyles:
         assert merged.stroke_width == 2
         assert merged.stroke_join_style == fpdf.drawing.StrokeJoinStyle.ROUND.value
         assert merged.stroke_cap_style == fpdf.drawing.StrokeCapStyle.BUTT.value
+
+    @pytest.mark.parametrize("paint_rule, expected", parameters.paint_rules)
+    def test_paint_rule(self, paint_rule, expected):
+        style = fpdf.drawing.GraphicsStyle()
+        style.paint_rule = paint_rule
+        assert style.paint_rule is expected
 
     def test_paint_rule_resolution(self):
         style = fpdf.drawing.GraphicsStyle()
