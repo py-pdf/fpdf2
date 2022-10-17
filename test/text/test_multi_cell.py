@@ -206,8 +206,27 @@ def test_multi_cell_table_with_automatic_page_break(tmp_path):  # issue 120
                 )
             pdf.ln(line_height)
     assert_pdf_equal(
-        pdf, HERE / "test_multi_cell_table_with_automatic_page_break.pdf", tmp_path
+        pdf, HERE / "multi_cell_table_with_automatic_page_break.pdf", tmp_path
     )
+
+
+def test_multi_cell_table_with_max_line_height(tmp_path):  # issue 589
+    """
+    When using multi_cell() with max_line_height to render multiline text,
+    the last line should be rendered like all the others
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica")
+    text = (
+        "Discard the water and serve the boiled gaozis."
+        " Tip: If you love spicy dishes, add a bit of our Red Silk Chili"
+        " (not included) with the gaozis"
+    )
+    pdf.multi_cell(w=120, h=50, txt=text, max_line_height=6, border=True)
+    pdf.ln()
+    pdf.multi_cell(w=120, h=18, txt=text, max_line_height=6, border=True)
+    assert_pdf_equal(pdf, HERE / "multi_cell_table_with_max_line_height.pdf", tmp_path)
 
 
 def test_multi_cell_justified_with_unicode_font(tmp_path):  # issue 118
@@ -217,9 +236,7 @@ def test_multi_cell_justified_with_unicode_font(tmp_path):  # issue 118
     pdf.set_font("DejaVuSans", size=14)
     text = 'Justified line containing "()" that is long enough to trigger wrapping and a line jump'
     pdf.multi_cell(w=0, h=8, txt=text, new_x="LMARGIN", new_y="NEXT")
-    assert_pdf_equal(
-        pdf, HERE / "test_multi_cell_justified_with_unicode_font.pdf", tmp_path
-    )
+    assert_pdf_equal(pdf, HERE / "multi_cell_justified_with_unicode_font.pdf", tmp_path)
 
 
 def test_multi_cell_split_only():  # discussion 314

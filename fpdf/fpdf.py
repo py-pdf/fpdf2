@@ -3235,14 +3235,22 @@ class FPDF(GraphicsStateMixin):
             ]
         if align == Align.X:
             prev_x = self.x
+        should_render_bottom_blank_cell = False
         for text_line_index, text_line in enumerate(text_lines):
             is_last_line = text_line_index == len(text_lines) - 1
-            if max_line_height is not None and h > max_line_height and not is_last_line:
+            should_render_bottom_blank_cell = False
+            if max_line_height is not None and h > max_line_height:
                 current_cell_height = max_line_height
                 h -= current_cell_height
+                if is_last_line:
+                    if h > 0 and len(text_lines) > 1:
+                        should_render_bottom_blank_cell = True
+                    else:
+                        h += current_cell_height
+                        current_cell_height = h
             else:
                 current_cell_height = h
-
+            has_line_after = not is_last_line or should_render_bottom_blank_cell
             new_page = self._render_styled_text_line(
                 text_line,
                 w,
@@ -3252,31 +3260,51 @@ class FPDF(GraphicsStateMixin):
                         "T" if "T" in border and text_line_index == 0 else "",
                         "L" if "L" in border else "",
                         "R" if "R" in border else "",
-                        "B" if "B" in border and is_last_line else "",
+                        "B" if "B" in border and not has_line_after else "",
                     )
                 ),
-                new_x=new_x if is_last_line else XPos.LEFT,
-                new_y=new_y if is_last_line else YPos.NEXT,
+                new_x=new_x if not has_line_after else XPos.LEFT,
+                new_y=new_y if not has_line_after else YPos.NEXT,
                 align=Align.L if (align == Align.J and is_last_line) else align,
                 fill=fill,
                 link=link,
             )
-            if is_last_line and new_page and new_y == YPos.TOP:
-                # When a page jump is performed and the requested y is TOP,
-                # pretend we started at the top of the text block on the new page.
-                # cf. test_multi_cell_table_with_automatic_page_break
-                prev_y = self.y
             page_break_triggered = page_break_triggered or new_page
             if not is_last_line and align == Align.X:
                 # prevent cumulative shift to the left
                 self.x = prev_x
-            if (
-                is_last_line
-                and text_line.trailing_nl
-                and new_y in (YPos.LAST, YPos.NEXT)
-            ):
-                # The line renderer can't handle trailing newlines in the text.
-                self.ln()
+        if should_render_bottom_blank_cell:
+            new_page = self._render_styled_text_line(
+                TextLine(
+                    "",
+                    text_width=0,
+                    number_of_spaces=0,
+                    justify=False,
+                    trailing_nl=False,
+                ),
+                w,
+                h=h,
+                border="".join(
+                    (
+                        "L" if "L" in border else "",
+                        "R" if "R" in border else "",
+                        "B" if "B" in border else "",
+                    )
+                ),
+                new_x=new_x,
+                new_y=new_y,
+                fill=fill,
+                link=link,
+            )
+            page_break_triggered = page_break_triggered or new_page
+        if new_page and new_y == YPos.TOP:
+            # When a page jump is performed and the requested y is TOP,
+            # pretend we started at the top of the text block on the new page.
+            # cf. test_multi_cell_table_with_automatic_page_break
+            prev_y = self.y
+        if text_line.trailing_nl and new_y in (YPos.LAST, YPos.NEXT):
+            # The line renderer can't handle trailing newlines in the text.
+            self.ln()
 
         if new_y == YPos.TOP:  # We may have jumped a few lines -> reset
             self.y = prev_y
