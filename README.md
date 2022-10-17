@@ -215,6 +215,7 @@ This library could only exist thanks to the dedication of many volunteers around
     </tr>
     <tr>
       <td align="center"><a href="https://github.com/jmunoz94"><img src="https://avatars.githubusercontent.com/u/48921408?v=4?s=100" width="100px;" alt="Jesús Alberto Muñoz Mesa"/><br /><sub><b>Jesús Alberto Muñoz Mesa</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=jmunoz94" title="Tests">⚠️</a></td>
+      <td align="center"><a href="https://jdeep.me"><img src="https://avatars.githubusercontent.com/u/64089730?v=4?s=100" width="100px;" alt="Jaydeep Das"/><br /><sub><b>Jaydeep Das</b></sub></a><br /><a href="#question-JDeepD" title="Answering Questions">💬</a></td>
     </tr>
   </tbody>
 </table>
