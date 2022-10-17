@@ -213,6 +213,9 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center"><a href="https://github.com/devdev29"><img src="https://avatars.githubusercontent.com/u/88680035?v=4?s=100" width="100px;" alt="devdev29"/><br /><sub><b>devdev29</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=devdev29" title="Documentation">📖</a></td>
       <td align="center"><a href="https://github.com/Zenigata"><img src="https://avatars.githubusercontent.com/u/1022393?v=4?s=100" width="100px;" alt="Johan Bonneau"/><br /><sub><b>Johan Bonneau</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=Zenigata" title="Documentation">📖</a></td>
     </tr>
+    <tr>
+      <td align="center"><a href="https://github.com/jmunoz94"><img src="https://avatars.githubusercontent.com/u/48921408?v=4?s=100" width="100px;" alt="Jesús Alberto Muñoz Mesa"/><br /><sub><b>Jesús Alberto Muñoz Mesa</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=jmunoz94" title="Tests">⚠️</a></td>
+    </tr>
   </tbody>
 </table>
 
