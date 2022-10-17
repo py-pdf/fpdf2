@@ -697,6 +697,15 @@
       "contributions": [
         "test"
       ]
+    },
+    {
+      "login": "JDeepD",
+      "name": "Jaydeep Das",
+      "avatar_url": "https://avatars.githubusercontent.com/u/64089730?v=4",
+      "profile": "https://jdeep.me",
+      "contributions": [
+        "question"
+      ]
     }
   ],
   "contributorsPerLine": 7,
