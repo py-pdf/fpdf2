@@ -92,7 +92,7 @@ that the cell should extend up to the right margin of the page; it is handy to
 center text. The current page number is returned by
 the [page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) method; as for
 the total number of pages, it is obtained by means of the special value `{nb}`
-which will be substituted on document closure (this special value can changed by 
+which will be substituted on document closure (this special value can be changed by 
 [alias_nb_pages()](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages)).
 Note the use of the [set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) method which allows to set
 position at an absolute location in the page, starting from the top or the
@@ -190,10 +190,10 @@ The first example is achieved in the most basic way possible: simple framed
 
 The second table brings some improvements: each column has its own width,
  titles are centered and figures right aligned. Moreover, horizontal lines have
- been removed. This is done by means of the border parameter of the Cell()
+ been removed. This is done by means of the border parameter of the `Cell()`
  method, which specifies which sides of the cell must be drawn. Here we want
- the left (L) and right (R) ones. Now only the problem of the horizontal line
- to finish the table remains. There are two possibilities to solv it: check
+ the left (`L`) and right (`R`) ones. Now only the problem of the horizontal line
+ to finish the table remains. There are two possibilities to solve it: check
  for the last line in the loop, in which case we use LRB for the border
  parameter; or, as done here, add the line once the loop is over.
 
