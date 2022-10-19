@@ -3,6 +3,14 @@ from datetime import datetime, timezone
 from typing import Union, Iterable
 
 
+def buffer_subst(buffer, placeholder, value):
+    buffer_size = len(buffer)
+    assert len(placeholder) == len(value), f"placeholder={placeholder} value={value}"
+    buffer = buffer.replace(placeholder.encode(), value.encode(), 1)
+    assert len(buffer) == buffer_size
+    return buffer
+
+
 def format_date(date: datetime, with_tz=False) -> str:
     if with_tz:
         assert date.tzinfo

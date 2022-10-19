@@ -1,19 +1,14 @@
-from typing import NamedTuple
-
 from fpdf.outline import OutlineSection, build_outline_objs
 from fpdf.syntax import DestinationXYZ, PDFString
 
 
-class DummyWithId(NamedTuple):
-    id: int
-
-
 def _serialize_outline(sections, first_object_id=1):
     n = first_object_id
-    page_objs = {i: DummyWithId(2 * i + 3) for i in range(len(sections))}
-    outline_objs = list(build_outline_objs(sections, page_objs))
+    outline_objs = list(build_outline_objs(sections))
     for obj in outline_objs:
         obj.id = n
+        if n > first_object_id:
+            obj.dest.page_ref = f"{2 * obj.dest.page_number + 1} 0 R"
         n += 1
     output = "\n".join(obj.serialize() for obj in outline_objs)
     return output

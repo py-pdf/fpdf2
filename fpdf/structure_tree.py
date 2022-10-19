@@ -30,8 +30,8 @@ class NumberTree(PDFObject):
 
     __slots__ = ("_id", "nums")
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self):
+        super().__init__()
         self.nums = defaultdict(list)  # {struct_parent_id -> struct_elems}
 
     def serialize(self, obj_dict=None):
@@ -46,8 +46,8 @@ class NumberTree(PDFObject):
 class StructTreeRoot(PDFObject):
     __slots__ = ("_id", "type", "parent_tree", "k")
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self):
+        super().__init__()
         self.type = "/StructTreeRoot"
         # A number tree used in finding the structure elements to which content items belong:
         self.parent_tree = NumberTree()
@@ -68,9 +68,8 @@ class StructElem(PDFObject):
         page_number: int = None,
         title: str = None,
         alt: str = None,
-        **kwargs,
     ):
-        super().__init__(**kwargs)
+        super().__init__()
         self.type = "/StructElem"
         # A name object identifying the nature of the structure element:
         self.s = struct_type

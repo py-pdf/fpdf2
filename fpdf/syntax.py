@@ -140,8 +140,8 @@ class PDFObject:
     """
 
     # pylint: disable=redefined-builtin
-    def __init__(self, id=None):
-        self._id = id
+    def __init__(self):
+        self._id = None
 
     @property
     def id(self):
@@ -189,8 +189,8 @@ class PDFObject:
 
 
 class PDFContentStream(PDFObject):
-    def __init__(self, contents, compress=False, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, contents, compress=False):
+        super().__init__()
         self._contents = zlib.compress(contents) if compress else contents
         self.filter = Name("FlateDecode") if compress else None
         self.length = len(self._contents)

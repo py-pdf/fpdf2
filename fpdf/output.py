@@ -36,25 +36,21 @@ ZOOM_CONFIGS = {  # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
 }
 
 
-LINEARIZATION_FILE_LENGTH_PLACEHOLDER = ""
+class ContentWithoutID:
+    pass
 
 
-class PDFLinearization(PDFObject):
-    def __init__(self, pages_count, **kwargs):
-        super().__init__(**kwargs)
-        self.linearized = "1.0"  # Version
-        self.n = pages_count
-        # TODO: implement assignment of the properties below
-        self.h = None  # Primary hint stream offset and length (part 5)
-        self.o = None  # Object number of first page’s page object (part 6)
-        self.e = None  # Offset of end of first page
-        self.t = None  # Offset of first entry in main cross-reference table (part 11)
-        self.l = LINEARIZATION_FILE_LENGTH_PLACEHOLDER  # The length of the entire file in bytes
+class PDFHeader(ContentWithoutID):
+    def __init__(self, pdf_version):
+        self.pdf_version = pdf_version
+
+    def serialize(self):
+        return f"%PDF-{self.pdf_version}"
 
 
 class PDFFont(PDFObject):
-    def __init__(self, subtype, base_font, encoding=None, d_w=None, w=None, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, subtype, base_font, encoding=None, d_w=None, w=None):
+        super().__init__()
         self.type = Name("Font")
         self.subtype = Name(subtype)
         self.base_font = Name(base_font)
@@ -79,9 +75,8 @@ class PDFFontDescriptor(PDFObject):
         italic_angle,
         stem_v,
         missing_width,
-        **kwargs,
     ):
-        super().__init__(**kwargs)
+        super().__init__()
         self.type = Name("FontDescriptor")
         self.ascent = ascent
         self.descent = descent
@@ -95,8 +90,8 @@ class PDFFontDescriptor(PDFObject):
 
 
 class CIDSystemInfo(PDFObject):
-    def __init__(self, registry, ordering, supplement, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, registry, ordering, supplement):
+        super().__init__()
         self.registry = enclose_in_parens(registry)
         self.ordering = enclose_in_parens(ordering)
         self.supplement = supplement
@@ -112,9 +107,8 @@ class PDFInfo(PDFObject):
         creator,
         producer,
         creation_date,
-        **kwargs,
     ):
-        super().__init__(**kwargs)
+        super().__init__()
         self.title = enclose_in_parens(title) if title else None
         self.subject = enclose_in_parens(subject) if subject else None
         self.author = enclose_in_parens(author) if author else None
@@ -136,21 +130,15 @@ class AcroForm:
 
 class PDFCatalog(PDFObject):
     def __init__(
-        self,
-        pages,
-        lang,
-        page_layout,
-        page_mode,
-        viewer_preferences,
-        **kwargs,
+        self, lang=None, page_layout=None, page_mode=None, viewer_preferences=None
     ):
-        super().__init__(**kwargs)
+        super().__init__()
         self.type = Name("Catalog")
-        self.pages = pages
         self.lang = enclose_in_parens(lang) if lang else None
         self.page_layout = page_layout
         self.page_mode = page_mode
         self.viewer_preferences = viewer_preferences
+        self.pages = None  # Required; shall be an indirect reference
         self.acro_form = None
         self.open_action = None
         self.mark_info = None
@@ -161,8 +149,8 @@ class PDFCatalog(PDFObject):
 
 
 class PDFResources(PDFObject):
-    def __init__(self, proc_set, font, x_object, ext_g_state, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, proc_set, font, x_object, ext_g_state):
+        super().__init__()
         self.proc_set = proc_set
         self.font = font
         self.x_object = x_object
@@ -170,14 +158,14 @@ class PDFResources(PDFObject):
 
 
 class PDFFontStream(PDFContentStream):
-    def __init__(self, contents, **kwargs):
-        super().__init__(contents=contents, compress=True, **kwargs)
+    def __init__(self, contents):
+        super().__init__(contents=contents, compress=True)
         self.length1 = len(contents)
 
 
 class PDFXmpMetadata(PDFContentStream):
-    def __init__(self, contents, **kwargs):
-        super().__init__(contents=contents, **kwargs)
+    def __init__(self, contents):
+        super().__init__(contents=contents)
         self.type = Name("Metadata")
         self.subtype = Name("XML")
 
@@ -211,9 +199,8 @@ class PDFXObject(PDFContentStream):
         img_filter=None,
         decode=None,
         decode_parms=None,
-        **kwargs,
     ):
-        super().__init__(contents=contents, **kwargs)
+        super().__init__(contents=contents)
         self.type = Name("XObject")
         self.subtype = Name(subtype)
         self.width = width
@@ -233,12 +220,14 @@ class PDFPage(PDFObject):
         "contents",
         "dur",
         "trans",
-        "media_box",
         "annots",
         "group",
+        "media_box",
         "struct_parents",
         "resources",
         "parent",
+        "_width_pt",
+        "_height_pt",
     )
 
     def __init__(
@@ -256,21 +245,22 @@ class PDFPage(PDFObject):
         self.group = None
         self.media_box = None
         self.struct_parents = None
-        # TODO: insert a direct /Resource PDF object, with only images / fonts / graphics states used on the page
         self.resources = None  # must always be set before calling .serialize()
         self.parent = None  # must always be set before calling .serialize()
         self._width_pt, self._height_pt = None, None
 
     def dimensions(self):
+        "Return a pair (width, height) in the unit specified to FPDF constructor"
         return self._width_pt, self._height_pt
 
     def set_dimensions(self, width_pt, height_pt):
+        "Accepts a pair (width, height) in the unit specified to FPDF constructor"
         self._width_pt, self._height_pt = width_pt, height_pt
 
 
 class PDFPagesRoot(PDFObject):
-    def __init__(self, count, media_box, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, count, media_box):
+        super().__init__()
         self.type = Name("Pages")
         self.count = count
         self.media_box = media_box
@@ -278,13 +268,48 @@ class PDFPagesRoot(PDFObject):
 
 
 class PDFExtGState(PDFObject):
-    def __init__(self, dict_as_str, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, dict_as_str):
+        super().__init__()
         self._dict_as_str = dict_as_str
 
     # method override
     def serialize(self, obj_dict=None):
         return f"{self.id} 0 obj\n{self._dict_as_str}\nendobj"
+
+
+class PDFXrefAndTrailer(ContentWithoutID):
+    def __init__(self, output_builder):
+        self.output_builder = output_builder
+        self.count = output_builder.obj_id + 1
+        # Must be set before the call to serialize():
+        self.catalog_obj = None
+        self.info_obj = None
+
+    def serialize(self):
+        builder = self.output_builder
+        startxref = str(len(builder.buffer))
+        out = []
+        out.append("xref")
+        out.append(f"0 {self.count}")
+        out.append("0000000000 65535 f ")
+        for obj_id in range(1, self.count):
+            out.append(f"{builder.offsets[obj_id]:010} 00000 n ")
+        out.append("trailer")
+        out.append("<<")
+        out.append(f"/Size {self.count}")
+        out.append(f"/Root {pdf_ref(self.catalog_obj.id)}")
+        out.append(f"/Info {pdf_ref(self.info_obj.id)}")
+        fpdf = builder.fpdf
+        file_id = fpdf.file_id()
+        if file_id == -1:
+            file_id = fpdf._default_file_id(builder.buffer)
+        if file_id:
+            out.append(f"/ID [{file_id}]")
+        out.append(">>")
+        out.append("startxref")
+        out.append(startxref)
+        out.append("%%EOF")
+        return "\n".join(out)
 
 
 class OutputProducer:
@@ -301,17 +326,19 @@ class OutputProducer:
         self.buffer = bytearray()  # resulting output buffer
 
     def bufferize(self):
-        "This method DOES NOT alter the target FPDF instance in any way"
+        """
+        This method alters the target FPDF instance
+        by assigning IDs to all PDF objects,
+        plus a few other properties on PDFPage instances
+        """
         fpdf = self.fpdf
 
-        # 1. Insert all objects in the order required to build a linearized PDF,
-        #    and assign IDs to those objects:
-        # TODO: uncomment the following lines
-        # linearization_obj = PDFLinearization(fpdf.pages_count)
-        # self._add_pdf_obj(linearization_obj)
-        # self._add_xref_and_trailer(page=1)
+        # 1. Setup - Insert all PDF objects
+        #    and assign unique consecutive numeric IDs to all of them
+
+        self.pdf_objs.append(PDFHeader(fpdf.pdf_version))
         pages_root_obj = self._add_pages_root()
-        catalog_obj = self._add_catalog(pages_root_obj)
+        catalog_obj = self._add_catalog()
         page_objs = self._add_pages()
         sig_annotation_obj = self._add_annotations_as_objects()
         for embedded_file in fpdf.embedded_files:
@@ -323,48 +350,64 @@ class OutputProducer:
             font_objs_per_index, img_objs_per_index, gfxstate_objs_per_name
         )
         struct_tree_root_obj = self._add_structure_tree()
-        outline_dict_obj = self._add_document_outline(page_objs)
+        outline_dict_obj, outline_items = self._add_document_outline()
         xmp_metadata_obj = self._add_xmp_metadata()
         info_obj = self._add_info()
+        xref = PDFXrefAndTrailer(self)
+        self.pdf_objs.append(xref)
 
-        # 2. Inject all PDF object references required:
-        # linearization_obj.o = page_objs[0]
+        # 2. Plumbing - Inject all PDF object references required:
         pages_root_obj.kids = PDFArray(page_objs)
         self._finalize_catalog(
             catalog_obj,
+            pages_root_obj=pages_root_obj,
             first_page_obj=page_objs[0],
             sig_annotation_obj=sig_annotation_obj,
             xmp_metadata_obj=xmp_metadata_obj,
             struct_tree_root_obj=struct_tree_root_obj,
             outline_dict_obj=outline_dict_obj,
         )
+        dests = []
         for page_obj in page_objs:
-            page_obj.parent = pdf_ref(pages_root_obj.id)
+            page_obj.parent = pages_root_obj
             page_obj.resources = resources_dict_obj
+            for annot in page_obj.annots:
+                if annot.dest:
+                    dests.append(annot.dest)
+                if annot.a and hasattr(annot.a, "dest"):
+                    dests.append(annot.a.dest)
             if not page_obj.annots:
                 # Avoid serializing an empty PDFArray:
                 page_obj.annots = None
+        for outline_item in outline_items:
+            dests.append(outline_item.dest)
+        # Assigning the .page_ref property of all Destination objects:
+        for dest in dests:
+            dest.page_ref = pdf_ref(page_objs[dest.page_number - 1].id)
         for struct_elem in fpdf.struct_builder.doc_struct_elem.k:
             struct_elem.pg = page_objs[struct_elem.page_number() - 1]
+        xref.catalog_obj = catalog_obj
+        xref.info_obj = info_obj
 
-        # 3. Serializing - appending all PDF objects to the buffer:
+        # 3. Serializing - Append all PDF objects to the buffer:
         assert (
             not self.buffer
         ), f"Nothing should have been appended to the .buffer at this stage: {self.buffer}"
         assert (
             not self.offsets
         ), f"No offset should have been set at this stage: {len(self.offsets)}"
-        self._out(f"%PDF-{fpdf.pdf_version}")
         for pdf_obj in self.pdf_objs:
-            self.offsets[pdf_obj.id] = len(self.buffer)
-            trace_label = self.trace_labels_per_obj_id.get(pdf_obj.id)
+            if isinstance(pdf_obj, ContentWithoutID):
+                # top header, xref table & trailer:
+                trace_label = None
+            else:
+                self.offsets[pdf_obj.id] = len(self.buffer)
+                trace_label = self.trace_labels_per_obj_id.get(pdf_obj.id)
             if trace_label:
                 with self._trace_size(trace_label):
                     self._out(pdf_obj.serialize())
             else:
                 self._out(pdf_obj.serialize())
-        self._put_xref_and_trailer(catalog_obj.id, info_obj.id)
-        self._out("%%EOF")
         self._log_final_sections_sizes()
 
         if fpdf._sign_key:
@@ -398,56 +441,35 @@ class OutputProducer:
 
     def _add_pages_root(self):
         fpdf = self.fpdf
-        dw_pt, dh_pt = self._get_dw_dh_pt()
         pages_root_obj = PDFPagesRoot(
             count=fpdf.pages_count,
-            media_box=f"[0 0 {dw_pt:.2f} {dh_pt:.2f}]",
+            media_box=_dimensions_to_mediabox(fpdf.default_page_dimensions),
         )
         self._add_pdf_obj(pages_root_obj)
         return pages_root_obj
 
-    def _add_pages(self):
+    def _add_pages(self, _slice=slice(0, None)):
         fpdf = self.fpdf
         page_objs = []
-        for page_obj in fpdf.pages.values():
+        for page_obj in list(fpdf.pages.values())[_slice]:
             if fpdf.pdf_version > "1.3":
                 page_obj.group = pdf_dict(
                     {"/Type": "/Group", "/S": "/Transparency", "/CS": "/DeviceRGB"},
                     field_join=" ",
                 )
-            if page_obj.dimensions() != self._get_dw_dh_pt():
-                w_pt, h_pt = page_obj.dimensions()
-                page_obj.media_box = f"[0 0 {w_pt:.2f} {h_pt:.2f}]"
+            if page_obj.dimensions() != fpdf.default_page_dimensions:
+                page_obj.media_box = _dimensions_to_mediabox(page_obj.dimensions())
             self._add_pdf_obj(page_obj, "pages")
             page_objs.append(page_obj)
 
-            # Extracting the page contents to insert as a content stream:
+            # Extracting the page contents to insert it as a content stream:
             cs_obj = PDFContentStream(
                 contents=page_obj.contents, compress=fpdf.compress
             )
             self._add_pdf_obj(cs_obj, "pages")
             page_obj.contents = cs_obj
 
-        # Assigning the page_ref property of all Destination objects in pages:
-        dests = []
-        for page_obj in page_objs:
-            for annot in page_obj.annots or ():
-                if annot.dest:
-                    dests.append(annot.dest)
-                if annot.a and hasattr(annot.a, "dest"):
-                    dests.append(annot.a.dest)
-        for dest in dests:
-            dest.page_ref = pdf_ref(page_objs[dest.page_number - 1].id)
-
         return page_objs
-
-    def _get_dw_dh_pt(self):
-        fpdf = self.fpdf
-        return (
-            (fpdf.dw_pt, fpdf.dh_pt)
-            if fpdf.def_orientation == "P"
-            else (fpdf.dh_pt, fpdf.dw_pt)
-        )
 
     def _add_annotations_as_objects(self):
         sig_annotation_obj = None
@@ -517,17 +539,12 @@ class OutputProducer:
                 # and then associate to the new code the glyph associated with the old code
                 code_to_glyph = {}
                 for code, new_code_mapped in uni_to_new_code_char.items():
-                    if code in cmap:
-                        glyph_name = cmap[code]
-                        code_to_glyph[new_code_mapped] = fonttools_font.getGlyphID(
-                            glyph_name
-                        )
-                    else:
-                        # notdef is associated if no glyph was associated to the old code
-                        # it's not necessary to do this, it seems to be done by default
-                        code_to_glyph[new_code_mapped] = fonttools_font.getGlyphID(
-                            ".notdef"
-                        )
+                    # notdef is associated if no glyph was associated to the old code
+                    # it's not necessary to do this, it seems to be done by default
+                    glyph_name = cmap.get(code, ".notdef")
+                    code_to_glyph[new_code_mapped] = fonttools_font.getGlyphID(
+                        glyph_name
+                    )
 
                 # 4. return the ttfile
                 output = BytesIO()
@@ -746,15 +763,17 @@ class OutputProducer:
             self._add_pdf_obj(pdf_obj, "structure_tree")
         return struct_tree_root_obj
 
-    def _add_document_outline(self, page_objs):
+    def _add_document_outline(self):
         if not self.fpdf._outline:
-            return None
-        outline_dict_obj = None
-        for pdf_obj in build_outline_objs(self.fpdf._outline, page_objs):
+            return None, ()
+        outline_dict_obj, outline_items = None, []
+        for pdf_obj in build_outline_objs(self.fpdf._outline):
             if outline_dict_obj is None:
                 outline_dict_obj = pdf_obj
+            else:
+                outline_items.append(pdf_obj)
             self._add_pdf_obj(pdf_obj, "document_outline")
-        return outline_dict_obj
+        return outline_dict_obj, outline_items
 
     def _add_xmp_metadata(self):
         if not self.fpdf.xmp_metadata:
@@ -786,13 +805,9 @@ class OutputProducer:
         self._add_pdf_obj(info_obj)
         return info_obj
 
-    def _add_catalog(
-        self,
-        pages_root_obj,
-    ):
+    def _add_catalog(self):
         fpdf = self.fpdf
         catalog_obj = PDFCatalog(
-            pages=pages_root_obj,
             lang=getattr(fpdf, "lang", None),
             page_layout=fpdf.page_layout,
             page_mode=fpdf.page_mode,
@@ -804,6 +819,7 @@ class OutputProducer:
     def _finalize_catalog(
         self,
         catalog_obj,
+        pages_root_obj,
         first_page_obj,
         sig_annotation_obj,
         xmp_metadata_obj,
@@ -811,6 +827,7 @@ class OutputProducer:
         outline_dict_obj,
     ):
         fpdf = self.fpdf
+        catalog_obj.pages = pages_root_obj
         catalog_obj.struct_tree_root = struct_tree_root_obj
         catalog_obj.outlines = outline_dict_obj
         catalog_obj.metadata = xmp_metadata_obj
@@ -837,27 +854,6 @@ class OutputProducer:
             catalog_obj.names = pdf_dict(
                 {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(file_spec_names)})}
             )
-
-    def _put_xref_and_trailer(self, catalog_obj_id, info_obj_id):
-        startxref = len(self.buffer)
-        self._out("xref")
-        self._out(f"0 {self.obj_id + 1}")
-        self._out("0000000000 65535 f ")
-        for i in range(1, self.obj_id + 1):
-            self._out(f"{self.offsets[i]:010} 00000 n ")
-        self._out("trailer")
-        self._out("<<")
-        self._out(f"/Size {self.obj_id + 1}")
-        self._out(f"/Root {pdf_ref(catalog_obj_id)}")
-        self._out(f"/Info {pdf_ref(info_obj_id)}")
-        file_id = self.fpdf.file_id()
-        if file_id == -1:
-            file_id = self.fpdf._default_file_id(self.buffer)
-        if file_id:
-            self._out(f"/ID [{file_id}]")
-        self._out(">>")
-        self._out("startxref")
-        self._out(startxref)
 
     @contextmanager
     def _trace_size(self, label):
@@ -942,6 +938,11 @@ def _tt_font_widths(font, maxUni):
         else:
             w.append(f" {k} [ {' '.join(str(int(h)) for h in ws)} ]\n")
     return f"[{''.join(w)}]"
+
+
+def _dimensions_to_mediabox(dimensions):
+    width_pt, height_pt = dimensions
+    return f"[0 0 {width_pt:.2f} {height_pt:.2f}]"
 
 
 def _sizeof_fmt(num, suffix="B"):

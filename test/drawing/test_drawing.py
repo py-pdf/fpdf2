@@ -162,8 +162,8 @@ class TestColors:
         assert cmyk.colors == (1, 1, 1, 0)
         assert cmyk_a.colors == (1, 1, 1, 0)
 
-        assert cmyk.pdf_repr() == "1 1 1 0 k"
-        assert cmyk_a.pdf_repr() == "1 1 1 0 k"
+        assert cmyk.serialize() == "1 1 1 0 k"
+        assert cmyk_a.serialize() == "1 1 1 0 k"
 
         with pytest.raises(ValueError):
             fpdf.drawing.DeviceCMYK(c=2, m=1, y=1, k=0)

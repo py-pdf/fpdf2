@@ -6,7 +6,6 @@ Quoting section 8.2.2 "Document Outline" of the 2006 PDF spec 1.7:
 from typing import NamedTuple, Optional
 
 from .syntax import Destination, PDFObject, PDFString
-from .syntax import iobj_ref as pdf_ref
 from .structure_tree import StructElem
 
 
@@ -37,9 +36,8 @@ class OutlineItemDictionary(PDFObject):
         title: str,
         dest: Destination = None,
         struct_elem: StructElem = None,
-        **kwargs
     ):
-        super().__init__(**kwargs)
+        super().__init__()
         self.title = PDFString(title)
         self.parent = None
         self.prev = None
@@ -62,7 +60,7 @@ class OutlineDictionary(PDFObject):
         self.count = 0
 
 
-def build_outline_objs(sections, page_objs):
+def build_outline_objs(sections):
     """
     Build PDF objects constitutive of the documents outline,
     and yield them one by one, starting with the outline dictionary
@@ -72,7 +70,6 @@ def build_outline_objs(sections, page_objs):
     outline_items = []
     last_outline_item_per_level = {}
     for section in sections:
-        section.dest.page_ref = pdf_ref(page_objs[section.dest.page_number - 1].id)
         outline_item = OutlineItemDictionary(
             title=section.name,
             dest=section.dest,

@@ -5,22 +5,25 @@ def test_pdf_object_serialize():
     class Point(PDFObject):
         __slots__ = ("_id", "x", "y")
 
-        def __init__(self, x=0, y=0, **kwargs):
-            super().__init__(**kwargs)
+        def __init__(self, x=0, y=0):
+            super().__init__()
             self.x = x
             self.y = y
 
     class Square(PDFObject):
         __slots__ = ("_id", "top_left", "bottom_right")
 
-        def __init__(self, top_left, bottom_right, **kwargs):
-            super().__init__(**kwargs)
+        def __init__(self, top_left, bottom_right):
+            super().__init__()
             self.top_left = top_left
             self.bottom_right = bottom_right
 
-    point_a = Point(id=1)
-    point_b = Point(x=10, y=10, id=2)
-    square = Square(top_left=point_a, bottom_right=point_b, id=3)
+    point_a = Point()
+    point_b = Point(x=10, y=10)
+    square = Square(top_left=point_a, bottom_right=point_b)
+    point_a.id = 1
+    point_b.id = 2
+    square.id = 3
     pdf_content = (
         point_a.serialize() + "\n" + point_b.serialize() + "\n" + square.serialize()
     )

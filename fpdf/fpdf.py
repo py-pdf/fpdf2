@@ -148,6 +148,9 @@ class SubsetMap:
         # int(x) to ensure values are integers
         self._map = {x: int(x) for x in self._reserved}
 
+    def __len__(self):
+        return len(self._map)
+
     def pick(self, unicode: int):
         if not unicode in self._map:
             while self._next in self._reserved:

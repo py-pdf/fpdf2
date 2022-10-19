@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from .syntax import build_obj_dict, Name
 from .syntax import create_dictionary_string as pdf_dict
+from .util import buffer_subst
 
 
 class Signature:
@@ -40,11 +41,12 @@ def sign_content(signer, buffer, key, cert, extra_certs, hashalgo, sign_time):
     start_index = buffer.find(sig_placeholder)
     end_index = start_index + len(sig_placeholder)
     content_range = (0, start_index - 1, end_index + 1, len(buffer) - end_index - 1)
-    br_placeholder = _SIGNATURE_BYTERANGE_PLACEHOLDER.encode()
-    byte_range = b"[%010d %010d %010d %010d]" % content_range
-    # Sanity check, otherwise we will break the xref table:
-    assert len(br_placeholder) == len(byte_range)
-    buffer = buffer.replace(br_placeholder, byte_range, 1)
+    # pylint: disable=consider-using-f-string
+    buffer = buffer_subst(
+        buffer,
+        _SIGNATURE_BYTERANGE_PLACEHOLDER,
+        "[%010d %010d %010d %010d]" % content_range,
+    )
 
     # We compute the ByteRange hash, of everything before & after the placeholder:
     content_hash = hashlib.new(hashalgo)

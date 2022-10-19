@@ -37,9 +37,7 @@ class AnnotationMixin:
         file_spec: str = None,
         field_type: str = None,
         value=None,
-        **kwargs,
     ):
-        super().__init__(**kwargs)
         self.type = Name("Annot")
         self.subtype = Name(subtype)
         self.rect = f"[{x:.2f} {y:.2f} {x + width:.2f} {y - height:.2f}]"
@@ -112,9 +110,8 @@ class PDFEmbeddedFile(PDFContentStream):
         modification_date: datetime = None,
         compress: bool = False,
         checksum: bool = False,
-        **kwargs,
     ):
-        super().__init__(contents=contents, compress=compress, **kwargs)
+        super().__init__(contents=contents, compress=compress)
         self.type = Name("EmbeddedFile")
         params = {"/Size": len(contents)}
         if creation_date:
