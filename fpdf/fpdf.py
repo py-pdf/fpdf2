@@ -1211,6 +1211,22 @@ class FPDF(GraphicsStateMixin):
         self.polyline(point_list, fill=fill, polygon=True, style=style)
 
     @check_page
+    def bezier(self, point_list, style=None):
+        """
+        Outputs a series of connected Bezier curves joining the points in the point list.
+
+        Args:
+            point_list (list of tuples): List of coordinates defining the points to be joined with 
+            Bezier curves.
+            style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
+            
+            * `D` or None: draw border. This is the default value.
+            * `F`: fill
+            * `DF` or `FD`: draw and fill
+        """
+        pass
+
+    @check_page
     def dashed_line(self, x1, y1, x2, y2, dash_length=1, space_length=1):
         """
         Draw a dashed line between two points.
