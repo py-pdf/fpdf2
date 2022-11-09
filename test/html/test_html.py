@@ -566,3 +566,13 @@ def test_html_HTMLMixin_deprecation_warning(tmp_path):
         """
         )
         assert_pdf_equal(pdf, HERE / "html_description.pdf", tmp_path)
+
+def test_issue_547(tmp_path):
+    """Testing whitespace handling for write_html().
+
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html("Testing whitespace: 3 spaces -> [   ], newline ->\
+tab -> [   ]")
+    assert_pdf_equal(pdf, HERE / "issue_547.pdf", tmp_path)
