@@ -574,5 +574,5 @@ def test_issue_547(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.write_html("Testing whitespace: 3 spaces -> [   ], newline ->\
-tab -> [   ]")
+         tab -> [   ]")
     assert_pdf_equal(pdf, HERE / "issue_547.pdf", tmp_path)
