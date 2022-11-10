@@ -573,6 +573,14 @@ def test_issue_547(tmp_path):
     """
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html("Testing whitespace: 3 spaces -> [   ], newline ->\
-         tab -> [   ]")
+    pdf.write_html("<body>\
+                        <h1>Hello, world!</h1>\
+                        <div>testing div blocks \
+                    that span multiple lines \
+                    and have tabs	and spaces    .\
+                        <pre><code>testing code blocks\
+                    that span multiple lines \
+                    and have tabs    and spaces   .\
+                        </code></pre>\
+                    </body>")
     assert_pdf_equal(pdf, HERE / "issue_547.pdf", tmp_path)
