@@ -373,7 +373,6 @@ class FPDF(GraphicsStateMixin):
                 DeprecationWarning,
                 stacklevel=2,
             )
-        text = re.sub("\s+"," ",text) # To treat spaces 
         text = unescape(text)  # To deal with HTML entities
         h2p.feed(text)
 

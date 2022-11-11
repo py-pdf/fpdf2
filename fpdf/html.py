@@ -11,6 +11,7 @@ from html.parser import HTMLParser
 
 from .enums import XPos, YPos
 
+import re
 
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
@@ -223,6 +224,7 @@ class HTML2FPDF(HTMLParser):
         self.table_line_separators = table_line_separators
         self.ul_bullet_char = ul_bullet_char
         self.style = dict(b=False, i=False, u=False)
+        self.literal_string = False
         self.href = ""
         self.align = ""
         self.page_links = {}
@@ -280,8 +282,15 @@ class HTML2FPDF(HTMLParser):
                 align=self.align[0].upper(),
                 link=self.href,
             )
+        elif self.literal_string: #for code and pre blocks
+            #data = data.replace("\n", " ")
+            if self.heading_level:
+                self.pdf.start_section(data, self.heading_level - 1)
+            LOGGER.debug("write '%s' h=%d", data.replace("\n", "\\n"), self.h)
+            self.pdf.write(self.h, data)
         else:
             data = data.replace("\n", " ")
+            data = self.trim_whitespace(data)
             if self.href:
                 self.put_link(data)
             else:
@@ -472,9 +481,14 @@ class HTML2FPDF(HTMLParser):
                 self.align = attrs.get("align")
         if tag == "hr":
             self.pdf.add_page(same=True)
+        if tag == "code":
+            self.font_stack.append((self.font_face, self.font_size, self.font_color))
+            self.set_font("courier", 11)
+            self.literal_string = True
         if tag == "pre":
             self.font_stack.append((self.font_face, self.font_size, self.font_color))
             self.set_font("courier", 11)
+            self.literal_string = True
         if tag == "blockquote":
             self.pdf.set_text_color(100, 0, 45)
             self.indent += 1
@@ -622,10 +636,16 @@ class HTML2FPDF(HTMLParser):
             self.set_font(face, size)
             self.set_text_color(*color)
             self.align = None
+        if tag == "code":
+            face, size, color = self.font_stack.pop()
+            self.set_font(face, size)
+            self.set_text_color(*color)
+            self.literal_string = False
         if tag == "pre":
             face, size, color = self.font_stack.pop()
             self.set_font(face, size)
             self.set_text_color(*color)
+            self.literal_string = False
         if tag == "blockquote":
             self.set_text_color(*self.font_color)
             self.indent -= 1
@@ -688,7 +708,9 @@ class HTML2FPDF(HTMLParser):
             self.pdf.char_vpos = "LINE"
         if tag == "sub":
             self.pdf.char_vpos = "LINE"
-
+    def trim_whitespace(self, data):
+        trimmed_data = re.sub("\s+"," ", data)
+        return trimmed_data
     def set_font(self, face=None, size=None):
         if face:
             self.font_face = face

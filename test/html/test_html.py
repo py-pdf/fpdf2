@@ -573,14 +573,34 @@ def test_issue_547(tmp_path):
     """
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html("<body>\
-                        <h1>Hello, world!</h1>\
-                        <div>testing div blocks \
-                    that span multiple lines \
-                    and have tabs	and spaces    .\
-                        <pre><code>testing code blocks\
-                    that span multiple lines \
-                    and have tabs    and spaces   .\
-                        </code></pre>\
-                    </body>")
+    pdf.write_html(
+    """
+    <body>
+        <h1>Issue 547 Test</h1>
+            <p>
+            Testing paragraph blocks
+                that span multiple lines
+                and have tabs       and    spaces.<br>
+                <code>Testing code blocks with tabs      and    spaces.</code>
+            </p>
+                
+                <pre>
+Testing pre blocks
+that span multiple lines 
+and have tabs    and    spaces.
+                </pre>  
+    </body>
+    """
+#         """
+#         <body>
+#             <h1>Issue 547 Test</h1>
+#                 <p>Testing paragraph blocks that span multiple lines and have tabs and spaces. <code>Testing code blocks with tabs and spaces.</code></p>
+# <pre>
+# Testing pre blocks
+# that span multiple lines 
+# and have tabs    and    spaces.
+# </pre>
+#         </body>
+#         """
+        )
     assert_pdf_equal(pdf, HERE / "issue_547.pdf", tmp_path)
