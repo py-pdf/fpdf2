@@ -224,7 +224,8 @@ class HTML2FPDF(HTMLParser):
         self.table_line_separators = table_line_separators
         self.ul_bullet_char = ul_bullet_char
         self.style = dict(b=False, i=False, u=False)
-        self.literal_string = False
+        self.pre_formatted = False
+        self.follows_fmt_tag = False
         self.href = ""
         self.align = ""
         self.page_links = {}
@@ -282,15 +283,25 @@ class HTML2FPDF(HTMLParser):
                 align=self.align[0].upper(),
                 link=self.href,
             )
-        elif self.literal_string: #for code and pre blocks
-            #data = data.replace("\n", " ")
-            if self.heading_level:
-                self.pdf.start_section(data, self.heading_level - 1)
-            LOGGER.debug("write '%s' h=%d", data.replace("\n", "\\n"), self.h)
+        elif self.pre_formatted: #for pre blocks
             self.pdf.write(self.h, data)
+
+        elif self.follows_fmt_tag: #don't trim leading whitespace if following a format tag
+            data = data.replace("\n", " ") #flatten multiline strings
+            data = re.sub("\s+"," ", data) #trim excess whitespace
+            if self.href:
+                self.put_link(data)
+            else:
+                if self.heading_level:
+                    self.pdf.start_section(data, self.heading_level - 1)
+                LOGGER.debug("write '%s' h=%d", data.replace("\n", "\\n"), self.h)
+                self.pdf.write(self.h, data)
+            self.follows_fmt_tag = False
+
         else:
-            data = data.replace("\n", " ")
-            data = self.trim_whitespace(data)
+            data = data.replace("\n", " ") #flatten multiline strings
+            data = re.sub("^\s*","", data)
+            data = re.sub("\s+"," ", data) #trim excess whitespace
             if self.href:
                 self.put_link(data)
             else:
@@ -484,11 +495,10 @@ class HTML2FPDF(HTMLParser):
         if tag == "code":
             self.font_stack.append((self.font_face, self.font_size, self.font_color))
             self.set_font("courier", 11)
-            self.literal_string = True
         if tag == "pre":
             self.font_stack.append((self.font_face, self.font_size, self.font_color))
             self.set_font("courier", 11)
-            self.literal_string = True
+            self.pre_formatted = True
         if tag == "blockquote":
             self.pdf.set_text_color(100, 0, 45)
             self.indent += 1
@@ -640,12 +650,11 @@ class HTML2FPDF(HTMLParser):
             face, size, color = self.font_stack.pop()
             self.set_font(face, size)
             self.set_text_color(*color)
-            self.literal_string = False
         if tag == "pre":
             face, size, color = self.font_stack.pop()
             self.set_font(face, size)
             self.set_text_color(*color)
-            self.literal_string = False
+            self.pre_formatted = False
         if tag == "blockquote":
             self.set_text_color(*self.font_color)
             self.indent -= 1
@@ -656,6 +665,7 @@ class HTML2FPDF(HTMLParser):
             tag = "i"
         if tag in ("b", "i", "u"):
             self.set_style(tag, False)
+            self.follows_fmt_tag = True
         if tag == "a":
             self.href = ""
         if tag == "p":
@@ -706,11 +716,11 @@ class HTML2FPDF(HTMLParser):
             self.align = None
         if tag == "sup":
             self.pdf.char_vpos = "LINE"
+            self.follows_fmt_tag = True
         if tag == "sub":
             self.pdf.char_vpos = "LINE"
-    def trim_whitespace(self, data):
-        trimmed_data = re.sub("\s+"," ", data)
-        return trimmed_data
+            self.follows_fmt_tag = True
+
     def set_font(self, face=None, size=None):
         if face:
             self.font_face = face
