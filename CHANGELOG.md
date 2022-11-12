@@ -16,6 +16,12 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
+## [2.6.1] - not released yet
+### Added
+- the `write_html()` method now supports <code></code> blocks.
+### Fixed
+- `write_html()` method now correctly handles whitespace when parsing HTML. <pre></pre> blocks still maintain spaces, tabs and line breaks. 
+
 ## [2.6.0] - not released yet
 ### Added
 - demonstration Jupyter notebook: [tutorial/notebook.ipynb](https://github.com/PyFPDF/fpdf2/blob/master/tutorial/notebook.ipynb)
