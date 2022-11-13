@@ -287,29 +287,49 @@ class HTML2FPDF(HTMLParser):
             self.pdf.write(self.h, data)
 
         elif self.follows_fmt_tag: #don't trim leading whitespace if following a format tag
-            data = data.replace("\n", " ") #flatten multiline strings
-            data = re.sub("\s+"," ", data) #trim excess whitespace
+            data = re.sub("(\s)(\s*)",self.whitespace_repl, data)
             if self.href:
                 self.put_link(data)
             else:
                 if self.heading_level:
                     self.pdf.start_section(data, self.heading_level - 1)
-                LOGGER.debug("write '%s' h=%d", data.replace("\n", "\\n"), self.h)
+                LOGGER.debug("write '%s' h=%d", re.sub("(\s)(\s*)",self.whitespace_repl, data), self.h)
                 self.pdf.write(self.h, data)
             self.follows_fmt_tag = False
 
         else:
-            data = data.replace("\n", " ") #flatten multiline strings
-            data = re.sub("^\s*","", data)
-            data = re.sub("\s+"," ", data) #trim excess whitespace
+            data = re.sub("^\s+",self.leading_whitespace_repl, data)
+            data = re.sub("(\s)(\s*)",self.whitespace_repl, data)
             if self.href:
                 self.put_link(data)
             else:
                 if self.heading_level:
                     self.pdf.start_section(data, self.heading_level - 1)
-                LOGGER.debug("write '%s' h=%d", data.replace("\n", "\\n"), self.h)
+                LOGGER.debug("write '%s' h=%d", re.sub("(\s)(\s*)",self.whitespace_repl, data), self.h)
                 self.pdf.write(self.h, data)
+    
+    def leading_whitespace_repl(self, matchobj):
+        trimmed_str = ''
+        for char in matchobj.group(0): #check if leading whitespace contains nbsp
+            if char == '\u00a0': 
+                trimmed_str += '\u00a0'
+            elif char == '\u202f': 
+                trimmed_str += '\u202f'
+        return trimmed_str
 
+    def whitespace_repl(self, matchobj):
+        trimmed_str = ''
+        for char in matchobj.group(1): #allow 1 whitespace char, check for narrow no-break space
+            if char == '\u202f': 
+                trimmed_str += '\u202f'
+            else: trimmed_str += ' '
+        for char in matchobj.group(2): #remove following whitespace char unless nbsp
+            if char == '\u00a0': 
+                trimmed_str += '\u00a0'
+            elif char == '\u202f': 
+                trimmed_str += '\u202f'
+        return trimmed_str
+            
     def _insert_td(self, data=""):
         self._only_imgs_in_td = False
         width = self._td_width()

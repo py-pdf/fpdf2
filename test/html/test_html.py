@@ -577,7 +577,8 @@ def test_html_whitespace_handling(tmp_path): #Issue 547
 """
 <body>
 <h1>Issue 547 Test</h1>
-<p>Testing paragraph blocks
+<p>
+<b>Testing</b> paragraph blocks
         that <i>span</i> <b>multiple lines</b>.
     Testing tabs       and    spaces<br>
     and break tags.<br>
@@ -588,6 +589,8 @@ Testing pre blocks
 that span multiple lines 
 and have tabs    and    spaces.
 </pre>  
+<p>Testing unicode nbsp \u00a0\u00a0\u00a0\u00a0,
+and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.
 </body>
 """
         )
