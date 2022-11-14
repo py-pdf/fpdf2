@@ -578,7 +578,7 @@ def test_html_whitespace_handling(tmp_path): #Issue 547
 <body>
 <h1>Issue 547 Test</h1>
 <p>
-<b>Testing</b> paragraph blocks
+<b>Testing   </b> paragraph blocks
         that <i>span</i> <b>multiple lines</b>.
     Testing tabs       and    spaces<br>
     and break tags.<br>
