@@ -224,6 +224,9 @@ class HTML2FPDF(HTMLParser):
         self.table_line_separators = table_line_separators
         self.ul_bullet_char = ul_bullet_char
         self.style = dict(b=False, i=False, u=False)
+        self.leading_space = re.compile(r"^\s+")
+        self.whitespace = re.compile(r"(\s)(\s*)")
+        self.trailing_space = re.compile(r"\s$")
         self.pre_formatted = False
         self.follows_fmt_tag = False
         self.follows_trailing_space = False
@@ -267,7 +270,7 @@ class HTML2FPDF(HTMLParser):
         return int(length)
 
     def handle_data(self, data):
-        trailing_space = re.search("\s$",data)
+        trailing_space_flag = self.trailing_space.search(data)
         if self.td is not None:  # drawing a table?
             self._insert_td(data)
         elif self.table is not None:
@@ -285,27 +288,33 @@ class HTML2FPDF(HTMLParser):
                 align=self.align[0].upper(),
                 link=self.href,
             )
-        elif self.pre_formatted: #for pre blocks
+        elif self.pre_formatted:  # for pre blocks
             self.pdf.write(self.h, data)
 
-        elif self.follows_fmt_tag and not self.follows_trailing_space: #don't trim leading whitespace if following a format tag with no trailing whitespace
-            data = re.sub("(\s)(\s*)",whitespace_repl, data)
-            if trailing_space:
+        elif (
+            self.follows_fmt_tag and not self.follows_trailing_space
+        ):  # don't trim leading whitespace if following a format tag with no trailing whitespace
+            data = self.whitespace.sub(whitespace_repl, data)
+            if trailing_space_flag:
                 self.follows_trailing_space = True
             if self.href:
                 self.put_link(data)
             else:
                 if self.heading_level:
                     self.pdf.start_section(data, self.heading_level - 1)
-                LOGGER.debug("write '%s' h=%d", re.sub("(\s)(\s*)",whitespace_repl, data), self.h)
+                LOGGER.debug(
+                    "write '%s' h=%d",
+                    self.whitespace.sub(whitespace_repl, data),
+                    self.h,
+                )
                 self.pdf.write(self.h, data)
             self.follows_fmt_tag = False
-            
-        else:
-            data = re.sub("^\s+",leading_whitespace_repl, data)
-            data = re.sub("(\s)(\s*)",whitespace_repl, data)
 
-            if trailing_space:
+        else:
+            data = self.leading_space.sub(leading_whitespace_repl, data)
+            data = self.whitespace.sub(whitespace_repl, data)
+
+            if trailing_space_flag:
                 self.follows_trailing_space = True
             else:
                 self.follows_trailing_space = False
@@ -314,10 +323,14 @@ class HTML2FPDF(HTMLParser):
             else:
                 if self.heading_level:
                     self.pdf.start_section(data, self.heading_level - 1)
-                LOGGER.debug("write '%s' h=%d", re.sub("(\s)(\s*)",whitespace_repl, data), self.h)
+                LOGGER.debug(
+                    "write '%s' h=%d",
+                    self.whitespace.sub(whitespace_repl, data),
+                    self.h,
+                )
                 self.pdf.write(self.h, data)
             self.follows_fmt_tag = False
-            
+
     def _insert_td(self, data=""):
         self._only_imgs_in_td = False
         width = self._td_width()
@@ -782,27 +795,33 @@ class HTML2FPDF(HTMLParser):
     def error(self, message):
         raise RuntimeError(message)
 
+
 def leading_whitespace_repl(matchobj):
-    trimmed_str = ''
-    for char in matchobj.group(0): #check if leading whitespace contains nbsp
-        if char == '\u00a0': 
-            trimmed_str += '\u00a0'
-        elif char == '\u202f': 
-            trimmed_str += '\u202f'
+    trimmed_str = ""
+    for char in matchobj.group(0):  # check if leading whitespace contains nbsp
+        if char == "\u00a0":
+            trimmed_str += "\u00a0"
+        elif char == "\u202f":
+            trimmed_str += "\u202f"
     return trimmed_str
 
+
 def whitespace_repl(matchobj):
-    trimmed_str = ''
-    for char in matchobj.group(1): #allow 1 whitespace char, check for narrow no-break space
-        if char == '\u202f': 
-            trimmed_str += '\u202f'
-        else: trimmed_str += ' '
-    for char in matchobj.group(2): #remove following whitespace char unless nbsp
-        if char == '\u00a0': 
-            trimmed_str += '\u00a0'
-        elif char == '\u202f': 
-            trimmed_str += '\u202f'
+    trimmed_str = ""
+    for char in matchobj.group(
+        1
+    ):  # allow 1 whitespace char, check for narrow no-break space
+        if char == "\u202f":
+            trimmed_str += "\u202f"
+        else:
+            trimmed_str += " "
+    for char in matchobj.group(2):  # remove following whitespace char unless nbsp
+        if char == "\u00a0":
+            trimmed_str += "\u00a0"
+        elif char == "\u202f":
+            trimmed_str += "\u202f"
     return trimmed_str
+
 
 class HTMLMixin:
     def __init__(self, *args, **kwargs):
