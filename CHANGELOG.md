@@ -31,6 +31,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Removed
 - `open()` & `close()` methods, that were only used internally and should never have been called by end-user code
 ### Fixed
+- After an "empty" cell(), ln() applied a line height of zero [#601](https://github.com/PyFPDF/fpdf2/issues/601)
 - when using `multi_cell()` with `max_line_height` to render multiline text, the last line is now rendered like all the others
 - templates don't leak graphics state changes to their surroundings anymore; [#570](https://github.com/PyFPDF/fpdf2/issues/570)
 - automatic page break is never performed on an empty page (when the Y position is at the top margin)

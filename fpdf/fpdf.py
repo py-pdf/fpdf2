@@ -2935,7 +2935,9 @@ class FPDF(GraphicsStateMixin):
                 s = " ".join(sl)
             # pylint: enable=too-many-boolean-expressions
             self._out(s)
-        self._lasth = h
+        # If the text is empty, h = max_font_size ends up as 0.
+        # We still need a valid default height for self.ln() (issue #601).
+        self._lasth = h or self.font_size
 
         # XPos.LEFT -> self.x stays the same
         if new_x == XPos.RIGHT:
