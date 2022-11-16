@@ -284,6 +284,7 @@ class PDFXrefAndTrailer(ContentWithoutID):
         # Must be set before the call to serialize():
         self.catalog_obj = None
         self.info_obj = None
+        self.encryption_obj = None
 
     def serialize(self):
         builder = self.output_builder
@@ -299,6 +300,8 @@ class PDFXrefAndTrailer(ContentWithoutID):
         out.append(f"/Size {self.count}")
         out.append(f"/Root {pdf_ref(self.catalog_obj.id)}")
         out.append(f"/Info {pdf_ref(self.info_obj.id)}")
+        if (self.encryption_obj != None):
+            out.append(f"/Encrypt {pdf_ref(self.encryption_obj.id)}")
         fpdf = builder.fpdf
         file_id = fpdf.file_id()
         if file_id == -1:
@@ -353,6 +356,7 @@ class OutputProducer:
         outline_dict_obj, outline_items = self._add_document_outline()
         xmp_metadata_obj = self._add_xmp_metadata()
         info_obj = self._add_info()
+        encryption_obj = self._add_encryption()
         xref = PDFXrefAndTrailer(self)
         self.pdf_objs.append(xref)
 
@@ -388,6 +392,7 @@ class OutputProducer:
             struct_elem.pg = page_objs[struct_elem.page_number() - 1]
         xref.catalog_obj = catalog_obj
         xref.info_obj = info_obj
+        xref.encryption_obj = encryption_obj
 
         # 3. Serializing - Append all PDF objects to the buffer:
         assert (
@@ -396,6 +401,7 @@ class OutputProducer:
         assert (
             not self.offsets
         ), f"No offset should have been set at this stage: {len(self.offsets)}"
+        encryption_handler = fpdf._security_handler
         for pdf_obj in self.pdf_objs:
             if isinstance(pdf_obj, ContentWithoutID):
                 # top header, xref table & trailer:
@@ -405,9 +411,12 @@ class OutputProducer:
                 trace_label = self.trace_labels_per_obj_id.get(pdf_obj.id)
             if trace_label:
                 with self._trace_size(trace_label):
-                    self._out(pdf_obj.serialize())
+                    self._out(pdf_obj.serialize(encryption_handler=encryption_handler))
             else:
-                self._out(pdf_obj.serialize())
+                if isinstance(pdf_obj, PDFObject):
+                    self._out(pdf_obj.serialize(encryption_handler=encryption_handler))
+                else:
+                    self._out(pdf_obj.serialize())
         self._log_final_sections_sizes()
 
         if fpdf._sign_key:
@@ -468,6 +477,8 @@ class OutputProducer:
             )
             self._add_pdf_obj(cs_obj, "pages")
             page_obj.contents = cs_obj
+            if (fpdf._security_handler):
+                page_obj.contents.encrypt(fpdf._security_handler)
 
         return page_objs
 
@@ -804,6 +815,15 @@ class OutputProducer:
         )
         self._add_pdf_obj(info_obj)
         return info_obj
+    
+    def _add_encryption(self):
+        if (self.fpdf._security_handler == None):
+            return None
+        else:
+            encryption_handler = self.fpdf._security_handler
+            pdf_obj = encryption_handler.get_encryption_obj()
+            self._add_pdf_obj(pdf_obj)
+            return pdf_obj
 
     def _add_catalog(self):
         fpdf = self.fpdf
