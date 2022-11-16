@@ -526,7 +526,16 @@ class OutputProducer:
                 # recommended_glyphs=True means that adds the .notdef, .null, CR, and space glyphs
                 options = ftsubset.Options(notdef_outline=True, recommended_glyphs=True)
                 # dropping the tables previous dropped in the old ttfonts.py file #issue 418
-                options.drop_tables += ["GDEF", "GSUB", "GPOS", "MATH", "hdmx"]
+                options.drop_tables += [
+                    "FFTM",  # FontForge Timestamp table - cf. https://github.com/PyFPDF/fpdf2/issues/600
+                    "GDEF",  # Glyph Definition table = various glyph properties used in OpenType layout processing
+                    "GPOS",  # Glyph Positioning table = precise control over glyph placement
+                    #          for sophisticated text layout and rendering in each script and language system
+                    "GSUB",  # Glyph Substitution table = data for substition of glyphs for appropriate rendering of scripts
+                    "MATH",  # Mathematical typesetting table = specific information necessary for math formula layout
+                    "hdmx",  # Horizontal Device Metrics table, stores integer advance widths scaled to particular pixel sizes
+                    #          for OpenType™ fonts with TrueType outlines
+                ]
                 subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)
                 subsetter.subset(fonttools_font)
@@ -850,6 +859,7 @@ class OutputProducer:
             file_spec_names = [
                 f"{enclose_in_parens(embedded_file.basename())} {embedded_file.file_spec().serialize()}"
                 for embedded_file in fpdf.embedded_files
+                if embedded_file.globally_enclosed
             ]
             catalog_obj.names = pdf_dict(
                 {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(file_spec_names)})}

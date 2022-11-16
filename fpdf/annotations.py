@@ -126,6 +126,13 @@ class PDFEmbeddedFile(PDFContentStream):
         self.params = pdf_dict(params)
         self._basename = basename  # private so that it does not get serialized
         self._desc = desc  # private so that it does not get serialized
+        self._globally_enclosed = True
+
+    def globally_enclosed(self):
+        return self._globally_enclosed
+
+    def set_globally_enclosed(self, value):
+        self._globally_enclosed = value
 
     def basename(self):
         return self._basename

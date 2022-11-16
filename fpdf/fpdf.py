@@ -2101,6 +2101,7 @@ class FPDF(GraphicsStateMixin):
             checksum (bool): insert a MD5 checksum of the file content - False by default
         """
         embedded_file = self.embed_file(file_path, **kwargs)
+        embedded_file.set_globally_enclosed(False)
         annotation = AnnotationDict(
             "FileAttachment",
             x * self.k,

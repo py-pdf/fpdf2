@@ -9,7 +9,7 @@ HERE = Path(__file__).resolve().parent
 
 @pytest.mark.timeout(40)
 # ensure memory usage does not get too high - this value depends on Python version:
-@memunit.assert_lt_mb(170)
+@memunit.assert_lt_mb(171)
 def test_intense_image_rendering():
     png_file_paths = []
     for png_file_path in (HERE / "image/png_images/").glob("*.png"):
