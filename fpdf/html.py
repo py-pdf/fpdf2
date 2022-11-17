@@ -16,6 +16,9 @@ import re
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
 DEFAULT_HEADING_SIZES = dict(h1=24, h2=18, h3=14, h4=12, h5=10, h6=8)
+LEADING_SPACE = re.compile(r"^\s+")
+WHITESPACE = re.compile(r"(\s)(\s*)")
+TRAILING_SPACE = re.compile(r"\s$")
 
 COLOR_DICT = {
     "black": "#000000",
@@ -224,9 +227,6 @@ class HTML2FPDF(HTMLParser):
         self.table_line_separators = table_line_separators
         self.ul_bullet_char = ul_bullet_char
         self.style = dict(b=False, i=False, u=False)
-        self.leading_space = re.compile(r"^\s+")
-        self.whitespace = re.compile(r"(\s)(\s*)")
-        self.trailing_space = re.compile(r"\s$")
         self.pre_formatted = False
         self.follows_fmt_tag = False
         self.follows_trailing_space = False
@@ -270,7 +270,7 @@ class HTML2FPDF(HTMLParser):
         return int(length)
 
     def handle_data(self, data):
-        trailing_space_flag = self.trailing_space.search(data)
+        trailing_space_flag = TRAILING_SPACE.search(data)
         if self.td is not None:  # drawing a table?
             self._insert_td(data)
         elif self.table is not None:
@@ -291,10 +291,9 @@ class HTML2FPDF(HTMLParser):
         elif self.pre_formatted:  # for pre blocks
             self.pdf.write(self.h, data)
 
-        elif (
-            self.follows_fmt_tag and not self.follows_trailing_space
-        ):  # don't trim leading whitespace if following a format tag with no trailing whitespace
-            data = self.whitespace.sub(whitespace_repl, data)
+        elif self.follows_fmt_tag and not self.follows_trailing_space:
+            # don't trim leading whitespace if following a format tag with no trailing whitespace
+            data = WHITESPACE.sub(whitespace_repl, data)
             if trailing_space_flag:
                 self.follows_trailing_space = True
             if self.href:
@@ -304,20 +303,16 @@ class HTML2FPDF(HTMLParser):
                     self.pdf.start_section(data, self.heading_level - 1)
                 LOGGER.debug(
                     "write '%s' h=%d",
-                    self.whitespace.sub(whitespace_repl, data),
+                    WHITESPACE.sub(whitespace_repl, data),
                     self.h,
                 )
                 self.pdf.write(self.h, data)
             self.follows_fmt_tag = False
 
         else:
-            data = self.leading_space.sub(leading_whitespace_repl, data)
-            data = self.whitespace.sub(whitespace_repl, data)
-
-            if trailing_space_flag:
-                self.follows_trailing_space = True
-            else:
-                self.follows_trailing_space = False
+            data = LEADING_SPACE.sub(leading_whitespace_repl, data)
+            data = WHITESPACE.sub(whitespace_repl, data)
+            self.follows_trailing_space = trailing_space_flag
             if self.href:
                 self.put_link(data)
             else:
@@ -325,7 +320,7 @@ class HTML2FPDF(HTMLParser):
                     self.pdf.start_section(data, self.heading_level - 1)
                 LOGGER.debug(
                     "write '%s' h=%d",
-                    self.whitespace.sub(whitespace_repl, data),
+                    WHITESPACE.sub(whitespace_repl, data),
                     self.h,
                 )
                 self.pdf.write(self.h, data)

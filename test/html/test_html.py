@@ -588,8 +588,16 @@ Testing pre blocks
 that span multiple lines
 and have tabs    and    spaces.
 </pre>
+
+<pre><code>
+Testing pre-code blocks
+that span multiple lines
+and have tabs    and    spaces.
+</code></pre>
+
 <p>Testing unicode nbsp \u00a0\u00a0\u00a0\u00a0,
-and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.
+and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.<br>
+    \u00a0&nbsp;&nbsp;Testing leading nbsp
 </body>
 """
     )
