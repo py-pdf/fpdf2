@@ -133,6 +133,7 @@ nav:
   - 'Combine with borb':              'CombineWithBorb.md'
   - 'Combine with pdfrw':             'CombineWithPdfrw.md'
   - 'Combine with PyPDF2':            'CombineWithPyPDF2.md'
+  - 'Templating with Jinja':          'TemplatingWithJinja.md'
   - 'Usage in web APIs':              'UsageInWebAPI.md'
   - 'Database storage':               'DatabaseStorage.md'
 - 'Development':
