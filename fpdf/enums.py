@@ -1,6 +1,5 @@
 from enum import Enum, IntEnum, Flag, IntFlag
 from sys import intern
-from types import ClassMethodDescriptorType
 
 from .syntax import Name
 

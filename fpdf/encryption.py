@@ -6,7 +6,7 @@ from .enums import EncryptionMethod
 from .syntax import Name, PDFObject, PDFString
 from .syntax import create_dictionary_string as pdf_dict
 
-""" try to use cryptography for AES encryption """
+# try to use cryptography for AES encryption
 try:
     from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
@@ -14,7 +14,7 @@ try:
 except ImportError:
     crypto = None
 
-""" If cryptography is not present, try Crypto """
+# If cryptography is not present, try Crypto
 if not crypto:
     try:
         from Crypto.Cipher import AES
@@ -120,40 +120,9 @@ class StandardSecurityHandler:
         * Set the access permissions on the document
     """
 
-    DEFAULT_PADDING = [
-        0x28,
-        0xBF,
-        0x4E,
-        0x5E,
-        0x4E,
-        0x75,
-        0x8A,
-        0x41,
-        0x64,
-        0x00,
-        0x4E,
-        0x56,
-        0xFF,
-        0xFA,
-        0x01,
-        0x08,
-        0x2E,
-        0x2E,
-        0x00,
-        0xB6,
-        0xD0,
-        0x68,
-        0x3E,
-        0x80,
-        0x2F,
-        0x0C,
-        0xA9,
-        0xFE,
-        0x64,
-        0x53,
-        0x69,
-        0x7A,
-    ]
+    DEFAULT_PADDING = (
+        b"(\xbfN^Nu\x8aAd\x00NV\xff\xfa\x01\x08..\x00\xb6\xd0h>\x80/\x0c\xa9\xfedSiz"
+    )
 
     def __init__(
         self,
@@ -267,7 +236,6 @@ class StandardSecurityHandler:
         return iv
 
     def encrypt_AES_crypto(self, key, data):
-        iv = bytearray(urandom(16))
         cipher = AES.new(key, AES.MODE_CBC)
         result = cipher.encrypt(pad(data, AES.block_size))
         r = bytearray(cipher.iv)
