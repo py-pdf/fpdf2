@@ -34,7 +34,7 @@ class NumberTree(PDFObject):
         super().__init__()
         self.nums = defaultdict(list)  # {struct_parent_id -> struct_elems}
 
-    def serialize(self, obj_dict=None):
+    def serialize(self, obj_dict=None, encryption_handler=None):
         newline = "\n"
         serialized_nums = "\n".join(
             f"{struct_parent_id} [{newline.join(struct_elem.ref for struct_elem in struct_elems)}]"

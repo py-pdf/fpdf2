@@ -49,7 +49,7 @@ from .annotations import (
     DEFAULT_ANNOT_FLAGS,
 )
 from .deprecation import WarnOnDeprecatedModuleAttributes
-from .encryption import AccessPermission, StandardSecurityHandler
+from .encryption import StandardSecurityHandler
 from .enums import (
     Align,
     AnnotationFlag,
@@ -65,6 +65,7 @@ from .enums import (
     YPos,
     Corner,
     FontDescriptorFlags,
+    AccessPermission,
     CharVPos,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
@@ -360,40 +361,33 @@ class FPDF(GraphicsStateMixin):
         # final buffer holding the PDF document in-memory - defined only after calling output():
         self.buffer = None
 
-    def set_encryption(self,
-            owner_password,
-            user_password=None,
-            encryption_method=None,
-            allow_print_lowres=True, 
-            allow_modify=True,
-            allow_copy=True,
-            allow_annotation=True,
-            allow_fill_forms=True,
-            allow_copy_accessibility=True,
-            allow_assemble=True,
-            allow_print_highres=True,
-            encrypt_metadata=False
-        ):
+    def set_encryption(
+        self,
+        owner_password,
+        user_password=None,
+        encryption_method=None,
+        permissions=AccessPermission.all(),
+        encrypt_metadata=False,
+    ):
 
-        """ 
+        """
         A file ID is needed for the security handler to generate the password hashes
         Override file_id method so it guarantees the same id will be generated at the trailer
         """
-        fid = self._default_file_id(bytearray([0xff]))
+        fid = self._default_file_id(bytearray([0xFF]))
+
         def file_id():
             return fid
+
         self.file_id = file_id
-        
-        ap = AccessPermission(print_lowres=allow_print_lowres, modify=allow_modify, copy=allow_copy,
-            annotation=allow_annotation, fill_forms=allow_fill_forms, copy_accessibility=allow_copy_accessibility,
-            assemble=allow_assemble, print_highres=allow_print_highres)
-        
-        self._security_handler = StandardSecurityHandler(self,
+        self._security_handler = StandardSecurityHandler(
+            self,
             owner_password=owner_password,
             user_password=user_password,
-            access_permission=ap,
+            permission=permissions,
             encryption_method=encryption_method,
-            encrypt_metadata=encrypt_metadata)
+            encrypt_metadata=encrypt_metadata,
+        )
 
     def write_html(self, text, *args, **kwargs):
         """

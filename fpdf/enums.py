@@ -1,5 +1,6 @@
-from enum import Enum, IntEnum, Flag
+from enum import Enum, IntEnum, Flag, IntFlag
 from sys import intern
+from types import ClassMethodDescriptorType
 
 from .syntax import Name
 
@@ -638,6 +639,55 @@ class FontDescriptorFlags(Flag):
     small text sizes by a conforming reader. If set, features of bold glyphs may be thickened at
     small text sizes."
     """
+
+
+class AccessPermission(IntFlag):
+    """Permissin flags will translate as a integer on the encryption dictionary"""
+
+    PRINT_LOW_RES = 0b000000000100
+    """ Print the document """
+
+    MODIFY = 0b000000001000
+    """ Modify the contents of the document """
+
+    COPY = 0b000000010000
+    """ Copy or extract text and graphics from the document """
+
+    ANNOTATION = 0b000000100000
+    """ Add or modify text annotations """
+
+    FILL_FORMS = 0b000100000000
+    """ Fill in existing interactive form fields """
+
+    COPY_FOR_ACCESSIBILITY = 0b001000000000
+    """ Extract text and graphics in support of accessibility to users with disabilities """
+
+    ASSEMBLE = 0b010000000000
+    """ Insert, rotate or delete pages and create bookmarks or thumbnail images """
+
+    PRINT_HIGH_RES = 0b100000000000
+    """ Print document at the highest resolution """
+
+    @classmethod
+    def all(cls):
+        """All flags enabled"""
+        result = 0
+        for permission in list(AccessPermission):
+            result = result | permission
+        return result
+
+    @classmethod
+    def none(cls):
+        """All flags disabled"""
+        return 0
+
+
+class EncryptionMethod(Enum):
+    """Algorithm to be used to encrypt the document"""
+
+    NO_ENCRYPTION = 0
+    RC4 = 1
+    AES_128 = 2
 
 
 # This enum is only used internally:

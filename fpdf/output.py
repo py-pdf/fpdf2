@@ -273,7 +273,7 @@ class PDFExtGState(PDFObject):
         self._dict_as_str = dict_as_str
 
     # method override
-    def serialize(self, obj_dict=None):
+    def serialize(self, obj_dict=None, encryption_handler=None):
         return f"{self.id} 0 obj\n{self._dict_as_str}\nendobj"
 
 
@@ -300,7 +300,7 @@ class PDFXrefAndTrailer(ContentWithoutID):
         out.append(f"/Size {self.count}")
         out.append(f"/Root {pdf_ref(self.catalog_obj.id)}")
         out.append(f"/Info {pdf_ref(self.info_obj.id)}")
-        if (self.encryption_obj != None):
+        if self.encryption_obj:
             out.append(f"/Encrypt {pdf_ref(self.encryption_obj.id)}")
         fpdf = builder.fpdf
         file_id = fpdf.file_id()
@@ -477,7 +477,7 @@ class OutputProducer:
             )
             self._add_pdf_obj(cs_obj, "pages")
             page_obj.contents = cs_obj
-            if (fpdf._security_handler):
+            if fpdf._security_handler:
                 page_obj.contents.encrypt(fpdf._security_handler)
 
         return page_objs
@@ -815,15 +815,14 @@ class OutputProducer:
         )
         self._add_pdf_obj(info_obj)
         return info_obj
-    
+
     def _add_encryption(self):
-        if (self.fpdf._security_handler == None):
-            return None
-        else:
+        if self.fpdf._security_handler:
             encryption_handler = self.fpdf._security_handler
             pdf_obj = encryption_handler.get_encryption_obj()
             self._add_pdf_obj(pdf_obj)
             return pdf_obj
+        return None
 
     def _add_catalog(self):
         fpdf = self.fpdf
