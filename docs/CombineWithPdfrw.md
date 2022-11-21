@@ -67,7 +67,7 @@ Until it is merged, you can install a forked version of `pdfrw` including the re
 
 ## Altering with pdfrw a document generated with fpdf2
 A document created with `fpdf2` can the be edited with `pdfrw`
-by passing it `.output()` to a `pdfrw.PdfReader`:
+by passing its `.output()` to a `pdfrw.PdfReader`:
 ```python
 import io
 from fpdf import FPDF

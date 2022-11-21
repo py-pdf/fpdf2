@@ -566,3 +566,39 @@ def test_html_HTMLMixin_deprecation_warning(tmp_path):
         """
         )
         assert_pdf_equal(pdf, HERE / "html_description.pdf", tmp_path)
+
+
+def test_html_whitespace_handling(tmp_path):  # Issue 547
+    """Testing whitespace handling for write_html()."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """
+<body>
+<h1>Issue 547 Test</h1>
+<p>
+<b>Testing   </b> paragraph blocks
+        that <i>span</i> <b>multiple lines</b>.
+    Testing tabs       and    spaces<br>
+    and break tags.<br>
+</p>
+<code>Testing code blocks with tabs      and    spaces.</code><br>
+<pre>
+Testing pre blocks
+that span multiple lines
+and have tabs    and    spaces.
+</pre>
+
+<pre><code>
+Testing pre-code blocks
+that span multiple lines
+and have tabs    and    spaces.
+</code></pre>
+
+<p>Testing unicode nbsp \u00a0\u00a0\u00a0\u00a0,
+and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.<br>
+    \u00a0&nbsp;&nbsp;Testing leading nbsp
+</body>
+"""
+    )
+    assert_pdf_equal(pdf, HERE / "test_html_whitespace_handling.pdf", tmp_path)

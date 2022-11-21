@@ -62,7 +62,7 @@ merger.write(OUT_FILEPATH)
 
 ## Altering with PyPDF2 a document generated with fpdf2
 A document created with `fpdf2` can the be edited with `PyPDF2`
-by passing it `.output()` to a `PyPDF2.PdfReader`:
+by passing its `.output()` to a `PyPDF2.PdfReader`:
 ```python
 import io
 from fpdf import FPDF

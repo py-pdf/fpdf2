@@ -12,7 +12,8 @@ def test_html_toc(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
-        """<h1>Document title</h1>
+        """
+        <h1>Document title</h1>
         <br><br><br>
         <u>Table of content:</u>
         <br>
@@ -37,7 +38,8 @@ def test_html_toc(tmp_path):
             <section><h3>Subtitle 2.2</h3><br>
             Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
             <section>
-        <section>"""
+        <section>
+        """
     )
     assert_pdf_equal(pdf, HERE / "html_toc.pdf", tmp_path)
 

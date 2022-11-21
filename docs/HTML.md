@@ -79,6 +79,7 @@ pdf.output("html.pdf")
 * `<font>`: (and `face`, `size`, `color` attributes)
 * `<center>` for aligning
 * `<a>`: links (and `href` attribute)
+* `<pre>` & `<code>` tags
 * `<img>`: images (and `src`, `width`, `height` attributes)
 * `<ol>`, `<ul>`, `<li>`: ordered, unordered and list items (can be nested)
 * `<dl>`, `<dt>`, `<dd>`: description list, title, details (can be nested)

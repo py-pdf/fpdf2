@@ -707,6 +707,24 @@
       "contributions": [
         "question"
       ]
+    },
+    {
+      "login": "seanpmulholland",
+      "name": "Sean",
+      "avatar_url": "https://avatars.githubusercontent.com/u/79894395?v=4",
+      "profile": "https://github.com/seanpmulholland",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "andersonhc",
+      "name": "Anderson Herzogenrath da Costa",
+      "avatar_url": "https://avatars.githubusercontent.com/u/948125?v=4",
+      "profile": "https://github.com/andersonhc",
+      "contributions": [
+        "question"
+      ]
     }
   ],
   "contributorsPerLine": 7,

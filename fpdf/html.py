@@ -11,10 +11,14 @@ from html.parser import HTMLParser
 
 from .enums import XPos, YPos
 
+import re
 
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
 DEFAULT_HEADING_SIZES = dict(h1=24, h2=18, h3=14, h4=12, h5=10, h6=8)
+LEADING_SPACE = re.compile(r"^\s+")
+WHITESPACE = re.compile(r"(\s)(\s*)")
+TRAILING_SPACE = re.compile(r"\s$")
 
 COLOR_DICT = {
     "black": "#000000",
@@ -223,6 +227,9 @@ class HTML2FPDF(HTMLParser):
         self.table_line_separators = table_line_separators
         self.ul_bullet_char = ul_bullet_char
         self.style = dict(b=False, i=False, u=False)
+        self.pre_formatted = False
+        self.follows_fmt_tag = False
+        self.follows_trailing_space = False
         self.href = ""
         self.align = ""
         self.page_links = {}
@@ -263,6 +270,7 @@ class HTML2FPDF(HTMLParser):
         return int(length)
 
     def handle_data(self, data):
+        trailing_space_flag = TRAILING_SPACE.search(data)
         if self.td is not None:  # drawing a table?
             self._insert_td(data)
         elif self.table is not None:
@@ -280,15 +288,43 @@ class HTML2FPDF(HTMLParser):
                 align=self.align[0].upper(),
                 link=self.href,
             )
-        else:
-            data = data.replace("\n", " ")
+        elif self.pre_formatted:  # for pre blocks
+            self.pdf.write(self.h, data)
+
+        elif self.follows_fmt_tag and not self.follows_trailing_space:
+            # don't trim leading whitespace if following a format tag with no trailing whitespace
+            data = WHITESPACE.sub(whitespace_repl, data)
+            if trailing_space_flag:
+                self.follows_trailing_space = True
             if self.href:
                 self.put_link(data)
             else:
                 if self.heading_level:
                     self.pdf.start_section(data, self.heading_level - 1)
-                LOGGER.debug("write '%s' h=%d", data.replace("\n", "\\n"), self.h)
+                LOGGER.debug(
+                    "write '%s' h=%d",
+                    WHITESPACE.sub(whitespace_repl, data),
+                    self.h,
+                )
                 self.pdf.write(self.h, data)
+            self.follows_fmt_tag = False
+
+        else:
+            data = LEADING_SPACE.sub(leading_whitespace_repl, data)
+            data = WHITESPACE.sub(whitespace_repl, data)
+            self.follows_trailing_space = trailing_space_flag
+            if self.href:
+                self.put_link(data)
+            else:
+                if self.heading_level:
+                    self.pdf.start_section(data, self.heading_level - 1)
+                LOGGER.debug(
+                    "write '%s' h=%d",
+                    WHITESPACE.sub(whitespace_repl, data),
+                    self.h,
+                )
+                self.pdf.write(self.h, data)
+            self.follows_fmt_tag = False
 
     def _insert_td(self, data=""):
         self._only_imgs_in_td = False
@@ -472,9 +508,13 @@ class HTML2FPDF(HTMLParser):
                 self.align = attrs.get("align")
         if tag == "hr":
             self.pdf.add_page(same=True)
+        if tag == "code":
+            self.font_stack.append((self.font_face, self.font_size, self.font_color))
+            self.set_font("courier", 11)
         if tag == "pre":
             self.font_stack.append((self.font_face, self.font_size, self.font_color))
             self.set_font("courier", 11)
+            self.pre_formatted = True
         if tag == "blockquote":
             self.pdf.set_text_color(100, 0, 45)
             self.indent += 1
@@ -622,10 +662,15 @@ class HTML2FPDF(HTMLParser):
             self.set_font(face, size)
             self.set_text_color(*color)
             self.align = None
+        if tag == "code":
+            face, size, color = self.font_stack.pop()
+            self.set_font(face, size)
+            self.set_text_color(*color)
         if tag == "pre":
             face, size, color = self.font_stack.pop()
             self.set_font(face, size)
             self.set_text_color(*color)
+            self.pre_formatted = False
         if tag == "blockquote":
             self.set_text_color(*self.font_color)
             self.indent -= 1
@@ -636,6 +681,7 @@ class HTML2FPDF(HTMLParser):
             tag = "i"
         if tag in ("b", "i", "u"):
             self.set_style(tag, False)
+            self.follows_fmt_tag = True
         if tag == "a":
             self.href = ""
         if tag == "p":
@@ -686,8 +732,10 @@ class HTML2FPDF(HTMLParser):
             self.align = None
         if tag == "sup":
             self.pdf.char_vpos = "LINE"
+            self.follows_fmt_tag = True
         if tag == "sub":
             self.pdf.char_vpos = "LINE"
+            self.follows_fmt_tag = True
 
     def set_font(self, face=None, size=None):
         if face:
@@ -741,6 +789,33 @@ class HTML2FPDF(HTMLParser):
     # Subclasses of _markupbase.ParserBase must implement this:
     def error(self, message):
         raise RuntimeError(message)
+
+
+def leading_whitespace_repl(matchobj):
+    trimmed_str = ""
+    for char in matchobj.group(0):  # check if leading whitespace contains nbsp
+        if char == "\u00a0":
+            trimmed_str += "\u00a0"
+        elif char == "\u202f":
+            trimmed_str += "\u202f"
+    return trimmed_str
+
+
+def whitespace_repl(matchobj):
+    trimmed_str = ""
+    for char in matchobj.group(
+        1
+    ):  # allow 1 whitespace char, check for narrow no-break space
+        if char == "\u202f":
+            trimmed_str += "\u202f"
+        else:
+            trimmed_str += " "
+    for char in matchobj.group(2):  # remove following whitespace char unless nbsp
+        if char == "\u00a0":
+            trimmed_str += "\u00a0"
+        elif char == "\u202f":
+            trimmed_str += "\u202f"
+    return trimmed_str
 
 
 class HTMLMixin:
