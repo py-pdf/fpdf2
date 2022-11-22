@@ -9,20 +9,9 @@ from .syntax import create_dictionary_string as pdf_dict
 # try to use cryptography for AES encryption
 try:
     from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-
-    crypto = "cryptography"
+    from cryptography.hazmat.primitives.padding import PKCS7
 except ImportError:
-    crypto = None
-
-# If cryptography is not present, try Crypto
-if not crypto:
-    try:
-        from Crypto.Cipher import AES
-        from Crypto.Util.Padding import pad
-
-        crypto = "crypto"
-    except ImportError:
-        crypto = None
+    Cipher = None
 
 
 class ARC4:
@@ -144,7 +133,7 @@ class StandardSecurityHandler:
         self.cf = None
 
         if self.encryption_method == EncryptionMethod.AES_128:
-            if crypto is None:
+            if Cipher is None:
                 raise EnvironmentError(
                     "cryptography not available - Try: 'pip install cryptography' or use another encryption method"
                 )
@@ -203,7 +192,8 @@ class StandardSecurityHandler:
         Append object ID and generation ID to the key and encrypt the data
         Generation ID is fixed as 0. Will need to revisit if the application start changing generation ID
         """
-        h = hashlib.md5(self.k)
+        h = hashlib.new("md5", usedforsecurity=False)
+        h.update(self.k)
         h.update(
             (obj_id & 0xFFFFFF).to_bytes(3, byteorder="little", signed=False)
         )  # object id
@@ -217,30 +207,19 @@ class StandardSecurityHandler:
             key = key[: ((self.key_length / 8) + 5)]
 
         if self.aes_algorithm():
-            return (
-                self.encrypt_AES_cryptography(key, data)
-                if crypto == "cryptography"
-                else self.encrypt_AES_crypto(key, data)
-            )
+            return self.encrypt_AES_cryptography(key, data)
         return ARC4().encrypt(key, data)
 
     def encrypt_AES_cryptography(self, key, data):
         iv = bytearray(urandom(16))
-        b = bytearray(data)
-        for _ in range(16 - (len(b) % 16)):
-            b.extend(bytes([0x00]))
+        padder = PKCS7(128).padder()
+        padded_data = padder.update(data)
+        padded_data += padder.finalize()
         cipher = Cipher(algorithms.AES128(key), modes.CBC(iv))
         e = cipher.encryptor()
-        data = e.update(b) + e.finalize()
+        data = e.update(padded_data) + e.finalize()
         iv.extend(data)
         return iv
-
-    def encrypt_AES_crypto(self, key, data):
-        cipher = AES.new(key, AES.MODE_CBC)
-        result = cipher.encrypt(pad(data, AES.block_size))
-        r = bytearray(cipher.iv)
-        r.extend(result)
-        return r
 
     def padded_password(self, password):
         """
@@ -260,7 +239,7 @@ class StandardSecurityHandler:
         """
         m = self.padded_password(self.owner_password)
         for _ in range(51):
-            m = hashlib.md5(m).digest()
+            m = self.md5(m)
         rc4key = m[: (math.ceil(self.key_length / 8))]
         result = self.padded_password(self.user_password)
         for i in range(20):
@@ -275,7 +254,8 @@ class StandardSecurityHandler:
         PDF32000 reference - Algorithm 5: Computing the encryption dictionary's U (user password) value
         The security handler is only using revision 3 or 4, so the legacy r2 version is not implemented here
         """
-        m = hashlib.md5(bytearray(self.DEFAULT_PADDING))
+        m = hashlib.new("md5", usedforsecurity=False)
+        m.update(bytearray(self.DEFAULT_PADDING))
         m.update(bytes.fromhex(self.info_id))
         result = m.digest()
         key = self.k
@@ -294,7 +274,8 @@ class StandardSecurityHandler:
         PDF32000 reference
         Algorithm 2: Computing an encryption key
         """
-        m = hashlib.md5(self.padded_password(self.user_password))
+        m = hashlib.new("md5", usedforsecurity=False)
+        m.update(self.padded_password(self.user_password))
         m.update(bytes.fromhex(self.o))
         m.update(
             (self.access_permission & 0xFFFFFFFF).to_bytes(
@@ -306,6 +287,10 @@ class StandardSecurityHandler:
             m.update(bytes([0xFF, 0xFF, 0xFF, 0xFF]))
         result = m.digest()[: (math.ceil(self.key_length / 8))]
         for _ in range(50):
-            m = hashlib.md5(result)
-            result = m.digest()[: (math.ceil(self.key_length / 8))]
+            result = self.md5(result)[: (math.ceil(self.key_length / 8))]
         return result
+
+    def md5(self, data):
+        h = hashlib.new("md5", usedforsecurity=False)
+        h.update(data)
+        return h.digest()

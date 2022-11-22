@@ -74,3 +74,36 @@ pdf.set_encryption(
     permissions=AccessPermission.all()
 )
 ```
+
+If no permission is specified it will default to `all()`.
+
+## Encryption method ##
+
+There are 3 available encryption methods:
+
+  * `NO_ENCRYPTION`
+    Data is not encrypted, only add the access permission flags.
+
+  * `RC4` (default)
+    Default PDF encryption algorithm.
+
+  * `AES_128`
+    Encrypts the data with AES algorithm. Requires the `cryptography` package.
+
+```python
+from fpdf import FPDF
+from fpdf.enums import AccessPermission, EncryptionMethod
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("helvetica", size=12)
+pdf.cell(txt="hello world")
+
+pdf.set_encryption(
+    owner_password="123",
+    encryption_method=EncryptionMethod.AES_128,
+    permissions=AccessPermission.none()
+)
+
+pdf.output("output.pdf")
+```
