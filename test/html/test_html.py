@@ -602,3 +602,14 @@ and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.<br>
 """
     )
     assert_pdf_equal(pdf, HERE / "test_html_whitespace_handling.pdf", tmp_path)
+
+
+def test_warn_on_tags_not_matching(caplog):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html("<p>")
+    assert "Missing HTML end tag for <p>" in caplog.text
+    pdf.write_html("</p>")
+    assert " Unexpected HTML end tag </p>" in caplog.text
+    pdf.write_html("<p></a>")
+    assert " Unexpected HTML end tag </a>" in caplog.text

@@ -22,13 +22,20 @@ class Fragment:
     A fragment of text with font/size/style and other associated information.
     """
 
-    def __init__(self, characters: Union[list, str], graphics_state: dict, k: float):
+    def __init__(
+        self,
+        characters: Union[list, str],
+        graphics_state: dict,
+        k: float,
+        url: str = None,
+    ):
         if isinstance(characters, str):
             self.characters = list(characters)
         else:
             self.characters = characters
         self.graphics_state = graphics_state
         self.k = k
+        self.url = url
 
     def __repr__(self):
         gstate = self.graphics_state.copy()
@@ -36,7 +43,7 @@ class Fragment:
             del gstate["current_font"]  # TMI
         return (
             f"Fragment(characters={self.characters},"
-            f" graphics_state={gstate}, k={self.k})"
+            f" graphics_state={gstate}, k={self.k}, url={self.url})"
         )
 
     @property
@@ -255,10 +262,11 @@ class CurrentLine:
         k: float,
         original_fragment_index: int,
         original_character_index: int,
+        url: str = None,
     ):
         assert character != NEWLINE
         if not self.fragments:
-            self.fragments.append(Fragment("", graphics_state, k))
+            self.fragments.append(Fragment("", graphics_state, k, url))
 
         # characters are expected to be grouped into fragments by font and
         # character attributes. If the last existing fragment doesn't match
@@ -267,7 +275,7 @@ class CurrentLine:
             graphics_state != self.fragments[-1].graphics_state
             or k != self.fragments[-1].k
         ):
-            self.fragments.append(Fragment("", graphics_state, k))
+            self.fragments.append(Fragment("", graphics_state, k, url))
         active_fragment = self.fragments[-1]
 
         if character == SPACE:
@@ -426,6 +434,7 @@ class MultiLineBreak:
                 current_fragment.k,
                 self.fragment_index,
                 self.character_index,
+                current_fragment.url,
             )
 
             self.character_index += 1

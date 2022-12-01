@@ -223,6 +223,8 @@ class FPDF(GraphicsStateMixin):
     MARKDOWN_BOLD_MARKER = "**"
     MARKDOWN_ITALICS_MARKER = "__"
     MARKDOWN_UNDERLINE_MARKER = "--"
+    MARKDOWN_LINK_REGEX = re.compile(r"^\[([^][]+)\]\(([^()]+)\)(.*)$")
+    MARKDOWN_LINK_COLOR = None
 
     HTML2FPDF_CLASS = HTML2FPDF
 
@@ -2895,6 +2897,14 @@ class FPDF(GraphicsStateMixin):
                     underlines.append(
                         (self.x + dx + s_width, frag_width, frag.font, frag.font_size)
                     )
+                if frag.url:
+                    self.link(
+                        x=self.x + dx + s_width,
+                        y=self.y + (0.5 * h) - (0.5 * frag.font_size),
+                        w=frag_width,
+                        h=frag.font_size,
+                        link=frag.url,
+                    )
                 s_width += frag_width
 
             sl.append("ET")
@@ -3020,6 +3030,18 @@ class FPDF(GraphicsStateMixin):
             "I" in self.font_style,
             bool(self.underline),
         )
+
+        def frag():
+            gstate = self._get_current_graphics_state()
+            gstate["font_style"] = ("B" if in_bold else "") + (
+                "I" if in_italics else ""
+            )
+            gstate["underline"] = in_underline
+            nonlocal txt_frag
+            fragment = Fragment(txt_frag, gstate, self.k)
+            txt_frag = []
+            return fragment
+
         while txt:
             is_marker = txt[:2] in (
                 self.MARKDOWN_BOLD_MARKER,
@@ -3034,30 +3056,30 @@ class FPDF(GraphicsStateMixin):
                 and (len(txt) < 3 or txt[2] != half_marker)
             ):
                 if txt_frag:
-                    gstate = self._get_current_graphics_state()
-                    gstate["font_style"] = ("B" if in_bold else "") + (
-                        "I" if in_italics else ""
-                    )
-                    gstate["underline"] = in_underline
-                    yield Fragment(txt_frag, gstate, self.k)
+                    yield frag()
                 if txt[:2] == self.MARKDOWN_BOLD_MARKER:
                     in_bold = not in_bold
                 if txt[:2] == self.MARKDOWN_ITALICS_MARKER:
                     in_italics = not in_italics
                 if txt[:2] == self.MARKDOWN_UNDERLINE_MARKER:
                     in_underline = not in_underline
-                txt_frag = []
                 txt = txt[2:]
-            else:
-                txt_frag.append(txt[0])
-                txt = txt[1:]
+                continue
+            is_link = self.MARKDOWN_LINK_REGEX.match(txt)
+            if is_link:
+                link_text, link_url, txt = is_link.groups()
+                if txt_frag:
+                    yield frag()
+                gstate = self._get_current_graphics_state()
+                gstate["underline"] = True
+                if self.MARKDOWN_LINK_COLOR:
+                    gstate["text_color"] = self.MARKDOWN_LINK_COLOR
+                yield Fragment(list(link_text), gstate, self.k, url=link_url)
+                continue
+            txt_frag.append(txt[0])
+            txt = txt[1:]
         if txt_frag:
-            gstate = self._get_current_graphics_state()
-            gstate["font_style"] = ("B" if in_bold else "") + (
-                "I" if in_italics else ""
-            )
-            gstate["underline"] = in_underline
-            yield Fragment(txt_frag, gstate, self.k)
+            yield frag()
 
     def will_page_break(self, height):
         """
