@@ -70,8 +70,7 @@ pdf.add_page()
 # Displaying a full-width cell with centered text:
 pdf.cell(w=pdf.epw, txt="Welcome on first page!", align="C")
 pdf.add_page()
-link = pdf.add_link()
-pdf.set_link(link, page=1)
+link = pdf.add_link(page=1)
 pdf.cell(txt="Internal link to first page", border=1, link=link)
 pdf.output("internal_link.pdf")
 ```

@@ -827,6 +827,7 @@ class FPDF(GraphicsStateMixin):
                 contents=bytearray(),
                 duration=duration,
                 transition=transition,
+                index=self.page,
             )
             self.pages[self.page] = page
             if transition:
@@ -1942,18 +1943,36 @@ class FPDF(GraphicsStateMixin):
         if self.page > 0:
             self._out(f"BT {stretching:.2f} Tz ET")
 
-    def add_link(self):
+    def add_link(self, y=0, x=0, page=-1, zoom="null"):
         """
         Creates a new internal link and returns its identifier.
         An internal link is a clickable area which directs to another place within the document.
 
         The identifier can then be passed to the `FPDF.cell()`, `FPDF.write()`, `FPDF.image()`
         or `FPDF.link()` methods.
-        The destination must be defined using `FPDF.set_link()`.
+
+        Args:
+            y (float): optional ordinate of target position.
+                The default value is 0 (top of page).
+            x (float): optional abscissa of target position.
+                The default value is 0 (top of page).
+            page (int): optional number of target page.
+                -1 indicates the current page, which is the default value.
+            zoom (float): optional new zoom level after following the link.
+                Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
         """
-        link_index = len(self.links) + 1
-        self.links[link_index] = DestinationXYZ(page=1, top=self.h_pt)
-        return link_index
+        link = DestinationXYZ(
+            self.page if page == -1 else page,
+            top=self.h_pt - y * self.k,
+            left=x * self.k,
+            zoom=zoom,
+        )
+        try:
+            return next(i for i, l in self.links.items() if l == link)
+        except StopIteration:
+            link_index = len(self.links) + 1
+            self.links[link_index] = link
+            return link_index
 
     def set_link(self, link, y=0, x=0, page=-1, zoom="null"):
         """
@@ -1990,7 +2009,7 @@ class FPDF(GraphicsStateMixin):
             y (float): vertical position (from the top) to the bottom side of the link rectangle
             w (float): width of the link rectangle
             h (float): height of the link rectangle
-            link: either an URL or a integer returned by `FPDF.add_link`, defining an internal link to a page
+            link: either an URL or an integer returned by `FPDF.add_link`, defining an internal link to a page
             alt_text (str): optional textual description of the link, for accessibility purposes
             border_width (int): thickness of an optional black border surrounding the link.
                 Not all PDF readers honor this: Acrobat renders it but not Sumatra.

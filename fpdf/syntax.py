@@ -275,6 +275,14 @@ class DestinationXYZ(Destination):
         self.zoom = zoom
         self.page_ref = None
 
+    def __eq__(self, dest):
+        return (
+            self.page_number == dest.page_number
+            and self.top == dest.top
+            and self.left == dest.left
+            and self.zoom == dest.zoom
+        )
+
     def __repr__(self):
         return f'DestinationXYZ(page_number={self.page_number}, top={self.top}, left={self.left}, zoom="{self.zoom}", page_ref={self.page_ref})'
 

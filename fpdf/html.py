@@ -807,8 +807,7 @@ class HTML2FPDF(HTMLParser):
         "This method can be overriden by subclasses to customize the Table of Contents style."
         pdf.ln()
         for section in outline:
-            link = pdf.add_link()
-            pdf.set_link(link, page=section.page_number)
+            link = pdf.add_link(page=section.page_number)
             text = f'{" " * section.level * 2} {section.name}'
             text += f' {"." * (60 - section.level*2 - len(section.name))} {section.page_number}'
             pdf.multi_cell(

@@ -174,7 +174,7 @@ Por outro lado, a sua principal desvantagem é que não podemos justificar o tex
 Na primeira página do exemplo, usámos [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
 para este propósito. O início da frase está escrita no estilo de texto normal, depois usando o  método [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), trocamos para sublinhado e acabámos a frase.
 
-Para adicionar o link externo a apontar para a segunda página, nós usámos o método [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link), que cria uma área clicável à qual demos o nome de “link” que direciona para outra parte do documento. Na segunda página, usámos [set_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link) para definir uma área de destino para o link que acabámos de criar.
+Para adicionar o link externo a apontar para a segunda página, nós usámos o método [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link), que cria uma área clicável à qual demos o nome de “link” que direciona para outra parte do documento.
 
 Para criar o link externo usando uma imagem, usámos [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). O método tem a opção de passar um link como um dos seus argumentos. O link pode ser interno ou externo.
 
