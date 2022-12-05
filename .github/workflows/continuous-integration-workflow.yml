@@ -44,7 +44,7 @@ jobs:
         if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: |
           # Using qpdf
-          find . -name '*.pdf' | xargs -n 1 qpdf --check
+          find . -name '*.pdf' | xargs -n 1 qpdf --check --password=fpdf2
           # Using Datalogics PDF Checker:
           scripts/install-pdfchecker.sh
           find . -name '*.pdf' | xargs -n 1 scripts/pdfchecker.py
