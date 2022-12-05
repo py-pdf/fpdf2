@@ -206,7 +206,14 @@ def _qpdf(input_pdf_filepath):
         input_pdf_filepath = (
             _run_cmd("cygpath", "-w", str(input_pdf_filepath)).decode().strip()
         )
-    return _run_cmd("qpdf", "--deterministic-id", "--qdf", str(input_pdf_filepath), "-")
+    return _run_cmd(
+        "qpdf",
+        "--deterministic-id",
+        "--password=fpdf2",
+        "--qdf",
+        str(input_pdf_filepath),
+        "-",
+    )
 
 
 def _run_cmd(*args):

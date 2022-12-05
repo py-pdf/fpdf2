@@ -211,7 +211,7 @@ class StandardSecurityHandler:
         return ARC4().encrypt(key, data)
 
     def encrypt_AES_cryptography(self, key, data):
-        iv = bytearray(urandom(16))
+        iv = self.get_initialization_vector(16)
         padder = PKCS7(128).padder()
         padded_data = padder.update(data)
         padded_data += padder.finalize()
@@ -220,6 +220,9 @@ class StandardSecurityHandler:
         data = e.update(padded_data) + e.finalize()
         iv.extend(data)
         return iv
+
+    def get_initialization_vector(self, size):
+        return bytearray(urandom(size))
 
     def padded_password(self, password):
         """
