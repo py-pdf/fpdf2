@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from functools import wraps
 from html import unescape
 from math import isclose
+from numbers import Number
 from os.path import splitext
 from pathlib import Path
 from typing import Callable, List, NamedTuple, Optional, Union
@@ -3483,8 +3484,10 @@ class FPDF(GraphicsStateMixin):
         Args:
             name: either a string representing a file path to an image, an URL to an image,
                 an io.BytesIO, or a instance of `PIL.Image.Image`
-            x (float): optional horizontal position where to put the image on the page.
+            x (float, fpdf.enums.Align): optional horizontal position where to put the image on the page.
                 If not specified or equal to None, the current abscissa is used.
+                `Align.C` can also be passed to center the image horizontally;
+                and `Align.R` to place it along the right page margin
             y (float): optional vertical position where to put the image on the page.
                 If not specified or equal to None, the current ordinate is used.
                 After the call, the current ordinate is moved to the bottom of the image
@@ -3559,6 +3562,16 @@ class FPDF(GraphicsStateMixin):
             self.y += h
         if x is None:
             x = self.x
+        elif not isinstance(x, Number):
+            x = Align.coerce(x)
+            if x == Align.C:
+                x = (self.w - w) / 2
+            elif x == Align.R:
+                x = self.w - w - self.r_margin
+            elif x == Align.L:
+                x = self.l_margin
+            else:
+                raise ValueError(f"Unsupported 'x' value passed to .image(): {x}")
 
         stream_content = (
             f"q {w * self.k:.2f} 0 0 {h * self.k:.2f} {x * self.k:.2f} "

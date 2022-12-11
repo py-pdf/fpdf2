@@ -18,8 +18,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.6.1] - not released yet
 ### Added
+* the `x` parameter of [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) can now accepts a value of `"C"` / `Align.C` / `"R"` / `Align.R` to horizontally position the image centered or aligned right
 * support for `[]()` links when `markdown=True`
-* support for `line-height` attribute of paragraph (`<p>`) in `write_html()`
+* support for `line-height` attribute of paragraph (`<p>`) in `write_html()` - thanks to @Bubbu0129
 ### Changed
 * `add_link()` creates a link to the current page by default, and now accepts optional parameters: `x`, `y`, `page` & `zoom`.
   Hence calling `set_link()` is not needed anymore after creating a link with `add_link()`.
