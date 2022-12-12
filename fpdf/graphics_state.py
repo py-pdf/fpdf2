@@ -24,6 +24,7 @@ class GraphicsStateMixin:
                 draw_color=self.DEFAULT_DRAW_COLOR,
                 fill_color=self.DEFAULT_FILL_COLOR,
                 text_color=self.DEFAULT_TEXT_COLOR,
+                skew=(0, 0),
                 underline=False,
                 font_style="",
                 font_stretching=100,
@@ -55,6 +56,14 @@ class GraphicsStateMixin:
 
     def _get_current_graphics_state(self):
         return self.__statestack[-1].copy()
+
+    @property
+    def skew(self):
+        return self.__statestack[-1]["skew"]
+
+    @skew.setter
+    def skew(self, v):
+        self.__statestack[-1]["skew"] = v
 
     @property
     def draw_color(self):

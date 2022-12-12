@@ -324,6 +324,7 @@ class FPDF(GraphicsStateMixin):
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
         self.text_color = self.DEFAULT_TEXT_COLOR
+        self.skew = (0, 0)
         self.page_background = None
         self.dash_pattern = dict(dash=0, gap=0, phase=0)
         self.line_width = 0.567 / self.k  # line width (0.2 mm)
@@ -2319,7 +2320,13 @@ class FPDF(GraphicsStateMixin):
             txt2 = escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))
         else:
             txt2 = escape_parens(txt)
-        sl = [f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td"]
+        x_pos = x * self.k
+        y_pos = (self.h - y) * self.k
+        sl = [f"BT {x_pos:.2f} {y_pos:.2f} Td"]
+        if any(self.skew):
+            sl.append(f"1 {self.skew[0]} {self.skew[1]} 1 "
+                      f"{x_pos:.2f} "
+                      f"{y_pos:.2f} Tm")
         if self.text_mode != TextMode.FILL:
             sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
         sl.append(f"({txt2}) Tj ET")
@@ -2409,6 +2416,13 @@ class FPDF(GraphicsStateMixin):
                 f"{c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm "
                 f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm"
             )
+            yield
+    
+    @check_page
+    @contextmanager
+    def skew_text(self, x=None, y=None):
+        with self.local_context():
+            self.skew = (y, x)
             yield
 
     @check_page
@@ -2822,10 +2836,16 @@ class FPDF(GraphicsStateMixin):
                     w - self.c_margin - self.c_margin - styled_txt_width
                 ) / text_line.number_of_spaces
 
+            x_pos = (self.x + dx) * k
+            y_pos = (self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k
             sl.append(
-                f"BT {(self.x + dx) * k:.2f} "
-                f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
+                f"BT {x_pos:.2f} "
+                f"{y_pos:.2f} Td"
             )
+            if any(self.skew):
+                sl.append(f"1 {self.skew[0]} {self.skew[1]} 1 "
+                          f"{x_pos:.2f} "
+                          f"{y_pos:.2f} Tm")
             for i, frag in enumerate(text_line.fragments):
                 if word_spacing and frag.font_stretching != 100:
                     # Space character is already stretched, extra spacing is absolute.
