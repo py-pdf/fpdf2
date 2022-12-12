@@ -550,7 +550,7 @@ def test_multi_cell_ln_newpos(tmp_path):
 def test_cell_skew_text(tmp_path):
     doc = fpdf.FPDF()
     doc.add_page()
-    doc.set_font('helvetica', size=12)
+    doc.set_font("helvetica", size=12)
     with doc.skew_text(0, 0.2):
         doc.cell(txt="text skewed on the y-axis")
         doc.ln(15)

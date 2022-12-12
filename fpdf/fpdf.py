@@ -2324,9 +2324,9 @@ class FPDF(GraphicsStateMixin):
         y_pos = (self.h - y) * self.k
         sl = [f"BT {x_pos:.2f} {y_pos:.2f} Td"]
         if any(self.skew):
-            sl.append(f"1 {self.skew[0]} {self.skew[1]} 1 "
-                      f"{x_pos:.2f} "
-                      f"{y_pos:.2f} Tm")
+            sl.append(
+                f"1 {self.skew[0]} {self.skew[1]} 1 " f"{x_pos:.2f} " f"{y_pos:.2f} Tm"
+            )
         if self.text_mode != TextMode.FILL:
             sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
         sl.append(f"({txt2}) Tj ET")
@@ -2417,7 +2417,7 @@ class FPDF(GraphicsStateMixin):
                 f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm"
             )
             yield
-    
+
     @check_page
     @contextmanager
     def skew_text(self, x=None, y=None):
@@ -2838,14 +2838,13 @@ class FPDF(GraphicsStateMixin):
 
             x_pos = (self.x + dx) * k
             y_pos = (self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k
-            sl.append(
-                f"BT {x_pos:.2f} "
-                f"{y_pos:.2f} Td"
-            )
+            sl.append(f"BT {x_pos:.2f} " f"{y_pos:.2f} Td")
             if any(self.skew):
-                sl.append(f"1 {self.skew[0]} {self.skew[1]} 1 "
-                          f"{x_pos:.2f} "
-                          f"{y_pos:.2f} Tm")
+                sl.append(
+                    f"1 {self.skew[0]} {self.skew[1]} 1 "
+                    f"{x_pos:.2f} "
+                    f"{y_pos:.2f} Tm"
+                )
             for i, frag in enumerate(text_line.fragments):
                 if word_spacing and frag.font_stretching != 100:
                     # Space character is already stretched, extra spacing is absolute.

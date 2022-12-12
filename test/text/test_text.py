@@ -119,7 +119,7 @@ def test_text_badinput():
 def test_text_skew(tmp_path):
     doc = FPDF()
     doc.add_page()
-    doc.set_font('helvetica', size=12)
+    doc.set_font("helvetica", size=12)
     with doc.skew_text(0, 0.2):
         doc.text(20, 20, txt="text skewed on the y-axis")
     with doc.skew_text(0, -0.2):
@@ -132,4 +132,3 @@ def test_text_skew(tmp_path):
     with doc.skew_text(20, 0):
         doc.text(20, 220, txt="some extreme skewing")
     assert_pdf_equal(doc, HERE / "text_skew_text.pdf", tmp_path)
-
