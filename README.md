@@ -219,6 +219,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center"><a href="https://github.com/seanpmulholland"><img src="https://avatars.githubusercontent.com/u/79894395?v=4?s=100" width="100px;" alt="Sean"/><br /><sub><b>Sean</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=seanpmulholland" title="Code">💻</a></td>
       <td align="center"><a href="https://github.com/andersonhc"><img src="https://avatars.githubusercontent.com/u/948125?v=4?s=100" width="100px;" alt="Anderson Herzogenrath da Costa"/><br /><sub><b>Anderson Herzogenrath da Costa</b></sub></a><br /><a href="#question-andersonhc" title="Answering Questions">💬</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=andersonhc" title="Code">💻</a></td>
       <td align="center"><a href="https://github.com/yiweelan"><img src="https://avatars.githubusercontent.com/u/117787188?v=4?s=100" width="100px;" alt="Yi Wei Lan"/><br /><sub><b>Yi Wei Lan</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=yiweelan" title="Tests">⚠️</a></td>
+      <td align="center"><a href="https://github.com/Bubbu0129"><img src="https://avatars.githubusercontent.com/u/93034081?v=4?s=100" width="100px;" alt="CpDong"/><br /><sub><b>CpDong</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=Bubbu0129" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
