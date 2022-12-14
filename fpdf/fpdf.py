@@ -2325,7 +2325,9 @@ class FPDF(GraphicsStateMixin):
         sl = [f"BT {x_pos:.2f} {y_pos:.2f} Td"]
         if any(self.skew):
             sl.append(
-                f"1 {self.skew[0]} {self.skew[1]} 1 " f"{x_pos:.2f} " f"{y_pos:.2f} Tm"
+                f"1 {self.skew[0]:.5f} {self.skew[1]:.5f} 1 "
+                f"{x_pos:.2f} "
+                f"{y_pos:.2f} Tm"
             )
         if self.text_mode != TextMode.FILL:
             sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
@@ -2420,7 +2422,10 @@ class FPDF(GraphicsStateMixin):
 
     @check_page
     @contextmanager
-    def skew_text(self, x=None, y=None):
+    def skew_text(self, ax=None, ay=None):
+        epsilon = 1e-5
+        x = math.tan((ax + epsilon) * (math.pi / 180))
+        y = math.tan((ay + epsilon) * (math.pi / 180))
         with self.local_context():
             self.skew = (y, x)
             yield
@@ -2841,7 +2846,7 @@ class FPDF(GraphicsStateMixin):
             sl.append(f"BT {x_pos:.2f} " f"{y_pos:.2f} Td")
             if any(self.skew):
                 sl.append(
-                    f"1 {self.skew[0]} {self.skew[1]} 1 "
+                    f"1 {self.skew[0]:.5f} {self.skew[1]:.5f} 1 "
                     f"{x_pos:.2f} "
                     f"{y_pos:.2f} Tm"
                 )
