@@ -212,13 +212,13 @@ pdf.write_html("""<B>bold</B>
 `skew_text` creates text that is skewed on the x or y axes:
 
 ```python
-with pdf.skew_text(0, 0.2):
+with pdf.skew_text(0, 10):
     pdf.cell(txt="text skewed on the y-axis")
 ```
 ![](y_axis_skewed_text.png)
 
 ```python
-with pdf.skew_text(0.2, 0):
+with pdf.skew_text(10, 0):
     pdf.cell(txt="text skewed on the x-axis")
 ```
 ![](x_axis_skewed_text.png)
