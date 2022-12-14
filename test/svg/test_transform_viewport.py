@@ -24,7 +24,7 @@ def test_rect_transform_height_exception():
 
     svg = fpdf.svg.SVGObject(svg_data)
     with pytest.raises(ValueError) as error:
-        svg.transform_to_rect_viewport(1, 10, None)
+        svg.transform_to_rect_viewport(scale=1, width=10, height=None)
     assert 'SVG "height" is a percentage, hence a viewport height is required' == str(
         error.value
     )
@@ -37,7 +37,7 @@ def test_rect_transform_vw_zero():
     """
 
     svg = fpdf.svg.SVGObject(svg_data)
-    width, height, context = svg.transform_to_rect_viewport(2, 10, 5)
+    width, height, context = svg.transform_to_rect_viewport(scale=2, width=10, height=5)
     assert width == 0
     assert height == 0
     assert context is not None
