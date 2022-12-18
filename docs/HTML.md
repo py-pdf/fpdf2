@@ -74,7 +74,7 @@ pdf.output("html.pdf")
 ## Supported HTML features
 
 * `<h1>` to `<h8>`: headings (and `align` attribute)
-* `<p>`: paragraphs (and `align` attribute)
+* `<p>`: paragraphs (and `align`, `line-height` attributes)
 * `<b>`, `<i>`, `<u>`: bold, italic, underline
 * `<font>`: (and `face`, `size`, `color` attributes)
 * `<center>` for aligning

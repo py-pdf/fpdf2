@@ -19,6 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.6.1] - not released yet
 ### Added
 * support for `[]()` links when `markdown=True`
+* support for `line-height` attribute of paragraph (`<p>`) in `write_html()`
 ### Changed
 * `write_html()`now generates warnings for unclosed HTML tags, unless `warn_on_tags_not_matching=False` is set
 
@@ -26,7 +27,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 - demonstration Jupyter notebook: [tutorial/notebook.ipynb](https://github.com/PyFPDF/fpdf2/blob/master/tutorial/notebook.ipynb)
 - new [`.default_page_dimensions`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.default_page_dimensions) property on `FPDF` instances
-- support for description list (`<dl>`), description titles (`<dt>`), description details (`<dd>`) and code blocks (`<code></code>`) in `write_html()` - thanks to @yk-jp & @seanpmulholland
+- support for description list (`<dl>`), description titles (`<dt>`), description details (`<dd>`) and code blocks (`<code>`) in `write_html()` - thanks to @yk-jp & @seanpmulholland
 - support for monochromatic images (PIL `image.mode == '1'`) thanks to @GerardoAllende
 - the 1000+ unit tests suite is now executed under Linux **<ins>and</ins>** Windows, with extra timing & memory usage checks ensuring we control `fpdf2` resource usage
 - new translation of the tutorial in [עברית](https://pyfpdf.github.io/fpdf2/Tutorial-he.html), thanks to @TzviGreenfeld
