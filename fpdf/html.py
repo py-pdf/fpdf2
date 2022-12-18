@@ -235,6 +235,7 @@ class HTML2FPDF(HTMLParser):
         self.follows_trailing_space = False
         self.href = ""
         self.align = ""
+        self.line_height = 1.0
         self.page_links = {}
         self.font_stack = []
         self.indent = 0
@@ -500,9 +501,12 @@ class HTML2FPDF(HTMLParser):
         if tag == "br":
             self.pdf.ln(self.h)
         if tag == "p":
-            self.pdf.ln(self.h)
-            if attrs:
+            if "align" in attrs:
                 self.align = attrs.get("align")
+            if "line-height" in attrs:
+                self.line_height = float(attrs.get("line-height"))
+                self.h = self.font_height * self.line_height
+            self.pdf.ln(self.h)
         if tag in self.heading_sizes:
             self.font_stack.append((self.font_face, self.font_size, self.font_color))
             self.heading_level = int(tag[1:])
@@ -710,6 +714,8 @@ class HTML2FPDF(HTMLParser):
         if tag == "p":
             self.pdf.ln(self.h)
             self.align = ""
+            self.line_height = 1.0
+            self.h = self.font_height
         if tag in ("ul", "ol"):
             self.indent -= 1
             self.bullet.pop()
@@ -772,13 +778,14 @@ class HTML2FPDF(HTMLParser):
             self.font_face = face
         if size:
             self.font_size = size
-            self.h = size / 72 * 25.4
-            LOGGER.debug("H %s", self.h)
         style = "".join(s for s in ("b", "i", "u") if self.style.get(s)).upper()
         if (self.font_face, style) != (self.pdf.font_family, self.pdf.font_style):
             self.pdf.set_font(self.font_face, style, self.font_size)
         if self.font_size != self.pdf.font_size:
             self.pdf.set_font_size(self.font_size)
+        self.font_height = self.font_size / 72 * 25.4
+        self.h = self.line_height * self.font_height
+        LOGGER.debug("H %s", self.h)
 
     def set_style(self, tag=None, enable=False):
         # Modify style and select corresponding font

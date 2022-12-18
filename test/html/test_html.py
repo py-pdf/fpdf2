@@ -604,6 +604,19 @@ and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.<br>
     assert_pdf_equal(pdf, HERE / "test_html_whitespace_handling.pdf", tmp_path)
 
 
+def test_html_custom_line_height(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<p line-height=3>text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-</p>
+<p line-height=2>text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-
+<font face=Helvetica size=20>text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-</font>
+text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-</p>
+"""
+    )
+    assert_pdf_equal(pdf, HERE / "test_html_line_height.pdf", tmp_path)
+
+
 def test_warn_on_tags_not_matching(caplog):
     pdf = FPDF()
     pdf.add_page()
