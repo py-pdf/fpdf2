@@ -614,7 +614,7 @@ def test_html_custom_line_height(tmp_path):
 text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-text-</p>
 """
     )
-    assert_pdf_equal(pdf, HERE / "test_html_line_height.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "html_custom_line_height.pdf", tmp_path)
 
 
 def test_warn_on_tags_not_matching(caplog):
