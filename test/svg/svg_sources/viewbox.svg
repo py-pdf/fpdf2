@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="no"?>
+<svg width="10cm" height="5cm" viewBox="0 0 500 200"
+     xmlns="http://www.w3.org/2000/svg" version="1.1" style="border: 1px solid black;">
+
+  <rect x="1" y="1" width="198" height="98"
+        fill="none" stroke="blue" stroke-width="2"/>
+
+  <line x1="0" y1="0" x2="0" y2="100" stroke="red" stroke-width="1"/>
+  <line x1="5" y1="0" x2="5" y2="100" stroke="red" stroke-width="1"/>
+  <line x1="10" y1="0" x2="10" y2="100" stroke="red" stroke-width="1"/>
+  <line x1="15" y1="0" x2="15" y2="100" stroke="red" stroke-width="1"/>
+
+  <line x1="0" y1="0" x2="200" y2="0" stroke="green" stroke-width="1"/>
+  <line x1="0" y1="5" x2="200" y2="5" stroke="green" stroke-width="1"/>
+  <line x1="0" y1="10" x2="200" y2="10" stroke="green" stroke-width="1"/>
+  <line x1="0" y1="15" x2="200" y2="15" stroke="green" stroke-width="1"/>
+
+</svg>
+

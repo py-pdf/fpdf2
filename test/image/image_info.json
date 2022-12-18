@@ -1,0 +1,1377 @@
+{
+    "basi0g01.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 1,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basi0g02.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basi0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basi0g08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basi0g16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "basi2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "basi2c16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "basi3p01.png": {
+        "pal": "\u00ee\u00ff\"\"f\u00ff",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basi3p02.png": {
+        "pal": "\u0000\u00ff\u0000\u00ff\u0000\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ff",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basi3p04.png": {
+        "pal": "\"\u0000\u00ff\u0000\u00ff\u00ff\u0088\u0000\u00ff\"\u00ff\u0000\u0000\u0099\u00ff\u00fff\u0000\u00dd\u0000\u00ffw\u00ff\u0000\u00ff\u0000\u0000\u0000\u00ff\u0099\u00dd\u00ff\u0000\u00ff\u0000\u00bb\u00ff\u00bb\u0000\u0000D\u00ff\u0000\u00ffD",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basi3p08.png": {
+        "pal": "\"D\u0000\u00f5\u00ff\u00edw\u00ffw\u00cb\u00ff\u00ff\u0011\n\u0000:w\u0000\"\"\u00ff\u00ff\u0011\u00ff\u0011\u0000\u0000\"\"\u0000\u00ff\u00acUf\u00fff\u00ffff\u00ff\u0001\u00ff\"\u0012\u0000\u00dc\u00ff\u00ff\u00cc\u00ff\u0099DD\u00ff\u0000UU\"\u0000\u0000\u00cb\u00cb\u00ffDD\u0000U\u00ffU\u00cb\u00cb\u00003\u001a\u0000\u00ff\u00ec\u00dc\u00ed\u00ff\u00ff\u00e4\u00ff\u00cb\u00ff\u00dc\u00dcD\u00ffDff\u00ff3\u0000\u0000D\"\u0000\u00ed\u00ed\u00ffff\u0000\u00ff\u00a4D\u00ff\u00ff\u00aa\u00ed\u00ed\u0000\u0000\u00cb\u00cb\u00fe\u00ff\u00ff\u00fd\u00ff\u00fe\u00ff\u00ff\u00013\u00ff3U*\u0000\u0001\u0001\u00ff\u0088\u0088\u00ff\u0000\u00aa\u00aa\u0001\u0001\u0000D\u0000\u0000\u0088\u0088\u0000\u00ff\u00e4\u00cb\u00ba[\u0000\"\u00ff\"f2\u0000\u00ff\u00ff\u0099\u00aa\u00aa\u00ffU\u0000\u0000\u00aa\u00aa\u0000\u00cbc\u0000\u0011\u00ff\u0011\u00d4\u00ff\u00aaw:\u0000\u00ffDD\u00dck\u0000f\u0000\u0000\u0001\u00ff\u0001\u0088B\u0000\u00ec\u00ff\u00dck\u00dc\u0000\u00ff\u00dc\u00ba\u000033\u0000\u00ed\u0000\u00eds\u0000\u00ff\u00ff\u0088\u0099J\u0000\u0011\u00ff\u00ffw\u0000\u0000\u00ff\u0083\u0001\u00ff\u00ba\u00ba\u00fe{\u0000\u00ff\u00fe\u00ff\u0000\u00cb\u0000\u00ff\u0099\u0099\"\u00ff\u00ff\u0088\u0000\u0000\u00ff\u00ffw\u0000\u0088\u0088\u00ff\u00dc\u00ff\u001a3\u0000\u0000\u0000\u00aa3\u00ff\u00ff\u0000\u0099\u0000\u0099\u0000\u0000\u0000\u0000\u00012f\u0000\u00ff\u00ba\u00ffD\u00ff\u00ff\u00ff\u00aa\u00ff\u0000w\u0000\u0000\u00fe\u00fe\u00aa\u0000\u0000J\u0099\u0000\u00ff\u00fff\u00ff\"\"\u0000\u0000\u0099\u008b\u00ff\u0011U\u00ff\u00ff\u00ff\u0001\u0001\u00ff\u0088\u00ff\u0000U\u0000\u0000\u0011\u0011\u00ff\u00ff\u00fe\u00ff\u00fd\u00fe\u00a4\u00ffDf\u00ff\u00ff\u00fff\u00ff\u00003\u0000\u00ff\u00ffU\u00ffww\u0000\u0000\u0088\u00ffD\u00ff\u0000\u0011\u0000w\u00ff\u00ff\u0000ff\u00ff\u00ff\u00ed\u0000\u0001\u0000\u00ff\u00f5\u00ed\u0011\u0011\u00ff\u00ff\u00ffD\u00ff\"\u00ff\u00ff\u00ed\u00ed\u0011\u0011\u0000\u0088\u00ff\u00ff\u0000\u0000w\u0093\u00ff\"\u0000\u00dc\u00dc33\u00ff\u00fe\u0000\u00fe\u00ba\u00ba\u00ff\u0099\u00ff\u00ff33\u0000c\u00cb\u0000\u00ba\u00ba\u0000\u00ac\u00ffU\u00ff\u00ff\u00dc\u00ff\u00ff3{\u00fe\u0000\u00ed\u0000\u00edUU\u00ff\u00aa\u00ff\u00ff\u00dc\u00dc\u00ffUU\u0000\u0000\u0000f\u00dc\u00dc\u0000\u00dc\u0000\u00dc\u0083\u00ff\u0001ww\u00ff\u00fe\u00fe\u00ff\u00ff\u00ff\u00cb\u00ffUUww\u0000\u00fe\u00fe\u0000\u00cb\u0000\u00cb\u0000\u0000\u00fe\u0001\u0002\u0000\u0001\u0000\u0000\u0012\"\u0000\u00ff\u00ff\"\u0000DD\u009b\u00ff3\u00ff\u00d4\u00aa\u0000\u0000U\u0099\u0099\u00ff\u0099\u0099\u0000\u00ba\u0000\u00ba*U\u0000\u00ff\u00cb\u00cb\u00b4\u00fff\u00ff\u009b3\u00ff\u00ff\u00ba\u00aa\u0000\u00aaB\u0088\u0000S\u00aa\u0000\u00ff\u00aa\u00aa\u0000\u0000\u00ed\u0000\u00ba\u00ba\u00ff\u00ff\u0011\u0000\u00fe\u0000\u0000\u0000D\u0000\u0099\u0099\u0099\u0000\u0099\u00ff\u00cc\u0099\u00ba\u0000\u0000\u0088\u0000\u0088\u0000\u00dc\u0000\u00ff\u0093\"\u0000\u0000\u00dc\u00fe\u00ff\u00fe\u00aaS\u0000w\u0000w\u0002\u0001\u0000\u00cb\u0000\u0000\u0000\u00003\u00ff\u00ed\u00ff\u0000\u00ba\u0000\u00ff33\u00ed\u00ff\u00ed\u00ff\u00c4\u0088\u00bc\u00ffw\u0000\u00aa\u0000f\u0000f\u0000\"\"\u00dc\u0000\u0000\u00ff\u00cb\u00ff\u00dc\u00ff\u00dc\u00ff\u008b\u0011\u0000\u0000\u00cb\u0000\u0001\u0001U\u0000U\u0000\u0088\u0000\u0000\u0000\"\u0001\u00ff\u00ff\u00cb\u00ff\u00cb\u00ed\u0000\u0000\u00ff\u0088\u0088D\u0000D[\u00ba\u0000\u00ff\u00bcw\u00ff\u0099\u00ff\u0000f\u0000\u00ba\u00ff\u00ba\u0000wws\u00ed\u0000\u00fe\u0000\u00003\u00003\u0000\u0000\u00ba\u00ffw\u00ff\u0000D\u0000\u00aa\u00ff\u00aa\u00ff\u00fe\u00fe\u0000\u0000\u0011\"\u0000\"\u00c4\u00ff\u0088\u0000\u00ed\u00ed\u0099\u00ff\u0099\u00ffU\u00ff\u0000\"\u0000\u00ff\u00b4f\u0011\u0000\u0011\n\u0011\u0000\u00ff\u0011\u0011\u00dc\u00ff\u00ba\u00ba\u00ff\u00ff\u0088\u00ff\u0088\u0001\u0000\u0001\u00ff3\u00ff",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basi4a08.png": {
+        "smask": "x\u009cc`\u00e0\u0010\u0090P\u00d04\u00b4t\u00f4\n\u008aJ\u00ca*\u00aen\u00ee\u009e2g\u00c9\u009a-{\u008f\u009e\u00bdz\u00ef\u00d9\u00bbo\u00ff\u0019F\u0015\u008c*\u0018U0R\u0015\u0000\u0000N\u00b3\u00fc0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basi4a16.png": {
+        "smask": "x\u009cc` \b\u0004\u00f0\u0002\u0090\u0002E<\u0000\u00a2\u00c0\u0010'\u0080)p\u00c2\u0001\u0010\n\u0082\u00b0\u0002d\u0005\u00c9X\u0000\u00aa\u0082b\f\u0080\u00ae\u00a0\u0005\r`*\u0098\u0082\u0002\u00b0)X\u008a\u0004\u00b0+\u00d8\n\u0007\u00b8\u0014\u001c\u0083\u0002\u00dc\n\u00ae\u0081\u0001>\u0005\u00cf\u0081\u0000\u00bf\u0082\u00ef\u00df)U@\u00c8\nB\u008e$\u00e4MB\u0001E(\u00a8\tE\u0016\u00a1\u00e8&\u0094`\b%9B\u0089\u0096P\u00b2'\u0094q\be=B\u0099\u0097\u0000\u0000\u0000\u0096\u009f>\u00d0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "basi6a08.png": {
+        "smask": "x\u009cc`\u00e0\u0010\u0090P\u00d04\u00b4t\u00f4\n\u008aJ\u00ca*\u00aen\u00ee\u009e2g\u00c9\u009a-{\u008f\u009e\u00bdz\u00ef\u00d9\u00bbo\u00ff\u0019F\u0015\u008c*\u0018U0R\u0015\u0000\u0000N\u00b3\u00fc0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "basi6a16.png": {
+        "smask": "x\u009cc` \b\u0004\u00f0\u0002\u0090\u0002E<\u0000\u00a2\u00c0\u0010'\u0080)p\u00c2\u0001\u0010\n\u0082\u00b0\u0002d\u0005\u00c9X\u0000\u00aa\u0082b\f\u0080\u00ae\u00a0\u0005\r`*\u0098\u0082\u0002\u00b0)X\u008a\u0004\u00b0+\u00d8\n\u0007\u00b8\u0014\u001c\u0083\u0002\u00dc\n\u00ae\u0081\u0001>\u0005\u00cf\u0081\u0000\u00bf\u0082\u00ef\u00df)U@\u00c8\nB\u008e$\u00e4MB\u0001E(\u00a8\tE\u0016\u00a1\u00e8&\u0094`\b%9B\u0089\u0096P\u00b2'\u0094q\be=B\u0099\u0097\u0000\u0000\u0000\u0096\u009f>\u00d0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "basn0g01.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 1,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basn0g02.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basn0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basn0g08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basn0g16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "basn2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "basn2c16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "basn3p01.png": {
+        "pal": "\u00ee\u00ff\"\"f\u00ff",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basn3p02.png": {
+        "pal": "\u0000\u00ff\u0000\u00ff\u0000\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ff",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basn3p04.png": {
+        "pal": "\"\u0000\u00ff\u0000\u00ff\u00ff\u0088\u0000\u00ff\"\u00ff\u0000\u0000\u0099\u00ff\u00fff\u0000\u00dd\u0000\u00ffw\u00ff\u0000\u00ff\u0000\u0000\u0000\u00ff\u0099\u00dd\u00ff\u0000\u00ff\u0000\u00bb\u00ff\u00bb\u0000\u0000D\u00ff\u0000\u00ffD",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basn3p08.png": {
+        "pal": "\"D\u0000\u00f5\u00ff\u00edw\u00ffw\u00cb\u00ff\u00ff\u0011\n\u0000:w\u0000\"\"\u00ff\u00ff\u0011\u00ff\u0011\u0000\u0000\"\"\u0000\u00ff\u00acUf\u00fff\u00ffff\u00ff\u0001\u00ff\"\u0012\u0000\u00dc\u00ff\u00ff\u00cc\u00ff\u0099DD\u00ff\u0000UU\"\u0000\u0000\u00cb\u00cb\u00ffDD\u0000U\u00ffU\u00cb\u00cb\u00003\u001a\u0000\u00ff\u00ec\u00dc\u00ed\u00ff\u00ff\u00e4\u00ff\u00cb\u00ff\u00dc\u00dcD\u00ffDff\u00ff3\u0000\u0000D\"\u0000\u00ed\u00ed\u00ffff\u0000\u00ff\u00a4D\u00ff\u00ff\u00aa\u00ed\u00ed\u0000\u0000\u00cb\u00cb\u00fe\u00ff\u00ff\u00fd\u00ff\u00fe\u00ff\u00ff\u00013\u00ff3U*\u0000\u0001\u0001\u00ff\u0088\u0088\u00ff\u0000\u00aa\u00aa\u0001\u0001\u0000D\u0000\u0000\u0088\u0088\u0000\u00ff\u00e4\u00cb\u00ba[\u0000\"\u00ff\"f2\u0000\u00ff\u00ff\u0099\u00aa\u00aa\u00ffU\u0000\u0000\u00aa\u00aa\u0000\u00cbc\u0000\u0011\u00ff\u0011\u00d4\u00ff\u00aaw:\u0000\u00ffDD\u00dck\u0000f\u0000\u0000\u0001\u00ff\u0001\u0088B\u0000\u00ec\u00ff\u00dck\u00dc\u0000\u00ff\u00dc\u00ba\u000033\u0000\u00ed\u0000\u00eds\u0000\u00ff\u00ff\u0088\u0099J\u0000\u0011\u00ff\u00ffw\u0000\u0000\u00ff\u0083\u0001\u00ff\u00ba\u00ba\u00fe{\u0000\u00ff\u00fe\u00ff\u0000\u00cb\u0000\u00ff\u0099\u0099\"\u00ff\u00ff\u0088\u0000\u0000\u00ff\u00ffw\u0000\u0088\u0088\u00ff\u00dc\u00ff\u001a3\u0000\u0000\u0000\u00aa3\u00ff\u00ff\u0000\u0099\u0000\u0099\u0000\u0000\u0000\u0000\u00012f\u0000\u00ff\u00ba\u00ffD\u00ff\u00ff\u00ff\u00aa\u00ff\u0000w\u0000\u0000\u00fe\u00fe\u00aa\u0000\u0000J\u0099\u0000\u00ff\u00fff\u00ff\"\"\u0000\u0000\u0099\u008b\u00ff\u0011U\u00ff\u00ff\u00ff\u0001\u0001\u00ff\u0088\u00ff\u0000U\u0000\u0000\u0011\u0011\u00ff\u00ff\u00fe\u00ff\u00fd\u00fe\u00a4\u00ffDf\u00ff\u00ff\u00fff\u00ff\u00003\u0000\u00ff\u00ffU\u00ffww\u0000\u0000\u0088\u00ffD\u00ff\u0000\u0011\u0000w\u00ff\u00ff\u0000ff\u00ff\u00ff\u00ed\u0000\u0001\u0000\u00ff\u00f5\u00ed\u0011\u0011\u00ff\u00ff\u00ffD\u00ff\"\u00ff\u00ff\u00ed\u00ed\u0011\u0011\u0000\u0088\u00ff\u00ff\u0000\u0000w\u0093\u00ff\"\u0000\u00dc\u00dc33\u00ff\u00fe\u0000\u00fe\u00ba\u00ba\u00ff\u0099\u00ff\u00ff33\u0000c\u00cb\u0000\u00ba\u00ba\u0000\u00ac\u00ffU\u00ff\u00ff\u00dc\u00ff\u00ff3{\u00fe\u0000\u00ed\u0000\u00edUU\u00ff\u00aa\u00ff\u00ff\u00dc\u00dc\u00ffUU\u0000\u0000\u0000f\u00dc\u00dc\u0000\u00dc\u0000\u00dc\u0083\u00ff\u0001ww\u00ff\u00fe\u00fe\u00ff\u00ff\u00ff\u00cb\u00ffUUww\u0000\u00fe\u00fe\u0000\u00cb\u0000\u00cb\u0000\u0000\u00fe\u0001\u0002\u0000\u0001\u0000\u0000\u0012\"\u0000\u00ff\u00ff\"\u0000DD\u009b\u00ff3\u00ff\u00d4\u00aa\u0000\u0000U\u0099\u0099\u00ff\u0099\u0099\u0000\u00ba\u0000\u00ba*U\u0000\u00ff\u00cb\u00cb\u00b4\u00fff\u00ff\u009b3\u00ff\u00ff\u00ba\u00aa\u0000\u00aaB\u0088\u0000S\u00aa\u0000\u00ff\u00aa\u00aa\u0000\u0000\u00ed\u0000\u00ba\u00ba\u00ff\u00ff\u0011\u0000\u00fe\u0000\u0000\u0000D\u0000\u0099\u0099\u0099\u0000\u0099\u00ff\u00cc\u0099\u00ba\u0000\u0000\u0088\u0000\u0088\u0000\u00dc\u0000\u00ff\u0093\"\u0000\u0000\u00dc\u00fe\u00ff\u00fe\u00aaS\u0000w\u0000w\u0002\u0001\u0000\u00cb\u0000\u0000\u0000\u00003\u00ff\u00ed\u00ff\u0000\u00ba\u0000\u00ff33\u00ed\u00ff\u00ed\u00ff\u00c4\u0088\u00bc\u00ffw\u0000\u00aa\u0000f\u0000f\u0000\"\"\u00dc\u0000\u0000\u00ff\u00cb\u00ff\u00dc\u00ff\u00dc\u00ff\u008b\u0011\u0000\u0000\u00cb\u0000\u0001\u0001U\u0000U\u0000\u0088\u0000\u0000\u0000\"\u0001\u00ff\u00ff\u00cb\u00ff\u00cb\u00ed\u0000\u0000\u00ff\u0088\u0088D\u0000D[\u00ba\u0000\u00ff\u00bcw\u00ff\u0099\u00ff\u0000f\u0000\u00ba\u00ff\u00ba\u0000wws\u00ed\u0000\u00fe\u0000\u00003\u00003\u0000\u0000\u00ba\u00ffw\u00ff\u0000D\u0000\u00aa\u00ff\u00aa\u00ff\u00fe\u00fe\u0000\u0000\u0011\"\u0000\"\u00c4\u00ff\u0088\u0000\u00ed\u00ed\u0099\u00ff\u0099\u00ffU\u00ff\u0000\"\u0000\u00ff\u00b4f\u0011\u0000\u0011\n\u0011\u0000\u00ff\u0011\u0011\u00dc\u00ff\u00ba\u00ba\u00ff\u00ff\u0088\u00ff\u0088\u0001\u0000\u0001\u00ff3\u00ff",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basn4a08.png": {
+        "smask": "x\u009cc`\u00e0\u0010\u0090P\u00d04\u00b4t\u00f4\n\u008aJ\u00ca*\u00aen\u00ee\u009e2g\u00c9\u009a-{\u008f\u009e\u00bdz\u00ef\u00d9\u00bbo\u00ff\u0019F\u0015\u008c*\u0018U0R\u0015\u0000\u0000N\u00b3\u00fc0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "basn4a16.png": {
+        "smask": "x\u009cc` \b\u0004\u00f0\u0002\u0090\u0002E<\u0000\u00a2\u00c0\u0010'\u0080)p\u00c2\u0001\u0010\n\u0082\u00b0\u0002d\u0005\u00c9X\u0000\u00aa\u0082b\f\u0080\u00ae\u00a0\u0005\r`*\u0098\u0082\u0002\u00b0)X\u008a\u0004\u00b0+\u00d8\n\u0007\u00b8\u0014\u001c\u0083\u0002\u00dc\n\u00ae\u0081\u0001>\u0005\u00cf\u0081\u0000\u00bf\u0082\u00ef\u00df)U@\u00c8\nB\u008e$\u00e4MB\u0001E(\u00a8\tE\u0016\u00a1\u00e8&\u0094`\b%9B\u0089\u0096P\u00b2'\u0094q\be=B\u0099\u0097\u0000\u0000\u0000\u0096\u009f>\u00d0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "basn6a08.png": {
+        "smask": "x\u009cc`\u00e0\u0010\u0090P\u00d04\u00b4t\u00f4\n\u008aJ\u00ca*\u00aen\u00ee\u009e2g\u00c9\u009a-{\u008f\u009e\u00bdz\u00ef\u00d9\u00bbo\u00ff\u0019F\u0015\u008c*\u0018U0R\u0015\u0000\u0000N\u00b3\u00fc0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "basn6a16.png": {
+        "smask": "x\u009cc` \b\u0004\u00f0\u0002\u0090\u0002E<\u0000\u00a2\u00c0\u0010'\u0080)p\u00c2\u0001\u0010\n\u0082\u00b0\u0002d\u0005\u00c9X\u0000\u00aa\u0082b\f\u0080\u00ae\u00a0\u0005\r`*\u0098\u0082\u0002\u00b0)X\u008a\u0004\u00b0+\u00d8\n\u0007\u00b8\u0014\u001c\u0083\u0002\u00dc\n\u00ae\u0081\u0001>\u0005\u00cf\u0081\u0000\u00bf\u0082\u00ef\u00df)U@\u00c8\nB\u008e$\u00e4MB\u0001E(\u00a8\tE\u0016\u00a1\u00e8&\u0094`\b%9B\u0089\u0096P\u00b2'\u0094q\be=B\u0099\u0097\u0000\u0000\u0000\u0096\u009f>\u00d0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "bgai4a08.png": {
+        "smask": "x\u009cc`\u00e0\u0010\u0090P\u00d04\u00b4t\u00f4\n\u008aJ\u00ca*\u00aen\u00ee\u009e2g\u00c9\u009a-{\u008f\u009e\u00bdz\u00ef\u00d9\u00bbo\u00ff\u0019F\u0015\u008c*\u0018U0R\u0015\u0000\u0000N\u00b3\u00fc0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "bgai4a16.png": {
+        "smask": "x\u009cc` \b\u0004\u00f0\u0002\u0090\u0002E<\u0000\u00a2\u00c0\u0010'\u0080)p\u00c2\u0001\u0010\n\u0082\u00b0\u0002d\u0005\u00c9X\u0000\u00aa\u0082b\f\u0080\u00ae\u00a0\u0005\r`*\u0098\u0082\u0002\u00b0)X\u008a\u0004\u00b0+\u00d8\n\u0007\u00b8\u0014\u001c\u0083\u0002\u00dc\n\u00ae\u0081\u0001>\u0005\u00cf\u0081\u0000\u00bf\u0082\u00ef\u00df)U@\u00c8\nB\u008e$\u00e4MB\u0001E(\u00a8\tE\u0016\u00a1\u00e8&\u0094`\b%9B\u0089\u0096P\u00b2'\u0094q\be=B\u0099\u0097\u0000\u0000\u0000\u0096\u009f>\u00d0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "bgan6a08.png": {
+        "smask": "x\u009cc`\u00e0\u0010\u0090P\u00d04\u00b4t\u00f4\n\u008aJ\u00ca*\u00aen\u00ee\u009e2g\u00c9\u009a-{\u008f\u009e\u00bdz\u00ef\u00d9\u00bbo\u00ff\u0019F\u0015\u008c*\u0018U0R\u0015\u0000\u0000N\u00b3\u00fc0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "bgan6a16.png": {
+        "smask": "x\u009cc` \b\u0004\u00f0\u0002\u0090\u0002E<\u0000\u00a2\u00c0\u0010'\u0080)p\u00c2\u0001\u0010\n\u0082\u00b0\u0002d\u0005\u00c9X\u0000\u00aa\u0082b\f\u0080\u00ae\u00a0\u0005\r`*\u0098\u0082\u0002\u00b0)X\u008a\u0004\u00b0+\u00d8\n\u0007\u00b8\u0014\u001c\u0083\u0002\u00dc\n\u00ae\u0081\u0001>\u0005\u00cf\u0081\u0000\u00bf\u0082\u00ef\u00df)U@\u00c8\nB\u008e$\u00e4MB\u0001E(\u00a8\tE\u0016\u00a1\u00e8&\u0094`\b%9B\u0089\u0096P\u00b2'\u0094q\be=B\u0099\u0097\u0000\u0000\u0000\u0096\u009f>\u00d0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "bgbn4a08.png": {
+        "smask": "x\u009cc`\u00e0\u0010\u0090P\u00d04\u00b4t\u00f4\n\u008aJ\u00ca*\u00aen\u00ee\u009e2g\u00c9\u009a-{\u008f\u009e\u00bdz\u00ef\u00d9\u00bbo\u00ff\u0019F\u0015\u008c*\u0018U0R\u0015\u0000\u0000N\u00b3\u00fc0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "bggn4a16.png": {
+        "smask": "x\u009cc` \b\u0004\u00f0\u0002\u0090\u0002E<\u0000\u00a2\u00c0\u0010'\u0080)p\u00c2\u0001\u0010\n\u0082\u00b0\u0002d\u0005\u00c9X\u0000\u00aa\u0082b\f\u0080\u00ae\u00a0\u0005\r`*\u0098\u0082\u0002\u00b0)X\u008a\u0004\u00b0+\u00d8\n\u0007\u00b8\u0014\u001c\u0083\u0002\u00dc\n\u00ae\u0081\u0001>\u0005\u00cf\u0081\u0000\u00bf\u0082\u00ef\u00df)U@\u00c8\nB\u008e$\u00e4MB\u0001E(\u00a8\tE\u0016\u00a1\u00e8&\u0094`\b%9B\u0089\u0096P\u00b2'\u0094q\be=B\u0099\u0097\u0000\u0000\u0000\u0096\u009f>\u00d0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "bgwn6a08.png": {
+        "smask": "x\u009cc`\u00e0\u0010\u0090P\u00d04\u00b4t\u00f4\n\u008aJ\u00ca*\u00aen\u00ee\u009e2g\u00c9\u009a-{\u008f\u009e\u00bdz\u00ef\u00d9\u00bbo\u00ff\u0019F\u0015\u008c*\u0018U0R\u0015\u0000\u0000N\u00b3\u00fc0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "bgyn6a16.png": {
+        "smask": "x\u009cc` \b\u0004\u00f0\u0002\u0090\u0002E<\u0000\u00a2\u00c0\u0010'\u0080)p\u00c2\u0001\u0010\n\u0082\u00b0\u0002d\u0005\u00c9X\u0000\u00aa\u0082b\f\u0080\u00ae\u00a0\u0005\r`*\u0098\u0082\u0002\u00b0)X\u008a\u0004\u00b0+\u00d8\n\u0007\u00b8\u0014\u001c\u0083\u0002\u00dc\n\u00ae\u0081\u0001>\u0005\u00cf\u0081\u0000\u00bf\u0082\u00ef\u00df)U@\u00c8\nB\u008e$\u00e4MB\u0001E(\u00a8\tE\u0016\u00a1\u00e8&\u0094`\b%9B\u0089\u0096P\u00b2'\u0094q\be=B\u0099\u0097\u0000\u0000\u0000\u0096\u009f>\u00d0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "ccwn2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "ccwn3p08.png": {
+        "pal": "\u00f6\u00b0\u00de\u0089\u00ffu\u00e4\u00ff\u00c5\r\u00ffk\u00ea\u00ff\u008c5\u00ff\u00ad\u00ff1\u00c0\u008cI\u0097\u0080\u00ff\u00d6\u00fe&4\u00ff\u00b14\u00e02\u00fe\u001c\u0088\u00ff\u00ff\u000etQ\u00ff#\u00c5\u0003\u00d3\u00c8\u0001l\u00ff\u00ce-\u00ff^\u00a5\u00fe>bO\u00ffw3\u00ffX\u00fe\u000b\u0094\u00ff.c$\u00ff\u0088\u007f\u00ff\u00c4s\u00ff\u00cc\u00ff\u00a7\u008d\u0083\u00ff\u0089=\u00ff\u00bb\u00ff\u00d1\u00e6\u001b\u00ff\u0096\u0096\u00ff\u00ca\u00ff;\u001dY\u0089\u00ff\u00bd\u0018\u00c7\u00ff\u001f\\z<\u00ff\u00fb\u00fb\u00fc\u00e4\u00ff\u000e\u001e\u00ff\u009c\u0081\u00ff\u00b5H\u00e2\u00feA(\u00ff\u00ff\u00a8\u00dc-\u00ff\u0083\u00ff\u009e\u001cI\u0013\u00be`\u00ff\u00a8%\u00ff\u00d1\u0011\u00ff{\u0092\u00ffKR\u00ff\u00d9~\u0000\u0099\u001do\u00ff\u00e0\u0015\u00fd\u00f7\u00fc\u001d\u00b8\u00e0\u00ff\u00b5\u00ff\u00de\u00ea|\u009c\u00c4\u00ff\u00f0\u00fc\u00fcd\u00fc\u00e0\u00e2qj\u00ff\u00c1\u0080\u00da\u00dd\u00dd\u00f5\u00fa`\u00ee\u001e\u00ff\u00a5\u00a6\u00ff\u00d2\u00c9\u00ff\u00e4+\u00ff_\u00f6\u0003p\u00b45\u00ff\u001f\u00ff\u00e8\u00c6\u00ff\u00cd]\u00ff\u0083\u00ffg\u00ad+\u00dc\u00fe\u00ff\u0013=d\u00e2\u00fe\u000e\u00fd\u00ebE\u00ff\u00be\u00ffcC=\u00ff\u008b\u00c8\u00ce\u00ed\u00ca\u00ff\u0014\u00c2\u00ffK\u00ff&\u00a0\u001a\u00ff\u0090\u00fc\u0082\u00ce\u00ff0\u008c\u00d2\u00ff3\u00177\u00ff\u00a3\u0000c\u008e\u00ff\u00bd\u00fe\u00ff\u00fa\u009b\u00e0\u00ff\u00ff\u0019,\u000f\u00ff\u00b0\t\u00ff\u007f\u0010\u00ffG\u0014\u00d2\u00fe6\u00ff\u001d\u00c7\u00ab\u00ce\u00ff\u00ef\u00bc\u00ff\u00e1f\u00ff\u00c8\u00da\u00d7\u00fa\u00f1\u0099\u00ff\u00e2\u00fb\u00ff\u00fa\u00fd\u00fb\u00fc\u00e3\u0002Y\u00ff\u0081L\u008b\u00ff\u0014\u001f\u009b\u00ff\u000f\u00ff\u009f\u00e0\u00fe\u00fd\u00d4\u00ff\u00d0\u00ffqL\u00fd\u0017\u00d9\u008e\u00c9\u00ff\u00ff\u00c0\u001d\u009e\u00ff\u0080\u00e0\u00ffJ\u0013\u00ff{A\u00c1\u00ff\u00fa\u00fb\u00fc<\u00f1\u00fd\u00f6\u00bb\u00de\u00ffp\u00c3\u00b1\u00ff,~\u00ff\u001e!\u00ffa\u00a2\u00ff1\u00b3\u00ff\u0084\f\u00ff\u00ca\u0018\u00ffX\u0014\u00f3\u00fd\t\u00ff]e\u00ff\u00aeG\u00ff\u008d\u00fe\n>\u00f5\u00de\u00ed\u00ffL\u00af;\u0001[\u00fa\u00fd\u00ac@\u00ff\u009d\u0098\u00ef\u00fe]\u00ff~T\u00ff\u00b4\u00ca\u00ff\u008d\u00f4\u00fd<\u0091\u00ff\u00e3\u0016\u00a7\u00ffe\u00ff\u00c89\u0003\u00c6O\u00a5\u00ff\u00ec\u00f0\u00fe\u00ff)f\u00fd\t\u00b7\u00aa\u00fb\u00eb\u009c\u00ff\u00b2\u00ff\u00cb\u009d\u00a2\u00ff\u000f\u00f64\u00a9\u00ba\u00f7\u00fe\u00ff\u0085\u00ae\u00e3\u0004\u00e6\u00a3\u00fff\u00ff\u0096\u0090\u00ffo\u0019\u00e2\u00ffX\u00ff\u00e3\u008c\u0096\u00ff\u00eeA\u00ffe=\u00ff6&\u00ff\u00dc^\u00ff\u001b\u00fe?\u00d5)\u00ff\u00a0g\u00ff\u00d0\u00ff\u00e1\u00e2\u00fa\u00fe\u00ea\u00e7KT!\u00b9\u00ff\u00d2i\u00ff\u00fd\u00d6\u00c2\u00bf\u00ff\u008bk\u00c9\u00ff\u00af\u00ff\u00ba\u00ff\u00f0\u00f2K\u00ff\u00a0\u00ff\u00c7{\u00fd\u00f1|S\u00ff\u00ea\u00ff\u00e8\u001e\u00ff\u00ff\u00ffi\u00ffC\u00ff\u00a8/\u00ff\u001b\u0086\u00ff5^e\u00fc\u00f5\u00ff\u0090\u00c4\u00ffMu\u00ff@\u007f~\u00ffr\u00ffs\u000e\u00ff>\u00aa\u00ff\u008e\u001bo\u00ff\u00a2\u00e3\u00a3\u00dd\u009b\u00ff?@\u00ff\u00af3\u00ff\u00b6'\u00f3\u00fd\u001a\u00ff0|\u00ff\u00dd\u00ff{\u00d1\u00ffO%?\u00ff\u00f0|\u00f6\u00fe\u00ff{S \u00ff9\u0090\u0000\u00c4\u00ff\u00d6O\u00ffU\u00a6\u00ef\u00ff\u00f5\u00af\u00c1\u00ff\u00ff\u001a\u00ad>\u00ff\u00db/W\u00ff\u0080\u00a6\u00ff\u0014\u00ff\u00ed\u00ff\u0092Lb\u00ff\u00da\u00ff\u00b6z\u008e\u00e4\u00ff\u00e7\u00e2\u00e3\u00ec\u0001\u00a4\u00fe\nY+\u00ff\u00b4\u00b9\u00b8\u00c3\u00da\u00ff\u008d\u00d2\u00ff\u00ef\u00ff\u009c\u00d0\u00ba\u00ff+",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "cdfn2c08.png": {
+        "w": 8,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 8"
+    },
+    "cdhn2c08.png": {
+        "w": 32,
+        "h": 8,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "cdsn2c08.png": {
+        "w": 8,
+        "h": 8,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 8"
+    },
+    "cdun2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "ch1n3p04.png": {
+        "pal": "\"\u0000\u00ff\u0000\u00ff\u00ff\u0088\u0000\u00ff\"\u00ff\u0000\u0000\u0099\u00ff\u00fff\u0000\u00dd\u0000\u00ffw\u00ff\u0000\u00ff\u0000\u0000\u0000\u00ff\u0099\u00dd\u00ff\u0000\u00ff\u0000\u00bb\u00ff\u00bb\u0000\u0000D\u00ff\u0000\u00ffD",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "ch2n3p08.png": {
+        "pal": "\"D\u0000\u00f5\u00ff\u00edw\u00ffw\u00cb\u00ff\u00ff\u0011\n\u0000:w\u0000\"\"\u00ff\u00ff\u0011\u00ff\u0011\u0000\u0000\"\"\u0000\u00ff\u00acUf\u00fff\u00ffff\u00ff\u0001\u00ff\"\u0012\u0000\u00dc\u00ff\u00ff\u00cc\u00ff\u0099DD\u00ff\u0000UU\"\u0000\u0000\u00cb\u00cb\u00ffDD\u0000U\u00ffU\u00cb\u00cb\u00003\u001a\u0000\u00ff\u00ec\u00dc\u00ed\u00ff\u00ff\u00e4\u00ff\u00cb\u00ff\u00dc\u00dcD\u00ffDff\u00ff3\u0000\u0000D\"\u0000\u00ed\u00ed\u00ffff\u0000\u00ff\u00a4D\u00ff\u00ff\u00aa\u00ed\u00ed\u0000\u0000\u00cb\u00cb\u00fe\u00ff\u00ff\u00fd\u00ff\u00fe\u00ff\u00ff\u00013\u00ff3U*\u0000\u0001\u0001\u00ff\u0088\u0088\u00ff\u0000\u00aa\u00aa\u0001\u0001\u0000D\u0000\u0000\u0088\u0088\u0000\u00ff\u00e4\u00cb\u00ba[\u0000\"\u00ff\"f2\u0000\u00ff\u00ff\u0099\u00aa\u00aa\u00ffU\u0000\u0000\u00aa\u00aa\u0000\u00cbc\u0000\u0011\u00ff\u0011\u00d4\u00ff\u00aaw:\u0000\u00ffDD\u00dck\u0000f\u0000\u0000\u0001\u00ff\u0001\u0088B\u0000\u00ec\u00ff\u00dck\u00dc\u0000\u00ff\u00dc\u00ba\u000033\u0000\u00ed\u0000\u00eds\u0000\u00ff\u00ff\u0088\u0099J\u0000\u0011\u00ff\u00ffw\u0000\u0000\u00ff\u0083\u0001\u00ff\u00ba\u00ba\u00fe{\u0000\u00ff\u00fe\u00ff\u0000\u00cb\u0000\u00ff\u0099\u0099\"\u00ff\u00ff\u0088\u0000\u0000\u00ff\u00ffw\u0000\u0088\u0088\u00ff\u00dc\u00ff\u001a3\u0000\u0000\u0000\u00aa3\u00ff\u00ff\u0000\u0099\u0000\u0099\u0000\u0000\u0000\u0000\u00012f\u0000\u00ff\u00ba\u00ffD\u00ff\u00ff\u00ff\u00aa\u00ff\u0000w\u0000\u0000\u00fe\u00fe\u00aa\u0000\u0000J\u0099\u0000\u00ff\u00fff\u00ff\"\"\u0000\u0000\u0099\u008b\u00ff\u0011U\u00ff\u00ff\u00ff\u0001\u0001\u00ff\u0088\u00ff\u0000U\u0000\u0000\u0011\u0011\u00ff\u00ff\u00fe\u00ff\u00fd\u00fe\u00a4\u00ffDf\u00ff\u00ff\u00fff\u00ff\u00003\u0000\u00ff\u00ffU\u00ffww\u0000\u0000\u0088\u00ffD\u00ff\u0000\u0011\u0000w\u00ff\u00ff\u0000ff\u00ff\u00ff\u00ed\u0000\u0001\u0000\u00ff\u00f5\u00ed\u0011\u0011\u00ff\u00ff\u00ffD\u00ff\"\u00ff\u00ff\u00ed\u00ed\u0011\u0011\u0000\u0088\u00ff\u00ff\u0000\u0000w\u0093\u00ff\"\u0000\u00dc\u00dc33\u00ff\u00fe\u0000\u00fe\u00ba\u00ba\u00ff\u0099\u00ff\u00ff33\u0000c\u00cb\u0000\u00ba\u00ba\u0000\u00ac\u00ffU\u00ff\u00ff\u00dc\u00ff\u00ff3{\u00fe\u0000\u00ed\u0000\u00edUU\u00ff\u00aa\u00ff\u00ff\u00dc\u00dc\u00ffUU\u0000\u0000\u0000f\u00dc\u00dc\u0000\u00dc\u0000\u00dc\u0083\u00ff\u0001ww\u00ff\u00fe\u00fe\u00ff\u00ff\u00ff\u00cb\u00ffUUww\u0000\u00fe\u00fe\u0000\u00cb\u0000\u00cb\u0000\u0000\u00fe\u0001\u0002\u0000\u0001\u0000\u0000\u0012\"\u0000\u00ff\u00ff\"\u0000DD\u009b\u00ff3\u00ff\u00d4\u00aa\u0000\u0000U\u0099\u0099\u00ff\u0099\u0099\u0000\u00ba\u0000\u00ba*U\u0000\u00ff\u00cb\u00cb\u00b4\u00fff\u00ff\u009b3\u00ff\u00ff\u00ba\u00aa\u0000\u00aaB\u0088\u0000S\u00aa\u0000\u00ff\u00aa\u00aa\u0000\u0000\u00ed\u0000\u00ba\u00ba\u00ff\u00ff\u0011\u0000\u00fe\u0000\u0000\u0000D\u0000\u0099\u0099\u0099\u0000\u0099\u00ff\u00cc\u0099\u00ba\u0000\u0000\u0088\u0000\u0088\u0000\u00dc\u0000\u00ff\u0093\"\u0000\u0000\u00dc\u00fe\u00ff\u00fe\u00aaS\u0000w\u0000w\u0002\u0001\u0000\u00cb\u0000\u0000\u0000\u00003\u00ff\u00ed\u00ff\u0000\u00ba\u0000\u00ff33\u00ed\u00ff\u00ed\u00ff\u00c4\u0088\u00bc\u00ffw\u0000\u00aa\u0000f\u0000f\u0000\"\"\u00dc\u0000\u0000\u00ff\u00cb\u00ff\u00dc\u00ff\u00dc\u00ff\u008b\u0011\u0000\u0000\u00cb\u0000\u0001\u0001U\u0000U\u0000\u0088\u0000\u0000\u0000\"\u0001\u00ff\u00ff\u00cb\u00ff\u00cb\u00ed\u0000\u0000\u00ff\u0088\u0088D\u0000D[\u00ba\u0000\u00ff\u00bcw\u00ff\u0099\u00ff\u0000f\u0000\u00ba\u00ff\u00ba\u0000wws\u00ed\u0000\u00fe\u0000\u00003\u00003\u0000\u0000\u00ba\u00ffw\u00ff\u0000D\u0000\u00aa\u00ff\u00aa\u00ff\u00fe\u00fe\u0000\u0000\u0011\"\u0000\"\u00c4\u00ff\u0088\u0000\u00ed\u00ed\u0099\u00ff\u0099\u00ffU\u00ff\u0000\"\u0000\u00ff\u00b4f\u0011\u0000\u0011\n\u0011\u0000\u00ff\u0011\u0011\u00dc\u00ff\u00ba\u00ba\u00ff\u00ff\u0088\u00ff\u0088\u0001\u0000\u0001\u00ff3\u00ff",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "cm0n0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "cm7n0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "cm9n0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "cs3n2c16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "cs3n3p08.png": {
+        "pal": "\u0092\u00ff\u0000\u0000\u00ff\u0092\u0000\u00ff\u00ff\u0000\u00ff\u0000\u0000\u00db\u00ff\u0000\u00ffm\u00ff\u00b6\u0000\u0000m\u00ff\u00b6\u00ff\u0000\u00ff\u0092\u0000\u00db\u00ff\u0000\u0000I\u00ff\u00ff$\u0000\u00ff\u0000\u0000$\u00ff\u0000I\u00ff\u0000\u0000\u00ff\u00db\u0000\u00ffI\u0000\u00ff\u00b6\u00ff\u00ff\u0000\u0000\u00ff$\u0000\u00b6\u00ff\u00ff\u00db\u0000\u0000\u0092\u00ff\u00ffm\u0000\u0000$\u00ff\u00ffI\u0000m\u00ff\u0000",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "cs5n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "cs5n3p08.png": {
+        "pal": "\u00ff\u0019\u0000B\u00ff\u0000\u00c5\u00ff\u0000\u0000\u00ff{\u0000\u00ff\u00bd\u0000\u00ff\u00ff\u0000\u00ff\u0000\u0000\u00c5\u00ff\u0000\u00a5\u00ff\u00ff\u00de\u0000\u00a5\u00ff\u0000\u0000c\u00ff\u00ff\u009c\u0000\u0000!\u00ff\u00ffZ\u0000\u0000\u00ff:\u00ff:\u0000c\u00ff\u0000\u00e6\u00ff\u0000\u00ff\u0000\u0000\u0000\u00ffZ!\u00ff\u0000\u0000\u00ff\u009c\u0000\u00ff\u00de\u0000\u00e6\u00ff\u00ff\u00ff\u0000\u0000\u0084\u00ff\u00ff\u00bd\u0000\u0000B\u00ff\u00ff{\u0000\u0084\u00ff\u0000\u0000\u00ff\u0019",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "cs8n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "cs8n3p08.png": {
+        "pal": " \u00ff\u0000\u00ff\u001f\u0000\u0000\u00ff\u001f\u0000\u00ff\u00df\u00a0\u00ff\u0000\u0000\u00ff?\u0000\u00ff\u00ff\u0000\u00ff\u0000\u0080\u00ff\u0000\u0000\u00ff_\u0000\u00ff\u007f`\u00ff\u0000\u00ff\u0000\u0000\u00e0\u00ff\u0000\u0000\u00ff\u009f\u0000\u00e0\u00ff@\u00ff\u0000\u00ff\u00ff\u0000\u0000\u00c0\u00ff\u00ff\u00df\u0000\u0000\u00a0\u00ff\u00ff\u00bf\u0000\u0000\u0080\u00ff\u00c0\u00ff\u0000\u0000\u00ff\u00bf\u00ff\u009f\u0000\u0000`\u00ff\u00ff\u007f\u0000\u0000@\u00ff\u00ff_\u0000\u0000 \u00ff\u00ff?\u0000",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "ct0n0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "ct1n0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "cten0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "ctfn0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "ctgn0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "cthn0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "ctjn0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "ctzn0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "exif2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "f00n0g08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "f00n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "f01n0g08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "f01n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "f02n0g08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "f02n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "f03n0g08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "f03n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "f04n0g08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "f04n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "f99n0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "g03n0g16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "g03n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "g03n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u0000\u00ff\u00ff\u00ff\u0000\u00ff\u0000\u00c8\u00c8\u00ad\u00ad\u0000\u00dd\u00dd\u0000\u00ff\u00ff\u00ff\u00ff\u00ff\u0000\u00ff\u00dd\u00ff\u00ff\u00ad\u00ff",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "g04n0g16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "g04n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "g04n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u0000\u00ff\u00ff\u00ff\u00d4\u00ff\u00d4\u00d4\u0000\u00ff\u0000\u00ff\u0000\u00ba\u00ba\u00ff\u00ff\u00ff\u00ff\u00ff\u0000\u00ff\u009b\u00ff\u009b\u009b\u0000",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "g05n0g16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "g05n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "g05n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u0000\u00ff\u00ff\u00cc\u00cc\u0000\u00ff\u00cc\u00ff\u0000\u00ae\u00ae\u00ff\u0000\u00ff\u008b\u008b\u0000\u00ff\u00ff\u00ff\u00ff\u00ff\u0000\u00ff\u008b\u00ff",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "g07n0g16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "g07n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "g07n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u0000\u00ff\u00ff\u0000\u009c\u009c\u00bf\u00bf\u0000\u00ffv\u00ffvv\u0000\u00ff\u0000\u00ff\u00ff\u00ff\u00ff\u00ff\u00ff\u0000\u00ff\u00bf\u00ff",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "g10n0g16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "g10n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "g10n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00a9\u00a9\u0000\u0000\u00ff\u00ff\u00ff\u00aa\u00ffTT\u0000\u00ff\u0000\u00ff\u0000\u007f\u007f\u00ff\u00ff\u00ff\u00ff\u00ff\u0000\u00ffU\u00ff",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "g25n0g16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "g25n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "g25n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u0000--\u0000\u00ff\u00ff\u0010\u0010\u0000\u00ff\\\u00ff\u00ff\u0010\u00ff\u00ff\u0000\u00ff\\\\\u0000\u00ff\u00ff\u00ff\u00ff\u00ff\u0000",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "oi1n0g16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "oi1n2c16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "oi2n0g16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "oi2n2c16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "oi4n0g16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "oi4n2c16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "oi9n0g16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "oi9n2c16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "pp0n2c16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "pp0n6a08.png": {
+        "smask": "x\u009cc`\u00e0\u0010\u0090P\u00d04\u00b4t\u00f4\n\u008aJ\u00ca*\u00aen\u00ee\u009e2g\u00c9\u009a-{\u008f\u009e\u00bdz\u00ef\u00d9\u00bbo\u00ff\u0019F\u0015\u008c*\u0018U0R\u0015\u0000\u0000N\u00b3\u00fc0",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "ps1n0g08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "ps1n2c16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "ps2n0g08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "ps2n2c16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "s01i3p01.png": {
+        "pal": "\u0000\u0000\u00ff",
+        "w": 1,
+        "h": 1,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 1"
+    },
+    "s01n3p01.png": {
+        "pal": "\u0000\u0000\u00ff",
+        "w": 1,
+        "h": 1,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 1"
+    },
+    "s02i3p01.png": {
+        "pal": "\u0000\u00ff\u00ff",
+        "w": 2,
+        "h": 2,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 2"
+    },
+    "s02n3p01.png": {
+        "pal": "\u0000\u00ff\u00ff",
+        "w": 2,
+        "h": 2,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 2"
+    },
+    "s03i3p01.png": {
+        "pal": "\u0000\u00ff\u0000\u00ffw\u0000",
+        "w": 3,
+        "h": 3,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 3"
+    },
+    "s03n3p01.png": {
+        "pal": "\u0000\u00ff\u0000\u00ffw\u0000",
+        "w": 3,
+        "h": 3,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 3"
+    },
+    "s04i3p01.png": {
+        "pal": "\u00ff\u0000w\u00ff\u00ff\u0000",
+        "w": 4,
+        "h": 4,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 4"
+    },
+    "s04n3p01.png": {
+        "pal": "\u00ff\u0000w\u00ff\u00ff\u0000",
+        "w": 4,
+        "h": 4,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 4"
+    },
+    "s05i3p02.png": {
+        "pal": "\u0000\u00ff\u00ffw\u0000\u00ff\u00ff\u0000\u0000",
+        "w": 5,
+        "h": 5,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 5"
+    },
+    "s05n3p02.png": {
+        "pal": "\u0000\u00ff\u00ffw\u0000\u00ff\u00ff\u0000\u0000",
+        "w": 5,
+        "h": 5,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 5"
+    },
+    "s06i3p02.png": {
+        "pal": "\u0000\u00ff\u0000\u0000w\u00ff\u00ff\u0000\u00ff",
+        "w": 6,
+        "h": 6,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 6"
+    },
+    "s06n3p02.png": {
+        "pal": "\u0000\u00ff\u0000\u0000w\u00ff\u00ff\u0000\u00ff",
+        "w": 6,
+        "h": 6,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 6"
+    },
+    "s07i3p02.png": {
+        "pal": "\u00ff\u0000w\u0000\u00ffw\u00ff\u00ff\u0000\u0000\u0000\u00ff",
+        "w": 7,
+        "h": 7,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 7"
+    },
+    "s07n3p02.png": {
+        "pal": "\u00ff\u0000w\u0000\u00ffw\u00ff\u00ff\u0000\u0000\u0000\u00ff",
+        "w": 7,
+        "h": 7,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 7"
+    },
+    "s08i3p02.png": {
+        "pal": "\u0000\u00ff\u00ffw\u0000\u00ffw\u00ff\u0000\u00ff\u0000\u0000",
+        "w": 8,
+        "h": 8,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 8"
+    },
+    "s08n3p02.png": {
+        "pal": "\u0000\u00ff\u00ffw\u0000\u00ffw\u00ff\u0000\u00ff\u0000\u0000",
+        "w": 8,
+        "h": 8,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 8"
+    },
+    "s09i3p02.png": {
+        "pal": "\u0000\u00ff\u0000\u0000w\u00ff\u00ff\u0000\u00ff\u00ffw\u0000",
+        "w": 9,
+        "h": 9,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 9"
+    },
+    "s09n3p02.png": {
+        "pal": "\u0000\u00ff\u0000\u0000w\u00ff\u00ff\u0000\u00ff\u00ffw\u0000",
+        "w": 9,
+        "h": 9,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 9"
+    },
+    "s32i3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "s32n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "s33i3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 33,
+        "h": 33,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 33"
+    },
+    "s33n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 33,
+        "h": 33,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 33"
+    },
+    "s34i3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 34,
+        "h": 34,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 34"
+    },
+    "s34n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 34,
+        "h": 34,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 34"
+    },
+    "s35i3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 35,
+        "h": 35,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 35"
+    },
+    "s35n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 35,
+        "h": 35,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 35"
+    },
+    "s36i3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 36,
+        "h": 36,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 36"
+    },
+    "s36n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 36,
+        "h": 36,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 36"
+    },
+    "s37i3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 37,
+        "h": 37,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 37"
+    },
+    "s37n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 37,
+        "h": 37,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 37"
+    },
+    "s38i3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 38,
+        "h": 38,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 38"
+    },
+    "s38n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 38,
+        "h": 38,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 38"
+    },
+    "s39i3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 39,
+        "h": 39,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 39"
+    },
+    "s39n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 39,
+        "h": 39,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 39"
+    },
+    "s40i3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 40,
+        "h": 40,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 40"
+    },
+    "s40n3p04.png": {
+        "pal": "\u0000\u0000\u0000\u00ff\u0000w\u0000\u00ff\u00ff\u0000\u00ff\u0000w\u0000\u00ff\u0000w\u00ffw\u00ff\u0000\u00ff\u0000\u00ff\u00ff\u0000\u0000\u0000\u00ffw\u00ff\u00ff\u0000\u00ffw\u0000\u0000\u0000\u00ff",
+        "w": 40,
+        "h": 40,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 40"
+    },
+    "tbbn0g04.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "tbbn2c16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "tbbn3p08.png": {
+        "pal": "\u00ff\u00ff\u00ff\u0080VV\u00b5\u00b5\u00b8\u00a8BB\u009f\u009f\u009f\u00b1  \u008b\u0015\u0015\u009d\u009d\u009d\u001b\u001bY\u009b\u009b\u009b\u0000\u0000\u0084\u0099\u0099\u0099\u008f\u00a7\u008f\u0097\u0097\u0097\u0095\u0095\u0095\u0093\u0093\u0093))V\u0091\u0091\u0091\u0000\u0000\u009b\u008f\u008f\u008f\u008b\u0095\u008b..\u00a7\u008d\u008d\u008d\u0080\u0000\u0000\u008b\u008b\u008b\u00b9\u0000\u0000\u0089\u0089\u0089\f\f\u00d5xuu\u0087\u0087\u0087\u0000\u0000\u00b2\u0085\u0085\u0085\u00a5\u0000\u0000\u00de\u0000\u0000\u0081\u0081\u0081\u007f\u007f\u007f\u0000\u0000\u009e}}}\u0000\u0000\u00c9{{{yyy77VwwwuuusssH\u00a9H\u008e\u0000\u0000\u0002\u0002d\u0000\u0000bV\u0089V((|S\u008bS\u0089\u0089\u008fgggeee]m]\u0013\u00e5\u0013\u0086&&o--D\u0091Daaa;\u009d;D\u0089D=\u0093=\u0000\u0000\u00a4\u0000\u00f3\u0000\u0000\u00f1\u0000YYYWWWUUUSSS4\u00854QQQ$\u0097$OOO::A\u0010\u0010\u00ba\u00b2\u000f\u000f\u0000\u00c7\u0000\u0000\u00c5\u0000\u00fc\u00fc\u00fc\u0000\u00c3\u0000\u0004\u0004\u0097\u0000\u00c1\u0000-w-\u00fa\u00fa\u00fa\u0000\u00bf\u0000\u0000\u0000h\u0000\u00bd\u0000\u00da\u00d4\u00d4\u0010\u0010{\t\u00ad\t\u00f8\u00f8\u00f8\u0000\u00b9\u0000\u0000\u00b7\u0000\u009c\u009c\u00a1\u00f6\u00f6\u00f6\f\u00a1\f\u0000\u00b3\u0000\u0000\u00b1\u0000\u0010\u0091\u0010\u0000\u00ab\u0000\u00f2\u00f2\u00f2\u0000\u00a9\u0000\u0000\u00a7\u0000\u00ee\u00ee\u00ee\u00ec\u00ec\u00ec\u0000\u0097\u0000\u00ea\u00ea\u00ea\u0000\u0000k\u0000\u008d\u0000\u0000\u008b\u0000\u0000\u0089\u0000\u0000\u0087\u0000111\u0019\u0019*\u0007\u0007@\u0012\u0012\u00ae\t\t\u00ee\u00d3\u00d6\u00d3\u00cc\u00cc\u00cc\u0093\u0000\u0000\u00a3**\u00c6\u00c6\u00c6\u00c4\u00c4\u00c4\u00cc\u0000\u0000\u00d3\n\n\u0081kkx>>\u0003\u0003m\u0000\u0000\u009f\n\nVFFHAAMs]]Q\u0007\u0007\u00a8\u00a8\u00a8\u00ed\u00ed\u00ef\u00a0\u00a0\u00a0\u009e\u009e\u009e\u009c\u009c\u009c\u0000\u0000\u00b9\u009a\u009a\u009a\u00b2\u0000\u0000\u0098\u0098\u0098\u00eb\u0000\u0000\u0096\u0096\u0096\u009e\u0000\u0000\u0094\u0094\u0094\u0013\u0013\u001c\u0092\u0092\u0092\u0090\u0090\u0090\u008e\u008e\u008e\u0000\u0000\u0091\u008a\u008a\u008a\u0088\u0088\u0088v\u00a2v\u0085\u0088\u0085\u0086\u0086\u0086\u0084\u0084\u0084x\u000f\u000f\u0082\u0082\u0082~\u0082~~~~|||zzzJ\u00c0Jvvvtttrrrppp\u0098\u0000\u0000nnnjpjzffjjj\u0084\u0000\u0000D\u00a2DK\u0096Kadabbb\u0000\u00f4\u00008\u00988\\\\\\ZZZ\u0000\u00e6\u0000\u0002\u0002]BxBVVV\u0000\u0000\u00f0.\u0094.GhG11`\u0000\u00d8\u0000RRRPPP\u0000\u00ce\u0000!\u0098!\u0014\u0014m\u0000\u00c8\u0000LLL\u00fd\u00fd\u00fd\u0000\u00c6\u0000\u0000\u0000\u009dokk\u00ea\u000e\u000eHHH\u0000\u00bc\u00004f4\u0002\u0002\u00f5SS`\u0000\u00b0\u0000\u0000\u00ae\u0000\u00b7\u0000\u0000\u0000\u00a4\u0000\u00ef\u00ef\u00ef\u0000\u00a2\u0000\u008fOO\u009544\u0000\u0098\u0000\u0000\u0096\u0000\u0000\u0092\u0000\u00e7\u00e7\u00e7\u0000\u008c\u0000\u00e3\u00e3\u00e3\u0000\u0080\u0000\u0092\u0006\u0006\u0001\u0001odVY\u0000\u0000dNNk\u00cf\u00cf\u00cf\u00dd\u00dd\u00e0\u0000\u0000{\u00c9\u00c9\u00c9\u0016\u0016A!!YWWYDDx\u00bf\u00bf\u00bf\u00eb\u00dd\u00dd--T\n\n`\u0000\u0000\u00ff\u00bf}}\u0000\u0000\u0000",
+        "smask": "x\u009c\u00cd\u00d2A\n\u0000 \bDQ\u00ef\u007fi#\u008a0\u00b5\u0099EE\u00b9\u00fdo!\u00a5\u00c8\u00e1QU\\\u00db\u00e0\u009a\"_g\u0093Wc\u00de\u0002\u00ba\u00e5\u0007\u0080>\u00e5}\u00c0~{\u001f\u00b0\u0093\"'\u0019\u000f\u0097uG\u00b2nE\u00de\u0007Y\u00e6.P\u00af\u0002\u00f78\u0005.\u00187\u00e5",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "tbgn2c16.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "tbgn3p08.png": {
+        "pal": "\u00ff\u00ff\u00ff\u0080VV\u00b5\u00b5\u00b8\u00a8BB\u009f\u009f\u009f\u00b1  \u008b\u0015\u0015\u009d\u009d\u009d\u001b\u001bY\u009b\u009b\u009b\u0000\u0000\u0084\u0099\u0099\u0099\u008f\u00a7\u008f\u0097\u0097\u0097\u0095\u0095\u0095\u0093\u0093\u0093))V\u0091\u0091\u0091\u0000\u0000\u009b\u008f\u008f\u008f\u008b\u0095\u008b..\u00a7\u008d\u008d\u008d\u0080\u0000\u0000\u008b\u008b\u008b\u00b9\u0000\u0000\u0089\u0089\u0089\f\f\u00d5xuu\u0087\u0087\u0087\u0000\u0000\u00b2\u0085\u0085\u0085\u00a5\u0000\u0000\u00de\u0000\u0000\u0081\u0081\u0081\u007f\u007f\u007f\u0000\u0000\u009e}}}\u0000\u0000\u00c9{{{yyy77VwwwuuusssH\u00a9H\u008e\u0000\u0000\u0002\u0002d\u0000\u0000bV\u0089V((|S\u008bS\u0089\u0089\u008fgggeee]m]\u0013\u00e5\u0013\u0086&&o--D\u0091Daaa;\u009d;D\u0089D=\u0093=\u0000\u0000\u00a4\u0000\u00f3\u0000\u0000\u00f1\u0000YYYWWWUUUSSS4\u00854QQQ$\u0097$OOO::A\u0010\u0010\u00ba\u00b2\u000f\u000f\u0000\u00c7\u0000\u0000\u00c5\u0000\u00fc\u00fc\u00fc\u0000\u00c3\u0000\u0004\u0004\u0097\u0000\u00c1\u0000-w-\u00fa\u00fa\u00fa\u0000\u00bf\u0000\u0000\u0000h\u0000\u00bd\u0000\u00da\u00d4\u00d4\u0010\u0010{\t\u00ad\t\u00f8\u00f8\u00f8\u0000\u00b9\u0000\u0000\u00b7\u0000\u009c\u009c\u00a1\u00f6\u00f6\u00f6\f\u00a1\f\u0000\u00b3\u0000\u0000\u00b1\u0000\u0010\u0091\u0010\u0000\u00ab\u0000\u00f2\u00f2\u00f2\u0000\u00a9\u0000\u0000\u00a7\u0000\u00ee\u00ee\u00ee\u00ec\u00ec\u00ec\u0000\u0097\u0000\u00ea\u00ea\u00ea\u0000\u0000k\u0000\u008d\u0000\u0000\u008b\u0000\u0000\u0089\u0000\u0000\u0087\u0000111\u0019\u0019*\u0007\u0007@\u0012\u0012\u00ae\t\t\u00ee\u00d3\u00d6\u00d3\u00cc\u00cc\u00cc\u0093\u0000\u0000\u00a3**\u00c6\u00c6\u00c6\u00c4\u00c4\u00c4\u00cc\u0000\u0000\u00d3\n\n\u0081kkx>>\u0003\u0003m\u0000\u0000\u009f\n\nVFFHAAMs]]Q\u0007\u0007\u00a8\u00a8\u00a8\u00ed\u00ed\u00ef\u00a0\u00a0\u00a0\u009e\u009e\u009e\u009c\u009c\u009c\u0000\u0000\u00b9\u009a\u009a\u009a\u00b2\u0000\u0000\u0098\u0098\u0098\u00eb\u0000\u0000\u0096\u0096\u0096\u009e\u0000\u0000\u0094\u0094\u0094\u0013\u0013\u001c\u0092\u0092\u0092\u0090\u0090\u0090\u008e\u008e\u008e\u0000\u0000\u0091\u008a\u008a\u008a\u0088\u0088\u0088v\u00a2v\u0085\u0088\u0085\u0086\u0086\u0086\u0084\u0084\u0084x\u000f\u000f\u0082\u0082\u0082~\u0082~~~~|||zzzJ\u00c0Jvvvtttrrrppp\u0098\u0000\u0000nnnjpjzffjjj\u0084\u0000\u0000D\u00a2DK\u0096Kadabbb\u0000\u00f4\u00008\u00988\\\\\\ZZZ\u0000\u00e6\u0000\u0002\u0002]BxBVVV\u0000\u0000\u00f0.\u0094.GhG11`\u0000\u00d8\u0000RRRPPP\u0000\u00ce\u0000!\u0098!\u0014\u0014m\u0000\u00c8\u0000LLL\u00fd\u00fd\u00fd\u0000\u00c6\u0000\u0000\u0000\u009dokk\u00ea\u000e\u000eHHH\u0000\u00bc\u00004f4\u0002\u0002\u00f5SS`\u0000\u00b0\u0000\u0000\u00ae\u0000\u00b7\u0000\u0000\u0000\u00a4\u0000\u00ef\u00ef\u00ef\u0000\u00a2\u0000\u008fOO\u009544\u0000\u0098\u0000\u0000\u0096\u0000\u0000\u0092\u0000\u00e7\u00e7\u00e7\u0000\u008c\u0000\u00e3\u00e3\u00e3\u0000\u0080\u0000\u0092\u0006\u0006\u0001\u0001odVY\u0000\u0000dNNk\u00cf\u00cf\u00cf\u00dd\u00dd\u00e0\u0000\u0000{\u00c9\u00c9\u00c9\u0016\u0016A!!YWWYDDx\u00bf\u00bf\u00bf\u00eb\u00dd\u00dd--T\n\n`\u0000\u0000\u00ff\u00bf}}\u00aa\u00aa\u00aa",
+        "smask": "x\u009c\u00cd\u00d2A\n\u0000 \bDQ\u00ef\u007fi#\u008a0\u00b5\u0099EE\u00b9\u00fdo!\u00a5\u00c8\u00e1QU\\\u00db\u00e0\u009a\"_g\u0093Wc\u00de\u0002\u00ba\u00e5\u0007\u0080>\u00e5}\u00c0~{\u001f\u00b0\u0093\"'\u0019\u000f\u0097uG\u00b2nE\u00de\u0007Y\u00e6.P\u00af\u0002\u00f78\u0005.\u00187\u00e5",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "tbrn2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "tbwn0g16.png": {
+        "smask": "x\u009cc`\u0018\u0005\u00a3`\u0014\u008c\u0002\u00ec\u0000\u0000\u0004 \u0000\u0001",
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "tbwn3p08.png": {
+        "pal": "\u00ff\u00ff\u00ff\u0080VV\u00b5\u00b5\u00b8\u00a8BB\u009f\u009f\u009f\u00b1  \u008b\u0015\u0015\u009d\u009d\u009d\u001b\u001bY\u009b\u009b\u009b\u0000\u0000\u0084\u0099\u0099\u0099\u008f\u00a7\u008f\u0097\u0097\u0097\u0095\u0095\u0095\u0093\u0093\u0093))V\u0091\u0091\u0091\u0000\u0000\u009b\u008f\u008f\u008f\u008b\u0095\u008b..\u00a7\u008d\u008d\u008d\u0080\u0000\u0000\u008b\u008b\u008b\u00b9\u0000\u0000\u0089\u0089\u0089\f\f\u00d5xuu\u0087\u0087\u0087\u0000\u0000\u00b2\u0085\u0085\u0085\u00a5\u0000\u0000\u00de\u0000\u0000\u0081\u0081\u0081\u007f\u007f\u007f\u0000\u0000\u009e}}}\u0000\u0000\u00c9{{{yyy77VwwwuuusssH\u00a9H\u008e\u0000\u0000\u0002\u0002d\u0000\u0000bV\u0089V((|S\u008bS\u0089\u0089\u008fgggeee]m]\u0013\u00e5\u0013\u0086&&o--D\u0091Daaa;\u009d;D\u0089D=\u0093=\u0000\u0000\u00a4\u0000\u00f3\u0000\u0000\u00f1\u0000YYYWWWUUUSSS4\u00854QQQ$\u0097$OOO::A\u0010\u0010\u00ba\u00b2\u000f\u000f\u0000\u00c7\u0000\u0000\u00c5\u0000\u00fc\u00fc\u00fc\u0000\u00c3\u0000\u0004\u0004\u0097\u0000\u00c1\u0000-w-\u00fa\u00fa\u00fa\u0000\u00bf\u0000\u0000\u0000h\u0000\u00bd\u0000\u00da\u00d4\u00d4\u0010\u0010{\t\u00ad\t\u00f8\u00f8\u00f8\u0000\u00b9\u0000\u0000\u00b7\u0000\u009c\u009c\u00a1\u00f6\u00f6\u00f6\f\u00a1\f\u0000\u00b3\u0000\u0000\u00b1\u0000\u0010\u0091\u0010\u0000\u00ab\u0000\u00f2\u00f2\u00f2\u0000\u00a9\u0000\u0000\u00a7\u0000\u00ee\u00ee\u00ee\u00ec\u00ec\u00ec\u0000\u0097\u0000\u00ea\u00ea\u00ea\u0000\u0000k\u0000\u008d\u0000\u0000\u008b\u0000\u0000\u0089\u0000\u0000\u0087\u0000111\u0019\u0019*\u0007\u0007@\u0012\u0012\u00ae\t\t\u00ee\u00d3\u00d6\u00d3\u00cc\u00cc\u00cc\u0093\u0000\u0000\u00a3**\u00c6\u00c6\u00c6\u00c4\u00c4\u00c4\u00cc\u0000\u0000\u00d3\n\n\u0081kkx>>\u0003\u0003m\u0000\u0000\u009f\n\nVFFHAAMs]]Q\u0007\u0007\u00a8\u00a8\u00a8\u00ed\u00ed\u00ef\u00a0\u00a0\u00a0\u009e\u009e\u009e\u009c\u009c\u009c\u0000\u0000\u00b9\u009a\u009a\u009a\u00b2\u0000\u0000\u0098\u0098\u0098\u00eb\u0000\u0000\u0096\u0096\u0096\u009e\u0000\u0000\u0094\u0094\u0094\u0013\u0013\u001c\u0092\u0092\u0092\u0090\u0090\u0090\u008e\u008e\u008e\u0000\u0000\u0091\u008a\u008a\u008a\u0088\u0088\u0088v\u00a2v\u0085\u0088\u0085\u0086\u0086\u0086\u0084\u0084\u0084x\u000f\u000f\u0082\u0082\u0082~\u0082~~~~|||zzzJ\u00c0Jvvvtttrrrppp\u0098\u0000\u0000nnnjpjzffjjj\u0084\u0000\u0000D\u00a2DK\u0096Kadabbb\u0000\u00f4\u00008\u00988\\\\\\ZZZ\u0000\u00e6\u0000\u0002\u0002]BxBVVV\u0000\u0000\u00f0.\u0094.GhG11`\u0000\u00d8\u0000RRRPPP\u0000\u00ce\u0000!\u0098!\u0014\u0014m\u0000\u00c8\u0000LLL\u00fd\u00fd\u00fd\u0000\u00c6\u0000\u0000\u0000\u009dokk\u00ea\u000e\u000eHHH\u0000\u00bc\u00004f4\u0002\u0002\u00f5SS`\u0000\u00b0\u0000\u0000\u00ae\u0000\u00b7\u0000\u0000\u0000\u00a4\u0000\u00ef\u00ef\u00ef\u0000\u00a2\u0000\u008fOO\u009544\u0000\u0098\u0000\u0000\u0096\u0000\u0000\u0092\u0000\u00e7\u00e7\u00e7\u0000\u008c\u0000\u00e3\u00e3\u00e3\u0000\u0080\u0000\u0092\u0006\u0006\u0001\u0001odVY\u0000\u0000dNNk\u00cf\u00cf\u00cf\u00dd\u00dd\u00e0\u0000\u0000{\u00c9\u00c9\u00c9\u0016\u0016A!!YWWYDDx\u00bf\u00bf\u00bf\u00eb\u00dd\u00dd--T\n\n`\u0000\u0000\u00ff\u00bf}}",
+        "smask": "x\u009c\u00cd\u00d2A\n\u0000 \bDQ\u00ef\u007fi#\u008a0\u00b5\u0099EE\u00b9\u00fdo!\u00a5\u00c8\u00e1QU\\\u00db\u00e0\u009a\"_g\u0093Wc\u00de\u0002\u00ba\u00e5\u0007\u0080>\u00e5}\u00c0~{\u001f\u00b0\u0093\"'\u0019\u000f\u0097uG\u00b2nE\u00de\u0007Y\u00e6.P\u00af\u0002\u00f78\u0005.\u00187\u00e5",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "tbyn3p08.png": {
+        "pal": "\u00ff\u00ff\u00ff\u0080VV\u00b5\u00b5\u00b8\u00a8BB\u009f\u009f\u009f\u00b1  \u008b\u0015\u0015\u009d\u009d\u009d\u001b\u001bY\u009b\u009b\u009b\u0000\u0000\u0084\u0099\u0099\u0099\u008f\u00a7\u008f\u0097\u0097\u0097\u0095\u0095\u0095\u0093\u0093\u0093))V\u0091\u0091\u0091\u0000\u0000\u009b\u008f\u008f\u008f\u008b\u0095\u008b..\u00a7\u008d\u008d\u008d\u0080\u0000\u0000\u008b\u008b\u008b\u00b9\u0000\u0000\u0089\u0089\u0089\f\f\u00d5xuu\u0087\u0087\u0087\u0000\u0000\u00b2\u0085\u0085\u0085\u00a5\u0000\u0000\u00de\u0000\u0000\u0081\u0081\u0081\u007f\u007f\u007f\u0000\u0000\u009e}}}\u0000\u0000\u00c9{{{yyy77VwwwuuusssH\u00a9H\u008e\u0000\u0000\u0002\u0002d\u0000\u0000bV\u0089V((|S\u008bS\u0089\u0089\u008fgggeee]m]\u0013\u00e5\u0013\u0086&&o--D\u0091Daaa;\u009d;D\u0089D=\u0093=\u0000\u0000\u00a4\u0000\u00f3\u0000\u0000\u00f1\u0000YYYWWWUUUSSS4\u00854QQQ$\u0097$OOO::A\u0010\u0010\u00ba\u00b2\u000f\u000f\u0000\u00c7\u0000\u0000\u00c5\u0000\u00fc\u00fc\u00fc\u0000\u00c3\u0000\u0004\u0004\u0097\u0000\u00c1\u0000-w-\u00fa\u00fa\u00fa\u0000\u00bf\u0000\u0000\u0000h\u0000\u00bd\u0000\u00da\u00d4\u00d4\u0010\u0010{\t\u00ad\t\u00f8\u00f8\u00f8\u0000\u00b9\u0000\u0000\u00b7\u0000\u009c\u009c\u00a1\u00f6\u00f6\u00f6\f\u00a1\f\u0000\u00b3\u0000\u0000\u00b1\u0000\u0010\u0091\u0010\u0000\u00ab\u0000\u00f2\u00f2\u00f2\u0000\u00a9\u0000\u0000\u00a7\u0000\u00ee\u00ee\u00ee\u00ec\u00ec\u00ec\u0000\u0097\u0000\u00ea\u00ea\u00ea\u0000\u0000k\u0000\u008d\u0000\u0000\u008b\u0000\u0000\u0089\u0000\u0000\u0087\u0000111\u0019\u0019*\u0007\u0007@\u0012\u0012\u00ae\t\t\u00ee\u00d3\u00d6\u00d3\u00cc\u00cc\u00cc\u0093\u0000\u0000\u00a3**\u00c6\u00c6\u00c6\u00c4\u00c4\u00c4\u00cc\u0000\u0000\u00d3\n\n\u0081kkx>>\u0003\u0003m\u0000\u0000\u009f\n\nVFFHAAMs]]Q\u0007\u0007\u00a8\u00a8\u00a8\u00ed\u00ed\u00ef\u00a0\u00a0\u00a0\u009e\u009e\u009e\u009c\u009c\u009c\u0000\u0000\u00b9\u009a\u009a\u009a\u00b2\u0000\u0000\u0098\u0098\u0098\u00eb\u0000\u0000\u0096\u0096\u0096\u009e\u0000\u0000\u0094\u0094\u0094\u0013\u0013\u001c\u0092\u0092\u0092\u0090\u0090\u0090\u008e\u008e\u008e\u0000\u0000\u0091\u008a\u008a\u008a\u0088\u0088\u0088v\u00a2v\u0085\u0088\u0085\u0086\u0086\u0086\u0084\u0084\u0084x\u000f\u000f\u0082\u0082\u0082~\u0082~~~~|||zzzJ\u00c0Jvvvtttrrrppp\u0098\u0000\u0000nnnjpjzffjjj\u0084\u0000\u0000D\u00a2DK\u0096Kadabbb\u0000\u00f4\u00008\u00988\\\\\\ZZZ\u0000\u00e6\u0000\u0002\u0002]BxBVVV\u0000\u0000\u00f0.\u0094.GhG11`\u0000\u00d8\u0000RRRPPP\u0000\u00ce\u0000!\u0098!\u0014\u0014m\u0000\u00c8\u0000LLL\u00fd\u00fd\u00fd\u0000\u00c6\u0000\u0000\u0000\u009dokk\u00ea\u000e\u000eHHH\u0000\u00bc\u00004f4\u0002\u0002\u00f5SS`\u0000\u00b0\u0000\u0000\u00ae\u0000\u00b7\u0000\u0000\u0000\u00a4\u0000\u00ef\u00ef\u00ef\u0000\u00a2\u0000\u008fOO\u009544\u0000\u0098\u0000\u0000\u0096\u0000\u0000\u0092\u0000\u00e7\u00e7\u00e7\u0000\u008c\u0000\u00e3\u00e3\u00e3\u0000\u0080\u0000\u0092\u0006\u0006\u0001\u0001odVY\u0000\u0000dNNk\u00cf\u00cf\u00cf\u00dd\u00dd\u00e0\u0000\u0000{\u00c9\u00c9\u00c9\u0016\u0016A!!YWWYDDx\u00bf\u00bf\u00bf\u00eb\u00dd\u00dd--T\n\n`\u0000\u0000\u00ff\u00bf}}\u00ff\u00ff\u0000",
+        "smask": "x\u009c\u00cd\u00d2A\n\u0000 \bDQ\u00ef\u007fi#\u008a0\u00b5\u0099EE\u00b9\u00fdo!\u00a5\u00c8\u00e1QU\\\u00db\u00e0\u009a\"_g\u0093Wc\u00de\u0002\u00ba\u00e5\u0007\u0080>\u00e5}\u00c0~{\u001f\u00b0\u0093\"'\u0019\u000f\u0097uG\u00b2nE\u00de\u0007Y\u00e6.P\u00af\u0002\u00f78\u0005.\u00187\u00e5",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "tm3n3p02.png": {
+        "pal": "\u0000\u0000\u00ff\u0000\u0000\u00ff\u0000\u0000\u00ff\u0000\u0000\u00ff",
+        "smask": "x\u009cc`@\u0003\u00a1h\u0000]~T\u00c1\u00f0V\u00b0\n\r\u00fcG\u0003\u00a3\nF\u0094\u0002\u0000\u001c\u00e8\u00fe\u0010",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "tp0n0g08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceGray",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "tp0n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "tp0n3p08.png": {
+        "pal": "\u0014\u0014m\u0080VV\u00b5\u00b5\u00b8\u00a8BB\u009f\u009f\u009f\u00b1  \u008b\u0015\u0015\u009d\u009d\u009d\u001b\u001bY\u009b\u009b\u009b\u0000\u0000\u0084\u0099\u0099\u0099\u008f\u00a7\u008f\u0097\u0097\u0097\u0095\u0095\u0095\u0093\u0093\u0093))V\u0091\u0091\u0091\u0000\u0000\u009b\u008f\u008f\u008f\u008b\u0095\u008b..\u00a7\u008d\u008d\u008d\u0080\u0000\u0000\u008b\u008b\u008b\u00b9\u0000\u0000\u0089\u0089\u0089\f\f\u00d5xuu\u0087\u0087\u0087\u0000\u0000\u00b2\u0085\u0085\u0085\u00a5\u0000\u0000\u00de\u0000\u0000\u0081\u0081\u0081\u007f\u007f\u007f\u0000\u0000\u009e}}}\u0000\u0000\u00c9{{{yyy77VwwwuuusssH\u00a9H\u008e\u0000\u0000\u0002\u0002d\u0000\u0000bV\u0089V((|S\u008bS\u0089\u0089\u008fgggeee]m]\u0013\u00e5\u0013\u0086&&o--D\u0091Daaa;\u009d;D\u0089D=\u0093=\u0000\u0000\u00a4\u0000\u00f3\u0000\u0000\u00f1\u0000YYYWWWUUUSSS4\u00854QQQ$\u0097$OOO::A\u0010\u0010\u00ba\u00b2\u000f\u000f\u0000\u00c7\u0000\u0000\u00c5\u0000\u00fc\u00fc\u00fc\u0000\u00c3\u0000\u0004\u0004\u0097\u0000\u00c1\u0000-w-\u00fa\u00fa\u00fa\u0000\u00bf\u0000\u0000\u0000h\u0000\u00bd\u0000\u00da\u00d4\u00d4\u0010\u0010{\t\u00ad\t\u00f8\u00f8\u00f8\u0000\u00b9\u0000\u0000\u00b7\u0000\u009c\u009c\u00a1\u00f6\u00f6\u00f6\f\u00a1\f\u0000\u00b3\u0000\u0000\u00b1\u0000\u0010\u0091\u0010\u0000\u00ab\u0000\u00f2\u00f2\u00f2\u0000\u00a9\u0000\u0000\u00a7\u0000\u00ee\u00ee\u00ee\u00ec\u00ec\u00ec\u0000\u0097\u0000\u00ea\u00ea\u00ea\u0000\u0000k\u0000\u008d\u0000\u0000\u008b\u0000\u0000\u0089\u0000\u0000\u0087\u0000111\u0019\u0019*\u0007\u0007@\u0012\u0012\u00ae\t\t\u00ee\u00d3\u00d6\u00d3\u00cc\u00cc\u00cc\u0093\u0000\u0000\u00a3**\u00c6\u00c6\u00c6\u00c4\u00c4\u00c4\u00cc\u0000\u0000\u00d3\n\n\u0081kkx>>\u0003\u0003m\u0000\u0000\u009f\n\nVFFHAAMs]]Q\u0007\u0007\u00a8\u00a8\u00a8\u00ed\u00ed\u00ef\u00a0\u00a0\u00a0\u009e\u009e\u009e\u009c\u009c\u009c\u0000\u0000\u00b9\u009a\u009a\u009a\u00b2\u0000\u0000\u0098\u0098\u0098\u00eb\u0000\u0000\u0096\u0096\u0096\u009e\u0000\u0000\u0094\u0094\u0094\u0013\u0013\u001c\u0092\u0092\u0092\u0090\u0090\u0090\u008e\u008e\u008e\u0000\u0000\u0091\u008a\u008a\u008a\u0088\u0088\u0088v\u00a2v\u0085\u0088\u0085\u0086\u0086\u0086\u0084\u0084\u0084x\u000f\u000f\u0082\u0082\u0082~\u0082~~~~|||zzzJ\u00c0Jvvvtttrrrppp\u0098\u0000\u0000nnnjpjzffjjj\u0084\u0000\u0000D\u00a2DK\u0096Kadabbb\u0000\u00f4\u00008\u00988\\\\\\ZZZ\u0000\u00e6\u0000\u0002\u0002]BxBVVV\u0000\u0000\u00f0.\u0094.GhG11`\u0000\u00d8\u0000RRRPPP\u0000\u00ce\u0000!\u0098!\u00ff\u00ff\u00ff\u0000\u00c8\u0000LLL\u00fd\u00fd\u00fd\u0000\u00c6\u0000\u0000\u0000\u009dokk\u00ea\u000e\u000eHHH\u0000\u00bc\u00004f4\u0002\u0002\u00f5SS`\u0000\u00b0\u0000\u0000\u00ae\u0000\u00b7\u0000\u0000\u0000\u00a4\u0000\u00ef\u00ef\u00ef\u0000\u00a2\u0000\u008fOO\u009544\u0000\u0098\u0000\u0000\u0096\u0000\u0000\u0092\u0000\u00e7\u00e7\u00e7\u0000\u008c\u0000\u00e3\u00e3\u00e3\u0000\u0080\u0000\u0092\u0006\u0006\u0001\u0001odVY\u0000\u0000dNNk\u00cf\u00cf\u00cf\u00dd\u00dd\u00e0\u0000\u0000{\u00c9\u00c9\u00c9\u0016\u0016A!!YWWYDDx\u00bf\u00bf\u00bf\u00eb\u00dd\u00dd--T\n\n`\u0000\u0000\u00ff\u00bf}}",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "tp1n3p08.png": {
+        "pal": "\u00ff\u00ff\u00ff\u0080VV\u00b5\u00b5\u00b8\u00a8BB\u009f\u009f\u009f\u00b1  \u008b\u0015\u0015\u009d\u009d\u009d\u001b\u001bY\u009b\u009b\u009b\u0000\u0000\u0084\u0099\u0099\u0099\u008f\u00a7\u008f\u0097\u0097\u0097\u0095\u0095\u0095\u0093\u0093\u0093))V\u0091\u0091\u0091\u0000\u0000\u009b\u008f\u008f\u008f\u008b\u0095\u008b..\u00a7\u008d\u008d\u008d\u0080\u0000\u0000\u008b\u008b\u008b\u00b9\u0000\u0000\u0089\u0089\u0089\f\f\u00d5xuu\u0087\u0087\u0087\u0000\u0000\u00b2\u0085\u0085\u0085\u00a5\u0000\u0000\u00de\u0000\u0000\u0081\u0081\u0081\u007f\u007f\u007f\u0000\u0000\u009e}}}\u0000\u0000\u00c9{{{yyy77VwwwuuusssH\u00a9H\u008e\u0000\u0000\u0002\u0002d\u0000\u0000bV\u0089V((|S\u008bS\u0089\u0089\u008fgggeee]m]\u0013\u00e5\u0013\u0086&&o--D\u0091Daaa;\u009d;D\u0089D=\u0093=\u0000\u0000\u00a4\u0000\u00f3\u0000\u0000\u00f1\u0000YYYWWWUUUSSS4\u00854QQQ$\u0097$OOO::A\u0010\u0010\u00ba\u00b2\u000f\u000f\u0000\u00c7\u0000\u0000\u00c5\u0000\u00fc\u00fc\u00fc\u0000\u00c3\u0000\u0004\u0004\u0097\u0000\u00c1\u0000-w-\u00fa\u00fa\u00fa\u0000\u00bf\u0000\u0000\u0000h\u0000\u00bd\u0000\u00da\u00d4\u00d4\u0010\u0010{\t\u00ad\t\u00f8\u00f8\u00f8\u0000\u00b9\u0000\u0000\u00b7\u0000\u009c\u009c\u00a1\u00f6\u00f6\u00f6\f\u00a1\f\u0000\u00b3\u0000\u0000\u00b1\u0000\u0010\u0091\u0010\u0000\u00ab\u0000\u00f2\u00f2\u00f2\u0000\u00a9\u0000\u0000\u00a7\u0000\u00ee\u00ee\u00ee\u00ec\u00ec\u00ec\u0000\u0097\u0000\u00ea\u00ea\u00ea\u0000\u0000k\u0000\u008d\u0000\u0000\u008b\u0000\u0000\u0089\u0000\u0000\u0087\u0000111\u0019\u0019*\u0007\u0007@\u0012\u0012\u00ae\t\t\u00ee\u00d3\u00d6\u00d3\u00cc\u00cc\u00cc\u0093\u0000\u0000\u00a3**\u00c6\u00c6\u00c6\u00c4\u00c4\u00c4\u00cc\u0000\u0000\u00d3\n\n\u0081kkx>>\u0003\u0003m\u0000\u0000\u009f\n\nVFFHAAMs]]Q\u0007\u0007\u00a8\u00a8\u00a8\u00ed\u00ed\u00ef\u00a0\u00a0\u00a0\u009e\u009e\u009e\u009c\u009c\u009c\u0000\u0000\u00b9\u009a\u009a\u009a\u00b2\u0000\u0000\u0098\u0098\u0098\u00eb\u0000\u0000\u0096\u0096\u0096\u009e\u0000\u0000\u0094\u0094\u0094\u0013\u0013\u001c\u0092\u0092\u0092\u0090\u0090\u0090\u008e\u008e\u008e\u0000\u0000\u0091\u008a\u008a\u008a\u0088\u0088\u0088v\u00a2v\u0085\u0088\u0085\u0086\u0086\u0086\u0084\u0084\u0084x\u000f\u000f\u0082\u0082\u0082~\u0082~~~~|||zzzJ\u00c0Jvvvtttrrrppp\u0098\u0000\u0000nnnjpjzffjjj\u0084\u0000\u0000D\u00a2DK\u0096Kadabbb\u0000\u00f4\u00008\u00988\\\\\\ZZZ\u0000\u00e6\u0000\u0002\u0002]BxBVVV\u0000\u0000\u00f0.\u0094.GhG11`\u0000\u00d8\u0000RRRPPP\u0000\u00ce\u0000!\u0098!\u0014\u0014m\u0000\u00c8\u0000LLL\u00fd\u00fd\u00fd\u0000\u00c6\u0000\u0000\u0000\u009dokk\u00ea\u000e\u000eHHH\u0000\u00bc\u00004f4\u0002\u0002\u00f5SS`\u0000\u00b0\u0000\u0000\u00ae\u0000\u00b7\u0000\u0000\u0000\u00a4\u0000\u00ef\u00ef\u00ef\u0000\u00a2\u0000\u008fOO\u009544\u0000\u0098\u0000\u0000\u0096\u0000\u0000\u0092\u0000\u00e7\u00e7\u00e7\u0000\u008c\u0000\u00e3\u00e3\u00e3\u0000\u0080\u0000\u0092\u0006\u0006\u0001\u0001odVY\u0000\u0000dNNk\u00cf\u00cf\u00cf\u00dd\u00dd\u00e0\u0000\u0000{\u00c9\u00c9\u00c9\u0016\u0016A!!YWWYDDx\u00bf\u00bf\u00bf\u00eb\u00dd\u00dd--T\n\n`\u0000\u0000\u00ff\u00bf}}",
+        "smask": "x\u009c\u00cd\u00d2A\n\u0000 \bDQ\u00ef\u007fi#\u008a0\u00b5\u0099EE\u00b9\u00fdo!\u00a5\u00c8\u00e1QU\\\u00db\u00e0\u009a\"_g\u0093Wc\u00de\u0002\u00ba\u00e5\u0007\u0080>\u00e5}\u00c0~{\u001f\u00b0\u0093\"'\u0019\u000f\u0097uG\u00b2nE\u00de\u0007Y\u00e6.P\u00af\u0002\u00f78\u0005.\u00187\u00e5",
+        "w": 32,
+        "h": 32,
+        "cs": "Indexed",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+    },
+    "z00n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "z03n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "z06n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    },
+    "z09n2c08.png": {
+        "w": 32,
+        "h": 32,
+        "cs": "DeviceRGB",
+        "bpc": 8,
+        "f": "FlateDecode",
+        "dp": "/Predictor 15 /Colors 3 /Columns 32"
+    }
+}

@@ -1,0 +1,91 @@
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+<TITLE>Esempio minimo</TITLE>
+<LINK TYPE="text/css" REL="stylesheet" HREF="../fpdf.css">
+</HEAD>
+<BODY>
+<H2>Esempio minimo</H2>
+Let's start with the classic example:
+<BR>
+<BR>
+<TABLE WIDTH="100%" STYLE="color:#4040C0; border-style:ridge" BORDERCOLORLIGHT="#B0B0E0" BORDERCOLORDARK="#000000" BORDER="2" CELLPADDING=6 CELLSPACING=0 BGCOLOR="#F0F5FF"><TR><TD style="border-width:0px">
+<NOBR><code><font color="#000000">
+&lt;?php<br><font class="kw">require(</font><font class="str">'fpdf.php'</font><font class="kw">);<br><br></font>$pdf<font class="kw">=new </font>FPDF<font class="kw">();<br></font>$pdf<font class="kw">-&gt;</font>AddPage<font class="kw">();<br></font>$pdf<font class="kw">-&gt;</font>SetFont<font class="kw">(</font><font class="str">'Arial'</font><font class="kw">,</font><font class="str">'B'</font><font class="kw">,</font>16<font class="kw">);<br></font>$pdf<font class="kw">-&gt;</font>Cell<font class="kw">(</font>40<font class="kw">,</font>10<font class="kw">,</font><font class="str">'Hello World!'</font><font class="kw">);<br></font>$pdf<font class="kw">-&gt;</font>Output<font class="kw">();<br></font>?&gt;
+</font>
+</code></NOBR></TD></TR></TABLE><P></P>
+<SCRIPT>
+<!--
+if(document.location.href.indexOf('http:')==0)
+{
+document.write("<P CLASS='demo'><A HREF='tuto1.php' TARGET='_blank' CLASS='demo'>[Demo]</A></P>");
+}
+//-->
+</SCRIPT>
+After including the library file, we create an FPDF object.
+The <A HREF='../doc/fpdf.htm'>FPDF()</A> constructor is used here with the default values: pages are in A4 portrait and
+the measure unit is millimeter. It could have been specified explicitly with:
+<BR>
+<BR>
+<TABLE WIDTH="100%" STYLE="color:#4040C0; border-style:ridge" BORDERCOLORLIGHT="#B0B0E0" BORDERCOLORDARK="#000000" BORDER="2" CELLPADDING=6 CELLSPACING=0 BGCOLOR="#F0F5FF"><TR><TD style="border-width:0px">
+<NOBR><code><font color="#000000">
+$pdf<font class="kw">=new </font>FPDF<font class="kw">(</font><font class="str">'P'</font><font class="kw">,</font><font class="str">'mm'</font><font class="kw">,</font><font class="str">'A4'</font><font class="kw">);</font><br>
+</font>
+</code></NOBR></TD></TR></TABLE><P></P>
+It is possible to use landscape (<TT>L</TT>), other page formats (such as <TT>Letter</TT> and
+<TT>Legal</TT>) and measure units (<TT>pt</TT>, <TT>cm</TT>, <TT>in</TT>).
+<BR>
+<BR>
+There is no page for the moment, so we have to add one with <A HREF='../doc/addpage.htm'>AddPage()</A>. The origin
+is at the upper-left corner and the current position is by default placed at 1 cm from the
+borders; the margins can be changed with <A HREF='../doc/setmargins.htm'>SetMargins()</A>.
+<BR>
+<BR>
+Before we can print text, it is mandatory to select a font with <A HREF='../doc/setfont.htm'>SetFont()</A>, otherwise the
+document would be invalid. We choose Arial bold 16:
+<BR>
+<BR>
+<TABLE WIDTH="100%" STYLE="color:#4040C0; border-style:ridge" BORDERCOLORLIGHT="#B0B0E0" BORDERCOLORDARK="#000000" BORDER="2" CELLPADDING=6 CELLSPACING=0 BGCOLOR="#F0F5FF"><TR><TD style="border-width:0px">
+<NOBR><code><font color="#000000">
+$pdf<font class="kw">-&gt;</font>SetFont<font class="kw">(</font><font class="str">'Arial'</font><font class="kw">,</font><font class="str">'B'</font><font class="kw">,</font>16<font class="kw">);</font><br>
+</font>
+</code></NOBR></TD></TR></TABLE><P></P>
+We could have specified italics with I, underlined with U or a regular font with an empty string
+(or any combination). Note that the font size is given in points, not millimeters (or another
+user unit); it is the only exception. The other standard fonts are Times, Courier, Symbol and
+ZapfDingbats.
+<BR>
+<BR>
+We can now print a cell with <A HREF='../doc/cell.htm'>Cell()</A>. A cell is a rectangular area, possibly framed,
+which contains some text. It is output at the current position. We specify its dimensions,
+its text (centered or aligned), if borders should be drawn, and where the current position
+moves after it (to the right, below or to the beginning of the next line). To add a frame, we would do this:
+<BR>
+<BR>
+<TABLE WIDTH="100%" STYLE="color:#4040C0; border-style:ridge" BORDERCOLORLIGHT="#B0B0E0" BORDERCOLORDARK="#000000" BORDER="2" CELLPADDING=6 CELLSPACING=0 BGCOLOR="#F0F5FF"><TR><TD style="border-width:0px">
+<NOBR><code><font color="#000000">
+$pdf<font class="kw">-&gt;</font>Cell<font class="kw">(</font>40<font class="kw">,</font>10<font class="kw">,</font><font class="str">'Hello World !'</font><font class="kw">,</font>1<font class="kw">);</font><br>
+</font>
+</code></NOBR></TD></TR></TABLE><P></P>
+To add a new cell next to it with centered text and go to the next line, we would do:
+<BR>
+<BR>
+<TABLE WIDTH="100%" STYLE="color:#4040C0; border-style:ridge" BORDERCOLORLIGHT="#B0B0E0" BORDERCOLORDARK="#000000" BORDER="2" CELLPADDING=6 CELLSPACING=0 BGCOLOR="#F0F5FF"><TR><TD style="border-width:0px">
+<NOBR><code><font color="#000000">
+$pdf<font class="kw">-&gt;</font>Cell<font class="kw">(</font>60<font class="kw">,</font>10<font class="kw">,</font><font class="str">'Powered by FPDF.'</font><font class="kw">,</font>0<font class="kw">,</font>1<font class="kw">,</font><font class="str">'C'</font><font class="kw">);</font><br>
+</font>
+</code></NOBR></TD></TR></TABLE><P></P>
+Remark : the line break can also be done with <A HREF='../doc/ln.htm'>Ln()</A>. This method allows to specify
+in addition the height of the break.
+<BR>
+<BR>
+Finally, the document is closed and sent to the browser with <A HREF='../doc/output.htm'>Output()</A>. We could have saved
+it in a file by passing the desired file name.
+<BR>
+<BR>
+Caution: in case when the PDF is sent to the browser, nothing else must be output, not before
+nor after (the least space or carriage return matters). If you send some data before, you will
+get the error message: "Some data has already been output to browser, can't send PDF file". If
+you send after, your browser may display a blank page.
+</BODY>
+</HTML>

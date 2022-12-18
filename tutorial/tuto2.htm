@@ -1,0 +1,50 @@
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+<TITLE>Intestazione, piè di pagina, cambio pagina e immagini</TITLE>
+<LINK TYPE="text/css" REL="stylesheet" HREF="../fpdf.css">
+</HEAD>
+<BODY>
+<H2>Intestazione, piè di pagina, cambio pagina e immagini</H2>
+Here is a two page example with header, footer and logo:
+<BR>
+<BR>
+<TABLE WIDTH="100%" STYLE="color:#4040C0; border-style:ridge" BORDERCOLORLIGHT="#B0B0E0" BORDERCOLORDARK="#000000" BORDER="2" CELLPADDING=6 CELLSPACING=0 BGCOLOR="#F0F5FF"><TR><TD style="border-width:0px">
+<NOBR><code><font color="#000000">
+&lt;?php<br><font class="kw">require(</font><font class="str">'fpdf.php'</font><font class="kw">);<br><br>class </font>PDF <font class="kw">extends </font>FPDF<br><font class="kw">{<br></font><font class="cmt">//Page header<br></font><font class="kw">function </font>Header<font class="kw">()<br>{<br>&nbsp;&nbsp;&nbsp;&nbsp;</font><font class="cmt">//Logo<br>&nbsp;&nbsp;&nbsp;&nbsp;</font>$<font class="kw">this-&gt;</font>Image<font class="kw">(</font><font class="str">'logo_pb.png'</font><font class="kw">,</font>10<font class="kw">,</font>8<font class="kw">,</font>33<font class="kw">);<br>&nbsp;&nbsp;&nbsp;&nbsp;</font><font class="cmt">//Arial bold 15<br>&nbsp;&nbsp;&nbsp;&nbsp;</font>$<font class="kw">this-&gt;</font>SetFont<font class="kw">(</font><font class="str">'Arial'</font><font class="kw">,</font><font class="str">'B'</font><font class="kw">,</font>15<font class="kw">);<br>&nbsp;&nbsp;&nbsp;&nbsp;</font><font class="cmt">//Move to the right<br>&nbsp;&nbsp;&nbsp;&nbsp;</font>$<font class="kw">this-&gt;</font>Cell<font class="kw">(</font>80<font class="kw">);<br>&nbsp;&nbsp;&nbsp;&nbsp;</font><font class="cmt">//Title<br>&nbsp;&nbsp;&nbsp;&nbsp;</font>$<font class="kw">this-&gt;</font>Cell<font class="kw">(</font>30<font class="kw">,</font>10<font class="kw">,</font><font class="str">'Title'</font><font class="kw">,</font>1<font class="kw">,</font>0<font class="kw">,</font><font class="str">'C'</font><font class="kw">);<br>&nbsp;&nbsp;&nbsp;&nbsp;</font><font class="cmt">//Line break<br>&nbsp;&nbsp;&nbsp;&nbsp;</font>$<font class="kw">this-&gt;</font>Ln<font class="kw">(</font>20<font class="kw">);<br>}<br><br></font><font class="cmt">//Page footer<br></font><font class="kw">function </font>Footer<font class="kw">()<br>{<br>&nbsp;&nbsp;&nbsp;&nbsp;</font><font class="cmt">//Position at 1.5 cm from bottom<br>&nbsp;&nbsp;&nbsp;&nbsp;</font>$<font class="kw">this-&gt;</font>SetY<font class="kw">(-</font>15<font class="kw">);<br>&nbsp;&nbsp;&nbsp;&nbsp;</font><font class="cmt">//Arial italic 8<br>&nbsp;&nbsp;&nbsp;&nbsp;</font>$<font class="kw">this-&gt;</font>SetFont<font class="kw">(</font><font class="str">'Arial'</font><font class="kw">,</font><font class="str">'I'</font><font class="kw">,</font>8<font class="kw">);<br>&nbsp;&nbsp;&nbsp;&nbsp;</font><font class="cmt">//Page number<br>&nbsp;&nbsp;&nbsp;&nbsp;</font>$<font class="kw">this-&gt;</font>Cell<font class="kw">(</font>0<font class="kw">,</font>10<font class="kw">,</font><font class="str">'Page '</font><font class="kw">.</font>$<font class="kw">this-&gt;</font>PageNo<font class="kw">().</font><font class="str">'/{nb}'</font><font class="kw">,</font>0<font class="kw">,</font>0<font class="kw">,</font><font class="str">'C'</font><font class="kw">);<br>}<br>}<br><br></font><font class="cmt">//Instanciation of inherited class<br></font>$pdf<font class="kw">=new </font>PDF<font class="kw">();<br></font>$pdf<font class="kw">-&gt;</font>AliasNbPages<font class="kw">();<br></font>$pdf<font class="kw">-&gt;</font>AddPage<font class="kw">();<br></font>$pdf<font class="kw">-&gt;</font>SetFont<font class="kw">(</font><font class="str">'Times'</font><font class="kw">,</font><font class="str">''</font><font class="kw">,</font>12<font class="kw">);<br>for(</font>$i<font class="kw">=</font>1<font class="kw">;</font>$i<font class="kw">&lt;=</font>40<font class="kw">;</font>$i<font class="kw">++)<br>&nbsp;&nbsp;&nbsp;&nbsp;</font>$pdf<font class="kw">-&gt;</font>Cell<font class="kw">(</font>0<font class="kw">,</font>10<font class="kw">,</font><font class="str">'Printing line number '</font><font class="kw">.</font>$i<font class="kw">,</font>0<font class="kw">,</font>1<font class="kw">);<br></font>$pdf<font class="kw">-&gt;</font>Output<font class="kw">();<br></font>?&gt;
+</font>
+</code></NOBR></TD></TR></TABLE><P></P>
+<SCRIPT>
+<!--
+if(document.location.href.indexOf('http:')==0)
+{
+document.write("<P CLASS='demo'><A HREF='tuto2.php' TARGET='_blank' CLASS='demo'>[Demo]</A></P>");
+}
+//-->
+</SCRIPT>
+This example makes use of the <A HREF='../doc/header.htm'>Header()</A> and <A HREF='../doc/footer.htm'>Footer()</A> methods to process page headers and
+footers. They are called automatically. They already exist in the FPDF class but do nothing,
+therefore we have to extend the class and override them.
+<BR>
+<BR>
+The logo is printed with the <A HREF='../doc/image.htm'>Image()</A> method by specifying its upper-left corner and
+its width. The height is calculated automatically to respect the image proportions.
+<BR>
+<BR>
+To print the page number, a null value is passed as the cell width. It means that the cell
+should extend up to the right margin of the page; it is handy to center text. The current page
+number is returned by the <A HREF='../doc/pageno.htm'>PageNo()</A> method; as for the total number of pages, it is obtained
+by means of the special value <TT>{nb}</TT> which will be substituted on document closure
+(provided you first called <A HREF='../doc/aliasnbpages.htm'>AliasNbPages()</A>).
+<BR>
+Note the use of the <A HREF='../doc/sety.htm'>SetY()</A> method which allows to set position at an absolute location in
+the page, starting from the top or the bottom.
+<BR>
+<BR>
+Another interesting feature is used here: the automatic page breaking. As soon as a cell would
+cross a limit in the page (at 2 centimeters from the bottom by default), a break is performed
+and the font restored. Although the header and footer select their own font (Arial), the body
+continues with Times. This mechanism of automatic restoration also applies to colors and line
+width. The limit which triggers page breaks can be set with <A HREF='../doc/setautopagebreak.htm'>SetAutoPageBreak()</A>.
+</BODY>
+</HTML>

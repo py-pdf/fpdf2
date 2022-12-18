@@ -1,0 +1,100 @@
+import json
+from io import BytesIO
+from pathlib import Path
+
+import fpdf
+
+HERE = Path(__file__).resolve().parent
+
+
+def break_down_filename(image):
+    """
+    filename:                               g04i2c08.png
+                                            || ||||
+    test feature (in this case gamma) ------+| ||||
+    parameter of test (here gamma-value) ----+ ||||
+    interlaced or non-interlaced --------------+|||
+    color-type (numerical) ---------------------+||
+    color-type (descriptive) --------------------+|
+    bit-depth ------------------------------------|
+    """
+    return {
+        "test_feature": image[0].lower(),
+        "parameter_ot": image[1:3].lower(),
+        "noninterlace": image[3].lower() != "i",
+        "colortype_nm": int(image[4], 10),
+        "colortype_ds": image[5].lower(),
+        "n_bits_depth": int(image[6:8], 10),
+    }
+
+
+def test_get_img_info():
+    short_keys = {"f", "h", "bpc", "w", "cs", "trns", "dp", "pal", "smask"}
+    expected = json.loads((HERE / "image_info.json").read_text(encoding="utf8"))
+
+    for path in sorted((HERE / "png_test_suite").glob("*.png")):
+        if not path.stem.startswith("x"):
+            blob = BytesIO(path.read_bytes())
+            info = fpdf.image_parsing.get_img_info(blob)
+            short_info = {}
+            for k, v in info.items():
+                if k in short_keys:
+                    short_info[k] = v.decode("latin-1") if isinstance(v, bytes) else v
+
+            assert short_info == expected[path.name]
+
+
+def test_get_img_info_data_rgba():
+    blob = BytesIO((HERE / "png_test_suite" / "basi6a08.png").read_bytes())
+    info = fpdf.image_parsing.get_img_info(blob)
+    assert (
+        info["data"]
+        == b"x\x9c\xb5\xd5[\x15@P\x18D\xe198\x97\x164\xa1\tMhB\x13\x9a\xd0d"
+        b"\xfc%\xf6Z\xdf<\xef\xc7\x91\xd5P\xf2\xd8P\xf2\xdcP\xf2\xdaP\xf2^Q\xf2YQ"
+        b"\xf2]Q\xf2[Q\xb2\x0bJ\x9f\x0bJ\x8f\x0bJ\x973J\x873J\x9b3J\x8b3J\x93\x07"
+        b"\x94\x06\xb3b#J\xbdgT\x04VT\x04vT\x04N\x94:\xdf\xa8\x08\xbc\xa8\x08\x18"
+        b"\xa5\xf4\x19\xa5\xf4\x18\xa5t\x19\xa5t\x18\xa58\x04V\x1c\x02+\x0e\x01\xf5\x03\xbe\xde\n\xdb"
+    )
+
+
+def test_get_img_info_data_palette():
+    blob = BytesIO((HERE / "png_test_suite" / "basi3p02.png").read_bytes())
+    info = fpdf.image_parsing.get_img_info(blob)
+    assert (
+        info["data"]
+        == b"x\x9cc`\x06\x02F `\x02\x02\x06 @\xe7c\x08\xd0@\x01\x9d\xac\xc1\xab\x00\x97."
+        b"\x18\x9f\x1e\n\xf0\xb9\x1e\xc4\xa7\x87\x82\x81\x8e\x87\xd1\xf40\xa8\xd2\x03\x00d\xd4\x06\x01"
+    )
+
+
+def test_get_img_info_data_gray():
+    blob = BytesIO((HERE / "png_test_suite" / "basi0g08.png").read_bytes())
+    info = fpdf.image_parsing.get_img_info(blob)
+    assert (
+        info["data"]
+        == b"x\x9cc``dbfaec\xe7\xe0\xe4\xe2\xe6\xe1\xe5\xe3\x17\x10\x14\x12\x16\x11\x15"
+        b"\x13\x97\x90\x94\x92\x96\x91\x95\x93gPPTRVQUS\xd7\xd0\xd4\xd2\xd6\xd1\xd5"
+        b"\xd370426153\xb7\xb0\xb4\xb2\xb6\xb1\xb5\xb3gpptrvqus\xf7\xf0\xf4\xf2\xf6"
+        b"\xf1\xf5\xf3\x0f\x08\x0c\n\x0e\t\r\x0b\x8f\x88\x8c\x8a\x8e\x89\x8d\x8b"
+        b"gHHLJNIMK\xcf\xc8\xcc\xca\xce\xc9\xcd\xcb/(,*.)-+\xaf\xa8\xac\xaa\xae\xa9"
+        b"\xad\xabghhljnimk\xef\xe8\xec\xea\xee\xe9\xed\xeb\x9f0q\xd2\xe4)S\xa7M"
+        b"\x9f1s\xd6\xec9s\xe7\xcdgX\xb0p\xd1\xe2%K\x97-_\xb1r\xd5\xea5k\xd7\xad\xdf"
+        b"\xb0q\xd3\xe6-[\xb7m\xdf\xb1s\xd7\xee={\xf7\xedg8p\xf0\xd0\xe1#G\x8f\x1d?q"
+        b"\xf2\xd4\xe93g\xcf\x9d\xbfp\xf1\xd2\xe5+W\xaf]\xbfq\xf3\xd6\xed;w\xef"
+        b"\xddgx\xf0\xf0\xd1\xe3'O\x9f=\x7f\xf1\xf2\xd5\xeb7o\xdf\xbd\xff\xf0\xf1"
+        b"\xd3\xe7/_\xbf}\xff\xf1\xf3\xd7\xef?\x7f\xff\xfdg\xf8\xf7\xf7\xcf\xef_?"
+        b"\x7f|\xff\xf6\xf5\xcb\xe7O\x1f?\xbc\x7f\xf7\xf6\xcd\xebW/_<\x7f\xf6\xf4"
+        b"\xc9\xe3G\x0f\x1f\xdcg\xb8w\xf7\xce\xed[7o\\\xbfv\xf5\xca\xe5K\x17/\x9c?w"
+        b"\xf6\xcc\xe9S'O\x1c?v\xf4\xc8\xe1C\x07\x0f\xecg\xd8\xb7w\xcf\xee];wl\xdf"
+        b"\xb6u\xcb\xe6M\x1b7\xac_\xb7v\xcd\xeaU+W,_\xb6t\xc9\xe2E\x0b\x17\xccg"
+        b"\x987w\xce\xecY3gL\x9f6u\xca\xe4I\x13'\xf4\xf7\xf5\xf6twuv\xb4\xb7\xb5"
+        b"\xb64756\xd43\xd4\xd5\xd6TWUV\x94\x97\x95\x96\x14\x17\x15\x16\xe4\xe7\xe5"
+        b"\xe6dgef\xa4\xa7\xa5\xa6$'%&\xc43\xc4\xc5\xc6DGEF\x84\x87\x85\x86\x04\x07"
+        b"\x05\x06\xf8\xfb\xf9\xfax{yz\xb8\xbb\xb9\xba8;9:\xd83\xd8\xd9\xdaX[YZ\x98"
+        b"\x9b\x99\x9a\x18\x1b\x19\x1a\xe8\xeb\xe9\xeahkij\xa8\xab\xa9\xaa(+)*\xc83"
+        b"\xc8\xc9\xcaHKIJ\x88\x8b\x89\x8a\x08\x0b\t\n\xf0\xf3\xf1\xf2psqr\xb0\xb3"
+        b"\xb1\xb2031202\xe0O\r\n\x8a\x0c\xf8S\x83\x83#\x03\xfe\xd4\x90\x90\xc8"
+        b"\x80?5442\xe0O\r\x0b\x162\xe0O\r\x07\x0e2\xe0O\r\x0f\x1e2\xe0O\r\xff\xfe2"
+        b"\xe0O\r\xf7\xee2\xe0O\r\xfb\xf62\xe0O\r\xf3\xe62\xe0O\ru\xb5\x0c\xf8SC\\,"
+        b"\x03\xfe\xd4`g\xcb\x80?5\xc8\xc92\xe0O\rL\xcc\x00\x17\xb3\xfc\x18"
+    )

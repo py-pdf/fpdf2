@@ -1,0 +1,150 @@
+### 
+# MkDocs Configuration File.
+# 
+# To build these docs, change to base of repository and run `mkdocs build` and
+# docs will be build into site_dir variable value in this file.
+# 
+# Alternatively, there is a script in the `scripts` folder for convenience.
+### 
+site_name: fpdf2
+site_url: https://pyfpdf.github.io/fpdf2/
+site_author: Lucas Cimon et al
+site_description: fpdf2 - minimalist PDF creation library for Python
+
+repo_url: https://github.com/PyFPDF/fpdf2
+repo_name: PyFPDF/fpdf2
+
+docs_dir: docs/
+site_dir: public/
+use_directory_urls: false
+edit_uri: edit/master/docs
+
+theme:
+  name: material
+  custom_dir: docs/overrides/
+  features:
+    - navigation.top
+    - toc.follow
+  palette:
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+markdown_extensions:
+  - admonition
+  - md_in_html
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - include-markdown
+  - mknotebooks
+  - minify:
+      minify_html: true
+  #- git-committers:
+  #    repository: PyFPDF/fpdf2
+  #    branch: master
+  # - redirects:
+  #     redirect_maps:
+  - with-pdf:  # https://github.com/orzih/mkdocs-with-pdf
+      output_path: fpdf2-manual.pdf
+      cover_title: fpdf2 manual
+      cover_subtitle: A minimalist PDF creation library for Python
+      author: ' '
+      copyright: ' '
+      #cover: false
+      #back_cover: true
+      #custom_template_path: TEMPLATES PATH
+      #toc_title: TOC TITLE TEXT
+      #heading_shift: false
+      #toc_level: 3
+      #ordered_chapter_level: 2
+      #excludes_children:
+      #    - 'release-notes/:upgrading'
+      #exclude_pages:
+      #    - 'appendix/contribute/'
+      #convert_iframe:
+      #    - src: IFRAME SRC
+      #      img: POSTER IMAGE URL
+      #      text: ALTERNATE TEXT
+      #two_columns_level: 3
+      #render_js: true
+      #headless_chrome_path: headless-chromium
+      #enabled_if_env: ENABLE_PDF_EXPORT
+      #debug_html: true
+      #show_anchors: true
+      #verbose: true
+nav:
+- 'Project Home':                   'index.md'
+- 'Tutorial':
+  - 'Jupyter notebook':               'notebook.ipynb'
+  - 'Tutorial in English':            'Tutorial.md'
+  - 'Tutorial auf Deutsch':           'Tutorial-de.md'
+  - 'Tutorial en español':            'Tutorial-es.md'
+  - 'Tutorial en français':           'Tutorial-fr.md'
+  - 'Φροντιστήριο στα ελληνικά':      'Tutorial-gr.md'
+  - 'Tutorial in italiano':           'Tutorial-it.md'
+  - 'Tutorial em português':          'Tutorial-pt.md'
+  - 'Учебник на русском языке':       'Tutorial-ru.md'
+  - 'हिंदी में ट्यूटोरियल':                  'Tutorial-हिंदी.md'
+  - 'מדריך בעברית':                   'Tutorial-he.md'
+- 'Page Layout':
+  - 'Page Format and Orientation':    'PageFormatAndOrientation.md'
+  - 'Margins':                        'Margins.md'
+  - 'Templates':                      'Templates.md'
+  - 'Tables':                         'Tables.md'
+- 'Text Content':
+  - 'Adding Text':                    'Text.md'
+  - 'Line breaks':                    'LineBreaks.md'
+  - 'Page breaks':                    'PageBreaks.md'
+  - 'Text styling':                   'TextStyling.md'
+  - 'Unicode':                        'Unicode.md'
+  - 'Emojis, Symbols & Dingbats':     'EmojisSymbolsDingbats.md'
+  - 'HTML':                           'HTML.md'
+- 'Graphics Content':
+  - 'Images':                         'Images.md'
+  - 'Shapes':                         'Shapes.md'
+  - 'Transparency':                   'Transparency.md'
+  - 'Barcodes':                       'Barcodes.md'
+  - 'Drawing':                        'Drawing.md'
+  - 'SVG':                            'SVG.md'
+  - 'Charts & Graphs':                'Maths.md'
+- 'PDF Features':
+  - 'Links':                          'Links.md'
+  - 'Metadata':                       'Metadata.md'
+  - 'Annotations':                    'Annotations.md'
+  - 'Presentation Mode':              'Presentations.md'
+  - 'Document outline & table of contents': 'DocumentOutlineAndTableOfContents.md'
+  - 'Signing':                        'Signing.md'
+  - 'File attachments':               'FileAttachments.md'
+- 'Mixing other libs':
+  - 'Combine with borb':              'CombineWithBorb.md'
+  - 'Combine with pdfrw':             'CombineWithPdfrw.md'
+  - 'Combine with PyPDF2':            'CombineWithPyPDF2.md'
+  - 'Templating with Jinja':          'TemplatingWithJinja.md'
+  - 'Usage in web APIs':              'UsageInWebAPI.md'
+  - 'Database storage':               'DatabaseStorage.md'
+- 'Development':
+  - 'Development Guidelines':         'Development.md'
+  - 'Logging':                        'Logging.md'
+- 'API':                            'https://pyfpdf.github.io/fpdf2/fpdf/'
+- 'FAQ':                            'FAQ.md'
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/PyFPDF/fpdf2
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/fpdf2/

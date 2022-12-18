@@ -1,0 +1,4 @@
+skips:
+  # Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+  # => OK, we don't care though
+  - B101

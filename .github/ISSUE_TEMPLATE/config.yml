@@ -1,0 +1,9 @@
+# Ref: https://help.github.com/en/github/building-a-strong-community/configuring-issue-templates-for-your-repository#configuring-the-template-chooser
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Start a discussion
+    url: https://github.com/PyFPDF/fpdf2/discussions/new
+    about: Informal discussion about the project organization, considerations that do not expect a definitive answer, etc.
+#  - name: Security issue
+#    url: security@...
+#    about: Do not report security issues publicly. Email our security contact.

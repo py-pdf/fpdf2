@@ -1,0 +1,9 @@
+mkdocs
+mkdocs-include-markdown-plugin
+mkdocs-material
+mkdocs-minify-plugin
+mkdocs-with-pdf
+mknotebooks
+# mkdocs-macros-plugin
+# mkdocs-redirects
+pdoc3

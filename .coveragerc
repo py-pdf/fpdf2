@@ -1,0 +1,16 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+
+[report]
+include =
+    fpdf/*.py
+    fpdf/**/*.py
+
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Don't complain about missing debug-only code:
+    def __repr__
+
+    # Don't complain if non-runnable code isn't run:
+    if __name__ == .__main__.:
