@@ -636,17 +636,6 @@ text-text-text-text-text-text-text-text-text-text-</p>
     assert_pdf_equal(pdf, HERE / "html_custom_line_height.pdf", tmp_path)
 
 
-def test_img_without_height_attr(tmp_path):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.write_html(
-        """<img src="test/image/png_images/affc57dfffa5ec448a0795738d456018.png" width="500" />
-<p>text</p>
-"""
-    )
-    assert_pdf_equal(pdf, HERE / "img_without_height_attr.pdf", tmp_path)
-
-
 def test_warn_on_tags_not_matching(caplog):
     pdf = FPDF()
     pdf.add_page()
