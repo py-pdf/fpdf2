@@ -20,6 +20,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 * support for `[]()` links when `markdown=True`
 * support for `line-height` attribute of paragraph (`<p>`) in `write_html()`
+* support for PDF encryption (RC4 and AES-128)
 ### Changed
 * `write_html()`now generates warnings for unclosed HTML tags, unless `warn_on_tags_not_matching=False` is set
 
