@@ -1,4 +1,4 @@
-"""HTML Renderer for FPDF.py"""
+"HTML Renderer for FPDF.py"
 
 __author__ = "Mariano Reingart <reingart@gmail.com>"
 __copyright__ = "Copyright (C) 2010 Mariano Reingart"
@@ -173,7 +173,7 @@ COLOR_DICT = {
 
 
 def px2mm(px):
-    return int(px) * 25.4 / 72
+    return px * 25.4 / 72
 
 
 def color_as_decimal(color="#000000"):
@@ -196,7 +196,9 @@ def color_as_decimal(color="#000000"):
 
 
 class HTML2FPDF(HTMLParser):
-    """Render basic HTML to FPDF"""
+    "Render basic HTML to FPDF"
+
+    HTML_UNCLOSED_TAGS = ("br", "dd", "dt", "hr", "img", "li", "td", "tr")
 
     def __init__(
         self,
@@ -207,6 +209,7 @@ class HTML2FPDF(HTMLParser):
         table_line_separators=False,
         ul_bullet_char=BULLET_WIN1252,
         heading_sizes=None,
+        warn_on_tags_not_matching=True,
         **_,
     ):
         """
@@ -259,6 +262,8 @@ class HTML2FPDF(HTMLParser):
         if heading_sizes:
             self.heading_sizes.update(heading_sizes)
         self._only_imgs_in_td = False
+        self.warn_on_tags_not_matching = warn_on_tags_not_matching
+        self._tags_stack = []
 
     def width2unit(self, length):
         "Handle conversion of % measures into the measurement unit used"
@@ -477,6 +482,7 @@ class HTML2FPDF(HTMLParser):
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         LOGGER.debug("STARTTAG %s %s", tag, attrs)
+        self._tags_stack.append(tag)
         if tag == "dt":
             self.pdf.ln(self.h)
             tag = "b"
@@ -495,8 +501,11 @@ class HTML2FPDF(HTMLParser):
             self.pdf.ln(self.h)
         if tag == "p":
             self.pdf.ln(self.h)
-            if attrs:
+            if "align" in attrs:
                 self.align = attrs.get("align")
+            if "line-height" in attrs:
+                line_height = float(attrs.get("line-height"))
+                self.h = px2mm(self.font_size) * line_height
         if tag in self.heading_sizes:
             self.font_stack.append((self.font_face, self.font_size, self.font_color))
             self.heading_level = int(tag[1:])
@@ -599,8 +608,8 @@ class HTML2FPDF(HTMLParser):
         if tag == "tfoot":
             self.tfoot = {}
         if tag == "img" and "src" in attrs:
-            width = px2mm(attrs.get("width", 0))
-            height = px2mm(attrs.get("height", 0))
+            width = px2mm(int(attrs.get("width", 0)))
+            height = px2mm(int(attrs.get("height", 0)))
             if self.pdf.y + height > self.pdf.page_break_trigger:
                 self.pdf.add_page(same=True)
             y = self.pdf.get_y()
@@ -651,14 +660,31 @@ class HTML2FPDF(HTMLParser):
             self.pdf.char_vpos = "SUB"
 
     def handle_endtag(self, tag):
-        # Closing tag
         LOGGER.debug("ENDTAG %s", tag)
+        while (
+            self._tags_stack
+            and tag != self._tags_stack[-1]
+            and self._tags_stack[-1] in self.HTML_UNCLOSED_TAGS
+        ):
+            self._tags_stack.pop()
+        if not self._tags_stack:
+            if self.warn_on_tags_not_matching:
+                LOGGER.warning(
+                    "Unexpected HTML end tag </%s>, start tag may be missing?", tag
+                )
+        elif tag == self._tags_stack[-1]:
+            self._tags_stack.pop()
+        elif self.warn_on_tags_not_matching:
+            LOGGER.warning(
+                "Unexpected HTML end tag </%s>, start tag was <%s>",
+                tag,
+                self._tags_stack[-1],
+            )
         if tag in self.heading_sizes:
             self.heading_level = None
             face, size, color = self.font_stack.pop()
-            self.pdf.ln(
-                self.h + self.h * self.heading_below
-            )  # more space below heading
+            # more space below heading:
+            self.pdf.ln(self.h + self.h * self.heading_below)
             self.set_font(face, size)
             self.set_text_color(*color)
             self.align = None
@@ -687,6 +713,7 @@ class HTML2FPDF(HTMLParser):
         if tag == "p":
             self.pdf.ln(self.h)
             self.align = ""
+            self.h = px2mm(self.font_size)
         if tag in ("ul", "ol"):
             self.indent -= 1
             self.bullet.pop()
@@ -737,12 +764,19 @@ class HTML2FPDF(HTMLParser):
             self.pdf.char_vpos = "LINE"
             self.follows_fmt_tag = True
 
+    def feed(self, data):
+        super().feed(data)
+        while self._tags_stack and self._tags_stack[-1] in self.HTML_UNCLOSED_TAGS:
+            self._tags_stack.pop()
+        if self._tags_stack and self.warn_on_tags_not_matching:
+            LOGGER.warning("Missing HTML end tag for <%s>", self._tags_stack[-1])
+
     def set_font(self, face=None, size=None):
         if face:
             self.font_face = face
         if size:
             self.font_size = size
-            self.h = size / 72 * 25.4
+            self.h = px2mm(size)
             LOGGER.debug("H %s", self.h)
         style = "".join(s for s in ("b", "i", "u") if self.style.get(s)).upper()
         if (self.font_face, style) != (self.pdf.font_family, self.pdf.font_style):

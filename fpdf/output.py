@@ -609,8 +609,7 @@ class OutputProducer:
                 # allows searching the file and copying text from it.
                 bfChar = []
                 uni_to_new_code_char = font["subset"].dict()
-                for code in uni_to_new_code_char:
-                    code_mapped = uni_to_new_code_char.get(code)
+                for code, code_mapped in uni_to_new_code_char.items():
                     if code > 0xFFFF:
                         # Calculate surrogate pair
                         code_high = 0xD800 | (code - 0x10000) >> 10

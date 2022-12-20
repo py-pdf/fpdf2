@@ -89,3 +89,15 @@ def test_multi_cell_markdown_justified(tmp_path):  # issue 327
         pdf.set_x(10)
         pdf.set_y(pdf.y + 5)
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_justified.pdf", tmp_path)
+
+
+def test_multi_cell_markdown_link(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+    pdf.multi_cell(
+        pdf.epw,
+        txt="**Start** [One Page Dungeon Context](https://www.dungeoncontest.com/) __End__",
+        markdown=True,
+    )
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_link.pdf", tmp_path)

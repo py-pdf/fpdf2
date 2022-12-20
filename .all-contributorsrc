@@ -723,7 +723,26 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/948125?v=4",
       "profile": "https://github.com/andersonhc",
       "contributions": [
-        "question"
+        "question",
+        "code"
+      ]
+    },
+    {
+      "login": "yiweelan",
+      "name": "Yi Wei Lan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/117787188?v=4",
+      "profile": "https://github.com/yiweelan",
+      "contributions": [
+        "test"
+      ]
+    },
+    {
+      "login": "Bubbu0129",
+      "name": "CpDong",
+      "avatar_url": "https://avatars.githubusercontent.com/u/93034081?v=4",
+      "profile": "https://github.com/Bubbu0129",
+      "contributions": [
+        "code"
       ]
     }
   ],

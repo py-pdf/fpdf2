@@ -17,12 +17,17 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.6.1] - not released yet
+### Added
+* support for `[]()` links when `markdown=True`
+* support for `line-height` attribute of paragraph (`<p>`) in `write_html()`
+### Changed
+* `write_html()`now generates warnings for unclosed HTML tags, unless `warn_on_tags_not_matching=False` is set
 
 ## [2.6.0] - 2022-11-20
 ### Added
 - demonstration Jupyter notebook: [tutorial/notebook.ipynb](https://github.com/PyFPDF/fpdf2/blob/master/tutorial/notebook.ipynb)
 - new [`.default_page_dimensions`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.default_page_dimensions) property on `FPDF` instances
-- support for description list (`<dl>`), description titles (`<dt>`), description details (`<dd>`) and code blocks (`<code></code>`) in `write_html()` - thanks to @yk-jp & @seanpmulholland
+- support for description list (`<dl>`), description titles (`<dt>`), description details (`<dd>`) and code blocks (`<code>`) in `write_html()` - thanks to @yk-jp & @seanpmulholland
 - support for monochromatic images (PIL `image.mode == '1'`) thanks to @GerardoAllende
 - the 1000+ unit tests suite is now executed under Linux **<ins>and</ins>** Windows, with extra timing & memory usage checks ensuring we control `fpdf2` resource usage
 - new translation of the tutorial in [עברית](https://pyfpdf.github.io/fpdf2/Tutorial-he.html), thanks to @TzviGreenfeld
@@ -32,6 +37,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - `HTMLMixin` is deprecated, and not needed anymore: **the `write_html()` method is now natively available in the `FPDF` class** - thanks to @yk-jp
 ### Removed
 - `open()` & `close()` methods, that were only used internally and should never have been called by end-user code
+- `FPDF.state`, which was an instance of the `DocumentState` enum, and has been replaced by moving the final rendering logic into a new `fpdf.output` module
 ### Fixed
 - after an "empty" `cell()`, `ln()` applied a line height of zero [#601](https://github.com/PyFPDF/fpdf2/issues/601)
 - when using `multi_cell()` with `max_line_height` to render multiline text, the last line is now rendered like all the others
