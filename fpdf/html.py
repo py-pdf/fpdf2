@@ -861,4 +861,3 @@ class HTMLMixin:
             DeprecationWarning,
             stacklevel=2,
         )
-
