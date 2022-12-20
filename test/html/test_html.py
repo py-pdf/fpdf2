@@ -611,23 +611,8 @@ def test_html_custom_line_height(tmp_path):
         """<p line-height=3>
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text-
-text-text-text-text-text-text-text-text-text-text-
-text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text</p>
 <p line-height=2>
-text-text-text-text-text-text-text-text-text-text-
-text-text-text-text-text-text-text-text-text-text-
-text-text-text-text-text-text-text-text-text-text-
-text-text-text-text-text-text-text-text-text-text-
-text-text-text-text-text-text-text-text-text-text-
-<font face=Helvetica size=20>
-text-text-text-text-text-text-text-text-text-text-
-text-text-text-text-text-text-text-text-text-text-
-text-text-text-text-text-text-text-text-text-text-
-text-text-text-text-text-text-text-text-text-text-
-text-text-text-text-text-text-text-text-text-text-</font>
-text-text-text-text-text-text-text-text-text-text-
-text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text-</p>
