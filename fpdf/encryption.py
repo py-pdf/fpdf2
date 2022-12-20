@@ -4,7 +4,7 @@ from os import urandom
 
 from .enums import EncryptionMethod
 from .syntax import Name, PDFObject, PDFString
-from .syntax import create_dictionary_string as pdf_dict
+from .syntax import create_dictionary_string as pdf_dict, build_obj_dict
 
 # try to use cryptography for AES encryption
 try:
@@ -55,22 +55,18 @@ class ARC4:
         return res
 
 
-class CryptFilter(PDFObject):
+class CryptFilter:
     """Represents one crypt filter, listed under CF inside the encryption dictionary"""
 
-    def __init__(self, mode):
+    def __init__(self, mode, length):
         super().__init__()
         self.type = Name("CryptFilter")
         self.c_f_m = Name(mode)
+        self.length = int(length / 8)
 
-    def serialize(self, obj_dict=None, encryption_handler=None):
-        self.id = 0  # avoid build_obj_dict error
-        output = []
-        output.append("<<")
-        obj_dict = self._build_obj_dict()
-        output.append(pdf_dict(obj_dict, open_dict="", close_dict=""))
-        output.append(">>")
-        return "\n".join(output)
+    def serialize(self):
+        obj_dict = build_obj_dict({key: getattr(self, key) for key in dir(self)})
+        return pdf_dict(obj_dict)
 
 
 class EncryptionDictionary(PDFObject):
@@ -83,7 +79,7 @@ class EncryptionDictionary(PDFObject):
     def __init__(self, security_handler):
         super().__init__()
         self.filter = Name("Standard")
-        self.length = 128
+        self.length = security_handler.key_length
         self.r = security_handler.r
         self.o = f"<{security_handler.o}>"
         self.u = f"<{security_handler.u}>"
@@ -103,7 +99,7 @@ class EncryptionDictionary(PDFObject):
 
 class StandardSecurityHandler:
     """
-    This class is reference on the main PDF class and is used to handle all encryption functions
+    This class is referenced in the main PDF class and is used to handle all encryption functions
         * Calculate password and hashes
         * Provide encrypt method to be called by stream and strings
         * Set the access permissions on the document
@@ -122,8 +118,7 @@ class StandardSecurityHandler:
         encryption_method=None,
         encrypt_metadata=False,
     ):
-
-        self.info_id = fpdf.file_id()[1:33]
+        self.fpdf = fpdf
         self.access_permission = -3904 if (permission is None) else (-3904 | permission)
         self.owner_password = owner_password
         self.user_password = user_password if (user_password) else ""
@@ -131,6 +126,7 @@ class StandardSecurityHandler:
             encryption_method if (encryption_method) else EncryptionMethod.RC4
         )
         self.cf = None
+        self.key_length = 128
 
         if self.encryption_method == EncryptionMethod.AES_128:
             if Cipher is None:
@@ -139,24 +135,26 @@ class StandardSecurityHandler:
                 )
             self.v = 4
             self.r = 4
-            self.key_length = 128
             fpdf._set_min_pdf_version("1.6")
-            self.cf = CryptFilter(mode="AESV2")
+            self.cf = CryptFilter(mode="AESV2", length=self.key_length)
         elif self.encryption_method == EncryptionMethod.NO_ENCRYPTION:
             self.v = 4
             self.r = 4
-            self.key_length = 128
             fpdf._set_min_pdf_version("1.6")
-            self.cf = CryptFilter(mode="V2")
+            self.cf = CryptFilter(mode="V2", length=self.key_length)
         else:
             self.v = 2
             self.r = 3
-            self.key_length = 128
-            fpdf._set_min_pdf_version("1.4")
+            fpdf._set_min_pdf_version("1.5")
             # not including crypt filter because it's only required on V=4
             # if needed, it would be CryptFilter(mode=V2)
 
         self.encrypt_metadata = encrypt_metadata
+
+    def generate_passwords(self, file_id):
+        """Return the first hash of the PDF file id"""
+        self.file_id = file_id
+        self.info_id = file_id[1:33]
         self.o = self.generate_owner_password()
         self.k = self.generate_encryption_key()
         self.u = self.generate_user_password()
@@ -166,7 +164,7 @@ class StandardSecurityHandler:
         return EncryptionDictionary(self)
 
     def encrypt(self, text, obj_id):
-        """Method invoked by PDFObject and PDFContentStream to encrype strings and streams"""
+        """Method invoked by PDFObject and PDFContentStream to encrypt strings and streams"""
         return (
             self.encrypt_stream(text, obj_id)
             if isinstance(text, (bytearray, bytes))
@@ -183,7 +181,7 @@ class StandardSecurityHandler:
             return stream
         return bytes(self.encrypt_bytes(stream, obj_id))
 
-    def aes_algorithm(self):
+    def is_aes_algorithm(self):
         return self.encryption_method == EncryptionMethod.AES_128
 
     def encrypt_bytes(self, data, obj_id):
@@ -200,19 +198,17 @@ class StandardSecurityHandler:
         h.update(
             (0 & 0xFFFF).to_bytes(2, byteorder="little", signed=False)
         )  # generation id
-        if self.aes_algorithm():
+        if self.is_aes_algorithm():
             h.update(bytes([0x73, 0x41, 0x6C, 0x54]))  # add salt (sAlT) for AES
         key = h.digest()
-        if ((self.key_length / 8) + 5) < 16:
-            key = key[: ((self.key_length / 8) + 5)]
 
-        if self.aes_algorithm():
+        if self.is_aes_algorithm():
             return self.encrypt_AES_cryptography(key, data)
         return ARC4().encrypt(key, data)
 
     def encrypt_AES_cryptography(self, key, data):
         iv = self.get_initialization_vector(16)
-        padder = PKCS7(128).padder()
+        padder = PKCS7(self.key_length).padder()
         padded_data = padder.update(data)
         padded_data += padder.finalize()
         cipher = Cipher(algorithms.AES128(key), modes.CBC(iv))
@@ -242,7 +238,7 @@ class StandardSecurityHandler:
         """
         m = self.padded_password(self.owner_password)
         for _ in range(51):
-            m = self.md5(m)
+            m = md5(m)
         rc4key = m[: (math.ceil(self.key_length / 8))]
         result = self.padded_password(self.user_password)
         for i in range(20):
@@ -290,10 +286,11 @@ class StandardSecurityHandler:
             m.update(bytes([0xFF, 0xFF, 0xFF, 0xFF]))
         result = m.digest()[: (math.ceil(self.key_length / 8))]
         for _ in range(50):
-            result = self.md5(result)[: (math.ceil(self.key_length / 8))]
+            result = md5(result)[: (math.ceil(self.key_length / 8))]
         return result
 
-    def md5(self, data):
-        h = hashlib.new("md5", usedforsecurity=False)
-        h.update(data)
-        return h.digest()
+
+def md5(data):
+    h = hashlib.new("md5", usedforsecurity=False)
+    h.update(data)
+    return h.digest()

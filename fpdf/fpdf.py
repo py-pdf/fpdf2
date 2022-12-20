@@ -369,17 +369,6 @@ class FPDF(GraphicsStateMixin):
         permissions=AccessPermission.all(),
         encrypt_metadata=False,
     ):
-
-        """
-        A file ID is needed for the security handler to generate the password hashes
-        Override file_id method so it guarantees the same id will be generated at the trailer
-        """
-        fid = self._default_file_id(bytearray([0xFF]))
-
-        def file_id():
-            return fid
-
-        self.file_id = file_id
         self._security_handler = StandardSecurityHandler(
             self,
             owner_password=owner_password,

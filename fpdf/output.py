@@ -44,7 +44,7 @@ class PDFHeader(ContentWithoutID):
     def __init__(self, pdf_version):
         self.pdf_version = pdf_version
 
-    def serialize(self):
+    def serialize(self, encryption_handler=None):
         return f"%PDF-{self.pdf_version}"
 
 
@@ -169,6 +169,10 @@ class PDFXmpMetadata(PDFContentStream):
         self.type = Name("Metadata")
         self.subtype = Name("XML")
 
+    def set_contents(self, contents):
+        self._contents = contents
+        self.length = len(self._contents)
+
 
 class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -286,7 +290,7 @@ class PDFXrefAndTrailer(ContentWithoutID):
         self.info_obj = None
         self.encryption_obj = None
 
-    def serialize(self):
+    def serialize(self, encryption_handler=None):
         builder = self.output_builder
         startxref = str(len(builder.buffer))
         out = []
@@ -300,12 +304,15 @@ class PDFXrefAndTrailer(ContentWithoutID):
         out.append(f"/Size {self.count}")
         out.append(f"/Root {pdf_ref(self.catalog_obj.id)}")
         out.append(f"/Info {pdf_ref(self.info_obj.id)}")
+        fpdf = builder.fpdf
         if self.encryption_obj:
             out.append(f"/Encrypt {pdf_ref(self.encryption_obj.id)}")
-        fpdf = builder.fpdf
-        file_id = fpdf.file_id()
-        if file_id == -1:
-            file_id = fpdf._default_file_id(builder.buffer)
+            file_id = fpdf._security_handler.file_id
+        else:
+
+            file_id = fpdf.file_id()
+            if file_id == -1:
+                file_id = fpdf._default_file_id(builder.buffer)
         if file_id:
             out.append(f"/ID [{file_id}]")
         out.append(">>")
@@ -338,6 +345,13 @@ class OutputProducer:
 
         # 1. Setup - Insert all PDF objects
         #    and assign unique consecutive numeric IDs to all of them
+
+        if fpdf._security_handler:
+            # get the file_id and generate passwords needed to encrypt streams and strings
+            file_id = fpdf.file_id()
+            if file_id == -1:
+                file_id = fpdf._default_file_id(self.buffer)
+            fpdf._security_handler.generate_passwords(file_id)
 
         self.pdf_objs.append(PDFHeader(fpdf.pdf_version))
         pages_root_obj = self._add_pages_root()
@@ -413,10 +427,7 @@ class OutputProducer:
                 with self._trace_size(trace_label):
                     self._out(pdf_obj.serialize(encryption_handler=encryption_handler))
             else:
-                if isinstance(pdf_obj, PDFObject):
-                    self._out(pdf_obj.serialize(encryption_handler=encryption_handler))
-                else:
-                    self._out(pdf_obj.serialize())
+                self._out(pdf_obj.serialize(encryption_handler=encryption_handler))
         self._log_final_sections_sizes()
 
         if fpdf._sign_key:
@@ -798,9 +809,13 @@ class OutputProducer:
     def _add_xmp_metadata(self):
         if not self.fpdf.xmp_metadata:
             return None
-        xpacket = f'<?xpacket begin="ï»¿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n{self.fpdf.xmp_metadata}\n<?xpacket end="w"?>\n'
+        xpacket = f'<?xpacket begin="ï»¿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n{self.fpdf.xmp_metadata}\n<?xpacket end="w"?>\n'.encode(
+            "latin-1"
+        )
         pdf_obj = PDFXmpMetadata(xpacket)
         self._add_pdf_obj(pdf_obj)
+        if self.fpdf._security_handler:
+            pdf_obj.encrypt(self.fpdf._security_handler)
         return pdf_obj
 
     def _add_info(self):
