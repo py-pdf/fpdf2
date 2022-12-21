@@ -3551,6 +3551,8 @@ class FPDF(GraphicsStateMixin):
             w = h * info["w"] / info["h"]
         elif h == 0:
             h = w * info["h"] / info["w"]
+        info["w1"] = w
+        info["h1"] = h
 
         if self.oversized_images and info["usages"] == 1:
             info = self._downscale_image(name, img, info, w, h)

@@ -28,6 +28,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Fixed
 * a `ValueError: Incoherent hierarchy` could be raised when using `write_html()` with some headings hierarchy
 * performance issue with adding large images with `FlateDecode` image filter
+* image (`<img>`) without `height` attribute overlaps with the following content [#632](https://github.com/PyFPDF/fpdf2/issues/632)
 
 ## [2.6.0] - 2022-11-20
 ### Added
