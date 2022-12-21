@@ -305,7 +305,7 @@ class HTML2FPDF(HTMLParser):
                 self.put_link(data)
             else:
                 if self.heading_level:
-                    self.pdf.start_section(data, self.heading_level - 1)
+                    self.pdf.start_section(data, self.heading_level - 1, strict=False)
                 LOGGER.debug(
                     "write '%s' h=%d",
                     WHITESPACE.sub(whitespace_repl, data),
@@ -322,7 +322,7 @@ class HTML2FPDF(HTMLParser):
                 self.put_link(data)
             else:
                 if self.heading_level:
-                    self.pdf.start_section(data, self.heading_level - 1)
+                    self.pdf.start_section(data, self.heading_level - 1, strict=False)
                 LOGGER.debug(
                     "write '%s' h=%d",
                     WHITESPACE.sub(whitespace_repl, data),

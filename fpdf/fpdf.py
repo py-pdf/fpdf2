@@ -4302,7 +4302,7 @@ class FPDF(GraphicsStateMixin):
         }
 
     @check_page
-    def start_section(self, name, level=0):
+    def start_section(self, name, level=0, strict=True):
         """
         Start a section in the document outline.
         If section_title_styles have been configured,
@@ -4314,7 +4314,7 @@ class FPDF(GraphicsStateMixin):
         """
         if level < 0:
             raise ValueError('"level" mut be equal or greater than zero')
-        if self._outline and level > self._outline[-1].level + 1:
+        if strict and self._outline and level > self._outline[-1].level + 1:
             raise ValueError(
                 f"Incoherent hierarchy: cannot start a level {level} section after a level {self._outline[-1].level} one"
             )
