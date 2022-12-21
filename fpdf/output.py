@@ -37,14 +37,15 @@ ZOOM_CONFIGS = {  # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
 
 
 class ContentWithoutID:
-    pass
+    def serialize(self, _security_handler=None):
+        pass
 
 
 class PDFHeader(ContentWithoutID):
     def __init__(self, pdf_version):
         self.pdf_version = pdf_version
 
-    def serialize(self, encryption_handler=None):
+    def serialize(self, _security_handler=None):
         return f"%PDF-{self.pdf_version}"
 
 
@@ -277,7 +278,7 @@ class PDFExtGState(PDFObject):
         self._dict_as_str = dict_as_str
 
     # method override
-    def serialize(self, obj_dict=None, encryption_handler=None):
+    def serialize(self, obj_dict=None, _security_handler=None):
         return f"{self.id} 0 obj\n{self._dict_as_str}\nendobj"
 
 
@@ -290,7 +291,7 @@ class PDFXrefAndTrailer(ContentWithoutID):
         self.info_obj = None
         self.encryption_obj = None
 
-    def serialize(self, encryption_handler=None):
+    def serialize(self, _security_handler=None):
         builder = self.output_builder
         startxref = str(len(builder.buffer))
         out = []
@@ -415,7 +416,6 @@ class OutputProducer:
         assert (
             not self.offsets
         ), f"No offset should have been set at this stage: {len(self.offsets)}"
-        encryption_handler = fpdf._security_handler
         for pdf_obj in self.pdf_objs:
             if isinstance(pdf_obj, ContentWithoutID):
                 # top header, xref table & trailer:
@@ -425,9 +425,11 @@ class OutputProducer:
                 trace_label = self.trace_labels_per_obj_id.get(pdf_obj.id)
             if trace_label:
                 with self._trace_size(trace_label):
-                    self._out(pdf_obj.serialize(encryption_handler=encryption_handler))
+                    self._out(
+                        pdf_obj.serialize(_security_handler=fpdf._security_handler)
+                    )
             else:
-                self._out(pdf_obj.serialize(encryption_handler=encryption_handler))
+                self._out(pdf_obj.serialize(_security_handler=fpdf._security_handler))
         self._log_final_sections_sizes()
 
         if fpdf._sign_key:

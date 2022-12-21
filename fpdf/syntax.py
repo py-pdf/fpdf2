@@ -161,15 +161,15 @@ class PDFObject:
     def ref(self):
         return iobj_ref(self.id)
 
-    def serialize(self, obj_dict=None, encryption_handler=None):
+    def serialize(self, obj_dict=None, _security_handler=None):
         "Serialize the PDF object as an obj<</>>endobj text block"
         output = []
         output.append(f"{self.id} 0 obj")
         output.append("<<")
         if not obj_dict:
             obj_dict = self._build_obj_dict()
-        if encryption_handler:
-            obj_dict = self._encrypt_obj_dict(obj_dict, encryption_handler)
+        if _security_handler:
+            obj_dict = self._encrypt_obj_dict(obj_dict, _security_handler)
         output.append(create_dictionary_string(obj_dict, open_dict="", close_dict=""))
         output.append(">>")
         content_stream = self.content_stream()
@@ -191,7 +191,7 @@ class PDFObject:
         """
         return build_obj_dict({key: getattr(self, key) for key in dir(self)})
 
-    def _encrypt_obj_dict(self, obj_dict, encryption_handler):
+    def _encrypt_obj_dict(self, obj_dict, security_handler):
         """Encrypt the strings present in the object dictionary"""
         for key in obj_dict:
             string = obj_dict[key]
@@ -200,7 +200,7 @@ class PDFObject:
                 and string.startswith("(")
                 and string.endswith(")")
             ):
-                obj_dict[key] = encryption_handler.encrypt(string[1:-1], self.id)
+                obj_dict[key] = security_handler.encrypt(string[1:-1], self.id)
         return obj_dict
 
 
@@ -215,9 +215,9 @@ class PDFContentStream(PDFObject):
     def content_stream(self):
         return self._contents
 
-    def encrypt(self, encryption_handler):
+    def encrypt(self, security_handler):
         # print('encrypting ', self.id)
-        self._contents = encryption_handler.encrypt(self._contents, self.id)
+        self._contents = security_handler.encrypt(self._contents, self.id)
         self.length = len(self._contents)
 
 

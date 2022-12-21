@@ -59,7 +59,7 @@ class PDFXrefAndTrailer(ContentWithoutID):
     def is_main_xref(self):
         return bool(self.first_xref)
 
-    def serialize(self):
+    def serialize(self, _security_handler=None):
         builder = self.output_builder
         out = []
         self.startxref = str(len(builder.buffer))
