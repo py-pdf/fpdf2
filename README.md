@@ -220,6 +220,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center"><a href="https://github.com/andersonhc"><img src="https://avatars.githubusercontent.com/u/948125?v=4?s=100" width="100px;" alt="Anderson Herzogenrath da Costa"/><br /><sub><b>Anderson Herzogenrath da Costa</b></sub></a><br /><a href="#question-andersonhc" title="Answering Questions">💬</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=andersonhc" title="Code">💻</a></td>
       <td align="center"><a href="https://github.com/yiweelan"><img src="https://avatars.githubusercontent.com/u/117787188?v=4?s=100" width="100px;" alt="Yi Wei Lan"/><br /><sub><b>Yi Wei Lan</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=yiweelan" title="Tests">⚠️</a></td>
       <td align="center"><a href="https://github.com/Bubbu0129"><img src="https://avatars.githubusercontent.com/u/93034081?v=4?s=100" width="100px;" alt="CpDong"/><br /><sub><b>CpDong</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=Bubbu0129" title="Code">💻</a> <a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3ABubbu0129" title="Bug reports">🐛</a></td>
+      <td align="center"><a href="https://github.com/CY-Qiu"><img src="https://avatars.githubusercontent.com/u/23075447?v=4?s=100" width="100px;" alt="CY-Qiu"/><br /><sub><b>CY-Qiu</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3ACY-Qiu" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
