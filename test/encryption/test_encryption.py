@@ -39,11 +39,6 @@ XMP_METADATA = """<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="fpdf2">
 def test_encryption_rc4(tmp_path):
     pdf = FPDF()
     pdf.set_creation_date(EPOCH)
-
-    def custom_file_id():
-        return pdf._default_file_id(bytearray([0xFF]))
-
-    pdf.file_id = custom_file_id
     pdf.set_author("author")
     pdf.set_subject("string to be encrypted")
     pdf.add_page()
@@ -56,11 +51,6 @@ def test_encryption_rc4(tmp_path):
 def test_encryption_rc4_permissions(tmp_path):
     pdf = FPDF()
     pdf.set_creation_date(EPOCH)
-
-    def custom_file_id():
-        return pdf._default_file_id(bytearray([0xFF]))
-
-    pdf.file_id = custom_file_id
     pdf.set_author("author")
     pdf.set_subject("string to be encrypted")
     pdf.add_page()
