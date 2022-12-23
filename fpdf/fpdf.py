@@ -371,6 +371,9 @@ class FPDF(GraphicsStateMixin):
         permissions=AccessPermission.all(),
         encrypt_metadata=False,
     ):
+        """ "
+        Creates a security handler that will be used at output() to encrypt the document streams and strings
+        """
         self._security_handler = StandardSecurityHandler(
             self,
             owner_password=owner_password,

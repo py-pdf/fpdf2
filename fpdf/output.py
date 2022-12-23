@@ -170,10 +170,6 @@ class PDFXmpMetadata(PDFContentStream):
         self.type = Name("Metadata")
         self.subtype = Name("XML")
 
-    def set_contents(self, contents):
-        self._contents = contents
-        self.length = len(self._contents)
-
 
 class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization

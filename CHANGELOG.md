@@ -18,9 +18,10 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.6.1] - not released yet
 ### Added
-* support for `[]()` links when `markdown=True`
-* support for `line-height` attribute of paragraph (`<p>`) in `write_html()`
 * support for PDF encryption (RC4 and AES-128)
+* the `x` parameter of [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) now accepts a value of `"C"` / `Align.C` / `"R"` / `Align.R` to horizontally position the image centered or aligned right
+* support for `[]()` links when `markdown=True`
+* support for `line-height` attribute of paragraph (`<p>`) in `write_html()` - thanks to @Bubbu0129
 ### Changed
 * `write_html()`now generates warnings for unclosed HTML tags, unless `warn_on_tags_not_matching=False` is set
 
