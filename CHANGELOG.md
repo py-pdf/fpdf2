@@ -23,7 +23,11 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support for `[]()` links when `markdown=True`
 * support for `line-height` attribute of paragraph (`<p>`) in `write_html()` - thanks to @Bubbu0129
 ### Changed
-* `write_html()`now generates warnings for unclosed HTML tags, unless `warn_on_tags_not_matching=False` is set
+* `add_link()` creates a link to the current page by default, and now accepts optional parameters: `x`, `y`, `page` & `zoom`.
+  Hence calling `set_link()` is not needed anymore after creating a link with `add_link()`.
+* `write_html()` now generates warnings for unclosed HTML tags, unless `warn_on_tags_not_matching=False` is set
+### Fixed
+* a `ValueError: Incoherent hierarchy` could be raised when using `write_html()` with some headings hierarchy
 
 ## [2.6.0] - 2022-11-20
 ### Added

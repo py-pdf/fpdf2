@@ -742,7 +742,17 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/93034081?v=4",
       "profile": "https://github.com/Bubbu0129",
       "contributions": [
-        "code"
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "CY-Qiu",
+      "name": "CY-Qiu",
+      "avatar_url": "https://avatars.githubusercontent.com/u/23075447?v=4",
+      "profile": "https://github.com/CY-Qiu",
+      "contributions": [
+        "bug"
       ]
     }
   ],

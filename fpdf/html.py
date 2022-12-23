@@ -305,7 +305,7 @@ class HTML2FPDF(HTMLParser):
                 self.put_link(data)
             else:
                 if self.heading_level:
-                    self.pdf.start_section(data, self.heading_level - 1)
+                    self.pdf.start_section(data, self.heading_level - 1, strict=False)
                 LOGGER.debug(
                     "write '%s' h=%d",
                     WHITESPACE.sub(whitespace_repl, data),
@@ -322,7 +322,7 @@ class HTML2FPDF(HTMLParser):
                 self.put_link(data)
             else:
                 if self.heading_level:
-                    self.pdf.start_section(data, self.heading_level - 1)
+                    self.pdf.start_section(data, self.heading_level - 1, strict=False)
                 LOGGER.debug(
                     "write '%s' h=%d",
                     WHITESPACE.sub(whitespace_repl, data),
@@ -807,8 +807,7 @@ class HTML2FPDF(HTMLParser):
         "This method can be overriden by subclasses to customize the Table of Contents style."
         pdf.ln()
         for section in outline:
-            link = pdf.add_link()
-            pdf.set_link(link, page=section.page_number)
+            link = pdf.add_link(page=section.page_number)
             text = f'{" " * section.level * 2} {section.name}'
             text += f' {"." * (60 - section.level*2 - len(section.name))} {section.page_number}'
             pdf.multi_cell(

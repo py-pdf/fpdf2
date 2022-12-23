@@ -15,21 +15,24 @@ with numerous examples and a very clean set of classes modelling the PDF interna
 import sys
 from fpdf import FPDF
 from pdfrw import PageMerge, PdfReader, PdfWriter
+from pdfrw.pagemerge import RectXObj
 
 IN_FILEPATH = sys.argv[1]
 OUT_FILEPATH = sys.argv[2]
 ON_PAGE_INDEX = 1
 UNDERNEATH = False  # if True, new content will be placed underneath page (painted first)
 
+reader = PdfReader(IN_FILEPATH)
+area = RectXObj(reader.pages[0])
+
 def new_content():
-    fpdf = FPDF()
+    fpdf = FPDF(format=(area.w, area.h))
     fpdf.add_page()
     fpdf.set_font("helvetica", size=36)
     fpdf.text(50, 50, "Hello!")
     reader = PdfReader(fdata=bytes(fpdf.output()))
     return reader.pages[0]
 
-reader = PdfReader(IN_FILEPATH)
 writer = PdfWriter()
 writer.pagearray = reader.Root.Pages.Kids
 PageMerge(writer.pagearray[ON_PAGE_INDEX]).add(new_content(), prepend=UNDERNEATH).render()
@@ -42,13 +45,17 @@ writer.write(OUT_FILEPATH)
 import sys
 from fpdf import FPDF
 from pdfrw import PdfReader, PdfWriter
+from pdfrw.pagemerge import RectXObj
 
 IN_FILEPATH = sys.argv[1]
 OUT_FILEPATH = sys.argv[2]
 NEW_PAGE_INDEX = 1  # set to None to append at the end
 
+reader = PdfReader(IN_FILEPATH)
+area = RectXObj(reader.pages[0])
+
 def new_page():
-    fpdf = FPDF()
+    fpdf = FPDF(format=(area.w, area.h))
     fpdf.add_page()
     fpdf.set_font("helvetica", size=36)
     fpdf.text(50, 50, "Hello!")
