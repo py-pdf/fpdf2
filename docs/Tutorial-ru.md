@@ -146,7 +146,7 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 На первой странице примера мы использовали для этой цели [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). Начало предложения написано текстом обычного стиля, затем, используя метод [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), мы переключились на подчеркивание и закончили предложение.
 
-Для добавления внутренней ссылки, указывающей на вторую страницу, мы использовали метод [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link), который создает кликабельную область, названную нами "link", которая ведет в другое место внутри документа. На второй странице мы использовали метод [set_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link), чтобы определить целевую зону для только что созданной ссылки.
+Для добавления внутренней ссылки, указывающей на вторую страницу, мы использовали метод [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link), который создает кликабельную область, названную нами "link", которая ведет в другое место внутри документа.
 
 Чтобы создать внешнюю ссылку с помощью изображения, мы использовали метод [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). Этот метод имеет возможность передать ссылку в качестве одного из аргументов. Ссылка может быть как внутренней, так и внешней.
 

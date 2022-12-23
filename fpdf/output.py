@@ -231,6 +231,7 @@ class PDFPage(PDFObject):
         "struct_parents",
         "resources",
         "parent",
+        "_index",
         "_width_pt",
         "_height_pt",
     )
@@ -240,6 +241,7 @@ class PDFPage(PDFObject):
         duration,
         transition,
         contents,
+        index,
     ):
         super().__init__()
         self.type = Name("Page")
@@ -252,7 +254,11 @@ class PDFPage(PDFObject):
         self.struct_parents = None
         self.resources = None  # must always be set before calling .serialize()
         self.parent = None  # must always be set before calling .serialize()
+        self._index = index
         self._width_pt, self._height_pt = None, None
+
+    def index(self):
+        return self._index
 
     def dimensions(self):
         "Return a pair (width, height) in the unit specified to FPDF constructor"
@@ -391,10 +397,17 @@ class OutputProducer:
             page_obj.parent = pages_root_obj
             page_obj.resources = resources_dict_obj
             for annot in page_obj.annots:
+                page_dests = []
                 if annot.dest:
-                    dests.append(annot.dest)
+                    page_dests.append(annot.dest)
                 if annot.a and hasattr(annot.a, "dest"):
-                    dests.append(annot.a.dest)
+                    page_dests.append(annot.a.dest)
+                for dest in page_dests:
+                    if dest.page_number > len(page_objs):
+                        raise ValueError(
+                            f"Invalid reference to non-existing page {dest.page_number} present on page {page_obj.index()}: "
+                        )
+                dests.extend(page_dests)
             if not page_obj.annots:
                 # Avoid serializing an empty PDFArray:
                 page_obj.annots = None

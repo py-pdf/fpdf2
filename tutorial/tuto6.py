@@ -8,13 +8,12 @@ pdf.add_page()
 pdf.set_font("helvetica", size=20)
 pdf.write(5, "To find out what's new in self tutorial, click ")
 pdf.set_font(style="U")
-link = pdf.add_link()
+link = pdf.add_link(page=2)
 pdf.write(5, "here", link)
 pdf.set_font()
 
 # Second page:
 pdf.add_page()
-pdf.set_link(link)
 pdf.image(
     "../docs/fpdf2-logo.png", 10, 10, 50, 0, "", "https://pyfpdf.github.io/fpdf2/"
 )

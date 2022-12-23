@@ -199,8 +199,7 @@ Der Anfang des Satzes wird in "normalem" Stil geschrieben, dann mit der Methode
 
 Um einen internen Link hinzuzufügen, der auf die zweite Seite verweist, nutzen wir die Methode
  [`add_link()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link), die einen anklickbaren Bereich erzeugt, 
- den wir "link" nennen und der auf eine andere Stelle innerhalb des Dokuments verweist. Auf der zweiten Seite verwenden wir
- [`set_link()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link), um den Zielbereich für den soeben erstellten Link zu definieren.
+ den wir "link" nennen und der auf eine andere Stelle innerhalb des Dokuments verweist.
 
 Um einen externen Link mit Hilfe eines Bildes zu erstellen, verwenden wir [`image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). Es besteht die Möglichkeit, der Methode ein Linkziel als eines ihrer Argumente zu übergeben. Der Link kann sowohl einer interner als auch ein externer sein.
 
