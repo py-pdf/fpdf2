@@ -27,6 +27,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `write_html()` now generates warnings for unclosed HTML tags, unless `warn_on_tags_not_matching=False` is set
 ### Fixed
 * a `ValueError: Incoherent hierarchy` could be raised when using `write_html()` with some headings hierarchy
+* performance issue with adding large images with `FlateDecode` image filter
 
 ## [2.6.0] - 2022-11-20
 ### Added
