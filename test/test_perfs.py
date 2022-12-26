@@ -7,7 +7,7 @@ from fpdf import FPDF
 HERE = Path(__file__).resolve().parent
 
 
-@pytest.mark.timeout(40)
+@pytest.mark.timeout(30)
 # ensure memory usage does not get too high - this value depends on Python version:
 @memunit.assert_lt_mb(178)
 def test_intense_image_rendering():
