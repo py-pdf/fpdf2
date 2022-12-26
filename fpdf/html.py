@@ -639,8 +639,8 @@ class HTML2FPDF(HTMLParser):
             image_info = self.pdf.image(
                 self.image_map(attrs["src"]), x, y, width, height, link=self.href
             )
-            width = image_info["w1"]
-            height = image_info["h1"]
+            width = image_info["rendered_width"]
+            height = image_info["rendered_height"]
             self.pdf.set_x(x + width)
             if self.table_col_index is not None:
                 # <img> in a <td>: we grow the cell height according to the image height:

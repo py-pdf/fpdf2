@@ -3551,8 +3551,6 @@ class FPDF(GraphicsStateMixin):
             w = h * info["w"] / info["h"]
         elif h == 0:
             h = w * info["h"] / info["w"]
-        info["w1"] = w
-        info["h1"] = h
 
         if self.oversized_images and info["usages"] == 1:
             info = self._downscale_image(name, img, info, w, h)
@@ -3587,7 +3585,7 @@ class FPDF(GraphicsStateMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        return info
+        return {"rendered_width": w, "rendered_height": h}
 
     def _vector_image(
         self,
@@ -3648,6 +3646,8 @@ class FPDF(GraphicsStateMixin):
             self.set_xy(old_x, old_y)
         if link:
             self.link(x, y, w, h, link)
+
+        return {"rendered_width": w, "rendered_height": h}
 
     def _downscale_image(self, name, img, info, w, h):
         width_in_pt, height_in_pt = w * self.k, h * self.k
