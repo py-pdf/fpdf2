@@ -3608,7 +3608,7 @@ class FPDF(GraphicsStateMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        return info
+        return {**info, "rendered_width": w, "rendered_height": h}
 
     def _vector_image(
         self,
@@ -3669,6 +3669,8 @@ class FPDF(GraphicsStateMixin):
             self.set_xy(old_x, old_y)
         if link:
             self.link(x, y, w, h, link)
+
+        return {"rendered_width": w, "rendered_height": h}
 
     def _downscale_image(self, name, img, info, w, h):
         width_in_pt, height_in_pt = w * self.k, h * self.k
