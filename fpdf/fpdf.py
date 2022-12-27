@@ -1698,7 +1698,7 @@ class FPDF(GraphicsStateMixin):
         if not fname:
             raise ValueError('"fname" parameter is required')
 
-        ext = splitext(str(fname))[1]
+        ext = splitext(str(fname))[1].lower()
         if ext not in (".otf", ".otc", ".ttf", ".ttc"):
             raise ValueError(
                 f"Unsupported font file extension: {ext}."
