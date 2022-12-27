@@ -3585,7 +3585,7 @@ class FPDF(GraphicsStateMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        return {"rendered_width": w, "rendered_height": h}
+        return {**info, "rendered_width": w, "rendered_height": h}
 
     def _vector_image(
         self,
