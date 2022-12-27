@@ -106,3 +106,9 @@ def test_add_font_otf(tmp_path):
     pdf.ln()
     pdf.multi_cell(w=pdf.epw, txt=text, markdown=True, align="L")
     assert_pdf_equal(pdf, HERE / "fonts_otf.pdf", tmp_path)
+
+def test_add_font_uppercase():
+    pdf = FPDF()
+    pdf.add_font(fname="Roboto-BoldItalic.TTF")
+    assert (pdf.fonts is not None and len(pdf.fonts) != 0)  # fonts add successful
+
