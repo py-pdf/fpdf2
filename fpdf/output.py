@@ -312,7 +312,6 @@ class PDFXrefAndTrailer(ContentWithoutID):
             out.append(f"/Encrypt {pdf_ref(self.encryption_obj.id)}")
             file_id = fpdf._security_handler.file_id
         else:
-
             file_id = fpdf.file_id()
             if file_id == -1:
                 file_id = fpdf._default_file_id(builder.buffer)
