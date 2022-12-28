@@ -110,5 +110,5 @@ def test_add_font_otf(tmp_path):
 
 def test_add_font_uppercase():
     pdf = FPDF()
-    pdf.add_font(fname="Roboto-BoldItalic.TTF")
+    pdf.add_font(fname=HERE / "Roboto-BoldItalic.TTF")
     assert pdf.fonts is not None and len(pdf.fonts) != 0  # fonts add successful
