@@ -38,19 +38,17 @@ XMP_METADATA = """<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="fpdf2">
 
 def test_encryption_rc4(tmp_path):
     pdf = FPDF()
-    pdf.set_creation_date(EPOCH)
     pdf.set_author("author")
     pdf.set_subject("string to be encrypted")
     pdf.add_page()
     pdf.set_font("helvetica", size=12)
     pdf.cell(txt="hello world")
     pdf.set_encryption(owner_password="fpdf2", permissions=AccessPermission.all())
-    assert_pdf_equal(pdf, HERE / "encryption_rc4.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "encryption_rc4.pdf", tmp_path, at_epoch=True)
 
 
 def test_encryption_rc4_permissions(tmp_path):
     pdf = FPDF()
-    pdf.set_creation_date(EPOCH)
     pdf.set_author("author")
     pdf.set_subject("string to be encrypted")
     pdf.add_page()
@@ -60,12 +58,13 @@ def test_encryption_rc4_permissions(tmp_path):
         owner_password="fpdf2",
         permissions=AccessPermission.PRINT_LOW_RES | AccessPermission.PRINT_HIGH_RES,
     )
-    assert_pdf_equal(pdf, HERE / "encryption_rc4_permissions.pdf", tmp_path)
+    assert_pdf_equal(
+        pdf, HERE / "encryption_rc4_permissions.pdf", tmp_path, at_epoch=True
+    )
 
 
 def test_no_encryption(tmp_path):
     pdf = FPDF()
-    pdf.set_creation_date(EPOCH)
 
     def custom_file_id():
         return pdf._default_file_id(bytearray([0xFF]))
@@ -81,12 +80,11 @@ def test_no_encryption(tmp_path):
         encryption_method=EncryptionMethod.NO_ENCRYPTION,
         permissions=AccessPermission.none(),
     )
-    assert_pdf_equal(pdf, HERE / "no_encryption.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "no_encryption.pdf", tmp_path, at_epoch=True)
 
 
 def test_encryption_rc4_user_password(tmp_path):
     pdf = FPDF()
-    pdf.set_creation_date(EPOCH)
 
     def custom_file_id():
         return pdf._default_file_id(bytearray([0xFF]))
@@ -102,12 +100,13 @@ def test_encryption_rc4_user_password(tmp_path):
         user_password="654321",
         permissions=AccessPermission.PRINT_LOW_RES | AccessPermission.PRINT_HIGH_RES,
     )
-    assert_pdf_equal(pdf, HERE / "encryption_rc4_user_password.pdf", tmp_path)
+    assert_pdf_equal(
+        pdf, HERE / "encryption_rc4_user_password.pdf", tmp_path, at_epoch=True
+    )
 
 
 def test_encryption_aes128(tmp_path):
     pdf = FPDF()
-    pdf.set_creation_date(EPOCH)
 
     def custom_file_id():
         return pdf._default_file_id(bytearray([0xFF]))
@@ -128,15 +127,15 @@ def test_encryption_aes128(tmp_path):
         permissions=AccessPermission.none(),
     )
     pdf._security_handler.get_initialization_vector = fixed_iv
-    assert_pdf_equal(pdf, HERE / "encryption_aes128.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "encryption_aes128.pdf", tmp_path, at_epoch=True)
 
 
 def test_encrypt_metadata(tmp_path):
     pdf = FPDF()
-    pdf.set_creation_date(EPOCH)
 
     def custom_file_id():
-        return pdf._default_file_id(bytearray([0xFF]))
+        # return pdf._default_file_id(bytearray([0xFF]))
+        return "<AC2718D5DA802D34E7F97EEF0A0B52C5><AC2718D5DA802D34E7F97EEF0A0B52C5>"
 
     pdf.file_id = custom_file_id
     pdf.add_page()
@@ -147,4 +146,4 @@ def test_encrypt_metadata(tmp_path):
         encrypt_metadata=True,
     )
     pdf.set_xmp_metadata(XMP_METADATA)
-    assert_pdf_equal(pdf, HERE / "encrypt_metadata.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "encrypt_metadata.pdf", tmp_path, at_epoch=True)

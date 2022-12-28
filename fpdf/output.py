@@ -312,7 +312,6 @@ class PDFXrefAndTrailer(ContentWithoutID):
             out.append(f"/Encrypt {pdf_ref(self.encryption_obj.id)}")
             file_id = fpdf._security_handler.file_id
         else:
-
             file_id = fpdf.file_id()
             if file_id == -1:
                 file_id = fpdf._default_file_id(builder.buffer)
@@ -353,7 +352,8 @@ class OutputProducer:
             # get the file_id and generate passwords needed to encrypt streams and strings
             file_id = fpdf.file_id()
             if file_id == -1:
-                file_id = fpdf._default_file_id(self.buffer)
+                # no custom file id - use default file id so enryption passwords can be generated
+                file_id = fpdf._default_file_id(bytearray(0x00))
             fpdf._security_handler.generate_passwords(file_id)
 
         self.pdf_objs.append(PDFHeader(fpdf.pdf_version))
@@ -425,6 +425,7 @@ class OutputProducer:
         assert (
             not self.offsets
         ), f"No offset should have been set at this stage: {len(self.offsets)}"
+
         for pdf_obj in self.pdf_objs:
             if isinstance(pdf_obj, ContentWithoutID):
                 # top header, xref table & trailer:
@@ -451,7 +452,6 @@ class OutputProducer:
                 fpdf._sign_hashalgo,
                 fpdf._sign_time,
             )
-
         return self.buffer
 
     def _out(self, data):

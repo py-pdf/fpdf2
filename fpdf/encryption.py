@@ -81,10 +81,10 @@ class EncryptionDictionary(PDFObject):
         self.filter = Name("Standard")
         self.length = security_handler.key_length
         self.r = security_handler.r
-        self.o = f"<{security_handler.o}>"
-        self.u = f"<{security_handler.u}>"
+        self.o = f"<{security_handler.o.upper()}>"
+        self.u = f"<{security_handler.u.upper()}>"
         self.v = security_handler.v
-        self.p = security_handler.access_permission
+        self.p = int32(security_handler.access_permission)
         if not security_handler.encrypt_metadata:
             self.encrypt_metadata = "false"
         if security_handler.cf:
@@ -119,7 +119,11 @@ class StandardSecurityHandler:
         encrypt_metadata=False,
     ):
         self.fpdf = fpdf
-        self.access_permission = -3904 if (permission is None) else (-3904 | permission)
+        self.access_permission = (
+            0b11111111111111111111000011000000
+            if (permission is None)
+            else (0b11111111111111111111000011000000 | permission)
+        )
         self.owner_password = owner_password
         self.user_password = user_password if (user_password) else ""
         self.encryption_method = (
@@ -174,7 +178,7 @@ class StandardSecurityHandler:
     def encrypt_string(self, string, obj_id):
         if self.encryption_method == EncryptionMethod.NO_ENCRYPTION:
             return PDFString(string).serialize()
-        return f"<{bytes(self.encrypt_bytes(string.encode('latin-1'), obj_id)).hex()}>"
+        return f"<{bytes(self.encrypt_bytes(string.encode('latin-1'), obj_id)).hex().upper()}>"
 
     def encrypt_stream(self, stream, obj_id):
         if self.encryption_method == EncryptionMethod.NO_ENCRYPTION:
@@ -294,3 +298,9 @@ def md5(data):
     h = hashlib.new("md5", usedforsecurity=False)
     h.update(data)
     return h.digest()
+
+
+def int32(n):
+    """convert long to signed 32 bit integer"""
+    n = n & 0xFFFFFFFF
+    return (n ^ 0x80000000) - 0x80000000
