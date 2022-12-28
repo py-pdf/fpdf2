@@ -50,10 +50,12 @@ from .annotations import (
     DEFAULT_ANNOT_FLAGS,
 )
 from .deprecation import WarnOnDeprecatedModuleAttributes
+from .encryption import StandardSecurityHandler
 from .enums import (
     Align,
     AnnotationFlag,
     AnnotationName,
+    EncryptionMethod,
     FileAttachmentAnnotationName,
     PageLayout,
     PageMode,
@@ -65,6 +67,7 @@ from .enums import (
     YPos,
     Corner,
     FontDescriptorFlags,
+    AccessPermission,
     CharVPos,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
@@ -349,6 +352,7 @@ class FPDF(GraphicsStateMixin):
         self.compress = True  # switch enabling pages content compression
         self.pdf_version = "1.3"  # Set default PDF version No.
         self.creation_date = datetime.now(timezone.utc)
+        self._security_handler = None
 
         self._current_draw_context = None
         self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
@@ -360,6 +364,39 @@ class FPDF(GraphicsStateMixin):
 
         # final buffer holding the PDF document in-memory - defined only after calling output():
         self.buffer = None
+
+    def set_encryption(
+        self,
+        owner_password,
+        user_password=None,
+        encryption_method=EncryptionMethod.RC4,
+        permissions=AccessPermission.all(),
+        encrypt_metadata=False,
+    ):
+        """ "
+        Activate encryption of the document content.
+
+        Args:
+            owner_password (str): mandatory. The owner password allows to perform any change on the document,
+                including removing all encryption and access permissions.
+            user_password (str): optional. If a user password is set, the content of the document will be encrypted
+                and a password prompt displayed when a user opens the document.
+                The document will only be displayed after either the user or owner password is entered.
+            encryption_method (fpdf.enums.EncryptionMethod, str): algorithm to be used to encrypt the document.
+                Defaults to RC4.
+            permissions (fpdf.enums.AccessPermission): specify access permissions granted
+                when the document is opened with user access. Defaults to ALL.
+            encrypt_metadata (bool): whether to also encrypt document metadata (author, creation date, etc.).
+                Defaults to False.
+        """
+        self._security_handler = StandardSecurityHandler(
+            self,
+            owner_password=owner_password,
+            user_password=user_password,
+            permission=permissions,
+            encryption_method=encryption_method,
+            encrypt_metadata=encrypt_metadata,
+        )
 
     def write_html(self, text, *args, **kwargs):
         """

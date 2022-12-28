@@ -42,6 +42,9 @@ theme:
 markdown_extensions:
   - admonition
   - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
   - pymdownx.highlight
   - pymdownx.superfences
   - toc:
@@ -127,6 +130,7 @@ nav:
   - 'Annotations':                    'Annotations.md'
   - 'Presentation Mode':              'Presentations.md'
   - 'Document outline & table of contents': 'DocumentOutlineAndTableOfContents.md'
+  - 'Encryption':                     'Encryption.md'
   - 'Signing':                        'Signing.md'
   - 'File attachments':               'FileAttachments.md'
 - 'Mixing other libs':

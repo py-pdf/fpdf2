@@ -108,9 +108,11 @@ def iobj_ref(n):
     return f"{n} 0 R"
 
 
-def create_stream(stream):
+def create_stream(stream, encryption_handler=None, obj_id=None):
     if isinstance(stream, (bytearray, bytes)):
         stream = str(stream, "latin-1")
+    if encryption_handler:
+        encryption_handler.encrypt(stream, obj_id)
     return "\n".join(["stream", stream, "endstream"])
 
 
@@ -159,13 +161,15 @@ class PDFObject:
     def ref(self):
         return iobj_ref(self.id)
 
-    def serialize(self, obj_dict=None):
+    def serialize(self, obj_dict=None, _security_handler=None):
         "Serialize the PDF object as an obj<</>>endobj text block"
         output = []
         output.append(f"{self.id} 0 obj")
         output.append("<<")
         if not obj_dict:
             obj_dict = self._build_obj_dict()
+        if _security_handler:
+            obj_dict = self._encrypt_obj_dict(obj_dict, _security_handler)
         output.append(create_dictionary_string(obj_dict, open_dict="", close_dict=""))
         output.append(">>")
         content_stream = self.content_stream()
@@ -187,6 +191,18 @@ class PDFObject:
         """
         return build_obj_dict({key: getattr(self, key) for key in dir(self)})
 
+    def _encrypt_obj_dict(self, obj_dict, security_handler):
+        """Encrypt the strings present in the object dictionary"""
+        for key in obj_dict:
+            string = obj_dict[key]
+            if (
+                isinstance(string, str)
+                and string.startswith("(")
+                and string.endswith(")")
+            ):
+                obj_dict[key] = security_handler.encrypt(string[1:-1], self.id)
+        return obj_dict
+
 
 class PDFContentStream(PDFObject):
     def __init__(self, contents, compress=False):
@@ -198,6 +214,10 @@ class PDFContentStream(PDFObject):
     # method override
     def content_stream(self):
         return self._contents
+
+    def encrypt(self, security_handler):
+        self._contents = security_handler.encrypt(self._contents, self.id)
+        self.length = len(self._contents)
 
 
 def build_obj_dict(key_values):
