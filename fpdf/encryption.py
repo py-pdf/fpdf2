@@ -81,8 +81,8 @@ class EncryptionDictionary(PDFObject):
         self.filter = Name("Standard")
         self.length = security_handler.key_length
         self.r = security_handler.r
-        self.o = f"<{security_handler.o}>"
-        self.u = f"<{security_handler.u}>"
+        self.o = f"<{security_handler.o.upper()}>"
+        self.u = f"<{security_handler.u.upper()}>"
         self.v = security_handler.v
         self.p = security_handler.access_permission
         if not security_handler.encrypt_metadata:
@@ -174,7 +174,7 @@ class StandardSecurityHandler:
     def encrypt_string(self, string, obj_id):
         if self.encryption_method == EncryptionMethod.NO_ENCRYPTION:
             return PDFString(string).serialize()
-        return f"<{bytes(self.encrypt_bytes(string.encode('latin-1'), obj_id)).hex()}>"
+        return f"<{bytes(self.encrypt_bytes(string.encode('latin-1'), obj_id)).hex().upper()}>"
 
     def encrypt_stream(self, stream, obj_id):
         if self.encryption_method == EncryptionMethod.NO_ENCRYPTION:
