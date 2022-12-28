@@ -155,6 +155,7 @@ class StandardSecurityHandler:
         """Return the first hash of the PDF file id"""
         self.file_id = file_id
         self.info_id = file_id[1:33]
+        print(self.info_id)
         self.o = self.generate_owner_password()
         self.k = self.generate_encryption_key()
         self.u = self.generate_user_password()
