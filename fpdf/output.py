@@ -425,6 +425,7 @@ class OutputProducer:
         assert (
             not self.offsets
         ), f"No offset should have been set at this stage: {len(self.offsets)}"
+
         for pdf_obj in self.pdf_objs:
             if isinstance(pdf_obj, ContentWithoutID):
                 # top header, xref table & trailer:

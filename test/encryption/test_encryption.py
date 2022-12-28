@@ -136,7 +136,8 @@ def test_encrypt_metadata(tmp_path):
     pdf.set_creation_date(EPOCH)
 
     def custom_file_id():
-        return pdf._default_file_id(bytearray([0xFF]))
+        # return pdf._default_file_id(bytearray([0xFF]))
+        return "<AC2718D5DA802D34E7F97EEF0A0B52C5><AC2718D5DA802D34E7F97EEF0A0B52C5>"
 
     pdf.file_id = custom_file_id
     pdf.add_page()
