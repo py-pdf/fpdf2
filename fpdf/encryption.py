@@ -300,14 +300,7 @@ def md5(data):
     return h.digest()
 
 
-def int32(x):
-    """convert number from unsigned 32 bit integer to signed 32 bit integer"""
-    if x > 0xFFFFFFFF:
-        raise OverflowError
-    if x > 0x7FFFFFFF:
-        x = int(0x100000000 - x)
-    if x < 2147483648:
-        return -x
-    else:
-        return -2147483648
-    return x
+def int32(n):
+    """convert long to signed 32 bit integer"""
+    n = n & 0xFFFFFFFF
+    return (n ^ 0x80000000) - 0x80000000
