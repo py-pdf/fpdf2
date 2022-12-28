@@ -452,8 +452,6 @@ class OutputProducer:
                 fpdf._sign_hashalgo,
                 fpdf._sign_time,
             )
-        if fpdf._security_handler:
-            print(self.buffer)
         return self.buffer
 
     def _out(self, data):

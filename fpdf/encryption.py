@@ -84,7 +84,7 @@ class EncryptionDictionary(PDFObject):
         self.o = f"<{security_handler.o.upper()}>"
         self.u = f"<{security_handler.u.upper()}>"
         self.v = security_handler.v
-        self.p = security_handler.access_permission
+        self.p = int32(security_handler.access_permission)
         if not security_handler.encrypt_metadata:
             self.encrypt_metadata = "false"
         if security_handler.cf:
@@ -119,7 +119,11 @@ class StandardSecurityHandler:
         encrypt_metadata=False,
     ):
         self.fpdf = fpdf
-        self.access_permission = -3904 if (permission is None) else (-3904 | permission)
+        self.access_permission = (
+            0b11111111111111111111000011000000
+            if (permission is None)
+            else (0b11111111111111111111000011000000 | permission)
+        )
         self.owner_password = owner_password
         self.user_password = user_password if (user_password) else ""
         self.encryption_method = (
@@ -294,3 +298,16 @@ def md5(data):
     h = hashlib.new("md5", usedforsecurity=False)
     h.update(data)
     return h.digest()
+
+
+def int32(x):
+    """convert number from unsigned 32 bit integer to signed 32 bit integer"""
+    if x > 0xFFFFFFFF:
+        raise OverflowError
+    if x > 0x7FFFFFFF:
+        x = int(0x100000000 - x)
+    if x < 2147483648:
+        return -x
+    else:
+        return -2147483648
+    return x
