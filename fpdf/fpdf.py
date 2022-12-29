@@ -3504,6 +3504,7 @@ class FPDF(GraphicsStateMixin):
         link="",
         title=None,
         alt_text=None,
+        dims=None,
     ):
         """
         Put an image on the page.
@@ -3540,6 +3541,11 @@ class FPDF(GraphicsStateMixin):
             title (str): optional. Currently, never seem rendered by PDF readers.
             alt_text (str): optional alternative text describing the image,
                 for accessibility purposes. Displayed by some PDF readers on hover.
+            dims (Tuple[float]): optional dimensions as a tuple (width, height) to resize the image
+                before storing it in the PDF. Note that those are the **intrinsic** image dimensions,
+                but the image will still be rendered on the page with the width (`w`) and height (`h`)
+                provided as parameters. Note also that the `.oversized_images` attribute of FPDF
+                provides an automated way to auto-adjust those intrinsic image dimensions.
         """
         if type:
             warnings.warn(
@@ -3573,7 +3579,7 @@ class FPDF(GraphicsStateMixin):
         else:
             if not img:
                 img = load_image(name)
-            info = get_img_info(img, self.image_filter)
+            info = get_img_info(img, self.image_filter, dims)
             info["i"] = len(self.images) + 1
             info["usages"] = 1
             self.images[name] = info
@@ -3589,7 +3595,7 @@ class FPDF(GraphicsStateMixin):
         elif h == 0:
             h = w * info["h"] / info["w"]
 
-        if self.oversized_images and info["usages"] == 1:
+        if self.oversized_images and info["usages"] == 1 and not dims:
             info = self._downscale_image(name, img, info, w, h)
 
         # Flowing mode

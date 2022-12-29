@@ -70,7 +70,7 @@ pip install git+https://github.com/PyFPDF/fpdf2.git@master
  * A [templating system](https://pyfpdf.github.io/fpdf2/Templates.html) to render PDFs in batchs
  * Images & links alternative descriptions, for accessibility
  * Table of contents & [document outline](https://pyfpdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html)
- * [Document signing](https://pyfpdf.github.io/fpdf2/Signing.html)
+ * [Document encryption](https://pyfpdf.github.io/fpdf2/Encryption.html) & [document signing](https://pyfpdf.github.io/fpdf2/Signing.html)
  * [Annotations](https://pyfpdf.github.io/fpdf2/Annotations.html), including text highlights, and [file attachments](https://pyfpdf.github.io/fpdf2/FileAttachments.html)
  * [Presentation mode](https://pyfpdf.github.io/fpdf2/Presentations.html) with control over page display duration & transitions
  * Optional basic Markdown-like styling: `**bold**, __italics__`

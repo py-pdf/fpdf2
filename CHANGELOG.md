@@ -20,18 +20,19 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 * support for PDF encryption (RC4 and AES-128): https://pyfpdf.github.io/fpdf2/Encryption.html - thanks to @andersonhc
 * ensured support for Python 3.11
-* the `x` parameter of [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) now accepts a value of `"C"` / `Align.C` / `"R"` / `Align.R` to horizontally position the image centered or aligned right
-* support for `[]()` links when `markdown=True`
-* support for `line-height` attribute of paragraph (`<p>`) in `write_html()` - thanks to @Bubbu0129
+* [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): the `x` parameter of now accepts a value of `"C"` / `Align.C` / `"R"` / `Align.R` to horizontally position the image centered or aligned right
+* [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): dimensions can now be provided to set the intrinsic image width & height before storing it in the PDF
+* [`FPDF.cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) & [`FPDF.multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell): support for `[]()` hyperlinks when `markdown=True`
+* [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): support for `line-height` attribute of paragraph (`<p>`) - thanks to @Bubbu0129
 ### Changed
-* `add_link()` creates a link to the current page by default, and now accepts optional parameters: `x`, `y`, `page` & `zoom`.
-  Hence calling `set_link()` is not needed anymore after creating a link with `add_link()`.
-* `write_html()` now generates warnings for unclosed HTML tags, unless `warn_on_tags_not_matching=False` is set
+* [`FPDF.add_link()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link) creates a link to the current page by default, and now accepts optional parameters: `x`, `y`, `page` & `zoom`.
+  Hence calling [`set_link()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link) is not needed anymore after creating a link with `add_link()`.
+* [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now generates warnings for unclosed HTML tags, unless `warn_on_tags_not_matching=False` is set
 ### Fixed
-* `write_html`: a `ValueError: Incoherent hierarchy` could be raised with some headings hierarchy
-* `write_html`: `<img>` without `height` attribute overlaps with the following content [#632](https://github.com/PyFPDF/fpdf2/issues/632) - thanks to @Bubbu0129
-* performance issue with adding large images with `FlateDecode` image filter [#644](https://github.com/PyFPDF/fpdf2/pull/644) - thanks to @Markovvn1
-* fix support for upper case font file name [#638](https://github.com/PyFPDF/fpdf2/issues/638) - thanks to @CY-Qiu
+* [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): a `ValueError: Incoherent hierarchy` could be raised with some headings hierarchy
+* [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): `<img>` without `height` attribute overlaps with the following content [#632](https://github.com/PyFPDF/fpdf2/issues/632) - thanks to @Bubbu0129
+* [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): performance issue with adding large images with `FlateDecode` image filter [#644](https://github.com/PyFPDF/fpdf2/pull/644) - thanks to @Markovvn1
+* [`FPDF.add_font()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font): fix support for upper case font file name [#638](https://github.com/PyFPDF/fpdf2/issues/638) - thanks to @CY-Qiu
 
 ## [2.6.0] - 2022-11-20
 ### Added
