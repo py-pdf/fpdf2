@@ -114,21 +114,3 @@ def test_text_badinput():
         pdf.text(20, 20, (1, 2, 3))
     with pytest.raises(AttributeError):
         pdf.text(20, 20, None)
-
-
-def test_text_skew(tmp_path):
-    doc = FPDF()
-    doc.add_page()
-    doc.set_font("helvetica", size=12)
-    with doc.skew_text(0, 20):
-        doc.text(20, 20, txt="text skewed on the y-axis")
-    with doc.skew_text(0, -20):
-        doc.text(20, 60, txt="text skewed on the y-axis (negative)")
-        doc.text(20, 100, txt="text skewed on the y-axis (negative) - line 2")
-    with doc.skew_text(20, 0):
-        doc.text(20, 140, txt="text skewed on the x-axis")
-    with doc.skew_text(-20, 0):
-        doc.text(20, 180, txt="text skewed on the x-axis (negative)")
-    with doc.skew_text(89, 0):
-        doc.text(20, 220, txt="some extreme skewing")
-    assert_pdf_equal(doc, HERE / "text_skew_text.pdf", tmp_path)

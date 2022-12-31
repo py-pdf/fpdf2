@@ -545,26 +545,3 @@ def test_multi_cell_ln_newpos(tmp_path):
             doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
 
     assert_pdf_equal(doc, HERE / "multi_cell_ln_newpos.pdf", tmp_path)
-
-
-def test_cell_skew_text(tmp_path):
-    doc = fpdf.FPDF()
-    doc.add_page()
-    doc.set_font("helvetica", size=12)
-    doc.ln(40)
-    with doc.skew_text(0, 20):
-        doc.cell(txt="text skewed on the y-axis")
-        doc.ln(40)
-    with doc.skew_text(0, -20):
-        doc.cell(txt="text skewed on the y-axis (negative)")
-        doc.ln(40)
-    with doc.skew_text(20, 0):
-        doc.cell(txt="text skewed on the x-axis")
-        doc.ln(40)
-    with doc.skew_text(-20, 0):
-        doc.cell(txt="text skewed on the x-axis (negative)")
-        doc.ln(40)
-    with doc.skew_text(89, 0):
-        doc.cell(txt="some extreme skewing")
-        doc.ln(40)
-    assert_pdf_equal(doc, HERE / "cell_skew_text.pdf", tmp_path)

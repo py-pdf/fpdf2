@@ -324,7 +324,6 @@ class FPDF(GraphicsStateMixin):
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
         self.text_color = self.DEFAULT_TEXT_COLOR
-        self.skew = (0, 0)
         self.page_background = None
         self.dash_pattern = dict(dash=0, gap=0, phase=0)
         self.line_width = 0.567 / self.k  # line width (0.2 mm)
@@ -2323,12 +2322,6 @@ class FPDF(GraphicsStateMixin):
         x_pos = x * self.k
         y_pos = (self.h - y) * self.k
         sl = [f"BT {x_pos:.2f} {y_pos:.2f} Td"]
-        if any(self.skew):
-            sl.append(
-                f"1 {self.skew[0]:.5f} {self.skew[1]:.5f} 1 "
-                f"{x_pos:.2f} "
-                f"{y_pos:.2f} Tm"
-            )
         if self.text_mode != TextMode.FILL:
             sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
         sl.append(f"({txt2}) Tj ET")
@@ -2422,12 +2415,36 @@ class FPDF(GraphicsStateMixin):
 
     @check_page
     @contextmanager
-    def skew_text(self, ax=None, ay=None):
-        epsilon = 1e-5
-        x = math.tan((ax + epsilon) * (math.pi / 180))
-        y = math.tan((ay + epsilon) * (math.pi / 180))
+    def skew(self, ax=0, ay=0, x=None, y=None):
+        """
+        This method allows to perform a skew transformation originating from a given center.
+        It must be used as a context-manager using `with`:
+
+            with skew(ax=15, ay=15, x=x, y=y):
+                pdf.something()
+
+        The skew transformation affects all elements which are printed inside the indented
+        context (with the exception of clickable areas).
+
+        Args:
+            ax (float): angle of skew in the horizontal direction in degrees
+            ay (float): angle of skew in the vertical direction in degrees
+            x (float): abscissa of the center of the skew transformation
+            y (float): ordinate of the center of the skew transformation
+        """
+        lim_val = 2**32
+        if x is None:
+            x = self.x
+        if y is None:
+            y = self.y
+        ax = max(min(math.tan(ax * (math.pi / 180)), lim_val), -lim_val)
+        ay = max(min(math.tan(ay * (math.pi / 180)), lim_val), -lim_val)
+        cx, cy = x * self.k, (self.h - y) * self.k
         with self.local_context():
-            self.skew = (y, x)
+            self._out(
+                f"1 {ay:.5f} {ax:.5f} 1 {cx:.2f} {cy:.2f} cm "
+                f"1 0 0 1 -{cx:.2f} -{cy:.2f} cm"
+            )
             yield
 
     @check_page
@@ -2844,12 +2861,6 @@ class FPDF(GraphicsStateMixin):
             x_pos = (self.x + dx) * k
             y_pos = (self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k
             sl.append(f"BT {x_pos:.2f} " f"{y_pos:.2f} Td")
-            if any(self.skew):
-                sl.append(
-                    f"1 {self.skew[0]:.5f} {self.skew[1]:.5f} 1 "
-                    f"{x_pos:.2f} "
-                    f"{y_pos:.2f} Tm"
-                )
             for i, frag in enumerate(text_line.fragments):
                 if word_spacing and frag.font_stretching != 100:
                     # Space character is already stretched, extra spacing is absolute.
