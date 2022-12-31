@@ -468,6 +468,10 @@ class OutputProducer:
         self.pdf_objs.append(pdf_obj)
         if trace_label:
             self.trace_labels_per_obj_id[self.obj_id] = trace_label
+        if isinstance(pdf_obj, PDFContentStream) and self.fpdf._security_handler:
+            if not isinstance(pdf_obj.content_stream(), (bytearray, bytes)):
+                pdf_obj._contents = pdf_obj.content_stream().encode("latin-1")
+            pdf_obj.encrypt(self.fpdf._security_handler)
         return self.obj_id
 
     def _add_pages_root(self):
@@ -499,9 +503,6 @@ class OutputProducer:
             )
             self._add_pdf_obj(cs_obj, "pages")
             page_obj.contents = cs_obj
-            if fpdf._security_handler:
-                page_obj.contents.encrypt(fpdf._security_handler)
-
         return page_objs
 
     def _add_annotations_as_objects(self):
@@ -824,8 +825,6 @@ class OutputProducer:
         )
         pdf_obj = PDFXmpMetadata(xpacket)
         self._add_pdf_obj(pdf_obj)
-        if self.fpdf._security_handler:
-            pdf_obj.encrypt(self.fpdf._security_handler)
         return pdf_obj
 
     def _add_info(self):
