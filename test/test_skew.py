@@ -62,7 +62,7 @@ def test_cell_skew_text(tmp_path):
     with doc.skew(89, 0):
         doc.cell(txt="some extreme skewing")
         doc.ln(40)
-    assert_pdf_equal(doc, HERE / "cell_skew_text.pdf", tmp_path, generate=True)
+    assert_pdf_equal(doc, HERE / "cell_skew_text.pdf", tmp_path)
 
 
 def test_multi_cell_skew_text(tmp_path):
@@ -79,4 +79,4 @@ def test_multi_cell_skew_text(tmp_path):
         pdf.ln(60)
     with pdf.skew(20, 20):
         pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], fill=True)
-    assert_pdf_equal(pdf, HERE / "multi_cell_skew_text.pdf", tmp_path, generate=True)
+    assert_pdf_equal(pdf, HERE / "multi_cell_skew_text.pdf", tmp_path)

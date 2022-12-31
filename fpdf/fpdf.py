@@ -2319,9 +2319,7 @@ class FPDF(GraphicsStateMixin):
             txt2 = escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))
         else:
             txt2 = escape_parens(txt)
-        x_pos = x * self.k
-        y_pos = (self.h - y) * self.k
-        sl = [f"BT {x_pos:.2f} {y_pos:.2f} Td"]
+        sl = [f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td"]
         if self.text_mode != TextMode.FILL:
             sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
         sl.append(f"({txt2}) Tj ET")
@@ -2858,9 +2856,10 @@ class FPDF(GraphicsStateMixin):
                     w - self.c_margin - self.c_margin - styled_txt_width
                 ) / text_line.number_of_spaces
 
-            x_pos = (self.x + dx) * k
-            y_pos = (self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k
-            sl.append(f"BT {x_pos:.2f} " f"{y_pos:.2f} Td")
+            sl.append(
+                f"BT {(self.x + dx) * k:.2f} "
+                f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
+            )
             for i, frag in enumerate(text_line.fragments):
                 if word_spacing and frag.font_stretching != 100:
                     # Space character is already stretched, extra spacing is absolute.
