@@ -399,3 +399,22 @@ def test_multi_cell_char_spacing(tmp_path):  # issue #489
     pdf.set_char_spacing(10)
     pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
     assert_pdf_equal(pdf, HERE / "multi_cell_char_spacing.pdf", tmp_path)
+
+
+def test_multi_cell_char_wrap(tmp_path):  # issue #649
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_fill_color(255, 255, 0)
+    pdf.multi_cell(w=50, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+    pdf.ln()
+    pdf.multi_cell(
+        w=50, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True, wrapmode="CHAR"
+    )
+    pdf.ln()
+    pdf.set_font("Courier", "", 10)
+    txt = "     " + "abcdefghijklmnopqrstuvwxyz" * 3
+    pdf.multi_cell(w=50, txt=txt, new_x="LEFT", fill=True, align="L")
+    pdf.ln()
+    pdf.multi_cell(w=50, txt=txt, new_x="LEFT", fill=True, align="L", wrapmode="CHAR")
+    assert_pdf_equal(pdf, HERE / "multi_cell_char_wrap.pdf", tmp_path)

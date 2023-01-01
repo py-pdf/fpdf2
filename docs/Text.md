@@ -8,7 +8,7 @@ There are several ways in fpdf to add text to a PDF document, each of which come
 | [`.cell()`](#cell)  | one | yes | no | yes | Inserts a single-line text string within the boundaries of a given box, optionally with background and border. |
 | [`.multi_cell()`](#multi_cell) | several | yes | no | yes | Inserts a multi-line text string within the boundaries of a given box, optionally with background and border. |
 | [`.write()`](#write) | several | no | no | auto | Inserts a multi-line text string within the boundaries of the page margins, starting at the current x/y location (typically the end of the last inserted text). |
-| [`.write_html()`](#write_html) | several | no | yes | auto | From [html.py](HTML.html). An extension to `.write()`, with additional parsing of basic HTML tags.
+| [`.write_html()`](#write_html) | several | no | yes | auto |  An extension to `.write()`, with additional parsing of basic HTML tags.
 
 ## Typographical Limitations
 
@@ -72,9 +72,9 @@ page break is performed before outputting.
 [Signature and parameters for.cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell)
 
 ## .multi_cell()
-Allows printing text with line breaks. Those can be automatic (breaking at the
-most recent space or soft-hyphen character) as soon as the text reaches the
-right border of the cell, or explicit (via the `\\n` character).
+Allows printing text with word or character based line breaks. Those can be automatic
+(breaking at the most recent space or soft-hyphen character) as soon as the text
+reaches the right border of the cell, or explicit (via the `\\n` character).
 As many cells as necessary are stacked, one below the other.
 Text can be aligned, centered or justified. The cell block can be framed and
 the background painted.
@@ -90,9 +90,12 @@ When `split_only == True`, returns `txt` split into lines in an array (with any 
 ## .write()
 Prints multi-line text between the page margins, starting from the current position.
 When the right margin is reached, a line break occurs at the most recent
-space or soft-hyphen character, and text continues from the left margin.
-A manual break happens any time the \\n character is met,
-Upon method exit, the current position is left near the end of the text, ready for the next call to continue without a gap, potentially with a different font or size set. Returns a boolean indicating if page break was triggered.
+space or soft-hyphen character (in word wrap mode) or at the current position (in
+character break mode), and text continues from the left margin.
+A manual break happens any time the \\n character is met.
+Upon method exit, the current position is left near the end of the text, ready for
+the next call to continue without a gap, potentially with a different font or size set.
+Returns a boolean indicating if page break was triggered.
 
 The primary purpose of this method is to print continuously wrapping text, where different parts may be rendered in different fonts or font sizes. This contrasts eg. with `.multi_cell()`, where a change in font family or size can only become effective on a new line.
 

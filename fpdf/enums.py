@@ -99,6 +99,15 @@ class CoerciveIntEnum(IntEnum):
         raise TypeError(f"{value} cannot convert to a {cls.__name__}")
 
 
+class WrapMode(CoerciveEnum):
+    "Defines how to break and wrap lines in multi-line text."
+    WORD = intern("WORD")
+    "Wrap by word"
+
+    CHAR = intern("CHAR")
+    "Wrap by character"
+
+
 class CharVPos(CoerciveEnum):
     "Defines the vertical position of text relative to the line."
     SUP = intern("SUP")

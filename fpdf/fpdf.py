@@ -69,6 +69,7 @@ from .enums import (
     FontDescriptorFlags,
     AccessPermission,
     CharVPos,
+    WrapMode,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
 from .fonts import fpdf_charwidths
@@ -3251,6 +3252,7 @@ class FPDF(GraphicsStateMixin):
         print_sh=False,
         new_x=XPos.RIGHT,
         new_y=YPos.NEXT,
+        wrapmode: WrapMode = WrapMode.WORD,
     ):
         """
         This method allows printing text with line breaks. They can be automatic
@@ -3287,6 +3289,8 @@ class FPDF(GraphicsStateMixin):
                 of text as bold / italics / underlined. Default to False.
             print_sh (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
                 character, instead of a line breaking opportunity. Default value: False
+            wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
+                "CHAR" for character based line wrapping.
 
         Using `new_x=XPos.RIGHT, new_y=XPos.TOP, maximum height=pdf.font_size` is
         useful to build tables with multiline text in cells.
@@ -3294,6 +3298,7 @@ class FPDF(GraphicsStateMixin):
         Returns: a boolean indicating if page break was triggered,
             or if `split_only == True`: `txt` splitted into lines in an array
         """
+        wrapmode = WrapMode.coerce(wrapmode)
         if isinstance(w, str) or isinstance(h, str):
             raise ValueError(
                 "Parameter 'w' and 'h' must be numbers, not strings."
@@ -3361,6 +3366,7 @@ class FPDF(GraphicsStateMixin):
             styled_text_fragments,
             justify=(align == Align.J),
             print_sh=print_sh,
+            wrapmode=wrapmode,
         )
         text_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
         while (text_line) is not None:
@@ -3476,7 +3482,12 @@ class FPDF(GraphicsStateMixin):
 
     @check_page
     def write(
-        self, h: float = None, txt: str = "", link: str = "", print_sh: bool = False
+        self,
+        h: float = None,
+        txt: str = "",
+        link: str = "",
+        print_sh: bool = False,
+        wrapmode: WrapMode = WrapMode.WORD,
     ):
         """
         Prints text from the current position.
@@ -3492,7 +3503,10 @@ class FPDF(GraphicsStateMixin):
                 (identifier returned by `FPDF.add_link`) or external URL.
             print_sh (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
                 character, instead of a line breaking opportunity. Default value: False
+            wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
+                "CHAR" for character based line wrapping.
         """
+        wrapmode = WrapMode.coerce(wrapmode)
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         if isinstance(h, str):
@@ -3511,6 +3525,7 @@ class FPDF(GraphicsStateMixin):
         multi_line_break = MultiLineBreak(
             styled_text_fragments,
             print_sh=print_sh,
+            wrapmode=wrapmode,
         )
         # first line from current x position to right margin
         first_width = self.w - self.x - self.r_margin

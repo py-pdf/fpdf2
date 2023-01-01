@@ -8,7 +8,7 @@ They may change at any time without prior warning or any deprecation period.
 
 from typing import NamedTuple, Any, Union, Sequence
 
-from .enums import CharVPos
+from .enums import CharVPos, WrapMode
 from .errors import FPDFException
 
 SOFT_HYPHEN = "\u00ad"
@@ -306,6 +306,20 @@ class CurrentLine:
             self.width += character_width
             active_fragment.characters.append(character)
 
+    def trim_trailing_spaces(self):
+        if not self.fragments:
+            return
+        last_frag = self.fragments[-1]
+        last_char = last_frag.characters[-1]
+        while last_char == " ":
+            char_width = last_frag.get_character_width(" ")
+            self.width -= char_width
+            last_frag.trim(-1)
+            if not last_frag.characters:
+                del self.fragments[-1]
+            last_frag = self.fragments[-1]
+            last_char = last_frag.characters[-1]
+
     def _apply_automatic_hint(self, break_hint: Union[SpaceHint, HyphenHint]):
         """
         This function mutates the current_line, applying one of the states
@@ -364,10 +378,12 @@ class MultiLineBreak:
         styled_text_fragments: Sequence,
         justify: bool = False,
         print_sh: bool = False,
+        wrapmode: WrapMode = WrapMode.WORD,
     ):
         self.styled_text_fragments = styled_text_fragments
         self.justify = justify
         self.print_sh = print_sh
+        self.wrapmode = wrapmode
         self.fragment_index = 0
         self.character_index = 0
         self.idx_last_forced_break = None
@@ -405,8 +421,13 @@ class MultiLineBreak:
                 return current_line.manual_break(trailing_nl=True)
 
             if current_line.width + character_width > maximum_width:
-                if character == SPACE:
+                if character == SPACE:  # must come first, always drop a current space.
                     self.character_index += 1
+                    return current_line.manual_break(self.justify)
+                if self.wrapmode == WrapMode.CHAR:
+                    # If the line ends with one or more spaces, then we want to get rid of them
+                    # so it can be justified correctly.
+                    current_line.trim_trailing_spaces()
                     return current_line.manual_break(self.justify)
                 if current_line.automatic_break_possible():
                     (
