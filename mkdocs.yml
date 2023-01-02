@@ -121,6 +121,7 @@ nav:
   - 'Drawing':                        'Drawing.md'
   - 'SVG':                            'SVG.md'
   - 'Charts & Graphs':                'Maths.md'
+  - 'Transformations':                'Transformations.md'
 - 'PDF Features':
   - 'Links':                          'Links.md'
   - 'Metadata':                       'Metadata.md'

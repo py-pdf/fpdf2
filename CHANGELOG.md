@@ -16,13 +16,10 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.6.2] - not released yet
-### Added
-* `skew` function (similar to `rotation`), along with relevant unit tests and documentation.
-
 ## [2.6.1] - not released yet
 ### Added
 * support for `[]()` links when `markdown=True`
+* `skew` function (similar to `rotation`), along with relevant unit tests and documentation.
 ### Changed
 * `write_html()`now generates warnings for unclosed HTML tags, unless `warn_on_tags_not_matching=False` is set
 
