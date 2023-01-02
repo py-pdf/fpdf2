@@ -224,6 +224,7 @@ This library could only exist thanks to the dedication of many volunteers around
     </tr>
     <tr>
       <td align="center"><a href="https://github.com/Markovvn1"><img src="https://avatars.githubusercontent.com/u/32509100?v=4?s=100" width="100px;" alt="Markovvn1"/><br /><sub><b>Markovvn1</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=Markovvn1" title="Code">💻</a></td>
+      <td align="center"><a href="https://github.com/erap129"><img src="https://avatars.githubusercontent.com/u/30405025?v=4?s=100" width="100px;" alt="Elad Rapaport"/><br /><sub><b>Elad Rapaport</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=erap129" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
