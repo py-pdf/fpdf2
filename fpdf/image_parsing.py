@@ -172,15 +172,17 @@ def _to_zdata(img, remove_slice=None, select_slice=None):
         data = data[select_slice]
     # Left-padding every row with a single zero:
     if img.mode == "1":
-        loop_incr = ceil(img.size[0] / 8) + 1
+        row_size = ceil(img.size[0] / 8)
     else:
         channels_count = len(data) // (img.size[0] * img.size[1])
-        loop_incr = img.size[0] * channels_count + 1
-    i = 0
-    while i < len(data):
-        data[i:i] = b"\0"
-        i += loop_incr
-    return zlib.compress(data)
+        row_size = img.size[0] * channels_count
+
+    data_with_padding = bytearray()
+    for i in range(0, len(data), row_size):
+        data_with_padding.extend(b"\0")
+        data_with_padding.extend(data[i : i + row_size])
+
+    return zlib.compress(data_with_padding)
 
 
 def _has_alpha(img, alpha_channel):

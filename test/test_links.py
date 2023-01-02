@@ -3,6 +3,8 @@ from pathlib import Path
 from fpdf import FPDF
 from test.conftest import assert_pdf_equal
 
+import pytest
+
 HERE = Path(__file__).resolve().parent
 
 
@@ -123,3 +125,39 @@ def test_link_border(tmp_path):
     )
 
     assert_pdf_equal(pdf, HERE / "link_border.pdf", tmp_path)
+
+
+def test_inserting_same_page_link_twice(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.link(
+        x=pdf.l_margin,
+        y=pdf.t_margin,
+        w=pdf.epw,
+        h=pdf.eph,
+        link=pdf.add_link(page=2),
+    )
+    pdf.add_page()
+    pdf.link(
+        x=pdf.l_margin,
+        y=pdf.t_margin,
+        w=pdf.epw,
+        h=pdf.eph,
+        link=pdf.add_link(page=2),
+    )
+    assert pdf.add_link(page=2) == pdf.add_link(page=2)
+    assert_pdf_equal(pdf, HERE / "inserting_same_page_link_twice.pdf", tmp_path)
+
+
+def test_inserting_link_to_non_exising_page():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.link(
+        x=pdf.l_margin,
+        y=pdf.t_margin,
+        w=pdf.epw,
+        h=pdf.eph,
+        link=pdf.add_link(page=2),
+    )
+    with pytest.raises(ValueError):
+        pdf.output()

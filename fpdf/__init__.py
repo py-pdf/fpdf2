@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 
-from .enums import TextMode, XPos, YPos
+from .enums import Align, TextMode, XPos, YPos
 from .fpdf import (
     FPDF,
     FPDFException,
@@ -34,6 +34,7 @@ __all__ = [
     "__license__",
     # Classes
     "FPDF",
+    "Align",
     "XPos",
     "YPos",
     "Template",

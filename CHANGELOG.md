@@ -18,16 +18,28 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.6.1] - not released yet
 ### Added
-* support for `[]()` links when `markdown=True`
-* `skew` function (similar to `rotation`), along with relevant unit tests and documentation.
+* `skew` function (similar to `rotation`), along with relevant unit tests and documentation. - thanks to @erap129
+* support for PDF encryption (RC4 and AES-128): https://pyfpdf.github.io/fpdf2/Encryption.html - thanks to @andersonhc
+* ensured support for Python 3.11
+* [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): the `x` parameter of now accepts a value of `"C"` / `Align.C` / `"R"` / `Align.R` to horizontally position the image centered or aligned right
+* [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): dimensions can now be provided to set the intrinsic image width & height before storing it in the PDF
+* [`FPDF.cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) & [`FPDF.multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell): support for `[]()` hyperlinks when `markdown=True`
+* [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): support for `line-height` attribute of paragraph (`<p>`) - thanks to @Bubbu0129
 ### Changed
-* `write_html()`now generates warnings for unclosed HTML tags, unless `warn_on_tags_not_matching=False` is set
+* [`FPDF.add_link()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link) creates a link to the current page by default, and now accepts optional parameters: `x`, `y`, `page` & `zoom`.
+  Hence calling [`set_link()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link) is not needed anymore after creating a link with `add_link()`.
+* [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now generates warnings for unclosed HTML tags, unless `warn_on_tags_not_matching=False` is set
+### Fixed
+* [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): a `ValueError: Incoherent hierarchy` could be raised with some headings hierarchy
+* [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): `<img>` without `height` attribute overlaps with the following content [#632](https://github.com/PyFPDF/fpdf2/issues/632) - thanks to @Bubbu0129
+* [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): performance issue with adding large images with `FlateDecode` image filter [#644](https://github.com/PyFPDF/fpdf2/pull/644) - thanks to @Markovvn1
+* [`FPDF.add_font()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font): fix support for upper case font file name [#638](https://github.com/PyFPDF/fpdf2/issues/638) - thanks to @CY-Qiu
 
 ## [2.6.0] - 2022-11-20
 ### Added
 - demonstration Jupyter notebook: [tutorial/notebook.ipynb](https://github.com/PyFPDF/fpdf2/blob/master/tutorial/notebook.ipynb)
 - new [`.default_page_dimensions`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.default_page_dimensions) property on `FPDF` instances
-- support for description list (`<dl>`), description titles (`<dt>`), description details (`<dd>`) and code blocks (`<code></code>`) in `write_html()` - thanks to @yk-jp & @seanpmulholland
+- support for description list (`<dl>`), description titles (`<dt>`), description details (`<dd>`) and code blocks (`<code>`) in `write_html()` - thanks to @yk-jp & @seanpmulholland
 - support for monochromatic images (PIL `image.mode == '1'`) thanks to @GerardoAllende
 - the 1000+ unit tests suite is now executed under Linux **<ins>and</ins>** Windows, with extra timing & memory usage checks ensuring we control `fpdf2` resource usage
 - new translation of the tutorial in [עברית](https://pyfpdf.github.io/fpdf2/Tutorial-he.html), thanks to @TzviGreenfeld
@@ -37,6 +49,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - `HTMLMixin` is deprecated, and not needed anymore: **the `write_html()` method is now natively available in the `FPDF` class** - thanks to @yk-jp
 ### Removed
 - `open()` & `close()` methods, that were only used internally and should never have been called by end-user code
+- `FPDF.state`, which was an instance of the `DocumentState` enum, and has been replaced by moving the final rendering logic into a new `fpdf.output` module
 ### Fixed
 - after an "empty" `cell()`, `ln()` applied a line height of zero [#601](https://github.com/PyFPDF/fpdf2/issues/601)
 - when using `multi_cell()` with `max_line_height` to render multiline text, the last line is now rendered like all the others

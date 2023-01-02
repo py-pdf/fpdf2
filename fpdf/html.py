@@ -173,7 +173,7 @@ COLOR_DICT = {
 
 
 def px2mm(px):
-    return int(px) * 25.4 / 72
+    return px * 25.4 / 72
 
 
 def color_as_decimal(color="#000000"):
@@ -305,7 +305,7 @@ class HTML2FPDF(HTMLParser):
                 self.put_link(data)
             else:
                 if self.heading_level:
-                    self.pdf.start_section(data, self.heading_level - 1)
+                    self.pdf.start_section(data, self.heading_level - 1, strict=False)
                 LOGGER.debug(
                     "write '%s' h=%d",
                     WHITESPACE.sub(whitespace_repl, data),
@@ -322,7 +322,7 @@ class HTML2FPDF(HTMLParser):
                 self.put_link(data)
             else:
                 if self.heading_level:
-                    self.pdf.start_section(data, self.heading_level - 1)
+                    self.pdf.start_section(data, self.heading_level - 1, strict=False)
                 LOGGER.debug(
                     "write '%s' h=%d",
                     WHITESPACE.sub(whitespace_repl, data),
@@ -501,8 +501,11 @@ class HTML2FPDF(HTMLParser):
             self.pdf.ln(self.h)
         if tag == "p":
             self.pdf.ln(self.h)
-            if attrs:
+            if "align" in attrs:
                 self.align = attrs.get("align")
+            if "line-height" in attrs:
+                line_height = float(attrs.get("line-height"))
+                self.h = px2mm(self.font_size) * line_height
         if tag in self.heading_sizes:
             self.font_stack.append((self.font_face, self.font_size, self.font_color))
             self.heading_level = int(tag[1:])
@@ -605,8 +608,8 @@ class HTML2FPDF(HTMLParser):
         if tag == "tfoot":
             self.tfoot = {}
         if tag == "img" and "src" in attrs:
-            width = px2mm(attrs.get("width", 0))
-            height = px2mm(attrs.get("height", 0))
+            width = px2mm(int(attrs.get("width", 0)))
+            height = px2mm(int(attrs.get("height", 0)))
             if self.pdf.y + height > self.pdf.page_break_trigger:
                 self.pdf.add_page(same=True)
             y = self.pdf.get_y()
@@ -633,9 +636,11 @@ class HTML2FPDF(HTMLParser):
                 width,
                 height,
             )
-            self.pdf.image(
+            image_info = self.pdf.image(
                 self.image_map(attrs["src"]), x, y, width, height, link=self.href
             )
+            width = image_info["rendered_width"]
+            height = image_info["rendered_height"]
             self.pdf.set_x(x + width)
             if self.table_col_index is not None:
                 # <img> in a <td>: we grow the cell height according to the image height:
@@ -710,6 +715,7 @@ class HTML2FPDF(HTMLParser):
         if tag == "p":
             self.pdf.ln(self.h)
             self.align = ""
+            self.h = px2mm(self.font_size)
         if tag in ("ul", "ol"):
             self.indent -= 1
             self.bullet.pop()
@@ -772,7 +778,7 @@ class HTML2FPDF(HTMLParser):
             self.font_face = face
         if size:
             self.font_size = size
-            self.h = size / 72 * 25.4
+            self.h = px2mm(size)
             LOGGER.debug("H %s", self.h)
         style = "".join(s for s in ("b", "i", "u") if self.style.get(s)).upper()
         if (self.font_face, style) != (self.pdf.font_family, self.pdf.font_style):
@@ -803,8 +809,7 @@ class HTML2FPDF(HTMLParser):
         "This method can be overriden by subclasses to customize the Table of Contents style."
         pdf.ln()
         for section in outline:
-            link = pdf.add_link()
-            pdf.set_link(link, page=section.page_number)
+            link = pdf.add_link(page=section.page_number)
             text = f'{" " * section.level * 2} {section.name}'
             text += f' {"." * (60 - section.level*2 - len(section.name))} {section.page_number}'
             pdf.multi_cell(

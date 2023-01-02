@@ -12,7 +12,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, '3.10']
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
         platform: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     steps:
@@ -30,7 +30,7 @@ jobs:
         run: sudo apt-get install qpdf
       - name: Install Python dependencies ⚙️
         run: |
-          python -m pip install --upgrade pip setuptools
+          python -m pip install --upgrade pip setuptools wheel
           pip install --upgrade . -r test/requirements.txt -r docs/requirements.txt -r contributors/requirements.txt
       - name: Statically checking code 🔎
         if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
@@ -44,7 +44,7 @@ jobs:
         if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: |
           # Using qpdf
-          find . -name '*.pdf' | xargs -n 1 qpdf --check
+          find . -name '*.pdf' | xargs -n 1 qpdf --check --password=fpdf2
           # Using Datalogics PDF Checker:
           scripts/install-pdfchecker.sh
           find . -name '*.pdf' | xargs -n 1 scripts/pdfchecker.py

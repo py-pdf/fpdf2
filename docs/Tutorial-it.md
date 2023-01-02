@@ -183,9 +183,7 @@ Nella prima pagina dell'esempio, abbiamo usato
 
 Per aggiungere un link interno che puntasse alla seconda pagina, abbiamo utilizzato 
  [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link)
-che crea un area cliccabile che abbiamo chiamato "link"  che redirige ad un altro punto del documento. Nella seconda pagina abbiamo usato
- [set_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link)
- per definire un'area di destinazione per il link creato in precedenza.
+che crea un area cliccabile che abbiamo chiamato "link"  che redirige ad un altro punto del documento.
 
 Per creare un link esterno utilizzando un'immagine, abbiamo usato
  [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)

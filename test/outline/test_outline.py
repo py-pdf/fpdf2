@@ -95,8 +95,7 @@ def render_toc(pdf, outline):
     pdf.y += 20
     pdf.set_font("Courier", size=12)
     for section in outline:
-        link = pdf.add_link()
-        pdf.set_link(link, page=section.page_number)
+        link = pdf.add_link(page=section.page_number)
         p(
             pdf,
             f'{" " * section.level * 2} {section.name} {"." * (60 - section.level*2 - len(section.name))} {section.page_number}',

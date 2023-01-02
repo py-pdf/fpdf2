@@ -604,6 +604,38 @@ and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.<br>
     assert_pdf_equal(pdf, HERE / "test_html_whitespace_handling.pdf", tmp_path)
 
 
+def test_html_custom_line_height(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<p line-height=3>
+text-text-text-text-text-text-text-text-text-text-
+text-text-text-text-text-text-text-text-text-text-
+text-text-text-text-text-text-text-text-text-text</p>
+<p line-height=2>
+text-text-text-text-text-text-text-text-text-text-
+text-text-text-text-text-text-text-text-text-text-
+text-text-text-text-text-text-text-text-text-text-</p>
+"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_custom_line_height.pdf", tmp_path)
+
+
+def test_img_not_overlapping(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<img src="test/image/png_images/affc57dfffa5ec448a0795738d456018.png"/>
+<p>text</p>
+"""
+    )
+    assert_pdf_equal(
+        pdf,
+        HERE / "test_img_not_overlapping.pdf",
+        tmp_path,
+    )
+
+
 def test_warn_on_tags_not_matching(caplog):
     pdf = FPDF()
     pdf.add_page()
@@ -613,3 +645,13 @@ def test_warn_on_tags_not_matching(caplog):
     assert " Unexpected HTML end tag </p>" in caplog.text
     pdf.write_html("<p></a>")
     assert " Unexpected HTML end tag </a>" in caplog.text
+
+
+def test_html_unorthodox_headings_hierarchy(tmp_path):  # issue 631
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<h1>H1</h1>
+           <h5>H5</h5>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_unorthodox_headings_hierarchy.pdf", tmp_path)

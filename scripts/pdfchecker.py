@@ -28,6 +28,8 @@ def analyze_pdf_file(pdf_filepath):
             "PDF_Checker/CheckerProfiles/everything.json",
             "--input",
             pdf_filepath,
+            "--password",
+            "fpdf2",
         ]
     ).decode()
     report = parse_output(output)

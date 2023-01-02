@@ -153,7 +153,7 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 בעמוד הראשון של הדוגמא השתמשנו [()write](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) למטרה זו. תחילת המשפט נכתב בסגנון טקסט רגיל ואז על ידי שימוש במתודה [()set_font](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) החלפנו לטקסט עם קו תחתון לסיום המשפט.
 
-כדי להוסיף קישור פנימי שמוביל לעמוד השני השתמשנו במתודה [()add_link](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link) שוצרת איזור ניתן להקלקה שנתנו לו את השם "קישור" שמוביל לאיזור אחר באותו המסמך. בעמוד השני השתמשנו ב[()set_link](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link) על מנת להגדיר את האיזור אליו הקישור שיצרנו מוביל.
+כדי להוסיף קישור פנימי שמוביל לעמוד השני השתמשנו במתודה [()add_link](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link) שוצרת איזור ניתן להקלקה שנתנו לו את השם "קישור" שמוביל לאיזור אחר באותו המסמך.
 
 על מנת ליצור קישור חיצני באמצעות תמונה, השתמשנו במתודה [()image](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). למתודה יש אופציה לקבל קישור כאחד הפרמטרים שלה. הקישור יכול להיות פנימי או חיצוני.
 

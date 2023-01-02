@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from functools import wraps
 from html import unescape
 from math import isclose
+from numbers import Number
 from os.path import splitext
 from pathlib import Path
 from typing import Callable, List, NamedTuple, Optional, Union
@@ -49,10 +50,12 @@ from .annotations import (
     DEFAULT_ANNOT_FLAGS,
 )
 from .deprecation import WarnOnDeprecatedModuleAttributes
+from .encryption import StandardSecurityHandler
 from .enums import (
     Align,
     AnnotationFlag,
     AnnotationName,
+    EncryptionMethod,
     FileAttachmentAnnotationName,
     PageLayout,
     PageMode,
@@ -64,6 +67,7 @@ from .enums import (
     YPos,
     Corner,
     FontDescriptorFlags,
+    AccessPermission,
     CharVPos,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
@@ -348,6 +352,7 @@ class FPDF(GraphicsStateMixin):
         self.compress = True  # switch enabling pages content compression
         self.pdf_version = "1.3"  # Set default PDF version No.
         self.creation_date = datetime.now(timezone.utc)
+        self._security_handler = None
 
         self._current_draw_context = None
         self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
@@ -359,6 +364,39 @@ class FPDF(GraphicsStateMixin):
 
         # final buffer holding the PDF document in-memory - defined only after calling output():
         self.buffer = None
+
+    def set_encryption(
+        self,
+        owner_password,
+        user_password=None,
+        encryption_method=EncryptionMethod.RC4,
+        permissions=AccessPermission.all(),
+        encrypt_metadata=False,
+    ):
+        """ "
+        Activate encryption of the document content.
+
+        Args:
+            owner_password (str): mandatory. The owner password allows to perform any change on the document,
+                including removing all encryption and access permissions.
+            user_password (str): optional. If a user password is set, the content of the document will be encrypted
+                and a password prompt displayed when a user opens the document.
+                The document will only be displayed after either the user or owner password is entered.
+            encryption_method (fpdf.enums.EncryptionMethod, str): algorithm to be used to encrypt the document.
+                Defaults to RC4.
+            permissions (fpdf.enums.AccessPermission): specify access permissions granted
+                when the document is opened with user access. Defaults to ALL.
+            encrypt_metadata (bool): whether to also encrypt document metadata (author, creation date, etc.).
+                Defaults to False.
+        """
+        self._security_handler = StandardSecurityHandler(
+            self,
+            owner_password=owner_password,
+            user_password=user_password,
+            permission=permissions,
+            encryption_method=encryption_method,
+            encrypt_metadata=encrypt_metadata,
+        )
 
     def write_html(self, text, *args, **kwargs):
         """
@@ -827,6 +865,7 @@ class FPDF(GraphicsStateMixin):
                 contents=bytearray(),
                 duration=duration,
                 transition=transition,
+                index=self.page,
             )
             self.pages[self.page] = page
             if transition:
@@ -1696,7 +1735,7 @@ class FPDF(GraphicsStateMixin):
         if not fname:
             raise ValueError('"fname" parameter is required')
 
-        ext = splitext(str(fname))[1]
+        ext = splitext(str(fname))[1].lower()
         if ext not in (".otf", ".otc", ".ttf", ".ttc"):
             raise ValueError(
                 f"Unsupported font file extension: {ext}."
@@ -1942,18 +1981,36 @@ class FPDF(GraphicsStateMixin):
         if self.page > 0:
             self._out(f"BT {stretching:.2f} Tz ET")
 
-    def add_link(self):
+    def add_link(self, y=0, x=0, page=-1, zoom="null"):
         """
         Creates a new internal link and returns its identifier.
         An internal link is a clickable area which directs to another place within the document.
 
         The identifier can then be passed to the `FPDF.cell()`, `FPDF.write()`, `FPDF.image()`
         or `FPDF.link()` methods.
-        The destination must be defined using `FPDF.set_link()`.
+
+        Args:
+            y (float): optional ordinate of target position.
+                The default value is 0 (top of page).
+            x (float): optional abscissa of target position.
+                The default value is 0 (top of page).
+            page (int): optional number of target page.
+                -1 indicates the current page, which is the default value.
+            zoom (float): optional new zoom level after following the link.
+                Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
         """
-        link_index = len(self.links) + 1
-        self.links[link_index] = DestinationXYZ(page=1, top=self.h_pt)
-        return link_index
+        link = DestinationXYZ(
+            self.page if page == -1 else page,
+            top=self.h_pt - y * self.k,
+            left=x * self.k,
+            zoom=zoom,
+        )
+        try:
+            return next(i for i, l in self.links.items() if l == link)
+        except StopIteration:
+            link_index = len(self.links) + 1
+            self.links[link_index] = link
+            return link_index
 
     def set_link(self, link, y=0, x=0, page=-1, zoom="null"):
         """
@@ -1990,7 +2047,7 @@ class FPDF(GraphicsStateMixin):
             y (float): vertical position (from the top) to the bottom side of the link rectangle
             w (float): width of the link rectangle
             h (float): height of the link rectangle
-            link: either an URL or a integer returned by `FPDF.add_link`, defining an internal link to a page
+            link: either an URL or an integer returned by `FPDF.add_link`, defining an internal link to a page
             alt_text (str): optional textual description of the link, for accessibility purposes
             border_width (int): thickness of an optional black border surrounding the link.
                 Not all PDF readers honor this: Acrobat renders it but not Sumatra.
@@ -3481,6 +3538,7 @@ class FPDF(GraphicsStateMixin):
         link="",
         title=None,
         alt_text=None,
+        dims=None,
     ):
         """
         Put an image on the page.
@@ -3498,8 +3556,10 @@ class FPDF(GraphicsStateMixin):
         Args:
             name: either a string representing a file path to an image, an URL to an image,
                 an io.BytesIO, or a instance of `PIL.Image.Image`
-            x (float): optional horizontal position where to put the image on the page.
+            x (float, fpdf.enums.Align): optional horizontal position where to put the image on the page.
                 If not specified or equal to None, the current abscissa is used.
+                `Align.C` can also be passed to center the image horizontally;
+                and `Align.R` to place it along the right page margin
             y (float): optional vertical position where to put the image on the page.
                 If not specified or equal to None, the current ordinate is used.
                 After the call, the current ordinate is moved to the bottom of the image
@@ -3515,6 +3575,11 @@ class FPDF(GraphicsStateMixin):
             title (str): optional. Currently, never seem rendered by PDF readers.
             alt_text (str): optional alternative text describing the image,
                 for accessibility purposes. Displayed by some PDF readers on hover.
+            dims (Tuple[float]): optional dimensions as a tuple (width, height) to resize the image
+                before storing it in the PDF. Note that those are the **intrinsic** image dimensions,
+                but the image will still be rendered on the page with the width (`w`) and height (`h`)
+                provided as parameters. Note also that the `.oversized_images` attribute of FPDF
+                provides an automated way to auto-adjust those intrinsic image dimensions.
         """
         if type:
             warnings.warn(
@@ -3548,7 +3613,7 @@ class FPDF(GraphicsStateMixin):
         else:
             if not img:
                 img = load_image(name)
-            info = get_img_info(img, self.image_filter)
+            info = get_img_info(img, self.image_filter, dims)
             info["i"] = len(self.images) + 1
             info["usages"] = 1
             self.images[name] = info
@@ -3564,7 +3629,7 @@ class FPDF(GraphicsStateMixin):
         elif h == 0:
             h = w * info["h"] / info["w"]
 
-        if self.oversized_images and info["usages"] == 1:
+        if self.oversized_images and info["usages"] == 1 and not dims:
             info = self._downscale_image(name, img, info, w, h)
 
         # Flowing mode
@@ -3574,6 +3639,16 @@ class FPDF(GraphicsStateMixin):
             self.y += h
         if x is None:
             x = self.x
+        elif not isinstance(x, Number):
+            x = Align.coerce(x)
+            if x == Align.C:
+                x = (self.w - w) / 2
+            elif x == Align.R:
+                x = self.w - w - self.r_margin
+            elif x == Align.L:
+                x = self.l_margin
+            else:
+                raise ValueError(f"Unsupported 'x' value passed to .image(): {x}")
 
         stream_content = (
             f"q {w * self.k:.2f} 0 0 {h * self.k:.2f} {x * self.k:.2f} "
@@ -3587,7 +3662,7 @@ class FPDF(GraphicsStateMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        return info
+        return {**info, "rendered_width": w, "rendered_height": h}
 
     def _vector_image(
         self,
@@ -3648,6 +3723,8 @@ class FPDF(GraphicsStateMixin):
             self.set_xy(old_x, old_y)
         if link:
             self.link(x, y, w, h, link)
+
+        return {"rendered_width": w, "rendered_height": h}
 
     def _downscale_image(self, name, img, info, w, h):
         width_in_pt, height_in_pt = w * self.k, h * self.k
@@ -4304,7 +4381,7 @@ class FPDF(GraphicsStateMixin):
         }
 
     @check_page
-    def start_section(self, name, level=0):
+    def start_section(self, name, level=0, strict=True):
         """
         Start a section in the document outline.
         If section_title_styles have been configured,
@@ -4316,7 +4393,7 @@ class FPDF(GraphicsStateMixin):
         """
         if level < 0:
             raise ValueError('"level" mut be equal or greater than zero')
-        if self._outline and level > self._outline[-1].level + 1:
+        if strict and self._outline and level > self._outline[-1].level + 1:
             raise ValueError(
                 f"Incoherent hierarchy: cannot start a level {level} section after a level {self._outline[-1].level} one"
             )

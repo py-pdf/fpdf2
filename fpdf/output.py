@@ -37,14 +37,15 @@ ZOOM_CONFIGS = {  # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
 
 
 class ContentWithoutID:
-    pass
+    def serialize(self, _security_handler=None):
+        pass
 
 
 class PDFHeader(ContentWithoutID):
     def __init__(self, pdf_version):
         self.pdf_version = pdf_version
 
-    def serialize(self):
+    def serialize(self, _security_handler=None):
         return f"%PDF-{self.pdf_version}"
 
 
@@ -226,6 +227,7 @@ class PDFPage(PDFObject):
         "struct_parents",
         "resources",
         "parent",
+        "_index",
         "_width_pt",
         "_height_pt",
     )
@@ -235,6 +237,7 @@ class PDFPage(PDFObject):
         duration,
         transition,
         contents,
+        index,
     ):
         super().__init__()
         self.type = Name("Page")
@@ -247,7 +250,11 @@ class PDFPage(PDFObject):
         self.struct_parents = None
         self.resources = None  # must always be set before calling .serialize()
         self.parent = None  # must always be set before calling .serialize()
+        self._index = index
         self._width_pt, self._height_pt = None, None
+
+    def index(self):
+        return self._index
 
     def dimensions(self):
         "Return a pair (width, height) in the unit specified to FPDF constructor"
@@ -273,7 +280,7 @@ class PDFExtGState(PDFObject):
         self._dict_as_str = dict_as_str
 
     # method override
-    def serialize(self, obj_dict=None):
+    def serialize(self, obj_dict=None, _security_handler=None):
         return f"{self.id} 0 obj\n{self._dict_as_str}\nendobj"
 
 
@@ -284,8 +291,9 @@ class PDFXrefAndTrailer(ContentWithoutID):
         # Must be set before the call to serialize():
         self.catalog_obj = None
         self.info_obj = None
+        self.encryption_obj = None
 
-    def serialize(self):
+    def serialize(self, _security_handler=None):
         builder = self.output_builder
         startxref = str(len(builder.buffer))
         out = []
@@ -300,9 +308,13 @@ class PDFXrefAndTrailer(ContentWithoutID):
         out.append(f"/Root {pdf_ref(self.catalog_obj.id)}")
         out.append(f"/Info {pdf_ref(self.info_obj.id)}")
         fpdf = builder.fpdf
-        file_id = fpdf.file_id()
-        if file_id == -1:
-            file_id = fpdf._default_file_id(builder.buffer)
+        if self.encryption_obj:
+            out.append(f"/Encrypt {pdf_ref(self.encryption_obj.id)}")
+            file_id = fpdf._security_handler.file_id
+        else:
+            file_id = fpdf.file_id()
+            if file_id == -1:
+                file_id = fpdf._default_file_id(builder.buffer)
         if file_id:
             out.append(f"/ID [{file_id}]")
         out.append(">>")
@@ -336,6 +348,14 @@ class OutputProducer:
         # 1. Setup - Insert all PDF objects
         #    and assign unique consecutive numeric IDs to all of them
 
+        if fpdf._security_handler:
+            # get the file_id and generate passwords needed to encrypt streams and strings
+            file_id = fpdf.file_id()
+            if file_id == -1:
+                # no custom file id - use default file id so enryption passwords can be generated
+                file_id = fpdf._default_file_id(bytearray(0x00))
+            fpdf._security_handler.generate_passwords(file_id)
+
         self.pdf_objs.append(PDFHeader(fpdf.pdf_version))
         pages_root_obj = self._add_pages_root()
         catalog_obj = self._add_catalog()
@@ -353,6 +373,7 @@ class OutputProducer:
         outline_dict_obj, outline_items = self._add_document_outline()
         xmp_metadata_obj = self._add_xmp_metadata()
         info_obj = self._add_info()
+        encryption_obj = self._add_encryption()
         xref = PDFXrefAndTrailer(self)
         self.pdf_objs.append(xref)
 
@@ -372,10 +393,17 @@ class OutputProducer:
             page_obj.parent = pages_root_obj
             page_obj.resources = resources_dict_obj
             for annot in page_obj.annots:
+                page_dests = []
                 if annot.dest:
-                    dests.append(annot.dest)
+                    page_dests.append(annot.dest)
                 if annot.a and hasattr(annot.a, "dest"):
-                    dests.append(annot.a.dest)
+                    page_dests.append(annot.a.dest)
+                for dest in page_dests:
+                    if dest.page_number > len(page_objs):
+                        raise ValueError(
+                            f"Invalid reference to non-existing page {dest.page_number} present on page {page_obj.index()}: "
+                        )
+                dests.extend(page_dests)
             if not page_obj.annots:
                 # Avoid serializing an empty PDFArray:
                 page_obj.annots = None
@@ -388,6 +416,7 @@ class OutputProducer:
             struct_elem.pg = page_objs[struct_elem.page_number() - 1]
         xref.catalog_obj = catalog_obj
         xref.info_obj = info_obj
+        xref.encryption_obj = encryption_obj
 
         # 3. Serializing - Append all PDF objects to the buffer:
         assert (
@@ -396,6 +425,7 @@ class OutputProducer:
         assert (
             not self.offsets
         ), f"No offset should have been set at this stage: {len(self.offsets)}"
+
         for pdf_obj in self.pdf_objs:
             if isinstance(pdf_obj, ContentWithoutID):
                 # top header, xref table & trailer:
@@ -405,9 +435,11 @@ class OutputProducer:
                 trace_label = self.trace_labels_per_obj_id.get(pdf_obj.id)
             if trace_label:
                 with self._trace_size(trace_label):
-                    self._out(pdf_obj.serialize())
+                    self._out(
+                        pdf_obj.serialize(_security_handler=fpdf._security_handler)
+                    )
             else:
-                self._out(pdf_obj.serialize())
+                self._out(pdf_obj.serialize(_security_handler=fpdf._security_handler))
         self._log_final_sections_sizes()
 
         if fpdf._sign_key:
@@ -420,7 +452,6 @@ class OutputProducer:
                 fpdf._sign_hashalgo,
                 fpdf._sign_time,
             )
-
         return self.buffer
 
     def _out(self, data):
@@ -437,6 +468,10 @@ class OutputProducer:
         self.pdf_objs.append(pdf_obj)
         if trace_label:
             self.trace_labels_per_obj_id[self.obj_id] = trace_label
+        if isinstance(pdf_obj, PDFContentStream) and self.fpdf._security_handler:
+            if not isinstance(pdf_obj.content_stream(), (bytearray, bytes)):
+                pdf_obj._contents = pdf_obj.content_stream().encode("latin-1")
+            pdf_obj.encrypt(self.fpdf._security_handler)
         return self.obj_id
 
     def _add_pages_root(self):
@@ -468,7 +503,6 @@ class OutputProducer:
             )
             self._add_pdf_obj(cs_obj, "pages")
             page_obj.contents = cs_obj
-
         return page_objs
 
     def _add_annotations_as_objects(self):
@@ -587,8 +621,7 @@ class OutputProducer:
                 # allows searching the file and copying text from it.
                 bfChar = []
                 uni_to_new_code_char = font["subset"].dict()
-                for code in uni_to_new_code_char:
-                    code_mapped = uni_to_new_code_char.get(code)
+                for code, code_mapped in uni_to_new_code_char.items():
                     if code > 0xFFFF:
                         # Calculate surrogate pair
                         code_high = 0xD800 | (code - 0x10000) >> 10
@@ -787,7 +820,9 @@ class OutputProducer:
     def _add_xmp_metadata(self):
         if not self.fpdf.xmp_metadata:
             return None
-        xpacket = f'<?xpacket begin="ï»¿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n{self.fpdf.xmp_metadata}\n<?xpacket end="w"?>\n'
+        xpacket = f'<?xpacket begin="ï»¿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n{self.fpdf.xmp_metadata}\n<?xpacket end="w"?>\n'.encode(
+            "latin-1"
+        )
         pdf_obj = PDFXmpMetadata(xpacket)
         self._add_pdf_obj(pdf_obj)
         return pdf_obj
@@ -813,6 +848,14 @@ class OutputProducer:
         )
         self._add_pdf_obj(info_obj)
         return info_obj
+
+    def _add_encryption(self):
+        if self.fpdf._security_handler:
+            encryption_handler = self.fpdf._security_handler
+            pdf_obj = encryption_handler.get_encryption_obj()
+            self._add_pdf_obj(pdf_obj)
+            return pdf_obj
+        return None
 
     def _add_catalog(self):
         fpdf = self.fpdf
