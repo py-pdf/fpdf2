@@ -150,3 +150,27 @@ def test_encrypt_metadata(tmp_path):
     )
     pdf.set_xmp_metadata(XMP_METADATA)
     assert_pdf_equal(pdf, HERE / "encrypt_metadata.pdf", tmp_path)
+
+
+def test_encrypt_font(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(
+        "Quicksand", style="", fname=HERE.parent / "fonts" / "Quicksand-Regular.otf"
+    )
+    pdf.add_font(
+        "Quicksand", style="B", fname=HERE.parent / "fonts" / "Quicksand-Bold.otf"
+    )
+    pdf.add_font(
+        "Quicksand", style="I", fname=HERE.parent / "fonts" / "Quicksand-Italic.otf"
+    )
+    pdf.set_font("Quicksand", size=32)
+    text = (
+        "Lorem ipsum dolor, **consectetur adipiscing** elit,"
+        " eiusmod __tempor incididunt__ ut labore et dolore --magna aliqua--."
+    )
+    pdf.multi_cell(w=pdf.epw, txt=text, markdown=True)
+    pdf.ln()
+    pdf.multi_cell(w=pdf.epw, txt=text, markdown=True, align="L")
+    pdf.set_encryption(owner_password="fpdf2")
+    assert_pdf_equal(pdf, HERE / "encrypt_fonts.pdf", tmp_path)
