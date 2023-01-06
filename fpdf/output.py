@@ -555,6 +555,18 @@ class OutputProducer:
                     cmap[unicode] for unicode in uni_to_new_code_char if unicode in cmap
                 ]
 
+                missing_glyphs = [
+                    chr(unicode)
+                    for unicode in uni_to_new_code_char
+                    if unicode not in cmap
+                ]
+                if len(missing_glyphs) > 0:
+                    LOGGER.warn(
+                        "Font %s is missing the following glyphs: %s",
+                        fontname,
+                        ", ".join(missing_glyphs),
+                    )
+
                 # 2. make a subset
                 # notdef_outline=True means that keeps the white box for the .notdef glyph
                 # recommended_glyphs=True means that adds the .notdef, .null, CR, and space glyphs
