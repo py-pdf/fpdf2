@@ -1,3 +1,4 @@
+from os import devnull
 from pathlib import Path
 
 import pytest
@@ -112,3 +113,13 @@ def test_add_font_uppercase():
     pdf = FPDF()
     pdf.add_font(fname=HERE / "Roboto-BoldItalic.TTF")
     assert pdf.fonts is not None and len(pdf.fonts) != 0  # fonts add successful
+
+
+def test_font_missing_glyphs(caplog):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="Roboto", fname=HERE / "Roboto-Regular.ttf")
+    pdf.set_font("Roboto")
+    pdf.cell(txt="Test 𝕥𝕖𝕤𝕥 🆃🅴🆂🆃 😲")
+    pdf.output(devnull)
+    assert "Roboto is missing the following glyphs: 𝕥, 𝕖, 𝕤, 🆃, 🅴, 🆂, 😲" in caplog.text
