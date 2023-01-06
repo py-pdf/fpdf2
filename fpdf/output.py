@@ -561,7 +561,7 @@ class OutputProducer:
                     if unicode not in cmap
                 ]
                 if len(missing_glyphs) > 0:
-                    LOGGER.warn(
+                    LOGGER.warning(
                         "Font %s is missing the following glyphs: %s",
                         fontname,
                         ", ".join(missing_glyphs),
