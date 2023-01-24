@@ -751,6 +751,46 @@ class FPDF(GraphicsStateMixin):
         """
         self.str_alias_nb_pages = alias
 
+    def insert_page(
+        self, insert_location, orientation="", format="", same=False, duration=0, transition=None
+    ):
+        """
+        Inserts a new page in the document at a specified location.
+        A page will be added at the end of the PDF, and each page between
+        the specified index and the last page will me moved one page.
+
+        Args:
+            insert_location (int): The page number where the new page should be added.
+            orientation (str): "portrait" (can be abbreviated "P")
+                or "landscape" (can be abbreviated "L"). Default to "portrait".
+            format (str): "a3", "a4", "a5", "letter", "legal" or a tuple
+                (width, height). Default to "a4".
+            same (bool): indicates to use the same page format as the previous page.
+                Default to False.
+            duration (float): optional page’s display duration, i.e. the maximum length of time,
+                in seconds, that the page is displayed in presentation mode,
+                before the viewer application automatically advances to the next page.
+                Can be configured globally through the `.page_duration` FPDF property.
+                As of june 2021, onored by Adobe Acrobat reader, but ignored by Sumatra PDF reader.
+            transition (Transition child class): optional visual transition to use when moving
+                from another page to the given page during a presentation.
+                Can be configured globally through the `.page_transition` FPDF property.
+                As of june 2021, onored by Adobe Acrobat reader, but ignored by Sumatra PDF reader.
+        """
+        # Add a page at the end of the pdf
+        self.page = len(self.pages)
+        self.add_page(orientation, format, same, duration, transition)
+
+        # Loop over each page from the end to the insert location
+        for page_index in range(len(self.pages), insert_location, -1):
+            # Copy content from page page_index-1 to page_index
+            saved_content = self.pages[page_index].contents
+            self.pages[page_index].contents = self.pages[page_index-1].contents
+            self.pages[page_index-1].contents = saved_content
+
+        # After this loop, the newly created page is not located at insert_location
+
+
     def add_page(
         self, orientation="", format="", same=False, duration=0, transition=None
     ):
