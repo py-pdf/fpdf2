@@ -353,6 +353,7 @@ class FPDF(GraphicsStateMixin):
         self.pdf_version = "1.3"  # Set default PDF version No.
         self.creation_date = datetime.now(timezone.utc)
         self._security_handler = None
+        self._fallback_fonts = None
 
         self._current_draw_context = None
         self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
@@ -1981,6 +1982,12 @@ class FPDF(GraphicsStateMixin):
         if self.page > 0:
             self._out(f"BT {stretching:.2f} Tz ET")
 
+    def set_fallback_fonts(self, fallback_fonts):
+        for i in range(len(fallback_fonts)):
+            fallback_fonts[i] = fallback_fonts[i].lower()
+            # to be done: validate all fonts were previously added and are valid
+        self._fallback_fonts = tuple(fallback_fonts)
+
     def add_link(self, y=0, x=0, page=-1, zoom="null"):
         """
         Creates a new internal link and returns its identifier.
@@ -3093,7 +3100,7 @@ class FPDF(GraphicsStateMixin):
         if not txt:
             return tuple()
         if not markdown:
-            return tuple([Fragment(txt, self._get_current_graphics_state(), self.k)])
+            return self._parse_chars(txt)
         prev_font_style = self.font_style
         styled_txt_frags = tuple(self._markdown_parse(txt))
         page = self.page
@@ -3112,6 +3119,50 @@ class FPDF(GraphicsStateMixin):
         self.set_font(style=prev_font_style)
         self.page = page
         return styled_txt_frags
+
+    def _parse_chars(self, txt):
+        "Check if the font has all the necessary glyphs. If a glyph front a fallback font is used, break into fragments"
+        fragments = []
+        txt_frag = []
+        if self.current_font["type"] != "TTF":
+            return tuple([Fragment(txt, self._get_current_graphics_state(), self.k)])
+        ttf_font = ttLib.TTFont(self.current_font["ttffile"], fontNumber=0)
+        font_glyphs = ttf_font.getBestCmap().keys()
+        for i in range(len(txt)):
+            if ord(txt[i]) in font_glyphs:
+                txt_frag.append(txt[i])
+            else:
+                if txt_frag:
+                    fragments.append(
+                        Fragment(txt_frag, self._get_current_graphics_state(), self.k)
+                    )
+                    txt_frag = []
+                fallback_font = self._get_fallback_font(txt[i])
+                if fallback_font:
+                    gstate = self._get_current_graphics_state()
+                    gstate["font_family"] = fallback_font
+                    frag = Fragment(txt[i], gstate, self.k)
+                    frag.font = self.fonts[fallback_font]
+                    fragments.append(frag)
+                else:
+                    raise EnvironmentError(
+                        f"Character {txt[i]} is not present on the current or fallback fonts."
+                    )
+        if txt_frag:
+            fragments.append(
+                Fragment(txt_frag, self._get_current_graphics_state(), self.k)
+            )
+        return tuple(fragments)
+
+    def _get_fallback_font(self, char):
+        "returns which fallback font has the requested glyph"
+        if not self._fallback_fonts:
+            return None
+        for font in self._fallback_fonts:
+            ttf_font = ttLib.TTFont(self.fonts[font]["ttffile"], fontNumber=0)
+            if ord(char) in ttf_font.getBestCmap().keys():
+                return font
+        return None
 
     def _markdown_parse(self, txt):
         "Split some text into fragments based on styling: **bold**, __italics__, --underlined--"
@@ -3132,6 +3183,9 @@ class FPDF(GraphicsStateMixin):
             fragment = Fragment(txt_frag, gstate, self.k)
             txt_frag = []
             return fragment
+
+        ttf_font = ttLib.TTFont(self.current_font["ttffile"], fontNumber=0)
+        font_glyphs = ttf_font.getBestCmap().keys()
 
         while txt:
             is_marker = txt[:2] in (
@@ -3167,6 +3221,20 @@ class FPDF(GraphicsStateMixin):
                     gstate["text_color"] = self.MARKDOWN_LINK_COLOR
                 yield Fragment(list(link_text), gstate, self.k, url=link_url)
                 continue
+            if not ord(txt[0]) in font_glyphs:
+                fallback_font = self._get_fallback_font(txt[0])
+                if fallback_font:
+                    if txt_frag:
+                        yield frag()
+                    gstate = self._get_current_graphics_state()
+                    gstate["font_family"] = fallback_font
+                    yield Fragment(txt[0], gstate, self.k)
+                    txt = txt[1:]
+                    continue
+                else:
+                    raise EnvironmentError(
+                        f"Character {txt[0]} is not present on the current or fallback fonts."
+                    )
             txt_frag.append(txt[0])
             txt = txt[1:]
         if txt_frag:
