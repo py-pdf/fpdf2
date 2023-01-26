@@ -16,7 +16,7 @@ Describe the bug
 
 **Error details**
 If an exception is raised, it is very important that you provide the full error message.
-Otherwise members of the fpdf2 won't be able to help you with your problem.
+Otherwise members of the fpdf2 community won't be able to help you with your problem.
 
 **Minimal code**
 Please include some minimal Python code reproducing your issue:

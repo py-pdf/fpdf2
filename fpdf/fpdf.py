@@ -91,7 +91,7 @@ from .util import (
 )
 
 # Public global variables:
-FPDF_VERSION = "2.6.0"
+FPDF_VERSION = "2.6.1"
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),
     "a4": (595.28, 841.89),
@@ -2012,12 +2012,9 @@ class FPDF(GraphicsStateMixin):
             left=x * self.k,
             zoom=zoom,
         )
-        try:
-            return next(i for i, l in self.links.items() if l == link)
-        except StopIteration:
-            link_index = len(self.links) + 1
-            self.links[link_index] = link
-            return link_index
+        link_index = len(self.links) + 1
+        self.links[link_index] = link
+        return link_index
 
     def set_link(self, link, y=0, x=0, page=-1, zoom="null"):
         """
@@ -2068,6 +2065,10 @@ class FPDF(GraphicsStateMixin):
                     link in self.links
                 ), f"Link with an invalid index: {link} (doc #links={len(self.links)})"
                 dest = self.links[link]
+                if not dest.page_number:
+                    raise ValueError(
+                        f"Cannot insert link {link} with no page number assigned"
+                    )
         link_annot = AnnotationDict(
             "Link",
             x=x * self.k,

@@ -22,6 +22,8 @@ pdf.output("fonts_emoji_glyph.pdf")
 
 This code produces this PDF file: [fonts_emoji_glyph.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/fonts/fonts_emoji_glyph.pdf)
 
+Another font supporting emojis is: [twemoji](https://github.com/13rac1/twemoji-color-font)
+
 ## Symbols ##
 
 The **Symbol** font is one of the built-in fonts in the PDF format.

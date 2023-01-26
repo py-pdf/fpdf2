@@ -32,6 +32,7 @@ It used to be `0` and is now set to the current value of `FPDF.font_size`.
 ## Usage
 
 - [PyPI download stats](https://pypistats.org/packages/fpdf2) - Downloads per release on [Pepy](https://pepy.tech/project/fpdf2)
+  - [pip trends: fpdf2 VS other PDF rendering libs](https://piptrends.com/compare/fpdf2-vs-fpdf-vs-PyPDF2-vs-borb-vs-reportlab)
 - packages using `fpdf2` can be listed using [GitHub Dependency graph: Dependents](https://github.com/PyFPDF/fpdf2/network/dependents),
 [Wheelodex](https://www.wheelodex.org/projects/fpdf2/rdepends/) or [Watchman Pypi](http://www.watchman-pypi.com).
 Some are also listed on [its libraries.io page](https://libraries.io/pypi/fpdf2).

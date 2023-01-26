@@ -153,7 +153,7 @@ def check_signature(pdf, trusted_cert_paths, linearize=False):
 
     trusted_certs = []
     for cert_filepath in trusted_cert_paths:
-        with open(cert_filepath, encoding="utf8") as cert_file:
+        with open(cert_filepath, "rb") as cert_file:
             trusted_certs.append(cert_file.read())
     results = endesive_pdf.verify(pdf.output(linearize=linearize), trusted_certs)
     for hash_ok, signature_ok, cert_ok in results:
