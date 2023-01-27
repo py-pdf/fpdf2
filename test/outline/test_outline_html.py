@@ -1,8 +1,8 @@
 from pathlib import Path
+import warnings
 
 from fpdf import FPDF, HTML2FPDF
 from test.conftest import assert_pdf_equal
-import pytest
 
 
 HERE = Path(__file__).resolve().parent
@@ -240,23 +240,27 @@ def test_html_toc_with_h1_as_2nd_heading(tmp_path):  # issue 239
     assert_pdf_equal(pdf, HERE / "html_toc_with_h1_as_2nd_heading.pdf", tmp_path)
 
 
-def test_custom_HTML2FPDF(tmp_path):  # issue 240
-    class CustomHTML2FPDF(HTML2FPDF):
-        def render_toc(self, pdf, outline):
-            pdf.cell(txt="Table of contents:", new_x="LMARGIN", new_y="NEXT")
-            for section in outline:
-                pdf.cell(
-                    txt=f"* {section.name} (page {section.page_number})",
-                    new_x="LMARGIN",
-                    new_y="NEXT",
-                )
+class CustomHTML2FPDF(HTML2FPDF):
+    def render_toc(self, pdf, outline):
+        pdf.cell(txt="Table of contents:", new_x="LMARGIN", new_y="NEXT")
+        for section in outline:
+            pdf.cell(
+                txt=f"* {section.name} (page {section.page_number})",
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
 
-    class CustomPDF(FPDF):
+
+def test_custom_HTML2FPDF(tmp_path):  # issue 240 & 670
+    class PDF(FPDF):
         HTML2FPDF_CLASS = CustomHTML2FPDF
 
-    pdf = CustomPDF()
+    pdf = PDF()
     pdf.add_page()
-    with pytest.warns(DeprecationWarning):
+
+    # Ensure no warning is raised:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         pdf.write_html(
             """<toc></toc>
         <h1>Level 1</h1>

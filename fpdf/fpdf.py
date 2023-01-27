@@ -406,15 +406,9 @@ class FPDF(GraphicsStateMixin):
         kwargs2 = vars(self)
         # Method arguments must override class & instance attributes:
         kwargs2.update(kwargs)
-        h2p = self.HTML2FPDF_CLASS(self, *args, **kwargs2)
-        if self.HTML2FPDF_CLASS != HTML2FPDF:
-            warnings.warn(
-                "The HTML2FPDF_CLASS is deprecated. It will be removed in a future release.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
+        html2pdf = self.HTML2FPDF_CLASS(self, *args, **kwargs2)
         text = unescape(text)  # To deal with HTML entities
-        h2p.feed(text)
+        html2pdf.feed(text)
 
     def _set_min_pdf_version(self, version):
         self.pdf_version = max(self.pdf_version, version)
@@ -4454,7 +4448,9 @@ class FPDF(GraphicsStateMixin):
         self.text_color = prev_text_color
         self.underline = prev_underline
 
-    def output(self, name="", dest="", linearize=False):
+    def output(
+        self, name="", dest="", linearize=False, output_producer_class=OutputProducer
+    ):
         """
         Output PDF to some destination.
         The method first calls [close](close.md) if necessary to terminate the document.
@@ -4466,6 +4462,7 @@ class FPDF(GraphicsStateMixin):
         Args:
             name (str): optional File object or file path where to save the PDF under
             dest (str): [**DEPRECATED since 2.3.0**] unused, will be removed in a later version
+            output_producer_class (class): use a custom class for PDF file generation
         """
         if dest:
             warnings.warn(
@@ -4486,9 +4483,9 @@ class FPDF(GraphicsStateMixin):
                 self._insert_table_of_contents()
             if self.str_alias_nb_pages:
                 self._substitute_page_number()
-            output_producer = (
-                LinearizedOutputProducer(self) if linearize else OutputProducer(self)
-            )
+            if linearize:
+                output_producer_class = LinearizedOutputProducer
+            output_producer = output_producer_class(self)
             self.buffer = output_producer.bufferize()
         if name:
             if isinstance(name, os.PathLike):
