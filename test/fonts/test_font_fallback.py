@@ -2,7 +2,6 @@ from pathlib import Path
 
 from fpdf import FPDF
 from fpdf.enums import XPos, YPos
-from fpdf.fonts import fpdf_charwidths
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent

@@ -1983,8 +1983,8 @@ class FPDF(GraphicsStateMixin):
             self._out(f"BT {stretching:.2f} Tz ET")
 
     def set_fallback_fonts(self, fallback_fonts):
-        for i in range(len(fallback_fonts)):
-            fallback_fonts[i] = fallback_fonts[i].lower()
+        for i, font in enumerate(fallback_fonts):
+            fallback_fonts[i] = font.lower()
             # to be done: validate all fonts were previously added and are valid
         self._fallback_fonts = tuple(fallback_fonts)
 
@@ -3129,25 +3129,25 @@ class FPDF(GraphicsStateMixin):
             return tuple([Fragment(txt, self._get_current_graphics_state(), self.k)])
         ttf_font = ttLib.TTFont(self.current_font["ttffile"], fontNumber=0)
         font_glyphs = ttf_font.getBestCmap().keys()
-        for i in range(len(txt)):
-            if ord(txt[i]) in font_glyphs:
-                txt_frag.append(txt[i])
+        for char in txt:
+            if char == "\n" or ord(char) in font_glyphs:
+                txt_frag.append(char)
             else:
                 if txt_frag:
                     fragments.append(
                         Fragment(txt_frag, self._get_current_graphics_state(), self.k)
                     )
                     txt_frag = []
-                fallback_font = self._get_fallback_font(txt[i])
+                fallback_font = self._get_fallback_font(char)
                 if fallback_font:
                     gstate = self._get_current_graphics_state()
                     gstate["font_family"] = fallback_font
-                    frag = Fragment(txt[i], gstate, self.k)
+                    frag = Fragment(char, gstate, self.k)
                     frag.font = self.fonts[fallback_font]
                     fragments.append(frag)
                 else:
                     raise EnvironmentError(
-                        f"Character {txt[i]} is not present on the current or fallback fonts."
+                        f"Character {char} is not present on the current or fallback fonts."
                     )
         if txt_frag:
             fragments.append(
@@ -3185,8 +3185,11 @@ class FPDF(GraphicsStateMixin):
             txt_frag = []
             return fragment
 
-        ttf_font = ttLib.TTFont(self.current_font["ttffile"], fontNumber=0)
-        font_glyphs = ttf_font.getBestCmap().keys()
+        if self.current_font and self.current_font["type"] == "TTF":
+            ttf_font = ttLib.TTFont(self.current_font["ttffile"], fontNumber=0)
+            font_glyphs = ttf_font.getBestCmap().keys()
+        else:
+            ttf_font = None
 
         while txt:
             is_marker = txt[:2] in (
@@ -3222,7 +3225,7 @@ class FPDF(GraphicsStateMixin):
                     gstate["text_color"] = self.MARKDOWN_LINK_COLOR
                 yield Fragment(list(link_text), gstate, self.k, url=link_url)
                 continue
-            if not ord(txt[0]) in font_glyphs:
+            if ttf_font and txt[0] != "\n" and not ord(txt[0]) in font_glyphs:
                 fallback_font = self._get_fallback_font(txt[0])
                 if fallback_font:
                     if txt_frag:
@@ -3232,10 +3235,9 @@ class FPDF(GraphicsStateMixin):
                     yield Fragment(txt[0], gstate, self.k)
                     txt = txt[1:]
                     continue
-                else:
-                    raise EnvironmentError(
-                        f"Character {txt[0]} is not present on the current or fallback fonts."
-                    )
+                raise EnvironmentError(
+                    f"Character {txt[0]} is not present on the current or fallback fonts."
+                )
             txt_frag.append(txt[0])
             txt = txt[1:]
         if txt_frag:
