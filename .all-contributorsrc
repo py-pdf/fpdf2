@@ -775,6 +775,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "SfinxV",
+      "name": "SfinxV",
+      "avatar_url": "https://avatars.githubusercontent.com/u/122991252?v=4",
+      "profile": "https://github.com/SfinxV",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
