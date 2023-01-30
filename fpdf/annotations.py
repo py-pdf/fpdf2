@@ -95,11 +95,11 @@ class AnnotationDict(AnnotationMixin):
         "f_s",
     )
 
-    def serialize(self, security_handler, obj_id):
+    def serialize(self, _security_handler=None, _obj_id=None):
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
-            security_handler=security_handler,
-            obj_id=obj_id,
+            _security_handler=_security_handler,
+            _obj_id=_obj_id,
         )
         return pdf_dict(obj_dict)
 
@@ -150,7 +150,7 @@ class FileSpec(NamedTuple):
     basename: str
     desc: str
 
-    def serialize(self, security_handler=None, obj_id=None):
+    def serialize(self, _security_handler=None, _obj_id=None):
         obj_dict = {
             "/Type": "/Filespec",
             "/F": enclose_in_parens(self.basename),
