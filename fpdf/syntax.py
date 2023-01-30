@@ -220,7 +220,6 @@ class PDFContentStream(PDFObject):
         return self._contents
 
     def encrypt(self, security_handler):
-        # print('encrypting ', self.id)
         self._contents = security_handler.encrypt(self._contents, self.id)
         self.length = len(self._contents)
 

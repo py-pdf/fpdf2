@@ -18,6 +18,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ### Added
 - new translation of the tutorial in [简体中文](https://pyfpdf.github.io/fpdf2/Tutorial-zh.html) - thanks to @Bubbu0129
+### Fixed
+- hyperlinks were not working on encrypted files
 
 ## [2.6.1] - 2023-01-13
 ### Added
