@@ -174,3 +174,12 @@ def test_encrypt_font(tmp_path):
     pdf.multi_cell(w=pdf.epw, txt=text, markdown=True, align="L")
     pdf.set_encryption(owner_password="fpdf2")
     assert_pdf_equal(pdf, HERE / "encrypt_fonts.pdf", tmp_path)
+
+
+def test_encryption_with_hyperlink(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica")
+    pdf.cell(txt="hyperlink", link="https://github.com/PyFPDF/fpdf2")
+    pdf.set_encryption(owner_password="fpdf2")
+    assert_pdf_equal(pdf, HERE / "encryption_with_hyperlink.pdf", tmp_path)
