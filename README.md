@@ -227,6 +227,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/erap129"><img src="https://avatars.githubusercontent.com/u/30405025?v=4?s=100" width="100px;" alt="Elad Rapaport"/><br /><sub><b>Elad Rapaport</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=erap129" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/SfinxV"><img src="https://avatars.githubusercontent.com/u/122991252?v=4?s=100" width="100px;" alt="SfinxV"/><br /><sub><b>SfinxV</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3ASfinxV" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/bramantoleksono"><img src="https://avatars.githubusercontent.com/u/86646351?v=4?s=100" width="100px;" alt="bramantoleksono"/><br /><sub><b>bramantoleksono</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Abramantoleksono" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/TheNerdy907"><img src="https://avatars.githubusercontent.com/u/51904226?v=4?s=100" width="100px;" alt="TheNerdy907"/><br /><sub><b>TheNerdy907</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3ATheNerdy907" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
