@@ -49,6 +49,16 @@ pdf.image("imgB.jpg", h=pdf.eph, w=pdf.epw/2, x=pdf.epw/2)  # full page height, 
 pdf.output("side-by-side.pdf")
 ```
 
+### Fitting an image inside a rectangle ###
+
+This unit test demonstrates how to scale an image vertically to fill a rectangle height, keeping its aspect ratio,
+and ensuring it does overflow the rectangle width in the process:
+
+* [test_image_fit.py](https://github.com/PyFPDF/fpdf2/blob/master/test/image/test_image_fit.py)
+* resulting document: [image_fit_in_rect.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/image/image_fit_in_rect.pdf)
+
+The same approach can be used to scale an image horizontally, ensuring it does not overflow its height.
+
 ### Blending images ###
 
 You can control the color blending mode of overlapping images.

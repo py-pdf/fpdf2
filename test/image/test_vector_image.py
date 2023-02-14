@@ -14,32 +14,119 @@ HERE = Path(__file__).resolve().parent
 def test_svg_image(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
+    # This image has a 300x300 viewbox and width=100% and height=100%:
     pdf.image(HERE / "../svg/svg_sources/SVG_logo.svg")
     assert_pdf_equal(pdf, HERE / "svg_image.pdf", tmp_path)
+
+
+def test_svg_image_fixed_dimensions(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    # This image has a 300x300 viewbox and width=100 and height=100:
+    img = pdf.image(HERE / "../svg/svg_sources/SVG_logo_fixed_dimensions.svg")
+    assert img["rendered_width"] == 100
+    assert img["rendered_height"] == 100
+    assert_pdf_equal(pdf, HERE / "svg_image_fixed_dimensions.pdf", tmp_path)
+
+
+def test_svg_image_no_dimensions(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    # This image has a 300x300 viewbox but no width/height:
+    pdf.image(HERE / "../svg/svg_sources/SVG_logo_no_dimensions.svg")
+    assert_pdf_equal(pdf, HERE / "svg_image_no_dimensions.pdf", tmp_path)
+
+
+def test_svg_image_no_viewbox(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    # This image has no viewbox and width=100 and height=200:
+    img = pdf.image(HERE / "../svg/svg_sources/simple_rect_no_viewbox.svg")
+    assert img["rendered_width"] == 100
+    assert img["rendered_height"] == 200
+    assert_pdf_equal(pdf, HERE / "svg_image_no_viewbox.pdf", tmp_path)
 
 
 def test_svg_image_with_custom_width(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.image(HERE / "../svg/svg_sources/SVG_logo.svg", w=60)
+    # This image has a 300x300 viewbox and width=100% and height=100%:
+    img = pdf.image(HERE / "../svg/svg_sources/SVG_logo.svg", w=60)
+    assert img["rendered_width"] == 60
     assert_pdf_equal(pdf, HERE / "svg_image_with_custom_width.pdf", tmp_path)
 
 
-def test_svg_image_no_dimensions():
+def test_svg_image_with_custom_width_and_no_dimensions(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
-    with pytest.raises(ValueError):
-        pdf.image(HERE / "../svg/svg_sources/SVG_logo_no_dimensions.svg")
+    # This image has a 300x300 viewbox but no width/height:
+    img = pdf.image(HERE / "../svg/svg_sources/SVG_logo_no_dimensions.svg", w=60)
+    assert img["rendered_width"] == 60
+    assert_pdf_equal(
+        pdf, HERE / "svg_image_with_custom_width_and_no_dimensions.pdf", tmp_path
+    )
+
+
+def test_svg_image_with_custom_width_and_no_viewbox(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    # This image has no viewbox and width=100 and height=200:
+    img = pdf.image(HERE / "../svg/svg_sources/simple_rect_no_viewbox.svg", w=60)
+    assert img["rendered_width"] == 60
+    assert_pdf_equal(
+        pdf, HERE / "svg_image_with_custom_width_and_no_viewbox.pdf", tmp_path
+    )
+
+
+def test_svg_image_with_no_dimensions_and_custom_width(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    # This image has a 300x300 viewbox but no width/height:
+    img = pdf.image(HERE / "../svg/svg_sources/SVG_logo_no_dimensions.svg", w=60)
+    assert img["rendered_width"] == 60
+    assert_pdf_equal(
+        pdf, HERE / "svg_image_with_no_dimensions_and_custom_width.pdf", tmp_path
+    )
 
 
 def test_svg_image_with_custom_size(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
+    # This image has a 300x300 viewbox but no width/height:
     pdf.image(
         HERE / "../svg/svg_sources/SVG_logo_no_dimensions.svg", x=50, y=50, w=30, h=60
     )
-    pdf.rect(x=50, y=50, w=30, h=60)  # Displaying the bounding box
+    pdf.rect(x=50, y=50, w=30, h=60)  # Displays the bounding box
     assert_pdf_equal(pdf, HERE / "svg_image_with_custom_size.pdf", tmp_path)
+
+
+def test_svg_image_with_custom_size_and_no_viewbox(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    # This image has no viewbox and width=100 and height=200:
+    img = pdf.image(
+        HERE / "../svg/svg_sources/simple_rect_no_viewbox.svg", x=50, y=50, w=30, h=60
+    )
+    assert img["rendered_width"] == 30
+    assert img["rendered_height"] == 60
+    pdf.rect(x=50, y=50, w=30, h=60)  # Displaying the bounding box
+    assert_pdf_equal(
+        pdf, HERE / "svg_image_with_custom_size_and_no_viewbox.pdf", tmp_path
+    )
+
+
+def test_svg_image_no_viewbox_nor_width_and_height():
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    with pytest.raises(ValueError):
+        pdf.image(
+            HERE / "../svg/svg_sources/simple_rect_no_viewbox_nor_width_and_height.svg"
+        )
+    with pytest.raises(ValueError):
+        pdf.image(
+            HERE / "../svg/svg_sources/simple_rect_no_viewbox_nor_width_and_height.svg",
+            w=60,
+        )
 
 
 def test_svg_image_style_inherited_from_fpdf(tmp_path):
@@ -55,13 +142,6 @@ def test_svg_image_style_inherited_from_fpdf(tmp_path):
         )
     )
     assert_pdf_equal(pdf, HERE / "svg_image_style_inherited_from_fpdf.pdf", tmp_path)
-
-
-def test_svg_image_fixed_dimensions(tmp_path):
-    pdf = fpdf.FPDF()
-    pdf.add_page()
-    pdf.image(HERE / "../svg/svg_sources/SVG_logo_fixed_dimensions.svg")
-    assert_pdf_equal(pdf, HERE / "svg_image_fixed_dimensions.pdf", tmp_path)
 
 
 def test_svg_image_from_bytesio(tmp_path):

@@ -18,10 +18,13 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.6.2] - Not released yet
 ### Added
+- new method `FPDF.preload_image()`: [documentation](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.preload_image). Example use case to fit an image in a rectangle: [documentation](https://pyfpdf.github.io/fpdf2/Images.html#fitting-an-image-inside-a-rectangle)
 - new translation of the tutorial in [简体中文](https://pyfpdf.github.io/fpdf2/Tutorial-zh.html) - thanks to @Bubbu0129
 ### Fixed
 - hyperlinks were not working on encrypted files - thanks to @andersonhc
 - all `TitleStyle` constructor parameters are now effectively optional
+### Changed
+- vector images parsing is now more robust: `fpdf2` can now embed SVG files without `viewPort` or no `height` / `width`
 
 ## [2.6.1] - 2023-01-13
 ### Added

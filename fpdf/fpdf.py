@@ -113,6 +113,34 @@ LAYOUT_ALIASES = {
 }
 
 
+class ImageInfo(dict):
+    "Information about a raster image used in the PDF document"
+
+    @property
+    def width(self):
+        "Intrinsic image width"
+        return self["w"]
+
+    @property
+    def height(self):
+        "Intrinsic image height"
+        return self["h"]
+
+    @property
+    def rendered_width(self):
+        "Only available if the image has been placed on the document"
+        return self["rendered_width"]
+
+    @property
+    def rendered_height(self):
+        "Only available if the image has been placed on the document"
+        return self["rendered_height"]
+
+    def __str__(self):
+        d = {k: ("..." if k in ("data", "smask") else v) for k, v in self.items()}
+        return f"ImageInfo({d})"
+
+
 class TitleStyle(NamedTuple):
     font_family: Optional[str] = None
     font_style: Optional[str] = None
@@ -262,7 +290,7 @@ class FPDF(GraphicsStateMixin):
         self.page = 0  # current page number
         self.pages = {}  # array of PDFPage objects starting at index 1
         self.fonts = {}  # map font string keys to dicts describing the fonts used
-        self.images = {}  # map image identifiers to dicts describing the images
+        self.images = {}  # map image identifiers to dicts describing the raster images
         self.links = {}  # array of Destination objects starting at index 1
         self.embedded_files = []  # array of PDFEmbeddedFile
 
@@ -3574,6 +3602,8 @@ class FPDF(GraphicsStateMixin):
                 but the image will still be rendered on the page with the width (`w`) and height (`h`)
                 provided as parameters. Note also that the `.oversized_images` attribute of FPDF
                 provides an automated way to auto-adjust those intrinsic image dimensions.
+
+        Returns: an instance of `ImageInfo`
         """
         if type:
             warnings.warn(
@@ -3585,32 +3615,9 @@ class FPDF(GraphicsStateMixin):
             # Insert it as a PDF path:
             img = load_image(str(name))
             return self._vector_image(img, x, y, w, h, link, title, alt_text)
-        if isinstance(name, str):
-            img = None
-        elif isinstance(name, Image):
-            bytes = name.tobytes()
-            img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
-            img_hash.update(bytes)
-            name, img = img_hash.hexdigest(), name
-        elif isinstance(name, io.BytesIO):
-            bytes = name.getvalue().strip()
-            if _is_svg(bytes):
-                return self._vector_image(name, x, y, w, h, link, title, alt_text)
-            img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
-            img_hash.update(bytes)
-            name, img = img_hash.hexdigest(), name
-        else:
-            name, img = str(name), name
-        info = self.images.get(name)
-        if info:
-            info["usages"] += 1
-        else:
-            if not img:
-                img = load_image(name)
-            info = get_img_info(img, self.image_filter, dims)
-            info["i"] = len(self.images) + 1
-            info["usages"] = 1
-            self.images[name] = info
+        if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
+            return self._vector_image(name, x, y, w, h, link, title, alt_text)
+        name, img, info = self.preload_image(name, dims)
         if "smask" in info:
             self._set_min_pdf_version("1.4")
 
@@ -3656,7 +3663,48 @@ class FPDF(GraphicsStateMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        return {**info, "rendered_width": w, "rendered_height": h}
+        return ImageInfo(**info, rendered_width=w, rendered_height=h)
+
+    def preload_image(self, name, dims=None):
+        """
+        Read a raster (= non-vector) image and loads it in memory in this FPDF instance.
+        Following this call, the image is inserted in `.images`,
+        and following calls to this method (or `FPDF.image`) will return (or re-use)
+        the same cached values, without re-reading the image.
+
+        Args:
+            name: either a string representing a file path to an image, an URL to an image,
+                an io.BytesIO, or a instance of `PIL.Image.Image`
+            dims (Tuple[float]): optional dimensions as a tuple (width, height) to resize the image
+                before storing it in the PDF.
+
+        Returns: an instance of `ImageInfo`
+        """
+        if isinstance(name, str):
+            img = None
+        elif isinstance(name, Image):
+            bytes = name.tobytes()
+            img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
+            img_hash.update(bytes)
+            name, img = img_hash.hexdigest(), name
+        elif isinstance(name, io.BytesIO):
+            bytes = name.getvalue().strip()
+            img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
+            img_hash.update(bytes)
+            name, img = img_hash.hexdigest(), name
+        else:
+            name, img = str(name), name
+        info = self.images.get(name)
+        if info:
+            info["usages"] += 1
+        else:
+            if not img:
+                img = load_image(name)
+            info = ImageInfo(get_img_info(img, self.image_filter, dims))
+            info["i"] = len(self.images) + 1
+            info["usages"] = 1
+            self.images[name] = info
+        return name, img, info
 
     def _vector_image(
         self,
@@ -3670,27 +3718,42 @@ class FPDF(GraphicsStateMixin):
         alt_text=None,
     ):
         svg = SVGObject(img.getvalue())
+        if not svg.viewbox and svg.width and svg.height:
+            warnings.warn(
+                '<svg> has no "viewBox", using its "width" & "height" as default "viewBox"'
+            )
+            svg.viewbox = 0, 0, svg.width, svg.height
         if w == 0 and h == 0:
-            if not svg.width or not svg.height:
-                raise ValueError(
-                    '<svg> has no "height" / "width": w= or h= must be provided to FPDF.image()'
+            if svg.width and svg.height:
+                w = (
+                    svg.width * self.epw / 100
+                    if isinstance(svg.width, Percent)
+                    else svg.width
                 )
-            w = (
-                svg.width * self.epw / 100
-                if isinstance(svg.width, Percent)
-                else svg.width
-            )
-            h = (
-                svg.height * self.eph / 100
-                if isinstance(svg.height, Percent)
-                else svg.height
-            )
-        else:
-            _, _, vw, vh = svg.viewbox
+                h = (
+                    svg.height * self.eph / 100
+                    if isinstance(svg.height, Percent)
+                    else svg.height
+                )
+            elif svg.viewbox:
+                _, _, w, h = svg.viewbox
+            else:
+                raise ValueError(
+                    '<svg> has no "viewBox" nor "height" / "width": w= and h= must be provided to FPDF.image()'
+                )
+        elif w == 0 or h == 0:
+            if svg.width and svg.height:
+                svg_width, svg_height = svg.width, svg.height
+            elif svg.viewbox:
+                _, _, svg_width, svg_height = svg.viewbox
+            else:
+                raise ValueError(
+                    '<svg> has no "viewBox" nor "height" / "width": w= and h= must be provided to FPDF.image()'
+                )
             if w == 0:
-                w = vw * h / vh
-            elif h == 0:
-                h = vh * w / vw
+                w = h * svg_width / svg_height
+            else:  # h == 0
+                h = w * svg_height / svg_width
 
         # Flowing mode
         if y is None:
@@ -3718,7 +3781,7 @@ class FPDF(GraphicsStateMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        return {"rendered_width": w, "rendered_height": h}
+        return ImageInfo(rendered_width=w, rendered_height=h)
 
     def _downscale_image(self, name, img, info, w, h):
         width_in_pt, height_in_pt = w * self.k, h * self.k
@@ -3766,8 +3829,8 @@ class FPDF(GraphicsStateMixin):
                         )
                     info["usages"] += 1
                 else:
-                    info = get_img_info(
-                        img or load_image(name), self.image_filter, dims
+                    info = ImageInfo(
+                        get_img_info(img or load_image(name), self.image_filter, dims)
                     )
                     info["i"] = len(self.images) + 1
                     info["usages"] = 1
