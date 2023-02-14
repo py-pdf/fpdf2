@@ -22,6 +22,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - new translation of the tutorial in [简体中文](https://pyfpdf.github.io/fpdf2/Tutorial-zh.html) - thanks to @Bubbu0129
 ### Fixed
 - hyperlinks were not working on encrypted files - thanks to @andersonhc
+- unicode (non limited to ASCII) text can now be provided as metadata [#685](https://github.com/PyFPDF/fpdf2/issues/685)
 - all `TitleStyle` constructor parameters are now effectively optional
 ### Changed
 - vector images parsing is now more robust: `fpdf2` can now embed SVG files without `viewPort` or no `height` / `width`

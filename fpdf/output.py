@@ -9,7 +9,14 @@ from .enums import SignatureFlag
 from .errors import FPDFException
 from .outline import build_outline_objs
 from .sign import Signature, sign_content
-from .syntax import build_obj_dict, Name, PDFArray, PDFContentStream, PDFObject
+from .syntax import (
+    build_obj_dict,
+    Name,
+    PDFArray,
+    PDFContentStream,
+    PDFObject,
+    PDFString,
+)
 from .syntax import create_dictionary_string as pdf_dict
 from .syntax import create_list_string as pdf_list
 from .syntax import iobj_ref as pdf_ref
@@ -110,12 +117,12 @@ class PDFInfo(PDFObject):
         creation_date,
     ):
         super().__init__()
-        self.title = enclose_in_parens(title) if title else None
-        self.subject = enclose_in_parens(subject) if subject else None
-        self.author = enclose_in_parens(author) if author else None
-        self.keywords = enclose_in_parens(keywords) if keywords else None
-        self.creator = enclose_in_parens(creator) if creator else None
-        self.producer = enclose_in_parens(producer) if producer else None
+        self.title = PDFString(title) if title else None
+        self.subject = PDFString(subject) if subject else None
+        self.author = PDFString(author) if author else None
+        self.keywords = PDFString(keywords) if keywords else None
+        self.creator = PDFString(creator) if creator else None
+        self.producer = PDFString(producer) if producer else None
         self.creation_date = creation_date
 
 
@@ -170,7 +177,7 @@ class PDFFontStream(PDFContentStream):
 
 class PDFXmpMetadata(PDFContentStream):
     def __init__(self, contents):
-        super().__init__(contents=contents)
+        super().__init__(contents=contents.encode("utf-8"))
         self.type = Name("Metadata")
         self.subtype = Name("XML")
 
@@ -836,9 +843,7 @@ class OutputProducer:
     def _add_xmp_metadata(self):
         if not self.fpdf.xmp_metadata:
             return None
-        xpacket = f'<?xpacket begin="ï»¿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n{self.fpdf.xmp_metadata}\n<?xpacket end="w"?>\n'.encode(
-            "latin-1"
-        )
+        xpacket = f'<?xpacket begin="ï»¿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n{self.fpdf.xmp_metadata}\n<?xpacket end="w"?>\n'
         pdf_obj = PDFXmpMetadata(xpacket)
         self._add_pdf_obj(pdf_obj)
         return pdf_obj
