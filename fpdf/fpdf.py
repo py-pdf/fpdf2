@@ -4586,6 +4586,9 @@ def _is_svg(bytes):
     return bytes.startswith(b"<?xml ") or bytes.startswith(b"<svg ")
 
 
+# Pattern from sir Guido Von Rossum: https://stackoverflow.com/a/72911884/636849
+# > a module can define a class with the desired functionality, and then at
+# > the end, replace itself in sys.modules with an instance of that class
 sys.modules[__name__].__class__ = WarnOnDeprecatedModuleAttributes
 
 
@@ -4596,6 +4599,7 @@ __all__ = [
     "XPos",
     "YPos",
     "get_page_format",
+    "ImageInfo",
     "TextMode",
     "TitleStyle",
     "PAGE_FORMATS",
