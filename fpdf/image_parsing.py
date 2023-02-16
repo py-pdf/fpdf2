@@ -212,8 +212,6 @@ def ccitt_payload_location_from_pil(img):
 
     (offset,), (length,) = strip_offsets, strip_bytes
 
-    #logger.debug("TIFF strip_offsets: %d" % offset)
-    #logger.debug("TIFF strip_bytes: %d" % length)
 
     return offset, length
 
