@@ -27,6 +27,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - all `TitleStyle` constructor parameters are now effectively optional
 ### Changed
 - vector images parsing is now more robust: `fpdf2` can now embed SVG files without `viewPort` or no `height` / `width`
+- bitonal images are now encoded using CCITTFaxDecode
 
 ## [2.6.1] - 2023-01-13
 ### Added
