@@ -70,7 +70,7 @@ def get_img_info(img, image_filter="AUTO", dims=None):
         elif img.mode == "1":
             image_filter = "CCITTFaxDecode"
         else:
-            "FlateDecode"
+            image_filter = "FlateDecode"
 
     if img.mode in ("P", "PA") and image_filter != "FlateDecode":
         img = img.convert("RGBA")
