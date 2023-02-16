@@ -131,7 +131,6 @@ def test_insert_gif(tmp_path):
 
 def test_insert_g4_tiff(tmp_path):
     pdf = fpdf.FPDF()
-    pdf.compress = False
     pdf.add_page()
     pdf.image(HERE / "test.tiff", x=15, y=15)
     assert_pdf_equal(pdf, HERE / "image_types_insert_tiff.pdf", tmp_path)

@@ -133,7 +133,7 @@ def get_img_info(img, image_filter="AUTO", dims=None):
             info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
 
     dp = f"/Predictor 15 /Colors {dpn} /Columns {w}"
-    
+
     if img.mode == "1":
         inverted = False
         # copied from img2pdf
@@ -163,8 +163,6 @@ def get_img_info(img, image_filter="AUTO", dims=None):
 
 class temp_attr:
     """
-    Copied verbatim from img2pdf
-
     temporary change the attribute of an object using a context manager
     """
     def __init__(self, obj, field, value):
@@ -187,15 +185,9 @@ class temp_attr:
 
 def ccitt_payload_location_from_pil(img):
     """
-    Copied verbatim from img2pdf
+    returns the byte offset and length of the CCITT payload in the original TIFF data
     """
-    # If Pillow is passed an invalid compression argument it will ignore it;
-    # make sure the image actually got compressed.
-    if img.info["compression"] != "group4":
-        raise ValueError(
-            "Image not compressed with CCITT Group 4 but with: %s"
-            % img.info["compression"]
-        )
+    # assert(img.info["compression"] == "group4")
 
     # Read the TIFF tags to find the offset(s) of the compressed data strips.
     strip_offsets = img.tag_v2[TiffImagePlugin.STRIPOFFSETS]
@@ -212,11 +204,10 @@ def ccitt_payload_location_from_pil(img):
 
     (offset,), (length,) = strip_offsets, strip_bytes
 
-
     return offset, length
 
 
-def transcode_monochrome(imgdata):
+def transcode_monochrome(img):
     """
     Convert the open PIL.Image imgdata to compressed CCITT Group4 data.
 
@@ -232,7 +223,7 @@ def transcode_monochrome(imgdata):
     # input images, that libtiff fails an assert and the whole process is
     # killed by a SIGABRT:
     #   https://gitlab.mister-muffin.de/josch/img2pdf/issues/46
-    im = Image.frombytes(imgdata.mode, imgdata.size, imgdata.tobytes())
+    im = Image.frombytes(img.mode, img.size, img.tobytes())
 
     # Since version 8.3.0 Pillow limits strips to 64 KB. Since PDF only
     # supports single strip CCITT Group4 payloads, we have to coerce it back
@@ -240,7 +231,7 @@ def transcode_monochrome(imgdata):
     # the hack.
     #
     # Since version 8.4.0 Pillow allows us to modify the strip size explicitly
-    tmp_strip_size = (imgdata.size[0] + 7) // 8 * imgdata.size[1]
+    tmp_strip_size = (img.size[0] + 7) // 8 * img.size[1]
     if hasattr(TiffImagePlugin, "STRIP_SIZE"):
         # we are using Pillow 8.4.0 or later
         with temp_attr(TiffImagePlugin, "STRIP_SIZE", tmp_strip_size):
@@ -252,7 +243,7 @@ def transcode_monochrome(imgdata):
 
         def __getitem__(self, tag):
             overrides = {
-                TiffImagePlugin.ROWSPERSTRIP: imgdata.size[1],
+                TiffImagePlugin.ROWSPERSTRIP: img.size[1],
                 TiffImagePlugin.STRIPBYTECOUNTS: [tmp_strip_size],
                 TiffImagePlugin.STRIPOFFSETS: [0],
             }
