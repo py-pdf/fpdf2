@@ -146,10 +146,7 @@ def get_img_info(img, image_filter="AUTO", dims=None):
             photo = img.tag_v2[TiffImagePlugin.PHOTOMETRIC_INTERPRETATION]
             if photo == 0:
                 inverted = True
-        if inverted:
-            dp = f"/BlackIs1 true /Columns {w} /K -1 /Rows {h}"
-        else:
-            dp = f"/BlackIs1 false /Columns {w} /K -1 /Rows {h}"
+        dp = f"/BlackIs1 {str(inverted).lower()} /Columns {w} /K -1 /Rows {h}"
 
     info.update(
         {
