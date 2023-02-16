@@ -222,7 +222,6 @@ def transcode_monochrome(imgdata):
     """
     Convert the open PIL.Image imgdata to compressed CCITT Group4 data.
 
-    Copied verbatim from img2pdf
     """
 
     #logger.debug("Converting monochrome to CCITT Group4")
