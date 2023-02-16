@@ -222,7 +222,6 @@ def transcode_monochrome(img):
     # we create a whole new PIL image or otherwise it might happen with some
     # input images, that libtiff fails an assert and the whole process is
     # killed by a SIGABRT:
-    #   https://gitlab.mister-muffin.de/josch/img2pdf/issues/46
     im = Image.frombytes(img.mode, img.size, img.tobytes())
 
     # Since version 8.3.0 Pillow limits strips to 64 KB. Since PDF only
