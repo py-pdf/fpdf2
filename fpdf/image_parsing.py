@@ -161,10 +161,12 @@ def get_img_info(img, image_filter="AUTO", dims=None):
 
     return info
 
+
 class temp_attr:
     """
     temporary change the attribute of an object using a context manager
     """
+
     def __init__(self, obj, field, value):
         self.obj = obj
         self.field = field
@@ -182,6 +184,7 @@ class temp_attr:
             setattr(self.obj, self.field, self.old_value)
         else:
             delattr(self.obj, self.field)
+
 
 def ccitt_payload_location_from_pil(img):
     """
@@ -213,7 +216,7 @@ def transcode_monochrome(img):
 
     """
 
-    #logger.debug("Converting monochrome to CCITT Group4")
+    # logger.debug("Converting monochrome to CCITT Group4")
 
     # Convert the image to Group 4 in memory. If libtiff is not installed and
     # Pillow is not compiled against it, .save() will raise an exception.
@@ -223,7 +226,7 @@ def transcode_monochrome(img):
     # input images, that libtiff fails an assert and the whole process is
     # killed by a SIGABRT:
     #   https://gitlab.mister-muffin.de/josch/img2pdf/issues/46
-    im = Image.frombytes(img.mode, img.size, img.tobytes())
+    img2 = Image.frombytes(img.mode, img.size, img.tobytes())
 
     # Since version 8.3.0 Pillow limits strips to 64 KB. Since PDF only
     # supports single strip CCITT Group4 payloads, we have to coerce it back
@@ -235,7 +238,7 @@ def transcode_monochrome(img):
     if hasattr(TiffImagePlugin, "STRIP_SIZE"):
         # we are using Pillow 8.4.0 or later
         with temp_attr(TiffImagePlugin, "STRIP_SIZE", tmp_strip_size):
-            im.save(newimgio, format="TIFF", compression="group4")
+            img2.save(newimgio, format="TIFF", compression="group4")
     else:
         # only needed for Pillow 8.3.x but works for versions before that as
         # well
@@ -252,7 +255,7 @@ def transcode_monochrome(img):
         with temp_attr(
             TiffImagePlugin.ImageFileDirectory_v2, "__getitem__", __getitem__
         ):
-            im.save(newimgio, format="TIFF", compression="group4")
+            img2.save(newimgio, format="TIFF", compression="group4")
 
     # Open new image in memory
     newimgio.seek(0)
@@ -262,6 +265,7 @@ def transcode_monochrome(img):
 
     newimgio.seek(offset)
     return newimgio.read(length)
+
 
 def _to_data(img, image_filter, **kwargs):
     if image_filter == "FlateDecode":
