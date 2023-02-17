@@ -1,5 +1,5 @@
 [MESSAGES CONTROL]
-disable = attribute-defined-outside-init, invalid-name, method-hidden, missing-docstring, multiple-imports, too-few-public-methods, too-many-arguments, too-many-instance-attributes, too-many-nested-blocks, too-many-branches, too-many-lines, too-many-locals, too-many-public-methods, too-many-statements, wrong-import-order
+disable = attribute-defined-outside-init, use-dict-literal, invalid-name, method-hidden, missing-docstring, multiple-imports, too-few-public-methods, too-many-arguments, too-many-instance-attributes, too-many-nested-blocks, too-many-branches, too-many-lines, too-many-locals, too-many-public-methods, too-many-statements, wrong-import-order
 max-line-length=150
 
 [SIMILARITIES]

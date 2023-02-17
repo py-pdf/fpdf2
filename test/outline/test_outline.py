@@ -195,7 +195,7 @@ def test_toc_with_nb_and_footer(tmp_path):  # issue-548
     assert_pdf_equal(pdf, HERE / "toc_with_nb_and_footer.pdf", tmp_path)
 
 
-def test_russian_heading(tmp_path):  # issue-320
+def test_toc_with_russian_heading(tmp_path):  # issue-320
     pdf = FPDF()
     pdf.add_font(fname="test/fonts/Roboto-Regular.ttf")
     pdf.set_font("Roboto-Regular")
@@ -205,7 +205,7 @@ def test_russian_heading(tmp_path):  # issue-320
     assert_pdf_equal(pdf, HERE / "russian_heading.pdf", tmp_path)
 
 
-def test_thai_headings(tmp_path):  # issue-458
+def test_toc_with_thai_headings(tmp_path):  # issue-458
     pdf = FPDF()
     for txt in [
         "ลักษณะเฉพาะของคุณ",
@@ -216,3 +216,15 @@ def test_thai_headings(tmp_path):  # issue-458
         pdf.add_page()
         pdf.start_section(txt)
     assert_pdf_equal(pdf, HERE / "thai_headings.pdf", tmp_path)
+
+
+def test_toc_without_font_style(tmp_path):  # issue-676
+    pdf = FPDF()
+    pdf.set_font("helvetica")
+    pdf.set_section_title_styles(
+        level0=TitleStyle(font_size_pt=28, l_margin=10), level1=TitleStyle()
+    )
+    pdf.add_page()
+    pdf.start_section("Title")
+    pdf.start_section("Subtitle", level=1)
+    assert_pdf_equal(pdf, HERE / "toc_without_font_style.pdf", tmp_path)

@@ -178,7 +178,8 @@ Ask maintainers through comments if some errors in the pipeline seem obscure to 
 
 ### Release checklist
 1. complete `CHANGELOG.md` and add the version & date of the new release
-2. bump `FPDF_VERSION` in `fpdf/fpdf.py`
+2. bump `FPDF_VERSION` in `fpdf/fpdf.py`.
+Also (optionnal, once every year), update `contributors/contributors-map-small.png` based on https://pyfpdf.github.io/fpdf2/contributors.html
 3. `git commit` & `git push`
 4. check that [the GitHub Actions succeed](https://github.com/PyFPDF/fpdf2/actions), and that [a new release appears on Pypi](https://pypi.org/project/fpdf2/#history)
 5. perform a [GitHub release](https://github.com/PyFPDF/fpdf2/releases), taking the description from the `CHANGELOG.md`.

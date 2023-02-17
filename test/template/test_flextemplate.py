@@ -59,7 +59,6 @@ def test_flextemplate_offset(tmp_path):
 
 
 def test_flextemplate_multipage(tmp_path):
-
     elements = [
         {
             "name": "box",

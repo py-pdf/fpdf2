@@ -775,6 +775,43 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "SfinxV",
+      "name": "SfinxV",
+      "avatar_url": "https://avatars.githubusercontent.com/u/122991252?v=4",
+      "profile": "https://github.com/SfinxV",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "bramantoleksono",
+      "name": "bramantoleksono",
+      "avatar_url": "https://avatars.githubusercontent.com/u/86646351?v=4",
+      "profile": "https://github.com/bramantoleksono",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "TheNerdy907",
+      "name": "TheNerdy907",
+      "avatar_url": "https://avatars.githubusercontent.com/u/51904226?v=4",
+      "profile": "https://github.com/TheNerdy907",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "eroux",
+      "name": "Elie Roux",
+      "avatar_url": "https://avatars.githubusercontent.com/u/60868?v=4",
+      "profile": "https://github.com/eroux",
+      "contributions": [
+        "bug",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,

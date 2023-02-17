@@ -16,8 +16,17 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
+## [2.6.2] - Not released yet
 ### Added
+- [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) has a new `keep_aspect_ratio` optional boolean parameter, to fit it inside a given rectangle: [documentation](https://pyfpdf.github.io/fpdf2/Images.html#fitting-an-image-inside-a-rectangle)
+- new method `FPDF.preload_image()`: [documentation](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.preload_image)
 - new translation of the tutorial in [简体中文](https://pyfpdf.github.io/fpdf2/Tutorial-zh.html) - thanks to @Bubbu0129
+### Fixed
+- hyperlinks were not working on encrypted files - thanks to @andersonhc
+- unicode (non limited to ASCII) text can now be provided as metadata [#685](https://github.com/PyFPDF/fpdf2/issues/685)
+- all `TitleStyle` constructor parameters are now effectively optional
+### Changed
+- vector images parsing is now more robust: `fpdf2` can now embed SVG files without `viewPort` or no `height` / `width`
 
 ## [2.6.1] - 2023-01-13
 ### Added
@@ -29,7 +38,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * [`FPDF.cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) & [`FPDF.multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell): support for `[]()` hyperlinks when `markdown=True`
 * [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): support for `line-height` attribute of paragraph (`<p>`) - thanks to @Bubbu0129
 * documentation on [useful tools to manipulate PDFs](https://pyfpdf.github.io/fpdf2/Development.html#useful-tools-to-manipulate-pdfs)
-* show a warning if the font being used doesn't have all the necessary glyphs for the text
+* show a warning if the font being used doesn't have all the necessary glyphs for the text - thanks to @andersonhc
 ### Changed
 * [`FPDF.add_link()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link) creates a link to the current page by default, and now accepts optional parameters: `x`, `y`, `page` & `zoom`.
   Hence calling [`set_link()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link) is not needed anymore after creating a link with `add_link()`.

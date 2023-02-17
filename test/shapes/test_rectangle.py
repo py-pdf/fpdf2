@@ -242,4 +242,4 @@ def test_round_corners_rect_invalid_value():
     pdf.add_page()
 
     with pytest.raises(ValueError):
-        pdf.rect(100, 100, 15, 20, round_corners=("BOTTOM_CENTER"))
+        pdf.rect(100, 100, 15, 20, round_corners="BOTTOM_CENTER")

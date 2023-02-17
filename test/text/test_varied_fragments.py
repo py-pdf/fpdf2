@@ -24,7 +24,8 @@ class FxFPDF(FPDF):
     def write_fragments(self, frags, align=Align.L):
         """Replicate the part of write() that actually renders the fragments."""
         text_lines = []
-        multi_line_break = MultiLineBreak(frags, justify=(align == Align.J))
+        justify = align == Align.J
+        multi_line_break = MultiLineBreak(frags, justify=justify)
         # first line from current x position to right margin
         first_width = self.w - self.x - self.r_margin
         text_line = multi_line_break.get_line_of_given_width(

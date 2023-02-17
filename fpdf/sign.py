@@ -24,8 +24,12 @@ class Signature:
         self.byte_range = _SIGNATURE_BYTERANGE_PLACEHOLDER
         self.contents = "<" + _SIGNATURE_CONTENTS_PLACEHOLDER + ">"
 
-    def serialize(self):
-        obj_dict = build_obj_dict({key: getattr(self, key) for key in dir(self)})
+    def serialize(self, _security_handler=None, _obj_id=None):
+        obj_dict = build_obj_dict(
+            {key: getattr(self, key) for key in dir(self)},
+            _security_handler=_security_handler,
+            _obj_id=_obj_id,
+        )
         return pdf_dict(obj_dict)
 
 

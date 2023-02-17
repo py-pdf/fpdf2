@@ -113,6 +113,34 @@ LAYOUT_ALIASES = {
 }
 
 
+class ImageInfo(dict):
+    "Information about a raster image used in the PDF document"
+
+    @property
+    def width(self):
+        "Intrinsic image width"
+        return self["w"]
+
+    @property
+    def height(self):
+        "Intrinsic image height"
+        return self["h"]
+
+    @property
+    def rendered_width(self):
+        "Only available if the image has been placed on the document"
+        return self["rendered_width"]
+
+    @property
+    def rendered_height(self):
+        "Only available if the image has been placed on the document"
+        return self["rendered_height"]
+
+    def __str__(self):
+        d = {k: ("..." if k in ("data", "smask") else v) for k, v in self.items()}
+        return f"ImageInfo({d})"
+
+
 class TitleStyle(NamedTuple):
     font_family: Optional[str] = None
     font_style: Optional[str] = None
@@ -262,7 +290,7 @@ class FPDF(GraphicsStateMixin):
         self.page = 0  # current page number
         self.pages = {}  # array of PDFPage objects starting at index 1
         self.fonts = {}  # map font string keys to dicts describing the fonts used
-        self.images = {}  # map image identifiers to dicts describing the images
+        self.images = {}  # map image identifiers to dicts describing the raster images
         self.links = {}  # array of Destination objects starting at index 1
         self.embedded_files = []  # array of PDFEmbeddedFile
 
@@ -407,15 +435,9 @@ class FPDF(GraphicsStateMixin):
         kwargs2 = vars(self)
         # Method arguments must override class & instance attributes:
         kwargs2.update(kwargs)
-        h2p = self.HTML2FPDF_CLASS(self, *args, **kwargs2)
-        if self.HTML2FPDF_CLASS != HTML2FPDF:
-            warnings.warn(
-                "The HTML2FPDF_CLASS is deprecated. It will be removed in a future release.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
+        html2pdf = self.HTML2FPDF_CLASS(self, *args, **kwargs2)
         text = unescape(text)  # To deal with HTML entities
-        h2p.feed(text)
+        html2pdf.feed(text)
 
     def _set_min_pdf_version(self, version):
         self.pdf_version = max(self.pdf_version, version)
@@ -1360,7 +1382,6 @@ class FPDF(GraphicsStateMixin):
             point_7 = (x, y + h - r)
 
         if style.is_fill:
-
             self.polyline(
                 [
                     point_1,
@@ -3610,6 +3631,7 @@ class FPDF(GraphicsStateMixin):
         title=None,
         alt_text=None,
         dims=None,
+        keep_aspect_ratio=False,
     ):
         """
         Put an image on the page.
@@ -3619,6 +3641,7 @@ class FPDF(GraphicsStateMixin):
         * one explicit dimension, the other being calculated automatically
           in order to keep the original proportions
         * no explicit dimension, in which case the image is put at 72 dpi.
+        * explicit width and height (expressed in user units) and `keep_aspect_ratio=True`
 
         **Remarks**:
         * if an image is used several times, only one copy is embedded in the file.
@@ -3651,6 +3674,11 @@ class FPDF(GraphicsStateMixin):
                 but the image will still be rendered on the page with the width (`w`) and height (`h`)
                 provided as parameters. Note also that the `.oversized_images` attribute of FPDF
                 provides an automated way to auto-adjust those intrinsic image dimensions.
+            keep_aspect_ratio (bool): ensure the image fits in the rectangle defined by `x`, `y`, `w` & `h`
+                while preserving its original aspect ratio. Defaults to False.
+                Only meaningful if both `w` & `h` are provided.
+
+        Returns: an instance of `ImageInfo`
         """
         if type:
             warnings.warn(
@@ -3662,32 +3690,9 @@ class FPDF(GraphicsStateMixin):
             # Insert it as a PDF path:
             img = load_image(str(name))
             return self._vector_image(img, x, y, w, h, link, title, alt_text)
-        if isinstance(name, str):
-            img = None
-        elif isinstance(name, Image):
-            bytes = name.tobytes()
-            img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
-            img_hash.update(bytes)
-            name, img = img_hash.hexdigest(), name
-        elif isinstance(name, io.BytesIO):
-            bytes = name.getvalue().strip()
-            if _is_svg(bytes):
-                return self._vector_image(name, x, y, w, h, link, title, alt_text)
-            img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
-            img_hash.update(bytes)
-            name, img = img_hash.hexdigest(), name
-        else:
-            name, img = str(name), name
-        info = self.images.get(name)
-        if info:
-            info["usages"] += 1
-        else:
-            if not img:
-                img = load_image(name)
-            info = get_img_info(img, self.image_filter, dims)
-            info["i"] = len(self.images) + 1
-            info["usages"] = 1
-            self.images[name] = info
+        if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
+            return self._vector_image(name, x, y, w, h, link, title, alt_text)
+        name, img, info = self.preload_image(name, dims)
         if "smask" in info:
             self._set_min_pdf_version("1.4")
 
@@ -3703,6 +3708,15 @@ class FPDF(GraphicsStateMixin):
         if self.oversized_images and info["usages"] == 1 and not dims:
             info = self._downscale_image(name, img, info, w, h)
 
+        if keep_aspect_ratio:
+            ratio = info.width / info.height
+            if h * ratio < w:
+                x += (w - h * ratio) / 2
+                w = h * ratio
+            else:  # => too wide, limiting width:
+                y += (h - w / ratio) / 2
+                h = w / ratio
+
         # Flowing mode
         if y is None:
             self._perform_page_break_if_need_be(h)
@@ -3711,6 +3725,10 @@ class FPDF(GraphicsStateMixin):
         if x is None:
             x = self.x
         elif not isinstance(x, Number):
+            if keep_aspect_ratio:
+                raise ValueError(
+                    "FPDF.image(): 'keep_aspect_ratio' cannot be used with an enum value provided to `x`"
+                )
             x = Align.coerce(x)
             if x == Align.C:
                 x = (self.w - w) / 2
@@ -3733,7 +3751,48 @@ class FPDF(GraphicsStateMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        return {**info, "rendered_width": w, "rendered_height": h}
+        return ImageInfo(**info, rendered_width=w, rendered_height=h)
+
+    def preload_image(self, name, dims=None):
+        """
+        Read a raster (= non-vector) image and loads it in memory in this FPDF instance.
+        Following this call, the image is inserted in `.images`,
+        and following calls to this method (or `FPDF.image`) will return (or re-use)
+        the same cached values, without re-reading the image.
+
+        Args:
+            name: either a string representing a file path to an image, an URL to an image,
+                an io.BytesIO, or a instance of `PIL.Image.Image`
+            dims (Tuple[float]): optional dimensions as a tuple (width, height) to resize the image
+                before storing it in the PDF.
+
+        Returns: an instance of `ImageInfo`
+        """
+        if isinstance(name, str):
+            img = None
+        elif isinstance(name, Image):
+            bytes = name.tobytes()
+            img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
+            img_hash.update(bytes)
+            name, img = img_hash.hexdigest(), name
+        elif isinstance(name, io.BytesIO):
+            bytes = name.getvalue().strip()
+            img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
+            img_hash.update(bytes)
+            name, img = img_hash.hexdigest(), name
+        else:
+            name, img = str(name), name
+        info = self.images.get(name)
+        if info:
+            info["usages"] += 1
+        else:
+            if not img:
+                img = load_image(name)
+            info = ImageInfo(get_img_info(img, self.image_filter, dims))
+            info["i"] = len(self.images) + 1
+            info["usages"] = 1
+            self.images[name] = info
+        return name, img, info
 
     def _vector_image(
         self,
@@ -3747,27 +3806,42 @@ class FPDF(GraphicsStateMixin):
         alt_text=None,
     ):
         svg = SVGObject(img.getvalue())
+        if not svg.viewbox and svg.width and svg.height:
+            warnings.warn(
+                '<svg> has no "viewBox", using its "width" & "height" as default "viewBox"'
+            )
+            svg.viewbox = 0, 0, svg.width, svg.height
         if w == 0 and h == 0:
-            if not svg.width or not svg.height:
-                raise ValueError(
-                    '<svg> has no "height" / "width": w= or h= must be provided to FPDF.image()'
+            if svg.width and svg.height:
+                w = (
+                    svg.width * self.epw / 100
+                    if isinstance(svg.width, Percent)
+                    else svg.width
                 )
-            w = (
-                svg.width * self.epw / 100
-                if isinstance(svg.width, Percent)
-                else svg.width
-            )
-            h = (
-                svg.height * self.eph / 100
-                if isinstance(svg.height, Percent)
-                else svg.height
-            )
-        else:
-            _, _, vw, vh = svg.viewbox
+                h = (
+                    svg.height * self.eph / 100
+                    if isinstance(svg.height, Percent)
+                    else svg.height
+                )
+            elif svg.viewbox:
+                _, _, w, h = svg.viewbox
+            else:
+                raise ValueError(
+                    '<svg> has no "viewBox" nor "height" / "width": w= and h= must be provided to FPDF.image()'
+                )
+        elif w == 0 or h == 0:
+            if svg.width and svg.height:
+                svg_width, svg_height = svg.width, svg.height
+            elif svg.viewbox:
+                _, _, svg_width, svg_height = svg.viewbox
+            else:
+                raise ValueError(
+                    '<svg> has no "viewBox" nor "height" / "width": w= and h= must be provided to FPDF.image()'
+                )
             if w == 0:
-                w = vw * h / vh
-            elif h == 0:
-                h = vh * w / vw
+                w = h * svg_width / svg_height
+            else:  # h == 0
+                h = w * svg_height / svg_width
 
         # Flowing mode
         if y is None:
@@ -3795,7 +3869,7 @@ class FPDF(GraphicsStateMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        return {"rendered_width": w, "rendered_height": h}
+        return ImageInfo(rendered_width=w, rendered_height=h)
 
     def _downscale_image(self, name, img, info, w, h):
         width_in_pt, height_in_pt = w * self.k, h * self.k
@@ -3843,8 +3917,8 @@ class FPDF(GraphicsStateMixin):
                         )
                     info["usages"] += 1
                 else:
-                    info = get_img_info(
-                        img or load_image(name), self.image_filter, dims
+                    info = ImageInfo(
+                        get_img_info(img or load_image(name), self.image_filter, dims)
                     )
                     info["i"] = len(self.images) + 1
                     info["usages"] = 1
@@ -4503,7 +4577,11 @@ class FPDF(GraphicsStateMixin):
     def _apply_style(self, title_style):
         prev_font = (self.font_family, self.font_style, self.font_size_pt)
         self.set_font(
-            title_style.font_family, title_style.font_style, title_style.font_size_pt
+            title_style.font_family or self.font_family,
+            title_style.font_style
+            if title_style.font_style is not None
+            else self.font_style,
+            title_style.font_size_pt or self.font_size_pt,
         )
         prev_text_color = self.text_color
         if title_style.color is not None:
@@ -4524,7 +4602,9 @@ class FPDF(GraphicsStateMixin):
         self.text_color = prev_text_color
         self.underline = prev_underline
 
-    def output(self, name="", dest="", linearize=False):
+    def output(
+        self, name="", dest="", linearize=False, output_producer_class=OutputProducer
+    ):
         """
         Output PDF to some destination.
         The method first calls [close](close.md) if necessary to terminate the document.
@@ -4536,6 +4616,7 @@ class FPDF(GraphicsStateMixin):
         Args:
             name (str): optional File object or file path where to save the PDF under
             dest (str): [**DEPRECATED since 2.3.0**] unused, will be removed in a later version
+            output_producer_class (class): use a custom class for PDF file generation
         """
         if dest:
             warnings.warn(
@@ -4556,9 +4637,9 @@ class FPDF(GraphicsStateMixin):
                 self._insert_table_of_contents()
             if self.str_alias_nb_pages:
                 self._substitute_page_number()
-            output_producer = (
-                LinearizedOutputProducer(self) if linearize else OutputProducer(self)
-            )
+            if linearize:
+                output_producer_class = LinearizedOutputProducer
+            output_producer = output_producer_class(self)
             self.buffer = output_producer.bufferize()
         if name:
             if isinstance(name, os.PathLike):
@@ -4575,6 +4656,9 @@ def _is_svg(bytes):
     return bytes.startswith(b"<?xml ") or bytes.startswith(b"<svg ")
 
 
+# Pattern from sir Guido Von Rossum: https://stackoverflow.com/a/72911884/636849
+# > a module can define a class with the desired functionality, and then at
+# > the end, replace itself in sys.modules with an instance of that class
 sys.modules[__name__].__class__ = WarnOnDeprecatedModuleAttributes
 
 
@@ -4585,6 +4669,7 @@ __all__ = [
     "XPos",
     "YPos",
     "get_page_format",
+    "ImageInfo",
     "TextMode",
     "TitleStyle",
     "PAGE_FORMATS",

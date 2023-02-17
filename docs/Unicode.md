@@ -42,7 +42,7 @@ more information.
 Then, to use a Unicode font in your script, pass `True` as the fourth parameter 
 of [`add_font`](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font).
 
-**Notes on non-latin languages**
+### Notes on non-latin languages
 
 Some users may encounter a problem where some characters displayed incorrectly. For example, using Thai language in the picture below
 

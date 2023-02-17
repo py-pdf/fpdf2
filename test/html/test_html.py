@@ -260,6 +260,7 @@ def test_customize_ul(tmp_path):
             <li><b>term1</b>: definition1</li>
             <li><b>term2</b>: definition2</li>
         </ul>"""
+
     # 1. Customizing through class attributes:
     class CustomPDF(FPDF):
         li_tag_indent = 5

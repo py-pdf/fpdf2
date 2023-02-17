@@ -9,6 +9,8 @@
 # API DOC: https://developer.github.com/v3/issues/
 
 import argparse
+from http.client import HTTPConnection, HTTPException
+import json
 import logging
 import os
 import sys
@@ -18,6 +20,39 @@ from agithub.base import IncompleteRequest
 from jinja2 import Environment, FileSystemLoader
 
 THIS_SCRIPT_PARENT_DIR = os.path.dirname(os.path.realpath(__file__))
+
+EMOJI_KEY = {
+    "a11y": "️♿️",
+    "audio": "🔊",
+    "blog": "📝",
+    "bug": "🐛",
+    "business": "💼",
+    "code": "💻",
+    "content": "🖋",
+    "data": "🔣",
+    "design": "🎨",
+    "doc": "📖",
+    "eventOrganizing": "📋",
+    "example": "💡",
+    "financial": "💵",
+    "fundingFinding": "🔍",
+    "ideas": "🤔",
+    "infra": "🚇",
+    "maintenance": "🚧",
+    "mentoring": "🧑‍🏫",
+    "platform": "📦",
+    "plugin": "🔌",
+    "projectManagement": "📆",
+    "question": "💬",
+    "research": "🔬",
+    "review": "👀",
+    "security": "🛡️",
+    "talk": "📢",
+    "test": "⚠️",
+    "tool": "🔧",
+    "translation": "🌍",
+    "tutorial": "✅",
+}
 
 
 def main():
@@ -29,16 +64,28 @@ def main():
     )
     logging.getLogger("agithub.GitHub").setLevel(logging.DEBUG)
     args = parse_args()
+    if args.debug:
+        HTTPConnection.debuglevel = 2
+    print("Reading .all-contributorsrc...")
+    with open(
+        f"{THIS_SCRIPT_PARENT_DIR}/../.all-contributorsrc", encoding="utf8"
+    ) as json_file:
+        allcontributors = json.load(json_file)["contributors"]
+        contributors_per_login = {user["login"]: user for user in allcontributors}
     ag = GitHubAPIWrapper(token=os.environ["GITHUB_TOKEN"])
     org, repo = args.org_repo.split("/")
-    print("Fetching all issues...")
+    print("Fetching all GitHub issues...")
     issues = ag.repos[org][repo].issues.get(state="all")
     print("Now retrieving each user location...")
     user_locations = {}
     for issue in issues:
         user_login = issue["user"]["login"]
         if user_login not in user_locations:
+            contributions = []
+            if user_login in contributors_per_login:
+                contributions = contributors_per_login[user_login]["contributions"]
             user_locations[user_login] = {
+                "contributions": contributions,
                 "location": ag.users[user_login].get()["location"],
                 "issues": 0,
                 "pulls": 0,
@@ -47,13 +94,31 @@ def main():
             user_locations[user_login]["pulls"] += 1
         else:
             user_locations[user_login]["issues"] += 1
+    print("Now adding remaining contributors from .all-contributorsrc...")
+    for user in allcontributors:
+        user_login = user["login"]
+        if user_login not in user_locations:
+            try:
+                gh_user = ag.users[user_login].get()
+                user_locations[user_login] = {
+                    "contributions": user["contributions"],
+                    "location": gh_user["location"],
+                    "issues": 0,
+                    "pulls": 0,
+                }
+            except HTTPException as error:
+                print(error)
     print("Now generating the HTML page...")
     env = Environment(loader=FileSystemLoader(THIS_SCRIPT_PARENT_DIR), autoescape=True)
     template = env.get_template("contributors.html.jinja2")
     out_filepath = os.path.join(THIS_SCRIPT_PARENT_DIR, "contributors.html")
     with open(out_filepath, "w", encoding="utf-8") as out_file:
         out_file.write(
-            template.render(org_repo=args.org_repo, user_locations=user_locations)
+            template.render(
+                org_repo=args.org_repo,
+                user_locations=user_locations,
+                EMOJI_KEY=EMOJI_KEY,
+            )
         )
 
 
@@ -62,6 +127,7 @@ def parse_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter, allow_abbrev=False
     )
     parser.add_argument("org_repo")
+    parser.add_argument("--debug", action="store_true")
     return parser.parse_args()
 
 
@@ -124,7 +190,8 @@ class HTTPRequester:
             print(f"HTTP {http_code}: {response['message']}", file=sys.stderr)
             return []
         if http_code != 200:
-            raise RuntimeError(f"HTTP code: {http_code}: {response}")
+            url = self.http_method_executer.keywords["url"]
+            raise HTTPException(f"[{url}] HTTP code: {http_code}: {response}")
         return response
 
 

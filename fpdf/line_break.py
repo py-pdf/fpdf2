@@ -387,7 +387,6 @@ class MultiLineBreak:
 
         current_line = CurrentLine(print_sh=self.print_sh)
         while self.fragment_index < len(self.styled_text_fragments):
-
             current_fragment = self.styled_text_fragments[self.fragment_index]
 
             if self.character_index >= len(current_fragment.characters):

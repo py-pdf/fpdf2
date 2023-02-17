@@ -77,7 +77,8 @@ def test_render_styled_newpos(tmp_path):
         newy = YPos.coerce(item[3])
         # pylint: disable=protected-access
         frags = doc._preload_font_styles(s, False)
-        mlb = MultiLineBreak(frags, justify=(align == Align.J))
+        justify = align == Align.J
+        mlb = MultiLineBreak(frags, justify=justify)
         line = mlb.get_line_of_given_width(twidth * 1000 / doc.font_size)
         # we need to manually rebuild our TextLine in order to force
         # justified alignment on a single line.

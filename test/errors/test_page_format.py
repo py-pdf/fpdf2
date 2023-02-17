@@ -1,39 +1,25 @@
 import pytest
 
-import fpdf
-
-
-def test_page_format_error_both():
-    with pytest.raises(TypeError) as e:
-        fpdf.errors.FPDFPageFormatException(None, unknown=True, one=True)
-
-    expected = "FPDF Page Format Exception cannot be both"
-    assert expected in str(e.value)
-
-
-def test_page_format_error_other():
-    expected = "error message"
-    error = fpdf.errors.FPDFPageFormatException(expected)
-
-    assert expected in str(error)
+from fpdf.errors import FPDFPageFormatException
+from fpdf.fpdf import get_page_format
 
 
 def test_page_format_error():
-    with pytest.raises(fpdf.errors.FPDFPageFormatException) as e:
-        fpdf.fpdf.get_page_format("letter1")
+    with pytest.raises(FPDFPageFormatException) as error:
+        get_page_format("letter1")
 
-    assert "FPDFPageFormatException" in str(e.value)
-    assert "Unknown page format" in str(e.value)
-    assert "letter1" in str(e.value)
+    assert "FPDFPageFormatException" in str(error.value)
+    assert "Unknown page format" in str(error.value)
+    assert "letter1" in str(error.value)
 
-    with pytest.raises(fpdf.errors.FPDFPageFormatException) as e:
-        fpdf.fpdf.get_page_format(3)
+    with pytest.raises(FPDFPageFormatException) as error:
+        get_page_format(3)
 
-    assert "FPDFPageFormatException" in str(e.value)
-    assert "Only one argument given" in str(e.value)
+    assert "FPDFPageFormatException" in str(error.value)
+    assert "Only one argument given" in str(error.value)
 
-    with pytest.raises(fpdf.errors.FPDFPageFormatException) as e:
-        fpdf.fpdf.get_page_format(4, "a")
+    with pytest.raises(FPDFPageFormatException) as error:
+        get_page_format(4, "a")
 
-        assert "FPDFPageFormatException" in str(e.value)
-        assert "Arguments must be numbers: " in str(e.value)
+    assert "FPDFPageFormatException" in str(error.value)
+    assert "Arguments must be numbers: " in str(error.value)

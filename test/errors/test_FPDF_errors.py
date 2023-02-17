@@ -134,3 +134,16 @@ def test_invalid_page_background():
     msg = f"""background must be of type str, io.BytesIO, PIL.Image.Image, drawing.DeviceRGB, tuple or None
         got: {type(i)}"""
     assert str(error.value) == msg
+
+
+def test_intantiating_fpdf_module():  # issue 683
+    # pylint: disable=import-outside-toplevel,not-callable,redefined-outer-name
+    from fpdf import fpdf
+
+    with pytest.raises(TypeError) as error:
+        fpdf()
+    assert str(error.value) == (
+        "You tried to instantied the fpdf module."
+        " You probably want to import the FPDF class instead:"
+        " from fpdf import FPDF"
+    )

@@ -67,3 +67,8 @@ You can easily suppress those logs with this single line of code:
 ```python
 logging.getLogger('fontTools.subset').level = logging.WARN
 ```
+
+Similarly, you can omit verbose logs from `fontTools.ttLib.ttFont`:
+```python
+logging.getLogger('fontTools.ttLib.ttFont').level = logging.WARN
+```

@@ -605,7 +605,8 @@ class Corner(CoerciveEnum):
 
 class FontDescriptorFlags(Flag):
     """An enumeration of the flags for the unsigned 32-bit integer entry in the font descriptor specifying various
-    characteristics of the font. Bit positions are numbered from 1 (low-order) to 32 (high-order)."""
+    characteristics of the font. Bit positions are numbered from 1 (low-order) to 32 (high-order).
+    """
 
     FIXED_PITCH = 0x0000001
     """

@@ -127,7 +127,7 @@ class Name(str):
         b"[^" + bytes(v for v in range(33, 127) if v not in b"()<>[]{}/%#\\") + b"]"
     )
 
-    def serialize(self) -> str:
+    def serialize(self, _security_handler=None, _obj_id=None) -> str:
         escaped = self.NAME_ESC.sub(
             lambda m: b"#%02X" % m[0][0], self.encode()
         ).decode()
@@ -167,8 +167,8 @@ class PDFObject:
         output.append(f"{self.id} 0 obj")
         output.append("<<")
         if not obj_dict:
-            obj_dict = self._build_obj_dict()
-        if _security_handler:
+            obj_dict = self._build_obj_dict(_security_handler)
+        elif _security_handler:
             obj_dict = self._encrypt_obj_dict(obj_dict, _security_handler)
         output.append(create_dictionary_string(obj_dict, open_dict="", close_dict=""))
         output.append(">>")
@@ -182,14 +182,18 @@ class PDFObject:
         "Subclass can override this method to indicate the presence of a content stream"
         return b""
 
-    def _build_obj_dict(self):
+    def _build_obj_dict(self, security_handler=None):
         """
         Build the PDF Object associative map to serialize,
         based on this class instance properties.
         The property names are converted from snake_case to CamelCase,
         and prefixed with a slash character "/".
         """
-        return build_obj_dict({key: getattr(self, key) for key in dir(self)})
+        return build_obj_dict(
+            {key: getattr(self, key) for key in dir(self)},
+            _security_handler=security_handler,
+            _obj_id=self.id,
+        )
 
     def _encrypt_obj_dict(self, obj_dict, security_handler):
         """Encrypt the strings present in the object dictionary"""
@@ -220,7 +224,7 @@ class PDFContentStream(PDFObject):
         self.length = len(self._contents)
 
 
-def build_obj_dict(key_values):
+def build_obj_dict(key_values, _security_handler=None, _obj_id=None):
     """
     Build the PDF Object associative map to serialize, based on a key-values dict.
     The property names are converted from snake_case to CamelCase,
@@ -241,9 +245,18 @@ def build_obj_dict(key_values):
             value = value.ref
         elif hasattr(value, "serialize"):
             # e.g. PDFArray, PDFString, Name, Destination, Action...
-            value = value.serialize()
+            value = value.serialize(
+                _security_handler=_security_handler, _obj_id=_obj_id
+            )
         elif isinstance(value, bool):
             value = str(value).lower()
+        if (
+            _security_handler
+            and isinstance(value, str)
+            and value.startswith("(")
+            and value.endswith(")")
+        ):
+            value = _security_handler.encrypt(value[1:-1], _obj_id)
         obj_dict[f"/{camel_case(key)}"] = value
     return obj_dict
 
@@ -259,7 +272,7 @@ class PDFString(str):
     but then there can be a risk of badly encoding some unicode strings - cf. issue #458
     """
 
-    def serialize(self):
+    def serialize(self, _security_handler=None, _obj_id=None):
         if self.USE_HEX_ENCODING:
             # Using the "Hexadecimal String" format defined in the PDF spec:
             hex_str = hexlify(BOM_UTF16_BE + self.encode("utf-16-be")).decode("latin-1")
@@ -268,14 +281,18 @@ class PDFString(str):
 
 
 class PDFArray(list):
-    def serialize(self):
+    def serialize(self, _security_handler=None, _obj_id=None):
         if all(isinstance(elem, str) for elem in self):
             serialized_elems = " ".join(self)
         elif all(isinstance(elem, int) for elem in self):
             serialized_elems = " ".join(map(str, self))
         else:
             serialized_elems = "\n".join(
-                elem.ref if isinstance(elem, PDFObject) else elem.serialize()
+                elem.ref
+                if isinstance(elem, PDFObject)
+                else elem.serialize(
+                    _security_handler=_security_handler, _obj_id=_obj_id
+                )
                 for elem in self
             )
         return f"[{serialized_elems}]"
@@ -283,7 +300,7 @@ class PDFArray(list):
 
 # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
 class Destination(ABC):
-    def serialize(self):
+    def serialize(self, _security_handler=None, _obj_id=None):
         raise NotImplementedError
 
 
@@ -306,7 +323,7 @@ class DestinationXYZ(Destination):
     def __repr__(self):
         return f'DestinationXYZ(page_number={self.page_number}, top={self.top}, left={self.left}, zoom="{self.zoom}", page_ref={self.page_ref})'
 
-    def serialize(self):
+    def serialize(self, _security_handler=None, _obj_id=None):
         left = round(self.left, 2) if isinstance(self.left, float) else self.left
         top = round(self.top, 2) if isinstance(self.top, float) else self.top
         assert self.page_ref

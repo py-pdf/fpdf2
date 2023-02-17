@@ -28,7 +28,6 @@ def auto_pdf(request):
 
 @pytest.fixture(scope="function")
 def auto_pdf_cmp(request, tmp_path, auto_pdf):
-
     yield auto_pdf
 
     assert_pdf_equal(
