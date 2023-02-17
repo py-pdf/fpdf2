@@ -135,18 +135,7 @@ def get_img_info(img, image_filter="AUTO", dims=None):
     dp = f"/Predictor 15 /Colors {dpn} /Columns {w}"
 
     if img.mode == "1":
-        inverted = False
-        # copied from img2pdf
-        if (
-            img.format == "TIFF"
-            and img.info["compression"] == "group4"
-            and len(img.tag_v2[TiffImagePlugin.STRIPOFFSETS]) == 1
-            and len(img.tag_v2[TiffImagePlugin.STRIPBYTECOUNTS]) == 1
-        ):
-            photo = img.tag_v2[TiffImagePlugin.PHOTOMETRIC_INTERPRETATION]
-            if photo == 0:
-                inverted = True
-        dp = f"/BlackIs1 {str(inverted).lower()} /Columns {w} /K -1 /Rows {h}"
+        dp = f"/BlackIs1 true /Columns {w} /K -1 /Rows {h}"
 
     info.update(
         {
@@ -215,7 +204,6 @@ def transcode_monochrome(img):
     Convert the open PIL.Image imgdata to compressed CCITT Group4 data.
 
     """
-
     # Convert the image to Group 4 in memory. If libtiff is not installed and
     # Pillow is not compiled against it, .save() will raise an exception.
     newimgio = BytesIO()
@@ -223,7 +211,7 @@ def transcode_monochrome(img):
     # we create a whole new PIL image or otherwise it might happen with some
     # input images, that libtiff fails an assert and the whole process is
     # killed by a SIGABRT:
-    im = Image.frombytes(img.mode, img.size, img.tobytes())
+    img2 = Image.frombytes(img.mode, img.size, img.tobytes())
 
     # Since version 8.3.0 Pillow limits strips to 64 KB. Since PDF only
     # supports single strip CCITT Group4 payloads, we have to coerce it back
