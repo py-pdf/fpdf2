@@ -3125,7 +3125,7 @@ class FPDF(GraphicsStateMixin):
         "Check if the font has all the necessary glyphs. If a glyph front a fallback font is used, break into fragments"
         fragments = []
         txt_frag = []
-        if self.current_font["type"] != "TTF":
+        if not self.is_ttf_font:
             return tuple([Fragment(txt, self._get_current_graphics_state(), self.k)])
         ttf_font = ttLib.TTFont(self.current_font["ttffile"], fontNumber=0)
         font_glyphs = ttf_font.getBestCmap().keys()
