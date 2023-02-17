@@ -3185,7 +3185,7 @@ class FPDF(GraphicsStateMixin):
             txt_frag = []
             return fragment
 
-        if self.current_font and self.current_font["type"] == "TTF":
+        if self.is_ttf_font:
             ttf_font = ttLib.TTFont(self.current_font["ttffile"], fontNumber=0)
             font_glyphs = ttf_font.getBestCmap().keys()
         else:
