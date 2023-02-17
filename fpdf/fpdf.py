@@ -353,7 +353,7 @@ class FPDF(GraphicsStateMixin):
         self.pdf_version = "1.3"  # Set default PDF version No.
         self.creation_date = datetime.now(timezone.utc)
         self._security_handler = None
-        self._fallback_fonts = None
+        self._fallback_font_ids = None
 
         self._current_draw_context = None
         self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
