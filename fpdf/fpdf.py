@@ -3189,7 +3189,7 @@ class FPDF(GraphicsStateMixin):
             ttf_font = ttLib.TTFont(self.current_font["ttffile"], fontNumber=0)
             font_glyphs = ttf_font.getBestCmap().keys()
         else:
-            ttf_font = None
+            font_glyphs = []
 
         while txt:
             is_marker = txt[:2] in (
