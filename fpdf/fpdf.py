@@ -3716,9 +3716,7 @@ class FPDF(GraphicsStateMixin):
         if info:
             info["usages"] += 1
         else:
-            if not img:
-                img = load_image(name)
-            info = ImageInfo(get_img_info(img, self.image_filter, dims))
+            info = ImageInfo(get_img_info(name, img, self.image_filter, dims))
             info["i"] = len(self.images) + 1
             info["usages"] = 1
             self.images[name] = info
