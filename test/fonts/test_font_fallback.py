@@ -15,7 +15,7 @@ def test_fallback_font(tmp_path):
     pdf.set_font("Roboto")
     pdf.set_fallback_fonts(["EmojiOne"])
     pdf.cell(
-        txt="hello world 😄 😁 😆 😅 ✌ 🤞 🌭 🍔 🍟 🍕",
+        txt="hello **world 😄 😁** 😆 😅 ✌ 🤞 🌭 🍔 🍟 🍕",
         markdown=True,
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
