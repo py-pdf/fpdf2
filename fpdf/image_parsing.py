@@ -216,8 +216,6 @@ def transcode_monochrome(img):
 
     """
 
-    # logger.debug("Converting monochrome to CCITT Group4")
-
     # Convert the image to Group 4 in memory. If libtiff is not installed and
     # Pillow is not compiled against it, .save() will raise an exception.
     newimgio = BytesIO()
