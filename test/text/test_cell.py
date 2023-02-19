@@ -269,7 +269,6 @@ def test_cell_lasth(tmp_path):  # issue #601
     pdf.set_font("helvetica", size=18)
     pdf.set_fill_color(255, 255, 0)
     pdf.cell(w=100, txt="Hello world", fill=True)
-    print(pdf._lasth)  # prints: 6.35
     pdf.ln()
     assert pdf._lasth == 6.35, f"pdf._lasth ({pdf._lasth}) != 5.35"
     pdf.set_fill_color(255, 0, 255)
