@@ -56,7 +56,7 @@ When you want to scale an image to fill a rectangle, while keeping its aspect ra
 and ensuring it does **not** overflow the rectangle width nor height in the process,
 you can set `w` / `h` and also provide `keep_aspect_ratio=True` to the [`image()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method.
 
-The following unit test illustrates that:
+The following unit tests illustrate that:
 
 * [test_image_fit.py](https://github.com/PyFPDF/fpdf2/blob/master/test/image/test_image_fit.py)
 * resulting document: [image_fit_in_rect.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/image/image_fit_in_rect.pdf)

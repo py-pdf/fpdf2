@@ -232,7 +232,7 @@ def test_multi_cell_table_with_max_line_height(tmp_path):  # issue 589
 def test_multi_cell_justified_with_unicode_font(tmp_path):  # issue 118
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font(fname=HERE / "../fonts/DejaVuSans.ttf")
+    pdf.add_font(fname=FONTS_DIR / "DejaVuSans.ttf")
     pdf.set_font("DejaVuSans", size=14)
     text = 'Justified line containing "()" that is long enough to trigger wrapping and a line jump'
     pdf.multi_cell(w=0, h=8, txt=text, new_x="LMARGIN", new_y="NEXT")
@@ -280,7 +280,7 @@ def test_multicell_newpos_badinput():
 def test_multi_cell_j_paragraphs(tmp_path):  # issue 364
     pdf = FPDF(format="A5")
     pdf.add_page()
-    pdf.add_font(fname=HERE / "../fonts/DejaVuSans.ttf")
+    pdf.add_font(fname=FONTS_DIR / "DejaVuSans.ttf")
     pdf.set_font("DejaVuSans", size=14)
     pdf.set_margins(34, 55, 34)
     pdf.set_auto_page_break(auto=True, margin=55)

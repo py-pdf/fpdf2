@@ -86,6 +86,7 @@ from .structure_tree import StructureTreeBuilder
 from .sign import Signature
 from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ, PDFDate
+from .table import Table
 from .util import (
     escape_parens,
     get_scale_factor,
@@ -4674,6 +4675,10 @@ class FPDF(GraphicsStateMixin):
         self.set_font(*prev_font)
         self.text_color = prev_text_color
         self.underline = prev_underline
+
+    @check_page
+    def table(self, *args, **kwargs):
+        return Table(self, *args, **kwargs)
 
     def output(
         self, name="", dest="", linearize=False, output_producer_class=OutputProducer
