@@ -194,6 +194,7 @@ pdf.output("markdown-styled.pdf")
 Using other fonts means that their variants (bold, italics)
 must be registered using `add_font` with `style="B"` and `style="I"`.
 Several unit tests in `test/text/` demonstrate that:
+
 * [test_cell_markdown_with_ttf_fonts](https://github.com/PyFPDF/fpdf2/blob/2.6.1/test/text/test_cell.py#L155)
 * [test_multi_cell_markdown_with_ttf_fonts](https://github.com/PyFPDF/fpdf2/blob/2.6.1/test/text/test_multi_cell_markdown.py#L27)
 
