@@ -54,6 +54,8 @@ jobs:
           find . -name '*.pdf' | xargs -n 1 scripts/verapdf.py
           scripts/verapdf.py  # printing aggregated report
       - name: Running tests ☑
+        env:
+          PYTHONMALLOCSTATS: 1
         run: |
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
