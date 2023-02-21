@@ -225,7 +225,6 @@ class TextEmphasis(CoerciveIntFlag):
                 return cls.I
             if value.upper() == "UNDERLINE":
                 return cls.U
-        return super(cls, cls).coerce(value)
 
 
 class RenderStyle(CoerciveEnum):

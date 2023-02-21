@@ -3,6 +3,8 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF
+from fpdf.drawing import DeviceRGB
+from fpdf.fonts import FontStyle
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
@@ -126,3 +128,28 @@ def test_table_with_fixed_width(tmp_path):
                 for datum in data_row:
                     row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_with_fixed_width.pdf", tmp_path)
+
+
+def test_table_without_headings(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table(first_row_as_headings=False) as table:
+        for data_row in TABLE_DATA:
+            with table.row() as row:
+                for datum in data_row:
+                    row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_without_headings.pdf", tmp_path)
+
+
+def test_table_with_headings_styled(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    red = DeviceRGB(r=1, g=0, b=0)
+    with pdf.table(headings_style=FontStyle(emphasis="ITALICS", color=red)) as table:
+        for data_row in TABLE_DATA:
+            with table.row() as row:
+                for datum in data_row:
+                    row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_with_headings_styled.pdf", tmp_path)

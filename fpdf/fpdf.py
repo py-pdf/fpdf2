@@ -73,7 +73,7 @@ from .enums import (
     YPos,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
-from .fonts import fpdf_charwidths
+from .fonts import CORE_FONTS_CHARWIDTHS, FontStyle
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
 from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
@@ -143,15 +143,23 @@ class ImageInfo(dict):
         return f"ImageInfo({d})"
 
 
-class TitleStyle(NamedTuple):
-    font_family: Optional[str] = None
-    font_style: Optional[str] = None
-    font_size_pt: Optional[int] = None
-    color: Union[int, tuple] = None  # grey scale or (red, green, blue)
-    underline: bool = False
-    t_margin: Optional[int] = None
-    l_margin: Optional[int] = None
-    b_margin: Optional[int] = None
+class TitleStyle(FontStyle):
+    def __init__(
+        self,
+        font_family: Optional[str] = None,
+        font_style: Optional[str] = None,  # "B", "I" or "BI"
+        font_size_pt: Optional[int] = None,
+        color: Union[int, tuple] = None,  # grey scale or (red, green, blue),
+        underline: bool = False,
+        t_margin: Optional[int] = None,
+        l_margin: Optional[int] = None,
+        b_margin: Optional[int] = None,
+    ):
+        super().__init__(font_family, font_style, font_size_pt, color)
+        self.underline = underline
+        self.t_margin = t_margin
+        self.l_margin = l_margin
+        self.b_margin = b_margin
 
 
 class ToCPlaceholder(NamedTuple):
@@ -1951,7 +1959,7 @@ class FPDF(GraphicsStateMixin):
                 "name": self.core_fonts[fontkey],
                 "up": -100,
                 "ut": 50,
-                "cw": fpdf_charwidths[fontkey],
+                "cw": CORE_FONTS_CHARWIDTHS[fontkey],
                 "fontkey": fontkey,
                 "emphasis": TextEmphasis.coerce(style),
             }
@@ -4622,7 +4630,7 @@ class FPDF(GraphicsStateMixin):
             # We first check if adding this multi-cell will trigger a page break:
             with self.offset_rendering() as pdf:
                 # pylint: disable=protected-access
-                with pdf._apply_style(pdf.section_title_styles[level]):
+                with pdf._use_title_style(pdf.section_title_styles[level]):
                     pdf.multi_cell(
                         w=pdf.epw,
                         h=pdf.font_size,
@@ -4635,7 +4643,7 @@ class FPDF(GraphicsStateMixin):
                 self.add_page()
             with self._marked_sequence(title=name) as struct_elem:
                 outline_struct_elem = struct_elem
-                with self._apply_style(self.section_title_styles[level]):
+                with self._use_title_style(self.section_title_styles[level]):
                     self.multi_cell(
                         w=self.epw,
                         h=self.font_size,
@@ -4648,37 +4656,45 @@ class FPDF(GraphicsStateMixin):
         )
 
     @contextmanager
-    def _apply_style(self, title_style):
-        prev_font = (self.font_family, self.font_style, self.font_size_pt)
-        self.set_font(
-            title_style.font_family or self.font_family,
-            title_style.font_style
-            if title_style.font_style is not None
-            else self.font_style,
-            title_style.font_size_pt or self.font_size_pt,
-        )
-        prev_text_color = self.text_color
-        if title_style.color is not None:
-            if isinstance(title_style.color, Sequence):
-                self.set_text_color(*title_style.color)
-            else:
-                self.set_text_color(title_style.color)
+    def _use_title_style(self, title_style: TitleStyle):
         prev_underline = self.underline
         self.underline = title_style.underline
         if title_style.t_margin:
             self.ln(title_style.t_margin)
         if title_style.l_margin:
             self.set_x(title_style.l_margin)
-        yield
+        with self.use_font_style(title_style):
+            yield
         if title_style.b_margin:
             self.ln(title_style.b_margin)
-        self.set_font(*prev_font)
-        self.text_color = prev_text_color
         self.underline = prev_underline
 
+    @contextmanager
+    def use_font_style(self, font_style: FontStyle):
+        prev_font = (self.font_family, self.font_style, self.font_size_pt)
+        self.set_font(
+            font_style.family or self.font_family,
+            font_style.emphasis.value
+            if font_style.emphasis is not None
+            else self.font_style,
+            font_style.size_pt or self.font_size_pt,
+        )
+        prev_text_color = self.text_color
+        if font_style.color is not None:
+            if isinstance(font_style.color, Sequence):
+                self.set_text_color(*font_style.color)
+            else:
+                self.set_text_color(font_style.color)
+        yield
+        self.set_font(*prev_font)
+        self.text_color = prev_text_color
+
     @check_page
+    @contextmanager
     def table(self, *args, **kwargs):
-        return Table(self, *args, **kwargs)
+        table = Table(self, *args, **kwargs)
+        yield table
+        table.render()
 
     def output(
         self, name="", dest="", linearize=False, output_producer_class=OutputProducer

@@ -5,7 +5,7 @@ import pytest
 
 from fpdf import FPDF
 from fpdf.errors import FPDFException
-from fpdf.fonts import fpdf_charwidths
+from fpdf.fonts import CORE_FONTS_CHARWIDTHS
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
@@ -105,7 +105,7 @@ def test_set_font_core_font_attributes():
         "name": "Courier",
         "up": -100,
         "ut": 50,
-        "cw": fpdf_charwidths["courier"],
+        "cw": CORE_FONTS_CHARWIDTHS["courier"],
         "fontkey": "courier",
         "emphasis": 0,
     }
@@ -115,7 +115,7 @@ def test_set_font_core_font_attributes():
         "name": "Times-Roman",
         "up": -100,
         "ut": 50,
-        "cw": fpdf_charwidths["times"],
+        "cw": CORE_FONTS_CHARWIDTHS["times"],
         "fontkey": "times",
         "emphasis": 0,
     }
