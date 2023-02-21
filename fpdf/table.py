@@ -8,21 +8,14 @@ DEFAULT_HEADINGS_STYLE = FontStyle(emphasis="BOLD")
 
 
 class Table:
-    def __init__(
-        self,
-        fpdf,
-        line_height=None,
-        width=None,
-        first_row_as_headings=True,
-        headings_style: FontStyle = DEFAULT_HEADINGS_STYLE,
-    ):
-        self.line_height = line_height or 2 * fpdf.font_size
-        self.width = width or fpdf.epw
-        self.col_widths = None
+    def __init__(self, fpdf):
         self._fpdf = fpdf
-        self._first_row_as_headings = first_row_as_headings
-        self._headings_style = headings_style
         self._rows = []
+        self.col_widths = None
+        self.first_row_as_headings = True
+        self.headings_style = DEFAULT_HEADINGS_STYLE
+        self.line_height = 2 * fpdf.font_size
+        self.width = fpdf.epw
 
     @contextmanager
     def row(self):
@@ -32,20 +25,30 @@ class Table:
 
     def render(self):
         for i in range(len(self._rows)):
-            if i == 0 and self._first_row_as_headings:
-                with self._fpdf.use_font_style(self._headings_style):
-                    self._render_table_row(i)
-            else:
-                self._render_table_row(i)
+            with self._fpdf.offset_rendering() as test:
+                self._render_table_row_styled(i)
+            if test.page_break_triggered:
+                # pylint: disable=protected-access
+                self._fpdf._perform_page_break()
+                if self.first_row_as_headings:  # repeat headings on top:
+                    self._render_table_row_styled(0)
+            self._render_table_row_styled(i)
 
-    def _render_table_row(self, i):
+    def _render_table_row_styled(self, i):
+        if i == 0 and self.first_row_as_headings:
+            with self._fpdf.use_font_style(self.headings_style):
+                self._render_table_row(i, fill=bool(self.headings_style.fill_color))
+        else:
+            self._render_table_row(i)
+
+    def _render_table_row(self, i, **kwargs):
         row = self._rows[i]
         lines_count_per_cell = self._get_lines_count_per_cell(i)
         row_height = max(lines_count_per_cell) * self.line_height
         for j in range(len(row.cells)):
             cell_line_height = row_height / lines_count_per_cell[j]
             self._render_table_cell(
-                i, j, h=row_height, max_line_height=cell_line_height
+                i, j, h=row_height, max_line_height=cell_line_height, **kwargs
             )
         self._fpdf.ln(row_height)
 

@@ -1,7 +1,6 @@
 """
 Definition of the character widths of all PDF standard fonts.
 """
-from numbers import Number
 from typing import Optional, Union
 
 from .drawing import DeviceRGB
@@ -2612,15 +2611,25 @@ class FontStyle:
         family: Optional[str] = None,
         emphasis: Optional[Union[str, TextEmphasis]] = None,
         size_pt: Optional[int] = None,
-        color: Optional[Union[int, tuple, DeviceRGB]] = None,  # grey scale or (red, green, blue)
+        color: Optional[
+            Union[int, tuple, DeviceRGB]
+        ] = None,  # grey scale or (red, green, blue)
+        fill_color: Optional[
+            Union[int, tuple, DeviceRGB]
+        ] = None,  # grey scale or (red, green, blue)
     ):
         self.family = family
-        self.emphasis = TextEmphasis.coerce(emphasis)
+        self.emphasis = TextEmphasis.coerce(emphasis) if emphasis else None
         self.size_pt = size_pt
-        # Convert color to a RGB tuple of numbers:
         if isinstance(color, DeviceRGB):
             self.color = (255 * color.r, 255 * color.g, 255 * color.b)
-        elif isinstance(color, Number):
-            self.color = (color, color, color)
         else:
             self.color = color
+        if isinstance(fill_color, DeviceRGB):
+            self.fill_color = (
+                255 * fill_color.r,
+                255 * fill_color.g,
+                255 * fill_color.b,
+            )
+        else:
+            self.fill_color = fill_color

@@ -147,7 +147,7 @@ class TitleStyle(FontStyle):
     def __init__(
         self,
         font_family: Optional[str] = None,
-        font_style: Optional[str] = None,  # "B", "I" or "BI"
+        font_style: Optional[str] = None,
         font_size_pt: Optional[int] = None,
         color: Union[int, tuple] = None,  # grey scale or (red, green, blue),
         underline: bool = False,
@@ -155,8 +155,12 @@ class TitleStyle(FontStyle):
         l_margin: Optional[int] = None,
         b_margin: Optional[int] = None,
     ):
-        super().__init__(font_family, font_style, font_size_pt, color)
-        self.underline = underline
+        super().__init__(
+            font_family,
+            (font_style or "") + ("U" if underline else ""),
+            font_size_pt,
+            color,
+        )
         self.t_margin = t_margin
         self.l_margin = l_margin
         self.b_margin = b_margin
@@ -4657,8 +4661,6 @@ class FPDF(GraphicsStateMixin):
 
     @contextmanager
     def _use_title_style(self, title_style: TitleStyle):
-        prev_underline = self.underline
-        self.underline = title_style.underline
         if title_style.t_margin:
             self.ln(title_style.t_margin)
         if title_style.l_margin:
@@ -4667,32 +4669,41 @@ class FPDF(GraphicsStateMixin):
             yield
         if title_style.b_margin:
             self.ln(title_style.b_margin)
-        self.underline = prev_underline
 
     @contextmanager
     def use_font_style(self, font_style: FontStyle):
         prev_font = (self.font_family, self.font_style, self.font_size_pt)
         self.set_font(
             font_style.family or self.font_family,
-            font_style.emphasis.value
+            font_style.emphasis.style
             if font_style.emphasis is not None
             else self.font_style,
             font_style.size_pt or self.font_size_pt,
         )
         prev_text_color = self.text_color
-        if font_style.color is not None:
+        if font_style.color is not None and font_style.color != self.text_color:
             if isinstance(font_style.color, Sequence):
                 self.set_text_color(*font_style.color)
             else:
                 self.set_text_color(font_style.color)
+        prev_fill_color = self.fill_color
+        if (
+            font_style.fill_color is not None
+            and font_style.fill_color != self.fill_color
+        ):
+            if isinstance(font_style.fill_color, Sequence):
+                self.set_fill_color(*font_style.fill_color)
+            else:
+                self.set_fill_color(font_style.fill_color)
         yield
-        self.set_font(*prev_font)
+        self.fill_color = prev_fill_color
         self.text_color = prev_text_color
+        self.set_font(*prev_font)
 
     @check_page
     @contextmanager
-    def table(self, *args, **kwargs):
-        table = Table(self, *args, **kwargs)
+    def table(self):
+        table = Table(self)
         yield table
         table.render()
 

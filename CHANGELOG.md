@@ -18,8 +18,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.6.2] - Not released yet
 ### Added
-* [`FPDF.multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) and [`FPDF.write()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) now accept a `wrapmode` argument for word or character based line wrapping ("WORD"/"CHAR"). 
+- new method [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): [documentation](https://pyfpdf.github.io/fpdf2/Tables.html)
 - [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) has a new `keep_aspect_ratio` optional boolean parameter, to fit it inside a given rectangle: [documentation](https://pyfpdf.github.io/fpdf2/Images.html#fitting-an-image-inside-a-rectangle)
+- [`FPDF.multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) and [`FPDF.write()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) now accept a `wrapmode` argument for word or character based line wrapping ("WORD"/"CHAR"). 
 - new method `FPDF.preload_image()`: [documentation](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.preload_image)
 - new translation of the tutorial in [简体中文](https://pyfpdf.github.io/fpdf2/Tutorial-zh.html) - thanks to @Bubbu0129
 - new method [`FPDF.set_fallback_fonts()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_fonts) allow alternative fonts to be provided if a character on the text is not available on the currently set font - thanks to @andersonhc

@@ -109,13 +109,26 @@ class CoerciveIntFlag(IntFlag):
     def coerce(cls, value):
         """
         Attempt to coerce `value` into a member of this enumeration.
+<<<<<<< HEAD
+=======
+
+>>>>>>> Handling page breaks in tables
         If value is already a member of this enumeration it is returned unchanged.
         Otherwise, if it is a string, attempt to convert it (case insensitively, by
         upcasing) as an enumeration name. Otherwise, if it is an int, attempt to
         convert it as an enumeration value.
+<<<<<<< HEAD
         Otherwise, an exception is raised.
         Args:
             value (IntEnum, str, int): the value to be coerced.
+=======
+
+        Otherwise, an exception is raised.
+
+        Args:
+            value (IntEnum, str, int): the value to be coerced.
+
+>>>>>>> Handling page breaks in tables
         Raises:
             ValueError: if `value` is an int but not a member of this enumeration.
             ValueError: if `value` is a string but not a member by name.

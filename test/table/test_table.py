@@ -84,7 +84,8 @@ def test_table_with_fixed_row_height(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(line_height=2.5 * pdf.font_size) as table:
+    with pdf.table() as table:
+        table.line_height = 2.5 * pdf.font_size
         for data_row in TABLE_DATA:
             with table.row() as row:
                 for datum in data_row:
@@ -108,7 +109,8 @@ def test_table_with_multiline_cells_and_fixed_row_height(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(line_height=2.5 * pdf.font_size) as table:
+    with pdf.table() as table:
+        table.line_height = 2.5 * pdf.font_size
         for data_row in MULTILINE_TABLE_DATA:
             with table.row() as row:
                 for datum in data_row:
@@ -122,7 +124,8 @@ def test_table_with_fixed_width(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(width=150) as table:
+    with pdf.table() as table:
+        table.width = 150
         for data_row in TABLE_DATA:
             with table.row() as row:
                 for datum in data_row:
@@ -134,7 +137,8 @@ def test_table_without_headings(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(first_row_as_headings=False) as table:
+    with pdf.table() as table:
+        table.first_row_as_headings = False
         for data_row in TABLE_DATA:
             with table.row() as row:
                 for datum in data_row:
@@ -142,14 +146,47 @@ def test_table_without_headings(tmp_path):
     assert_pdf_equal(pdf, HERE / "table_without_headings.pdf", tmp_path)
 
 
+def test_table_with_multiline_cells_and_without_headings(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table() as table:
+        table.first_row_as_headings = False
+        for data_row in MULTILINE_TABLE_DATA + MULTILINE_TABLE_DATA[1:]:
+            with table.row() as row:
+                for datum in data_row:
+                    row.cell(datum)
+    assert_pdf_equal(
+        pdf, HERE / "table_with_multiline_cells_and_without_headings.pdf", tmp_path
+    )
+
+
 def test_table_with_headings_styled(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    red = DeviceRGB(r=1, g=0, b=0)
-    with pdf.table(headings_style=FontStyle(emphasis="ITALICS", color=red)) as table:
+    with pdf.table() as table:
+        blue = DeviceRGB(r=0, g=0, b=1)
+        grey = 128
+        table.headings_style = FontStyle(
+            emphasis="ITALICS", color=blue, fill_color=grey
+        )
         for data_row in TABLE_DATA:
             with table.row() as row:
                 for datum in data_row:
                     row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_with_headings_styled.pdf", tmp_path)
+
+
+def test_table_with_multiline_cells_and_split_over_3_pages(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table() as table:
+        for data_row in MULTILINE_TABLE_DATA + MULTILINE_TABLE_DATA[1:]:
+            with table.row() as row:
+                for datum in data_row:
+                    row.cell(datum)
+    assert_pdf_equal(
+        pdf, HERE / "table_with_multiline_cells_and_split_over_3_pages.pdf", tmp_path
+    )
