@@ -11,6 +11,8 @@ class Table:
     def __init__(self, fpdf):
         self._fpdf = fpdf
         self._rows = []
+        self.cell_fill_color = None
+        self.cell_fill_logic = lambda i, j: True
         self.col_widths = None
         self.first_row_as_headings = True
         self.headings_style = DEFAULT_HEADINGS_STYLE
@@ -32,7 +34,16 @@ class Table:
                 self._fpdf._perform_page_break()
                 if self.first_row_as_headings:  # repeat headings on top:
                     self._render_table_row_styled(0)
+            if self.cell_fill_color:
+                print(self.cell_fill_color)
+                prev_fill_color = self._fpdf.fill_color
+                self._fpdf.set_fill_color(self.cell_fill_color)
+                print(self._fpdf.fill_color)
+            else:
+                prev_fill_color = None
             self._render_table_row_styled(i)
+            if prev_fill_color:
+                self._fpdf.set_fill_color(prev_fill_color)
 
     def _render_table_row_styled(self, i):
         if i == 0 and self.first_row_as_headings:
@@ -41,14 +52,23 @@ class Table:
         else:
             self._render_table_row(i)
 
-    def _render_table_row(self, i, **kwargs):
+    def _render_table_row(self, i, fill=False, **kwargs):
         row = self._rows[i]
         lines_count_per_cell = self._get_lines_count_per_cell(i)
         row_height = max(lines_count_per_cell) * self.line_height
         for j in range(len(row.cells)):
             cell_line_height = row_height / lines_count_per_cell[j]
+            if fill:
+                cell_fill = True
+            else:
+                cell_fill = self.cell_fill_color and self.cell_fill_logic(i, j)
             self._render_table_cell(
-                i, j, h=row_height, max_line_height=cell_line_height, **kwargs
+                i,
+                j,
+                h=row_height,
+                max_line_height=cell_line_height,
+                fill=cell_fill,
+                **kwargs,
             )
         self._fpdf.ln(row_height)
 

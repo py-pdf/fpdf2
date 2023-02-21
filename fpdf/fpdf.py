@@ -963,15 +963,21 @@ class FPDF(GraphicsStateMixin):
         The method can be called before the first page is created and the value is retained from page to page.
 
         Args:
-            r (int): if `g` and `b` are given, this indicates the red component.
+            r (int, tuple, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): if `g` and `b` are given, this indicates the red component.
                 Else, this indicates the grey level. The value must be between 0 and 255.
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
-        if (r == 0 and g == 0 and b == 0) or g == -1:
-            self.draw_color = drawing.DeviceGray(r / 255)
+        if isinstance(r, (drawing.DeviceGray, drawing.DeviceRGB)):
+            # Note: in this case, r is also a Sequence
+            self.draw_color = r
         else:
-            self.draw_color = drawing.DeviceRGB(r / 255, g / 255, b / 255)
+            if isinstance(r, Sequence):
+                r, g, b = r
+            if (r, g, b) == (0, 0, 0) or g == -1:
+                self.draw_color = drawing.DeviceGray(r / 255)
+            else:
+                self.draw_color = drawing.DeviceRGB(r / 255, g / 255, b / 255)
         if self.page > 0:
             self._out(self.draw_color.serialize().upper())
 
@@ -982,15 +988,21 @@ class FPDF(GraphicsStateMixin):
         The method can be called before the first page is created and the value is retained from page to page.
 
         Args:
-            r (int): if `g` and `b` are given, this indicates the red component.
+            r (int, tuple, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): if `g` and `b` are given, this indicates the red component.
                 Else, this indicates the grey level. The value must be between 0 and 255.
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
-        if (r == 0 and g == 0 and b == 0) or g == -1:
-            self.fill_color = drawing.DeviceGray(r / 255)
+        if isinstance(r, (drawing.DeviceGray, drawing.DeviceRGB)):
+            # Note: in this case, r is also a Sequence
+            self.fill_color = r
         else:
-            self.fill_color = drawing.DeviceRGB(r / 255, g / 255, b / 255)
+            if isinstance(r, Sequence):
+                r, g, b = r
+            if (r, g, b) == (0, 0, 0) or g == -1:
+                self.fill_color = drawing.DeviceGray(r / 255)
+            else:
+                self.fill_color = drawing.DeviceRGB(r / 255, g / 255, b / 255)
         if self.page > 0:
             self._out(self.fill_color.serialize().lower())
 
@@ -1001,15 +1013,21 @@ class FPDF(GraphicsStateMixin):
         The method can be called before the first page is created and the value is retained from page to page.
 
         Args:
-            r (int): if `g` and `b` are given, this indicates the red component.
+            r (int, tuple, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): if `g` and `b` are given, this indicates the red component.
                 Else, this indicates the grey level. The value must be between 0 and 255.
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
-        if (r == 0 and g == 0 and b == 0) or g == -1:
-            self.text_color = drawing.DeviceGray(r / 255)
+        if isinstance(r, (drawing.DeviceGray, drawing.DeviceRGB)):
+            # Note: in this case, r is also a Sequence
+            self.text_color = r
         else:
-            self.text_color = drawing.DeviceRGB(r / 255, g / 255, b / 255)
+            if isinstance(r, Sequence):
+                r, g, b = r
+            if (r, g, b) == (0, 0, 0) or g == -1:
+                self.text_color = drawing.DeviceGray(r / 255)
+            else:
+                self.text_color = drawing.DeviceRGB(r / 255, g / 255, b / 255)
 
     def get_string_width(self, s, normalized=False, markdown=False):
         """
@@ -2665,20 +2683,11 @@ class FPDF(GraphicsStateMixin):
         if line_width is not None:
             self.set_line_width(line_width)
         if draw_color is not None:
-            if isinstance(draw_color, Sequence):
-                self.set_draw_color(*draw_color)
-            else:
-                self.set_draw_color(draw_color)
+            self.set_draw_color(draw_color)
         if fill_color is not None:
-            if isinstance(fill_color, Sequence):
-                self.set_fill_color(*fill_color)
-            else:
-                self.set_fill_color(fill_color)
+            self.set_fill_color(fill_color)
         if text_color is not None:
-            if isinstance(text_color, Sequence):
-                self.set_text_color(*text_color)
-            else:
-                self.set_text_color(text_color)
+            self.set_text_color(text_color)
         if dash_pattern is not None:
             self.set_dash_pattern(**dash_pattern)
         yield
@@ -4682,21 +4691,19 @@ class FPDF(GraphicsStateMixin):
         )
         prev_text_color = self.text_color
         if font_style.color is not None and font_style.color != self.text_color:
-            if isinstance(font_style.color, Sequence):
-                self.set_text_color(*font_style.color)
-            else:
-                self.set_text_color(font_style.color)
+            self.set_text_color(font_style.color)
         prev_fill_color = self.fill_color
         if (
             font_style.fill_color is not None
             and font_style.fill_color != self.fill_color
         ):
-            if isinstance(font_style.fill_color, Sequence):
-                self.set_fill_color(*font_style.fill_color)
-            else:
-                self.set_fill_color(font_style.fill_color)
+            self.set_fill_color(font_style.fill_color)
         yield
-        self.fill_color = prev_fill_color
+        if (
+            font_style.fill_color is not None
+            and font_style.fill_color != prev_fill_color
+        ):
+            self.set_fill_color(prev_fill_color)
         self.text_color = prev_text_color
         self.set_font(*prev_font)
 

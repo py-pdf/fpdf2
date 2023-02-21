@@ -3,7 +3,7 @@ Definition of the character widths of all PDF standard fonts.
 """
 from typing import Optional, Union
 
-from .drawing import DeviceRGB
+from .drawing import DeviceGray, DeviceRGB
 from .enums import TextEmphasis
 
 COURIER_FONT = {chr(i): 600 for i in range(256)}
@@ -2612,24 +2612,14 @@ class FontStyle:
         emphasis: Optional[Union[str, TextEmphasis]] = None,
         size_pt: Optional[int] = None,
         color: Optional[
-            Union[int, tuple, DeviceRGB]
+            Union[int, tuple, DeviceGray, DeviceRGB]
         ] = None,  # grey scale or (red, green, blue)
         fill_color: Optional[
-            Union[int, tuple, DeviceRGB]
+            Union[int, tuple, DeviceGray, DeviceRGB]
         ] = None,  # grey scale or (red, green, blue)
     ):
         self.family = family
         self.emphasis = TextEmphasis.coerce(emphasis) if emphasis else None
         self.size_pt = size_pt
-        if isinstance(color, DeviceRGB):
-            self.color = (255 * color.r, 255 * color.g, 255 * color.b)
-        else:
-            self.color = color
-        if isinstance(fill_color, DeviceRGB):
-            self.fill_color = (
-                255 * fill_color.r,
-                255 * fill_color.g,
-                255 * fill_color.b,
-            )
-        else:
-            self.fill_color = fill_color
+        self.color = color
+        self.fill_color = fill_color
