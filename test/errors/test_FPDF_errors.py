@@ -113,7 +113,7 @@ def test_repeated_calls_to_output(tmp_path):
 def test_unsupported_image_filter_error():
     image_filter = "N/A"
     with pytest.raises(FPDFException) as error:
-        get_img_info(img=Image.open(HERE / "flowers.png"), image_filter=image_filter)
+        get_img_info(HERE / "flowers.png", Image.open(HERE / "flowers.png"), image_filter=image_filter)
     assert str(error.value) == f'Unsupported image filter: "{image_filter}"'
 
 

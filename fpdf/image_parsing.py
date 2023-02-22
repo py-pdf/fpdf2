@@ -31,6 +31,8 @@ def load_image(filename):
     # if a bytesio instance is passed in, use it as is.
     if isinstance(filename, BytesIO):
         return filename
+    if isinstance(filename, Path):
+        filename = str(filename)
     # by default loading from network is allowed for all images
     if filename.startswith(("http://", "https://")):
         # disabling bandit rule as permitted schemes are whitelisted:
@@ -40,28 +42,6 @@ def load_image(filename):
         return _decode_base64_image(filename)
     with open(filename, "rb") as local_file:
         return BytesIO(local_file.read())
-
-
-def load_image_readable(filename):
-    """
-    This method is used to load external resources, such as images.
-    It is automatically called when resource added to document by `FPDF.image()`.
-    It returns the content of the file.
-    """
-    # if a bytesio instance is passed in, use it as is.
-    if isinstance(filename, BytesIO):
-        return filename
-    if isinstance(filename, Path):
-        filename = str(filename)
-    # by default loading from network is allowed for all images
-    if filename.startswith(("http://", "https://")):
-        # disabling bandit rule as permitted schemes are whitelisted:
-        with urlopen(filename) as url_file:  # nosec B310
-            return url_file
-    elif filename.startswith("data"):
-        return _decode_base64_image(filename)
-    return open(filename, "rb")
-
 
 def _decode_base64_image(base64Image):
     "Decode the base 64 image string"
@@ -343,7 +323,7 @@ def get_img_info(filename, imgbytesio=None, image_filter="AUTO", dims=None):
     imgreadable = None
     img = None
     if not imgbytesio or isinstance(imgbytesio, Path):
-        imgreadable = load_image_readable(filename)
+        imgreadable = load_image(filename)
         img = Image.open(imgreadable)
     elif not isinstance(imgbytesio, Image.Image):
         imgreadable = imgbytesio
