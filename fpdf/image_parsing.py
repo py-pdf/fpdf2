@@ -2,6 +2,7 @@ import base64, zlib
 from io import BytesIO
 from math import ceil
 from urllib.request import urlopen
+from pathlib import Path
 
 try:
     from PIL import Image, TiffImagePlugin
@@ -41,8 +42,29 @@ def load_image(filename):
         return BytesIO(local_file.read())
 
 
+def load_image_readable(filename):
+    """
+    This method is used to load external resources, such as images.
+    It is automatically called when resource added to document by `FPDF.image()`.
+    It returns the content of the file.
+    """
+    # if a bytesio instance is passed in, use it as is.
+    if isinstance(filename, BytesIO):
+        return filename
+    if isinstance(filename, Path):
+        filename = str(filename)
+    # by default loading from network is allowed for all images
+    if filename.startswith(("http://", "https://")):
+        # disabling bandit rule as permitted schemes are whitelisted:
+        with urlopen(filename) as url_file:  # nosec B310
+            return url_file
+    elif filename.startswith("data"):
+        return _decode_base64_image(filename)
+    return open(filename, "rb")
+
+
 def _decode_base64_image(base64Image):
-    "Decode the base 64 image string into an io byte stream."
+    "Decode the base 64 image string"
     imageData = base64Image.split("base64,")[1]
     decodedData = base64.b64decode(imageData)
     return BytesIO(decodedData)
@@ -308,24 +330,28 @@ TIFFBitRevTable = [
 ]
 
 
-def get_img_info(name, imgbytesio, image_filter="AUTO", dims=None):
+def get_img_info(filename, imgbytesio=None, image_filter="AUTO", dims=None):
     """
     Args:
-        img: `BytesIO` or `PIL.Image.Image` instance
+        filename: in a format that can be passed to load_image_content
+        imgbytesio: optional `BytesIO` or `PIL.Image.Image` instance
         image_filter (str): one of the SUPPORTED_IMAGE_FILTERS
     """
     if Image is None:
         raise EnvironmentError("Pillow not available - fpdf2 cannot insert images")
 
-    if not img:
-        img = load_image(name)
+    imgreadable = None
+    img = None
+    if not imgbytesio or isinstance(imgbytesio, Path):
+        imgreadable = load_image_readable(filename)
+        img = Image.open(imgreadable)
+    elif not isinstance(imgbytesio, Image.Image):
+        imgreadable = imgbytesio
+        img = Image.open(imgreadable)
+    else:
+        img = imgbytesio
 
-    imgrawdata = None
     altered = False
-    if not isinstance(img, Image.Image):
-        imgrawdata = img
-        img = Image.open(img)
-
     if dims:
         img = img.resize(dims, resample=RESAMPLE)
         altered = True
@@ -349,14 +375,15 @@ def get_img_info(name, imgbytesio, image_filter="AUTO", dims=None):
     w, h = img.size
     info = {}
 
-    if imgrawdata is not None and not altered:
+    if imgreadable is not None and not altered:
         # if we can use the original image bytes directly we do (JPEG and group4 TIFF only):
         if img.format == "JPEG" and image_filter == "DCTDecode":
             dpn, bpc, colspace = 3, 8, "DeviceRGB"
             if img.mode == "L":
                 dpn, bpc, colspace = 1, 8, "DeviceGray"
+            imgreadable.seek(0)
             return {
-                "data": imgrawdata,
+                "data": imgreadable.read(),
                 "w": w,
                 "h": h,
                 "cs": colspace,
@@ -383,11 +410,9 @@ def get_img_info(name, imgbytesio, image_filter="AUTO", dims=None):
                     "group4 tiff: %d" % photo
                 )
             offset, length = ccitt_payload_location_from_pil(img)
-            imgrawdata.seek(offset)
-            ccittrawdata = imgrawdata.read(length)
+            imgreadable.seek(offset)
+            ccittrawdata = imgreadable.read(length)
             fillorder = img.tag_v2.get(TiffImagePlugin.FILLORDER)
-            eprint("yo")
-            eprint(fillorder)
             if fillorder is None:
                 # no FillOrder: nothing to do
                 pass
@@ -410,7 +435,7 @@ def get_img_info(name, imgbytesio, image_filter="AUTO", dims=None):
                 "cs": colspace,
                 "bpc": bpc,
                 "f": image_filter,
-                "dp": f"/BlackIs1 {str(not inverse).lower()} /Columns {w} /K -1 /Rows {h}",
+                "dp": f"/BlackIs1 {str(not inverted).lower()} /Columns {w} /K -1 /Rows {h}",
             }
 
     # garbage collection
