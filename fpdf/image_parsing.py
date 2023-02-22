@@ -332,7 +332,7 @@ def get_img_info(filename, imgbytesio=None, image_filter="AUTO", dims=None):
     else:
         img = imgbytesio
 
-    altered = False
+    img_altered = False
     if dims:
         img = img.resize(dims, resample=RESAMPLE)
         altered = True
