@@ -3716,9 +3716,7 @@ class FPDF(GraphicsStateMixin):
         if info:
             info["usages"] += 1
         else:
-            if not img:
-                img = load_image(name)
-            info = ImageInfo(get_img_info(img, self.image_filter, dims))
+            info = ImageInfo(get_img_info(name, img, self.image_filter, dims))
             info["i"] = len(self.images) + 1
             info["usages"] = 1
             self.images[name] = info
@@ -3836,7 +3834,7 @@ class FPDF(GraphicsStateMixin):
                         # The existing low-res image is too small, we need a bigger low-res image:
                         info.update(
                             get_img_info(
-                                img or load_image(name), self.image_filter, dims
+                                name, img or load_image(name), self.image_filter, dims
                             )
                         )
                         LOGGER.debug(
@@ -3848,7 +3846,9 @@ class FPDF(GraphicsStateMixin):
                     info["usages"] += 1
                 else:
                     info = ImageInfo(
-                        get_img_info(img or load_image(name), self.image_filter, dims)
+                        get_img_info(
+                            name, img or load_image(name), self.image_filter, dims
+                        )
                     )
                     info["i"] = len(self.images) + 1
                     info["usages"] = 1
