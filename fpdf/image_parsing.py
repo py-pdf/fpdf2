@@ -31,7 +31,7 @@ def load_image(filename):
     # if a bytesio instance is passed in, use it as is.
     if isinstance(filename, BytesIO):
         return filename
-    if isinstance(filename, Path):
+    elif isinstance(filename, Path):
         filename = str(filename)
     # by default loading from network is allowed for all images
     if filename.startswith(("http://", "https://")):
