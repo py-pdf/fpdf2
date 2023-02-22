@@ -240,6 +240,19 @@ class TextEmphasis(CoerciveIntFlag):
                 return cls.U
 
 
+class TableBordersLayout(CoerciveEnum):
+    "Defines how to render table borders"
+
+    ALL = intern("ALL")
+    "Draw all table cells borders"
+
+    INTERNAL = intern("INTERNAL")
+    "Draw only internal horizontal & vertical borders"
+
+    MINIMAL = intern("MINIMAL")
+    "Draw only the top horizontal border, below the headings, and internal vertical borders"
+
+
 class RenderStyle(CoerciveEnum):
     "Defines how to render shapes"
 

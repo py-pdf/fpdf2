@@ -218,3 +218,29 @@ def test_table_with_cell_fill2(tmp_path):
                 for datum in data_row:
                     row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_with_cell_fill2.pdf", tmp_path)
+
+
+def test_table_with_internal_layout(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table() as table:
+        table.borders_layout = "INTERNAL"
+        for data_row in TABLE_DATA:
+            with table.row() as row:
+                for datum in data_row:
+                    row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_with_internal_layout.pdf", tmp_path)
+
+
+def test_table_with_minimal_layout(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table() as table:
+        table.borders_layout = "MINIMAL"
+        for data_row in TABLE_DATA:
+            with table.row() as row:
+                for datum in data_row:
+                    row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_with_minimal_layout.pdf", tmp_path)

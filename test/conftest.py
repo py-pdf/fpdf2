@@ -21,7 +21,6 @@ import pytest
 from fpdf.util import get_process_rss_as_mib, print_mem_usage
 from fpdf.template import Template
 
-
 QPDF_AVAILABLE = bool(shutil.which("qpdf"))
 if not QPDF_AVAILABLE:
     warnings.warn(

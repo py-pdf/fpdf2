@@ -99,6 +99,27 @@ Result:
 
 ![](table-with-cells-filled2.jpg)
 
+## Set borders layout
+```python
+...
+with pdf.table() as table:
+    table.borders_layout = "INTERNAL"
+    ...
+```
+Result:
+
+![](table_with_internal__layout.jpg)
+
+```python
+...
+with pdf.table() as table:
+    table.borders_layout = "MINIMAL"
+    ...
+```
+Result:
+
+![](table_with_minimal_layout.jpg)
+
 ## Using write_html
 
 Tables can also be defined in HTML using [`FPDF.write_html`](HTML.md).

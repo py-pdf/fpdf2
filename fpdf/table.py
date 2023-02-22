@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from numbers import Number
 
+from .enums import TableBordersLayout
 from .fonts import FontStyle
 
 
@@ -17,6 +18,7 @@ class Table:
         self.first_row_as_headings = True
         self.headings_style = DEFAULT_HEADINGS_STYLE
         self.line_height = 2 * fpdf.font_size
+        self.borders_layout = TableBordersLayout.ALL
         self.width = fpdf.epw
 
     @contextmanager
@@ -35,15 +37,40 @@ class Table:
                 if self.first_row_as_headings:  # repeat headings on top:
                     self._render_table_row_styled(0)
             if self.cell_fill_color:
-                print(self.cell_fill_color)
                 prev_fill_color = self._fpdf.fill_color
                 self._fpdf.set_fill_color(self.cell_fill_color)
-                print(self._fpdf.fill_color)
             else:
                 prev_fill_color = None
             self._render_table_row_styled(i)
             if prev_fill_color:
                 self._fpdf.set_fill_color(prev_fill_color)
+
+    def get_cell_border(self, i, j):
+        "Can be overriden to customize this logic"
+        if self.borders_layout == TableBordersLayout.ALL.value:
+            return 1
+        columns_count = max(len(row.cells) for row in self._rows)
+        rows_count = len(self._rows)
+        border = list("LRTB")
+        if self.borders_layout == TableBordersLayout.INTERNAL.value:
+            if i == 0 and "T" in border:
+                border.remove("T")
+            if i == rows_count - 1 and "B" in border:
+                border.remove("B")
+            if j == 0 and "L" in border:
+                border.remove("L")
+            if j == columns_count - 1 and "R" in border:
+                border.remove("R")
+        if self.borders_layout == TableBordersLayout.MINIMAL.value:
+            if i != 0 and "B" in border:
+                border.remove("B")
+            if rows_count > 1 and i != 1 and "T" in border:
+                border.remove("T")
+            if j == 0 and "L" in border:
+                border.remove("L")
+            if j == columns_count - 1 and "R" in border:
+                border.remove("R")
+        return "".join(border)
 
     def _render_table_row_styled(self, i):
         if i == 0 and self.first_row_as_headings:
@@ -79,7 +106,7 @@ class Table:
             w=col_width,
             h=h,
             txt=row.cells[j],
-            border=1,
+            border=self.get_cell_border(i, j),
             new_x="RIGHT",
             new_y="TOP",
             **kwargs,
