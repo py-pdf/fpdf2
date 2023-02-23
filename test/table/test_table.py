@@ -9,7 +9,6 @@ from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
 HERE = Path(__file__).resolve().parent
-FONTS_DIR = HERE.parent / "fonts"
 
 TABLE_DATA = (
     ("First name", "Last name", "Age", "City"),
@@ -237,6 +236,8 @@ def test_table_with_minimal_layout(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
+    pdf.set_draw_color(100)  # dark grey
+    pdf.set_line_width(1)
     with pdf.table() as table:
         table.borders_layout = "MINIMAL"
         for data_row in TABLE_DATA:

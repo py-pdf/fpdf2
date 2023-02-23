@@ -3789,6 +3789,14 @@ class FPDF(GraphicsStateMixin):
         if self.oversized_images and info["usages"] == 1 and not dims:
             info = self._downscale_image(name, img, info, w, h)
 
+        # Flowing mode
+        if y is None:
+            self._perform_page_break_if_need_be(h)
+            y = self.y
+            self.y += h
+        if x is None:
+            x = self.x
+
         if keep_aspect_ratio:
             ratio = info.width / info.height
             if h * ratio < w:
@@ -3798,14 +3806,7 @@ class FPDF(GraphicsStateMixin):
                 y += (h - w / ratio) / 2
                 h = w / ratio
 
-        # Flowing mode
-        if y is None:
-            self._perform_page_break_if_need_be(h)
-            y = self.y
-            self.y += h
-        if x is None:
-            x = self.x
-        elif not isinstance(x, Number):
+        if not isinstance(x, Number):
             if keep_aspect_ratio:
                 raise ValueError(
                     "FPDF.image(): 'keep_aspect_ratio' cannot be used with an enum value provided to `x`"

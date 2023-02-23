@@ -108,10 +108,11 @@ with pdf.table() as table:
 ```
 Result:
 
-![](table_with_internal__layout.jpg)
+![](table_with_internal_layout.jpg)
 
 ```python
 ...
+pdf.set_draw_color(100)  # dark grey
 with pdf.table() as table:
     table.borders_layout = "MINIMAL"
     ...
@@ -119,6 +120,42 @@ with pdf.table() as table:
 Result:
 
 ![](table_with_minimal_layout.jpg)
+
+## Insert images
+```python
+TABLE_DATA = (
+    ("First name", "Last name", "Image", "City"),
+    ("Jules", "Smith", "shirt.png", "San Juan"),
+    ("Mary", "Ramos", "shirt.png", "Orlando"),
+    ("Carlson", "Banks", "shirt.png", "Los Angeles"),
+    ("Lucas", "Cimon", "shirt.png", "Angers"),
+)
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Times", size=16)
+with pdf.table() as table:
+    for i, data_row in enumerate(TABLE_DATA):
+        with table.row() as row:
+            for j, datum in enumerate(data_row):
+                if j == 2 and i > 0:
+                    row.cell(img=datum)
+                else:
+                    row.cell(datum)
+pdf.output('table_with_images.pdf')
+```
+Result:
+
+![](table_with_images.jpg)
+
+By default, images height & width are constrained by the row height (based on text content)
+and the column width. To render bigger images, you can set the `table.line_height` parameter to increase the row height, or pass `img_fill_width=True` to `.cell()`:
+
+```python
+                    row.cell(img=datum, img_fill_width=True)
+```
+Result:
+
+![](table_with_images_and_img_fill_width.jpg)
 
 ## Using write_html
 

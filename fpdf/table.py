@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from numbers import Number
+from typing import List
 
 from .enums import TableBordersLayout
 from .fonts import FontStyle
@@ -12,13 +13,13 @@ class Table:
     def __init__(self, fpdf):
         self._fpdf = fpdf
         self._rows = []
+        self.borders_layout = TableBordersLayout.ALL
         self.cell_fill_color = None
         self.cell_fill_logic = lambda i, j: True
         self.col_widths = None
         self.first_row_as_headings = True
         self.headings_style = DEFAULT_HEADINGS_STYLE
         self.line_height = 2 * fpdf.font_size
-        self.borders_layout = TableBordersLayout.ALL
         self.width = fpdf.epw
 
     @contextmanager
@@ -81,36 +82,74 @@ class Table:
 
     def _render_table_row(self, i, fill=False, **kwargs):
         row = self._rows[i]
-        lines_count_per_cell = self._get_lines_count_per_cell(i)
-        row_height = max(lines_count_per_cell) * self.line_height
+        lines_heights_per_cell = self._get_lines_heights_per_cell(i)
+        row_height = max(sum(lines_heights) for lines_heights in lines_heights_per_cell)
         for j in range(len(row.cells)):
-            cell_line_height = row_height / lines_count_per_cell[j]
-            if fill:
-                cell_fill = True
-            else:
-                cell_fill = self.cell_fill_color and self.cell_fill_logic(i, j)
+            cell_line_height = row_height / len(lines_heights_per_cell[j])
             self._render_table_cell(
                 i,
                 j,
-                h=row_height,
-                max_line_height=cell_line_height,
-                fill=cell_fill,
+                cell_line_height=cell_line_height,
+                row_height=row_height,
+                fill=fill,
                 **kwargs,
             )
         self._fpdf.ln(row_height)
 
-    def _render_table_cell(self, i, j, h, **kwargs):
+    # pylint: disable=inconsistent-return-statements
+    def _render_table_cell(
+        self,
+        i,
+        j,
+        cell_line_height,
+        row_height,
+        fill=False,
+        lines_heights_only=False,
+        **kwargs,
+    ):
+        """
+        If `lines_heights_only` is True, returns a list of lines (subcells) heights.
+        """
         row = self._rows[i]
         col_width = self._get_col_width(i, j)
-        return self._fpdf.multi_cell(
+        cell = row.cells[j]
+        lines_heights = []
+        if cell.img:
+            if lines_heights_only:
+                info = self._fpdf.preload_image(cell.img)[2]
+                img_ratio = info.width / info.height
+                if cell.img_fill_width or row_height * img_ratio > col_width:
+                    img_height = col_width / img_ratio
+                else:
+                    img_height = row_height
+                lines_heights += [img_height]
+            else:
+                x, y = self._fpdf.x, self._fpdf.y
+                self._fpdf.image(
+                    cell.img,
+                    w=col_width,
+                    h=0 if cell.img_fill_width else row_height,
+                    keep_aspect_ratio=True,
+                )
+                self._fpdf.set_xy(x, y)
+        if not fill:
+            fill = self.cell_fill_color and self.cell_fill_logic(i, j)
+        lines = self._fpdf.multi_cell(
             w=col_width,
-            h=h,
-            txt=row.cells[j],
+            h=row_height,
+            txt=cell.text or "",
+            max_line_height=cell_line_height,
             border=self.get_cell_border(i, j),
             new_x="RIGHT",
             new_y="TOP",
+            fill=fill,
+            split_only=lines_heights_only,
             **kwargs,
         )
+        if lines_heights_only and cell.text:
+            lines_heights += len(lines) * [self.line_height]
+        if lines_heights_only:
+            return lines_heights
 
     def _get_col_width(self, i, j):
         if not self.col_widths:
@@ -126,27 +165,32 @@ class Table:
         col_ratio = self.col_widths[j] / sum(self.col_widths)
         return col_ratio * self.width
 
-    def _get_lines_count_per_cell(self, i):
+    def _get_lines_heights_per_cell(self, i) -> List[List[int]]:
         row = self._rows[i]
-        lines_count = []
+        lines_heights = []
         for j in range(len(row.cells)):
-            lines_count.append(
-                len(
-                    self._render_table_cell(
-                        i,
-                        j,
-                        h=self.line_height,
-                        max_line_height=self.line_height,
-                        split_only=True,
-                    )
+            lines_heights.append(
+                self._render_table_cell(
+                    i,
+                    j,
+                    cell_line_height=self.line_height,
+                    row_height=self.line_height,
+                    lines_heights_only=True,
                 )
             )
-        return lines_count
+        return lines_heights
 
 
 class Row:
     def __init__(self):
         self.cells = []
 
-    def cell(self, text):
-        self.cells.append(text)
+    def cell(self, text=None, img=None, img_fill_width=False):
+        self.cells.append(Cell(text, img, img_fill_width))
+
+
+class Cell:
+    def __init__(self, text, img, img_fill_width):
+        self.text = text
+        self.img = img
+        self.img_fill_width = img_fill_width
