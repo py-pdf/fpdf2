@@ -322,48 +322,42 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         raise EnvironmentError("Pillow not available - fpdf2 cannot insert images")
 
     img_raw_data = None
-    pil_img = None
-    if not img or isinstance(img, Path):
+    if not img or isinstance(img, Path) or isinstance(img, Path):
         img_raw_data = load_image(filename)
-        pil_img = Image.open(img_raw_data)
+        img = Image.open(img_raw_data)
     elif not isinstance(img, Image.Image):
         img_raw_data = img
-        pil_img = Image.open(img_raw_data)
-    else:
-        pil_img = img
-
-    # garbage collection
-    img = None
+        img = Image.open(img_raw_data)
 
     img_altered = False
     if dims:
-        pil_img = pil_img.resize(dims, resample=RESAMPLE)
+        img = img.resize(dims, resample=RESAMPLE)
         img_altered = True
 
     if image_filter == "AUTO":
         # Very simple logic for now:
-        if pil_img.format == "JPEG":
+        if img.format == "JPEG":
             image_filter = "DCTDecode"
-        elif pil_img.mode == "1":
+        elif img.mode == "1":
             image_filter = "CCITTFaxDecode"
         else:
             image_filter = "FlateDecode"
 
-    if pil_img.mode in ("P", "PA") and image_filter != "FlateDecode":
-        pil_img = pil_img.convert("RGBA")
+    if img.mode in ("P", "PA") and image_filter != "FlateDecode":
+        img = img.convert("RGBA")
 
-    if pil_img.mode not in ("1", "L", "LA", "RGB", "RGBA", "P", "PA"):
-        pil_img = pil_img.convert("RGBA")
+    if img.mode not in ("1", "L", "LA", "RGB", "RGBA", "P", "PA"):
+        img = img.convert("RGBA")
         img_altered = True
 
-    w, h = pil_img.size
+    w, h = img.size
     info = {}
 
     if img_raw_data is not None and not img_altered:
         # if we can use the original image bytes directly we do (JPEG and group4 TIFF only):
-        if pil_img.format == "JPEG" and image_filter == "DCTDecode":
+        if img.format == "JPEG" and image_filter == "DCTDecode":
             dpn, bpc, colspace = 3, 8, "DeviceRGB"
-            if pil_img.mode == "L":
+            if img.mode == "L":
                 dpn, bpc, colspace = 1, 8, "DeviceGray"
             img_raw_data.seek(0)
             return {
@@ -378,13 +372,13 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         # We can directly copy the data out of a CCITT Group 4 encoded TIFF, if it
         # only contains a single strip
         if (
-            pil_img.format == "TIFF"
+            img.format == "TIFF"
             and image_filter == "CCITTFaxDecode"
-            and pil_img.info["compression"] == "group4"
-            and len(pil_img.tag_v2[TiffImagePlugin.STRIPOFFSETS]) == 1
-            and len(pil_img.tag_v2[TiffImagePlugin.STRIPBYTECOUNTS]) == 1
+            and img.info["compression"] == "group4"
+            and len(img.tag_v2[TiffImagePlugin.STRIPOFFSETS]) == 1
+            and len(img.tag_v2[TiffImagePlugin.STRIPBYTECOUNTS]) == 1
         ):
-            photo = pil_img.tag_v2[TiffImagePlugin.PHOTOMETRIC_INTERPRETATION]
+            photo = img.tag_v2[TiffImagePlugin.PHOTOMETRIC_INTERPRETATION]
             inverted = False
             if photo == 0:
                 inverted = True
@@ -392,10 +386,10 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
                 raise ValueError(
                     f"unsupported photometric interpretation for g4 tiff: {photo}"
                 )
-            offset, length = ccitt_payload_location_from_pil(pil_img)
+            offset, length = ccitt_payload_location_from_pil(img)
             img_raw_data.seek(offset)
             ccittrawdata = img_raw_data.read(length)
-            fillorder = pil_img.tag_v2.get(TiffImagePlugin.FILLORDER)
+            fillorder = img.tag_v2.get(TiffImagePlugin.FILLORDER)
             if fillorder is None or fillorder == 1:
                 # no FillOrder or msb-to-lsb: nothing to do
                 pass
@@ -421,61 +415,61 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
     # garbage collection
     img_raw_data = None
 
-    if pil_img.mode == "1":
+    if img.mode == "1":
         dpn, bpc, colspace = 1, 1, "DeviceGray"
-        info["data"] = _to_data(pil_img, image_filter)
-    elif pil_img.mode == "L":
+        info["data"] = _to_data(img, image_filter)
+    elif img.mode == "L":
         dpn, bpc, colspace = 1, 8, "DeviceGray"
-        info["data"] = _to_data(pil_img, image_filter)
-    elif pil_img.mode == "LA":
+        info["data"] = _to_data(img, image_filter)
+    elif img.mode == "LA":
         dpn, bpc, colspace = 1, 8, "DeviceGray"
         alpha_channel = slice(1, None, 2)
-        info["data"] = _to_data(pil_img, image_filter, remove_slice=alpha_channel)
-        if _has_alpha(pil_img, alpha_channel) and image_filter not in (
+        info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
+        if _has_alpha(img, alpha_channel) and image_filter not in (
             "DCTDecode",
             "JPXDecode",
         ):
-            info["smask"] = _to_data(pil_img, image_filter, select_slice=alpha_channel)
-    elif pil_img.mode == "P":
+            info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
+    elif img.mode == "P":
         dpn, bpc, colspace = 1, 8, "Indexed"
-        info["data"] = _to_data(pil_img, image_filter)
-        info["pal"] = pil_img.palette.palette
+        info["data"] = _to_data(img, image_filter)
+        info["pal"] = img.palette.palette
 
         # check if the P image has transparency
-        if pil_img.info.get("transparency", None) is not None and image_filter not in (
+        if img.info.get("transparency", None) is not None and image_filter not in (
             "DCTDecode",
             "JPXDecode",
         ):
             # convert to RGBA to get the alpha channel for creating the smask
             info["smask"] = _to_data(
-                pil_img.convert("RGBA"), image_filter, select_slice=slice(3, None, 4)
+                img.convert("RGBA"), image_filter, select_slice=slice(3, None, 4)
             )
-    elif pil_img.mode == "PA":
+    elif img.mode == "PA":
         dpn, bpc, colspace = 1, 8, "Indexed"
-        info["pal"] = pil_img.palette.palette
+        info["pal"] = img.palette.palette
         alpha_channel = slice(1, None, 2)
-        info["data"] = _to_data(pil_img, image_filter, remove_slice=alpha_channel)
-        if _has_alpha(pil_img, alpha_channel) and image_filter not in (
+        info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
+        if _has_alpha(img, alpha_channel) and image_filter not in (
             "DCTDecode",
             "JPXDecode",
         ):
-            info["smask"] = _to_data(pil_img, image_filter, select_slice=alpha_channel)
-    elif pil_img.mode == "RGB":
+            info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
+    elif img.mode == "RGB":
         dpn, bpc, colspace = 3, 8, "DeviceRGB"
-        info["data"] = _to_data(pil_img, image_filter)
+        info["data"] = _to_data(img, image_filter)
     else:  # RGBA image
         dpn, bpc, colspace = 3, 8, "DeviceRGB"
         alpha_channel = slice(3, None, 4)
-        info["data"] = _to_data(pil_img, image_filter, remove_slice=alpha_channel)
-        if _has_alpha(pil_img, alpha_channel) and image_filter not in (
+        info["data"] = _to_data(img, image_filter, remove_slice=alpha_channel)
+        if _has_alpha(img, alpha_channel) and image_filter not in (
             "DCTDecode",
             "JPXDecode",
         ):
-            info["smask"] = _to_data(pil_img, image_filter, select_slice=alpha_channel)
+            info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
 
     dp = f"/Predictor 15 /Colors {dpn} /Columns {w}"
 
-    if pil_img.mode == "1":
+    if img.mode == "1":
         dp = f"/BlackIs1 true /Columns {w} /K -1 /Rows {h}"
 
     info.update(
