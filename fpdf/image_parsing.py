@@ -322,7 +322,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         raise EnvironmentError("Pillow not available - fpdf2 cannot insert images")
 
     img_raw_data = None
-    if not img or isinstance(img, Path) or isinstance(img, Path):
+    if isinstance(img, Path):
         img_raw_data = load_image(filename)
         img = Image.open(img_raw_data)
     elif not isinstance(img, Image.Image):
