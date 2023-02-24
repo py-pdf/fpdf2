@@ -15,8 +15,11 @@ class Table:
     def __init__(self, fpdf):
         self._fpdf = fpdf
         self._rows = []
-        self.align = "LEFT"
-        "Control text alignment inside cells"
+        self.align = "CENTER"
+        """
+        Sets the table horizontal position relative to the page,
+        when it's not using the full page width
+        """
         self.borders_layout = TableBordersLayout.ALL
         "Control what cell borders are drawn"
         self.cell_fill_color = None
@@ -31,6 +34,8 @@ class Table:
         "Defines the visual style of the top headings row: size, color, emphasis..."
         self.line_height = 2 * fpdf.font_size
         "Defines how much vertical space a line of text will occupy"
+        self.text_align = "JUSTIFY"
+        "Control text alignment inside cells. Justify by default"
         self.width = fpdf.epw
         "Sets the table width"
 
@@ -43,6 +48,22 @@ class Table:
 
     def render(self):
         "This is an internal method called by `FPDF.table()` once the table is finished"
+        if self.width > self._fpdf.epw:
+            raise ValueError(
+                f"Invalid value provided .width={self.width}: effective page width is {self._fpdf.epw}"
+            )
+        table_align = Align.coerce(self.align)
+        if table_align == Align.J:
+            raise ValueError("JUSTIFY is an invalid value for table .align")
+        prev_l_margin = self._fpdf.l_margin
+        if table_align == Align.C:
+            self._fpdf.l_margin = (self._fpdf.w - self.width) / 2
+            self._fpdf.x = self._fpdf.l_margin
+        elif table_align == Align.R:
+            self._fpdf.l_margin = self._fpdf.w - self.width
+            self._fpdf.x = self._fpdf.l_margin
+        elif self._fpdf.x != self._fpdf.l_margin:
+            self._fpdf.l_margin = self._fpdf.x
         for i in range(len(self._rows)):
             with self._fpdf.offset_rendering() as test:
                 self._render_table_row_styled(i)
@@ -59,6 +80,8 @@ class Table:
             self._render_table_row_styled(i)
             if prev_fill_color:
                 self._fpdf.set_fill_color(prev_fill_color)
+        self._fpdf.l_margin = prev_l_margin
+        self._fpdf.x = self._fpdf.l_margin
 
     def get_cell_border(self, i, j):
         """
@@ -159,14 +182,18 @@ class Table:
                 self._fpdf.set_xy(x, y)
         if not fill:
             fill = self.cell_fill_color and self.cell_fill_logic(i, j)
-        align = self.align if isinstance(self.align, (Align, str)) else self.align[j]
+        text_align = (
+            self.text_align
+            if isinstance(self.text_align, (Align, str))
+            else self.text_align[j]
+        )
         lines = self._fpdf.multi_cell(
             w=col_width,
             h=row_height,
             txt=cell.text or "",
             max_line_height=cell_line_height,
             border=self.get_cell_border(i, j),
-            align=align,
+            align=text_align,
             new_x="RIGHT",
             new_y="TOP",
             fill=fill,
@@ -224,6 +251,11 @@ class Row:
             img_fill_width (bool): optional, defaults to False. Indicates to render the image
                 using the full width of the current table column.
         """
+        if text and img:
+            raise NotImplementedError(
+                "fpdf2 currently does not support inserting text with an image in the same table cell."
+                "Pull Requests are welcome to implement this 😊"
+            )
         self.cells.append(Cell(text, img, img_fill_width))
 
 

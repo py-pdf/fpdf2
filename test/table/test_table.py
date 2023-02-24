@@ -132,6 +132,19 @@ def test_table_with_fixed_width(tmp_path):
     assert_pdf_equal(pdf, HERE / "table_with_fixed_width.pdf", tmp_path)
 
 
+def test_table_with_invalid_width():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pytest.raises(ValueError):
+        with pdf.table() as table:
+            table.width = 200
+            for data_row in TABLE_DATA:
+                with table.row() as row:
+                    for datum in data_row:
+                        row.cell(datum)
+
+
 def test_table_without_headings(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -267,14 +280,14 @@ def test_table_align(tmp_path):
     pdf.add_page()
     pdf.set_font("Times", size=16)
     with pdf.table() as table:
-        table.align = "CENTER"
+        table.text_align = "CENTER"
         for data_row in TABLE_DATA:
             with table.row() as row:
                 for datum in data_row:
                     row.cell(datum)
     pdf.ln()
     with pdf.table() as table:
-        table.align = ("CENTER", "CENTER", "RIGHT", "LEFT")
+        table.text_align = ("CENTER", "CENTER", "RIGHT", "LEFT")
         for data_row in TABLE_DATA:
             with table.row() as row:
                 for datum in data_row:

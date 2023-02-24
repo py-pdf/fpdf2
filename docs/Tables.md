@@ -28,11 +28,14 @@ Result:
 ![](table-simple.jpg)
 
 ## Features
+* support cells with content wrapping over several lines
 * control over column & row sizes (automatically computed by default)
-* allow to style table headings, or disable them
+* allow to style table headings (top row), or disable them
+* control over borders: color, width & where they are drawn
 * handle splitting a table over page breaks, with headings repeated
 * control over cell background color
-
+* control table width & position
+* control over text alignment in cells, globally or per row
 * allow to embed images in cells
 
 ## Setting table & column widths
@@ -47,16 +50,19 @@ Result:
 
 ![](table-with-fixed-column-widths.jpg)
 
+`table.align` can be used to set the table horizontal position relative to the page,
+when it's not using the full page width. It's centered by default.
+
 ## Setting text alignment
 This can be set globally, or on a per-column basis:
 ```python
 ...
 with pdf.table() as table:
-    table.align = "CENTER"
+    table.text_align = "CENTER"
     ...
 pdf.ln()
 with pdf.table() as table:
-    table.align = ("CENTER", "CENTER", "RIGHT", "LEFT")
+    table.text_align = ("CENTER", "CENTER", "RIGHT", "LEFT")
     ...
 ```
 Result:

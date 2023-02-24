@@ -1,8 +1,9 @@
 from pathlib import Path
 
+import pytest
+
 from fpdf import FPDF
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
-
 
 HERE = Path(__file__).resolve().parent
 IMG_DIR = HERE.parent / "image"
@@ -38,7 +39,7 @@ MULTILINE_TABLE_DATA = (
 )
 
 
-def test_table_with_an_image(tmp_path):
+def test_table_with_images(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
@@ -50,10 +51,10 @@ def test_table_with_an_image(tmp_path):
                         row.cell(img=datum)
                     else:
                         row.cell(datum)
-    assert_pdf_equal(pdf, HERE / "table_with_an_image.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "table_with_images.pdf", tmp_path)
 
 
-def test_table_with_an_image_and_img_fill_width(tmp_path):
+def test_table_with_images_and_img_fill_width(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
@@ -67,7 +68,7 @@ def test_table_with_an_image_and_img_fill_width(tmp_path):
                         row.cell(datum)
     assert_pdf_equal(
         pdf,
-        HERE / "table_with_an_image_and_img_fill_width.pdf",
+        HERE / "table_with_images_and_img_fill_width.pdf",
         tmp_path,
     )
 
@@ -85,3 +86,18 @@ def test_table_with_multiline_cells_and_images(tmp_path):
                     else:
                         row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_with_multiline_cells_and_images.pdf", tmp_path)
+
+
+def test_table_with_images_and_text():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pytest.raises(NotImplementedError):
+        with pdf.table() as table:
+            for i, data_row in enumerate(TABLE_DATA):
+                with table.row() as row:
+                    for j, datum in enumerate(data_row):
+                        if j == 2 and i > 0:
+                            row.cell(datum.name, img=datum)
+                        else:
+                            row.cell(datum)
