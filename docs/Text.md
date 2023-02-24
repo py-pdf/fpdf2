@@ -10,8 +10,9 @@ There are several ways in fpdf to add text to a PDF document, each of which come
 | [`.write()`](#write) | several | no | no | auto | Inserts a multi-line text string within the boundaries of the page margins, starting at the current x/y location (typically the end of the last inserted text). |
 | [`.write_html()`](#write_html) | several | no | yes | auto |  An extension to `.write()`, with additional parsing of basic HTML tags.
 
-## Typographical Limitations
+## Typography and Language Specific Concepts 
 
+### Limitations
 There are a few advanced typesetting features that fpdf doesn't currently support.
 
 * Automatic ligatures - Some writing systems (eg. most Indic scripts such as Devaganari, Tamil, Kannada) frequently combine a number of written characters into a single glyph. This would require advanced font analysis capabilities, which aren't currently implemented.
@@ -29,6 +30,13 @@ from bidi.algorithm import get_display
 some_text = 'اَلْعَرَبِيَّةُכַּף סוֹפִית'
 fixed_text = get_display(reshape(some_text))
 ```
+
+### Character or Word Based Line Wrapping
+By default, `multi_line()` and `write()` will wrap lines based on words, using space characters and soft hyphens as seperators.
+For languages like Chinese and Japanese, that don't usually seperate their words, character based wrapping is more appropriate.
+In such a case, the argument `wrapmode="CHAR"` can be used (the default is "WORD"), and each line will get broken right before the
+character that doesn't fit anymore.
+
 
 ## Text Formatting
 For all text insertion methods, the relevant font related properties (eg. font/style and foreground/background color) must be set before invoking them. This includes using:
