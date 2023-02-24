@@ -64,4 +64,5 @@ nosetests.xml
 
 # Vim backup and swap files
 *.*~
+*.swo
 *.swp

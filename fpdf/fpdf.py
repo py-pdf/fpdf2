@@ -77,9 +77,9 @@ from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
 from .text_region import TextRegionMixin, TextColumns
 from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
-from .line_break import Fragment, MultiLineBreak, TextLine
 from .linearization import LinearizedOutputProducer
 from .output import OutputProducer, PDFPage, ZOOM_CONFIGS
+from .line_break import Fragment, MultiLineBreak, DynamicMultiLineBreak, TextLine
 from .outline import OutlineSection
 from .recorder import FPDFRecorder
 from .structure_tree import StructureTreeBuilder
@@ -2779,9 +2779,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         return self._render_styled_text_line(
             TextLine(
                 styled_txt_frags,
-                text_width=0.0,
+                text_width=0,
                 number_of_spaces=0,
                 justify=False,
+                height=h,
+                max_width=w,
                 trailing_nl=False,
             ),
             w,
@@ -2948,6 +2950,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 word_spacing = (
                     w - horizontal_margin - horizontal_margin - styled_txt_width
                 ) / text_line.number_of_spaces
+
+            # XXX
+            print(round(w, 3), round(text_line.text_width, 3), text_line.justify, word_spacing)
             sl.append(
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
@@ -3531,6 +3536,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         text_lines = []
         multi_line_break = MultiLineBreak(
             styled_text_fragments,
+            maximum_allowed_width,
             justify=(align == Align.J),
             print_sh=print_sh,
             wrapmode=wrapmode,
@@ -3547,6 +3553,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     text_width=0,
                     number_of_spaces=0,
                     justify=False,
+                    height=h,
+                    max_width=w,
                     trailing_nl=False,
                 )
             ]
@@ -3698,23 +3706,29 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         normalized_string = self.normalize_text(txt).replace("\r", "")
         styled_text_fragments = self._preload_font_styles(normalized_string, False)
 
+        def _get_width(line_height):  # pyline: disable=unused-argument
+            # Since the first line can have a different width, we need DynamicMultiLineBreak
+            # here, which needs this auxiliary callback function to query the current width.
+            # It ignores its argument, and returns the current local value of `max_width`.
+            return max_width
+
         text_lines = []
-        multi_line_break = MultiLineBreak(
+        multi_line_break = DynamicMultiLineBreak(
             styled_text_fragments,
+            _get_width,
             print_sh=print_sh,
             wrapmode=wrapmode,
         )
         # first line from current x position to right margin
         first_width = self.w - self.x - self.r_margin
-        txt_line = multi_line_break.get_line_of_given_width(
-            first_width - 2 * self.c_margin,
-        )
+        max_width = first_width - 2 * self.c_margin
+        text_line = multi_line_break.get_line_of_given_width(wordsplit=False)
         # remaining lines fill between margins
         full_width = self.w - self.l_margin - self.r_margin
-        fit_width = full_width - 2 * self.c_margin
-        while txt_line is not None:
-            text_lines.append(txt_line)
-            txt_line = multi_line_break.get_line_of_given_width(fit_width)
+        max_width = full_width - 2 * self.c_margin
+        while (text_line) is not None:
+            text_lines.append(text_line)
+            text_line = multi_line_break.get_line_of_given_width()
         if not text_lines:
             return False
 
