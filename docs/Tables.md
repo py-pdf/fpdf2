@@ -190,6 +190,10 @@ Result:
 
 ![](table_with_images_and_img_fill_width.jpg)
 
+## Table from pandas DataFrame
+
+_cf._ https://pyfpdf.github.io/fpdf2/Maths.html#using-pandas
+
 ## Using write_html
 
 Tables can also be defined in HTML using [`FPDF.write_html`](HTML.md).

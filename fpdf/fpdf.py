@@ -946,7 +946,7 @@ class FPDF(GraphicsStateMixin):
         """
         Footer to be implemented in your own inherited class.
 
-        This is automatically called by `FPDF.add_page()` and `FPDF.close()`
+        This is automatically called by `FPDF.add_page()` and `FPDF.output()`
         and should not be called directly by the user application.
         The default implementation performs nothing: you have to override this method
         in a subclass to implement your own rendering logic.
@@ -968,16 +968,7 @@ class FPDF(GraphicsStateMixin):
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
-        if isinstance(r, (drawing.DeviceGray, drawing.DeviceRGB)):
-            # Note: in this case, r is also a Sequence
-            self.draw_color = r
-        else:
-            if isinstance(r, Sequence):
-                r, g, b = r
-            if (r, g, b) == (0, 0, 0) or g == -1:
-                self.draw_color = drawing.DeviceGray(r / 255)
-            else:
-                self.draw_color = drawing.DeviceRGB(r / 255, g / 255, b / 255)
+        self.draw_color = _convert_to_drawing_color(r, g, b)
         if self.page > 0:
             self._out(self.draw_color.serialize().upper())
 
@@ -993,16 +984,7 @@ class FPDF(GraphicsStateMixin):
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
-        if isinstance(r, (drawing.DeviceGray, drawing.DeviceRGB)):
-            # Note: in this case, r is also a Sequence
-            self.fill_color = r
-        else:
-            if isinstance(r, Sequence):
-                r, g, b = r
-            if (r, g, b) == (0, 0, 0) or g == -1:
-                self.fill_color = drawing.DeviceGray(r / 255)
-            else:
-                self.fill_color = drawing.DeviceRGB(r / 255, g / 255, b / 255)
+        self.fill_color = _convert_to_drawing_color(r, g, b)
         if self.page > 0:
             self._out(self.fill_color.serialize().lower())
 
@@ -1018,16 +1000,7 @@ class FPDF(GraphicsStateMixin):
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
-        if isinstance(r, (drawing.DeviceGray, drawing.DeviceRGB)):
-            # Note: in this case, r is also a Sequence
-            self.text_color = r
-        else:
-            if isinstance(r, Sequence):
-                r, g, b = r
-            if (r, g, b) == (0, 0, 0) or g == -1:
-                self.text_color = drawing.DeviceGray(r / 255)
-            else:
-                self.text_color = drawing.DeviceRGB(r / 255, g / 255, b / 255)
+        self.text_color = _convert_to_drawing_color(r, g, b)
 
     def get_string_width(self, s, normalized=False, markdown=False):
         """
@@ -4713,6 +4686,7 @@ class FPDF(GraphicsStateMixin):
     def table(self):
         """
         Inserts a table, that can be built using the `fpdf.table.Table` object yield.
+        Detailed usage documentation: https://pyfpdf.github.io/fpdf2/Tables.html
         """
         table = Table(self)
         yield table
@@ -4766,6 +4740,17 @@ class FPDF(GraphicsStateMixin):
                 name.write(self.buffer)
             return None
         return self.buffer
+
+
+def _convert_to_drawing_color(r, g, b):
+    if isinstance(r, (drawing.DeviceGray, drawing.DeviceRGB)):
+        # Note: in this case, r is also a Sequence
+        return r
+    if isinstance(r, Sequence):
+        r, g, b = r
+    if (r, g, b) == (0, 0, 0) or g == -1:
+        return drawing.DeviceGray(r / 255)
+    return drawing.DeviceRGB(r / 255, g / 255, b / 255)
 
 
 def _is_svg(bytes):

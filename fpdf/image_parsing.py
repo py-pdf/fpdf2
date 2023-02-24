@@ -59,7 +59,7 @@ TIFFBitRevTable = [
 def load_image(filename):
     """
     This method is used to load external resources, such as images.
-    It is automatically called when resource added to document by `FPDF.image()`.
+    It is automatically called when resource added to document by `fpdf.FPDF.image()`.
     It always return a BytesIO buffer.
     """
     # if a bytesio instance is passed in, use it as is.

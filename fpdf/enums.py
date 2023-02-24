@@ -246,6 +246,9 @@ class TableBordersLayout(CoerciveEnum):
     ALL = intern("ALL")
     "Draw all table cells borders"
 
+    NONE = intern("NONE")
+    "Draw zero cells border"
+
     INTERNAL = intern("INTERNAL")
     "Draw only internal horizontal & vertical borders"
 
@@ -794,7 +797,3 @@ class EncryptionMethod(Enum):
     NO_ENCRYPTION = 0
     RC4 = 1
     AES_128 = 2
-
-
-# This enum is only used internally:
-__pdoc__ = {"DocumentState": False}

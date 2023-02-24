@@ -10,7 +10,10 @@ DEFAULT_HEADINGS_STYLE = FontStyle(emphasis="BOLD")
 
 
 class Table:
-    "Object that `FPDF.table()` yields, used to build a table in the document"
+    """
+    Object that `fpdf.FPDF.table()` yields, used to build a table in the document.
+    Detailed usage documentation: https://pyfpdf.github.io/fpdf2/Tables.html
+    """
 
     def __init__(self, fpdf):
         self._fpdf = fpdf
@@ -47,7 +50,7 @@ class Table:
         yield row
 
     def render(self):
-        "This is an internal method called by `FPDF.table()` once the table is finished"
+        "This is an internal method called by `fpdf.FPDF.table()` once the table is finished"
         if self.width > self._fpdf.epw:
             raise ValueError(
                 f"Invalid value provided .width={self.width}: effective page width is {self._fpdf.epw}"
@@ -87,11 +90,13 @@ class Table:
         """
         Defines which cell borders should be drawn.
         Returns a string containing some or all of the letters L/R/T/B,
-        to be passed to `FPDF.multi_cell()`.
+        to be passed to `fpdf.FPDF.multi_cell()`.
         Can be overriden to customize this logic
         """
         if self.borders_layout == TableBordersLayout.ALL.value:
             return 1
+        if self.borders_layout == TableBordersLayout.NONE.value:
+            return 0
         columns_count = max(len(row.cells) for row in self._rows)
         rows_count = len(self._rows)
         border = list("LRTB")
@@ -190,7 +195,7 @@ class Table:
         lines = self._fpdf.multi_cell(
             w=col_width,
             h=row_height,
-            txt=cell.text or "",
+            txt=cell.text,
             max_line_height=cell_line_height,
             border=self.get_cell_border(i, j),
             align=text_align,
@@ -236,15 +241,17 @@ class Table:
 
 
 class Row:
-    "Object that FPDF.row() yields, used to build a row in a table"
+    "Object that `Table.row()` yields, used to build a row in a table"
 
     def __init__(self):
         self.cells = []
 
-    def cell(self, text=None, img=None, img_fill_width=False):
+    def cell(self, text="", img=None, img_fill_width=False):
         """
+        Adds a cell to the row.
+
         Args:
-            text (str): optional. String content, can contain several lines.
+            text (str): string content, can contain several lines.
                 In that case, the row height will grow proportionally.
             img: optional. Either a string representing a file path to an image,
                 an URL to an image, an io.BytesIO, or a instance of `PIL.Image.Image`.
