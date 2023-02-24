@@ -10,25 +10,37 @@ DEFAULT_HEADINGS_STYLE = FontStyle(emphasis="BOLD")
 
 
 class Table:
+    "Object that `FPDF.table()` yields, used to build a table in the document"
+
     def __init__(self, fpdf):
         self._fpdf = fpdf
         self._rows = []
         self.borders_layout = TableBordersLayout.ALL
+        "Control what cell borders are drawn"
         self.cell_fill_color = None
+        "Defines the cells background color"
         self.cell_fill_logic = lambda i, j: True
+        "Defines which cells are filled with color in the background"
         self.col_widths = None
+        "Sets column width. Can be a single number or a sequence of numbers."
         self.first_row_as_headings = True
+        "If False, the first row of the table is not styled differently from the others"
         self.headings_style = DEFAULT_HEADINGS_STYLE
+        "Defines the visual style of the top headings row: size, color, emphasis..."
         self.line_height = 2 * fpdf.font_size
+        "Defines how much vertical space a line of text will occupy"
         self.width = fpdf.epw
+        "Sets the table width"
 
     @contextmanager
     def row(self):
+        "Adds a row to the table. Yields a `Row` object."
         row = Row()
         self._rows.append(row)
         yield row
 
     def render(self):
+        "This is an internal method called by `FPDF.table()` once the table is finished"
         for i in range(len(self._rows)):
             with self._fpdf.offset_rendering() as test:
                 self._render_table_row_styled(i)
@@ -47,7 +59,12 @@ class Table:
                 self._fpdf.set_fill_color(prev_fill_color)
 
     def get_cell_border(self, i, j):
-        "Can be overriden to customize this logic"
+        """
+        Defines which cell borders should be drawn.
+        Returns a string containing some or all of the letters L/R/T/B,
+        to be passed to `FPDF.multi_cell()`.
+        Can be overriden to customize this logic
+        """
         if self.borders_layout == TableBordersLayout.ALL.value:
             return 1
         columns_count = max(len(row.cells) for row in self._rows)
@@ -188,14 +205,27 @@ class Table:
 
 
 class Row:
+    "Object that FPDF.row() yields, used to build a row in a table"
+
     def __init__(self):
         self.cells = []
 
     def cell(self, text=None, img=None, img_fill_width=False):
+        """
+        Args:
+            text (str): optional. String content, can contain several lines.
+                In that case, the row height will grow proportionally.
+            img: optional. Either a string representing a file path to an image,
+                an URL to an image, an io.BytesIO, or a instance of `PIL.Image.Image`.
+            img_fill_width (bool): optional, defaults to False. Indicates to render the image
+                using the full width of the current table column.
+        """
         self.cells.append(Cell(text, img, img_fill_width))
 
 
 class Cell:
+    "Internal representation of a table cell"
+
     def __init__(self, text, img, img_fill_width):
         self.text = text
         self.img = img

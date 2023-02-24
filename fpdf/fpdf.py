@@ -4711,6 +4711,9 @@ class FPDF(GraphicsStateMixin):
     @check_page
     @contextmanager
     def table(self):
+        """
+        Inserts a table, that can be built using the `fpdf.table.Table` object yield.
+        """
         table = Table(self)
         yield table
         table.render()
