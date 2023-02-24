@@ -1,5 +1,5 @@
 from fpdf import FPDF, FPDFException, TextMode
-from fpdf.line_break import Fragment, MultiLineBreak, TextLine
+from fpdf.line_break import Fragment, MultiLineBreak, TextLine, CurrentLine
 
 import pytest
 
@@ -1113,3 +1113,19 @@ def test_last_line_no_justify():
     res = multi_line_break.get_line_of_given_width(char_width)
     exp = None
     assert res == exp
+
+
+def test_trim_trailing_spaces():
+    "Check special cases in CurrentLine method."
+    # pylint: disable=protected-access,assignment-from-none
+    pdf = FPDF()
+    pdf.set_font("helvetica")
+    cl = CurrentLine()
+    # Result: None - if cl.fragments is empty to begin with.
+    res = cl.trim_trailing_spaces()
+    assert res is None
+    # Result: None - if cl.fragments is empty after trimming trailing spaces.
+    frag = Fragment(" ", pdf._get_current_graphics_state(), pdf.k)
+    cl.fragments = [frag]
+    res = cl.trim_trailing_spaces()
+    assert res is None
