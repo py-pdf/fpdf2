@@ -75,8 +75,7 @@ jobs:
           sed -i "s/author:.*/author: v$(python setup.py -V 2>/dev/null)/" mkdocs.yml
           cp tutorial/notebook.ipynb docs/
           mkdocs build
-          pdoc --html -o public/ fpdf --config "git_link_template='https://github
-.com/PyFPDF/fpdf2/blob/{commit}/{path}#L{start_line}-L{end_line}'"
+          pdoc --html -o public/ fpdf --config "git_link_template='https://github.com/PyFPDF/fpdf2/blob/{commit}/{path}#L{start_line}-L{end_line}'"
           cd contributors/ && PYTHONUNBUFFERED=1 ./build_contributors_html_page.py PyFPDF/fpdf2
           cp -t ../public/ contributors.html contributors-map-small.png
       - name: Deploy documentation 🚀

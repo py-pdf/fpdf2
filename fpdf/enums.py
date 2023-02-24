@@ -255,6 +255,9 @@ class TableBordersLayout(CoerciveEnum):
     MINIMAL = intern("MINIMAL")
     "Draw only the top horizontal border, below the headings, and internal vertical borders"
 
+    HORIZONTAL_LINES = intern("HORIZONTAL_LINES")
+    "Draw only horizontal lines"
+
     NO_HORIZONTAL_LINES = intern("NO_HORIZONTAL_LINES")
     "Draw all cells border except horizontal lines, after the headings"
 

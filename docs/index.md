@@ -30,7 +30,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * Embedding images, including transparency and alpha channel, using [Pillow (Python Imaging Library)](https://pillow.readthedocs.io/en/stable/)
 * Arbitrary path drawing and basic [SVG](SVG.md) import
 * Embedding [barcodes](Barcodes.md), [charts & graphs](Maths.md), [emojis, symbols & dingbats](EmojisSymbolsDingbats.md)
-* [Cell / multi-cell / plaintext writing](Text.md), with [automatic page breaks](PageBreaks.md), line break and text justification
+* [Tables](Tables.md), and also [cell / multi-cell / plaintext writing](Text.md), with [automatic page breaks](PageBreaks.md), line break and text justification
 * Choice of measurement unit, page format & margins. Optional page header and footer
 * Basic [conversion from HTML to PDF](HTML.md)
 * A [templating system](Templates.md) to render PDFs in batchs

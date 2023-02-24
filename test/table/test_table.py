@@ -215,13 +215,7 @@ def test_table_with_cell_fill(tmp_path):
             with table.row() as row:
                 for datum in data_row:
                     row.cell(datum)
-    assert_pdf_equal(pdf, HERE / "table_with_cell_fill.pdf", tmp_path)
-
-
-def test_table_with_cell_fill2(tmp_path):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Times", size=16)
+    pdf.ln()
     with pdf.table() as table:
         table.cell_fill_color = (173, 216, 230)  # light blue
         table.cell_fill_logic = lambda i, j: j % 2
@@ -229,7 +223,7 @@ def test_table_with_cell_fill2(tmp_path):
             with table.row() as row:
                 for datum in data_row:
                     row.cell(datum)
-    assert_pdf_equal(pdf, HERE / "table_with_cell_fill2.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "table_with_cell_fill.pdf", tmp_path)
 
 
 def test_table_with_internal_layout(tmp_path):

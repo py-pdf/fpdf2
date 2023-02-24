@@ -1,6 +1,7 @@
 """
 Definition of the character widths of all PDF standard fonts.
 """
+from dataclasses import dataclass, replace
 from typing import Optional, Union
 
 from .drawing import DeviceGray, DeviceRGB
@@ -2605,21 +2606,22 @@ CORE_FONTS_CHARWIDTHS["zapfdingbats"] = {
 }
 
 
+@dataclass
 class FontStyle:
+    family: Optional[str]
+    emphasis: Optional[TextEmphasis]
+    size_pt: Optional[int]
+    # Colors are single number grey scales or (red, green, blue) tuples:
+    color: Optional[Union[int, tuple, DeviceGray, DeviceRGB]]
+    fill_color: Optional[Union[int, tuple, DeviceGray, DeviceRGB]]
+
     def __init__(
-        self,
-        family: Optional[str] = None,
-        emphasis: Optional[Union[str, TextEmphasis]] = None,
-        size_pt: Optional[int] = None,
-        color: Optional[
-            Union[int, tuple, DeviceGray, DeviceRGB]
-        ] = None,  # grey scale or (red, green, blue)
-        fill_color: Optional[
-            Union[int, tuple, DeviceGray, DeviceRGB]
-        ] = None,  # grey scale or (red, green, blue)
+        self, family=None, emphasis=None, size_pt=None, color=None, fill_color=None
     ):
         self.family = family
         self.emphasis = TextEmphasis.coerce(emphasis) if emphasis else None
         self.size_pt = size_pt
         self.color = color
         self.fill_color = fill_color
+
+    replace = replace

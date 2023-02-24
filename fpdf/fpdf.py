@@ -4655,6 +4655,17 @@ class FPDF(GraphicsStateMixin):
 
     @contextmanager
     def use_font_style(self, font_style: FontStyle):
+        """
+        Sets the provided `fpdf.font.FontStyle` in a local context,
+        then restore font settings back to they were initially.
+        This method must be used as a context manager using `with`:
+
+            with pdf.use_font_style(FontStyle(emphasis="BOLD", color=255, size_pt=42)):
+                put_some_text()
+        """
+        if not font_style:
+            yield
+            return
         prev_font = (self.font_family, self.font_style, self.font_size_pt)
         self.set_font(
             font_style.family or self.font_family,

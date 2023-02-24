@@ -1,5 +1,7 @@
 # Tables
 
+_New in [:octicons-tag-24: 2.7.0](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
+
 Tables can be built using the `table()` method.
 Here is a simple example:
 

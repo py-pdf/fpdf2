@@ -16,12 +16,12 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.6.2] - Not released yet
+## [2.7.0] - Not released yet
 ### Added
 - new method [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): [documentation](https://pyfpdf.github.io/fpdf2/Tables.html)
 - [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) has a new `keep_aspect_ratio` optional boolean parameter, to fit it inside a given rectangle: [documentation](https://pyfpdf.github.io/fpdf2/Images.html#fitting-an-image-inside-a-rectangle)
 - [`FPDF.multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) and [`FPDF.write()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) now accept a `wrapmode` argument for word or character based line wrapping ("WORD"/"CHAR"). 
-- new method `FPDF.preload_image()`: [documentation](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.preload_image)
+- new methods: [`FPDF.preload_image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.preload_image) & [`FPDF.use_font_style()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.use_font_style)
 - new translation of the tutorial in [简体中文](https://pyfpdf.github.io/fpdf2/Tutorial-zh.html) - thanks to @Bubbu0129
 - new method [`FPDF.set_fallback_fonts()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_fonts) allow alternative fonts to be provided if a character on the text is not available on the currently set font - thanks to @andersonhc
 - documentation on how to embed static [Plotly](https://plotly.com/python/) charts: [link to docs](https://pyfpdf.github.io/fpdf2/Maths.html)
@@ -33,10 +33,13 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - all `TitleStyle` constructor parameters are now effectively optional
 - memory usage was reduced by 10 MiB in some cases, thanks to a small optimization in using `fonttools`
 ### Changed
+* [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now uses the new [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/Tables.html) method to render `<table>` tags. As a consequence, vertical space before `<table>` tags has sometimes been reduced.
 - vector images parsing is now more robust: `fpdf2` can now embed SVG files without `viewPort` or no `height` / `width`
 - bitonal images are now encoded using `CCITTFaxDecode`, reducing their size in the PDF document - thanks to @eroux
 - when possible, JPG and group4 encoded TIFFs are now embedded directly without recompression - thanks to @eroux
 - ICC Profiles of included images are now extracted and turned into PDF objects; they should now be taken into account by PDF viewers - thanks to @eroux
+### Removed
+* [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now uses the new [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/Tables.html) method to render `<table>` tags. As a consequence, it does not support the `height` attribute defined on `<td>` / `<th>` tags anymore, nor `height` / `width` attributes defined on `<img>` tags inside cells, nor `width` attributes defined on `<thead>` / `<tfoot>` tags.
 
 ## [2.6.1] - 2023-01-13
 ### Added

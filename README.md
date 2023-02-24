@@ -64,7 +64,7 @@ pip install git+https://github.com/PyFPDF/fpdf2.git@master
  * Embedding images, including transparency and alpha channel
  * Arbitrary path drawing and basic [SVG](https://pyfpdf.github.io/fpdf2/SVG.html) import
  * Embedding [barcodes](https://pyfpdf.github.io/fpdf2/Barcodes.html), [charts & graphs](https://pyfpdf.github.io/fpdf2/Maths.html), [emojis, symbols & dingbats](https://pyfpdf.github.io/fpdf2/EmojisSymbolsDingbats.html)
- * [Cell / multi-cell / plaintext writing](https://pyfpdf.github.io/fpdf2/Text.html), with [automatic page breaks](https://pyfpdf.github.io/fpdf2/PageBreaks.html), line break and text justification
+ * [Tables](https://pyfpdf.github.io/fpdf2/Tables.html) and also [cell / multi-cell / plaintext writing](https://pyfpdf.github.io/fpdf2/Text.html), with [automatic page breaks](https://pyfpdf.github.io/fpdf2/PageBreaks.html), line break and text justification
  * Choice of measurement unit, page format & margins. Optional page header and footer
  * Basic [conversion from HTML to PDF](https://pyfpdf.github.io/fpdf2/HTML.html)
  * A [templating system](https://pyfpdf.github.io/fpdf2/Templates.html) to render PDFs in batchs
