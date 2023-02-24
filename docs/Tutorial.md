@@ -169,37 +169,23 @@ back to the first column and trigger a page break.
 
 ## Tuto 5 - Creating Tables ##
 
-This tutorial will explain how to create tables easily.
-
-The code will create three different tables to explain what
- can be achieved with some simple adjustments.
+This tutorial will explain how to create two different tables,
+ to demonstrate what can be achieved with some simple adjustments.
 
 ```python
 {% include "../tutorial/tuto5.py" %}
 ```
 
 [Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
-[Countries text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
+[Countries CSV data](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
 
-Since a table is just a collection of cells, it is natural to build one
- from them.
+The first example is achieved in the most basic way possible, feeding data to [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/Tables.html). The result is rudimentary but very quick to obtain.
 
-The first example is achieved in the most basic way possible: simple framed
- cells, all of the same size and left aligned. The result is rudimentary but
- very quick to obtain.
-
-The second table brings some improvements: each column has its own width,
- titles are centered and figures right aligned. Moreover, horizontal lines have
- been removed. This is done by means of the border parameter of the `Cell()`
- method, which specifies which sides of the cell must be drawn. Here we want
- the left (`L`) and right (`R`) ones. Now only the problem of the horizontal line
- to finish the table remains. There are two possibilities to solve it: check
- for the last line in the loop, in which case we use LRB for the border
- parameter; or, as done here, add the line once the loop is over.
-
-The third table is similar to the second one but uses colors. Fill, text and
- line colors are simply specified. Alternate coloring for rows is obtained by
- using alternatively transparent and filled cells.
+The second table brings some improvements: colors, limited table width, reduced line height,
+ centered titles, columns with custom widths, figures right aligned...
+ Moreover, horizontal lines have been removed.
+ This was done by picking a `table.borders_layout` among the available values:
+ [`TableBordersLayout`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
 
 ## Tuto 6 - Creating links and mixing text styles ##
 

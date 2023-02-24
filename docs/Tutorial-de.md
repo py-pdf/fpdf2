@@ -144,10 +144,6 @@ Sobald det Text der dritten den oben beschriebenen Abstand zum Seitenende erreic
 
 ## Lektion 5 - Tabellen erstellen ##
 
-In dieser Lektion zeigen wir, wie man auf einfache Weise Tabellen erstellen kann.
-
-Der Code wird drei verschiedene Tabellen erstellen, um zu zeigen, welche Effekte wir mit einigen einfachen Anpassungen erzielen können.
-
 ```python
 {% include "../tutorial/tuto5.py" %}
 ```
@@ -155,18 +151,12 @@ Der Code wird drei verschiedene Tabellen erstellen, um zu zeigen, welche Effekte
 [Erzeugtes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
 [Länder](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
 
-Da eine Tabelle lediglich eine Sammlung von Zellen darstellt, ist es naheliegend, eine Tabelle aus den bereits bekannten Zellen aufzubauen.
+This section has changed a lot and requires a new translation: https://github.com/PyFPDF/fpdf2/issues/267
 
-Das erste Beispiel wird auf die einfachste Art und Weise realisiert. Einfach gerahmte Zellen, die alle die gleiche Größe haben und linksbündig ausgerichtet sind. Das Ergebnis ist rudimentär, aber sehr schnell zu erzielen.
+English versions:
 
-Die zweite Tabelle bringt einige Verbesserungen: Jede Spalte hat ihre eigene Breite,
- die Überschriften sind zentriert und die Zahlen rechtsbündig ausgerichtet. Außerdem wurden die horizontalen Linien
- entfernt. Dies geschieht mit Hilfe des Randparameters der Methode `cell()`, der angibt, welche Seiten der Zelle gezeichnet werden müssen. 
- Im Beispiel wählen wir die linke (L) und die rechte (R) Seite. Jetzt muss nur noch das Problem der horizontalen Linie
- zum Abschluss der Tabelle gelöst werden. Es gibt zwei Möglichkeiten, es zu lösen: In der Schleife prüfen, ob wir uns in der letzten Zeile befinden und dann "LRB" als Rahmenparameter übergeben oder, wie hier geschehen, eine abschließende Zelle separat nach dem Durchlaufen der Schleife einfügen.
-
-Die dritte Tabelle der zweiten sehr ähnlich, verwendet aber zusätzlich Farben. Füllung, Text und
- Linienfarben werden einfach mit den entsprechenden Methoden gesetzt. Eine wechselnde Färbung der Zeilen wird durch die abwechselnde Verwendung transparenter und gefüllter Zellen erreicht.
+* [Tuto 5 - Creating Tables](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
+* [Documentation on tables](https://pyfpdf.github.io/fpdf2/Tables.html)
 
 ## Lektion 6 - Links erstellen und Textstile mischen ##
 

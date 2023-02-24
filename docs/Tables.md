@@ -154,6 +154,8 @@ Result:
 
 ![](table_with_single_top_line_layout.jpg)
 
+All the possible layout values are described there: [`TableBordersLayout`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
+
 ## Insert images
 ```python
 TABLE_DATA = (

@@ -130,10 +130,6 @@ Una volta che il limite inferiore della terza colonna sarà raggiunto, [accept_p
 
 ## Tuto 5 - Creare tabelle ##
 
-Questo tutoria spiegherà come creare facilmente tabelle.
-
-Creeremo tre diverse tabelle per spiegare cosa si può ottenere con piccolo cambiamenti.
-
 ```python
 {% include "../tutorial/tuto5.py" %}
 ```
@@ -141,13 +137,12 @@ Creeremo tre diverse tabelle per spiegare cosa si può ottenere con piccolo camb
 [Risultato PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
 [Testo delle nazioni](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
 
-Dato che una tabella è un insieme di celle, viene natura crearne una partendo da loro.
+This section has changed a lot and requires a new translation: https://github.com/PyFPDF/fpdf2/issues/267
 
-Il primo esempio è la via più elementare: semplici celle con cornice, tutte della stessa dimensione e allineate a sinistra. Il risultato è rudimentale ma molto veloce da ottenere.
+English versions:
 
-La seconda tabella contiene dei miglioramenti: ogni colonna ha la propria larghezza, i titoli sono centrati e i numeri allineati a destra. Inoltre, le linee orizzontale sono state rimosse. Questo è stato possibile grazie al parametro border del metodo Cell(), che specifica quali lati della cella saranno disegnati. In questo caso vogliamo il sinistro (L) e il destro (R). Rimane il problema delle linee orizzontali. Ci sono due possibilità per risolverlo: controllare di essere nell'ultimo giro del ciclo, nel qual caso utilizziamo LRB per il parametro border; oppure, come fatto in questo esempio, aggiungiamo una linea dopo il completamento del ciclo.
-
-La terza tabella è molto simile alla seconda, ma utilizza i colori. Il colore di sfondo, testo e linee sono semplicemente specificati. L'alternanza dei colori delle righe è ottenuta utilizzando celle con sfondo colorato e trasparente alternativamente.
+* [Tuto 5 - Creating Tables](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
+* [Documentation on tables](https://pyfpdf.github.io/fpdf2/Tables.html)
 
 ## Tuto 6 - Creare link e mescolare stili di testo ##
 

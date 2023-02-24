@@ -125,10 +125,6 @@ Quando o limite inferior da terceira coluna é alcançado, o método [accept_pag
 
 ## Tuto 5 - Criar Tabelas ##
 
-Este tutorial irá explicar como criar tabelas facilmente.
-
-O código seguinte cria três tabelas diferentes para explicar o que pode ser alcançado com alguns ajustes simples.
-
 ```python
 {% include "../tutorial/tuto5.py"%}
 ```
@@ -136,16 +132,12 @@ O código seguinte cria três tabelas diferentes para explicar o que pode ser al
 [PDF resultante](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
 [Texto dos países](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
 
-Uma vez que uma tabela é apenas uma coleção de células, é natural construir uma
-a partir delas.
+This section has changed a lot and requires a new translation: https://github.com/PyFPDF/fpdf2/issues/267
 
-O primeiro exemplo é obtido da maneira mais básica possível: moldura simples
- células, todas do mesmo tamanho e alinhadas à esquerda. O resultado é rudimentar, mas
- muito rápido de obter.
+English versions:
 
-A segunda tabela traz algumas melhorias: cada coluna tem sua largura própria, os títulos estão centrados e as figuras alinhadas à direita. Além disso, as linhas horizontais foram removidas. Isto é feito por meio do parâmetro border do método Cell(), que especifica quais lados da célula devem ser desenhados. Aqui nós queremos os esquerdo (L) e direito (R). Agora apenas o problema da linha horizontal para terminar a mesa permanece. Existem duas possibilidades para resolvê-lo: verificar para a última linha do loop, caso este em que usamos LRB para o parâmetro da borda; ou, como foi feito aqui, adicione a linha assim que o loop terminar.
-
-A terceira tabela é semelhante à segunda, mas usa cores. Preenchimento, texto e as cores das linhas são simplesmente especificadas. Coloração alternativa para linhas é obtida usando células alternativamente transparentes e preenchidas.
+* [Tuto 5 - Creating Tables](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
+* [Documentation on tables](https://pyfpdf.github.io/fpdf2/Tables.html)
 
 ## Tuto 6 - Criar links e misturar estilos de texto ##
 

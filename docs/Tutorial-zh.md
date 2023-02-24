@@ -177,10 +177,6 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 ## 教程五 - 创建表 ##
 
-本教程将演示如何创建表。
-
-该代码创建了三个不同的表，演示了几个简单的表格配置。
-
 ```python
 {% include "../tutorial/tuto5.py" %}
 ```
@@ -188,23 +184,12 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 [生成的 PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
 [源文本](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
 
-表格只是单元格的集合，因此由单元格便可构建一个表格。
+This section has changed a lot and requires a new translation: https://github.com/PyFPDF/fpdf2/issues/267
 
-第一张表以最基本的方式实现：带框的单元格，大小相同且左对齐。
-虽然简陋，但操作便捷。
+English versions:
 
-第二张表进行了一些改进：每列都设定了宽度，标题居中，数字右对齐。
-此外，水平线也被删除。
-上述设定由`Cell()` 的边界参数完成，在参数中指定需要绘制的
-单元格边框。
-在示例中，需要绘制左侧 (`L`) 和右侧 (`R`) 的边框。
-水平的边框可使用两种方法设置：
-对于循环中的最后一行，使用 `LRB` 作为边界参数; 
-或者，如示例中，在循环结束后添加一行。
-
-第三张表与第二张表类似，但设置了颜色。
-填充、文本和线条的颜色直接指定即可。行间的间隔着色可以
-通过交替使用透明和填充的单元格实现。
+* [Tuto 5 - Creating Tables](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
+* [Documentation on tables](https://pyfpdf.github.io/fpdf2/Tables.html)
 
 ## 教程六 - 创建链接和混合文本样式 ##
 
