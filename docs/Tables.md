@@ -112,7 +112,6 @@ Result:
 
 ```python
 ...
-pdf.set_draw_color(100)  # dark grey
 with pdf.table() as table:
     table.borders_layout = "MINIMAL"
     ...
@@ -121,14 +120,26 @@ Result:
 
 ![](table_with_minimal_layout.jpg)
 
+```python
+...
+pdf.set_draw_color(50)  # very dark grey
+pdf.set_line_width(.5)
+with pdf.table() as table:
+    table.borders_layout = "SINGLE_TOP_LINE"
+    ...
+```
+Result:
+
+![](table_with_single_top_line_layout.jpg)
+
 ## Insert images
 ```python
 TABLE_DATA = (
     ("First name", "Last name", "Image", "City"),
     ("Jules", "Smith", "shirt.png", "San Juan"),
-    ("Mary", "Ramos", "shirt.png", "Orlando"),
-    ("Carlson", "Banks", "shirt.png", "Los Angeles"),
-    ("Lucas", "Cimon", "shirt.png", "Angers"),
+    ("Mary", "Ramos", "joker.png", "Orlando"),
+    ("Carlson", "Banks", "socialist.png", "Los Angeles"),
+    ("Lucas", "Cimon", "circle.bmp", "Angers"),
 )
 pdf = FPDF()
 pdf.add_page()

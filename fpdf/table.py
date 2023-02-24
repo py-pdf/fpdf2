@@ -71,6 +71,12 @@ class Table:
                 border.remove("L")
             if j == columns_count - 1 and "R" in border:
                 border.remove("R")
+        if self.borders_layout == TableBordersLayout.SINGLE_TOP_LINE.value:
+            border = list("TB")
+            if i != 0 and "B" in border:
+                border.remove("B")
+            if rows_count > 1 and i != 1 and "T" in border:
+                border.remove("T")
         return "".join(border)
 
     def _render_table_row_styled(self, i):

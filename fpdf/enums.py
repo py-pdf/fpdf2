@@ -252,6 +252,9 @@ class TableBordersLayout(CoerciveEnum):
     MINIMAL = intern("MINIMAL")
     "Draw only the top horizontal border, below the headings, and internal vertical borders"
 
+    SINGLE_TOP_LINE = intern("SINGLE_TOP_LINE")
+    "Draw only the top horizontal border, below the headings"
+
 
 class RenderStyle(CoerciveEnum):
     "Defines how to render shapes"

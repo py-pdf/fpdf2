@@ -245,3 +245,18 @@ def test_table_with_minimal_layout(tmp_path):
                 for datum in data_row:
                     row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_with_minimal_layout.pdf", tmp_path)
+
+
+def test_table_with_single_top_line_layout(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    pdf.set_draw_color(50)  # very dark grey
+    pdf.set_line_width(0.5)
+    with pdf.table() as table:
+        table.borders_layout = "SINGLE_TOP_LINE"
+        for data_row in TABLE_DATA:
+            with table.row() as row:
+                for datum in data_row:
+                    row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_with_single_top_line_layout.pdf", tmp_path)
