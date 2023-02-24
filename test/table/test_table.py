@@ -260,3 +260,23 @@ def test_table_with_single_top_line_layout(tmp_path):
                 for datum in data_row:
                     row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_with_single_top_line_layout.pdf", tmp_path)
+
+
+def test_table_align(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table() as table:
+        table.align = "CENTER"
+        for data_row in TABLE_DATA:
+            with table.row() as row:
+                for datum in data_row:
+                    row.cell(datum)
+    pdf.ln()
+    with pdf.table() as table:
+        table.align = ("CENTER", "CENTER", "RIGHT", "LEFT")
+        for data_row in TABLE_DATA:
+            with table.row() as row:
+                for datum in data_row:
+                    row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_align.pdf", tmp_path)

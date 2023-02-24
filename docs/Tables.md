@@ -47,6 +47,22 @@ Result:
 
 ![](table-with-fixed-column-widths.jpg)
 
+## Setting text alignment
+This can be set globally, or on a per-column basis:
+```python
+...
+with pdf.table() as table:
+    table.align = "CENTER"
+    ...
+pdf.ln()
+with pdf.table() as table:
+    table.align = ("CENTER", "CENTER", "RIGHT", "LEFT")
+    ...
+```
+Result:
+
+![](table_align.jpg)
+
 ## Setting row height
 ```python
 ...

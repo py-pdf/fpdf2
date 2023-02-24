@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from numbers import Number
 from typing import List
 
-from .enums import TableBordersLayout
+from .enums import Align, TableBordersLayout
 from .fonts import FontStyle
 
 
@@ -15,6 +15,8 @@ class Table:
     def __init__(self, fpdf):
         self._fpdf = fpdf
         self._rows = []
+        self.align = "LEFT"
+        "Control text alignment inside cells"
         self.borders_layout = TableBordersLayout.ALL
         "Control what cell borders are drawn"
         self.cell_fill_color = None
@@ -157,12 +159,14 @@ class Table:
                 self._fpdf.set_xy(x, y)
         if not fill:
             fill = self.cell_fill_color and self.cell_fill_logic(i, j)
+        align = self.align if isinstance(self.align, (Align, str)) else self.align[j]
         lines = self._fpdf.multi_cell(
             w=col_width,
             h=row_height,
             txt=cell.text or "",
             max_line_height=cell_line_height,
             border=self.get_cell_border(i, j),
+            align=align,
             new_x="RIGHT",
             new_y="TOP",
             fill=fill,
