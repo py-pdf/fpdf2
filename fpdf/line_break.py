@@ -317,6 +317,8 @@ class CurrentLine:
             last_frag.trim(-1)
             if not last_frag.characters:
                 del self.fragments[-1]
+            if not self.fragments:
+                return
             last_frag = self.fragments[-1]
             last_char = last_frag.characters[-1]
 
