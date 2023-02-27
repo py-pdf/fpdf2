@@ -2008,7 +2008,7 @@ class FPDF(GraphicsStateMixin):
         fallback_font_ids = []
         for fallback_font in fallback_fonts:
             found = False
-            for fontkey in self.fonts.keys():
+            for fontkey in self.fonts:
                 # will add all font styles on the same family
                 if fontkey.replace("B", "").replace("I", "") == fallback_font.lower():
                     fallback_font_ids.append(fontkey)
