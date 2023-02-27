@@ -7,7 +7,6 @@ HERE = Path(__file__).resolve().parent
 FONTS_DIR = HERE.parent / "fonts"
 
 
-
 def test_tcols_align(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
@@ -55,8 +54,6 @@ def test_tcols_align(tmp_path):
     cols.render(align="C")
 
     assert_pdf_equal(pdf, HERE / "tcols_align.pdf", tmp_path)
-
-
 
 
 def test_tcols_2cols(tmp_path):

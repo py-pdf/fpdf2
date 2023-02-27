@@ -2952,7 +2952,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 ) / text_line.number_of_spaces
 
             # XXX
-            print(round(w, 3), round(text_line.text_width, 3), text_line.justify, word_spacing)
+            print(
+                round(w, 3),
+                round(text_line.text_width, 3),
+                text_line.justify,
+                word_spacing,
+            )
             sl.append(
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
@@ -2969,9 +2974,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 if current_char_spacing != frag.char_spacing:
                     current_char_spacing = frag.char_spacing
                     sl.append(f"{frag.char_spacing:.2f} Tc")
-                if (current_font != frag.font
-                        or current_font_size_pt != frag.font_size_pt
-                        or current_char_vpos != frag.char_vpos):
+                if (
+                    current_font != frag.font
+                    or current_font_size_pt != frag.font_size_pt
+                    or current_char_vpos != frag.char_vpos
+                ):
                     if current_char_vpos != frag.char_vpos:
                         current_char_vpos = frag.char_vpos
                     if current_font_size_pt != frag.font_size_pt:
@@ -3536,15 +3543,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         text_lines = []
         multi_line_break = MultiLineBreak(
             styled_text_fragments,
-            maximum_allowed_width,
+            #maximum_allowed_width,
             justify=(align == Align.J),
             print_sh=print_sh,
             wrapmode=wrapmode,
         )
-        txt_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
-        while (txt_line) is not None:
-            text_lines.append(txt_line)
-            txt_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
+        text_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
+        while (text_line) is not None:
+            text_lines.append(text_line)
+            text_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
 
         if not text_lines:  # ensure we display at least one cell - cf. issue #349
             text_lines = [
@@ -3706,7 +3713,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         normalized_string = self.normalize_text(txt).replace("\r", "")
         styled_text_fragments = self._preload_font_styles(normalized_string, False)
 
-        def _get_width(line_height):  # pyline: disable=unused-argument
+        def _get_width(line_height):  # pylint: disable=unused-argument
             # Since the first line can have a different width, we need DynamicMultiLineBreak
             # here, which needs this auxiliary callback function to query the current width.
             # It ignores its argument, and returns the current local value of `max_width`.

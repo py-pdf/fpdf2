@@ -380,8 +380,8 @@ class CurrentLine:
         k: float,
         original_fragment_index: int,
         original_character_index: int,
-        url: str = None,
         height: float,
+        url: str = None,
     ):
         assert character != NEWLINE
         self.height = height
@@ -482,6 +482,7 @@ class CurrentLine:
                 self.hyphen_break_hint.k,
                 self.hyphen_break_hint.original_fragment_index,
                 self.hyphen_break_hint.original_character_index,
+                self.height,
             )
             return (
                 self.hyphen_break_hint.original_fragment_index,
@@ -608,7 +609,6 @@ class DynamicMultiLineBreak:
         last_fragment_index = self.fragment_index
         last_character_index = self.character_index
         current_line_height = 0
-        incremental_widths = []
 
         max_width = self.get_width(current_line_height)
         current_line = CurrentLine(max_width=max_width, print_sh=self.print_sh)

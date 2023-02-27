@@ -1,5 +1,3 @@
-
-
 from .errors import FPDFException
 from .enums import Align, XPos, YPos
 from .line_break import Fragment, DynamicMultiLineBreak, TextLine
@@ -9,7 +7,8 @@ from .line_break import Fragment, DynamicMultiLineBreak, TextLine
 
 
 class TextRegionMixin:
-    """ Mixing for FPDF() to support text regions. """
+    """Mixing for FPDF() to support text regions."""
+
     def __init__(self, *args, **kwargs):
         self.clear_text_region()
         super().__init__(*args, **kwargs)
@@ -22,8 +21,6 @@ class TextRegionMixin:
 
     def clear_text_region(self):
         self.__current_text_region = None
-
-
 
 
 class TextRegion:
@@ -39,8 +36,9 @@ class TextRegion:
 
     def __enter__(self):
         if self.pdf.is_current_text_region(self):
-            raise UserError(
-                f"Unable to enter the same {self.__class__.__name__} context recursively.")
+            raise FPDFException(
+                f"Unable to enter the same {self.__class__.__name__} context recursively."
+            )
         self._page = self.pdf.page
         self.pdf._push_local_stack()
         self.pdf.page = 0
@@ -72,11 +70,12 @@ class TextRegion:
     def _render_lines(self, text_lines, align):
         page_break_triggered = False
         self.pdf.y = max(self.pdf.y, self.pdf.t_margin)
+        text_line = None
         for text_line_index, text_line in enumerate(text_lines):
-            is_last_line = text_line_index == len(text_lines) -1
+            is_last_line = text_line_index == len(text_lines) - 1
             if text_line_index != 0:
                 self.ln()
-            #print(self.pdf.y + text_line.height, self.pdf.page_break_trigger)
+            # print(self.pdf.y + text_line.height, self.pdf.page_break_trigger)
             if hasattr(self, "accept_page_break"):
                 if self.pdf.y + text_line.height > self.pdf.page_break_trigger:
                     res = self.accept_page_break()
@@ -89,10 +88,10 @@ class TextRegion:
                 new_y=YPos.TOP,
                 align=Align.L if (align == Align.J and is_last_line) else align,
                 fill=False,
-#                link=link,
+                #                link=link,
             )
             page_break_triggered = page_break_triggered or new_page
-        if text_line.trailing_nl:
+        if text_line and text_line.trailing_nl:
             # The line renderer can't handle trailing newlines in the text.
             self.pdf.ln()
         return page_break_triggered
@@ -138,20 +137,19 @@ class TextColumnarMixin:
             raise FPDFException(
                 f"{self.__class__.__name__}(): "
                 f"Right limit ({self.right}) lower than left limit ({self.left})."
-                )
+            )
 
     def current_x_extents(self, y, height):
-        '''Return the horizontal extents of the current line.
+        """Return the horizontal extents of the current line.
         Columnar regions simply return the boundaries of the column.
         Regions with non-vertical boundaries need to check how the largest
         font-height in the current line actually fits in there.
         For that reason we include the current y and the line height.
-        '''
+        """
         return self.left, self.right
 
 
 class TextColumns(TextRegion, TextColumnarMixin):
-
     def __init__(self, pdf, ncols: int = 1, gap_width: float = 10, *args, **kwargs):
         super().__init__(pdf, *args, **kwargs)
         self.cur_column = 0
@@ -170,12 +168,12 @@ class TextColumns(TextRegion, TextColumnarMixin):
             self.cols.append((c_left, c_left + self.col_width))
 
     def render(
-            self,
-            stay_below: bool = False,
-            balance: bool = False,
-            align: Align = Align.L,
-            print_sh: bool = False
-        ):
+        self,
+        align: Align = Align.L,
+        print_sh: bool = False,
+        stay_below: bool = False,
+        balance: bool = False,
+    ):
         if not self._text_fragments:
             return False
         if stay_below or (self.cur_column == 0 and balance):
@@ -192,8 +190,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
         h_lines = sum([l.text_width for l in text_lines])
         bottom = self.pdf.h - self.pdf.b_margin
         h_avail = bottom - self.pdf.y
-        h_avail += (self.ncols - self.cur_col - 1) * (bottom - self.cur_top)
-
+        h_avail += (self.ncols - self.cur_column - 1) * (bottom - self.cur_top)
 
     def accept_page_break(self):
         if self.cur_column == self.ncols - 1:
@@ -208,14 +205,9 @@ class TextColumns(TextRegion, TextColumnarMixin):
 
     def ln(self, h=None):
         self.pdf.x = self.cols[self.cur_column][0]
-        self.pdf.y  += self.pdf.lasth if h is None else h
+        self.pdf.y += self.pdf._lasth if h is None else h
 
     def current_x_extents(self, y, height):
         left = self.cols[self.cur_column][0]
         right = self.cols[self.cur_column][1]
         return left, right
-
-
-
-
-
