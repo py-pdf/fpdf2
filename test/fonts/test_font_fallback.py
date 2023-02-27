@@ -11,7 +11,7 @@ from test.conftest import assert_pdf_equal
 HERE = Path(__file__).resolve().parent
 
 
-def test_fallback_font(tmp_path):
+def test_fallback_font(tmp_path, caplog):
     def write_strings():
         pdf.ln()
         pdf.write(txt="write 😄 😁 😆 😅 ✌ 🤞 🌭 🍔 🍟 🍕")

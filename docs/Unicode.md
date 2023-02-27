@@ -153,3 +153,7 @@ installers, or can be downloaded separately (for any operating system).
 You could use any TTF font file as long embedding usage is allowed in the licence.
 If not, a runtime exception will be raised saying: "ERROR - Font file 
 filename.ttf cannot be embedded due to copyright restrictions."
+
+## Fallback fonts ##
+
+It is possible to specify alternative fonts for FPDF to use if the current set font doesn't have all characters on the text. See an exemple [Here](EmojiSymbolsDingbats.md)
