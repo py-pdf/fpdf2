@@ -649,8 +649,6 @@ def test_break_fragment_into_two_lines():
         justify=False,
         trailing_nl=False,
     )
-    print(res)
-    print(exp)
     assert res == exp
     res = multi_line_break.get_line_of_given_width(test_width_B)
     exp = TextLine(

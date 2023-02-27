@@ -4,8 +4,8 @@
         "h": 32,
         "cs": "DeviceGray",
         "bpc": 1,
-        "f": "FlateDecode",
-        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+        "f": "CCITTFaxDecode",
+        "dp": "/BlackIs1 true /Columns 32 /K -1 /Rows 32"
     },
     "basi0g02.png": {
         "w": 32,
@@ -132,8 +132,8 @@
         "h": 32,
         "cs": "DeviceGray",
         "bpc": 1,
-        "f": "FlateDecode",
-        "dp": "/Predictor 15 /Colors 1 /Columns 32"
+        "f": "CCITTFaxDecode",
+        "dp": "/BlackIs1 true /Columns 32 /K -1 /Rows 32"
     },
     "basn0g02.png": {
         "w": 32,

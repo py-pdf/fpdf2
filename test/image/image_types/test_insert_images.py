@@ -16,12 +16,7 @@ def test_insert_jpg(tmp_path):
     pdf.compress = False
     pdf.add_page()
     pdf.image(HERE / "insert_images_insert_jpg.jpg", x=15, y=15, h=140)
-    if sys.platform in ("cygwin", "win32"):
-        # Pillow uses libjpeg-turbo on Windows and libjpeg elsewhere,
-        # leading to a slightly different image being parsed and included in the PDF:
-        assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_windows.pdf", tmp_path)
-    else:
-        assert_pdf_equal(pdf, HERE / "image_types_insert_jpg.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "image_types_insert_jpg.pdf", tmp_path)
 
 
 @pytest.mark.skipif(
@@ -127,6 +122,13 @@ def test_insert_gif(tmp_path):
     pdf.add_page()
     pdf.image(HERE / "circle.gif", x=15, y=15)
     assert_pdf_equal(pdf, HERE / "image_types_insert_gif.pdf", tmp_path)
+
+
+def test_insert_g4_tiff(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.image(HERE / "test.tiff", x=15, y=15)
+    assert_pdf_equal(pdf, HERE / "image_types_insert_tiff.pdf", tmp_path)
 
 
 def test_insert_pillow(tmp_path):

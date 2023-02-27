@@ -54,11 +54,13 @@ jobs:
           find . -name '*.pdf' | xargs -n 1 scripts/verapdf.py
           scripts/verapdf.py  # printing aggregated report
       - name: Running tests ☑
+        env:
+          PYTHONMALLOCSTATS: 1
         run: |
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
           # Executing all tests:
-          pytest -vv
+          pytest -vv --final-rss-usage
       - name: Uploading coverage report to codecov.io ☑
         if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: bash <(curl -s https://codecov.io/bash)

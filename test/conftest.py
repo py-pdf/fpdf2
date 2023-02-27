@@ -8,8 +8,10 @@ import signal
 import shutil
 import sys
 import warnings
+import gc, linecache, tracemalloc
 from subprocess import check_output, CalledProcessError, PIPE
 
+from psutil import Process  # transitive dependency of memunit
 import pytest
 
 from fpdf.template import Template
@@ -251,3 +253,59 @@ def timeout_after(seconds):
     finally:
         signal.setitimer(signal.ITIMER_REAL, 0)
         signal.signal(signal.SIGALRM, signal.SIG_DFL)
+
+
+# Enabling this check creates an increase in memory usage,
+# so we require an opt-in through a CLI argument:
+def pytest_addoption(parser):
+    parser.addoption(
+        "--final-rss-usage",
+        action="store_true",
+        help="At the end of the tests execution, display the current RSS memory usage",
+    )
+    parser.addoption(
+        "--trace-malloc",
+        action="store_true",
+        help="Trace main memory allocations differences during the whole execution",
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def final_rss_usage(request):
+    yield
+    if request.config.getoption("final_rss_usage"):
+        rss_in_mib = Process().memory_info().rss / 1024 / 1024
+        capmanager = request.config.pluginmanager.getplugin("capturemanager")
+        with capmanager.global_and_fixture_disabled():
+            print("\n")
+            print(f"[psutil] Final process RSS memory usage: {rss_in_mib:.1f} MiB")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def trace_malloc(request):
+    if not request.config.getoption("trace_malloc"):
+        yield
+        return
+    capmanager = request.config.pluginmanager.getplugin("capturemanager")
+    gc.collect()
+    # Top-10 recipe from: https://docs.python.org/3/library/tracemalloc.html#display-the-top-10
+    tracemalloc.start()
+    snapshot1 = tracemalloc.take_snapshot().filter_traces(
+        (
+            tracemalloc.Filter(False, linecache.__file__),
+            tracemalloc.Filter(False, tracemalloc.__file__),
+        )
+    )
+    yield
+    gc.collect()
+    snapshot2 = tracemalloc.take_snapshot().filter_traces(
+        (
+            tracemalloc.Filter(False, linecache.__file__),
+            tracemalloc.Filter(False, tracemalloc.__file__),
+        )
+    )
+    top_stats = snapshot2.compare_to(snapshot1, "lineno")
+    with capmanager.global_and_fixture_disabled():
+        print("[tracemalloc] Top 10 differences:")
+        for stat in top_stats[:10]:
+            print(stat)
