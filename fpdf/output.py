@@ -754,6 +754,7 @@ class OutputProducer:
                 iccp_content = iccp_c
                 break
         assert iccp_content is not None
+        # Note: n should be 4 if the profile ColorSpace is CMYK
         iccp_obj = PDFICCPObject(
             contents=iccp_content, n=img_info["dpn"], alternate=img_info["cs"]
         )
@@ -770,11 +771,13 @@ class OutputProducer:
                 ["/Indexed", "/DeviceRGB", f"{len(info['pal']) // 3 - 1}"]
             )
         elif iccp_i is not None:
-            # indexed images are not supposed to have ICC profiles
             iccp_pdf_i = self._ensure_iccp(info)
             color_space = PDFArray(["/ICCBased", str(iccp_pdf_i), str("0"), "R"])
         elif color_space == "DeviceCMYK":
             decode = "[1 0 1 0 1 0 1 0]"
+            raise NotImplementedError(
+                "fpdf2 does not support DeviceCMYK ColorSpace yet - cf. issue #711"
+            )
 
         decode_parms = f"<<{info['dp']} /BitsPerComponent {info['bpc']}>>"
         img_obj = PDFXObject(

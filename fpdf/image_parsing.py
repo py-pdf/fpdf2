@@ -314,17 +314,22 @@ TIFFBitRevTable = [
 ]
 
 
-def iccp_is_valid(iccp):
-    """
-    checks the validity of an iccp profile
-    """
+def is_iccp_valid(iccp, filename):
+    "Checks the validity of an ICC profile"
     try:
-        iccp_io = BytesIO(iccp)
-        profile = ImageCms.getOpenProfile(iccp_io)
-        ImageCms.getProfileInfo(profile)
-        return True
+        profile = ImageCms.getOpenProfile(BytesIO(iccp))
     except ImageCms.PyCMSError:
+        LOGGER.warning("Invalid ICC Profile in file %s", filename)
         return False
+    color_space = profile.profile.xcolor_space.strip()
+    if color_space not in ("GRAY", "RGB"):
+        LOGGER.warning(
+            "Unsupported color space %s in ICC Profile of file %s - cf. issue #711",
+            color_space,
+            filename,
+        )
+        return False
+    return True
 
 
 def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
@@ -371,10 +376,8 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
 
     iccp = None
     if "icc_profile" in img.info:
-        iccp = img.info.get("icc_profile")
-        if not iccp_is_valid(iccp):
-            LOGGER.error("ICCP for %s is invalid", filename)
-            iccp = None
+        if is_iccp_valid(img.info["icc_profile"], filename):
+            iccp = img.info["icc_profile"]
 
     if img_raw_data is not None and not img_altered:
         # if we can use the original image bytes directly we do (JPEG and group4 TIFF only):
