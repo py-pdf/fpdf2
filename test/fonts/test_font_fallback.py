@@ -11,6 +11,7 @@ def test_fallback_font(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font(family="Roboto", fname=HERE / "Roboto-Regular.ttf")
+    pdf.add_font(family="Roboto", style="B", fname=HERE / "Roboto-Bold.ttf")
     pdf.add_font(family="EmojiOne", fname=HERE / "EmojiOneColor-SVGinOT.ttf")
     pdf.set_font("Roboto")
     pdf.set_fallback_fonts(["EmojiOne"])

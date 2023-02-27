@@ -557,7 +557,7 @@ class OutputProducer:
                 # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
                 # if we leave recalcTimestamp=True the tests will break every time
                 fonttools_font = ttLib.TTFont(
-                    file=font["ttffile"], recalcTimestamp=False
+                    file=font["ttffile"], recalcTimestamp=False, fontNumber=0
                 )
 
                 # 1. get all glyphs in PDF
