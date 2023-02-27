@@ -3,9 +3,11 @@ from io import BytesIO
 from math import ceil
 from urllib.request import urlopen
 from pathlib import Path
+import logging
 
 try:
     from PIL import Image, TiffImagePlugin
+    from PIL import ImageCms
 
     try:
         from PIL.Image import Resampling
@@ -19,6 +21,7 @@ except ImportError:
 from .errors import FPDFException
 
 
+LOGGER = logging.getLogger(__name__)
 SUPPORTED_IMAGE_FILTERS = ("AUTO", "FlateDecode", "DCTDecode", "JPXDecode")
 
 
@@ -311,6 +314,20 @@ TIFFBitRevTable = [
 ]
 
 
+def iccp_is_valid(iccp):
+    """
+    checks the validity of an iccp profile
+    """
+    try:
+        iccp_io = BytesIO(iccp)
+        profile = ImageCms.getOpenProfile(iccp_io)
+        info = ImageCms.getProfileInfo(profile)
+        return True
+    except ImageCms.PyCMSError:
+        LOGGER.error(f"ICCP for {filename} is invalid")
+        return False
+
+
 def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
     """
     Args:
@@ -356,6 +373,8 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
     iccp = None
     if "icc_profile" in img.info:
         iccp = img.info.get("icc_profile")
+        if not iccp_is_valid(iccp):
+            iccp = None
 
     if img_raw_data is not None and not img_altered:
         # if we can use the original image bytes directly we do (JPEG and group4 TIFF only):
