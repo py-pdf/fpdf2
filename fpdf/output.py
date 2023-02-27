@@ -740,21 +740,22 @@ class OutputProducer:
                 img_objs_per_index[img["i"]] = self._add_image(img)
         return img_objs_per_index
 
-    def _ensure_iccp(self, info, iccp_i):
+    def _ensure_iccp(self, img_info):
         """
         Returns the PDF object of the ICC profile indexed iccp_i in the FPDF object.
         Adds it if not present.
         """
+        iccp_i = img_info["iccp_i"]
         if iccp_i in self.iccp_i_to_pdf_i:
             return self.iccp_i_to_pdf_i[iccp_i]
         iccp_content = None
-        for iccp_c, i in self.fpdf.iccps.items():
+        for iccp_c, i in self.fpdf.icc_profiles.items():
             if iccp_i == i:
                 iccp_content = iccp_c
                 break
         assert iccp_content is not None
         iccp_obj = PDFICCPObject(
-            contents=iccp_content, n=info["dpn"], alternate=info["cs"]
+            contents=iccp_content, n=img_info["dpn"], alternate=img_info["cs"]
         )
         iccp_pdf_i = self._add_pdf_obj(iccp_obj, "iccp")
         self.iccp_i_to_pdf_i[iccp_i] = iccp_pdf_i
@@ -763,8 +764,9 @@ class OutputProducer:
     def _add_image(self, info):
         color_space = Name(info["cs"])
         decode = None
-        if "iccp_i" in info and info["iccp_i"] is not None:
-            iccp_pdf_i = self._ensure_iccp(info, info["iccp_i"])
+        iccp_i = info.get("iccp_i")
+        if iccp_i is not None:
+            iccp_pdf_i = self._ensure_iccp(info)
             color_space = PDFArray(["/ICCBased", str(iccp_pdf_i), str("0"), "R"])
         elif color_space == "Indexed":
             color_space = PDFArray(

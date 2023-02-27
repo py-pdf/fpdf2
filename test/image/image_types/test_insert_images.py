@@ -121,6 +121,14 @@ def test_insert_jpg_icc(tmp_path):
     pdf.add_page(format=(448, 498))
     pdf.set_margin(0)
     pdf.image(HERE / "insert_images_insert_jpg_icc.jpg", x=0, y=0, h=498)
+    # we add the same image a second time to make sure the ICC profile is only included
+    # only once in that case
+    pdf.add_page(format=(448, 498))
+    pdf.image(HERE / "insert_images_insert_jpg_icc.jpg", x=0, y=0, h=498)
+    # we add another image with the same ICC profile to make sure it's also included
+    # only once in that case
+    pdf.add_page(format=(314, 500))
+    pdf.image(HERE / "insert_images_insert_jpg_icc_2.jpg", x=0, y=0, h=500)
     assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_icc.pdf", tmp_path)
 
 
