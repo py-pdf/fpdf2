@@ -45,10 +45,12 @@ def test_load_invalid_base64_data():
 @memunit.assert_lt_mb(147)
 def test_share_images_cache(tmp_path):
     images_cache = {}
+    iccp_cache = {}
 
     def build_pdf_with_big_images():
         pdf = fpdf.FPDF()
         pdf.images = images_cache
+        pdf.iccps = iccp_cache
         pdf.add_page()
         for img_path in glob(f"{HERE}/png_images/*.png"):
             pdf.image(img_path, h=pdf.eph)
