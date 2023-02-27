@@ -150,8 +150,7 @@ pdf.image("https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png")
 
 ## Image compression ##
 
-By default, `fpdf2` will avoid altering your images :
-no image conversion from / to PNG / JPEG is performed.
+By default, `fpdf2` will avoid altering or recompressing your images: when possible, the original bytes from the JPG or TIFF file will be used directly. Bitonal images are by default compressed as TIFF Group4.
 
 However, you can easily tell `fpdf2` to embed all images as JPEGs in order to reduce your PDF size,
 using [`set_image_filter()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_image_filter):
@@ -171,6 +170,9 @@ Beware that "flattening" images into JPEGs this way will fill transparent areas 
 The allowed `image_filter` values are listed in the [image_parsing]( https://github.com/PyFPDF/fpdf2/blob/master/fpdf/image_parsing.py) module and are currently:
 `FlateDecode` (lossless zlib/deflate compression), `DCTDecode` (lossy compression with JPEG) and `JPXDecode` (lossy compression with JPEG2000).
 
+## ICC Profiles
+
+The ICC profile of the included images are read through the PIL function `Image.info.get("icc_profile)"` and are included in the PDF as objects.
 
 ## Oversized images detection & downscaling ##
 
