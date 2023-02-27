@@ -137,9 +137,7 @@ def test_insert_jpg_invalid_icc(tmp_path):
     pdf.add_page(format=(448, 498))
     pdf.set_margin(0)
     pdf.image(HERE / "insert_images_insert_jpg_icc_invalid.jpg", x=0, y=0, h=498)
-    assert_pdf_equal(
-        pdf, HERE / "image_types_insert_jpg_icc_invalid.pdf", tmp_path, generate=True
-    )
+    assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_icc_invalid.pdf", tmp_path)
 
 
 def test_insert_gif(tmp_path):
