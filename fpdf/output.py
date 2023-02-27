@@ -765,13 +765,14 @@ class OutputProducer:
         color_space = Name(info["cs"])
         decode = None
         iccp_i = info.get("iccp_i")
-        if iccp_i is not None:
-            iccp_pdf_i = self._ensure_iccp(info)
-            color_space = PDFArray(["/ICCBased", str(iccp_pdf_i), str("0"), "R"])
-        elif color_space == "Indexed":
+        if color_space == "Indexed":
             color_space = PDFArray(
                 ["/Indexed", "/DeviceRGB", f"{len(info['pal']) // 3 - 1}"]
             )
+        elif iccp_i is not None:
+            # indexed images are not supposed to have ICC profiles
+            iccp_pdf_i = self._ensure_iccp(info)
+            color_space = PDFArray(["/ICCBased", str(iccp_pdf_i), str("0"), "R"])
         elif color_space == "DeviceCMYK":
             decode = "[1 0 1 0 1 0 1 0]"
 
