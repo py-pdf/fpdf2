@@ -321,10 +321,9 @@ def iccp_is_valid(iccp):
     try:
         iccp_io = BytesIO(iccp)
         profile = ImageCms.getOpenProfile(iccp_io)
-        info = ImageCms.getProfileInfo(profile)
+        ImageCms.getProfileInfo(profile)
         return True
     except ImageCms.PyCMSError:
-        LOGGER.error(f"ICCP for {filename} is invalid")
         return False
 
 
@@ -374,6 +373,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
     if "icc_profile" in img.info:
         iccp = img.info.get("icc_profile")
         if not iccp_is_valid(iccp):
+            LOGGER.error("ICCP for %s is invalid", filename)
             iccp = None
 
     if img_raw_data is not None and not img_altered:
