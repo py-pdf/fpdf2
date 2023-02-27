@@ -291,6 +291,7 @@ class FPDF(GraphicsStateMixin):
         self.pages = {}  # array of PDFPage objects starting at index 1
         self.fonts = {}  # map font string keys to dicts describing the fonts used
         self.images = {}  # map image identifiers to dicts describing the raster images
+        self.iccps = {}  # map icc profiles (bytes) to their index (number)
         self.links = {}  # array of Destination objects starting at index 1
         self.embedded_files = []  # array of PDFEmbeddedFile
 
@@ -3719,6 +3720,15 @@ class FPDF(GraphicsStateMixin):
             info = ImageInfo(get_img_info(name, img, self.image_filter, dims))
             info["i"] = len(self.images) + 1
             info["usages"] = 1
+            info["iccp_i"] = None
+            if "iccp" in info and info["iccp"]:
+                if info["iccp"] in self.iccps:
+                    info["iccp_i"] = self.iccps[info["iccp"]]
+                else:
+                    iccp_i = len(self.iccps)
+                    self.iccps[info["iccp"]] = iccp_i
+                    info["iccp_i"] = iccp_i
+                info["iccp"] = None
             self.images[name] = info
         return name, img, info
 

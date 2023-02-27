@@ -194,7 +194,6 @@ class PDFXObject(PDFContentStream):
         "height",
         "color_space",
         "bits_per_component",
-        "filter",
         "decode",
         "decode_parms",
         "s_mask",
@@ -223,6 +222,27 @@ class PDFXObject(PDFContentStream):
         self.decode = decode
         self.decode_parms = decode_parms
         self.s_mask = None
+
+
+class PDFICCPObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        "_id",
+        "_contents",
+        "filter",
+        "length",
+        "n",
+        "alternate",
+    )
+
+    def __init__(
+        self,
+        contents,
+        n,
+        alternate,
+    ):
+        super().__init__(contents=contents, compress=True)
+        self.n = n
+        self.alternate = Name(alternate)
 
 
 class PDFPage(PDFObject):
@@ -341,6 +361,7 @@ class OutputProducer:
     def __init__(self, fpdf):
         self.fpdf = fpdf
         self.pdf_objs = []
+        self.iccp_i_to_pdf_i = {}
         self.obj_id = 0  # current PDF object number
         # array of PDF object offsets in self.buffer, used to build the xref table:
         self.offsets = {}
@@ -719,10 +740,33 @@ class OutputProducer:
                 img_objs_per_index[img["i"]] = self._add_image(img)
         return img_objs_per_index
 
+    def _ensure_iccp(self, info, iccp_i):
+        """
+        Returns the PDF object of the ICC profile indexed iccp_i in the FPDF object.
+        Adds it if not present.
+        """
+        if iccp_i in self.iccp_i_to_pdf_i:
+            return self.iccp_i_to_pdf_i[iccp_i]
+        iccp_content = None
+        for iccp_c, i in self.fpdf.iccps.items():
+            if iccp_i == i:
+                iccp_content = iccp_c
+                break
+        assert iccp_content is not None
+        iccp_obj = PDFICCPObject(
+            contents=iccp_content, n=info["dpn"], alternate=info["cs"]
+        )
+        iccp_pdf_i = self._add_pdf_obj(iccp_obj, "iccp")
+        self.iccp_i_to_pdf_i[iccp_i] = iccp_pdf_i
+        return iccp_pdf_i
+
     def _add_image(self, info):
         color_space = Name(info["cs"])
         decode = None
-        if color_space == "Indexed":
+        if "iccp_i" in info and info["iccp_i"] is not None:
+            iccp_pdf_i = self._ensure_iccp(info, info["iccp_i"])
+            color_space = PDFArray(["/ICCBased", str(iccp_pdf_i), str("0"), "R"])
+        elif color_space == "Indexed":
             color_space = PDFArray(
                 ["/Indexed", "/DeviceRGB", f"{len(info['pal']) // 3 - 1}"]
             )

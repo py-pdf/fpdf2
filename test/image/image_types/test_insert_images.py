@@ -116,6 +116,14 @@ def test_insert_bmp(tmp_path):
     assert_pdf_equal(pdf, HERE / "image_types_insert_bmp.pdf", tmp_path)
 
 
+def test_insert_jpg_icc(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page(format=(448, 498))
+    pdf.set_margin(0)
+    pdf.image(HERE / "insert_images_insert_jpg_icc.jpg", x=0, y=0, h=498)
+    assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_icc.pdf", tmp_path)
+
+
 def test_insert_gif(tmp_path):
     pdf = fpdf.FPDF()
     pdf.compress = False

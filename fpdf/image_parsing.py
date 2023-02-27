@@ -353,6 +353,10 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
     w, h = img.size
     info = {}
 
+    iccp = None
+    if "icc_profile" in img.info:
+        iccp = img.info.get("icc_profile")
+
     if img_raw_data is not None and not img_altered:
         # if we can use the original image bytes directly we do (JPEG and group4 TIFF only):
         if img.format == "JPEG" and image_filter == "DCTDecode":
@@ -365,6 +369,8 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
                 "w": w,
                 "h": h,
                 "cs": colspace,
+                "iccp": iccp,
+                "dpn": dpn,
                 "bpc": bpc,
                 "f": image_filter,
                 "dp": f"/Predictor 15 /Colors {dpn} /Columns {w}",
@@ -406,6 +412,8 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
                 "data": ccittrawdata,
                 "w": w,
                 "h": h,
+                "iccp": None,
+                "dpn": dpn,
                 "cs": colspace,
                 "bpc": bpc,
                 "f": image_filter,
@@ -477,7 +485,9 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
             "w": w,
             "h": h,
             "cs": colspace,
+            "iccp": iccp,
             "bpc": bpc,
+            "dpn": dpn,
             "f": image_filter,
             "dp": dp,
         }

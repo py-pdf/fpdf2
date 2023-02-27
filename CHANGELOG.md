@@ -29,6 +29,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - vector images parsing is now more robust: `fpdf2` can now embed SVG files without `viewPort` or no `height` / `width`
 - bitonal images are now encoded using `CCITTFaxDecode`, reducing their size in the PDF document - thanks to @eroux
 - when possible, JPG and group4 encoded TIFFs are now embedded directly without recompression - thanks to @eroux
+- ICC Profiles of included images are now extracted and turned into PDF objects; they should now be taken into account by PDF viewers - thanks to @eroux
 
 ## [2.6.1] - 2023-01-13
 ### Added
