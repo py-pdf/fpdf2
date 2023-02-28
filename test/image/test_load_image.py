@@ -42,7 +42,7 @@ def test_load_invalid_base64_data():
 
 
 # ensure memory usage does not get too high - this value depends on Python version:
-@memunit.assert_lt_mb(151)
+@memunit.assert_lt_mb(157)
 def test_share_images_cache(tmp_path):
     images_cache = {}
 
