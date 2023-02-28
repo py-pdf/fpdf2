@@ -1831,7 +1831,8 @@ class FPDF(GraphicsStateMixin):
 
         # a map unicode_char -> char_width
         char_widths = defaultdict(lambda: default_width)
-        for char in font.getBestCmap().keys():
+        font_cmap = font.getBestCmap().keys()
+        for char in font_cmap:
             # take glyph associated to char
             glyph = font.getBestCmap()[char]
 
@@ -1862,7 +1863,7 @@ class FPDF(GraphicsStateMixin):
             "ttffile": font_file_path,
             "fontkey": fontkey,
             "subset": SubsetMap(map(ord, sbarr)),
-            "ttf_font": font,
+            "cmap": font_cmap,
         }
 
     def set_font(self, family=None, style="", size=0):
@@ -3158,8 +3159,7 @@ class FPDF(GraphicsStateMixin):
         txt_frag = []
         if not self.is_ttf_font or not self._fallback_font_ids:
             return tuple([Fragment(txt, self._get_current_graphics_state(), self.k)])
-        ttf_font = self.current_font["ttf_font"]
-        font_glyphs = ttf_font.getBestCmap().keys()
+        font_glyphs = self.current_font["cmap"]
         for char in txt:
             if char == "\n" or ord(char) in font_glyphs:
                 txt_frag.append(char)
@@ -3195,8 +3195,7 @@ class FPDF(GraphicsStateMixin):
         for font in self._fallback_font_ids:
             if not self.fonts[font]["fontkey"].endswith(style):
                 continue
-            ttf_font = self.fonts[font]["ttf_font"]
-            if ord(char) in ttf_font.getBestCmap().keys():
+            if ord(char) in self.fonts[font]["cmap"]:
                 return font
         return None
 
@@ -3221,8 +3220,7 @@ class FPDF(GraphicsStateMixin):
             return fragment
 
         if self.is_ttf_font:
-            ttf_font = self.current_font["ttf_font"]
-            font_glyphs = ttf_font.getBestCmap().keys()
+            font_glyphs = self.current_font["cmap"]
         else:
             font_glyphs = []
 
