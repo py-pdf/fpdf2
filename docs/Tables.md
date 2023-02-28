@@ -20,9 +20,9 @@ pdf.add_page()
 pdf.set_font("Times", size=16)
 with pdf.table() as table:
     for data_row in TABLE_DATA:
-        with table.row() as row:
-            for datum in data_row:
-                row.cell(datum)
+        row = table.row()
+        for datum in data_row:
+            row.cell(datum)
 pdf.output('table.pdf')
 ```
 Result:
@@ -43,28 +43,24 @@ Result:
 ## Setting table & column widths
 ```python
 ...
-with pdf.table() as table:
-    table.width = 150
-    table.col_widths = (30, 30, 10, 30)
+with pdf.table(width=150, col_widths=(30, 30, 10, 30)) as table:
     ...
 ```
 Result:
 
 ![](table-with-fixed-column-widths.jpg)
 
-`table.align` can be used to set the table horizontal position relative to the page,
+`align` can be passed to `table()` to set the table horizontal position relative to the page,
 when it's not using the full page width. It's centered by default.
 
 ## Setting text alignment
 This can be set globally, or on a per-column basis:
 ```python
 ...
-with pdf.table() as table:
-    table.text_align = "CENTER"
+with pdf.table(text_align="CENTER") as table:
     ...
 pdf.ln()
-with pdf.table() as table:
-    table.text_align = ("CENTER", "CENTER", "RIGHT", "LEFT")
+with pdf.table(text_align=("CENTER", "CENTER", "RIGHT", "LEFT")) as table:
     ...
 ```
 Result:
@@ -74,26 +70,24 @@ Result:
 ## Setting row height
 ```python
 ...
-with pdf.table() as table:
-    table.line_height = 2.5 * pdf.font_size
+with pdf.table(line_height=2.5 * pdf.font_size) as table:
     ...
 ```
 
 ## Disable table headings
 ```python
 ...
-with pdf.table() as table:
-    table.first_row_as_headings = False
+with pdf.table(first_row_as_headings=False) as table:y
     ...
 ```
 
 ## Style table headings
 ```python
 ...
-with pdf.table() as table:
-    blue = (0, 0, 255)
-    grey = (128, 128, 128)
-    table.headings_style = FontStyle(emphasis="ITALICS", color=blue, fill_color=grey)
+blue = (0, 0, 255)
+grey = (128, 128, 128)
+headings_style = FontStyle(emphasis="ITALICS", color=blue, fill_color=grey)
+with pdf.table(headings_styleheadings_style=headings_style) as table:
     ...
 ```
 Result:
@@ -103,9 +97,8 @@ Result:
 ## Set cells background
 ```python
 ...
-with pdf.table() as table:
-    table.cell_fill_color = 200  # grey
-    table.cell_fill_logic = lambda i, j: i % 2
+greyscale = 200
+with pdf.table(cell_fill_color=greyscale, cell_fill_logic lambda i, j: i % 2) as table:
     ...
 ```
 Result:
@@ -114,9 +107,8 @@ Result:
 
 ```python
 ...
-with pdf.table() as table:
-    table.cell_fill_color = (0, 0, 200)  # light blue
-    table.cell_fill_logic = lambda i, j: j % 2
+lightblue = (173, 216, 230)
+with pdf.table(cell_fill_color=lightblue, cell_fill_logic=lambda i, j: j % 2) as table:
     ...
 ```
 Result:
@@ -126,8 +118,7 @@ Result:
 ## Set borders layout
 ```python
 ...
-with pdf.table() as table:
-    table.borders_layout = "INTERNAL"
+with pdf.table(borders_layout="INTERNAL") as table:
     ...
 ```
 Result:
@@ -136,8 +127,7 @@ Result:
 
 ```python
 ...
-with pdf.table() as table:
-    table.borders_layout = "MINIMAL"
+with pdf.table(borders_layout="MINIMAL") as table:
     ...
 ```
 Result:
@@ -148,8 +138,7 @@ Result:
 ...
 pdf.set_draw_color(50)  # very dark grey
 pdf.set_line_width(.5)
-with pdf.table() as table:
-    table.borders_layout = "SINGLE_TOP_LINE"
+with pdf.table(borders_layout="SINGLE_TOP_LINE") as table:
     ...
 ```
 Result:
@@ -172,12 +161,12 @@ pdf.add_page()
 pdf.set_font("Times", size=16)
 with pdf.table() as table:
     for i, data_row in enumerate(TABLE_DATA):
-        with table.row() as row:
-            for j, datum in enumerate(data_row):
-                if j == 2 and i > 0:
-                    row.cell(img=datum)
-                else:
-                    row.cell(datum)
+        row = table.row()
+        for j, datum in enumerate(data_row):
+            if j == 2 and i > 0:
+                row.cell(img=datum)
+            else:
+                row.cell(datum)
 pdf.output('table_with_images.pdf')
 ```
 Result:
@@ -185,7 +174,7 @@ Result:
 ![](table_with_images.jpg)
 
 By default, images height & width are constrained by the row height (based on text content)
-and the column width. To render bigger images, you can set the `table.line_height` parameter to increase the row height, or pass `img_fill_width=True` to `.cell()`:
+and the column width. To render bigger images, you can set the `line_height` to increase the row height, or pass `img_fill_width=True` to `.cell()`:
 
 ```python
                     row.cell(img=datum, img_fill_width=True)
@@ -193,6 +182,34 @@ and the column width. To render bigger images, you can set the `table.line_heigh
 Result:
 
 ![](table_with_images_and_img_fill_width.jpg)
+
+## Syntactic sugar
+
+To simplify `table()` usage, shorter, alternative usage forms are allowed.
+
+This sample code:
+```python
+with pdf.table() as table:
+    for data_row in TABLE_DATA:
+        row = table.row()
+        for datum in data_row:
+            row.cell(datum)
+```
+
+Can be shortened to the followng code,
+by passing lists of strings as the `cells` optional argument of `.row()`:
+```python
+with pdf.table() as table:
+    for data_row in TABLE_DATA:
+        table.row(data_row)
+```
+
+And even shortened further to a single line,
+by passing lists of lists of strings as the `rows` optional argument of `.table()`:
+```python
+with pdf.table(TABLE_DATA):
+    pass
+```
 
 ## Table from pandas DataFrame
 

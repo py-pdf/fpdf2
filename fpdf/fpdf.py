@@ -4694,12 +4694,30 @@ class FPDF(GraphicsStateMixin):
 
     @check_page
     @contextmanager
-    def table(self):
+    def table(self, *args, **kwargs):
         """
         Inserts a table, that can be built using the `fpdf.table.Table` object yield.
         Detailed usage documentation: https://pyfpdf.github.io/fpdf2/Tables.html
+
+        Args:
+            rows: optional. Sequence of rows (iterable) of str to initiate the table cells with text content
+            align (str, fpdf.enums.Align): optional, default to CENTER. Sets the table horizontal position relative to the page,
+                when it's not using the full page width
+            borders_layout (str, fpdf.enums.TableBordersLayout): optional, default to ALL. Control what cell borders are drawn
+            cell_fill_color (int, tuple, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): optional.
+                Defines the cells background color
+            cell_fill_logic (function): optional. Defines which cells are filled with color in the background
+            col_widths (int, tuple): optional. Sets column width. Can be a single number or a sequence of numbers
+            first_row_as_headings (bool): optional, default to True. If False, the first row of the table
+                is not styled differently from the others
+            headings_style (fpdf.fonts.FontStyle): optional, default to bold.
+                Defines the visual style of the top headings row: size, color, emphasis...
+            line_height (number): optional. Defines how much vertical space a line of text will occupy
+            markdown (bool): optional, default to False. Enable markdown interpretation of cells textual content
+            text_align (str, fpdf.enums.Align): optional, default to JUSTIFY. Control text alignment inside cells.
+            width (number): optional. Sets the table width
         """
-        table = Table(self)
+        table = Table(self, *args, **kwargs)
         yield table
         table.render()
 

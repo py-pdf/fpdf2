@@ -123,7 +123,7 @@ Le premier exemple est généré de la façon la plus simple possible, en fourni
 
 Le second tableau introduit quelques améliorations : couleurs, largeur réduite de la table, moindre hauteur des lignes de texte, titres centrés, colonnes avec des largeurs propres, nombres alignés à droite...
 De plus, les lignes horizontales ont été supprimées.
-Cela grâce à la sélection d'un `table.borders_layout` parmi les valeurs disponibles :
+Cela grâce à la sélection d'un `borders_layout` parmi les valeurs disponibles :
  [`TableBordersLayout`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
 
 ## Tuto 6 - Créer des liens et mélanger différents styles de textes ##

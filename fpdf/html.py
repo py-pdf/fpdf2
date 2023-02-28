@@ -422,30 +422,32 @@ class HTML2FPDF(HTMLParser):
             self.set_font()
             self.set_text_color(*self.font_color)
         if tag == "table":
-            self.table = Table(self.pdf)
-            self.table.line_height = self.h * 1.30
             width = attrs.get("width")
             if width:
                 if width[-1] == "%":
                     width = self.pdf.epw * int(width[:-1]) / 100
                 else:
                     width = px2mm(int(width))
-                self.table.width = width
             if "border" in attrs:
-                self.table.borders_layout = (
+                borders_layout = (
                     "ALL" if self.table_line_separators else "NO_HORIZONTAL_LINES"
                 )
             else:
-                self.table.borders_layout = (
+                borders_layout = (
                     "HORIZONTAL_LINES"
                     if self.table_line_separators
                     else "SINGLE_TOP_LINE"
                 )
+            self.table = Table(
+                self.pdf,
+                borders_layout=borders_layout,
+                line_height=self.h * 1.30,
+                width=width,
+            )
             self.pdf.ln()
         if tag == "tr":
             self.tr = {k.lower(): v for k, v in attrs.items()}
-            with self.table.row() as row:
-                self.table_row = row
+            self.table_row = self.table.row()
         if tag in ("td", "th"):
             self.td_th = {k.lower(): v for k, v in attrs.items()}
             if tag == "th":
@@ -459,12 +461,13 @@ class HTML2FPDF(HTMLParser):
                 )
             if "width" in attrs:
                 width = attrs["width"]
-                if len(self.table.rows) == 1:  # => first table row
+                # pylint: disable=protected-access
+                if len(self.table._rows) == 1:  # => first table row
                     if width[-1] == "%":
                         width = width[:-1]
-                    if not self.table.col_widths:
-                        self.table.col_widths = []
-                    self.table.col_widths.append(int(width))
+                    if not self.table._col_widths:
+                        self.table._col_widths = []
+                    self.table._col_widths.append(int(width))
                 else:
                     LOGGER.warning(
                         'Ignoring width="%s" specified on a <%s> that is not in the first <tr>',

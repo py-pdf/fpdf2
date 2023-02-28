@@ -184,7 +184,7 @@ The first example is achieved in the most basic way possible, feeding data to [`
 The second table brings some improvements: colors, limited table width, reduced line height,
  centered titles, columns with custom widths, figures right aligned...
  Moreover, horizontal lines have been removed.
- This was done by picking a `table.borders_layout` among the available values:
+ This was done by picking a `borders_layout` among the available values:
  [`TableBordersLayout`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
 
 ## Tuto 6 - Creating links and mixing text styles ##

@@ -7,6 +7,28 @@ from typing import Optional, Union
 from .drawing import DeviceGray, DeviceRGB
 from .enums import TextEmphasis
 
+
+@dataclass
+class FontStyle:
+    family: Optional[str]
+    emphasis: Optional[TextEmphasis]
+    size_pt: Optional[int]
+    # Colors are single number grey scales or (red, green, blue) tuples:
+    color: Optional[Union[int, tuple, DeviceGray, DeviceRGB]]
+    fill_color: Optional[Union[int, tuple, DeviceGray, DeviceRGB]]
+
+    def __init__(
+        self, family=None, emphasis=None, size_pt=None, color=None, fill_color=None
+    ):
+        self.family = family
+        self.emphasis = TextEmphasis.coerce(emphasis) if emphasis else None
+        self.size_pt = size_pt
+        self.color = color
+        self.fill_color = fill_color
+
+    replace = replace
+
+
 COURIER_FONT = {chr(i): 600 for i in range(256)}
 CORE_FONTS_CHARWIDTHS = {
     "courier": COURIER_FONT,
@@ -2604,24 +2626,3 @@ CORE_FONTS_CHARWIDTHS["zapfdingbats"] = {
     "\xfe": 918,
     "\xff": 0,
 }
-
-
-@dataclass
-class FontStyle:
-    family: Optional[str]
-    emphasis: Optional[TextEmphasis]
-    size_pt: Optional[int]
-    # Colors are single number grey scales or (red, green, blue) tuples:
-    color: Optional[Union[int, tuple, DeviceGray, DeviceRGB]]
-    fill_color: Optional[Union[int, tuple, DeviceGray, DeviceRGB]]
-
-    def __init__(
-        self, family=None, emphasis=None, size_pt=None, color=None, fill_color=None
-    ):
-        self.family = family
-        self.emphasis = TextEmphasis.coerce(emphasis) if emphasis else None
-        self.size_pt = size_pt
-        self.color = color
-        self.fill_color = fill_color
-
-    replace = replace

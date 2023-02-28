@@ -45,12 +45,12 @@ def test_table_with_images(tmp_path):
     pdf.set_font("Times", size=16)
     with pdf.table() as table:
         for i, data_row in enumerate(TABLE_DATA):
-            with table.row() as row:
-                for j, datum in enumerate(data_row):
-                    if j == 2 and i > 0:
-                        row.cell(img=datum)
-                    else:
-                        row.cell(datum)
+            row = table.row()
+            for j, datum in enumerate(data_row):
+                if j == 2 and i > 0:
+                    row.cell(img=datum)
+                else:
+                    row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_with_images.pdf", tmp_path)
 
 
@@ -60,12 +60,12 @@ def test_table_with_images_and_img_fill_width(tmp_path):
     pdf.set_font("Times", size=16)
     with pdf.table() as table:
         for i, data_row in enumerate(TABLE_DATA):
-            with table.row() as row:
-                for j, datum in enumerate(data_row):
-                    if j == 2 and i > 0:
-                        row.cell(img=datum, img_fill_width=True)
-                    else:
-                        row.cell(datum)
+            row = table.row()
+            for j, datum in enumerate(data_row):
+                if j == 2 and i > 0:
+                    row.cell(img=datum, img_fill_width=True)
+                else:
+                    row.cell(datum)
     assert_pdf_equal(
         pdf,
         HERE / "table_with_images_and_img_fill_width.pdf",
@@ -79,12 +79,12 @@ def test_table_with_multiline_cells_and_images(tmp_path):
     pdf.set_font("Times", size=16)
     with pdf.table() as table:
         for i, data_row in enumerate(MULTILINE_TABLE_DATA):
-            with table.row() as row:
-                for j, datum in enumerate(data_row):
-                    if j == 1 and i > 0:
-                        row.cell(img=datum, img_fill_width=True)
-                    else:
-                        row.cell(datum)
+            row = table.row()
+            for j, datum in enumerate(data_row):
+                if j == 1 and i > 0:
+                    row.cell(img=datum, img_fill_width=True)
+                else:
+                    row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_with_multiline_cells_and_images.pdf", tmp_path)
 
 
@@ -95,9 +95,9 @@ def test_table_with_images_and_text():
     with pytest.raises(NotImplementedError):
         with pdf.table() as table:
             for i, data_row in enumerate(TABLE_DATA):
-                with table.row() as row:
-                    for j, datum in enumerate(data_row):
-                        if j == 2 and i > 0:
-                            row.cell(datum.name, img=datum)
-                        else:
-                            row.cell(datum)
+                row = table.row()
+                for j, datum in enumerate(data_row):
+                    if j == 2 and i > 0:
+                        row.cell(datum.name, img=datum)
+                    else:
+                        row.cell(datum)
