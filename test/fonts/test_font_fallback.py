@@ -11,25 +11,25 @@ from test.conftest import assert_pdf_equal
 HERE = Path(__file__).resolve().parent
 
 
-def test_fallback_font(tmp_path):
+def test_fallback_font(tmp_path, caplog):
     def write_strings():
         pdf.ln()
-        pdf.write(txt="write 😄 😁 😆 😅 ✌ 🤞 🌭 🍔 🍟 🍕")
+        pdf.write(txt="write 😄 😁 😆 😅 ✌")
         pdf.ln()
         pdf.cell(
-            txt="cell with **markdown 😄 😁** 😆 😅 ✌ 🤞 🌭 🍔 🍟 🍕",
+            txt="cell with **markdown 😄 😁** 😆 😅 ✌",
             markdown=True,
             new_x=XPos.LMARGIN,
             new_y=YPos.NEXT,
         )
         pdf.cell(
-            txt="cell without **markdown 😄 😁** 😆 😅 ✌ 🤞 🌭 🍔 🍟 🍕",
+            txt="cell without **markdown 😄 😁** 😆 😅 ✌",
             markdown=False,
             new_x=XPos.LMARGIN,
             new_y=YPos.NEXT,
         )
         pdf.multi_cell(
-            txt="multi cell 😄 😁 😆 😅 ✌ 🤞 🌭 🍔 🍟 🍕",
+            txt="multi cell 😄 😁 😆 😅 ✌",
             w=50,
             new_x=XPos.LMARGIN,
             new_y=YPos.NEXT,
@@ -39,26 +39,30 @@ def test_fallback_font(tmp_path):
     pdf.add_page()
     pdf.add_font(family="Roboto", fname=HERE / "Roboto-Regular.ttf")
     pdf.add_font(family="Roboto", style="B", fname=HERE / "Roboto-Bold.ttf")
-    pdf.add_font(family="EmojiOne", fname=HERE / "EmojiOneColor-SVGinOT.ttf")
+    pdf.add_font(family="DejaVuSans", fname=HERE / "DejaVuSans.ttf")
     pdf.set_font("Roboto", size=15)
     pdf.write(txt="No fallback font:")
     write_strings()
-    pdf.set_fallback_fonts(["EmojiOne"])
+    pdf.set_fallback_fonts(["DejaVuSans"])
     pdf.ln(2)
     pdf.write(txt="With fallback font:")
     write_strings()
 
-    assert_pdf_equal(pdf, HERE / "font_fallback.pdf", tmp_path)
+    assert_pdf_equal(
+        pdf,
+        HERE / "font_fallback.pdf",
+        tmp_path,
+    )
 
 
 def test_invalid_fallback_font():
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font(family="Roboto", fname=HERE / "Roboto-Regular.ttf")
-    pdf.add_font(family="EmojiOne", fname=HERE / "EmojiOneColor-SVGinOT.ttf")
+    pdf.add_font(family="Waree", fname=HERE / "Waree.ttf")
     pdf.set_font("Roboto", size=15)
     with pytest.raises(FPDFException) as error:
-        pdf.set_fallback_fonts(["EmojiOne", "Invalid"])
+        pdf.set_fallback_fonts(["Waree", "Invalid"])
     assert (
         str(error.value)
         == "Undefined fallback font: Invalid - Use FPDF.add_font() beforehand"
