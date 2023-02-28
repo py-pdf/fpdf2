@@ -33,6 +33,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - ICC Profiles of included images are now extracted and turned into PDF objects; they should now be taken into account by PDF viewers - thanks to @eroux
 
 ## [2.6.1] - 2023-01-13
+### Added
 * support for PDF **encryption** (RC4 and AES-128): [documentation page](https://pyfpdf.github.io/fpdf2/Encryption.html) - thanks to @andersonhc
 * [`FPDF.skew()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.skew) - New method: [documentation page](https://pyfpdf.github.io/fpdf2/Transformations.html) - thanks to @erap129
 * ensured support for Python 3.11
