@@ -154,6 +154,23 @@ You could use any TTF font file as long embedding usage is allowed in the licenc
 If not, a runtime exception will be raised saying: "ERROR - Font file 
 filename.ttf cannot be embedded due to copyright restrictions."
 
-## Fallback fonts ##
+# Fallback fonts #
 
-It is possible to specify alternative fonts for FPDF to use if the current set font doesn't have all characters on the text. See an exemple [Here](EmojiSymbolsDingbats.md)
+FPDF allows you to specify a list of fonts to be used if any character is not available on the font currently used. Common scenarios are use of special characters like emojis within your text, greek characters in formulas or citations mixing different languages.
+
+The method set_fallback_font() will receive a list of fonts. When a character doesn’t exist on the current font, FPDF will look if it’s available on the fallback fonts, on the same order the list was provided.
+
+Example
+```python
+import fpdf 
+
+pdf = fpdf.FPDF()
+pdf.add_page()
+pdf.add_font(family="Roboto", fname="Roboto-Regular.ttf")
+# twitter emoji font: https://github.com/13rac1/twemoji-color-font/releases
+pdf.add_font(family="TwitterEmoji", fname="TwitterColorEmoji-SVGinOT.ttf")
+pdf.set_font("Roboto", size=15)
+pdf.set_fallback_fonts(["TwitterEmoji"])
+pdf.write(txt="text with an emoji 🌭")
+pdf.output("text_with_emoji.pdf")
+```
