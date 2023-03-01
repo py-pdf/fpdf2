@@ -1,7 +1,5 @@
 # Unicode #
 
-[TOC]
-
 The FPDF class was modified adding UTF-8 support.
 Moreover, it embeds only the necessary parts of the fonts that are used in the 
 document, making the file size much smaller than if the whole fonts were 
@@ -156,13 +154,13 @@ filename.ttf cannot be embedded due to copyright restrictions."
 
 # Fallback fonts #
 
-FPDF allows you to specify a list of fonts to be used if any character is not available on the font currently used. Common scenarios are use of special characters like emojis within your text, greek characters in formulas or citations mixing different languages.
+The method [`set_fallback_font()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_font) allows you to specify a list of fonts to be used if any character is not available on the font currently set. When a character doesn’t exist on the current font, `fpdf2` will look if it’s available on the fallback fonts, on the same order the list was provided.
 
-The method set_fallback_font() will receive a list of fonts. When a character doesn’t exist on the current font, FPDF will look if it’s available on the fallback fonts, on the same order the list was provided.
+Common scenarios are use of special characters like emojis within your text, greek characters in formulas or citations mixing different languages.
 
-Example
+Example:
 ```python
-import fpdf 
+import fpdf
 
 pdf = fpdf.FPDF()
 pdf.add_page()

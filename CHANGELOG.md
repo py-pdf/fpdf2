@@ -22,7 +22,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) has a new `keep_aspect_ratio` optional boolean parameter, to fit it inside a given rectangle: [documentation](https://pyfpdf.github.io/fpdf2/Images.html#fitting-an-image-inside-a-rectangle)
 - new method `FPDF.preload_image()`: [documentation](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.preload_image)
 - new translation of the tutorial in [简体中文](https://pyfpdf.github.io/fpdf2/Tutorial-zh.html) - thanks to @Bubbu0129
-- new method `FPDF.set_fallback_fonts()` allow alternative fonts to be provided if a character on the text is not available on the currently set font
+- new method [`FPDF.set_fallback_fonts()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_fonts) allow alternative fonts to be provided if a character on the text is not available on the currently set font - thanks to @andersonhc
 - documentation on how to embed static [Plotly](https://plotly.com/python/) charts: [link to docs](https://pyfpdf.github.io/fpdf2/Maths.html)
 ### Fixed
 - hyperlinks were not working on encrypted files - thanks to @andersonhc

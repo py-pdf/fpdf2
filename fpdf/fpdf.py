@@ -2008,6 +2008,13 @@ class FPDF(GraphicsStateMixin):
             self._out(f"BT {stretching:.2f} Tz ET")
 
     def set_fallback_fonts(self, fallback_fonts):
+        """
+        Allows you to specify a list of fonts to be used if any character is not available on the font currently set.
+        Detailed documentation: https://pyfpdf.github.io/fpdf2/Unicode.html#fallback-fonts
+
+        Args:
+            fallback_fonts: sequence of fallback font IDs
+        """
         fallback_font_ids = []
         for fallback_font in fallback_fonts:
             found = False
@@ -3171,9 +3178,7 @@ class FPDF(GraphicsStateMixin):
                         Fragment(txt_frag, self._get_current_graphics_state(), self.k)
                     )
                     txt_frag = []
-                fallback_font = self._get_fallback_font(
-                    char=char, style=self.font_style
-                )
+                fallback_font = self._get_fallback_font(char)
                 if fallback_font:
                     gstate = self._get_current_graphics_state()
                     gstate["font_family"] = fallback_font
@@ -3190,13 +3195,11 @@ class FPDF(GraphicsStateMixin):
             )
         return tuple(fragments)
 
-    def _get_fallback_font(self, char, style=""):
-        "returns which fallback font has the requested glyph"
+    def _get_fallback_font(self, char):
+        "Returns which fallback font has the requested glyph"
         if not self._fallback_font_ids:
             return None
         for font in self._fallback_font_ids:
-            if not self.fonts[font]["fontkey"].endswith(style):
-                continue
             if ord(char) in self.fonts[font]["cmap"]:
                 return font
         return None
@@ -3261,8 +3264,7 @@ class FPDF(GraphicsStateMixin):
                 yield Fragment(list(link_text), gstate, self.k, url=link_url)
                 continue
             if self.is_ttf_font and txt[0] != "\n" and not ord(txt[0]) in font_glyphs:
-                style = ("B" if in_bold else "") + ("I" if in_italics else "")
-                fallback_font = self._get_fallback_font(char=txt[0], style=style)
+                fallback_font = self._get_fallback_font(char=txt[0])
                 if fallback_font:
                     if txt_frag:
                         yield frag()
