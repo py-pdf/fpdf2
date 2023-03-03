@@ -154,7 +154,7 @@ filename.ttf cannot be embedded due to copyright restrictions."
 
 # Fallback fonts #
 
-The method [`set_fallback_font()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_font) allows you to specify a list of fonts to be used if any character is not available on the font currently set. When a character doesn’t exist on the current font, `fpdf2` will look if it’s available on the fallback fonts, on the same order the list was provided.
+The method [`set_fallback_fonts()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_fonts) allows you to specify a list of fonts to be used if any character is not available on the font currently set. When a character doesn’t exist on the current font, `fpdf2` will look if it’s available on the fallback fonts, on the same order the list was provided.
 
 Common scenarios are use of special characters like emojis within your text, greek characters in formulas or citations mixing different languages.
 

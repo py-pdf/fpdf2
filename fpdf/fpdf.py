@@ -2007,13 +2007,15 @@ class FPDF(GraphicsStateMixin):
         if self.page > 0:
             self._out(f"BT {stretching:.2f} Tz ET")
 
-    def set_fallback_fonts(self, fallback_fonts):
+    def set_fallback_fonts(self, fallback_fonts, ignore_style=False):
         """
         Allows you to specify a list of fonts to be used if any character is not available on the font currently set.
         Detailed documentation: https://pyfpdf.github.io/fpdf2/Unicode.html#fallback-fonts
 
         Args:
             fallback_fonts: sequence of fallback font IDs
+            ignore_style: when looking for fallback fonts to render a glyph,
+                allows to use a font with a differing style (bold/italics)
         """
         fallback_font_ids = []
         for fallback_font in fallback_fonts:
@@ -2028,6 +2030,7 @@ class FPDF(GraphicsStateMixin):
                     f"Undefined fallback font: {fallback_font} - Use FPDF.add_font() beforehand"
                 )
         self._fallback_font_ids = tuple(fallback_font_ids)
+        self._fallback_font_ignore_style = ignore_style
 
     def add_link(self, y=0, x=0, page=-1, zoom="null"):
         """
@@ -3178,7 +3181,7 @@ class FPDF(GraphicsStateMixin):
                         Fragment(txt_frag, self._get_current_graphics_state(), self.k)
                     )
                     txt_frag = []
-                fallback_font = self._get_fallback_font(char)
+                fallback_font = self._get_fallback_font(char, self.font_style)
                 if fallback_font:
                     gstate = self._get_current_graphics_state()
                     gstate["font_family"] = fallback_font
@@ -3195,13 +3198,29 @@ class FPDF(GraphicsStateMixin):
             )
         return tuple(fragments)
 
-    def _get_fallback_font(self, char):
+    def _get_fallback_font(self, char, style=""):
         "Returns which fallback font has the requested glyph"
         if not self._fallback_font_ids:
             return None
-        for font in self._fallback_font_ids:
-            if ord(char) in self.fonts[font]["cmap"]:
-                return font
+        fonts_with_char = [
+            font
+            for font in self._fallback_font_ids
+            if ord(char) in self.fonts[font]["cmap"]
+        ]
+        if not fonts_with_char:
+            return None
+        exact_match = next(
+            (
+                font
+                for font in fonts_with_char
+                if self.fonts[font]["fontkey"].endswith(style)
+            ),
+            None,
+        )
+        if exact_match:
+            return exact_match
+        if self._fallback_font_ignore_style:
+            return fonts_with_char[0]
         return None
 
     def _markdown_parse(self, txt):
@@ -3264,7 +3283,8 @@ class FPDF(GraphicsStateMixin):
                 yield Fragment(list(link_text), gstate, self.k, url=link_url)
                 continue
             if self.is_ttf_font and txt[0] != "\n" and not ord(txt[0]) in font_glyphs:
-                fallback_font = self._get_fallback_font(char=txt[0])
+                style = ("B" if in_bold else "") + ("I" if in_italics else "")
+                fallback_font = self._get_fallback_font(txt[0], style)
                 if fallback_font:
                     if txt_frag:
                         yield frag()

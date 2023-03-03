@@ -28,7 +28,7 @@ def test_fallback_font(tmp_path):
 
     assert_pdf_equal(
         pdf,
-        HERE / "font_fallback.pdf",
+        HERE / "fallback_font.pdf",
         tmp_path,
     )
 
@@ -37,14 +37,13 @@ def write_strings(pdf):
     pdf.write(txt="write() 😄 😁 😆 😅 ✌")
     pdf.ln()
     pdf.cell(
-        txt="cell() with **markdown 😄 😁** 😆 😅 ✌",
-        markdown=True,
+        txt="cell() without markdown 😄 😁**bold** 😆 😅 ✌",
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
     )
     pdf.cell(
-        txt="cell() without **markdown 😄 😁** 😆 😅 ✌",
-        markdown=False,
+        txt="cell() with markdown 😄 😁**bold** 😆 😅 ✌",
+        markdown=True,
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
     )
@@ -67,6 +66,35 @@ def test_fallback_font_no_warning(caplog):
     write_strings(pdf)
     pdf.output()
     assert len(caplog.text) == 0
+
+
+def test_fallback_font_ignore_style(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="Roboto", fname=HERE / "Roboto-Regular.ttf")
+    pdf.add_font(family="Roboto", style="B", fname=HERE / "Roboto-Bold.ttf")
+    pdf.add_font(family="DejaVuSans", fname=HERE / "DejaVuSans.ttf")
+    pdf.set_font("Roboto", size=20)
+    pdf.set_fallback_fonts(["DejaVuSans"])
+    pdf.cell(
+        txt="cell() with markdown and strict style match: **[😄 😁]** 😆 😅 ✌",
+        markdown=True,
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+    pdf.ln()
+    pdf.set_fallback_fonts(["DejaVuSans"], ignore_style=True)
+    pdf.cell(
+        txt="cell() with markdown and ignore style match: **[😄 😁]** 😆 😅 ✌",
+        markdown=True,
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+    assert_pdf_equal(
+        pdf,
+        HERE / "fallback_font_ignore_style.pdf",
+        tmp_path,
+    )
 
 
 def test_invalid_fallback_font():
