@@ -218,18 +218,14 @@ def test_table_with_cell_fill(tmp_path):
     pdf.add_page()
     pdf.set_font("Times", size=16)
     greyscale = 200
-    with pdf.table(
-        cell_fill_color=greyscale, cell_fill_logic=lambda i, j: i % 2
-    ) as table:
+    with pdf.table(cell_fill_color=greyscale, cell_fill_mode="ROWS") as table:
         for data_row in TABLE_DATA:
             row = table.row()
             for datum in data_row:
                 row.cell(datum)
     pdf.ln()
     lightblue = (173, 216, 230)
-    with pdf.table(
-        cell_fill_color=lightblue, cell_fill_logic=lambda i, j: j % 2
-    ) as table:
+    with pdf.table(cell_fill_color=lightblue, cell_fill_mode="COLUMNS") as table:
         for data_row in TABLE_DATA:
             row = table.row()
             for datum in data_row:

@@ -98,7 +98,7 @@ Result:
 ```python
 ...
 greyscale = 200
-with pdf.table(cell_fill_color=greyscale, cell_fill_logic lambda i, j: i % 2) as table:
+with pdf.table(cell_fill_color=greyscale, cell_fill_mode="ROWS") as table:
     ...
 ```
 Result:
@@ -108,7 +108,7 @@ Result:
 ```python
 ...
 lightblue = (173, 216, 230)
-with pdf.table(cell_fill_color=lightblue, cell_fill_logic=lambda i, j: j % 2) as table:
+with pdf.table(cell_fill_color=lightblue, cell_fill_mode="COLUMNS") as table:
     ...
 ```
 Result:

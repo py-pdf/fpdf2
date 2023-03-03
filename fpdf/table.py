@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from numbers import Number
 from typing import List, Union
 
-from .enums import Align, TableBordersLayout
+from .enums import Align, TableBordersLayout, TableCellFillMode
 from .fonts import FontStyle
 
 
@@ -23,7 +23,7 @@ class Table:
         align="CENTER",
         borders_layout=TableBordersLayout.ALL,
         cell_fill_color=None,
-        cell_fill_logic=lambda i, j: True,
+        cell_fill_mode=TableCellFillMode.NONE,
         col_widths=None,
         first_row_as_headings=True,
         headings_style=DEFAULT_HEADINGS_STYLE,
@@ -41,7 +41,7 @@ class Table:
             borders_layout (str, fpdf.enums.TableBordersLayout): optional, default to ALL. Control what cell borders are drawn
             cell_fill_color (int, tuple, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): optional.
                 Defines the cells background color
-            cell_fill_logic (function): optional. Defines which cells are filled with color in the background
+            cell_fill_mode (str, fpdf.enums.TableCellFillMode): optional. Defines which cells are filled with color in the background
             col_widths (int, tuple): optional. Sets column width. Can be a single number or a sequence of numbers
             first_row_as_headings (bool): optional, default to True. If False, the first row of the table
                 is not styled differently from the others
@@ -53,11 +53,10 @@ class Table:
             width (number): optional. Sets the table width
         """
         self._fpdf = fpdf
-        self._rows = []
         self._align = align
-        self._borders_layout = borders_layout
+        self._borders_layout = TableBordersLayout.coerce(borders_layout)
         self._cell_fill_color = cell_fill_color
-        self._cell_fill_logic = cell_fill_logic
+        self._cell_fill_mode = TableCellFillMode.coerce(cell_fill_mode)
         self._col_widths = col_widths
         self._first_row_as_headings = first_row_as_headings
         self._headings_style = headings_style
@@ -65,13 +64,14 @@ class Table:
         self._markdown = markdown
         self._text_align = text_align
         self._width = fpdf.epw if width is None else width
+        self.rows = []
         for row in rows:
             self.row(row)
 
     def row(self, cells=()):
         "Adds a row to the table. Yields a `Row` object."
         row = Row()
-        self._rows.append(row)
+        self.rows.append(row)
         for cell in cells:
             row.cell(cell)
         return row
@@ -94,7 +94,7 @@ class Table:
             self._fpdf.x = self._fpdf.l_margin
         elif self._fpdf.x != self._fpdf.l_margin:
             self._fpdf.l_margin = self._fpdf.x
-        for i in range(len(self._rows)):
+        for i in range(len(self.rows)):
             with self._fpdf.offset_rendering() as test:
                 self._render_table_row(i)
             if test.page_break_triggered:
@@ -113,14 +113,14 @@ class Table:
         to be passed to `fpdf.FPDF.multi_cell()`.
         Can be overriden to customize this logic
         """
-        if self._borders_layout == TableBordersLayout.ALL.value:
+        if self._borders_layout == TableBordersLayout.ALL:
             return 1
-        if self._borders_layout == TableBordersLayout.NONE.value:
+        if self._borders_layout == TableBordersLayout.NONE:
             return 0
-        columns_count = max(row.cols_count for row in self._rows)
-        rows_count = len(self._rows)
+        columns_count = max(row.cols_count for row in self.rows)
+        rows_count = len(self.rows)
         border = list("LRTB")
-        if self._borders_layout == TableBordersLayout.INTERNAL.value:
+        if self._borders_layout == TableBordersLayout.INTERNAL:
             if i == 0 and "T" in border:
                 border.remove("T")
             if i == rows_count - 1 and "B" in border:
@@ -129,7 +129,7 @@ class Table:
                 border.remove("L")
             if j == columns_count - 1 and "R" in border:
                 border.remove("R")
-        if self._borders_layout == TableBordersLayout.MINIMAL.value:
+        if self._borders_layout == TableBordersLayout.MINIMAL:
             if (i != 1 or rows_count == 1) and "T" in border:
                 border.remove("T")
             if i != 0 and "B" in border:
@@ -138,12 +138,12 @@ class Table:
                 border.remove("L")
             if j == columns_count - 1 and "R" in border:
                 border.remove("R")
-        if self._borders_layout == TableBordersLayout.NO_HORIZONTAL_LINES.value:
+        if self._borders_layout == TableBordersLayout.NO_HORIZONTAL_LINES:
             if i not in (0, 1) and "T" in border:
                 border.remove("T")
             if i not in (0, rows_count - 1) and "B" in border:
                 border.remove("B")
-        if self._borders_layout == TableBordersLayout.HORIZONTAL_LINES.value:
+        if self._borders_layout == TableBordersLayout.HORIZONTAL_LINES:
             if rows_count == 1:
                 return 0
             border = list("TB")
@@ -151,7 +151,7 @@ class Table:
                 border.remove("T")
             if i == rows_count - 1 and "B" in border:
                 border.remove("B")
-        if self._borders_layout == TableBordersLayout.SINGLE_TOP_LINE.value:
+        if self._borders_layout == TableBordersLayout.SINGLE_TOP_LINE:
             if rows_count == 1:
                 return 0
             border = list("TB")
@@ -162,7 +162,7 @@ class Table:
         return "".join(border)
 
     def _render_table_row(self, i, fill=False, **kwargs):
-        row = self._rows[i]
+        row = self.rows[i]
         lines_heights_per_cell = self._get_lines_heights_per_cell(i)
         row_height = max(sum(lines_heights) for lines_heights in lines_heights_per_cell)
         j = 0
@@ -193,7 +193,7 @@ class Table:
         """
         If `lines_heights_only` is True, returns a list of lines (subcells) heights.
         """
-        row = self._rows[i]
+        row = self.rows[i]
         cell = row.cells[j]
         col_width = self._get_col_width(i, j, cell.colspan)
         lines_heights = []
@@ -225,8 +225,17 @@ class Table:
             style = style.replace(emphasis=None)
         if style and style.fill_color:
             fill = True
-        elif not fill:
-            fill = self._cell_fill_color and self._cell_fill_logic(i, j)
+        elif (
+            not fill
+            and self._cell_fill_color
+            and self._cell_fill_mode != TableCellFillMode.NONE
+        ):
+            if self._cell_fill_mode == TableCellFillMode.ALL:
+                fill = True
+            elif self._cell_fill_mode == TableCellFillMode.ROWS:
+                fill = bool(i % 2)
+            elif self._cell_fill_mode == TableCellFillMode.COLUMNS:
+                fill = bool(j % 2)
         if fill and self._cell_fill_color and not (style and style.fill_color):
             style = (
                 style.replace(fill_color=self._cell_fill_color)
@@ -255,7 +264,7 @@ class Table:
 
     def _get_col_width(self, i, j, colspan=1):
         if not self._col_widths:
-            cols_count = self._rows[i].cols_count
+            cols_count = self.rows[i].cols_count
             return colspan * (self._width / cols_count)
         if isinstance(self._col_widths, Number):
             return colspan * self._col_widths
@@ -271,7 +280,7 @@ class Table:
         return col_width
 
     def _get_lines_heights_per_cell(self, i) -> List[List[int]]:
-        row = self._rows[i]
+        row = self.rows[i]
         lines_heights = []
         for j in range(len(row.cells)):
             lines_heights.append(

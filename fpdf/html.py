@@ -253,10 +253,11 @@ class HTML2FPDF(HTMLParser):
         self._tags_stack = []
         # <table>-related properties:
         self.table_line_separators = table_line_separators
-        self.table = None
-        self.table_row = None
-        self.tr = None
-        self.td_th = None
+        self.table = None  # becomes a Table instance when processing <table> tags
+        self.table_row = None  # becomes a Row instance when processing <tr> tags
+        self.tr = None  # becomes a dict of attributes when processing <tr> tags
+        self.td_th = None  # becomes a dict of attributes when processing <td>/<th> tags
+        # "inserted" is a special attribute indicating that a cell has be inserted in self.table_row
 
     def handle_data(self, data):
         trailing_space_flag = TRAILING_SPACE.search(data)
@@ -282,7 +283,7 @@ class HTML2FPDF(HTMLParser):
             if bgcolor or emphasis:
                 style = FontStyle(emphasis=emphasis, fill_color=bgcolor)
             self.table_row.cell(text=data, align=align, style=style, colspan=colspan)
-            self.td_th["rendered"] = True
+            self.td_th["inserted"] = True
         elif self.table is not None:
             # ignore anything else than td inside a table
             pass
@@ -462,7 +463,7 @@ class HTML2FPDF(HTMLParser):
             if "width" in attrs:
                 width = attrs["width"]
                 # pylint: disable=protected-access
-                if len(self.table._rows) == 1:  # => first table row
+                if len(self.table.rows) == 1:  # => first table row
                     if width[-1] == "%":
                         width = width[:-1]
                     if not self.table._col_widths:
@@ -485,7 +486,7 @@ class HTML2FPDF(HTMLParser):
                 if self.align:
                     LOGGER.warning("Ignoring unsupported <img> alignment")
                 self.table_row.cell(img=attrs["src"], img_fill_width=True)
-                self.td_th["rendered"] = True
+                self.td_th["inserted"] = True
                 return
             if self.pdf.y + height > self.pdf.page_break_trigger:
                 self.pdf.add_page(same=True)
@@ -582,7 +583,7 @@ class HTML2FPDF(HTMLParser):
             self.tr = None
             self.table_row = None
         if tag in ("td", "th"):
-            if "rendered" not in self.td_th:
+            if "inserted" not in self.td_th:
                 # handle_data() was not called => we call it to produce an empty cell:
                 bgcolor = color_as_decimal(
                     self.td_th.get("bgcolor", self.tr.get("bgcolor", None))

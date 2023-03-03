@@ -133,7 +133,7 @@ pdf.add_page()
 pdf.set_font("Times", size=10)
 with pdf.table(borders_layout="MINIMAL",
                cell_fill_color=200,  # grey
-               cell_fill_logic=lambda i, j: i % 2,
+               cell_fill_mode="ROWS",
                line_height=pdf.font_size * 2.5,
                text_align="CENTER",
                width=160) as table:
