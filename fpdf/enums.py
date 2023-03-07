@@ -99,6 +99,47 @@ class CoerciveIntEnum(IntEnum):
         raise TypeError(f"{value} cannot convert to a {cls.__name__}")
 
 
+class CoerciveIntFlag(IntFlag):
+    """
+    Enumerated constants that can be combined using the bitwise operators,
+    with a helper to coerce strings and integers into enumeration members.
+    """
+
+    @classmethod
+    def coerce(cls, value):
+        """
+        Attempt to coerce `value` into a member of this enumeration.
+        If value is already a member of this enumeration it is returned unchanged.
+        Otherwise, if it is a string, attempt to convert it (case insensitively, by
+        upcasing) as an enumeration name. Otherwise, if it is an int, attempt to
+        convert it as an enumeration value.
+        Otherwise, an exception is raised.
+        Args:
+            value (IntEnum, str, int): the value to be coerced.
+        Raises:
+            ValueError: if `value` is an int but not a member of this enumeration.
+            ValueError: if `value` is a string but not a member by name.
+            TypeError: if `value`'s type is neither a member of the enumeration nor an
+                int or a string.
+        """
+        if isinstance(value, cls):
+            return value
+
+        if isinstance(value, str):
+            try:
+                flags = cls[value[0].upper()]
+                for char in value[1:]:
+                    flags = flags | cls[char.upper()]
+                return flags
+            except KeyError:
+                raise ValueError(f"{value} is not a valid {cls.__name__}") from None
+
+        if isinstance(value, int):
+            return cls(value)
+
+        raise TypeError(f"{value} cannot convert to a {cls.__name__}")
+
+
 class WrapMode(CoerciveEnum):
     "Defines how to break and wrap lines in multi-line text."
     WORD = intern("WORD")
@@ -148,6 +189,42 @@ class Align(CoerciveEnum):
     def coerce(cls, value):
         if value == "":
             return cls.L
+        return super(cls, cls).coerce(value)
+
+
+class TextEmphasis(CoerciveIntFlag):
+    """
+    Indicates use of bold / italics / underline.
+    This enum values can be combined with & and | operators:
+        style = B | I
+    """
+
+    B = 1
+    "Bold"
+
+    I = 2
+    "Italics"
+
+    U = 4
+    "Underline"
+
+    @property
+    def style(self):
+        return "".join(
+            name for name, value in self.__class__.__members__.items() if value & self
+        )
+
+    @classmethod
+    def coerce(cls, value):
+        if isinstance(value, str):
+            if value == "":
+                return 0
+            if value.upper() == "BOLD":
+                return cls.B
+            if value.upper() == "ITALICS":
+                return cls.I
+            if value.upper() == "UNDERLINE":
+                return cls.U
         return super(cls, cls).coerce(value)
 
 

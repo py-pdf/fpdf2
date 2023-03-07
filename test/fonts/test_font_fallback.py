@@ -75,24 +75,98 @@ def test_fallback_font_ignore_style(tmp_path):
     pdf.add_font(family="Roboto", style="B", fname=HERE / "Roboto-Bold.ttf")
     pdf.add_font(family="DejaVuSans", fname=HERE / "DejaVuSans.ttf")
     pdf.set_font("Roboto", size=20)
-    pdf.set_fallback_fonts(["DejaVuSans"])
+
+    pdf.set_fallback_fonts(["DejaVuSans"], exact_match=True)
     pdf.cell(
-        txt="cell() with markdown and strict style match: **[😄 😁]** 😆 😅 ✌",
+        txt="cell() with markdown + exact_match=True: **[😄 😁]** 😆 😅 ✌",
         markdown=True,
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
     )
     pdf.ln()
-    pdf.set_fallback_fonts(["DejaVuSans"], ignore_style=True)
+
+    pdf.set_fallback_fonts(["DejaVuSans"], exact_match=False)
     pdf.cell(
-        txt="cell() with markdown and ignore style match: **[😄 😁]** 😆 😅 ✌",
+        txt="cell() with markdown + exact_match=False: **[😄 😁]** 😆 😅 ✌",
         markdown=True,
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+    pdf.ln()
+
+    pdf.add_font(family="DejaVuSans", style="B", fname=HERE / "DejaVuSans-Bold.ttf")
+    pdf.cell(
+        txt="cell() with markdown + matching font style: **[😄 😁]** 😆 😅 ✌",
+        markdown=True,
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+    pdf.ln()
+
+    pdf.add_font(family="Roboto", style="I", fname=HERE / "Roboto-Italic.ttf")
+    pdf.add_font(family="Roboto", style="BI", fname=HERE / "Roboto-BoldItalic.TTF")
+    pdf.add_font(family="DejaVuSans", style="I", fname=HERE / "DejaVuSans-Oblique.ttf")
+    pdf.add_font(
+        family="DejaVuSans", style="IB", fname=HERE / "DejaVuSans-BoldOblique.ttf"
+    )
+    pdf.cell(
+        txt="cell() with markdown + bold-italics: __{**[😄 😁]** 😆 😅}__ ✌",
+        markdown=True,
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+    pdf.ln()
+
+    assert_pdf_equal(
+        pdf,
+        HERE / "fallback_font_ignore_style.pdf",
+        tmp_path,
+    )
+
+
+def test_fallback_font_with_overriden_get_fallback_font(tmp_path):
+    class PDF(FPDF):
+        def get_fallback_font(self, char, style=""):
+            fonts_with_char = [
+                font_id
+                for font_id in self._fallback_font_ids
+                if ord(char) in self.fonts[font_id]["cmap"]
+            ]
+            if not fonts_with_char:
+                return None
+            if len(fonts_with_char) == 1:
+                return fonts_with_char[0]
+            if self.font_family == "quicksand" and "dejavusans" in fonts_with_char:
+                return "dejavusans"
+            if self.font_family == "roboto" and "twitteremoji" in fonts_with_char:
+                return "twitteremoji"
+            raise NotImplementedError
+
+    pdf = PDF()
+    pdf.add_page()
+    pdf.add_font(family="Quicksand", fname=HERE / "Quicksand-Regular.otf")
+    pdf.add_font(family="Roboto", fname=HERE / "Roboto-Regular.ttf")
+    pdf.add_font(fname=HERE / "DejaVuSans.ttf")
+    pdf.add_font(fname=HERE / "TwitterEmoji.ttf")
+    pdf.add_font(fname=HERE / "Waree.ttf")
+    text = "Hello world / สวัสดีชาวโลก ทดสอบฟอนต์, 😄 😁 😆 😅 ✌"
+    pdf.set_fallback_fonts(["DejaVuSans", "TwitterEmoji", "Waree"])
+    pdf.set_font("Quicksand", size=20)
+    pdf.cell(
+        txt=text,
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+    pdf.ln()
+    pdf.set_font("Roboto", size=20)
+    pdf.cell(
+        txt=text,
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
     )
     assert_pdf_equal(
         pdf,
-        HERE / "fallback_font_ignore_style.pdf",
+        HERE / "fallback_font_with_overriden_get_fallback_font.pdf",
         tmp_path,
     )
 

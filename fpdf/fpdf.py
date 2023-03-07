@@ -52,24 +52,25 @@ from .annotations import (
 from .deprecation import WarnOnDeprecatedModuleAttributes
 from .encryption import StandardSecurityHandler
 from .enums import (
+    AccessPermission,
     Align,
     AnnotationFlag,
     AnnotationName,
+    CharVPos,
+    Corner,
     EncryptionMethod,
+    FontDescriptorFlags,
     FileAttachmentAnnotationName,
     PageLayout,
     PageMode,
     PathPaintRule,
     RenderStyle,
+    TextEmphasis,
     TextMarkupType,
     TextMode,
+    WrapMode,
     XPos,
     YPos,
-    Corner,
-    FontDescriptorFlags,
-    AccessPermission,
-    CharVPos,
-    WrapMode,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
 from .fonts import fpdf_charwidths
@@ -384,6 +385,7 @@ class FPDF(GraphicsStateMixin):
         self.creation_date = datetime.now(timezone.utc)
         self._security_handler = None
         self._fallback_font_ids = []
+        self._fallback_font_exact_match = False
 
         self._current_draw_context = None
         self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
@@ -1864,6 +1866,7 @@ class FPDF(GraphicsStateMixin):
             "cw": char_widths,
             "ttffile": font_file_path,
             "fontkey": fontkey,
+            "emphasis": TextEmphasis.coerce(style),
             "subset": SubsetMap(map(ord, sbarr)),
             "cmap": font_cmap,
         }
@@ -1950,6 +1953,7 @@ class FPDF(GraphicsStateMixin):
                 "ut": 50,
                 "cw": fpdf_charwidths[fontkey],
                 "fontkey": fontkey,
+                "emphasis": TextEmphasis.coerce(style),
             }
 
         # Select it
@@ -2007,15 +2011,18 @@ class FPDF(GraphicsStateMixin):
         if self.page > 0:
             self._out(f"BT {stretching:.2f} Tz ET")
 
-    def set_fallback_fonts(self, fallback_fonts, ignore_style=False):
+    def set_fallback_fonts(self, fallback_fonts, exact_match=True):
         """
         Allows you to specify a list of fonts to be used if any character is not available on the font currently set.
         Detailed documentation: https://pyfpdf.github.io/fpdf2/Unicode.html#fallback-fonts
 
         Args:
             fallback_fonts: sequence of fallback font IDs
-            ignore_style: when looking for fallback fonts to render a glyph,
-                allows to use a font with a differing style (bold/italics)
+            exact_match (bool): when a glyph cannot be rendered uing the current font,
+                fpdf2 will look for a fallback font matching the current character emphasis (bold/italics).
+                If it does not find such matching font, and `exact_match` is True, no fallback font will be used.
+                If it does not find such matching font, and `exact_match` is False, a fallback font will still be used.
+                To get even more control over this logic, you can also override `FPDF.get_fallback_font()`
         """
         fallback_font_ids = []
         for fallback_font in fallback_fonts:
@@ -2030,7 +2037,7 @@ class FPDF(GraphicsStateMixin):
                     f"Undefined fallback font: {fallback_font} - Use FPDF.add_font() beforehand"
                 )
         self._fallback_font_ids = tuple(fallback_font_ids)
-        self._fallback_font_ignore_style = ignore_style
+        self._fallback_font_exact_match = exact_match
 
     def add_link(self, y=0, x=0, page=-1, zoom="null"):
         """
@@ -3181,7 +3188,7 @@ class FPDF(GraphicsStateMixin):
                         Fragment(txt_frag, self._get_current_graphics_state(), self.k)
                     )
                     txt_frag = []
-                fallback_font = self._get_fallback_font(char, self.font_style)
+                fallback_font = self.get_fallback_font(char, self.font_style)
                 if fallback_font:
                     gstate = self._get_current_graphics_state()
                     gstate["font_family"] = fallback_font
@@ -3198,30 +3205,33 @@ class FPDF(GraphicsStateMixin):
             )
         return tuple(fragments)
 
-    def _get_fallback_font(self, char, style=""):
-        "Returns which fallback font has the requested glyph"
-        if not self._fallback_font_ids:
-            return None
+    def get_fallback_font(self, char, style=""):
+        """
+        Returns which fallback font has the requested glyph.
+        This method can be overriden to provide more control than the `select_mode` parameter
+        of `FPDF.set_fallback_fonts()` provides.
+        """
+        emphasis = TextEmphasis.coerce(style)
         fonts_with_char = [
-            font
-            for font in self._fallback_font_ids
-            if ord(char) in self.fonts[font]["cmap"]
+            font_id
+            for font_id in self._fallback_font_ids
+            if ord(char) in self.fonts[font_id]["cmap"]
         ]
         if not fonts_with_char:
             return None
-        exact_match = next(
+        font_with_matching_emphasis = next(
             (
                 font
                 for font in fonts_with_char
-                if self.fonts[font]["fontkey"].endswith(style)
+                if self.fonts[font]["emphasis"] == emphasis
             ),
             None,
         )
-        if exact_match:
-            return exact_match
-        if self._fallback_font_ignore_style:
-            return fonts_with_char[0]
-        return None
+        if font_with_matching_emphasis:
+            return font_with_matching_emphasis
+        if self._fallback_font_exact_match:
+            return None
+        return fonts_with_char[0]
 
     def _markdown_parse(self, txt):
         "Split some text into fragments based on styling: **bold**, __italics__, --underlined--"
@@ -3284,7 +3294,7 @@ class FPDF(GraphicsStateMixin):
                 continue
             if self.is_ttf_font and txt[0] != "\n" and not ord(txt[0]) in font_glyphs:
                 style = ("B" if in_bold else "") + ("I" if in_italics else "")
-                fallback_font = self._get_fallback_font(txt[0], style)
+                fallback_font = self.get_fallback_font(txt[0], style)
                 if fallback_font:
                     if txt_frag:
                         yield frag()

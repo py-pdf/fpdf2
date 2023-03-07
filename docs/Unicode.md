@@ -154,6 +154,8 @@ filename.ttf cannot be embedded due to copyright restrictions."
 
 # Fallback fonts #
 
+_New in [:octicons-tag-24: 2.7.0](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
+
 The method [`set_fallback_fonts()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_fonts) allows you to specify a list of fonts to be used if any character is not available on the font currently set. When a character doesn’t exist on the current font, `fpdf2` will look if it’s available on the fallback fonts, on the same order the list was provided.
 
 Common scenarios are use of special characters like emojis within your text, greek characters in formulas or citations mixing different languages.
@@ -164,11 +166,19 @@ import fpdf
 
 pdf = fpdf.FPDF()
 pdf.add_page()
-pdf.add_font(family="Roboto", fname="Roboto-Regular.ttf")
+pdf.add_font(fname="Roboto.ttf")
 # twitter emoji font: https://github.com/13rac1/twemoji-color-font/releases
-pdf.add_font(family="TwitterEmoji", fname="TwitterColorEmoji-SVGinOT.ttf")
+pdf.add_font(fname="TwitterEmoji.ttf")
 pdf.set_font("Roboto", size=15)
 pdf.set_fallback_fonts(["TwitterEmoji"])
 pdf.write(txt="text with an emoji 🌭")
 pdf.output("text_with_emoji.pdf")
 ```
+
+When a glyph cannot be rendered uing the current font,
+`fpdf2` will look for a fallback font matching the current character emphasis (bold/italics).
+By default, if it does not find such matching font, the character will not be rendered using any fallback font. This behaviour can be relaxed by passing `exact_match=False` to [`set_fallback_fonts()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_fonts).
+
+Moreover, for more control over font fallback election logic,
+the [`get_fallback_font()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_fallback_font) can be overriden.
+An example of this can be found in [test/fonts/test_font_fallback.py](https://github.com/PyFPDF/fpdf2/blob/master/test/fonts/test_font_fallback.py).
