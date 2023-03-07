@@ -238,7 +238,7 @@ img = Image.fromarray(np.asarray(canvas.buffer_rgba()))
 Before running this example, please install the required dependencies using the command below:
 
 ```
-pip install fpdf2 plotly==5.13.1 kaleido numpy
+pip install fpdf2 plotly kaleido numpy
 ```
 
 [kaleido](https://pypi.org/project/kaleido/) is a cross-platform library for generating static images that is used by plotly.
@@ -246,11 +246,11 @@ pip install fpdf2 plotly==5.13.1 kaleido numpy
 Example taken from [Plotly static image export tutorial](https://plotly.com/python/static-image-export/):
 
 ```python
+import io
 import plotly.graph_objects as go
 import numpy as np
 from fpdf import FPDF
-from PIL import Image
-import io
+
 
 np.random.seed(1)
 
@@ -287,17 +287,17 @@ Result:
 
 ![](plotly_png.png)
 
-You can also embed a figure as [SVG](SVG.md) but this is not recommended because the text data such as the x and y axis bars might not show as illustrated in the result image because plotly places this data in a svg text tag which is currently not supported by FPDF2.
+You can also embed a figure as [SVG](SVG.md) but this is not recommended because the text data such as the x and y axis bars might not show as illustrated in the result image because plotly places this data in a svg text tag which is currently [not supported](https://github.com/PyFPDF/fpdf2/issues/537) by FPDF2.
 
 Before running this example, please install the required dependencies:
 
 ```
-pip install fpdf2 pandas
+pip install fpdf2 plotly kaleido pandas
 ```
 
 ```python
-import plotly.graph_objects as go
 from fpdf import FPDF
+import plotly.graph_objects as go
 import plotly.express as px
 
 fig = px.bar(x=["a", "b", "c"], y=[1, 3, 2])
