@@ -251,7 +251,6 @@ import plotly.graph_objects as go
 import numpy as np
 from fpdf import FPDF
 
-
 np.random.seed(1)
 
 N = 100
@@ -297,7 +296,6 @@ pip install fpdf2 plotly kaleido pandas
 
 ```python
 from fpdf import FPDF
-import plotly.graph_objects as go
 import plotly.express as px
 
 fig = px.bar(x=["a", "b", "c"], y=[1, 3, 2])
