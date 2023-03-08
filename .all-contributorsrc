@@ -814,6 +814,15 @@
         "code",
         "question"
       ]
+    },
+    {
+      "login": "msalem99",
+      "name": "msalem",
+      "avatar_url": "https://avatars.githubusercontent.com/u/89017128?v=4",
+      "profile": "https://github.com/msalem99",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
