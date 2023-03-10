@@ -28,6 +28,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - hyperlinks were not working on encrypted files - thanks to @andersonhc
 - unicode (non limited to ASCII) text can now be provided as metadata [#685](https://github.com/PyFPDF/fpdf2/issues/685)
 - all `TitleStyle` constructor parameters are now effectively optional
+- memory usage was reduced by 10 MiB in some cases, thanks to a small optimization in using `fonttools`
 ### Changed
 - vector images parsing is now more robust: `fpdf2` can now embed SVG files without `viewPort` or no `height` / `width`
 - bitonal images are now encoded using `CCITTFaxDecode`, reducing their size in the PDF document - thanks to @eroux

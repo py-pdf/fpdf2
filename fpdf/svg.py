@@ -635,7 +635,8 @@ class SVGObject:
     def __init__(self, svg_text):
         self.cross_references = {}
 
-        svg_tree = parse_xml_str(svg_text)
+        # disabling bandit rule as we use defusedxml:
+        svg_tree = parse_xml_str(svg_text)  # nosec B314
 
         if svg_tree.tag not in xmlns_lookup("svg", "svg"):
             raise ValueError(f"root tag must be svg, not {svg_tree.tag}")
