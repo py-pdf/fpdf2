@@ -11,10 +11,10 @@ and this seems to be okay.
 """
 from pathlib import Path
 
+from fontTools.ttLib import TTFont
 import pytest
 
-import fpdf
-from fontTools import ttLib
+from fpdf import FPDF
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
@@ -22,25 +22,34 @@ HERE = Path(__file__).resolve().parent
 
 @pytest.mark.parametrize(
     "font_filename",
-    ["DejaVuSans.ttf", "DroidSansFallback.ttf", "Roboto-Regular.ttf", "cmss12.ttf"],
+    [
+        font_file.name
+        for font_file in HERE.glob("*.*tf")
+        if not any(
+            exclude in font_file.stem
+            for exclude in ("Bold", "Italic", "NotoColorEmoji")
+        )
+    ],
 )
-def test_first_999_chars(font_filename, tmp_path):
-    font_path = HERE / ".." / ".." / "fonts" / font_filename
+def test_charmap_first_999_chars(font_filename, tmp_path):
+    """
+    Character Map Test
+    from PyFPDF version 1.7.2: github.com/reingart/pyfpdf/commit/2eab310cfd866ce24947c3a9d850ebda7c6d515d
+    """
+    font_path = HERE / font_filename
     font_name = font_path.stem
 
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
-    pdf.add_font(font_name, fname=font_path)
+    pdf.add_font(fname=font_path)
     pdf.set_font(font_name, size=10)
 
-    font = ttLib.TTFont(font_path)
+    font = TTFont(font_path, lazy=True)
     cmap = font.getBestCmap()
 
-    # Create a PDF with the first 999 charters defined in the font:
-    for counter, character in enumerate(cmap, 0):
+    # Create a PDF with the first 999 characters defined in the font:
+    for counter, character in enumerate(list(cmap.keys())[:1000]):
         pdf.write(8, f"{counter:03}) {character:03x} - {character:c}", print_sh=True)
         pdf.ln()
-        if counter >= 999:
-            break
 
     assert_pdf_equal(pdf, HERE / f"charmap_first_999_chars-{font_name}.pdf", tmp_path)

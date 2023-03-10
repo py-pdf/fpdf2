@@ -1798,7 +1798,7 @@ class FPDF(GraphicsStateMixin):
         if fontkey in self.fonts or fontkey in self.core_fonts:
             warnings.warn(f"Core font or font already added '{fontkey}': doing nothing")
             return
-        font = ttLib.TTFont(font_file_path, fontNumber=0)
+        font = ttLib.TTFont(font_file_path, fontNumber=0, lazy=True)
 
         scale = 1000 / font["head"].unitsPerEm
         default_width = round(scale * font["hmtx"].metrics[".notdef"][0])
