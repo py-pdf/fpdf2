@@ -1,17 +1,15 @@
 from pathlib import Path
 
 import pytest
+from test.conftest import ensure_rss_memory_below
 
 from fpdf import FPDF
 
 HERE = Path(__file__).resolve().parent
 
 
+@ensure_rss_memory_below(max_in_mib=175)
 @pytest.mark.timeout(40)
-# Note: this does not combine well with memunit.
-# memory_profiler.MemTimer does not terminate properly when a signal is raised by pytest-timeout,
-# and as a consequence multiprocessing.util._exit_function becomes blocking at the end of Pytest execution,
-# (on line "calling join() for process MemTimer-1")
 def test_intense_image_rendering():
     png_file_paths = []
     for png_file_path in (HERE / "image/png_images/").glob("*.png"):

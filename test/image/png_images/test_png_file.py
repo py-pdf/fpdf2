@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from fpdf import FPDF
@@ -8,10 +9,11 @@ HERE = Path(__file__).resolve().parent
 
 
 def test_insert_png_files(caplog, tmp_path):
-    pdf = FPDF()
-    for path in sorted(HERE.glob("*.png")):
-        pdf.add_page()
-        pdf.image(str(path), x=0, y=0, w=0, h=0)
+    with caplog.at_level(logging.INFO):
+        pdf = FPDF()
+        for png_path in sorted(HERE.glob("*.png")):
+            pdf.add_page()
+            pdf.image(png_path, x=0, y=0, w=0, h=0)
     # Note: 7 of those images have an ICC profile, and there are only 5 distinct ICC profiles among them
     assert_pdf_equal(pdf, HERE / "image_png_insert_png_files.pdf", tmp_path)
 

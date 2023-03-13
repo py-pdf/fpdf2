@@ -1,20 +1,26 @@
+# pylint: disable=import-outside-toplevel
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from time import perf_counter
 from types import SimpleNamespace
+import functools
+import gc
 import hashlib
+import linecache
 import pathlib
 import signal
 import shutil
 import sys
+import tracemalloc
 import warnings
-import gc, linecache, tracemalloc
+
 from subprocess import check_output, CalledProcessError, PIPE
 
-from psutil import Process  # transitive dependency of memunit
 import pytest
 
+from fpdf.util import get_process_rss_as_mib, print_mem_usage
 from fpdf.template import Template
+
 
 QPDF_AVAILABLE = bool(shutil.which("qpdf"))
 if not QPDF_AVAILABLE:
@@ -255,13 +261,32 @@ def timeout_after(seconds):
         signal.signal(signal.SIGALRM, signal.SIG_DFL)
 
 
+def ensure_rss_memory_below(max_in_mib):
+    def actual_decorator(test_func):
+        @functools.wraps(test_func)
+        def wrapper(*args, **kwargs):
+            test_func(*args, **kwargs)
+            rss_in_mib = get_process_rss_as_mib()
+            if rss_in_mib:
+                assert rss_in_mib < max_in_mib
+
+        return wrapper
+
+    return actual_decorator
+
+
 # Enabling this check creates an increase in memory usage,
 # so we require an opt-in through a CLI argument:
 def pytest_addoption(parser):
     parser.addoption(
-        "--final-rss-usage",
+        "--final-memory-usage",
         action="store_true",
-        help="At the end of the tests execution, display the current RSS memory usage",
+        help="At the end of the tests execution, display the current memory usage",
+    )
+    parser.addoption(
+        "--pympler-summary",
+        action="store_true",
+        help="At the end of the tests execution, display a summary of objects allocated in memory",
     )
     parser.addoption(
         "--trace-malloc",
@@ -271,14 +296,30 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def final_rss_usage(request):
+def final_memory_usage(request):
     yield
-    if request.config.getoption("final_rss_usage"):
-        rss_in_mib = Process().memory_info().rss / 1024 / 1024
+    if request.config.getoption("final_memory_usage"):
+        gc.collect()
         capmanager = request.config.pluginmanager.getplugin("capturemanager")
         with capmanager.global_and_fixture_disabled():
             print("\n")
-            print(f"[psutil] Final process RSS memory usage: {rss_in_mib:.1f} MiB")
+            print_mem_usage("Final memory usage:")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def pympler_summary(request):
+    yield
+    if request.config.getoption("pympler_summary"):
+        # pylint: disable=import-error
+        from pympler.muppy import get_objects
+        from pympler.summary import print_, summarize
+
+        gc.collect()
+        all_objects = get_objects()
+        capmanager = request.config.pluginmanager.getplugin("capturemanager")
+        with capmanager.global_and_fixture_disabled():
+            print("\n[pympler/muppy] biggest objects summary:")
+            print_(summarize(all_objects))
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -286,7 +327,6 @@ def trace_malloc(request):
     if not request.config.getoption("trace_malloc"):
         yield
         return
-    capmanager = request.config.pluginmanager.getplugin("capturemanager")
     gc.collect()
     # Top-10 recipe from: https://docs.python.org/3/library/tracemalloc.html#display-the-top-10
     tracemalloc.start()
@@ -305,6 +345,7 @@ def trace_malloc(request):
         )
     )
     top_stats = snapshot2.compare_to(snapshot1, "lineno")
+    capmanager = request.config.pluginmanager.getplugin("capturemanager")
     with capmanager.global_and_fixture_disabled():
         print("[tracemalloc] Top 10 differences:")
         for stat in top_stats[:10]:

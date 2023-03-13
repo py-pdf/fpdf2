@@ -1,6 +1,11 @@
-import locale
+import gc, os, warnings
 from datetime import datetime, timezone
-from typing import Union, Iterable
+from numbers import Number
+from tracemalloc import get_traced_memory, is_tracing
+from typing import Iterable, Tuple, Union
+
+# default block size from src/libImaging/Storage.c:
+PIL_MEM_BLOCK_SIZE_IN_MIB = 16
 
 
 def buffer_subst(buffer, placeholder, value):
@@ -57,7 +62,7 @@ def b(s):
     raise ValueError(f"Invalid input: {s}")
 
 
-def get_scale_factor(unit: Union[str, float, int]) -> float:
+def get_scale_factor(unit: Union[str, Number]) -> float:
     """
     Get how many pts are in a unit. (k)
 
@@ -68,7 +73,7 @@ def get_scale_factor(unit: Union[str, float, int]) -> float:
     Raises:
         ValueError
     """
-    if isinstance(unit, (int, float)):
+    if isinstance(unit, Number):
         return float(unit)
 
     if unit == "pt":
@@ -84,8 +89,8 @@ def get_scale_factor(unit: Union[str, float, int]) -> float:
 
 def convert_unit(
     to_convert: Union[float, int, Iterable[Union[float, int, Iterable]]],
-    old_unit: Union[str, float, int],
-    new_unit: Union[str, float, int],
+    old_unit: Union[str, Number],
+    new_unit: Union[str, Number],
 ) -> Union[float, tuple]:
     """
      Convert a number or sequence of numbers from one unit to another.
@@ -107,14 +112,115 @@ def convert_unit(
     return to_convert / unit_conversion_factor
 
 
-def dochecks():
-    # Check for locale-related bug
-    # if (1.1==1):
-    #     raise FPDFException("Don\'t alter the locale before including class file")
-    # Check for decimal separator
-    if f"{1.0:.1f}" != "1.0":
-        locale.setlocale(locale.LC_NUMERIC, "C")
+################################################################################
+################### Utility functions to track memory usage ####################
+################################################################################
 
 
-# Moved here from FPDF#__init__
-dochecks()
+def print_mem_usage(prefix):
+    print(get_mem_usage(prefix))
+
+
+def get_mem_usage(prefix) -> str:
+    _collected_count = gc.collect()
+    rss = get_process_rss()
+    # heap_size, stack_size = get_process_heap_and_stack_sizes()
+    # objs_size_sum = get_gc_managed_objs_total_size()
+    pillow = get_pillow_allocated_memory()
+    if is_tracing():
+        malloc_stats = get_tracemalloc_traced_memory()
+    else:
+        malloc_stats = get_pymalloc_allocated_over_total_size()
+    return f"{prefix:<40} Malloc stats: {malloc_stats} | Pillow: {pillow} | Process RSS: {rss}"
+
+
+def get_process_rss() -> str:
+    rss_as_mib = get_process_rss_as_mib()
+    if rss_as_mib:
+        return f"{rss_as_mib:.1f} MiB"
+    return "<unavailable>"
+
+
+def get_process_rss_as_mib() -> Union[Number, None]:
+    "Inspired by psutil source code"
+    pid = os.getpid()
+    try:
+        with open(f"/proc/{pid}/statm", encoding="utf8") as statm:
+            return (
+                int(statm.readline().split()[1])
+                * os.sysconf("SC_PAGE_SIZE")
+                / 1024
+                / 1024
+            )
+    except FileNotFoundError:  # This file only exists under Linux
+        return None
+
+
+def get_process_heap_and_stack_sizes() -> Tuple[str]:
+    heap_size_in_mib, stack_size_in_mib = "<unavailable>", "<unavailable>"
+    pid = os.getpid()
+    try:
+        with open(f"/proc/{pid}/maps", encoding="utf8") as maps_file:
+            maps_lines = list(maps_file)
+    except FileNotFoundError:  # This file only exists under Linux
+        return heap_size_in_mib, stack_size_in_mib
+    for line in maps_lines:
+        line = line.split()
+        addr_range, path = line[0], line[-1]
+        addr_start, addr_end = addr_range.split("-")
+        addr_start, addr_end = int(addr_start, 16), int(addr_end, 16)
+        size = addr_end - addr_start
+        if path == "[heap]":
+            heap_size_in_mib = f"{size / 1024 / 1024:.1f} MiB"
+        elif path == "[stack]":
+            stack_size_in_mib = f"{size / 1024 / 1024:.1f} MiB"
+    return heap_size_in_mib, stack_size_in_mib
+
+
+def get_pymalloc_allocated_over_total_size() -> Tuple[str]:
+    """
+    Get PyMalloc stats from sys._debugmallocstats()
+    From experiments, not very reliable
+    """
+    try:
+        # pylint: disable=import-outside-toplevel
+        from pymemtrace.debug_malloc_stats import get_debugmallocstats
+
+        allocated, total = -1, -1
+        for line in get_debugmallocstats().decode().splitlines():
+            if line.startswith("Total"):
+                total = int(line.split()[-1].replace(",", ""))
+            elif line.startswith("# bytes in allocated blocks"):
+                allocated = int(line.split()[-1].replace(",", ""))
+        return f"{allocated / 1024 / 1024:.1f} / {total / 1024 / 1024:.1f} MiB"
+    except ImportError:
+        warnings.warn("pymemtrace could not be imported - Run: pip install pymemtrace")
+        return "<unavailable>"
+
+
+def get_gc_managed_objs_total_size() -> str:
+    "From experiments, not very reliable"
+    try:
+        # pylint: disable=import-outside-toplevel
+        from pympler.muppy import get_objects, getsizeof
+
+        objs_total_size = sum(getsizeof(obj) for obj in get_objects())
+        return f"{objs_total_size / 1024 / 1024:.1f} MiB"
+    except ImportError:
+        warnings.warn("pympler could not be imported - Run: pip install pympler")
+        return "<unavailable>"
+
+
+def get_tracemalloc_traced_memory() -> str:
+    "Requires python -X tracemalloc"
+    current, peak = get_traced_memory()
+    return f"{current / 1024 / 1024:.1f} (peak={peak / 1024 / 1024:.1f}) MiB"
+
+
+def get_pillow_allocated_memory() -> str:
+    # pylint: disable=c-extension-no-member,import-outside-toplevel
+    from PIL import Image
+
+    stats = Image.core.get_stats()
+    blocks_in_use = stats["allocated_blocks"] - stats["freed_blocks"]
+    return f"{blocks_in_use * PIL_MEM_BLOCK_SIZE_IN_MIB:.1f} MiB"
