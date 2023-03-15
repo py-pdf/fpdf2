@@ -823,6 +823,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "ruiz-manuel",
+      "name": "Manuel Ruiz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/43274578?v=4",
+      "profile": "https://github.com/ruiz-manuel",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
