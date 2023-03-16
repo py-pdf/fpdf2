@@ -133,7 +133,9 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         # Very simple logic for now:
         if img.format == "JPEG":
             image_filter = "DCTDecode"
-        elif img.mode == "1":
+        elif img.mode == "1" and hasattr(Image.core, "libtiff_support_custom_tags"):
+            # The 2nd condition prevents from running in a bug sometimes,
+            # cf. test_transcode_monochrome_and_libtiff_support_custom_tags()
             image_filter = "CCITTFaxDecode"
         else:
             image_filter = "FlateDecode"

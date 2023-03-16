@@ -7,6 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 import pytest
 
 import fpdf
+from fpdf.image_parsing import transcode_monochrome
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
@@ -61,6 +62,15 @@ def test_insert_png_monochromatic(tmp_path):
     pdf.add_page()
     pdf.image(HERE / "../png_test_suite/basi0g01.png", x=15, y=15, h=140)
     assert_pdf_equal(pdf, HERE / "image_types_insert_png_monochromatic.pdf", tmp_path)
+
+
+def test_transcode_monochrome_and_libtiff_support_custom_tags():
+    # Fails under WSL on my computer (Lucas), with this error:
+    #   AttributeError: module 'PIL._imaging' has no attribute 'libtiff_support_custom_tags'
+    # (as a consequence, the test above & everal others also fail, because PDFs don't match)
+    # cf. https://github.com/python-pillow/Pillow/issues/7019
+    with Image.open("test/image/png_test_suite/basi0g01.png") as img:
+        transcode_monochrome(img)
 
 
 def test_insert_png_alpha(tmp_path):
