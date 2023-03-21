@@ -24,6 +24,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - new translation of the tutorial in [简体中文](https://pyfpdf.github.io/fpdf2/Tutorial-zh.html) - thanks to @Bubbu0129
 - new method [`FPDF.set_fallback_fonts()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_fonts) allow alternative fonts to be provided if a character on the text is not available on the currently set font - thanks to @andersonhc
 - documentation on how to embed static [Plotly](https://plotly.com/python/) charts: [link to docs](https://pyfpdf.github.io/fpdf2/Maths.html)
+- additional linter / static code analyser in GitHub Actions CI pipeline: [semgrep](https://github.com/returntocorp/semgrep)
 ### Fixed
 - hyperlinks were not working on encrypted files - thanks to @andersonhc
 - unicode (non limited to ASCII) text can now be provided as metadata [#685](https://github.com/PyFPDF/fpdf2/issues/685)

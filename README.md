@@ -4,7 +4,7 @@
 
 [![build status](https://github.com/PyFPDF/fpdf2/workflows/build/badge.svg)](https://github.com/PyFPDF/fpdf2/actions?query=branch%3Amaster)
 [![codecov](https://codecov.io/gh/PyFPDF/fpdf2/branch/master/graph/badge.svg)](https://codecov.io/gh/PyFPDF/fpdf2)
-[![security: bandit](https://img.shields.io/badge/linters-bandit,pylint-yellow.svg)](https://github.com/PyCQA/bandit)
+![security: bandit, pylint, semgrep](https://img.shields.io/badge/linters-bandit,pylint,semgrep-yellow.svg)
 
 [![Dependents](https://img.shields.io/librariesio/dependents/pypi/fpdf2)](https://libraries.io/pypi/fpdf2/dependents)
 [![Downloads per month](https://pepy.tech/badge/fpdf2/month)](https://pepy.tech/project/fpdf2)

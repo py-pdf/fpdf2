@@ -645,6 +645,7 @@ class Template(FlexTemplate):
             "creator",
             "keywords",
         ):
+            # nosemgrep: python.lang.security.dangerous-globals-use.dangerous-globals-use
             if not isinstance(locals()[arg], str):
                 raise TypeError(f'Argument "{arg}" must be of type str.')
         pdf = FPDF(format=format, orientation=orientation, unit=unit)

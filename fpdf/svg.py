@@ -9,6 +9,7 @@ except ImportError:
     warnings.warn(
         "defusedxml could not be imported - fpdf2 will not be able to sanitize SVG images provided"
     )
+    # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
     from xml.etree.ElementTree import fromstring as parse_xml_str  # nosec
 
 from . import html
