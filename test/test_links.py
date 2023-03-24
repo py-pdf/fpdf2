@@ -169,3 +169,18 @@ def test_inserting_link_with_no_page_number():
     pdf.set_font("helvetica", size=12)
     with pytest.raises(ValueError):
         pdf.cell(txt="Page 1", link=link)
+
+
+def test_later_call_to_set_link(tmp_path):  # v2.6.1 bug spotted in discussion 729
+    pdf = FPDF()
+    pdf.set_font("helvetica")
+
+    pdf.add_page()  # page 1
+    link_to_section1 = pdf.add_link()
+    pdf.cell(txt="Section 1", link=link_to_section1)
+
+    pdf.add_page()  # page 2
+    pdf.set_link(link_to_section1, page=pdf.page)
+    pdf.cell(txt="Section 1: Bla bla bla")
+
+    assert_pdf_equal(pdf, HERE / "later_call_to_set_link.pdf", tmp_path)

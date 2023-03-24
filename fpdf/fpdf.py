@@ -2082,12 +2082,14 @@ class FPDF(GraphicsStateMixin):
             zoom (float): optional new zoom level after following the link.
                 Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
         """
-        self.links[link] = DestinationXYZ(
-            self.page if page == -1 else page,
-            top=self.h_pt - y * self.k,
-            left=x * self.k,
-            zoom=zoom,
-        )
+        # We must take care to update the existing DestinationXYZ,
+        # and NOT re-assign self.links[link] to a new instance,
+        # as a reference to self.links[link] is kept in self.pages[].annots:
+        link = self.links[link]
+        link.page_number = self.page if page == -1 else page
+        link.top = self.h_pt - y * self.k
+        link.left = x * self.k
+        link.zoom = zoom
 
     @check_page
     def link(self, x, y, w, h, link, alt_text=None, border_width=0):

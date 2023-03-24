@@ -103,6 +103,12 @@ class AnnotationDict(AnnotationMixin):
         )
         return pdf_dict(obj_dict)
 
+    def __repr__(self):
+        keys = [key for key in dir(self) if not key.startswith("__")]
+        d = {key: getattr(self, key) for key in keys}
+        d = {key: value for key, value in d.items() if not callable(value)}
+        return f"AnnotationDict(**{d})"
+
 
 class PDFEmbeddedFile(PDFContentStream):
     def __init__(
