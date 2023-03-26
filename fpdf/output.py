@@ -7,7 +7,7 @@ from io import BytesIO
 from .annotations import PDFAnnotation
 from .enums import SignatureFlag
 from .errors import FPDFException
-from .outline import build_outline_objs
+from .outline import build_outline_objs, OutlineItemDictionary
 from .sign import Signature, sign_content
 from .syntax import (
     build_obj_dict,
@@ -887,7 +887,13 @@ class OutputProducer:
                 outline_dict_obj = pdf_obj
             else:
                 outline_items.append(pdf_obj)
-            self._add_pdf_obj(pdf_obj, "document_outline")
+            obj_id = self._add_pdf_obj(pdf_obj, "document_outline")
+            if self.fpdf._security_handler and isinstance(
+                pdf_obj, OutlineItemDictionary
+            ):
+                pdf_obj.title = self.fpdf._security_handler.encrypt(
+                    pdf_obj.title, obj_id
+                )
         return outline_dict_obj, outline_items
 
     def _add_xmp_metadata(self):
