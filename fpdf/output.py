@@ -98,8 +98,8 @@ class PDFFontDescriptor(PDFObject):
 class CIDSystemInfo(PDFObject):
     def __init__(self):
         super().__init__()
-        self.registry = "(Adobe)"
-        self.ordering = "(UCS)"
+        self.registry = PDFString("Adobe", encrypt=True)
+        self.ordering = PDFString("UCS", encrypt=True)
         self.supplement = 0
 
 
@@ -144,7 +144,7 @@ class PDFCatalog(PDFObject):
     ):
         super().__init__()
         self.type = Name("Catalog")
-        self.lang = f"({lang})" if lang else None
+        self.lang = PDFString(lang) if lang else None
         self.page_layout = page_layout
         self.page_mode = page_mode
         self.viewer_preferences = viewer_preferences

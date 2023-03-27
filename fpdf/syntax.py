@@ -272,6 +272,12 @@ class PDFString(str):
         if _security_handler and self.encrypt:
             assert _obj_id
             return _security_handler.encrypt_string(self, _obj_id)
+        try:
+            self.encode("ascii")
+            # => this string only contains ASCII characters, no need for special encoding:
+            return f"({self})"
+        except UnicodeEncodeError:
+            pass
         if self.USE_HEX_ENCODING:
             # Using the "Hexadecimal String" format defined in the PDF spec:
             hex_str = hexlify(BOM_UTF16_BE + self.encode("utf-16-be")).decode("latin-1")

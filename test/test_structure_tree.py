@@ -117,11 +117,11 @@ endobj
 endobj
 6 0 obj
 <<
-/Alt <feff0049006d0061006700650020006400650073006300720069007000740069006f006e>
+/Alt (Image description)
 /K [0]
 /P 4 0 R
 /S /Figure
-/T <feff0049006d0061006700650020007400690074006c0065>
+/T (Image title)
 /Type /StructElem
 >>
 endobj"""
