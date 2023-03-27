@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import math
 from os import urandom
 
@@ -15,6 +16,9 @@ try:
     import_error = None
 except ImportError as error:
     import_error = error
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class ARC4:
@@ -181,6 +185,7 @@ class StandardSecurityHandler:
     def encrypt_string(self, string, obj_id):
         if self.encryption_method == EncryptionMethod.NO_ENCRYPTION:
             return PDFString(string).serialize()
+        LOGGER.debug("Encrypting string: %s", string)
         return f"<{bytes(self.encrypt_bytes(string.encode('latin-1'), obj_id)).hex().upper()}>"
 
     def encrypt_stream(self, stream, obj_id):

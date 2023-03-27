@@ -4,8 +4,15 @@ from typing import NamedTuple, Tuple, Union
 
 from .actions import Action
 from .enums import AnnotationFlag, AnnotationName, FileAttachmentAnnotationName
-from .util import enclose_in_parens, format_date
-from .syntax import build_obj_dict, Destination, Name, PDFObject, PDFContentStream
+from .util import enclose_in_parens
+from .syntax import (
+    build_obj_dict,
+    Destination,
+    Name,
+    PDFContentStream,
+    PDFDate,
+    PDFObject,
+)
 from .syntax import create_dictionary_string as pdf_dict
 from .syntax import create_list_string as pdf_list
 from .syntax import iobj_ref as pdf_ref
@@ -50,7 +57,7 @@ class AnnotationMixin:
         self.dest = dest
         self.c = f"[{color[0]} {color[1]} {color[2]}]" if color else None
         self.t = enclose_in_parens(title) if title else None
-        self.m = format_date(modification_time) if modification_time else None
+        self.m = PDFDate(modification_time) if modification_time else None
         self.quad_points = (
             pdf_list(f"{quad_point:.2f}" for quad_point in quad_points)
             if quad_points
@@ -125,9 +132,9 @@ class PDFEmbeddedFile(PDFContentStream):
         self.type = Name("EmbeddedFile")
         params = {"/Size": len(contents)}
         if creation_date:
-            params["/CreationDate"] = format_date(creation_date, with_tz=True)
+            params["/CreationDate"] = PDFDate(creation_date, with_tz=True).serialize()
         if modification_date:
-            params["/ModDate"] = format_date(modification_date, with_tz=True)
+            params["/ModDate"] = PDFDate(modification_date, with_tz=True).serialize()
         if checksum:
             file_hash = hashlib.new("md5", usedforsecurity=False)
             file_hash.update(self._contents)

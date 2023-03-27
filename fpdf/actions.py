@@ -21,22 +21,8 @@ class Action(ABC):
             key_values = {}
         if self.next:
             key_values["Next"] = self.next
-        obj_dict = build_obj_dict(key_values)
-        if _security_handler:
-            obj_dict = self._encrypt_obj_dict(obj_dict, _security_handler, _obj_id)
+        obj_dict = build_obj_dict(key_values, _security_handler, _obj_id)
         return create_dictionary_string(obj_dict, field_join=" ")
-
-    def _encrypt_obj_dict(self, obj_dict, security_handler, obj_id):
-        """Encrypt the strings present in the object dictionary"""
-        for key in obj_dict:
-            string = obj_dict[key]
-            if (
-                isinstance(string, str)
-                and string.startswith("(")
-                and string.endswith(")")
-            ):
-                obj_dict[key] = security_handler.encrypt(string[1:-1], obj_id)
-        return obj_dict
 
 
 class URIAction(Action):

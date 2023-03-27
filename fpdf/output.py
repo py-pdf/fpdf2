@@ -14,16 +14,14 @@ from .syntax import (
     Name,
     PDFArray,
     PDFContentStream,
+    PDFDate,
     PDFObject,
     PDFString,
 )
 from .syntax import create_dictionary_string as pdf_dict
 from .syntax import create_list_string as pdf_list
 from .syntax import iobj_ref as pdf_ref
-from .util import (
-    enclose_in_parens,
-    format_date,
-)
+from .util import enclose_in_parens
 
 from fontTools import ttLib
 from fontTools import subset as ftsubset
@@ -52,6 +50,7 @@ class PDFHeader(ContentWithoutID):
     def __init__(self, pdf_version):
         self.pdf_version = pdf_version
 
+    # method override
     def serialize(self, _security_handler=None):
         return f"%PDF-{self.pdf_version}"
 
@@ -114,7 +113,7 @@ class PDFInfo(PDFObject):
         keywords,
         creator,
         producer,
-        creation_date,
+        creation_date: PDFDate,
     ):
         super().__init__()
         self.title = PDFString(title) if title else None
@@ -500,10 +499,6 @@ class OutputProducer:
         self.pdf_objs.append(pdf_obj)
         if trace_label:
             self.trace_labels_per_obj_id[self.obj_id] = trace_label
-        if isinstance(pdf_obj, PDFContentStream) and self.fpdf._security_handler:
-            if not isinstance(pdf_obj.content_stream(), (bytearray, bytes)):
-                pdf_obj._contents = pdf_obj.content_stream().encode("latin-1")
-            pdf_obj.encrypt(self.fpdf._security_handler)
         return self.obj_id
 
     def _add_pages_root(self):
@@ -903,7 +898,7 @@ class OutputProducer:
         creation_date = None
         if fpdf.creation_date:
             try:
-                creation_date = format_date(fpdf.creation_date, with_tz=True)
+                creation_date = PDFDate(fpdf.creation_date, with_tz=True)
             except Exception as error:
                 raise FPDFException(
                     f"Could not format date: {fpdf.creation_date}"

@@ -48,6 +48,13 @@ class OutlineItemDictionary(PDFObject):
         self.dest = dest
         self.struct_elem = struct_elem
 
+    # method override
+    def serialize(self, obj_dict=None, _security_handler=None):
+        if _security_handler:
+            assert not obj_dict
+            self.title = _security_handler.encrypt_string(self.title, self._id)
+        return super().serialize(obj_dict, _security_handler)
+
 
 class OutlineDictionary(PDFObject):
     __slots__ = ("_id", "type", "first", "last", "count")

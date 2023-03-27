@@ -63,6 +63,7 @@ import re, zlib
 from abc import ABC
 from binascii import hexlify
 from codecs import BOM_UTF16_BE
+from datetime import datetime, timezone
 
 
 def clear_empty_fields(d):
@@ -198,13 +199,9 @@ class PDFObject:
     def _encrypt_obj_dict(self, obj_dict, security_handler):
         """Encrypt the strings present in the object dictionary"""
         for key in obj_dict:
-            string = obj_dict[key]
-            if (
-                isinstance(string, str)
-                and string.startswith("(")
-                and string.endswith(")")
-            ):
-                obj_dict[key] = security_handler.encrypt(string[1:-1], self.id)
+            value = obj_dict[key]
+            if isinstance(value, str) and value.startswith("(") and value.endswith(")"):
+                obj_dict[key] = security_handler.encrypt(value[1:-1], self.id)
         return obj_dict
 
 
@@ -222,6 +219,14 @@ class PDFContentStream(PDFObject):
     def encrypt(self, security_handler):
         self._contents = security_handler.encrypt(self._contents, self.id)
         self.length = len(self._contents)
+
+    # method override
+    def serialize(self, obj_dict=None, _security_handler=None):
+        if _security_handler:
+            if not isinstance(self._contents, (bytearray, bytes)):
+                self._contents = self._contents.encode("latin-1")
+            self.encrypt(_security_handler)
+        return super().serialize(obj_dict, _security_handler)
 
 
 def build_obj_dict(key_values, _security_handler=None, _obj_id=None):
@@ -278,6 +283,23 @@ class PDFString(str):
             hex_str = hexlify(BOM_UTF16_BE + self.encode("utf-16-be")).decode("latin-1")
             return f"<{hex_str}>"
         return f'({self.encode("UTF-16").decode("latin-1")})'
+
+
+class PDFDate:
+    def __init__(self, date: datetime, with_tz=False):
+        self.date = date
+        self.with_tz = with_tz
+
+    def serialize(self, _security_handler=None, _obj_id=None):
+        if not self.with_tz:
+            return f"(D:{self.date:%Y%m%d%H%M%S})"
+        assert self.date.tzinfo
+        if self.date.tzinfo == timezone.utc:
+            str_date = f"D:{self.date:%Y%m%d%H%M%SZ%H'%M'}"
+        else:
+            str_date = f"D:{self.date:%Y%m%d%H%M%S%z}"
+            str_date = str_date[:-2] + "'" + str_date[-2:] + "'"
+        return f"({str_date})"
 
 
 class PDFArray(list):

@@ -1,5 +1,4 @@
 import gc, os, warnings
-from datetime import datetime, timezone
 from numbers import Number
 from tracemalloc import get_traced_memory, is_tracing
 from typing import Iterable, Tuple, Union
@@ -14,18 +13,6 @@ def buffer_subst(buffer, placeholder, value):
     buffer = buffer.replace(placeholder.encode(), value.encode(), 1)
     assert len(buffer) == buffer_size
     return buffer
-
-
-def format_date(date: datetime, with_tz=False) -> str:
-    if with_tz:
-        assert date.tzinfo
-        if date.tzinfo == timezone.utc:
-            str_date = f"D:{date:%Y%m%d%H%M%SZ%H'%M'}"
-        else:
-            str_date = f"D:{date:%Y%m%d%H%M%S%z}"
-            str_date = str_date[:-2] + "'" + str_date[-2:] + "'"
-        return enclose_in_parens(str_date)
-    return enclose_in_parens(f"D:{date:%Y%m%d%H%M%S}")
 
 
 def enclose_in_parens(s):

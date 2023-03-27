@@ -176,10 +176,20 @@ def test_encrypt_font(tmp_path):
     assert_pdf_equal(pdf, HERE / "encrypt_fonts.pdf", tmp_path)
 
 
-def test_encryption_with_hyperlink(tmp_path):
+def test_encryption_with_hyperlink(tmp_path):  # issue 672
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("helvetica")
     pdf.cell(txt="hyperlink", link="https://github.com/PyFPDF/fpdf2")
     pdf.set_encryption(owner_password="fpdf2")
     assert_pdf_equal(pdf, HERE / "encryption_with_hyperlink.pdf", tmp_path)
+
+
+def test_encrypt_outline(tmp_path):  # issue 732
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica")
+    pdf.start_section("Title")
+    pdf.start_section("Subtitle", level=1)
+    pdf.set_encryption(owner_password="fpdf2")
+    assert_pdf_equal(pdf, HERE / "encrypt_outline.pdf", tmp_path)

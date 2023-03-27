@@ -85,10 +85,9 @@ from .recorder import FPDFRecorder
 from .structure_tree import StructureTreeBuilder
 from .sign import Signature
 from .svg import Percent, SVGObject
-from .syntax import DestinationXYZ
+from .syntax import DestinationXYZ, PDFDate
 from .util import (
     escape_parens,
-    format_date,
     get_scale_factor,
 )
 
@@ -4213,7 +4212,7 @@ class FPDF(GraphicsStateMixin):
             value=Signature(
                 contact_info=contact_info,
                 location=location,
-                m=format_date(self._sign_time),
+                m=PDFDate(self._sign_time),
                 reason=reason,
             ),
         )
@@ -4541,7 +4540,7 @@ class FPDF(GraphicsStateMixin):
         Args:
             render_toc_function (function): a function that will be invoked to render the ToC.
                 This function will receive 2 parameters: `pdf`, an instance of FPDF, and `outline`,
-                a list of `OutlineSection`.
+                a list of `fpdf.outline.OutlineSection`.
             pages (int): the number of pages that the Table of Contents will span,
                 including the current one that will. As many page breaks as the value of this argument
                 will occur immediately after calling this method.
