@@ -38,7 +38,7 @@ class OutlineItemDictionary(PDFObject):
         struct_elem: StructElem = None,
     ):
         super().__init__()
-        self.title = PDFString(title)
+        self.title = PDFString(title, encrypt=True)
         self.parent = None
         self.prev = None
         self.next = None
@@ -47,13 +47,6 @@ class OutlineItemDictionary(PDFObject):
         self.count = 0
         self.dest = dest
         self.struct_elem = struct_elem
-
-    # method override
-    def serialize(self, obj_dict=None, _security_handler=None):
-        if _security_handler:
-            assert not obj_dict
-            self.title = _security_handler.encrypt_string(self.title, self._id)
-        return super().serialize(obj_dict, _security_handler)
 
 
 class OutlineDictionary(PDFObject):

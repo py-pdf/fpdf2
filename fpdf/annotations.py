@@ -4,7 +4,6 @@ from typing import NamedTuple, Tuple, Union
 
 from .actions import Action
 from .enums import AnnotationFlag, AnnotationName, FileAttachmentAnnotationName
-from .util import enclose_in_parens
 from .syntax import (
     build_obj_dict,
     Destination,
@@ -12,6 +11,7 @@ from .syntax import (
     PDFContentStream,
     PDFDate,
     PDFObject,
+    PDFString,
 )
 from .syntax import create_dictionary_string as pdf_dict
 from .syntax import create_list_string as pdf_list
@@ -52,11 +52,11 @@ class AnnotationMixin:
         self.f_t = Name(field_type) if field_type else None
         self.v = value
         self.f = sum(flags)
-        self.contents = enclose_in_parens(contents) if contents else None
+        self.contents = PDFString(contents) if contents else None
         self.a = action
         self.dest = dest
         self.c = f"[{color[0]} {color[1]} {color[2]}]" if color else None
-        self.t = enclose_in_parens(title) if title else None
+        self.t = PDFString(title) if title else None
         self.m = PDFDate(modification_time) if modification_time else None
         self.quad_points = (
             pdf_list(f"{quad_point:.2f}" for quad_point in quad_points)
@@ -166,9 +166,9 @@ class FileSpec(NamedTuple):
     def serialize(self, _security_handler=None, _obj_id=None):
         obj_dict = {
             "/Type": "/Filespec",
-            "/F": enclose_in_parens(self.basename),
+            "/F": PDFString(self.basename).serialize(),
             "/EF": pdf_dict({"/F": pdf_ref(self.embedded_file.id)}),
         }
         if self.desc:
-            obj_dict["/Desc"] = enclose_in_parens(self.desc)
+            obj_dict["/Desc"] = PDFString(self.desc).serialize()
         return pdf_dict(obj_dict, field_join=" ")

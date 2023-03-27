@@ -169,8 +169,6 @@ class PDFObject:
         output.append("<<")
         if not obj_dict:
             obj_dict = self._build_obj_dict(_security_handler)
-        elif _security_handler:
-            obj_dict = self._encrypt_obj_dict(obj_dict, _security_handler)
         output.append(create_dictionary_string(obj_dict, open_dict="", close_dict=""))
         output.append(">>")
         content_stream = self.content_stream()
@@ -180,7 +178,7 @@ class PDFObject:
         return "\n".join(output)
 
     def content_stream(self):
-        "Subclass can override this method to indicate the presence of a content stream"
+        "Subclasses can override this method to indicate the presence of a content stream"
         return b""
 
     def _build_obj_dict(self, security_handler=None):
@@ -196,14 +194,6 @@ class PDFObject:
             _obj_id=self.id,
         )
 
-    def _encrypt_obj_dict(self, obj_dict, security_handler):
-        """Encrypt the strings present in the object dictionary"""
-        for key in obj_dict:
-            value = obj_dict[key]
-            if isinstance(value, str) and value.startswith("(") and value.endswith(")"):
-                obj_dict[key] = security_handler.encrypt(value[1:-1], self.id)
-        return obj_dict
-
 
 class PDFContentStream(PDFObject):
     def __init__(self, contents, compress=False):
@@ -216,16 +206,14 @@ class PDFContentStream(PDFObject):
     def content_stream(self):
         return self._contents
 
-    def encrypt(self, security_handler):
-        self._contents = security_handler.encrypt(self._contents, self.id)
-        self.length = len(self._contents)
-
     # method override
     def serialize(self, obj_dict=None, _security_handler=None):
         if _security_handler:
+            assert not obj_dict
             if not isinstance(self._contents, (bytearray, bytes)):
                 self._contents = self._contents.encode("latin-1")
-            self.encrypt(_security_handler)
+            self._contents = _security_handler.encrypt(self._contents, self.id)
+            self.length = len(self._contents)
         return super().serialize(obj_dict, _security_handler)
 
 
@@ -255,13 +243,6 @@ def build_obj_dict(key_values, _security_handler=None, _obj_id=None):
             )
         elif isinstance(value, bool):
             value = str(value).lower()
-        if (
-            _security_handler
-            and isinstance(value, str)
-            and value.startswith("(")
-            and value.endswith(")")
-        ):
-            value = _security_handler.encrypt(value[1:-1], _obj_id)
         obj_dict[f"/{camel_case(key)}"] = value
     return obj_dict
 
@@ -277,7 +258,20 @@ class PDFString(str):
     but then there can be a risk of badly encoding some unicode strings - cf. issue #458
     """
 
+    def __new__(cls, content, encrypt=False):
+        """
+        Args:
+            content (str): text
+            encrypt (bool): if document encryption is enabled, should this string be encrypted?
+        """
+        self = super().__new__(cls, content)
+        self.encrypt = encrypt
+        return self
+
     def serialize(self, _security_handler=None, _obj_id=None):
+        if _security_handler and self.encrypt:
+            assert _obj_id
+            return _security_handler.encrypt_string(self, _obj_id)
         if self.USE_HEX_ENCODING:
             # Using the "Hexadecimal String" format defined in the PDF spec:
             hex_str = hexlify(BOM_UTF16_BE + self.encode("utf-16-be")).decode("latin-1")
@@ -286,20 +280,34 @@ class PDFString(str):
 
 
 class PDFDate:
-    def __init__(self, date: datetime, with_tz=False):
+    def __init__(self, date: datetime, with_tz=False, encrypt=False):
+        """
+        Args:
+            date (datetime): self-explanatory
+            with_tz (bool): should the timezone be encoded in included in the date?
+            encrypt (bool): if document encryption is enabled, should this string be encrypted?
+        """
         self.date = date
         self.with_tz = with_tz
+        self.encrypt = encrypt
+
+    def __repr__(self):
+        return f"PDFDate({self.date}, with_tz={self.with_tz}, encrypt={self.encrypt})"
 
     def serialize(self, _security_handler=None, _obj_id=None):
-        if not self.with_tz:
-            return f"(D:{self.date:%Y%m%d%H%M%S})"
-        assert self.date.tzinfo
-        if self.date.tzinfo == timezone.utc:
-            str_date = f"D:{self.date:%Y%m%d%H%M%SZ%H'%M'}"
+        if self.with_tz:
+            assert self.date.tzinfo
+            if self.date.tzinfo == timezone.utc:
+                out_str = f"D:{self.date:%Y%m%d%H%M%SZ%H'%M'}"
+            else:
+                out_str = f"D:{self.date:%Y%m%d%H%M%S%z}"
+                out_str = out_str[:-2] + "'" + out_str[-2:] + "'"
         else:
-            str_date = f"D:{self.date:%Y%m%d%H%M%S%z}"
-            str_date = str_date[:-2] + "'" + str_date[-2:] + "'"
-        return f"({str_date})"
+            out_str = f"D:{self.date:%Y%m%d%H%M%S}"
+        if _security_handler and self.encrypt:
+            assert _obj_id
+            return _security_handler.encrypt_string(out_str, _obj_id)
+        return f"({out_str})"
 
 
 class PDFArray(list):

@@ -15,14 +15,6 @@ def buffer_subst(buffer, placeholder, value):
     return buffer
 
 
-def enclose_in_parens(s):
-    """Format a text string"""
-    if s:
-        assert isinstance(s, str)
-        return f"({escape_parens(s)})"
-    return ""
-
-
 def escape_parens(s):
     """Add a backslash character before , ( and )"""
     if isinstance(s, str):
@@ -38,15 +30,6 @@ def escape_parens(s):
         .replace(b"(", b"\\(")
         .replace(b"\r", b"\\r")
     )
-
-
-# shortcut to bytes conversion (b prefix)
-def b(s):
-    if isinstance(s, str):
-        return s.encode("latin1")
-    if isinstance(s, int):
-        return bytes([s])  # http://bugs.python.org/issue4588
-    raise ValueError(f"Invalid input: {s}")
 
 
 def get_scale_factor(unit: Union[str, Number]) -> float:

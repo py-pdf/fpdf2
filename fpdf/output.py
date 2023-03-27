@@ -21,7 +21,6 @@ from .syntax import (
 from .syntax import create_dictionary_string as pdf_dict
 from .syntax import create_list_string as pdf_list
 from .syntax import iobj_ref as pdf_ref
-from .util import enclose_in_parens
 
 from fontTools import ttLib
 from fontTools import subset as ftsubset
@@ -97,11 +96,11 @@ class PDFFontDescriptor(PDFObject):
 
 
 class CIDSystemInfo(PDFObject):
-    def __init__(self, registry, ordering, supplement):
+    def __init__(self):
         super().__init__()
-        self.registry = enclose_in_parens(registry)
-        self.ordering = enclose_in_parens(ordering)
-        self.supplement = supplement
+        self.registry = "(Adobe)"
+        self.ordering = "(UCS)"
+        self.supplement = 0
 
 
 class PDFInfo(PDFObject):
@@ -145,7 +144,7 @@ class PDFCatalog(PDFObject):
     ):
         super().__init__()
         self.type = Name("Catalog")
-        self.lang = enclose_in_parens(lang) if lang else None
+        self.lang = f"({lang})" if lang else None
         self.page_layout = page_layout
         self.page_mode = page_mode
         self.viewer_preferences = viewer_preferences
@@ -696,9 +695,7 @@ class OutputProducer:
                 self._add_pdf_obj(to_unicode_obj, "fonts")
                 composite_font_obj.to_unicode = to_unicode_obj
 
-                cid_system_info_obj = CIDSystemInfo(
-                    registry="Adobe", ordering="UCS", supplement=0
-                )
+                cid_system_info_obj = CIDSystemInfo()
                 self._add_pdf_obj(cid_system_info_obj, "fonts")
                 cid_font_obj.c_i_d_system_info = cid_system_info_obj
 
@@ -898,7 +895,7 @@ class OutputProducer:
         creation_date = None
         if fpdf.creation_date:
             try:
-                creation_date = PDFDate(fpdf.creation_date, with_tz=True)
+                creation_date = PDFDate(fpdf.creation_date, with_tz=True, encrypt=True)
             except Exception as error:
                 raise FPDFException(
                     f"Could not format date: {fpdf.creation_date}"
@@ -966,7 +963,7 @@ class OutputProducer:
             catalog_obj.mark_info = pdf_dict({"/Marked": "true"})
         if fpdf.embedded_files:
             file_spec_names = [
-                f"{enclose_in_parens(embedded_file.basename())} {embedded_file.file_spec().serialize()}"
+                f"{PDFString(embedded_file.basename()).serialize()} {embedded_file.file_spec().serialize()}"
                 for embedded_file in fpdf.embedded_files
                 if embedded_file.globally_enclosed
             ]

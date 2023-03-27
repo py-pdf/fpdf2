@@ -1,8 +1,7 @@
 from abc import ABC
 import warnings
 
-from .util import enclose_in_parens
-from .syntax import build_obj_dict, create_dictionary_string
+from .syntax import PDFString, build_obj_dict, create_dictionary_string
 
 
 class Action(ABC):
@@ -32,7 +31,7 @@ class URIAction(Action):
 
     def serialize(self, _security_handler=None, _obj_id=None):
         return super()._serialize(
-            {"s": "/URI", "u_r_i": enclose_in_parens(self.uri)},
+            {"s": "/URI", "u_r_i": PDFString(self.uri, encrypt=True)},
             _security_handler=_security_handler,
             _obj_id=_obj_id,
         )
@@ -76,7 +75,7 @@ class GoToRemoteAction(Action):
 
     def serialize(self, _security_handler=None, _obj_id=None):
         return super()._serialize(
-            {"s": "/GoToR", "f": enclose_in_parens(self.file), "d": self.dest},
+            {"s": "/GoToR", "f": PDFString(self.file, encrypt=True), "d": self.dest},
             _security_handler=_security_handler,
             _obj_id=_obj_id,
         )
@@ -91,7 +90,7 @@ class LaunchAction(Action):
 
     def serialize(self, _security_handler=None, _obj_id=None):
         return super()._serialize(
-            {"s": "/Launch", "f": enclose_in_parens(self.file)},
+            {"s": "/Launch", "f": PDFString(self.file, encrypt=True)},
             _security_handler=_security_handler,
             _obj_id=_obj_id,
         )
