@@ -21,6 +21,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.7.1] - 2023-03-27
 ### Changed
 - renamed `fonts.FontStyle` to [`fonts.FontFace`](https://pyfpdf.github.io/fpdf2/fpdf/fonts.html#fpdf.fonts.FontFace), and `FPDF.use_font_style` to [`FPDF.use_font_face`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.FPDF.FPDF.use_font_face), to avoid confusions with `FPDF.font_style`
+- new translation of the tutorial in [বাংলা](https://pyfpdf.github.io/fpdf2/Tutorial-বাংলা.html) - thanks to @ssavi-ict
 
 ## [2.7.0] - 2023-03-27
 ### Added
