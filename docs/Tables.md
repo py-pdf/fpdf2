@@ -247,3 +247,15 @@ pdf.output('table_html.pdf')
 ```
 
 Note that `write_html` has [some limitations, notably regarding multi-lines cells](HTML.html#supported-html-features).
+
+## "Parsabilty" of the tables generated
+
+The PDF file format is not designed to embed structured tables.
+Hence, it can be tricky to extract tables data from PDF documents.
+
+In our tests suite, we ensure that several PDF-tables parsing Python libraries can successfully extract tables in documents generated with `fpdf2`.
+Namely, we test [camelot-py](https://camelot-py.readthedocs.io) & [tabula-py](https://tabula-py.readthedocs.io): [test/table/test_table_extraction.py](https://github.com/PyFPDF/fpdf2/blob/master/test/table/test_table_extraction.py).
+
+Based on those tests, if you want to ease table extraction from the documents you produce, we recommend the following guidelines:
+* avoid splitting tables on several pages
+* avoid the `INTERNAL` / `MINIMAL` / `SINGLE_TOP_LINE` borders layouts

@@ -1,5 +1,6 @@
 bandit
 black
+camelot-py[base]
 endesive
 pylint
 pytest
@@ -7,3 +8,4 @@ pytest-cov
 pytest-timeout
 qrcode
 semgrep
+tabula-py
