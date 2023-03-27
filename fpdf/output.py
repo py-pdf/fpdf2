@@ -580,6 +580,7 @@ class OutputProducer:
                 glyph_names = [
                     cmap[unicode] for unicode in uni_to_new_code_char if unicode in cmap
                 ]
+                print(glyph_names)
 
                 missing_glyphs = [
                     chr(unicode)

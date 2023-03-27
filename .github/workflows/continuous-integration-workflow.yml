@@ -24,7 +24,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies ⚙️
         if: matrix.platform == 'ubuntu-latest'
-        run: sudo apt-get install libjpeg-dev
+        run: sudo apt-get install ghostscript libjpeg-dev
       - name: Install qpdf ⚙️
         if: matrix.platform == 'ubuntu-latest' && matrix.python-version != '3.9'  # This allows us to run the unit tests WITHOUT qpdf in just one parallel execution
         run: sudo apt-get install qpdf
@@ -35,9 +35,9 @@ jobs:
       - name: Statically checking code 🔎
         if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: |
-            pylint fpdf test tutorial/tuto*.py
-            bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
-            semgrep scan --config auto --lang=py --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
+          pylint fpdf test tutorial/tuto*.py
+          bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
+          semgrep scan --config auto --lang=py --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
       - name: Ensure code has been autoformatted with black 🖌️
         if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: black --check .
@@ -59,7 +59,7 @@ jobs:
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
           # Executing all tests:
-          pytest -vv --final-memory-usage
+          pytest -vv --trace-memory-usage
       - name: Uploading coverage report to codecov.io ☑
         if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: bash <(curl -s https://codecov.io/bash)

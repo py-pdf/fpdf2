@@ -8,7 +8,7 @@ from fpdf import FPDF
 HERE = Path(__file__).resolve().parent
 
 
-@ensure_rss_memory_below(max_in_mib=175)
+@ensure_rss_memory_below(max_in_mib=7)
 @pytest.mark.timeout(40)
 def test_intense_image_rendering():
     png_file_paths = []

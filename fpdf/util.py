@@ -97,11 +97,11 @@ def get_mem_usage(prefix) -> str:
     # heap_size, stack_size = get_process_heap_and_stack_sizes()
     # objs_size_sum = get_gc_managed_objs_total_size()
     pillow = get_pillow_allocated_memory()
+    # malloc_stats = "Malloc stats: " + get_pymalloc_allocated_over_total_size()
+    malloc_stats = ""
     if is_tracing():
-        malloc_stats = get_tracemalloc_traced_memory()
-    else:
-        malloc_stats = get_pymalloc_allocated_over_total_size()
-    return f"{prefix:<40} Malloc stats: {malloc_stats} | Pillow: {pillow} | Process RSS: {rss}"
+        malloc_stats = "Malloc stats: " + get_tracemalloc_traced_memory()
+    return f"{prefix:<40} {malloc_stats} | Pillow: {pillow} | Process RSS: {rss}"
 
 
 def get_process_rss() -> str:
@@ -122,7 +122,7 @@ def get_process_rss_as_mib() -> Union[Number, None]:
                 / 1024
                 / 1024
             )
-    except FileNotFoundError:  # This file only exists under Linux
+    except FileNotFoundError:  # /proc files only exist under Linux
         return None
 
 
