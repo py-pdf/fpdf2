@@ -73,7 +73,7 @@ from .enums import (
     YPos,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
-from .fonts import CORE_FONTS_CHARWIDTHS, FontStyle
+from .fonts import CORE_FONTS_CHARWIDTHS, FontFace
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
 from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
@@ -143,7 +143,7 @@ class ImageInfo(dict):
         return f"ImageInfo({d})"
 
 
-class TitleStyle(FontStyle):
+class TitleStyle(FontFace):
     def __init__(
         self,
         font_family: Optional[str] = None,
@@ -4648,46 +4648,40 @@ class FPDF(GraphicsStateMixin):
             self.ln(title_style.t_margin)
         if title_style.l_margin:
             self.set_x(title_style.l_margin)
-        with self.use_font_style(title_style):
+        with self.use_font_face(title_style):
             yield
         if title_style.b_margin:
             self.ln(title_style.b_margin)
 
     @contextmanager
-    def use_font_style(self, font_style: FontStyle):
+    def use_font_face(self, font_face: FontFace):
         """
-        Sets the provided `fpdf.font.FontStyle` in a local context,
+        Sets the provided `fpdf.fonts.FontFace` in a local context,
         then restore font settings back to they were initially.
         This method must be used as a context manager using `with`:
 
-            with pdf.use_font_style(FontStyle(emphasis="BOLD", color=255, size_pt=42)):
+            with pdf.use_font_face(FontFace(emphasis="BOLD", color=255, size_pt=42)):
                 put_some_text()
         """
-        if not font_style:
+        if not font_face:
             yield
             return
         prev_font = (self.font_family, self.font_style, self.font_size_pt)
         self.set_font(
-            font_style.family or self.font_family,
-            font_style.emphasis.style
-            if font_style.emphasis is not None
+            font_face.family or self.font_family,
+            font_face.emphasis.style
+            if font_face.emphasis is not None
             else self.font_style,
-            font_style.size_pt or self.font_size_pt,
+            font_face.size_pt or self.font_size_pt,
         )
         prev_text_color = self.text_color
-        if font_style.color is not None and font_style.color != self.text_color:
-            self.set_text_color(font_style.color)
+        if font_face.color is not None and font_face.color != self.text_color:
+            self.set_text_color(font_face.color)
         prev_fill_color = self.fill_color
-        if (
-            font_style.fill_color is not None
-            and font_style.fill_color != self.fill_color
-        ):
-            self.set_fill_color(font_style.fill_color)
+        if font_face.fill_color is not None and font_face.fill_color != self.fill_color:
+            self.set_fill_color(font_face.fill_color)
         yield
-        if (
-            font_style.fill_color is not None
-            and font_style.fill_color != prev_fill_color
-        ):
+        if font_face.fill_color is not None and font_face.fill_color != prev_fill_color:
             self.set_fill_color(prev_fill_color)
         self.text_color = prev_text_color
         self.set_font(*prev_font)
@@ -4710,7 +4704,7 @@ class FPDF(GraphicsStateMixin):
             col_widths (int, tuple): optional. Sets column width. Can be a single number or a sequence of numbers
             first_row_as_headings (bool): optional, default to True. If False, the first row of the table
                 is not styled differently from the others
-            headings_style (fpdf.fonts.FontStyle): optional, default to bold.
+            headings_style (fpdf.fonts.FontFace): optional, default to bold.
                 Defines the visual style of the top headings row: size, color, emphasis...
             line_height (number): optional. Defines how much vertical space a line of text will occupy
             markdown (bool): optional, default to False. Enable markdown interpretation of cells textual content

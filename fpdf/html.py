@@ -10,7 +10,7 @@ import logging, warnings
 from html.parser import HTMLParser
 
 from .enums import TextEmphasis, XPos, YPos
-from .fonts import FontStyle
+from .fonts import FontFace
 from .table import Table
 
 import re
@@ -281,7 +281,7 @@ class HTML2FPDF(HTMLParser):
                 emphasis |= TextEmphasis.U
             style = None
             if bgcolor or emphasis:
-                style = FontStyle(emphasis=emphasis, fill_color=bgcolor)
+                style = FontFace(emphasis=emphasis, fill_color=bgcolor)
             self.table_row.cell(text=data, align=align, style=style, colspan=colspan)
             self.td_th["inserted"] = True
         elif self.table is not None:
@@ -588,7 +588,7 @@ class HTML2FPDF(HTMLParser):
                 bgcolor = color_as_decimal(
                     self.td_th.get("bgcolor", self.tr.get("bgcolor", None))
                 )
-                style = FontStyle(fill_color=bgcolor) if bgcolor else None
+                style = FontFace(fill_color=bgcolor) if bgcolor else None
                 self.table_row.cell(text="", style=style)
             self.td_th = None
         if tag == "font":

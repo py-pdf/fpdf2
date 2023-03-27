@@ -1,6 +1,6 @@
 import csv
 from fpdf import FPDF
-from fpdf.fonts import FontStyle
+from fpdf.fonts import FontFace
 
 
 with open("countries.txt", encoding="utf8") as csv_file:
@@ -21,7 +21,7 @@ with pdf.table() as table:
 pdf.add_page()
 pdf.set_draw_color(255, 0, 0)
 pdf.set_line_width(0.3)
-headings_style = FontStyle(emphasis="BOLD", color=255, fill_color=(255, 100, 0))
+headings_style = FontFace(emphasis="BOLD", color=255, fill_color=(255, 100, 0))
 with pdf.table(
     borders_layout="NO_HORIZONTAL_LINES",
     cell_fill_color=(224, 235, 255),

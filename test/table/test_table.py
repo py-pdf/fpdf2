@@ -4,7 +4,7 @@ import pytest
 
 from fpdf import FPDF
 from fpdf.drawing import DeviceRGB
-from fpdf.fonts import FontStyle
+from fpdf.fonts import FontFace
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
@@ -190,7 +190,7 @@ def test_table_with_headings_styled(tmp_path):
     pdf.set_font("Times", size=16)
     blue = DeviceRGB(r=0, g=0, b=1)
     grey = 128
-    headings_style = FontStyle(emphasis="ITALICS", color=blue, fill_color=grey)
+    headings_style = FontFace(emphasis="ITALICS", color=blue, fill_color=grey)
     with pdf.table(headings_style=headings_style) as table:
         for data_row in TABLE_DATA:
             row = table.row()
@@ -289,3 +289,21 @@ def test_table_align(tmp_path):
             for datum in data_row:
                 row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_align.pdf", tmp_path)
+
+
+def test_table_capture_font_settings(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    lightblue = (173, 216, 230)
+    with pdf.table() as table:
+        for data_row in TABLE_DATA:
+            with pdf.local_context(text_color=lightblue):
+                row = table.row()
+                for i, datum in enumerate(data_row):
+                    if i == 0:
+                        pdf.font_style = "I"
+                    else:
+                        pdf.font_style = ""
+                    row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_capture_font_settings.pdf", tmp_path)

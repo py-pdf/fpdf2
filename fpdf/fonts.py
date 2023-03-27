@@ -1,5 +1,6 @@
 """
-Definition of the character widths of all PDF standard fonts.
+Font-related classes & constants.
+Includes the definition of the character widths of all PDF standard fonts.
 """
 from dataclasses import dataclass, replace
 from typing import Optional, Union
@@ -9,7 +10,12 @@ from .enums import TextEmphasis
 
 
 @dataclass
-class FontStyle:
+class FontFace:
+    """
+    Represent basic font styling properties.
+    This is a subset of `fpdf.graphics_state.GraphicState` properties.
+    """
+
     family: Optional[str]
     emphasis: Optional[TextEmphasis]
     size_pt: Optional[int]

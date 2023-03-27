@@ -83,10 +83,11 @@ with pdf.table(first_row_as_headings=False) as table:y
 
 ## Style table headings
 ```python
+from fpdf.fonts import FontFace
 ...
 blue = (0, 0, 255)
 grey = (128, 128, 128)
-headings_style = FontStyle(emphasis="ITALICS", color=blue, fill_color=grey)
+headings_style = FontFace(emphasis="ITALICS", color=blue, fill_color=grey)
 with pdf.table(headings_styleheadings_style=headings_style) as table:
     ...
 ```

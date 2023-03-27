@@ -262,7 +262,7 @@ def timeout_after(seconds):
 
 def ensure_rss_memory_below(max_in_mib):
     """
-    Enure there is no unexpected / significant increase between
+    Ensure there is no unexpected / significant increase between
     the process RSS memory BEFORE executing the test, and AFTER.
     """
 

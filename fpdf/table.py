@@ -3,10 +3,10 @@ from numbers import Number
 from typing import List, Union
 
 from .enums import Align, TableBordersLayout, TableCellFillMode
-from .fonts import FontStyle
+from .fonts import FontFace
 
 
-DEFAULT_HEADINGS_STYLE = FontStyle(emphasis="BOLD")
+DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
 
 
 class Table:
@@ -45,7 +45,7 @@ class Table:
             col_widths (int, tuple): optional. Sets column width. Can be a single number or a sequence of numbers
             first_row_as_headings (bool): optional, default to True. If False, the first row of the table
                 is not styled differently from the others
-            headings_style (fpdf.fonts.FontStyle): optional, default to bold.
+            headings_style (fpdf.fonts.FontFace): optional, default to bold.
                 Defines the visual style of the top headings row: size, color, emphasis...
             line_height (number): optional. Defines how much vertical space a line of text will occupy
             markdown (bool): optional, default to False. Enable markdown interpretation of cells textual content
@@ -70,7 +70,7 @@ class Table:
 
     def row(self, cells=()):
         "Adds a row to the table. Yields a `Row` object."
-        row = Row()
+        row = Row(self._fpdf)
         self.rows.append(row)
         for cell in cells:
             row.cell(cell)
@@ -218,10 +218,12 @@ class Table:
         text_align = cell.align or self._text_align
         if not isinstance(text_align, (Align, str)):
             text_align = text_align[j]
-        style = cell.style
-        if not style and i == 0 and self._first_row_as_headings:
+        if i == 0 and self._first_row_as_headings:
             style = self._headings_style
+        else:
+            style = cell.style or row.style
         if lines_heights_only and style:
+            # Avoid to generate font-switching instructions: BT /F... Tf ET
             style = style.replace(emphasis=None)
         if style and style.fill_color:
             fill = True
@@ -240,9 +242,9 @@ class Table:
             style = (
                 style.replace(fill_color=self._cell_fill_color)
                 if style
-                else FontStyle(fill_color=self._cell_fill_color)
+                else FontFace(fill_color=self._cell_fill_color)
             )
-        with self._fpdf.use_font_style(style):
+        with self._fpdf.use_font_face(style):
             lines = self._fpdf.multi_cell(
                 w=col_width,
                 h=row_height,
@@ -298,8 +300,10 @@ class Table:
 class Row:
     "Object that `Table.row()` yields, used to build a row in a table"
 
-    def __init__(self):
+    def __init__(self, fpdf):
+        self._fpdf = fpdf
         self.cells = []
+        self.style = fpdf.font_face()
 
     @property
     def cols_count(self):
@@ -315,7 +319,7 @@ class Row:
             text (str): string content, can contain several lines.
                 In that case, the row height will grow proportionally.
             align (str, fpdf.enums.Align): optional text alignment.
-            style (fpdf.fonts.FontStyle): optional text style.
+            style (fpdf.fonts.FontFace): optional text style.
             img: optional. Either a string representing a file path to an image,
                 an URL to an image, an io.BytesIO, or a instance of `PIL.Image.Image`.
             img_fill_width (bool): optional, defaults to False. Indicates to render the image
@@ -327,6 +331,11 @@ class Row:
                 "fpdf2 currently does not support inserting text with an image in the same table cell."
                 "Pull Requests are welcome to implement this 😊"
             )
+        if not style:
+            # We capture the current font settings:
+            font_face = self._fpdf.font_face()
+            if font_face != self.style:
+                style = font_face
         cell = Cell(text, align, style, img, img_fill_width, colspan)
         self.cells.append(cell)
         return cell
@@ -337,7 +346,7 @@ class Cell:
     "Internal representation of a table cell"
     text: str
     align: Union[str, Align]
-    style: FontStyle
+    style: FontFace
     img: str
     img_fill_width: bool
     colspan: int
