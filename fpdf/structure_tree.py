@@ -28,7 +28,7 @@ class NumberTree(PDFObject):
     and names) be specified as direct objects
     """
 
-    __slots__ = ("_id", "nums")
+    __slots__ = ("_id", "nums")  # RAM usage optimization
 
     def __init__(self):
         super().__init__()
@@ -44,7 +44,7 @@ class NumberTree(PDFObject):
 
 
 class StructTreeRoot(PDFObject):
-    __slots__ = ("_id", "type", "parent_tree", "k")
+    __slots__ = ("_id", "type", "parent_tree", "k")  # RAM usage optimization
 
     def __init__(self):
         super().__init__()
@@ -56,9 +56,17 @@ class StructTreeRoot(PDFObject):
 
 
 class StructElem(PDFObject):
-    # The main reason to use __slots__ in PDFObject child classes is to save up some memory
-    # when very many instances of this class are created.
-    __slots__ = ("_id", "type", "s", "p", "k", "t", "alt", "pg", "_page_number")
+    __slots__ = (  # RAM usage optimization
+        "_id",
+        "type",
+        "s",
+        "p",
+        "k",
+        "t",
+        "alt",
+        "pg",
+        "_page_number",
+    )
 
     def __init__(
         self,

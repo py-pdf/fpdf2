@@ -13,9 +13,16 @@ from .enums import TextEmphasis
 class FontFace:
     """
     Represent basic font styling properties.
-    This is a subset of `fpdf.graphics_state.GraphicState` properties.
+    This is a subset of `fpdf.graphics_state.GraphicsStateMixin` properties.
     """
 
+    __slots__ = (  # RAM usage optimization
+        "family",
+        "emphasis",
+        "size_pt",
+        "color",
+        "fill_color",
+    )
     family: Optional[str]
     emphasis: Optional[TextEmphasis]
     size_pt: Optional[int]

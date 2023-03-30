@@ -344,6 +344,14 @@ class Row:
 @dataclass
 class Cell:
     "Internal representation of a table cell"
+    __slots__ = (  # RAM usage optimization
+        "text",
+        "align",
+        "style",
+        "img",
+        "img_fill_width",
+        "colspan",
+    )
     text: str
     align: Optional[Union[str, Align]]
     style: Optional[FontFace]

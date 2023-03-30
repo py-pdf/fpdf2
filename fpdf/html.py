@@ -1,4 +1,4 @@
-"HTML Renderer for FPDF.py"
+"HTML renderer"
 
 __author__ = "Mariano Reingart <reingart@gmail.com>"
 __copyright__ = "Copyright (C) 2010 Mariano Reingart"

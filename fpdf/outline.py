@@ -18,7 +18,7 @@ class OutlineSection(NamedTuple):
 
 
 class OutlineItemDictionary(PDFObject):
-    __slots__ = (
+    __slots__ = (  # RAM usage optimization
         "_id",
         "title",
         "parent",
@@ -50,7 +50,7 @@ class OutlineItemDictionary(PDFObject):
 
 
 class OutlineDictionary(PDFObject):
-    __slots__ = ("_id", "type", "first", "last", "count")
+    __slots__ = ("_id", "type", "first", "last", "count")  # RAM usage optimization
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
