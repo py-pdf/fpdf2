@@ -27,7 +27,7 @@ def test_unit_str(tmp_path, unit):
     """Test all of the unit strings"""
     pdf = FPDF(unit=unit)
     add_cell_page(pdf, unit)
-    assert_pdf_equal(pdf, HERE / "unit_{}.pdf".format(unit), tmp_path)
+    assert_pdf_equal(pdf, HERE / f"unit_{unit}.pdf", tmp_path)
 
 
 def test_unit_int(tmp_path):

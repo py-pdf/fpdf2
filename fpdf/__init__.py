@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import sys
 
 from .enums import Align, TextMode, XPos, YPos

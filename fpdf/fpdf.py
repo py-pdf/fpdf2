@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ****************************************************************************
 # * Software: FPDF for python                                                *
 # * License:  LGPL v3.0+                                                     *

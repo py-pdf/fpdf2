@@ -272,7 +272,7 @@ image_data=fig.to_image(format="png", engine="kaleido")
 image = io.BytesIO(image_data)
 pdf = FPDF()
 pdf.add_page()
-pdf.image(image,w=pdf.epw)	# Width of the image is equal to the width of the page
+pdf.image(image,w=pdf.epw)  # Width of the image is equal to the width of the page
 pdf.output("plotly.pdf")
 
 ```
