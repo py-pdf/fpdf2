@@ -20,6 +20,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Fixed
 - the SVG parser now accepts `<rect>` with `width` / `height` defined as percents
 
+### Added
+- documentation on how to generate Code128 barcodes using the `python-barcode` lib: [documentation section](https://pyfpdf.github.io/fpdf2/Barcodes.html#Code128)
+
 ## [2.7.1] - 2023-03-27
 ### Changed
 - renamed `fonts.FontStyle` to [`fonts.FontFace`](https://pyfpdf.github.io/fpdf2/fpdf/fonts.html#fpdf.fonts.FontFace), and `FPDF.use_font_style` to [`FPDF.use_font_face`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.FPDF.FPDF.use_font_face), to avoid confusions with `FPDF.font_style`
