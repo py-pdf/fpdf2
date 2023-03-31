@@ -842,6 +842,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "ssavi-ict",
+      "name": "Avik Sarkar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/14172268?v=4",
+      "profile": "https://sites.google.com/view/iamavik/",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,

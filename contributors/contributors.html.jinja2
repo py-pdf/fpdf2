@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en"><head>
-	<title>Map of {{ org_repo }} contributors</title>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map of {{ org_repo }} contributors</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
     <style>
@@ -29,7 +29,7 @@
         issues: {{ contributor.issues }},
     },{% endfor %}];
 
-	const cMap = L.map('contributors-map').setView([0, 0], 2);
+    const cMap = L.map('contributors-map').setView([0, 0], 2);
 
     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -38,7 +38,7 @@
         tileSize: 512,
         zoomOffset: -1,
         accessToken: ACCESS_TOKEN,
-	}).addTo(cMap);
+    }).addTo(cMap);
 
     const geocoder = L.Control.Geocoder.nominatim();
     function placeNextContributor() {

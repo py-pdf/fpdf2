@@ -334,10 +334,24 @@ class ShapeBuilder:
     def rect(cls, tag):
         """Convert an SVG <rect> into a PDF path."""
         # svg rect is wound clockwise
-        x = float(tag.attrib.get("x", 0))
-        y = float(tag.attrib.get("y", 0))
-        width = resolve_length(tag.attrib.get("width", 0))
-        height = resolve_length(tag.attrib.get("height", 0))
+        if "x" in tag.attrib:
+            x = resolve_length(tag.attrib["x"])
+        else:
+            x = 0
+        if "y" in tag.attrib:
+            y = resolve_length(tag.attrib["y"])
+        else:
+            y = 0
+        width = tag.attrib.get("width", "0")
+        if width.endswith("%"):
+            width = Percent(width[:-1])
+        else:
+            width = resolve_length(width)
+        height = tag.attrib.get("height", "0")
+        if height.endswith("%"):
+            height = Percent(height[:-1])
+        else:
+            height = resolve_length(height)
         rx = tag.attrib.get("rx", "auto")
         ry = tag.attrib.get("ry", "auto")
 

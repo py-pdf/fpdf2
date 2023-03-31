@@ -4,7 +4,6 @@ from pathlib import Path
 import pytest
 
 import fpdf
-from fpdf.errors import FPDFException
 from test.conftest import assert_pdf_equal
 
 

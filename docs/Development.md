@@ -83,34 +83,20 @@ checks can be disabled locally with `#pylint disable=XXX` code comments,
 or globally through the `.pylintrc` file.
 
 ## Pre-commit hook
-If you use a UNIX system, you can place the following shell code
-in `.git/hooks/pre-commit` in order to always invoke `black` & `pylint`
-before every commit:
+This project uses `git` **pre-commit hooks**: https://pre-commit.com
 
-```shell
-#!/bin/bash
-git_cached_names() { git diff --cached --name-only --diff-filter=ACM; }
-if git_cached_names | grep -q 'test.*\.py$' && grep -IRF generate=True $(git_cached_names | grep 'test.*\.py$'); then
-    echo '`generate=True` left remaining in a call to assert_pdf_equal'
-    exit 1
-fi
-modified_py_files=$(git_cached_names | grep '\.py$')
-modified_fpdf_files=$(git_cached_names | grep '^fpdf.*\.py$')
-# If any Python files were modified, format them:
-if [ -n "$modified_py_files" ]; then
-    if ! black --check $modified_py_files; then
-        black $modified_py_files
-        exit 1
-    fi
-    # If fpdf/ files were modified, lint them:
-    [[ $modified_fpdf_files == "" ]] || pylint $modified_fpdf_files
-fi
-```
+Those hooks are configured in [`.pre-commit-config.yaml`](https://github.com/PyFPDF/fpdf2/blob/master/.pre-commit-config.yaml).
 
-It will abort the commit if `pylint` found issues
-or `black` detect non-properly formatted code.
+They are intended to abort your commit if `pylint` found issues
+or `black` detected non-properly formatted code.
 In the later case though, it will auto-format your code
 and you will just have to run `git commit -a` again.
+
+To install pre-commit hooks on your computer, run:
+```
+pip install pre-commit
+pre-commit install
+```
 
 ## Testing
 

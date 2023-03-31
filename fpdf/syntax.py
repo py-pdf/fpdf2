@@ -1,4 +1,4 @@
-"""**PDF Syntax Helpers**
+"""Classes & functions that represent core elements of the PDF syntax
 
 Functions in this module take variable input and produce PDF Syntax features.
 
@@ -141,6 +141,8 @@ class PDFObject:
     * delay ID assignement
     * implement serializing
     """
+
+    # Note: several child classes use __slots__ to save up some memory
 
     # pylint: disable=redefined-builtin
     def __init__(self):
