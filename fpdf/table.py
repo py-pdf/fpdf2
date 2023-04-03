@@ -218,7 +218,7 @@ class Table:
         text_align = cell.align or self._text_align
         if not isinstance(text_align, (Align, str)):
             text_align = text_align[j]
-        if i == 0 and self._first_row_as_headings:
+        if i == 0 and self._first_row_as_headings and self._headings_style:
             style = self._headings_style
         else:
             style = cell.style or row.style

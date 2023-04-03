@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import pytest
@@ -306,7 +307,8 @@ def test_table_capture_font_settings(tmp_path):
     assert_pdf_equal(pdf, HERE / "table_capture_font_settings.pdf", tmp_path)
 
 
-def test_table_with_ttf_font(tmp_path):  # issue 749
+def test_table_with_ttf_font(caplog, tmp_path):  # issue 749
+    caplog.set_level(logging.ERROR)  # hides fonttool warnings
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font(fname=HERE / "../fonts/cmss12.ttf")

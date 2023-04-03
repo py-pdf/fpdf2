@@ -8,7 +8,7 @@ HERE = Path(__file__).resolve().parent
 
 
 @ensure_exec_time_below(seconds=40)
-@ensure_rss_memory_below(mib=4)
+@ensure_rss_memory_below(mib=1.5)
 def test_intense_image_rendering():
     png_file_paths = []
     for png_file_path in (HERE / "image/png_images/").glob("*.png"):

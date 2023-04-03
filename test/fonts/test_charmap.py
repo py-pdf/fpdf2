@@ -32,7 +32,7 @@ HERE = Path(__file__).resolve().parent
         )
     ],
 )
-@ensure_exec_time_below(seconds=10)
+@ensure_exec_time_below(seconds=10)  # TwitterEmoji.ttf is the longest to process
 def test_charmap_first_999_chars(caplog, font_filename, tmp_path):
     """
     Character Map Test
