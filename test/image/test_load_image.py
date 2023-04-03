@@ -6,7 +6,7 @@ import pytest
 
 import fpdf
 
-from test.conftest import assert_pdf_equal, time_execution
+from test.conftest import assert_pdf_equal, ensure_rss_memory_below, time_execution
 
 
 HERE = Path(__file__).resolve().parent
@@ -42,7 +42,7 @@ def test_load_invalid_base64_data():
 
 
 # ensure memory usage does not get too high - this value depends on Python version:
-# @ensure_rss_memory_below(mib=6)
+@ensure_rss_memory_below(mib=6)
 def test_share_images_cache(tmp_path):
     images_cache = {}
     icc_profiles_cache = {}
