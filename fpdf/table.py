@@ -3,6 +3,7 @@ from numbers import Number
 from typing import List, Optional, Union
 
 from .enums import Align, TableBordersLayout, TableCellFillMode
+from .errors import FPDFException
 from .fonts import FontFace
 
 
@@ -78,13 +79,32 @@ class Table:
 
     def render(self):
         "This is an internal method called by `fpdf.FPDF.table()` once the table is finished"
+        # Starting with some sanity checks:
         if self._width > self._fpdf.epw:
             raise ValueError(
-                f"Invalid value provided .width={self._width}: effective page width is {self._fpdf.epw}"
+                f"Invalid value provided width={self._width}: effective page width is {self._fpdf.epw}"
             )
         table_align = Align.coerce(self._align)
         if table_align == Align.J:
             raise ValueError("JUSTIFY is an invalid value for table .align")
+        if self._first_row_as_headings:
+            if not self._headings_style:
+                raise ValueError(
+                    "headings_style must be provided to FPDF.table() if first_row_as_headings=True"
+                )
+            emphasis = self._headings_style.emphasis
+            if emphasis is not None:
+                family = self._headings_style.family or self._fpdf.font_family
+                font_key = family + emphasis.style
+                if (
+                    font_key not in self._fpdf.core_fonts
+                    and font_key not in self._fpdf.fonts
+                ):
+                    # Raising a more explicit error than the one from set_font():
+                    raise FPDFException(
+                        f"Using font emphasis '{emphasis.style}' in table headings require the corresponding font style to be added using add_font()"
+                    )
+        # Defining table global horizontal position:
         prev_l_margin = self._fpdf.l_margin
         if table_align == Align.C:
             self._fpdf.l_margin = (self._fpdf.w - self._width) / 2
@@ -94,6 +114,7 @@ class Table:
             self._fpdf.x = self._fpdf.l_margin
         elif self._fpdf.x != self._fpdf.l_margin:
             self._fpdf.l_margin = self._fpdf.x
+        # Starting the actual rows & cells rendering:
         for i in range(len(self.rows)):
             with self._fpdf.offset_rendering() as test:
                 self._render_table_row(i)
@@ -103,6 +124,7 @@ class Table:
                 if self._first_row_as_headings:  # repeat headings on top:
                     self._render_table_row(0)
             self._render_table_row(i)
+        # Restoring altered FPDF settings:
         self._fpdf.l_margin = prev_l_margin
         self._fpdf.x = self._fpdf.l_margin
 
@@ -218,7 +240,7 @@ class Table:
         text_align = cell.align or self._text_align
         if not isinstance(text_align, (Align, str)):
             text_align = text_align[j]
-        if i == 0 and self._first_row_as_headings and self._headings_style:
+        if i == 0 and self._first_row_as_headings:
             style = self._headings_style
         else:
             style = cell.style or row.style

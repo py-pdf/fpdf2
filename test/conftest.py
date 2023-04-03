@@ -281,7 +281,7 @@ def ensure_exec_time_below(seconds, repeats=10):
     return actual_decorator
 
 
-def ensure_rss_memory_below(mib, repeats=10):
+def ensure_rss_memory_below(mib):
     """
     Ensure there is no unexpected / significant increase between
     the process RSS memory BEFORE executing the test, and AFTER.
@@ -289,7 +289,6 @@ def ensure_rss_memory_below(mib, repeats=10):
     Those checks are only enabled if $CHECK_RSS_MEMORY is set.
 
     This decorator replaced memunit, and is a better fit:
-    * because it computes an average, and is hence more stable
     * because it takes in consideration a difference of RSS values,
       not an absolute memory amount, and hence better checks
       the memory usage of a single test, with more isolation to other tests
@@ -298,6 +297,9 @@ def ensure_rss_memory_below(mib, repeats=10):
         + hanging MemTimer child process sometimes preventing PyTest finalization,
           blocking in multiprocessing.util._exit_function() :
           https://github.com/python/cpython/blob/3.11/Lib/multiprocessing/util.py#L355
+
+    Sadly, we cannot use the same approach as ensure_exec_time_below()
+    of using averages, as RSS measures are made on the same process and are not independent.
     """
 
     def actual_decorator(test_func):
@@ -306,19 +308,12 @@ def ensure_rss_memory_below(mib, repeats=10):
             if not os.environ.get("CHECK_RSS_MEMORY"):
                 test_func(*args, **kwargs)
                 return
-
-            cumulated_diff_rss_as_mib = 0
-            for _ in range(repeats):
-                start_rss_in_mib = get_process_rss_as_mib()
-                test_func(*args, **kwargs)
-                if not start_rss_in_mib:
-                    return  # not available under Windows
-                end_rss_in_mib = get_process_rss_as_mib()
-                cumulated_diff_rss_as_mib += end_rss_in_mib - start_rss_in_mib
-                gc.collect()
-            # Compute average:
-            avg_diff_rss_as_mib = cumulated_diff_rss_as_mib / repeats
-            assert avg_diff_rss_as_mib < mib
+            start_rss_in_mib = get_process_rss_as_mib()
+            test_func(*args, **kwargs)
+            if not start_rss_in_mib:
+                return  # not available under Windows
+            end_rss_in_mib = get_process_rss_as_mib()
+            assert end_rss_in_mib - start_rss_in_mib < mib
 
         return wrapper
 

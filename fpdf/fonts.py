@@ -24,7 +24,7 @@ class FontFace:
         "fill_color",
     )
     family: Optional[str]
-    emphasis: Optional[TextEmphasis]
+    emphasis: Optional[TextEmphasis]  # can be a combination: B | U
     size_pt: Optional[int]
     # Colors are single number grey scales or (red, green, blue) tuples:
     color: Optional[Union[int, tuple, DeviceGray, DeviceRGB]]

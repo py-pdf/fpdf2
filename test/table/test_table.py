@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF
+from fpdf import FPDF, FPDFException
 from fpdf.drawing import DeviceRGB
 from fpdf.fonts import FontFace
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
@@ -313,10 +313,41 @@ def test_table_with_ttf_font(caplog, tmp_path):  # issue 749
     pdf.add_page()
     pdf.add_font(fname=HERE / "../fonts/cmss12.ttf")
     pdf.set_font("cmss12", size=16)
-    default_style = FontFace()
-    with pdf.table(headings_style=default_style) as table:
+    with pdf.table(first_row_as_headings=False) as table:
         for data_row in TABLE_DATA:
             row = table.row()
             for datum in data_row:
                 row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_with_ttf_font.pdf", tmp_path)
+
+
+def test_table_with_ttf_font_and_headings(caplog, tmp_path):
+    caplog.set_level(logging.ERROR)  # hides fonttool warnings
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf")
+    pdf.add_font("Roboto", style="BI", fname=HERE / "../fonts/Roboto-BoldItalic.TTF")
+    pdf.set_font("Roboto", size=16)
+    with pdf.table(headings_style=FontFace(emphasis="IB")) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_with_ttf_font_and_headings.pdf", tmp_path)
+
+
+def test_table_with_ttf_font_and_headings_but_missing_bold_font():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Quicksand", fname=HERE / "../fonts/Quicksand-Regular.otf")
+    pdf.set_font("Quicksand", size=16)
+    with pytest.raises(FPDFException) as error:
+        with pdf.table() as table:
+            for data_row in TABLE_DATA:
+                row = table.row()
+                for datum in data_row:
+                    row.cell(datum)
+    assert (
+        str(error.value)
+        == "Using font emphasis 'B' in table headings require the corresponding font style to be added using add_font()"
+    )

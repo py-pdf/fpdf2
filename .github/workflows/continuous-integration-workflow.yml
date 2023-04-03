@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
-        platform: [ubuntu-latest] #, windows-latest]
+        platform: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout 🛎️
@@ -34,16 +34,16 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install --upgrade . -r test/requirements.txt -r docs/requirements.txt -r contributors/requirements.txt
       - name: Statically checking code 🔎
-        if: false  # TMP matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
+        if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: |
           pylint fpdf test tutorial/tuto*.py
           bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
           semgrep scan --config auto --lang=py --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
       - name: Ensure code has been autoformatted with black 🖌️
-        if: false  # TMP matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
+        if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: black --check .
       - name: Checking all PDF samples ☑
-        if: false  # TMP matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
+        if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: |
           # Using qpdf
           find . -name '*.pdf' | xargs -n 1 qpdf --check --password=fpdf2
@@ -63,9 +63,9 @@ jobs:
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
           # Executing all tests:
-          pytest -vv --trace-memory-usage test/image/test_oversized.py test/image/test_load_image.py test/test_perfs.py
+          pytest -vv --trace-memory-usage
       - name: Uploading coverage report to codecov.io ☑
-        if: false  # TMP matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
+        if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: bash <(curl -s https://codecov.io/bash)
       - name: Generating HTML documentation 🏗️
         # As build_contributors_html_page.py can hang due to GitHub rate-limiting,
