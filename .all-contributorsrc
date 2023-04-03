@@ -852,6 +852,15 @@
         "translation",
         "doc"
       ]
+    },
+    {
+      "login": "aeris07",
+      "name": "aeris07",
+      "avatar_url": "https://avatars.githubusercontent.com/u/129675592?v=4",
+      "profile": "https://github.com/aeris07",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
