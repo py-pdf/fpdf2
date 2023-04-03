@@ -1837,7 +1837,7 @@ class FPDF(GraphicsStateMixin):
 
         # a map unicode_char -> char_width
         char_widths = defaultdict(lambda: default_width)
-        font_cmap = font.getBestCmap().keys()
+        font_cmap = tuple(font.getBestCmap().keys())
         for char in font_cmap:
             # take glyph associated to char
             glyph = font.getBestCmap()[char]

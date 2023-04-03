@@ -301,9 +301,20 @@ def test_table_capture_font_settings(tmp_path):
             with pdf.local_context(text_color=lightblue):
                 row = table.row()
                 for i, datum in enumerate(data_row):
-                    if i == 0:
-                        pdf.font_style = "I"
-                    else:
-                        pdf.font_style = ""
+                    pdf.font_style = "I" if i == 0 else ""
                     row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_capture_font_settings.pdf", tmp_path)
+
+
+def test_table_with_ttf_font(tmp_path):  # issue 749
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(fname=HERE / "../fonts/cmss12.ttf")
+    pdf.set_font("cmss12", size=16)
+    default_style = FontFace()
+    with pdf.table(headings_style=default_style) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_with_ttf_font.pdf", tmp_path)

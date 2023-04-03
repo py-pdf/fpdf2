@@ -16,8 +16,11 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.7.2] - not released yet
+## [2.7.3] - Not released yet
+
+## [2.7.2] - 2023-04-03
 ### Fixed
+- custom fonts can be used with `FPDF.table()` without triggering a `TypeError: cannot pickle 'dict_keys' object` - thanks @aeris07 for the bug report
 - the SVG parser now accepts `<rect>` with `width` / `height` defined as percents
 
 ### Added
