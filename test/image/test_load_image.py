@@ -42,7 +42,7 @@ def test_load_invalid_base64_data():
 
 
 # ensure memory usage does not get too high - this value depends on Python version:
-@ensure_rss_memory_below(max_in_mib=6)
+@ensure_rss_memory_below(mib=4)
 def test_share_images_cache(tmp_path):
     images_cache = {}
     icc_profiles_cache = {}

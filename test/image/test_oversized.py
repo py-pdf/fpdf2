@@ -7,7 +7,7 @@ from test.conftest import assert_pdf_equal, ensure_rss_memory_below
 
 HERE = Path(__file__).resolve().parent
 IMAGE_PATH = HERE / "png_images/6c853ed9dacd5716bc54eb59cec30889.png"
-MAX_MEMORY_MB = 12  # memory usage depends on Python version
+MAX_MEMORY_MB = 8  # memory usage depends on Python version
 
 
 def test_oversized_images_warn(caplog):
@@ -18,7 +18,7 @@ def test_oversized_images_warn(caplog):
     assert "OVERSIZED" in caplog.text
 
 
-@ensure_rss_memory_below(max_in_mib=MAX_MEMORY_MB)
+@ensure_rss_memory_below(mib=MAX_MEMORY_MB)
 def test_oversized_images_downscale_simple(caplog, tmp_path):
     caplog.set_level(logging.DEBUG)
     pdf = fpdf.FPDF()
@@ -32,7 +32,7 @@ def test_oversized_images_downscale_simple(caplog, tmp_path):
     assert_pdf_equal(pdf, HERE / "oversized_images_downscale_simple.pdf", tmp_path)
 
 
-@ensure_rss_memory_below(max_in_mib=MAX_MEMORY_MB)
+@ensure_rss_memory_below(mib=MAX_MEMORY_MB)
 def test_oversized_images_downscale_twice(tmp_path):
     pdf = fpdf.FPDF()
     pdf.oversized_images = "DOWNSCALE"
@@ -45,7 +45,7 @@ def test_oversized_images_downscale_twice(tmp_path):
     assert_pdf_equal(pdf, HERE / "oversized_images_downscale_twice.pdf", tmp_path)
 
 
-@ensure_rss_memory_below(max_in_mib=MAX_MEMORY_MB)
+@ensure_rss_memory_below(mib=MAX_MEMORY_MB)
 def test_oversized_images_downscaled_and_highres():
     pdf = fpdf.FPDF()
     pdf.oversized_images = "DOWNSCALE"
@@ -56,7 +56,7 @@ def test_oversized_images_downscaled_and_highres():
     # Not calling assert_pdf_equal to avoid storing a large binary (1.4M) in this git repo
 
 
-@ensure_rss_memory_below(max_in_mib=MAX_MEMORY_MB)
+@ensure_rss_memory_below(mib=MAX_MEMORY_MB)
 def test_oversized_images_highres_and_downscaled():
     pdf = fpdf.FPDF()
     pdf.oversized_images = "DOWNSCALE"
@@ -67,7 +67,7 @@ def test_oversized_images_highres_and_downscaled():
     # Not calling assert_pdf_equal to avoid storing a large binary (1.4M) in this git repo
 
 
-@ensure_rss_memory_below(max_in_mib=MAX_MEMORY_MB)
+@ensure_rss_memory_below(mib=MAX_MEMORY_MB)
 def test_oversized_images_downscale_biggest_1st(tmp_path):
     pdf = fpdf.FPDF()
     pdf.oversized_images = "DOWNSCALE"
@@ -80,7 +80,7 @@ def test_oversized_images_downscale_biggest_1st(tmp_path):
     assert_pdf_equal(pdf, HERE / "oversized_images_downscale_biggest_1st.pdf", tmp_path)
 
 
-@ensure_rss_memory_below(max_in_mib=MAX_MEMORY_MB)
+@ensure_rss_memory_below(mib=MAX_MEMORY_MB)
 def test_oversized_images_downscale_biggest_2nd(caplog, tmp_path):
     caplog.set_level(logging.DEBUG)
     pdf = fpdf.FPDF()

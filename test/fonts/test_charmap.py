@@ -9,13 +9,14 @@ the range of the C 'short' data type (2 bytes, 0 - 65535):
   fpdf/ttfonts.py:671: UserWarning: cmap value too big/small:
 and this seems to be okay.
 """
+import logging
 from pathlib import Path
 
 from fontTools.ttLib import TTFont
 import pytest
 
 from fpdf import FPDF
-from test.conftest import assert_pdf_equal
+from test.conftest import assert_pdf_equal, ensure_exec_time_below
 
 HERE = Path(__file__).resolve().parent
 
@@ -31,12 +32,14 @@ HERE = Path(__file__).resolve().parent
         )
     ],
 )
-@pytest.mark.timeout(20)
-def test_charmap_first_999_chars(font_filename, tmp_path):
+@ensure_exec_time_below(seconds=10)
+def test_charmap_first_999_chars(caplog, font_filename, tmp_path):
     """
     Character Map Test
     from PyFPDF version 1.7.2: github.com/reingart/pyfpdf/commit/2eab310cfd866ce24947c3a9d850ebda7c6d515d
     """
+    caplog.set_level(logging.ERROR)  # hides fonttool warnings
+
     font_path = HERE / font_filename
     font_name = font_path.stem
 

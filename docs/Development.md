@@ -170,7 +170,8 @@ Also (optionnal, once every year), update `contributors/contributors-map-small.p
 4. check that [the GitHub Actions succeed](https://github.com/PyFPDF/fpdf2/actions), and that [a new release appears on Pypi](https://pypi.org/project/fpdf2/#history)
 5. perform a [GitHub release](https://github.com/PyFPDF/fpdf2/releases), taking the description from the `CHANGELOG.md`.
 It will create a new `git` tag.
-6. Announce the release on [r/pythonnews](https://www.reddit.com/r/pythonnews/)
+6. Announce the release on [r/pythonnews](https://www.reddit.com/r/pythonnews/),
+   and add an announcement to the documentation website: [docs/overrides/main.html](https://github.com/PyFPDF/fpdf2/blob/master/docs/overrides/main.html)
 
 ## Documentation
 The standalone documentation is in the `docs` subfolder,

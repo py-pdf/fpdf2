@@ -281,7 +281,7 @@ def test_html_headings_line_height(tmp_path):  # issue-223
     <h4>H4   {long_title*3}</h4>
     <h5>H5   {long_title*3}</h5>
     <h6>H6   {long_title*4}</h6>
-    <p>P   {long_title*5}<p>"""
+    <p>P   {long_title*5}</p>"""
     )
     assert_pdf_equal(pdf, HERE / "html_headings_line_height.pdf", tmp_path)
 
@@ -382,6 +382,7 @@ and have tabs    and    spaces.
 <p>Testing unicode nbsp \u00a0\u00a0\u00a0\u00a0,
 and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.<br>
     \u00a0&nbsp;&nbsp;Testing leading nbsp
+</p>
 </body>
 """
     )

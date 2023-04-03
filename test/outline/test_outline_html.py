@@ -22,23 +22,23 @@ def test_html_toc(tmp_path):
             <section><h3>Subtitle 1.1</h3>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit,
             sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            <section>
+            </section>
             <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
             <section><h3>Subtitle 1.2</h3><br>
             Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            <section>
-        <section>
+            </section>
+        </section>
         <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
         <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
         <section><h2>Subtitle 2</h2><br>
             <section><h3>Subtitle 2.1</h3><br>
             Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-            <section>
+            </section>
             <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
             <section><h3>Subtitle 2.2</h3><br>
             Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-            <section>
-        <section>
+            </section>
+        </section>
         """
     )
     assert_pdf_equal(pdf, HERE / "html_toc.pdf", tmp_path)
@@ -269,6 +269,6 @@ def test_custom_HTML2FPDF(tmp_path):  # issue 240 & 670
         <h4>Level 4</h4>
         <h5>Level 5</h5>
         <h6>Level 6</h6>
-        <p>paragraph<p>"""
+        <p>paragraph</p>"""
         )
     assert_pdf_equal(pdf, HERE / "custom_HTML2FPDF.pdf", tmp_path)

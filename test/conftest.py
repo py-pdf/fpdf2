@@ -2,13 +2,14 @@
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from time import perf_counter
+from timeit import timeit
 from types import SimpleNamespace
 import functools
 import gc
 import hashlib
 import linecache
+import os
 import pathlib
-import signal
 import shutil
 import sys
 import tracemalloc
@@ -246,35 +247,78 @@ def time_execution():
     ctx.seconds = perf_counter() - start
 
 
-@contextmanager
-def timeout_after(seconds):
-    def handler(_, __):
-        pytest.fail(f"Test duration >{seconds}s")
-
-    signal.signal(signal.SIGALRM, handler)
-    signal.setitimer(signal.ITIMER_REAL, seconds)
-    try:
-        yield
-    finally:
-        signal.setitimer(signal.ITIMER_REAL, 0)
-        signal.signal(signal.SIGALRM, signal.SIG_DFL)
-
-
-def ensure_rss_memory_below(max_in_mib):
+def ensure_exec_time_below(seconds, repeats=10):
     """
-    Ensure there is no unexpected / significant increase between
-    the process RSS memory BEFORE executing the test, and AFTER.
+    Unit test decorator using the standard timeit module
+    to check that average duration of the target test
+    does not get over the limit provided.
+
+    Those checks are only enabled if $CHECK_EXEC_TIME is set.
+
+    This decorator replaced pytest-timeout, and is a better fit:
+    * because it allows to know how much above the threshold the test ran
+    * because it does not cause a global PyTest interruption
+    * because it computes an average, and is hence more stable
     """
 
     def actual_decorator(test_func):
         @functools.wraps(test_func)
         def wrapper(*args, **kwargs):
-            start_rss_in_mib = get_process_rss_as_mib()
-            test_func(*args, **kwargs)
-            if not start_rss_in_mib:
-                return  # not available under Windows
-            end_rss_in_mib = get_process_rss_as_mib()
-            assert (end_rss_in_mib - start_rss_in_mib) < max_in_mib
+            def func_with_args():
+                test_func(*args, **kwargs)
+
+            if not os.environ.get("CHECK_EXEC_TIME"):
+                func_with_args()
+                return
+
+            total_elapsed_in_secs = timeit(func_with_args, number=repeats)
+            # Compute average:
+            avg_duration_in_secs = total_elapsed_in_secs / repeats
+            assert avg_duration_in_secs < seconds
+
+        return wrapper
+
+    return actual_decorator
+
+
+def ensure_rss_memory_below(mib, repeats=10):
+    """
+    Ensure there is no unexpected / significant increase between
+    the process RSS memory BEFORE executing the test, and AFTER.
+
+    Those checks are only enabled if $CHECK_RSS_MEMORY is set.
+
+    This decorator replaced memunit, and is a better fit:
+    * because it computes an average, and is hence more stable
+    * because it takes in consideration a difference of RSS values,
+      not an absolute memory amount, and hence better checks
+      the memory usage of a single test, with more isolation to other tests
+    * because it does not suffer from some memory_profiler issues:
+        + https://github.com/PyFPDF/fpdf2/issues/641#issuecomment-1465730884
+        + hanging MemTimer child process sometimes preventing PyTest finalization,
+          blocking in multiprocessing.util._exit_function() :
+          https://github.com/python/cpython/blob/3.11/Lib/multiprocessing/util.py#L355
+    """
+
+    def actual_decorator(test_func):
+        @functools.wraps(test_func)
+        def wrapper(*args, **kwargs):
+            if not os.environ.get("CHECK_RSS_MEMORY"):
+                test_func(*args, **kwargs)
+                return
+
+            cumulated_diff_rss_as_mib = 0
+            for _ in range(repeats):
+                start_rss_in_mib = get_process_rss_as_mib()
+                test_func(*args, **kwargs)
+                if not start_rss_in_mib:
+                    return  # not available under Windows
+                end_rss_in_mib = get_process_rss_as_mib()
+                cumulated_diff_rss_as_mib += end_rss_in_mib - start_rss_in_mib
+                gc.collect()
+            # Compute average:
+            avg_diff_rss_as_mib = cumulated_diff_rss_as_mib / repeats
+            assert avg_diff_rss_as_mib < mib
 
         return wrapper
 

@@ -9,7 +9,6 @@ pre-commit
 pylint
 pytest
 pytest-cov
-pytest-timeout
 qrcode
 semgrep
 tabula-py

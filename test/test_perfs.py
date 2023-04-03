@@ -1,15 +1,14 @@
 from pathlib import Path
 
-import pytest
-from test.conftest import ensure_rss_memory_below
+from test.conftest import ensure_exec_time_below, ensure_rss_memory_below
 
 from fpdf import FPDF
 
 HERE = Path(__file__).resolve().parent
 
 
-@ensure_rss_memory_below(max_in_mib=8)
-@pytest.mark.timeout(40)
+@ensure_exec_time_below(seconds=40)
+@ensure_rss_memory_below(mib=4)
 def test_intense_image_rendering():
     png_file_paths = []
     for png_file_path in (HERE / "image/png_images/").glob("*.png"):

@@ -26,7 +26,8 @@ jobs:
         if: matrix.platform == 'ubuntu-latest'
         run: sudo apt-get install ghostscript libjpeg-dev
       - name: Install qpdf ⚙️
-        if: matrix.platform == 'ubuntu-latest' && matrix.python-version != '3.9'  # This allows us to run the unit tests WITHOUT qpdf in just one parallel execution
+        if: matrix.platform == 'ubuntu-latest' && matrix.python-version != '3.9'
+        # We run the unit tests WITHOUT qpdf for a single parallel execution / Python version:
         run: sudo apt-get install qpdf
       - name: Install Python dependencies ⚙️
         run: |
@@ -55,6 +56,9 @@ jobs:
           find . -name '*.pdf' | xargs -n 1 scripts/verapdf.py
           scripts/verapdf.py  # printing aggregated report
       - name: Running tests ☑
+        env:
+          CHECK_EXEC_TIME: ${{ matrix.python-version == '3.9' && 'test-enabled' || '' }}
+          CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.11' && 'test-enabled' || '' }}
         run: |
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
