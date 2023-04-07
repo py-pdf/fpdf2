@@ -70,7 +70,7 @@ def get_img_info(img, image_filter="AUTO", dims=None):
     if img.mode in ("P", "PA") and image_filter != "FlateDecode":
         img = img.convert("RGBA")
 
-    if img.mode not in ("1", "L", "LA", "RGB", "RGBA", "P", "PA"):
+    if img.mode not in ("1", "L", "LA", "RGB", "RGBA", "P", "PA", "CMYK"):
         img = img.convert("RGBA")
 
     w, h = img.size
@@ -114,6 +114,9 @@ def get_img_info(img, image_filter="AUTO", dims=None):
             "JPXDecode",
         ):
             info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
+    elif img.mode == "CMYK":
+        dpn, bpc, colspace = 4, 8, "CMYK"
+        info["data"] = _to_data(img, image_filter)
     elif img.mode == "RGB":
         dpn, bpc, colspace = 3, 8, "DeviceRGB"
         info["data"] = _to_data(img, image_filter)
@@ -150,6 +153,9 @@ def _to_data(img, image_filter, **kwargs):
 
     if img.mode == "LA":
         img = img.convert("L")
+
+    if img.mode == "CMYK":
+        img = img.convert("CMYK")
 
     if img.mode == "RGBA":
         img = img.convert("RGB")
