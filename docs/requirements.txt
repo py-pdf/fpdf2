@@ -7,7 +7,3 @@ mknotebooks
 # mkdocs-macros-plugin
 # mkdocs-redirects
 pdoc3
-# We lock weasyprint version to avoid the following error:
-# TypeError: 'float' object is not iterable
-# https://github.com/PyFPDF/fpdf2/runs/7263726951
-weasyprint==55.0

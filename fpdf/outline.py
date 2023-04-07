@@ -18,7 +18,7 @@ class OutlineSection(NamedTuple):
 
 
 class OutlineItemDictionary(PDFObject):
-    __slots__ = (
+    __slots__ = (  # RAM usage optimization
         "_id",
         "title",
         "parent",
@@ -32,10 +32,13 @@ class OutlineItemDictionary(PDFObject):
     )
 
     def __init__(
-        self, title: str, dest: str = None, struct_elem: StructElem = None, **kwargs
+        self,
+        title: str,
+        dest: Destination = None,
+        struct_elem: StructElem = None,
     ):
-        super().__init__(**kwargs)
-        self.title = PDFString(title)
+        super().__init__()
+        self.title = PDFString(title, encrypt=True)
         self.parent = None
         self.prev = None
         self.next = None
@@ -47,7 +50,7 @@ class OutlineItemDictionary(PDFObject):
 
 
 class OutlineDictionary(PDFObject):
-    __slots__ = ("_id", "type", "first", "last", "count")
+    __slots__ = ("_id", "type", "first", "last", "count")  # RAM usage optimization
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -57,40 +60,22 @@ class OutlineDictionary(PDFObject):
         self.count = 0
 
 
-def serialize_outline(sections, first_object_id=1, output_producer=None):
+def build_outline_objs(sections):
     """
-    Assign object IDs & output the whole outline hierarchy serialized
-    as a multi-lines string in PDF syntax, ready to be embedded.
-
-    Objects ID assignement will start with the provided first ID,
-    that will be assigned to the Outlines object.
-    Apart from that, assignement is made in an arbitrary order.
-    All PDF objects must have assigned IDs before proceeding to output
-    generation though, as they have many references to each others.
-
-    If a OutputProducer instance provided, its `_newobj` & `_out` methods will be called
-    and this method output will be meaningless.
-
-    Args:
-        sections (sequence): list of OutlineSection
+    Build PDF objects constitutive of the documents outline,
+    and yield them one by one, starting with the outline dictionary
     """
-    outline, outline_items = build_outline(sections, first_object_id, output_producer)
-    return outline_as_str(outline, outline_items, output_producer)
-
-
-def build_outline(sections, first_object_id, output_producer):
-    outline = OutlineDictionary(id=first_object_id)
-    n = first_object_id + 1
+    outline = OutlineDictionary()
+    yield outline
     outline_items = []
     last_outline_item_per_level = {}
     for section in sections:
         outline_item = OutlineItemDictionary(
             title=section.name,
-            dest=section.dest.as_str(output_producer.fpdf if output_producer else None),
+            dest=section.dest,
             struct_elem=section.struct_elem,
-            id=n,
         )
-        n += 1
+        yield outline_item
         if section.level in last_outline_item_per_level:
             last_outline_item_at_level = last_outline_item_per_level[section.level]
             last_outline_item_at_level.next = outline_item
@@ -111,12 +96,4 @@ def build_outline(sections, first_object_id, output_producer):
             for level, oitem in last_outline_item_per_level.items()
             if level <= section.level
         }
-    return outline, outline_items
-
-
-def outline_as_str(outline, outline_items, output_producer):
-    output = []
-    output.append(outline.serialize(output_producer))
-    for outline_item in outline_items:
-        output.append(outline_item.serialize(output_producer))
-    return "\n".join(output)
+    return [outline] + outline_items

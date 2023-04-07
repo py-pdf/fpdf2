@@ -113,7 +113,11 @@ def test_repeated_calls_to_output(tmp_path):
 def test_unsupported_image_filter_error():
     image_filter = "N/A"
     with pytest.raises(FPDFException) as error:
-        get_img_info(img=Image.open(HERE / "flowers.png"), image_filter=image_filter)
+        get_img_info(
+            HERE / "flowers.png",
+            Image.open(HERE / "flowers.png"),
+            image_filter=image_filter,
+        )
     assert str(error.value) == f'Unsupported image filter: "{image_filter}"'
 
 
@@ -134,3 +138,16 @@ def test_invalid_page_background():
     msg = f"""background must be of type str, io.BytesIO, PIL.Image.Image, drawing.DeviceRGB, tuple or None
         got: {type(i)}"""
     assert str(error.value) == msg
+
+
+def test_intantiating_fpdf_module():  # issue 683
+    # pylint: disable=import-outside-toplevel,not-callable,redefined-outer-name
+    from fpdf import fpdf
+
+    with pytest.raises(TypeError) as error:
+        fpdf()
+    assert str(error.value) == (
+        "You tried to instantied the fpdf module."
+        " You probably want to import the FPDF class instead:"
+        " from fpdf import FPDF"
+    )

@@ -11,7 +11,7 @@ Here is an example using the [DejaVu](https://dejavu-fonts.github.io) font:
 import fpdf
 
 pdf = fpdf.FPDF()
-pdf.add_font("DejaVuSans", fname="DejaVuSans.ttf")
+pdf.add_font(fname="DejaVuSans.ttf")
 pdf.set_font("DejaVuSans", size=64)
 pdf.add_page()
 pdf.multi_cell(0, txt="".join([chr(0x1F600 + x) for x in range(68)]))
@@ -21,6 +21,8 @@ pdf.output("fonts_emoji_glyph.pdf")
 ```
 
 This code produces this PDF file: [fonts_emoji_glyph.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/fonts/fonts_emoji_glyph.pdf)
+
+Another font supporting emojis is: [twemoji](https://github.com/13rac1/twemoji-color-font)
 
 ## Symbols ##
 
@@ -68,3 +70,7 @@ This results in:
 
 The following table will help you find which characters map to which dingbats: [zapfdingbats.pdf](zapfdingbats.pdf).
 For reference, it was built using this script: [zapfdingbats.py](zapfdingbats.py).
+
+## Fallback fonts ##
+
+If you need to mix special characters and emojis within normal text, it is possible to specify alternative fonts for FPDF to use as fallback fonts. See an exemple of use [Here](Unicode.md#fallback-fonts)

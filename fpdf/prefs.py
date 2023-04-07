@@ -52,6 +52,10 @@ class ViewerPreferences:
     def non_full_screen_page_mode(self, page_mode):
         self._non_full_screen_page_mode = PageMode.coerce(page_mode)
 
-    def serialize(self):
-        obj_dict = build_obj_dict({key: getattr(self, key) for key in dir(self)})
+    def serialize(self, _security_handler=None, _obj_id=None):
+        obj_dict = build_obj_dict(
+            {key: getattr(self, key) for key in dir(self)},
+            _security_handler=_security_handler,
+            _obj_id=_obj_id,
+        )
         return create_dictionary_string(obj_dict)

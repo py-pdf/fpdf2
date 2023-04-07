@@ -74,11 +74,12 @@ pdf.output("html.pdf")
 ## Supported HTML features
 
 * `<h1>` to `<h8>`: headings (and `align` attribute)
-* `<p>`: paragraphs (and `align` attribute)
+* `<p>`: paragraphs (and `align`, `line-height` attributes)
 * `<b>`, `<i>`, `<u>`: bold, italic, underline
 * `<font>`: (and `face`, `size`, `color` attributes)
 * `<center>` for aligning
 * `<a>`: links (and `href` attribute)
+* `<pre>` & `<code>` tags
 * `<img>`: images (and `src`, `width`, `height` attributes)
 * `<ol>`, `<ul>`, `<li>`: ordered, unordered and list items (can be nested)
 * `<dl>`, `<dt>`, `<dd>`: description list, title, details (can be nested)

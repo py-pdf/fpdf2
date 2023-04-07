@@ -1,16 +1,56 @@
 """
-Definition of the character widths of all PDF standard fonts.
+Font-related classes & constants.
+Includes the definition of the character widths of all PDF standard fonts.
 """
+from dataclasses import dataclass, replace
+from typing import Optional, Union
 
-courier = {chr(i): 600 for i in range(256)}
-fpdf_charwidths = {
-    "courier": courier,
-    "courierB": courier,
-    "courierI": courier,
-    "courierBI": courier,
+from .drawing import DeviceGray, DeviceRGB
+from .enums import TextEmphasis
+
+
+@dataclass
+class FontFace:
+    """
+    Represent basic font styling properties.
+    This is a subset of `fpdf.graphics_state.GraphicsStateMixin` properties.
+    """
+
+    __slots__ = (  # RAM usage optimization
+        "family",
+        "emphasis",
+        "size_pt",
+        "color",
+        "fill_color",
+    )
+    family: Optional[str]
+    emphasis: Optional[TextEmphasis]  # can be a combination: B | U
+    size_pt: Optional[int]
+    # Colors are single number grey scales or (red, green, blue) tuples:
+    color: Optional[Union[int, tuple, DeviceGray, DeviceRGB]]
+    fill_color: Optional[Union[int, tuple, DeviceGray, DeviceRGB]]
+
+    def __init__(
+        self, family=None, emphasis=None, size_pt=None, color=None, fill_color=None
+    ):
+        self.family = family
+        self.emphasis = TextEmphasis.coerce(emphasis) if emphasis else None
+        self.size_pt = size_pt
+        self.color = color
+        self.fill_color = fill_color
+
+    replace = replace
+
+
+COURIER_FONT = {chr(i): 600 for i in range(256)}
+CORE_FONTS_CHARWIDTHS = {
+    "courier": COURIER_FONT,
+    "courierB": COURIER_FONT,
+    "courierI": COURIER_FONT,
+    "courierBI": COURIER_FONT,
 }
 
-fpdf_charwidths["helvetica"] = {
+CORE_FONTS_CHARWIDTHS["helvetica"] = {
     "\x00": 278,
     "\x01": 278,
     "\x02": 278,
@@ -269,7 +309,7 @@ fpdf_charwidths["helvetica"] = {
     "\xff": 500,
 }
 
-fpdf_charwidths["helveticaB"] = {
+CORE_FONTS_CHARWIDTHS["helveticaB"] = {
     "\x00": 278,
     "\x01": 278,
     "\x02": 278,
@@ -528,7 +568,7 @@ fpdf_charwidths["helveticaB"] = {
     "\xff": 556,
 }
 
-fpdf_charwidths["helveticaBI"] = {
+CORE_FONTS_CHARWIDTHS["helveticaBI"] = {
     "\x00": 278,
     "\x01": 278,
     "\x02": 278,
@@ -787,7 +827,7 @@ fpdf_charwidths["helveticaBI"] = {
     "\xff": 556,
 }
 
-fpdf_charwidths["helveticaI"] = {
+CORE_FONTS_CHARWIDTHS["helveticaI"] = {
     "\x00": 278,
     "\x01": 278,
     "\x02": 278,
@@ -1046,7 +1086,7 @@ fpdf_charwidths["helveticaI"] = {
     "\xff": 500,
 }
 
-fpdf_charwidths["symbol"] = {
+CORE_FONTS_CHARWIDTHS["symbol"] = {
     "\x00": 250,
     "\x01": 250,
     "\x02": 250,
@@ -1305,7 +1345,7 @@ fpdf_charwidths["symbol"] = {
     "\xff": 0,
 }
 
-fpdf_charwidths["times"] = {
+CORE_FONTS_CHARWIDTHS["times"] = {
     "\x00": 250,
     "\x01": 250,
     "\x02": 250,
@@ -1564,7 +1604,7 @@ fpdf_charwidths["times"] = {
     "\xff": 500,
 }
 
-fpdf_charwidths["timesB"] = {
+CORE_FONTS_CHARWIDTHS["timesB"] = {
     "\x00": 250,
     "\x01": 250,
     "\x02": 250,
@@ -1823,7 +1863,7 @@ fpdf_charwidths["timesB"] = {
     "\xff": 500,
 }
 
-fpdf_charwidths["timesBI"] = {
+CORE_FONTS_CHARWIDTHS["timesBI"] = {
     "\x00": 250,
     "\x01": 250,
     "\x02": 250,
@@ -2082,7 +2122,7 @@ fpdf_charwidths["timesBI"] = {
     "\xff": 444,
 }
 
-fpdf_charwidths["timesI"] = {
+CORE_FONTS_CHARWIDTHS["timesI"] = {
     "\x00": 250,
     "\x01": 250,
     "\x02": 250,
@@ -2341,7 +2381,7 @@ fpdf_charwidths["timesI"] = {
     "\xff": 444,
 }
 
-fpdf_charwidths["zapfdingbats"] = {
+CORE_FONTS_CHARWIDTHS["zapfdingbats"] = {
     "\x00": 0,
     "\x01": 0,
     "\x02": 0,

@@ -206,20 +206,37 @@ def test_multi_cell_table_with_automatic_page_break(tmp_path):  # issue 120
                 )
             pdf.ln(line_height)
     assert_pdf_equal(
-        pdf, HERE / "test_multi_cell_table_with_automatic_page_break.pdf", tmp_path
+        pdf, HERE / "multi_cell_table_with_automatic_page_break.pdf", tmp_path
     )
+
+
+def test_multi_cell_table_with_max_line_height(tmp_path):  # issue 589
+    """
+    When using multi_cell() with max_line_height to render multiline text,
+    the last line should be rendered like all the others
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica")
+    text = (
+        "Discard the water and serve the boiled gaozis."
+        " Tip: If you love spicy dishes, add a bit of our Red Silk Chili"
+        " (not included) with the gaozis"
+    )
+    pdf.multi_cell(w=120, h=50, txt=text, max_line_height=6, border=True)
+    pdf.ln()
+    pdf.multi_cell(w=120, h=18, txt=text, max_line_height=6, border=True)
+    assert_pdf_equal(pdf, HERE / "multi_cell_table_with_max_line_height.pdf", tmp_path)
 
 
 def test_multi_cell_justified_with_unicode_font(tmp_path):  # issue 118
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("DejaVu", "", HERE / "../fonts/DejaVuSans.ttf")
-    pdf.set_font("DejaVu", "", 14)
+    pdf.add_font(fname=FONTS_DIR / "DejaVuSans.ttf")
+    pdf.set_font("DejaVuSans", size=14)
     text = 'Justified line containing "()" that is long enough to trigger wrapping and a line jump'
     pdf.multi_cell(w=0, h=8, txt=text, new_x="LMARGIN", new_y="NEXT")
-    assert_pdf_equal(
-        pdf, HERE / "test_multi_cell_justified_with_unicode_font.pdf", tmp_path
-    )
+    assert_pdf_equal(pdf, HERE / "multi_cell_justified_with_unicode_font.pdf", tmp_path)
 
 
 def test_multi_cell_split_only():  # discussion 314
@@ -263,8 +280,8 @@ def test_multicell_newpos_badinput():
 def test_multi_cell_j_paragraphs(tmp_path):  # issue 364
     pdf = FPDF(format="A5")
     pdf.add_page()
-    pdf.add_font("DejaVu", "", HERE / "../fonts/DejaVuSans.ttf")
-    pdf.set_font("DejaVu", "", 14)
+    pdf.add_font(fname=FONTS_DIR / "DejaVuSans.ttf")
+    pdf.set_font("DejaVuSans", size=14)
     pdf.set_margins(34, 55, 34)
     pdf.set_auto_page_break(auto=True, margin=55)
     # pylint: disable=line-too-long
@@ -351,8 +368,8 @@ def test_multi_cell_font_stretching(tmp_path):  # issue #478
     pdf.ln()
     # unicode font
     pdf.set_stretching(100)
-    pdf.add_font("Droid", fname=FONTS_DIR / "DroidSansFallback.ttf")
-    pdf.set_font("Droid", "", 8)
+    pdf.add_font(fname=FONTS_DIR / "DroidSansFallback.ttf")
+    pdf.set_font("DroidSansFallback", size=8)
     pdf.set_fill_color(255, 255, 0)
     pdf.multi_cell(w=50, txt=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
     pdf.ln()
@@ -374,11 +391,30 @@ def test_multi_cell_char_spacing(tmp_path):  # issue #489
     pdf.ln()
     # unicode font
     pdf.set_char_spacing(0)
-    pdf.add_font("Droid", fname=FONTS_DIR / "DroidSansFallback.ttf")
-    pdf.set_font("Droid", "", 8)
+    pdf.add_font(fname=FONTS_DIR / "DroidSansFallback.ttf")
+    pdf.set_font("DroidSansFallback", size=8)
     pdf.set_fill_color(255, 255, 0)
     pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
     pdf.ln()
     pdf.set_char_spacing(10)
     pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
     assert_pdf_equal(pdf, HERE / "multi_cell_char_spacing.pdf", tmp_path)
+
+
+def test_multi_cell_char_wrap(tmp_path):  # issue #649
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_fill_color(255, 255, 0)
+    pdf.multi_cell(w=50, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+    pdf.ln()
+    pdf.multi_cell(
+        w=50, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True, wrapmode="CHAR"
+    )
+    pdf.ln()
+    pdf.set_font("Courier", "", 10)
+    txt = "     " + "abcdefghijklmnopqrstuvwxyz" * 3
+    pdf.multi_cell(w=50, txt=txt, new_x="LEFT", fill=True, align="L")
+    pdf.ln()
+    pdf.multi_cell(w=50, txt=txt, new_x="LEFT", fill=True, align="L", wrapmode="CHAR")
+    assert_pdf_equal(pdf, HERE / "multi_cell_char_wrap.pdf", tmp_path)

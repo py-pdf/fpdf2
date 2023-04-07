@@ -1,5 +1,14 @@
 {% extends "base.html" %}
 
+{% block announce %}
+<center>
+  <a href="https://github.com/PyFPDF/fpdf2/discussions/752">
+    Planning to move <code>fpdf2</code> to the <b>@py-fpdf</b> GitHub org:
+    read more by clicking there
+  </a>
+</center>
+{% endblock %}
+
 {% block extrahead %}
   {% set title = config.site_name %}
   {% if page and page.meta and page.meta.title %}

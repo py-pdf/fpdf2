@@ -179,9 +179,7 @@ in order to enable basic Markdown-like styling: `**bold**, __italics__, --underl
 
 Bold & italics require using dedicated fonts for each style.
 
-For the standard fonts (Courier, Helvetica & Times), those dedicated fonts are configured by default.
-Using other fonts means that their variants (bold, italics)
-must be registered using `add_font` (with `style="B"` and `style="I"`).
+For the standard fonts (Courier, Helvetica & Times), those dedicated fonts are configured by default:
 
 ```python
 from fpdf import FPDF
@@ -192,6 +190,13 @@ pdf.set_font("Times", size=60)
 pdf.cell(txt="**Lorem** __Ipsum__ --dolor--", markdown=True)
 pdf.output("markdown-styled.pdf")
 ```
+
+Using other fonts means that their variants (bold, italics)
+must be registered using `add_font` with `style="B"` and `style="I"`.
+Several unit tests in `test/text/` demonstrate that:
+
+* [test_cell_markdown_with_ttf_fonts](https://github.com/PyFPDF/fpdf2/blob/2.6.1/test/text/test_cell.py#L155)
+* [test_multi_cell_markdown_with_ttf_fonts](https://github.com/PyFPDF/fpdf2/blob/2.6.1/test/text/test_multi_cell_markdown.py#L27)
 
 
 ## write_html ##

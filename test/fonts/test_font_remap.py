@@ -36,8 +36,7 @@ def test_subset_map():
 def test_emoji_glyph(tmp_path):
     pdf = FPDF()
 
-    font_file_path = HERE / "DejaVuSans.ttf"
-    pdf.add_font("DejaVuSans", fname=str(font_file_path))
+    pdf.add_font(fname=HERE / "DejaVuSans.ttf")
     pdf.set_font("DejaVuSans", size=64)
     pdf.add_page()
 
@@ -52,8 +51,7 @@ def test_emoji_glyph(tmp_path):
 def test_nb_replace(tmp_path):
     pdf = FPDF()
 
-    font_file_path = HERE / "DejaVuSans.ttf"
-    pdf.add_font("DejaVuSans", fname=str(font_file_path))
+    pdf.add_font(fname=HERE / "DejaVuSans.ttf")
     pdf.add_page()
 
     pdf.set_font("DejaVuSans", size=64)
@@ -68,10 +66,8 @@ def test_nb_replace(tmp_path):
 def test_two_mappings(tmp_path):
     pdf = FPDF()
 
-    font_file_path_1 = HERE / "DejaVuSans.ttf"
-    font_file_path_2 = HERE / "DroidSansFallback.ttf"
-    pdf.add_font("DejaVuSans", fname=str(font_file_path_1))
-    pdf.add_font("DroidSansFallback", fname=str(font_file_path_2))
+    pdf.add_font(fname=HERE / "DejaVuSans.ttf")
+    pdf.add_font(fname=HERE / "DroidSansFallback.ttf")
     pdf.add_page()
 
     pdf.set_font("DejaVuSans", size=64)
@@ -85,7 +81,7 @@ def test_two_mappings(tmp_path):
 
 def test_thai_text(tmp_path):
     pdf = FPDF()
-    pdf.add_font("Waree", fname=HERE / "Waree.ttf")
+    pdf.add_font(fname=HERE / "Waree.ttf")
     pdf.set_font("Waree")
     pdf.add_page()
     pdf.write(txt="สวัสดีชาวโลก ทดสอบฟอนต์, Hello world font test.")

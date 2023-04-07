@@ -143,6 +143,12 @@ test_svg_shape_tags = (
         no_error(),
         id="rect overlarge rx and ry",
     ),
+    pytest.param(  # spotted in issue #720
+        '<rect x="1mm" y="1mm" width="100%" height="100%"/>',
+        [M(0.0, 0.0), Re(2.834645669291339, 2.834645669291339, 100, 100, 0, 0)],
+        no_error(),
+        id="rect with mm and percents",
+    ),
     pytest.param(
         '<rect x="20" y="20" width="500" height="60" rx="-100" ry="10"/>',
         [],
@@ -360,8 +366,8 @@ test_svg_transforms = (
         id="skew x-only",
     ),
     pytest.param(
-        "skew(2, 3)",
-        Transform.shearing(x=math.tan(math.radians(2)), y=math.tan(math.radians(3))),
+        "skew(3, 3)",
+        Transform.shearing(x=math.tan(math.radians(3))),
         no_error(),
         id="skew x and y",
     ),
@@ -583,7 +589,7 @@ test_svg_attribute_conversion = (
         '<path stroke-width="bad"/>',
         Gs(),
         pytest.raises(ValueError),
-        id="stroke-width number",
+        id="stroke-width invalid",
     ),
     pytest.param(
         '<path stroke-dasharray="1 2 3 4 5"/>',

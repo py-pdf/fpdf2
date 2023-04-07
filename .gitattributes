@@ -6,6 +6,7 @@
 *.p12 binary
 *.otf binary
 *.ttf binary
+*.TTF binary
 *.bmp binary
 *.jpg binary
 *.gif binary

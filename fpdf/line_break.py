@@ -8,7 +8,7 @@ They may change at any time without prior warning or any deprecation period.
 
 from typing import NamedTuple, Any, Union, Sequence
 
-from .enums import CharVPos
+from .enums import CharVPos, WrapMode
 from .errors import FPDFException
 
 SOFT_HYPHEN = "\u00ad"
@@ -22,13 +22,20 @@ class Fragment:
     A fragment of text with font/size/style and other associated information.
     """
 
-    def __init__(self, characters: Union[list, str], graphics_state: dict, k: float):
+    def __init__(
+        self,
+        characters: Union[list, str],
+        graphics_state: dict,
+        k: float,
+        url: str = None,
+    ):
         if isinstance(characters, str):
             self.characters = list(characters)
         else:
             self.characters = characters
         self.graphics_state = graphics_state
         self.k = k
+        self.url = url
 
     def __repr__(self):
         gstate = self.graphics_state.copy()
@@ -36,7 +43,7 @@ class Fragment:
             del gstate["current_font"]  # TMI
         return (
             f"Fragment(characters={self.characters},"
-            f" graphics_state={gstate}, k={self.k})"
+            f" graphics_state={gstate}, k={self.k}, url={self.url})"
         )
 
     @property
@@ -255,10 +262,11 @@ class CurrentLine:
         k: float,
         original_fragment_index: int,
         original_character_index: int,
+        url: str = None,
     ):
         assert character != NEWLINE
         if not self.fragments:
-            self.fragments.append(Fragment("", graphics_state, k))
+            self.fragments.append(Fragment("", graphics_state, k, url))
 
         # characters are expected to be grouped into fragments by font and
         # character attributes. If the last existing fragment doesn't match
@@ -267,7 +275,7 @@ class CurrentLine:
             graphics_state != self.fragments[-1].graphics_state
             or k != self.fragments[-1].k
         ):
-            self.fragments.append(Fragment("", graphics_state, k))
+            self.fragments.append(Fragment("", graphics_state, k, url))
         active_fragment = self.fragments[-1]
 
         if character == SPACE:
@@ -297,6 +305,22 @@ class CurrentLine:
         if character != SOFT_HYPHEN or self.print_sh:
             self.width += character_width
             active_fragment.characters.append(character)
+
+    def trim_trailing_spaces(self):
+        if not self.fragments:
+            return
+        last_frag = self.fragments[-1]
+        last_char = last_frag.characters[-1]
+        while last_char == " ":
+            char_width = last_frag.get_character_width(" ")
+            self.width -= char_width
+            last_frag.trim(-1)
+            if not last_frag.characters:
+                del self.fragments[-1]
+            if not self.fragments:
+                return
+            last_frag = self.fragments[-1]
+            last_char = last_frag.characters[-1]
 
     def _apply_automatic_hint(self, break_hint: Union[SpaceHint, HyphenHint]):
         """
@@ -356,10 +380,12 @@ class MultiLineBreak:
         styled_text_fragments: Sequence,
         justify: bool = False,
         print_sh: bool = False,
+        wrapmode: WrapMode = WrapMode.WORD,
     ):
         self.styled_text_fragments = styled_text_fragments
         self.justify = justify
         self.print_sh = print_sh
+        self.wrapmode = wrapmode
         self.fragment_index = 0
         self.character_index = 0
         self.idx_last_forced_break = None
@@ -379,7 +405,6 @@ class MultiLineBreak:
 
         current_line = CurrentLine(print_sh=self.print_sh)
         while self.fragment_index < len(self.styled_text_fragments):
-
             current_fragment = self.styled_text_fragments[self.fragment_index]
 
             if self.character_index >= len(current_fragment.characters):
@@ -398,8 +423,13 @@ class MultiLineBreak:
                 return current_line.manual_break(trailing_nl=True)
 
             if current_line.width + character_width > maximum_width:
-                if character == SPACE:
+                if character == SPACE:  # must come first, always drop a current space.
                     self.character_index += 1
+                    return current_line.manual_break(self.justify)
+                if self.wrapmode == WrapMode.CHAR:
+                    # If the line ends with one or more spaces, then we want to get rid of them
+                    # so it can be justified correctly.
+                    current_line.trim_trailing_spaces()
                     return current_line.manual_break(self.justify)
                 if current_line.automatic_break_possible():
                     (
@@ -426,6 +456,7 @@ class MultiLineBreak:
                 current_fragment.k,
                 self.fragment_index,
                 self.character_index,
+                current_fragment.url,
             )
 
             self.character_index += 1
@@ -438,3 +469,4 @@ class MultiLineBreak:
             return CurrentLine().manual_break(self.justify)
         if current_line.width:
             return current_line.manual_break()
+        return None

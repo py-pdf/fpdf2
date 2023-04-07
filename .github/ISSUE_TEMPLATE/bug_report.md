@@ -16,7 +16,7 @@ Describe the bug
 
 **Error details**
 If an exception is raised, it is very important that you provide the full error message.
-Otherwise members of the fpdf2 won't be able to help you with your problem.
+Otherwise members of the fpdf2 community won't be able to help you with your problem.
 
 **Minimal code**
 Please include some minimal Python code reproducing your issue:
@@ -29,9 +29,10 @@ pdf = FPDF()
 If you don't know how to build a minimal reproducible example, please check this tutorial: https://stackoverflow.com/help/minimal-reproducible-example
 
 **Environment**
-* OS (Windows, Mac OSX, Linux flavour...)
-* Python version
-* `fpdf2` version used
+Please provide the following information:
+* **Operating System**: Windows, Mac OSX, Linux flavour...
+* **Python version**: you can get this information with `python --version`
+* **`fpdf2` version used**: if you installed it with `pip`, you can get this information in `pip freeze` output
 
 <!-- Bonus / recommended:
 

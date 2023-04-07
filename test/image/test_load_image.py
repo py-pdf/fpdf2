@@ -2,11 +2,11 @@ import binascii
 from glob import glob
 from pathlib import Path
 
-import memunit, pytest
+import pytest
 
 import fpdf
 
-from test.conftest import assert_pdf_equal, time_execution
+from test.conftest import assert_pdf_equal, ensure_rss_memory_below, time_execution
 
 
 HERE = Path(__file__).resolve().parent
@@ -42,13 +42,15 @@ def test_load_invalid_base64_data():
 
 
 # ensure memory usage does not get too high - this value depends on Python version:
-@memunit.assert_lt_mb(128)
+@ensure_rss_memory_below(mib=6)
 def test_share_images_cache(tmp_path):
     images_cache = {}
+    icc_profiles_cache = {}
 
     def build_pdf_with_big_images():
         pdf = fpdf.FPDF()
         pdf.images = images_cache
+        pdf.icc_profiles = icc_profiles_cache
         pdf.add_page()
         for img_path in glob(f"{HERE}/png_images/*.png"):
             pdf.image(img_path, h=pdf.eph)

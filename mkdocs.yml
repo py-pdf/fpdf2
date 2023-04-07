@@ -1,10 +1,7 @@
 ### 
-# MkDocs Configuration File.
-# 
-# To build these docs, change to base of repository and run `mkdocs build` and
-# docs will be build into site_dir variable value in this file.
-# 
-# Alternatively, there is a script in the `scripts` folder for convenience.
+# Related docs: https://pyfpdf.github.io/fpdf2/Development.html#documentation
+#
+# material theme docs: https://squidfunk.github.io/mkdocs-material/
 ### 
 site_name: fpdf2
 site_url: https://pyfpdf.github.io/fpdf2/
@@ -42,6 +39,9 @@ theme:
 markdown_extensions:
   - admonition
   - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
   - pymdownx.highlight
   - pymdownx.superfences
   - toc:
@@ -98,8 +98,10 @@ nav:
   - 'Tutorial in italiano':           'Tutorial-it.md'
   - 'Tutorial em português':          'Tutorial-pt.md'
   - 'Учебник на русском языке':       'Tutorial-ru.md'
-  - 'हिंदी में ट्यूटोरियल':                  'Tutorial-हिंदी.md'
-  - 'מדריך בעברית':                   'Tutorial-he.md'
+  - 'हिंदी में ट्यूटोरियल':                       'Tutorial-hi.md'
+  - 'বাংলা':                              'Tutorial-bn.md'
+  - 'מדריך בעברית':                     'Tutorial-he.md'
+  - '简体中文教程':                   'Tutorial-zh.md'
 - 'Page Layout':
   - 'Page Format and Orientation':    'PageFormatAndOrientation.md'
   - 'Margins':                        'Margins.md'
@@ -116,6 +118,7 @@ nav:
 - 'Graphics Content':
   - 'Images':                         'Images.md'
   - 'Shapes':                         'Shapes.md'
+  - 'Transformations':                'Transformations.md'
   - 'Transparency':                   'Transparency.md'
   - 'Barcodes':                       'Barcodes.md'
   - 'Drawing':                        'Drawing.md'
@@ -127,16 +130,18 @@ nav:
   - 'Annotations':                    'Annotations.md'
   - 'Presentation Mode':              'Presentations.md'
   - 'Document outline & table of contents': 'DocumentOutlineAndTableOfContents.md'
+  - 'Encryption':                     'Encryption.md'
   - 'Signing':                        'Signing.md'
   - 'File attachments':               'FileAttachments.md'
 - 'Mixing other libs':
+  - 'Combine with borb':              'CombineWithBorb.md'
+  - 'Combine with pdfrw':             'CombineWithPdfrw.md'
   - 'Combine with PyPDF2':            'CombineWithPyPDF2.md'
-  - 'Combine with Borb':              'CombineWithBorb.md'
-  - 'Combine with Pdfrw':             'CombineWithPdfrw.md'
+  - 'Templating with Jinja':          'TemplatingWithJinja.md'
   - 'Usage in web APIs':              'UsageInWebAPI.md'
   - 'Database storage':               'DatabaseStorage.md'
 - 'Development':
-  - 'Development Guidelines':         'Development.md'
+  - 'Development guidelines':         'Development.md'
   - 'Logging':                        'Logging.md'
 - 'API':                            'https://pyfpdf.github.io/fpdf2/fpdf/'
 - 'FAQ':                            'FAQ.md'

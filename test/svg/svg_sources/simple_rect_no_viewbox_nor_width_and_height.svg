@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <!-- Show outline of width x height rectangle using 'rect' element: -->
+  <rect x="1" y="1" width="98" height="198"
+        fill="none" stroke="blue" stroke-width="2"/>
+
+  <rect width="80"  height="40" x="10" y="10"
+        fill="red" style="fill: yellow; stroke: cadetblue; stroke-width: 2;"  />
+</svg>

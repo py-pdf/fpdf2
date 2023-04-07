@@ -1,23 +1,21 @@
-"""PDF Syntax Helpers
+"""Classes & functions that represent core elements of the PDF syntax
 
-Functions in this module take variable input and produce PDF Syntax features
-as they are described in the Adobe PDF Reference Manual, found here:
-http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf
+Functions in this module take variable input and produce PDF Syntax features.
 
 Most of what happens in a PDF happens in objects, which are formatted like so:
-<pre>
+```
 3 0 obj
 <</Type /Page
 /Parent 1 0 R
 /Resources 2 0 R
 /Contents 4 0 R>>
 endobj
-</pre>
+```
 
-The first line says that this is the third object in the structure of the
-document.
+The first line says that this is the third object in the structure of the document.
 
 There are 8 kinds of objects (Adobe Reference, 51):
+
 * Boolean values
 * Integer and real numbers
 * Strings
@@ -30,48 +28,42 @@ There are 8 kinds of objects (Adobe Reference, 51):
 The `<<` in the second line and the `>>` in the line preceding `endobj` denote
 that it is a dictionary object. Dictionaries map Names to other objects.
 
-Names are the strings preceded by '/', valid Names do not have to start with a
+Names are the strings preceded by `/`, valid Names do not have to start with a
 capital letter, they can be any ascii characters, # and two characters can
 escape non-printable ascii characters, described on page 57.
 
 `3 0 obj` means what follows here is the third object, but the name Type
 (represented here by `/Type`) is mapped to an indirect object reference:
-`0 obj` vs `0 R`. (Page 64 of Adobe Reference)
+`0 obj` vs `0 R`.
 
 The structure of this data, in python/dict form, is thus:
+```
 third_obj = {
   '/Type': '/Page'),
   '/Parent': iobj_ref(1),
   '/Resources': iobj_ref(2),
   '/Contents': iobj_ref(4),
 }
+```
 
-Some additional notes:
-
-Streams are of the form:
-
-<pre>
+Content streams are of the form:
+```
 4 0 obj
 <</Filter /ASCIIHexDecode /Length 22>>
 stream
 68656c6c6f20776f726c64
 endstream
 endobj
-</pre>
+```
 
 In this case, the ASCIIHexDecode filter is used because
-"68656c6c6f20776f726c64" is "hello world" in ascii, and 22 is the length of
-that string.
-
-As of this writing, I am not sure how length is actually calculated, so this
-remains something to be looked into.
+"68656c6c6f20776f726c64" is "hello world" in ascii, and 22 is the length of that string.
 """
-import re
+import re, zlib
 from abc import ABC
 from binascii import hexlify
 from codecs import BOM_UTF16_BE
-
-from .util import object_id_for_page
+from datetime import datetime, timezone
 
 
 def clear_empty_fields(d):
@@ -117,9 +109,11 @@ def iobj_ref(n):
     return f"{n} 0 R"
 
 
-def create_stream(stream):
+def create_stream(stream, encryption_handler=None, obj_id=None):
     if isinstance(stream, (bytearray, bytes)):
         stream = str(stream, "latin-1")
+    if encryption_handler:
+        encryption_handler.encrypt(stream, obj_id)
     return "\n".join(["stream", stream, "endstream"])
 
 
@@ -134,7 +128,7 @@ class Name(str):
         b"[^" + bytes(v for v in range(33, 127) if v not in b"()<>[]{}/%#\\") + b"]"
     )
 
-    def pdf_repr(self) -> str:
+    def serialize(self, _security_handler=None, _obj_id=None) -> str:
         escaped = self.NAME_ESC.sub(
             lambda m: b"#%02X" % m[0][0], self.encode()
         ).decode()
@@ -146,14 +140,13 @@ class PDFObject:
     Main features of this class:
     * delay ID assignement
     * implement serializing
-
-    To ensure consistency on how the serialize() method operates,
-    child classes must define a __slots__ attribute.
     """
 
+    # Note: several child classes use __slots__ to save up some memory
+
     # pylint: disable=redefined-builtin
-    def __init__(self, id=None):
-        self._id = id
+    def __init__(self):
+        self._id = None
 
     @property
     def id(self):
@@ -171,36 +164,62 @@ class PDFObject:
     def ref(self):
         return iobj_ref(self.id)
 
-    def serialize(self, output_producer=None, obj_dict=None):
+    def serialize(self, obj_dict=None, _security_handler=None):
+        "Serialize the PDF object as an obj<</>>endobj text block"
         output = []
-        if output_producer:
-            # pylint: disable=protected-access
-            appender = output_producer._out
-            assert (
-                output_producer._newobj() == self.id
-            ), "Something went wrong in StructTree object IDs assignment"
-        else:
-            appender = output.append
-            appender(f"{self.id} 0 obj")
-        appender("<<")
+        output.append(f"{self.id} 0 obj")
+        output.append("<<")
         if not obj_dict:
-            obj_dict = self._build_obj_dict()
-        appender(create_dictionary_string(obj_dict, open_dict="", close_dict=""))
-        appender(">>")
-        appender("endobj")
+            obj_dict = self._build_obj_dict(_security_handler)
+        output.append(create_dictionary_string(obj_dict, open_dict="", close_dict=""))
+        output.append(">>")
+        content_stream = self.content_stream()
+        if content_stream:
+            output.append(create_stream(content_stream))
+        output.append("endobj")
         return "\n".join(output)
 
-    def _build_obj_dict(self):
+    def content_stream(self):
+        "Subclasses can override this method to indicate the presence of a content stream"
+        return b""
+
+    def _build_obj_dict(self, security_handler=None):
         """
         Build the PDF Object associative map to serialize,
         based on this class instance properties.
         The property names are converted from snake_case to CamelCase,
         and prefixed with a slash character "/".
         """
-        return build_obj_dict({key: getattr(self, key) for key in dir(self)})
+        return build_obj_dict(
+            {key: getattr(self, key) for key in dir(self)},
+            _security_handler=security_handler,
+            _obj_id=self.id,
+        )
 
 
-def build_obj_dict(key_values):
+class PDFContentStream(PDFObject):
+    def __init__(self, contents, compress=False):
+        super().__init__()
+        self._contents = zlib.compress(contents) if compress else contents
+        self.filter = Name("FlateDecode") if compress else None
+        self.length = len(self._contents)
+
+    # method override
+    def content_stream(self):
+        return self._contents
+
+    # method override
+    def serialize(self, obj_dict=None, _security_handler=None):
+        if _security_handler:
+            assert not obj_dict
+            if not isinstance(self._contents, (bytearray, bytes)):
+                self._contents = self._contents.encode("latin-1")
+            self._contents = _security_handler.encrypt(self._contents, self.id)
+            self.length = len(self._contents)
+        return super().serialize(obj_dict, _security_handler)
+
+
+def build_obj_dict(key_values, _security_handler=None, _obj_id=None):
     """
     Build the PDF Object associative map to serialize, based on a key-values dict.
     The property names are converted from snake_case to CamelCase,
@@ -219,10 +238,11 @@ def build_obj_dict(key_values):
             value = value.value
         if isinstance(value, PDFObject):  # indirect object reference
             value = value.ref
-        elif hasattr(value, "pdf_repr"):  # e.g. Name
-            value = value.pdf_repr()
-        elif hasattr(value, "serialize"):  # e.g. PDFArray & PDFString
-            value = value.serialize()
+        elif hasattr(value, "serialize"):
+            # e.g. PDFArray, PDFString, Name, Destination, Action...
+            value = value.serialize(
+                _security_handler=_security_handler, _obj_id=_obj_id
+            )
         elif isinstance(value, bool):
             value = str(value).lower()
         obj_dict[f"/{camel_case(key)}"] = value
@@ -240,7 +260,26 @@ class PDFString(str):
     but then there can be a risk of badly encoding some unicode strings - cf. issue #458
     """
 
-    def serialize(self):
+    def __new__(cls, content, encrypt=False):
+        """
+        Args:
+            content (str): text
+            encrypt (bool): if document encryption is enabled, should this string be encrypted?
+        """
+        self = super().__new__(cls, content)
+        self.encrypt = encrypt
+        return self
+
+    def serialize(self, _security_handler=None, _obj_id=None):
+        if _security_handler and self.encrypt:
+            assert _obj_id
+            return _security_handler.encrypt_string(self, _obj_id)
+        try:
+            self.encode("ascii")
+            # => this string only contains ASCII characters, no need for special encoding:
+            return f"({self})"
+        except UnicodeEncodeError:
+            pass
         if self.USE_HEX_ENCODING:
             # Using the "Hexadecimal String" format defined in the PDF spec:
             hex_str = hexlify(BOM_UTF16_BE + self.encode("utf-16-be")).decode("latin-1")
@@ -248,44 +287,82 @@ class PDFString(str):
         return f'({self.encode("UTF-16").decode("latin-1")})'
 
 
+class PDFDate:
+    def __init__(self, date: datetime, with_tz=False, encrypt=False):
+        """
+        Args:
+            date (datetime): self-explanatory
+            with_tz (bool): should the timezone be encoded in included in the date?
+            encrypt (bool): if document encryption is enabled, should this string be encrypted?
+        """
+        self.date = date
+        self.with_tz = with_tz
+        self.encrypt = encrypt
+
+    def __repr__(self):
+        return f"PDFDate({self.date}, with_tz={self.with_tz}, encrypt={self.encrypt})"
+
+    def serialize(self, _security_handler=None, _obj_id=None):
+        if self.with_tz:
+            assert self.date.tzinfo
+            if self.date.tzinfo == timezone.utc:
+                out_str = f"D:{self.date:%Y%m%d%H%M%SZ%H'%M'}"
+            else:
+                out_str = f"D:{self.date:%Y%m%d%H%M%S%z}"
+                out_str = out_str[:-2] + "'" + out_str[-2:] + "'"
+        else:
+            out_str = f"D:{self.date:%Y%m%d%H%M%S}"
+        if _security_handler and self.encrypt:
+            assert _obj_id
+            return _security_handler.encrypt_string(out_str, _obj_id)
+        return f"({out_str})"
+
+
 class PDFArray(list):
-    def serialize(self):
-        if all(isinstance(elem, PDFObject) for elem in self):
-            serialized_elems = "\n".join(elem.ref for elem in self)
+    def serialize(self, _security_handler=None, _obj_id=None):
+        if all(isinstance(elem, str) for elem in self):
+            serialized_elems = " ".join(self)
         elif all(isinstance(elem, int) for elem in self):
             serialized_elems = " ".join(map(str, self))
         else:
-            raise NotImplementedError(f"PDFArray.serialize with self={self}")
+            serialized_elems = "\n".join(
+                elem.ref
+                if isinstance(elem, PDFObject)
+                else elem.serialize(
+                    _security_handler=_security_handler, _obj_id=_obj_id
+                )
+                for elem in self
+            )
         return f"[{serialized_elems}]"
 
 
 # cf. section 8.2.1 "Destinations" of the 2006 PDF spec 1.7:
 class Destination(ABC):
-    def as_str(self, pdf=None):
+    def serialize(self, _security_handler=None, _obj_id=None):
         raise NotImplementedError
 
 
 class DestinationXYZ(Destination):
-    def __init__(self, page, x=0, y=0, zoom="null", page_as_obj_id=True):
-        self.page = page
-        self.x = x
-        self.y = y
+    def __init__(self, page, top, left=0, zoom="null"):
+        self.page_number = page
+        self.top = top
+        self.left = left
         self.zoom = zoom
-        self.page_as_obj_id = page_as_obj_id
+        self.page_ref = None
+
+    def __eq__(self, dest):
+        return (
+            self.page_number == dest.page_number
+            and self.top == dest.top
+            and self.left == dest.left
+            and self.zoom == dest.zoom
+        )
 
     def __repr__(self):
-        return f'DestinationXYZ(page={self.page}, x={self.x}, y={self.y}, zoom="{self.zoom}", page_as_obj_id={self.page_as_obj_id})'
+        return f'DestinationXYZ(page_number={self.page_number}, top={self.top}, left={self.left}, zoom="{self.zoom}", page_ref={self.page_ref})'
 
-    def as_str(self, pdf=None):
-        left = self.x * pdf.k if pdf else self.x
-        if isinstance(left, float):
-            left = round(left, 2)
-        top = (pdf.h_pt - self.y * pdf.k) if pdf else self.y
-        if isinstance(top, float):
-            top = round(top, 2)
-        page = (
-            iobj_ref(object_id_for_page(self.page))
-            if self.page_as_obj_id
-            else self.page
-        )
-        return f"[{page} /XYZ {left} {top} {self.zoom}]"
+    def serialize(self, _security_handler=None, _obj_id=None):
+        left = round(self.left, 2) if isinstance(self.left, float) else self.left
+        top = round(self.top, 2) if isinstance(self.top, float) else self.top
+        assert self.page_ref
+        return f"[{self.page_ref} /XYZ {left} {top} {self.zoom}]"

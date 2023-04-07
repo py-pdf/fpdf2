@@ -6,6 +6,7 @@ from test.conftest import assert_pdf_equal
 import pytest
 
 HERE = Path(__file__).resolve().parent
+FONTS_DIR = HERE.parent / "fonts"
 
 
 def test_multi_cell_markdown(tmp_path):
@@ -27,9 +28,9 @@ def test_multi_cell_markdown(tmp_path):
 def test_multi_cell_markdown_with_ttf_fonts(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf")
-    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf")
-    pdf.add_font("Roboto", "I", HERE / "../fonts/Roboto-Italic.ttf")
+    pdf.add_font("Roboto", "", FONTS_DIR / "Roboto-Regular.ttf")
+    pdf.add_font("Roboto", "B", FONTS_DIR / "Roboto-Bold.ttf")
+    pdf.add_font("Roboto", "I", FONTS_DIR / "Roboto-Italic.ttf")
     pdf.set_font("Roboto", size=32)
     text = (  # Some text where styling occur over line breaks:
         "Lorem ipsum dolor, **consectetur adipiscing** elit,"
@@ -46,13 +47,11 @@ def test_multi_cell_markdown_with_ttf_fonts(tmp_path):
 def test_multi_cell_markdown_missing_ttf_font():
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf")
-    pdf.set_font("Roboto", size=60)
+    pdf.add_font(fname=FONTS_DIR / "Roboto-Regular.ttf")
+    pdf.set_font("Roboto-Regular", size=60)
     with pytest.raises(fpdf.FPDFException) as error:
         pdf.multi_cell(w=pdf.epw, txt="**Lorem Ipsum**", markdown=True)
-    expected_msg = (
-        "Undefined font: robotoB - Use built-in fonts or FPDF.add_font() beforehand"
-    )
+    expected_msg = "Undefined font: roboto-regularB - Use built-in fonts or FPDF.add_font() beforehand"
     assert str(error.value) == expected_msg
 
 
@@ -91,3 +90,15 @@ def test_multi_cell_markdown_justified(tmp_path):  # issue 327
         pdf.set_x(10)
         pdf.set_y(pdf.y + 5)
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_justified.pdf", tmp_path)
+
+
+def test_multi_cell_markdown_link(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+    pdf.multi_cell(
+        pdf.epw,
+        txt="**Start** [One Page Dungeon Context](https://www.dungeoncontest.com/) __End__",
+        markdown=True,
+    )
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_link.pdf", tmp_path)

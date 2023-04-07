@@ -78,6 +78,7 @@ pip install fpdf2 matplotlib pandas
 
 Create a plot using [pandas.DataFrame.plot](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.plot.html):
 ```python
+from io import BytesIO
 from fpdf import FPDF
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -93,7 +94,7 @@ df = pd.DataFrame(data, columns=["Unemployment_Rate", "Stock_Index_Price"])
 df.plot(x="Unemployment_Rate", y="Stock_Index_Price", kind="scatter")
 
 # Converting Figure to an image:
-img_buf = io.BytesIO()  # Create image object
+img_buf = BytesIO()  # Create image object
 plt.savefig(img_buf, dpi=200)  # Save the image
 
 pdf = FPDF()
@@ -127,25 +128,20 @@ columns = [list(df)]  # Get list of dataframe columns
 rows = df.values.tolist()  # Get list of dataframe rows
 data = columns + rows  # Combine columns and rows in one list
 
-# Start pdf creating
 pdf = FPDF()
 pdf.add_page()
 pdf.set_font("Times", size=10)
-line_height = pdf.font_size * 2.5
-col_width = pdf.epw / 4  # distribute content evenly
-
-for row in data:
-    for datum in row:
-        pdf.multi_cell(
-            col_width,
-            line_height,
-            datum,
-            border=1,
-            new_y="TOP",
-            max_line_height=pdf.font_size,
-        )
-    pdf.ln(line_height)
-pdf.output("table_with_cells.pdf")
+with pdf.table(borders_layout="MINIMAL",
+               cell_fill_color=200,  # grey
+               cell_fill_mode="ROWS",
+               line_height=pdf.font_size * 2.5,
+               text_align="CENTER",
+               width=160) as table:
+    for data_row in data:
+        row = table.row()
+        for datum in data_row:
+            row.cell(datum)
+pdf.output("table_from_pandas.pdf")
 ```
 
 Result:
@@ -184,27 +180,24 @@ Result:
 ![](equation-with-gcharts.png)
 
 
-### Using Matplotlib ###
+### Using LaTeX & Matplotlib ###
 Matplotlib can render **LaTeX**: [Text rendering With LaTeX](https://matplotlib.org/stable/tutorials/text/usetex.html).
 
 Example:
 
 ```python
+from io import BytesIO
 from fpdf import FPDF
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
-import numpy as np
-from PIL import Image
 
-fig = Figure(figsize=(6, 2), dpi=300)
-axes = fig.gca()
-axes.text(0, 0.5, r"$x^n + y^n = \frac{a}{b}$", fontsize=60)
-axes.axis("off")
+fig = Figure(figsize=(6, 2))
+gca = fig.gca()
+gca.text(0, 0.5, r"$x^n + y^n = \frac{a}{b}$", fontsize=60)
+gca.axis("off")
 
-# Converting Figure to an image:
-canvas = FigureCanvas(fig)
-canvas.draw()
-img = Image.fromarray(np.asarray(canvas.buffer_rgba()))
+# Converting Figure to a SVG image:
+img = BytesIO()
+fig.savefig(img, format="svg")
 
 pdf = FPDF()
 pdf.add_page()
@@ -215,3 +208,100 @@ pdf.output("equation-with-matplotlib.pdf")
 Result:
 
 ![](equation-with-matplotlib.png)
+
+If you have trouble with the SVG export, you can also render the matplotlib figure as pixels:
+```python
+from fpdf import FPDF
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+import numpy as np
+from PIL import Image
+
+fig = Figure(figsize=(6, 2), dpi=300)
+gca = fig.gca()
+gca.text(0, 0.5, r"$x^n + y^n = \frac{a}{b}$", fontsize=60)
+gca.axis("off")
+
+canvas = FigureCanvas(fig)
+canvas.draw()
+img = Image.fromarray(np.asarray(canvas.buffer_rgba()))
+
+...
+```
+### Using Plotly ###
+
+Before running this example, please install the required dependencies using the command below:
+
+```
+pip install fpdf2 plotly kaleido numpy
+```
+
+[kaleido](https://pypi.org/project/kaleido/) is a cross-platform library for generating static images that is used by plotly.
+
+Example taken from [Plotly static image export tutorial](https://plotly.com/python/static-image-export/):
+
+```python
+import io
+import plotly.graph_objects as go
+import numpy as np
+from fpdf import FPDF
+
+np.random.seed(1)
+
+N = 100
+x = np.random.rand(N)
+y = np.random.rand(N)
+colors = np.random.rand(N)
+sz = np.random.rand(N) * 30
+
+fig = go.Figure()
+fig.add_trace(go.Scatter(
+    x=x,
+    y=y,
+    mode="markers",
+    marker=go.scatter.Marker(
+        size=sz,
+        color=colors,
+        opacity=0.6,
+        colorscale="Viridis"
+    )
+))
+# Convert the figure to png using kaleido
+image_data=fig.to_image(format="png", engine="kaleido")
+# Create an io.BytesIO object which can be used by FPDF2
+image = io.BytesIO(image_data)
+pdf = FPDF()
+pdf.add_page()
+pdf.image(image,w=pdf.epw)  # Width of the image is equal to the width of the page
+pdf.output("plotly.pdf")
+
+```
+
+Result:
+
+![](plotly_png.png)
+
+You can also embed a figure as [SVG](SVG.md) but this is not recommended because the text data such as the x and y axis bars might not show as illustrated in the result image because plotly places this data in a svg text tag which is currently [not supported](https://github.com/PyFPDF/fpdf2/issues/537) by FPDF2.
+
+Before running this example, please install the required dependencies:
+
+```
+pip install fpdf2 plotly kaleido pandas
+```
+
+```python
+from fpdf import FPDF
+import plotly.express as px
+
+fig = px.bar(x=["a", "b", "c"], y=[1, 3, 2])
+fig.write_image("figure.svg")
+
+pdf = FPDF()
+pdf.add_page()
+pdf.image("figure.svg",w=pdf.epw)
+pdf.output("plotly.pdf")
+```
+
+Result:
+
+![](plotly_svg.png)

@@ -1,7 +1,6 @@
-#!/usr/bin/env python
 import sys
 
-from .enums import TextMode, XPos, YPos
+from .enums import Align, TextMode, XPos, YPos
 from .fpdf import (
     FPDF,
     FPDFException,
@@ -12,7 +11,6 @@ from .fpdf import (
 from .html import HTMLMixin, HTML2FPDF
 from .prefs import ViewerPreferences
 from .template import Template, FlexTemplate
-from . import svg
 from .deprecation import WarnOnDeprecatedModuleAttributes
 
 FPDF_VERSION = _FPDF_VERSION
@@ -21,6 +19,9 @@ FPDF_VERSION = _FPDF_VERSION
 FPDF_FONT_DIR = _FPDF_FONT_DIR
 """This is the location of where to look for fonts."""
 
+# Pattern from sir Guido Von Rossum: https://stackoverflow.com/a/72911884/636849
+# > a module can define a class with the desired functionality, and then at
+# > the end, replace itself in sys.modules with an instance of that class
 sys.modules[__name__].__class__ = WarnOnDeprecatedModuleAttributes
 
 __license__ = "LGPL 3.0"
@@ -34,6 +35,8 @@ __all__ = [
     "__license__",
     # Classes
     "FPDF",
+    "FPDFException",
+    "Align",
     "XPos",
     "YPos",
     "Template",

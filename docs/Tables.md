@@ -1,42 +1,225 @@
-# Tables #
+# Tables
 
-Tables can be built either using **cells**
-or with [`write_html`](HTML.md).
+_New in [:octicons-tag-24: 2.7.0](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
 
-
-## Using cells ##
-
-There is a method to build tables allowing for multilines content in cells:
+Tables can be built using the `table()` method.
+Here is a simple example:
 
 ```python
 from fpdf import FPDF
 
-data = (
+TABLE_DATA = (
     ("First name", "Last name", "Age", "City"),
     ("Jules", "Smith", "34", "San Juan"),
     ("Mary", "Ramos", "45", "Orlando"),
     ("Carlson", "Banks", "19", "Los Angeles"),
     ("Lucas", "Cimon", "31", "Saint-Mahturin-sur-Loire"),
 )
-
 pdf = FPDF()
 pdf.add_page()
-pdf.set_font("Times", size=10)
-line_height = pdf.font_size * 2.5
-col_width = pdf.epw / 4  # distribute content evenly
-for row in data:
-    for datum in row:
-        pdf.multi_cell(col_width, line_height, datum, border=1,
-                new_x="RIGHT", new_y="TOP", max_line_height=pdf.font_size)
-    pdf.ln(line_height)
-pdf.output('table_with_cells.pdf')
+pdf.set_font("Times", size=16)
+with pdf.table() as table:
+    for data_row in TABLE_DATA:
+        row = table.row()
+        for datum in data_row:
+            row.cell(datum)
+pdf.output('table.pdf')
+```
+Result:
+
+![](table-simple.jpg)
+
+## Features
+* support cells with content wrapping over several lines
+* control over column & row sizes (automatically computed by default)
+* allow to style table headings (top row), or disable them
+* control over borders: color, width & where they are drawn
+* handle splitting a table over page breaks, with headings repeated
+* control over cell background color
+* control table width & position
+* control over text alignment in cells, globally or per row
+* allow to embed images in cells
+
+## Setting table & column widths
+```python
+...
+with pdf.table(width=150, col_widths=(30, 30, 10, 30)) as table:
+    ...
+```
+Result:
+
+![](table-with-fixed-column-widths.jpg)
+
+`align` can be passed to `table()` to set the table horizontal position relative to the page,
+when it's not using the full page width. It's centered by default.
+
+## Setting text alignment
+This can be set globally, or on a per-column basis:
+```python
+...
+with pdf.table(text_align="CENTER") as table:
+    ...
+pdf.ln()
+with pdf.table(text_align=("CENTER", "CENTER", "RIGHT", "LEFT")) as table:
+    ...
+```
+Result:
+
+![](table_align.jpg)
+
+## Setting row height
+```python
+...
+with pdf.table(line_height=2.5 * pdf.font_size) as table:
+    ...
 ```
 
+## Disable table headings
+```python
+...
+with pdf.table(first_row_as_headings=False) as table:y
+    ...
+```
 
-## Using write_html ##
+## Style table headings
+```python
+from fpdf.fonts import FontFace
+...
+blue = (0, 0, 255)
+grey = (128, 128, 128)
+headings_style = FontFace(emphasis="ITALICS", color=blue, fill_color=grey)
+with pdf.table(headings_style=headings_style) as table:
+    ...
+```
+Result:
 
-An alternative method using [`FPDF.write_html`](HTML.md),
-with the same `data` as above, and column widths defined as percent of the effective width:
+![](table-styled.jpg)
+
+## Set cells background
+```python
+...
+greyscale = 200
+with pdf.table(cell_fill_color=greyscale, cell_fill_mode="ROWS") as table:
+    ...
+```
+Result:
+
+![](table-with-cells-filled.jpg)
+
+```python
+...
+lightblue = (173, 216, 230)
+with pdf.table(cell_fill_color=lightblue, cell_fill_mode="COLUMNS") as table:
+    ...
+```
+Result:
+
+![](table-with-cells-filled2.jpg)
+
+## Set borders layout
+```python
+...
+with pdf.table(borders_layout="INTERNAL") as table:
+    ...
+```
+Result:
+
+![](table_with_internal_layout.jpg)
+
+```python
+...
+with pdf.table(borders_layout="MINIMAL") as table:
+    ...
+```
+Result:
+
+![](table_with_minimal_layout.jpg)
+
+```python
+...
+pdf.set_draw_color(50)  # very dark grey
+pdf.set_line_width(.5)
+with pdf.table(borders_layout="SINGLE_TOP_LINE") as table:
+    ...
+```
+Result:
+
+![](table_with_single_top_line_layout.jpg)
+
+All the possible layout values are described there: [`TableBordersLayout`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
+
+## Insert images
+```python
+TABLE_DATA = (
+    ("First name", "Last name", "Image", "City"),
+    ("Jules", "Smith", "shirt.png", "San Juan"),
+    ("Mary", "Ramos", "joker.png", "Orlando"),
+    ("Carlson", "Banks", "socialist.png", "Los Angeles"),
+    ("Lucas", "Cimon", "circle.bmp", "Angers"),
+)
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Times", size=16)
+with pdf.table() as table:
+    for i, data_row in enumerate(TABLE_DATA):
+        row = table.row()
+        for j, datum in enumerate(data_row):
+            if j == 2 and i > 0:
+                row.cell(img=datum)
+            else:
+                row.cell(datum)
+pdf.output('table_with_images.pdf')
+```
+Result:
+
+![](table_with_images.jpg)
+
+By default, images height & width are constrained by the row height (based on text content)
+and the column width. To render bigger images, you can set the `line_height` to increase the row height, or pass `img_fill_width=True` to `.cell()`:
+
+```python
+                    row.cell(img=datum, img_fill_width=True)
+```
+Result:
+
+![](table_with_images_and_img_fill_width.jpg)
+
+## Syntactic sugar
+
+To simplify `table()` usage, shorter, alternative usage forms are allowed.
+
+This sample code:
+```python
+with pdf.table() as table:
+    for data_row in TABLE_DATA:
+        row = table.row()
+        for datum in data_row:
+            row.cell(datum)
+```
+
+Can be shortened to the followng code,
+by passing lists of strings as the `cells` optional argument of `.row()`:
+```python
+with pdf.table() as table:
+    for data_row in TABLE_DATA:
+        table.row(data_row)
+```
+
+And even shortened further to a single line,
+by passing lists of lists of strings as the `rows` optional argument of `.table()`:
+```python
+with pdf.table(TABLE_DATA):
+    pass
+```
+
+## Table from pandas DataFrame
+
+_cf._ https://pyfpdf.github.io/fpdf2/Maths.html#using-pandas
+
+## Using write_html
+
+Tables can also be defined in HTML using [`FPDF.write_html`](HTML.md).
+With the same `data` as above, and column widths defined as percent of the effective width:
 
 ```python
 from fpdf import FPDF
@@ -46,18 +229,18 @@ pdf.set_font_size(16)
 pdf.add_page()
 pdf.write_html(
     f"""<table border="1"><thead><tr>
-    <th width="25%">{data[0][0]}</th>
-    <th width="25%">{data[0][1]}</th>
-    <th width="15%">{data[0][2]}</th>
-    <th width="35%">{data[0][3]}</th>
+    <th width="25%">{TABLE_DATA[0][0]}</th>
+    <th width="25%">{TABLE_DATA[0][1]}</th>
+    <th width="15%">{TABLE_DATA[0][2]}</th>
+    <th width="35%">{TABLE_DATA[0][3]}</th>
 </tr></thead><tbody><tr>
-    <td>{'</td><td>'.join(data[1])}</td>
+    <td>{'</td><td>'.join(TABLE_DATA[1])}</td>
 </tr><tr>
-    <td>{'</td><td>'.join(data[2])}</td>
+    <td>{'</td><td>'.join(TABLE_DATA[2])}</td>
 </tr><tr>
-    <td>{'</td><td>'.join(data[3])}</td>
+    <td>{'</td><td>'.join(TABLE_DATA[3])}</td>
 </tr><tr>
-    <td>{'</td><td>'.join(data[4])}</td>
+    <td>{'</td><td>'.join(TABLE_DATA[4])}</td>
 </tr></tbody></table>""",
     table_line_separators=True,
 )
@@ -66,54 +249,14 @@ pdf.output('table_html.pdf')
 
 Note that `write_html` has [some limitations, notably regarding multi-lines cells](HTML.html#supported-html-features).
 
+## "Parsabilty" of the tables generated
 
-## Recipes ##
+The PDF file format is not designed to embed structured tables.
+Hence, it can be tricky to extract tables data from PDF documents.
 
-- our 5th tutorial provides examples on how to build tables: [Tuto 5 - Creating Tables](Tutorial.md#tuto-5-creating-tables)
-- `@bvalgard` wrote a custom `table()` method: [YouTube video](https://www.youtube.com/watch?v=euNvxWaRQMY) - [`create_table()` source code](https://github.com/bvalgard/create-pdf-with-python-fpdf2/blob/main/create_table_fpdf2.py)
-- [code snippet by @RubendeBruin to adapt row height to the highest cell](https://github.com/PyFPDF/fpdf2/issues/91#issuecomment-813033012)
+In our tests suite, we ensure that several PDF-tables parsing Python libraries can successfully extract tables in documents generated with `fpdf2`.
+Namely, we test [camelot-py](https://camelot-py.readthedocs.io) & [tabula-py](https://tabula-py.readthedocs.io): [test/table/test_table_extraction.py](https://github.com/PyFPDF/fpdf2/blob/master/test/table/test_table_extraction.py).
 
-
-## Repeat table header on each page ##
-
-The following recipe demonstrates a solution to handle this requirement:
-
-```python
-from fpdf import FPDF
-
-TABLE_COL_NAMES = ("First name", "Last name", "Age", "City")
-TABLE_DATA = (
-    ("Jules", "Smith", "34", "San Juan"),
-    ("Mary", "Ramos", "45", "Orlando"),
-    ("Carlson", "Banks", "19", "Los Angeles"),
-    ("Lucas", "Cimon", "31", "Angers"),
-)
-
-pdf = FPDF()
-pdf.add_page()
-pdf.set_font("Times", size=16)
-line_height = pdf.font_size * 2
-col_width = pdf.epw / 4  # distribute content evenly
-
-def render_table_header():
-    pdf.set_font(style="B")  # enabling bold text
-    for col_name in TABLE_COL_NAMES:
-        pdf.cell(col_width, line_height, col_name, border=1)
-    pdf.ln(line_height)
-    pdf.set_font(style="")  # disabling bold text
-
-render_table_header()
-for _ in range(10):  # repeat data rows
-    for row in TABLE_DATA:
-        if pdf.will_page_break(line_height):
-            render_table_header()
-        for datum in row:
-            pdf.cell(col_width, line_height, datum, border=1)
-        pdf.ln(line_height)
-
-pdf.output("table_with_headers_on_every_page.pdf")
-```
-
-Note that if you want to use [`multi_cell()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) method instead of `cell()`,
-some extra code will be required: an initial call to `multi_cell` with `split_only=True`
-will be needed in order to compute the number of lines in the cell.
+Based on those tests, if you want to ease table extraction from the documents you produce, we recommend the following guidelines:
+* avoid splitting tables on several pages
+* avoid the `INTERNAL` / `MINIMAL` / `SINGLE_TOP_LINE` borders layouts

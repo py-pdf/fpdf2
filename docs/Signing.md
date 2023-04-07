@@ -1,5 +1,7 @@
 # Signing #
 
+_New in [:octicons-tag-24: 2.5.6](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
+
 > A digital signature may be used to authenticate the identity of a user and the document’s contents.
 > It stores information about the signer and the state of the document when it was signed.
 

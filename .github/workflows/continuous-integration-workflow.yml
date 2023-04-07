@@ -12,7 +12,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, '3.10']
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
         platform: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     steps:
@@ -24,19 +24,21 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies ⚙️
         if: matrix.platform == 'ubuntu-latest'
-        run: sudo apt-get install libjpeg-dev
+        run: sudo apt-get install ghostscript libjpeg-dev
       - name: Install qpdf ⚙️
-        if: matrix.platform == 'ubuntu-latest' && matrix.python-version != '3.9'  # This allows us to run the unit tests WITHOUT qpdf in just one parallel execution
+        if: matrix.platform == 'ubuntu-latest' && matrix.python-version != '3.9'
+        # We run the unit tests WITHOUT qpdf for a single parallel execution / Python version:
         run: sudo apt-get install qpdf
       - name: Install Python dependencies ⚙️
         run: |
-          python -m pip install --upgrade pip setuptools
+          python -m pip install --upgrade pip setuptools wheel
           pip install --upgrade . -r test/requirements.txt -r docs/requirements.txt -r contributors/requirements.txt
       - name: Statically checking code 🔎
         if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: |
-            pylint fpdf test tutorial/tuto*.py
-            bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
+          pylint fpdf test tutorial/tuto*.py
+          bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
+          semgrep scan --config auto --lang=py --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
       - name: Ensure code has been autoformatted with black 🖌️
         if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: black --check .
@@ -44,7 +46,7 @@ jobs:
         if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: |
           # Using qpdf
-          find . -name '*.pdf' | xargs -n 1 qpdf --check
+          find . -name '*.pdf' | xargs -n 1 qpdf --check --password=fpdf2
           # Using Datalogics PDF Checker:
           scripts/install-pdfchecker.sh
           find . -name '*.pdf' | xargs -n 1 scripts/pdfchecker.py
@@ -54,11 +56,14 @@ jobs:
           find . -name '*.pdf' | xargs -n 1 scripts/verapdf.py
           scripts/verapdf.py  # printing aggregated report
       - name: Running tests ☑
+        env:
+          CHECK_EXEC_TIME: ${{ matrix.python-version == '3.9' && 'test-enabled' || '' }}
+          CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.11' && 'test-enabled' || '' }}
         run: |
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
           # Executing all tests:
-          pytest -vv
+          pytest -vv --trace-memory-usage
       - name: Uploading coverage report to codecov.io ☑
         if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: bash <(curl -s https://codecov.io/bash)
@@ -74,7 +79,7 @@ jobs:
           sed -i "s/author:.*/author: v$(python setup.py -V 2>/dev/null)/" mkdocs.yml
           cp tutorial/notebook.ipynb docs/
           mkdocs build
-          pdoc --html -o public/ fpdf
+          pdoc --html -o public/ fpdf --config "git_link_template='https://github.com/PyFPDF/fpdf2/blob/{commit}/{path}#L{start_line}-L{end_line}'"
           cd contributors/ && PYTHONUNBUFFERED=1 ./build_contributors_html_page.py PyFPDF/fpdf2
           cp -t ../public/ contributors.html contributors-map-small.png
       - name: Deploy documentation 🚀

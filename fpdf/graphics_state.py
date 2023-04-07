@@ -1,5 +1,6 @@
 from .drawing import DeviceGray
-from .enums import TextMode, CharVPos
+from .enums import CharVPos, TextEmphasis, TextMode
+from .fonts import FontFace
 
 
 class GraphicsStateMixin:
@@ -311,3 +312,20 @@ class GraphicsStateMixin:
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         """
         self.__statestack[-1]["denom_lift"] = float(v)
+
+    def font_face(self):
+        """
+        Return a `fpdf.fonts.FontFace` instance
+        representing a subset of properties of this GraphicsState.
+        """
+        return FontFace(
+            family=self.font_family,
+            emphasis=TextEmphasis.coerce(self.font_style),
+            size_pt=self.font_size_pt,
+            color=self.text_color
+            if self.text_color != self.DEFAULT_TEXT_COLOR
+            else None,
+            fill_color=self.fill_color
+            if self.fill_color != self.DEFAULT_FILL_COLOR
+            else None,
+        )

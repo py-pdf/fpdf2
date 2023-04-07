@@ -70,6 +70,11 @@ Rendering by Firefox internal PDF viewer:
 Method documentation: [`FPDF.ink_annotation`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ink_annotation)
 
 
+## File attachments ##
+
+_cf._ the dedicated page: [File attachments](FileAttachments.md)
+
+
 ## Named actions ##
 
 The four standard PDF named actions provide some basic navigation relative to the current page:

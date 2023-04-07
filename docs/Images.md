@@ -2,7 +2,8 @@
 
 When rendering an image, its size on the page can be specified in several ways:
 
-* explicit width and height (expressed in user units)
+* explicit width and height (expressed in user units).
+  The image is scaled to those dimensions, unless `keep_aspect_ratio=True` is specified.
 * one explicit dimension, the other being calculated automatically in order to keep the original proportions
 * no explicit dimension, in which case the image is put at 72 dpi
 
@@ -48,6 +49,17 @@ pdf.set_y(0)
 pdf.image("imgB.jpg", h=pdf.eph, w=pdf.epw/2, x=pdf.epw/2)  # full page height, half page width, right half of the page
 pdf.output("side-by-side.pdf")
 ```
+
+### Fitting an image inside a rectangle ###
+
+When you want to scale an image to fill a rectangle, while keeping its aspect ratio,
+and ensuring it does **not** overflow the rectangle width nor height in the process,
+you can set `w` / `h` and also provide `keep_aspect_ratio=True` to the [`image()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method.
+
+The following unit tests illustrate that:
+
+* [test_image_fit.py](https://github.com/PyFPDF/fpdf2/blob/master/test/image/test_image_fit.py)
+* resulting document: [image_fit_in_rect.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/image/image_fit_in_rect.pdf)
 
 ### Blending images ###
 
@@ -138,8 +150,7 @@ pdf.image("https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png")
 
 ## Image compression ##
 
-By default, `fpdf2` will avoid altering your images :
-no image conversion from / to PNG / JPEG is performed.
+By default, `fpdf2` will avoid altering or recompressing your images: when possible, the original bytes from the JPG or TIFF file will be used directly. Bitonal images are by default compressed as TIFF Group4.
 
 However, you can easily tell `fpdf2` to embed all images as JPEGs in order to reduce your PDF size,
 using [`set_image_filter()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_image_filter):
@@ -159,6 +170,9 @@ Beware that "flattening" images into JPEGs this way will fill transparent areas 
 The allowed `image_filter` values are listed in the [image_parsing]( https://github.com/PyFPDF/fpdf2/blob/master/fpdf/image_parsing.py) module and are currently:
 `FlateDecode` (lossless zlib/deflate compression), `DCTDecode` (lossy compression with JPEG) and `JPXDecode` (lossy compression with JPEG2000).
 
+## ICC Profiles
+
+The ICC profile of the included images are read through the PIL function `Image.info.get("icc_profile)"` and are included in the PDF as objects.
 
 ## Oversized images detection & downscaling ##
 
@@ -213,6 +227,11 @@ pdf.output("pdf-including-image-without-transparency.pdf")
 This will fill transparent areas of your images with color (usually black).
 
 _cf._ also documentation on [controlling transparency](Transparency.md).
+
+
+## Page background ##
+
+_cf._ [Per-page format, orientation and background](PageFormatAndOrientation.md#per-page-format-orientation-and-background)
 
 
 ## Sharing the image cache among FPDF instances ##

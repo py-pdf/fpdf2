@@ -114,24 +114,16 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 ## 5 - יצירת טבלאות ##
 
-דוגמא זו מסבירה איך ליצור טבלאות בקלות.
-
-הקוד ייצור שלוש טבלאות שונות על מנת להראות מה ניתן להשיג עם שינוים קלים.
-
 ```python
 {% include "../tutorial/tuto5.py" %}
 ```
 
-[תוצר](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
-[טקסט מתמשך](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/PyFPDF/fpdf2/issues/267>_
 
-מאחר וטבלה היא בסה"כ אוסף של תאים, טבעי שכך נבנה טבלאות.
+English versions:
 
-הדוגמא הראשונה נוצרת באופן הבסיסי ביותר שאפשר:תאים ממוסגרים, מיושרים לשמאל ובגדלים שווים. התוצאה היא בסיסית אבל קלה מאוד להשגה.
-
-הטבלה השניה מציגה כמה שיפורים: לכל עמודה יש רוחב משלה, כותרות ממורכזות ותמונות מיושרות לימין. הוסרו קווים אופקיים. זה נעשה על ידי תכונות הגבול של המתודה Cell(), שמציינת איזה גבולות של התא להדפיס. כאן אנחנו רוצים את הגבול השמאלי (L) והימני (R). כעת נותרה הבעיה של הקווים האופקיים. ישנן שתי אפשרויות לפתור בעיה זו: לבדוק את הקו האחרון בלולאה, במקרה זה נשתמש בLRB עבור פרמטר הגבול; או לחלופין, כמו שעשינו כאן, להוסיף את הקו בסוף הלולאה.
-
-הטבלה השלישית דומה לשניה אבל עושה שימוש בצבעים. צבעי המילוי, טקסט והקווים מצויינים במפורש. שינוי הצבעים נעשה על ידי שימוש בתאים שקופים ומלאים לסירוגין.
+* [Tuto 5 - Creating Tables](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
+* [Documentation on tables](https://pyfpdf.github.io/fpdf2/Tables.html)
 
 ## 6 - יצירת קישורים וערבוב סגנונות טקסט ##
 
@@ -153,7 +145,7 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 בעמוד הראשון של הדוגמא השתמשנו [()write](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) למטרה זו. תחילת המשפט נכתב בסגנון טקסט רגיל ואז על ידי שימוש במתודה [()set_font](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) החלפנו לטקסט עם קו תחתון לסיום המשפט.
 
-כדי להוסיף קישור פנימי שמוביל לעמוד השני השתמשנו במתודה [()add_link](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link) שוצרת איזור ניתן להקלקה שנתנו לו את השם "קישור" שמוביל לאיזור אחר באותו המסמך. בעמוד השני השתמשנו ב[()set_link](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link) על מנת להגדיר את האיזור אליו הקישור שיצרנו מוביל.
+כדי להוסיף קישור פנימי שמוביל לעמוד השני השתמשנו במתודה [()add_link](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link) שוצרת איזור ניתן להקלקה שנתנו לו את השם "קישור" שמוביל לאיזור אחר באותו המסמך.
 
 על מנת ליצור קישור חיצני באמצעות תמונה, השתמשנו במתודה [()image](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). למתודה יש אופציה לקבל קישור כאחד הפרמטרים שלה. הקישור יכול להיות פנימי או חיצוני.
 

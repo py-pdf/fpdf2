@@ -63,7 +63,7 @@ class GraphicsStateDictRegistry(OrderedDict):
     """
 
     def register_style(self, style: "GraphicsStyle"):
-        sdict = style.to_pdf_dict()
+        sdict = style.serialize()
 
         # empty style does not need a dictionary
         if not sdict:
@@ -110,11 +110,11 @@ def render_pdf_primitive(primitive):
     Container types (tuples/lists and dicts) are rendered recursively. This supports
     values of the type Name, str, bytes, numbers, booleans, list/tuple, and dict.
 
-    Any custom type can be passed in as long as it provides a `pdf_repr` method that
+    Any custom type can be passed in as long as it provides a `serialize` method that
     takes no arguments and returns a string. The primitive object is returned directly
-    if it is an instance of the `Raw` class. Otherwise, The existence of the `pdf_repr`
+    if it is an instance of the `Raw` class. Otherwise, The existence of the `serialize`
     method is checked before any other type checking is performed, so, for example, a
-    `dict` subclass with a `pdf_repr` method would be converted using its `pdf_repr`
+    `dict` subclass with a `serialize` method would be converted using its `pdf_repr`
     method rather than the built-in `dict` conversion process.
 
     Args:
@@ -132,8 +132,8 @@ def render_pdf_primitive(primitive):
     if isinstance(primitive, Raw):
         return primitive
 
-    if callable(getattr(primitive, "pdf_repr", None)):
-        output = primitive.pdf_repr()
+    if callable(getattr(primitive, "serialize", None)):
+        output = primitive.serialize()
     elif primitive is None:
         output = "null"
     elif isinstance(primitive, str):
@@ -166,6 +166,7 @@ def render_pdf_primitive(primitive):
 # We allow passing alpha in as None instead of a numeric quantity, which signals to the
 # rendering procedure not to emit an explicit alpha field for this graphics state,
 # causing it to be inherited from the parent.
+
 
 # this weird inheritance is used because for some reason normal NamedTuple usage doesn't
 # allow overriding __new__, even though it works just as expected this way.
@@ -207,7 +208,7 @@ class DeviceRGB(
         """The color components as a tuple in order `(r, g, b)` with alpha omitted."""
         return self[:-1]
 
-    def pdf_repr(self) -> str:
+    def serialize(self) -> str:
         return " ".join(number_to_str(val) for val in self.colors) + f" {self.OPERATOR}"
 
 
@@ -250,7 +251,7 @@ class DeviceGray(
         """The color components as a tuple in order (g,) with alpha omitted."""
         return self[:-1]
 
-    def pdf_repr(self) -> str:
+    def serialize(self) -> str:
         return " ".join(number_to_str(val) for val in self.colors) + f" {self.OPERATOR}"
 
 
@@ -306,7 +307,7 @@ class DeviceCMYK(
 
         return self[:-1]
 
-    def pdf_repr(self) -> str:
+    def serialize(self) -> str:
         return " ".join(number_to_str(val) for val in self.colors) + f" {self.OPERATOR}"
 
 
@@ -1175,7 +1176,7 @@ class GraphicsStyle:
     def paint_rule(self, new):
         if new is None:
             super().__setattr__("_paint_rule", PathPaintRule.DONT_PAINT)
-        if new is self.INHERIT:
+        elif new is self.INHERIT:
             super().__setattr__("_paint_rule", new)
         else:
             super().__setattr__("_paint_rule", PathPaintRule.coerce(new))
@@ -1379,8 +1380,7 @@ class GraphicsStyle:
                 raise TypeError(
                     f"stroke_dash_pattern {value} must be a number or sequence of numbers"
                 ) from None
-            else:
-                result = (*accum,)
+            result = (*accum,)
 
         super().__setattr__("_stroke_dash_pattern", result)
 
@@ -1396,7 +1396,7 @@ class GraphicsStyle:
 
         raise TypeError(f"{value} isn't a number or GraphicsStyle.INHERIT")
 
-    def to_pdf_dict(self):
+    def serialize(self):
         """
         Convert this style object to a PDF dictionary with appropriate style keys.
 
@@ -4077,10 +4077,10 @@ class GraphicsContext:
             stroke_color = self.style.stroke_color
 
             if fill_color not in NO_EMIT_SET:
-                render_list.append(fill_color.pdf_repr().lower())
+                render_list.append(fill_color.serialize().lower())
 
             if stroke_color not in NO_EMIT_SET:
-                render_list.append(stroke_color.pdf_repr().upper())
+                render_list.append(stroke_color.serialize().upper())
 
             if emit_dash is not None:
                 render_list.append(

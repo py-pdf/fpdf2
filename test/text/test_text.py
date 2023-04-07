@@ -22,7 +22,7 @@ def test_text_positioning(tmp_path):
         doc.line(x - 5, y, x + 5, y)
         doc.line(x, y - 5, x, y + 5)
         doc.text(x, y, f"{doc.font_family} {doc.font_size_pt}")
-    doc.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf")
+    doc.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf")
     for i in range(15):  # unicode font
         doc.set_font("Roboto", size=10 + 2 * i)
         x = 120

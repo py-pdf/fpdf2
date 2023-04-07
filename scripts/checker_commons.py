@@ -8,7 +8,7 @@ def aggregate(pdf_filepath, report, aggregated_report_filepath):
         "errors": defaultdict(list),
     }
     try:
-        with open(aggregated_report_filepath) as agg_file:
+        with open(aggregated_report_filepath, encoding="utf8") as agg_file:
             prev_agg_report = json.load(agg_file)
         agg_report["failures"].update(prev_agg_report["failures"])
         agg_report["errors"].update(prev_agg_report["errors"])
@@ -22,14 +22,14 @@ def aggregate(pdf_filepath, report, aggregated_report_filepath):
     else:
         for error in report.get("errors", []):
             agg_report["errors"][error].append(pdf_filepath)
-    with open(aggregated_report_filepath, "w") as agg_file:
+    with open(aggregated_report_filepath, "w", encoding="utf8") as agg_file:
         json.dump(agg_report, agg_file)
 
 
 def print_aggregated_report(
     aggregated_report_filepath, checks_details_url, ignore_whitelist_filepath
 ):
-    with open(aggregated_report_filepath) as agg_file:
+    with open(aggregated_report_filepath, encoding="utf8") as agg_file:
         agg_report = json.load(agg_file)
     if "version" in agg_report:
         print(agg_report["version"])
@@ -37,18 +37,19 @@ def print_aggregated_report(
     print("# AGGREGATED REPORT #")
     if agg_report["failures"]:
         print("Failures:")
-        for failure, pdf_filepaths in agg_report["failures"].items():
+        for failure, pdf_filepaths in sorted(agg_report["failures"].items()):
             print(f"- {failure} ({len(pdf_filepaths)}): {', '.join(pdf_filepaths)}")
     print("Errors:")
-    sort_key = lambda error: -len(error[1])
-    for error, pdf_filepaths in sorted(agg_report["errors"].items(), key=sort_key):
+    for error, pdf_filepaths in sorted(
+        sorted(agg_report["errors"].items(), key=lambda error: -len(error[1]))
+    ):
         print(f"- {error} ({len(pdf_filepaths)}): {', '.join(pdf_filepaths)}")
     fail_on_unexpected_check_failure(agg_report, ignore_whitelist_filepath)
 
 
 def fail_on_unexpected_check_failure(agg_report, ignore_whitelist_filepath):
     "exit(1) if there is any non-passing & non-whitelisted error remaining"
-    with open(ignore_whitelist_filepath) as ignore_file:
+    with open(ignore_whitelist_filepath, encoding="utf8") as ignore_file:
         ignore = json.load(ignore_file)
     errors = set(agg_report["errors"].keys()) - set(ignore["errors"].keys())
     if agg_report["failures"] or errors:

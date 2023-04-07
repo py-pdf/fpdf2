@@ -3,8 +3,7 @@ from pathlib import Path
 from fpdf import FPDF
 from fpdf.actions import GoToAction, GoToRemoteAction, LaunchAction, NamedAction
 from fpdf.enums import AnnotationName
-from fpdf.syntax import DestinationXYZ, iobj_ref as pdf_ref
-from fpdf.util import object_id_for_page
+from fpdf.syntax import DestinationXYZ
 
 from test.conftest import assert_pdf_equal, EPOCH, LOREM_IPSUM
 
@@ -76,7 +75,7 @@ def test_goto_action(tmp_path):
     x, y, text = 80, 140, "GoTo action"
     pdf.text(x=x, y=y, txt=text)
     pdf.add_action(
-        GoToAction(dest=DestinationXYZ(page=2).as_str(pdf)),
+        GoToAction(dest=DestinationXYZ(page=2, top=pdf.h_pt)),
         x=x,
         y=y - pdf.font_size,
         w=pdf.get_string_width(text),
@@ -87,68 +86,13 @@ def test_goto_action(tmp_path):
     assert_pdf_equal(pdf, HERE / "goto_action.pdf", tmp_path)
 
 
-def test_goto_next_page_chained(tmp_path):
-    "As of 2022, neither Adobe Acrobat nor Sumatra PDF readers trigger those actions"
-    pdf = FPDF()
-    pdf.set_margin(0)
-    pdf.set_font("Helvetica", size=24)
-    pdf.add_page()
-    pdf.cell(txt="Page 1 (first page)")
-    pdf.add_action(
-        GoToAction(
-            DestinationXYZ(page=1).as_str(pdf),
-            next_action=pdf_ref(object_id_for_page(pdf.page + 1)),
-        ),
-        x=0,
-        y=0,
-        w=pdf.epw,
-        h=pdf.eph,
-    )
-    pdf.add_page()
-    pdf.cell(txt="Page 2")
-    pdf.add_action(
-        GoToAction(
-            DestinationXYZ(page=1).as_str(pdf),
-            next_action=pdf_ref(object_id_for_page(pdf.page + 1)),
-        ),
-        x=0,
-        y=0,
-        w=pdf.epw,
-        h=pdf.eph,
-    )
-    pdf.add_page()
-    pdf.cell(txt="Page 3 (last page)")
-    assert_pdf_equal(pdf, HERE / "goto_next_page_chained.pdf", tmp_path)
-
-
-def test_infinite_loop_with_goto_action(tmp_path):
-    """
-    Based on Jens Müller talk at NDSS: Processing Dangerous Paths.
-    As of 2022, neither Adobe Acrobat nor Sumatra PDF readers seem vulnerable.
-    """
-    pdf = FPDF()
-    pdf.set_margin(0)
-    pdf.add_page()
-    pdf.add_action(
-        GoToAction(
-            DestinationXYZ(page=1).as_str(pdf),
-            next_action=pdf_ref(object_id_for_page(pdf.page)),
-        ),
-        x=0,
-        y=0,
-        w=pdf.epw,
-        h=pdf.eph,
-    )
-    assert_pdf_equal(pdf, HERE / "infinite_loop_with_goto_action.pdf", tmp_path)
-
-
 def test_goto_remote_action(tmp_path):
     pdf = FPDF()
     pdf.set_font("Helvetica", size=24)
     pdf.add_page()
     x, y, text = 80, 140, "GoTo-Remote action"
     pdf.text(x=x, y=y, txt=text)
-    dest = DestinationXYZ(page=1, page_as_obj_id=False).as_str(pdf)
+    dest = DestinationXYZ(page=1, top=pdf.h_pt)
     pdf.add_action(
         GoToRemoteAction("goto_action.pdf", dest=dest),
         x=x,

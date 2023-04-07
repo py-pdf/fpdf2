@@ -23,6 +23,9 @@ contributors/contributors.html
 include/
 local/
 
+# vscode
+.vscode
+
 # Packages
 *.egg
 .eggs

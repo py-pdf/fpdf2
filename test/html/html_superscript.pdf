@@ -1,90 +1,93 @@
 %PDF-1.3
+1 0 obj
+<<
+/Count 1
+/Kids [3 0 R]
+/MediaBox [0 0 595.28 841.89]
+/Type /Pages
+>>
+endobj
+2 0 obj
+<<
+/OpenAction [3 0 R /FitH null]
+/Outlines 7 0 R
+/PageLayout /OneColumn
+/Pages 1 0 R
+/Type /Catalog
+>>
+endobj
 3 0 obj
-<</Type /Page
+<<
+/Contents 4 0 R
 /Parent 1 0 R
-/Resources 2 0 R
-/Contents 4 0 R>>
+/Resources 6 0 R
+/Type /Page
+>>
 endobj
 4 0 obj
-<</Filter /FlateDecode /Length 178>>
+<<
+/Filter /FlateDecode
+/Length 178
+>>
 stream
 xœu=‚0†w~Å;Â`iku5ÑÁÍĞ‘I©ã–ùù ¹á.÷ñ<Çq(‘)>ÁV#Ş30N(…¾`§ÇSë¿®õa¯ğ+kF˜Bš(’
 èaÖTÆÖg[V.ÎšS_Á™ÚEĞ7OÁqÁ6 Ä†ÈÅ‡ïíÆé|Ü?€ Êç¡Lf!ı¿ÿH<^Öà^>©u3c’p±`X±Q‘‡eÑæÑäù¦zMô
 endstream
 endobj
-1 0 obj
-<</Type /Pages
-/Kids [3 0 R]
-/Count 1
-/MediaBox [0 0 595.28 841.89]
->>
-endobj
 5 0 obj
-<</Type /Font
-/BaseFont /Times-Roman
-/Subtype /Type1
-/Encoding /WinAnsiEncoding
->>
-endobj
-2 0 obj
 <<
-/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
-/Font <<
-/F1 5 0 R
->>
-/XObject <<
->>
+/BaseFont /Times-Roman
+/Encoding /WinAnsiEncoding
+/Subtype /Type1
+/Type /Font
 >>
 endobj
 6 0 obj
 <<
-/Count 1
-/First 7 0 R
-/Last 7 0 R
-/Type /Outlines
+/Font <</F1 5 0 R>>
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
 >>
 endobj
 7 0 obj
 <<
-/Count 0
-/Dest [3 0 R /XYZ 0.0 787.94 null]
-/Parent 6 0 R
-/Title <feff00530075007000650072007300630072006900700074002f00530075006200730063007200690070007400200074006500730074>
+/Count 1
+/First 8 0 R
+/Last 8 0 R
+/Type /Outlines
 >>
 endobj
 8 0 obj
 <<
-/CreationDate (D:19691231190000Z19'00')
+/Count 0
+/Dest [3 0 R /XYZ 0 787.94 null]
+/Parent 7 0 R
+/Title (Superscript/Subscript test)
 >>
 endobj
 9 0 obj
 <<
-/Type /Catalog
-/Pages 1 0 R
-/OpenAction [3 0 R /FitH null]
-/PageLayout /OneColumn
-/Outlines 6 0 R
+/CreationDate (D:19691231190000Z19'00')
 >>
 endobj
 xref
 0 10
 0000000000 65535 f 
-0000000335 00000 n 
-0000000519 00000 n 
 0000000009 00000 n 
-0000000087 00000 n 
-0000000421 00000 n 
-0000000623 00000 n 
-0000000694 00000 n 
-0000000891 00000 n 
-0000000952 00000 n 
+0000000096 00000 n 
+0000000215 00000 n 
+0000000295 00000 n 
+0000000545 00000 n 
+0000000644 00000 n 
+0000000731 00000 n 
+0000000802 00000 n 
+0000000915 00000 n 
 trailer
 <<
 /Size 10
-/Root 9 0 R
-/Info 8 0 R
-/ID [<2A5D6AB75371FFBBA1CB376485A9C994><2A5D6AB75371FFBBA1CB376485A9C994>]
+/Root 2 0 R
+/Info 9 0 R
+/ID [<7BED1EE685C7A33E60B84A3771F35BEC><7BED1EE685C7A33E60B84A3771F35BEC>]
 >>
 startxref
-1071
+976
 %%EOF

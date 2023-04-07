@@ -55,10 +55,13 @@ def test_transition_errors():
     pdf = FPDF()
     pdf.set_font("Helvetica", size=120)
     with pytest.raises(NotImplementedError):
-        Transition().dict_as_string()
+        Transition().serialize()
 
     with pytest.raises(ValueError):
         pdf.add_page(transition=SplitTransition("A", "B"))
+
+    with pytest.raises(ValueError):
+        pdf.add_page(transition=SplitTransition("H", "B"))
 
     with pytest.raises(ValueError):
         pdf.add_page(transition=BlindsTransition("A"))
@@ -74,6 +77,9 @@ def test_transition_errors():
 
     with pytest.raises(ValueError):
         pdf.add_page(transition=FlyTransition("A", -1))
+
+    with pytest.raises(ValueError):
+        pdf.add_page(transition=FlyTransition("V", -1))
 
     with pytest.raises(ValueError):
         pdf.add_page(transition=PushTransition(-1))

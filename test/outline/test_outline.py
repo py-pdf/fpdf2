@@ -95,8 +95,7 @@ def render_toc(pdf, outline):
     pdf.y += 20
     pdf.set_font("Courier", size=12)
     for section in outline:
-        link = pdf.add_link()
-        pdf.set_link(link, page=section.page_number)
+        link = pdf.add_link(page=section.page_number)
         p(
             pdf,
             f'{" " * section.level * 2} {section.name} {"." * (60 - section.level*2 - len(section.name))} {section.page_number}',
@@ -196,17 +195,17 @@ def test_toc_with_nb_and_footer(tmp_path):  # issue-548
     assert_pdf_equal(pdf, HERE / "toc_with_nb_and_footer.pdf", tmp_path)
 
 
-def test_russian_heading(tmp_path):  # issue-320
+def test_toc_with_russian_heading(tmp_path):  # issue-320
     pdf = FPDF()
-    pdf.add_font("Roboto", style="B", fname="test/fonts/Roboto-Regular.ttf")
-    pdf.set_font("Roboto", style="B")
+    pdf.add_font(fname="test/fonts/Roboto-Regular.ttf")
+    pdf.set_font("Roboto-Regular")
     pdf.add_page()
     pdf.start_section("Русский, English, 1 2 3...")
     pdf.write(8, "Русский текст в параграфе.")
     assert_pdf_equal(pdf, HERE / "russian_heading.pdf", tmp_path)
 
 
-def test_thai_headings(tmp_path):  # issue-458
+def test_toc_with_thai_headings(tmp_path):  # issue-458
     pdf = FPDF()
     for txt in [
         "ลักษณะเฉพาะของคุณ",
@@ -217,3 +216,15 @@ def test_thai_headings(tmp_path):  # issue-458
         pdf.add_page()
         pdf.start_section(txt)
     assert_pdf_equal(pdf, HERE / "thai_headings.pdf", tmp_path)
+
+
+def test_toc_without_font_style(tmp_path):  # issue-676
+    pdf = FPDF()
+    pdf.set_font("helvetica")
+    pdf.set_section_title_styles(
+        level0=TitleStyle(font_size_pt=28, l_margin=10), level1=TitleStyle()
+    )
+    pdf.add_page()
+    pdf.start_section("Title")
+    pdf.start_section("Subtitle", level=1)
+    assert_pdf_equal(pdf, HERE / "toc_without_font_style.pdf", tmp_path)

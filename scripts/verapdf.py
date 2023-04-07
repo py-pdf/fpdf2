@@ -15,21 +15,20 @@ from scripts.checker_commons import aggregate, print_aggregated_report
 
 AGGREGATED_REPORT_FILEPATH = "verapdf-aggregated.json"
 IGNORE_WHITELIST_FILEPATH = "scripts/verapdf-ignore.json"
-CHECKS_DETAILS_URL = "https://docs.verapdf.org/validation/pdfa-part1/ & https://docs.verapdf.org/validation/pdfa-parts-2-and-3/"
+CHECKS_DETAILS_URL = "https://docs.verapdf.org/validation/"
 BAT_EXT = ".bat" if sys.platform in ("cygwin", "win32") else ""
 
 
 def analyze_pdf_file(pdf_filepath):
-    output = run(
-        [
-            "verapdf/verapdf" + BAT_EXT,
-            "--format",
-            "text",
-            "-v",
-            pdf_filepath,
-        ],
-        stdout=PIPE,
-    ).stdout.decode()
+    command = [
+        "verapdf/verapdf" + BAT_EXT,
+        "--format",
+        "text",
+        "-v",
+        pdf_filepath,
+    ]
+    # print(" ".join(command))
+    output = run(command, check=False, stdout=PIPE).stdout.decode()
     report = parse_output(output)
     aggregate(pdf_filepath, report, AGGREGATED_REPORT_FILEPATH)
 

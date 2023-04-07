@@ -5,11 +5,12 @@ import pytest
 from fpdf import FPDF, FPDFException
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
-TEXT_SIZE, SPACING = 36, 1.15
-LINE_HEIGHT = TEXT_SIZE * SPACING
-
 
 HERE = Path(__file__).resolve().parent
+FONTS_DIR = HERE.parent / "fonts"
+
+TEXT_SIZE, SPACING = 36, 1.15
+LINE_HEIGHT = TEXT_SIZE * SPACING
 
 TABLE_DATA = (
     ("First name", "Last name", "Age", "City"),
@@ -155,9 +156,9 @@ def test_cell_markdown(tmp_path):
 def test_cell_markdown_with_ttf_fonts(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf")
-    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf")
-    pdf.add_font("Roboto", "I", HERE / "../fonts/Roboto-Italic.ttf")
+    pdf.add_font("Roboto", "", FONTS_DIR / "Roboto-Regular.ttf")
+    pdf.add_font("Roboto", "B", FONTS_DIR / "Roboto-Bold.ttf")
+    pdf.add_font("Roboto", "I", FONTS_DIR / "Roboto-Italic.ttf")
     pdf.set_font("Roboto", size=60)
     pdf.cell(txt="**Lorem** __Ipsum__ --dolor--", markdown=True)
     assert_pdf_equal(pdf, HERE / "cell_markdown_with_ttf_fonts.pdf", tmp_path)
@@ -166,13 +167,11 @@ def test_cell_markdown_with_ttf_fonts(tmp_path):
 def test_cell_markdown_missing_ttf_font():
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf")
-    pdf.set_font("Roboto", size=60)
+    pdf.add_font(fname=FONTS_DIR / "Roboto-Regular.ttf")
+    pdf.set_font("Roboto-Regular", size=60)
     with pytest.raises(FPDFException) as error:
         pdf.cell(txt="**Lorem Ipsum**", markdown=True)
-    expected_msg = (
-        "Undefined font: robotoB - Use built-in fonts or FPDF.add_font() beforehand"
-    )
+    expected_msg = "Undefined font: roboto-regularB - Use built-in fonts or FPDF.add_font() beforehand"
     assert str(error.value) == expected_msg
 
 
@@ -192,8 +191,8 @@ def test_cell_markdown_bleeding(tmp_path):  # issue 241
 def test_cell_markdown_right_aligned(tmp_path):  # issue 333
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf")
-    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf")
+    pdf.add_font("Roboto", fname=FONTS_DIR / "Roboto-Regular.ttf")
+    pdf.add_font("Roboto", style="B", fname=FONTS_DIR / "Roboto-Bold.ttf")
     pdf.set_font("Roboto", size=60)
     pdf.cell(
         0,
@@ -248,8 +247,8 @@ def test_cell_newpos_badinput():
 def test_cell_curfont_leak(tmp_path):  # issue #475
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto", "", HERE / "../fonts/Roboto-Regular.ttf")
-    pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf")
+    pdf.add_font("Roboto", fname=FONTS_DIR / "Roboto-Regular.ttf")
+    pdf.add_font("Roboto", style="B", fname=FONTS_DIR / "Roboto-Bold.ttf")
     with pdf.local_context():
         pdf.set_font("Roboto", "B", 10)
         pdf.cell(txt="ABCDEFGH", new_x="LEFT", new_y="NEXT")
@@ -262,3 +261,25 @@ def test_cell_curfont_leak(tmp_path):  # issue #475
     pdf.cell(txt="XYZ012abc,-", new_x="LEFT", new_y="NEXT")
     pdf.cell(txt="3,7E-05", new_x="LEFT", new_y="NEXT")
     assert_pdf_equal(pdf, HERE / "cell_curfont_leak.pdf", tmp_path)
+
+
+# pylint: disable=protected-access
+def test_cell_lasth(tmp_path):  # issue #601
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica", size=18)
+    pdf.set_fill_color(255, 255, 0)
+    pdf.cell(w=100, txt="Hello world", fill=True)
+    pdf.ln()
+    assert pdf._lasth == 6.35, f"pdf._lasth ({pdf._lasth}) != 5.35"
+    pdf.set_fill_color(255, 0, 255)
+    pdf.cell(w=100, txt="Hello world", h=50, fill=True)
+    pdf.ln()
+    assert pdf._lasth == 50, f"pdf._lasth ({pdf._lasth}) != 50 after cell(h=50)"
+    pdf.set_fill_color(0, 255, 255)
+    pdf.cell(w=100, txt="Hello world", fill=True)
+    pdf.cell(w=100, txt="")
+    pdf.ln()
+    assert pdf._lasth == 6.35, f"pdf._lasth ({pdf._lasth}) != 5.35 after empty cell"
+    pdf.cell(w=100, txt="Hello world", border=True)
+    assert_pdf_equal(pdf, HERE / "cell_lasth.pdf", tmp_path)

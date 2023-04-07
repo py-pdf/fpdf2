@@ -26,7 +26,7 @@ def test_html_images(tmp_path):
         f"<center><img src=\"{img_path}\" height='300' width='300'></center>"
     )
     # Unable to text position of the image as write html moves to a new line after
-    # adding the image but it can be seen in the produce test.pdf file.
+    # adding the image but it can be seen in the resulting html_images.pdf file.
     assert round(pdf.get_x()) == 10
     assert pdf.get_y() == pytest.approx(mm_after_image, abs=0.01)
 
@@ -83,8 +83,8 @@ def test_html_features(tmp_path):
         "  </tbody>"
         "  <tfoot>"
         "    <tr>"
-        '      <td width="50%">id</td>'
-        '      <td width="50%">name</td>'
+        "      <td>id</td>"
+        "      <td>name</td>"
         "    </tr>"
         "  </tfoot>"
         "</table>"
@@ -110,8 +110,8 @@ def test_html_features(tmp_path):
         "  </tbody>"
         "  <tfoot>"
         "    <tr>"
-        '      <td width="50%">id</td>'
-        '      <td width="50%">name</td>'
+        "      <td>id</td>"
+        "      <td>name</td>"
         "    </tr>"
         "  </tfoot>"
         "</table>"
@@ -160,7 +160,7 @@ def test_html_features(tmp_path):
             "  </thead>"
             "  <tbody>"
             "    <tr>"
-            '      <td colspan="2">Alice</td>'
+            '      <td colspan="2" align="center">Alice</td>'
             "    </tr>"
         )
         + "".join(getrow(i) for i in range(26))
@@ -173,73 +173,6 @@ def test_html_features(tmp_path):
     pdf.write_html(f"<img src=\"{img_path}\" height='300' width='300'>")
 
     assert_pdf_equal(pdf, HERE / "html_features.pdf", tmp_path)
-
-
-def test_html_simple_table(tmp_path):
-    pdf = FPDF()
-    pdf.set_font_size(30)
-    pdf.add_page()
-    pdf.write_html(
-        """<table><thead><tr>
-        <th width="25%">left</th><th width="50%">center</th><th width="25%">right</th>
-    </tr></thead><tbody><tr>
-        <td>1</td><td>2</td><td>3</td>
-    </tr><tr>
-        <td>4</td><td>5</td><td>6</td>
-    </tr></tbody></table>"""
-    )
-    assert_pdf_equal(pdf, HERE / "html_simple_table.pdf", tmp_path)
-
-
-def test_html_table_line_separators(tmp_path):
-    pdf = FPDF()
-    pdf.set_font_size(30)
-    pdf.add_page()
-    pdf.write_html(
-        """<table><thead><tr>
-        <th width="25%">left</th><th width="50%">center</th><th width="25%">right</th>
-    </tr></thead><tbody><tr>
-        <td>1</td><td>2</td><td>3</td>
-    </tr><tr>
-        <td>4</td><td>5</td><td>6</td>
-    </tr></tbody></table>""",
-        table_line_separators=True,
-    )
-    assert_pdf_equal(pdf, HERE / "html_table_line_separators.pdf", tmp_path)
-
-
-def test_html_table_th_inside_tr_issue_137(tmp_path):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.write_html(
-        """<table border="1">
-    <tr>
-        <th width="40%">header1</th>
-        <th width="60%">header2</th>
-    </tr>
-    <tr>
-        <th width="40%">value1</th>
-        <td width="60%">value2</td>
-    </tr>
-</table>"""
-    )
-    assert_pdf_equal(pdf, HERE / "html_table_line_separators_issue_137.pdf", tmp_path)
-
-
-def test_html_table_with_border(tmp_path):
-    pdf = FPDF()
-    pdf.set_font_size(30)
-    pdf.add_page()
-    pdf.write_html(
-        """<table border="1"><thead><tr>
-        <th width="25%">left</th><th width="50%">center</th><th width="25%">right</th>
-    </tr></thead><tbody><tr>
-        <td>1</td><td>2</td><td>3</td>
-    </tr><tr>
-        <td>4</td><td>5</td><td>6</td>
-    </tr></tbody></table>"""
-    )
-    assert_pdf_equal(pdf, HERE / "html_table_with_border.pdf", tmp_path)
 
 
 def test_html_bold_italic_underline(tmp_path):
@@ -255,11 +188,12 @@ def test_html_bold_italic_underline(tmp_path):
     assert_pdf_equal(pdf, HERE / "html_bold_italic_underline.pdf", tmp_path)
 
 
-def test_customize_ul(tmp_path):
+def test_html_customize_ul(tmp_path):
     html = """<ul>
             <li><b>term1</b>: definition1</li>
             <li><b>term2</b>: definition2</li>
         </ul>"""
+
     # 1. Customizing through class attributes:
     class CustomPDF(FPDF):
         li_tag_indent = 5
@@ -279,135 +213,7 @@ def test_customize_ul(tmp_path):
     for indent, bullet in ((15, "\xac"), (20, "\xb7")):
         pdf.write_html(html, li_tag_indent=indent, ul_bullet_char=bullet)
         pdf.ln()
-    assert_pdf_equal(pdf, HERE / "test_customize_ul.pdf", tmp_path)
-
-
-def test_img_inside_html_table(tmp_path):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.write_html(
-        """<table>
-        <tr>
-            <td width="50%">
-                <img src="test/image/png_images/affc57dfffa5ec448a0795738d456018.png" height="235" width="435"/>
-            </td>
-            <td width="50%">
-                <img src="test/image/image_types/insert_images_insert_png.png" height="162" width="154"/>
-            </td>
-        </tr>
-    </table>"""
-    )
-    assert_pdf_equal(pdf, HERE / "test_img_inside_html_table.pdf", tmp_path)
-
-
-def test_img_inside_html_table_without_explicit_dimensions(tmp_path):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.write_html(
-        """<table>
-        <tr>
-            <td width="50%">
-                <img src="test/image/png_images/affc57dfffa5ec448a0795738d456018.png"/>
-            </td>
-            <td width="50%">
-                <img src="test/image/image_types/insert_images_insert_png.png"/>
-            </td>
-        </tr>
-    </table>"""
-    )
-    assert_pdf_equal(
-        pdf,
-        HERE / "test_img_inside_html_table_without_explicit_dimensions.pdf",
-        tmp_path,
-    )
-
-
-def test_img_inside_html_table_centered(tmp_path):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.write_html(
-        """<table>
-        <tr>
-            <td width="50%"><center>
-                <img src="test/image/png_images/affc57dfffa5ec448a0795738d456018.png" height="235" width="435"/>
-            </center></td>
-            <td width="50%"><center>
-                <img src="test/image/image_types/insert_images_insert_png.png" height="162" width="154"/>
-            </center></td>
-        </tr>
-    </table>"""
-    )
-    assert_pdf_equal(pdf, HERE / "test_img_inside_html_table_centered.pdf", tmp_path)
-
-
-def test_img_inside_html_table_centered_with_align(tmp_path):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.write_html(
-        """<table>
-        <tr>
-            <td width="50%" align="center">
-                <img src="test/image/png_images/affc57dfffa5ec448a0795738d456018.png" height="235" width="435"/>
-            </td>
-            <td width="50%" align="center">
-                <img src="test/image/image_types/insert_images_insert_png.png" height="162" width="154"/>
-            </td>
-        </tr>
-    </table>"""
-    )
-    assert_pdf_equal(
-        pdf, HERE / "test_img_inside_html_table_centered_with_align.pdf", tmp_path
-    )
-
-
-def test_img_inside_html_table_centered_with_caption(tmp_path):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.write_html(
-        """<table border="1">
-        <tr>
-            <td colspan="2" align="center"><b>Side by side centered pictures and captions</b></td>
-        </tr>
-        <tr>
-            <td width="50%" align="center"><img src="docs/fpdf2-logo.png" height="200" width="200"/></td>
-            <td width="50%" align="center"><img src="docs/fpdf2-logo.png" height="200" width="200"/></td>
-        </tr>
-        <tr>
-            <td width="50%" align="center">left caption</td>
-            <td width="50%" align="center">right caption</td>
-        </tr>
-    </table>"""
-    )
-    assert_pdf_equal(
-        pdf, HERE / "test_img_inside_html_table_centered_with_caption.pdf", tmp_path
-    )
-
-
-def test_html_table_with_empty_cell_contents(tmp_path):  # issue 349
-    pdf = FPDF()
-    pdf.set_font_size(30)
-    pdf.add_page()
-    # Reference table cells positions:
-    pdf.write_html(
-        """<table><thead><tr>
-        <th width="25%">left</th><th width="50%">center</th><th width="25%">right</th>
-    </tr></thead><tbody><tr>
-        <td>1</td><td>2</td><td>3</td>
-    </tr><tr>
-        <td>4</td><td>5</td><td>6</td>
-    </tr></tbody></table>"""
-    )
-    # Table with empty cells:
-    pdf.write_html(
-        """<table><thead><tr>
-        <th width="25%">left</th><th width="50%">center</th><th width="25%">right</th>
-    </tr></thead><tbody><tr>
-        <td>1</td><td></td><td>3</td>
-    </tr><tr>
-        <td></td><td>5</td><td></td>
-    </tr></tbody></table>"""
-    )
-    assert_pdf_equal(pdf, HERE / "html_table_with_empty_cell_contents.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "html_customize_ul.pdf", tmp_path)
 
 
 def test_html_justify_paragraph(tmp_path):
@@ -456,7 +262,7 @@ def test_html_font_color_name(tmp_path):
 
 def test_html_heading_hebrew(tmp_path):
     pdf = FPDF()
-    pdf.add_font("DejaVuSans", fname=HERE / "../fonts/DejaVuSans.ttf")
+    pdf.add_font(fname=HERE / "../fonts/DejaVuSans.ttf")
     pdf.set_font("DejaVuSans")
     pdf.add_page()
     pdf.write_html("<h1>Hebrew: שלום עולם</h1>")
@@ -475,7 +281,7 @@ def test_html_headings_line_height(tmp_path):  # issue-223
     <h4>H4   {long_title*3}</h4>
     <h5>H5   {long_title*3}</h5>
     <h6>H6   {long_title*4}</h6>
-    <p>P   {long_title*5}<p>"""
+    <p>P   {long_title*5}</p>"""
     )
     assert_pdf_equal(pdf, HERE / "html_headings_line_height.pdf", tmp_path)
 
@@ -493,28 +299,6 @@ def test_html_custom_heading_sizes(tmp_path):  # issue-223
         heading_sizes=dict(h1=6, h2=12, h3=18, h4=24, h5=30, h6=36),
     )
     assert_pdf_equal(pdf, HERE / "html_custom_heading_sizes.pdf", tmp_path)
-
-
-def test_bgcolor_in_table(tmp_path):  # issue-512
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.write_html(
-        """<table>
-    <thead>
-        <tr>
-            <th width="25%">Career</th>
-            <th width="75%">Quote</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr bgcolor="grey"><td>Engineer</td><td>The engineer has been, and is, a maker of history.</td></tr>
-        <tr bgcolor="white"><td>Developer</td><td>Logical thinking, passion and perseverance is the paint on your palette.</td></tr>
-        <tr bgcolor="grey"><td>Analyst</td><td>Seeing what other people can't see gives you great vision.</td></tr>
-        <tr bgcolor="white"><td><i>None of the above</i></td><td>I'm sorry. We could not find a quote for your job.</td></tr>
-    </tbody>
-</table>"""
-    )
-    assert_pdf_equal(pdf, HERE / "bgcolor_in_table.pdf", tmp_path)
 
 
 def test_html_superscript(tmp_path):
@@ -566,3 +350,93 @@ def test_html_HTMLMixin_deprecation_warning(tmp_path):
         """
         )
         assert_pdf_equal(pdf, HERE / "html_description.pdf", tmp_path)
+
+
+def test_html_whitespace_handling(tmp_path):  # Issue 547
+    """Testing whitespace handling for write_html()."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """
+<body>
+<h1>Issue 547 Test</h1>
+<p>
+<b>Testing   </b> paragraph blocks
+        that <i>span</i> <b>multiple lines</b>.
+    Testing tabs       and    spaces<br>
+    and break tags.<br>
+</p>
+<code>Testing code blocks with tabs      and    spaces.</code><br>
+<pre>
+Testing pre blocks
+that span multiple lines
+and have tabs    and    spaces.
+</pre>
+
+<pre><code>
+Testing pre-code blocks
+that span multiple lines
+and have tabs    and    spaces.
+</code></pre>
+
+<p>Testing unicode nbsp \u00a0\u00a0\u00a0\u00a0,
+and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.<br>
+    \u00a0&nbsp;&nbsp;Testing leading nbsp
+</p>
+</body>
+"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_whitespace_handling.pdf", tmp_path)
+
+
+def test_html_custom_line_height(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<p line-height=3>
+text-text-text-text-text-text-text-text-text-text-
+text-text-text-text-text-text-text-text-text-text-
+text-text-text-text-text-text-text-text-text-text</p>
+<p line-height=2>
+text-text-text-text-text-text-text-text-text-text-
+text-text-text-text-text-text-text-text-text-text-
+text-text-text-text-text-text-text-text-text-text-</p>
+"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_custom_line_height.pdf", tmp_path)
+
+
+def test_html_img_not_overlapping(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<img src="test/image/png_images/affc57dfffa5ec448a0795738d456018.png"/>
+<p>text</p>
+"""
+    )
+    assert_pdf_equal(
+        pdf,
+        HERE / "html_img_not_overlapping.pdf",
+        tmp_path,
+    )
+
+
+def test_warn_on_tags_not_matching(caplog):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html("<p>")
+    assert "Missing HTML end tag for <p>" in caplog.text
+    pdf.write_html("</p>")
+    assert " Unexpected HTML end tag </p>" in caplog.text
+    pdf.write_html("<p></a>")
+    assert " Unexpected HTML end tag </a>" in caplog.text
+
+
+def test_html_unorthodox_headings_hierarchy(tmp_path):  # issue 631
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<h1>H1</h1>
+           <h5>H5</h5>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_unorthodox_headings_hierarchy.pdf", tmp_path)
