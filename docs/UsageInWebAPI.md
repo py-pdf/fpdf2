@@ -152,3 +152,72 @@ Check [tutorial/notebook.ipynb](https://github.com/PyFPDF/fpdf2/blob/master/tuto
 Usage of the original PyFPDF lib with [web2py](http://www.web2py.com/) is described here: <https://github.com/reingart/pyfpdf/blob/master/docs/Web2Py.md>
 
 `v1.7.2` of PyFPDF is included in `web2py` since release `1.85.2`: <https://github.com/web2py/web2py/tree/master/gluon/contrib/fpdf>
+
+
+## FastAPI ##
+[FastAPI](https://fastapi.tiangolo.com/) is:
+> a modern, fast (high-performance), web framework for building APIs with Python 3.7+ based on standard Python type hints.
+
+The following code shows how to generate a PDF via a POST endpoint that receives the recipient's email address and sends the file to them.
+
+
+```python
+from fastapi import FastAPI, Path, Request
+
+from fpdf import FPDF
+
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+
+from io import BytesIO
+
+import warnings
+warnings.filterwarnings("ignore")
+
+
+app = FastAPI()
+
+@app.post("/send_data")
+async def create_pdf(request: Request):
+    data = await request.json()
+
+    # Create the message
+    msg = MIMEMultipart()
+    msg["From"] = "<your_email_address>"
+    msg["To"] = data["user_email_address"]
+    msg["Subject"] = "<add_subject_here>"
+
+
+    # Add message body
+    body = "<add_body_here>"
+    msg.attach(MIMEText(body))
+
+
+    # Create the PDF file
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=24)
+    pdf.cell(txt="hello world")
+
+
+    # Convert the file into byte format using BytesIO
+    in_memory_file = BytesIO(pdf.output())
+    attach = MIMEApplication(in_memory_file.read(), _subtype="pdf")
+    custom_filename = "<add_file_name_here>"
+    attach.add_header("Content-Disposition", "attachment", filename=str(custom_filename))
+    msg.attach(attach)
+
+
+    # Send the message to the user's email
+    smtp_server = smtplib.SMTP("<smtp_server>", <PORT_NUMBER>)
+    smtp_server.starttls()
+
+    smtp.server.login("SMTP_LOGIN_EMAIL", "SMTP_PASSWORD")
+    smtp_server.sendmail("SMTP_LOGIN_EMAIL", data["<user_email_here>"], msg.as_string())
+
+    smtp_server.quit()
+
+    return {"status": 200}
+```
