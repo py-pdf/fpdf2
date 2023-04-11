@@ -162,7 +162,7 @@ The following code shows how to generate a PDF via a POST endpoint that receives
 
 
 ```python
-from fastapi import FastAPI, Path, Request
+from fastapi import FastAPI, Request
 
 from fpdf import FPDF
 
@@ -171,50 +171,81 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 
+import json
+import anyio
+
 import warnings
 warnings.filterwarnings("ignore")
 
 
 app = FastAPI()
 
+
+def run_in_thread(func, *args, **kwargs):
+    """ 
+    Utility function that allows you to run a python function 
+    in a separate thread using the anyio library 
+    """
+    return anyio.run(func, *args, **kwargs)
+
+
+def json_handler(request):
+    """
+    Helper function that reads the request object as input
+    """
+    async def get_json_payload(request):
+        json_payload = await request.json()
+        return json_payload
+    return run_in_thread(get_json_payload, request)
+
+
 @app.post("/send_data")
-async def create_pdf(request: Request):
-    data = await request.json()
+def create_pdf(request: Request):
+    """ 
+    POST Endpoint that receives a json object 
+    Creates a PDF file based on the contents of the json object
+    Sends the PDF to the user's email via SMTP 
+    """
+    try:
+        data = json_handler(request)
 
-    # Create the message
-    msg = MIMEMultipart()
-    msg["From"] = "<your_email_address>"
-    msg["To"] = data["user_email_address"]
-    msg["Subject"] = "<add_subject_here>"
-
-
-    # Add message body
-    body = "<add_body_here>"
-    msg.attach(MIMEText(body))
-
-
-    # Create the PDF file
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Helvetica", size=24)
-    pdf.cell(txt="hello world")
+        # Create the message
+        msg = MIMEMultipart()
+        msg["From"] = "<your_email_address>"
+        msg["To"] = data["user_email_address"]
+        msg["Subject"] = "<add_subject_here>"
 
 
-    # Convert the file into byte format using BytesIO
-    attach = MIMEApplication(bytes(pdf.output()), _subtype="pdf")
-    custom_filename = "<add_file_name_here>"
-    attach.add_header("Content-Disposition", "attachment", filename=custom_filename)
-    msg.attach(attach)
+        # Add message body
+        body = "<add_body_here>"
+        msg.attach(MIMEText(body))
 
 
-    # Send the message to the user's email
-    smtp_server = smtplib.SMTP("<smtp_server>", <PORT_NUMBER>)
-    smtp_server.starttls()
+        # Create the PDF file
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Helvetica", size=24)
+        pdf.cell(txt="hello world")
 
-    smtp.server.login("SMTP_LOGIN_EMAIL", "SMTP_PASSWORD")
-    smtp_server.sendmail("SMTP_LOGIN_EMAIL", data["<user_email_here>"], msg.as_string())
 
-    smtp_server.quit()
+        # Convert the file into byte format using BytesIO
+        attach = MIMEApplication(bytes(pdf.output()), _subtype="pdf")
+        custom_filename = "<add_file_name_here>"
+        attach.add_header("Content-Disposition", "attachment", filename=custom_filename)
+        msg.attach(attach)
 
-    return {"status": 200}
+
+        # Send the message to the user's email
+        smtp_server = smtplib.SMTP("<smtp_server>", <PORT_NUMBER>)
+        smtp_server.starttls()
+
+        smtp.server.login("SMTP_LOGIN_EMAIL", "SMTP_PASSWORD")
+        smtp_server.sendmail("SMTP_LOGIN_EMAIL", data["<user_email_here>"], msg.as_string())
+
+        smtp_server.quit()
+
+        return {"status": 200}
+
+    except Exception as e:
+        return {"status": str(e)}
 ```
