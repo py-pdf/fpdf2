@@ -171,8 +171,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 
-from io import BytesIO
-
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -203,10 +201,9 @@ async def create_pdf(request: Request):
 
 
     # Convert the file into byte format using BytesIO
-    in_memory_file = BytesIO(pdf.output())
-    attach = MIMEApplication(in_memory_file.read(), _subtype="pdf")
+    attach = MIMEApplication(bytes(pdf.output()), _subtype="pdf")
     custom_filename = "<add_file_name_here>"
-    attach.add_header("Content-Disposition", "attachment", filename=str(custom_filename))
+    attach.add_header("Content-Disposition", "attachment", filename=custom_filename)
     msg.attach(attach)
 
 
