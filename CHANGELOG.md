@@ -17,9 +17,10 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.7.4] - Not released yet
-
 ### Added
 - documentation on how to embed `graphs` and `charts` generated using `Pygal` lib: [documentation section](https://pyfpdf.github.io/fpdf2/Maths.html#using-pygal) - thanks to @ssavi-ict
+### Changed
+- [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) does not render the top row as a header, in bold with a line below, when no `<th>` are used, in order to be more backward-compatible with earlier versions of `fpdf2` - _cf._ [#740](https://github.com/PyFPDF/fpdf2/issues/740)
 
 ## [2.7.3] - 2023-04-03
 ### Fixed
@@ -29,7 +30,6 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Fixed
 - custom fonts can be used with `FPDF.table()` without triggering a `TypeError: cannot pickle 'dict_keys' object` - thanks @aeris07 for the bug report
 - the SVG parser now accepts `<rect>` with `width` / `height` defined as percents
-
 ### Added
 - documentation on how to generate Code128 barcodes using the `python-barcode` lib: [documentation section](https://pyfpdf.github.io/fpdf2/Barcodes.html#Code128)
 

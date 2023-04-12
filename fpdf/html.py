@@ -10,8 +10,9 @@ import logging, warnings
 from html.parser import HTMLParser
 
 from .enums import TextEmphasis, XPos, YPos
+from .errors import FPDFException
 from .fonts import FontFace
-from .table import Table
+from .table import Table, TableBordersLayout
 
 import re
 
@@ -447,13 +448,23 @@ class HTML2FPDF(HTMLParser):
             )
             self.pdf.ln()
         if tag == "tr":
+            if not self.table:
+                raise FPDFException("Invalid HTML: <tr> used outside any <table>")
             self.tr = {k.lower(): v for k, v in attrs.items()}
             self.table_row = self.table.row()
         if tag in ("td", "th"):
+            if not self.table_row:
+                raise FPDFException(f"Invalid HTML: <{tag}> used outside any <tr>")
             self.td_th = {k.lower(): v for k, v in attrs.items()}
             if tag == "th":
                 self.td_th["align"] = "CENTER"
                 self.td_th["b"] = True
+            elif len(self.table.rows) == 1 and not self.table_row.cells:
+                # => we are in the 1st <tr>, and the 1st cell is a <td>
+                # => we do not treat the first row as a header
+                # pylint: disable=protected-access
+                self.table._borders_layout = TableBordersLayout.NONE
+                self.table._first_row_as_headings = False
             if "height" in attrs:
                 LOGGER.warning(
                     'Ignoring unsupported height="%s" specified on a <%s>',
