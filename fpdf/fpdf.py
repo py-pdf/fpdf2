@@ -3743,6 +3743,10 @@ class FPDF(GraphicsStateMixin):
             # Insert it as a PDF path:
             img = load_image(str(name))
             return self._vector_image(img, x, y, w, h, link, title, alt_text)
+        if isinstance(name, bytes) and _is_svg(name.strip()):
+            return self._vector_image(
+                io.BytesIO(name), x, y, w, h, link, title, alt_text
+            )
         if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
             return self._vector_image(name, x, y, w, h, link, title, alt_text)
         name, img, info = self.preload_image(name, dims)

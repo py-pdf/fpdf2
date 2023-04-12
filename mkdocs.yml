@@ -138,7 +138,7 @@ nav:
   - 'Combine with borb':              'CombineWithBorb.md'
   - 'Combine with pdfrw':             'CombineWithPdfrw.md'
   - 'Combine with PyPDF2':            'CombineWithPyPDF2.md'
-  - 'Matplotlib, Pandas, Plotly':     'CombineWithChartingLibs.md'
+  - 'Matplotlib, Pandas, Plotly, Pygal': 'CombineWithChartingLibs.md'
   - 'Templating with Jinja':          'TemplatingWithJinja.md'
   - 'Usage in web APIs':              'UsageInWebAPI.md'
   - 'Database storage':               'DatabaseStorage.md'
