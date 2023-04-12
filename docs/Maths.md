@@ -232,7 +232,7 @@ You can install it using: `pip install pygal`
 `fpdf2` can embed graphs and charts generated using `Pygal` library. However, they cannot be embedded as SVG directly, because `Pygal` inserts `<style>` & `<script>` tags in the images it produces (_cf._ [`pygal/svg.py`](https://github.com/Kozea/pygal/blob/3.0.0/pygal/svg.py#L449)), which is currently not supported by `fpdf2`.
 The full list of supported & unsupported SVG features can be found there: [SVG page](SVG.md#supported-svg-features).
 
-You can find documentation on how to convert Pygal vector images (SVG) to raster images (PNG, JPG) there:
+You can find documentation on how to convert vector images (SVG) to raster images (PNG, JPG), with a practical example of embedding PyGal charts, there:
 [SVG page](SVG.md#converting-vector-graphics-to-raster-graphics).
 
 
