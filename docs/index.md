@@ -56,7 +56,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * [Italian](Tutorial-it.md)
 * [español](Tutorial-es.md)
 * [français](Tutorial-fr.md)
-* [हिंदी](Tutorial-हिंदी.md)
+* [हिंदी](Tutorial-hi.md)
 * [português](Tutorial-pt.md)
 * [Русский](Tutorial-ru.md)
 * [Ελληνικά](Tutorial-gr.md)
