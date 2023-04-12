@@ -158,7 +158,7 @@ Usage of the original PyFPDF lib with [web2py](http://www.web2py.com/) is descri
 [FastAPI](https://fastapi.tiangolo.com/) is:
 > a modern, fast (high-performance), web framework for building APIs with Python 3.7+ based on standard Python type hints.
 
-The follow code shows how to generate a PDF file via a POST endpoint that receives a JSON object. The JSON object can be used to write into the PDF file itself. The generated PDF file will be returned back to the user/frontend as its response. 
+The following code shows how to generate a PDF file via a POST endpoint that receives a JSON object. The JSON object can be used to write into the PDF file. The generated PDF file will be returned back to the user/frontend as the response. 
 
 
 ```python
