@@ -162,18 +162,14 @@ The following code shows how to generate a PDF file via a POST endpoint that rec
 
 
 ```python
-from fastapi import FastAPI, Request, Response
-
+from fastapi import FastAPI, Request, Response, HTTPException, status
 from fpdf import FPDF
-
-import warnings
-warnings.filterwarnings("ignore")
 
 
 app = FastAPI()
 
 
-@app.post("/send_data")
+@app.post("/send_data", status_code=status.HTTP_200_OK)
 async def create_pdf(request: Request):
     """ 
     POST endpoint that accepts a JSON object
@@ -206,5 +202,6 @@ async def create_pdf(request: Request):
 
 
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
 ```
