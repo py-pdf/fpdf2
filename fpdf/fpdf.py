@@ -3702,7 +3702,7 @@ class FPDF(GraphicsStateMixin):
 
         Args:
             name: either a string representing a file path to an image, an URL to an image,
-                an io.BytesIO, or a instance of `PIL.Image.Image`
+                bytes, an io.BytesIO, or a instance of `PIL.Image.Image`
             x (float, fpdf.enums.Align): optional horizontal position where to put the image on the page.
                 If not specified or equal to None, the current abscissa is used.
                 `Align.C` can also be passed to center the image horizontally;
@@ -3829,14 +3829,15 @@ class FPDF(GraphicsStateMixin):
         if isinstance(name, str):
             img = None
         elif isinstance(name, Image):
-            bytes = name.tobytes()
+            bytes_ = name.tobytes()
             img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
-            img_hash.update(bytes)
+            img_hash.update(bytes_)
             name, img = img_hash.hexdigest(), name
-        elif isinstance(name, io.BytesIO):
-            bytes = name.getvalue().strip()
+        elif isinstance(name, (bytes, io.BytesIO)):
+            bytes_ = name.getvalue() if isinstance(name, io.BytesIO) else name
+            bytes_ = bytes_.strip()
             img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
-            img_hash.update(bytes)
+            img_hash.update(bytes_)
             name, img = img_hash.hexdigest(), name
         else:
             name, img = str(name), name
