@@ -42,7 +42,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * Optional basic Markdown-like styling: `**bold**, __italics__`
 * It has very few dependencies: [Pillow](https://pillow.readthedocs.io/en/stable/), [defusedxml](https://pypi.org/project/defusedxml/), & [fonttools](https://pypi.org/project/fonttools/)
 * Can render [mathematical equations & charts](https://pyfpdf.github.io/fpdf2/Maths.html)
-* Many example scripts available throughout this documentation, including usage examples with [Django](https://www.djangoproject.com/), [Flask](https://flask.palletsprojects.com), [streamlit](https://streamlit.io/), AWS lambdas... : [Usage in web APIs](UsageInWebAPI.md)
+* Many example scripts available throughout this documentation, including usage examples with [Django](https://www.djangoproject.com/), [Flask](https://flask.palletsprojects.com), [FastAPI](https://fastapi.tiangolo.com/), [streamlit](https://streamlit.io/), AWS lambdas... : [Usage in web APIs](UsageInWebAPI.md)
 * Unit tests with `qpdf`-based PDF diffing, and PDF samples validation using 3 different checkers:
 
 [![QPDF logo](qpdf-logo.svg)](https://github.com/qpdf/qpdf)
@@ -56,13 +56,13 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * [Italian](Tutorial-it.md)
 * [español](Tutorial-es.md)
 * [français](Tutorial-fr.md)
-* [हिंदी](Tutorial-हिंदी.md)
+* [हिंदी](Tutorial-hi.md)
 * [português](Tutorial-pt.md)
 * [Русский](Tutorial-ru.md)
 * [Ελληνικά](Tutorial-gr.md)
 * [עברית](Tutorial-he.md)
 * [简体中文](Tutorial-zh.md)
-* [বাংলা](Tutorial-%E0%A6%AC%E0%A6%BE%E0%A6%82%E0%A6%B2%E0%A6%BE.md)
+* [বাংলা](Tutorial-bn.md)
 
 ## Installation ##
 

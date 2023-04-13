@@ -2,6 +2,7 @@ mkdocs
 mkdocs-include-markdown-plugin
 mkdocs-material
 mkdocs-minify-plugin
+mkdocs-redirects
 mkdocs-with-pdf
 mknotebooks
 # mkdocs-macros-plugin

@@ -196,3 +196,13 @@ def test_insert_bytesio(tmp_path):
     img.save(img_bytes, "PNG")
     pdf.image(img_bytes, x=15, y=15, h=140)
     assert_pdf_equal(pdf, HERE / "image_types_insert_png.pdf", tmp_path)
+
+
+def test_insert_bytes(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    img = Image.open(HERE / "insert_images_insert_png.png")
+    img_bytes = io.BytesIO()
+    img.save(img_bytes, "PNG")
+    pdf.image(img_bytes.getvalue(), x=15, y=15, h=140)
+    assert_pdf_equal(pdf, HERE / "image_types_insert_png.pdf", tmp_path)

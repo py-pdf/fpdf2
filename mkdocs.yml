@@ -53,11 +53,12 @@ plugins:
   - mknotebooks
   - minify:
       minify_html: true
+  - redirects:
+      redirect_maps:
+        'CombineWithChartingLibs.md': 'Maths.md'
   #- git-committers:
   #    repository: PyFPDF/fpdf2
   #    branch: master
-  # - redirects:
-  #     redirect_maps:
   - with-pdf:  # https://github.com/orzih/mkdocs-with-pdf
       output_path: fpdf2-manual.pdf
       cover_title: fpdf2 manual
@@ -137,6 +138,7 @@ nav:
   - 'Combine with borb':              'CombineWithBorb.md'
   - 'Combine with pdfrw':             'CombineWithPdfrw.md'
   - 'Combine with PyPDF2':            'CombineWithPyPDF2.md'
+  - 'Matplotlib, Pandas, Plotly, Pygal': 'CombineWithChartingLibs.md'
   - 'Templating with Jinja':          'TemplatingWithJinja.md'
   - 'Usage in web APIs':              'UsageInWebAPI.md'
   - 'Database storage':               'DatabaseStorage.md'

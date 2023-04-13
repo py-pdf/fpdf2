@@ -6,6 +6,7 @@ Note that `FPDF` instance objects are not designed to be reusable:
 Hence, even if the `FPDF` class should be thread-safe, we recommend that you either **create an instance for every request**,
 or if you want to use a global / shared object, to only store the bytes returned from `output()`.
 
+
 ## Django ##
 [Django](https://www.djangoproject.com/) is:
 > a high-level Python web framework that encourages rapid development and clean, pragmatic design
@@ -23,6 +24,7 @@ def report(request):
     pdf.cell(txt="hello world")
     return HttpResponse(bytes(pdf.output()), content_type="application/pdf")
 ```
+
 
 ## Flask ##
 [Flask](https://flask.palletsprojects.com) is a micro web framework written in Python.
@@ -45,6 +47,7 @@ def hello_world():
     response.headers["Content-Type"] = "application/pdf"
     return response
 ```
+
 
 ## AWS lambda ##
 The following code demonstrates some minimal [AWS lambda handler function](https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html)
@@ -145,8 +148,63 @@ st.download_button(
 )
 ```
 
+
+## FastAPI ##
+[FastAPI](https://fastapi.tiangolo.com/) is:
+> a modern, fast (high-performance), web framework for building APIs with Python 3.7+ based on standard Python type hints.
+
+The following code shows how to generate a PDF file via a POST endpoint that receives a JSON object. The JSON object can be used to write into the PDF file. The generated PDF file will be returned back to the user/frontend as the response. 
+
+
+```python
+from fastapi import FastAPI, Request, Response, HTTPException, status
+from fpdf import FPDF
+
+
+app = FastAPI()
+
+
+@app.post("/send_data", status_code=status.HTTP_200_OK)
+async def create_pdf(request: Request):
+    """ 
+    POST endpoint that accepts a JSON object
+    This endpoint returns a PDF file as the response
+    """
+    try:
+        # data will read the JSON object and can be accessed like a Python Dictionary 
+        # The contents of the JSON object can be used to write into the PDF file (if needed)
+        data = await request.json()
+
+
+        # Create a sample PDF file
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Helvetica", size=24)
+        pdf.cell(txt="hello world")
+        # pdf.cell(txt=data["content"])  # Using the contents of the JSON object to write into the PDF file
+        # Use str(data["content"]) if the content is non-string type
+
+
+        # Prepare the filename and headers
+        filename = "<file_name_here>.pdf"
+        headers = {
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+
+
+        # Return the file as a response
+        return Response(content=bytes(pdf.output()), media_type="application/pdf", headers=headers)
+
+
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+```
+
+
 ## Jupyter ##
 Check [tutorial/notebook.ipynb](https://github.com/PyFPDF/fpdf2/blob/master/tutorial/notebook.ipynb)
+
 
 ## web2py ##
 Usage of the original PyFPDF lib with [web2py](http://www.web2py.com/) is described here: <https://github.com/reingart/pyfpdf/blob/master/docs/Web2Py.md>
