@@ -159,7 +159,10 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
     if img_raw_data is not None and not img_altered:
         # if we can use the original image bytes directly we do (JPEG and group4 TIFF only):
         if img.format == "JPEG" and image_filter == "DCTDecode":
-            dpn, bpc, colspace = 3, 8, "DeviceRGB"
+            if img.mode == "RGB" or img.mode == "RGBA":
+                dpn, bpc, colspace = 3, 8, "DeviceRGB"
+            elif img.mode == 'CMYK':
+                dpn, bpc, colspace = 4, 8, "DeviceCMYK"
             if img.mode == "L":
                 dpn, bpc, colspace = 1, 8, "DeviceGray"
             img_raw_data.seek(0)
@@ -262,7 +265,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         ):
             info["smask"] = _to_data(img, image_filter, select_slice=alpha_channel)
     elif img.mode == "CMYK":
-        dpn, bpc, colspace = 4, 8, "CMYK"
+        dpn, bpc, colspace = 4, 8, "DeviceCMYK"
         info["data"] = _to_data(img, image_filter)
     elif img.mode == "RGB":
         dpn, bpc, colspace = 3, 8, "DeviceRGB"
@@ -411,9 +414,6 @@ def _to_data(img, image_filter, **kwargs):
 
     if img.mode == "LA":
         img = img.convert("L")
-
-    if img.mode == "CMYK":
-        img = img.convert("CMYK")
 
     if img.mode == "RGBA":
         img = img.convert("RGB")
