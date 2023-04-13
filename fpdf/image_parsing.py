@@ -108,7 +108,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
     """
     Args:
         filename: in a format that can be passed to load_image
-        img: optional `BytesIO` or `PIL.Image.Image` instance
+        img: optional `bytes`, `BytesIO` or `PIL.Image.Image` instance
         image_filter (str): one of the SUPPORTED_IMAGE_FILTERS
     """
     if Image is None:
@@ -121,6 +121,8 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         img = Image.open(img_raw_data)
         is_pil_img = False
     elif not isinstance(img, Image.Image):
+        if isinstance(img, bytes):
+            img = BytesIO(img)
         img_raw_data = img
         img = Image.open(img_raw_data)
         is_pil_img = False

@@ -186,7 +186,11 @@ class Table:
     def _render_table_row(self, i, fill=False, **kwargs):
         row = self.rows[i]
         lines_heights_per_cell = self._get_lines_heights_per_cell(i)
-        row_height = max(sum(lines_heights) for lines_heights in lines_heights_per_cell)
+        row_height = (
+            max(sum(lines_heights) for lines_heights in lines_heights_per_cell)
+            if lines_heights_per_cell
+            else 0
+        )
         j = 0
         while j < len(row.cells):
             cell_line_height = row_height / len(lines_heights_per_cell[j])
