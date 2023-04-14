@@ -49,6 +49,12 @@ def test_insert_jpg_flatedecode(tmp_path):
     else:
         assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_flatedecode.pdf", tmp_path)
 
+def test_insert_jpg_cmyk(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.add_page()
+    pdf.image(HERE / "insert_images_insert_jpg_cmyk.jpg", x=15, y=15)
+    assert_pdf_equal(pdf, HERE / "images_types_insert_jpg_cmyk.pdf", tmp_path)
 
 def test_insert_png(tmp_path):
     pdf = fpdf.FPDF()
@@ -167,6 +173,11 @@ def test_insert_g4_tiff(tmp_path):
     pdf.image(HERE / "test.tiff", x=15, y=15)
     assert_pdf_equal(pdf, HERE / "image_types_insert_tiff.pdf", tmp_path)
 
+def test_insert_tiff_cmyk(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.image(HERE / "test.tiff", x=15, y=15)
+    assert_pdf_equal(pdf, HERE / "image_types_insert_tiff_cmyk.pdf", tmp_path)
 
 def test_insert_pillow(tmp_path):
     pdf = fpdf.FPDF()
