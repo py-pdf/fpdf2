@@ -4,6 +4,7 @@ import pytest
 
 from fpdf import FPDF, FPDFException
 from test.conftest import assert_pdf_equal
+from test.table.test_table import MULTILINE_TABLE_DATA
 
 
 HERE = Path(__file__).resolve().parent
@@ -205,6 +206,40 @@ def test_html_table_with_only_tds(tmp_path):  # issue-740
     </tr></table>"""
     )
     assert_pdf_equal(pdf, HERE / "html_table_with_only_tds.pdf", tmp_path)
+
+
+def test_html_table_with_multi_lines_text(tmp_path):  # issue-91
+    pdf = FPDF()
+    pdf.set_font_size(30)
+    pdf.add_page()
+    pdf.write_html(
+        """<table border="1"><thead><tr>
+    <th width="30%">First name</th><th width="30%">Last name</th><th width="15%">Age</th><th width="25%">City</th>
+</tr></thead><tbody><tr>
+    <td>Jean Abdul William</td><td>Smith</td><td>34</td><td>San Juan</td>
+</tr></tbody></table>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_table_with_multi_lines_text.pdf", tmp_path)
+
+
+def test_html_table_with_multiline_cells_and_split_over_page(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    html = "<table><thead><tr>"
+    # pylint: disable=consider-using-join
+    for cell_text in MULTILINE_TABLE_DATA[0]:
+        html += f"\n<th>{cell_text}</th>"
+    html += "\n</tr></thead><tbody><tr>"
+    for data_row in MULTILINE_TABLE_DATA[1:-1] + MULTILINE_TABLE_DATA[1:]:
+        for cell_text in data_row:
+            html += f"\n<td>{cell_text}</td>"
+        html += "\n</tr><tr>"
+    html += "\n</tr></tbody></table>"
+    pdf.write_html(html)
+    assert_pdf_equal(
+        pdf, HERE / "html_table_with_multiline_cells_and_split_over_page.pdf", tmp_path
+    )
 
 
 def test_html_table_invalid(caplog):

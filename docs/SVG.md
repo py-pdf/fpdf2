@@ -211,3 +211,13 @@ In addition to that:
 - a lot of attributes
 - embedded images or other content (including nested SVGs)
 - CSS styling via `<style>` tags or external *.css files.
+
+{==
+
+Contributions would be very welcome to add support for more SVG features! 👍
+
+If you are interested in contributing to `fpdf2` regarding this,
+drop a comment on GitHub issue [#537](https://github.com/PyFPDF/fpdf2/issues/537)
+and a maintainer will give some pointers to start poking with the code 😊
+
+==}
