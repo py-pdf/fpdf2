@@ -86,7 +86,9 @@ class Table:
             )
         table_align = Align.coerce(self._align)
         if table_align == Align.J:
-            raise ValueError("JUSTIFY is an invalid value for table .align")
+            raise ValueError(
+                "JUSTIFY is an invalid value for FPDF.table() 'align' parameter"
+            )
         if self._first_row_as_headings:
             if not self._headings_style:
                 raise ValueError(
@@ -110,7 +112,7 @@ class Table:
             self._fpdf.l_margin = (self._fpdf.w - self._width) / 2
             self._fpdf.x = self._fpdf.l_margin
         elif table_align == Align.R:
-            self._fpdf.l_margin = self._fpdf.w - self._width
+            self._fpdf.l_margin = self._fpdf.w - self._fpdf.r_margin - self._width
             self._fpdf.x = self._fpdf.l_margin
         elif self._fpdf.x != self._fpdf.l_margin:
             self._fpdf.l_margin = self._fpdf.x

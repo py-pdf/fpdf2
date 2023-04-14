@@ -351,3 +351,19 @@ def test_table_with_ttf_font_and_headings_but_missing_bold_font():
         str(error.value)
         == "Using font emphasis 'B' in table headings require the corresponding font style to be added using add_font()"
     )
+
+
+def test_table_with_cell_overflow(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("Times", size=30)
+    pdf.add_page()
+    with pdf.table(width=pdf.epw / 2, col_widths=(1, 2, 1)) as table:
+        row = table.row()
+        row.cell("left")
+        row.cell("center")
+        row.cell("right")  # triggers header cell overflow
+        row = table.row()
+        row.cell("1")
+        row.cell("222222222")  # triggers cell overflow
+        row.cell("3")
+    assert_pdf_equal(pdf, HERE / "table_with_cell_overflow.pdf", tmp_path, generate=True)

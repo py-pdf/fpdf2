@@ -434,8 +434,10 @@ class HTML2FPDF(HTMLParser):
                     if self.table_line_separators
                     else "SINGLE_TOP_LINE"
                 )
+            align = attrs.get("align", "center").upper()
             self.table = Table(
                 self.pdf,
+                align=align,
                 borders_layout=borders_layout,
                 line_height=self.h * 1.30,
                 width=width,
