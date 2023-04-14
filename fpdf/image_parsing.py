@@ -161,7 +161,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
     if img_raw_data is not None and not img_altered:
         # if we can use the original image bytes directly we do (JPEG and group4 TIFF only):
         if img.format == "JPEG" and image_filter == "DCTDecode":
-            if img.mode == "RGB" or img.mode == "RGBA":
+            if img.mode in ("RGB", "RGBA"):
                 dpn, bpc, colspace = 3, 8, "DeviceRGB"
             elif img.mode == 'CMYK':
                 dpn, bpc, colspace = 4, 8, "DeviceCMYK"
