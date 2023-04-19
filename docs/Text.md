@@ -90,8 +90,7 @@ the background painted.
 Using `new_x="RIGHT", new_y="TOP", maximum height=pdf.font_size` can be
 useful to build tables with multiline text in cells.
 
-In normal operation, returns a boolean indicating if page break was triggered.
-When `split_only == True`, returns `txt` split into lines in an array (with any markdown markup removed).
+In normal operation, returns a boolean indicating if page break was triggered. The return value can be altered by specifying the `output` parameter.
 
 [Signature and parameters for.multi_cell()](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
 

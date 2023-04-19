@@ -22,10 +22,12 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - documentation on how to use `fpdf2` with [FastAPI](https://fastapi.tiangolo.com/): <https://pyfpdf.github.io/fpdf2/UsageInWebAPI.html#FastAPI> - thanks to @KamarulAdha
 - [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): `<table>` elements can now be aligned left or right on the page using `align=`
 ### Fixed
-- [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): text overflow in the header row cells is now properly handled
+- [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): text overflow in the last cell of the header row is now properly handled
 - [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): when `align="RIGHT"` is provided, the page right margin is now properly taken in consideration
 ### Changed
 - [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) does not render the top row as a header, in bold with a line below, when no `<th>` are used, in order to be more backward-compatible with earlier versions of `fpdf2` - _cf._ [#740](https://github.com/PyFPDF/fpdf2/issues/740)
+### Deprecated
+- the `split_only` optional parameter of [`FPDF.multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell), which is replaced by two new distincts optional parameters: `dry_run` & `output`
 
 ## [2.7.3] - 2023-04-03
 ### Fixed

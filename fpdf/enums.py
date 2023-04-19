@@ -130,6 +130,10 @@ class CoerciveIntFlag(IntFlag):
 
         if isinstance(value, str):
             try:
+                return cls[value.upper()]
+            except KeyError:
+                pass
+            try:
                 flags = cls[value[0].upper()]
                 for char in value[1:]:
                     flags = flags | cls[char.upper()]
@@ -198,6 +202,7 @@ class Align(CoerciveEnum):
 class TextEmphasis(CoerciveIntFlag):
     """
     Indicates use of bold / italics / underline.
+
     This enum values can be combined with & and | operators:
         style = B | I
     """
@@ -229,6 +234,24 @@ class TextEmphasis(CoerciveIntFlag):
             if value.upper() == "UNDERLINE":
                 return cls.U
         return super(cls, cls).coerce(value)
+
+
+class MethodReturnValue(CoerciveIntFlag):
+    """
+    Defines the return value(s) of a FPDF content-rendering method.
+
+    This enum values can be combined with & and | operators:
+        PAGE_BREAK | LINES
+    """
+
+    PAGE_BREAK = 1
+    "The method will return a boolean indicating if a page break occured"
+
+    LINES = 2
+    "The method will return a multi-lines array of strings, after performing word-wrapping"
+
+    HEIGHT = 4
+    "The method will return how much vertical space was used"
 
 
 class TableBordersLayout(CoerciveEnum):

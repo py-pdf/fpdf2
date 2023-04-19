@@ -249,7 +249,10 @@ def test_multi_cell_split_only():  # discussion 314
         "reprehenderit anim nostrud",
         "dolore sed ut",
     ]
-    assert pdf.multi_cell(w=0, h=LINE_HEIGHT, txt=text, split_only=True) == expected
+    with pytest.warns(
+        DeprecationWarning, match='The parameter "split_only" is deprecated.'
+    ):
+        assert pdf.multi_cell(w=0, h=LINE_HEIGHT, txt=text, split_only=True) == expected
 
 
 def test_multi_cell_with_empty_contents(tmp_path):  # issue 349
