@@ -219,14 +219,15 @@ class Table:
         row = self.rows[i]
         cell = row.cells[j]
         col_width = self._get_col_width(i, j, cell.colspan)
+        img_height = 0
         if cell.img:
             x, y = self._fpdf.x, self._fpdf.y
-            self._fpdf.image(
+            img_height = self._fpdf.image(
                 cell.img,
                 w=col_width,
                 h=0 if cell.img_fill_width else row_height,
                 keep_aspect_ratio=True,
-            )
+            ).rendered_height
             self._fpdf.set_xy(x, y)
         text_align = cell.align or self._text_align
         if not isinstance(text_align, (Align, str)):
@@ -255,7 +256,7 @@ class Table:
                 else FontFace(fill_color=self._cell_fill_color)
             )
         with self._fpdf.use_font_face(style):
-            page_break, height = self._fpdf.multi_cell(
+            page_break, cell_height = self._fpdf.multi_cell(
                 w=col_width,
                 h=row_height,
                 txt=cell.text,
@@ -269,7 +270,7 @@ class Table:
                 output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
                 **kwargs,
             )
-        return page_break, height
+        return page_break, max(img_height, cell_height)
 
     def _get_col_width(self, i, j, colspan=1):
         if not self._col_widths:

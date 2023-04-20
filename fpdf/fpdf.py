@@ -3346,15 +3346,19 @@ class FPDF(GraphicsStateMixin):
     @contextmanager
     def _disable_writing(self):
         self._out = lambda *args, **kwargs: None
-        self.add_page = lambda *args, **kwargs: None
-        self._perform_page_break = lambda *args, **kwargs: None
-        prev_x, prev_y = self.x, self.y
-        yield
-        # restore writing functions:
-        del self.add_page
-        del self._out
-        del self._perform_page_break
-        self.set_xy(prev_x, prev_y)  # restore location
+        prev_page, prev_x, prev_y = self.page, self.x, self.y
+        self._push_local_stack()
+        try:
+            yield
+        finally:
+            self._pop_local_stack()
+            # restore location:
+            for p in range(prev_page + 1, self.page + 1):
+                del self.pages[p]
+            self.page = prev_page
+            self.set_xy(prev_x, prev_y)
+            # restore writing function:
+            del self._out
 
     @check_page
     def multi_cell(
