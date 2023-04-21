@@ -21,6 +21,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - documentation on how to embed `graphs` and `charts` generated using `Pygal` lib: [documentation section](https://pyfpdf.github.io/fpdf2/Maths.html#using-pygal) - thanks to @ssavi-ict
 - documentation on how to use `fpdf2` with [FastAPI](https://fastapi.tiangolo.com/): <https://pyfpdf.github.io/fpdf2/UsageInWebAPI.html#FastAPI> - thanks to @KamarulAdha
 - [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): `<table>` elements can now be aligned left or right on the page using `align=`
+- [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): a custom font can now be specified for `<code>` & `<pre>` elements, using the new optional parameter `pre_code_font`
 ### Fixed
 - [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): images no more overflow cells
 - [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): text overflow in the last cell of the header row is now properly handled
