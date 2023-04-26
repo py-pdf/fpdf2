@@ -176,7 +176,7 @@ def test_insert_g4_tiff(tmp_path):
 def test_insert_tiff_cmyk(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.image(HERE / "test.tiff", x=15, y=15)
+    pdf.image(HERE / "insert_images_insert_tiff_cmyk.tiff", x=15, y=15)
     assert_pdf_equal(pdf, HERE / "image_types_insert_tiff_cmyk.pdf", tmp_path)
 
 def test_insert_pillow(tmp_path):
