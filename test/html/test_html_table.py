@@ -242,6 +242,22 @@ def test_html_table_with_multiline_cells_and_split_over_page(tmp_path):
     )
 
 
+def test_html_table_with_width_and_align(tmp_path):
+    pdf = FPDF()
+    pdf.set_font_size(24)
+    pdf.add_page()
+    pdf.write_html(
+        """<table width=50% align=right><thead><tr>
+        <th width="25%">left</th><th width="50%">center</th><th width="25%">right</th>
+    </tr></thead><tbody><tr>
+        <td>1</td><td>2</td><td>3</td>
+    </tr><tr>
+        <td>4</td><td>5</td><td>6</td>
+    </tr></tbody></table>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_table_with_width_and_align.pdf", tmp_path)
+
+
 def test_html_table_invalid(caplog):
     pdf = FPDF()
     pdf.set_font_size(30)

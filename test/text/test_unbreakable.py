@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import fpdf
+from fpdf import FPDF, FPDFException
 from test.conftest import assert_pdf_equal
 
 import pytest
@@ -18,7 +18,7 @@ TABLE_DATA = (
 
 
 def test_multi_cell_table_unbreakable(tmp_path):  # issue 111
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
     line_height = pdf.font_size * 2
@@ -51,7 +51,7 @@ def test_multi_cell_table_unbreakable2(tmp_path):  # issue 120 - 2nd snippet
         "G": "test_lin",
         "H": "test_lin",
     }
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_margins(20, 20)
     pdf.set_font("Times", "B", size=7)
@@ -90,7 +90,9 @@ def test_multi_cell_table_unbreakable2(tmp_path):  # issue 120 - 2nd snippet
 
 
 def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
-    pdf = fpdf.FPDF("P", "mm", "A4")
+    expected_warn = 'The parameter "split_only" is deprecated.'
+
+    pdf = FPDF("P", "mm", "A4")
     pdf.set_auto_page_break(True, 20)
     pdf.set_font("Helvetica", "", 10)
     pdf.add_page()
@@ -117,17 +119,18 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
     for row in data:
         max_no_of_lines_in_cell = 1
         for cell in row:
-            result = pdf.multi_cell(
-                cell_width,
-                l_height,
-                cell,
-                border=1,
-                align="L",
-                new_x="RIGHT",
-                new_y="TOP",
-                max_line_height=l_height,
-                split_only=True,
-            )
+            with pytest.warns(DeprecationWarning, match=expected_warn):
+                result = pdf.multi_cell(
+                    cell_width,
+                    l_height,
+                    cell,
+                    border=1,
+                    align="L",
+                    new_x="RIGHT",
+                    new_y="TOP",
+                    max_line_height=l_height,
+                    split_only=True,
+                )
             no_of_lines_in_cell = len(result)
             if no_of_lines_in_cell > max_no_of_lines_in_cell:
                 max_no_of_lines_in_cell = no_of_lines_in_cell
@@ -169,17 +172,18 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
             for row in data:
                 max_no_of_lines_in_cell = 1
                 for cell in row:
-                    result = doc.multi_cell(
-                        cell_width,
-                        l_height,
-                        cell,
-                        border=1,
-                        align="L",
-                        new_x="RIGHT",
-                        new_y="TOP",
-                        max_line_height=l_height,
-                        split_only=True,
-                    )
+                    with pytest.warns(DeprecationWarning, match=expected_warn):
+                        result = doc.multi_cell(
+                            cell_width,
+                            l_height,
+                            cell,
+                            border=1,
+                            align="L",
+                            new_x="RIGHT",
+                            new_y="TOP",
+                            max_line_height=l_height,
+                            split_only=True,
+                        )
                     no_of_lines_in_cell = len(result)
                     if no_of_lines_in_cell > max_no_of_lines_in_cell:
                         max_no_of_lines_in_cell = no_of_lines_in_cell
@@ -220,26 +224,26 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
 
 
 def test_unbreakable_with_local_context():  # discussion 557
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.set_font("Helvetica", "", 10)
     pdf.add_page()
     pdf.set_y(270)  # Set position so that adding a cell triggers a page break
-    with pytest.raises(fpdf.FPDFException):
+    with pytest.raises(FPDFException):
         with pdf.unbreakable() as doc:
             with doc.local_context(fill_opacity=0.3):
                 doc.cell(doc.epw, 10, "Cell text content", border=1, fill=True)
     pdf.set_y(270)  # Set position so that adding a cell triggers a page break
-    with pytest.raises(fpdf.FPDFException):
+    with pytest.raises(FPDFException):
         with pdf.unbreakable() as doc:
             with doc.local_context(text_color=(255, 0, 0)):
                 doc.cell(doc.epw, 10, "Cell text content", border=1)
 
 
 def test_unbreakable_with_get_y():  # discussion 557
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.set_font("Helvetica", "", 10)
     pdf.add_page()
     pdf.set_y(270)  # Set position so that adding a cell triggers a page break
-    with pytest.raises(fpdf.FPDFException):
+    with pytest.raises(FPDFException):
         with pdf.unbreakable() as doc:
             doc.cell(doc.epw, 10, f"doc.get_y(): {doc.get_y()}", border=1)

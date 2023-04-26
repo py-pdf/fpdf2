@@ -214,7 +214,7 @@ with pdf.table(TABLE_DATA):
 
 ## Table from pandas DataFrame
 
-_cf._ https://pyfpdf.github.io/fpdf2/Maths.html#using-pandas
+_cf._ [Maths documentation page](Maths.md#using-pandas)
 
 ## Using write_html
 
@@ -247,7 +247,7 @@ pdf.write_html(
 pdf.output('table_html.pdf')
 ```
 
-Note that `write_html` has [some limitations, notably regarding multi-lines cells](HTML.html#supported-html-features).
+Note that `write_html` has [some limitations, notably regarding multi-lines cells](HTML.md#supported-html-features).
 
 ## "Parsabilty" of the tables generated
 

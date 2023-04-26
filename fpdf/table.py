@@ -1,13 +1,20 @@
 from dataclasses import dataclass
 from numbers import Number
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from .enums import Align, TableBordersLayout, TableCellFillMode
+from .enums import MethodReturnValue
 from .errors import FPDFException
 from .fonts import FontFace
 
 
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
+
+
+@dataclass(frozen=True)
+class RowLayoutInfo:
+    height: int
+    triggers_page_jump: bool
 
 
 class Table:
@@ -86,7 +93,9 @@ class Table:
             )
         table_align = Align.coerce(self._align)
         if table_align == Align.J:
-            raise ValueError("JUSTIFY is an invalid value for table .align")
+            raise ValueError(
+                "JUSTIFY is an invalid value for FPDF.table() 'align' parameter"
+            )
         if self._first_row_as_headings:
             if not self._headings_style:
                 raise ValueError(
@@ -110,20 +119,19 @@ class Table:
             self._fpdf.l_margin = (self._fpdf.w - self._width) / 2
             self._fpdf.x = self._fpdf.l_margin
         elif table_align == Align.R:
-            self._fpdf.l_margin = self._fpdf.w - self._width
+            self._fpdf.l_margin = self._fpdf.w - self._fpdf.r_margin - self._width
             self._fpdf.x = self._fpdf.l_margin
         elif self._fpdf.x != self._fpdf.l_margin:
             self._fpdf.l_margin = self._fpdf.x
         # Starting the actual rows & cells rendering:
         for i in range(len(self.rows)):
-            with self._fpdf.offset_rendering() as test:
-                self._render_table_row(i)
-            if test.page_break_triggered:
+            row_layout_info = self._get_row_layout_info(i)
+            if row_layout_info.triggers_page_jump:
                 # pylint: disable=protected-access
                 self._fpdf._perform_page_break()
                 if self._first_row_as_headings:  # repeat headings on top:
                     self._render_table_row(0)
-            self._render_table_row(i)
+            self._render_table_row(i, row_layout_info)
         # Restoring altered FPDF settings:
         self._fpdf.l_margin = prev_l_margin
         self._fpdf.x = self._fpdf.l_margin
@@ -183,64 +191,44 @@ class Table:
                 border.remove("B")
         return "".join(border)
 
-    def _render_table_row(self, i, fill=False, **kwargs):
+    def _render_table_row(self, i, row_layout_info=None, fill=False, **kwargs):
+        if not row_layout_info:
+            row_layout_info = self._get_row_layout_info(i)
         row = self.rows[i]
-        lines_heights_per_cell = self._get_lines_heights_per_cell(i)
-        row_height = (
-            max(sum(lines_heights) for lines_heights in lines_heights_per_cell)
-            if lines_heights_per_cell
-            else 0
-        )
         j = 0
         while j < len(row.cells):
-            cell_line_height = row_height / len(lines_heights_per_cell[j])
             self._render_table_cell(
                 i,
                 j,
-                cell_line_height=cell_line_height,
-                row_height=row_height,
+                row_height=row_layout_info.height,
                 fill=fill,
                 **kwargs,
             )
             j += row.cells[j].colspan
-        self._fpdf.ln(row_height)
+        self._fpdf.ln(row_layout_info.height)
 
     # pylint: disable=inconsistent-return-statements
     def _render_table_cell(
         self,
         i,
         j,
-        cell_line_height,
         row_height,
         fill=False,
-        lines_heights_only=False,
         **kwargs,
     ):
-        """
-        If `lines_heights_only` is True, returns a list of lines (subcells) heights.
-        """
         row = self.rows[i]
         cell = row.cells[j]
         col_width = self._get_col_width(i, j, cell.colspan)
-        lines_heights = []
+        img_height = 0
         if cell.img:
-            if lines_heights_only:
-                info = self._fpdf.preload_image(cell.img)[2]
-                img_ratio = info.width / info.height
-                if cell.img_fill_width or row_height * img_ratio > col_width:
-                    img_height = col_width / img_ratio
-                else:
-                    img_height = row_height
-                lines_heights += [img_height]
-            else:
-                x, y = self._fpdf.x, self._fpdf.y
-                self._fpdf.image(
-                    cell.img,
-                    w=col_width,
-                    h=0 if cell.img_fill_width else row_height,
-                    keep_aspect_ratio=True,
-                )
-                self._fpdf.set_xy(x, y)
+            x, y = self._fpdf.x, self._fpdf.y
+            img_height = self._fpdf.image(
+                cell.img,
+                w=col_width,
+                h=0 if cell.img_fill_width else row_height,
+                keep_aspect_ratio=True,
+            ).rendered_height
+            self._fpdf.set_xy(x, y)
         text_align = cell.align or self._text_align
         if not isinstance(text_align, (Align, str)):
             text_align = text_align[j]
@@ -248,9 +236,6 @@ class Table:
             style = self._headings_style
         else:
             style = cell.style or row.style
-        if lines_heights_only and style:
-            # Avoid to generate font-switching instructions: BT /F... Tf ET
-            style = style.replace(emphasis=None)
         if style and style.fill_color:
             fill = True
         elif (
@@ -271,24 +256,21 @@ class Table:
                 else FontFace(fill_color=self._cell_fill_color)
             )
         with self._fpdf.use_font_face(style):
-            lines = self._fpdf.multi_cell(
+            page_break, cell_height = self._fpdf.multi_cell(
                 w=col_width,
                 h=row_height,
                 txt=cell.text,
-                max_line_height=cell_line_height,
+                max_line_height=self._line_height,
                 border=self.get_cell_border(i, j),
                 align=text_align,
                 new_x="RIGHT",
                 new_y="TOP",
                 fill=fill,
-                split_only=lines_heights_only,
                 markdown=self._markdown,
+                output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
                 **kwargs,
             )
-        if lines_heights_only and not cell.img:
-            lines_heights += (len(lines) or 1) * [self._line_height]
-        if lines_heights_only:
-            return lines_heights
+        return page_break, max(img_height, cell_height)
 
     def _get_col_width(self, i, j, colspan=1):
         if not self._col_widths:
@@ -307,20 +289,28 @@ class Table:
             col_width += col_ratio * self._width
         return col_width
 
-    def _get_lines_heights_per_cell(self, i) -> List[List[int]]:
+    def _get_row_layout_info(self, i):
+        """
+        Uses FPDF.offset_rendering() to detect a potential page jump
+        and compute the cells heights.
+        """
         row = self.rows[i]
-        lines_heights = []
-        for j in range(len(row.cells)):
-            lines_heights.append(
-                self._render_table_cell(
+        heights_per_cell = []
+        any_page_break = False
+        # pylint: disable=protected-access
+        with self._fpdf._disable_writing():
+            for j in range(len(row.cells)):
+                page_break, height = self._render_table_cell(
                     i,
                     j,
-                    cell_line_height=self._line_height,
                     row_height=self._line_height,
-                    lines_heights_only=True,
                 )
-            )
-        return lines_heights
+                any_page_break = any_page_break or page_break
+                heights_per_cell.append(height)
+        row_height = (
+            max(height for height in heights_per_cell) if heights_per_cell else 0
+        )
+        return RowLayoutInfo(row_height, any_page_break)
 
 
 class Row:
@@ -367,7 +357,7 @@ class Row:
         return cell
 
 
-@dataclass
+@dataclass(frozen=True)
 class Cell:
     "Internal representation of a table cell"
     __slots__ = (  # RAM usage optimization
