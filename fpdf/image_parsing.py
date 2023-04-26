@@ -115,6 +115,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         raise EnvironmentError("Pillow not available - fpdf2 cannot insert images")
 
     is_pil_img = True
+    jpeg_inverted = False #flag to check whether a cmyk image is jpeg or not, if set to True the decode array is inverted in output.py
     img_raw_data = None
     if not img or isinstance(img, (Path, str)):
         img_raw_data = load_image(filename)
@@ -165,6 +166,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
                 dpn, bpc, colspace = 3, 8, "DeviceRGB"
             elif img.mode == 'CMYK':
                 dpn, bpc, colspace = 4, 8, "DeviceCMYK"
+                jpeg_inverted = True
             if img.mode == "L":
                 dpn, bpc, colspace = 1, 8, "DeviceGray"
             img_raw_data.seek(0)
@@ -177,6 +179,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
                 "dpn": dpn,
                 "bpc": bpc,
                 "f": image_filter,
+                "inverted": jpeg_inverted,
                 "dp": f"/Predictor 15 /Colors {dpn} /Columns {w}",
             }
         # We can directly copy the data out of a CCITT Group 4 encoded TIFF, if it
@@ -221,6 +224,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
                 "cs": colspace,
                 "bpc": bpc,
                 "f": image_filter,
+                "inverted": jpeg_inverted,
                 "dp": f"/BlackIs1 {str(not inverted).lower()} /Columns {w} /K -1 /Rows {h}",
             }
 
@@ -299,6 +303,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
             "bpc": bpc,
             "dpn": dpn,
             "f": image_filter,
+            "inverted": jpeg_inverted,
             "dp": dp,
         }
     )
