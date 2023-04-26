@@ -115,7 +115,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         raise EnvironmentError("Pillow not available - fpdf2 cannot insert images")
 
     is_pil_img = True
-    jpeg_inverted = False #flag to check whether a cmyk image is jpeg or not, if set to True the decode array is inverted in output.py
+    jpeg_inverted = False  # flag to check whether a cmyk image is jpeg or not, if set to True the decode array is inverted in output.py
     img_raw_data = None
     if not img or isinstance(img, (Path, str)):
         img_raw_data = load_image(filename)
@@ -164,7 +164,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         if img.format == "JPEG" and image_filter == "DCTDecode":
             if img.mode in ("RGB", "RGBA"):
                 dpn, bpc, colspace = 3, 8, "DeviceRGB"
-            elif img.mode == 'CMYK':
+            elif img.mode == "CMYK":
                 dpn, bpc, colspace = 4, 8, "DeviceCMYK"
                 jpeg_inverted = True
             if img.mode == "L":
