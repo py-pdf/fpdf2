@@ -850,7 +850,8 @@
       "profile": "https://sites.google.com/view/iamavik/",
       "contributions": [
         "translation",
-        "doc"
+        "doc",
+        "question"
       ]
     },
     {
@@ -869,6 +870,15 @@
       "profile": "https://github.com/KamarulAdha",
       "contributions": [
         "doc"
+      ]
+    },
+    {
+      "login": "Valerus5685",
+      "name": "Valerus5685",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7953869?v=4",
+      "profile": "https://github.com/Valerus5685",
+      "contributions": [
+        "bug"
       ]
     }
   ],

@@ -60,6 +60,7 @@ from .enums import (
     EncryptionMethod,
     FontDescriptorFlags,
     FileAttachmentAnnotationName,
+    MethodReturnValue,
     PageLayout,
     PageMode,
     PathPaintRule,
@@ -256,7 +257,7 @@ def check_page(fn):
 
     @wraps(fn)
     def wrapper(self, *args, **kwargs):
-        if not self.page and not kwargs.get("split_only"):
+        if not self.page and not (kwargs.get("dry_run") or kwargs.get("split_only")):
             raise FPDFException("No page open, you need to call add_page() first")
         return fn(self, *args, **kwargs)
 
@@ -3342,6 +3343,23 @@ class FPDF(GraphicsStateMixin):
     def _has_next_page(self):
         return self.pages_count > self.page
 
+    @contextmanager
+    def _disable_writing(self):
+        self._out = lambda *args, **kwargs: None
+        prev_page, prev_x, prev_y = self.page, self.x, self.y
+        self._push_local_stack()
+        try:
+            yield
+        finally:
+            self._pop_local_stack()
+            # restore location:
+            for p in range(prev_page + 1, self.page + 1):
+                del self.pages[p]
+            self.page = prev_page
+            self.set_xy(prev_x, prev_y)
+            # restore writing function:
+            del self._out
+
     @check_page
     def multi_cell(
         self,
@@ -3351,7 +3369,7 @@ class FPDF(GraphicsStateMixin):
         border=0,
         align=Align.J,
         fill=False,
-        split_only=False,
+        split_only=False,  # DEPRECATED
         link="",
         ln="DEPRECATED",
         max_line_height=None,
@@ -3360,6 +3378,8 @@ class FPDF(GraphicsStateMixin):
         new_x=XPos.RIGHT,
         new_y=YPos.NEXT,
         wrapmode: WrapMode = WrapMode.WORD,
+        dry_run=False,
+        output=MethodReturnValue.PAGE_BREAK,
     ):
         """
         This method allows printing text with line breaks. They can be automatic
@@ -3384,8 +3404,8 @@ class FPDF(GraphicsStateMixin):
                 `C`: center; `X`: center around current x; `R`: right align
             fill (bool): Indicates if the cell background must be painted (`True`)
                 or transparent (`False`). Default value: False.
-            split_only (bool): if `True`, does not output anything, only perform
-                word-wrapping and return the resulting multi-lines array of strings.
+            split_only (bool): **DEPRECATED since 2.7.4**:
+                Use `dry_run=True` and `output=("LINES",)` instead.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `add_link`) or external URL.
             new_x (fpdf.enums.XPos, str): New current position in x after the call. Default: RIGHT
@@ -3398,13 +3418,46 @@ class FPDF(GraphicsStateMixin):
                 character, instead of a line breaking opportunity. Default value: False
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
                 "CHAR" for character based line wrapping.
+            dry_run (bool): if `True`, does not output anything in the document.
+                Can be useful when combined with `output`.
+            output (fpdf.enums.MethodReturnValue): defines what this method returns.
+                If several enum values are joined, the result will be a tuple.
 
         Using `new_x=XPos.RIGHT, new_y=XPos.TOP, maximum height=pdf.font_size` is
         useful to build tables with multiline text in cells.
 
-        Returns: a boolean indicating if page break was triggered,
-            or if `split_only == True`: `txt` splitted into lines in an array
+        Returns: a single value or a tuple, depending on the `output` parameter value
         """
+        if split_only:
+            warnings.warn(
+                (
+                    'The parameter "split_only" is deprecated.'
+                    ' Use instead dry_run=True and output="LINES".'
+                ),
+                DeprecationWarning,
+                stacklevel=3,
+            )
+        if dry_run or split_only:
+            with self._disable_writing():
+                return self.multi_cell(
+                    w=w,
+                    h=h,
+                    txt=txt,
+                    border=border,
+                    align=align,
+                    fill=fill,
+                    link=link,
+                    ln=ln,
+                    max_line_height=max_line_height,
+                    markdown=markdown,
+                    print_sh=print_sh,
+                    new_x=new_x,
+                    new_y=new_y,
+                    wrapmode=wrapmode,
+                    dry_run=False,
+                    split_only=False,
+                    output=MethodReturnValue.LINES if split_only else output,
+                )
         wrapmode = WrapMode.coerce(wrapmode)
         if isinstance(w, str) or isinstance(h, str):
             raise ValueError(
@@ -3443,10 +3496,6 @@ class FPDF(GraphicsStateMixin):
         align = Align.coerce(align)
 
         page_break_triggered = False
-        if split_only:
-            self._out = lambda *args, **kwargs: None
-            self.add_page = lambda *args, **kwargs: None
-            self._perform_page_break_if_need_be = lambda *args, **kwargs: None
 
         if h is None:
             h = self.font_size
@@ -3462,6 +3511,7 @@ class FPDF(GraphicsStateMixin):
 
         prev_font_style, prev_underline = self.font_style, self.underline
         prev_x, prev_y = self.x, self.y
+        total_height = 0
 
         if not border:
             border = ""
@@ -3490,8 +3540,6 @@ class FPDF(GraphicsStateMixin):
                     trailing_nl=False,
                 )
             ]
-        if align == Align.X:
-            prev_x = self.x
         should_render_bottom_blank_cell = False
         for text_line_index, text_line in enumerate(text_lines):
             is_last_line = text_line_index == len(text_lines) - 1
@@ -3527,6 +3575,7 @@ class FPDF(GraphicsStateMixin):
                 link=link,
             )
             page_break_triggered = page_break_triggered or new_page
+            total_height += current_cell_height
             if not is_last_line and align == Align.X:
                 # prevent cumulative shift to the left
                 self.x = prev_x
@@ -3566,26 +3615,29 @@ class FPDF(GraphicsStateMixin):
         if new_y == YPos.TOP:  # We may have jumped a few lines -> reset
             self.y = prev_y
 
-        if split_only:
-            # restore writing functions
-            del self.add_page
-            del self._out
-            del self._perform_page_break_if_need_be
-            self.set_xy(prev_x, prev_y)  # restore location
-            result = []
-            for text_line in text_lines:
-                characters = []
-                for frag in text_line.fragments:
-                    characters.extend(frag.characters)
-                result.append("".join(characters))
-            return result
         if markdown:
             if self.font_style != prev_font_style:
                 self.font_style = prev_font_style
                 self.current_font = self.fonts[self.font_family + self.font_style]
             self.underline = prev_underline
 
-        return page_break_triggered
+        output = MethodReturnValue.coerce(output)
+        return_value = ()
+        if output & MethodReturnValue.PAGE_BREAK:
+            return_value += (page_break_triggered,)
+        if output & MethodReturnValue.LINES:
+            output_lines = []
+            for text_line in text_lines:
+                characters = []
+                for frag in text_line.fragments:
+                    characters.extend(frag.characters)
+                output_lines.append("".join(characters))
+            return_value += (output_lines,)
+        if output & MethodReturnValue.HEIGHT:
+            return_value += (total_height,)
+        if len(return_value) == 1:
+            return return_value[0]
+        return return_value
 
     @check_page
     def write(

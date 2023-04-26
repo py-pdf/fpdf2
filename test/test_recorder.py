@@ -1,7 +1,7 @@
 from fpdf import FPDF
 from fpdf.recorder import FPDFRecorder
 
-from test.conftest import assert_pdf_equal, EPOCH
+from test.conftest import assert_pdf_equal, EPOCH, LOREM_IPSUM
 
 
 def init_pdf():
@@ -48,3 +48,14 @@ def test_recorder_replay_ok(tmp_path):
 def test_recorder_override_accept_page_break_ok():
     recorder = FPDFRecorder(init_pdf(), accept_page_break=False)
     assert recorder.accept_page_break is False
+
+
+def test_recorder_preserve_pages_count():
+    pdf = init_pdf()
+    pdf.set_y(250)
+    assert pdf.pages_count == 1
+    with pdf.offset_rendering() as recorder:
+        pdf.multi_cell(txt=LOREM_IPSUM, w=pdf.epw)
+        assert pdf.pages_count == 2
+    assert recorder.page_break_triggered
+    assert pdf.pages_count == 1

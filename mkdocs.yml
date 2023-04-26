@@ -66,6 +66,18 @@ plugins:
       cover_subtitle: A minimalist PDF creation library for Python
       author: ' '
       copyright: ' '
+      exclude_pages:
+        - 'Tutorial-de'
+        - 'Tutorial-es'
+        - 'Tutorial-fr'
+        - 'Tutorial-gr'
+        - 'Tutorial-it'
+        - 'Tutorial-pt'
+        - 'Tutorial-ru'
+        - 'Tutorial-hi'
+        - 'Tutorial-bn'
+        - 'Tutorial-he'
+        - 'Tutorial-zh'
       #cover: false
       #back_cover: true
       #custom_template_path: TEMPLATES PATH
@@ -75,8 +87,6 @@ plugins:
       #ordered_chapter_level: 2
       #excludes_children:
       #    - 'release-notes/:upgrading'
-      #exclude_pages:
-      #    - 'appendix/contribute/'
       #convert_iframe:
       #    - src: IFRAME SRC
       #      img: POSTER IMAGE URL

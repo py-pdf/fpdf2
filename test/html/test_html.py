@@ -232,7 +232,7 @@ def test_html_justify_paragraph(tmp_path):
 
 def test_issue_156(tmp_path):
     pdf = FPDF()
-    pdf.add_font("Roboto", style="B", fname="test/fonts/Roboto-Bold.ttf")
+    pdf.add_font("Roboto", style="B", fname=HERE / "../fonts/Roboto-Bold.ttf")
     pdf.set_font("Roboto", style="B")
     pdf.add_page()
     with pytest.raises(FPDFException) as error:
@@ -440,3 +440,11 @@ def test_html_unorthodox_headings_hierarchy(tmp_path):  # issue 631
            <h5>H5</h5>"""
     )
     assert_pdf_equal(pdf, HERE / "html_unorthodox_headings_hierarchy.pdf", tmp_path)
+
+
+def test_html_custom_pre_code_font(tmp_path):  # issue 770
+    pdf = FPDF()
+    pdf.add_font(fname=HERE / "../fonts/DejaVuSansMono.ttf")
+    pdf.add_page()
+    pdf.write_html("<code> Cześć! </code>", pre_code_font="DejaVuSansMono")
+    assert_pdf_equal(pdf, HERE / "html_custom_pre_code_font.pdf", tmp_path)

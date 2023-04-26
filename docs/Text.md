@@ -46,15 +46,15 @@ For all text insertion methods, the relevant font related properties (eg. font/s
 * [`.set_draw_color()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color) - for cell borders
 * [`.set_fill_color()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) - for the background
 
-In addition, some of the methods can optionally use [markdown](TextStyling.html#markdowntrue) or [HTML](HTML.html) markup in the supplied text in order to change the font style (bold/italic/underline) of parts of the output.
+In addition, some of the methods can optionally use [markdown](TextStyling.md#markdowntrue) or [HTML](HTML.md) markup in the supplied text in order to change the font style (bold/italic/underline) of parts of the output.
 
 ## Change in current position
 `.cell()` and `.multi_cell()` let you specify where the current position (`.x`/`.y`) should go after the call.
 This is handled by the parameters `new_x` and `new_y`.
 Their values must one of the following enums values or an equivalent string:
 
-* [`XPos`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.XPos)
-* [`YPos`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.YPos)
+* [`XPos`](fpdf/enums.html#fpdf.enums.XPos)
+* [`YPos`](fpdf/enums.html#fpdf.enums.YPos)
 
 ## .text()
 Prints a single-line character string. In contrast to the other text methods,
@@ -63,21 +63,21 @@ on the left of the first character, on the baseline. This method allows placing
 a string with typographical precision on the page, but it is usually easier to
 use the `.cell()`, `.multi_cell()` or `.write()` methods.
 
-[Signature and parameters for .text()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text)
+[Signature and parameters for .text()](fpdf/fpdf.html#fpdf.fpdf.FPDF.text)
 
 ## .cell()
 Prints a cell (rectangular area) with optional borders, background color and
 character string. The upper-left corner of the cell corresponds to the current
 position. The text can be aligned or centered. After the call, the current
 position moves to the selected `new_x`/`new_y` position. It is possible to put a link on the text.
-If `markdown=True`, then minimal [markdown](TextStyling.html#markdowntrue)
+If `markdown=True`, then minimal [markdown](TextStyling.md#markdowntrue)
 styling is enabled, to render parts of the text in bold, italics, and/or
 underlined.
 
 If automatic page breaking is enabled and the cell goes beyond the limit, a
 page break is performed before outputting.
 
-[Signature and parameters for.cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell)
+[Signature and parameters for.cell()](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell)
 
 ## .multi_cell()
 Allows printing text with word or character based line breaks. Those can be automatic
@@ -90,10 +90,9 @@ the background painted.
 Using `new_x="RIGHT", new_y="TOP", maximum height=pdf.font_size` can be
 useful to build tables with multiline text in cells.
 
-In normal operation, returns a boolean indicating if page break was triggered.
-When `split_only == True`, returns `txt` split into lines in an array (with any markdown markup removed).
+In normal operation, returns a boolean indicating if page break was triggered. The return value can be altered by specifying the `output` parameter.
 
-[Signature and parameters for.multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
+[Signature and parameters for.multi_cell()](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
 
 ## .write()
 Prints multi-line text between the page margins, starting from the current position.
@@ -107,12 +106,12 @@ Returns a boolean indicating if page break was triggered.
 
 The primary purpose of this method is to print continuously wrapping text, where different parts may be rendered in different fonts or font sizes. This contrasts eg. with `.multi_cell()`, where a change in font family or size can only become effective on a new line.
 
-[Signature and parameters for.write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
+[Signature and parameters for.write()](fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
 
 
 ## .write_html()
-This method is very similar to `.write()`, but accepts basic HTML formatted text as input. See [html.py](HTML.html) for more details and the supported HTML tags.
+This method is very similar to `.write()`, but accepts basic HTML formatted text as input. See [html.py](HTML.md) for more details and the supported HTML tags.
 
 Note that when using data from actual web pages, the result may not look exactly as expected, because `.write_html()` prints all whitespace unchanged as it finds them, while webbrowsers rather collapse each run of consequitive whitespace into a single space character.
 
-[Signature and parameters for .write_html()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html)
+[Signature and parameters for .write_html()](fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html)

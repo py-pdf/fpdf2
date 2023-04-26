@@ -300,7 +300,8 @@ class FlexTemplate:
             h=element["y2"] - element["y1"],
             txt=str(text),
             align=element.get("align", ""),
-            split_only=True,
+            dry_run=True,
+            output="LINES",
         )
 
     def _text(
@@ -358,7 +359,12 @@ class FlexTemplate:
             )
         else:  # trim to fit exactly the space defined
             text = pdf.multi_cell(
-                w=width, h=height, txt=text, align=align, split_only=True
+                w=width,
+                h=height,
+                txt=text,
+                align=align,
+                dry_run=True,
+                output="LINES",
             )[0]
             pdf.cell(w=width, h=height, txt=text, border=0, align=align, fill=fill)
 

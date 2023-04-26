@@ -118,6 +118,7 @@ def test_table_with_multiline_cells(tmp_path):
             row = table.row()
             for datum in data_row:
                 row.cell(datum)
+    assert pdf.pages_count == 2
     assert_pdf_equal(pdf, HERE / "table_with_multiline_cells.pdf", tmp_path)
 
 
@@ -130,6 +131,7 @@ def test_table_with_multiline_cells_and_fixed_row_height(tmp_path):
             row = table.row()
             for datum in data_row:
                 row.cell(datum)
+    assert pdf.pages_count == 2
     assert_pdf_equal(
         pdf, HERE / "table_with_multiline_cells_and_fixed_row_height.pdf", tmp_path
     )
@@ -180,8 +182,11 @@ def test_table_with_multiline_cells_and_without_headings(tmp_path):
             row = table.row()
             for datum in data_row:
                 row.cell(datum)
+    assert pdf.pages_count == 4
     assert_pdf_equal(
-        pdf, HERE / "table_with_multiline_cells_and_without_headings.pdf", tmp_path
+        pdf,
+        HERE / "table_with_multiline_cells_and_without_headings.pdf",
+        tmp_path,
     )
 
 
@@ -209,8 +214,11 @@ def test_table_with_multiline_cells_and_split_over_3_pages(tmp_path):
             row = table.row()
             for datum in data_row:
                 row.cell(datum)
+    assert pdf.pages_count == 4
     assert_pdf_equal(
-        pdf, HERE / "table_with_multiline_cells_and_split_over_3_pages.pdf", tmp_path
+        pdf,
+        HERE / "table_with_multiline_cells_and_split_over_3_pages.pdf",
+        tmp_path,
     )
 
 
@@ -351,3 +359,23 @@ def test_table_with_ttf_font_and_headings_but_missing_bold_font():
         str(error.value)
         == "Using font emphasis 'B' in table headings require the corresponding font style to be added using add_font()"
     )
+
+
+def test_table_with_cell_overflow(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("Times", size=30)
+    pdf.add_page()
+    with pdf.table(width=pdf.epw / 2, col_widths=(1, 2, 1)) as table:
+        row = table.row()
+        row.cell("left")
+        row.cell("center")
+        row.cell("right")  # triggers header cell overflow on last column
+        row = table.row()
+        row.cell("A1")
+        row.cell("A2")
+        row.cell("A33333333")  # triggers cell overflow on last column
+        row = table.row()
+        row.cell("B1")
+        row.cell("B2")
+        row.cell("B3")
+    assert_pdf_equal(pdf, HERE / "table_with_cell_overflow.pdf", tmp_path)

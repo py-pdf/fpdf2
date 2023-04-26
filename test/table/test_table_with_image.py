@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import pytest
+import qrcode, pytest
 
 from fpdf import FPDF
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
@@ -66,11 +66,7 @@ def test_table_with_images_and_img_fill_width(tmp_path):
                     row.cell(img=datum, img_fill_width=True)
                 else:
                     row.cell(datum)
-    assert_pdf_equal(
-        pdf,
-        HERE / "table_with_images_and_img_fill_width.pdf",
-        tmp_path,
-    )
+    assert_pdf_equal(pdf, HERE / "table_with_images_and_img_fill_width.pdf", tmp_path)
 
 
 def test_table_with_multiline_cells_and_images(tmp_path):
@@ -101,3 +97,15 @@ def test_table_with_images_and_text():
                         row.cell(datum.name, img=datum)
                     else:
                         row.cell(datum)
+
+
+def test_table_with_qrcode(tmp_path):  # issue 771
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    qrCodeGenerated = qrcode.make("https://google.com")
+    with pdf.table(first_row_as_headings=False) as table:
+        row = table.row()
+        row.cell(img=qrCodeGenerated.get_image(), img_fill_width=True)
+        row.cell("Other field")
+    assert_pdf_equal(pdf, HERE / "table_with_qrcode.pdf", tmp_path)
