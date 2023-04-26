@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.7.4] - Not released yet
 ### Added
+- [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): CMYK images can now be inserted directly by passing them into the image method. Contributed by @devdev29
 - documentation on how to embed `graphs` and `charts` generated using `Pygal` lib: [documentation section](https://pyfpdf.github.io/fpdf2/Maths.html#using-pygal) - thanks to @ssavi-ict
 - documentation on how to use `fpdf2` with [FastAPI](https://fastapi.tiangolo.com/): <https://pyfpdf.github.io/fpdf2/UsageInWebAPI.html#FastAPI> - thanks to @KamarulAdha
 - [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): `<table>` elements can now be aligned left or right on the page using `align=`
