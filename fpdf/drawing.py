@@ -3867,7 +3867,7 @@ class ClippingPath(PaintedPath):
             intersection_rule = ClippingPathIntersectionRule.NONZERO
         else:
             intersection_rule = ClippingPathIntersectionRule[
-                intersection_rule.name  # pylint: disable=no-member
+                intersection_rule.name  # pylint: disable=no-member, useless-suppression
             ]
 
         paint_rule = merged_style.resolve_paint_rule()

@@ -28,7 +28,6 @@ load-plugins = pylint.extensions.bad_builtin,
                pylint.extensions.private_import,
                pylint.extensions.redefined_loop_name,
                # pylint.extensions.set_membership,
-               pylint.extensions.typing,
 
 [STRING_CONSTANT]
 # Doc: https://pylint.pycqa.org/en/latest/user_guide/messages/warning/implicit-str-concat.html
