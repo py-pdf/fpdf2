@@ -738,7 +738,8 @@ class FPDF(GraphicsStateMixin):
             Simply set the `FPDF.core_fonts_encoding` property as a replacement.
         """
         warnings.warn(
-            "set_doc_option() is deprecated. "
+            # pylint: disable=implicit-str-concat
+            "set_doc_option() is deprecated and will be removed in a future release. "
             "Simply set the `.core_fonts_encoding` property as a replacement.",
             DeprecationWarning,
             stacklevel=2,
@@ -1292,6 +1293,7 @@ class FPDF(GraphicsStateMixin):
             Use `FPDF.set_dash_pattern()` and the normal drawing operations instead.
         """
         warnings.warn(
+            # pylint: disable=implicit-str-concat
             "dashed_line() is deprecated, and will be removed in a future release. "
             "Use set_dash_pattern() and the normal drawing operations instead.",
             DeprecationWarning,
@@ -1360,12 +1362,12 @@ class FPDF(GraphicsStateMixin):
         coor_y = [y, y, y + h, y + h]
 
         if round_corners is True:
-            round_corners = [
+            round_corners = (
                 Corner.TOP_RIGHT.value,
                 Corner.TOP_LEFT.value,
                 Corner.BOTTOM_RIGHT.value,
                 Corner.BOTTOM_LEFT.value,
-            ]
+            )
         round_corners = tuple(Corner.coerce(rc) for rc in round_corners)
 
         if Corner.TOP_RIGHT in round_corners:
@@ -1870,7 +1872,7 @@ class FPDF(GraphicsStateMixin):
             "ttffile": font_file_path,
             "fontkey": fontkey,
             "emphasis": TextEmphasis.coerce(style),
-            "subset": SubsetMap(map(ord, sbarr)),
+            "subset": SubsetMap([ord(char) for char in sbarr]),
             "cmap": font_cmap,
         }
 
@@ -2466,7 +2468,9 @@ class FPDF(GraphicsStateMixin):
             Use `FPDF.rotation()` instead.
         """
         warnings.warn(
+            # pylint: disable=implicit-str-concat
             "rotate() can produces malformed PDFs and is deprecated. "
+            "It will be removed in a future release. "
             "Use the rotation() context manager instead.",
             DeprecationWarning,
             stacklevel=3,
@@ -2736,13 +2740,13 @@ class FPDF(GraphicsStateMixin):
             raise FPDFException("No font set, you need to call set_font() beforehand")
         if isinstance(w, str) or isinstance(h, str):
             raise ValueError(
+                # pylint: disable=implicit-str-concat
                 "Parameter 'w' and 'h' must be numbers, not strings."
                 " You can omit them by passing string content with txt="
             )
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
-                'Integer values for "border" parameter other than 1 are currently '
-                "ignored"
+                'Integer values for "border" parameter other than 1 are currently ignored'
             )
             border = 1
         new_x = XPos.coerce(new_x)
@@ -2862,8 +2866,7 @@ class FPDF(GraphicsStateMixin):
             raise FPDFException("No font set, you need to call set_font() beforehand")
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
-                'Integer values for "border" parameter other than 1 are currently '
-                "ignored"
+                'Integer values for "border" parameter other than 1 are currently ignored'
             )
             border = 1
         styled_txt_width = text_line.text_width
@@ -3014,11 +3017,12 @@ class FPDF(GraphicsStateMixin):
                             chr(frag.font["subset"].pick(ord(" ")))
                         )
                         words_strl = []
-                        for i, word in enumerate(words):
+                        for word_i, word in enumerate(words):
+                            # pylint: disable=redefined-loop-name
                             word = escape_parens(
                                 word.encode("utf-16-be").decode("latin-1")
                             )
-                            if i == 0:
+                            if word_i == 0:
                                 words_strl.append(f"({word})")
                             else:
                                 adj = -(frag_ws * frag.k) * 1000 / frag.font_size_pt
@@ -3430,10 +3434,9 @@ class FPDF(GraphicsStateMixin):
         """
         if split_only:
             warnings.warn(
-                (
-                    'The parameter "split_only" is deprecated.'
-                    ' Use instead dry_run=True and output="LINES".'
-                ),
+                # pylint: disable=implicit-str-concat
+                'The parameter "split_only" is deprecated.'
+                ' Use instead dry_run=True and output="LINES".',
                 DeprecationWarning,
                 stacklevel=3,
             )
@@ -3461,6 +3464,7 @@ class FPDF(GraphicsStateMixin):
         wrapmode = WrapMode.coerce(wrapmode)
         if isinstance(w, str) or isinstance(h, str):
             raise ValueError(
+                # pylint: disable=implicit-str-concat
                 "Parameter 'w' and 'h' must be numbers, not strings."
                 " You can omit them by passing string content with txt="
             )
@@ -3670,6 +3674,7 @@ class FPDF(GraphicsStateMixin):
             raise FPDFException("No font set, you need to call set_font() beforehand")
         if isinstance(h, str):
             raise ValueError(
+                # pylint: disable=implicit-str-concat
                 "Parameter 'h' must be a number, not a string."
                 " You can omit it by passing string content with txt="
             )
@@ -4008,6 +4013,7 @@ class FPDF(GraphicsStateMixin):
             )
             if self.oversized_images.lower().startswith("warn"):
                 LOGGER.warning(
+                    # pylint: disable=implicit-str-concat
                     "OVERSIZED: Image %s with size %.1fx%.1fpx is rendered at size %.1fx%.1fpt."
                     " Set pdf.oversized_images = 'DOWNSCALE' to reduce embedded image size by a factor %.1f",
                     name,
@@ -4309,7 +4315,7 @@ class FPDF(GraphicsStateMixin):
         del self.footer
         del self.header
 
-    def file_id(self):
+    def file_id(self):  # pylint: disable=no-self-use
         """
         This method can be overridden in inherited classes
         in order to define a custom file identifier.
@@ -4422,6 +4428,7 @@ class FPDF(GraphicsStateMixin):
         dim = {"w": w, "n": w / 3}
         if not txt.startswith("*") or not txt.endswith("*"):
             warnings.warn(
+                # pylint: disable=implicit-str-concat
                 "Code 39 input must start and end with a '*' character to be valid."
                 " This method does not insert it automatically."
             )

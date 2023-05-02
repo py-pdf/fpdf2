@@ -76,9 +76,7 @@ def convert_unit(
     """
     unit_conversion_factor = get_scale_factor(new_unit) / get_scale_factor(old_unit)
     if isinstance(to_convert, Iterable):
-        return tuple(
-            map(lambda i: convert_unit(i, 1, unit_conversion_factor), to_convert)
-        )
+        return tuple(convert_unit(i, 1, unit_conversion_factor) for i in to_convert)
     return to_convert / unit_conversion_factor
 
 
@@ -135,8 +133,8 @@ def get_process_heap_and_stack_sizes() -> Tuple[str]:
     except FileNotFoundError:  # This file only exists under Linux
         return heap_size_in_mib, stack_size_in_mib
     for line in maps_lines:
-        line = line.split()
-        addr_range, path = line[0], line[-1]
+        words = line.split()
+        addr_range, path = words[0], words[-1]
         addr_start, addr_end = addr_range.split("-")
         addr_start, addr_end = int(addr_start, 16), int(addr_end, 16)
         size = addr_end - addr_start

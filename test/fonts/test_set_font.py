@@ -138,6 +138,7 @@ def test_set_font_styles():
         # Test if underline is set correctly
         assert pdf.underline == int("U" in style)
 
+        # pylint: disable=redefined-loop-name
         # Test if style is set correctly
         style = style.replace("U", "")
         if style == "IB":

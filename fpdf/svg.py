@@ -40,6 +40,7 @@ _HANDY_NAMESPACES = {
 
 NUMBER_SPLIT = re.compile(r"(?:\s+,\s+|\s+,|,\s+|\s+|,)")
 TRANSFORM_GETTER = re.compile(
+    # pylint: disable=implicit-str-concat
     r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)"
     r"\(((?:\s*(?:[-+]?[\d\.]+,?)+\s*)+)\)"
 )
@@ -303,8 +304,7 @@ def apply_styles(stylable, svg_element):
     for attr_name, converter in svg_attr_map.items():
         value = svg_element.attrib.get(attr_name)
         if value:
-            attr_name, value = converter(value)
-            setattr(stylable.style, attr_name, value)
+            setattr(stylable.style, *converter(value))
 
     # handle this separately for now
     opacity = svg_element.attrib.get("opacity")
@@ -473,7 +473,7 @@ def convert_transforms(tfstr):
     # harder to support.
     # https://drafts.csswg.org/css-transforms/#two-d-transform-functions
     parsed = TRANSFORM_GETTER.findall(tfstr)
-
+    # pylint: disable=redefined-loop-name
     transform = Transform.identity()
     for tf_type, args in parsed:
         if tf_type == "matrix":

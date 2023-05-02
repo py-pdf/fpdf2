@@ -144,7 +144,6 @@ class PDFObject:
 
     # Note: several child classes use __slots__ to save up some memory
 
-    # pylint: disable=redefined-builtin
     def __init__(self):
         self._id = None
 
@@ -179,6 +178,7 @@ class PDFObject:
         output.append("endobj")
         return "\n".join(output)
 
+    # pylint: disable=no-self-use
     def content_stream(self):
         "Subclasses can override this method to indicate the presence of a content stream"
         return b""
@@ -234,6 +234,7 @@ def build_obj_dict(key_values, _security_handler=None, _obj_id=None):
             or value is None
         ):
             continue
+        # pylint: disable=redefined-loop-name
         if hasattr(value, "value"):  # e.g. Enum subclass
             value = value.value
         if isinstance(value, PDFObject):  # indirect object reference
@@ -323,7 +324,7 @@ class PDFArray(list):
         if all(isinstance(elem, str) for elem in self):
             serialized_elems = " ".join(self)
         elif all(isinstance(elem, int) for elem in self):
-            serialized_elems = " ".join(map(str, self))
+            serialized_elems = " ".join(str(elem) for elem in self)
         else:
             serialized_elems = "\n".join(
                 elem.ref
@@ -357,6 +358,9 @@ class DestinationXYZ(Destination):
             and self.left == dest.left
             and self.zoom == dest.zoom
         )
+
+    def __hash__(self):
+        return hash((self.page_number, self.top, self.left, self.zoom))
 
     def __repr__(self):
         return f'DestinationXYZ(page_number={self.page_number}, top={self.top}, left={self.left}, zoom="{self.zoom}", page_ref={self.page_ref})'

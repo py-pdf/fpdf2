@@ -27,6 +27,7 @@ def test_encoding_exception():
         pdf.cell(txt="Joséō")
         # This should through an error since Helvetica is a latin-1 encoder and the ō is out of range.
     msg = (
+        # pylint: disable=implicit-str-concat
         'Character "ō" at index 4 in text is outside the range of characters supported by the font '
         'used: "helvetica". Please consider using a Unicode font.'
     )

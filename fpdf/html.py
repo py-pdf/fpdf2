@@ -654,6 +654,7 @@ class HTML2FPDF(HTMLParser):
         self.set_style("u", False)
         self.set_text_color(*self.font_color)
 
+    # pylint: disable=no-self-use
     def render_toc(self, pdf, outline):
         "This method can be overriden by subclasses to customize the Table of Contents style."
         pdf.ln()
@@ -706,6 +707,7 @@ class HTMLMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         warnings.warn(
+            # pylint: disable=implicit-str-concat
             "The HTMLMixin class is deprecated. "
             "Simply use the FPDF class as a replacement.",
             DeprecationWarning,

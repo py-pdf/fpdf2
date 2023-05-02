@@ -1,4 +1,4 @@
-# pylint: disable=redefined-outer-name, protected-access
+# pylint: disable=implicit-str-concat, no-self-use, protected-access
 import io
 from pathlib import Path
 

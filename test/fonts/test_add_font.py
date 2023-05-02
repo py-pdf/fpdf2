@@ -100,6 +100,7 @@ def test_add_font_otf(tmp_path):
     pdf.add_font("Quicksand", style="I", fname=HERE / "Quicksand-Italic.otf")
     pdf.set_font("Quicksand", size=32)
     text = (
+        # pylint: disable=implicit-str-concat
         "Lorem ipsum dolor, **consectetur adipiscing** elit,"
         " eiusmod __tempor incididunt__ ut labore et dolore --magna aliqua--."
     )

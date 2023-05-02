@@ -9,6 +9,7 @@ class FPDFPageFormatException(FPDFException):
         super().__init__()
         if unknown and one:
             raise TypeError(
+                # pylint: disable=implicit-str-concat
                 "FPDF Page Format Exception cannot be both for "
                 "unknown type and for wrong number of arguments"
             )

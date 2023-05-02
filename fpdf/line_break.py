@@ -149,6 +149,9 @@ class Fragment:
             and self.k == other.k
         )
 
+    def __hash__(self):
+        return hash((self.characters, self.graphics_state, self.k))
+
     def get_width(
         self,
         start: int = 0,

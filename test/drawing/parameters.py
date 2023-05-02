@@ -1,4 +1,4 @@
-# pylint: disable=redefined-outer-name, protected-access
+# pylint: disable=implicit-str-concat
 import pytest
 
 from decimal import Decimal
@@ -73,6 +73,7 @@ r = fpdf.drawing.Raw
 
 
 class CustomPrimitive:
+    # pylint: disable=no-self-use
     def serialize(self):
         return "custom primitive"
 

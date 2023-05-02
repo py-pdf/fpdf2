@@ -2214,7 +2214,6 @@ class QuadraticBezierCurve(NamedTuple):
         Returns:
             a tuple of `(str, new_last_item)`, where `new_last_item` is `self`.
         """
-        # pylint: disable=unused-argument
         return (
             self.to_cubic_curve(last_item.end_point).render(
                 gsd_registry, style, last_item, initial_point
@@ -2286,7 +2285,6 @@ class RelativeQuadraticBezierCurve(NamedTuple):
             a tuple of `(str, new_last_item)`, where `new_last_item` is the resolved
             `QuadraticBezierCurve`.
         """
-        # pylint: disable=unused-argument
         last_point = last_item.end_point
 
         ctrl = last_point + self.ctrl
@@ -2489,7 +2487,6 @@ class Arc(NamedTuple):
             a tuple of `(str, new_last_item)`, where `new_last_item` is a resolved
             `BezierCurve`.
         """
-        # pylint: disable=unused-argument
         curves = self._approximate_arc(last_item)
 
         if not curves:
@@ -2527,7 +2524,6 @@ class Arc(NamedTuple):
         Returns:
             The same tuple as `Arc.render`.
         """
-        # pylint: disable=unused-argument
         curves = self._approximate_arc(last_item)
 
         debug_stream.write(f"{self} resolved to:\n")
@@ -2590,7 +2586,6 @@ class RelativeArc(NamedTuple):
             a tuple of `(str, new_last_item)`, where `new_last_item` is a resolved
             `BezierCurve`.
         """
-        # pylint: disable=unused-argument
         return Arc(
             self.radii,
             self.rotation,
@@ -2622,7 +2617,6 @@ class RelativeArc(NamedTuple):
         Returns:
             The same tuple as `RelativeArc.render`.
         """
-        # pylint: disable=unused-argument
         # newline is intentionally missing here
         debug_stream.write(f"{self} resolved to ")
 
@@ -2770,7 +2764,6 @@ class RoundedRectangle(NamedTuple):
             a tuple of `(str, new_last_item)`, where `new_last_item` is a resolved
             `Line`.
         """
-        # pylint: disable=unused-argument
         components = self._decompose()
 
         if not components:
@@ -2808,7 +2801,6 @@ class RoundedRectangle(NamedTuple):
         Returns:
             The same tuple as `RoundedRectangle.render`.
         """
-        # pylint: disable=unused-argument
         components = self._decompose()
 
         debug_stream.write(f"{self} resolved to:\n")
@@ -2882,7 +2874,6 @@ class Ellipse(NamedTuple):
             a tuple of `(str, new_last_item)`, where `new_last_item` is a resolved
             `Move` to the center of the ellipse.
         """
-        # pylint: disable=unused-argument
         components = self._decompose()
 
         if not components:
@@ -2920,7 +2911,6 @@ class Ellipse(NamedTuple):
         Returns:
             The same tuple as `Ellipse.render`.
         """
-        # pylint: disable=unused-argument
         components = self._decompose()
 
         debug_stream.write(f"{self} resolved to:\n")
@@ -2951,6 +2941,7 @@ class ImplicitClose(NamedTuple):
     `GraphicsStyle.auto_close`.
     """
 
+    # pylint: disable=no-self-use
     @force_nodocument
     def render(self, gsd_registry, style, last_item, initial_point):
         """
@@ -3015,6 +3006,7 @@ class Close(NamedTuple):
     See: `PaintedPath.close`
     """
 
+    # pylint: disable=no-self-use
     @force_nodocument
     def render(self, gsd_registry, style, last_item, initial_point):
         """

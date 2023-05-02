@@ -229,7 +229,8 @@ class StandardSecurityHandler:
         iv.extend(data)
         return iv
 
-    def get_initialization_vector(self, size):
+    @classmethod
+    def get_initialization_vector(cls, size):
         return bytearray(urandom(size))
 
     def padded_password(self, password):
@@ -276,7 +277,7 @@ class StandardSecurityHandler:
                 new_key.append(k ^ i)
             result = ARC4().encrypt(new_key, result)
         result.extend(
-            map(lambda x: (result[x] ^ self.DEFAULT_PADDING[x]), range(16))
+            (result[x] ^ self.DEFAULT_PADDING[x]) for x in range(16)
         )  # add 16 bytes of random padding
         return bytes(result).hex()
 

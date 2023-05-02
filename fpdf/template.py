@@ -123,7 +123,6 @@ class FlexTemplate:
                     e["size"] = e["w"]
             for k, t in key_config.items():
                 if k in e and not isinstance(e[k], t):
-                    # pylint: disable=no-member
                     ttype = (
                         t.__name__
                         if isinstance(t, type)
@@ -591,7 +590,6 @@ class Template(FlexTemplate):
 
     # Disabling this check due to the "format" parameter below:
     # pylint: disable=redefined-builtin
-    # pylint: disable=unused-argument
     def __init__(
         self,
         infile=None,

@@ -48,6 +48,7 @@ def test_simple_outline(tmp_path):
     pdf.start_section("Subtitle 1.1", level=1)
     p(
         pdf,
+        # pylint: disable=implicit-str-concat
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit,"
         " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     )
@@ -85,7 +86,6 @@ def p(pdf, text, **kwargs):
     )
 
 
-# pylint: disable=unused-argument
 def render_toc(pdf, outline):
     pdf.y += 50
     pdf.set_font("Helvetica", size=16)
@@ -162,6 +162,7 @@ def test_2_pages_outline(tmp_path):
         pdf.start_section(f"Title {i}")
         p(
             pdf,
+            # pylint: disable=implicit-str-concat
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit,"
             " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         )

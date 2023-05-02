@@ -207,7 +207,6 @@ class Table:
             j += row.cells[j].colspan
         self._fpdf.ln(row_layout_info.height)
 
-    # pylint: disable=inconsistent-return-statements
     def _render_table_cell(
         self,
         i,
@@ -282,7 +281,6 @@ class Table:
             raise ValueError(
                 f"Invalid .col_widths specified: missing width for table() column {j + 1} on row {i + 1}"
             )
-        # pylint: disable=unsubscriptable-object
         col_width = 0
         for k in range(j, j + colspan):
             col_ratio = self._col_widths[k] / sum(self._col_widths)
@@ -344,6 +342,7 @@ class Row:
         """
         if text and img:
             raise NotImplementedError(
+                # pylint: disable=implicit-str-concat
                 "fpdf2 currently does not support inserting text with an image in the same table cell."
                 "Pull Requests are welcome to implement this 😊"
             )

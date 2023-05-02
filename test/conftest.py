@@ -25,6 +25,7 @@ from fpdf.template import Template
 QPDF_AVAILABLE = bool(shutil.which("qpdf"))
 if not QPDF_AVAILABLE:
     warnings.warn(
+        # pylint: disable=implicit-str-concat
         "qpdf command not available on the $PATH, falling back to hash-based "
         "comparisons in tests"
     )
@@ -32,6 +33,7 @@ if not QPDF_AVAILABLE:
 EPOCH = datetime(1969, 12, 31, 19, 00, 00).replace(tzinfo=timezone.utc)
 
 LOREM_IPSUM = (
+    # pylint: disable=implicit-str-concat
     "Lorem ipsum Ut nostrud irure reprehenderit anim nostrud dolore sed "
     "ut Excepteur dolore ut sunt irure consectetur tempor eu tempor "
     "nostrud dolore sint exercitation aliquip velit ullamco esse dolore "

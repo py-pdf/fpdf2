@@ -27,6 +27,7 @@ def test_load_base64_data(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.image(
+        # pylint: disable=implicit-str-concat
         "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEU0OkArMjhobHEoPUPFEBIuO0L+AAC2FBZ2JyuNICOfGx7xAwT"
         "jCAlCNTvVDA1aLzQ3COjMAAAAVUlEQVQI12NgwAaCDSA0888GCItjn0szWGBJTVoGSCjWs8TleQCQYV95evdxkFT8Kpe0PLDi5WfKd4LUsN5zS1sKFolt8bwAZrCa"
         "GqNYJAgFDEpQAAAzmxafI4vZWwAAAABJRU5ErkJggg=="

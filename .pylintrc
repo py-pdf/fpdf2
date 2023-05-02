@@ -1,6 +1,38 @@
 [MESSAGES CONTROL]
-disable = attribute-defined-outside-init, use-dict-literal, invalid-name, method-hidden, missing-docstring, multiple-imports, too-few-public-methods, too-many-arguments, too-many-instance-attributes, too-many-nested-blocks, too-many-branches, too-many-lines, too-many-locals, too-many-public-methods, too-many-statements, wrong-import-order
 max-line-length=150
+
+# Disable superflous / noisy rules:
+disable = attribute-defined-outside-init, use-dict-literal, invalid-name, method-hidden, missing-docstring, multiple-imports, too-few-public-methods, too-many-arguments, too-many-instance-attributes, too-many-nested-blocks, too-many-branches, too-many-lines, too-many-locals, too-many-public-methods, too-many-statements, wrong-import-order
+
+# Enable some rules that are not activated by default:
+enable = bad-inline-option, deprecated-pragma, file-ignored, use-symbolic-message-instead, useless-suppression
+
+# Include some helpful details on errors messages for naming rules:
+include-naming-hint = yes
+
+[MASTER]
+# Informational messages ("I") should make Pylint execution fail (non-0 program return code):
+fail-on = I
+# Enable many optional extensions:
+load-plugins = pylint.extensions.bad_builtin,
+               # pylint.extensions.code_style,
+               pylint.extensions.comparison_placement,
+               pylint.extensions.consider_refactoring_into_while_condition,
+               # pylint.extensions.docparams,
+               pylint.extensions.dunder,
+               pylint.extensions.eq_without_hash,
+               pylint.extensions.for_any_all,
+               # pylint.extensions.mccabe,
+               pylint.extensions.no_self_use,
+               pylint.extensions.overlapping_exceptions,
+               pylint.extensions.private_import,
+               pylint.extensions.redefined_loop_name,
+               # pylint.extensions.set_membership,
+               pylint.extensions.typing,
+
+[STRING_CONSTANT]
+# Doc: https://pylint.pycqa.org/en/latest/user_guide/messages/warning/implicit-str-concat.html
+check-str-concat-over-line-jumps = yes
 
 [SIMILARITIES]
 # Restricting duplicate-code check:

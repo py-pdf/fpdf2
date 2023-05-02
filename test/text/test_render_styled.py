@@ -1,3 +1,4 @@
+# pylint: disable=redefined-loop-name
 from pathlib import Path
 
 import pytest

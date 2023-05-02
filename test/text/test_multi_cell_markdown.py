@@ -1,3 +1,4 @@
+# pylint: disable=implicit-str-concat
 from pathlib import Path
 
 import fpdf

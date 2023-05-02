@@ -1,4 +1,3 @@
-# pylint: disable=redefined-outer-name, protected-access, unnecessary-lambda-assignment
 import pytest
 
 from contextlib import contextmanager
