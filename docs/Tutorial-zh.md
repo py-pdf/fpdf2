@@ -122,7 +122,7 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [生成的 PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)
 
-[儒勒·凡尔纳的原文](https://github.com/PyFPDF/fpdf2/raw/mast呃/教程/20k_c1.txt）
+[儒勒·凡尔纳的文本](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 调用 [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) 
 函数设定当前字体下字符串的长度，
@@ -160,7 +160,7 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [生成的 PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
 
-[儒勒·凡尔纳的原文](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+[儒勒·凡尔纳的文本](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 与上一个教程的主要区别在于使用了
 [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) 
