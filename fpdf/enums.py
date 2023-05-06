@@ -394,6 +394,18 @@ class YPos(CoerciveEnum):
     "bottom page margin (end of printable area)"
 
 
+class Angle(CoerciveIntEnum):
+    "Direction values used for mirror transformations specifying the angle of mirror line"
+    NORTH = 90
+    EAST = 0
+    SOUTH = 270
+    WEST = 180
+    NORTHEAST = 45
+    SOUTHEAST = 315
+    SOUTHWEST = 225
+    NORTHWEST = 135
+
+
 class PageLayout(CoerciveEnum):
     "Specify the page layout shall be used when the document is opened"
 

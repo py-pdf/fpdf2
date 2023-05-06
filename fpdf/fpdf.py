@@ -53,6 +53,7 @@ from .encryption import StandardSecurityHandler
 from .enums import (
     AccessPermission,
     Align,
+    Angle,
     AnnotationFlag,
     AnnotationName,
     CharVPos,
@@ -2566,6 +2567,45 @@ class FPDF(GraphicsStateMixin):
         with self.local_context():
             self._out(
                 f"1 {ay:.5f} {ax:.5f} 1 {cx:.2f} {cy:.2f} cm "
+                f"1 0 0 1 -{cx:.2f} -{cy:.2f} cm"
+            )
+            yield
+
+    @check_page
+    @contextmanager
+    def mirror(self, angle, origin=(None, None)):
+        """
+        This method allows to perform a reflection transformation over a given mirror line.
+        It must be used as a context-manager using `with`:
+
+            with mirror(angle="SOUTH", origin=(15,15)):
+                pdf.something()
+
+        The mirror transformation affects all elements which are printed inside the indented
+        context (with the exception of clickable areas).
+
+        Args:
+            angle: (fpdf.enums.Angle): the direction of the mirror line
+            origin (Sequence[float, float]): a point on the mirror line
+        """
+        angle = Angle.coerce(angle)
+        x, y = origin
+
+        if x is None:
+            x = self.x
+        if y is None:
+            y = self.y
+
+        theta = angle.value
+
+        a = math.cos(math.radians(theta * 2))
+        b = math.sin(math.radians(theta * 2))
+        d = a * -1
+        cx, cy = x * self.k, (self.h - y) * self.k
+
+        with self.local_context():
+            self._out(
+                f"{a:.5f} {b:.5f} {b:.5f} {d:.5f} {cx:.2f} {cy:.2f} cm "
                 f"1 0 0 1 -{cx:.2f} -{cy:.2f} cm"
             )
             yield
