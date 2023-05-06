@@ -2600,12 +2600,11 @@ class FPDF(GraphicsStateMixin):
 
         a = math.cos(math.radians(theta * 2))
         b = math.sin(math.radians(theta * 2))
-        d = a * -1
         cx, cy = x * self.k, (self.h - y) * self.k
 
         with self.local_context():
             self._out(
-                f"{a:.5f} {b:.5f} {b:.5f} {d:.5f} {cx:.2f} {cy:.2f} cm "
+                f"{a:.5f} {b:.5f} {b:.5f} {a*-1:.5f} {cx:.2f} {cy:.2f} cm "
                 f"1 0 0 1 -{cx:.2f} -{cy:.2f} cm"
             )
             yield
