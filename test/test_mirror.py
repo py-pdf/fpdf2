@@ -167,8 +167,4 @@ def test_mirror_multi_cell(tmp_path):
         pdf.multi_cell(w=120, txt=LOREM_IPSUM[:120], fill=True, border=1)
 
     pdf.output(HERE / "mirror_multi_cell.pdf")
-    assert_pdf_equal(
-        pdf,
-        HERE / "mirror_multi_cell.pdf",
-        tmp_path
-    )
+    assert_pdf_equal(pdf, HERE / "mirror_multi_cell.pdf", tmp_path)
