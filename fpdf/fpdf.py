@@ -2573,7 +2573,7 @@ class FPDF(GraphicsStateMixin):
 
     @check_page
     @contextmanager
-    def mirror(self, angle, origin=(None, None)):
+    def mirror(self, angle, origin):
         """
         This method allows to perform a reflection transformation over a given mirror line.
         It must be used as a context-manager using `with`:
@@ -2581,22 +2581,20 @@ class FPDF(GraphicsStateMixin):
             with mirror(angle="SOUTH", origin=(15,15)):
                 pdf.something()
 
-        The mirror transformation affects all elements which are printed inside the indented
+        The mirror transformation affects all elements which are rendered inside the indented
         context (with the exception of clickable areas).
 
         Args:
             angle: (fpdf.enums.Angle): the direction of the mirror line
-            origin (Sequence[float, float]): a point on the mirror line
+            origin (Sequence(float, float)): a point on the mirror line
         """
         angle = Angle.coerce(angle)
         x, y = origin
 
-        if x is None:
-            x = self.x
-        if y is None:
-            y = self.y
-
-        theta = angle.value
+        try:
+            theta = Angle.coerce(angle).value
+        except ValueError:
+            theta = angle
 
         a = math.cos(math.radians(theta * 2))
         b = math.sin(math.radians(theta * 2))

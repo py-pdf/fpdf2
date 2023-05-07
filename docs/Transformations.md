@@ -42,3 +42,37 @@ with pdf.skew(ax=-45, ay=0, x=100, y=170):
     pdf.circle(x=100, y=170, r=10, style="FD")
 ```
 ![](slanted_circle.png)
+
+## Mirror ##
+
+The `mirror` context-manager applies a mirror transformation to all objects inserted in its indented block over a given mirror line by specifying starting co-ordinate and angle.
+
+```python
+x = 100
+y = 100
+pdf.text(x, y, txt="mirror this text")
+with pdf.mirror("EAST", (x, y)):
+    pdf.set_text_color(r=255, g=128, b=0)
+    pdf.text(x, y, txt="mirror this text")
+```
+![](horizontal_mirror.png)
+
+```python
+pdf.text(x, y, txt="mirror this text")
+with pdf.mirror("NORTH", (x, y)):
+    pdf.set_text_color(r=255, g=128, b=0)
+    pdf.text(x, y, txt="mirror this text")
+```
+![](vertical_mirror.png)
+
+```python
+prev_x = pdf.x
+prev_y = pdf.y
+pdf.multi_cell(w=50, txt=LOREM_IPSUM)
+with pdf.mirror("NORTHEAST", (pdf.x, pdf.y)):
+    # Reset cursor to mirror original multi-cell
+    pdf.x = prev_x
+    pdf.y = prev_y
+    pdf.multi_cell(w=50, txt=LOREM_IPSUM, fill=True)
+```
+![](diagonal_mirror.png)

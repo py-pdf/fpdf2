@@ -3,7 +3,7 @@ from pathlib import Path
 
 from fpdf import FPDF
 from fpdf.enums import Angle
-from test.conftest import assert_pdf_equal
+from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 HERE = Path(__file__).resolve().parent
 
@@ -97,35 +97,82 @@ def test_mirror_text(tmp_path):
     assert_pdf_equal(pdf, HERE / "mirror_text.pdf", tmp_path)
 
 
-# WIP
-def test_cell_skew_text(tmp_path):
-    doc = FPDF()
-    doc.add_page()
-    doc.set_font("helvetica", size=12)
+def test_mirror_cell(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica", size=12)
+    pdf.set_fill_color(255, 255, 0)
 
-    doc.cell(txt="cell text to be mirrored")
-    with doc.mirror("NORTH", (doc.epw / 2, 0)):
-        draw_mirror_line(doc, "NORTH", (doc.epw / 2, 0))
-        doc.cell(txt="cell text to be mirrored")
-        doc.ln(40)
+    pdf.cell(txt="cell to be mirrored repeatedly")
+    pdf.x = pdf.l_margin
+    with pdf.mirror("NORTH", (pdf.epw / 2, 0)):
+        draw_mirror_line(pdf, "NORTH", (pdf.epw / 2, 0))
+        pdf.cell(txt="cell mirrored", fill=True)
+        pdf.cell(txt="cell mirrored", fill=True)
+        pdf.cell(txt="cell mirrored", fill=True)
+        pdf.ln(40)
 
-    # doc.cell(txt="Text1")
-    with doc.mirror("EAST", (doc.epw / 2, doc.eph / 4)):
-        draw_mirror_line(doc, "EAST", (doc.epw / 2, doc.eph / 4))
-        doc.cell(txt="Text1")
-        doc.ln(40)
+    pdf.cell(txt="cell text 1")
+    pdf.x = pdf.l_margin
+    with pdf.mirror("EAST", (pdf.epw / 2, pdf.eph / 4)):
+        draw_mirror_line(pdf, "EAST", (pdf.epw / 2, pdf.eph / 4))
+        pdf.cell(txt="cell text 1", fill=True)
+        pdf.ln(40)
 
-    # doc.cell(txt="Text2")
-    with doc.mirror("SOUTHWEST", (doc.epw / 2, 0)):
-        draw_mirror_line(doc, "SOUTHWEST", (doc.epw / 2, 0))
-        doc.cell(txt="Text2")
-        doc.ln(40)
+    pdf.cell(txt="cell text 2")
+    pdf.x = pdf.l_margin
+    with pdf.mirror("SOUTHWEST", (pdf.epw / 2, 0)):
+        draw_mirror_line(pdf, "SOUTHWEST", (pdf.epw / 2, 0))
+        pdf.cell(txt="cell text 2", fill=True)
+        pdf.ln(40)
 
-    # doc.cell(txt="Text3")
-    with doc.mirror("NORTHEAST", (doc.epw / 2, doc.eph / 4)):
-        draw_mirror_line(doc, "NORTHEAST", (doc.epw / 2, doc.eph / 4))
-        doc.cell(txt="Text3")
-        doc.ln(40)
+    pdf.cell(txt="cell text 3")
+    pdf.x = pdf.l_margin
+    with pdf.mirror("NORTHEAST", (pdf.epw / 2, pdf.eph / 4)):
+        draw_mirror_line(pdf, "NORTHEAST", (pdf.epw / 2, pdf.eph / 4))
+        pdf.cell(txt="cell text 3", fill=True)
+        pdf.ln(40)
 
-    doc.output("help.pdf")
-    assert_pdf_equal(doc, HERE / "cell_skew_text.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "mirror_cell.pdf", tmp_path)
+
+
+def test_mirror_multi_cell(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica", size=12)
+    pdf.set_fill_color(255, 255, 0)
+
+    pdf.multi_cell(w=50, txt=LOREM_IPSUM[:200])
+
+    pdf.x = pdf.l_margin
+    pdf.y = pdf.t_margin
+    with pdf.mirror("NORTHEAST", (pdf.epw / 2, pdf.eph / 4)):
+        draw_mirror_line(pdf, "NORTHEAST", (pdf.epw / 2, pdf.eph / 4))
+        pdf.multi_cell(w=50, txt=LOREM_IPSUM[:200], fill=True)
+        pdf.ln(20)
+
+    prev_y = pdf.y
+    pdf.multi_cell(w=100, txt=LOREM_IPSUM[:200])
+    pdf.x = pdf.l_margin
+    pdf.y = prev_y
+
+    with pdf.mirror("EAST", (0, pdf.eph / 2)):
+        draw_mirror_line(pdf, "EAST", (0, pdf.eph / 2))
+        pdf.multi_cell(w=100, txt=LOREM_IPSUM[:200], fill=True)
+        pdf.ln(150)
+
+    prev_y = pdf.y
+    pdf.multi_cell(w=120, txt=LOREM_IPSUM[:120])
+    pdf.x = pdf.l_margin
+    pdf.y = prev_y
+
+    with pdf.mirror("SOUTH", (pdf.epw / 2, pdf.eph)):
+        draw_mirror_line(pdf, "SOUTH", (pdf.epw / 2, pdf.eph))
+        pdf.multi_cell(w=120, txt=LOREM_IPSUM[:120], fill=True)
+
+    pdf.output(HERE / "mirror_multi_cell.pdf")
+    assert_pdf_equal(
+        pdf,
+        HERE / "mirror_multi_cell.pdf",
+        tmp_path,
+    )
