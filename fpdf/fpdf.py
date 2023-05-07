@@ -2500,7 +2500,7 @@ class FPDF(GraphicsStateMixin):
     @contextmanager
     def rotation(self, angle, x=None, y=None):
         """
-        This method allows to perform a rotation around a given center.
+        Method to perform a rotation around a given center.
         It must be used as a context-manager using `with`:
 
             with rotation(angle=90, x=x, y=y):
@@ -2541,7 +2541,7 @@ class FPDF(GraphicsStateMixin):
     @contextmanager
     def skew(self, ax=0, ay=0, x=None, y=None):
         """
-        This method allows to perform a skew transformation originating from a given center.
+        Method to perform a skew transformation originating from a given center.
         It must be used as a context-manager using `with`:
 
             with skew(ax=15, ay=15, x=x, y=y):
@@ -2575,7 +2575,7 @@ class FPDF(GraphicsStateMixin):
     @contextmanager
     def mirror(self, angle, origin):
         """
-        This method allows to perform a reflection transformation over a given mirror line.
+        Method to perform a reflection transformation over a given mirror line.
         It must be used as a context-manager using `with`:
 
             with mirror(angle="SOUTH", origin=(15,15)):
