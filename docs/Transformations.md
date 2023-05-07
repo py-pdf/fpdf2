@@ -51,7 +51,7 @@ The `mirror` context-manager applies a mirror transformation to all objects inse
 x = 100
 y = 100
 pdf.text(x, y, txt="mirror this text")
-with pdf.mirror("EAST", (x, y)):
+with pdf.mirror((x, y), "EAST"):
     pdf.set_text_color(r=255, g=128, b=0)
     pdf.text(x, y, txt="mirror this text")
 ```
@@ -59,17 +59,16 @@ with pdf.mirror("EAST", (x, y)):
 
 ```python
 pdf.text(x, y, txt="mirror this text")
-with pdf.mirror("NORTH", (x, y)):
+with pdf.mirror((x, y), "NORTH"):
     pdf.set_text_color(r=255, g=128, b=0)
     pdf.text(x, y, txt="mirror this text")
 ```
 ![](vertical_mirror.png)
 
 ```python
-prev_x = pdf.x
-prev_y = pdf.y
+prev_x, prev_y = pdf.x, pdf.y
 pdf.multi_cell(w=50, txt=LOREM_IPSUM)
-with pdf.mirror("NORTHEAST", (pdf.x, pdf.y)):
+with pdf.mirror((pdf.x, pdf.y), "NORTHEAST"):
     # Reset cursor to mirror original multi-cell
     pdf.x = prev_x
     pdf.y = prev_y
