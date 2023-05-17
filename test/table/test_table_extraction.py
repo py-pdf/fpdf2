@@ -11,7 +11,6 @@ from pandas.testing import assert_frame_equal
 import pytest
 import tabula
 
-# pylint: disable=import-error,no-name-in-module
 from test.table.test_table import TABLE_DATA
 
 HERE = Path(__file__).resolve().parent
