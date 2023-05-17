@@ -185,7 +185,6 @@ Result:
 ![](table_with_images_and_img_fill_width.jpg)
 
 ## Syntactic sugar
-
 To simplify `table()` usage, shorter, alternative usage forms are allowed.
 
 This sample code:
@@ -212,12 +211,20 @@ with pdf.table(TABLE_DATA):
     pass
 ```
 
-## Table from pandas DataFrame
+## Gutter
+Spacing can be introduced between rows and/or columns:
+```python
+with pdf.table(TABLE_DATA, gutter_height=3, gutter_width=3):
+    pass
+```
+Result:
 
+![](table_with_gutter.jpg)
+
+## Table from pandas DataFrame
 _cf._ [Maths documentation page](Maths.md#using-pandas)
 
 ## Using write_html
-
 Tables can also be defined in HTML using [`FPDF.write_html`](HTML.md).
 With the same `data` as above, and column widths defined as percent of the effective width:
 
@@ -250,7 +257,6 @@ pdf.output('table_html.pdf')
 Note that `write_html` has [some limitations, notably regarding multi-lines cells](HTML.md#supported-html-features).
 
 ## "Parsabilty" of the tables generated
-
 The PDF file format is not designed to embed structured tables.
 Hence, it can be tricky to extract tables data from PDF documents.
 

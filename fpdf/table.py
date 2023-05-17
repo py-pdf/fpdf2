@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from numbers import Number
 from typing import Optional, Union
 
-from .enums import Align, TableBordersLayout, TableCellFillMode
+from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode
 from .enums import MethodReturnValue
 from .errors import FPDFException
 from .fonts import FontFace
@@ -13,7 +13,7 @@ DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
 
 @dataclass(frozen=True)
 class RowLayoutInfo:
-    height: int
+    height: float
     triggers_page_jump: bool
 
 
@@ -34,11 +34,14 @@ class Table:
         cell_fill_mode=TableCellFillMode.NONE,
         col_widths=None,
         first_row_as_headings=True,
+        gutter_height=0,
+        gutter_width=0,
         headings_style=DEFAULT_HEADINGS_STYLE,
         line_height=None,
         markdown=False,
         text_align="JUSTIFY",
         width=None,
+        wrapmode=WrapMode.WORD,
     ):
         """
         Args:
@@ -47,18 +50,22 @@ class Table:
             align (str, fpdf.enums.Align): optional, default to CENTER. Sets the table horizontal position relative to the page,
                 when it's not using the full page width
             borders_layout (str, fpdf.enums.TableBordersLayout): optional, default to ALL. Control what cell borders are drawn
-            cell_fill_color (int, tuple, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): optional.
+            cell_fill_color (float, tuple, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): optional.
                 Defines the cells background color
             cell_fill_mode (str, fpdf.enums.TableCellFillMode): optional. Defines which cells are filled with color in the background
-            col_widths (int, tuple): optional. Sets column width. Can be a single number or a sequence of numbers
+            col_widths (float, tuple): optional. Sets column width. Can be a single number or a sequence of numbers
             first_row_as_headings (bool): optional, default to True. If False, the first row of the table
                 is not styled differently from the others
+            gutter_height (float): optional vertical space between rows
+            gutter_width (float): optional horizontal space between columns
             headings_style (fpdf.fonts.FontFace): optional, default to bold.
                 Defines the visual style of the top headings row: size, color, emphasis...
             line_height (number): optional. Defines how much vertical space a line of text will occupy
             markdown (bool): optional, default to False. Enable markdown interpretation of cells textual content
             text_align (str, fpdf.enums.Align): optional, default to JUSTIFY. Control text alignment inside cells.
             width (number): optional. Sets the table width
+            wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
+                "CHAR" for character based line wrapping.
         """
         self._fpdf = fpdf
         self._align = align
@@ -67,11 +74,14 @@ class Table:
         self._cell_fill_mode = TableCellFillMode.coerce(cell_fill_mode)
         self._col_widths = col_widths
         self._first_row_as_headings = first_row_as_headings
+        self._gutter_height = gutter_height
+        self._gutter_width = gutter_width
         self._headings_style = headings_style
         self._line_height = 2 * fpdf.font_size if line_height is None else line_height
         self._markdown = markdown
         self._text_align = text_align
         self._width = fpdf.epw if width is None else width
+        self._wrapmode = wrapmode
         self.rows = []
         for row in rows:
             self.row(row)
@@ -131,6 +141,8 @@ class Table:
                 self._fpdf._perform_page_break()
                 if self._first_row_as_headings:  # repeat headings on top:
                     self._render_table_row(0)
+            elif i and self._gutter_height:
+                self._fpdf.y += self._gutter_height
             self._render_table_row(i, row_layout_info)
         # Restoring altered FPDF settings:
         self._fpdf.l_margin = prev_l_margin
@@ -218,6 +230,8 @@ class Table:
         row = self.rows[i]
         cell = row.cells[j]
         col_width = self._get_col_width(i, j, cell.colspan)
+        if j and self._gutter_width:
+            self._fpdf.x += self._gutter_width
         img_height = 0
         if cell.img:
             x, y = self._fpdf.x, self._fpdf.y
@@ -267,14 +281,16 @@ class Table:
                 fill=fill,
                 markdown=self._markdown,
                 output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
+                wrapmode=self._wrapmode,
                 **kwargs,
             )
         return page_break, max(img_height, cell_height)
 
     def _get_col_width(self, i, j, colspan=1):
+        cols_count = self.rows[i].cols_count
+        width = self._width - (cols_count - 1) * self._gutter_width
         if not self._col_widths:
-            cols_count = self.rows[i].cols_count
-            return colspan * (self._width / cols_count)
+            return colspan * (width / cols_count)
         if isinstance(self._col_widths, Number):
             return colspan * self._col_widths
         if j >= len(self._col_widths):
@@ -284,7 +300,7 @@ class Table:
         col_width = 0
         for k in range(j, j + colspan):
             col_ratio = self._col_widths[k] / sum(self._col_widths)
-            col_width += col_ratio * self._width
+            col_width += col_ratio * width
         return col_width
 
     def _get_row_layout_info(self, i):

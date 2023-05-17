@@ -3564,10 +3564,10 @@ class FPDF(GraphicsStateMixin):
             print_sh=print_sh,
             wrapmode=wrapmode,
         )
-        text_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
-        while (text_line) is not None:
-            text_lines.append(text_line)
-            text_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
+        txt_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
+        while (txt_line) is not None:
+            text_lines.append(txt_line)
+            txt_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
 
         if not text_lines:  # ensure we display at least one cell - cf. issue #349
             text_lines = [
@@ -3647,7 +3647,8 @@ class FPDF(GraphicsStateMixin):
             # pretend we started at the top of the text block on the new page.
             # cf. test_multi_cell_table_with_automatic_page_break
             prev_y = self.y
-        if text_line.trailing_nl and new_y in (YPos.LAST, YPos.NEXT):
+        # pylint: disable=undefined-loop-variable
+        if text_line and text_line.trailing_nl and new_y in (YPos.LAST, YPos.NEXT):
             # The line renderer can't handle trailing newlines in the text.
             self.ln()
 
@@ -3728,15 +3729,15 @@ class FPDF(GraphicsStateMixin):
         )
         # first line from current x position to right margin
         first_width = self.w - self.x - self.r_margin
-        text_line = multi_line_break.get_line_of_given_width(
+        txt_line = multi_line_break.get_line_of_given_width(
             first_width - 2 * self.c_margin, wordsplit=False
         )
         # remaining lines fill between margins
         full_width = self.w - self.l_margin - self.r_margin
         fit_width = full_width - 2 * self.c_margin
-        while (text_line) is not None:
-            text_lines.append(text_line)
-            text_line = multi_line_break.get_line_of_given_width(fit_width)
+        while txt_line is not None:
+            text_lines.append(txt_line)
+            txt_line = multi_line_break.get_line_of_given_width(fit_width)
         if not text_lines:
             return False
 
@@ -3758,6 +3759,7 @@ class FPDF(GraphicsStateMixin):
                 link=link,
             )
             page_break_triggered = page_break_triggered or new_page
+        # pylint: disable=undefined-loop-variable
         if text_line.trailing_nl:
             # The line renderer can't handle trailing newlines in the text.
             self.ln()
@@ -4802,12 +4804,16 @@ class FPDF(GraphicsStateMixin):
             col_widths (int, tuple): optional. Sets column width. Can be a single number or a sequence of numbers
             first_row_as_headings (bool): optional, default to True. If False, the first row of the table
                 is not styled differently from the others
+            gutter_height (float): optional vertical space between rows
+            gutter_width (float): optional horizontal space between columns
             headings_style (fpdf.fonts.FontFace): optional, default to bold.
                 Defines the visual style of the top headings row: size, color, emphasis...
             line_height (number): optional. Defines how much vertical space a line of text will occupy
             markdown (bool): optional, default to False. Enable markdown interpretation of cells textual content
             text_align (str, fpdf.enums.Align): optional, default to JUSTIFY. Control text alignment inside cells.
             width (number): optional. Sets the table width
+            wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
+                "CHAR" for character based line wrapping.
         """
         table = Table(self, *args, **kwargs)
         yield table

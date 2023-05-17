@@ -41,6 +41,23 @@ def test_table_simple(tmp_path):
     assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
 
 
+def test_table_with_no_row():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table():
+        pass
+
+
+def test_table_with_no_column():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table() as table:
+        for _ in TABLE_DATA:
+            table.row()
+
+
 def test_table_with_syntactic_sugar(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -379,3 +396,17 @@ def test_table_with_cell_overflow(tmp_path):
         row.cell("B2")
         row.cell("B3")
     assert_pdf_equal(pdf, HERE / "table_with_cell_overflow.pdf", tmp_path)
+
+
+def test_table_with_gutter(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table(TABLE_DATA, gutter_height=3, gutter_width=3):
+        pass
+    pdf.ln(10)
+    with pdf.table(
+        TABLE_DATA, borders_layout="SINGLE_TOP_LINE", gutter_height=3, gutter_width=3
+    ):
+        pass
+    assert_pdf_equal(pdf, HERE / "table_with_gutter.pdf", tmp_path)
