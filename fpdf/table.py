@@ -42,6 +42,7 @@ class Table:
         text_align="JUSTIFY",
         width=None,
         wrapmode=WrapMode.WORD,
+        padding=None,
     ):
         """
         Args:
@@ -66,6 +67,7 @@ class Table:
             width (number): optional. Sets the table width
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
                 "CHAR" for character based line wrapping.
+            padding (number, tuple): optional. Sets the cell padding. Can be a single number or a sequence of numbers, default: half line height
         """
         self._fpdf = fpdf
         self._align = align
@@ -83,6 +85,12 @@ class Table:
         self._width = fpdf.epw if width is None else width
         self._wrapmode = wrapmode
         self.rows = []
+
+        if padding is None:
+            self._padding = 0.5 * self._line_height
+        else:
+            self._padding = padding
+
         for row in rows:
             self.row(row)
 
@@ -282,6 +290,7 @@ class Table:
                 markdown=self._markdown,
                 output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
                 wrapmode=self._wrapmode,
+                padding = self._padding,
                 **kwargs,
             )
         return page_break, max(img_height, cell_height)

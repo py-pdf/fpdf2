@@ -3568,6 +3568,9 @@ class FPDF(GraphicsStateMixin):
         if w == 0:
             w = self.w - self.r_margin - self.x
 
+        prev_x, prev_y = self.x, self.y
+
+
         # Apply padding to contents
         # decrease maximum allowed width by padding
         # shift the starting point by padding
@@ -3581,7 +3584,6 @@ class FPDF(GraphicsStateMixin):
         styled_text_fragments = self._preload_font_styles(normalized_string, markdown)
 
         prev_font_style, prev_underline = self.font_style, self.underline
-        prev_x, prev_y = self.x, self.y
         total_height = 0
 
         if not border:
@@ -3695,6 +3697,8 @@ class FPDF(GraphicsStateMixin):
                 self.current_font = self.fonts[self.font_family + self.font_style]
             self.underline = prev_underline
 
+        self.x += padding[1]
+
         output = MethodReturnValue.coerce(output)
         return_value = ()
         if output & MethodReturnValue.PAGE_BREAK:
@@ -3708,7 +3712,7 @@ class FPDF(GraphicsStateMixin):
                 output_lines.append("".join(characters))
             return_value += (output_lines,)
         if output & MethodReturnValue.HEIGHT:
-            return_value += (total_height,)
+            return_value += (total_height + padding[0] + padding[2],)
         if len(return_value) == 1:
             return return_value[0]
         return return_value
@@ -4848,6 +4852,7 @@ class FPDF(GraphicsStateMixin):
             width (number): optional. Sets the table width
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
                 "CHAR" for character based line wrapping.
+            padding (number, tuple): optional. Sets the cell padding. Can be a single number or a sequence of numbers (top, right, bottom, left) using CSS convention
         """
         table = Table(self, *args, **kwargs)
         yield table
