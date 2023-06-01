@@ -20,6 +20,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 - [`FPDF.mirror()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.mirror) - New method: [documentation page](https://pyfpdf.github.io/fpdf2/Transformations.html) - Contributed by @sebastiantia
 - [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): new optional parameters `gutter_height`, `gutter_width` and `wrapmode`
+### Fixed
+- [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): allowing images path starting with `data` to be passed as input
 
 ## [2.7.4] - 2023-04-28
 ### Added

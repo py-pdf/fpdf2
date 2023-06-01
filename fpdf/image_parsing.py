@@ -73,7 +73,7 @@ def load_image(filename):
         # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
         with urlopen(filename) as url_file:  # nosec B310
             return BytesIO(url_file.read())
-    elif filename.startswith("data"):
+    elif filename.startswith("data:"):
         return _decode_base64_image(filename)
     with open(filename, "rb") as local_file:
         return BytesIO(local_file.read())
