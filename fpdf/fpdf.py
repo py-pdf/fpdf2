@@ -2952,7 +2952,7 @@ class FPDF(GraphicsStateMixin):
         elif border == 1:
             sl.append(
                 f"{left:.2f} {top:.2f} "
-                f"{right-left:.2f} {top-bottom:.2f} re S"
+                f"{right-left:.2f} {bottom-top:.2f} re S"
             )
         # pylint: enable=invalid-unary-operand-type
 
