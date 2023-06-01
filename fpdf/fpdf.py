@@ -2857,6 +2857,7 @@ class FPDF(GraphicsStateMixin):
         fill: bool = False,
         link: str = "",
         center: bool = False,
+        padding = (0,0,0,0),
     ):
         """
         Prints a cell (rectangular area) with optional borders, background color and
@@ -2934,6 +2935,14 @@ class FPDF(GraphicsStateMixin):
         k = self.k
         # pylint: disable=invalid-unary-operand-type
         # "h" can't actually be None
+
+        # pre-calc border edges with padding
+
+        left = (self.x - padding[3]) * k
+        right = (self.x + w + padding[1]) * k
+        top = (self.h - self.y + padding[0]) * k
+        bottom = (self.h - (self.y + h) - padding[2]) * k
+
         if fill:
             op = "B" if border == 1 else "f"
             sl.append(
@@ -2942,33 +2951,32 @@ class FPDF(GraphicsStateMixin):
             )
         elif border == 1:
             sl.append(
-                f"{self.x * k:.2f} {(self.h - self.y) * k:.2f} "
-                f"{w * k:.2f} {-h * k:.2f} re S"
+                f"{left:.2f} {top:.2f} "
+                f"{right-left:.2f} {top-bottom:.2f} re S"
             )
         # pylint: enable=invalid-unary-operand-type
 
         if isinstance(border, str):
-            x = self.x
-            y = self.y
+
             if "L" in border:
                 sl.append(
-                    f"{x * k:.2f} {(self.h - y) * k:.2f} m "
-                    f"{x * k:.2f} {(self.h - (y + h)) * k:.2f} l S"
+                    f"{left:.2f} {top:.2f} m "
+                    f"{left:.2f} {bottom:.2f} l S"
                 )
             if "T" in border:
                 sl.append(
-                    f"{x * k:.2f} {(self.h - y) * k:.2f} m "
-                    f"{(x + w) * k:.2f} {(self.h - y) * k:.2f} l S"
+                    f"{left:.2f} {top:.2f} m "
+                    f"{right:.2f} {top:.2f} l S"
                 )
             if "R" in border:
                 sl.append(
-                    f"{(x + w) * k:.2f} {(self.h - y) * k:.2f} m "
-                    f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S"
+                    f"{right:.2f} {top:.2f} m "
+                    f"{right:.2f} {bottom:.2f} l S"
                 )
             if "B" in border:
                 sl.append(
-                    f"{x * k:.2f} {(self.h - (y + h)) * k:.2f} m "
-                    f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S"
+                    f"{left:.2f} {bottom:.2f} m "
+                    f"{right:.2f} {bottom:.2f} l S"
                 )
 
         if self._record_text_quad_points:
@@ -3419,6 +3427,7 @@ class FPDF(GraphicsStateMixin):
         wrapmode: WrapMode = WrapMode.WORD,
         dry_run=False,
         output=MethodReturnValue.PAGE_BREAK,
+        padding = 0,
     ):
         """
         This method allows printing text with line breaks. They can be automatic
@@ -3461,12 +3470,28 @@ class FPDF(GraphicsStateMixin):
                 Can be useful when combined with `output`.
             output (fpdf.enums.MethodReturnValue): defines what this method returns.
                 If several enum values are joined, the result will be a tuple.
+            padding (float or Sequence): padding to apply around the text. Default value: 0.
+                When one value is specified, it applies the same padding to all four sides.
+                When two values are specified, the first padding applies to the top and bottom, the second to the left and right.
+                When three values are specified, the first padding applies to the top, the second to the right and left, the third to the bottom.
+                When four values are specified, the paddings apply to the top, right, bottom, and left in that order (clockwise)
 
         Using `new_x=XPos.RIGHT, new_y=XPos.TOP, maximum height=pdf.font_size` is
         useful to build tables with multiline text in cells.
 
         Returns: a single value or a tuple, depending on the `output` parameter value
         """
+
+        if isinstance(padding, (int, float)):
+            padding = (padding, padding, padding, padding)
+        elif len(padding) == 2:
+            padding = (padding[0], padding[1], padding[0], padding[1])
+        elif len(padding) == 3:
+            padding = (padding[0], padding[1], padding[2], padding[1])
+        elif len(padding) > 4:
+            raise ValueError(f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}")
+
+
         if split_only:
             warnings.warn(
                 # pylint: disable=implicit-str-concat
@@ -3495,6 +3520,7 @@ class FPDF(GraphicsStateMixin):
                     dry_run=False,
                     split_only=False,
                     output=MethodReturnValue.LINES if split_only else output,
+                    padding = padding,
                 )
         wrapmode = WrapMode.coerce(wrapmode)
         if isinstance(w, str) or isinstance(h, str):
@@ -3538,10 +3564,16 @@ class FPDF(GraphicsStateMixin):
 
         if h is None:
             h = self.font_size
-        # If width is 0, set width to available width between margins
+        # If width is 0, set width to available width between margins   # TODO: can we just replace w with w - padding?
         if w == 0:
             w = self.w - self.r_margin - self.x
-        maximum_allowed_width = w - 2 * self.c_margin
+
+        # Apply padding to contents
+        # decrease maximum allowed width by padding
+        # shift the starting point by padding
+        maximum_allowed_width = w - 2 * self.c_margin - padding[1] - padding[3]
+        self.x += padding[3]
+        self.y += padding[0]
 
         # Calculate text length
         txt = self.normalize_text(txt)
@@ -3597,7 +3629,7 @@ class FPDF(GraphicsStateMixin):
             has_line_after = not is_last_line or should_render_bottom_blank_cell
             new_page = self._render_styled_text_line(
                 text_line,
-                w,
+                w - padding[1] - padding[3],
                 h=current_cell_height,
                 border="".join(
                     (
@@ -3612,6 +3644,7 @@ class FPDF(GraphicsStateMixin):
                 align=Align.L if (align == Align.J and is_last_line) else align,
                 fill=fill,
                 link=link,
+                padding = padding,
             )
             page_break_triggered = page_break_triggered or new_page
             total_height += current_cell_height
@@ -3627,7 +3660,7 @@ class FPDF(GraphicsStateMixin):
                     justify=False,
                     trailing_nl=False,
                 ),
-                w,
+                w - padding[1] - padding[3],
                 h=h,
                 border="".join(
                     (
@@ -3640,6 +3673,7 @@ class FPDF(GraphicsStateMixin):
                 new_y=new_y,
                 fill=fill,
                 link=link,
+                padding = padding,
             )
             page_break_triggered = page_break_triggered or new_page
         if new_page and new_y == YPos.TOP:
