@@ -890,8 +890,18 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "1nv",
+      "name": "Eugene Selifonov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10288828?v=4",
+      "profile": "https://github.com/1nv",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
-  "skipCi": true
+  "skipCi": true,
+  "commitType": "docs"
 }
