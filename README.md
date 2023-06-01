@@ -240,6 +240,9 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Valerus5685"><img src="https://avatars.githubusercontent.com/u/7953869?v=4?s=100" width="100px;" alt="Valerus5685"/><br /><sub><b>Valerus5685</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3AValerus5685" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/sebastiantia"><img src="https://avatars.githubusercontent.com/u/75666019?v=4?s=100" width="100px;" alt="Sebastian Tia"/><br /><sub><b>Sebastian Tia</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=sebastiantia" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/1nv"><img src="https://avatars.githubusercontent.com/u/10288828?v=4?s=100" width="100px;" alt="Eugene Selifonov"/><br /><sub><b>Eugene Selifonov</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3A1nv" title="Bug reports">🐛</a></td>
+    </tr>
   </tbody>
 </table>
 
