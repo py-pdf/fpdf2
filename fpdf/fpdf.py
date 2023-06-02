@@ -1413,6 +1413,61 @@ class FPDF(GraphicsStateMixin):
             self.line(point_5[0], point_5[1], point_6[0], point_6[1])
             self.line(point_7[0], point_7[1], point_8[0], point_8[1])
 
+    def _draw_box(self, x1, y1, x2, y2, border, fill):
+        """Draws a box using the current style"""
+
+        sl = []
+
+        k = self.k
+
+        # y top to bottom instead of bottom to top
+        y1 = self.h - y1
+        y2 = self.h - y2
+
+        # scale
+        x1 *= k
+        x2 *= k
+        y2 *= k
+        y1 *= k
+
+        if fill:
+            op = "B" if border == 1 else "f"
+            sl.append(
+                f"{x1:.2f} {y2:.2f} "
+                f"{x2 - x1:.2f} {y1 - y2:.2f} re {op}"
+            )
+        elif border == 1:
+            sl.append(
+                f"{x1:.2f} {y2:.2f} "
+                f"{x2 - x1:.2f} {y1 - y2:.2f} re S"
+            )
+
+        if isinstance(border, str):
+
+            if "L" in border:
+                sl.append(
+                    f"{x1:.2f} {y2:.2f} m "
+                    f"{x1:.2f} {y1:.2f} l S"
+                )
+            if "T" in border:
+                sl.append(
+                    f"{x1:.2f} {y2:.2f} m "
+                    f"{x2:.2f} {y2:.2f} l S"
+                )
+            if "R" in border:
+                sl.append(
+                    f"{x2:.2f} {y2:.2f} m "
+                    f"{x2:.2f} {y1:.2f} l S"
+                )
+            if "B" in border:
+                sl.append(
+                    f"{x1:.2f} {y1:.2f} m "
+                    f"{x2:.2f} {y1:.2f} l S"
+                )
+
+        s = " ".join(sl)
+        self._out(s)
+
     @check_page
     def ellipse(self, x, y, w, h, style=None):
         """
@@ -2932,6 +2987,7 @@ class FPDF(GraphicsStateMixin):
             self.x = self.l_margin + (self.epw - w) / 2
         page_break_triggered = self._perform_page_break_if_need_be(h)
         sl = []
+
         k = self.k
         # pylint: disable=invalid-unary-operand-type
         # "h" can't actually be None
@@ -2946,8 +3002,8 @@ class FPDF(GraphicsStateMixin):
         if fill:
             op = "B" if border == 1 else "f"
             sl.append(
-                f"{self.x * k:.2f} {(self.h - self.y) * k:.2f} "
-                f"{w * k:.2f} {-h * k:.2f} re {op}"
+                f"{left:.2f} {top:.2f} "
+                f"{right-left:.2f} {bottom-top:.2f} re {op}"
             )
         elif border == 1:
             sl.append(
@@ -3428,6 +3484,7 @@ class FPDF(GraphicsStateMixin):
         dry_run=False,
         output=MethodReturnValue.PAGE_BREAK,
         padding = 0,
+        cell_height = None,
     ):
         """
         This method allows printing text with line breaks. They can be automatic
@@ -3439,7 +3496,7 @@ class FPDF(GraphicsStateMixin):
 
         Args:
             w (float): cell width. If 0, they extend up to the right margin of the page.
-            h (float): cell height. Default value: None, meaning to use the current font size.
+            h (float): row height. Default value: None, meaning to use the current font size.
             txt (str): string to print.
             border: Indicates if borders must be drawn around the cell.
                 The value can be either a number (`0`: no border ; `1`: frame)
@@ -3475,12 +3532,15 @@ class FPDF(GraphicsStateMixin):
                 When two values are specified, the first padding applies to the top and bottom, the second to the left and right.
                 When three values are specified, the first padding applies to the top, the second to the right and left, the third to the bottom.
                 When four values are specified, the paddings apply to the top, right, bottom, and left in that order (clockwise)
+            cell_height (float): height of the cell, used for borders and fill. Default value: None meaning auto.
 
         Using `new_x=XPos.RIGHT, new_y=XPos.TOP, maximum height=pdf.font_size` is
         useful to build tables with multiline text in cells.
 
         Returns: a single value or a tuple, depending on the `output` parameter value
         """
+
+        print('rendering with h = ', h)
 
         if isinstance(padding, (int, float)):
             padding = (padding, padding, padding, padding)
@@ -3564,6 +3624,7 @@ class FPDF(GraphicsStateMixin):
 
         if h is None:
             h = self.font_size
+
         # If width is 0, set width to available width between margins   # TODO: can we just replace w with w - padding?
         if w == 0:
             w = self.w - self.r_margin - self.x
@@ -3652,7 +3713,7 @@ class FPDF(GraphicsStateMixin):
             total_height += current_cell_height
             if not is_last_line and align == Align.X:
                 # prevent cumulative shift to the left
-                self.x = prev_x
+                self.x = prev_x + padding[3]
         if should_render_bottom_blank_cell:
             new_page = self._render_styled_text_line(
                 TextLine(
@@ -3690,6 +3751,8 @@ class FPDF(GraphicsStateMixin):
 
         if new_y == YPos.TOP:  # We may have jumped a few lines -> reset
             self.y = prev_y
+        elif new_y == YPos.NEXT:  # move down by bottom padding
+            self.y += padding[2]
 
         if markdown:
             if self.font_style != prev_font_style:
@@ -3697,6 +3760,7 @@ class FPDF(GraphicsStateMixin):
                 self.current_font = self.fonts[self.font_family + self.font_style]
             self.underline = prev_underline
 
+        # move right by right padding
         self.x += padding[1]
 
         output = MethodReturnValue.coerce(output)

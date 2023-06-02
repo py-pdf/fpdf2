@@ -220,7 +220,9 @@ class Table:
             self._render_table_cell(
                 i,
                 j,
-                row_height=row_layout_info.height,
+                # row_height=row_layout_info.height,  # <-- No, confusion between text row and table row
+                row_height = self._line_height,
+                cell_height = row_layout_info.height,
                 fill=fill,
                 **kwargs,
             )
@@ -231,8 +233,9 @@ class Table:
         self,
         i,
         j,
-        row_height,
+        row_height,        # height of a row of text
         fill=False,
+        cell_height=None,  # height of cell for rendering borders and layout
         **kwargs,
     ):
         row = self.rows[i]
@@ -246,7 +249,7 @@ class Table:
             img_height = self._fpdf.image(
                 cell.img,
                 w=col_width,
-                h=0 if cell.img_fill_width else row_height,
+                h=0 if cell.img_fill_width else cell_height,
                 keep_aspect_ratio=True,
             ).rendered_height
             self._fpdf.set_xy(x, y)
@@ -277,16 +280,26 @@ class Table:
                 else FontFace(fill_color=self._cell_fill_color)
             )
         with self._fpdf.use_font_face(style):
+
+            if cell_height is not None:
+                x1 = self._fpdf.x
+                y1 = self._fpdf.y
+                x2 = x1 + col_width
+                y2 = y1 + cell_height
+
+                self._fpdf._draw_box(x1, y1, x2, y2, border=self.get_cell_border(i, j), fill=fill)
+
             page_break, cell_height = self._fpdf.multi_cell(
                 w=col_width,
-                h=row_height,
+                h= row_height,  #<-- this is the problem
+                cell_height = cell_height,
                 txt=cell.text,
                 max_line_height=self._line_height,
-                border=self.get_cell_border(i, j),
+                border=0, # self.get_cell_border(i, j),
                 align=text_align,
                 new_x="RIGHT",
                 new_y="TOP",
-                fill=fill,
+                fill=None, # fill,
                 markdown=self._markdown,
                 output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
                 wrapmode=self._wrapmode,

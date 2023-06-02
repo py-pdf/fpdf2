@@ -3,7 +3,15 @@ from pathlib import Path
 import qrcode, pytest
 
 from fpdf import FPDF
+from fpdf.enums import MethodReturnValue, YPos
+from fpdf.fonts import FontFace
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
+
+def show(pdf):
+    pdf.output(r'c:\data\temp.pdf')
+    import subprocess
+    subprocess.Popen(r'explorer "c:\data\temp.pdf"')
+
 
 HERE = Path(__file__).resolve().parent
 IMG_DIR = HERE.parent / "image"
@@ -21,6 +29,7 @@ MULTILINE_TABLE_DATA = (
 TABLE_DATA = (
     ("First name", "Last name", "Age", "City"),
     ("Jules", "Smith", "34", "San Juan"),
+    ("Brave Sir Robin ", "the  Not-Quite-So-Brave-As-Sir-Lancelot", "+", "Bridge of Death"),
     ("Mary", "Ramos", "45", "Orlando"),
     ("Carlson", "Banks", "19", "Los Angeles"),
     ("Lucas", "Cimon", "31", "Angers"),
@@ -34,14 +43,16 @@ Professor: That I don't know. I just don't know. I really just don't know. I'm a
 
 SHORT_TEXT = "Monty Python / Killer Sheep"
 
+TWO_LINE_TEXT = "Monty Python\nKiller Sheep"
+
 def test_multicell_with_padding():
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
     pdf.multi_cell(0, 5, LONG_TEXT, border = 1, padding = (10, 20, 30, 40))
 
-    pdf.x = 45
-    pdf.y += 50
+    pdf.x = 0
+    pdf.y = 0
     pdf.multi_cell(150, 5, SHORT_TEXT, border = 1, padding = (5, 5, 5, 5))
 
     pdf.output(HERE / "multicell_with_padding.pdf")
@@ -57,6 +68,55 @@ def test_multicell_with_padding_check_input():
     with pytest.raises(ValueError):
         pdf.multi_cell(0, 5, LONG_TEXT, border = 1, padding = (5, 5, 5, 5,5,5))
 
+def test_multicell_return_value():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+
+    pdf.x = 5
+
+    out = pdf.multi_cell(0, 5, TWO_LINE_TEXT, border=1, padding=0, output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,)
+    print(out)
+    height_without_padding = out[1]
+
+    pdf.x = 5
+    # pdf.y += 50
+
+    # try again
+    out = pdf.multi_cell(0, 5, TWO_LINE_TEXT, border=1, padding=0,
+                         output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT, )
+
+    height_without_padding2 = out[1]
+
+    pdf.x = 5
+    # pdf.y += 50
+
+    # try again
+    out = pdf.multi_cell(0, 5, TWO_LINE_TEXT, border=1, padding=10,
+                         output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT, )
+
+    height_with_padding = out[1]
+
+
+
+
+    assert height_without_padding == height_without_padding2
+    assert height_without_padding + 20 == height_with_padding
+
+    pdf.x = 5
+    pdf.y += 10
+
+    old_y = pdf.y
+    out = pdf.multi_cell(0, 5, TWO_LINE_TEXT, border=1, padding=10,
+                         output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT, new_y = YPos.NEXT)
+
+    # assert pdf.y == old_y + height_with_padding
+
+
+    pdf.output(HERE / "table_with_padding.pdf")
+
+    import subprocess
+    subprocess.Popen('explorer "' + str(HERE / "table_with_padding.pdf") + '"')
 
 
 def test_table_with_multiline_cells_and_images_padding(tmp_path):
@@ -82,13 +142,80 @@ def test_table_simple_padding(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=12)
-    with pdf.table(padding=2) as table:
+
+    red = (255, 100, 100)
+    black = (0, 0, 0)
+
+    deathstyle = FontFace(color=black, fill_color=red)
+
+    with pdf.table(line_height = pdf.font_size,padding=3) as table:
         for data_row in TABLE_DATA:
             row = table.row()
             for datum in data_row:
-                row.cell(datum)
+                if "Death" in datum:
+                    row.cell(datum, style=deathstyle)
+                else:
+                    row.cell(datum)
     # assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
     pdf.output(HERE / "simple_table_with_padding.pdf")
 
     import subprocess
     subprocess.Popen('explorer "' + str(HERE / "simple_table_with_padding.pdf") + '"')
+
+def rectangle(self, x1, y1, x2, y2, border, fill):
+
+    sl = []
+
+    k = self.k
+
+    x1 *= k
+    x2 *= k
+    y2 *= k
+    y1 *= k
+
+    if fill:
+        op = "B" if border == 1 else "f"
+        sl.append(
+            f"{x1:.2f} {y2:.2f} "
+            f"{x2 - x1:.2f} {y1 - y2:.2f} re {op}"
+        )
+    elif border == 1:
+        sl.append(
+            f"{x1:.2f} {y2:.2f} "
+            f"{x2 - x1:.2f} {y1 - y2:.2f} re S"
+        )
+
+    if isinstance(border, str):
+
+        if "L" in border:
+            sl.append(
+                f"{x1:.2f} {y2:.2f} m "
+                f"{x1:.2f} {y1:.2f} l S"
+            )
+        if "T" in border:
+            sl.append(
+                f"{x1:.2f} {y2:.2f} m "
+                f"{x2:.2f} {y2:.2f} l S"
+            )
+        if "R" in border:
+            sl.append(
+                f"{x2:.2f} {y2:.2f} m "
+                f"{x2:.2f} {y1:.2f} l S"
+            )
+        if "B" in border:
+            sl.append(
+                f"{x1:.2f} {y1:.2f} m "
+                f"{x2:.2f} {y1:.2f} l S"
+            )
+
+    s = " ".join(sl)
+    self._out(s)
+
+def test_draw_box():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+
+    pdf._draw_box( 0, 0, 40, 20, 1, False)
+
+    show(pdf)
