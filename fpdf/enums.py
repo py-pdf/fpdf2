@@ -198,6 +198,25 @@ class Align(CoerciveEnum):
             return cls.L
         return super(cls, cls).coerce(value)
 
+class AlignV(CoerciveEnum):
+    """Defines how to vertically render text in a cell.
+    Default value is CENTER"""
+
+    C = intern("CENTER")
+    "Center text vertically"
+
+    T = intern("TOP")
+    "Place text at the top of the cell, but obey the cells padding"
+
+    B = intern("BOTTOM")
+    "Place text at the bottom of the cell, but obey the cells padding"
+
+    @classmethod
+    def coerce(cls, value):
+        if value == "":
+            return cls.C
+        return super(cls, cls).coerce(value)
+
 
 class TextEmphasis(CoerciveIntFlag):
     """

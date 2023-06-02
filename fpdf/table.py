@@ -3,7 +3,7 @@ from numbers import Number
 from types import NoneType
 from typing import Optional, Union
 
-from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode
+from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode, AlignV
 from .enums import MethodReturnValue
 from .errors import FPDFException
 from .fonts import FontFace
@@ -29,6 +29,7 @@ class Table:
         rows=(),
         *,
         align="CENTER",
+        v_align = "CENTER",
         borders_layout=TableBordersLayout.ALL,
         cell_fill_color=None,
         cell_fill_mode=TableCellFillMode.NONE,
@@ -64,6 +65,7 @@ class Table:
             line_height (number): optional. Defines how much vertical space a line of text will occupy
             markdown (bool): optional, default to False. Enable markdown interpretation of cells textual content
             text_align (str, fpdf.enums.Align): optional, default to JUSTIFY. Control text alignment inside cells.
+            v_align (str, fpdf.enums.AlignV): optional, default to CENTER. Control vertical alignment of cells content
             width (number): optional. Sets the table width
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
                 "CHAR" for character based line wrapping.
@@ -71,6 +73,7 @@ class Table:
         """
         self._fpdf = fpdf
         self._align = align
+        self._v_align = v_align
         self._borders_layout = TableBordersLayout.coerce(borders_layout)
         self._cell_fill_color = cell_fill_color
         self._cell_fill_mode = TableCellFillMode.coerce(cell_fill_mode)
@@ -288,6 +291,11 @@ class Table:
         else:
             padding = self._padding
 
+        if cell.v_align:
+            v_align = cell.v_align
+        else:
+            v_align = self._v_align
+
         # place cursor (required for images after images)
         cell_widhts = [self._get_col_width(i, jj) for jj in range(j)]
         cell_x = sum(cell_widhts)
@@ -340,6 +348,37 @@ class Table:
         # render text
 
         if cell.text:
+
+            dy = 0
+            if cell_height is not None:
+                if v_align != AlignV.T:  # For Top we don't need to calculate the dy
+                    # first dry run to get the actual text height of the cell
+                    _, actual_text_height = self._fpdf.multi_cell(
+                        w=col_width,
+                        h=row_height,
+                        txt=cell.text,
+                        max_line_height=self._line_height,
+                        border=0,
+                        align=text_align,
+                        new_x="RIGHT",
+                        new_y="TOP",
+                        fill=False,  # fill is already done above
+                        markdown=self._markdown,
+                        output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
+                        wrapmode=self._wrapmode,
+                        dry_run= True,
+                        padding=padding, # (0,padding[1], 0, padding[3]),
+                        **kwargs,
+                    )
+                    # then calculate the y offset of the text depending on the vertical alignment
+
+                    if v_align == AlignV.C:
+                        dy = (cell_height - actual_text_height) /2
+                    elif v_align == AlignV.B:
+                        dy = cell_height - actual_text_height
+
+            self._fpdf.y += dy
+
             with self._fpdf.use_font_face(style):
                 page_break_text, cell_height = self._fpdf.multi_cell(
                     w=col_width,
@@ -357,6 +396,8 @@ class Table:
                     padding = padding,
                     **kwargs,
                 )
+
+            self._fpdf.y -= dy
         else:
             cell_height = 0
         return page_break_text or page_break_image, max(img_height, cell_height)
@@ -415,7 +456,7 @@ class Row:
         return sum(cell.colspan for cell in self.cells)
 
     def cell(
-        self, text="", align=None, style=None, img=None, img_fill_width=False, colspan=1, padding=None,
+        self, text="", align=None, v_align=None, style=None, img=None, img_fill_width=False, colspan=1, padding=None,
     ):
         """
         Adds a cell to the row.
@@ -424,6 +465,7 @@ class Row:
             text (str): string content, can contain several lines.
                 In that case, the row height will grow proportionally.
             align (str, fpdf.enums.Align): optional text alignment.
+            v_align (str, fpdf.enums.AlignV): optional vertical text alignment.
             style (fpdf.fonts.FontFace): optional text style.
             img: optional. Either a string representing a file path to an image,
                 an URL to an image, an io.BytesIO, or a instance of `PIL.Image.Image`.
@@ -442,7 +484,7 @@ class Row:
             font_face = self._fpdf.font_face()
             if font_face != self.style:
                 style = font_face
-        cell = Cell(text, align, style, img, img_fill_width, colspan, padding)
+        cell = Cell(text, align, v_align, style, img, img_fill_width, colspan, padding)
         self.cells.append(cell)
         return cell
 
@@ -453,6 +495,7 @@ class Cell:
     __slots__ = (  # RAM usage optimization
         "text",
         "align",
+        "v_align",
         "style",
         "img",
         "img_fill_width",
@@ -461,11 +504,13 @@ class Cell:
         )
     text: str
     align: Optional[Union[str, Align]]
+    v_align: Optional[Union[str, AlignV]]
     style: Optional[FontFace]
     img: Optional[str]
     img_fill_width: bool
     colspan: int
     padding: Optional[Union[int, tuple, NoneType]]
+
 
 
     def write(self, text, align=None):

@@ -3,7 +3,7 @@ from pathlib import Path
 import qrcode, pytest
 
 from fpdf import FPDF
-from fpdf.enums import MethodReturnValue, YPos, TableCellFillMode
+from fpdf.enums import MethodReturnValue, YPos, TableCellFillMode, AlignV
 from fpdf.fonts import FontFace
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
@@ -180,15 +180,21 @@ def test_table_simple_padding(tmp_path):
 
     deathstyle = FontFace(color=black, fill_color=red)
 
-    with pdf.table(line_height = pdf.font_size,padding=3) as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                if "Death" in datum:
-                    row.cell(datum, style=deathstyle)
-                else:
-                    row.cell(datum)
-    # assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
+    for v in (AlignV.T, AlignV.C, AlignV.B):
+
+        pdf.write_html("<h1>Vertical alignment: {}</h1>".format(v))
+
+        with pdf.table(line_height = pdf.font_size,padding=3, v_align = v) as table:
+            for data_row in TABLE_DATA:
+                row = table.row()
+                for datum in data_row:
+                    if "Death" in datum:
+                        row.cell(datum, style=deathstyle)
+                    else:
+                        row.cell(datum)
+
+
+
     show(pdf)
 
 def test_padding_per_cell(tmp_path):
@@ -213,6 +219,36 @@ def test_padding_per_cell(tmp_path):
                     row.cell(datum)
     # assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
     show(pdf)
+
+def test_valign_per_cell(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=12)
+
+    red = (255, 100, 100)
+    black = (0, 0, 0)
+
+    deathstyle = FontFace(color=black, fill_color=red)
+
+    with pdf.table(line_height = pdf.font_size,padding=2,v_align = AlignV.C) as table:
+        for irow in range(5):
+            row = table.row()
+            for icol in range(5):
+                datum = icol * "Circus\n"
+
+
+                if irow == 2:
+                    v_align = AlignV.T
+                elif irow == 3:
+                    v_align = AlignV.B
+
+                if irow == 2 or irow == 3:
+                    row.cell(f"{datum}: custom v-align {v_align}", style=deathstyle, v_align = v_align)
+                else:
+                    row.cell(datum)
+    # assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
+    show(pdf)
+
 
 def test_draw_box():
     pdf = FPDF()
