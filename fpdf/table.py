@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from numbers import Number
+from types import NoneType
 from typing import Optional, Union
 
 from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode
 from .enums import MethodReturnValue
 from .errors import FPDFException
 from .fonts import FontFace
-
 
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
 
@@ -86,10 +86,12 @@ class Table:
         self._wrapmode = wrapmode
         self.rows = []
 
+        from fpdf.fpdf import get_padding_tuple # Avoid circular import
+
         if padding is None:
-            self._padding = 0.5 * self._line_height
+            self._padding = get_padding_tuple(0.5 * self._line_height)
         else:
-            self._padding = padding
+            self._padding = get_padding_tuple(padding)
 
         for row in rows:
             self.row(row)
@@ -280,6 +282,12 @@ class Table:
                 else FontFace(fill_color=self._cell_fill_color)
             )
 
+        if cell.padding:
+            from fpdf.fpdf import get_padding_tuple
+            padding = get_padding_tuple(cell.padding)
+        else:
+            padding = self._padding
+
         # place cursor (required for images after images)
         cell_widhts = [self._get_col_width(i, jj) for jj in range(j)]
         cell_x = sum(cell_widhts)
@@ -311,13 +319,13 @@ class Table:
             auto_height = cell.img_fill_width or cell_height is None
 
             # apply padding
-            self._fpdf.x += self._padding[3]
-            self._fpdf.y += self._padding[0]
+            self._fpdf.x += padding[3]
+            self._fpdf.y += padding[0]
 
             image = self._fpdf.image(
                 cell.img,
-                w=col_width - self._padding[1] - self._padding[3],
-                h=0 if auto_height else cell_height - self._padding[0] - self._padding[2],
+                w=col_width - padding[1] - padding[3],
+                h=0 if auto_height else cell_height - padding[0] - padding[2],
                 keep_aspect_ratio=True,
             )
 
@@ -346,7 +354,7 @@ class Table:
                     markdown=self._markdown,
                     output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
                     wrapmode=self._wrapmode,
-                    padding = self._padding,
+                    padding = padding,
                     **kwargs,
                 )
         else:
@@ -407,7 +415,7 @@ class Row:
         return sum(cell.colspan for cell in self.cells)
 
     def cell(
-        self, text="", align=None, style=None, img=None, img_fill_width=False, colspan=1
+        self, text="", align=None, style=None, img=None, img_fill_width=False, colspan=1, padding=None,
     ):
         """
         Adds a cell to the row.
@@ -434,7 +442,7 @@ class Row:
             font_face = self._fpdf.font_face()
             if font_face != self.style:
                 style = font_face
-        cell = Cell(text, align, style, img, img_fill_width, colspan)
+        cell = Cell(text, align, style, img, img_fill_width, colspan, padding)
         self.cells.append(cell)
         return cell
 
@@ -449,13 +457,16 @@ class Cell:
         "img",
         "img_fill_width",
         "colspan",
-    )
+        "padding",
+        )
     text: str
     align: Optional[Union[str, Align]]
     style: Optional[FontFace]
     img: Optional[str]
     img_fill_width: bool
     colspan: int
+    padding: Optional[Union[int, tuple, NoneType]]
+
 
     def write(self, text, align=None):
         raise NotImplementedError("Not implemented yet")
