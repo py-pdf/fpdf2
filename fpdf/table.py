@@ -29,7 +29,7 @@ class Table:
         rows=(),
         *,
         align="CENTER",
-        v_align = "CENTER",
+        v_align="CENTER",
         borders_layout=TableBordersLayout.ALL,
         cell_fill_color=None,
         cell_fill_mode=TableCellFillMode.NONE,
@@ -89,7 +89,7 @@ class Table:
         self._wrapmode = wrapmode
         self.rows = []
 
-        from fpdf.fpdf import get_padding_tuple # Avoid circular import
+        from fpdf.fpdf import get_padding_tuple  # Avoid circular import
 
         if padding is None:
             self._padding = get_padding_tuple(0.5 * self._line_height)
@@ -225,9 +225,8 @@ class Table:
             self._render_table_cell(
                 i,
                 j,
-                # row_height=row_layout_info.height,  # <-- No, confusion between text row and table row
-                row_height = self._line_height,
-                cell_height = row_layout_info.height,
+                row_height=self._line_height,
+                cell_height=row_layout_info.height,
                 fill=fill,
                 **kwargs,
             )
@@ -238,12 +237,11 @@ class Table:
         self,
         i,
         j,
-        row_height,        # height of a row of text
+        row_height,  # height of a row of text
         fill=False,
         cell_height=None,  # height of cell for rendering borders and layout and images
         **kwargs,
     ):
-
         # default values:
 
         page_break_text = False
@@ -268,9 +266,9 @@ class Table:
         if style and style.fill_color:
             fill = True
         elif (
-                not fill
-                and self._cell_fill_color
-                and self._cell_fill_mode != TableCellFillMode.NONE
+            not fill
+            and self._cell_fill_color
+            and self._cell_fill_mode != TableCellFillMode.NONE
         ):
             if self._cell_fill_mode == TableCellFillMode.ALL:
                 fill = True
@@ -287,6 +285,7 @@ class Table:
 
         if cell.padding:
             from fpdf.fpdf import get_padding_tuple
+
             padding = get_padding_tuple(cell.padding)
         else:
             padding = self._padding
@@ -315,7 +314,9 @@ class Table:
                 x2 = x1 + col_width
                 y2 = y1 + cell_height
 
-                self._fpdf._draw_box(x1, y1, x2, y2, border=self.get_cell_border(i, j), fill=fill)
+                self._fpdf._draw_box(
+                    x1, y1, x2, y2, border=self.get_cell_border(i, j), fill=fill
+                )
 
         # render image
 
@@ -344,11 +345,9 @@ class Table:
 
             self._fpdf.set_xy(x, y)
 
-
         # render text
 
         if cell.text:
-
             dy = 0
             if cell_height is not None:
                 if v_align != AlignV.T:  # For Top we don't need to calculate the dy
@@ -366,14 +365,14 @@ class Table:
                         markdown=self._markdown,
                         output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
                         wrapmode=self._wrapmode,
-                        dry_run= True,
-                        padding=padding, # (0,padding[1], 0, padding[3]),
+                        dry_run=True,
+                        padding=padding,  # (0,padding[1], 0, padding[3]),
                         **kwargs,
                     )
                     # then calculate the y offset of the text depending on the vertical alignment
 
                     if v_align == AlignV.C:
-                        dy = (cell_height - actual_text_height) /2
+                        dy = (cell_height - actual_text_height) / 2
                     elif v_align == AlignV.B:
                         dy = cell_height - actual_text_height
 
@@ -382,18 +381,18 @@ class Table:
             with self._fpdf.use_font_face(style):
                 page_break_text, cell_height = self._fpdf.multi_cell(
                     w=col_width,
-                    h= row_height,
+                    h=row_height,
                     txt=cell.text,
                     max_line_height=self._line_height,
                     border=0,
                     align=text_align,
                     new_x="RIGHT",
                     new_y="TOP",
-                    fill=False, # fill is already done above
+                    fill=False,  # fill is already done above
                     markdown=self._markdown,
                     output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
                     wrapmode=self._wrapmode,
-                    padding = padding,
+                    padding=padding,
                     **kwargs,
                 )
 
@@ -456,7 +455,15 @@ class Row:
         return sum(cell.colspan for cell in self.cells)
 
     def cell(
-        self, text="", align=None, v_align=None, style=None, img=None, img_fill_width=False, colspan=1, padding=None,
+        self,
+        text="",
+        align=None,
+        v_align=None,
+        style=None,
+        img=None,
+        img_fill_width=False,
+        colspan=1,
+        padding=None,
     ):
         """
         Adds a cell to the row.
@@ -501,7 +508,7 @@ class Cell:
         "img_fill_width",
         "colspan",
         "padding",
-        )
+    )
     text: str
     align: Optional[Union[str, Align]]
     v_align: Optional[Union[str, AlignV]]
@@ -510,8 +517,6 @@ class Cell:
     img_fill_width: bool
     colspan: int
     padding: Optional[Union[int, tuple, NoneType]]
-
-
 
     def write(self, text, align=None):
         raise NotImplementedError("Not implemented yet")

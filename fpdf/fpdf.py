@@ -256,7 +256,7 @@ def get_page_format(format, k=None):
 def get_padding_tuple(padding):
     """Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules"""
     if isinstance(padding, (int, float)):
-        return  (padding, padding, padding, padding)
+        return (padding, padding, padding, padding)
     elif len(padding) == 2:
         return (padding[0], padding[1], padding[0], padding[1])
     elif len(padding) == 3:
@@ -264,7 +264,10 @@ def get_padding_tuple(padding):
     elif len(padding) == 4:
         return padding
 
-    raise ValueError(f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}")
+    raise ValueError(
+        f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
+    )
+
 
 def check_page(fn):
     """Decorator to protect drawing methods"""
@@ -1445,38 +1448,19 @@ class FPDF(GraphicsStateMixin):
 
         if fill:
             op = "B" if border == 1 else "f"
-            sl.append(
-                f"{x1:.2f} {y2:.2f} "
-                f"{x2 - x1:.2f} {y1 - y2:.2f} re {op}"
-            )
+            sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re {op}")
         elif border == 1:
-            sl.append(
-                f"{x1:.2f} {y2:.2f} "
-                f"{x2 - x1:.2f} {y1 - y2:.2f} re S"
-            )
+            sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re S")
 
         if isinstance(border, str):
-
             if "L" in border:
-                sl.append(
-                    f"{x1:.2f} {y2:.2f} m "
-                    f"{x1:.2f} {y1:.2f} l S"
-                )
+                sl.append(f"{x1:.2f} {y2:.2f} m " f"{x1:.2f} {y1:.2f} l S")
             if "T" in border:
-                sl.append(
-                    f"{x1:.2f} {y2:.2f} m "
-                    f"{x2:.2f} {y2:.2f} l S"
-                )
+                sl.append(f"{x1:.2f} {y2:.2f} m " f"{x2:.2f} {y2:.2f} l S")
             if "R" in border:
-                sl.append(
-                    f"{x2:.2f} {y2:.2f} m "
-                    f"{x2:.2f} {y1:.2f} l S"
-                )
+                sl.append(f"{x2:.2f} {y2:.2f} m " f"{x2:.2f} {y1:.2f} l S")
             if "B" in border:
-                sl.append(
-                    f"{x1:.2f} {y1:.2f} m "
-                    f"{x2:.2f} {y1:.2f} l S"
-                )
+                sl.append(f"{x1:.2f} {y1:.2f} m " f"{x2:.2f} {y1:.2f} l S")
 
         s = " ".join(sl)
         self._out(s)
@@ -2925,7 +2909,7 @@ class FPDF(GraphicsStateMixin):
         fill: bool = False,
         link: str = "",
         center: bool = False,
-        padding = (0,0,0,0),
+        padding=(0, 0, 0, 0),
     ):
         """
         Prints a cell (rectangular area) with optional borders, background color and
@@ -3015,38 +2999,23 @@ class FPDF(GraphicsStateMixin):
         if fill:
             op = "B" if border == 1 else "f"
             sl.append(
-                f"{left:.2f} {top:.2f} "
-                f"{right-left:.2f} {bottom-top:.2f} re {op}"
+                f"{left:.2f} {top:.2f} " f"{right-left:.2f} {bottom-top:.2f} re {op}"
             )
         elif border == 1:
             sl.append(
-                f"{left:.2f} {top:.2f} "
-                f"{right-left:.2f} {bottom-top:.2f} re S"
+                f"{left:.2f} {top:.2f} " f"{right-left:.2f} {bottom-top:.2f} re S"
             )
         # pylint: enable=invalid-unary-operand-type
 
         if isinstance(border, str):
-
             if "L" in border:
-                sl.append(
-                    f"{left:.2f} {top:.2f} m "
-                    f"{left:.2f} {bottom:.2f} l S"
-                )
+                sl.append(f"{left:.2f} {top:.2f} m " f"{left:.2f} {bottom:.2f} l S")
             if "T" in border:
-                sl.append(
-                    f"{left:.2f} {top:.2f} m "
-                    f"{right:.2f} {top:.2f} l S"
-                )
+                sl.append(f"{left:.2f} {top:.2f} m " f"{right:.2f} {top:.2f} l S")
             if "R" in border:
-                sl.append(
-                    f"{right:.2f} {top:.2f} m "
-                    f"{right:.2f} {bottom:.2f} l S"
-                )
+                sl.append(f"{right:.2f} {top:.2f} m " f"{right:.2f} {bottom:.2f} l S")
             if "B" in border:
-                sl.append(
-                    f"{left:.2f} {bottom:.2f} m "
-                    f"{right:.2f} {bottom:.2f} l S"
-                )
+                sl.append(f"{left:.2f} {bottom:.2f} m " f"{right:.2f} {bottom:.2f} l S")
 
         if self._record_text_quad_points:
             self._add_quad_points(self.x, self.y, w, h)
@@ -3496,7 +3465,7 @@ class FPDF(GraphicsStateMixin):
         wrapmode: WrapMode = WrapMode.WORD,
         dry_run=False,
         output=MethodReturnValue.PAGE_BREAK,
-        padding = 0,
+        padding=0,
         # cell_height = None,
     ):
         """
@@ -3583,7 +3552,7 @@ class FPDF(GraphicsStateMixin):
                     dry_run=False,
                     split_only=False,
                     output=MethodReturnValue.LINES if split_only else output,
-                    padding = padding,
+                    padding=padding,
                 )
         wrapmode = WrapMode.coerce(wrapmode)
         if isinstance(w, str) or isinstance(h, str):
@@ -3710,7 +3679,7 @@ class FPDF(GraphicsStateMixin):
                 align=Align.L if (align == Align.J and is_last_line) else align,
                 fill=fill,
                 link=link,
-                padding = padding,
+                padding=padding,
             )
             page_break_triggered = page_break_triggered or new_page
             total_height += current_cell_height
@@ -3739,7 +3708,7 @@ class FPDF(GraphicsStateMixin):
                 new_y=new_y,
                 fill=fill,
                 link=link,
-                padding = padding,
+                padding=padding,
             )
             page_break_triggered = page_break_triggered or new_page
         if new_page and new_y == YPos.TOP:
