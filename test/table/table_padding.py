@@ -16,7 +16,14 @@ def show(pdf):
 HERE = Path(__file__).resolve().parent
 IMG_DIR = HERE.parent / "image"
 
+IMAGE = IMG_DIR / "png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png"
 
+IMAGES_DATA = (
+    (IMAGE, IMAGE, IMAGE, IMAGE),
+    (IMAGE, IMAGE, IMAGE, IMAGE),
+    (IMAGE, IMAGE, IMAGE, IMAGE),
+    (IMAGE, IMAGE, IMAGE, IMAGE),
+)
 
 MULTILINE_TABLE_DATA = (
     ("Multilines text", "Image"),
@@ -132,10 +139,23 @@ def test_table_with_multiline_cells_and_images_padding(tmp_path):
                 else:
                     row.cell(datum)
     # assert_pdf_equal(pdf, HERE / "table_with_multiline_cells_and_images.pdf", tmp_path)
-    pdf.output(HERE / "table_with_padding.pdf")
+    show(pdf)
 
-    import subprocess
-    subprocess.Popen('explorer "' + str(HERE / "table_with_padding.pdf") + '"' )
+def test_table_with_only_images(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table(line_height=pdf.font_size, padding=(5, 5, 5, 5)) as table:
+        for i, data_row in enumerate(IMAGES_DATA):
+            row = table.row()
+            for datum in data_row:
+                row.cell(img=datum) # , img_fill_width=True)
+
+    # assert_pdf_equal(pdf, HERE / "table_with_multiline_cells_and_images.pdf", tmp_path)
+    show(pdf)
+
+
+
 
 
 def test_table_simple_padding(tmp_path):
@@ -157,59 +177,7 @@ def test_table_simple_padding(tmp_path):
                 else:
                     row.cell(datum)
     # assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
-    pdf.output(HERE / "simple_table_with_padding.pdf")
-
-    import subprocess
-    subprocess.Popen('explorer "' + str(HERE / "simple_table_with_padding.pdf") + '"')
-
-def rectangle(self, x1, y1, x2, y2, border, fill):
-
-    sl = []
-
-    k = self.k
-
-    x1 *= k
-    x2 *= k
-    y2 *= k
-    y1 *= k
-
-    if fill:
-        op = "B" if border == 1 else "f"
-        sl.append(
-            f"{x1:.2f} {y2:.2f} "
-            f"{x2 - x1:.2f} {y1 - y2:.2f} re {op}"
-        )
-    elif border == 1:
-        sl.append(
-            f"{x1:.2f} {y2:.2f} "
-            f"{x2 - x1:.2f} {y1 - y2:.2f} re S"
-        )
-
-    if isinstance(border, str):
-
-        if "L" in border:
-            sl.append(
-                f"{x1:.2f} {y2:.2f} m "
-                f"{x1:.2f} {y1:.2f} l S"
-            )
-        if "T" in border:
-            sl.append(
-                f"{x1:.2f} {y2:.2f} m "
-                f"{x2:.2f} {y2:.2f} l S"
-            )
-        if "R" in border:
-            sl.append(
-                f"{x2:.2f} {y2:.2f} m "
-                f"{x2:.2f} {y1:.2f} l S"
-            )
-        if "B" in border:
-            sl.append(
-                f"{x1:.2f} {y1:.2f} m "
-                f"{x2:.2f} {y1:.2f} l S"
-            )
-
-    s = " ".join(sl)
-    self._out(s)
+    show(pdf)
 
 def test_draw_box():
     pdf = FPDF()

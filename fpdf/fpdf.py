@@ -3484,7 +3484,7 @@ class FPDF(GraphicsStateMixin):
         dry_run=False,
         output=MethodReturnValue.PAGE_BREAK,
         padding = 0,
-        cell_height = None,
+        # cell_height = None,
     ):
         """
         This method allows printing text with line breaks. They can be automatic
@@ -3532,15 +3532,13 @@ class FPDF(GraphicsStateMixin):
                 When two values are specified, the first padding applies to the top and bottom, the second to the left and right.
                 When three values are specified, the first padding applies to the top, the second to the right and left, the third to the bottom.
                 When four values are specified, the paddings apply to the top, right, bottom, and left in that order (clockwise)
-            cell_height (float): height of the cell, used for borders and fill. Default value: None meaning auto.
+
 
         Using `new_x=XPos.RIGHT, new_y=XPos.TOP, maximum height=pdf.font_size` is
         useful to build tables with multiline text in cells.
 
         Returns: a single value or a tuple, depending on the `output` parameter value
         """
-
-        print('rendering with h = ', h)
 
         if isinstance(padding, (int, float)):
             padding = (padding, padding, padding, padding)
@@ -3625,17 +3623,17 @@ class FPDF(GraphicsStateMixin):
         if h is None:
             h = self.font_size
 
-        # If width is 0, set width to available width between margins   # TODO: can we just replace w with w - padding?
+        # If width is 0, set width to available width between margins
         if w == 0:
             w = self.w - self.r_margin - self.x
 
         prev_x, prev_y = self.x, self.y
 
-
         # Apply padding to contents
         # decrease maximum allowed width by padding
         # shift the starting point by padding
-        maximum_allowed_width = w - 2 * self.c_margin - padding[1] - padding[3]
+        w = w - padding[1] - padding[3]
+        maximum_allowed_width = w - 2 * self.c_margin
         self.x += padding[3]
         self.y += padding[0]
 
@@ -3692,7 +3690,7 @@ class FPDF(GraphicsStateMixin):
             has_line_after = not is_last_line or should_render_bottom_blank_cell
             new_page = self._render_styled_text_line(
                 text_line,
-                w - padding[1] - padding[3],
+                w,
                 h=current_cell_height,
                 border="".join(
                     (
@@ -3723,7 +3721,7 @@ class FPDF(GraphicsStateMixin):
                     justify=False,
                     trailing_nl=False,
                 ),
-                w - padding[1] - padding[3],
+                w,
                 h=h,
                 border="".join(
                     (

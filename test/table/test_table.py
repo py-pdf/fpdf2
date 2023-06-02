@@ -9,6 +9,11 @@ from fpdf.fonts import FontFace
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
+def show(pdf):
+    pdf.output(r'c:\data\temp.pdf')
+    import subprocess
+    subprocess.Popen(r'explorer "c:\data\temp.pdf"')
+
 HERE = Path(__file__).resolve().parent
 
 TABLE_DATA = (
@@ -149,6 +154,9 @@ def test_table_with_multiline_cells_and_fixed_row_height(tmp_path):
             for datum in data_row:
                 row.cell(datum)
     assert pdf.pages_count == 2
+
+    show(pdf)
+
     assert_pdf_equal(
         pdf, HERE / "table_with_multiline_cells_and_fixed_row_height.pdf", tmp_path
     )

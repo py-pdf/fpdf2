@@ -416,3 +416,5 @@ def trace_malloc(request):
         print("[tracemalloc] Top 10 differences:")
         for stat in top_stats[:10]:
             print(stat)
+
+
