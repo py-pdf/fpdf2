@@ -130,12 +130,18 @@ def test_table_with_multiline_cells_and_images_padding(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(line_height = pdf.font_size, padding = (5,5,5,5)) as table:
+
+    red = (255, 100, 100)
+    black = (0, 0, 0)
+
+    deathstyle = FontFace(color=black, fill_color=red)
+
+    with pdf.table(line_height = pdf.font_size, padding = (5,5,5,5),col_widths= (0.3,0.1), width = 120) as table:
         for i, data_row in enumerate(MULTILINE_TABLE_DATA):
             row = table.row()
             for j, datum in enumerate(data_row):
                 if j == 1 and i > 0:
-                    row.cell(img=datum, img_fill_width=True)
+                    row.cell(img=datum, img_fill_width=False, style = deathstyle)
                 else:
                     row.cell(datum)
     # assert_pdf_equal(pdf, HERE / "table_with_multiline_cells_and_images.pdf", tmp_path)

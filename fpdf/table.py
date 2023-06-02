@@ -240,7 +240,6 @@ class Table:
     ):
         page_break_text = False
         page_break_image = False
-        img_height = 0
 
         row = self.rows[i]
         cell = row.cells[j]
@@ -248,6 +247,50 @@ class Table:
         if j and self._gutter_width:
             self._fpdf.x += self._gutter_width
         img_height = 0
+
+        text_align = cell.align or self._text_align
+        if not isinstance(text_align, (Align, str)):
+            text_align = text_align[j]
+        if i == 0 and self._first_row_as_headings:
+            style = self._headings_style
+        else:
+            style = cell.style or row.style
+        if style and style.fill_color:
+            fill = True
+        elif (
+                not fill
+                and self._cell_fill_color
+                and self._cell_fill_mode != TableCellFillMode.NONE
+        ):
+            if self._cell_fill_mode == TableCellFillMode.ALL:
+                fill = True
+            elif self._cell_fill_mode == TableCellFillMode.ROWS:
+                fill = bool(i % 2)
+            elif self._cell_fill_mode == TableCellFillMode.COLUMNS:
+                fill = bool(j % 2)
+        if fill and self._cell_fill_color and not (style and style.fill_color):
+            style = (
+                style.replace(fill_color=self._cell_fill_color)
+                if style
+                else FontFace(fill_color=self._cell_fill_color)
+            )
+
+        # render cell
+
+        with self._fpdf.use_font_face(style):
+
+            # if cell_height is defined, that means that we already know the size at which the cell will be rendered
+            # so we can draw the borders now
+            if cell_height is not None:
+                x1 = self._fpdf.x
+                y1 = self._fpdf.y
+                x2 = x1 + col_width
+                y2 = y1 + cell_height
+
+                self._fpdf._draw_box(x1, y1, x2, y2, border=self.get_cell_border(i, j), fill=fill)
+
+        # render image
+
         if cell.img:
             x, y = self._fpdf.x, self._fpdf.y
 
@@ -267,65 +310,29 @@ class Table:
 
             self._fpdf.set_xy(x, y)
 
-        text_align = cell.align or self._text_align
-        if not isinstance(text_align, (Align, str)):
-            text_align = text_align[j]
-        if i == 0 and self._first_row_as_headings:
-            style = self._headings_style
-        else:
-            style = cell.style or row.style
-        if style and style.fill_color:
-            fill = True
-        elif (
-            not fill
-            and self._cell_fill_color
-            and self._cell_fill_mode != TableCellFillMode.NONE
-        ):
-            if self._cell_fill_mode == TableCellFillMode.ALL:
-                fill = True
-            elif self._cell_fill_mode == TableCellFillMode.ROWS:
-                fill = bool(i % 2)
-            elif self._cell_fill_mode == TableCellFillMode.COLUMNS:
-                fill = bool(j % 2)
-        if fill and self._cell_fill_color and not (style and style.fill_color):
-            style = (
-                style.replace(fill_color=self._cell_fill_color)
-                if style
-                else FontFace(fill_color=self._cell_fill_color)
-            )
-        with self._fpdf.use_font_face(style):
 
-            # if cell_height is defined, that means that we already know the size at which the cell will be rendered
-            # so we can draw the borders now
-            if cell_height is not None:
-                x1 = self._fpdf.x
-                y1 = self._fpdf.y
-                x2 = x1 + col_width
-                y2 = y1 + cell_height
+        # render text
 
-                self._fpdf._draw_box(x1, y1, x2, y2, border=self.get_cell_border(i, j), fill=fill)
-
-            # Draw without borders and shading, and only if we have text
-            if cell.text:
+        if cell.text:
+            with self._fpdf.use_font_face(style):
                 page_break_text, cell_height = self._fpdf.multi_cell(
                     w=col_width,
                     h= row_height,
-                    # cell_height = cell_height,
                     txt=cell.text,
                     max_line_height=self._line_height,
-                    border=0, # self.get_cell_border(i, j),
+                    border=0,
                     align=text_align,
                     new_x="RIGHT",
                     new_y="TOP",
-                    fill=False, # fill,
+                    fill=False, # fill is already done above
                     markdown=self._markdown,
                     output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
                     wrapmode=self._wrapmode,
                     padding = self._padding,
                     **kwargs,
                 )
-            else:
-                cell_height = 0
+        else:
+            cell_height = 0
         return page_break_text or page_break_image, max(img_height, cell_height)
 
     def _get_col_width(self, i, j, colspan=1):
