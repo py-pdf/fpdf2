@@ -56,7 +56,7 @@ class Fragment:
 
     @property
     def is_ttf_font(self):
-        return self.font.get("type") == "TTF"
+        return self.font and self.font.type == "TTF"
 
     @property
     def font_style(self):
@@ -173,9 +173,9 @@ class Fragment:
         if chars is None:
             chars = self.characters[start:end]
         if self.is_ttf_font:
-            w = sum(self.font["cw"][ord(c)] for c in chars)
+            w = sum(self.font.cw[ord(c)] for c in chars)
         else:
-            w = sum(self.font["cw"][c] for c in chars)
+            w = sum(self.font.cw[c] for c in chars)
         char_spacing = self.char_spacing
         if self.font_stretching != 100:
             w *= self.font_stretching * 0.01

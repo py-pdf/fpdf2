@@ -5,7 +5,7 @@ from typing import Optional, Union
 from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode
 from .enums import MethodReturnValue
 from .errors import FPDFException
-from .fonts import FontFace
+from .fonts import CORE_FONTS, FontFace
 
 
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
@@ -115,10 +115,7 @@ class Table:
             if emphasis is not None:
                 family = self._headings_style.family or self._fpdf.font_family
                 font_key = family + emphasis.style
-                if (
-                    font_key not in self._fpdf.core_fonts
-                    and font_key not in self._fpdf.fonts
-                ):
+                if font_key not in CORE_FONTS and font_key not in self._fpdf.fonts:
                     # Raising a more explicit error than the one from set_font():
                     raise FPDFException(
                         f"Using font emphasis '{emphasis.style}' in table headings require the corresponding font style to be added using add_font()"
