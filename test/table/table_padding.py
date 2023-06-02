@@ -170,7 +170,7 @@ def test_table_with_only_images(tmp_path):
 
 
 
-def test_table_simple_padding(tmp_path):
+def test_table_vertical_alignment(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=12)
@@ -206,13 +206,11 @@ def test_padding_per_cell(tmp_path):
     black = (0, 0, 0)
 
     deathstyle = FontFace(color=black, fill_color=red)
-
     with pdf.table(line_height = pdf.font_size,padding=2) as table:
         for irow in range(5):
             row = table.row()
             for icol in range(5):
                 datum = "Circus"
-
                 if irow == 3 and icol %2 == 0:
                     row.cell("custom padding", style=deathstyle, padding = (2*icol,8,8,8))
                 else:

@@ -67,6 +67,45 @@ Result:
 
 ![](table_align.jpg)
 
+## Setting cell padding
+
+Cell padding (the space between the cells content and the edge of the cell) can be set globally or on a per-cell basis.
+
+Following the CCS standard the padding can be specified using 1,2 3 or 4 values. 
+- When one value is specified, it applies the same padding to all four sides.
+- When two values are specified, the first padding applies to the top and bottom, the second to the left and right.
+- When three values are specified, the first padding applies to the top, the second to the right and left, the third to the bottom.
+- When four values are specified, the paddings apply to the top, right, bottom, and left in that order (clockwise)
+
+```python
+    ...
+    style = FontFace(color=black, fill_color=red)
+    with pdf.table(line_height = pdf.font_size,padding=2) as table:
+        for irow in range(5):
+            row = table.row()
+            for icol in range(5):
+                datum = "Circus"
+                if irow == 3 and icol %2 == 0:
+                    row.cell("custom padding", style=style, padding = (2*icol,8,8,8))
+                else:
+                    row.cell(datum)
+```
+(also an example of coloring individual cells)
+
+![img.png](img_table_padding.png)
+
+## Setting vertical alignment of text in cells
+
+Can be set globally or per cell.
+Works the same way as padding, but with the `v_align` parameter.
+
+```python
+
+    with pdf.table(v_align = AlignV.C) as table:
+        ...
+           row.cell(f"custom v-align" v_align = AlignV.T) # <-- align to top
+```
+
 ## Setting row height
 ```python
 ...
