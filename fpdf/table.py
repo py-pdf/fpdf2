@@ -238,8 +238,13 @@ class Table:
         cell_height=None,  # height of cell for rendering borders and layout and images
         **kwargs,
     ):
+
+        # default values:
+
         page_break_text = False
         page_break_image = False
+
+        # Get style and cell content:
 
         row = self.rows[i]
         cell = row.cells[j]
@@ -275,13 +280,20 @@ class Table:
                 else FontFace(fill_color=self._cell_fill_color)
             )
 
-        # render cell
+        # place cursor (required for images after images)
+        cell_widhts = [self._get_col_width(i, jj) for jj in range(j)]
+        cell_x = sum(cell_widhts)
+        self._fpdf.set_x(self._fpdf.l_margin + cell_x)
 
-        with self._fpdf.use_font_face(style):
+        # render cell border and background
 
-            # if cell_height is defined, that means that we already know the size at which the cell will be rendered
-            # so we can draw the borders now
-            if cell_height is not None:
+        # if cell_height is defined, that means that we already know the size at which the cell will be rendered
+        # so we can draw the borders now
+        #
+        # If cell_height is None then we're still in the phase of calculating the height of the cell meaning that
+        # we do not need to render and borders yet.
+        if cell_height is not None:
+            with self._fpdf.use_font_face(style):
                 x1 = self._fpdf.x
                 y1 = self._fpdf.y
                 x2 = x1 + col_width
@@ -294,16 +306,22 @@ class Table:
         if cell.img:
             x, y = self._fpdf.x, self._fpdf.y
 
-            # if cell_height is None and width is given then call image with h=0
-
+            # if cell_height is None or width is given then call image with h=0
+            # calling with h=0 means that the image will be rendered with an auto determined height
             auto_height = cell.img_fill_width or cell_height is None
 
-            img_height = self._fpdf.image(
+            # apply padding
+            self._fpdf.x += self._padding[3]
+            self._fpdf.y += self._padding[0]
+
+            image = self._fpdf.image(
                 cell.img,
-                w=col_width,
-                h=0 if auto_height else cell_height,
+                w=col_width - self._padding[1] - self._padding[3],
+                h=0 if auto_height else cell_height - self._padding[0] - self._padding[2],
                 keep_aspect_ratio=True,
-            ).rendered_height
+            )
+
+            img_height = image.rendered_height
 
             if img_height + y > self._fpdf.page_break_trigger:
                 page_break_image = True

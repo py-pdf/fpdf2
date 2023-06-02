@@ -3,7 +3,7 @@ from pathlib import Path
 import qrcode, pytest
 
 from fpdf import FPDF
-from fpdf.enums import MethodReturnValue, YPos
+from fpdf.enums import MethodReturnValue, YPos, TableCellFillMode
 from fpdf.fonts import FontFace
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
@@ -52,20 +52,20 @@ SHORT_TEXT = "Monty Python / Killer Sheep"
 
 TWO_LINE_TEXT = "Monty Python\nKiller Sheep"
 
-def test_multicell_with_padding():
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Times", size=16)
-    pdf.multi_cell(0, 5, LONG_TEXT, border = 1, padding = (10, 20, 30, 40))
-
-    pdf.x = 0
-    pdf.y = 0
-    pdf.multi_cell(150, 5, SHORT_TEXT, border = 1, padding = (5, 5, 5, 5))
-
-    pdf.output(HERE / "multicell_with_padding.pdf")
-
-    import subprocess
-    subprocess.Popen('explorer "' + str(HERE / "multicell_with_padding.pdf") + '"' )
+# def test_multicell_with_padding():
+#     pdf = FPDF()
+#     pdf.add_page()
+#     pdf.set_font("Times", size=16)
+#     pdf.multi_cell(0, 5, LONG_TEXT, border = 1, padding = (10, 20, 30, 40))
+#
+#     pdf.x = 0
+#     pdf.y = 0
+#     pdf.multi_cell(150, 5, SHORT_TEXT, border = 1, padding = (5, 5, 5, 5))
+#
+#     pdf.output(HERE / "multicell_with_padding.pdf")
+#
+#     import subprocess
+#     subprocess.Popen('explorer "' + str(HERE / "multicell_with_padding.pdf") + '"' )
 
 def test_multicell_with_padding_check_input():
     pdf = FPDF()
@@ -126,7 +126,7 @@ def test_multicell_return_value():
     subprocess.Popen('explorer "' + str(HERE / "table_with_padding.pdf") + '"')
 
 
-def test_table_with_multiline_cells_and_images_padding(tmp_path):
+def test_table_with_multiline_cells_and_images_padding_and_pagebreak(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
@@ -136,7 +136,7 @@ def test_table_with_multiline_cells_and_images_padding(tmp_path):
 
     deathstyle = FontFace(color=black, fill_color=red)
 
-    with pdf.table(line_height = pdf.font_size, padding = (5,5,5,5),col_widths= (0.3,0.1), width = 120) as table:
+    with pdf.table(line_height = pdf.font_size, padding = (5,5,5,5),col_widths= (0.3,0.2), width = 80) as table:
         for i, data_row in enumerate(MULTILINE_TABLE_DATA):
             row = table.row()
             for j, datum in enumerate(data_row):
@@ -151,13 +151,19 @@ def test_table_with_only_images(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(line_height=pdf.font_size, padding=(5, 5, 5, 5)) as table:
+    with pdf.table(line_height=pdf.font_size,
+                   padding=(5, 7, 3, 4),
+                   width = 120,
+                   col_widths = (1,2,3,2),
+                   cell_fill_color=(150, 200, 255),
+                   cell_fill_mode = TableCellFillMode.ROWS,
+                   ) as table:
         for i, data_row in enumerate(IMAGES_DATA):
             row = table.row()
             for datum in data_row:
-                row.cell(img=datum) # , img_fill_width=True)
+                row.cell(img=datum)
 
-    # assert_pdf_equal(pdf, HERE / "table_with_multiline_cells_and_images.pdf", tmp_path)
+
     show(pdf)
 
 
