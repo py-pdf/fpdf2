@@ -242,6 +242,7 @@ This library could only exist thanks to the dedication of many volunteers around
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/1nv"><img src="https://avatars.githubusercontent.com/u/10288828?v=4?s=100" width="100px;" alt="Eugene Selifonov"/><br /><sub><b>Eugene Selifonov</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3A1nv" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://ez-startup.com"><img src="https://avatars.githubusercontent.com/u/69514175?v=4?s=100" width="100px;" alt="Kuth"/><br /><sub><b>Kuth</b></sub></a><br /><a href="#translation-kuth-chi" title="Translation">🌍</a></td>
     </tr>
   </tbody>
 </table>
