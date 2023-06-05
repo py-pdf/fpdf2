@@ -252,8 +252,6 @@ class Table:
         row = self.rows[i]
         cell = row.cells[j]
         col_width = self._get_col_width(i, j, cell.colspan)
-        if j and self._gutter_width:
-            self._fpdf.x += self._gutter_width
         img_height = 0
 
         text_align = cell.align or self._text_align
@@ -298,7 +296,7 @@ class Table:
         # place cursor (required for images after images)
         cell_widhts = [self._get_col_width(i, jj) for jj in range(j)]
         cell_x = sum(cell_widhts)
-        self._fpdf.set_x(self._fpdf.l_margin + cell_x)
+        self._fpdf.set_x(self._fpdf.l_margin + cell_x + self._gutter_width * j)
 
         # render cell border and background
 

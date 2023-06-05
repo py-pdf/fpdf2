@@ -283,6 +283,16 @@ def test_valign_per_cell(tmp_path):
     # assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
     show(pdf)
 
+def test_table_with_gutter_and_padding(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table(TABLE_DATA, gutter_height=3, gutter_width=13, padding = 0, line_height = pdf.font_size, align="L"):
+        pass
+
+    show(pdf)
+
+
 
 def test_draw_box():
     pdf = FPDF()
