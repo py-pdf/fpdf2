@@ -261,7 +261,7 @@ class FPDF(GraphicsStateMixin):
         super().__init__()
         self.page = 0  # current page number
         self.pages = {}  # array of PDFPage objects starting at index 1
-        self.fonts = {}  # map font string keys to dicts describing the fonts used
+        self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
         self.images = {}  # map image identifiers to dicts describing the raster images
         self.icc_profiles = {}  # map icc profiles (bytes) to their index (number)
         self.links = {}  # array of Destination objects starting at index 1
@@ -308,7 +308,9 @@ class FPDF(GraphicsStateMixin):
         self.font_stretching = 100  # current font stretching
         self.char_spacing = 0  # current character spacing
         self.underline = False  # underlining flag
-        self.current_font = None  # current font
+        self.current_font = (
+            None  # current font, None or an instance of CoreFont or TTFFont
+        )
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
         self.text_color = self.DEFAULT_TEXT_COLOR
