@@ -908,6 +908,15 @@
       "contributions": [
         "translation"
       ]
+    },
+    {
+      "login": "RubendeBruin",
+      "name": "Ruben de Bruin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/34062862?v=4",
+      "profile": "https://rdbr.nl",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
