@@ -44,6 +44,7 @@ class Table:
         width=None,
         wrapmode=WrapMode.WORD,
         padding=None,
+        borders_outside_width=None,
     ):
         """
         Args:
@@ -70,11 +71,13 @@ class Table:
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
                 "CHAR" for character based line wrapping.
             padding (number, tuple): optional. Sets the cell padding. Can be a single number or a sequence of numbers, default: half line height
+            borders_outside_width (number): optional. Sets the width of the outside borders of the table
         """
         self._fpdf = fpdf
         self._align = align
         self._v_align = v_align
         self._borders_layout = TableBordersLayout.coerce(borders_layout)
+        self._borders_outside_width = borders_outside_width
         self._cell_fill_color = cell_fill_color
         self._cell_fill_mode = TableCellFillMode.coerce(cell_fill_mode)
         self._col_widths = col_widths
@@ -88,6 +91,7 @@ class Table:
         self._width = fpdf.epw if width is None else width
         self._wrapmode = wrapmode
         self.rows = []
+
 
         from fpdf.fpdf import get_padding_tuple  # Avoid circular import
 
@@ -317,6 +321,21 @@ class Table:
                 self._fpdf._draw_box(
                     x1, y1, x2, y2, border=self.get_cell_border(i, j), fill=fill
                 )
+
+            # draw outside box if needed
+            _remember_linewidth = self._fpdf.line_width
+            self._fpdf.set_line_width(self._borders_outside_width)
+            if self._borders_outside_width:
+                if i == 0:
+                    self._fpdf.line(x1, y1, x2, y1)
+                if i== len(self.rows) - 1:
+                    self._fpdf.line(x1, y2, x2, y2)
+                if j == 0:
+                    self._fpdf.line(x1, y1, x1, y2)
+                if j == len(row.cells) - 1:
+                    self._fpdf.line(x2, y1, x2, y2)
+            self._fpdf.set_line_width(_remember_linewidth)
+
 
         # render image
 

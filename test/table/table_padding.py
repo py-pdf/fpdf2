@@ -283,6 +283,23 @@ def test_valign_per_cell(tmp_path):
     # assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
     show(pdf)
 
+def test_outside_border_width(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=12)
+
+    with pdf.table(borders_outside_width=1,
+                   gutter_height = 10,
+                   gutter_width = 15) as table:
+        for irow in range(5):
+            row = table.row()
+            for icol in range(5):
+                datum = "Circus"
+                row.cell(datum)
+    # assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
+
+    show(pdf)
+
 
 def test_draw_box():
     pdf = FPDF()
