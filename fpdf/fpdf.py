@@ -3015,7 +3015,7 @@ class FPDF(GraphicsStateMixin):
             if "R" in border:
                 sl.append(f"{right:.2f} {top:.2f} m {right:.2f} {bottom:.2f} l S")
             if "B" in border:
-                sl.append(f"{left:.2f} {bottom:.2f} m " f"{right:.2f} {bottom:.2f} l S")
+                sl.append(f"{left:.2f} {bottom:.2f} m {right:.2f} {bottom:.2f} l S")
 
         if self._record_text_quad_points:
             self._add_quad_points(self.x, self.y, w, h)
