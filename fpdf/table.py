@@ -1,7 +1,11 @@
 from dataclasses import dataclass
 from numbers import Number
-from types import NoneType
-from typing import Optional, Union
+from typing import Optional, Union, NamedTuple
+
+try:
+    from types import NoneType
+except ImportError:
+    NoneType = type(None)
 
 from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode, AlignV
 from .enums import MethodReturnValue
@@ -10,6 +14,26 @@ from .fonts import FontFace
 
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
 
+class Padding(NamedTuple):
+    top: Number = 0
+    right: Number = 0
+    bottom: Number = 0
+    left: Number = 0
+
+def get_padding_tuple(padding: Union[int, float, tuple, list]) -> Padding:
+    """Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules"""
+    if isinstance(padding, (int, float)):
+        return Padding(padding, padding, padding, padding)
+    elif len(padding) == 2:
+        return Padding(padding[0], padding[1], padding[0], padding[1])
+    elif len(padding) == 3:
+        return Padding(padding[0], padding[1], padding[2], padding[1])
+    elif len(padding) == 4:
+        return Padding(*padding)
+
+    raise ValueError(
+        f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
+    )
 
 @dataclass(frozen=True)
 class RowLayoutInfo:
@@ -89,10 +113,8 @@ class Table:
         self._wrapmode = wrapmode
         self.rows = []
 
-        from fpdf.fpdf import get_padding_tuple  # Avoid circular import
-
         if padding is None:
-            self._padding = get_padding_tuple(0.5 * self._line_height)
+            self._padding = get_padding_tuple(0)
         else:
             self._padding = get_padding_tuple(padding)
 
@@ -237,11 +259,17 @@ class Table:
         self,
         i,
         j,
-        row_height,  # height of a row of text
+        row_height,        # height of a row of text including line spacing
         fill=False,
-        cell_height=None,  # height of cell for rendering borders and layout and images
+        cell_height=None,  # full height of a cell, including padding, used to render borders and images
         **kwargs,
     ):
+        # If cell_height is provided then we are rendering a cell
+        # If cell_height is not provided then we are only here to figure out the height of the cell
+        #
+        # So this function is first called without cell_height to figure out the heights of all cells in a row
+        # and then called again with cell_height to actually render the cells
+
         # default values:
 
         page_break_text = False
@@ -477,6 +505,7 @@ class Row:
             img_fill_width (bool): optional, defaults to False. Indicates to render the image
                 using the full width of the current table column.
             colspan (int): optional number of columns this cell should span.
+            padding (tuple): optional padding (left, top, right, bottom) for the cell.
         """
         if text and img:
             raise NotImplementedError(

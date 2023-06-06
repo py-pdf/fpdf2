@@ -253,20 +253,7 @@ def get_page_format(format, k=None):
         raise FPDFPageFormatException(f"Arguments must be numbers: {args}") from e
 
 
-def get_padding_tuple(padding):
-    """Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules"""
-    if isinstance(padding, (int, float)):
-        return (padding, padding, padding, padding)
-    elif len(padding) == 2:
-        return (padding[0], padding[1], padding[0], padding[1])
-    elif len(padding) == 3:
-        return (padding[0], padding[1], padding[2], padding[1])
-    elif len(padding) == 4:
-        return padding
 
-    raise ValueError(
-        f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
-    )
 
 
 def check_page(fn):
@@ -3466,7 +3453,6 @@ class FPDF(GraphicsStateMixin):
         dry_run=False,
         output=MethodReturnValue.PAGE_BREAK,
         padding=0,
-        # cell_height = None,
     ):
         """
         This method allows printing text with line breaks. They can be automatic
