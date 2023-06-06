@@ -296,7 +296,7 @@ class Table:
         # so we can draw the borders now
         #
         # If cell_height is None then we're still in the phase of calculating the height of the cell meaning that
-        # we do not need to render and borders yet.
+        # we do not need to set fonts & draw borders yet.
         if cell_height is not None:
             with self._fpdf.use_font_face(style):
                 x1 = self._fpdf.x
