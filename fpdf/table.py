@@ -364,8 +364,9 @@ class Table:
         v_align = cell.v_align if cell.v_align else self._v_align
 
         # place cursor (required for images after images)
-        cell_widhts = [self._get_col_width(i, jj) for jj in range(j)]
-        cell_x = sum(cell_widhts)
+        cell_widths = [self._get_col_width(i, jj) for jj in range(j)]
+        cell_x = sum(cell_widths)
+
         self._fpdf.set_x(self._fpdf.l_margin + cell_x + self._gutter_width * j)
 
         # render cell border and background
@@ -438,6 +439,9 @@ class Table:
             dy = 0
             if cell_height is not None:
                 if v_align != AlignV.T:  # For Top we don't need to calculate the dy
+
+                    # TODO: Make this more efficient by not calling multi_cell twice
+
                     # first dry run to get the actual text height of the cell
                     _, actual_text_height = self._fpdf.multi_cell(
                         w=col_width,

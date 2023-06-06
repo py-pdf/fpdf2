@@ -3431,7 +3431,7 @@ class FPDF(GraphicsStateMixin):
 
         Args:
             w (float): cell width. If 0, they extend up to the right margin of the page.
-            h (float): row height. Default value: None, meaning to use the current font size.
+            h (float): height of a single line of text.  Default value: None, meaning to use the current font size.
             txt (str): string to print.
             border: Indicates if borders must be drawn around the cell.
                 The value can be either a number (`0`: no border ; `1`: frame)
