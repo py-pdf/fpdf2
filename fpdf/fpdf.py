@@ -3013,7 +3013,7 @@ class FPDF(GraphicsStateMixin):
             if "T" in border:
                 sl.append(f"{left:.2f} {top:.2f} m {right:.2f} {top:.2f} l S")
             if "R" in border:
-                sl.append(f"{right:.2f} {top:.2f} m " f"{right:.2f} {bottom:.2f} l S")
+                sl.append(f"{right:.2f} {top:.2f} m {right:.2f} {bottom:.2f} l S")
             if "B" in border:
                 sl.append(f"{left:.2f} {bottom:.2f} m " f"{right:.2f} {bottom:.2f} l S")
 
