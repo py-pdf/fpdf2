@@ -4875,6 +4875,7 @@ class FPDF(GraphicsStateMixin):
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
                 "CHAR" for character based line wrapping.
             padding (number, tuple): optional. Sets the cell padding. Can be a single number or a sequence of numbers (top, right, bottom, left) using CSS convention
+            borders_outside_width (number): optional. Sets the width of the outside borders
         """
         table = Table(self, *args, **kwargs)
         yield table
