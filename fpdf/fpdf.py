@@ -2986,23 +2986,23 @@ class FPDF(GraphicsStateMixin):
         if fill:
             op = "B" if border == 1 else "f"
             sl.append(
-                f"{left:.2f} {top:.2f} " f"{right-left:.2f} {bottom-top:.2f} re {op}"
+                f"{left:.2f} {top:.2f} {right-left:.2f} {bottom-top:.2f} re {op}"
             )
         elif border == 1:
             sl.append(
-                f"{left:.2f} {top:.2f} " f"{right-left:.2f} {bottom-top:.2f} re S"
+                f"{left:.2f} {top:.2f} {right-left:.2f} {bottom-top:.2f} re S"
             )
         # pylint: enable=invalid-unary-operand-type
 
         if isinstance(border, str):
             if "L" in border:
-                sl.append(f"{left:.2f} {top:.2f} m " f"{left:.2f} {bottom:.2f} l S")
+                sl.append(f"{left:.2f} {top:.2f} m {left:.2f} {bottom:.2f} l S")
             if "T" in border:
-                sl.append(f"{left:.2f} {top:.2f} m " f"{right:.2f} {top:.2f} l S")
+                sl.append(f"{left:.2f} {top:.2f} m {right:.2f} {top:.2f} l S")
             if "R" in border:
-                sl.append(f"{right:.2f} {top:.2f} m " f"{right:.2f} {bottom:.2f} l S")
+                sl.append(f"{right:.2f} {top:.2f} m {right:.2f} {bottom:.2f} l S")
             if "B" in border:
-                sl.append(f"{left:.2f} {bottom:.2f} m " f"{right:.2f} {bottom:.2f} l S")
+                sl.append(f"{left:.2f} {bottom:.2f} m {right:.2f} {bottom:.2f} l S")
 
         if self._record_text_quad_points:
             self._add_quad_points(self.x, self.y, w, h)

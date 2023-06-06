@@ -309,17 +309,9 @@ class Table:
                 else FontFace(fill_color=self._cell_fill_color)
             )
 
-        if cell.padding:
-            from fpdf.fpdf import get_padding_tuple
+        padding = get_padding_tuple(cell.padding) if cell.padding else self._padding
 
-            padding = get_padding_tuple(cell.padding)
-        else:
-            padding = self._padding
-
-        if cell.v_align:
-            v_align = cell.v_align
-        else:
-            v_align = self._v_align
+        v_align = cell.v_align if if cell.v_align else self._v_align
 
         # place cursor (required for images after images)
         cell_widhts = [self._get_col_width(i, jj) for jj in range(j)]
@@ -332,7 +324,7 @@ class Table:
         # so we can draw the borders now
         #
         # If cell_height is None then we're still in the phase of calculating the height of the cell meaning that
-        # we do not need to render and borders yet.
+        # we do not need to set fonts & draw borders yet.
         if cell_height is not None:
             with self._fpdf.use_font_face(style):
                 x1 = self._fpdf.x
