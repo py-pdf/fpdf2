@@ -283,10 +283,7 @@ class Table:
 
         padding = get_padding_tuple(cell.padding) if cell.padding else self._padding
 
-        if cell.v_align:
-            v_align = cell.v_align
-        else:
-            v_align = self._v_align
+        v_align = cell.v_align if if cell.v_align else self._v_align
 
         # place cursor (required for images after images)
         cell_widhts = [self._get_col_width(i, jj) for jj in range(j)]
