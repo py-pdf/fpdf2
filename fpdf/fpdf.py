@@ -2999,7 +2999,7 @@ class FPDF(GraphicsStateMixin):
         if fill:
             op = "B" if border == 1 else "f"
             sl.append(
-                f"{left:.2f} {top:.2f} " f"{right-left:.2f} {bottom-top:.2f} re {op}"
+                f"{left:.2f} {top:.2f} {right-left:.2f} {bottom-top:.2f} re {op}"
             )
         elif border == 1:
             sl.append(
