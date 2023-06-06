@@ -87,7 +87,7 @@ from .structure_tree import StructureTreeBuilder
 from .sign import Signature
 from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ, PDFDate
-from .table import Table
+from .table import Table, get_padding_tuple
 from .util import (
     escape_parens,
     get_scale_factor,
@@ -1416,41 +1416,8 @@ class FPDF(GraphicsStateMixin):
             self.line(point_5[0], point_5[1], point_6[0], point_6[1])
             self.line(point_7[0], point_7[1], point_8[0], point_8[1])
 
-    def _draw_box(self, x1, y1, x2, y2, border, fill):
-        """Draws a box using the current style"""
 
-        sl = []
 
-        k = self.k
-
-        # y top to bottom instead of bottom to top
-        y1 = self.h - y1
-        y2 = self.h - y2
-
-        # scale
-        x1 *= k
-        x2 *= k
-        y2 *= k
-        y1 *= k
-
-        if fill:
-            op = "B" if border == 1 else "f"
-            sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re {op}")
-        elif border == 1:
-            sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re S")
-
-        if isinstance(border, str):
-            if "L" in border:
-                sl.append(f"{x1:.2f} {y2:.2f} m " f"{x1:.2f} {y1:.2f} l S")
-            if "T" in border:
-                sl.append(f"{x1:.2f} {y2:.2f} m " f"{x2:.2f} {y2:.2f} l S")
-            if "R" in border:
-                sl.append(f"{x2:.2f} {y2:.2f} m " f"{x2:.2f} {y1:.2f} l S")
-            if "B" in border:
-                sl.append(f"{x1:.2f} {y1:.2f} m " f"{x2:.2f} {y1:.2f} l S")
-
-        s = " ".join(sl)
-        self._out(s)
 
     @check_page
     def ellipse(self, x, y, w, h, style=None):
@@ -4875,7 +4842,7 @@ class FPDF(GraphicsStateMixin):
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
                 "CHAR" for character based line wrapping.
             padding (number, tuple): optional. Sets the cell padding. Can be a single number or a sequence of numbers (top, right, bottom, left) using CSS convention
-            borders_outside_width (number): optional. Sets the width of the outside borders
+            outer_border_width (number): optional. The outer_border_width will trigger rendering of the outer border of the table with the given width regardless of any other defined border styles.
         """
         table = Table(self, *args, **kwargs)
         yield table

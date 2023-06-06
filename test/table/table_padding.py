@@ -172,7 +172,12 @@ def test_table_with_multiline_cells_and_images_padding_and_pagebreak(tmp_path):
     deathstyle = FontFace(color=black, fill_color=red)
 
     with pdf.table(
-        line_height=pdf.font_size, padding=(5, 5, 5, 5), col_widths=(0.3, 0.2), width=80
+        line_height=pdf.font_size,
+            padding=(5, 5, 5, 5),
+            col_widths=(0.3, 0.2),
+            width=80,
+            outer_border_width=3,
+
     ) as table:
         for i, data_row in enumerate(MULTILINE_TABLE_DATA):
             row = table.row()
@@ -290,7 +295,7 @@ def test_table_with_gutter_and_padding(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(TABLE_DATA, gutter_height=3, gutter_width=13, padding = 0, line_height = pdf.font_size, align="L"):
+    with pdf.table(TABLE_DATA, gutter_height=3, gutter_width=13, padding = 0, line_height = pdf.font_size, align="L", outer_border_width=2):
         pass
 
     show(pdf)
@@ -301,7 +306,7 @@ def test_outside_border_width(tmp_path):
     pdf.add_page()
     pdf.set_font("Times", size=12)
 
-    with pdf.table(borders_outside_width=1,
+    with pdf.table(outer_border_width=1,
                    gutter_height = 10,
                    gutter_width = 15) as table:
         for irow in range(5):
@@ -312,13 +317,13 @@ def test_outside_border_width(tmp_path):
     # assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
 
     show(pdf)
-
-
-def test_draw_box():
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Times", size=16)
-
-    pdf._draw_box(0, 0, 40, 20, 1, False)
-
-    show(pdf)
+#
+#
+# def test_draw_box():
+#     pdf = FPDF()
+#     pdf.add_page()
+#     pdf.set_font("Times", size=16)
+#
+#     pdf._draw_box(0, 0, 40, 20, 1, False)
+#
+#     show(pdf)

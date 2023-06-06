@@ -35,6 +35,52 @@ def get_padding_tuple(padding: Union[int, float, tuple, list]) -> Padding:
         f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
     )
 
+def draw_box(pdf, x1, y1, x2, y2, border, fill = None):
+    """Draws a box using the provided style - private helper used by table for drawing the cell and table borders.
+    Difference bewteen this and rect() is that border can be defined as "L,R,T,B" to draw only some of the four borders; compatible with get_border(i,k)
+
+    See Also: rect()"""
+
+    if fill:
+        prev_fill_color = pdf.fill_color
+        pdf.set_fill_color(*fill)
+
+    sl = []
+
+    k = pdf.k
+
+    # y top to bottom instead of bottom to top
+    y1 = pdf.h - y1
+    y2 = pdf.h - y2
+
+    # scale
+    x1 *= k
+    x2 *= k
+    y2 *= k
+    y1 *= k
+
+    if fill:
+        op = "B" if border == 1 else "f"
+        sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re {op}")
+    elif border == 1:
+        sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re S")
+
+    if isinstance(border, str):
+        if "L" in border:
+            sl.append(f"{x1:.2f} {y2:.2f} m " f"{x1:.2f} {y1:.2f} l S")
+        if "T" in border:
+            sl.append(f"{x1:.2f} {y2:.2f} m " f"{x2:.2f} {y2:.2f} l S")
+        if "R" in border:
+            sl.append(f"{x2:.2f} {y2:.2f} m " f"{x2:.2f} {y1:.2f} l S")
+        if "B" in border:
+            sl.append(f"{x1:.2f} {y1:.2f} m " f"{x2:.2f} {y1:.2f} l S")
+
+    s = " ".join(sl)
+    pdf._out(s)
+
+    if fill:
+        pdf.set_fill_color(prev_fill_color)
+
 @dataclass(frozen=True)
 class RowLayoutInfo:
     height: float
@@ -68,7 +114,7 @@ class Table:
         width=None,
         wrapmode=WrapMode.WORD,
         padding=None,
-        borders_outside_width=None,
+        outer_border_width=None,
     ):
         """
         Args:
@@ -95,13 +141,13 @@ class Table:
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
                 "CHAR" for character based line wrapping.
             padding (number, tuple): optional. Sets the cell padding. Can be a single number or a sequence of numbers, default: half line height
-            borders_outside_width (number): optional. Sets the width of the outside borders of the table
+            outer_border_width (number): optional. Sets the width of the outer borders of the table
         """
         self._fpdf = fpdf
         self._align = align
         self._v_align = v_align
         self._borders_layout = TableBordersLayout.coerce(borders_layout)
-        self._borders_outside_width = borders_outside_width
+        self._outer_border_width = outer_border_width
         self._cell_fill_color = cell_fill_color
         self._cell_fill_mode = TableCellFillMode.coerce(cell_fill_mode)
         self._col_widths = col_widths
@@ -315,7 +361,7 @@ class Table:
 
         padding = get_padding_tuple(cell.padding) if cell.padding else self._padding
 
-        v_align = cell.v_align if if cell.v_align else self._v_align
+        v_align = cell.v_align if cell.v_align else self._v_align
 
         # place cursor (required for images after images)
         cell_widhts = [self._get_col_width(i, jj) for jj in range(j)]
@@ -330,20 +376,23 @@ class Table:
         # If cell_height is None then we're still in the phase of calculating the height of the cell meaning that
         # we do not need to set fonts & draw borders yet.
         if cell_height is not None:
-            with self._fpdf.use_font_face(style):
-                x1 = self._fpdf.x
-                y1 = self._fpdf.y
-                x2 = x1 + col_width
-                y2 = y1 + cell_height
+            x1 = self._fpdf.x
+            y1 = self._fpdf.y
+            x2 = x1 + col_width
+            y2 = y1 + cell_height
 
-                self._fpdf._draw_box(
-                    x1, y1, x2, y2, border=self.get_cell_border(i, j), fill=fill
-                )
+            draw_box(
+                self._fpdf,
+                x1, y1, x2, y2, border=self.get_cell_border(i, j),
+                fill=style.fill_color if fill else None
+            )
 
-            # draw outside box if needed
-            _remember_linewidth = self._fpdf.line_width
-            self._fpdf.set_line_width(self._borders_outside_width)
-            if self._borders_outside_width:
+            # draw outer box if needed
+            if self._outer_border_width:
+
+                _remember_linewidth = self._fpdf.line_width
+                self._fpdf.set_line_width(self._outer_border_width)
+
                 if i == 0:
                     self._fpdf.line(x1, y1, x2, y1)
                 if i== len(self.rows) - 1:
@@ -352,7 +401,8 @@ class Table:
                     self._fpdf.line(x1, y1, x1, y2)
                 if j == len(row.cells) - 1:
                     self._fpdf.line(x2, y1, x2, y2)
-            self._fpdf.set_line_width(_remember_linewidth)
+
+                self._fpdf.set_line_width(_remember_linewidth)
 
 
         # render image
@@ -365,13 +415,13 @@ class Table:
             auto_height = cell.img_fill_width or cell_height is None
 
             # apply padding
-            self._fpdf.x += padding[3]
-            self._fpdf.y += padding[0]
+            self._fpdf.x += padding.left
+            self._fpdf.y += padding.top
 
             image = self._fpdf.image(
                 cell.img,
-                w=col_width - padding[1] - padding[3],
-                h=0 if auto_height else cell_height - padding[0] - padding[2],
+                w=col_width - padding.left - padding.right,
+                h=0 if auto_height else cell_height - padding.top - padding.bottom,
                 keep_aspect_ratio=True,
             )
 
@@ -403,7 +453,7 @@ class Table:
                         output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
                         wrapmode=self._wrapmode,
                         dry_run=True,
-                        padding=padding,  # (0,padding[1], 0, padding[3]),
+                        padding=padding,
                         **kwargs,
                     )
                     # then calculate the y offset of the text depending on the vertical alignment
