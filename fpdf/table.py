@@ -281,12 +281,7 @@ class Table:
                 else FontFace(fill_color=self._cell_fill_color)
             )
 
-        if cell.padding:
-            from fpdf.fpdf import get_padding_tuple
-
-            padding = get_padding_tuple(cell.padding)
-        else:
-            padding = self._padding
+        padding = get_padding_tuple(cell.padding) if cell.padding else self._padding
 
         if cell.v_align:
             v_align = cell.v_align
