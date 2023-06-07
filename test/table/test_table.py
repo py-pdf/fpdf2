@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from subprocess import Popen
 
 import pytest
 
@@ -419,3 +420,30 @@ def test_table_with_gutter(tmp_path):
         pass
 
     assert_pdf_equal(pdf, HERE / "table_with_gutter.pdf", tmp_path)
+
+
+def test_table_colspan(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("Times", size=30)
+    pdf.add_page()
+    with pdf.table(col_widths=(1, 2, 1,1)) as table:
+        row = table.row()
+        row.cell("0")
+        row.cell("1")
+        row.cell("2")
+        row.cell("3")
+        row = table.row()
+        row.cell("A1")
+        row.cell("A2", colspan=2)
+        row.cell("void") # <--- this cell is not rendered
+        row.cell("A4")
+
+        row = table.row()
+        row.cell("B1", colspan=2)
+        row.cell("void")  # <--- this cell is not rendered
+        row.cell("B3")
+        row.cell("B4")
+
+    filename = HERE / "table_colspan.pdf"
+
+    assert_pdf_equal(pdf, HERE / "table_colspan.pdf", tmp_path)
