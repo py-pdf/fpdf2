@@ -145,7 +145,7 @@ class Table:
         """
         self._fpdf = fpdf
         self._align = align
-        self._v_align = v_align
+        self._v_align = AlignV.coerce(v_align)
         self._borders_layout = TableBordersLayout.coerce(borders_layout)
         self._outer_border_width = outer_border_width
         self._cell_fill_color = cell_fill_color
