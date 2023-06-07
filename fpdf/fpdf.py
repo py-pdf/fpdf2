@@ -3478,6 +3478,7 @@ class FPDF(GraphicsStateMixin):
                 When two values are specified, the first padding applies to the top and bottom, the second to the left and right.
                 When three values are specified, the first padding applies to the top, the second to the right and left, the third to the bottom.
                 When four values are specified, the paddings apply to the top, right, bottom, and left in that order (clockwise)
+                If padding for left and right ends up being non-zero then c_margin is ignored.
 
 
         Using `new_x=XPos.RIGHT, new_y=XPos.TOP, maximum height=pdf.font_size` is
@@ -4852,7 +4853,8 @@ class FPDF(GraphicsStateMixin):
             width (number): optional. Sets the table width
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
                 "CHAR" for character based line wrapping.
-            padding (number, tuple): optional. Sets the cell padding. Can be a single number or a sequence of numbers (top, right, bottom, left) using CSS convention
+            padding (number, tuple, Padding): optional. Sets the cell padding. Can be a single number or a sequence of numbers, default:0
+                If padding for left and right ends up being non-zero then c_margin is ignored.
             outer_border_width (number): optional. The outer_border_width will trigger rendering of the outer border of the table with the given width regardless of any other defined border styles.
         """
         table = Table(self, *args, **kwargs)
