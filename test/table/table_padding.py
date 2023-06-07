@@ -383,3 +383,31 @@ def test_outside_border_width(tmp_path):
 #     pdf._draw_box(0, 0, 40, 20, 1, False)
 #
 #     show(pdf)
+
+
+def test_table_colspan(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("Times", size=30)
+    pdf.add_page()
+    with pdf.table(col_widths=(1, 2, 1,1), padding=3, gutter_width=10, gutter_height = 3) as table:
+        row = table.row()
+        row.cell("0")
+        row.cell("1")
+        row.cell("2")
+        row.cell("3")
+        row = table.row()
+        row.cell("A1")
+        row.cell("A2", colspan=2)
+        row.cell("void") # <--- this cell is not rendered
+        row.cell("A4")
+
+        row = table.row()
+        row.cell("B1", colspan=2)
+        row.cell("void")  # <--- this cell is not rendered
+        row.cell("B3")
+        row.cell("B4")
+
+    show(pdf)
+
+    # filename = HERE / "table_colspan_padding.pdf"
+    # assert_pdf_equal(pdf, HERE / "table_colspan_padding.pdf", tmp_path)

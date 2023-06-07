@@ -109,3 +109,5 @@ def test_table_with_qrcode(tmp_path):  # issue 771
         row.cell(img=qrCodeGenerated.get_image(), img_fill_width=True)
         row.cell("Other field")
     assert_pdf_equal(pdf, HERE / "table_with_qrcode.pdf", tmp_path)
+
+

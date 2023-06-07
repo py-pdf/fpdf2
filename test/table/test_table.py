@@ -444,6 +444,6 @@ def test_table_colspan(tmp_path):
         row.cell("B3")
         row.cell("B4")
 
-    filename = HERE / "table_colspan.pdf"
 
+    filename = HERE / "table_colspan.pdf"
     assert_pdf_equal(pdf, HERE / "table_colspan.pdf", tmp_path)

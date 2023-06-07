@@ -365,7 +365,7 @@ class Table:
 
         # place cursor (required for images after images)
         cell_widths = [self._get_col_width(i, jj) for jj in range(j)]
-        cell_x = sum(cell_widths)
+        cell_x = sum(cell_widths) + self._gutter_width * (j-1)
 
         self._fpdf.set_x(self._fpdf.l_margin + cell_x + self._gutter_width * j)
 
