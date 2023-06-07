@@ -94,6 +94,9 @@ Following the CCS standard the padding can be specified using 1,2 3 or 4 values.
 
 ![img.png](img_table_padding.png)
 
+Note: the `c_margin` parameter (default 1.0) also controls the horizontal margins in a cell. If a non-zero padding for left and right is supplied then c_margin is ignored.
+
+
 ## Setting vertical alignment of text in cells
 
 Can be set globally or per cell.

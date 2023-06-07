@@ -2,13 +2,13 @@
 
 There are several ways in fpdf to add text to a PDF document, each of which comes with its own special features and its own set of advantages and disadvantages. You will need to pick the right one for your specific task.
 
-| method | lines | markdown support | HTML support | accepts new current position | details |
-| -- | :--: | :--: | :--: | :--: | -- |
-| [`.text()`](#text)  | one | no | no | fixed | Inserts a single-line text string with a precise location on the base line of the font.|
-| [`.cell()`](#cell)  | one | yes | no | yes | Inserts a single-line text string within the boundaries of a given box, optionally with background and border. |
-| [`.multi_cell()`](#multi_cell) | several | yes | no | yes | Inserts a multi-line text string within the boundaries of a given box, optionally with background and border. |
+| method | lines | markdown support | HTML support | accepts new current position | details                                                                                                                                                         |
+| -- | :--: | :--: | :--: | :--: |-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`.text()`](#text)  | one | no | no | fixed | Inserts a single-line text string with a precise location on the base line of the font.                                                                         |
+| [`.cell()`](#cell)  | one | yes | no | yes | Inserts a single-line text string within the boundaries of a given box, optionally with background and border.                                                  |
+| [`.multi_cell()`](#multi_cell) | several | yes | no | yes | Inserts a multi-line text string within the boundaries of a given box, optionally with background, border and padding.                                          |
 | [`.write()`](#write) | several | no | no | auto | Inserts a multi-line text string within the boundaries of the page margins, starting at the current x/y location (typically the end of the last inserted text). |
-| [`.write_html()`](#write_html) | several | no | yes | auto |  An extension to `.write()`, with additional parsing of basic HTML tags.
+| [`.write_html()`](#write_html) | several | no | yes | auto | An extension to `.write()`, with additional parsing of basic HTML tags.                                                                                         
 
 ## Typography and Language Specific Concepts 
 
@@ -85,7 +85,7 @@ Allows printing text with word or character based line breaks. Those can be auto
 reaches the right border of the cell, or explicit (via the `\\n` character).
 As many cells as necessary are stacked, one below the other.
 Text can be aligned, centered or justified. The cell block can be framed and
-the background painted.
+the background painted. Padding between text and the cell edge can be specified in the same way as for tables.
 
 Using `new_x="RIGHT", new_y="TOP", maximum height=pdf.font_size` can be
 useful to build tables with multiline text in cells.

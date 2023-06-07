@@ -6,6 +6,7 @@ import qrcode, pytest
 from fpdf import FPDF
 from fpdf.enums import MethodReturnValue, YPos, TableCellFillMode, AlignV
 from fpdf.fonts import FontFace
+from fpdf.table import Padding
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
@@ -66,20 +67,22 @@ SHORT_TEXT = "Monty Python / Killer Sheep"
 TWO_LINE_TEXT = "Monty Python\nKiller Sheep"
 
 
-# def test_multicell_with_padding():
-#     pdf = FPDF()
-#     pdf.add_page()
-#     pdf.set_font("Times", size=16)
-#     pdf.multi_cell(0, 5, LONG_TEXT, border = 1, padding = (10, 20, 30, 40))
-#
-#     pdf.x = 0
-#     pdf.y = 0
-#     pdf.multi_cell(150, 5, SHORT_TEXT, border = 1, padding = (5, 5, 5, 5))
-#
-#     pdf.output(HERE / "multicell_with_padding.pdf")
-#
-#     import subprocess
-#     subprocess.Popen('explorer "' + str(HERE / "multicell_with_padding.pdf") + '"' )
+def test_multicell_with_padding():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    pdf.multi_cell(0, 5, LONG_TEXT, border = 1, padding = (10, 20, 30, 40))
+
+    # pdf.x = 0
+    # pdf.y = 0
+    # pdf.multi_cell(150, 5, SHORT_TEXT, border = 1, padding = (5, 5, 5, 5))
+
+    show(pdf)
+
+    # pdf.output(HERE / "multicell_with_padding.pdf")
+    #
+    # import subprocess
+    # subprocess.Popen('explorer "' + str(HERE / "multicell_with_padding.pdf") + '"' )
 
 
 def test_multicell_with_padding_check_input():
@@ -385,11 +388,12 @@ def test_outside_border_width(tmp_path):
 #     show(pdf)
 
 
-def test_table_colspan(tmp_path):
+def test_table_colspan_and_padding(tmp_path):
     pdf = FPDF()
-    pdf.set_font("Times", size=30)
+
+    pdf.set_font("Times", size=12)
     pdf.add_page()
-    with pdf.table(col_widths=(1, 2, 1,1), padding=3, gutter_width=10, gutter_height = 3) as table:
+    with pdf.table(col_widths=(1, 2, 1,1), padding=5) as table:
         row = table.row()
         row.cell("0")
         row.cell("1")
@@ -399,6 +403,26 @@ def test_table_colspan(tmp_path):
         row.cell("A1")
         row.cell("A2", colspan=2)
         row.cell("void") # <--- this cell is not rendered
+        row.cell("A4")
+
+        row = table.row()
+        row.cell("B1", colspan=2)
+        row.cell("void")  # <--- this cell is not rendered
+        row.cell("B3")
+        row.cell("B4")
+
+    pdf.c_margin = 10
+
+    with pdf.table(col_widths=(1, 2, 1, 1), padding=5) as table:
+        row = table.row()
+        row.cell("0")
+        row.cell("1")
+        row.cell("2")
+        row.cell("3")
+        row = table.row()
+        row.cell("A1")
+        row.cell("A2", colspan=2)
+        row.cell("void")  # <--- this cell is not rendered
         row.cell("A4")
 
         row = table.row()

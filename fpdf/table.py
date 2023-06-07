@@ -364,10 +364,10 @@ class Table:
         v_align = cell.v_align if cell.v_align else self._v_align
 
         # place cursor (required for images after images)
-        cell_widths = [self._get_col_width(i, jj) for jj in range(j)]
-        cell_x = sum(cell_widths) + self._gutter_width * (j-1)
+        cell_widths = [self._get_col_width(i, jj, colspan=1) for jj in range(j)]  # Note that we use colspan=1 here
+        cell_x = sum(cell_widths)
 
-        self._fpdf.set_x(self._fpdf.l_margin + cell_x + self._gutter_width * j)
+        self._fpdf.set_x(self._fpdf.l_margin + cell_x)
 
         # render cell border and background
 

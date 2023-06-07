@@ -87,7 +87,7 @@ from .structure_tree import StructureTreeBuilder
 from .sign import Signature
 from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ, PDFDate
-from .table import Table, get_padding_tuple
+from .table import Table, get_padding_tuple, Padding
 from .util import (
     escape_parens,
     get_scale_factor,
@@ -2863,7 +2863,7 @@ class FPDF(GraphicsStateMixin):
         fill: bool = False,
         link: str = "",
         center: bool = False,
-        padding=(0, 0, 0, 0),
+        padding : Padding = None,
     ):
         """
         Prints a cell (rectangular area) with optional borders, background color and
@@ -2901,6 +2901,7 @@ class FPDF(GraphicsStateMixin):
             center (bool): **DEPRECATED since 2.5.1**: Use `align="C"` instead.
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
+            padding (Padding or None): optional padding to apply to the cell content. If padding for left and right is non-zero then c_margin is ignored.
 
         Returns: a boolean indicating if page break was triggered
         """
@@ -2911,6 +2912,16 @@ class FPDF(GraphicsStateMixin):
                 'Integer values for "border" parameter other than 1 are currently ignored'
             )
             border = 1
+
+        if padding is None:
+            padding = Padding(0,0,0,0)
+
+        if padding.left == 0 and padding.right == 0:
+            local_c_margin = self.c_margin
+        else:
+            local_c_margin = 0
+
+
         styled_txt_width = text_line.text_width
         if not styled_txt_width:
             for i, frag in enumerate(text_line.fragments):
@@ -2924,7 +2935,7 @@ class FPDF(GraphicsStateMixin):
                 raise ValueError(
                     "A 'text_line' parameter with fragments must be provided if 'w' is None"
                 )
-            w = styled_txt_width + self.c_margin + self.c_margin
+            w = styled_txt_width + local_c_margin + local_c_margin
         max_font_size = 0  # how much height we need to accomodate.
         # currently all font sizes within a line are vertically aligned on the baseline.
         for frag in text_line.fragments:
@@ -2945,10 +2956,10 @@ class FPDF(GraphicsStateMixin):
 
         # pre-calc border edges with padding
 
-        left = (self.x - padding[3]) * k
-        right = (self.x + w + padding[1]) * k
-        top = (self.h - self.y + padding[0]) * k
-        bottom = (self.h - (self.y + h) - padding[2]) * k
+        left = (self.x - padding.left) * k
+        right = (self.x + w + padding.right) * k
+        top = (self.h - self.y + padding.top) * k
+        bottom = (self.h - (self.y + h) - padding.bottom) * k
 
         if fill:
             op = "B" if border == 1 else "f"
@@ -2985,11 +2996,11 @@ class FPDF(GraphicsStateMixin):
         current_char_spacing = self.char_spacing
         if text_line.fragments:
             if align == Align.R:
-                dx = w - self.c_margin - styled_txt_width
+                dx = w - local_c_margin - styled_txt_width
             elif align in [Align.C, Align.X]:
                 dx = (w - styled_txt_width) / 2
             else:
-                dx = self.c_margin
+                dx = local_c_margin
             s_start += dx
 
             if self.fill_color != self.text_color:
@@ -3003,7 +3014,7 @@ class FPDF(GraphicsStateMixin):
                 # If a line gets broken by an explicit '\n', then MultiLineBreak
                 # will set its justify to False (end of paragraph).
                 word_spacing = (
-                    w - self.c_margin - self.c_margin - styled_txt_width
+                    w - local_c_margin - local_c_margin - styled_txt_width
                 ) / text_line.number_of_spaces
 
             sl.append(
@@ -3142,7 +3153,7 @@ class FPDF(GraphicsStateMixin):
         elif new_x == XPos.END:
             self.x = s_start + s_width
         elif new_x == XPos.WCONT:
-            self.x = s_start + s_width - self.c_margin
+            self.x = s_start + s_width - local_c_margin
         elif new_x == XPos.CENTER:
             self.x = s_start + s_width / 2.0
         elif new_x == XPos.LMARGIN:
