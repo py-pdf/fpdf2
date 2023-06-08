@@ -5,7 +5,7 @@ from typing import Optional, Union
 from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode
 from .enums import MethodReturnValue
 from .errors import FPDFException
-from .fonts import FontFace
+from .fonts import CORE_FONTS, FontFace
 
 
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
@@ -115,10 +115,7 @@ class Table:
             if emphasis is not None:
                 family = self._headings_style.family or self._fpdf.font_family
                 font_key = family + emphasis.style
-                if (
-                    font_key not in self._fpdf.core_fonts
-                    and font_key not in self._fpdf.fonts
-                ):
+                if font_key not in CORE_FONTS and font_key not in self._fpdf.fonts:
                     # Raising a more explicit error than the one from set_font():
                     raise FPDFException(
                         f"Using font emphasis '{emphasis.style}' in table headings require the corresponding font style to be added using add_font()"
@@ -140,7 +137,7 @@ class Table:
                 # pylint: disable=protected-access
                 self._fpdf._perform_page_break()
                 if self._first_row_as_headings:  # repeat headings on top:
-                    self._render_table_row(0)
+                    self._render_table_row(0, self._get_row_layout_info(0))
             elif i and self._gutter_height:
                 self._fpdf.y += self._gutter_height
             self._render_table_row(i, row_layout_info)
@@ -203,9 +200,7 @@ class Table:
                 border.remove("B")
         return "".join(border)
 
-    def _render_table_row(self, i, row_layout_info=None, fill=False, **kwargs):
-        if not row_layout_info:
-            row_layout_info = self._get_row_layout_info(i)
+    def _render_table_row(self, i, row_layout_info, fill=False, **kwargs):
         row = self.rows[i]
         j = 0
         while j < len(row.cells):
@@ -305,8 +300,8 @@ class Table:
 
     def _get_row_layout_info(self, i):
         """
-        Uses FPDF.offset_rendering() to detect a potential page jump
-        and compute the cells heights.
+        Compute the cells heights & detect page jumps,
+        but disable actual rendering by using FPDF._disable_writing()
         """
         row = self.rows[i]
         heights_per_cell = []

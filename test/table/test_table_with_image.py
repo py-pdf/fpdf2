@@ -109,3 +109,19 @@ def test_table_with_qrcode(tmp_path):  # issue 771
         row.cell(img=qrCodeGenerated.get_image(), img_fill_width=True)
         row.cell("Other field")
     assert_pdf_equal(pdf, HERE / "table_with_qrcode.pdf", tmp_path)
+
+
+def test_table_with_page_break_over_image(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    pdf.y = 220
+    with pdf.table() as table:
+        for i, data_row in enumerate(TABLE_DATA[:2]):
+            row = table.row()
+            for j, datum in enumerate(data_row):
+                if j == 2 and i > 0:
+                    row.cell(img=datum, img_fill_width=True)
+                else:
+                    row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_with_page_break_over_image.pdf", tmp_path)

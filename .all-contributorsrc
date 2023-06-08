@@ -899,6 +899,25 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "kuth-chi",
+      "name": "Kuth",
+      "avatar_url": "https://avatars.githubusercontent.com/u/69514175?v=4",
+      "profile": "https://ez-startup.com",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "RubendeBruin",
+      "name": "Ruben de Bruin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/34062862?v=4",
+      "profile": "https://rdbr.nl",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,

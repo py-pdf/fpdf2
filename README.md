@@ -104,7 +104,7 @@ This library relies on community interactions. Please consider sharing a post ab
 ## Documentation
 
 - [Documentation Home](https://pyfpdf.github.io/fpdf2/)
-- Tutorial in several languages: [English](https://pyfpdf.github.io/fpdf2/Tutorial.html) - [Deutsch](https://pyfpdf.github.io/fpdf2/Tutorial-de.html) - [español](https://pyfpdf.github.io/fpdf2/Tutorial-es.html) - [हिंदी](https://pyfpdf.github.io/fpdf2/Tutorial-hi.html) - [português](https://pyfpdf.github.io/fpdf2/Tutorial-pt.html) - [Русский](https://pyfpdf.github.io/fpdf2/Tutorial-ru.html) - [Italian](https://pyfpdf.github.io/fpdf2/Tutorial-it.html) - [français](https://pyfpdf.github.io/fpdf2/Tutorial-fr.html) - [Ελληνικά](https://pyfpdf.github.io/fpdf2/Tutorial-gr.html) - [עברית](https://pyfpdf.github.io/fpdf2/Tutorial-he.html) - [简体中文](https://pyfpdf.github.io/fpdf2/Tutorial-zh.html) - [বাংলা](https://pyfpdf.github.io/fpdf2/Tutorial-bn.html)
+- Tutorial in several languages: [English](https://pyfpdf.github.io/fpdf2/Tutorial.html) - [Deutsch](https://pyfpdf.github.io/fpdf2/Tutorial-de.html) - [español](https://pyfpdf.github.io/fpdf2/Tutorial-es.html) - [हिंदी](https://pyfpdf.github.io/fpdf2/Tutorial-hi.html) - [português](https://pyfpdf.github.io/fpdf2/Tutorial-pt.html) - [Русский](https://pyfpdf.github.io/fpdf2/Tutorial-ru.html) - [Italian](https://pyfpdf.github.io/fpdf2/Tutorial-it.html) - [français](https://pyfpdf.github.io/fpdf2/Tutorial-fr.html) - [Ελληνικά](https://pyfpdf.github.io/fpdf2/Tutorial-gr.html) - [עברית](https://pyfpdf.github.io/fpdf2/Tutorial-he.html) - [简体中文](https://pyfpdf.github.io/fpdf2/Tutorial-zh.html) - [বাংলা](https://pyfpdf.github.io/fpdf2/Tutorial-bn.html) - [ភាសខ្មែរ](https://pyfpdf.github.io/fpdf2/Tutorial-km.md)
 - Release notes: [CHANGELOG.md](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)
 - A series of blog posts: [fpdf2 tag @ ludochaordic](https://chezsoi.org/lucas/blog/tag/fpdf2.html)
 
@@ -242,6 +242,8 @@ This library could only exist thanks to the dedication of many volunteers around
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/1nv"><img src="https://avatars.githubusercontent.com/u/10288828?v=4?s=100" width="100px;" alt="Eugene Selifonov"/><br /><sub><b>Eugene Selifonov</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3A1nv" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://ez-startup.com"><img src="https://avatars.githubusercontent.com/u/69514175?v=4?s=100" width="100px;" alt="Kuth"/><br /><sub><b>Kuth</b></sub></a><br /><a href="#translation-kuth-chi" title="Translation">🌍</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://rdbr.nl"><img src="https://avatars.githubusercontent.com/u/34062862?v=4?s=100" width="100px;" alt="Ruben de Bruin"/><br /><sub><b>Ruben de Bruin</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=RubendeBruin" title="Code">💻</a> <a href="https://github.com/PyFPDF/fpdf2/commits?author=RubendeBruin" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
