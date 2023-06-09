@@ -916,7 +916,8 @@
       "profile": "https://rdbr.nl",
       "contributions": [
         "code",
-        "doc"
+        "doc",
+        "bug"
       ]
     }
   ],
