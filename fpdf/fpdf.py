@@ -2593,7 +2593,7 @@ class FPDF(GraphicsStateMixin):
         align=Align.L,
         fill=False,
         link="",
-        center="DEPRECATED",
+        center=False,
         markdown=False,
         new_x=XPos.RIGHT,
         new_y=YPos.TOP,
@@ -2622,15 +2622,14 @@ class FPDF(GraphicsStateMixin):
             new_x (fpdf.enums.XPos, str): New current position in x after the call. Default: RIGHT
             new_y (fpdf.enums.YPos, str): New current position in y after the call. Default: TOP
             ln (int): **DEPRECATED since 2.5.1**: Use `new_x` and `new_y` instead.
-            align (fpdf.enums.Align, str): Allows to center or align the text inside the cell.
+            align (fpdf.enums.Align, str): Set text alignment inside the cell.
                 Possible values are: `L` or empty string: left align (default value) ;
-                `C`: center; `X`: center around current x; `R`: right align
+                `C`: center; `X`: center around current x position; `R`: right align
             fill (bool): Indicates if the cell background must be painted (`True`)
                 or transparent (`False`). Default value: False.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `FPDF.add_link`) or external URL.
-            center (bool): **DEPRECATED** since 2.5.1:
-                Use align="C" or align="X" instead.
+            center (bool): center the cell horizontally on the page.
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
 
@@ -2656,16 +2655,6 @@ class FPDF(GraphicsStateMixin):
             raise ValueError(
                 "cell() only produces one text line, justified alignment is not possible"
             )
-        if center == "DEPRECATED":
-            center = False
-        else:
-            warnings.warn(
-                'The parameter "center" is deprecated. Use align="C" or align="X" instead.',
-                DeprecationWarning,
-                stacklevel=3,
-            )
-            if align == Align.L:
-                align = Align.C
         if ln != "DEPRECATED":
             # For backwards compatibility, if "ln" is used we overwrite "new_[xy]".
             if ln == 0:
@@ -2709,6 +2698,7 @@ class FPDF(GraphicsStateMixin):
             align=align,
             fill=fill,
             link=link,
+            center=center,
         )
 
     def _render_styled_text_line(
@@ -2722,6 +2712,7 @@ class FPDF(GraphicsStateMixin):
         align: Align = Align.L,
         fill: bool = False,
         link: str = "",
+        center: bool = False,
     ):
         """
         Prints a cell (rectangular area) with optional borders, background color and
@@ -2756,8 +2747,7 @@ class FPDF(GraphicsStateMixin):
                 or transparent (`False`). Default value: False.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `FPDF.add_link`) or external URL.
-            markdown (bool): enable minimal markdown-like markup to render part
-                of text as bold / italics / underlined. Default to False.
+            center (bool): center the cell horizontally on the page.
 
         Returns: a boolean indicating if page break was triggered
         """
@@ -2782,6 +2772,12 @@ class FPDF(GraphicsStateMixin):
                     "A 'text_line' parameter with fragments must be provided if 'w' is None"
                 )
             w = styled_txt_width + self.c_margin + self.c_margin
+        if center:
+            self.x = (
+                self.w / 2 if align == Align.X else self.l_margin + (self.epw - w) / 2
+            )
+        if align == Align.X:
+            self.x -= w / 2
         max_font_size = 0  # how much height we need to accomodate.
         # currently all font sizes within a line are vertically aligned on the baseline.
         for frag in text_line.fragments:
@@ -2789,10 +2785,6 @@ class FPDF(GraphicsStateMixin):
                 max_font_size = frag.font_size
         if h is None:
             h = max_font_size
-        if align == Align.X:
-            self.x -= w / 2
-        # if center_cell:
-        #     self.x = self.l_margin + (self.epw - w) / 2
         page_break_triggered = self._perform_page_break_if_need_be(h)
         sl = []
         k = self.k
@@ -3276,6 +3268,7 @@ class FPDF(GraphicsStateMixin):
         wrapmode: WrapMode = WrapMode.WORD,
         dry_run=False,
         output=MethodReturnValue.PAGE_BREAK,
+        center=False,
     ):
         """
         This method allows printing text with line breaks. They can be automatic
@@ -3294,10 +3287,10 @@ class FPDF(GraphicsStateMixin):
                 or a string containing some or all of the following characters
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
-            align (fpdf.enums.Align, str): Allows to center or align the text.
+            align (fpdf.enums.Align, str): Set text alignment inside the cell.
                 Possible values are:
                 `J`: justify (default value); `L` or empty string: left align;
-                `C`: center; `X`: center around current x; `R`: right align
+                `C`: center; `X`: center around current x position; `R`: right align
             fill (bool): Indicates if the cell background must be painted (`True`)
                 or transparent (`False`). Default value: False.
             split_only (bool): **DEPRECATED since 2.7.4**:
@@ -3318,6 +3311,7 @@ class FPDF(GraphicsStateMixin):
                 Can be useful when combined with `output`.
             output (fpdf.enums.MethodReturnValue): defines what this method returns.
                 If several enum values are joined, the result will be a tuple.
+            center (bool): center the cell horizontally on the page.
 
         Using `new_x=XPos.RIGHT, new_y=XPos.TOP, maximum height=pdf.font_size` is
         useful to build tables with multiline text in cells.
@@ -3352,6 +3346,7 @@ class FPDF(GraphicsStateMixin):
                     dry_run=False,
                     split_only=False,
                     output=MethodReturnValue.LINES if split_only else output,
+                    center=center,
                 )
         wrapmode = WrapMode.coerce(wrapmode)
         if isinstance(w, str) or isinstance(h, str):
@@ -3398,6 +3393,10 @@ class FPDF(GraphicsStateMixin):
         # If width is 0, set width to available width between margins
         if w == 0:
             w = self.w - self.r_margin - self.x
+        if center:
+            self.x = (
+                self.w / 2 if align == Align.X else self.l_margin + (self.epw - w) / 2
+            )
         maximum_allowed_width = w - 2 * self.c_margin
 
         # Calculate text length
