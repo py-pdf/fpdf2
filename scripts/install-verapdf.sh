@@ -7,7 +7,7 @@
 set -o pipefail -o errexit -o nounset -o xtrace
 
 rm -rf verapdf-*
-wget --quiet http://downloads.verapdf.org/rel/verapdf-installer.zip
+wget --quiet http://software.verapdf.org/rel/verapdf-installer.zip
 unzip verapdf-installer.zip
 (
     # Press 1 to continue, 2 to quit, 3 to redisplay:

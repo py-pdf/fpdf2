@@ -422,3 +422,32 @@ def test_multi_cell_char_wrap(tmp_path):  # issue #649
     pdf.ln()
     pdf.multi_cell(w=50, txt=txt, new_x="LEFT", fill=True, align="L", wrapmode="CHAR")
     assert_pdf_equal(pdf, HERE / "multi_cell_char_wrap.pdf", tmp_path)
+
+
+def test_multi_cell_centering(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    pdf.multi_cell(w=120, txt=LOREM_IPSUM, border=1, center=True)
+    assert_pdf_equal(pdf, HERE / "multi_cell_centering.pdf", tmp_path)
+
+
+def test_multi_cell_align_x(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    pdf.set_x(140)
+    pdf.multi_cell(w=120, txt=LOREM_IPSUM, border=1, align="X")
+    pdf.set_draw_color(r=0, g=255, b=0)
+    pdf.line(140, 0, 140, pdf.h)
+    assert_pdf_equal(pdf, HERE / "multi_cell_align_x.pdf", tmp_path)
+
+
+def test_multi_cell_centering_and_align_x(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    pdf.multi_cell(w=120, txt=LOREM_IPSUM, border=1, center=True, align="X")
+    pdf.set_draw_color(r=0, g=255, b=0)
+    pdf.line(pdf.w / 2, 0, pdf.w / 2, pdf.h)
+    assert_pdf_equal(pdf, HERE / "multi_cell_centering_and_align_x.pdf", tmp_path)

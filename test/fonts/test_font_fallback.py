@@ -130,7 +130,7 @@ def test_fallback_font_with_overriden_get_fallback_font(tmp_path):
             fonts_with_char = [
                 font_id
                 for font_id in self._fallback_font_ids
-                if ord(char) in self.fonts[font_id]["cmap"]
+                if ord(char) in self.fonts[font_id].cmap
             ]
             if not fonts_with_char:
                 return None

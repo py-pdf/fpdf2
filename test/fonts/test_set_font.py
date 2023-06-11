@@ -5,7 +5,7 @@ import pytest
 
 from fpdf import FPDF
 from fpdf.errors import FPDFException
-from fpdf.fonts import CORE_FONTS_CHARWIDTHS
+from fpdf.fonts import CORE_FONTS, CORE_FONTS_CHARWIDTHS
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
@@ -44,9 +44,7 @@ def test_set_unknown_style():
 def test_set_builtin_font(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    builtin_fonts = sorted(
-        f for f in pdf.core_fonts if not f.endswith(("B", "I", "BI"))
-    )
+    builtin_fonts = sorted(f for f in CORE_FONTS if not f.endswith(("B", "I", "BI")))
     for i, font_name in enumerate(builtin_fonts):
         styles = (
             ("",) if font_name in ("symbol", "zapfdingbats") else ("", "B", "I", "BI")
@@ -99,26 +97,23 @@ def test_set_font_core_font_attributes():
     pdf.set_font("times")
 
     # Test for the font attributes
-    assert pdf.fonts["courier"] == {
-        "i": 1,
-        "type": "core",
-        "name": "Courier",
-        "up": -100,
-        "ut": 50,
-        "cw": CORE_FONTS_CHARWIDTHS["courier"],
-        "fontkey": "courier",
-        "emphasis": 0,
-    }
-    assert pdf.fonts["times"] == {
-        "i": 2,
-        "type": "core",
-        "name": "Times-Roman",
-        "up": -100,
-        "ut": 50,
-        "cw": CORE_FONTS_CHARWIDTHS["times"],
-        "fontkey": "times",
-        "emphasis": 0,
-    }
+    assert pdf.fonts["courier"].i == 1
+    assert pdf.fonts["courier"].type == "core"
+    assert pdf.fonts["courier"].name == "Courier"
+    assert pdf.fonts["courier"].up == -100
+    assert pdf.fonts["courier"].ut == 50
+    assert pdf.fonts["courier"].cw == CORE_FONTS_CHARWIDTHS["courier"]
+    assert pdf.fonts["courier"].fontkey == "courier"
+    assert pdf.fonts["courier"].emphasis == 0
+
+    assert pdf.fonts["times"].i == 2
+    assert pdf.fonts["times"].type == "core"
+    assert pdf.fonts["times"].name == "Times-Roman"
+    assert pdf.fonts["times"].up == -100
+    assert pdf.fonts["times"].ut == 50
+    assert pdf.fonts["times"].cw == CORE_FONTS_CHARWIDTHS["times"]
+    assert pdf.fonts["times"].fontkey == "times"
+    assert pdf.fonts["times"].emphasis == 0
 
 
 def test_set_font_styles():

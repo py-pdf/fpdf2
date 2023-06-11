@@ -230,12 +230,13 @@ def test_html_table_with_multiline_cells_and_split_over_page(tmp_path):
     # pylint: disable=consider-using-join
     for cell_text in MULTILINE_TABLE_DATA[0]:
         html += f"\n<th>{cell_text}</th>"
-    html += "\n</tr></thead><tbody><tr>"
+    html += "\n</tr></thead><tbody>"
     for data_row in MULTILINE_TABLE_DATA[1:-1] + MULTILINE_TABLE_DATA[1:]:
+        html += "\n<tr>"
         for cell_text in data_row:
             html += f"\n<td>{cell_text}</td>"
-        html += "\n</tr><tr>"
-    html += "\n</tr></tbody></table>"
+        html += "</tr>"
+    html += "\n</tbody></table>"
     pdf.write_html(html)
     assert_pdf_equal(
         pdf, HERE / "html_table_with_multiline_cells_and_split_over_page.pdf", tmp_path
