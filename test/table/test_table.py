@@ -413,11 +413,11 @@ def test_table_with_gutter(tmp_path):
     assert_pdf_equal(pdf, HERE / "table_with_gutter.pdf", tmp_path)
 
 
-def test_table_colspan(tmp_path):
+def test_table_with_colspan_and_gutter(tmp_path):  # issue 808
     pdf = FPDF()
     pdf.set_font("Times", size=30)
     pdf.add_page()
-    with pdf.table(col_widths=(1, 2, 1,1)) as table:
+    with pdf.table(col_widths=(1, 2, 1, 1), gutter_height=5, gutter_width=5) as table:
         row = table.row()
         row.cell("0")
         row.cell("1")
@@ -426,15 +426,9 @@ def test_table_colspan(tmp_path):
         row = table.row()
         row.cell("A1")
         row.cell("A2", colspan=2)
-        row.cell("void") # <--- this cell is not rendered
-        row.cell("A4")
-
+        row.cell("A3")
         row = table.row()
         row.cell("B1", colspan=2)
-        row.cell("void")  # <--- this cell is not rendered
+        row.cell("B2")
         row.cell("B3")
-        row.cell("B4")
-
-    filename = HERE / "table_colspan.pdf"
-
-    assert_pdf_equal(pdf, HERE / "table_colspan.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "table_with_colspan_and_gutter.pdf", tmp_path)

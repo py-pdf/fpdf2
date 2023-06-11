@@ -23,6 +23,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - [`FPDF.multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell): has a new optional `center` parameter to position the cell horizontally at the center of the page
 - Added Tutorial in Khmer language - thanks to @kuth-chi
 ### Fixed
+- [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): the `colspan` setting has been fixed
 - [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): allowing images path starting with `data` to be passed as input
 ### Deprecated
 - the `center` optional parameter of [`FPDF.cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) is **no more** deprecated, as it allows for horizontal positioning, which is different from text alignment control with `align="C"`
