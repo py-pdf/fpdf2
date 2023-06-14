@@ -410,3 +410,24 @@ def test_table_with_gutter(tmp_path):
     ):
         pass
     assert_pdf_equal(pdf, HERE / "table_with_gutter.pdf", tmp_path)
+
+
+def test_table_with_colspan_and_gutter(tmp_path):  # issue 808
+    pdf = FPDF()
+    pdf.set_font("Times", size=30)
+    pdf.add_page()
+    with pdf.table(col_widths=(1, 2, 1, 1), gutter_height=5, gutter_width=5) as table:
+        row = table.row()
+        row.cell("0")
+        row.cell("1")
+        row.cell("2")
+        row.cell("3")
+        row = table.row()
+        row.cell("A1")
+        row.cell("A2", colspan=2)
+        row.cell("A3")
+        row = table.row()
+        row.cell("B1", colspan=2)
+        row.cell("B2")
+        row.cell("B3")
+    assert_pdf_equal(pdf, HERE / "table_with_colspan_and_gutter.pdf", tmp_path)

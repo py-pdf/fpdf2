@@ -221,6 +221,38 @@ Result:
 
 ![](table_with_gutter.jpg)
 
+## Column span
+
+Cells spanning multiple columns can be defined by passing a `colspan` argument to `.cell()`.
+The cells that are overwritten by the spanned cell are not rendered but must be added to the table.
+
+Result:
+
+```python
+    ...
+    with pdf.table(col_widths=(1, 2, 1,1)) as table:
+        row = table.row()
+        row.cell("0")
+        row.cell("1")
+        row.cell("2")
+        row.cell("3")
+        
+        row = table.row()
+        row.cell("A1")
+        row.cell("A2", colspan=2)
+        row.cell("void") # <--- this cell is not rendered
+        row.cell("A4")
+
+        row = table.row()
+        row.cell("B1", colspan=2)
+        row.cell("void")  # <--- this cell is not rendered
+        row.cell("B3")
+        row.cell("B4")
+    ... 
+```
+
+![](image-colspan.png)
+
 ## Table from pandas DataFrame
 _cf._ [Maths documentation page](Maths.md#using-pandas)
 

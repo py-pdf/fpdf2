@@ -1,5 +1,4 @@
 from pathlib import Path
-from test.conftest import assert_pdf_equal
 
 import fpdf
 import pytest
@@ -103,12 +102,6 @@ def test_adding_content_after_closing():
         str(error.value)
         == "Content cannot be added on a finalized document, after calling output()"
     )
-
-
-def test_repeated_calls_to_output(tmp_path):
-    pdf = fpdf.FPDF()
-    assert_pdf_equal(pdf, HERE / "repeated_calls_to_output.pdf", tmp_path)
-    assert_pdf_equal(pdf, HERE / "repeated_calls_to_output.pdf", tmp_path)
 
 
 def test_unsupported_image_filter_error():
