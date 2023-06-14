@@ -44,6 +44,7 @@ class GraphicsStateMixin:
                 sup_lift=0.4,
                 nom_lift=0.2,
                 denom_lift=0.0,
+                text_shaping=False,
             ),
         ]
         super().__init__(*args, **kwargs)
@@ -312,6 +313,14 @@ class GraphicsStateMixin:
         ([docs](../TextStyling.html#subscript-superscript-and-fractional-numbers))
         """
         self.__statestack[-1]["denom_lift"] = float(v)
+
+    @property
+    def text_shaping(self):
+        return self.__statestack[-1]["text_shaping"]
+
+    @denom_lift.setter
+    def text_shaping(self, v):
+        self.__statestack[-1]["text_shaping"] = float(v)
 
     def font_face(self):
         """

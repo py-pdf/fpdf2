@@ -541,7 +541,8 @@ class OutputProducer:
                 uni_to_new_code_char = font.subset.dict()
 
                 # why we delete 0-element?
-                del uni_to_new_code_char[0]
+                if font.subset.get_glyph_by_unicode(0):
+                    del uni_to_new_code_char[font.subset.get_glyph_by_unicode(0)]
 
                 # ---- FONTTOOLS SUBSETTER ----
                 # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
@@ -551,22 +552,30 @@ class OutputProducer:
                 )
 
                 # 1. get all glyphs in PDF
-                cmap = fonttools_font["cmap"].getBestCmap()
-                glyph_names = [
-                    cmap[unicode] for unicode in uni_to_new_code_char if unicode in cmap
-                ]
+                # cmap = fonttools_font["cmap"].getBestCmap()
+                # glyph_names = [
+                #    cmap[glyph.unicode[0]]
+                #    for glyph in uni_to_new_code_char
+                #    if glyph.unicode[0] in cmap
+                # ]
+                glyph_id_to_names = {
+                    glyph.glyph_id: fonttools_font.getGlyphName(glyph.glyph_id)
+                    for glyph in font.subset._map
+                }
+                glyph_names = glyph_id_to_names.values()
 
-                missing_glyphs = [
-                    chr(unicode)
-                    for unicode in uni_to_new_code_char
-                    if unicode not in cmap
-                ]
-                if len(missing_glyphs) > 0:
-                    LOGGER.warning(
-                        "Font %s is missing the following glyphs: %s",
-                        fontname,
-                        ", ".join(missing_glyphs),
-                    )
+                LOGGER.warning("missing_glyphs logic needs to be re-written")
+                # missing_glyphs = [
+                #    chr(glyph.unicode[0])
+                #    for glyph in uni_to_new_code_char
+                #    if glyph.unicode[0] not in cmap
+                # ]
+                # if len(missing_glyphs) > 0:
+                #    LOGGER.warning(
+                #        "Font %s is missing the following glyphs: %s",
+                #        fontname,
+                #        ", ".join(missing_glyphs),
+                #    )
 
                 # 2. make a subset
                 # notdef_outline=True means that keeps the white box for the .notdef glyph
@@ -593,14 +602,21 @@ class OutputProducer:
                 # this basically takes the old code of the character
                 # take the glyph associated with it
                 # and then associate to the new code the glyph associated with the old code
-                code_to_glyph = {}
-                for code, new_code_mapped in uni_to_new_code_char.items():
-                    # notdef is associated if no glyph was associated to the old code
-                    # it's not necessary to do this, it seems to be done by default
-                    glyph_name = cmap.get(code, ".notdef")
-                    code_to_glyph[new_code_mapped] = fonttools_font.getGlyphID(
-                        glyph_name
+                # code_to_glyph = {}
+
+                code_to_glyph = {
+                    font.subset._map[glyph]: fonttools_font.getGlyphID(
+                        glyph_id_to_names[glyph.glyph_id]
                     )
+                    for glyph in font.subset._map.keys()
+                }
+                # for code, new_code_mapped in uni_to_new_code_char.items():
+                #    # notdef is associated if no glyph was associated to the old code
+                #    # it's not necessary to do this, it seems to be done by default
+                #    glyph_name = cmap.get(code.unicode[0], ".notdef")
+                #    code_to_glyph[new_code_mapped] = fonttools_font.getGlyphID(
+                #        glyph_name
+                #    )
 
                 # 4. return the ttfile
                 output = BytesIO()
@@ -623,7 +639,9 @@ class OutputProducer:
                     subtype="CIDFontType2",
                     base_font=fontname,
                     d_w=font.desc.missing_width,
-                    w=_tt_font_widths(font, max(uni_to_new_code_char)),
+                    w=_tt_font_widths(
+                        font, max(glyph.unicode[0] for glyph in uni_to_new_code_char)
+                    ),
                 )
                 self._add_pdf_obj(cid_font_obj, "fonts")
                 composite_font_obj.descendant_fonts = PDFArray([cid_font_obj])
@@ -635,15 +653,15 @@ class OutputProducer:
                 bfChar = []
                 uni_to_new_code_char = font.subset.dict()
                 for code, code_mapped in uni_to_new_code_char.items():
-                    if code > 0xFFFF:
+                    if code.unicode[0] > 0xFFFF:
                         # Calculate surrogate pair
-                        code_high = 0xD800 | (code - 0x10000) >> 10
-                        code_low = 0xDC00 | (code & 0x3FF)
+                        code_high = 0xD800 | (code.unicode[0] - 0x10000) >> 10
+                        code_low = 0xDC00 | (code.unicode[0] & 0x3FF)
                         bfChar.append(
                             f"<{code_mapped:04X}> <{code_high:04X}{code_low:04X}>\n"
                         )
                     else:
-                        bfChar.append(f"<{code_mapped:04X}> <{code:04X}>\n")
+                        bfChar.append(f"<{code_mapped:04X}> <{code.unicode[0]:04X}>\n")
 
                 to_unicode_obj = PDFContentStream(
                     "/CIDInit /ProcSet findresource begin\n"
@@ -970,7 +988,7 @@ def _tt_font_widths(font, maxUni):
     subset = font.subset.dict()
     for cid in range(startcid, cwlen):
         char_width = font.cw[cid]
-        cid_mapped = subset.get(cid)
+        cid_mapped = subset.get(font.subset.get_glyph_by_unicode(cid))
         if cid_mapped is None:
             continue
         if cid_mapped == (prevcid + 1):

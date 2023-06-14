@@ -6,13 +6,20 @@ import re
 
 from collections import defaultdict
 from dataclasses import dataclass, replace
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 from fontTools import ttLib
 
+try:
+    import uharfbuzz as hb
+except:
+    hb = None
+
 from .drawing import DeviceGray, DeviceRGB
 from .enums import FontDescriptorFlags, TextEmphasis
+from .errors import FPDFException
 from .syntax import Name, PDFObject
+from .util import escape_parens
 
 
 @dataclass
@@ -61,6 +68,12 @@ class CoreFont:
         self.fontkey = fontkey
         self.emphasis = TextEmphasis.coerce(style)
 
+    def get_text_width(self, text, font_size_pt):
+        return (len(text), sum(self.cw[c] for c in text) * font_size_pt * 0.001)
+
+    def convert_pdf_text(self, text):
+        return f"({escape_parens(text)}) Tj"
+
 
 class TTFFont:
     __slots__ = (
@@ -68,12 +81,15 @@ class TTFFont:
         "type",
         "name",
         "desc",
+        "glyph_ids",
+        "hbfont",
         "up",
         "ut",
         "cw",
         "ttffile",
         "fontkey",
         "emphasis",
+        "scale",
         "subset",
         "cmap",
     )
@@ -86,8 +102,8 @@ class TTFFont:
 
         font = ttLib.TTFont(self.ttffile, fontNumber=0, lazy=True)
 
-        scale = 1000 / font["head"].unitsPerEm
-        default_width = round(scale * font["hmtx"].metrics[".notdef"][0])
+        self.scale = 1000 / font["head"].unitsPerEm
+        default_width = round(self.scale * font["hmtx"].metrics[".notdef"][0])
 
         try:
             cap_height = font["OS/2"].sCapHeight
@@ -104,13 +120,13 @@ class TTFFont:
             flags |= FontDescriptorFlags.FORCE_BOLD
 
         self.desc = PDFFontDescriptor(
-            ascent=round(font["hhea"].ascent * scale),
-            descent=round(font["hhea"].descent * scale),
-            cap_height=round(cap_height * scale),
+            ascent=round(font["hhea"].ascent * self.scale),
+            descent=round(font["hhea"].descent * self.scale),
+            cap_height=round(cap_height * self.scale),
             flags=flags,
             font_b_box=(
-                f"[{font['head'].xMin * scale:.0f} {font['head'].yMin * scale:.0f}"
-                f" {font['head'].xMax * scale:.0f} {font['head'].yMax * scale:.0f}]"
+                f"[{font['head'].xMin * self.scale:.0f} {font['head'].yMin * self.scale:.0f}"
+                f" {font['head'].xMax * self.scale:.0f} {font['head'].yMax * self.scale:.0f}]"
             ),
             italic_angle=int(font["post"].italicAngle),
             stem_v=round(50 + int(pow((font["OS/2"].usWeightClass / 65), 2))),
@@ -119,7 +135,16 @@ class TTFFont:
 
         # a map unicode_char -> char_width
         self.cw = defaultdict(lambda: default_width)
+
+        # fonttools cmap = unicode char to glyph name
+        # saving only the keys we have a tuple with
+        # the unicode characters available on the font
         self.cmap = tuple(font.getBestCmap().keys())
+
+        # saving a list of glyph ids to char to allow
+        # subset by unicode (regular) and by glyph
+        # (shaped with harfbuz)
+        self.glyph_ids = {}
         for char in self.cmap:
             # take glyph associated to char
             glyph = font.getBestCmap()[char]
@@ -131,20 +156,81 @@ class TTFFont:
             if w == 65535:
                 w = 0
 
-            self.cw[char] = round(scale * w + 0.001)  # ROUND_HALF_UP
+            self.cw[char] = round(self.scale * w + 0.001)  # ROUND_HALF_UP
+
+            self.glyph_ids[char] = font.getGlyphID(glyph)
 
         # include numbers in the subset! (if alias present)
         # ensure that alias is mapped 1-by-1 additionally (must be replaceable)
-        sbarr = "\x00 "
+        sbarr = "\x00 \n\r"
         if fpdf.str_alias_nb_pages:
             sbarr += "0123456789"
             sbarr += fpdf.str_alias_nb_pages
 
         self.name = re.sub("[ ()]", "", font["name"].getBestFullName())
-        self.up = round(font["post"].underlinePosition * scale)
-        self.ut = round(font["post"].underlineThickness * scale)
+        self.up = round(font["post"].underlinePosition * self.scale)
+        self.ut = round(font["post"].underlineThickness * self.scale)
         self.emphasis = TextEmphasis.coerce(style)
-        self.subset = SubsetMap([ord(char) for char in sbarr])
+        self.subset = SubsetMap(self, [ord(char) for char in sbarr])
+
+    def get_text_width(self, text, font_size_pt, text_shaping):
+        if text_shaping:
+            return self.shaped_text_width(text, font_size_pt)
+        return (len(text), sum(self.cw[ord(c)] for c in text) * font_size_pt * 0.001)
+
+    def shaped_text_width(self, text, font_size_pt):
+        if hb == None:
+            raise FPDFException(
+                'uharfbuzz wasn\'t imported. Use "pip install uharfbuzz"'
+            )
+        if not hasattr(self, "hbfont"):
+            self.hbfont = hb.Font(hb.Face(hb.Blob.from_file_path(self.ttffile)))
+        self.hbfont.ptem = font_size_pt
+        buf = hb.Buffer()
+        buf.add_str("".join(text))
+        buf.guess_segment_properties()
+        features = {"kern": True, "liga": True}
+        hb.shape(self.hbfont, buf, features)
+        text_width = 0
+        for pos in buf.glyph_positions:
+            text_width += pos.x_advance
+            text_width += pos.x_offset
+        return (len(buf.glyph_positions), text_width)
+
+    def convert_pdf_text(self, text):
+        txt_mapped = ""
+        for char in text:
+            uni = ord(char)
+            # Instead of adding the actual character to the stream its code is
+            # mapped to a position in the font's subset
+            txt_mapped += chr(self.subset.pick(uni))
+        return f'({escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))}) Tj'
+
+    def shape_text(self, text, font_size_pt):
+        if hb == None:
+            raise FPDFException(
+                'uharfbuzz wasn\'t imported. Use "pip install uharfbuzz"'
+            )
+        if not hasattr(self, "hbfont"):
+            self.hbfont = hb.Font(hb.Face(hb.Blob.from_file_path(self.ttffile)))
+        self.hbfont.ptem = font_size_pt
+        buf = hb.Buffer()
+        buf.add_str(text)
+        buf.guess_segment_properties()
+        features = {"kern": True, "liga": True}
+        hb.shape(self.hbfont, buf, features)
+        char_mapped = []
+        # TO DO : find cluster gaps
+        # Ex: text = "ABCD"
+        # glyph infos has cluster: 0, 2, 3 - it means A and B are together on the first glyph
+        # (ligature or substitution) - the glyph should have both unicodes and it should be translated
+        # properly on the CID to GID mapping
+        for gid in buf.glyph_infos:
+            glyph = self.subset.get_glyph(
+                glyph=gid.codepoint, unicode=[ord(text[gid.cluster])]
+            )
+            char_mapped.append(self.subset.pick_glyph(glyph))
+        return zip(char_mapped, buf.glyph_positions)
 
 
 class PDFFontDescriptor(PDFObject):
@@ -172,6 +258,18 @@ class PDFFontDescriptor(PDFObject):
         self.font_name = None
 
 
+@dataclass(order=True, frozen=True)
+class Glyph:
+    """
+    This represents one glyph on the font
+    Unicode is a tuple because ligatures or character substitution
+    can map a sequence of unicode characters to a single glyph
+    """
+
+    glyph_id: int
+    unicode: Tuple
+
+
 class SubsetMap:
     """Holds a mapping of used characters and their position in the font's subset
 
@@ -183,34 +281,63 @@ class SubsetMap:
     the lowest possible representation.
     """
 
-    def __init__(self, identities: List[int]):
+    def __init__(self, font: TTFFont, identities: List[int]):
         super().__init__()
         self._next = 0
+        self.font = font
 
         # sort list to ease deletion once _next
         # becomes higher than first reservation
         self._reserved = sorted(identities)
 
         # int(x) to ensure values are integers
-        self._map = {x: int(x) for x in self._reserved}
+        self._map = {}
+        for x in self._reserved:
+            glyph = self.get_glyph(unicode=x)
+            if glyph:
+                self._map[glyph] = int(x)
 
     def __len__(self):
         return len(self._map)
 
     def pick(self, unicode: int):
-        if not unicode in self._map:
+        glyph = self.get_glyph(unicode=unicode)
+        return self.pick_glyph(glyph)
+
+    def pick_glyph(self, glyph):
+        if (glyph) and (glyph not in self._map):
             while self._next in self._reserved:
                 self._next += 1
                 if self._next > self._reserved[0]:
                     del self._reserved[0]
-
-            self._map[unicode] = self._next
+            self._map[glyph] = self._next
             self._next += 1
 
-        return self._map.get(unicode)
+        return self._map.get(glyph)
 
     def dict(self):
         return self._map.copy()
+
+    def get_glyph(self, glyph=None, unicode=None) -> Glyph:
+        if glyph:
+            return Glyph(glyph, tuple(unicode))
+        if unicode in self.font.glyph_ids:
+            return Glyph(self.font.glyph_ids[unicode], tuple([unicode]))
+        if unicode == 0x00:
+            return Glyph(self.font.cmap[0], tuple([0x00]))
+        return None
+
+    def get_glyph_by_id(self, cid) -> Glyph:
+        for glyph in self._map.keys():
+            if glyph.glyph_id == cid:
+                return glyph
+        return None
+
+    def get_glyph_by_unicode(self, cid) -> Glyph:
+        for glyph in self._map.keys():
+            if glyph.unicode[0] == cid:
+                return glyph
+        return None
 
 
 # Standard fonts

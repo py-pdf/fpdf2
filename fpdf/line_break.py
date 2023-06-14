@@ -10,6 +10,8 @@ from typing import NamedTuple, Any, Union, Sequence
 
 from .enums import CharVPos, WrapMode
 from .errors import FPDFException
+from .fonts import CoreFont, TTFFont
+from .util import escape_parens
 
 SOFT_HYPHEN = "\u00ad"
 HYPHEN = "\u002d"
@@ -47,7 +49,7 @@ class Fragment:
         )
 
     @property
-    def font(self):
+    def font(self) -> Union[CoreFont, TTFFont]:
         return self.graphics_state["current_font"]
 
     @font.setter
@@ -136,6 +138,10 @@ class Fragment:
         return lift * self.graphics_state["font_size_pt"]
 
     @property
+    def text_shaping(self):
+        return self.graphics_state["text_shaping"]
+
+    @property
     def string(self):
         return "".join(self.characters)
 
@@ -172,22 +178,21 @@ class Fragment:
 
         if chars is None:
             chars = self.characters[start:end]
-        if self.is_ttf_font:
-            w = sum(self.font.cw[ord(c)] for c in chars)
-        else:
-            w = sum(self.font.cw[c] for c in chars)
+        (char_len, w) = self.font.get_text_width(
+            chars, self.font_size_pt, self.text_shaping
+        )
+
         char_spacing = self.char_spacing
         if self.font_stretching != 100:
             w *= self.font_stretching * 0.01
             char_spacing *= self.font_stretching * 0.01
-        w *= self.font_size_pt * 0.001
         if self.char_spacing != 0:
             # initial_cs must be False if the fragment is located at the
             # beginning of a text object, because the first char won't get spaced.
             if initial_cs:
-                w += char_spacing * len(chars)
+                w += char_spacing * char_len
             else:
-                w += char_spacing * (len(chars) - 1)
+                w += char_spacing * (char_len - 1)
         return w / self.k
 
     def get_character_width(self, character: str, print_sh=False, initial_cs=True):
@@ -198,6 +203,97 @@ class Fragment:
             # HYPHEN is inserted instead of SOFT_HYPHEN
             character = HYPHEN
         return self.get_width(chars=character, initial_cs=initial_cs)
+
+    def render_pdf_text(
+        self, frag_ws, current_ws, word_spacing, adjust_x, adjust_y, fpdf
+    ):
+        if self.is_ttf_font:
+            if self.text_shaping:
+                return self.render_with_text_shaping(adjust_x, adjust_y, fpdf)
+            return self.render_pdf_text_ttf(frag_ws, word_spacing)
+        return self.render_pdf_text_core(frag_ws, current_ws)
+
+    def render_pdf_text_ttf(self, frag_ws, word_spacing):
+        ret = ""
+        mapped_text = ""
+        for char in self.string:
+            mapped_char = self.font.subset.pick(ord(char))
+            if mapped_char:
+                mapped_text += chr(mapped_char)
+        if word_spacing:
+            # do this once in advance
+            u_space = escape_parens(" ".encode("utf-16-be").decode("latin-1"))
+
+            # According to the PDF reference, word spacing shall be applied to every
+            # occurrence of the single-byte character code 32 in a string when using
+            # a simple font or a composite font that defines code 32 as a single-byte code.
+            # It shall not apply to occurrences of the byte value 32 in multiple-byte codes.
+            # FPDF uses 2 bytes per character (UTF-16-BE encoding) so the "Tw" operator doesn't work
+            # As a workaround, we do word spacing using an adjustment before each space.
+            # Determine the index of the space character (" ") in the current
+            # subset and split words whenever this mapping code is found
+            #
+            words = mapped_text.split(chr(self.font.subset.pick(ord(" "))))
+            words_strl = []
+            for word_i, word in enumerate(words):
+                # pylint: disable=redefined-loop-name
+                word = escape_parens(word.encode("utf-16-be").decode("latin-1"))
+                if word_i == 0:
+                    words_strl.append(f"({word})")
+                else:
+                    adj = -(frag_ws * self.k) * 1000 / self.font_size_pt
+                    words_strl.append(f"{adj:.3f}({u_space}{word})")
+            escaped_text = " ".join(words_strl)
+            ret += f"[{escaped_text}] TJ"
+        else:
+            escaped_text = escape_parens(
+                mapped_text.encode("utf-16-be").decode("latin-1")
+            )
+            ret += f"({escaped_text}) Tj"
+        return ret
+
+    def render_with_text_shaping(self, adjust_x, adjust_y, fpdf):
+        ret = ""
+        text = ""
+        k = fpdf.k
+        x = fpdf.x + adjust_x
+        y = fpdf.y + adjust_y
+
+        def adjust_pos(pos):
+            return pos * self.font.scale * self.font_size_pt / 1000 / k
+
+        for mapped_char, pos in self.font.shape_text(self.string, self.font_size_pt):
+            # print(
+            #    f"[{x:.2f},{y:.2f}] Char {chr(mapped_char)} xadv {pos.x_advance} yadv {pos.y_advance} xofs {pos.x_offset} yofs {pos.y_offset}"
+            # )
+            char = chr(mapped_char)
+            if pos.x_offset != 0 or pos.y_offset != 0:
+                if text:
+                    ret += f'({text.encode("utf-16-be").decode("latin-1")}) Tj '
+                    text = ""
+                offsetx = x + adjust_pos(pos.x_offset)
+                offsety = y - adjust_pos(pos.y_offset)
+                ret += f"1 0 0 1 {(offsetx) * k:.2f} {(fpdf.h - offsety) * k:.2f} Tm "
+            text += char
+            x += adjust_pos(pos.x_advance)
+            y += adjust_pos(pos.y_advance)
+            # if only moving "x" we don't need to move the text matrix
+            # if pos.y_advance != 0 or pos.x_offset != 0 or pos.y_offset != 0:
+            if text:
+                ret += f'({text.encode("utf-16-be").decode("latin-1")}) Tj '
+                text = ""
+            ret += f"1 0 0 1 {(x) * k:.2f} {(fpdf.h - y) * k:.2f} Tm "
+        if text:
+            ret += f'({text.encode("utf-16-be").decode("latin-1")}) Tj'
+        return ret
+
+    def render_pdf_text_core(self, frag_ws, current_ws):
+        ret = ""
+        if frag_ws != current_ws:
+            ret += f"{frag_ws * self.k:.3f} Tw "
+        escaped_text = escape_parens(self.string)
+        ret += f"({escaped_text}) Tj"
+        return ret
 
 
 class TextLine(NamedTuple):

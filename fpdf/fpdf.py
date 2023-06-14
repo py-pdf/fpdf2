@@ -311,6 +311,7 @@ class FPDF(GraphicsStateMixin):
         self.current_font = (
             None  # current font, None or an instance of CoreFont or TTFFont
         )
+        self.text_shaping = False  # use text shaping engine (harbuzz) or not
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
         self.text_color = self.DEFAULT_TEXT_COLOR
@@ -558,6 +559,12 @@ class FPDF(GraphicsStateMixin):
         elif zoom != "default":
             raise FPDFException(f"Incorrect zoom display mode: {zoom}")
         self.page_layout = LAYOUT_ALIASES.get(layout, layout)
+
+    def set_text_shaping(self, use_shaping_engine):
+        """
+        True or False value to enable or disable text shaping engine when rendering text
+        """
+        self.text_shaping = use_shaping_engine
 
     @property
     def page_layout(self):
@@ -2298,20 +2305,10 @@ class FPDF(GraphicsStateMixin):
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         txt = self.normalize_text(txt)
-        if self.is_ttf_font:
-            txt_mapped = ""
-            for char in txt:
-                uni = ord(char)
-                # Instead of adding the actual character to the stream its code is
-                # mapped to a position in the font's subset
-                txt_mapped += chr(self.current_font.subset.pick(uni))
-            txt2 = escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))
-        else:
-            txt2 = escape_parens(txt)
         sl = [f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td"]
         if self.text_mode != TextMode.FILL:
             sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
-        sl.append(f"({txt2}) Tj ET")
+        sl.append(f"{self.current_font.convert_pdf_text(txt)} ET")
         if (self.underline and txt != "") or self._record_text_quad_points:
             w = self.get_string_width(txt, normalized=True, markdown=False)
             if self.underline and txt != "":
@@ -2851,8 +2848,6 @@ class FPDF(GraphicsStateMixin):
             if self.fill_color != self.text_color:
                 sl.append(self.text_color.serialize().lower())
 
-            # do this once in advance
-            u_space = escape_parens(" ".encode("utf-16-be").decode("latin-1"))
             word_spacing = 0
             if text_line.justify:
                 # Don't rely on align==Align.J here.
@@ -2891,43 +2886,15 @@ class FPDF(GraphicsStateMixin):
                 ):
                     current_text_mode = frag.text_mode
                     sl.append(f"{frag.text_mode} Tr {frag.line_width:.2f} w")
-
-                if frag.is_ttf_font:
-                    mapped_text = ""
-                    for char in frag.string:
-                        uni = ord(char)
-                        mapped_text += chr(frag.font.subset.pick(uni))
-                    if word_spacing:
-                        # "Tw" only has an effect on the ASCII space character and ignores
-                        # space characters from unicode (TTF) fonts. As a workaround,
-                        # we do word spacing using an adjustment before each space.
-                        # Determine the index of the space character (" ") in the current
-                        # subset and split words whenever this mapping code is found
-                        words = mapped_text.split(chr(frag.font.subset.pick(ord(" "))))
-                        words_strl = []
-                        for word_i, word in enumerate(words):
-                            # pylint: disable=redefined-loop-name
-                            word = escape_parens(
-                                word.encode("utf-16-be").decode("latin-1")
-                            )
-                            if word_i == 0:
-                                words_strl.append(f"({word})")
-                            else:
-                                adj = -(frag_ws * frag.k) * 1000 / frag.font_size_pt
-                                words_strl.append(f"{adj:.3f}({u_space}{word})")
-                        escaped_text = " ".join(words_strl)
-                        sl.append(f"[{escaped_text}] TJ")
-                    else:
-                        escaped_text = escape_parens(
-                            mapped_text.encode("utf-16-be").decode("latin-1")
-                        )
-                        sl.append(f"({escaped_text}) Tj")
-                else:  # core fonts
-                    if frag_ws != current_ws:
-                        sl.append(f"{frag_ws * frag.k:.3f} Tw")
-                        current_ws = frag_ws
-                    escaped_text = escape_parens(frag.string)
-                    sl.append(f"({escaped_text}) Tj")
+                adjust_x = dx
+                adjust_y = 0.5 * h + 0.3 * max_font_size
+                r_text = frag.render_pdf_text(
+                    frag_ws, current_ws, word_spacing, adjust_x, adjust_y, self
+                )
+                if r_text:
+                    sl.append(r_text)
+                if not frag.is_ttf_font:
+                    current_ws = frag_ws
                 frag_width = frag.get_width(
                     initial_cs=i != 0
                 ) + word_spacing * frag.characters.count(" ")
