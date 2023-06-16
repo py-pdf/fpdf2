@@ -609,7 +609,6 @@ class OutputProducer:
                 # character that each used 16-bit code belongs to. It
                 # allows searching the file and copying text from it.
                 bfChar = []
-                uni_to_new_code_char = font.subset.dict()
 
                 def format_code(unicode):
                     if unicode > 0xFFFF:

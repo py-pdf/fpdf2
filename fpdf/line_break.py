@@ -210,10 +210,10 @@ class Fragment:
         if self.is_ttf_font:
             if self._text_shaping:
                 return self.render_with_text_shaping(adjust_x, adjust_y, fpdf)
-            return self.render_pdf_text(frag_ws, word_spacing)
+            return self.render_pdf_text_ttf(frag_ws, word_spacing)
         return self.render_pdf_text_core(frag_ws, current_ws)
 
-    def render_pdf_text(self, frag_ws, word_spacing):
+    def render_pdf_text_ttf(self, frag_ws, word_spacing):
         ret = ""
         mapped_text = ""
         for char in self.string:
