@@ -22,7 +22,6 @@ from .syntax import create_dictionary_string as pdf_dict
 from .syntax import create_list_string as pdf_list
 from .syntax import iobj_ref as pdf_ref
 
-from fontTools import ttLib
 from fontTools import subset as ftsubset
 
 try:
@@ -537,45 +536,15 @@ class OutputProducer:
             elif font.type == "TTF":
                 fontname = f"MPDFAA+{font.name}"
 
-                # unicode_char -> new_code_char map for chars embedded in the PDF
-                uni_to_new_code_char = font.subset.dict()
-
-                # why we delete 0-element?
-                if font.subset.get_glyph_by_unicode(0):
-                    del uni_to_new_code_char[font.subset.get_glyph_by_unicode(0)]
-
-                # ---- FONTTOOLS SUBSETTER ----
-                # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
-                # if we leave recalcTimestamp=True the tests will break every time
-                fonttools_font = ttLib.TTFont(
-                    file=font.ttffile, recalcTimestamp=False, fontNumber=0, lazy=True
-                )
-
                 # 1. get all glyphs in PDF
-                # cmap = fonttools_font["cmap"].getBestCmap()
-                # glyph_names = [
-                #    cmap[glyph.unicode[0]]
-                #    for glyph in uni_to_new_code_char
-                #    if glyph.unicode[0] in cmap
-                # ]
-                glyph_id_to_names = {
-                    glyph.glyph_id: fonttools_font.getGlyphName(glyph.glyph_id)
-                    for glyph in font.subset._map
-                }
-                glyph_names = glyph_id_to_names.values()
+                glyph_names = font.subset.get_all_glyph_names()
 
-                LOGGER.warning("missing_glyphs logic needs to be re-written")
-                # missing_glyphs = [
-                #    chr(glyph.unicode[0])
-                #    for glyph in uni_to_new_code_char
-                #    if glyph.unicode[0] not in cmap
-                # ]
-                # if len(missing_glyphs) > 0:
-                #    LOGGER.warning(
-                #        "Font %s is missing the following glyphs: %s",
-                #        fontname,
-                #        ", ".join(missing_glyphs),
-                #    )
+                if len(font.missing_glyphs) > 0:
+                    LOGGER.warning(
+                        "Font %s is missing the following glyphs: %s",
+                        fontname,
+                        ", ".join(chr(x) for x in font.missing_glyphs),
+                    )
 
                 # 2. make a subset
                 # notdef_outline=True means that keeps the white box for the .notdef glyph
@@ -594,7 +563,7 @@ class OutputProducer:
                 ]
                 subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)
-                subsetter.subset(fonttools_font)
+                subsetter.subset(font.ttfont)
 
                 # 3. make codeToGlyph
                 # is a map Character_ID -> Glyph_ID
@@ -605,22 +574,13 @@ class OutputProducer:
                 # code_to_glyph = {}
 
                 code_to_glyph = {
-                    font.subset._map[glyph]: fonttools_font.getGlyphID(
-                        glyph_id_to_names[glyph.glyph_id]
-                    )
+                    font.subset._map[glyph]: font.ttfont.getGlyphID(glyph.glyph_name)
                     for glyph in font.subset._map.keys()
                 }
-                # for code, new_code_mapped in uni_to_new_code_char.items():
-                #    # notdef is associated if no glyph was associated to the old code
-                #    # it's not necessary to do this, it seems to be done by default
-                #    glyph_name = cmap.get(code.unicode[0], ".notdef")
-                #    code_to_glyph[new_code_mapped] = fonttools_font.getGlyphID(
-                #        glyph_name
-                #    )
 
                 # 4. return the ttfile
                 output = BytesIO()
-                fonttools_font.save(output)
+                font.ttfont.save(output)
 
                 output.seek(0)
                 ttfontstream = output.read()
@@ -639,9 +599,7 @@ class OutputProducer:
                     subtype="CIDFontType2",
                     base_font=fontname,
                     d_w=font.desc.missing_width,
-                    w=_tt_font_widths(
-                        font, max(glyph.unicode[0] for glyph in uni_to_new_code_char)
-                    ),
+                    w=_tt_font_widths(font),
                 )
                 self._add_pdf_obj(cid_font_obj, "fonts")
                 composite_font_obj.descendant_fonts = PDFArray([cid_font_obj])
@@ -652,16 +610,19 @@ class OutputProducer:
                 # allows searching the file and copying text from it.
                 bfChar = []
                 uni_to_new_code_char = font.subset.dict()
-                for code, code_mapped in uni_to_new_code_char.items():
-                    if code.unicode[0] > 0xFFFF:
+
+                def format_code(unicode):
+                    if unicode > 0xFFFF:
                         # Calculate surrogate pair
-                        code_high = 0xD800 | (code.unicode[0] - 0x10000) >> 10
-                        code_low = 0xDC00 | (code.unicode[0] & 0x3FF)
-                        bfChar.append(
-                            f"<{code_mapped:04X}> <{code_high:04X}{code_low:04X}>\n"
-                        )
-                    else:
-                        bfChar.append(f"<{code_mapped:04X}> <{code.unicode[0]:04X}>\n")
+                        code_high = 0xD800 | (glyph.unicode[0] - 0x10000) >> 10
+                        code_low = 0xDC00 | (glyph.unicode[0] & 0x3FF)
+                        return f"<{code_high:04X}{code_low:04X}>"
+                    return f"{unicode:04X}"
+
+                for glyph, code_mapped in font.subset._map.items():
+                    bfChar.append(
+                        f'<{code_mapped:04X}> <{" ".join(format_code(code) for code in glyph.unicode)}>\n'
+                    )
 
                 to_unicode_obj = PDFContentStream(
                     "/CIDInit /ProcSet findresource begin\n"
@@ -974,48 +935,44 @@ class OutputProducer:
             LOGGER.debug("- %s: %s", label, _sizeof_fmt(section_size))
 
 
-def _tt_font_widths(font, maxUni):
+def _tt_font_widths(font):
     rangeid = 0
     range_ = {}
     range_interval = {}
     prevcid = -2
     prevwidth = -1
     interval = False
-    startcid = 1
-    cwlen = maxUni + 1
 
-    # for each character
-    subset = font.subset.dict()
-    for cid in range(startcid, cwlen):
-        char_width = font.cw[cid]
-        cid_mapped = subset.get(font.subset.get_glyph_by_unicode(cid))
-        if cid_mapped is None:
-            continue
+    # Glyphs sorted by mapped character id
+    glyphs = dict(sorted(font.subset._map.items(), key=lambda item: item[1]))
+
+    for glyph in glyphs:
+        cid_mapped = glyphs[glyph]
         if cid_mapped == (prevcid + 1):
-            if char_width == prevwidth:
-                if char_width == range_[rangeid][0]:
-                    range_.setdefault(rangeid, []).append(char_width)
+            if glyph.glyph_width == prevwidth:
+                if glyph.glyph_width == range_[rangeid][0]:
+                    range_.setdefault(rangeid, []).append(glyph.glyph_width)
                 else:
                     range_[rangeid].pop()
                     # new range
                     rangeid = prevcid
-                    range_[rangeid] = [prevwidth, char_width]
+                    range_[rangeid] = [prevwidth, glyph.glyph_width]
                 interval = True
                 range_interval[rangeid] = True
             else:
                 if interval:
                     # new range
                     rangeid = cid_mapped
-                    range_[rangeid] = [char_width]
+                    range_[rangeid] = [glyph.glyph_width]
                 else:
-                    range_[rangeid].append(char_width)
+                    range_[rangeid].append(glyph.glyph_width)
                 interval = False
         else:
             rangeid = cid_mapped
-            range_[rangeid] = [char_width]
+            range_[rangeid] = [glyph.glyph_width]
             interval = False
         prevcid = cid_mapped
-        prevwidth = char_width
+        prevwidth = glyph.glyph_width
     prevk = -1
     nextk = -1
     prevint = False

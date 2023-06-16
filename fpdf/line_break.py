@@ -138,8 +138,8 @@ class Fragment:
         return lift * self.graphics_state["font_size_pt"]
 
     @property
-    def text_shaping(self):
-        return self.graphics_state["text_shaping"]
+    def _text_shaping(self):
+        return self.graphics_state["_text_shaping"]
 
     @property
     def string(self):
@@ -179,7 +179,7 @@ class Fragment:
         if chars is None:
             chars = self.characters[start:end]
         (char_len, w) = self.font.get_text_width(
-            chars, self.font_size_pt, self.text_shaping
+            chars, self.font_size_pt, self._text_shaping
         )
 
         char_spacing = self.char_spacing
@@ -208,12 +208,12 @@ class Fragment:
         self, frag_ws, current_ws, word_spacing, adjust_x, adjust_y, fpdf
     ):
         if self.is_ttf_font:
-            if self.text_shaping:
+            if self._text_shaping:
                 return self.render_with_text_shaping(adjust_x, adjust_y, fpdf)
-            return self.render_pdf_text_ttf(frag_ws, word_spacing)
+            return self.render_pdf_text(frag_ws, word_spacing)
         return self.render_pdf_text_core(frag_ws, current_ws)
 
-    def render_pdf_text_ttf(self, frag_ws, word_spacing):
+    def render_pdf_text(self, frag_ws, word_spacing):
         ret = ""
         mapped_text = ""
         for char in self.string:
@@ -263,13 +263,12 @@ class Fragment:
             return pos * self.font.scale * self.font_size_pt / 1000 / k
 
         for mapped_char, pos in self.font.shape_text(self.string, self.font_size_pt):
-            # print(
-            #    f"[{x:.2f},{y:.2f}] Char {chr(mapped_char)} xadv {pos.x_advance} yadv {pos.y_advance} xofs {pos.x_offset} yofs {pos.y_offset}"
-            # )
-            char = chr(mapped_char)
+            if mapped_char is None:  # Missing glyph
+                continue
+            char = chr(mapped_char).encode("utf-16-be").decode("latin-1")
             if pos.x_offset != 0 or pos.y_offset != 0:
                 if text:
-                    ret += f'({text.encode("utf-16-be").decode("latin-1")}) Tj '
+                    ret += f"({text}) Tj "
                     text = ""
                 offsetx = x + adjust_pos(pos.x_offset)
                 offsety = y - adjust_pos(pos.y_offset)
@@ -277,14 +276,15 @@ class Fragment:
             text += char
             x += adjust_pos(pos.x_advance)
             y += adjust_pos(pos.y_advance)
+
             # if only moving "x" we don't need to move the text matrix
-            # if pos.y_advance != 0 or pos.x_offset != 0 or pos.y_offset != 0:
-            if text:
-                ret += f'({text.encode("utf-16-be").decode("latin-1")}) Tj '
-                text = ""
-            ret += f"1 0 0 1 {(x) * k:.2f} {(fpdf.h - y) * k:.2f} Tm "
+            if pos.y_advance != 0 or pos.x_offset != 0 or pos.y_offset != 0:
+                if text:
+                    ret += f"({text}) Tj "
+                    text = ""
+                ret += f"1 0 0 1 {(x) * k:.2f} {(fpdf.h - y) * k:.2f} Tm "
         if text:
-            ret += f'({text.encode("utf-16-be").decode("latin-1")}) Tj'
+            ret += f"({text}) Tj"
         return ret
 
     def render_pdf_text_core(self, frag_ws, current_ws):

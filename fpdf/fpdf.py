@@ -86,10 +86,7 @@ from .sign import Signature
 from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ, PDFDate
 from .table import Table
-from .util import (
-    escape_parens,
-    get_scale_factor,
-)
+from .util import get_scale_factor
 
 # Public global variables:
 FPDF_VERSION = "2.7.4"
@@ -311,7 +308,6 @@ class FPDF(GraphicsStateMixin):
         self.current_font = (
             None  # current font, None or an instance of CoreFont or TTFFont
         )
-        self.text_shaping = False  # use text shaping engine (harbuzz) or not
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
         self.text_color = self.DEFAULT_TEXT_COLOR
@@ -560,11 +556,20 @@ class FPDF(GraphicsStateMixin):
             raise FPDFException(f"Incorrect zoom display mode: {zoom}")
         self.page_layout = LAYOUT_ALIASES.get(layout, layout)
 
+    # Disabling this check - importing outside toplevel to check module is present
+    # pylint: disable=import-outside-toplevel, unused-import
     def set_text_shaping(self, use_shaping_engine):
         """
         True or False value to enable or disable text shaping engine when rendering text
         """
-        self.text_shaping = use_shaping_engine
+        if use_shaping_engine:
+            try:
+                import uharfbuzz
+            except ImportError as exc:
+                raise FPDFException(
+                    "The uharfbuzz package could not be imported, but is required for text shaping. Try: pip install uharfbuzz"
+                ) from exc
+        self._text_shaping = use_shaping_engine
 
     @property
     def page_layout(self):
@@ -2308,7 +2313,7 @@ class FPDF(GraphicsStateMixin):
         sl = [f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td"]
         if self.text_mode != TextMode.FILL:
             sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
-        sl.append(f"{self.current_font.convert_pdf_text(txt)} ET")
+        sl.append(f"{self.current_font.encode_text(txt)} ET")
         if (self.underline and txt != "") or self._record_text_quad_points:
             w = self.get_string_width(txt, normalized=True, markdown=False)
             if self.underline and txt != "":
