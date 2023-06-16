@@ -195,6 +195,8 @@ class TTFFont:
             text_width += pos.x_advance + pos.x_offset
         return (len(glyph_positions), text_width)
 
+    # Disabling this check - looks like cython confuses pylint:
+    # pylint: disable=no-member
     def perform_harfbuzz_shaping(self, text, font_size_pt):
         if not hasattr(self, "hbfont"):
             self.hbfont = hb.Font(hb.Face(hb.Blob.from_file_path(self.ttffile)))
