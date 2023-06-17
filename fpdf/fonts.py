@@ -192,7 +192,11 @@ class TTFFont:
         _, glyph_positions = self.perform_harfbuzz_shaping(text, font_size_pt)
         text_width = 0
         for pos in glyph_positions:
-            text_width += pos.x_advance + pos.x_offset
+            text_width += (
+                round(self.scale * (pos.x_advance + pos.x_offset) + 0.001)
+                * font_size_pt
+                * 0.001
+            )
         return (len(glyph_positions), text_width)
 
     # Disabling this check - looks like cython confuses pylint:
@@ -218,6 +222,8 @@ class TTFFont:
         return f'({escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))}) Tj'
 
     def shape_text(self, text, font_size_pt):
+        if len(text) == 0:
+            return zip([], [])
         glyph_infos, glyph_positions = self.perform_harfbuzz_shaping(text, font_size_pt)
         char_mapped = []
         # TO DO : find cluster gaps

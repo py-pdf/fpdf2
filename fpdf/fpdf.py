@@ -2891,30 +2891,42 @@ class FPDF(GraphicsStateMixin):
                 ):
                     current_text_mode = frag.text_mode
                     sl.append(f"{frag.text_mode} Tr {frag.line_width:.2f} w")
-                adjust_x = dx
-                adjust_y = 0.5 * h + 0.3 * max_font_size
-                r_text = frag.render_pdf_text(
-                    frag_ws, current_ws, word_spacing, adjust_x, adjust_y, self
-                )
-                if r_text:
-                    sl.append(r_text)
+
+                frag_width = 0
+                if len(frag.string) > 0:
+                    r_text = frag.render_pdf_text(
+                        frag_ws,
+                        current_ws,
+                        word_spacing,
+                        self.x + dx + s_width,
+                        self.y + (0.5 * h + 0.3 * max_font_size),
+                        self.h,
+                    )
+                    if r_text:
+                        sl.append(r_text)
+
+                    frag_width = frag.get_width(
+                        initial_cs=i != 0
+                    ) + word_spacing * frag.characters.count(" ")
+                    if frag.underline:
+                        underlines.append(
+                            (
+                                self.x + dx + s_width,
+                                frag_width,
+                                frag.font,
+                                frag.font_size,
+                            )
+                        )
+                    if frag.url:
+                        self.link(
+                            x=self.x + dx + s_width,
+                            y=self.y + (0.5 * h) - (0.5 * frag.font_size),
+                            w=frag_width,
+                            h=frag.font_size,
+                            link=frag.url,
+                        )
                 if not frag.is_ttf_font:
                     current_ws = frag_ws
-                frag_width = frag.get_width(
-                    initial_cs=i != 0
-                ) + word_spacing * frag.characters.count(" ")
-                if frag.underline:
-                    underlines.append(
-                        (self.x + dx + s_width, frag_width, frag.font, frag.font_size)
-                    )
-                if frag.url:
-                    self.link(
-                        x=self.x + dx + s_width,
-                        y=self.y + (0.5 * h) - (0.5 * frag.font_size),
-                        w=frag_width,
-                        h=frag.font_size,
-                        link=frag.url,
-                    )
                 s_width += frag_width
 
             sl.append("ET")

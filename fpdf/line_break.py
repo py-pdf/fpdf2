@@ -181,7 +181,6 @@ class Fragment:
         (char_len, w) = self.font.get_text_width(
             chars, self.font_size_pt, self._text_shaping
         )
-
         char_spacing = self.char_spacing
         if self.font_stretching != 100:
             w *= self.font_stretching * 0.01
@@ -204,12 +203,12 @@ class Fragment:
             character = HYPHEN
         return self.get_width(chars=character, initial_cs=initial_cs)
 
-    def render_pdf_text(
-        self, frag_ws, current_ws, word_spacing, adjust_x, adjust_y, fpdf
-    ):
+    def render_pdf_text(self, frag_ws, current_ws, word_spacing, adjust_x, adjust_y, h):
         if self.is_ttf_font:
             if self._text_shaping:
-                return self.render_with_text_shaping(adjust_x, adjust_y, fpdf)
+                return self.render_with_text_shaping(
+                    adjust_x, adjust_y, h, word_spacing
+                )
             return self.render_pdf_text_ttf(frag_ws, word_spacing)
         return self.render_pdf_text_core(frag_ws, current_ws)
 
@@ -252,16 +251,22 @@ class Fragment:
             ret += f"({escaped_text}) Tj"
         return ret
 
-    def render_with_text_shaping(self, adjust_x, adjust_y, fpdf):
+    def render_with_text_shaping(self, pos_x, pos_y, h, word_spacing):
         ret = ""
         text = ""
-        k = fpdf.k
-        x = fpdf.x + adjust_x
-        y = fpdf.y + adjust_y
+        space_mapped_code = self.font.subset.pick(ord(" "))
 
         def adjust_pos(pos):
-            return pos * self.font.scale * self.font_size_pt / 1000 / k
+            return (
+                pos
+                * self.font.scale
+                * self.font_size_pt
+                * (self.font_stretching / 100)
+                / 1000
+                / self.k
+            )
 
+        char_spacing = self.char_spacing * (self.font_stretching / 100) / self.k
         for mapped_char, pos in self.font.shape_text(self.string, self.font_size_pt):
             if mapped_char is None:  # Missing glyph
                 continue
@@ -270,19 +275,29 @@ class Fragment:
                 if text:
                     ret += f"({text}) Tj "
                     text = ""
-                offsetx = x + adjust_pos(pos.x_offset)
-                offsety = y - adjust_pos(pos.y_offset)
-                ret += f"1 0 0 1 {(offsetx) * k:.2f} {(fpdf.h - offsety) * k:.2f} Tm "
+                offsetx = pos_x + adjust_pos(pos.x_offset)
+                offsety = pos_y - adjust_pos(pos.y_offset)
+                ret += (
+                    f"1 0 0 1 {(offsetx) * self.k:.2f} {(h - offsety) * self.k:.2f} Tm "
+                )
             text += char
-            x += adjust_pos(pos.x_advance)
-            y += adjust_pos(pos.y_advance)
+            pos_x += adjust_pos(pos.x_advance) + char_spacing
+            pos_y += adjust_pos(pos.y_advance)
+            if word_spacing and mapped_char == space_mapped_code:
+                pos_x += word_spacing
 
             # if only moving "x" we don't need to move the text matrix
-            if pos.y_advance != 0 or pos.x_offset != 0 or pos.y_offset != 0:
+            if (
+                pos.y_advance != 0
+                or pos.x_offset != 0
+                or pos.y_offset != 0
+                or (word_spacing and mapped_char == space_mapped_code)
+            ):
                 if text:
                     ret += f"({text}) Tj "
                     text = ""
-                ret += f"1 0 0 1 {(x) * k:.2f} {(fpdf.h - y) * k:.2f} Tm "
+                ret += f"1 0 0 1 {(pos_x) * self.k:.2f} {(h - pos_y) * self.k:.2f} Tm "
+
         if text:
             ret += f"({text}) Tj"
         return ret
