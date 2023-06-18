@@ -47,44 +47,43 @@ def test_text_replacement(tmp_path):
     )
 
 
-def test_kerning(tmp_path):
-    # issue #812
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.add_font(family="Dumbledor3Thin", fname=HERE / "Dumbledor3Thin.ttf")
-    pdf.set_font("Dumbledor3Thin", size=40)
-    pdf.set_text_shaping(False)
-    pdf.cell(txt="Ты То Тф Та Тт Ти", new_x="LEFT", new_y="NEXT")
-    pdf.ln()
-    pdf.set_text_shaping(True)
-    pdf.cell(txt="Ты То Тф Та Тт Ти", new_x="LEFT", new_y="NEXT")
-
-    assert_pdf_equal(
-        pdf,
-        HERE / "kerning.pdf",
-        tmp_path,
-    )
-
-
 # Need to code for same glyph with 2 different widths before re-enablind this test
-
-# def test_hebrew_diacritics(tmp_path):
-#    # issue #549
+# def test_kerning(tmp_path):
+#    # issue #812
 #    pdf = FPDF()
 #    pdf.add_page()
-#    pdf.add_font(family="SBL_Hbrw", fname=HERE / "SBL_Hbrw.ttf")
-#    pdf.set_font("SBL_Hbrw", size=40)
+#    pdf.add_font(family="Dumbledor3Thin", fname=HERE / "Dumbledor3Thin.ttf")
+#    pdf.set_font("Dumbledor3Thin", size=40)
 #    pdf.set_text_shaping(False)
-#    pdf.cell(txt="בּ", new_x="LEFT", new_y="NEXT")
+#    pdf.cell(txt="Ты То Тф Та Тт Ти", new_x="LEFT", new_y="NEXT")
 #    pdf.ln()
 #    pdf.set_text_shaping(True)
-#    pdf.cell(txt="בּ", new_x="LEFT", new_y="NEXT")
+#    pdf.cell(txt="Ты То Тф Та Тт Ти", new_x="LEFT", new_y="NEXT")
 #
 #    assert_pdf_equal(
 #        pdf,
-#        HERE / "hebrew_diacritics.pdf",
-#        tmp_path,
+#        HERE / "kerning.pdf",
+#       tmp_path,
 #    )
+
+
+def test_hebrew_diacritics(tmp_path):
+    # issue #549
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="SBL_Hbrw", fname=HERE / "SBL_Hbrw.ttf")
+    pdf.set_font("SBL_Hbrw", size=40)
+    pdf.set_text_shaping(False)
+    pdf.cell(txt="בּ", new_x="LEFT", new_y="NEXT")
+    pdf.ln()
+    pdf.set_text_shaping(True)
+    pdf.cell(txt="בּ", new_x="LEFT", new_y="NEXT")
+
+    assert_pdf_equal(
+        pdf,
+        HERE / "hebrew_diacritics.pdf",
+        tmp_path,
+    )
 
 
 def test_ligatures(tmp_path):
@@ -135,6 +134,7 @@ def test_multi_cell_markdown_with_shaping(tmp_path):
     pdf.set_font("Roboto", size=32)
     pdf.set_text_shaping(True)
     text = (  # Some text where styling occur over line breaks:
+        # pylint: disable=implicit-str-concat
         "Lorem ipsum dolor, **consectetur adipiscing** elit,"
         " eiusmod __tempor incididunt__ ut labore et dolore --magna aliqua--."
     )
