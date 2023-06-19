@@ -229,6 +229,7 @@ class FPDF(GraphicsStateMixin):
     MARKDOWN_UNDERLINE_MARKER = "--"
     MARKDOWN_LINK_REGEX = re.compile(r"^\[([^][]+)\]\(([^()]+)\)(.*)$")
     MARKDOWN_LINK_COLOR = None
+    MARKDOWN_LINK_UNDERLINE = True
 
     HTML2FPDF_CLASS = HTML2FPDF
 
@@ -2934,13 +2935,13 @@ class FPDF(GraphicsStateMixin):
                     underlines.append(
                         (self.x + dx + s_width, frag_width, frag.font, frag.font_size)
                     )
-                if frag.url:
+                if frag.link:
                     self.link(
                         x=self.x + dx + s_width,
                         y=self.y + (0.5 * h) - (0.5 * frag.font_size),
                         w=frag_width,
                         h=frag.font_size,
-                        link=frag.url,
+                        link=frag.link,
                     )
                 s_width += frag_width
 
@@ -3166,14 +3167,19 @@ class FPDF(GraphicsStateMixin):
                 continue
             is_link = self.MARKDOWN_LINK_REGEX.match(txt)
             if is_link:
-                link_text, link_url, txt = is_link.groups()
+                link_text, link_dest, txt = is_link.groups()
                 if txt_frag:
                     yield frag()
                 gstate = self._get_current_graphics_state()
-                gstate["underline"] = True
+                gstate["underline"] = self.MARKDOWN_LINK_UNDERLINE
                 if self.MARKDOWN_LINK_COLOR:
                     gstate["text_color"] = self.MARKDOWN_LINK_COLOR
-                yield Fragment(list(link_text), gstate, self.k, url=link_url)
+                try:
+                    page = int(link_dest)
+                    link_dest = self.add_link(page=page)
+                except ValueError:
+                    pass
+                yield Fragment(list(link_text), gstate, self.k, link=link_dest)
                 continue
             if self.is_ttf_font and txt[0] != "\n" and not ord(txt[0]) in font_glyphs:
                 style = ("B" if in_bold else "") + ("I" if in_italics else "")
