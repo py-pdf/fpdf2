@@ -243,6 +243,7 @@ class Table:
                 w=col_width,
                 h=0 if cell.img_fill_width else row_height,
                 keep_aspect_ratio=True,
+                link=cell.link,
             ).rendered_height
             self._fpdf.set_xy(x, y)
         text_align = cell.align or self._text_align
@@ -278,6 +279,7 @@ class Table:
                 txt=cell.text,
                 max_line_height=self._line_height,
                 border=self.get_cell_border(i, j),
+                link=cell.link,
                 align=text_align,
                 new_x="RIGHT",
                 new_y="TOP",
@@ -348,7 +350,14 @@ class Row:
         return sum(cell.colspan for cell in self.cells)
 
     def cell(
-        self, text="", align=None, style=None, img=None, img_fill_width=False, colspan=1
+        self,
+        text="",
+        align=None,
+        style=None,
+        img=None,
+        img_fill_width=False,
+        colspan=1,
+        link=None,
     ):
         """
         Adds a cell to the row.
@@ -363,6 +372,8 @@ class Row:
             img_fill_width (bool): optional, defaults to False. Indicates to render the image
                 using the full width of the current table column.
             colspan (int): optional number of columns this cell should span.
+            link (str, int): optional link, either an URL or an integer returned by `FPDF.add_link`, defining an internal link to a page
+
         """
         if text and img:
             raise NotImplementedError(
@@ -375,7 +386,7 @@ class Row:
             font_face = self._fpdf.font_face()
             if font_face != self.style:
                 style = font_face
-        cell = Cell(text, align, style, img, img_fill_width, colspan)
+        cell = Cell(text, align, style, img, img_fill_width, colspan, link)
         self.cells.append(cell)
         return cell
 
@@ -390,6 +401,7 @@ class Cell:
         "img",
         "img_fill_width",
         "colspan",
+        "link",
     )
     text: str
     align: Optional[Union[str, Align]]
@@ -397,6 +409,7 @@ class Cell:
     img: Optional[str]
     img_fill_width: bool
     colspan: int
+    link: Optional[Union[str, int]]
 
     def write(self, text, align=None):
         raise NotImplementedError("Not implemented yet")
