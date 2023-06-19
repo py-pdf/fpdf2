@@ -2751,8 +2751,6 @@ class FPDF(GraphicsStateMixin):
 
         Returns: a boolean indicating if page break was triggered
         """
-        if not self.font_family:
-            raise FPDFException("No font set, you need to call set_font() beforehand")
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
                 'Integer values for "border" parameter other than 1 are currently ignored'
@@ -2884,6 +2882,7 @@ class FPDF(GraphicsStateMixin):
                     sl.append(f"/F{frag.font.i} {frag.font_size_pt:.2f} Tf")
                 lift = frag.lift
                 if lift != 0.0:
+                    # Use text rise operator:
                     sl.append(f"{lift:.2f} Ts")
                 if (
                     frag.text_mode != TextMode.FILL
@@ -3348,6 +3347,8 @@ class FPDF(GraphicsStateMixin):
                     output=MethodReturnValue.LINES if split_only else output,
                     center=center,
                 )
+        if not self.font_family:
+            raise FPDFException("No font set, you need to call set_font() beforehand")
         wrapmode = WrapMode.coerce(wrapmode)
         if isinstance(w, str) or isinstance(h, str):
             raise ValueError(
