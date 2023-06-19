@@ -22,11 +22,7 @@ def test_indi_text(tmp_path):
     pdf.set_text_shaping(True)
     pdf.cell(txt="इण्टरनेट पर हिन्दी के साधन", new_x="LEFT", new_y="NEXT")
 
-    assert_pdf_equal(
-        pdf,
-        HERE / "shaping_hindi.pdf",
-        tmp_path,
-    )
+    assert_pdf_equal(pdf, HERE / "shaping_hindi.pdf", tmp_path)
 
 
 def test_text_replacement(tmp_path):
@@ -40,31 +36,22 @@ def test_text_replacement(tmp_path):
     pdf.set_text_shaping(True)
     pdf.cell(txt="http://www 3 >= 2 != 1", new_x="LEFT", new_y="NEXT")
 
-    assert_pdf_equal(
-        pdf,
-        HERE / "text_replacement.pdf",
-        tmp_path,
-    )
+    assert_pdf_equal(pdf, HERE / "text_replacement.pdf", tmp_path)
 
 
-# Need to code for same glyph with 2 different widths before re-enablind this test
-# def test_kerning(tmp_path):
-#    # issue #812
-#    pdf = FPDF()
-#    pdf.add_page()
-#    pdf.add_font(family="Dumbledor3Thin", fname=HERE / "Dumbledor3Thin.ttf")
-#    pdf.set_font("Dumbledor3Thin", size=40)
-#    pdf.set_text_shaping(False)
-#    pdf.cell(txt="Ты То Тф Та Тт Ти", new_x="LEFT", new_y="NEXT")
-#    pdf.ln()
-#    pdf.set_text_shaping(True)
-#    pdf.cell(txt="Ты То Тф Та Тт Ти", new_x="LEFT", new_y="NEXT")
-#
-#    assert_pdf_equal(
-#        pdf,
-#        HERE / "kerning.pdf",
-#       tmp_path,
-#    )
+def test_kerning(tmp_path):
+    # issue #812
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="Dumbledor3Thin", fname=HERE / "Dumbledor3Thin.ttf")
+    pdf.set_font("Dumbledor3Thin", size=40)
+    pdf.set_text_shaping(False)
+    pdf.cell(txt="Ты То Тф Та Тт Ти", new_x="LEFT", new_y="NEXT")
+    pdf.ln()
+    pdf.set_text_shaping(True)
+    pdf.cell(txt="Ты То Тф Та Тт Ти", new_x="LEFT", new_y="NEXT")
+
+    assert_pdf_equal(pdf, HERE / "kerning.pdf", tmp_path)
 
 
 def test_hebrew_diacritics(tmp_path):
@@ -79,11 +66,7 @@ def test_hebrew_diacritics(tmp_path):
     pdf.set_text_shaping(True)
     pdf.cell(txt="בּ", new_x="LEFT", new_y="NEXT")
 
-    assert_pdf_equal(
-        pdf,
-        HERE / "hebrew_diacritics.pdf",
-        tmp_path,
-    )
+    assert_pdf_equal(pdf, HERE / "hebrew_diacritics.pdf", tmp_path)
 
 
 def test_ligatures(tmp_path):
@@ -97,11 +80,7 @@ def test_ligatures(tmp_path):
     pdf.set_text_shaping(True)
     pdf.cell(txt="final soft stuff", new_x="LEFT", new_y="NEXT")
 
-    assert_pdf_equal(
-        pdf,
-        HERE / "ligatures.pdf",
-        tmp_path,
-    )
+    assert_pdf_equal(pdf, HERE / "ligatures.pdf", tmp_path)
 
 
 def test_arabic_right_to_left(tmp_path):
@@ -118,11 +97,7 @@ def test_arabic_right_to_left(tmp_path):
     pdf.set_text_shaping(True)
     pdf.cell(txt="مثال على اللغة العربية. محاذاة لليمين.", new_x="LEFT", new_y="NEXT")
 
-    assert_pdf_equal(
-        pdf,
-        HERE / "arabic.pdf",
-        tmp_path,
-    )
+    assert_pdf_equal(pdf, HERE / "arabic.pdf", tmp_path)
 
 
 def test_multi_cell_markdown_with_shaping(tmp_path):

@@ -225,12 +225,14 @@ class TTFFont:
         if len(text) == 0:
             return zip([], [])
         glyph_infos, glyph_positions = self.perform_harfbuzz_shaping(text, font_size_pt)
-        char_mapped = []
+        text_info = []
         # TO DO : find cluster gaps
         # Ex: text = "ABCD"
         # glyph infos has cluster: 0, 2, 3 - it means A and B are together on the first glyph
         # (ligature or substitution) - the glyph should have both unicodes and it should be translated
         # properly on the CID to GID mapping
+        #
+        # TO DO : mapping in reverse order for right-to-left shaping
         for cluster_seq, gi in enumerate(glyph_infos):
             unicode = []
             if (
@@ -247,15 +249,34 @@ class TTFFont:
                 ):  # but there's extra characters on input (ligatures on the last char)
                     for i in range(gi.cluster + 1, len(text)):
                         unicode.append(ord(text[i]))
+            gname = self.ttfont.getGlyphName(gi.codepoint)
+            gwidth = round(self.scale * self.ttfont["hmtx"].metrics[gname][0])
             glyph = self.subset.get_glyph(
                 glyph=gi.codepoint,
                 unicode=(unicode),
-                glyph_width=round(
-                    self.scale * glyph_positions[cluster_seq].x_advance + 0.001
-                ),
+                glyph_name=gname,
+                glyph_width=gwidth
+                # self.scale * glyph_positions[cluster_seq].x_advance + 0.001
             )
-            char_mapped.append(self.subset.pick_glyph(glyph))
-        return zip(char_mapped, glyph_positions)
+            force_positioning = False
+            if (
+                gwidth != glyph_positions[cluster_seq].x_advance
+                or glyph_positions[cluster_seq].x_offset != 0
+                or glyph_positions[cluster_seq].y_offset != 0
+                or glyph_positions[cluster_seq].y_advance != 0
+            ):
+                force_positioning = True
+            text_info.append(
+                {
+                    "mapped_char": self.subset.pick_glyph(glyph),
+                    "x_advance": glyph_positions[cluster_seq].x_advance,
+                    "y_advance": glyph_positions[cluster_seq].y_advance,
+                    "x_offset": glyph_positions[cluster_seq].x_offset,
+                    "y_offset": glyph_positions[cluster_seq].y_offset,
+                    "force_positioning": force_positioning,
+                }
+            )
+        return text_info
 
 
 class PDFFontDescriptor(PDFObject):
@@ -347,11 +368,11 @@ class SubsetMap:
     def dict(self):
         return self._map.copy()
 
-    def get_glyph(self, glyph=None, unicode=None, glyph_width=None) -> Glyph:
+    def get_glyph(
+        self, glyph=None, unicode=None, glyph_name=None, glyph_width=None
+    ) -> Glyph:
         if glyph:
-            return Glyph(
-                glyph, tuple(unicode), self.font.ttfont.getGlyphName(glyph), glyph_width
-            )
+            return Glyph(glyph, tuple(unicode), glyph_name, glyph_width)
         if isinstance(unicode, int) and unicode in self.font.glyph_ids.keys():
             return Glyph(
                 self.font.glyph_ids[unicode],

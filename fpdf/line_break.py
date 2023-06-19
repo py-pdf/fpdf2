@@ -267,31 +267,28 @@ class Fragment:
             )
 
         char_spacing = self.char_spacing * (self.font_stretching / 100) / self.k
-        for mapped_char, pos in self.font.shape_text(self.string, self.font_size_pt):
-            if mapped_char is None:  # Missing glyph
+        for ti in self.font.shape_text(self.string, self.font_size_pt):
+            if ti["mapped_char"] is None:  # Missing glyph
                 continue
-            char = chr(mapped_char).encode("utf-16-be").decode("latin-1")
-            if pos.x_offset != 0 or pos.y_offset != 0:
+            char = chr(ti["mapped_char"]).encode("utf-16-be").decode("latin-1")
+            if ti["x_offset"] != 0 or ti["y_offset"] != 0:
                 if text:
                     ret += f"({text}) Tj "
                     text = ""
-                offsetx = pos_x + adjust_pos(pos.x_offset)
-                offsety = pos_y - adjust_pos(pos.y_offset)
+                offsetx = pos_x + adjust_pos(ti["x_offset"])
+                offsety = pos_y - adjust_pos(ti["y_offset"])
                 ret += (
                     f"1 0 0 1 {(offsetx) * self.k:.2f} {(h - offsety) * self.k:.2f} Tm "
                 )
             text += char
-            pos_x += adjust_pos(pos.x_advance) + char_spacing
-            pos_y += adjust_pos(pos.y_advance)
-            if word_spacing and mapped_char == space_mapped_code:
+            pos_x += adjust_pos(ti["x_advance"]) + char_spacing
+            pos_y += adjust_pos(ti["y_advance"])
+            if word_spacing and ti["mapped_char"] == space_mapped_code:
                 pos_x += word_spacing
 
             # if only moving "x" we don't need to move the text matrix
-            if (
-                pos.y_advance != 0
-                or pos.x_offset != 0
-                or pos.y_offset != 0
-                or (word_spacing and mapped_char == space_mapped_code)
+            if ti["force_positioning"] or (
+                word_spacing and ti["mapped_char"] == space_mapped_code
             ):
                 if text:
                     ret += f"({text}) Tj "
