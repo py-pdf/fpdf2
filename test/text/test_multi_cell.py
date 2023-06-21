@@ -21,6 +21,14 @@ TABLE_DATA = (
 )
 
 
+def test_multi_cell_without_any_font_set():
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(FPDFException) as error:
+        pdf.multi_cell(txt="Hello world!", w=pdf.epw)
+    assert str(error.value) == "No font set, you need to call set_font() beforehand"
+
+
 def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
     doc = FPDF(format="letter", unit="pt")
     doc.add_page()

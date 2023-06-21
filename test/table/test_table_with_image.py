@@ -125,3 +125,25 @@ def test_table_with_page_break_over_image(tmp_path):
                 else:
                     row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_with_page_break_over_image.pdf", tmp_path)
+
+
+def test_table_with_links(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("Times", size=16)
+    pdf.add_page()
+    pdf.y = 100
+    pdf.cell(txt="Page 1", center=True)
+    pdf.add_page()
+    with pdf.table() as table:
+        for i, data_row in enumerate(TABLE_DATA):
+            row = table.row()
+            for j, datum in enumerate(data_row):
+                if j == 2 and i > 0:
+                    row.cell(
+                        img=datum,
+                        img_fill_width=True,
+                        link="https://pyfpdf.github.io/fpdf2/",
+                    )
+                else:
+                    row.cell(datum, link=pdf.add_link(page=1))
+    assert_pdf_equal(pdf, HERE / "table_with_links.pdf", tmp_path)

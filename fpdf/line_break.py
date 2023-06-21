@@ -6,7 +6,7 @@ The contents of this file are internal to fpdf, and not part of the public API.
 They may change at any time without prior warning or any deprecation period.
 """
 
-from typing import NamedTuple, Any, Union, Sequence
+from typing import NamedTuple, Any, Optional, Union, Sequence
 
 from .enums import CharVPos, WrapMode
 from .errors import FPDFException
@@ -29,7 +29,7 @@ class Fragment:
         characters: Union[list, str],
         graphics_state: dict,
         k: float,
-        url: str = None,
+        link: Optional[Union[int, str]] = None,
     ):
         if isinstance(characters, str):
             self.characters = list(characters)
@@ -37,7 +37,7 @@ class Fragment:
             self.characters = characters
         self.graphics_state = graphics_state
         self.k = k
-        self.url = url
+        self.link = link
 
     def __repr__(self):
         gstate = self.graphics_state.copy()
@@ -45,7 +45,7 @@ class Fragment:
             del gstate["current_font"]  # TMI
         return (
             f"Fragment(characters={self.characters},"
-            f" graphics_state={gstate}, k={self.k}, url={self.url})"
+            f" graphics_state={gstate}, k={self.k}, link={self.link})"
         )
 
     @property
@@ -567,7 +567,7 @@ class MultiLineBreak:
                 current_fragment.k,
                 self.fragment_index,
                 self.character_index,
-                current_fragment.url,
+                current_fragment.link,
             )
 
             self.character_index += 1

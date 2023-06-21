@@ -226,6 +226,7 @@ class FPDF(GraphicsStateMixin):
     MARKDOWN_UNDERLINE_MARKER = "--"
     MARKDOWN_LINK_REGEX = re.compile(r"^\[([^][]+)\]\(([^()]+)\)(.*)$")
     MARKDOWN_LINK_COLOR = None
+    MARKDOWN_LINK_UNDERLINE = True
 
     HTML2FPDF_CLASS = HTML2FPDF
 
@@ -2753,8 +2754,6 @@ class FPDF(GraphicsStateMixin):
 
         Returns: a boolean indicating if page break was triggered
         """
-        if not self.font_family:
-            raise FPDFException("No font set, you need to call set_font() beforehand")
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
                 'Integer values for "border" parameter other than 1 are currently ignored'
@@ -2884,6 +2883,7 @@ class FPDF(GraphicsStateMixin):
                     sl.append(f"/F{frag.font.i} {frag.font_size_pt:.2f} Tf")
                 lift = frag.lift
                 if lift != 0.0:
+                    # Use text rise operator:
                     sl.append(f"{lift:.2f} Ts")
                 if (
                     frag.text_mode != TextMode.FILL
@@ -2915,13 +2915,13 @@ class FPDF(GraphicsStateMixin):
                             frag.font_size,
                         )
                     )
-                if frag.url:
+                if frag.link:
                     self.link(
                         x=self.x + dx + s_width,
                         y=self.y + (0.5 * h) - (0.5 * frag.font_size),
                         w=frag_width,
                         h=frag.font_size,
-                        link=frag.url,
+                        link=frag.link,
                     )
                 if not frag.is_ttf_font:
                     current_ws = frag_ws
@@ -3149,14 +3149,19 @@ class FPDF(GraphicsStateMixin):
                 continue
             is_link = self.MARKDOWN_LINK_REGEX.match(txt)
             if is_link:
-                link_text, link_url, txt = is_link.groups()
+                link_text, link_dest, txt = is_link.groups()
                 if txt_frag:
                     yield frag()
                 gstate = self._get_current_graphics_state()
-                gstate["underline"] = True
+                gstate["underline"] = self.MARKDOWN_LINK_UNDERLINE
                 if self.MARKDOWN_LINK_COLOR:
                     gstate["text_color"] = self.MARKDOWN_LINK_COLOR
-                yield Fragment(list(link_text), gstate, self.k, url=link_url)
+                try:
+                    page = int(link_dest)
+                    link_dest = self.add_link(page=page)
+                except ValueError:
+                    pass
+                yield Fragment(list(link_text), gstate, self.k, link=link_dest)
                 continue
             if self.is_ttf_font and txt[0] != "\n" and not ord(txt[0]) in font_glyphs:
                 style = ("B" if in_bold else "") + ("I" if in_italics else "")
@@ -3330,6 +3335,8 @@ class FPDF(GraphicsStateMixin):
                     output=MethodReturnValue.LINES if split_only else output,
                     center=center,
                 )
+        if not self.font_family:
+            raise FPDFException("No font set, you need to call set_font() beforehand")
         wrapmode = WrapMode.coerce(wrapmode)
         if isinstance(w, str) or isinstance(h, str):
             raise ValueError(

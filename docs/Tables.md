@@ -184,6 +184,12 @@ Result:
 
 ![](table_with_images_and_img_fill_width.jpg)
 
+## Adding links to cells
+```python
+                    row.cell(..., link="https://pyfpdf.github.io/fpdf2/")
+                    row.cell(..., link=pdf.add_link(page=1))
+```
+
 ## Syntactic sugar
 To simplify `table()` usage, shorter, alternative usage forms are allowed.
 
@@ -222,7 +228,6 @@ Result:
 ![](table_with_gutter.jpg)
 
 ## Column span
-
 Cells spanning multiple columns can be defined by passing a `colspan` argument to `.cell()`.
 The cells that are overwritten by the spanned cell are not rendered but must be added to the table.
 
