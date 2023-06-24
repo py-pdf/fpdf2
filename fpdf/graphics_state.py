@@ -44,7 +44,7 @@ class GraphicsStateMixin:
                 sup_lift=0.4,
                 nom_lift=0.2,
                 denom_lift=0.0,
-                _text_shaping=False,
+                _text_shaping=None,
             ),
         ]
         super().__init__(*args, **kwargs)
@@ -320,7 +320,7 @@ class GraphicsStateMixin:
 
     @_text_shaping.setter
     def _text_shaping(self, v):
-        self.__statestack[-1]["_text_shaping"] = bool(v)
+        self.__statestack[-1]["_text_shaping"] = v
 
     def font_face(self):
         """

@@ -4,6 +4,7 @@ Includes the definition of the character widths of all PDF standard fonts.
 """
 import re
 
+from bisect import bisect_left
 from collections import defaultdict
 from dataclasses import dataclass, replace
 from typing import List, Optional, Tuple, Union
@@ -183,13 +184,20 @@ class TTFFont:
         self.emphasis = TextEmphasis.coerce(style)
         self.subset = SubsetMap(self, [ord(char) for char in sbarr])
 
-    def get_text_width(self, text, font_size_pt, text_shaping):
-        if text_shaping:
-            return self.shaped_text_width(text, font_size_pt)
+    def get_text_width(self, text, font_size_pt, text_shaping_parms):
+        if text_shaping_parms:
+            return self.shaped_text_width(text, font_size_pt, text_shaping_parms)
         return (len(text), sum(self.cw[ord(c)] for c in text) * font_size_pt * 0.001)
 
-    def shaped_text_width(self, text, font_size_pt):
-        _, glyph_positions = self.perform_harfbuzz_shaping(text, font_size_pt)
+    def shaped_text_width(self, text, font_size_pt, text_shaping_parms):
+        """
+        When texts are shaped, the length of a string is not always the sum of all individual character widths
+        This method will invoke harfbuzz to perform the text shaping and return the sum of "x_advance"
+        and "x_offset" for each glyph. This method works for "left to right" or "right to left" texts.
+        """
+        _, glyph_positions = self.perform_harfbuzz_shaping(
+            text, font_size_pt, text_shaping_parms
+        )
         text_width = 0
         for pos in glyph_positions:
             text_width += (
@@ -201,14 +209,27 @@ class TTFFont:
 
     # Disabling this check - looks like cython confuses pylint:
     # pylint: disable=no-member
-    def perform_harfbuzz_shaping(self, text, font_size_pt):
+    def perform_harfbuzz_shaping(self, text, font_size_pt, text_shaping_parms):
+        """
+        This method invokes Harfbuzz to performing text shaping of the input string
+        """
         if not hasattr(self, "hbfont"):
             self.hbfont = hb.Font(hb.Face(hb.Blob.from_file_path(self.ttffile)))
         self.hbfont.ptem = font_size_pt
         buf = hb.Buffer()
+        buf.cluster_level = 1
         buf.add_str("".join(text))
-        buf.guess_segment_properties()
-        features = {}  # {"kern": True, "liga": True}
+        features = text_shaping_parms["features"]
+        if (
+            text_shaping_parms["direction"]
+            or text_shaping_parms["script"]
+            or text_shaping_parms["language"]
+        ):
+            buf.direction = text_shaping_parms["direction"]
+            buf.script = text_shaping_parms["script"]
+            buf.language = text_shaping_parms["language"]
+        else:
+            buf.guess_segment_properties()
         hb.shape(self.hbfont, buf, features)
         return buf.glyph_infos, buf.glyph_positions
 
@@ -221,42 +242,54 @@ class TTFFont:
             txt_mapped += chr(self.subset.pick(uni))
         return f'({escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))}) Tj'
 
-    def shape_text(self, text, font_size_pt):
+    def shape_text(self, text, font_size_pt, text_shaping_parms):
+        """
+        This method will invoke harfbuzz for text shaping, include the mapping code
+        of the glyphs on the subset and map input characters to the cluster codes
+        """
         if len(text) == 0:
             return zip([], [])
-        glyph_infos, glyph_positions = self.perform_harfbuzz_shaping(text, font_size_pt)
+        glyph_infos, glyph_positions = self.perform_harfbuzz_shaping(
+            text, font_size_pt, text_shaping_parms
+        )
         text_info = []
-        # TO DO : find cluster gaps
+
+        # Find cluster gaps
         # Ex: text = "ABCD"
         # glyph infos has cluster: 0, 2, 3 - it means A and B are together on the first glyph
         # (ligature or substitution) - the glyph should have both unicodes and it should be translated
         # properly on the CID to GID mapping
         #
-        # TO DO : mapping in reverse order for right-to-left shaping
+        def get_cluster_from_text_index(cluster_list, index):
+            pos = bisect_left(cluster_list, index)
+            if pos == 0:
+                return cluster_list[0]
+            if pos == len(cluster_list) or cluster_list[pos] != index:
+                return cluster_list[pos - 1]
+            return cluster_list[pos]
+
+        cluster_list = list(sorted(int(gi.cluster) for gi in glyph_infos))
+        cluster_mapping = {}
+        for i in range(len(text)):
+            cl = get_cluster_from_text_index(cluster_list, i)
+            if cl in cluster_mapping:
+                cluster_mapping[cl].append(i)
+            else:
+                cluster_mapping[cl] = [i]
+
         for cluster_seq, gi in enumerate(glyph_infos):
             unicode = []
-            if (
-                cluster_seq + 1 < len(glyph_infos)
-                and glyph_infos[cluster_seq + 1].cluster > gi.cluster + 1
-            ):
-                for i in range(gi.cluster, glyph_infos[cluster_seq + 1].cluster):
-                    unicode.append(ord(text[i]))
-            else:
-                unicode.append(ord(text[gi.cluster]))
-            if cluster_seq == len(glyph_infos) - 1:  # last character on the glyph map
-                if gi.cluster < len(
-                    text
-                ):  # but there's extra characters on input (ligatures on the last char)
-                    for i in range(gi.cluster + 1, len(text)):
-                        unicode.append(ord(text[i]))
+            if gi.cluster in cluster_mapping:
+                unicode = [ord(text[i]) for i in cluster_mapping[gi.cluster]]
+                cluster_mapping.pop(gi.cluster)
+
             gname = self.ttfont.getGlyphName(gi.codepoint)
             gwidth = round(self.scale * self.ttfont["hmtx"].metrics[gname][0])
             glyph = self.subset.get_glyph(
                 glyph=gi.codepoint,
-                unicode=(unicode),
+                unicode=tuple(unicode),
                 glyph_name=gname,
-                glyph_width=gwidth
-                # self.scale * glyph_positions[cluster_seq].x_advance + 0.001
+                glyph_width=gwidth,
             )
             force_positioning = False
             if (

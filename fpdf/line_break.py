@@ -207,7 +207,7 @@ class Fragment:
         if self.is_ttf_font:
             if self._text_shaping:
                 return self.render_with_text_shaping(
-                    adjust_x, adjust_y, h, word_spacing
+                    adjust_x, adjust_y, h, word_spacing, self._text_shaping
                 )
             return self.render_pdf_text_ttf(frag_ws, word_spacing)
         return self.render_pdf_text_core(frag_ws, current_ws)
@@ -251,7 +251,9 @@ class Fragment:
             ret += f"({escaped_text}) Tj"
         return ret
 
-    def render_with_text_shaping(self, pos_x, pos_y, h, word_spacing):
+    def render_with_text_shaping(
+        self, pos_x, pos_y, h, word_spacing, text_shaping_parms
+    ):
         ret = ""
         text = ""
         space_mapped_code = self.font.subset.pick(ord(" "))
@@ -267,7 +269,9 @@ class Fragment:
             )
 
         char_spacing = self.char_spacing * (self.font_stretching / 100) / self.k
-        for ti in self.font.shape_text(self.string, self.font_size_pt):
+        for ti in self.font.shape_text(
+            self.string, self.font_size_pt, text_shaping_parms
+        ):
             if ti["mapped_char"] is None:  # Missing glyph
                 continue
             char = chr(ti["mapped_char"]).encode("utf-16-be").decode("latin-1")

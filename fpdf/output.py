@@ -613,12 +613,14 @@ class OutputProducer:
                 def format_code(unicode):
                     if unicode > 0xFFFF:
                         # Calculate surrogate pair
-                        code_high = 0xD800 | (glyph.unicode[0] - 0x10000) >> 10
-                        code_low = 0xDC00 | (glyph.unicode[0] & 0x3FF)
+                        code_high = 0xD800 | (unicode - 0x10000) >> 10
+                        code_low = 0xDC00 | (unicode & 0x3FF)
                         return f"<{code_high:04X}{code_low:04X}>"
                     return f"{unicode:04X}"
 
                 for glyph, code_mapped in font.subset._map.items():
+                    if len(glyph.unicode) == 0:
+                        continue
                     bfChar.append(
                         f'<{code_mapped:04X}> <{" ".join(format_code(code) for code in glyph.unicode)}>\n'
                     )

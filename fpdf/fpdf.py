@@ -559,7 +559,14 @@ class FPDF(GraphicsStateMixin):
 
     # Disabling this check - importing outside toplevel to check module is present
     # pylint: disable=import-outside-toplevel, unused-import
-    def set_text_shaping(self, use_shaping_engine):
+    def set_text_shaping(
+        self,
+        use_shaping_engine=False,
+        features=None,
+        direction=None,
+        script=None,
+        language=None,
+    ):
         """
         True or False value to enable or disable text shaping engine when rendering text
         """
@@ -570,7 +577,36 @@ class FPDF(GraphicsStateMixin):
                 raise FPDFException(
                     "The uharfbuzz package could not be imported, but is required for text shaping. Try: pip install uharfbuzz"
                 ) from exc
-        self._text_shaping = use_shaping_engine
+        else:
+            self._text_shaping = None
+            return
+        #
+        # Features must be a dictionary contaning opentype features and a boolean flag
+        # stating wether the feature should be enabled or disabled.
+        #
+        # e.g. features={"liga": True, "kern": False}
+        #
+        # https://harfbuzz.github.io/shaping-opentype-features.html
+        #
+
+        if features and not isinstance(features, dict):
+            raise FPDFException(
+                "Features must be a dictionary. See text shaping documentation"
+            )
+        if not features:
+            features = {}
+
+        # Buffer properties (direction, script and language)
+        # if the properties are not provided, Harfbuzz "guessing" logic is used.
+        # https://harfbuzz.github.io/setting-buffer-properties.html
+
+        self._text_shaping = {
+            "use_shaping_engine": True,
+            "features": features,
+            "direction": direction,
+            "script": script,
+            "language": language,
+        }
 
     @property
     def page_layout(self):
