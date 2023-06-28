@@ -561,11 +561,11 @@ class FPDF(GraphicsStateMixin):
     # pylint: disable=import-outside-toplevel, unused-import
     def set_text_shaping(
         self,
-        use_shaping_engine=False,
-        features=None,
-        direction=None,
-        script=None,
-        language=None,
+        use_shaping_engine:bool=False,
+        features:dict=None,
+        direction:str=None,
+        script:str=None,
+        language:str=None,
     ):
         """
         True or False value to enable or disable text shaping engine when rendering text
@@ -599,6 +599,13 @@ class FPDF(GraphicsStateMixin):
         # Buffer properties (direction, script and language)
         # if the properties are not provided, Harfbuzz "guessing" logic is used.
         # https://harfbuzz.github.io/setting-buffer-properties.html
+        # Valid harfbuzz directions are lrt (left to right), rtl (right to left),
+        # ttb (top to bottom) or btt (bottom to top)
+
+        if direction and direction not in ("ltr", "rtl"):
+            raise FPDFException(
+                "FPDF2 only accept ltr (left to right) or rtl (right to left) directions for now."
+            )
 
         self._text_shaping = {
             "use_shaping_engine": True,

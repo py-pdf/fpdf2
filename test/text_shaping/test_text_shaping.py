@@ -119,3 +119,26 @@ def test_multi_cell_markdown_with_shaping(tmp_path):
     pdf.ln()
     pdf.multi_cell(w=pdf.epw, txt=text, markdown=True, align="L")
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_with_styling.pdf", tmp_path)
+
+
+def test_features(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="ViaodaLibre", fname=HERE / "ViaodaLibre-Regular.ttf")
+    pdf.set_font("ViaodaLibre", size=40)
+    pdf.set_text_shaping(use_shaping_engine=True)
+    pdf.cell(txt="final soft stuff", new_x="LEFT", new_y="NEXT")
+    pdf.ln()
+    pdf.set_text_shaping(use_shaping_engine=True, features={"liga": False})
+    pdf.cell(txt="final soft stuff", new_x="LEFT", new_y="NEXT")
+    pdf.ln()
+    pdf.set_text_shaping(use_shaping_engine=True, features={"kern": False})
+    pdf.cell(txt="final soft stuff", new_x="LEFT", new_y="NEXT")
+    pdf.ln()
+    pdf.set_text_shaping(
+        use_shaping_engine=True, direction="rtl", script="Latn", language="en-us"
+    )
+    pdf.cell(txt="final soft stuff", new_x="LEFT", new_y="NEXT")
+    pdf.ln()
+
+    assert_pdf_equal(pdf, HERE / "features.pdf", tmp_path)
