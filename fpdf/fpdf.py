@@ -561,11 +561,11 @@ class FPDF(GraphicsStateMixin):
     # pylint: disable=import-outside-toplevel, unused-import
     def set_text_shaping(
         self,
-        use_shaping_engine:bool=False,
-        features:dict=None,
-        direction:str=None,
-        script:str=None,
-        language:str=None,
+        use_shaping_engine: bool = False,
+        features: dict = None,
+        direction: str = None,
+        script: str = None,
+        language: str = None,
     ):
         """
         True or False value to enable or disable text shaping engine when rendering text
