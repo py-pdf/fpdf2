@@ -622,7 +622,7 @@ class OutputProducer:
                     if len(glyph.unicode) == 0:
                         continue
                     bfChar.append(
-                        f'<{code_mapped:04X}> <{" ".join(format_code(code) for code in glyph.unicode)}>\n'
+                        f'<{code_mapped:04X}> <{"".join(format_code(code) for code in glyph.unicode)}>\n'
                     )
 
                 to_unicode_obj = PDFContentStream(
