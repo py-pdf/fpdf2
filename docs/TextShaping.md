@@ -12,13 +12,31 @@ This process is especially important for scripts that require complex layout, su
 
 There are three primary aspects of text shaping that contribute to the overall appearance of the text: kerning, ligatures, and glyph substitution.
 
-## Kerning ##
+### Kerning ###
 Kerning refers to the adjustment of space between individual letter pairs in a font. This process is essential to avoid awkward gaps or overlaps that may occur due to the default spacing of the font. By manually or programmatically modifying the kerning, we can ensure an even and visually pleasing distribution of letters, which significantly improves the readability and aesthetic quality of the text.
 
-![](text-shaping-ligatures.png)
+![](text-shaping-kerning.png)
 
-## Ligatures ##
+### Ligatures ###
 Ligatures are special characters that are created by combining two or more glyphs. This is frequently used to avoid collision between characters or to adhere to the typographic traditions. For instance, in English typography, the most common ligatures are "fi" and "fl", which are often fused into single characters to provide a more seamless reading experience.
 
-## Glyph Substitution ##
+### Glyph Substitution ###
 Glyph substitution is a mechanism that replaces one glyph or a set of glyphs with one or more alternative glyphs. This is a crucial aspect of text shaping, especially for complex scripts where the representation of a character can significantly vary based on its surrounding characters. For example, in Arabic script, a letter can have different forms depending on whether it's at the beginning, middle, or end of a word.
+
+![](text-shaping-substitution.png)
+
+## Usage ##
+Text shaping is disabled by default to keep backwards compatibility, reduce resource requirements and not make uharfbuzz a hard dependency.
+
+If you want to use text shaping, the first step is installing the uharfbuzz package via pip.
+
+```python
+pip install uharfbuzz
+```
+
+### Basic usage ###
+
+
+### Features ###
+
+### Additional options ###
