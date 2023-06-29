@@ -67,7 +67,7 @@ pip install git+https://github.com/PyFPDF/fpdf2.git@master
  * [Tables](https://pyfpdf.github.io/fpdf2/Tables.html) and also [cell / multi-cell / plaintext writing](https://pyfpdf.github.io/fpdf2/Text.html), with [automatic page breaks](https://pyfpdf.github.io/fpdf2/PageBreaks.html), line break and text justification
  * Choice of measurement unit, page format & margins. Optional page header and footer
  * Basic [conversion from HTML to PDF](https://pyfpdf.github.io/fpdf2/HTML.html)
- * A [templating system](https://pyfpdf.github.io/fpdf2/Templates.html) to render PDFs in batchs
+ * A [templating system](https://pyfpdf.github.io/fpdf2/Templates.html) to render PDFs in batches
  * Images & links alternative descriptions, for accessibility
  * Table of contents & [document outline](https://pyfpdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html)
  * [Document encryption](https://pyfpdf.github.io/fpdf2/Encryption.html) & [document signing](https://pyfpdf.github.io/fpdf2/Signing.html)
