@@ -1,7 +1,7 @@
 import copy, decimal, math, re
 from collections import OrderedDict
 from contextlib import contextmanager
-from typing import Optional, NamedTuple, Union
+from typing import Optional, NamedTuple, Union, Dict
 
 from .enums import (
     BlendMode,
@@ -15,7 +15,7 @@ from .enums import (
 from .syntax import Name, Raw
 from .util import escape_parens
 
-__pdoc__ = {"force_nodocument": False}
+__pdoc__: Dict[str, Union[bool, str]] = {"force_nodocument": False}
 
 
 def force_nodocument(item):
@@ -605,7 +605,7 @@ class Point(NamedTuple):
 
         return NotImplemented
 
-    __rmul__ = __mul__
+    __rmul__ = __mul__  # type: ignore[misc]
 
     @force_document
     def __truediv__(self, other):
@@ -983,7 +983,7 @@ class Transform(NamedTuple):
         return NotImplemented
 
     # scalar multiplication is commutative
-    __rmul__ = __mul__
+    __rmul__ = __mul__  # type: ignore[misc]
 
     @force_document
     def __matmul__(self, other):

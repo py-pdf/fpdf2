@@ -17,7 +17,7 @@ try:
         # pylint: disable=no-member
         RESAMPLE = Image.ANTIALIAS
 except ImportError:
-    Image = None
+    Image = None  # type: ignore[assignment]
 
 from .errors import FPDFException
 

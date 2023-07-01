@@ -1,6 +1,6 @@
 import hashlib
 from datetime import datetime
-from typing import NamedTuple, Tuple, Union
+from typing import NamedTuple, Tuple, Union, Optional, Dict
 
 from .actions import Action
 from .enums import AnnotationFlag, AnnotationName, FileAttachmentAnnotationName
@@ -31,18 +31,18 @@ class AnnotationMixin:
         width: int,
         height: int,
         flags: Tuple[AnnotationFlag] = DEFAULT_ANNOT_FLAGS,
-        contents: str = None,
-        dest: Destination = None,
-        action: Action = None,
-        color: tuple = None,
-        modification_time: datetime = None,
-        title: str = None,
-        quad_points: tuple = None,
+        contents: Optional[str] = None,
+        dest: Optional[Destination] = None,
+        action: Optional[Action] = None,
+        color: Optional[tuple] = None,
+        modification_time: Optional[datetime] = None,
+        title: Optional[str] = None,
+        quad_points: Optional[tuple] = None,
         border_width: int = 0,  # PDF readers support: displayed by Acrobat but not Sumatra
-        name: Union[AnnotationName, FileAttachmentAnnotationName] = None,
-        ink_list: Tuple[int] = (),  # for ink annotations
-        file_spec: str = None,
-        field_type: str = None,
+        name: Optional[Union[AnnotationName, FileAttachmentAnnotationName]] = None,
+        ink_list: Optional[Tuple[int]] = None,  # for ink annotations
+        file_spec: Optional[str] = None,
+        field_type: Optional[str] = None,
         value=None,
     ):
         self.type = Name("Annot")
@@ -123,14 +123,14 @@ class PDFEmbeddedFile(PDFContentStream):
         basename: str,
         contents: bytes,
         desc: str = "",
-        creation_date: datetime = None,
-        modification_date: datetime = None,
+        creation_date: Optional[datetime] = None,
+        modification_date: Optional[datetime] = None,
         compress: bool = False,
         checksum: bool = False,
     ):
         super().__init__(contents=contents, compress=compress)
         self.type = Name("EmbeddedFile")
-        params = {"/Size": len(contents)}
+        params: Dict[str, Union[int, str]] = {"/Size": len(contents)}
         if creation_date:
             params["/CreationDate"] = PDFDate(creation_date, with_tz=True).serialize()
         if modification_date:

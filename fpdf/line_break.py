@@ -6,7 +6,7 @@ The contents of this file are internal to fpdf, and not part of the public API.
 They may change at any time without prior warning or any deprecation period.
 """
 
-from typing import NamedTuple, Any, Optional, Union, Sequence
+from typing import NamedTuple, Any, Optional, Union, Sequence, List
 
 from .enums import CharVPos, WrapMode
 from .errors import FPDFException
@@ -153,8 +153,8 @@ class Fragment:
     def get_width(
         self,
         start: int = 0,
-        end: int = None,
-        chars: str = None,
+        end: Optional[int] = None,
+        chars: Optional[str] = None,
         initial_cs: bool = True,
     ):
         """
@@ -169,7 +169,9 @@ class Fragment:
         """
 
         if chars is None:
-            chars = self.characters[start:end]
+            chars = self.characters[start:end]  # type: ignore[assignment]
+        assert chars is not None  # make mypy happy
+
         if self.is_ttf_font:
             w = sum(self.font.cw[ord(c)] for c in chars)
         else:
@@ -237,7 +239,7 @@ class CurrentLine:
                     normally, instead of triggering a line break. Default: False
         """
         self.print_sh = print_sh
-        self.fragments = []
+        self.fragments: List[Fragment] = []
         self.width = 0
         self.number_of_spaces = 0
 
@@ -252,8 +254,8 @@ class CurrentLine:
         #     HyphenHint is used fo this purpose.
         # The purpose of multiple positions tracking - to have an ability
         # to break in multiple places, depending on condition.
-        self.space_break_hint = None
-        self.hyphen_break_hint = None
+        self.space_break_hint: Optional[SpaceHint] = None
+        self.hyphen_break_hint: Optional[HyphenHint] = None
 
     def add_character(
         self,
@@ -263,7 +265,7 @@ class CurrentLine:
         k: float,
         original_fragment_index: int,
         original_character_index: int,
-        url: str = None,
+        url: Optional[str] = None,
     ):
         assert character != NEWLINE
         if not self.fragments:
@@ -367,6 +369,7 @@ class CurrentLine:
                 self.hyphen_break_hint.original_character_index,
                 self.manual_break(justify),
             )
+        assert self.space_break_hint is not None
         self._apply_automatic_hint(self.space_break_hint)
         return (
             self.space_break_hint.original_fragment_index,
@@ -389,7 +392,7 @@ class MultiLineBreak:
         self.wrapmode = wrapmode
         self.fragment_index = 0
         self.character_index = 0
-        self.idx_last_forced_break = None
+        self.idx_last_forced_break: Optional[int] = None
 
     # pylint: disable=too-many-return-statements
     def get_line_of_given_width(self, maximum_width: float):

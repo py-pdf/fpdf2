@@ -19,13 +19,13 @@ from math import isclose
 from numbers import Number
 from os.path import splitext
 from pathlib import Path
-from typing import Callable, NamedTuple, Optional, Union
+from typing import Callable, NamedTuple, Optional, Union, List, Tuple
 
 try:
     from endesive import signer
     from cryptography.hazmat.primitives.serialization import pkcs12
 except ImportError:
-    pkcs12, signer = None, None
+    pkcs12, signer = None, None  # type: ignore[assignment]
 
 try:
     from PIL.Image import Image
@@ -34,7 +34,7 @@ except ImportError:
         "Pillow could not be imported - fpdf2 will not be able to add any image"
     )
 
-    class Image:
+    class Image:  # type: ignore[no-redef]
         # The class must exist for some isinstance checks below
         pass
 
@@ -148,7 +148,7 @@ class TitleStyle(FontFace):
         font_family: Optional[str] = None,
         font_style: Optional[str] = None,
         font_size_pt: Optional[int] = None,
-        color: Union[int, tuple] = None,  # grey scale or (red, green, blue),
+        color: Optional[Union[int, tuple]] = None,  # grey scale or (red, green, blue),
         underline: bool = False,
         t_margin: Optional[int] = None,
         l_margin: Optional[int] = None,
@@ -510,7 +510,7 @@ class FPDF(GraphicsStateMixin):
         """
         self.r_margin = margin
 
-    def set_auto_page_break(self, auto, margin=0):
+    def set_auto_page_break(self, auto: bool, margin: float = 0.0):
         """
         Set auto page break mode and triggering bottom margin.
         By default, the mode is on and the bottom margin is 2 cm.
@@ -582,7 +582,7 @@ class FPDF(GraphicsStateMixin):
         if self._page_layout in (PageLayout.TWO_PAGE_LEFT, PageLayout.TWO_PAGE_RIGHT):
             self._set_min_pdf_version("1.5")
 
-    def set_compression(self, compress):
+    def set_compression(self, compress: bool):
         """
         Activates or deactivates page compression.
 
@@ -597,7 +597,7 @@ class FPDF(GraphicsStateMixin):
         """
         self.compress = compress
 
-    def set_title(self, title):
+    def set_title(self, title: str):
         """
         Defines the title of the document.
 
@@ -606,7 +606,7 @@ class FPDF(GraphicsStateMixin):
         """
         self.title = title
 
-    def set_lang(self, lang):
+    def set_lang(self, lang: str):
         """
         A language identifier specifying the natural language for all text in the document
         except where overridden by language specifications for structure elements or marked content.
@@ -620,7 +620,7 @@ class FPDF(GraphicsStateMixin):
         if lang:
             self._set_min_pdf_version("1.4")
 
-    def set_subject(self, subject):
+    def set_subject(self, subject: str):
         """
         Defines the subject of the document.
 
@@ -629,7 +629,7 @@ class FPDF(GraphicsStateMixin):
         """
         self.subject = subject
 
-    def set_author(self, author):
+    def set_author(self, author: str):
         """
         Defines the author of the document.
 
@@ -638,7 +638,7 @@ class FPDF(GraphicsStateMixin):
         """
         self.author = author
 
-    def set_keywords(self, keywords):
+    def set_keywords(self, keywords: str):
         """
         Associate keywords with the document
 
@@ -647,7 +647,7 @@ class FPDF(GraphicsStateMixin):
         """
         self.keywords = keywords
 
-    def set_creator(self, creator):
+    def set_creator(self, creator: str):
         """
         Defines the creator of the document.
         This is typically the name of the application that generates the PDF.
@@ -673,7 +673,7 @@ class FPDF(GraphicsStateMixin):
             date = date.astimezone()
         self.creation_date = date
 
-    def set_xmp_metadata(self, xmp_metadata):
+    def set_xmp_metadata(self, xmp_metadata: str):
         if "<?xpacket" in xmp_metadata[:50]:
             raise ValueError(
                 "fpdf2 already performs XMP metadata wrapping in a <?xpacket> tag"
@@ -682,7 +682,7 @@ class FPDF(GraphicsStateMixin):
         if xmp_metadata:
             self._set_min_pdf_version("1.4")
 
-    def set_doc_option(self, opt, value):
+    def set_doc_option(self, opt: str, value: str):
         """
         Defines a document option.
 
@@ -704,7 +704,7 @@ class FPDF(GraphicsStateMixin):
             raise FPDFException(f'Unknown document option "{opt}"')
         self.core_fonts_encoding = value
 
-    def set_image_filter(self, image_filter):
+    def set_image_filter(self, image_filter: str):
         """
         Args:
             image_filter (str): name of a the image filter to use
@@ -723,7 +723,7 @@ class FPDF(GraphicsStateMixin):
         if image_filter == "JPXDecode":
             self._set_min_pdf_version("1.5")
 
-    def alias_nb_pages(self, alias="{nb}"):
+    def alias_nb_pages(self, alias: str = "{nb}"):
         """
         Defines an alias for the total number of pages.
         It will be substituted as the document is closed.
@@ -748,7 +748,12 @@ class FPDF(GraphicsStateMixin):
         self.str_alias_nb_pages = alias
 
     def add_page(
-        self, orientation="", format="", same=False, duration=0, transition=None
+        self,
+        orientation: str = "",
+        format: str = "",
+        same: bool = False,
+        duration: float = 0.0,
+        transition=None,
     ):
         """
         Adds a new page to the document.
@@ -909,11 +914,11 @@ class FPDF(GraphicsStateMixin):
         in a subclass to implement your own rendering logic.
         """
 
-    def page_no(self):
+    def page_no(self) -> int:
         """Get the current page number"""
         return self.page
 
-    def set_draw_color(self, r, g=-1, b=-1):
+    def set_draw_color(self, r, g: int = -1, b: int = -1):
         """
         Defines the color used for all stroking operations (lines, rectangles and cell borders).
         It can be expressed in RGB components or grey scale.
@@ -929,7 +934,7 @@ class FPDF(GraphicsStateMixin):
         if self.page > 0:
             self._out(self.draw_color.serialize().upper())
 
-    def set_fill_color(self, r, g=-1, b=-1):
+    def set_fill_color(self, r, g: int = -1, b: int = -1):
         """
         Defines the color used for all filling operations (filled rectangles and cell backgrounds).
         It can be expressed in RGB components or grey scale.
@@ -980,7 +985,7 @@ class FPDF(GraphicsStateMixin):
             w += frag.get_width()
         return w
 
-    def set_line_width(self, width):
+    def set_line_width(self, width: float):
         """
         Defines the line width of all stroking operations (lines, rectangles and cell borders).
         By default, the value equals 0.2 mm.
@@ -993,7 +998,7 @@ class FPDF(GraphicsStateMixin):
         if self.page > 0:
             self._out(f"{width * self.k:.2f} w")
 
-    def set_page_background(self, background):
+    def set_page_background(self, background: str):
         """
         Sets a background color or image to be drawn every time `FPDF.add_page()` is called, or removes a previously set background.
         The method can be called before the first page is created and the value is retained from page to page.
@@ -1764,7 +1769,7 @@ class FPDF(GraphicsStateMixin):
 
         self.fonts[fontkey] = TTFFont(self, font_file_path, fontkey, style)
 
-    def set_font(self, family=None, style="", size=0):
+    def set_font(self, family: Optional[str] = None, style: str = "", size: float = 0):
         """
         Sets the font used to print character strings.
         It is mandatory to call this method at least once before printing text.
@@ -1848,7 +1853,7 @@ class FPDF(GraphicsStateMixin):
         if self.page > 0:
             self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
 
-    def set_font_size(self, size):
+    def set_font_size(self, size: float):
         """
         Configure the font size in points
 
@@ -1865,7 +1870,7 @@ class FPDF(GraphicsStateMixin):
                 )
             self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
 
-    def set_char_spacing(self, spacing):
+    def set_char_spacing(self, spacing: float):
         """
         Sets horizontal character spacing.
         A positive value increases the space between characters, a negative value
@@ -1881,7 +1886,7 @@ class FPDF(GraphicsStateMixin):
         if self.page > 0:
             self._out(f"BT {spacing:.2f} Tc ET")
 
-    def set_stretching(self, stretching):
+    def set_stretching(self, stretching: float):
         """
         Sets horizontal font stretching.
         By default, no stretching is set (which is equivalent to a value of 100).
@@ -1895,7 +1900,7 @@ class FPDF(GraphicsStateMixin):
         if self.page > 0:
             self._out(f"BT {stretching:.2f} Tz ET")
 
-    def set_fallback_fonts(self, fallback_fonts, exact_match=True):
+    def set_fallback_fonts(self, fallback_fonts: List[str], exact_match: bool = True):
         """
         Allows you to specify a list of fonts to be used if any character is not available on the font currently set.
         Detailed documentation: https://pyfpdf.github.io/fpdf2/Unicode.html#fallback-fonts
@@ -1923,7 +1928,7 @@ class FPDF(GraphicsStateMixin):
         self._fallback_font_ids = tuple(fallback_font_ids)
         self._fallback_font_exact_match = exact_match
 
-    def add_link(self, y=0, x=0, page=-1, zoom="null"):
+    def add_link(self, y: float = 0, x: float = 0, page: int = -1, zoom: str = "null"):
         """
         Creates a new internal link and returns its identifier.
         An internal link is a clickable area which directs to another place within the document.
@@ -1951,7 +1956,9 @@ class FPDF(GraphicsStateMixin):
         self.links[link_index] = link
         return link_index
 
-    def set_link(self, link, y=0, x=0, page=-1, zoom="null"):
+    def set_link(
+        self, link: int, y: float = 0, x: float = 0, page: int = -1, zoom: str = "null"
+    ):
         """
         Defines the page and position a link points to.
 
@@ -1976,7 +1983,16 @@ class FPDF(GraphicsStateMixin):
         link.zoom = zoom
 
     @check_page
-    def link(self, x, y, w, h, link, alt_text=None, border_width=0):
+    def link(
+        self,
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        link,
+        alt_text: Optional[str] = None,
+        border_width: int = 0,
+    ):
         """
         Puts a link annotation on a rectangular area of the page.
         Text or image links are generally put via `FPDF.cell`,
@@ -2027,9 +2043,9 @@ class FPDF(GraphicsStateMixin):
     def embed_file(
         self,
         file_path=None,
-        bytes=None,
-        basename=None,
-        modification_date=None,
+        bytes: Optional[bytes] = None,
+        basename: Optional[str] = None,
+        modification_date: Optional[datetime] = None,
         **kwargs,
     ):
         """
@@ -2083,7 +2099,15 @@ class FPDF(GraphicsStateMixin):
 
     @check_page
     def file_attachment_annotation(
-        self, file_path, x, y, w=1, h=1, name=None, flags=DEFAULT_ANNOT_FLAGS, **kwargs
+        self,
+        file_path,
+        x: float,
+        y: float,
+        w: float = 1,
+        h: float = 1,
+        name=None,
+        flags=DEFAULT_ANNOT_FLAGS,
+        **kwargs,
     ):
         """
         Puts a file attachment annotation on a rectangular area of the page.
@@ -2121,7 +2145,14 @@ class FPDF(GraphicsStateMixin):
 
     @check_page
     def text_annotation(
-        self, x, y, text, w=1, h=1, name=None, flags=DEFAULT_ANNOT_FLAGS
+        self,
+        x: float,
+        y: float,
+        text: str,
+        w: float = 1,
+        h: float = 1,
+        name=None,
+        flags=DEFAULT_ANNOT_FLAGS,
     ):
         """
         Puts a text annotation on a rectangular area of the page.
@@ -2149,7 +2180,7 @@ class FPDF(GraphicsStateMixin):
         return annotation
 
     @check_page
-    def add_action(self, action, x, y, w, h):
+    def add_action(self, action, x: float, y: float, w: float, h: float):
         """
         Puts an Action annotation on a rectangular area of the page.
 
@@ -2173,7 +2204,12 @@ class FPDF(GraphicsStateMixin):
 
     @contextmanager
     def highlight(
-        self, text, title="", type="Highlight", color=(1, 1, 0), modification_time=None
+        self,
+        text: str,
+        title: str = "",
+        type="Highlight",
+        color: Tuple[float, float, float] = (1, 1, 0),
+        modification_time: Optional[datetime] = None,
     ):
         """
         Context manager that adds a single highlight annotation based on the text lines inserted
@@ -2211,12 +2247,12 @@ class FPDF(GraphicsStateMixin):
     def add_text_markup_annotation(
         self,
         type,
-        text,
+        text: str,
         quad_points,
         title="",
-        color=(1, 1, 0),
-        modification_time=None,
-        page=None,
+        color: Tuple[float, float, float] = (1, 1, 0),
+        modification_time: Optional[datetime] = None,
+        page: Optional[int] = None,
     ):
         """
         Adds a text markup annotation on some quadrilateral areas of the page.
@@ -2262,7 +2298,12 @@ class FPDF(GraphicsStateMixin):
 
     @check_page
     def ink_annotation(
-        self, coords, contents="", title="", color=(1, 1, 0), border_width=1
+        self,
+        coords,
+        contents: str = "",
+        title: str = "",
+        color: Tuple[float, float, float] = (1, 1, 0),
+        border_width: int = 1,
     ):
         """
         Adds add an ink annotation on the page.
@@ -2297,7 +2338,7 @@ class FPDF(GraphicsStateMixin):
         return annotation
 
     @check_page
-    def text(self, x, y, txt=""):
+    def text(self, x: float, y: float, txt: str = ""):
         """
         Prints a character string. The origin is on the left of the first character,
         on the baseline. This method allows placing a string precisely on the page,
@@ -2341,7 +2382,9 @@ class FPDF(GraphicsStateMixin):
         self._out(" ".join(sl))
 
     @check_page
-    def rotate(self, angle, x=None, y=None):
+    def rotate(
+        self, angle: float, x: Optional[float] = None, y: Optional[float] = None
+    ):
         """
         .. deprecated:: 2.1.0
             Use `FPDF.rotation()` instead.
@@ -2717,8 +2760,8 @@ class FPDF(GraphicsStateMixin):
     def _render_styled_text_line(
         self,
         text_line: TextLine,
-        w: float = None,
-        h: float = None,
+        w: Optional[float] = None,
+        h: Optional[float] = None,
         border: Union[str, int] = 0,
         new_x: XPos = XPos.RIGHT,
         new_y: YPos = YPos.TOP,
@@ -2783,6 +2826,8 @@ class FPDF(GraphicsStateMixin):
                     "A 'text_line' parameter with fragments must be provided if 'w' is None"
                 )
             w = styled_txt_width + self.c_margin + self.c_margin
+        assert w is not None  # this is always true, make mypy happy
+
         if center:
             self.x = (
                 self.w / 2 if align == Align.X else self.l_margin + (self.epw - w) / 2
@@ -3447,7 +3492,7 @@ class FPDF(GraphicsStateMixin):
         if not text_lines:  # ensure we display at least one cell - cf. issue #349
             text_lines = [
                 TextLine(
-                    "",
+                    [],
                     text_width=0,
                     number_of_spaces=0,
                     justify=False,
@@ -3496,7 +3541,7 @@ class FPDF(GraphicsStateMixin):
         if should_render_bottom_blank_cell:
             new_page = self._render_styled_text_line(
                 TextLine(
-                    "",
+                    [],
                     text_width=0,
                     number_of_spaces=0,
                     justify=False,
@@ -3537,7 +3582,7 @@ class FPDF(GraphicsStateMixin):
             self.underline = prev_underline
 
         output = MethodReturnValue.coerce(output)
-        return_value = ()
+        return_value: tuple = ()
         if output & MethodReturnValue.PAGE_BREAK:
             return_value += (page_break_triggered,)
         if output & MethodReturnValue.LINES:
@@ -3557,7 +3602,7 @@ class FPDF(GraphicsStateMixin):
     @check_page
     def write(
         self,
-        h: float = None,
+        h: Optional[float] = None,
         txt: str = "",
         link: str = "",
         print_sh: bool = False,
@@ -4059,7 +4104,7 @@ class FPDF(GraphicsStateMixin):
         self.x = self.l_margin
         self.y = y if y >= 0 else self.h + y
 
-    def set_xy(self, x, y):
+    def set_xy(self, x: float, y: float):
         """
         Defines the abscissa and ordinate of the current position.
         If the values provided are negative, they are relative respectively to the right and bottom of the page.
@@ -4071,7 +4116,7 @@ class FPDF(GraphicsStateMixin):
         self.set_y(y)
         self.set_x(x)
 
-    def normalize_text(self, txt):
+    def normalize_text(self, txt: str):
         """Check that text input is in the correct format/encoding"""
         # - for TTF unicode fonts: unicode object (utf8 encoding)
         # - for built-in fonts: string instances (encoding: latin-1, cp1252)
