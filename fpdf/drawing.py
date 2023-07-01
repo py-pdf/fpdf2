@@ -195,7 +195,7 @@ class DeviceRGB(
     OPERATOR = "rg"
     """The PDF drawing operator used to specify this type of color."""
 
-    def __new__(cls, r, g, b, a=None):
+    def __new__(cls, r: float, g: float, b: float, a: Optional[float] = None):
         if a is not None:
             _check_range(a)
 
@@ -240,7 +240,7 @@ class DeviceGray(
     OPERATOR = "g"
     """The PDF drawing operator used to specify this type of color."""
 
-    def __new__(cls, g, a=None):
+    def __new__(cls, g: float, a: Optional[float] = None):
         if a is not None:
             _check_range(a)
 
@@ -3240,7 +3240,7 @@ class PaintedPath:
     primitive path elements and `GraphicsContext`.
     """
 
-    def __init__(self, x=0, y=0):
+    def __init__(self, x: float = 0, y: float = 0) -> None:
         self._root_graphics_context = GraphicsContext()
         self._graphics_context = self._root_graphics_context
 

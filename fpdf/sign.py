@@ -1,6 +1,7 @@
 "Document signature generation"
 import hashlib
 from datetime import timezone
+from typing import Optional
 from unittest.mock import patch
 
 from .syntax import build_obj_dict, Name
@@ -9,7 +10,13 @@ from .util import buffer_subst
 
 
 class Signature:
-    def __init__(self, contact_info=None, location=None, m=None, reason=None):
+    def __init__(
+        self,
+        contact_info: Optional[str] = None,
+        location: Optional[str] = None,
+        m: Optional[str] = None,
+        reason: Optional[str] = None,
+    ):
         self.type = Name("Sig")
         self.filter = Name("Adobe.PPKLite")
         self.sub_filter = Name("adbe.pkcs7.detached")

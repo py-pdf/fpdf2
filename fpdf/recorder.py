@@ -24,7 +24,7 @@ class FPDFRecorder:
     when generating large PDFs, doubling memory usage may be troublesome.
     """
 
-    def __init__(self, pdf, accept_page_break=True):
+    def __init__(self, pdf, accept_page_break: bool = True) -> None:
         self.pdf = pdf
         self._initial = deepcopy(self.pdf.__dict__)
         self._calls = []
@@ -41,7 +41,7 @@ class FPDFRecorder:
         self.pdf.__dict__ = self._initial
         self._initial = deepcopy(self.pdf.__dict__)
 
-    def replay(self):
+    def replay(self) -> None:
         for call in self._calls:
             func, args, kwargs = call
             try:
@@ -59,7 +59,7 @@ class FPDFRecorder:
 
 
 class CallRecorder:
-    def __init__(self, func, calls):
+    def __init__(self, func, calls) -> None:
         self._func = func
         self._calls = calls
 

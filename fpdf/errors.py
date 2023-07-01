@@ -5,7 +5,7 @@ class FPDFException(Exception):
 class FPDFPageFormatException(FPDFException):
     """Error is thrown when a bad page format is given"""
 
-    def __init__(self, argument, unknown=False, one=False):
+    def __init__(self, argument, unknown: bool = False, one: bool = False):
         super().__init__()
         if unknown and one:
             raise TypeError(

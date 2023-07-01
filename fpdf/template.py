@@ -5,7 +5,7 @@ __copyright__ = "Copyright (C) 2010 Mariano Reingart"
 __license__ = "LGPL 3.0"
 
 import csv, locale, warnings
-from typing import Optional
+from typing import Optional, List
 
 from .errors import FPDFException
 from .fpdf import FPDF
@@ -30,7 +30,7 @@ class FlexTemplate:
     a document in any combination.
     """
 
-    def __init__(self, pdf, elements=None):
+    def __init__(self, pdf: FPDF, elements: Optional[List[dict]] = None) -> None:
         """
         Arguments:
 
@@ -60,7 +60,7 @@ class FlexTemplate:
         }
         self.texts = {}
 
-    def load_elements(self, elements):
+    def load_elements(self, elements: List[dict]):
         """
         Load a template definition.
 
@@ -152,7 +152,13 @@ class FlexTemplate:
             return False
         return None
 
-    def parse_csv(self, infile, delimiter=",", decimal_sep=".", encoding=None):
+    def parse_csv(
+        self,
+        infile: str,
+        delimiter: str = ",",
+        decimal_sep: str = ".",
+        encoding: Optional[str] = None,
+    ):
         """
         Load the template definition from a CSV file.
 
@@ -175,7 +181,7 @@ class FlexTemplate:
 
         """
 
-        def _varsep_float(s, default="0"):
+        def _varsep_float(s: str, default: str = "0"):
             """Convert to float with given decimal seperator"""
             # glad to have nonlocal scoping...
             return float((s.strip() or default).replace(decimal_sep, "."))
@@ -674,7 +680,7 @@ class Template(FlexTemplate):
         self.pdf.add_page()
 
     # pylint: disable=arguments-differ
-    def render(self, outfile: Optional[str] = None, dest: Optional[str] = None):
+    def render(self, outfile: Optional[str] = None, dest: Optional[str] = None):  # type: ignore[override]
         """
         Finish the document and process all pending data.
 

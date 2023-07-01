@@ -19,7 +19,9 @@ from math import isclose
 from numbers import Number
 from os.path import splitext
 from pathlib import Path
-from typing import Callable, NamedTuple, Optional, Union, List, Tuple
+from typing import Callable, NamedTuple, Optional, Union, List, Tuple, Any
+
+from .drawing import DeviceGray, DeviceRGB
 
 try:
     from endesive import signer
@@ -235,10 +237,10 @@ class FPDF(GraphicsStateMixin):
 
     def __init__(
         self,
-        orientation="portrait",
-        unit="mm",
-        format="A4",
-        font_cache_dir="DEPRECATED",
+        orientation: str = "portrait",
+        unit: Union[str, int, float] = "mm",
+        format: str = "A4",
+        font_cache_dir: Union[Path, str] = "DEPRECATED",
     ):
         """
         Args:
@@ -411,11 +413,11 @@ class FPDF(GraphicsStateMixin):
         text = unescape(text)  # To deal with HTML entities
         html2pdf.feed(text)
 
-    def _set_min_pdf_version(self, version):
+    def _set_min_pdf_version(self, version: str) -> None:
         self.pdf_version = max(self.pdf_version, version)
 
     @property
-    def is_ttf_font(self):
+    def is_ttf_font(self) -> bool:
         return self.current_font and self.current_font.type == "TTF"
 
     @property
@@ -461,7 +463,7 @@ class FPDF(GraphicsStateMixin):
         self.set_margins(margin, margin)
         self.set_auto_page_break(self.auto_page_break, margin)
 
-    def set_margins(self, left, top, right=-1):
+    def set_margins(self, left: float, top: float, right: float = -1):
         """
         Sets the document left, top & optionaly right margins to the same value.
         By default, they equal 1 cm.
@@ -480,7 +482,7 @@ class FPDF(GraphicsStateMixin):
             right = left
         self.r_margin = right
 
-    def set_left_margin(self, margin):
+    def set_left_margin(self, margin: float):
         """
         Sets the document left margin.
         Also sets the current FPDF.x on the page to this minimum horizontal position.
@@ -492,7 +494,7 @@ class FPDF(GraphicsStateMixin):
             self.x = margin
         self.l_margin = margin
 
-    def set_top_margin(self, margin):
+    def set_top_margin(self, margin: float):
         """
         Sets the document top margin.
 
@@ -501,7 +503,7 @@ class FPDF(GraphicsStateMixin):
         """
         self.t_margin = margin
 
-    def set_right_margin(self, margin):
+    def set_right_margin(self, margin: float):
         """
         Sets the document right margin.
 
@@ -533,7 +535,7 @@ class FPDF(GraphicsStateMixin):
             else (self.dh_pt, self.dw_pt)
         )
 
-    def _set_orientation(self, orientation, page_width_pt, page_height_pt):
+    def _set_orientation(self, orientation: str, page_width_pt, page_height_pt):
         orientation = orientation.lower()
         if orientation in ("p", "portrait"):
             self.cur_orientation = "P"
@@ -548,7 +550,7 @@ class FPDF(GraphicsStateMixin):
         self.w = self.w_pt / self.k
         self.h = self.h_pt / self.k
 
-    def set_display_mode(self, zoom, layout="continuous"):
+    def set_display_mode(self, zoom: Union[str, int], layout="continuous"):
         """
         Defines the way the document is to be displayed by the viewer.
 
@@ -950,7 +952,12 @@ class FPDF(GraphicsStateMixin):
         if self.page > 0:
             self._out(self.fill_color.serialize().lower())
 
-    def set_text_color(self, r, g=-1, b=-1):
+    def set_text_color(
+        self,
+        r: Union[int, Tuple[float, float, float], DeviceGray, DeviceRGB],
+        g=-1,
+        b=-1,
+    ):
         """
         Defines the color used for text.
         It can be expressed in RGB components or grey scale.
@@ -1393,7 +1400,7 @@ class FPDF(GraphicsStateMixin):
         style = RenderStyle.coerce(style)
         self._draw_ellipse(x, y, w, h, style.operator)
 
-    def _draw_ellipse(self, x, y, w, h, operator):
+    def _draw_ellipse(self, x: float, y: float, w: float, h: float, operator):
         cx = x + w / 2
         cy = y + h / 2
         rx = w / 2
@@ -3071,7 +3078,7 @@ class FPDF(GraphicsStateMixin):
 
         return page_break_triggered
 
-    def _add_quad_points(self, x, y, w, h):
+    def _add_quad_points(self, x: float, y: float, w: float, h: float):
         self._text_quad_points[self.page].extend(
             [
                 x * self.k,
@@ -3085,7 +3092,7 @@ class FPDF(GraphicsStateMixin):
             ]
         )
 
-    def _preload_font_styles(self, txt, markdown):
+    def _preload_font_styles(self, txt: str, markdown: bool):
         """
         When Markdown styling is enabled, we require secondary fonts
         to ender text in bold & italics.
@@ -3117,7 +3124,7 @@ class FPDF(GraphicsStateMixin):
         self.page = page
         return styled_txt_frags
 
-    def _parse_chars(self, txt):
+    def _parse_chars(self, txt: str):
         "Check if the font has all the necessary glyphs. If a glyph from a fallback font is used, break into fragments"
         fragments = []
         txt_frag = []
@@ -3285,12 +3292,12 @@ class FPDF(GraphicsStateMixin):
             return True
         return False
 
-    def _perform_page_break(self):
+    def _perform_page_break(self) -> None:
         x = self.x
         self.add_page(same=True)
         self.x = x  # restore x but not y after drawing header
 
-    def _has_next_page(self):
+    def _has_next_page(self) -> bool:
         return self.pages_count > self.page
 
     @contextmanager
@@ -4071,11 +4078,11 @@ class FPDF(GraphicsStateMixin):
         self.x = self.l_margin
         self.y += self._lasth if h is None else h
 
-    def get_x(self):
+    def get_x(self) -> float:
         """Returns the abscissa of the current position."""
         return self.x
 
-    def set_x(self, x):
+    def set_x(self, x: float) -> None:
         """
         Defines the abscissa of the current position.
         If the value provided is negative, it is relative to the right of the page.
@@ -4085,7 +4092,7 @@ class FPDF(GraphicsStateMixin):
         """
         self.x = x if x >= 0 else self.w + x
 
-    def get_y(self):
+    def get_y(self) -> float:
         """Returns the ordinate of the current position."""
         if self._in_unbreakable:
             raise FPDFException(
@@ -4093,7 +4100,7 @@ class FPDF(GraphicsStateMixin):
             )
         return self.y
 
-    def set_y(self, y):
+    def set_y(self, y: float) -> None:
         """
         Moves the current abscissa back to the left margin and sets the ordinate.
         If the value provided is negative, it is relative to the bottom of the page.
@@ -4133,13 +4140,13 @@ class FPDF(GraphicsStateMixin):
 
     def sign_pkcs12(
         self,
-        pkcs_filepath,
+        pkcs_filepath: str,
         password=None,
-        hashalgo="sha256",
-        contact_info=None,
-        location=None,
-        signing_time=None,
-        reason=None,
+        hashalgo: str = "sha256",
+        contact_info: Optional[str] = None,
+        location: Optional[str] = None,
+        signing_time: Optional[datetime] = None,
+        reason: Optional[str] = None,
         flags=(AnnotationFlag.PRINT, AnnotationFlag.LOCKED),
     ):
         """
@@ -4182,11 +4189,11 @@ class FPDF(GraphicsStateMixin):
         key,
         cert,
         extra_certs=(),
-        hashalgo="sha256",
-        contact_info=None,
-        location=None,
-        signing_time=None,
-        reason=None,
+        hashalgo: str = "sha256",
+        contact_info: Optional[str] = None,
+        location: Optional[str] = None,
+        signing_time: Optional[datetime] = None,
+        reason: Optional[str] = None,
         flags=(AnnotationFlag.PRINT, AnnotationFlag.LOCKED),
     ):
         """
@@ -4380,7 +4387,7 @@ class FPDF(GraphicsStateMixin):
                 x += line_width
 
     @check_page
-    def code39(self, txt, x, y, w=1.5, h=5):
+    def code39(self, txt: str, x: float, y: float, w: float = 1.5, h: float = 5):
         """Barcode 3of9"""
         dim = {"w": w, "n": w / 3}
         if not txt.startswith("*") or not txt.endswith("*"):
@@ -4448,7 +4455,7 @@ class FPDF(GraphicsStateMixin):
 
     @check_page
     @contextmanager
-    def rect_clip(self, x, y, w, h):
+    def rect_clip(self, x: float, y: float, w: float, h: float):
         """
         Context manager that defines a rectangular crop zone,
         useful to render only part of an image.
@@ -4470,7 +4477,7 @@ class FPDF(GraphicsStateMixin):
 
     @check_page
     @contextmanager
-    def elliptic_clip(self, x, y, w, h):
+    def elliptic_clip(self, x: float, y: float, w: float, h: float):
         """
         Context manager that defines an elliptic crop zone,
         useful to render only part of an image.
@@ -4488,7 +4495,7 @@ class FPDF(GraphicsStateMixin):
 
     @check_page
     @contextmanager
-    def round_clip(self, x, y, r):
+    def round_clip(self, x: float, y: float, r: float):
         """
         Context manager that defines a circular crop zone,
         useful to render only part of an image.
@@ -4548,7 +4555,7 @@ class FPDF(GraphicsStateMixin):
         recorder.rewind()
 
     @check_page
-    def insert_toc_placeholder(self, render_toc_function, pages=1):
+    def insert_toc_placeholder(self, render_toc_function, pages: int = 1):
         """
         Configure Table Of Contents rendering at the end of the document generation,
         and reserve some vertical space right now in order to insert it.
@@ -4578,13 +4585,13 @@ class FPDF(GraphicsStateMixin):
 
     def set_section_title_styles(
         self,
-        level0,
-        level1=None,
-        level2=None,
-        level3=None,
-        level4=None,
-        level5=None,
-        level6=None,
+        level0: TitleStyle,
+        level1: Optional[TitleStyle] = None,
+        level2: Optional[TitleStyle] = None,
+        level3: Optional[TitleStyle] = None,
+        level4: Optional[TitleStyle] = None,
+        level5: Optional[TitleStyle] = None,
+        level6: Optional[TitleStyle] = None,
     ):
         """
         Defines a style for section titles.
@@ -4615,7 +4622,7 @@ class FPDF(GraphicsStateMixin):
         }
 
     @check_page
-    def start_section(self, name, level=0, strict=True):
+    def start_section(self, name: str, level: int = 0, strict: bool = True):
         """
         Start a section in the document outline.
         If section_title_styles have been configured,
@@ -4740,7 +4747,11 @@ class FPDF(GraphicsStateMixin):
         table.render()
 
     def output(
-        self, name="", dest="", linearize=False, output_producer_class=OutputProducer
+        self,
+        name: str = "",
+        dest: str = "",
+        linearize: bool = False,
+        output_producer_class: type = OutputProducer,
     ):
         """
         Output PDF to some destination.
@@ -4800,7 +4811,7 @@ def _convert_to_drawing_color(r, g, b):
     return drawing.DeviceRGB(r / 255, g / 255, b / 255)
 
 
-def _is_svg(bytes):
+def _is_svg(bytes) -> bool:
     return bytes.startswith(b"<?xml ") or bytes.startswith(b"<svg ")
 
 

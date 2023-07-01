@@ -344,7 +344,7 @@ class Destination(ABC):
 
 
 class DestinationXYZ(Destination):
-    def __init__(self, page, top, left=0, zoom="null"):
+    def __init__(self, page, top, left: int = 0, zoom: str = "null"):
         self.page_number = page
         self.top = top
         self.left = left

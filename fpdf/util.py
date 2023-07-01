@@ -115,10 +115,10 @@ def get_process_rss_as_mib() -> Union[Number, None]:
     try:
         with open(f"/proc/{pid}/statm", encoding="utf8") as statm:
             return (
-                int(statm.readline().split()[1])  # type: ignore[return-value]
+                int(statm.readline().split()[1])
                 * os.sysconf("SC_PAGE_SIZE")
                 / 1024
-                / 1024
+                / 1024  # type: ignore[return-value]
             )
     except FileNotFoundError:  # /proc files only exist under Linux
         return None
