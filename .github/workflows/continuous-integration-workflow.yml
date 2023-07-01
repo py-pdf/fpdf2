@@ -24,7 +24,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies ⚙️
         if: matrix.platform == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install ghostscript libjpeg-dev
+        run: sudo apt-get update && sudo apt-get install ghostscript libjpeg-dev swig
       - name: Install qpdf ⚙️
         if: matrix.platform == 'ubuntu-latest' && matrix.python-version != '3.9'
         # We run the unit tests WITHOUT qpdf for a single parallel execution / Python version:
