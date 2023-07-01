@@ -5,16 +5,17 @@ __copyright__ = "Copyright (C) 2010 Mariano Reingart"
 __license__ = "LGPL 3.0"
 
 import csv, locale, warnings
+from typing import Optional
 
 from .errors import FPDFException
 from .fpdf import FPDF
 
 
-def _rgb(col):
+def _rgb(col: int):
     return (col // 65536), (col // 256 % 256), (col % 256)
 
 
-def _rgb_as_str(col):
+def _rgb_as_str(col: int):
     r, g, b = _rgb(col)
     if (r == 0 and g == 0 and b == 0) or g == -1:
         return f"{r / 255:.3f} g"
@@ -532,7 +533,13 @@ class FlexTemplate:
         pdf.set_xy(x1, y1)
         pdf.write(5, text, link)
 
-    def render(self, offsetx=0.0, offsety=0.0, rotate=0.0, scale=1.0):
+    def render(
+        self,
+        offsetx: float = 0.0,
+        offsety: float = 0.0,
+        rotate: float = 0.0,
+        scale: float = 1.0,
+    ):
         """
         Add the contents of the template to the PDF document.
 
@@ -667,7 +674,7 @@ class Template(FlexTemplate):
         self.pdf.add_page()
 
     # pylint: disable=arguments-differ
-    def render(self, outfile=None, dest=None):
+    def render(self, outfile: Optional[str] = None, dest: Optional[str] = None):
         """
         Finish the document and process all pending data.
 

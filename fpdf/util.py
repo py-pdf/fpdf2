@@ -44,7 +44,7 @@ def get_scale_factor(unit: Union[str, Number]) -> float:
         ValueError
     """
     if isinstance(unit, Number):
-        return float(unit)
+        return float(unit)  # type: ignore
 
     if unit == "pt":
         return 1
@@ -76,7 +76,7 @@ def convert_unit(
     """
     unit_conversion_factor = get_scale_factor(new_unit) / get_scale_factor(old_unit)
     if isinstance(to_convert, Iterable):
-        return tuple(convert_unit(i, 1, unit_conversion_factor) for i in to_convert)
+        return tuple(convert_unit(i, 1, unit_conversion_factor) for i in to_convert)  # type: ignore
     return to_convert / unit_conversion_factor
 
 
@@ -115,7 +115,7 @@ def get_process_rss_as_mib() -> Union[Number, None]:
     try:
         with open(f"/proc/{pid}/statm", encoding="utf8") as statm:
             return (
-                int(statm.readline().split()[1])
+                int(statm.readline().split()[1])  # type: ignore[return-value]
                 * os.sysconf("SC_PAGE_SIZE")
                 / 1024
                 / 1024
@@ -124,7 +124,7 @@ def get_process_rss_as_mib() -> Union[Number, None]:
         return None
 
 
-def get_process_heap_and_stack_sizes() -> Tuple[str]:
+def get_process_heap_and_stack_sizes() -> Tuple[str, str]:
     heap_size_in_mib, stack_size_in_mib = "<unavailable>", "<unavailable>"
     pid = os.getpid()
     try:
@@ -136,8 +136,8 @@ def get_process_heap_and_stack_sizes() -> Tuple[str]:
         words = line.split()
         addr_range, path = words[0], words[-1]
         addr_start, addr_end = addr_range.split("-")
-        addr_start, addr_end = int(addr_start, 16), int(addr_end, 16)
-        size = addr_end - addr_start
+        addr_start_int, addr_end_int = int(addr_start, 16), int(addr_end, 16)
+        size = addr_end_int - addr_start_int
         if path == "[heap]":
             heap_size_in_mib = f"{size / 1024 / 1024:.1f} MiB"
         elif path == "[stack]":
@@ -145,7 +145,7 @@ def get_process_heap_and_stack_sizes() -> Tuple[str]:
     return heap_size_in_mib, stack_size_in_mib
 
 
-def get_pymalloc_allocated_over_total_size() -> Tuple[str]:
+def get_pymalloc_allocated_over_total_size() -> str:
     """
     Get PyMalloc stats from sys._debugmallocstats()
     From experiments, not very reliable
@@ -189,6 +189,6 @@ def get_pillow_allocated_memory() -> str:
     # pylint: disable=c-extension-no-member,import-outside-toplevel
     from PIL import Image
 
-    stats = Image.core.get_stats()
+    stats = Image.core.get_stats()  # type: ignore[attr-defined]
     blocks_in_use = stats["allocated_blocks"] - stats["freed_blocks"]
     return f"{blocks_in_use * PIL_MEM_BLOCK_SIZE_IN_MIB:.1f} MiB"

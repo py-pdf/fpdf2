@@ -9,7 +9,7 @@ Quoting the PDF spec:
 > located by means of the **StructTreeRoot** entry in the document catalog.
 """
 from collections import defaultdict
-from typing import List, Union
+from typing import List, Union, Optional
 
 from .syntax import PDFObject, PDFString, PDFArray
 
@@ -73,9 +73,9 @@ class StructElem(PDFObject):
         struct_type: str,
         parent: PDFObject,
         kids: Union[List[int], List["StructElem"]],
-        page_number: int = None,
-        title: str = None,
-        alt: str = None,
+        page_number: Optional[int] = None,
+        title: Optional[str] = None,
+        alt: Optional[str] = None,
     ):
         super().__init__()
         self.type = "/StructElem"
@@ -107,9 +107,9 @@ class StructureTreeBuilder:
         self,
         page_number: int,
         struct_type: str,
-        mcid: int = None,
-        title: str = None,
-        alt_text: str = None,
+        mcid: Optional[int] = None,
+        title: Optional[str] = None,
+        alt_text: Optional[str] = None,
     ):
         struct_parents_id = self.spid_per_page_number.get(page_number)
         if struct_parents_id is None:

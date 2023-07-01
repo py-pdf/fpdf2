@@ -34,8 +34,8 @@ class OutlineItemDictionary(PDFObject):
     def __init__(
         self,
         title: str,
-        dest: Destination = None,
-        struct_elem: StructElem = None,
+        dest: Optional[Destination] = None,
+        struct_elem: Optional[StructElem] = None,
     ):
         super().__init__()
         self.title = PDFString(title, encrypt=True)
