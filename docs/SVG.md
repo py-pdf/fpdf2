@@ -120,7 +120,7 @@ pdf.image(img_bytesio, x=x, y=y, w=w, h=h)
 pdf.output('browser-usage-bar-chart.pdf')
 ```
 The above code generates a PDF with the following graph:
-![](pygal_chart_cairo.PNG)
+![](pygal_chart_cairo.png)
 
 **!! Troubleshooting advice !!**
 
