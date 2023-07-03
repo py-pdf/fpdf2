@@ -239,6 +239,7 @@ class FPDF(GraphicsStateMixin):
         unit="mm",
         format="A4",
         font_cache_dir="DEPRECATED",
+        nbsp=False,
     ):
         """
         Args:
@@ -252,6 +253,8 @@ class FPDF(GraphicsStateMixin):
             format (str): possible values are "a3", "a4", "a5", "letter", "legal" or a tuple
                 (width, height) expressed in the given unit. Default to "a4".
             font_cache_dir (Path or str): [**DEPRECATED since v2.5.1**] unused
+            nbsp (bool): Treat a non-breaking space (hard space) (\\u00a0) as a variable width
+                character, instead of a deprecated fixed-width character. Default value: False
         """
         if font_cache_dir != "DEPRECATED":
             warnings.warn(
@@ -353,6 +356,9 @@ class FPDF(GraphicsStateMixin):
 
         # final buffer holding the PDF document in-memory - defined only after calling output():
         self.buffer = None
+
+        # non-breaking space behavior, True for NBSP (variable-width), False for fixed-width space
+        self.nbsp = nbsp
 
     def set_encryption(
         self,
@@ -3426,6 +3432,7 @@ class FPDF(GraphicsStateMixin):
             justify=(align == Align.J),
             print_sh=print_sh,
             wrapmode=wrapmode,
+            nbsp=self.nbsp,
         )
         txt_line = multi_line_break.get_line_of_given_width(maximum_allowed_width)
         while (txt_line) is not None:

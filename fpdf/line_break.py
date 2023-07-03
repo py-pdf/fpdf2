@@ -14,6 +14,7 @@ from .errors import FPDFException
 SOFT_HYPHEN = "\u00ad"
 HYPHEN = "\u002d"
 SPACE = " "
+HARD_SPACE = "\u00a0"
 NEWLINE = "\n"
 
 
@@ -231,14 +232,17 @@ class HyphenHint(NamedTuple):
 
 
 class CurrentLine:
-    def __init__(self, print_sh: bool = False):
+    def __init__(self, print_sh: bool = False, nbsp: bool = False):
         """
         Per-line text fragment management for use by MultiLineBreak.
             Args:
                 print_sh (bool): If true, a soft-hyphen will be rendered
                     normally, instead of triggering a line break. Default: False
+                nbsp (bool): Treat a non-breaking space (hard space) (\\u00a0) as a variable width
+                    character, instead of a deprecated fixed-width character. Default value: False
         """
         self.print_sh = print_sh
+        self.nbsp = nbsp
         self.fragments = []
         self.width = 0
         self.number_of_spaces = 0
@@ -291,6 +295,11 @@ class CurrentLine:
                 self.number_of_spaces,
             )
             self.number_of_spaces += 1
+        elif self.nbsp and character == HARD_SPACE:
+            character = SPACE
+            self.fragments.append(Fragment("", graphics_state, k, url))
+            self.number_of_spaces += 1
+            # active_fragment = self.fragments[-1]
         elif character == SOFT_HYPHEN and not self.print_sh:
             self.hyphen_break_hint = HyphenHint(
                 original_fragment_index,
@@ -384,11 +393,13 @@ class MultiLineBreak:
         justify: bool = False,
         print_sh: bool = False,
         wrapmode: WrapMode = WrapMode.WORD,
+        nbsp: bool = False,
     ):
         self.styled_text_fragments = styled_text_fragments
         self.justify = justify
         self.print_sh = print_sh
         self.wrapmode = wrapmode
+        self.nbsp = nbsp
         self.fragment_index = 0
         self.character_index = 0
         self.idx_last_forced_break = None
@@ -406,7 +417,7 @@ class MultiLineBreak:
         last_character_index = self.character_index
         line_full = False
 
-        current_line = CurrentLine(print_sh=self.print_sh)
+        current_line = CurrentLine(print_sh=self.print_sh, nbsp=self.nbsp)
         while self.fragment_index < len(self.styled_text_fragments):
             current_fragment = self.styled_text_fragments[self.fragment_index]
 
