@@ -47,6 +47,7 @@ jobs:
         run: |
           # Using qpdf
           find . -name '*.pdf' | xargs -n 1 qpdf --check --password=fpdf2
+          export PYTHONPATH=$PWD
           # Using Datalogics PDF Checker:
           scripts/install-pdfchecker.sh
           find . -name '*.pdf' | xargs -n 1 scripts/pdfchecker.py
