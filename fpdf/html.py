@@ -238,7 +238,7 @@ class HTML2FPDF(HTMLParser):
         self.bullet = []
         self.font_size = pdf.font_size_pt
         self.set_font(pdf.font_family or "times", size=self.font_size)
-        self.font_color = 0, 0, 0  # initialize font color, r,g,b format
+        self.font_color = tuple((255 * v for v in pdf.text_color.colors))
         self.heading_level = None
         self.heading_sizes = dict(**DEFAULT_HEADING_SIZES)
         self.heading_above = 0.2  # extra space above heading, relative to font size

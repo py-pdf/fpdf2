@@ -25,6 +25,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Fixed
 - [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): the `colspan` setting has been fixed - [documentation](https://pyfpdf.github.io/fpdf2/Tables.html#column-span)
 - [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): allowing images path starting with `data` to be passed as input
+- the initial text color is preserved when using `FPDF.write_html()` - _cf._ [issue #846](https://github.com/PyFPDF/fpdf2/issues/846)
 ### Deprecated
 - the `center` optional parameter of [`FPDF.cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) is **no more** deprecated, as it allows for horizontal positioning, which is different from text alignment control with `align="C"`
 
