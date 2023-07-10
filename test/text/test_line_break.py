@@ -1129,3 +1129,13 @@ def test_trim_trailing_spaces():
     cl.fragments = [frag]
     res = cl.trim_trailing_spaces()
     assert res is None
+
+
+def test_line_break_no_initial_newline():  # issue-847
+    text = "X" * 50
+    alphabet = {"normal": {}}
+    alphabet["normal"]["X"] = 4.7
+    fragments = [FxFragment(alphabet, text, _gs_normal, 1)]
+    multi_line_break = MultiLineBreak(fragments)
+    text_line = multi_line_break.get_line_of_given_width(188)
+    assert text_line.fragments

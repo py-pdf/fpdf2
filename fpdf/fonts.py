@@ -61,6 +61,9 @@ class CoreFont:
         self.fontkey = fontkey
         self.emphasis = TextEmphasis.coerce(style)
 
+    def __repr__(self):
+        return f"CoreFont(i={self.i}, fontkey={self.fontkey})"
+
 
 class TTFFont:
     __slots__ = (

@@ -38,12 +38,10 @@ class Fragment:
         self.link = link
 
     def __repr__(self):
-        gstate = self.graphics_state.copy()
-        if "current_font" in gstate:
-            del gstate["current_font"]  # TMI
         return (
             f"Fragment(characters={self.characters},"
-            f" graphics_state={gstate}, k={self.k}, link={self.link})"
+            f" graphics_state={self.graphics_state},"
+            f" k={self.k}, link={self.link})"
         )
 
     @property
@@ -394,17 +392,13 @@ class MultiLineBreak:
         self.idx_last_forced_break = None
 
     # pylint: disable=too-many-return-statements
-    def get_line_of_given_width(self, maximum_width: float, wordsplit: bool = True):
+    def get_line_of_given_width(self, maximum_width: float):
         first_char = True  # "Tw" ignores the first character in a text object.
         idx_last_forced_break = self.idx_last_forced_break
         self.idx_last_forced_break = None
 
         if self.fragment_index == len(self.styled_text_fragments):
             return None
-
-        last_fragment_index = self.fragment_index
-        last_character_index = self.character_index
-        line_full = False
 
         current_line = CurrentLine(print_sh=self.print_sh)
         while self.fragment_index < len(self.styled_text_fragments):
@@ -442,9 +436,6 @@ class MultiLineBreak:
                     ) = current_line.automatic_break(self.justify)
                     self.character_index += 1
                     return line
-                if not wordsplit:
-                    line_full = True
-                    break
                 if idx_last_forced_break == self.character_index:
                     raise FPDFException(
                         "Not enough horizontal space to render a single character"
@@ -464,12 +455,6 @@ class MultiLineBreak:
 
             self.character_index += 1
 
-        if line_full and not wordsplit:
-            # roll back and return empty line to trigger continuation
-            # on the next line.
-            self.fragment_index = last_fragment_index
-            self.character_index = last_character_index
-            return CurrentLine().manual_break(self.justify)
         if current_line.width:
             return current_line.manual_break()
         return None
