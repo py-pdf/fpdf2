@@ -18,6 +18,7 @@ from .util import escape_parens
 SOFT_HYPHEN = "\u00ad"
 HYPHEN = "\u002d"
 SPACE = " "
+NBSP = "\u00a0"
 NEWLINE = "\n"
 
 
@@ -408,6 +409,10 @@ class CurrentLine:
                 self.width,
                 self.number_of_spaces,
             )
+            self.number_of_spaces += 1
+        elif character == NBSP:
+            # PDF viewers ignore NBSP for word spacing with "Tw".
+            character = SPACE
             self.number_of_spaces += 1
         elif character == SOFT_HYPHEN and not self.print_sh:
             self.hyphen_break_hint = HyphenHint(
