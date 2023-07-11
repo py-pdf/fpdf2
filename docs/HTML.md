@@ -1,4 +1,4 @@
-# HTML #
+# HTML
 
 `fpdf2` supports basic rendering from HTML.
 
@@ -12,9 +12,9 @@ you may want to check [Reportlab](https://www.reportlab.com) (or [xhtml2pdf](htt
 or [borb](https://github.com/jorisschellekens/borb-examples/#76-exporting-html-as-pdf).
 
 
-## write_html usage example ##
+## write_html usage example
 
-HTML rendering require the use of `write_html` method:
+HTML rendering requires the use of [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html):
 
 ```python
 from fpdf import FPDF
@@ -91,3 +91,14 @@ pdf.output("html.pdf")
     + `<tr>`: rows (with `align`, `bgcolor` attributes)
     + `<th>`: heading cells (with `align`, `bgcolor`, `width` attributes)
     * `<td>`: cells (with `align`, `bgcolor`, `width` attributes)
+
+
+## Known limitations
+
+`fpdf2` HTML renderer does not support many configuration of nested tags.
+For example:
+* `<center>` cannot be used as a parent for several elements - _cf._ [issue #640](https://github.com/PyFPDF/fpdf2/issues/640)
+* `<table>` cells can contain `<td><b><em>nested tags forming a single text block</em></b></td>`, but **not** `<td><b>arbitrarily</b> nested <em>tags</em></td>` - _cf._ [issue #845](https://github.com/PyFPDF/fpdf2/issues/845)
+
+You can also check the currently open GitHub issues with the tag `html`:
+https://github.com/PyFPDF/fpdf2/issues?q=is%3Aopen+label%3Ahtml

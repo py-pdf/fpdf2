@@ -391,6 +391,18 @@ class FPDF(GraphicsStateMixin):
         """
         Parse HTML and convert it to PDF.
         cf. https://pyfpdf.github.io/fpdf2/HTML.html
+
+        Args:
+            text (str): HTML content to render
+            image_map (function): an optional one-argument function that map <img> "src"
+                to new image URLs
+            li_tag_indent (int): numeric indentation of <li> elements
+            dd_tag_indent (int): numeric indentation of <dd> elements
+            table_line_separators (bool): enable horizontal line separators in <table>
+            ul_bullet_char (str): bullet character for <ul> elements
+            heading_sizes (dict): font size per heading level names ("h1", "h2"...)
+            pre_code_font (str): font to use for <pre> & <code> blocks
+            warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags
         """
         kwargs2 = vars(self)
         # Method arguments must override class & instance attributes:

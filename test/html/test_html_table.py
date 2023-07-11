@@ -278,3 +278,19 @@ def test_html_table_invalid(caplog):
         pdf.write_html("<tr></tr>")
     assert str(error.value) == "Invalid HTML: <tr> used outside any <table>"
     assert caplog.text == ""
+
+
+def test_html_table_with_nested_tags():  # issue 845
+    pdf = FPDF()
+    pdf.set_font_size(24)
+    pdf.add_page()
+    with pytest.raises(NotImplementedError):
+        pdf.write_html(
+            """<table><tr>
+            <th>LEFT</th>
+            <th>RIGHT</th>
+        </tr><tr>
+            <td><font size=7>This is supported</font></td>
+            <td>This <font size=20>is not</font> <b>supported</b></td>
+        </tr></table>"""
+        )

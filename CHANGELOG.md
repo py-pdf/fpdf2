@@ -22,6 +22,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): new optional parameters `gutter_height`, `gutter_width` and `wrapmode`. Links can also be added to cells by passing a `link` parameter to [`Row.cell()`](https://pyfpdf.github.io/fpdf2/fpdf/table.html#fpdf.table.Row.cell)
 - [`FPDF.multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell): has a new optional `center` parameter to position the cell horizontally at the center of the page
 - Added Tutorial in Khmer language - thanks to @kuth-chi
+- Better documentation & errors when facing HTML rendering limitations for `<table>` tags: <https://pyfpdf.github.io/fpdf2/HTML.html>
 ### Fixed
 - [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): the `colspan` setting has been fixed - [documentation](https://pyfpdf.github.io/fpdf2/Tables.html#column-span)
 - [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): allowing images path starting with `data` to be passed as input
