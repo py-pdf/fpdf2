@@ -79,6 +79,7 @@ plugins:
         - 'Tutorial-bn'
         - 'Tutorial-he'
         - 'Tutorial-zh'
+        - 'Tutorial-ja'
       #cover: false
       #back_cover: true
       #custom_template_path: TEMPLATES PATH
@@ -116,6 +117,7 @@ nav:
   - 'বাংলা':                              'Tutorial-bn.md'
   - 'מדריך בעברית':                     'Tutorial-he.md'
   - '简体中文教程':                   'Tutorial-zh.md'
+  - '日本語チュートリアル':           'Tutorial-ja.md'
 - 'Page Layout':
   - 'Page Format and Orientation':    'PageFormatAndOrientation.md'
   - 'Margins':                        'Margins.md'
