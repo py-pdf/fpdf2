@@ -19,7 +19,7 @@ from math import isclose
 from numbers import Number
 from os.path import splitext
 from pathlib import Path
-from typing import Callable, NamedTuple, Optional, Union, List, Tuple, Any
+from typing import Callable, NamedTuple, Optional, Union, List, Tuple
 
 from .drawing import DeviceGray, DeviceRGB
 
