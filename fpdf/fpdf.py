@@ -2803,10 +2803,8 @@ class FPDF(GraphicsStateMixin):
                     "A 'text_line' parameter with fragments must be provided if 'w' is None"
                 )
             w = styled_txt_width + local_c_margin + local_c_margin
-        if center:
-            self.x = (
-                self.w / 2 if align == Align.X else self.l_margin + (self.epw - w) / 2
-            )
+
+
         if align == Align.X:
             self.x -= w / 2
         max_font_size = 0  # how much height we need to accomodate.

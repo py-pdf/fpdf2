@@ -302,7 +302,7 @@ def test_table_with_gutter_and_padding(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(TABLE_DATA, gutter_height=3, gutter_width=13, padding = 0, line_height = pdf.font_size, align="L", outer_border_width=2):
+    with pdf.table(TABLE_DATA, gutter_height=3, gutter_width=5, padding = 0, line_height = pdf.font_size, align="L", outer_border_width=2):
         pass
 
     show(pdf)
@@ -435,3 +435,28 @@ def test_table_colspan_and_padding(tmp_path):
 
     # filename = HERE / "table_colspan_padding.pdf"
     # assert_pdf_equal(pdf, HERE / "table_colspan_padding.pdf", tmp_path)
+
+
+def test_table_colspan_and_padding_and_gutter(tmp_path):
+    pdf = FPDF()
+
+    pdf.set_font("Times", size=12)
+    pdf.add_page()
+    with pdf.table(col_widths=(1, 2, 1,1), padding=5, gutter_height=3, gutter_width=5) as table:
+        row = table.row()
+        row.cell("0")
+        row.cell("1")
+        row.cell("2")
+        row.cell("3")
+        row = table.row()
+        row.cell("A1")
+        row.cell("A2", colspan=2)
+        row.cell("A4")
+
+        row = table.row()
+        row.cell("B1", colspan=2)
+        row.cell("B3")
+        row.cell("B4")
+
+
+    show(pdf)
