@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import fpdf
+from fpdf import FPDF
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 HERE = Path(__file__).resolve().parent
@@ -8,7 +8,7 @@ FONTS_DIR = HERE.parent / "fonts"
 
 
 def test_write_page_break(tmp_path):
-    doc = fpdf.FPDF()
+    doc = FPDF()
     doc.add_page()
     doc.set_font("helvetica", size=24)
     doc.y = 20
@@ -18,8 +18,15 @@ def test_write_page_break(tmp_path):
 
 
 def test_write_soft_hyphen(tmp_path):
+    """
+    The current behaviour is close to CSS word-break: break-all
+    cf. https://developer.mozilla.org/en-US/docs/Web/CSS/overflow-wrap#comparing_overflow-wrap_word-break_and_hyphens
+    We used to prefer a line break over a word split without regards to soft hyphens:
+    https://github.com/PyFPDF/fpdf2/blob/2.7.4/test/text/write_soft_hyphen.pdf
+    But that caused issue with write_html(), cf. issue #847
+    """
     s = "Donau\u00addamp\u00adfschiff\u00adfahrts\u00adgesellschafts\u00adkapitäns\u00admützen\u00adstreifen. "
-    doc = fpdf.FPDF()
+    doc = FPDF()
     doc.add_page()
     doc.set_font("helvetica", size=24)
     doc.y = 20
@@ -41,7 +48,7 @@ def test_write_soft_hyphen(tmp_path):
 
 def test_write_trailing_nl(tmp_path):  # issue #455
     """Each item in lines triggers a line break at the end."""
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
     lines = ["Hello\n", "Sweet\n", "World\n"]
@@ -53,7 +60,7 @@ def test_write_trailing_nl(tmp_path):  # issue #455
 
 def test_write_font_stretching(tmp_path):  # issue #478
     right_boundary = 60
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     # built-in font
     pdf.set_font("Helvetica", "", 8)
@@ -81,7 +88,7 @@ def test_write_font_stretching(tmp_path):  # issue #478
 
 
 def test_write_superscript(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", "", 20)
 
@@ -131,7 +138,7 @@ def test_write_superscript(tmp_path):
 
 def test_write_char_wrap(tmp_path):  # issue #649
     right_boundary = 50
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_right_margin(pdf.w - right_boundary)
     pdf.set_font("Helvetica", "", 10)
@@ -150,3 +157,11 @@ def test_write_char_wrap(tmp_path):  # issue #649
     pdf.line(pdf.l_margin, 10, pdf.l_margin, 130)
     pdf.line(right_boundary, 10, right_boundary, 130)
     assert_pdf_equal(pdf, HERE / "write_char_wrap.pdf", tmp_path)
+
+
+def test_write_overflow_no_initial_newline(tmp_path):  # issue-847
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font(family="Helvetica", size=20)
+    pdf.write(7, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    assert_pdf_equal(pdf, HERE / "write_overflow_no_initial_newline.pdf", tmp_path)

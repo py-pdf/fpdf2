@@ -6,7 +6,7 @@ The contents of this file are internal to fpdf, and not part of the public API.
 They may change at any time without prior warning or any deprecation period.
 """
 
-from typing import NamedTuple, Any, Union, Sequence
+from typing import NamedTuple, Any, Optional, Union, Sequence
 
 from .enums import CharVPos, WrapMode
 from .errors import FPDFException
@@ -27,7 +27,7 @@ class Fragment:
         characters: Union[list, str],
         graphics_state: dict,
         k: float,
-        url: str = None,
+        link: Optional[Union[int, str]] = None,
     ):
         if isinstance(characters, str):
             self.characters = list(characters)
@@ -35,15 +35,13 @@ class Fragment:
             self.characters = characters
         self.graphics_state = graphics_state
         self.k = k
-        self.url = url
+        self.link = link
 
     def __repr__(self):
-        gstate = self.graphics_state.copy()
-        if "current_font" in gstate:
-            del gstate["current_font"]  # TMI
         return (
             f"Fragment(characters={self.characters},"
-            f" graphics_state={gstate}, k={self.k}, url={self.url})"
+            f" graphics_state={self.graphics_state},"
+            f" k={self.k}, link={self.link})"
         )
 
     @property
@@ -56,7 +54,7 @@ class Fragment:
 
     @property
     def is_ttf_font(self):
-        return self.font.get("type") == "TTF"
+        return self.font and self.font.type == "TTF"
 
     @property
     def font_style(self):
@@ -160,7 +158,7 @@ class Fragment:
         initial_cs: bool = True,
     ):
         """
-        Return the witdth of the string with the given font/size/style/etc.
+        Return the width of the string with the given font/size/style/etc.
 
         Args:
             start (int): Index of the start character. Default start of fragment.
@@ -173,9 +171,9 @@ class Fragment:
         if chars is None:
             chars = self.characters[start:end]
         if self.is_ttf_font:
-            w = sum(self.font["cw"][ord(c)] for c in chars)
+            w = sum(self.font.cw[ord(c)] for c in chars)
         else:
-            w = sum(self.font["cw"][c] for c in chars)
+            w = sum(self.font.cw[c] for c in chars)
         char_spacing = self.char_spacing
         if self.font_stretching != 100:
             w *= self.font_stretching * 0.01
@@ -394,17 +392,13 @@ class MultiLineBreak:
         self.idx_last_forced_break = None
 
     # pylint: disable=too-many-return-statements
-    def get_line_of_given_width(self, maximum_width: float, wordsplit: bool = True):
+    def get_line_of_given_width(self, maximum_width: float):
         first_char = True  # "Tw" ignores the first character in a text object.
         idx_last_forced_break = self.idx_last_forced_break
         self.idx_last_forced_break = None
 
         if self.fragment_index == len(self.styled_text_fragments):
             return None
-
-        last_fragment_index = self.fragment_index
-        last_character_index = self.character_index
-        line_full = False
 
         current_line = CurrentLine(print_sh=self.print_sh)
         while self.fragment_index < len(self.styled_text_fragments):
@@ -442,9 +436,6 @@ class MultiLineBreak:
                     ) = current_line.automatic_break(self.justify)
                     self.character_index += 1
                     return line
-                if not wordsplit:
-                    line_full = True
-                    break
                 if idx_last_forced_break == self.character_index:
                     raise FPDFException(
                         "Not enough horizontal space to render a single character"
@@ -459,17 +450,11 @@ class MultiLineBreak:
                 current_fragment.k,
                 self.fragment_index,
                 self.character_index,
-                current_fragment.url,
+                current_fragment.link,
             )
 
             self.character_index += 1
 
-        if line_full and not wordsplit:
-            # roll back and return empty line to trigger continuation
-            # on the next line.
-            self.fragment_index = last_fragment_index
-            self.character_index = last_character_index
-            return CurrentLine().manual_break(self.justify)
         if current_line.width:
             return current_line.manual_break()
         return None

@@ -26,7 +26,7 @@ reader = PdfReader(IN_FILEPATH)
 area = RectXObj(reader.pages[0])
 
 def new_content():
-    fpdf = FPDF(format=(area.w, area.h))
+    fpdf = FPDF(format=(area.w, area.h), unit="pt")
     fpdf.add_page()
     fpdf.set_font("helvetica", size=36)
     fpdf.text(50, 50, "Hello!")
@@ -55,7 +55,7 @@ reader = PdfReader(IN_FILEPATH)
 area = RectXObj(reader.pages[0])
 
 def new_page():
-    fpdf = FPDF(format=(area.w, area.h))
+    fpdf = FPDF(format=(area.w, area.h), unit="pt")
     fpdf.add_page()
     fpdf.set_font("helvetica", size=36)
     fpdf.text(50, 50, "Hello!")

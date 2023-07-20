@@ -8,16 +8,14 @@ import pytest
 HERE = Path(__file__).resolve().parent
 
 
-def test_links(tmp_path):
+def test_hyperlinks(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("helvetica", size=24)
-    line_height = 10
 
     pdf.set_xy(80, 50)
     pdf.cell(
-        w=40,
-        h=line_height,
+        h=pdf.h,
         txt="Cell link",
         border=1,
         align="C",
@@ -32,21 +30,13 @@ def test_links(tmp_path):
     width = pdf.get_string_width(text)
     pdf.link(
         x=80,
-        y=150 - line_height,
+        y=150 - pdf.h,
         w=width,
-        h=line_height,
+        h=pdf.h,
         link="https://github.com/PyFPDF/fpdf2",
     )
 
-    pdf.add_page()
-    link = pdf.add_link()
-    pdf.set_link(link, page=1)
-    pdf.set_xy(50, 50)
-    pdf.cell(
-        w=100, h=10, txt="Internal link to first page", border=1, align="C", link=link
-    )
-
-    assert_pdf_equal(pdf, HERE / "links.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "hyperlinks.pdf", tmp_path)
 
 
 def test_link_alt_text(tmp_path):
@@ -184,3 +174,104 @@ def test_later_call_to_set_link(tmp_path):  # v2.6.1 bug spotted in discussion 7
     pdf.cell(txt="Section 1: Bla bla bla")
 
     assert_pdf_equal(pdf, HERE / "later_call_to_set_link.pdf", tmp_path)
+
+
+def test_link_to_other_document(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica", size=24)
+
+    pdf.set_xy(80, 50)
+    pdf.cell(
+        txt="Link defined with FPDF.cell",
+        border=1,
+        align="C",
+        link="links.pdf",
+    )
+
+    pdf.set_y(100)
+    pdf.multi_cell(
+        w=pdf.epw,
+        txt="Link defined with FPDF.multi_cell",
+        border=1,
+        align="C",
+        link="links.pdf",
+    )
+
+    pdf.set_y(150)
+    pdf.multi_cell(
+        w=pdf.epw,
+        txt="Link defined with FPDF.multi_cell and markdown=True: [links.pdf](links.pdf)",
+        border=1,
+        align="C",
+        markdown=True,
+    )
+
+    pdf.set_xy(60, 200)
+    pdf.write_html('<a href="links.pdf">Link defined with FPDF.write_html</a>')
+
+    text = "Link defined with FPDF.link"
+    pdf.text(x=80, y=250, txt=text)
+    width = pdf.get_string_width(text)
+    pdf.link(
+        x=80,
+        y=250 - pdf.h,
+        w=width,
+        h=pdf.h,
+        link="links.pdf",
+    )
+
+    assert_pdf_equal(pdf, HERE / "link_to_other_document.pdf", tmp_path)
+
+
+def test_internal_links(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("helvetica", size=24)
+
+    pdf.add_page()
+    pdf.y = 100
+    pdf.cell(txt="Page 1", center=True)
+
+    pdf.add_page()
+
+    pdf.set_xy(80, 50)
+    pdf.cell(
+        txt="Link defined with FPDF.cell",
+        border=1,
+        align="C",
+        link=pdf.add_link(page=1),
+    )
+
+    pdf.set_y(100)
+    pdf.multi_cell(
+        w=pdf.epw,
+        txt="Link defined with FPDF.multi_cell",
+        border=1,
+        align="C",
+        link=pdf.add_link(page=1),
+    )
+
+    pdf.set_y(150)
+    pdf.multi_cell(
+        w=pdf.epw,
+        txt="Link defined with FPDF.multi_cell and markdown=True: [page 1](1)",
+        border=1,
+        align="C",
+        markdown=True,
+    )
+
+    pdf.set_xy(60, 200)
+    pdf.write_html('<a href="1">Link defined with FPDF.write_html</a>')
+
+    text = "Link defined with FPDF.link"
+    pdf.text(x=80, y=250, txt=text)
+    width = pdf.get_string_width(text)
+    pdf.link(
+        x=80,
+        y=250 - pdf.h,
+        w=width,
+        h=pdf.h,
+        link=pdf.add_link(page=1),
+    )
+
+    assert_pdf_equal(pdf, HERE / "internal_links.pdf", tmp_path)

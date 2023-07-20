@@ -140,9 +140,18 @@ def test_cell_centering(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=60)
-    with pytest.warns(DeprecationWarning):
-        pdf.cell(txt="Lorem ipsum", border=1, center=True)
+    pdf.cell(txt="Lorem ipsum", border=1, center=True)
     assert_pdf_equal(pdf, HERE / "cell_centering.pdf", tmp_path)
+
+
+def test_cell_centering_and_align_x(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    pdf.cell(txt="Lorem ipsum", border=1, center=True, align="X")
+    pdf.set_draw_color(r=0, g=255, b=0)
+    pdf.line(pdf.w / 2, 0, pdf.w / 2, pdf.h)
+    assert_pdf_equal(pdf, HERE / "cell_centering_and_align_x.pdf", tmp_path)
 
 
 def test_cell_markdown(tmp_path):

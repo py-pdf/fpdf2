@@ -70,31 +70,6 @@ class PDFFont(PDFObject):
         self.c_i_d_to_g_i_d_map = None
 
 
-class PDFFontDescriptor(PDFObject):
-    def __init__(
-        self,
-        ascent,
-        descent,
-        cap_height,
-        flags,
-        font_b_box,
-        italic_angle,
-        stem_v,
-        missing_width,
-    ):
-        super().__init__()
-        self.type = Name("FontDescriptor")
-        self.ascent = ascent
-        self.descent = descent
-        self.cap_height = cap_height
-        self.flags = flags
-        self.font_b_box = font_b_box
-        self.italic_angle = italic_angle
-        self.stem_v = stem_v
-        self.missing_width = missing_width
-        self.font_name = None
-
-
 class CIDSystemInfo(PDFObject):
     def __init__(self):
         super().__init__()
@@ -546,24 +521,24 @@ class OutputProducer:
 
     def _add_fonts(self):
         font_objs_per_index = {}
-        for font in sorted(self.fpdf.fonts.values(), key=lambda font: font["i"]):
+        for font in sorted(self.fpdf.fonts.values(), key=lambda font: font.i):
             # Standard font
-            if font["type"] == "core":
+            if font.type == "core":
                 encoding = (
                     "WinAnsiEncoding"
-                    if font["name"] not in ("Symbol", "ZapfDingbats")
+                    if font.name not in ("Symbol", "ZapfDingbats")
                     else None
                 )
                 core_font_obj = PDFFont(
-                    subtype="Type1", base_font=font["name"], encoding=encoding
+                    subtype="Type1", base_font=font.name, encoding=encoding
                 )
                 self._add_pdf_obj(core_font_obj, "fonts")
-                font_objs_per_index[font["i"]] = core_font_obj
-            elif font["type"] == "TTF":
-                fontname = f"MPDFAA+{font['name']}"
+                font_objs_per_index[font.i] = core_font_obj
+            elif font.type == "TTF":
+                fontname = f"MPDFAA+{font.name}"
 
                 # unicode_char -> new_code_char map for chars embedded in the PDF
-                uni_to_new_code_char = font["subset"].dict()
+                uni_to_new_code_char = font.subset.dict()
 
                 # why we delete 0-element?
                 del uni_to_new_code_char[0]
@@ -572,7 +547,7 @@ class OutputProducer:
                 # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
                 # if we leave recalcTimestamp=True the tests will break every time
                 fonttools_font = ttLib.TTFont(
-                    file=font["ttffile"], recalcTimestamp=False, fontNumber=0, lazy=True
+                    file=font.ttffile, recalcTimestamp=False, fontNumber=0, lazy=True
                 )
 
                 # 1. get all glyphs in PDF
@@ -597,7 +572,7 @@ class OutputProducer:
                 # notdef_outline=True means that keeps the white box for the .notdef glyph
                 # recommended_glyphs=True means that adds the .notdef, .null, CR, and space glyphs
                 options = ftsubset.Options(notdef_outline=True, recommended_glyphs=True)
-                # dropping the tables previous dropped in the old ttfonts.py file #issue 418
+                # dropping some tables that currently not used:
                 options.drop_tables += [
                     "FFTM",  # FontForge Timestamp table - cf. https://github.com/PyFPDF/fpdf2/issues/600
                     "GDEF",  # Glyph Definition table = various glyph properties used in OpenType layout processing
@@ -607,6 +582,7 @@ class OutputProducer:
                     "MATH",  # Mathematical typesetting table = specific information necessary for math formula layout
                     "hdmx",  # Horizontal Device Metrics table, stores integer advance widths scaled to particular pixel sizes
                     #          for OpenType™ fonts with TrueType outlines
+                    "meta",  # metadata table
                 ]
                 subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)
@@ -640,14 +616,14 @@ class OutputProducer:
                     subtype="Type0", base_font=fontname, encoding="Identity-H"
                 )
                 self._add_pdf_obj(composite_font_obj, "fonts")
-                font_objs_per_index[font["i"]] = composite_font_obj
+                font_objs_per_index[font.i] = composite_font_obj
 
                 # A CIDFont whose glyph descriptions are based on
                 # TrueType font technology
                 cid_font_obj = PDFFont(
                     subtype="CIDFontType2",
                     base_font=fontname,
-                    d_w=font["desc"].missing_width,
+                    d_w=font.desc.missing_width,
                     w=_tt_font_widths(font, max(uni_to_new_code_char)),
                 )
                 self._add_pdf_obj(cid_font_obj, "fonts")
@@ -658,7 +634,7 @@ class OutputProducer:
                 # character that each used 16-bit code belongs to. It
                 # allows searching the file and copying text from it.
                 bfChar = []
-                uni_to_new_code_char = font["subset"].dict()
+                uni_to_new_code_char = font.subset.dict()
                 for code, code_mapped in uni_to_new_code_char.items():
                     if code > 0xFFFF:
                         # Calculate surrogate pair
@@ -699,7 +675,7 @@ class OutputProducer:
                 self._add_pdf_obj(cid_system_info_obj, "fonts")
                 cid_font_obj.c_i_d_system_info = cid_system_info_obj
 
-                font_descriptor_obj = font["desc"]
+                font_descriptor_obj = font.desc
                 font_descriptor_obj.font_name = Name(fontname)
                 self._add_pdf_obj(font_descriptor_obj, "fonts")
                 cid_font_obj.font_descriptor = font_descriptor_obj
@@ -992,38 +968,37 @@ def _tt_font_widths(font, maxUni):
     cwlen = maxUni + 1
 
     # for each character
-    subset = font["subset"].dict()
+    subset = font.subset.dict()
     for cid in range(startcid, cwlen):
-        char_width = font["cw"][cid]
-        if "dw" not in font or (font["dw"] and char_width != font["dw"]):
-            cid_mapped = subset.get(cid)
-            if cid_mapped is None:
-                continue
-            if cid_mapped == (prevcid + 1):
-                if char_width == prevwidth:
-                    if char_width == range_[rangeid][0]:
-                        range_.setdefault(rangeid, []).append(char_width)
-                    else:
-                        range_[rangeid].pop()
-                        # new range
-                        rangeid = prevcid
-                        range_[rangeid] = [prevwidth, char_width]
-                    interval = True
-                    range_interval[rangeid] = True
+        char_width = font.cw[cid]
+        cid_mapped = subset.get(cid)
+        if cid_mapped is None:
+            continue
+        if cid_mapped == (prevcid + 1):
+            if char_width == prevwidth:
+                if char_width == range_[rangeid][0]:
+                    range_.setdefault(rangeid, []).append(char_width)
                 else:
-                    if interval:
-                        # new range
-                        rangeid = cid_mapped
-                        range_[rangeid] = [char_width]
-                    else:
-                        range_[rangeid].append(char_width)
-                    interval = False
+                    range_[rangeid].pop()
+                    # new range
+                    rangeid = prevcid
+                    range_[rangeid] = [prevwidth, char_width]
+                interval = True
+                range_interval[rangeid] = True
             else:
-                rangeid = cid_mapped
-                range_[rangeid] = [char_width]
+                if interval:
+                    # new range
+                    rangeid = cid_mapped
+                    range_[rangeid] = [char_width]
+                else:
+                    range_[rangeid].append(char_width)
                 interval = False
-            prevcid = cid_mapped
-            prevwidth = char_width
+        else:
+            rangeid = cid_mapped
+            range_[rangeid] = [char_width]
+            interval = False
+        prevcid = cid_mapped
+        prevwidth = char_width
     prevk = -1
     nextk = -1
     prevint = False

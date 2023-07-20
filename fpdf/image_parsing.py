@@ -14,6 +14,7 @@ try:
 
         RESAMPLE = Resampling.LANCZOS
     except ImportError:  # For Pillow < 9.1.0
+        # pylint: disable=no-member
         RESAMPLE = Image.ANTIALIAS
 except ImportError:
     Image = None

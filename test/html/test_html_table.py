@@ -230,12 +230,13 @@ def test_html_table_with_multiline_cells_and_split_over_page(tmp_path):
     # pylint: disable=consider-using-join
     for cell_text in MULTILINE_TABLE_DATA[0]:
         html += f"\n<th>{cell_text}</th>"
-    html += "\n</tr></thead><tbody><tr>"
+    html += "\n</tr></thead><tbody>"
     for data_row in MULTILINE_TABLE_DATA[1:-1] + MULTILINE_TABLE_DATA[1:]:
+        html += "\n<tr>"
         for cell_text in data_row:
             html += f"\n<td>{cell_text}</td>"
-        html += "\n</tr><tr>"
-    html += "\n</tr></tbody></table>"
+        html += "</tr>"
+    html += "\n</tbody></table>"
     pdf.write_html(html)
     assert_pdf_equal(
         pdf, HERE / "html_table_with_multiline_cells_and_split_over_page.pdf", tmp_path
@@ -277,3 +278,19 @@ def test_html_table_invalid(caplog):
         pdf.write_html("<tr></tr>")
     assert str(error.value) == "Invalid HTML: <tr> used outside any <table>"
     assert caplog.text == ""
+
+
+def test_html_table_with_nested_tags():  # issue 845
+    pdf = FPDF()
+    pdf.set_font_size(24)
+    pdf.add_page()
+    with pytest.raises(NotImplementedError):
+        pdf.write_html(
+            """<table><tr>
+            <th>LEFT</th>
+            <th>RIGHT</th>
+        </tr><tr>
+            <td><font size=7>This is supported</font></td>
+            <td>This <font size=20>is not</font> <b>supported</b></td>
+        </tr></table>"""
+        )

@@ -2,11 +2,17 @@
 Font-related classes & constants.
 Includes the definition of the character widths of all PDF standard fonts.
 """
+import re
+
+from collections import defaultdict
 from dataclasses import dataclass, replace
-from typing import Optional, Union
+from typing import List, Optional, Union
+
+from fontTools import ttLib
 
 from .drawing import DeviceGray, DeviceRGB
-from .enums import TextEmphasis
+from .enums import FontDescriptorFlags, TextEmphasis
+from .syntax import Name, PDFObject
 
 
 @dataclass
@@ -41,6 +47,192 @@ class FontFace:
 
     replace = replace
 
+
+class CoreFont:
+    __slots__ = ("i", "type", "name", "up", "ut", "cw", "fontkey", "emphasis")
+
+    def __init__(self, fpdf, fontkey, style):
+        self.i = len(fpdf.fonts) + 1
+        self.type = "core"
+        self.name = CORE_FONTS[fontkey]
+        self.up = -100
+        self.ut = 50
+        self.cw = CORE_FONTS_CHARWIDTHS[fontkey]
+        self.fontkey = fontkey
+        self.emphasis = TextEmphasis.coerce(style)
+
+    def __repr__(self):
+        return f"CoreFont(i={self.i}, fontkey={self.fontkey})"
+
+
+class TTFFont:
+    __slots__ = (
+        "i",
+        "type",
+        "name",
+        "desc",
+        "up",
+        "ut",
+        "cw",
+        "ttffile",
+        "fontkey",
+        "emphasis",
+        "subset",
+        "cmap",
+    )
+
+    def __init__(self, fpdf, font_file_path, fontkey, style):
+        self.i = len(fpdf.fonts) + 1
+        self.type = "TTF"
+        self.ttffile = font_file_path
+        self.fontkey = fontkey
+
+        font = ttLib.TTFont(self.ttffile, fontNumber=0, lazy=True)
+
+        scale = 1000 / font["head"].unitsPerEm
+        default_width = round(scale * font["hmtx"].metrics[".notdef"][0])
+
+        try:
+            cap_height = font["OS/2"].sCapHeight
+        except AttributeError:
+            cap_height = font["hhea"].ascent
+
+        # entry for the PDF font descriptor specifying various characteristics of the font
+        flags = FontDescriptorFlags.SYMBOLIC
+        if font["post"].isFixedPitch:
+            flags |= FontDescriptorFlags.FIXED_PITCH
+        if font["post"].italicAngle != 0:
+            flags |= FontDescriptorFlags.ITALIC
+        if font["OS/2"].usWeightClass >= 600:
+            flags |= FontDescriptorFlags.FORCE_BOLD
+
+        self.desc = PDFFontDescriptor(
+            ascent=round(font["hhea"].ascent * scale),
+            descent=round(font["hhea"].descent * scale),
+            cap_height=round(cap_height * scale),
+            flags=flags,
+            font_b_box=(
+                f"[{font['head'].xMin * scale:.0f} {font['head'].yMin * scale:.0f}"
+                f" {font['head'].xMax * scale:.0f} {font['head'].yMax * scale:.0f}]"
+            ),
+            italic_angle=int(font["post"].italicAngle),
+            stem_v=round(50 + int(pow((font["OS/2"].usWeightClass / 65), 2))),
+            missing_width=default_width,
+        )
+
+        # a map unicode_char -> char_width
+        self.cw = defaultdict(lambda: default_width)
+        self.cmap = tuple(font.getBestCmap().keys())
+        for char in self.cmap:
+            # take glyph associated to char
+            glyph = font.getBestCmap()[char]
+
+            # take width associated to glyph
+            w = font["hmtx"].metrics[glyph][0]
+
+            # probably this check could be deleted
+            if w == 65535:
+                w = 0
+
+            self.cw[char] = round(scale * w + 0.001)  # ROUND_HALF_UP
+
+        # include numbers in the subset! (if alias present)
+        # ensure that alias is mapped 1-by-1 additionally (must be replaceable)
+        sbarr = "\x00 "
+        if fpdf.str_alias_nb_pages:
+            sbarr += "0123456789"
+            sbarr += fpdf.str_alias_nb_pages
+
+        self.name = re.sub("[ ()]", "", font["name"].getBestFullName())
+        self.up = round(font["post"].underlinePosition * scale)
+        self.ut = round(font["post"].underlineThickness * scale)
+        self.emphasis = TextEmphasis.coerce(style)
+        self.subset = SubsetMap([ord(char) for char in sbarr])
+
+
+class PDFFontDescriptor(PDFObject):
+    def __init__(
+        self,
+        ascent,
+        descent,
+        cap_height,
+        flags,
+        font_b_box,
+        italic_angle,
+        stem_v,
+        missing_width,
+    ):
+        super().__init__()
+        self.type = Name("FontDescriptor")
+        self.ascent = ascent
+        self.descent = descent
+        self.cap_height = cap_height
+        self.flags = flags
+        self.font_b_box = font_b_box
+        self.italic_angle = italic_angle
+        self.stem_v = stem_v
+        self.missing_width = missing_width
+        self.font_name = None
+
+
+class SubsetMap:
+    """Holds a mapping of used characters and their position in the font's subset
+
+    Characters that must be mapped on their actual unicode must be part of the
+    `identities` list during object instanciation. These non-negative values should
+    only appear once in the list. `pick()` can be used to get the characters
+    corresponding position in the subset. If it's not yet part of the object, a new
+    position is acquired automatically. This implementation always tries to return
+    the lowest possible representation.
+    """
+
+    def __init__(self, identities: List[int]):
+        super().__init__()
+        self._next = 0
+
+        # sort list to ease deletion once _next
+        # becomes higher than first reservation
+        self._reserved = sorted(identities)
+
+        # int(x) to ensure values are integers
+        self._map = {x: int(x) for x in self._reserved}
+
+    def __len__(self):
+        return len(self._map)
+
+    def pick(self, unicode: int):
+        if not unicode in self._map:
+            while self._next in self._reserved:
+                self._next += 1
+                if self._next > self._reserved[0]:
+                    del self._reserved[0]
+
+            self._map[unicode] = self._next
+            self._next += 1
+
+        return self._map.get(unicode)
+
+    def dict(self):
+        return self._map.copy()
+
+
+# Standard fonts
+CORE_FONTS = {
+    "courier": "Courier",
+    "courierB": "Courier-Bold",
+    "courierI": "Courier-Oblique",
+    "courierBI": "Courier-BoldOblique",
+    "helvetica": "Helvetica",
+    "helveticaB": "Helvetica-Bold",
+    "helveticaI": "Helvetica-Oblique",
+    "helveticaBI": "Helvetica-BoldOblique",
+    "times": "Times-Roman",
+    "timesB": "Times-Bold",
+    "timesI": "Times-Italic",
+    "timesBI": "Times-BoldItalic",
+    "symbol": "Symbol",
+    "zapfdingbats": "ZapfDingbats",
+}
 
 COURIER_FONT = {chr(i): 600 for i in range(256)}
 CORE_FONTS_CHARWIDTHS = {

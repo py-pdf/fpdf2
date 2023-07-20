@@ -19,14 +19,13 @@ from math import isclose
 from numbers import Number
 from os.path import splitext
 from pathlib import Path
-from typing import Callable, List, NamedTuple, Optional, Union
+from typing import Callable, NamedTuple, Optional, Union
 
 try:
     from endesive import signer
     from cryptography.hazmat.primitives.serialization import pkcs12
 except ImportError:
     pkcs12, signer = None, None
-from fontTools import ttLib
 
 try:
     from PIL.Image import Image
@@ -59,7 +58,6 @@ from .enums import (
     CharVPos,
     Corner,
     EncryptionMethod,
-    FontDescriptorFlags,
     FileAttachmentAnnotationName,
     MethodReturnValue,
     PageLayout,
@@ -74,13 +72,13 @@ from .enums import (
     YPos,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
-from .fonts import CORE_FONTS_CHARWIDTHS, FontFace
+from .fonts import CoreFont, CORE_FONTS, FontFace, TTFFont
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
 from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
 from .line_break import Fragment, MultiLineBreak, TextLine
 from .linearization import LinearizedOutputProducer
-from .output import OutputProducer, PDFFontDescriptor, PDFPage, ZOOM_CONFIGS
+from .output import OutputProducer, PDFPage, ZOOM_CONFIGS
 from .outline import OutlineSection
 from .recorder import FPDFRecorder
 from .structure_tree import StructureTreeBuilder
@@ -174,47 +172,6 @@ class ToCPlaceholder(NamedTuple):
     pages: int = 1
 
 
-class SubsetMap:
-    """Holds a mapping of used characters and their position in the font's subset
-
-    Characters that must be mapped on their actual unicode must be part of the
-    `identities` list during object instanciation. These non-negative values should
-    only appear once in the list. `pick()` can be used to get the characters
-    corresponding position in the subset. If it's not yet part of the object, a new
-    position is acquired automatically. This implementation always tries to return
-    the lowest possible representation.
-    """
-
-    def __init__(self, identities: List[int]):
-        super().__init__()
-        self._next = 0
-
-        # sort list to ease deletion once _next
-        # becomes higher than first reservation
-        self._reserved = sorted(identities)
-
-        # int(x) to ensure values are integers
-        self._map = {x: int(x) for x in self._reserved}
-
-    def __len__(self):
-        return len(self._map)
-
-    def pick(self, unicode: int):
-        if not unicode in self._map:
-            while self._next in self._reserved:
-                self._next += 1
-                if self._next > self._reserved[0]:
-                    del self._reserved[0]
-
-            self._map[unicode] = self._next
-            self._next += 1
-
-        return self._map.get(unicode)
-
-    def dict(self):
-        return self._map.copy()
-
-
 # Disabling this check due to the "format" parameter below:
 # pylint: disable=redefined-builtin
 def get_page_format(format, k=None):
@@ -275,6 +232,7 @@ class FPDF(GraphicsStateMixin):
     MARKDOWN_UNDERLINE_MARKER = "--"
     MARKDOWN_LINK_REGEX = re.compile(r"^\[([^][]+)\]\(([^()]+)\)(.*)$")
     MARKDOWN_LINK_COLOR = None
+    MARKDOWN_LINK_UNDERLINE = True
 
     HTML2FPDF_CLASS = HTML2FPDF
 
@@ -307,7 +265,7 @@ class FPDF(GraphicsStateMixin):
         super().__init__()
         self.page = 0  # current page number
         self.pages = {}  # array of PDFPage objects starting at index 1
-        self.fonts = {}  # map font string keys to dicts describing the fonts used
+        self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
         self.images = {}  # map image identifiers to dicts describing the raster images
         self.icc_profiles = {}  # map icc profiles (bytes) to their index (number)
         self.links = {}  # array of Destination objects starting at index 1
@@ -335,23 +293,6 @@ class FPDF(GraphicsStateMixin):
         self._sign_key = None
         self.section_title_styles = {}  # level -> TitleStyle
 
-        # Standard fonts
-        self.core_fonts = {
-            "courier": "Courier",
-            "courierB": "Courier-Bold",
-            "courierI": "Courier-Oblique",
-            "courierBI": "Courier-BoldOblique",
-            "helvetica": "Helvetica",
-            "helveticaB": "Helvetica-Bold",
-            "helveticaI": "Helvetica-Oblique",
-            "helveticaBI": "Helvetica-BoldOblique",
-            "times": "Times-Roman",
-            "timesB": "Times-Bold",
-            "timesI": "Times-Italic",
-            "timesBI": "Times-BoldItalic",
-            "symbol": "Symbol",
-            "zapfdingbats": "ZapfDingbats",
-        }
         self.core_fonts_encoding = "latin-1"
         "Font encoding, Latin-1 by default"
         # Replace these fonts with these core fonts
@@ -371,7 +312,9 @@ class FPDF(GraphicsStateMixin):
         self.font_stretching = 100  # current font stretching
         self.char_spacing = 0  # current character spacing
         self.underline = False  # underlining flag
-        self.current_font = {}  # current font
+        self.current_font = (
+            None  # current font, None or an instance of CoreFont or TTFFont
+        )
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
         self.text_color = self.DEFAULT_TEXT_COLOR
@@ -451,6 +394,18 @@ class FPDF(GraphicsStateMixin):
         """
         Parse HTML and convert it to PDF.
         cf. https://pyfpdf.github.io/fpdf2/HTML.html
+
+        Args:
+            text (str): HTML content to render
+            image_map (function): an optional one-argument function that map <img> "src"
+                to new image URLs
+            li_tag_indent (int): numeric indentation of <li> elements
+            dd_tag_indent (int): numeric indentation of <dd> elements
+            table_line_separators (bool): enable horizontal line separators in <table>
+            ul_bullet_char (str): bullet character for <ul> elements
+            heading_sizes (dict): font size per heading level names ("h1", "h2"...)
+            pre_code_font (str): font to use for <pre> & <code> blocks
+            warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags
         """
         kwargs2 = vars(self)
         # Method arguments must override class & instance attributes:
@@ -464,7 +419,7 @@ class FPDF(GraphicsStateMixin):
 
     @property
     def is_ttf_font(self):
-        return self.current_font.get("type") == "TTF"
+        return self.current_font and self.current_font.type == "TTF"
 
     @property
     def page_mode(self):
@@ -1809,79 +1764,11 @@ class FPDF(GraphicsStateMixin):
 
         fontkey = f"{family.lower()}{style}"
         # Check if font already added or one of the core fonts
-        if fontkey in self.fonts or fontkey in self.core_fonts:
+        if fontkey in self.fonts or fontkey in CORE_FONTS:
             warnings.warn(f"Core font or font already added '{fontkey}': doing nothing")
             return
-        font = ttLib.TTFont(font_file_path, fontNumber=0, lazy=True)
 
-        scale = 1000 / font["head"].unitsPerEm
-        default_width = round(scale * font["hmtx"].metrics[".notdef"][0])
-
-        try:
-            cap_height = font["OS/2"].sCapHeight
-        except AttributeError:
-            cap_height = font["hhea"].ascent
-
-        # entry for the PDF font descriptor specifying various characteristics of the font
-        flags = FontDescriptorFlags.SYMBOLIC
-        if font["post"].isFixedPitch:
-            flags |= FontDescriptorFlags.FIXED_PITCH
-        if font["post"].italicAngle != 0:
-            flags |= FontDescriptorFlags.ITALIC
-        if font["OS/2"].usWeightClass >= 600:
-            flags |= FontDescriptorFlags.FORCE_BOLD
-
-        desc = PDFFontDescriptor(
-            ascent=round(font["hhea"].ascent * scale),
-            descent=round(font["hhea"].descent * scale),
-            cap_height=round(cap_height * scale),
-            flags=flags,
-            font_b_box=(
-                f"[{font['head'].xMin * scale:.0f} {font['head'].yMin * scale:.0f}"
-                f" {font['head'].xMax * scale:.0f} {font['head'].yMax * scale:.0f}]"
-            ),
-            italic_angle=int(font["post"].italicAngle),
-            stem_v=round(50 + int(pow((font["OS/2"].usWeightClass / 65), 2))),
-            missing_width=default_width,
-        )
-
-        # a map unicode_char -> char_width
-        char_widths = defaultdict(lambda: default_width)
-        font_cmap = tuple(font.getBestCmap().keys())
-        for char in font_cmap:
-            # take glyph associated to char
-            glyph = font.getBestCmap()[char]
-
-            # take width associated to glyph
-            w = font["hmtx"].metrics[glyph][0]
-
-            # probably this check could be deleted
-            if w == 65535:
-                w = 0
-
-            char_widths[char] = round(scale * w + 0.001)  # ROUND_HALF_UP
-
-        # include numbers in the subset! (if alias present)
-        # ensure that alias is mapped 1-by-1 additionally (must be replaceable)
-        sbarr = "\x00 "
-        if self.str_alias_nb_pages:
-            sbarr += "0123456789"
-            sbarr += self.str_alias_nb_pages
-
-        self.fonts[fontkey] = {
-            "i": len(self.fonts) + 1,
-            "type": "TTF",
-            "name": re.sub("[ ()]", "", font["name"].getBestFullName()),
-            "desc": desc,
-            "up": round(font["post"].underlinePosition * scale),
-            "ut": round(font["post"].underlineThickness * scale),
-            "cw": char_widths,
-            "ttffile": font_file_path,
-            "fontkey": fontkey,
-            "emphasis": TextEmphasis.coerce(style),
-            "subset": SubsetMap([ord(char) for char in sbarr]),
-            "cmap": font_cmap,
-        }
+        self.fonts[fontkey] = TTFFont(self, font_file_path, fontkey, style)
 
     def set_font(self, family=None, style="", size=0):
         """
@@ -1951,22 +1838,13 @@ class FPDF(GraphicsStateMixin):
         # Test if used for the first time
         fontkey = family + style
         if fontkey not in self.fonts:
-            if fontkey not in self.core_fonts:
+            if fontkey not in CORE_FONTS:
                 raise FPDFException(
                     f"Undefined font: {fontkey} - "
                     f"Use built-in fonts or FPDF.add_font() beforehand"
                 )
             # If it's one of the core fonts, add it to self.fonts
-            self.fonts[fontkey] = {
-                "i": len(self.fonts) + 1,
-                "type": "core",
-                "name": self.core_fonts[fontkey],
-                "up": -100,
-                "ut": 50,
-                "cw": CORE_FONTS_CHARWIDTHS[fontkey],
-                "fontkey": fontkey,
-                "emphasis": TextEmphasis.coerce(style),
-            }
+            self.fonts[fontkey] = CoreFont(self, fontkey, style)
 
         # Select it
         self.font_family = family
@@ -1974,7 +1852,7 @@ class FPDF(GraphicsStateMixin):
         self.font_size_pt = size
         self.current_font = self.fonts[fontkey]
         if self.page > 0:
-            self._out(f"BT /F{self.current_font['i']} {self.font_size_pt:.2f} Tf ET")
+            self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
 
     def set_font_size(self, size):
         """
@@ -1991,7 +1869,7 @@ class FPDF(GraphicsStateMixin):
                 raise FPDFException(
                     "Cannot set font size: a font must be selected first"
                 )
-            self._out(f"BT /F{self.current_font['i']} {self.font_size_pt:.2f} Tf ET")
+            self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
 
     def set_char_spacing(self, spacing):
         """
@@ -2445,7 +2323,7 @@ class FPDF(GraphicsStateMixin):
                 uni = ord(char)
                 # Instead of adding the actual character to the stream its code is
                 # mapped to a position in the font's subset
-                txt_mapped += chr(self.current_font["subset"].pick(uni))
+                txt_mapped += chr(self.current_font.subset.pick(uni))
             txt2 = escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))
         else:
             txt2 = escape_parens(txt)
@@ -2734,7 +2612,7 @@ class FPDF(GraphicsStateMixin):
         align=Align.L,
         fill=False,
         link="",
-        center="DEPRECATED",
+        center=False,
         markdown=False,
         new_x=XPos.RIGHT,
         new_y=YPos.TOP,
@@ -2763,15 +2641,14 @@ class FPDF(GraphicsStateMixin):
             new_x (fpdf.enums.XPos, str): New current position in x after the call. Default: RIGHT
             new_y (fpdf.enums.YPos, str): New current position in y after the call. Default: TOP
             ln (int): **DEPRECATED since 2.5.1**: Use `new_x` and `new_y` instead.
-            align (fpdf.enums.Align, str): Allows to center or align the text inside the cell.
+            align (fpdf.enums.Align, str): Set text alignment inside the cell.
                 Possible values are: `L` or empty string: left align (default value) ;
-                `C`: center; `X`: center around current x; `R`: right align
+                `C`: center; `X`: center around current x position; `R`: right align
             fill (bool): Indicates if the cell background must be painted (`True`)
                 or transparent (`False`). Default value: False.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `FPDF.add_link`) or external URL.
-            center (bool): **DEPRECATED** since 2.5.1:
-                Use align="C" or align="X" instead.
+            center (bool): center the cell horizontally on the page.
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
 
@@ -2792,13 +2669,10 @@ class FPDF(GraphicsStateMixin):
             border = 1
         new_x = XPos.coerce(new_x)
         new_y = YPos.coerce(new_y)
-        if center == "DEPRECATED":
-            center = False
-        else:
-            warnings.warn(
-                'The parameter "center" is deprecated. Use align="C" or align="X" instead.',
-                DeprecationWarning,
-                stacklevel=3,
+        align = Align.coerce(align)
+        if align == Align.J:
+            raise ValueError(
+                "cell() only produces one text line, justified alignment is not possible"
             )
         if ln != "DEPRECATED":
             # For backwards compatibility, if "ln" is used we overwrite "new_[xy]".
@@ -2823,11 +2697,6 @@ class FPDF(GraphicsStateMixin):
                 ),
                 DeprecationWarning,
                 stacklevel=3,
-            )
-        align = Align.coerce(align)
-        if align == Align.J:
-            raise ValueError(
-                "cell() only produces one text line, justified alignment is not possible"
             )
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
         txt = self.normalize_text(txt)
@@ -2905,8 +2774,6 @@ class FPDF(GraphicsStateMixin):
 
         Returns: a boolean indicating if page break was triggered
         """
-        if not self.font_family:
-            raise FPDFException("No font set, you need to call set_font() beforehand")
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
                 'Integer values for "border" parameter other than 1 are currently ignored'
@@ -2936,6 +2803,12 @@ class FPDF(GraphicsStateMixin):
                     "A 'text_line' parameter with fragments must be provided if 'w' is None"
                 )
             w = styled_txt_width + local_c_margin + local_c_margin
+        if center:
+            self.x = (
+                self.w / 2 if align == Align.X else self.l_margin + (self.epw - w) / 2
+            )
+        if align == Align.X:
+            self.x -= w / 2
         max_font_size = 0  # how much height we need to accomodate.
         # currently all font sizes within a line are vertically aligned on the baseline.
         for frag in text_line.fragments:
@@ -2943,10 +2816,6 @@ class FPDF(GraphicsStateMixin):
                 max_font_size = frag.font_size
         if h is None:
             h = max_font_size
-        if align == Align.X:
-            self.x -= w / 2
-        if center:
-            self.x = self.l_margin + (self.epw - w) / 2
         page_break_triggered = self._perform_page_break_if_need_be(h)
         sl = []
 
@@ -3016,7 +2885,6 @@ class FPDF(GraphicsStateMixin):
                 word_spacing = (
                     w - local_c_margin - local_c_margin - styled_txt_width
                 ) / text_line.number_of_spaces
-
             sl.append(
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
@@ -3037,9 +2905,10 @@ class FPDF(GraphicsStateMixin):
                     if current_char_vpos != frag.char_vpos:
                         current_char_vpos = frag.char_vpos
                     current_font = frag.font
-                    sl.append(f"/F{frag.font['i']} {frag.font_size_pt:.2f} Tf")
+                    sl.append(f"/F{frag.font.i} {frag.font_size_pt:.2f} Tf")
                 lift = frag.lift
                 if lift != 0.0:
+                    # Use text rise operator:
                     sl.append(f"{lift:.2f} Ts")
                 if (
                     frag.text_mode != TextMode.FILL
@@ -3052,16 +2921,14 @@ class FPDF(GraphicsStateMixin):
                     mapped_text = ""
                     for char in frag.string:
                         uni = ord(char)
-                        mapped_text += chr(frag.font["subset"].pick(uni))
+                        mapped_text += chr(frag.font.subset.pick(uni))
                     if word_spacing:
                         # "Tw" only has an effect on the ASCII space character and ignores
                         # space characters from unicode (TTF) fonts. As a workaround,
                         # we do word spacing using an adjustment before each space.
                         # Determine the index of the space character (" ") in the current
                         # subset and split words whenever this mapping code is found
-                        words = mapped_text.split(
-                            chr(frag.font["subset"].pick(ord(" ")))
-                        )
+                        words = mapped_text.split(chr(frag.font.subset.pick(ord(" "))))
                         words_strl = []
                         for word_i, word in enumerate(words):
                             # pylint: disable=redefined-loop-name
@@ -3093,13 +2960,13 @@ class FPDF(GraphicsStateMixin):
                     underlines.append(
                         (self.x + dx + s_width, frag_width, frag.font, frag.font_size)
                     )
-                if frag.url:
+                if frag.link:
                     self.link(
                         x=self.x + dx + s_width,
                         y=self.y + (0.5 * h) - (0.5 * frag.font_size),
                         w=frag_width,
                         h=frag.font_size,
-                        link=frag.url,
+                        link=frag.link,
                     )
                 s_width += frag_width
 
@@ -3224,7 +3091,7 @@ class FPDF(GraphicsStateMixin):
         txt_frag = []
         if not self.is_ttf_font or not self._fallback_font_ids:
             return tuple([Fragment(txt, self._get_current_graphics_state(), self.k)])
-        font_glyphs = self.current_font["cmap"]
+        font_glyphs = self.current_font.cmap
         for char in txt:
             if char == "\n" or ord(char) in font_glyphs:
                 txt_frag.append(char)
@@ -3261,16 +3128,12 @@ class FPDF(GraphicsStateMixin):
         fonts_with_char = [
             font_id
             for font_id in self._fallback_font_ids
-            if ord(char) in self.fonts[font_id]["cmap"]
+            if ord(char) in self.fonts[font_id].cmap
         ]
         if not fonts_with_char:
             return None
         font_with_matching_emphasis = next(
-            (
-                font
-                for font in fonts_with_char
-                if self.fonts[font]["emphasis"] == emphasis
-            ),
+            (font for font in fonts_with_char if self.fonts[font].emphasis == emphasis),
             None,
         )
         if font_with_matching_emphasis:
@@ -3300,7 +3163,7 @@ class FPDF(GraphicsStateMixin):
             return fragment
 
         if self.is_ttf_font:
-            font_glyphs = self.current_font["cmap"]
+            font_glyphs = self.current_font.cmap
         else:
             font_glyphs = []
 
@@ -3329,14 +3192,19 @@ class FPDF(GraphicsStateMixin):
                 continue
             is_link = self.MARKDOWN_LINK_REGEX.match(txt)
             if is_link:
-                link_text, link_url, txt = is_link.groups()
+                link_text, link_dest, txt = is_link.groups()
                 if txt_frag:
                     yield frag()
                 gstate = self._get_current_graphics_state()
-                gstate["underline"] = True
+                gstate["underline"] = self.MARKDOWN_LINK_UNDERLINE
                 if self.MARKDOWN_LINK_COLOR:
                     gstate["text_color"] = self.MARKDOWN_LINK_COLOR
-                yield Fragment(list(link_text), gstate, self.k, url=link_url)
+                try:
+                    page = int(link_dest)
+                    link_dest = self.add_link(page=page)
+                except ValueError:
+                    pass
+                yield Fragment(list(link_text), gstate, self.k, link=link_dest)
                 continue
             if self.is_ttf_font and txt[0] != "\n" and not ord(txt[0]) in font_glyphs:
                 style = ("B" if in_bold else "") + ("I" if in_italics else "")
@@ -3430,6 +3298,7 @@ class FPDF(GraphicsStateMixin):
         wrapmode: WrapMode = WrapMode.WORD,
         dry_run=False,
         output=MethodReturnValue.PAGE_BREAK,
+        center=False,
         padding=0,
     ):
         """
@@ -3449,10 +3318,10 @@ class FPDF(GraphicsStateMixin):
                 or a string containing some or all of the following characters
                 (in any order):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
-            align (fpdf.enums.Align, str): Allows to center or align the text.
+            align (fpdf.enums.Align, str): Set text alignment inside the cell.
                 Possible values are:
                 `J`: justify (default value); `L` or empty string: left align;
-                `C`: center; `X`: center around current x; `R`: right align
+                `C`: center; `X`: center around current x position; `R`: right align
             fill (bool): Indicates if the cell background must be painted (`True`)
                 or transparent (`False`). Default value: False.
             split_only (bool): **DEPRECATED since 2.7.4**:
@@ -3473,12 +3342,15 @@ class FPDF(GraphicsStateMixin):
                 Can be useful when combined with `output`.
             output (fpdf.enums.MethodReturnValue): defines what this method returns.
                 If several enum values are joined, the result will be a tuple.
+            center (bool): center the cell horizontally on the page.
             padding (float or Sequence): padding to apply around the text. Default value: 0.
                 When one value is specified, it applies the same padding to all four sides.
                 When two values are specified, the first padding applies to the top and bottom, the second to the left and right.
                 When three values are specified, the first padding applies to the top, the second to the right and left, the third to the bottom.
                 When four values are specified, the paddings apply to the top, right, bottom, and left in that order (clockwise)
                 If padding for left and right ends up being non-zero then c_margin is ignored.
+
+        Center overrides values for horizontal padding
 
 
         Using `new_x=XPos.RIGHT, new_y=XPos.TOP, maximum height=pdf.font_size` is
@@ -3517,8 +3389,11 @@ class FPDF(GraphicsStateMixin):
                     dry_run=False,
                     split_only=False,
                     output=MethodReturnValue.LINES if split_only else output,
+                    center=center,
                     padding=padding,
                 )
+        if not self.font_family:
+            raise FPDFException("No font set, you need to call set_font() beforehand")
         wrapmode = WrapMode.coerce(wrapmode)
         if isinstance(w, str) or isinstance(h, str):
             raise ValueError(
@@ -3568,6 +3443,11 @@ class FPDF(GraphicsStateMixin):
 
         prev_x, prev_y = self.x, self.y
 
+
+
+
+        prev_x, prev_y = self.x, self.y
+
         # Apply padding to contents
         # decrease maximum allowed width by padding
         # shift the starting point by padding
@@ -3575,6 +3455,12 @@ class FPDF(GraphicsStateMixin):
         maximum_allowed_width = w - 2 * self.c_margin
         self.x += padding[3]
         self.y += padding[0]
+
+        # Center overrides padding
+        if center:
+            self.x = (
+                self.w / 2 if align == Align.X else self.l_margin + (self.epw - w) / 2
+            )
 
         # Calculate text length
         txt = self.normalize_text(txt)
@@ -3769,7 +3655,7 @@ class FPDF(GraphicsStateMixin):
         # first line from current x position to right margin
         first_width = self.w - self.x - self.r_margin
         txt_line = multi_line_break.get_line_of_given_width(
-            first_width - 2 * self.c_margin, wordsplit=False
+            first_width - 2 * self.c_margin,
         )
         # remaining lines fill between margins
         full_width = self.w - self.l_margin - self.r_margin
@@ -4421,8 +4307,8 @@ class FPDF(GraphicsStateMixin):
         "Draw an horizontal line starting from (x, y) with a length equal to 'w'"
         if current_font is None:
             current_font = self.current_font
-        up = current_font["up"]
-        ut = current_font["ut"]
+        up = current_font.up
+        ut = current_font.ut
         return (
             f"{x * self.k:.2f} "
             f"{(self.h - y + up / 1000 * self.font_size) * self.k:.2f} "

@@ -449,3 +449,12 @@ def test_html_custom_pre_code_font(tmp_path):  # issue 770
     pdf.add_page()
     pdf.write_html("<code> Cześć! </code>", pre_code_font="DejaVuSansMono")
     assert_pdf_equal(pdf, HERE / "html_custom_pre_code_font.pdf", tmp_path)
+
+
+def test_html_preserve_initial_text_color(tmp_path):  # issue 846
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_text_color(200, 50, 50)
+    pdf.set_font(family="Helvetica", size=13)
+    pdf.write_html("one <font size=8>two</font> three")
+    assert_pdf_equal(pdf, HERE / "html_preserve_initial_text_color.pdf", tmp_path)

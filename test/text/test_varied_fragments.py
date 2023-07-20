@@ -29,7 +29,7 @@ class FxFPDF(FPDF):
         # first line from current x position to right margin
         first_width = self.w - self.x - self.r_margin
         text_line = multi_line_break.get_line_of_given_width(
-            first_width - 2 * self.c_margin, wordsplit=False
+            first_width - 2 * self.c_margin
         )
         # remaining lines fill between margins
         full_width = self.w - self.l_margin - self.r_margin
