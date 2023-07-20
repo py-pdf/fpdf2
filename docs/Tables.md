@@ -271,9 +271,7 @@ Result:
 
 ## Column span
 Cells spanning multiple columns can be defined by passing a `colspan` argument to `.cell()`.
-The cells that are overwritten by the spanned cell are not rendered but must be added to the table.
-
-Result:
+Only the cells with data in them need to be defined. This means that the number of cells on each row can be different.
 
 ```python
     ...
@@ -287,16 +285,16 @@ Result:
         row = table.row()
         row.cell("A1")
         row.cell("A2", colspan=2)
-        row.cell("void") # <--- this cell is not rendered
         row.cell("A4")
 
         row = table.row()
         row.cell("B1", colspan=2)
-        row.cell("void")  # <--- this cell is not rendered
         row.cell("B3")
         row.cell("B4")
     ... 
 ```
+
+result:
 
 ![](image-colspan.png)
 

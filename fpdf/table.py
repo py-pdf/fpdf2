@@ -388,7 +388,7 @@ class Table:
         if cell_height is not None:
             x1 = self._fpdf.x
             y1 = self._fpdf.y
-            x2 = x1 + col_width - self._gutter_width
+            x2 = x1 + col_width # already includes gutter
             y2 = y1 + cell_height
 
             draw_box(
