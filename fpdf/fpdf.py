@@ -3441,18 +3441,13 @@ class FPDF(GraphicsStateMixin):
 
         prev_x, prev_y = self.x, self.y
 
-
-
-
-        prev_x, prev_y = self.x, self.y
-
         # Apply padding to contents
         # decrease maximum allowed width by padding
         # shift the starting point by padding
-        w = w - padding[1] - padding[3]
+        w = w - padding.right - padding.left
         maximum_allowed_width = w - 2 * self.c_margin
-        self.x += padding[3]
-        self.y += padding[0]
+        self.x += padding.left
+        self.y += padding.top
 
         # Center overrides padding
         if center:
@@ -3534,7 +3529,7 @@ class FPDF(GraphicsStateMixin):
             total_height += current_cell_height
             if not is_last_line and align == Align.X:
                 # prevent cumulative shift to the left
-                self.x = prev_x + padding[3]
+                self.x = prev_x + padding.left
         if should_render_bottom_blank_cell:
             new_page = self._render_styled_text_line(
                 TextLine(
@@ -3573,7 +3568,7 @@ class FPDF(GraphicsStateMixin):
         if new_y == YPos.TOP:  # We may have jumped a few lines -> reset
             self.y = prev_y
         elif new_y == YPos.NEXT:  # move down by bottom padding
-            self.y += padding[2]
+            self.y += padding.bottom
 
         if markdown:
             if self.font_style != prev_font_style:
@@ -3582,7 +3577,7 @@ class FPDF(GraphicsStateMixin):
             self.underline = prev_underline
 
         # move right by right padding
-        self.x += padding[1]
+        self.x += padding.right
 
         output = MethodReturnValue.coerce(output)
         return_value = ()
@@ -3597,7 +3592,7 @@ class FPDF(GraphicsStateMixin):
                 output_lines.append("".join(characters))
             return_value += (output_lines,)
         if output & MethodReturnValue.HEIGHT:
-            return_value += (total_height + padding[0] + padding[2],)
+            return_value += (total_height + padding.top + padding.bottom,)
         if len(return_value) == 1:
             return return_value[0]
         return return_value

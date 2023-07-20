@@ -302,7 +302,7 @@ def test_table_with_gutter_REMOVE_DOUBLE(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(TABLE_DATA, gutter_height=3, gutter_width=10):
+    with pdf.table(TABLE_DATA, gutter_height=3, gutter_width=3):
         pass
 
     show(pdf)
