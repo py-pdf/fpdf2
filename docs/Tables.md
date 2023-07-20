@@ -119,7 +119,7 @@ with pdf.table(line_height=2.5 * pdf.font_size) as table:
 ## Disable table headings
 ```python
 ...
-with pdf.table(first_row_as_headings=False) as table:y
+with pdf.table(first_row_as_headings=False) as table:
     ...
 ```
 

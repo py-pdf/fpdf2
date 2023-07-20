@@ -402,12 +402,12 @@ def test_table_colspan_and_padding(tmp_path):
         row = table.row()
         row.cell("A1")
         row.cell("A2", colspan=2)
-        row.cell("void") # <--- this cell is not rendered
+        # row.cell("void") # <--- this cell is not rendered
         row.cell("A4")
 
         row = table.row()
         row.cell("B1", colspan=2)
-        row.cell("void")  # <--- this cell is not rendered
+        # row.cell("void")  # <--- this cell is not rendered
         row.cell("B3")
         row.cell("B4")
 
@@ -422,12 +422,12 @@ def test_table_colspan_and_padding(tmp_path):
         row = table.row()
         row.cell("A1")
         row.cell("A2", colspan=2)
-        row.cell("void")  # <--- this cell is not rendered
+        # row.cell("void")  # <--- this cell is not rendered
         row.cell("A4")
 
         row = table.row()
         row.cell("B1", colspan=2)
-        row.cell("void")  # <--- this cell is not rendered
+        #row.cell("void")  # <--- this cell is not rendered
         row.cell("B3")
         row.cell("B4")
 
