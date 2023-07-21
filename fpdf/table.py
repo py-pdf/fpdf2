@@ -85,6 +85,7 @@ def draw_box_borders(pdf, x1, y1, x2, y2, border, fill = None):
 class RowLayoutInfo:
     height: float
     triggers_page_jump: bool
+    rendered_height : dict
 
 
 class Table:
@@ -313,7 +314,7 @@ class Table:
                 j,
                 cell,
                 row_height=self._line_height,
-                cell_height=row_layout_info.height,
+                cell_height_info=row_layout_info,
                 fill=fill,
                 **kwargs,
             )
@@ -327,16 +328,19 @@ class Table:
         cell,
         row_height,        # height of a row of text including line spacing
         fill=False,
-        cell_height=None,  # full height of a cell, including padding, used to render borders and images
+        cell_height_info=None,  # full height of a cell, including padding, used to render borders and images
         **kwargs,
     ):
-        # If cell_height is provided then we are rendering a cell
-        # If cell_height is not provided then we are only here to figure out the height of the cell
+        # If cell_height_info is provided then we are rendering a cell
+        # If cell_height_info is not provided then we are only here to figure out the height of the cell
         #
-        # So this function is first called without cell_height to figure out the heights of all cells in a row
+        # So this function is first called without cell_height_info to figure out the heights of all cells in a row
         # and then called again with cell_height to actually render the cells
 
-        # default values:
+        if cell_height_info is None:
+            cell_height = None
+        else:
+            cell_height = cell_height_info.height
 
         page_break_text = False
         page_break_image = False
@@ -457,37 +461,18 @@ class Table:
         # render text
 
         if cell.text:
+
             dy = 0
+
             if cell_height is not None:
-                if v_align != AlignV.T:  # For Top we don't need to calculate the dy
 
-                    # TODO: Make this more efficient by not calling multi_cell twice
-                    with self._fpdf.use_font_face(style):
-                        # first dry run to get the actual text height of the cell
-                        _, actual_text_height = self._fpdf.multi_cell(
-                            w=col_width,
-                            h=row_height,
-                            txt=cell.text,
-                            max_line_height=self._line_height,
-                            border=0,
-                            align=text_align,
-                            new_x="RIGHT",
-                            new_y="TOP",
-                            link=cell.link,
-                            fill=False,  # fill is already done above
-                            markdown=self._markdown,
-                            output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
-                            wrapmode=self._wrapmode,
-                            dry_run=True,
-                            padding=padding,
-                            **kwargs,
-                        )
-                        # then calculate the y offset of the text depending on the vertical alignment
+                actual_text_height = cell_height_info.rendered_height[j]
 
-                    if v_align == AlignV.C:
-                        dy = (cell_height - actual_text_height) / 2
-                    elif v_align == AlignV.B:
-                        dy = cell_height - actual_text_height
+                if v_align == AlignV.C:
+                    dy = (cell_height - actual_text_height) / 2
+                elif v_align == AlignV.B:
+                    dy = cell_height - actual_text_height
+
 
             self._fpdf.y += dy
 
@@ -547,6 +532,7 @@ class Table:
         """
         row = self.rows[i]
         heights_per_cell = []
+        rendered_height = dict()  # as dict because j is not continuous in case of colspans
         any_page_break = False
         # pylint: disable=protected-access
         with self._fpdf._disable_writing():
@@ -558,13 +544,22 @@ class Table:
                     cell,
                     row_height=self._line_height,
                 )
+
+                # store the rendered height in the cell as info
+                # Can not store in the cell as this is a frozen dataclass
+                # so store in RowLayoutInfo instead
+                rendered_height[j] = height
+
                 j += cell.colspan
                 any_page_break = any_page_break or page_break
                 heights_per_cell.append(height)
+
+
+
         row_height = (
             max(height for height in heights_per_cell) if heights_per_cell else 0
         )
-        return RowLayoutInfo(row_height, any_page_break)
+        return RowLayoutInfo(row_height, any_page_break,rendered_height)
 
 
 class Row:

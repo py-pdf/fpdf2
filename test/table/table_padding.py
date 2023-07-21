@@ -18,22 +18,15 @@ def run_comparison(pdf, name, tmp_path):
     try:
         assert_pdf_equal(pdf, filename, tmp_path, generate=False)
     except AssertionError as e:
-        print(e)
-        pdf.output(r"c:\data\test.pdf")
-        import subprocess
 
-        subprocess.Popen(rf'explorer "{str(filename)}"')
-        subprocess.Popen(rf'explorer "c:\data\test.pdf"')
+        # windows only debugging
+        # import subprocess
+        # # subprocess.Popen(rf'explorer "{str(filename)}"')
+        # pdf.output(rf'c:\temp\{name}.pdf')
+        # subprocess.Popen(rf'explorer "c:\temp\{name}.pdf"')
 
+        raise e
 
-    # Debugging on windows
-    # if filename.exists():
-    #     raise(ValueError(f"File {filename} already exists"))
-    #
-    # pdf.output(filename)
-    # import subprocess
-    #
-    # subprocess.Popen(rf'explorer "{str(filename)}"')
 
 IMG_DIR = HERE.parent / "image"
 
