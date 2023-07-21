@@ -87,67 +87,66 @@ class TTFFont:
         self.ttffile = font_file_path
         self.fontkey = fontkey
 
-        font = ttLib.TTFont(self.ttffile, fontNumber=0, lazy=True)
+        with ttLib.TTFont(self.ttffile, fontNumber=0, lazy=True) as font:
+            scale = 1000 / font["head"].unitsPerEm
+            default_width = round(scale * font["hmtx"].metrics[".notdef"][0])
 
-        scale = 1000 / font["head"].unitsPerEm
-        default_width = round(scale * font["hmtx"].metrics[".notdef"][0])
+            try:
+                cap_height = font["OS/2"].sCapHeight
+            except AttributeError:
+                cap_height = font["hhea"].ascent
 
-        try:
-            cap_height = font["OS/2"].sCapHeight
-        except AttributeError:
-            cap_height = font["hhea"].ascent
+            # entry for the PDF font descriptor specifying various characteristics of the font
+            flags = FontDescriptorFlags.SYMBOLIC
+            if font["post"].isFixedPitch:
+                flags |= FontDescriptorFlags.FIXED_PITCH
+            if font["post"].italicAngle != 0:
+                flags |= FontDescriptorFlags.ITALIC
+            if font["OS/2"].usWeightClass >= 600:
+                flags |= FontDescriptorFlags.FORCE_BOLD
 
-        # entry for the PDF font descriptor specifying various characteristics of the font
-        flags = FontDescriptorFlags.SYMBOLIC
-        if font["post"].isFixedPitch:
-            flags |= FontDescriptorFlags.FIXED_PITCH
-        if font["post"].italicAngle != 0:
-            flags |= FontDescriptorFlags.ITALIC
-        if font["OS/2"].usWeightClass >= 600:
-            flags |= FontDescriptorFlags.FORCE_BOLD
+            self.desc = PDFFontDescriptor(
+                ascent=round(font["hhea"].ascent * scale),
+                descent=round(font["hhea"].descent * scale),
+                cap_height=round(cap_height * scale),
+                flags=flags,
+                font_b_box=(
+                    f"[{font['head'].xMin * scale:.0f} {font['head'].yMin * scale:.0f}"
+                    f" {font['head'].xMax * scale:.0f} {font['head'].yMax * scale:.0f}]"
+                ),
+                italic_angle=int(font["post"].italicAngle),
+                stem_v=round(50 + int(pow((font["OS/2"].usWeightClass / 65), 2))),
+                missing_width=default_width,
+            )
 
-        self.desc = PDFFontDescriptor(
-            ascent=round(font["hhea"].ascent * scale),
-            descent=round(font["hhea"].descent * scale),
-            cap_height=round(cap_height * scale),
-            flags=flags,
-            font_b_box=(
-                f"[{font['head'].xMin * scale:.0f} {font['head'].yMin * scale:.0f}"
-                f" {font['head'].xMax * scale:.0f} {font['head'].yMax * scale:.0f}]"
-            ),
-            italic_angle=int(font["post"].italicAngle),
-            stem_v=round(50 + int(pow((font["OS/2"].usWeightClass / 65), 2))),
-            missing_width=default_width,
-        )
+            # a map unicode_char -> char_width
+            self.cw = defaultdict(lambda: default_width)
+            self.cmap = tuple(font.getBestCmap().keys())
+            for char in self.cmap:
+                # take glyph associated to char
+                glyph = font.getBestCmap()[char]
 
-        # a map unicode_char -> char_width
-        self.cw = defaultdict(lambda: default_width)
-        self.cmap = tuple(font.getBestCmap().keys())
-        for char in self.cmap:
-            # take glyph associated to char
-            glyph = font.getBestCmap()[char]
+                # take width associated to glyph
+                w = font["hmtx"].metrics[glyph][0]
 
-            # take width associated to glyph
-            w = font["hmtx"].metrics[glyph][0]
+                # probably this check could be deleted
+                if w == 65535:
+                    w = 0
 
-            # probably this check could be deleted
-            if w == 65535:
-                w = 0
+                self.cw[char] = round(scale * w + 0.001)  # ROUND_HALF_UP
 
-            self.cw[char] = round(scale * w + 0.001)  # ROUND_HALF_UP
+            # include numbers in the subset! (if alias present)
+            # ensure that alias is mapped 1-by-1 additionally (must be replaceable)
+            sbarr = "\x00 "
+            if fpdf.str_alias_nb_pages:
+                sbarr += "0123456789"
+                sbarr += fpdf.str_alias_nb_pages
 
-        # include numbers in the subset! (if alias present)
-        # ensure that alias is mapped 1-by-1 additionally (must be replaceable)
-        sbarr = "\x00 "
-        if fpdf.str_alias_nb_pages:
-            sbarr += "0123456789"
-            sbarr += fpdf.str_alias_nb_pages
-
-        self.name = re.sub("[ ()]", "", font["name"].getBestFullName())
-        self.up = round(font["post"].underlinePosition * scale)
-        self.ut = round(font["post"].underlineThickness * scale)
-        self.emphasis = TextEmphasis.coerce(style)
-        self.subset = SubsetMap([ord(char) for char in sbarr])
+            self.name = re.sub("[ ()]", "", font["name"].getBestFullName())
+            self.up = round(font["post"].underlinePosition * scale)
+            self.ut = round(font["post"].underlineThickness * scale)
+            self.emphasis = TextEmphasis.coerce(style)
+            self.subset = SubsetMap([ord(char) for char in sbarr])
 
 
 class PDFFontDescriptor(PDFObject):
