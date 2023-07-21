@@ -16,6 +16,7 @@ from .syntax import (
 from .syntax import create_dictionary_string as pdf_dict
 from .syntax import create_list_string as pdf_list
 from .syntax import iobj_ref as pdf_ref
+from .util import nbr2str
 
 
 # cf. https://docs.verapdf.org/validation/pdfa-part1/#rule-653-2
@@ -47,7 +48,9 @@ class AnnotationMixin:
     ):
         self.type = Name("Annot")
         self.subtype = Name(subtype)
-        self.rect = f"[{x:.2f} {y:.2f} {x + width:.2f} {y - height:.2f}]"
+        self.rect = (
+            f"[{nbr2str(x)} {nbr2str(y)} {nbr2str(x + width)} {nbr2str(y - height)}]"
+        )
         self.border = f"[0 0 {border_width}]"
         self.f_t = Name(field_type) if field_type else None
         self.v = value
@@ -59,14 +62,14 @@ class AnnotationMixin:
         self.t = PDFString(title) if title else None
         self.m = PDFDate(modification_time) if modification_time else None
         self.quad_points = (
-            pdf_list(f"{quad_point:.2f}" for quad_point in quad_points)
+            pdf_list(f"{nbr2str(quad_point)}" for quad_point in quad_points)
             if quad_points
             else None
         )
         self.p = None  # must always be set before calling .serialize()
         self.name = name
         self.ink_list = (
-            ("[" + pdf_list(f"{coord:.2f}" for coord in ink_list) + "]")
+            ("[" + pdf_list(f"{nbr2str(coord)}" for coord in ink_list) + "]")
             if ink_list
             else None
         )

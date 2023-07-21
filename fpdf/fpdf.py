@@ -89,6 +89,7 @@ from .table import Table
 from .util import (
     escape_parens,
     get_scale_factor,
+    nbr2str,
 )
 
 # Public global variables:
@@ -813,7 +814,7 @@ class FPDF(GraphicsStateMixin):
 
         self._out("2 J")  # Set line cap style to square
         self.line_width = lw  # Set line width
-        self._out(f"{lw * self.k:.2f} w")
+        self._out(f"{nbr2str(lw * self.k)} w")
 
         # Set font
         if family:
@@ -833,7 +834,7 @@ class FPDF(GraphicsStateMixin):
 
         if self.line_width != lw:  # Restore line width
             self.line_width = lw
-            self._out(f"{lw * self.k:.2f} w")
+            self._out(f"{nbr2str(lw * self.k)} w")
 
         if family:
             self.set_font(family, style, size)  # Restore font
@@ -991,7 +992,7 @@ class FPDF(GraphicsStateMixin):
         """
         self.line_width = width
         if self.page > 0:
-            self._out(f"{width * self.k:.2f} w")
+            self._out(f"{nbr2str(width * self.k)} w")
 
     def set_page_background(self, background):
         """
@@ -1172,8 +1173,8 @@ class FPDF(GraphicsStateMixin):
             y2 (float): Ordinate of second point
         """
         self._out(
-            f"{x1 * self.k:.2f} {(self.h - y1) * self.k:.2f} m {x2 * self.k:.2f} "
-            f"{(self.h - y2) * self.k:.2f} l S"
+            f"{nbr2str(x1 * self.k)} {nbr2str((self.h - y1) * self.k)} m "
+            f"{nbr2str(x2 * self.k)} {nbr2str((self.h - y2) * self.k)} l S"
         )
 
     @check_page
@@ -1209,7 +1210,7 @@ class FPDF(GraphicsStateMixin):
         operator = "m"
         for point in point_list:
             self._out(
-                f"{point[0] * self.k:.2f} {(self.h - point[1]) * self.k:.2f} {operator}"
+                f"{nbr2str(point[0] * self.k)} {nbr2str((self.h - point[1]) * self.k)} {operator}"
             )
             operator = "l"
         if polygon:
@@ -1295,8 +1296,8 @@ class FPDF(GraphicsStateMixin):
             self._draw_rounded_rect(x, y, w, h, style, round_corners, corner_radius)
         else:
             self._out(
-                f"{x * self.k:.2f} {(self.h - y) * self.k:.2f} {w * self.k:.2f} "
-                f"{-h * self.k:.2f} re {style.operator}"
+                f"{nbr2str(x * self.k)} {nbr2str((self.h - y) * self.k)} {nbr2str(w * self.k)} "
+                f"{nbr2str(-h * self.k)} re {style.operator}"
             )
 
     def _draw_rounded_rect(self, x, y, w, h, style, round_corners, r):
@@ -1399,31 +1400,31 @@ class FPDF(GraphicsStateMixin):
 
         self._out(
             (
-                f"{(cx + rx) * self.k:.2f} {(self.h - cy) * self.k:.2f} m "
-                f"{(cx + rx) * self.k:.2f} {(self.h - cy + ly) * self.k:.2f} "
-                f"{(cx + lx) * self.k:.2f} {(self.h - cy + ry) * self.k:.2f} "
-                f"{cx * self.k:.2f} {(self.h - cy + ry) * self.k:.2f} c"
+                f"{nbr2str((cx + rx) * self.k)} {nbr2str((self.h - cy) * self.k)} m "
+                f"{nbr2str((cx + rx) * self.k)} {nbr2str((self.h - cy + ly) * self.k)} "
+                f"{nbr2str((cx + lx) * self.k)} {nbr2str((self.h - cy + ry) * self.k)} "
+                f"{nbr2str(cx * self.k)} {nbr2str((self.h - cy + ry) * self.k)} c"
             )
         )
         self._out(
             (
-                f"{(cx - lx) * self.k:.2f} {(self.h - cy + ry) * self.k:.2f} "
-                f"{(cx - rx) * self.k:.2f} {(self.h - cy + ly) * self.k:.2f} "
-                f"{(cx - rx) * self.k:.2f} {(self.h - cy) * self.k:.2f} c"
+                f"{nbr2str((cx - lx) * self.k)} {nbr2str((self.h - cy + ry) * self.k)} "
+                f"{nbr2str((cx - rx) * self.k)} {nbr2str((self.h - cy + ly) * self.k)} "
+                f"{nbr2str((cx - rx) * self.k)} {nbr2str((self.h - cy) * self.k)} c"
             )
         )
         self._out(
             (
-                f"{(cx - rx) * self.k:.2f} {(self.h - cy - ly) * self.k:.2f} "
-                f"{(cx - lx) * self.k:.2f} {(self.h - cy - ry) * self.k:.2f} "
-                f"{cx * self.k:.2f} {(self.h - cy - ry) * self.k:.2f} c"
+                f"{nbr2str((cx - rx) * self.k)} {nbr2str((self.h - cy - ly) * self.k)} "
+                f"{nbr2str((cx - lx) * self.k)} {nbr2str((self.h - cy - ry) * self.k)} "
+                f"{nbr2str(cx * self.k)} {nbr2str((self.h - cy - ry) * self.k)} c"
             )
         )
         self._out(
             (
-                f"{(cx + lx) * self.k:.2f} {(self.h - cy - ry) * self.k:.2f} "
-                f"{(cx + rx) * self.k:.2f} {(self.h - cy - ly) * self.k:.2f} "
-                f"{(cx + rx) * self.k:.2f} {(self.h - cy) * self.k:.2f} c {operator}"
+                f"{nbr2str((cx + lx) * self.k)} {nbr2str((self.h - cy - ry) * self.k)} "
+                f"{nbr2str((cx + rx) * self.k)} {nbr2str((self.h - cy - ly) * self.k)} "
+                f"{nbr2str((cx + rx) * self.k)} {nbr2str((self.h - cy) * self.k)} c {operator}"
             )
         )
 
@@ -1606,13 +1607,13 @@ class FPDF(GraphicsStateMixin):
 
         # Move to the start point
         if start_from_center:
-            self._out(f"{cx * self.k:.2f} {(self.h - cy) * self.k:.2f} m")
+            self._out(f"{nbr2str(cx * self.k)} {nbr2str((self.h - cy) * self.k)} m")
             self._out(
-                f"{start_point[0] * self.k:.2f} {(self.h - start_point[1]) * self.k:.2f} l"
+                f"{nbr2str(start_point[0] * self.k)} {nbr2str((self.h - start_point[1]) * self.k)} l"
             )
         else:
             self._out(
-                f"{start_point[0] * self.k:.2f} {(self.h - start_point[1]) * self.k:.2f} m"
+                f"{nbr2str(start_point[0] * self.k)} {nbr2str((self.h - start_point[1]) * self.k)} m"
             )
 
         # Number of curves to use, maximal segment angle is 2*PI/max_curves
@@ -1645,9 +1646,10 @@ class FPDF(GraphicsStateMixin):
 
             self._out(
                 (
-                    f"{control_point_1[0] * self.k:.2f} {(self.h - control_point_1[1]) * self.k:.2f} "
-                    f"{control_point_2[0] * self.k:.2f} {(self.h - control_point_2[1]) * self.k:.2f} "
-                    f"{p2[0] * self.k:.2f} {(self.h - p2[1]) * self.k:.2f} c" + end
+                    f"{nbr2str(control_point_1[0] * self.k)} {nbr2str((self.h - control_point_1[1]) * self.k)} "
+                    f"{nbr2str(control_point_2[0] * self.k)} {nbr2str((self.h - control_point_2[1]) * self.k)} "
+                    f"{nbr2str(p2[0] * self.k)} {nbr2str((self.h - p2[1]) * self.k)} c"
+                    + end
                 )
             )
 
@@ -1656,7 +1658,7 @@ class FPDF(GraphicsStateMixin):
                 self._out(f"h {style.operator}")
             else:
                 self._out(
-                    f"{cx * self.k:.2f} {(self.h - cy) * self.k:.2f} l {style.operator}"
+                    f"{nbr2str(cx * self.k)} {nbr2str((self.h - cy) * self.k)} l {style.operator}"
                 )
 
     def solid_arc(
@@ -1846,7 +1848,7 @@ class FPDF(GraphicsStateMixin):
         self.font_size_pt = size
         self.current_font = self.fonts[fontkey]
         if self.page > 0:
-            self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
+            self._out(f"BT /F{self.current_font.i} {nbr2str(self.font_size_pt)} Tf ET")
 
     def set_font_size(self, size):
         """
@@ -1863,7 +1865,7 @@ class FPDF(GraphicsStateMixin):
                 raise FPDFException(
                     "Cannot set font size: a font must be selected first"
                 )
-            self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
+            self._out(f"BT /F{self.current_font.i} {nbr2str(self.font_size_pt)} Tf ET")
 
     def set_char_spacing(self, spacing):
         """
@@ -1879,7 +1881,7 @@ class FPDF(GraphicsStateMixin):
             return
         self.char_spacing = spacing
         if self.page > 0:
-            self._out(f"BT {spacing:.2f} Tc ET")
+            self._out(f"BT {nbr2str(spacing)} Tc ET")
 
     def set_stretching(self, stretching):
         """
@@ -1893,7 +1895,7 @@ class FPDF(GraphicsStateMixin):
             return
         self.font_stretching = stretching
         if self.page > 0:
-            self._out(f"BT {stretching:.2f} Tz ET")
+            self._out(f"BT {nbr2str(stretching)} Tz ET")
 
     def set_fallback_fonts(self, fallback_fonts, exact_match=True):
         """
@@ -2321,9 +2323,9 @@ class FPDF(GraphicsStateMixin):
             txt2 = escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))
         else:
             txt2 = escape_parens(txt)
-        sl = [f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td"]
+        sl = [f"BT {nbr2str(x * self.k)} {nbr2str((self.h - y) * self.k)} Td"]
         if self.text_mode != TextMode.FILL:
-            sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
+            sl.append(f" {self.text_mode} Tr {nbr2str(self.line_width)} w")
         sl.append(f"({txt2}) Tj ET")
         if (self.underline and txt != "") or self._record_text_quad_points:
             w = self.get_string_width(txt, normalized=True, markdown=False)
@@ -2369,8 +2371,8 @@ class FPDF(GraphicsStateMixin):
             cx = x * self.k
             cy = (self.h - y) * self.k
             s = (
-                f"q {c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm "
-                f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm"
+                f"q {c:.5F} {s:.5F} {-s:.5F} {c:.5F} {nbr2str(cx)} {nbr2str(cy)} cm "
+                f"1 0 0 1 {nbr2str(-cx)} {nbr2str(-cy)} cm"
             )
             self._out(s)
 
@@ -2410,8 +2412,8 @@ class FPDF(GraphicsStateMixin):
         cx, cy = x * self.k, (self.h - y) * self.k
         with self.local_context():
             self._out(
-                f"{c:.5F} {s:.5F} {-s:.5F} {c:.5F} {cx:.2F} {cy:.2F} cm "
-                f"1 0 0 1 {-cx:.2F} {-cy:.2F} cm"
+                f"{c:.5F} {s:.5F} {-s:.5F} {c:.5F} {nbr2str(cx)} {nbr2str(cy)} cm "
+                f"1 0 0 1 {nbr2str(-cx)} {nbr2str(-cy)} cm"
             )
             yield
 
@@ -2444,8 +2446,8 @@ class FPDF(GraphicsStateMixin):
         cx, cy = x * self.k, (self.h - y) * self.k
         with self.local_context():
             self._out(
-                f"1 {ay:.5f} {ax:.5f} 1 {cx:.2f} {cy:.2f} cm "
-                f"1 0 0 1 -{cx:.2f} -{cy:.2f} cm"
+                f"1 {ay:.5f} {ax:.5f} 1 {nbr2str(cx)} {nbr2str(cy)} cm "
+                f"1 0 0 1 -{nbr2str(cx)} -{nbr2str(cy)} cm"
             )
             yield
 
@@ -2478,8 +2480,8 @@ class FPDF(GraphicsStateMixin):
 
         with self.local_context():
             self._out(
-                f"{a:.5f} {b:.5f} {b:.5f} {a*-1:.5f} {cx:.2f} {cy:.2f} cm "
-                f"1 0 0 1 -{cx:.2f} -{cy:.2f} cm"
+                f"{a:.5f} {b:.5f} {b:.5f} {a*-1:.5f} {nbr2str(cx)} {nbr2str(cy)} cm "
+                f"1 0 0 1 -{nbr2str(cx)} -{nbr2str(cy)} cm"
             )
             yield
 
@@ -2804,13 +2806,13 @@ class FPDF(GraphicsStateMixin):
         if fill:
             op = "B" if border == 1 else "f"
             sl.append(
-                f"{self.x * k:.2f} {(self.h - self.y) * k:.2f} "
-                f"{w * k:.2f} {-h * k:.2f} re {op}"
+                f"{nbr2str(self.x * k)} {nbr2str((self.h - self.y) * k)} "
+                f"{nbr2str(w * k)} {nbr2str(-h * k)} re {op}"
             )
         elif border == 1:
             sl.append(
-                f"{self.x * k:.2f} {(self.h - self.y) * k:.2f} "
-                f"{w * k:.2f} {-h * k:.2f} re S"
+                f"{nbr2str(self.x * k)} {nbr2str((self.h - self.y) * k)} "
+                f"{nbr2str(w * k)} {nbr2str(-h * k)} re S"
             )
         # pylint: enable=invalid-unary-operand-type
 
@@ -2819,23 +2821,23 @@ class FPDF(GraphicsStateMixin):
             y = self.y
             if "L" in border:
                 sl.append(
-                    f"{x * k:.2f} {(self.h - y) * k:.2f} m "
-                    f"{x * k:.2f} {(self.h - (y + h)) * k:.2f} l S"
+                    f"{nbr2str(x * k)} {nbr2str((self.h - y) * k)} m "
+                    f"{nbr2str(x * k)} {nbr2str((self.h - (y + h)) * k)} l S"
                 )
             if "T" in border:
                 sl.append(
-                    f"{x * k:.2f} {(self.h - y) * k:.2f} m "
-                    f"{(x + w) * k:.2f} {(self.h - y) * k:.2f} l S"
+                    f"{nbr2str(x * k)} {nbr2str((self.h - y) * k)} m "
+                    f"{nbr2str((x + w) * k)} {nbr2str((self.h - y) * k)} l S"
                 )
             if "R" in border:
                 sl.append(
-                    f"{(x + w) * k:.2f} {(self.h - y) * k:.2f} m "
-                    f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S"
+                    f"{nbr2str((x + w) * k)} {nbr2str((self.h - y) * k)} m "
+                    f"{nbr2str((x + w) * k)} {nbr2str((self.h - (y + h)) * k)} l S"
                 )
             if "B" in border:
                 sl.append(
-                    f"{x * k:.2f} {(self.h - (y + h)) * k:.2f} m "
-                    f"{(x + w) * k:.2f} {(self.h - (y + h)) * k:.2f} l S"
+                    f"{nbr2str(x * k)} {nbr2str((self.h - (y + h)) * k)} m "
+                    f"{nbr2str((x + w) * k)} {nbr2str((self.h - (y + h)) * k)} l S"
                 )
 
         if self._record_text_quad_points:
@@ -2873,8 +2875,8 @@ class FPDF(GraphicsStateMixin):
                     w - self.c_margin - self.c_margin - styled_txt_width
                 ) / text_line.number_of_spaces
             sl.append(
-                f"BT {(self.x + dx) * k:.2f} "
-                f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
+                f"BT {nbr2str((self.x + dx) * k)} "
+                f"{nbr2str((self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k)} Td"
             )
             for i, frag in enumerate(text_line.fragments):
                 if word_spacing and frag.font_stretching != 100:
@@ -2884,25 +2886,25 @@ class FPDF(GraphicsStateMixin):
                     frag_ws = word_spacing
                 if current_font_stretching != frag.font_stretching:
                     current_font_stretching = frag.font_stretching
-                    sl.append(f"{frag.font_stretching:.2f} Tz")
+                    sl.append(f"{nbr2str(frag.font_stretching)} Tz")
                 if current_char_spacing != frag.char_spacing:
                     current_char_spacing = frag.char_spacing
-                    sl.append(f"{frag.char_spacing:.2f} Tc")
+                    sl.append(f"{nbr2str(frag.char_spacing)} Tc")
                 if current_font != frag.font or current_char_vpos != frag.char_vpos:
                     if current_char_vpos != frag.char_vpos:
                         current_char_vpos = frag.char_vpos
                     current_font = frag.font
-                    sl.append(f"/F{frag.font.i} {frag.font_size_pt:.2f} Tf")
+                    sl.append(f"/F{frag.font.i} {nbr2str(frag.font_size_pt)} Tf")
                 lift = frag.lift
                 if lift != 0.0:
                     # Use text rise operator:
-                    sl.append(f"{lift:.2f} Ts")
+                    sl.append(f"{nbr2str(lift)} Ts")
                 if (
                     frag.text_mode != TextMode.FILL
                     or frag.text_mode != current_text_mode
                 ):
                     current_text_mode = frag.text_mode
-                    sl.append(f"{frag.text_mode} Tr {frag.line_width:.2f} w")
+                    sl.append(f"{frag.text_mode} Tr {nbr2str(frag.line_width)} w")
 
                 if frag.is_ttf_font:
                     mapped_text = ""
@@ -3767,8 +3769,8 @@ class FPDF(GraphicsStateMixin):
                 raise ValueError(f"Unsupported 'x' value passed to .image(): {x}")
 
         stream_content = (
-            f"q {w * self.k:.2f} 0 0 {h * self.k:.2f} {x * self.k:.2f} "
-            f"{(self.h - y - h) * self.k:.2f} cm /I{info['i']} Do Q"
+            f"q {nbr2str(w * self.k)} 0 0 {nbr2str(h * self.k)} {nbr2str(x * self.k)} "
+            f"{nbr2str((self.h - y - h) * self.k)} cm /I{info['i']} Do Q"
         )
         if title or alt_text:
             with self._marked_sequence(title=title, alt_text=alt_text):
@@ -3815,7 +3817,7 @@ class FPDF(GraphicsStateMixin):
             info["usages"] += 1
         else:
             info = ImageInfo(get_img_info(name, img, self.image_filter, dims))
-            info["i"] = len(self.images) + 1
+            info["i"] = self._new_img_id()
             info["usages"] = 1
             info["iccp_i"] = None
             iccp = info.get("iccp")
@@ -3963,7 +3965,7 @@ class FPDF(GraphicsStateMixin):
                             name, img or load_image(name), self.image_filter, dims
                         )
                     )
-                    info["i"] = len(self.images) + 1
+                    info["i"] = self._new_img_id()
                     info["usages"] = 1
                     self.images[lowres_name] = info
                     LOGGER.debug(
@@ -3982,6 +3984,9 @@ class FPDF(GraphicsStateMixin):
             del self.images[name]
             info = lowres_info
         return info
+
+    def _new_img_id(self):
+        return (max(img["i"] for img in self.images.values()) if self.images else 0) + 1
 
     @contextmanager
     def _marked_sequence(self, **kwargs):
@@ -4260,9 +4265,9 @@ class FPDF(GraphicsStateMixin):
         up = current_font.up
         ut = current_font.ut
         return (
-            f"{x * self.k:.2f} "
-            f"{(self.h - y + up / 1000 * self.font_size) * self.k:.2f} "
-            f"{w * self.k:.2f} {-ut / 1000 * self.font_size_pt:.2f} re f"
+            f"{nbr2str(x * self.k)} "
+            f"{nbr2str((self.h - y + up / 1000 * self.font_size) * self.k)} "
+            f"{nbr2str(w * self.k)} {nbr2str(-ut / 1000 * self.font_size_pt)} re f"
         )
 
     def _out(self, s):
@@ -4416,8 +4421,8 @@ class FPDF(GraphicsStateMixin):
         """
         self._out(
             (
-                f"q {x * self.k:.2f} {(self.h - y - h) * self.k:.2f} {w * self.k:.2f} "
-                f"{h * self.k:.2f} re W n"
+                f"q {nbr2str(x * self.k)} {nbr2str((self.h - y - h) * self.k)} {nbr2str(w * self.k)} "
+                f"{nbr2str(h * self.k)} re W n"
             )
         )
         yield

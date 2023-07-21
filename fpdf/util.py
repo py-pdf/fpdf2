@@ -7,6 +7,12 @@ from typing import Iterable, Tuple, Union
 PIL_MEM_BLOCK_SIZE_IN_MIB = 16
 
 
+def nbr2str(nbr):
+    # Reduce the overall PDF document size by limiting the number of trailing zeros
+    # Recipe from https://stackoverflow.com/a/2440786/636849
+    return f"{nbr:.2f}".rstrip("0").rstrip(".")
+
+
 def buffer_subst(buffer, placeholder, value):
     buffer_size = len(buffer)
     assert len(placeholder) == len(value), f"placeholder={placeholder} value={value}"

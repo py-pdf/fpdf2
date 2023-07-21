@@ -74,8 +74,8 @@ class TestUtilities:
         fpdf.drawing._check_range(1, minimum=0.0, maximum=1.0)
 
     @pytest.mark.parametrize("number, converted", parameters.numbers)
-    def test_number_to_str(self, number, converted):
-        assert fpdf.drawing.number_to_str(number) == converted
+    def test_nbr2str(self, number, converted):
+        assert fpdf.drawing.nbr2str(number) == converted
 
     @pytest.mark.parametrize("primitive, result", parameters.pdf_primitives)
     def test_render_primitive(self, primitive, result):

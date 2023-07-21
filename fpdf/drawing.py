@@ -13,7 +13,7 @@ from .enums import (
     PDFStyleKeys,
 )
 from .syntax import Name, Raw
-from .util import escape_parens
+from .util import escape_parens, nbr2str
 
 __pdoc__ = {"force_nodocument": False}
 
@@ -87,21 +87,6 @@ def _check_range(value, minimum=0.0, maximum=1.0):
     return value
 
 
-def number_to_str(number):
-    """
-    Convert a decimal number to a minimal string representation (no trailing 0 or .).
-
-    Args:
-        number (Number): the number to be converted to a string.
-
-    Returns:
-        The number's string representation.
-    """
-    # this approach tries to produce minimal representations of floating point numbers
-    # but can also produce "-0".
-    return f"{number:.4f}".rstrip("0").rstrip(".")
-
-
 # this maybe should live in fpdf.syntax
 def render_pdf_primitive(primitive):
     """
@@ -143,7 +128,7 @@ def render_pdf_primitive(primitive):
     elif isinstance(primitive, bool):  # has to come before number check
         output = ["false", "true"][primitive]
     elif isinstance(primitive, NumberClass):
-        output = number_to_str(primitive)
+        output = nbr2str(primitive)
     elif isinstance(primitive, (list, tuple)):
         output = "[" + " ".join(render_pdf_primitive(val) for val in primitive) + "]"
     elif isinstance(primitive, dict):
@@ -209,7 +194,7 @@ class DeviceRGB(
         return self[:-1]
 
     def serialize(self) -> str:
-        return " ".join(number_to_str(val) for val in self.colors) + f" {self.OPERATOR}"
+        return " ".join(nbr2str(val) for val in self.colors) + f" {self.OPERATOR}"
 
 
 __pdoc__["DeviceRGB.OPERATOR"] = False
@@ -252,7 +237,7 @@ class DeviceGray(
         return self[:-1]
 
     def serialize(self) -> str:
-        return " ".join(number_to_str(val) for val in self.colors) + f" {self.OPERATOR}"
+        return " ".join(nbr2str(val) for val in self.colors) + f" {self.OPERATOR}"
 
 
 __pdoc__["DeviceGray.OPERATOR"] = False
@@ -308,7 +293,7 @@ class DeviceCMYK(
         return self[:-1]
 
     def serialize(self) -> str:
-        return " ".join(number_to_str(val) for val in self.colors) + f" {self.OPERATOR}"
+        return " ".join(nbr2str(val) for val in self.colors) + f" {self.OPERATOR}"
 
 
 __pdoc__["DeviceCMYK.OPERATOR"] = False
@@ -481,7 +466,7 @@ class Point(NamedTuple):
     def render(self):
         """Render the point to the string `"x y"` for emitting to a PDF."""
 
-        return f"{number_to_str(self.x)} {number_to_str(self.y)}"
+        return f"{nbr2str(self.x)} {nbr2str(self.y)}"
 
     def dot(self, other):
         """
@@ -679,7 +664,7 @@ class Point(NamedTuple):
         return NotImplemented
 
     def __str__(self):
-        return f"(x={number_to_str(self.x)}, y={number_to_str(self.y)})"
+        return f"(x={nbr2str(self.x)}, y={nbr2str(self.y)})"
 
 
 class Transform(NamedTuple):
@@ -1019,18 +1004,18 @@ class Transform(NamedTuple):
             A tuple of `(str, last_item)`. `last_item` is returned unchanged.
         """
         return (
-            f"{number_to_str(self.a)} {number_to_str(self.b)} "
-            f"{number_to_str(self.c)} {number_to_str(self.d)} "
-            f"{number_to_str(self.e)} {number_to_str(self.f)} cm",
+            f"{nbr2str(self.a)} {nbr2str(self.b)} "
+            f"{nbr2str(self.c)} {nbr2str(self.d)} "
+            f"{nbr2str(self.e)} {nbr2str(self.f)} cm",
             last_item,
         )
 
     def __str__(self):
         return (
             f"transform: ["
-            f"{number_to_str(self.a)} {number_to_str(self.b)} 0; "
-            f"{number_to_str(self.c)} {number_to_str(self.d)} 0; "
-            f"{number_to_str(self.e)} {number_to_str(self.f)} 1]"
+            f"{nbr2str(self.a)} {nbr2str(self.b)} 0; "
+            f"{nbr2str(self.c)} {nbr2str(self.d)} 0; "
+            f"{nbr2str(self.e)} {nbr2str(self.f)} 1]"
         )
 
 
@@ -3155,7 +3140,7 @@ class DrawingContext:
             render_list.insert(
                 3,
                 render_pdf_primitive(style.stroke_dash_pattern)
-                + f" {number_to_str(style.stroke_dash_phase)} d",
+                + f" {nbr2str(style.stroke_dash_phase)} d",
             )
 
         render_list.append("Q")
@@ -3220,7 +3205,7 @@ class DrawingContext:
                 render_list.insert(
                     3,
                     render_pdf_primitive(style.stroke_dash_pattern)
-                    + f" {number_to_str(style.stroke_dash_phase)} d",
+                    + f" {nbr2str(style.stroke_dash_phase)} d",
                 )
 
             render_list.append("Q")
@@ -4076,8 +4061,7 @@ class GraphicsContext:
 
             if emit_dash is not None:
                 render_list.append(
-                    render_pdf_primitive(emit_dash[0])
-                    + f" {number_to_str(emit_dash[1])} d"
+                    render_pdf_primitive(emit_dash[0]) + f" {nbr2str(emit_dash[1])} d"
                 )
 
             if debug_stream:

@@ -31,6 +31,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - the initial text color is preserved when using `FPDF.write_html()` - _cf._ [issue #846](https://github.com/PyFPDF/fpdf2/issues/846)
 ### Deprecated
 - the `center` optional parameter of [`FPDF.cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) is **no more** deprecated, as it allows for horizontal positioning, which is different from text alignment control with `align="C"`
+### Changed
+- useless trailing zeros in the PDF content streams have been removed, which makes the size of the generated PDF files slightly smaller
 
 ## [2.7.4] - 2023-04-28
 ### Added

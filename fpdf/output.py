@@ -21,6 +21,7 @@ from .syntax import (
 from .syntax import create_dictionary_string as pdf_dict
 from .syntax import create_list_string as pdf_list
 from .syntax import iobj_ref as pdf_ref
+from .util import nbr2str
 
 from fontTools import ttLib
 from fontTools import subset as ftsubset
@@ -1031,7 +1032,7 @@ def _tt_font_widths(font, maxUni):
 
 def _dimensions_to_mediabox(dimensions):
     width_pt, height_pt = dimensions
-    return f"[0 0 {width_pt:.2f} {height_pt:.2f}]"
+    return f"[0 0 {nbr2str(width_pt)} {nbr2str(height_pt)}]"
 
 
 def _sizeof_fmt(num, suffix="B"):
