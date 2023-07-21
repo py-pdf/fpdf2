@@ -10,11 +10,6 @@ from fpdf.fonts import FontFace
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
-def show(pdf):
-    pdf.output(r'c:\data\temp.pdf')
-    import subprocess
-    subprocess.Popen(r'explorer "c:\data\temp.pdf"')
-
 HERE = Path(__file__).resolve().parent
 
 TABLE_DATA = (
