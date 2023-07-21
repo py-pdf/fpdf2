@@ -101,6 +101,8 @@ def test_multicell_with_padding_check_input():
         pdf.multi_cell(0, 5, LONG_TEXT, border=1, padding=(5, 5, 5, 5, 5, 5))
 
 
+
+
 def test_multicell_return_value():
     pdf = FPDF()
     pdf.add_page()
@@ -173,6 +175,7 @@ def test_multicell_return_value():
     import subprocess
 
     subprocess.Popen('explorer "' + str(HERE / "table_with_padding.pdf") + '"')
+
 
 
 def test_table_with_multiline_cells_and_images_padding_and_pagebreak(tmp_path):
@@ -477,3 +480,32 @@ def test_table_colspan_and_padding_and_gutter(tmp_path):
 
 
     show(pdf)
+
+def test_table_with_cell_overflow(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("Times", size=30)
+    pdf.add_page()
+
+    boldstyle = FontFace("Times", emphasis="B")
+
+    with pdf.table(width=pdf.epw / 2, col_widths=(1, 2, 1)) as table:
+        row = table.row()
+        row.cell("left")
+        row.cell("center")
+        row.cell("right")  # triggers header cell overflow on last column
+        row = table.row()
+        row.cell("left")
+        row.cell("center")
+        row.cell("right", style=boldstyle)  # triggers header cell overflow on last column
+        row = table.row()
+        row.cell("A1")
+        row.cell("A2")
+        row.cell("A33333333")  # triggers cell overflow on last column
+        row = table.row()
+        row.cell("B1")
+        row.cell("B2")
+        row.cell("B3")
+
+    show(pdf)
+    # assert_pdf_equal(pdf, HERE / "table_with_cell_overflow.pdf", tmp_path)
+

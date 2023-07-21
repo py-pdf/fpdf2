@@ -369,14 +369,15 @@ class Table:
 
         v_align = cell.v_align if cell.v_align else self._v_align
 
-        # place cursor (required for images after images)
-        # col_widths exclude the gutter
-        # cell_widths = [self._get_col_width(i, jj, colspan=1) for jj in range(j)]  # Note that we use colspan=1 here
-        # cell_x = sum(cell_widths)
+        # We can not rely on the actual x position of the cell. Notably in case of
+        # empty cells or cells with an image only the actual x position is incorrect.
+        # Instead, we calculate the x position based on the column widths of the previous columns
 
-        # Add the gutter, if any
-        if j > 0:
-            self._fpdf.x += self._gutter_width
+        # place cursor (required for images after images)
+        cell_widths = [self._get_col_width(i, jj, colspan=1) for jj in range(j)]  # Note that we use colspan=1 here
+        cell_x = sum(cell_widths) + self._gutter_width * j
+
+        self._fpdf.set_x(self._fpdf.l_margin + cell_x)
 
         # render cell border and background
 
@@ -388,7 +389,7 @@ class Table:
         if cell_height is not None:
             x1 = self._fpdf.x
             y1 = self._fpdf.y
-            x2 = x1 + col_width # already includes gutter
+            x2 = x1 + col_width # already includes gutter for cells spanning multiple columns
             y2 = y1 + cell_height
 
             draw_box(
@@ -451,27 +452,27 @@ class Table:
                 if v_align != AlignV.T:  # For Top we don't need to calculate the dy
 
                     # TODO: Make this more efficient by not calling multi_cell twice
-
-                    # first dry run to get the actual text height of the cell
-                    _, actual_text_height = self._fpdf.multi_cell(
-                        w=col_width,
-                        h=row_height,
-                        txt=cell.text,
-                        max_line_height=self._line_height,
-                        border=0,
-                        align=text_align,
-                        new_x="RIGHT",
-                        new_y="TOP",
-                        link=cell.link,
-                        fill=False,  # fill is already done above
-                        markdown=self._markdown,
-                        output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
-                        wrapmode=self._wrapmode,
-                        dry_run=True,
-                        padding=padding,
-                        **kwargs,
-                    )
-                    # then calculate the y offset of the text depending on the vertical alignment
+                    with self._fpdf.use_font_face(style):
+                        # first dry run to get the actual text height of the cell
+                        _, actual_text_height = self._fpdf.multi_cell(
+                            w=col_width,
+                            h=row_height,
+                            txt=cell.text,
+                            max_line_height=self._line_height,
+                            border=0,
+                            align=text_align,
+                            new_x="RIGHT",
+                            new_y="TOP",
+                            link=cell.link,
+                            fill=False,  # fill is already done above
+                            markdown=self._markdown,
+                            output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
+                            wrapmode=self._wrapmode,
+                            dry_run=True,
+                            padding=padding,
+                            **kwargs,
+                        )
+                        # then calculate the y offset of the text depending on the vertical alignment
 
                     if v_align == AlignV.C:
                         dy = (cell_height - actual_text_height) / 2
@@ -511,12 +512,12 @@ class Table:
         cols_count = self.rows[i].cols_count
         width = self._width - (cols_count - 1) * self._gutter_width
 
-        gutter_within_cells = max((colspan - 1) * self._gutter_width,0)
+        gutter_within_cell = max((colspan - 1) * self._gutter_width,0)
 
         if not self._col_widths:
-            return colspan * (width / cols_count) +gutter_within_cells
+            return colspan * (width / cols_count) + gutter_within_cell
         if isinstance(self._col_widths, Number):
-            return colspan * self._col_widths + gutter_within_cells
+            return colspan * self._col_widths + gutter_within_cell
         if j >= len(self._col_widths):
             raise ValueError(
                 f"Invalid .col_widths specified: missing width for table() column {j + 1} on row {i + 1}"
@@ -527,7 +528,7 @@ class Table:
             col_width += col_ratio * width
             if k != j:
                 col_width += self._gutter_width
-        return col_width + gutter_within_cells
+        return col_width
 
     def _get_row_layout_info(self, i):
         """
