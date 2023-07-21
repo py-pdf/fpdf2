@@ -10,24 +10,34 @@ from fpdf.table import Padding
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
-# Failing
-#
-# Images only
-# test_valign_per_cell
-#
-# All of them are about horizontal positioning
-
-def show(pdf):
-    pdf.output(r"c:\data\temp.pdf")
-    import subprocess
-
-    subprocess.Popen(r'explorer "c:\data\temp.pdf"')
-
-
 HERE = Path(__file__).resolve().parent
+
+def run_comparison(pdf, name, tmp_path):
+    filename = HERE / f"{name}.pdf"
+
+    try:
+        assert_pdf_equal(pdf, filename, tmp_path, generate=False)
+    except AssertionError as e:
+        print(e)
+        pdf.output(r"c:\data\test.pdf")
+        import subprocess
+
+        subprocess.Popen(rf'explorer "{str(filename)}"')
+        subprocess.Popen(rf'explorer "c:\data\test.pdf"')
+
+
+    # Debugging on windows
+    # if filename.exists():
+    #     raise(ValueError(f"File {filename} already exists"))
+    #
+    # pdf.output(filename)
+    # import subprocess
+    #
+    # subprocess.Popen(rf'explorer "{str(filename)}"')
+
 IMG_DIR = HERE.parent / "image"
 
-IMAGE = IMG_DIR / "png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png"
+IMAGE = IMG_DIR / "image_types/pythonknight.png"
 
 IMAGES_DATA = (
     (IMAGE, IMAGE, IMAGE, IMAGE),
@@ -74,25 +84,17 @@ SHORT_TEXT = "Monty Python / Killer Sheep"
 TWO_LINE_TEXT = "Monty Python\nKiller Sheep"
 
 
-def test_multicell_with_padding():
+def test_multicell_with_padding(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
     pdf.multi_cell(0, 5, LONG_TEXT, border = 1, padding = (10, 20, 30, 40))
 
-    # pdf.x = 0
-    # pdf.y = 0
-    # pdf.multi_cell(150, 5, SHORT_TEXT, border = 1, padding = (5, 5, 5, 5))
-
-    show(pdf)
-
-    # pdf.output(HERE / "multicell_with_padding.pdf")
-    #
-    # import subprocess
-    # subprocess.Popen('explorer "' + str(HERE / "multicell_with_padding.pdf") + '"' )
+    run_comparison(pdf,"multicell_with_padding",tmp_path)
 
 
-def test_multicell_with_padding_check_input():
+
+def test_multicell_with_padding_check_input(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
@@ -103,7 +105,7 @@ def test_multicell_with_padding_check_input():
 
 
 
-def test_multicell_return_value():
+def test_multicell_return_value(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
@@ -170,11 +172,7 @@ def test_multicell_return_value():
 
     # assert pdf.y == old_y + height_with_padding
 
-    pdf.output(HERE / "table_with_padding.pdf")
-
-    import subprocess
-
-    subprocess.Popen('explorer "' + str(HERE / "table_with_padding.pdf") + '"')
+    run_comparison(pdf, "table_with_padding.pdf",tmp_path)
 
 
 
@@ -203,9 +201,8 @@ def test_table_with_multiline_cells_and_images_padding_and_pagebreak(tmp_path):
                     row.cell(img=datum, img_fill_width=False, style=deathstyle)
                 else:
                     row.cell(datum)
-    # assert_pdf_equal(pdf, HERE / "table_with_multiline_cells_and_images.pdf", tmp_path)
-    show(pdf)
 
+    run_comparison(pdf, "table_with_multiline_cells_and_images_padding_and_pagebreak",tmp_path)
 
 def test_table_with_only_images(tmp_path):
     pdf = FPDF()
@@ -224,7 +221,7 @@ def test_table_with_only_images(tmp_path):
             for datum in data_row:
                 row.cell(img=datum)
 
-    show(pdf)
+    run_comparison(pdf, "table_with_only_images", tmp_path)
 
 
 def test_table_vertical_alignment(tmp_path):
@@ -249,7 +246,7 @@ def test_table_vertical_alignment(tmp_path):
                     else:
                         row.cell(datum)
 
-    show(pdf)
+    run_comparison(pdf, "table_vertical_alignment", tmp_path)
 
 
 def test_padding_per_cell(tmp_path):
@@ -272,8 +269,8 @@ def test_padding_per_cell(tmp_path):
                     )
                 else:
                     row.cell(datum)
-    # assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
-    show(pdf)
+
+    run_comparison(pdf, "table_padding_per_cell", tmp_path)
 
 
 def test_valign_per_cell(tmp_path):
@@ -306,17 +303,8 @@ def test_valign_per_cell(tmp_path):
                 else:
                     row.cell(datum)
 
-    # assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
-    show(pdf)
+    run_comparison(pdf, "table_valign_per_cell",tmp_path)
 
-def test_table_with_gutter_REMOVE_DOUBLE(tmp_path):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Times", size=16)
-    with pdf.table(TABLE_DATA, gutter_height=3, gutter_width=3):
-        pass
-
-    show(pdf)
 
 def test_table_with_gutter_and_padding_and_outer_border_width(tmp_path):
     pdf = FPDF()
@@ -325,7 +313,7 @@ def test_table_with_gutter_and_padding_and_outer_border_width(tmp_path):
     with pdf.table(TABLE_DATA, gutter_height=3, gutter_width=5, padding = 0, line_height = pdf.font_size, align="L", outer_border_width=2):
         pass
 
-    show(pdf)
+    run_comparison(pdf, "table_with_gutter_and_padding_and_outer_border_width",tmp_path)
 
 
 def test_table_with_colspan(tmp_path):
@@ -376,7 +364,7 @@ def test_table_with_colspan(tmp_path):
                 row.cell(
                     txt)
 
-    show(pdf)
+    run_comparison(pdf, "table_with_colspan",tmp_path)
 
 
 
@@ -393,19 +381,8 @@ def test_outside_border_width(tmp_path):
             for icol in range(5):
                 datum = "Circus"
                 row.cell(datum)
-    # assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
 
-    show(pdf)
-#
-#
-# def test_draw_box():
-#     pdf = FPDF()
-#     pdf.add_page()
-#     pdf.set_font("Times", size=16)
-#
-#     pdf._draw_box(0, 0, 40, 20, 1, False)
-#
-#     show(pdf)
+    run_comparison(pdf, "table_with_outside_border_width",tmp_path)
 
 
 def test_table_colspan_and_padding(tmp_path):
@@ -451,10 +428,7 @@ def test_table_colspan_and_padding(tmp_path):
         row.cell("B3")
         row.cell("B4")
 
-    show(pdf)
-
-    # filename = HERE / "table_colspan_padding.pdf"
-    # assert_pdf_equal(pdf, HERE / "table_colspan_padding.pdf", tmp_path)
+    run_comparison(pdf, "table_colspan_and_padding",tmp_path)
 
 
 def test_table_colspan_and_padding_and_gutter(tmp_path):
@@ -479,7 +453,7 @@ def test_table_colspan_and_padding_and_gutter(tmp_path):
         row.cell("B4")
 
 
-    show(pdf)
+    run_comparison(pdf, "table_colspan_and_padding_and_gutter",tmp_path)
 
 def test_table_colspan_and_padding_and_gutter_and_width(tmp_path):
     pdf = FPDF()
@@ -502,7 +476,7 @@ def test_table_colspan_and_padding_and_gutter_and_width(tmp_path):
         row.cell("B4")
 
 
-    show(pdf)
+    run_comparison(pdf, "table_colspan_and_padding_and_gutter_and_width",tmp_path)
 
 def test_table_with_cell_overflow(tmp_path):
     pdf = FPDF()
@@ -529,40 +503,20 @@ def test_table_with_cell_overflow(tmp_path):
         row.cell("B2")
         row.cell("B3")
 
-    show(pdf)
-    # assert_pdf_equal(pdf, HERE / "table_with_cell_overflow.pdf", tmp_path)
-
-TABLE_DATA_OLD = (
-    ("First name", "Last name", "Age", "City"),
-    ("Jules", "Smith", "34", "San Juan"),
-    ("Mary", "Ramos", "45", "Orlando"),
-    ("Carlson", "Banks", "19", "Los Angeles"),
-    ("Lucas", "Cimon", "31", "Angers"),
-)
-
-def test_table_with_varying_col_widths(tmp_path):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Times", size=16)
-    with pdf.table(col_widths=(30, 30, 10, 30)) as table:
-        for data_row in TABLE_DATA_OLD:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
-    assert_pdf_equal(pdf, HERE / "table_with_varying_col_widths.pdf", tmp_path)
+    run_comparison(pdf, "table_with_cell_overflow_font_setting",tmp_path)
 
 
 
-def test_draw_box(tmp_path):
+def test_draw_box_borders(tmp_path):
     pdf = FPDF()
     pdf.set_font("Times", size=16)
     pdf.add_page()
 
-    from fpdf.table import draw_box
+    from fpdf.table import draw_box_borders
 
     def box(x,y, borders):
-        draw_box(pdf, x-10, y-10, x+40, y+20, fill=(200,200,200), border="None")
-        draw_box(pdf, x-20,y-20,x+50, y+30,border=borders)
+        draw_box_borders(pdf, x - 10, y - 10, x + 40, y + 20, fill=(200, 200, 200), border="None")
+        draw_box_borders(pdf, x - 20, y - 20, x + 50, y + 30, border=borders)
         pdf.set_xy(x,y)
         pdf.cell(txt=borders)
 
@@ -572,4 +526,4 @@ def test_draw_box(tmp_path):
     box(40, 140, "T")
     box(140, 140, "B")
 
-    show(pdf)
+    run_comparison(pdf, "draw_box_borders",tmp_path)

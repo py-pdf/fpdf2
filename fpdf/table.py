@@ -35,7 +35,7 @@ def get_padding_tuple(padding: Union[int, float, tuple, list]) -> Padding:
         f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
     )
 
-def draw_box(pdf, x1, y1, x2, y2, border, fill = None):
+def draw_box_borders(pdf, x1, y1, x2, y2, border, fill = None):
     """Draws a box using the provided style - private helper used by table for drawing the cell and table borders.
     Difference bewteen this and rect() is that border can be defined as "L,R,T,B" to draw only some of the four borders; compatible with get_border(i,k)
 
@@ -401,7 +401,7 @@ class Table:
             x2 = x1 + col_width # already includes gutter for cells spanning multiple columns
             y2 = y1 + cell_height
 
-            draw_box(
+            draw_box_borders(
                 self._fpdf,
                 x1, y1, x2, y2, border=self.get_cell_border(i, j),
                 fill=style.fill_color if fill else None
