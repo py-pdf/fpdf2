@@ -4,7 +4,7 @@ from pathlib import Path
 import qrcode, pytest
 
 from fpdf import FPDF
-from fpdf.enums import MethodReturnValue, YPos, TableCellFillMode, AlignV
+from fpdf.enums import MethodReturnValue, YPos, TableCellFillMode, VAlign
 from fpdf.fonts import FontFace
 from fpdf.table import Padding
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
@@ -18,12 +18,13 @@ def run_comparison(pdf, name, tmp_path):
     try:
         assert_pdf_equal(pdf, filename, tmp_path, generate=False)
     except AssertionError as e:
+        # assert_pdf_equal(pdf, filename, tmp_path, generate=True)
 
         # windows only debugging
-        # import subprocess
-        # # subprocess.Popen(rf'explorer "{str(filename)}"')
-        # pdf.output(rf'c:\temp\{name}.pdf')
-        # subprocess.Popen(rf'explorer "c:\temp\{name}.pdf"')
+        import subprocess
+        # subprocess.Popen(rf'explorer "{str(filename)}"')
+        pdf.output(rf'c:\temp\{name}.pdf')
+        subprocess.Popen(rf'explorer "c:\temp\{name}.pdf"')
 
         raise e
 
@@ -227,7 +228,7 @@ def test_table_vertical_alignment(tmp_path):
 
     deathstyle = FontFace(color=black, fill_color=red)
 
-    for v in (AlignV.T, AlignV.C, AlignV.B):
+    for v in (VAlign.T, VAlign.C, VAlign.B):
         pdf.write_html("<h1>Vertical alignment: {}</h1>".format(v))
 
         with pdf.table(line_height=pdf.font_size, padding=3, v_align=v) as table:
@@ -276,16 +277,16 @@ def test_valign_per_cell(tmp_path):
 
     deathstyle = FontFace(color=black, fill_color=red)
 
-    with pdf.table(line_height=pdf.font_size, padding=2, v_align=AlignV.C) as table:
+    with pdf.table(line_height=pdf.font_size, padding=2, v_align=VAlign.C) as table:
         for irow in range(5):
             row = table.row()
             for icol in range(5):
                 datum = icol * "Circus\n"
 
                 if irow == 2:
-                    v_align = AlignV.T
+                    v_align = VAlign.T
                 elif irow == 3:
-                    v_align = AlignV.B
+                    v_align = VAlign.B
 
                 if irow == 2 or irow == 3:
                     row.cell(

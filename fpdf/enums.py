@@ -198,7 +198,7 @@ class Align(CoerciveEnum):
             return cls.L
         return super(cls, cls).coerce(value)
 
-class AlignV(CoerciveEnum):
+class VAlign(CoerciveEnum):
     """Defines how to vertically render text in a cell.
     Default value is CENTER"""
 

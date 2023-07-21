@@ -7,7 +7,7 @@ try:
 except ImportError:
     NoneType = type(None)
 
-from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode, AlignV
+from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode, VAlign
 from .enums import MethodReturnValue
 from .errors import FPDFException
 from .fonts import CORE_FONTS, FontFace
@@ -147,7 +147,7 @@ class Table:
         """
         self._fpdf = fpdf
         self._align = align
-        self._v_align = AlignV.coerce(v_align)
+        self._v_align = VAlign.coerce(v_align)
         self._borders_layout = TableBordersLayout.coerce(borders_layout)
         self._outer_border_width = outer_border_width
         self._cell_fill_color = cell_fill_color
@@ -468,9 +468,9 @@ class Table:
 
                 actual_text_height = cell_height_info.rendered_height[j]
 
-                if v_align == AlignV.C:
+                if v_align == VAlign.C:
                     dy = (cell_height - actual_text_height) / 2
-                elif v_align == AlignV.B:
+                elif v_align == VAlign.B:
                     dy = cell_height - actual_text_height
 
 
@@ -636,7 +636,7 @@ class Cell:
     )
     text: str
     align: Optional[Union[str, Align]]
-    v_align: Optional[Union[str, AlignV]]
+    v_align: Optional[Union[str, VAlign]]
     style: Optional[FontFace]
     img: Optional[str]
     img_fill_width: bool
