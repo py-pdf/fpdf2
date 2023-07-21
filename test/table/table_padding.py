@@ -10,6 +10,13 @@ from fpdf.table import Padding
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
+# Failing
+#
+# Images only
+# test_valign_per_cell
+#
+# All of them are about horizontal positioning
+
 def show(pdf):
     pdf.output(r"c:\data\temp.pdf")
     import subprocess
@@ -295,6 +302,7 @@ def test_valign_per_cell(tmp_path):
                     )
                 else:
                     row.cell(datum)
+
     # assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
     show(pdf)
 

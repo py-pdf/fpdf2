@@ -501,15 +501,22 @@ class Table:
             self._fpdf.y -= dy
         else:
             cell_height = 0
+
         return page_break_text or page_break_image, max(img_height, cell_height)
 
     def _get_col_width(self, i, j, colspan=1):
+        """Gets width of a column in a table, this excludes the gutter outside the column but includes the gutter
+        between columns if the cell spans multiple columns."""
+
         cols_count = self.rows[i].cols_count
         width = self._width - (cols_count - 1) * self._gutter_width
+
+        gutter_within_cells = max((colspan - 1) * self._gutter_width,0)
+
         if not self._col_widths:
-            return colspan * (width / cols_count)
+            return colspan * (width / cols_count) +gutter_within_cells
         if isinstance(self._col_widths, Number):
-            return colspan * self._col_widths
+            return colspan * self._col_widths + gutter_within_cells
         if j >= len(self._col_widths):
             raise ValueError(
                 f"Invalid .col_widths specified: missing width for table() column {j + 1} on row {i + 1}"
@@ -520,7 +527,7 @@ class Table:
             col_width += col_ratio * width
             if k != j:
                 col_width += self._gutter_width
-        return col_width
+        return col_width + gutter_within_cells
 
     def _get_row_layout_info(self, i):
         """
