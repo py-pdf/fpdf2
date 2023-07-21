@@ -68,11 +68,11 @@ def draw_box(pdf, x1, y1, x2, y2, border, fill = None):
     if isinstance(border, str):
         if "L" in border:
             sl.append(f"{x1:.2f} {y2:.2f} m " f"{x1:.2f} {y1:.2f} l S")
-        if "T" in border:
+        if "B" in border:
             sl.append(f"{x1:.2f} {y2:.2f} m " f"{x2:.2f} {y2:.2f} l S")
         if "R" in border:
             sl.append(f"{x2:.2f} {y2:.2f} m " f"{x2:.2f} {y1:.2f} l S")
-        if "B" in border:
+        if "T" in border:
             sl.append(f"{x1:.2f} {y1:.2f} m " f"{x2:.2f} {y1:.2f} l S")
 
     s = " ".join(sl)
@@ -168,6 +168,15 @@ class Table:
             self._padding = get_padding_tuple(0)
         else:
             self._padding = get_padding_tuple(padding)
+
+        # check table_border_layout and outer_border_width
+        if self._borders_layout != TableBordersLayout.ALL:
+            if outer_border_width is not None:
+                raise ValueError(
+                    "outer_border_width is not allowed when borders_layout is not ALL"
+                )
+            self._outer_border_width = 0
+
 
         for row in rows:
             self.row(row)
@@ -399,6 +408,7 @@ class Table:
             )
 
             # draw outer box if needed
+
             if self._outer_border_width:
 
                 _remember_linewidth = self._fpdf.line_width

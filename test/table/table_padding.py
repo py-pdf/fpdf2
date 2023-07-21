@@ -481,6 +481,29 @@ def test_table_colspan_and_padding_and_gutter(tmp_path):
 
     show(pdf)
 
+def test_table_colspan_and_padding_and_gutter_and_width(tmp_path):
+    pdf = FPDF()
+
+    pdf.set_font("Times", size=12)
+    pdf.add_page()
+    with pdf.table(col_widths=(1, 2, 1,1), padding=5, gutter_height=3, gutter_width=5, width=100) as table:
+        row = table.row()
+        row.cell("0")
+        row.cell("1")
+        row.cell("2")
+        row.cell("3")
+        row = table.row()
+        row.cell("A1")
+        row.cell("A2,3,4", colspan=3)
+
+        row = table.row()
+        row.cell("B1", colspan=2)
+        row.cell("B3")
+        row.cell("B4")
+
+
+    show(pdf)
+
 def test_table_with_cell_overflow(tmp_path):
     pdf = FPDF()
     pdf.set_font("Times", size=30)
@@ -509,3 +532,44 @@ def test_table_with_cell_overflow(tmp_path):
     show(pdf)
     # assert_pdf_equal(pdf, HERE / "table_with_cell_overflow.pdf", tmp_path)
 
+TABLE_DATA_OLD = (
+    ("First name", "Last name", "Age", "City"),
+    ("Jules", "Smith", "34", "San Juan"),
+    ("Mary", "Ramos", "45", "Orlando"),
+    ("Carlson", "Banks", "19", "Los Angeles"),
+    ("Lucas", "Cimon", "31", "Angers"),
+)
+
+def test_table_with_varying_col_widths(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table(col_widths=(30, 30, 10, 30)) as table:
+        for data_row in TABLE_DATA_OLD:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_with_varying_col_widths.pdf", tmp_path)
+
+
+
+def test_draw_box(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("Times", size=16)
+    pdf.add_page()
+
+    from fpdf.table import draw_box
+
+    def box(x,y, borders):
+        draw_box(pdf, x-10, y-10, x+40, y+20, fill=(200,200,200), border="None")
+        draw_box(pdf, x-20,y-20,x+50, y+30,border=borders)
+        pdf.set_xy(x,y)
+        pdf.cell(txt=borders)
+
+    box(40,40, "L")
+    box(140, 40, "R")
+
+    box(40, 140, "T")
+    box(140, 140, "B")
+
+    show(pdf)
