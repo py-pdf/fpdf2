@@ -187,6 +187,9 @@ class TTFFont:
         self.emphasis = TextEmphasis.coerce(style)
         self.subset = SubsetMap(self, [ord(char) for char in sbarr])
 
+    def __repr__(self):
+        return f"TTFFont(i={self.i}, fontkey={self.fontkey})"
+
     def close(self):
         self.ttfont.close()
         self.hbfont = None
