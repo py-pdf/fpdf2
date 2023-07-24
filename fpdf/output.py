@@ -678,6 +678,8 @@ class OutputProducer:
                 self._add_pdf_obj(font_file_cs_obj, "fonts")
                 font_descriptor_obj.font_file2 = font_file_cs_obj
 
+                font.close()
+
         return font_objs_per_index
 
     def _add_images(self):

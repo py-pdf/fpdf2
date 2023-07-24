@@ -184,6 +184,10 @@ class TTFFont:
         self.emphasis = TextEmphasis.coerce(style)
         self.subset = SubsetMap(self, [ord(char) for char in sbarr])
 
+    def close(self):
+        self.ttfont.close()
+        self.hbfont = None
+
     def get_text_width(self, text, font_size_pt, text_shaping_parms):
         if text_shaping_parms:
             return self.shaped_text_width(text, font_size_pt, text_shaping_parms)
