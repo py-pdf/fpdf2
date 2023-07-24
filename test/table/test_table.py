@@ -431,3 +431,12 @@ def test_table_with_colspan_and_gutter(tmp_path):  # issue 808
         row.cell("B2")
         row.cell("B3")
     assert_pdf_equal(pdf, HERE / "table_with_colspan_and_gutter.pdf", tmp_path)
+
+
+def test_table_with_capitalized_font_family_and_emphasis():  # issue 828
+    pdf = FPDF()
+    pdf.add_page()
+    with pdf.table(
+        TABLE_DATA, headings_style=FontFace(family="Helvetica", emphasis="ITALICS")
+    ):
+        pass

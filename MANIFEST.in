@@ -1,14 +1,10 @@
-include           PyPIReadme.rst
+include CHANGELOG.md
+include CONTRIBUTING.md
+include CONTRIBUTORS.md
+include LICENSE
+exclude MANIFEST.in
+include README.md
+
 recursive-include fpdf     *
 recursive-exclude fpdf     *.pyc
-recursive-exclude scripts  *
 recursive-exclude test     *
-recursive-exclude tutorial *
-
-# added by check_manifest.py
-exclude *.md
-exclude *.yml
-include LICENSE
-exclude tox.ini
-
-include README.md

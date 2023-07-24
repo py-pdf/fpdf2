@@ -167,12 +167,12 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
 
     pdf.ln()
 
-    with pdf.unbreakable() as doc:
-        for _ in range(4):
-            for row in data:
-                max_no_of_lines_in_cell = 1
-                for cell in row:
-                    with pytest.warns(DeprecationWarning, match=expected_warn):
+    with pytest.warns(DeprecationWarning, match=expected_warn):
+        with pdf.unbreakable() as doc:
+            for _ in range(4):
+                for row in data:
+                    max_no_of_lines_in_cell = 1
+                    for cell in row:
                         result = doc.multi_cell(
                             cell_width,
                             l_height,
@@ -184,39 +184,39 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
                             max_line_height=l_height,
                             split_only=True,
                         )
-                    no_of_lines_in_cell = len(result)
-                    if no_of_lines_in_cell > max_no_of_lines_in_cell:
-                        max_no_of_lines_in_cell = no_of_lines_in_cell
-                no_of_lines_list.append(max_no_of_lines_in_cell)
+                        no_of_lines_in_cell = len(result)
+                        if no_of_lines_in_cell > max_no_of_lines_in_cell:
+                            max_no_of_lines_in_cell = no_of_lines_in_cell
+                    no_of_lines_list.append(max_no_of_lines_in_cell)
 
-            for j, row in enumerate(data):
-                cell_height = no_of_lines_list[j] * l_height
-                for cell in row:
-                    if j == 0:
-                        doc.multi_cell(
-                            cell_width,
-                            cell_height,
-                            "**" + cell + "**",
-                            border=1,
-                            fill=False,
-                            align="L",
-                            new_x="RIGHT",
-                            new_y="TOP",
-                            max_line_height=l_height,
-                            markdown=False,
-                        )
-                    else:
-                        doc.multi_cell(
-                            cell_width,
-                            cell_height,
-                            cell,
-                            border=1,
-                            align="L",
-                            new_x="RIGHT",
-                            new_y="TOP",
-                            max_line_height=l_height,
-                        )
-                doc.ln(cell_height)
+                for j, row in enumerate(data):
+                    cell_height = no_of_lines_list[j] * l_height
+                    for cell in row:
+                        if j == 0:
+                            doc.multi_cell(
+                                cell_width,
+                                cell_height,
+                                "**" + cell + "**",
+                                border=1,
+                                fill=False,
+                                align="L",
+                                new_x="RIGHT",
+                                new_y="TOP",
+                                max_line_height=l_height,
+                                markdown=False,
+                            )
+                        else:
+                            doc.multi_cell(
+                                cell_width,
+                                cell_height,
+                                cell,
+                                border=1,
+                                align="L",
+                                new_x="RIGHT",
+                                new_y="TOP",
+                                max_line_height=l_height,
+                            )
+                    doc.ln(cell_height)
 
     assert_pdf_equal(
         pdf, HERE / "multi_cell_table_unbreakable_with_split_only.pdf", tmp_path

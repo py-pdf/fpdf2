@@ -919,6 +919,24 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "stenci",
+      "name": "stenci",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5955495?v=4",
+      "profile": "https://github.com/stenci",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "alcnaka",
+      "name": "alcnaka",
+      "avatar_url": "https://avatars.githubusercontent.com/u/47954083?v=4",
+      "profile": "https://github.com/alcnaka",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,

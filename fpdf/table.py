@@ -114,7 +114,7 @@ class Table:
             emphasis = self._headings_style.emphasis
             if emphasis is not None:
                 family = self._headings_style.family or self._fpdf.font_family
-                font_key = family + emphasis.style
+                font_key = family.lower() + emphasis.style
                 if font_key not in CORE_FONTS and font_key not in self._fpdf.fonts:
                     # Raising a more explicit error than the one from set_font():
                     raise FPDFException(
@@ -122,10 +122,12 @@ class Table:
                     )
         if self.rows:
             cols_count = self.rows[0].cols_count
-            for i, row in enumerate(self.rows[1:], start=1):
+            for i, row in enumerate(self.rows[1:], start=2):
                 if row.cols_count != cols_count:
                     raise FPDFException(
-                        f"Inconsistent column count detected on row {i}"
+                        f"Inconsistent column count detected on row {i}:"
+                        f" it has {row.cols_count} columns,"
+                        f" whereas the top row has {cols_count}."
                     )
         # Defining table global horizontal position:
         prev_l_margin = self._fpdf.l_margin

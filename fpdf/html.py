@@ -219,6 +219,9 @@ class HTML2FPDF(HTMLParser):
             dd_tag_indent (int): numeric indentation of <dd> elements
             table_line_separators (bool): enable horizontal line separators in <table>
             ul_bullet_char (str): bullet character for <ul> elements
+            heading_sizes (dict): font size per heading level names ("h1", "h2"...)
+            pre_code_font (str): font to use for <pre> & <code> blocks
+            warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags
         """
         super().__init__()
         self.pdf = pdf
@@ -238,7 +241,7 @@ class HTML2FPDF(HTMLParser):
         self.bullet = []
         self.font_size = pdf.font_size_pt
         self.set_font(pdf.font_family or "times", size=self.font_size)
-        self.font_color = 0, 0, 0  # initialize font color, r,g,b format
+        self.font_color = tuple((255 * v for v in pdf.text_color.colors))
         self.heading_level = None
         self.heading_sizes = dict(**DEFAULT_HEADING_SIZES)
         self.heading_above = 0.2  # extra space above heading, relative to font size
@@ -262,6 +265,17 @@ class HTML2FPDF(HTMLParser):
             data = data.strip()
             if not data:
                 return
+            if "inserted" in self.td_th:
+                tag = self.td_th["tag"]
+                raise NotImplementedError(
+                    f"Unsupported nested HTML tags inside <{tag}> element"
+                )
+                # We could potentially support nested <b> / <em> / <font> tags
+                # by building a list of Fragment instances from the HTML cell content
+                # and then passing those fragments to Row.cell().
+                # However there should be an incoming refactoring of this code
+                # dedicated to text layout, and we should probably wait for that
+                # before supporting this feature.
             align = self.td_th.get("align", self.tr.get("align"))
             if align:
                 align = align.upper()
@@ -454,6 +468,7 @@ class HTML2FPDF(HTMLParser):
             if not self.table_row:
                 raise FPDFException(f"Invalid HTML: <{tag}> used outside any <tr>")
             self.td_th = {k.lower(): v for k, v in attrs.items()}
+            self.td_th["tag"] = tag
             if tag == "th":
                 self.td_th["align"] = "CENTER"
                 self.td_th["b"] = True

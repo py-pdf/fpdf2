@@ -550,7 +550,7 @@ class OutputProducer:
                 # notdef_outline=True means that keeps the white box for the .notdef glyph
                 # recommended_glyphs=True means that adds the .notdef, .null, CR, and space glyphs
                 options = ftsubset.Options(notdef_outline=True, recommended_glyphs=True)
-                # dropping the tables previous dropped in the old ttfonts.py file #issue 418
+                # dropping some tables that currently not used:
                 options.drop_tables += [
                     "FFTM",  # FontForge Timestamp table - cf. https://github.com/PyFPDF/fpdf2/issues/600
                     "GDEF",  # Glyph Definition table = various glyph properties used in OpenType layout processing
@@ -560,6 +560,7 @@ class OutputProducer:
                     "MATH",  # Mathematical typesetting table = specific information necessary for math formula layout
                     "hdmx",  # Horizontal Device Metrics table, stores integer advance widths scaled to particular pixel sizes
                     #          for OpenType™ fonts with TrueType outlines
+                    "meta",  # metadata table
                 ]
                 subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)

@@ -23,9 +23,14 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - [`FPDF.multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell): has a new optional `center` parameter to position the cell horizontally at the center of the page
 - Added Tutorial in Khmer language - thanks to @kuth-chi
 - [`FPDF.set_text_shaping()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_shaping): new method to perform text shaping using Harfbuzz - [documentation](https://pyfpdf.github.io/fpdf2/TextShaping.html).
+- Added tutorial in Khmer language: [ភាសខ្មែរ](https://pyfpdf.github.io/fpdf2/Tutorial-km.html) - thanks to @kuth-chi
+- Added tutorial in [日本語](https://pyfpdf.github.io/fpdf2/Tutorial-ja.html) - thanks to @alcnaka
+- Better documentation & errors when facing HTML rendering limitations for `<table>` tags: <https://pyfpdf.github.io/fpdf2/HTML.html>
 ### Fixed
 - [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): the `colspan` setting has been fixed - [documentation](https://pyfpdf.github.io/fpdf2/Tables.html#column-span)
 - [`FPDF.image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): allowing images path starting with `data` to be passed as input
+- text overflow is better handled by `FPDF.write()` & `FPDF.write_html()` - _cf._ [issue #847](https://github.com/PyFPDF/fpdf2/issues/847)
+- the initial text color is preserved when using `FPDF.write_html()` - _cf._ [issue #846](https://github.com/PyFPDF/fpdf2/issues/846)
 ### Deprecated
 - the `center` optional parameter of [`FPDF.cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) is **no more** deprecated, as it allows for horizontal positioning, which is different from text alignment control with `align="C"`
 
