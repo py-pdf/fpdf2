@@ -560,7 +560,7 @@ class OutputProducer:
                     "MATH",  # Mathematical typesetting table = specific information necessary for math formula layout
                     "hdmx",  # Horizontal Device Metrics table, stores integer advance widths scaled to particular pixel sizes
                     #          for OpenType™ fonts with TrueType outlines
-                    # "meta",  # metadata table
+                    "meta",  # metadata table
                 ]
                 subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)
