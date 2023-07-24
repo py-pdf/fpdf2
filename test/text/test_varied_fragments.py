@@ -192,3 +192,35 @@ def test_varfrags_text_mode(tmp_path):
     pdf.ln()
     pdf.write_fragments(frags, align=Align.C)
     assert_pdf_equal(pdf, HERE / "varfrags_text_mode.pdf", tmp_path)
+
+
+def test_varfrags_char_vpos(tmp_path):
+    pdf = FxFPDF()
+    pdf.add_page()
+    pdf.line(pdf.l_margin, pdf.t_margin, pdf.l_margin, pdf.h - pdf.b_margin)
+    pdf.line(
+        pdf.l_margin + pdf.epw,
+        pdf.t_margin,
+        pdf.l_margin + pdf.epw,
+        pdf.h - pdf.b_margin,
+    )
+    pdf.set_font("helvetica", "", 14)
+    f1 = Fragment(TEXT_1, pdf._get_current_graphics_state(), pdf.k)
+    pdf.char_vpos = "SUB"
+    f2 = Fragment(TEXT_2, pdf._get_current_graphics_state(), pdf.k)
+    f3 = Fragment(TEXT_3, f1.graphics_state, pdf.k)
+    pdf.char_vpos = "SUP"
+    f4 = Fragment(TEXT_4, pdf._get_current_graphics_state(), pdf.k)
+    f5 = Fragment(TEXT_5, f1.graphics_state, pdf.k)
+    frags = [f1, f2, f3, f4, f5]
+    pdf.write_fragments(frags)
+    pdf.ln()
+    pdf.ln()
+    pdf.write_fragments(frags, align=Align.J)
+    pdf.ln()
+    pdf.ln()
+    pdf.write_fragments(frags, align=Align.R)
+    pdf.ln()
+    pdf.ln()
+    pdf.write_fragments(frags, align=Align.C)
+    assert_pdf_equal(pdf, HERE / "varfrags_char_vpos.pdf", tmp_path)
