@@ -90,12 +90,12 @@ class PDFInfo(PDFObject):
         creation_date: PDFDate,
     ):
         super().__init__()
-        self.title = PDFString(title) if title else None
-        self.subject = PDFString(subject) if subject else None
-        self.author = PDFString(author) if author else None
-        self.keywords = PDFString(keywords) if keywords else None
-        self.creator = PDFString(creator) if creator else None
-        self.producer = PDFString(producer) if producer else None
+        self.title = PDFString(title, encrypt=True) if title else None
+        self.subject = PDFString(subject, encrypt=True) if subject else None
+        self.author = PDFString(author, encrypt=True) if author else None
+        self.keywords = PDFString(keywords, encrypt=True) if keywords else None
+        self.creator = PDFString(creator, encrypt=True) if creator else None
+        self.producer = PDFString(producer, encrypt=True) if producer else None
         self.creation_date = creation_date
 
 
