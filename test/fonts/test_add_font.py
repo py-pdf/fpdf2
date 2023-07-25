@@ -1,5 +1,6 @@
 from os import devnull
 from pathlib import Path
+import sys
 
 import pytest
 
@@ -92,6 +93,10 @@ def test_render_en_dash(tmp_path):  # issue-166
     assert_pdf_equal(pdf, HERE / "render_en_dash.pdf", tmp_path)
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 8),
+    reason="fontTools dropped support for 3.7. https://github.com/PyFPDF/fpdf2/pull/863",
+)
 def test_add_font_otf(tmp_path):
     pdf = FPDF()
     pdf.add_page()

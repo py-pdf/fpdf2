@@ -1,5 +1,8 @@
 # pylint: disable=protected-access
 from pathlib import Path
+import sys
+
+import pytest
 
 from fpdf import FPDF
 from fpdf.enums import AccessPermission, EncryptionMethod
@@ -152,6 +155,10 @@ def test_encrypt_metadata(tmp_path):
     assert_pdf_equal(pdf, HERE / "encrypt_metadata.pdf", tmp_path)
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 8),
+    reason="fontTools dropped support for 3.7. https://github.com/PyFPDF/fpdf2/pull/863",
+)
 def test_encrypt_font(tmp_path):
     pdf = FPDF()
     pdf.add_page()
