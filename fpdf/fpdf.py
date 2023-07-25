@@ -2890,6 +2890,7 @@ class FPDF(GraphicsStateMixin):
         s_width, underlines = 0, []
         # We try to avoid modifying global settings for temporary changes.
         current_ws = frag_ws = 0.0
+        current_lift = 0.0
         current_char_vpos = CharVPos.LINE
         current_font = self.current_font
         current_text_mode = self.text_mode
@@ -2937,9 +2938,10 @@ class FPDF(GraphicsStateMixin):
                     current_font = frag.font
                     sl.append(f"/F{frag.font.i} {frag.font_size_pt:.2f} Tf")
                 lift = frag.lift
-                if lift != 0.0:
+                if lift != current_lift:
                     # Use text rise operator:
                     sl.append(f"{lift:.2f} Ts")
+                    current_lift = lift
                 if (
                     frag.text_mode != TextMode.FILL
                     or frag.text_mode != current_text_mode
@@ -3008,6 +3010,7 @@ class FPDF(GraphicsStateMixin):
             # pylint: disable=too-many-boolean-expressions
             if (
                 current_ws != 0.0
+                or current_lift != 0.0
                 or current_char_vpos != CharVPos.LINE
                 or current_font != self.current_font
                 or current_text_mode != self.text_mode
