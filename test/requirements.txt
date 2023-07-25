@@ -4,7 +4,6 @@ black
 camelot-py
 endesive
 ghostscript  # required by camelot-py[base]: https://github.com/camelot-dev/camelot/blob/master/setup.py#L27
-fonttools>=4.41.1; python_version>'3.7' # can be removed when minimum version in setup.cfg surpasses this: https://github.com/PyFPDF/fpdf2/pull/863
 opencv-python  # required by camelot-py[base]: https://github.com/camelot-dev/camelot/blob/master/setup.py#L27
 pre-commit
 pylint
