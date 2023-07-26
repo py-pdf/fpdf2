@@ -57,7 +57,7 @@ def parse_output(output):
     print(output_dict.keys())
 
     reports_per_pdf_filepath = {}
-    for output_job in output_dict["report"]["jobs"]:
+    for output_job in output_dict["reports"]["jobs"]:
         file_path = output_job["itemDetails"]["name"]
         if "taskException" in output_job:
             reports_per_pdf_filepath[file_path] = {
