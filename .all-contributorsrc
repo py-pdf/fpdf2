@@ -946,6 +946,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "lfavole",
+      "name": "lfavole",
+      "avatar_url": "https://avatars.githubusercontent.com/u/88188568?v=4",
+      "profile": "http://lfavole.eu.pythonanywhere.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
