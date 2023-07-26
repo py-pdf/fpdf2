@@ -267,9 +267,9 @@ class HTML2FPDF(HTMLParser):
             if not data:
                 return
             if "inserted" in self.td_th:
-                tag = self.td_th["tag"]
+                td_th_tag = self.td_th["tag"]
                 raise NotImplementedError(
-                    f"Unsupported nested HTML tags inside <{tag}> element"
+                    f"Unsupported nested HTML tags inside <{td_th_tag}> element: <{self._tags_stack[-1]}>"
                 )
                 # We could potentially support nested <b> / <em> / <font> tags
                 # by building a list of Fragment instances from the HTML cell content

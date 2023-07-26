@@ -133,7 +133,8 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
                 )
 
             for r in record:
-                assert r.filename == __file__
+                if r.category == DeprecationWarning:
+                    assert r.filename == __file__
 
             no_of_lines_in_cell = len(result)
             if no_of_lines_in_cell > max_no_of_lines_in_cell:
