@@ -4,17 +4,16 @@
 # Purpose of this script:
 # * abort the validation pipeline with a non-zero error code if any check fails on a PDF sample
 # * aggregate all checks performed in a concise summary
+# * parallelize the execution of this analysis on all PDF files
 # * allow to ignore some errors considered harmless, listed in verapdf-ignore.json
 
-# USAGE: ./verapdf.py [$pdf_filepath]
+# USAGE: ./verapdf.py [$pdf_filepath|--process-all-test-pdf-files|--print-aggregated-report]
 
 import sys
-from subprocess import PIPE, run
+from subprocess import run, DEVNULL, PIPE
 
-from scripts.checker_commons import aggregate, print_aggregated_report
+from scripts.checker_commons import main, HIDE_STDERR
 
-AGGREGATED_REPORT_FILEPATH = "verapdf-aggregated.json"
-IGNORE_WHITELIST_FILEPATH = "scripts/verapdf-ignore.json"
 CHECKS_DETAILS_URL = "https://docs.verapdf.org/validation/"
 BAT_EXT = ".bat" if sys.platform in ("cygwin", "win32") else ""
 
@@ -28,9 +27,11 @@ def analyze_pdf_file(pdf_filepath):
         pdf_filepath,
     ]
     # print(" ".join(command))
-    output = run(command, check=False, stdout=PIPE).stdout.decode()
-    report = parse_output(output)
-    aggregate(pdf_filepath, report, AGGREGATED_REPORT_FILEPATH)
+    output = run(
+        command, stdout=PIPE, stderr=DEVNULL if HIDE_STDERR else None
+    ).stdout.decode()
+    # print(output)
+    return pdf_filepath, parse_output(output)
 
 
 def parse_output(output):
@@ -46,13 +47,4 @@ def parse_output(output):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print_aggregated_report(
-            AGGREGATED_REPORT_FILEPATH, CHECKS_DETAILS_URL, IGNORE_WHITELIST_FILEPATH
-        )
-    elif len(sys.argv) > 2:
-        print(sys.argv, file=sys.stderr)
-        print("Exactly one argument must be passed to verapdf.py", file=sys.stderr)
-        sys.exit(2)
-    else:
-        analyze_pdf_file(sys.argv[1])
+    main("verapdf", analyze_pdf_file, sys.argv, CHECKS_DETAILS_URL)
