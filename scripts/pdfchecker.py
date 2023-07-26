@@ -11,8 +11,17 @@
 
 import sys
 from subprocess import check_output
+from multiprocessing import cpu_count, Pool
 
-from scripts.checker_commons import main
+try:  # optional dependency to display a progress bar
+    from tqdm import tqdm
+
+    HIDE_STDERR = True
+except ImportError:
+    tqdm = lambda _, total: _
+    HIDE_STDERR = False
+
+from scripts.checker_commons import main, scantree
 
 CHECKS_DETAILS_URL = "https://dev.datalogics.com/pdf-checker/the-json-profile-file/description-of-json-profile-parameters/"
 UNPROCESSABLE_PDF_ERROR_LINE = "Unable to process document due to PDF Error"
@@ -33,6 +42,27 @@ def analyze_pdf_file(pdf_filepath):
     output = check_output(command).decode()
     # print(output)
     return pdf_filepath, parse_output(output)
+
+
+def analyze_directory_of_pdf_files(root):
+    pdf_filepaths = [
+        entry.path
+        for entry in scantree(root)
+        if entry.is_file() and entry.name.endswith(".pdf")
+    ]
+    print(
+        f"Starting parallel execution of pdfchecker on {len(pdf_filepaths)} PDF files with {cpu_count()} CPUs"
+    )
+
+    with Pool(cpu_count()) as pool:
+        reports_per_pdf_filepath = {}
+        for pdf_filepath, report in tqdm(
+            pool.imap_unordered(analyze_pdf_file, pdf_filepaths),
+            total=len(pdf_filepaths),
+        ):
+            reports_per_pdf_filepath[pdf_filepath] = report
+
+    return reports_per_pdf_filepath
 
 
 def parse_output(output):
@@ -105,4 +135,10 @@ def insert_indented(lines, node=None, depth=0, indent=0):
 
 
 if __name__ == "__main__":
-    main("pdfchecker", analyze_pdf_file, sys.argv, CHECKS_DETAILS_URL)
+    main(
+        "pdfchecker",
+        analyze_pdf_file,
+        analyze_directory_of_pdf_files,
+        sys.argv,
+        CHECKS_DETAILS_URL,
+    )

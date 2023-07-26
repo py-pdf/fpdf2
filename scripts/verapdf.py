@@ -9,10 +9,12 @@
 
 # USAGE: ./verapdf.py [$pdf_filepath|--process-all-test-pdf-files|--print-aggregated-report]
 
+import json
 import sys
-from subprocess import run, DEVNULL, PIPE
+from subprocess import run, PIPE
+from multiprocessing import cpu_count
 
-from scripts.checker_commons import main, HIDE_STDERR
+from scripts.checker_commons import main
 
 CHECKS_DETAILS_URL = "https://docs.verapdf.org/validation/"
 BAT_EXT = ".bat" if sys.platform in ("cygwin", "win32") else ""
@@ -22,29 +24,62 @@ def analyze_pdf_file(pdf_filepath):
     command = [
         "verapdf/verapdf" + BAT_EXT,
         "--format",
-        "text",
-        "-v",
+        "json",
         pdf_filepath,
     ]
     # print(" ".join(command))
-    output = run(
-        command, stdout=PIPE, stderr=DEVNULL if HIDE_STDERR else None
-    ).stdout.decode()
-    # print(output)
-    return pdf_filepath, parse_output(output)
+    output = run(command, stdout=PIPE).stdout.decode()
+
+    return parse_output(output)
+
+
+def analyze_directory_of_pdf_files(root):
+    print(f"Starting execution of verapdf on directory {root}.")
+    command = [
+        "verapdf/verapdf" + BAT_EXT,
+        "--format",
+        "json",
+        "--processes",
+        str(cpu_count()),
+        "--recurse",
+        root,
+    ]
+    # print(" ".join(command))
+    output = run(command, stdout=PIPE).stdout.decode()
+
+    return parse_output(output)
 
 
 def parse_output(output):
     "Parse VeraPDF CLI output into a dict."
-    lines = output.splitlines()
-    try:
-        grave_line = next(line for line in lines if line.startswith("GRAVE:"))
-        return {"failure": grave_line}
-    except StopIteration:
-        # Skipping the first line
-        errors = [line[len("  FAIL ") :] for line in lines[1:]]
-        return {"errors": errors}
+    output_dict = json.loads(output)
+
+    print(output_dict.keys())
+
+    reports_per_pdf_filepath = {}
+    for output_job in output_dict["report"]["jobs"]:
+        file_path = output_job["itemDetails"]["name"]
+        if "taskException" in output_job:
+            reports_per_pdf_filepath[file_path] = {
+                "failure": output_job["taskException"]["exceptionMessage"]
+            }
+        else:
+            errors = [
+                f"{rule_summary['clause']}-{rule_summary['testNumber']}"
+                for rule_summary in output_job["validationResult"]["details"][
+                    "ruleSummaries"
+                ]
+            ]
+            reports_per_pdf_filepath[file_path] = {"errors": errors}
+
+    return reports_per_pdf_filepath
 
 
 if __name__ == "__main__":
-    main("verapdf", analyze_pdf_file, sys.argv, CHECKS_DETAILS_URL)
+    main(
+        "verapdf",
+        analyze_pdf_file,
+        analyze_directory_of_pdf_files,
+        sys.argv,
+        CHECKS_DETAILS_URL,
+    )

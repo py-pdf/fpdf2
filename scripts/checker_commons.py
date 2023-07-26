@@ -1,17 +1,14 @@
 import json, os, sys
 from collections import defaultdict
-from multiprocessing import cpu_count, Pool
-
-try:  # optional dependency to display a progress bar
-    from tqdm import tqdm
-
-    HIDE_STDERR = True
-except ImportError:
-    tqdm = lambda _, total: _
-    HIDE_STDERR = False
 
 
-def main(checker_name, analyze_pdf_file, argv, checks_details_url):
+def main(
+    checker_name,
+    analyze_pdf_file,
+    analyze_directory_of_pdf_files,
+    argv,
+    checks_details_url,
+):
     if len(argv) != 2:
         print(argv, file=sys.stderr)
         print(
@@ -21,27 +18,14 @@ def main(checker_name, analyze_pdf_file, argv, checks_details_url):
     elif argv[1] == "--print-aggregated-report":
         print_aggregated_report(checker_name, checks_details_url)
     elif argv[1] == "--process-all-test-pdf-files":
-        process_all_test_pdf_files(checker_name, analyze_pdf_file)
+        process_all_test_pdf_files(checker_name, analyze_directory_of_pdf_files)
     else:
         print(analyze_pdf_file(argv[1]))
 
 
-def process_all_test_pdf_files(checker_name, analyze_pdf_file):
-    pdf_filepaths = [
-        entry.path
-        for entry in scantree("test")
-        if entry.is_file() and entry.name.endswith(".pdf")
-    ]
-    print(
-        f"Starting parallel execution of {checker_name} on {len(pdf_filepaths)} PDF files with {cpu_count()} CPUs"
-    )
-    with Pool(cpu_count()) as pool:
-        reports_per_pdf_filepath = {}
-        for pdf_filepath, report in tqdm(
-            pool.imap_unordered(analyze_pdf_file, pdf_filepaths),
-            total=len(pdf_filepaths),
-        ):
-            reports_per_pdf_filepath[pdf_filepath] = report
+def process_all_test_pdf_files(checker_name, analyze_directory_of_pdf_files):
+    reports_per_pdf_filepath = analyze_directory_of_pdf_files("test")
+
     agg_report = aggregate(checker_name, reports_per_pdf_filepath)
     print(
         "Failures:", len(agg_report["failures"]), "Errors:", len(agg_report["errors"])
