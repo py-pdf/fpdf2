@@ -30,6 +30,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - text overflow is better handled by `FPDF.write()` & `FPDF.write_html()` - _cf._ [issue #847](https://github.com/PyFPDF/fpdf2/issues/847)
 - the initial text color is preserved when using `FPDF.write_html()` - _cf._ [issue #846](https://github.com/PyFPDF/fpdf2/issues/846)
 - handle superscript and subscript correctly when rendering `TextLine`- [Pull Request #862](https://github.com/PyFPDF/fpdf2/pull/862) 
+- PDF metadata not encrypted - _cf._ [issue #865](https://github.com/PyFPDF/fpdf2/issues/865)
 ### Deprecated
 - the `center` optional parameter of [`FPDF.cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) is **no more** deprecated, as it allows for horizontal positioning, which is different from text alignment control with `align="C"`
 
