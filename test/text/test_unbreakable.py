@@ -119,7 +119,7 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
     for row in data:
         max_no_of_lines_in_cell = 1
         for cell in row:
-            with pytest.warns(DeprecationWarning, match=expected_warn):
+            with pytest.warns(DeprecationWarning, match=expected_warn) as record:
                 result = pdf.multi_cell(
                     cell_width,
                     l_height,
@@ -131,6 +131,10 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
                     max_line_height=l_height,
                     split_only=True,
                 )
+
+            for r in record:
+                assert r.filename == __file__
+
             no_of_lines_in_cell = len(result)
             if no_of_lines_in_cell > max_no_of_lines_in_cell:
                 max_no_of_lines_in_cell = no_of_lines_in_cell
@@ -167,7 +171,7 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
 
     pdf.ln()
 
-    with pytest.warns(DeprecationWarning, match=expected_warn):
+    with pytest.warns(DeprecationWarning, match=expected_warn) as record:
         with pdf.unbreakable() as doc:
             for _ in range(4):
                 for row in data:
@@ -217,6 +221,10 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
                                 max_line_height=l_height,
                             )
                     doc.ln(cell_height)
+
+    for r in record:
+        if r.category == DeprecationWarning:
+            assert r.filename == __file__
 
     assert_pdf_equal(
         pdf, HERE / "multi_cell_table_unbreakable_with_split_only.pdf", tmp_path

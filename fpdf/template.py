@@ -6,6 +6,7 @@ __license__ = "LGPL 3.0"
 
 import csv, locale, warnings
 
+from .deprecation import get_stack_level
 from .errors import FPDFException
 from .fpdf import FPDF
 
@@ -480,7 +481,7 @@ class FlexTemplate:
             warnings.warn(
                 "code39 arguments x/y/w/h are deprecated, please use x1/y1/y2/size instead",
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=get_stack_level(),
             )
         pdf = self.pdf
         if pdf.fill_color.serialize().lower() != _rgb_as_str(foreground):
@@ -637,7 +638,7 @@ class Template(FlexTemplate):
             warnings.warn(
                 '"infile" is deprecated, unused and will soon be removed',
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=get_stack_level(),
             )
         for arg in (
             "format",
@@ -684,7 +685,7 @@ class Template(FlexTemplate):
             warnings.warn(
                 '"dest" is deprecated, unused and will soon be removed',
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=get_stack_level(),
             )
         self.pdf.set_font("helvetica", "B", 16)
         self.pdf.set_auto_page_break(False, margin=0)

@@ -337,7 +337,7 @@ def test_html_HTMLMixin_deprecation_warning(tmp_path):
         "Simply use the FPDF class as a replacement."
     )
 
-    with pytest.warns(DeprecationWarning, match=msg):
+    with pytest.warns(DeprecationWarning, match=msg) as record:
         pdf = PDF()
         pdf.add_page()
         pdf.write_html(
@@ -351,6 +351,9 @@ def test_html_HTMLMixin_deprecation_warning(tmp_path):
         """
         )
         assert_pdf_equal(pdf, HERE / "html_description.pdf", tmp_path)
+
+    assert len(record) == 1
+    assert record[0].filename == __file__
 
 
 def test_html_whitespace_handling(tmp_path):  # Issue 547

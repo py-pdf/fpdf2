@@ -492,7 +492,7 @@ def test_cell_lnpos(tmp_path):
         align = item[1]
         if align == "J":
             continue
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning) as record:
             doc.cell(
                 twidth,
                 txt=s,
@@ -500,6 +500,10 @@ def test_cell_lnpos(tmp_path):
                 align=align,
                 ln=ln,
             )
+
+        assert len(record) == 1
+        assert record[0].filename == __file__
+
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
             doc.circle(doc.x - 3, doc.y - 3, 6)
@@ -532,7 +536,7 @@ def test_multi_cell_ln_newpos(tmp_path):
         s = item[0]
         align = item[1]
         ln = item[2]
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning) as record:
             doc.multi_cell(
                 twidth,
                 txt=s + " xxxxxxxxxxxxxxxxxxxx",  # force auto break
@@ -540,6 +544,9 @@ def test_multi_cell_ln_newpos(tmp_path):
                 align=align,
                 ln=ln,
             )
+        assert len(record) == 1
+        assert record[0].filename == __file__
+
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
             doc.circle(doc.x - 3, doc.y - 3, 6)

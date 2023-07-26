@@ -28,11 +28,14 @@ def test_polyline_command_all_k(unit, factor):
     assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l S"
     data.clear()
 
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning) as record:
         # keep one "fill=True" to test the warning
         pdf.polyline(scale_points(POLYLINE_COORDINATES, factor), fill=True)
         assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l B"
         data.clear()
+
+    assert len(record) == 1
+    assert record[0].filename == __file__
 
     pdf.polyline(scale_points(POLYLINE_COORDINATES, factor), polygon=True)
     assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l h S"

@@ -60,8 +60,11 @@ def test_cell_ln_1(tmp_path):
     doc = FPDF()
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning) as record:
         doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Lorem ipsum", ln=1)
+    assert len(record) == 1
+    assert record[0].filename == __file__
+
     doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Ut nostrud irure")
     assert_pdf_equal(doc, HERE / "ln_1.pdf", tmp_path)
 
@@ -243,8 +246,11 @@ def test_cell_newpos_badinput():
     pdf.add_page()
     pdf.set_font("Times", size=16)
     with pytest.raises(ValueError):
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning) as record:
             pdf.cell(w=0, ln=5)
+        assert len(record) == 1
+        assert record[0].filename == __file__
+
     with pytest.raises(TypeError):
         pdf.cell(w=0, new_x=5)
     with pytest.raises(TypeError):

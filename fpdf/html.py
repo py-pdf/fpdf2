@@ -5,6 +5,7 @@ from html.parser import HTMLParser
 
 from .enums import TextEmphasis, XPos, YPos
 from .errors import FPDFException
+from .deprecation import get_stack_level
 from .fonts import FontFace
 from .table import Table, TableBordersLayout
 
@@ -726,5 +727,5 @@ class HTMLMixin:
             "The HTMLMixin class is deprecated. "
             "Simply use the FPDF class as a replacement.",
             DeprecationWarning,
-            stacklevel=2,
+            stacklevel=get_stack_level(),
         )

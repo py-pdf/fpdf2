@@ -47,7 +47,7 @@ from .annotations import (
     PDFEmbeddedFile,
     DEFAULT_ANNOT_FLAGS,
 )
-from .deprecation import WarnOnDeprecatedModuleAttributes
+from .deprecation import get_stack_level, WarnOnDeprecatedModuleAttributes
 from .encryption import StandardSecurityHandler
 from .enums import (
     AccessPermission,
@@ -257,7 +257,7 @@ class FPDF(GraphicsStateMixin):
             warnings.warn(
                 '"font_cache_dir" parameter is deprecated, unused and will soon be removed',
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=get_stack_level(),
             )
         super().__init__()
         self.page = 0  # current page number
@@ -698,7 +698,7 @@ class FPDF(GraphicsStateMixin):
             "set_doc_option() is deprecated and will be removed in a future release. "
             "Simply set the `.core_fonts_encoding` property as a replacement.",
             DeprecationWarning,
-            stacklevel=2,
+            stacklevel=get_stack_level(),
         )
         if opt != "core_fonts_encoding":
             raise FPDFException(f'Unknown document option "{opt}"')
@@ -1196,7 +1196,7 @@ class FPDF(GraphicsStateMixin):
             warnings.warn(
                 '"fill" parameter is deprecated, use style="F" or style="DF" instead',
                 DeprecationWarning,
-                stacklevel=5 if polygon else 3,
+                stacklevel=get_stack_level(),
             )
         if fill and style is None:
             style = RenderStyle.DF
@@ -1253,7 +1253,7 @@ class FPDF(GraphicsStateMixin):
             "dashed_line() is deprecated, and will be removed in a future release. "
             "Use set_dash_pattern() and the normal drawing operations instead.",
             DeprecationWarning,
-            stacklevel=3,
+            stacklevel=get_stack_level(),
         )
         self.set_dash_pattern(dash_length, space_length)
         self.line(x1, y1, x2, y2)
@@ -1734,7 +1734,7 @@ class FPDF(GraphicsStateMixin):
             warnings.warn(
                 '"uni" parameter is deprecated, unused and will soon be removed',
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=get_stack_level(),
             )
 
         style = "".join(sorted(style.upper()))
@@ -1759,7 +1759,10 @@ class FPDF(GraphicsStateMixin):
         fontkey = f"{family.lower()}{style}"
         # Check if font already added or one of the core fonts
         if fontkey in self.fonts or fontkey in CORE_FONTS:
-            warnings.warn(f"Core font or font already added '{fontkey}': doing nothing")
+            warnings.warn(
+                f"Core font or font already added '{fontkey}': doing nothing",
+                stacklevel=get_stack_level(),
+            )
             return
 
         self.fonts[fontkey] = TTFFont(self, font_file_path, fontkey, style)
@@ -1808,13 +1811,15 @@ class FPDF(GraphicsStateMixin):
         if family in self.font_aliases and family + style not in self.fonts:
             warnings.warn(
                 f"Substituting font {family} by core font "
-                f"{self.font_aliases[family]}"
+                f"{self.font_aliases[family]}",
+                stacklevel=get_stack_level(),
             )
             family = self.font_aliases[family]
         elif family in ("symbol", "zapfdingbats") and style:
             warnings.warn(
                 f"Built-in font {family} only has a single 'style' and can't be bold "
-                f"or italic"
+                f"or italic",
+                stacklevel=get_stack_level(),
             )
             style = ""
 
@@ -2352,7 +2357,7 @@ class FPDF(GraphicsStateMixin):
             "It will be removed in a future release. "
             "Use the rotation() context manager instead.",
             DeprecationWarning,
-            stacklevel=3,
+            stacklevel=get_stack_level(),
         )
         if x is None:
             x = self.x
@@ -2658,7 +2663,8 @@ class FPDF(GraphicsStateMixin):
             )
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
-                'Integer values for "border" parameter other than 1 are currently ignored'
+                'Integer values for "border" parameter other than 1 are currently ignored',
+                stacklevel=get_stack_level(),
             )
             border = 1
         new_x = XPos.coerce(new_x)
@@ -2690,7 +2696,7 @@ class FPDF(GraphicsStateMixin):
                     f" Instead of ln={ln} use new_x=XPos.{new_x.name}, new_y=YPos.{new_y.name}."
                 ),
                 DeprecationWarning,
-                stacklevel=3,
+                stacklevel=get_stack_level(),
             )
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
         txt = self.normalize_text(txt)
@@ -2766,7 +2772,8 @@ class FPDF(GraphicsStateMixin):
         """
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
-                'Integer values for "border" parameter other than 1 are currently ignored'
+                'Integer values for "border" parameter other than 1 are currently ignored',
+                stacklevel=get_stack_level(),
             )
             border = 1
         styled_txt_width = text_line.text_width
@@ -3344,7 +3351,7 @@ class FPDF(GraphicsStateMixin):
                 'The parameter "split_only" is deprecated.'
                 ' Use instead dry_run=True and output="LINES".',
                 DeprecationWarning,
-                stacklevel=3,
+                stacklevel=get_stack_level(),
             )
         if dry_run or split_only:
             with self._disable_writing():
@@ -3404,7 +3411,7 @@ class FPDF(GraphicsStateMixin):
                     f" Instead of ln={ln} use new_x=XPos.{new_x.name}, new_y=YPos.{new_y.name}."
                 ),
                 DeprecationWarning,
-                stacklevel=3,
+                stacklevel=get_stack_level(),
             )
         align = Align.coerce(align)
 
@@ -3709,7 +3716,7 @@ class FPDF(GraphicsStateMixin):
             warnings.warn(
                 '"type" parameter is deprecated, unused and will soon be removed',
                 DeprecationWarning,
-                stacklevel=3,
+                stacklevel=get_stack_level(),
             )
         if str(name).endswith(".svg"):
             # Insert it as a PDF path:
@@ -3851,7 +3858,8 @@ class FPDF(GraphicsStateMixin):
         svg = SVGObject(img.getvalue())
         if not svg.viewbox and svg.width and svg.height:
             warnings.warn(
-                '<svg> has no "viewBox", using its "width" & "height" as default "viewBox"'
+                '<svg> has no "viewBox", using its "width" & "height" as default "viewBox"',
+                stacklevel=get_stack_level(),
             )
             svg.viewbox = 0, 0, svg.width, svg.height
         if w == 0 and h == 0:
@@ -4345,7 +4353,8 @@ class FPDF(GraphicsStateMixin):
             warnings.warn(
                 # pylint: disable=implicit-str-concat
                 "Code 39 input must start and end with a '*' character to be valid."
-                " This method does not insert it automatically."
+                " This method does not insert it automatically.",
+                stacklevel=get_stack_level(),
             )
         chars = {
             "0": "nnnwwnwnn",
@@ -4717,7 +4726,7 @@ class FPDF(GraphicsStateMixin):
             warnings.warn(
                 '"dest" parameter is deprecated, unused and will soon be removed',
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=get_stack_level(),
             )
         # Finish document if necessary:
         if not self.buffer:
