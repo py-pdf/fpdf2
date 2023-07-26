@@ -177,5 +177,4 @@ def test_mirror_multi_cell(tmp_path):
         draw_mirror_line(pdf, (pdf.epw / 2, pdf.eph), "SOUTH")
         pdf.multi_cell(w=120, txt=LOREM_IPSUM[:120], fill=True, border=1)
 
-    pdf.output(HERE / "mirror_multi_cell.pdf")
     assert_pdf_equal(pdf, HERE / "mirror_multi_cell.pdf", tmp_path)
