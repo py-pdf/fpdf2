@@ -12,17 +12,18 @@ from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 HERE = Path(__file__).resolve().parent
 
+
 def run_comparison(pdf, name, tmp_path):
     filename = HERE / f"{name}.pdf"
 
     try:
         assert_pdf_equal(pdf, filename, tmp_path, generate=False)
     except AssertionError as e:
-
         # windows only debugging
         import subprocess
+
         # subprocess.Popen(rf'explorer "{str(filename)}"')
-        pdf.output(rf'c:\temp\{name}.pdf')
+        pdf.output(rf"c:\temp\{name}.pdf")
         subprocess.Popen(rf'explorer "c:\temp\{name}.pdf"')
 
         raise e
@@ -70,7 +71,7 @@ Assistant: But where are they coming from, professor?
 Professor: That I don't know. I just don't know. I really just don't know. I'm afraid I really just don't know. I'm afraid even I really just don't know. I have to tell you I'm afraid even I really just don't know. I'm afraid I have to tell you... (she hands him a glass of water which she had been busy getting as soon as he started into this speech) ... thank you ... (resuming normal breezy voice) ... I don't know. Our only clue is this portion of wolf's clothing which the killer sheep ..."""
 
 
-TABLE_DATA_LIST = ["And","now","for","something","completely","different"]
+TABLE_DATA_LIST = ["And", "now", "for", "something", "completely", "different"]
 
 SHORT_TEXT = "Monty Python / Killer Sheep"
 
@@ -81,10 +82,9 @@ def test_multicell_with_padding(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    pdf.multi_cell(0, 5, LONG_TEXT, border = 1, padding = (10, 20, 30, 40))
+    pdf.multi_cell(0, 5, LONG_TEXT, border=1, padding=(10, 20, 30, 40))
 
-    run_comparison(pdf,"multicell_with_padding",tmp_path)
-
+    run_comparison(pdf, "multicell_with_padding", tmp_path)
 
 
 def test_multicell_with_padding_check_input(tmp_path):
@@ -94,8 +94,6 @@ def test_multicell_with_padding_check_input(tmp_path):
 
     with pytest.raises(ValueError):
         pdf.multi_cell(0, 5, LONG_TEXT, border=1, padding=(5, 5, 5, 5, 5, 5))
-
-
 
 
 def test_multicell_return_value(tmp_path):
@@ -165,8 +163,7 @@ def test_multicell_return_value(tmp_path):
 
     # assert pdf.y == old_y + height_with_padding
 
-    run_comparison(pdf, "table_with_padding.pdf",tmp_path)
-
+    run_comparison(pdf, "table_with_padding.pdf", tmp_path)
 
 
 def test_table_with_multiline_cells_and_images_padding_and_pagebreak(tmp_path):
@@ -181,11 +178,10 @@ def test_table_with_multiline_cells_and_images_padding_and_pagebreak(tmp_path):
 
     with pdf.table(
         line_height=pdf.font_size,
-            padding=(5, 5, 5, 5),
-            col_widths=(0.3, 0.2),
-            width=80,
-            outer_border_width=3,
-
+        padding=(5, 5, 5, 5),
+        col_widths=(0.3, 0.2),
+        width=80,
+        outer_border_width=3,
     ) as table:
         for i, data_row in enumerate(MULTILINE_TABLE_DATA):
             row = table.row()
@@ -195,7 +191,10 @@ def test_table_with_multiline_cells_and_images_padding_and_pagebreak(tmp_path):
                 else:
                     row.cell(datum)
 
-    run_comparison(pdf, "table_with_multiline_cells_and_images_padding_and_pagebreak",tmp_path)
+    run_comparison(
+        pdf, "table_with_multiline_cells_and_images_padding_and_pagebreak", tmp_path
+    )
+
 
 def test_table_with_only_images(tmp_path):
     pdf = FPDF()
@@ -296,17 +295,27 @@ def test_valign_per_cell(tmp_path):
                 else:
                     row.cell(datum)
 
-    run_comparison(pdf, "table_valign_per_cell",tmp_path)
+    run_comparison(pdf, "table_valign_per_cell", tmp_path)
 
 
 def test_table_with_gutter_and_padding_and_outer_border_width(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(TABLE_DATA, gutter_height=3, gutter_width=5, padding = 0, line_height = pdf.font_size, align="L", outer_border_width=2):
+    with pdf.table(
+        TABLE_DATA,
+        gutter_height=3,
+        gutter_width=5,
+        padding=0,
+        line_height=pdf.font_size,
+        align="L",
+        outer_border_width=2,
+    ):
         pass
 
-    run_comparison(pdf, "table_with_gutter_and_padding_and_outer_border_width",tmp_path)
+    run_comparison(
+        pdf, "table_with_gutter_and_padding_and_outer_border_width", tmp_path
+    )
 
 
 def test_table_with_colspan(tmp_path):
@@ -348,17 +357,14 @@ def test_table_with_colspan(tmp_path):
 
                 if irow > 0:
                     if icol == 2:
-                        row.cell(
-                                txt + " SPAN 2", colspan = 2)
+                        row.cell(txt + " SPAN 2", colspan=2)
                         continue
                     elif icol == 3:
                         continue
 
-                row.cell(
-                    txt)
+                row.cell(txt)
 
-    run_comparison(pdf, "table_with_colspan",tmp_path)
-
+    run_comparison(pdf, "table_with_colspan", tmp_path)
 
 
 def test_outside_border_width(tmp_path):
@@ -366,16 +372,14 @@ def test_outside_border_width(tmp_path):
     pdf.add_page()
     pdf.set_font("Times", size=12)
 
-    with pdf.table(outer_border_width=1,
-                   gutter_height = 10,
-                   gutter_width = 15) as table:
+    with pdf.table(outer_border_width=1, gutter_height=10, gutter_width=15) as table:
         for irow in range(5):
             row = table.row()
             for icol in range(5):
                 datum = "Circus"
                 row.cell(datum)
 
-    run_comparison(pdf, "table_with_outside_border_width",tmp_path)
+    run_comparison(pdf, "table_with_outside_border_width", tmp_path)
 
 
 def test_table_colspan_and_padding(tmp_path):
@@ -383,7 +387,7 @@ def test_table_colspan_and_padding(tmp_path):
 
     pdf.set_font("Times", size=12)
     pdf.add_page()
-    with pdf.table(col_widths=(1, 2, 1,1), padding=5) as table:
+    with pdf.table(col_widths=(1, 2, 1, 1), padding=5) as table:
         row = table.row()
         row.cell("0")
         row.cell("1")
@@ -417,11 +421,11 @@ def test_table_colspan_and_padding(tmp_path):
 
         row = table.row()
         row.cell("B1", colspan=2)
-        #row.cell("void")  # <--- this cell is not rendered
+        # row.cell("void")  # <--- this cell is not rendered
         row.cell("B3")
         row.cell("B4")
 
-    run_comparison(pdf, "table_colspan_and_padding",tmp_path)
+    run_comparison(pdf, "table_colspan_and_padding", tmp_path)
 
 
 def test_table_colspan_and_padding_and_gutter(tmp_path):
@@ -429,7 +433,9 @@ def test_table_colspan_and_padding_and_gutter(tmp_path):
 
     pdf.set_font("Times", size=12)
     pdf.add_page()
-    with pdf.table(col_widths=(1, 2, 1,1), padding=5, gutter_height=3, gutter_width=5) as table:
+    with pdf.table(
+        col_widths=(1, 2, 1, 1), padding=5, gutter_height=3, gutter_width=5
+    ) as table:
         row = table.row()
         row.cell("0")
         row.cell("1")
@@ -445,15 +451,17 @@ def test_table_colspan_and_padding_and_gutter(tmp_path):
         row.cell("B3")
         row.cell("B4")
 
+    run_comparison(pdf, "table_colspan_and_padding_and_gutter", tmp_path)
 
-    run_comparison(pdf, "table_colspan_and_padding_and_gutter",tmp_path)
 
 def test_table_colspan_and_padding_and_gutter_and_width(tmp_path):
     pdf = FPDF()
 
     pdf.set_font("Times", size=12)
     pdf.add_page()
-    with pdf.table(col_widths=(1, 2, 1,1), padding=5, gutter_height=3, gutter_width=5, width=100) as table:
+    with pdf.table(
+        col_widths=(1, 2, 1, 1), padding=5, gutter_height=3, gutter_width=5, width=100
+    ) as table:
         row = table.row()
         row.cell("0")
         row.cell("1")
@@ -468,8 +476,8 @@ def test_table_colspan_and_padding_and_gutter_and_width(tmp_path):
         row.cell("B3")
         row.cell("B4")
 
+    run_comparison(pdf, "table_colspan_and_padding_and_gutter_and_width", tmp_path)
 
-    run_comparison(pdf, "table_colspan_and_padding_and_gutter_and_width",tmp_path)
 
 def test_table_with_cell_overflow(tmp_path):
     pdf = FPDF()
@@ -486,7 +494,9 @@ def test_table_with_cell_overflow(tmp_path):
         row = table.row()
         row.cell("left")
         row.cell("center")
-        row.cell("right", style=boldstyle)  # triggers header cell overflow on last column
+        row.cell(
+            "right", style=boldstyle
+        )  # triggers header cell overflow on last column
         row = table.row()
         row.cell("A1")
         row.cell("A2")
@@ -496,8 +506,7 @@ def test_table_with_cell_overflow(tmp_path):
         row.cell("B2")
         row.cell("B3")
 
-    run_comparison(pdf, "table_with_cell_overflow_font_setting",tmp_path)
-
+    run_comparison(pdf, "table_with_cell_overflow_font_setting", tmp_path)
 
 
 def test_draw_box_borders(tmp_path):
@@ -507,16 +516,18 @@ def test_draw_box_borders(tmp_path):
 
     from fpdf.table import draw_box_borders
 
-    def box(x,y, borders):
-        draw_box_borders(pdf, x - 10, y - 10, x + 40, y + 20, fill=(200, 200, 200), border="None")
+    def box(x, y, borders):
+        draw_box_borders(
+            pdf, x - 10, y - 10, x + 40, y + 20, fill=(200, 200, 200), border="None"
+        )
         draw_box_borders(pdf, x - 20, y - 20, x + 50, y + 30, border=borders)
-        pdf.set_xy(x,y)
+        pdf.set_xy(x, y)
         pdf.cell(txt=borders)
 
-    box(40,40, "L")
+    box(40, 40, "L")
     box(140, 40, "R")
 
     box(40, 140, "T")
     box(140, 140, "B")
 
-    run_comparison(pdf, "draw_box_borders",tmp_path)
+    run_comparison(pdf, "draw_box_borders", tmp_path)
