@@ -18,7 +18,6 @@ def run_comparison(pdf, name, tmp_path):
     try:
         assert_pdf_equal(pdf, filename, tmp_path, generate=False)
     except AssertionError as e:
-        # assert_pdf_equal(pdf, filename, tmp_path, generate=True)
 
         # windows only debugging
         import subprocess
