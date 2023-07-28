@@ -437,7 +437,7 @@ class StandardSecurityHandler:
             else:
                 k = hashlib.sha512(e).digest()
             # Step (e)
-            if round_number >= 64 and e[-1] <= round - 32:
+            if round_number >= 64 and e[-1] <= round_number - 32:
                 break
 
         return k[:32]
