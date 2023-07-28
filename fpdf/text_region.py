@@ -23,15 +23,11 @@ class TextRegionMixin:
         self.__current_text_region = None
 
 
-class TextRegion:
-
-    col_wrapper = None
+class TextCollectorMixin:
 
     def __init__(self, pdf, *args, **kwargs):
         self.pdf = pdf
         self._text_fragments = []
-        self._added = []
-        self._removed = []
         super().__init__(pdf, *args, **kwargs)
 
     def __enter__(self):
@@ -49,7 +45,12 @@ class TextRegion:
         self.pdf.page = self._page
         self.pdf._pop_local_stack()
 
-    def ln(self, h=None):
+
+class TextRegion(TextCollectorMixin):
+
+    col_wrapper = None
+
+    def _ln(self, h=None):
         self.pdf.ln(h)
 
     def _build_lines(self, align, print_sh):
@@ -74,7 +75,7 @@ class TextRegion:
         for text_line_index, text_line in enumerate(text_lines):
             is_last_line = text_line_index == len(text_lines) - 1
             if text_line_index != 0:
-                self.ln()
+                self._ln()
             # print(self.pdf.y + text_line.height, self.pdf.page_break_trigger)
             if hasattr(self, "accept_page_break"):
                 if self.pdf.y + text_line.height > self.pdf.page_break_trigger:
@@ -93,7 +94,7 @@ class TextRegion:
             page_break_triggered = page_break_triggered or new_page
         if text_line and text_line.trailing_nl:
             # The line renderer can't handle trailing newlines in the text.
-            self.pdf.ln()
+            self.pdf._ln()
         return page_break_triggered
 
     def render(self, align=Align.L, print_sh: bool = False):
@@ -203,11 +204,18 @@ class TextColumns(TextRegion, TextColumnarMixin):
         self.pdf.y = self.cur_top
         return False
 
-    def ln(self, h=None):
+    def _ln(self, h=None):
+        self.pdf.ln(h=h)
         self.pdf.x = self.cols[self.cur_column][0]
-        self.pdf.y += self.pdf._lasth if h is None else h
 
     def current_x_extents(self, y, height):
         left = self.cols[self.cur_column][0]
         right = self.cols[self.cur_column][1]
         return left, right
+
+
+class Paragraph(TextRegion):
+    def __init__(self, pdf, align=None, *args, **kwargs):
+        super().__init__(pdf, *args, **kwargs)
+        self.align = align
+ 
