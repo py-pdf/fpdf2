@@ -287,8 +287,6 @@ class StandardSecurityHandler:
         Python offers a stringprep module with the tables mapped in methods
         """
 
-        LOGGER.debug("preparing password %s", string)
-
         # Mapping
         def char_map(char: str) -> str:
             if not char:
@@ -512,6 +510,7 @@ class StandardSecurityHandler:
             + b"adb"
             + self.get_random_bytes(4)
         )
+        # nosemgrep: python.cryptography.security.insecure-cipher-mode-ecb.insecure-cipher-mode-ecb
         cipher = Cipher(AES256(self.k), modes.ECB())
         encryptor = cipher.encryptor()
         perms = encryptor.update(perms_input) + encryptor.finalize()
