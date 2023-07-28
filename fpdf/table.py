@@ -14,11 +14,13 @@ from .fonts import CORE_FONTS, FontFace
 
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
 
+
 class Padding(NamedTuple):
     top: Number = 0
     right: Number = 0
     bottom: Number = 0
     left: Number = 0
+
 
 def get_padding_tuple(padding: Union[int, float, tuple, list]) -> Padding:
     """Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules"""
@@ -30,14 +32,16 @@ def get_padding_tuple(padding: Union[int, float, tuple, list]) -> Padding:
         return Padding(padding[0], padding[1], padding[2], padding[1])
     elif len(padding) == 4:
         return Padding(*padding)
+    else:
+        raise ValueError(
+            f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
+        )
 
-    raise ValueError(
-        f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
-    )
 
-def draw_box_borders(pdf, x1, y1, x2, y2, border, fill = None):
+def draw_box_borders(pdf, x1, y1, x2, y2, border, fill=None):
     """Draws a box using the provided style - private helper used by table for drawing the cell and table borders.
-    Difference bewteen this and rect() is that border can be defined as "L,R,T,B" to draw only some of the four borders; compatible with get_border(i,k)
+    Difference bewteen this and rect() is that border can be defined as "L,R,T,B" to draw only some of the four borders;
+    compatible with get_border(i,k)
 
     See Also: rect()"""
 
@@ -81,11 +85,12 @@ def draw_box_borders(pdf, x1, y1, x2, y2, border, fill = None):
     if fill:
         pdf.set_fill_color(prev_fill_color)
 
+
 @dataclass(frozen=True)
 class RowLayoutInfo:
     height: float
     triggers_page_jump: bool
-    rendered_height : dict
+    rendered_height: dict
 
 
 class Table:
@@ -164,7 +169,6 @@ class Table:
         self._wrapmode = wrapmode
         self.rows = []
 
-
         if padding is None:
             self._padding = get_padding_tuple(0)
         else:
@@ -177,7 +181,6 @@ class Table:
                     "outer_border_width is not allowed when borders_layout is not ALL"
                 )
             self._outer_border_width = 0
-
 
         for row in rows:
             self.row(row)
@@ -326,7 +329,7 @@ class Table:
         i,
         j,
         cell,
-        row_height,        # height of a row of text including line spacing
+        row_height,  # height of a row of text including line spacing
         fill=False,
         cell_height_info=None,  # full height of a cell, including padding, used to render borders and images
         **kwargs,
@@ -387,7 +390,9 @@ class Table:
         # Instead, we calculate the x position based on the column widths of the previous columns
 
         # place cursor (required for images after images)
-        cell_widths = [self._get_col_width(i, jj, colspan=1) for jj in range(j)]  # Note that we use colspan=1 here
+        cell_widths = [
+            self._get_col_width(i, jj, colspan=1) for jj in range(j)
+        ]  # Note that we use colspan=1 here
         cell_x = sum(cell_widths) + self._gutter_width * j
 
         self._fpdf.set_x(self._fpdf.l_margin + cell_x)
@@ -402,25 +407,30 @@ class Table:
         if cell_height is not None:
             x1 = self._fpdf.x
             y1 = self._fpdf.y
-            x2 = x1 + col_width # already includes gutter for cells spanning multiple columns
+            x2 = (
+                x1 + col_width
+            )  # already includes gutter for cells spanning multiple columns
             y2 = y1 + cell_height
 
             draw_box_borders(
                 self._fpdf,
-                x1, y1, x2, y2, border=self.get_cell_border(i, j),
-                fill=style.fill_color if fill else None
+                x1,
+                y1,
+                x2,
+                y2,
+                border=self.get_cell_border(i, j),
+                fill=style.fill_color if fill else None,
             )
 
             # draw outer box if needed
 
             if self._outer_border_width:
-
                 _remember_linewidth = self._fpdf.line_width
                 self._fpdf.set_line_width(self._outer_border_width)
 
                 if i == 0:
                     self._fpdf.line(x1, y1, x2, y1)
-                if i== len(self.rows) - 1:
+                if i == len(self.rows) - 1:
                     self._fpdf.line(x1, y2, x2, y2)
                 if j == 0:
                     self._fpdf.line(x1, y1, x1, y2)
@@ -428,7 +438,6 @@ class Table:
                     self._fpdf.line(x2, y1, x2, y2)
 
                 self._fpdf.set_line_width(_remember_linewidth)
-
 
         # render image
 
@@ -461,18 +470,15 @@ class Table:
         # render text
 
         if cell.text:
-
             dy = 0
 
             if cell_height is not None:
-
                 actual_text_height = cell_height_info.rendered_height[j]
 
                 if v_align == VAlign.C:
                     dy = (cell_height - actual_text_height) / 2
                 elif v_align == VAlign.B:
                     dy = cell_height - actual_text_height
-
 
             self._fpdf.y += dy
 
@@ -507,7 +513,7 @@ class Table:
         cols_count = self.rows[i].cols_count
         width = self._width - (cols_count - 1) * self._gutter_width
 
-        gutter_within_cell = max((colspan - 1) * self._gutter_width,0)
+        gutter_within_cell = max((colspan - 1) * self._gutter_width, 0)
 
         if not self._col_widths:
             return colspan * (width / cols_count) + gutter_within_cell
@@ -532,7 +538,9 @@ class Table:
         """
         row = self.rows[i]
         heights_per_cell = []
-        rendered_height = dict()  # as dict because j is not continuous in case of colspans
+        rendered_height = (
+            dict()
+        )  # as dict because j is not continuous in case of colspans
         any_page_break = False
         # pylint: disable=protected-access
         with self._fpdf._disable_writing():
@@ -554,12 +562,10 @@ class Table:
                 any_page_break = any_page_break or page_break
                 heights_per_cell.append(height)
 
-
-
         row_height = (
             max(height for height in heights_per_cell) if heights_per_cell else 0
         )
-        return RowLayoutInfo(row_height, any_page_break,rendered_height)
+        return RowLayoutInfo(row_height, any_page_break, rendered_height)
 
 
 class Row:
@@ -615,7 +621,9 @@ class Row:
             font_face = self._fpdf.font_face()
             if font_face != self.style:
                 style = font_face
-        cell = Cell(text, align, v_align, style, img, img_fill_width, colspan, padding, link)
+        cell = Cell(
+            text, align, v_align, style, img, img_fill_width, colspan, padding, link
+        )
         self.cells.append(cell)
         return cell
 

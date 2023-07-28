@@ -766,6 +766,7 @@ test_svg_sources = (
     pytest.param(svgfile("Ghostscript_escher.svg"), id="ghostscript escher"),
     pytest.param(svgfile("use-xlink-href.svg"), id="use xlink:href - issue #446"),
     pytest.param(svgfile("rgb-color-issue-480.svg"), id="rgb() color - issue #480"),
+    pytest.param(svgfile("matplotlib.svg"), id="ISSUETO"),
 )
 
 svg_path_edge_cases = (

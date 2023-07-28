@@ -210,9 +210,6 @@ def get_page_format(format, k=None):
         raise FPDFPageFormatException(f"Arguments must be numbers: {args}") from e
 
 
-
-
-
 def check_page(fn):
     """Decorator to protect drawing methods"""
 
@@ -1370,9 +1367,6 @@ class FPDF(GraphicsStateMixin):
             self.line(point_3[0], point_3[1], point_4[0], point_4[1])
             self.line(point_5[0], point_5[1], point_6[0], point_6[1])
             self.line(point_7[0], point_7[1], point_8[0], point_8[1])
-
-
-
 
     @check_page
     def ellipse(self, x, y, w, h, style=None):
@@ -2732,7 +2726,7 @@ class FPDF(GraphicsStateMixin):
         fill: bool = False,
         link: str = "",
         center: bool = False,
-        padding : Padding = None,
+        padding: Padding = None,
     ):
         """
         Prints a cell (rectangular area) with optional borders, background color and
@@ -2781,13 +2775,12 @@ class FPDF(GraphicsStateMixin):
             border = 1
 
         if padding is None:
-            padding = Padding(0,0,0,0)
+            padding = Padding(0, 0, 0, 0)
 
         if padding.left == 0 and padding.right == 0:
             local_c_margin = self.c_margin
         else:
             local_c_margin = 0
-
 
         styled_txt_width = text_line.text_width
         if not styled_txt_width:
@@ -2803,7 +2796,6 @@ class FPDF(GraphicsStateMixin):
                     "A 'text_line' parameter with fragments must be provided if 'w' is None"
                 )
             w = styled_txt_width + local_c_margin + local_c_margin
-
 
         if align == Align.X:
             self.x -= w / 2
@@ -2830,13 +2822,9 @@ class FPDF(GraphicsStateMixin):
 
         if fill:
             op = "B" if border == 1 else "f"
-            sl.append(
-                f"{left:.2f} {top:.2f} {right-left:.2f} {bottom-top:.2f} re {op}"
-            )
+            sl.append(f"{left:.2f} {top:.2f} {right-left:.2f} {bottom-top:.2f} re {op}")
         elif border == 1:
-            sl.append(
-                f"{left:.2f} {top:.2f} {right-left:.2f} {bottom-top:.2f} re S"
-            )
+            sl.append(f"{left:.2f} {top:.2f} {right-left:.2f} {bottom-top:.2f} re S")
         # pylint: enable=invalid-unary-operand-type
 
         if isinstance(border, str):
