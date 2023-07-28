@@ -222,9 +222,9 @@ class StandardSecurityHandler:
         return bytes(self.encrypt_bytes(stream, obj_id))
 
     def is_aes_algorithm(self) -> bool:
-        return (
-            self.encryption_method == EncryptionMethod.AES_128
-            or self.encryption_method == EncryptionMethod.AES_256
+        return self.encryption_method in (
+            EncryptionMethod.AES_128,
+            EncryptionMethod.AES_256,
         )
 
     def encrypt_bytes(self, data: bytes, obj_id: int):
@@ -335,10 +335,7 @@ class StandardSecurityHandler:
 
         # Bidirectional characters
         def has_character(string: str, fun: Callable) -> bool:
-            for char in string:
-                if fun(char):
-                    return True
-            return False
+            return any(fun(char) for char in string)
 
         if has_character(prepared_string, stringprep.in_table_d1):
             # If a string contains any RandALCat character, the string MUST NOT contain any LCat character.
@@ -409,17 +406,21 @@ class StandardSecurityHandler:
         )  # add 16 bytes of random padding
         return bytes(result).hex()
 
+    @classmethod
     def compute_hash(
-        self, input_password: bytes, salt: bytes, user_key: bytes = bytearray()
+        cls: Type["StandardSecurityHandler"],
+        input_password: bytes,
+        salt: bytes,
+        user_key: bytes = bytearray(),
     ) -> bytes:
         """
         Algorithm 2B - section 7.6.4.3.4 of the ISO 32000-2:2020
         Applied on Security handlers revision 6
         """
         k = hashlib.sha256(input_password + salt + user_key).digest()
-        round = 0
+        round_number = 0
         while True:
-            round += 1
+            round_number += 1
             k1 = input_password + k + user_key
             # Step (a + b)
             cipher = Cipher(AES128(k[:16]), modes.CBC(k[16:32]))
@@ -436,7 +437,7 @@ class StandardSecurityHandler:
             else:
                 k = hashlib.sha512(e).digest()
             # Step (e)
-            if round >= 64 and e[-1] <= round - 32:
+            if round_number >= 64 and e[-1] <= round - 32:
                 break
 
         return k[:32]
