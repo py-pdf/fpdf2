@@ -80,9 +80,7 @@ def draw_box_borders(pdf, x1, y1, x2, y2, border, fill=None):
             sl.append(f"{x1:.2f} {y1:.2f} m " f"{x2:.2f} {y1:.2f} l S")
 
     s = " ".join(sl)
-    # noinspection PyProtectedMember
-    # nosemgrep
-    pdf._out(s)  # <-- static check fails on this, so using a direct method instead:
+    pdf._out(s)  # nosemgrep
     # pdf.pages[pdf.page].contents += s.encode("latin1") + b"\n"  # (alternative)
 
     if fill:
