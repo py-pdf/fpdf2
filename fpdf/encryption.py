@@ -39,7 +39,7 @@ class ARC4:
 
     MOD = 256
 
-    def KSA(self, key: bytes) -> list[int]:
+    def KSA(self, key: bytes) -> list:
         key_length = len(key)
         S = list(range(self.MOD))
         j = 0
@@ -48,7 +48,7 @@ class ARC4:
             S[i], S[j] = S[j], S[i]
         return S
 
-    def PRGA(self, S: list[int]) -> Iterable[int]:
+    def PRGA(self, S: list) -> Iterable[int]:
         i = 0
         j = 0
         while True:
