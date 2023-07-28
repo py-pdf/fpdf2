@@ -510,6 +510,7 @@ class StandardSecurityHandler:
             + b"adb"
             + self.get_random_bytes(4)
         )
+        
         # nosemgrep: python.cryptography.security.insecure-cipher-mode-ecb.insecure-cipher-mode-ecb
         cipher = Cipher(AES256(self.k), modes.ECB())
         encryptor = cipher.encryptor()
