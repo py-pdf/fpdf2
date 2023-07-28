@@ -2764,10 +2764,14 @@ class FPDF(GraphicsStateMixin):
             center (bool): **DEPRECATED since 2.5.1**: Use `align="C"` instead.
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
-            padding (Padding or None): optional padding to apply to the cell content. If padding for left and right is non-zero then c_margin is ignored.
+            padding (Padding or None): optional padding to apply to the cell content.
+                If padding for left and right is non-zero then c_margin is ignored.
 
         Returns: a boolean indicating if page break was triggered
         """
+        if center:
+            warnings.warn('Parameter "center" is deprecated, use "align" instead')
+
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
                 'Integer values for "border" parameter other than 1 are currently ignored'
@@ -2810,8 +2814,6 @@ class FPDF(GraphicsStateMixin):
         sl = []
 
         k = self.k
-        # pylint: disable=invalid-unary-operand-type
-        # "h" can't actually be None
 
         # pre-calc border edges with padding
 

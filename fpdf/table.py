@@ -26,16 +26,16 @@ def get_padding_tuple(padding: Union[int, float, tuple, list]) -> Padding:
     """Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules"""
     if isinstance(padding, (int, float)):
         return Padding(padding, padding, padding, padding)
-    elif len(padding) == 2:
+    if len(padding) == 2:
         return Padding(padding[0], padding[1], padding[0], padding[1])
-    elif len(padding) == 3:
+    if len(padding) == 3:
         return Padding(padding[0], padding[1], padding[2], padding[1])
-    elif len(padding) == 4:
+    if len(padding) == 4:
         return Padding(*padding)
-    else:
-        raise ValueError(
-            f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
-        )
+
+    raise ValueError(
+        f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
+    )
 
 
 def draw_box_borders(pdf, x1, y1, x2, y2, border, fill=None):
@@ -80,7 +80,9 @@ def draw_box_borders(pdf, x1, y1, x2, y2, border, fill=None):
             sl.append(f"{x1:.2f} {y1:.2f} m " f"{x2:.2f} {y1:.2f} l S")
 
     s = " ".join(sl)
-    pdf._out(s)
+    # noinspection PyProtectedMember
+    pdf._out(s)  # <-- static check fails on this, so using a direct method instead:
+    # pdf.pages[pdf.page].contents += s.encode("latin1") + b"\n"  (alternative)
 
     if fill:
         pdf.set_fill_color(prev_fill_color)
