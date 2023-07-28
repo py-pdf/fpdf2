@@ -4722,9 +4722,11 @@ class FPDF(GraphicsStateMixin):
             width (number): optional. Sets the table width
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
                 "CHAR" for character based line wrapping.
-            padding (number, tuple, Padding): optional. Sets the cell padding. Can be a single number or a sequence of numbers, default:0
+            padding (number, tuple, Padding): optional. Sets the cell padding. Can be a single number or a sequence
+                of numbers, default:0
                 If padding for left and right ends up being non-zero then c_margin is ignored.
-            outer_border_width (number): optional. The outer_border_width will trigger rendering of the outer border of the table with the given width regardless of any other defined border styles.
+            outer_border_width (number): optional. The outer_border_width will trigger rendering of the outer border of
+                the table with the given width regardless of any other defined border styles.
         """
         table = Table(self, *args, **kwargs)
         yield table

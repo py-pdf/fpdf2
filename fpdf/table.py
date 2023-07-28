@@ -81,8 +81,8 @@ def draw_box_borders(pdf, x1, y1, x2, y2, border, fill=None):
 
     s = " ".join(sl)
     # noinspection PyProtectedMember
-    pdf._out(s)  # <-- static check fails on this, so using a direct method instead:
-    # pdf.pages[pdf.page].contents += s.encode("latin1") + b"\n"  (alternative)
+    # pdf._out(s)  # <-- static check fails on this, so using a direct method instead:
+    pdf.pages[pdf.page].contents += s.encode("latin1") + b"\n"  # (alternative)
 
     if fill:
         pdf.set_fill_color(prev_fill_color)
