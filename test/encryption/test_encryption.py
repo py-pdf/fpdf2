@@ -132,7 +132,7 @@ def test_encryption_aes128(tmp_path):
         encryption_method=EncryptionMethod.AES_128,
         permissions=AccessPermission.none(),
     )
-    pdf._security_handler.get_initialization_vector = fixed_iv
+    pdf._security_handler.get_random_bytes = fixed_iv
     assert_pdf_equal(pdf, HERE / "encryption_aes128.pdf", tmp_path)
 
 
@@ -201,3 +201,34 @@ def test_encrypt_outline(tmp_path):  # issue 732
     pdf.start_section("Subtitle", level=1)
     pdf.set_encryption(owner_password="fpdf2")
     assert_pdf_equal(pdf, HERE / "encrypt_outline.pdf", tmp_path)
+
+
+def test_encryption_aes256(tmp_path):
+    pdf = FPDF()
+
+    def custom_file_id():
+        return pdf._default_file_id(bytearray([0xFF]))
+
+    pdf.file_id = custom_file_id
+
+    def fixed_iv(size):
+        return bytearray(size)
+
+    pdf.set_author("author")
+    pdf.set_subject("string to be encrypted")
+    pdf.add_page()
+    pdf.set_font("helvetica", size=12)
+    pdf.cell(txt="hello world")
+    pdf.text(50, 50, "Some text")
+    pdf.ink_annotation(
+        [(40, 50), (70, 25), (100, 50), (70, 75), (40, 50)],
+        title="Lucas",
+        contents="Some encrypted annotation",
+    )
+    pdf.set_encryption(
+        owner_password="fpdf2",
+        encryption_method=EncryptionMethod.AES_256,
+        permissions=AccessPermission.none(),
+    )
+    pdf._security_handler.get_random_bytes = fixed_iv
+    assert_pdf_equal(pdf, HERE / "encryption_aes256.pdf", tmp_path)

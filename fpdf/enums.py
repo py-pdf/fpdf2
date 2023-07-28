@@ -845,3 +845,4 @@ class EncryptionMethod(Enum):
     NO_ENCRYPTION = 0
     RC4 = 1
     AES_128 = 2
+    AES_256 = 3
