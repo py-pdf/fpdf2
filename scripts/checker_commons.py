@@ -1,8 +1,64 @@
-import json, sys
+import json, os, sys
 from collections import defaultdict
+from multiprocessing import cpu_count, Pool
+
+try:  # optional dependency to display a progress bar
+    from tqdm import tqdm
+
+    HIDE_STDERR = True
+except ImportError:
+    tqdm = lambda _, total: _
+    HIDE_STDERR = False
 
 
-def aggregate(pdf_filepath, report, aggregated_report_filepath):
+def main(checker_name, analyze_pdf_file, argv, checks_details_url):
+    if len(argv) != 2:
+        print(argv, file=sys.stderr)
+        print(
+            f"Exactly one argument must be passed to {checker_name}.py", file=sys.stderr
+        )
+        sys.exit(2)
+    elif argv[1] == "--print-aggregated-report":
+        print_aggregated_report(checker_name, checks_details_url)
+    elif argv[1] == "--process-all-test-pdf-files":
+        process_all_test_pdf_files(checker_name, analyze_pdf_file)
+    else:
+        print(analyze_pdf_file(argv[1]))
+
+
+def process_all_test_pdf_files(checker_name, analyze_pdf_file):
+    pdf_filepaths = [
+        entry.path
+        for entry in scantree("test")
+        if entry.is_file() and entry.name.endswith(".pdf")
+    ]
+    print(
+        f"Starting parallel execution of {checker_name} on {len(pdf_filepaths)} PDF files with {cpu_count()} CPUs"
+    )
+    with Pool(cpu_count()) as pool:
+        reports_per_pdf_filepath = {}
+        for pdf_filepath, report in tqdm(
+            pool.imap_unordered(analyze_pdf_file, pdf_filepaths),
+            total=len(pdf_filepaths),
+        ):
+            reports_per_pdf_filepath[pdf_filepath] = report
+    agg_report = aggregate(checker_name, reports_per_pdf_filepath)
+    print(
+        "Failures:", len(agg_report["failures"]), "Errors:", len(agg_report["errors"])
+    )
+
+
+def scantree(path):
+    """Recursively yield DirEntry objects for given directory."""
+    for entry in os.scandir(path):
+        if entry.is_dir():
+            yield from scantree(entry.path)
+        else:
+            yield entry
+
+
+def aggregate(checker_name, reports_per_pdf_filepath):
+    aggregated_report_filepath = f"{checker_name}-aggregated.json"
     agg_report = {
         "failures": defaultdict(list),
         "errors": defaultdict(list),
@@ -14,21 +70,23 @@ def aggregate(pdf_filepath, report, aggregated_report_filepath):
         agg_report["errors"].update(prev_agg_report["errors"])
     except FileNotFoundError:
         print("Initializing a new JSON file for the aggregated report")
+        report = list(reports_per_pdf_filepath.items())[0][1]
         if "version" in report:
             agg_report["version"] = report.pop("version")
-    if "failure" in report:
-        failure = report["failure"]
-        agg_report["failures"][failure].append(pdf_filepath)
-    else:
-        for error in report.get("errors", []):
-            agg_report["errors"][error].append(pdf_filepath)
+    for pdf_filepath, report in reports_per_pdf_filepath.items():
+        if "failure" in report:
+            agg_report["failures"][report["failure"]].append(pdf_filepath)
+        else:
+            for error in report.get("errors", ()):
+                agg_report["errors"][error].append(pdf_filepath)
     with open(aggregated_report_filepath, "w", encoding="utf8") as agg_file:
-        json.dump(agg_report, agg_file)
+        json.dump(agg_report, agg_file, indent=4)
+    return agg_report
 
 
-def print_aggregated_report(
-    aggregated_report_filepath, checks_details_url, ignore_whitelist_filepath
-):
+def print_aggregated_report(checker_name, checks_details_url):
+    aggregated_report_filepath = f"{checker_name}-aggregated.json"
+    ignore_whitelist_filepath = f"scripts/{checker_name}-ignore.json"
     with open(aggregated_report_filepath, encoding="utf8") as agg_file:
         agg_report = json.load(agg_file)
     if "version" in agg_report:

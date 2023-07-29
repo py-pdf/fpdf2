@@ -4,36 +4,35 @@
 # Purpose of this script:
 # * abort the validation pipeline with a non-zero error code if any check fails on a PDF sample
 # * aggregate all checks performed in a concise summary
+# * parallelize the execution of this analysis on all PDF files
 # * allow to ignore some errors considered harmless, listed in pdfchecker-ignore.json
 
-# USAGE: ./pdfchecker.py [$pdf_filepath]
+# USAGE: ./pdfchecker.py [$pdf_filepath|--process-all-test-pdf-files|--print-aggregated-report]
 
 import sys
 from subprocess import check_output
 
-from scripts.checker_commons import aggregate, print_aggregated_report
+from scripts.checker_commons import main
 
-AGGREGATED_REPORT_FILEPATH = "pdfchecker-aggregated.json"
-IGNORE_WHITELIST_FILEPATH = "scripts/pdfchecker-ignore.json"
 CHECKS_DETAILS_URL = "https://dev.datalogics.com/pdf-checker/the-json-profile-file/description-of-json-profile-parameters/"
 UNPROCESSABLE_PDF_ERROR_LINE = "Unable to process document due to PDF Error"
 CHECKER_SUMMARY_END_LINE = "<<=CHECKER_SUMMARY_END=>>"
 
 
 def analyze_pdf_file(pdf_filepath):
-    output = check_output(
-        [
-            "PDF_Checker/pdfchecker",
-            "--profile",
-            "PDF_Checker/CheckerProfiles/everything.json",
-            "--input",
-            pdf_filepath,
-            "--password",
-            "fpdf2",
-        ]
-    ).decode()
-    report = parse_output(output)
-    aggregate(pdf_filepath, report, AGGREGATED_REPORT_FILEPATH)
+    command = [
+        "PDF_Checker/pdfchecker",
+        "--profile",
+        "PDF_Checker/CheckerProfiles/everything.json",
+        "--input",
+        pdf_filepath,
+        "--password",
+        "fpdf2",
+    ]
+    # print(" ".join(command))
+    output = check_output(command).decode()
+    # print(output)
+    return pdf_filepath, parse_output(output)
 
 
 def parse_output(output):
@@ -106,13 +105,4 @@ def insert_indented(lines, node=None, depth=0, indent=0):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print_aggregated_report(
-            AGGREGATED_REPORT_FILEPATH, CHECKS_DETAILS_URL, IGNORE_WHITELIST_FILEPATH
-        )
-    elif len(sys.argv) > 2:
-        print(sys.argv, file=sys.stderr)
-        print("Exactly one argument must be passed to pdfchecker.py", file=sys.stderr)
-        sys.exit(2)
-    else:
-        analyze_pdf_file(sys.argv[1])
+    main("pdfchecker", analyze_pdf_file, sys.argv, CHECKS_DETAILS_URL)

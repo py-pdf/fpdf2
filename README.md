@@ -247,6 +247,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/stenci"><img src="https://avatars.githubusercontent.com/u/5955495?v=4?s=100" width="100px;" alt="stenci"/><br /><sub><b>stenci</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/issues?q=author%3Astenci" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/alcnaka"><img src="https://avatars.githubusercontent.com/u/47954083?v=4?s=100" width="100px;" alt="alcnaka"/><br /><sub><b>alcnaka</b></sub></a><br /><a href="#translation-alcnaka" title="Translation">🌍</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Tolker-KU"><img src="https://avatars.githubusercontent.com/u/55140581?v=4?s=100" width="100px;" alt="Tolker-KU"/><br /><sub><b>Tolker-KU</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=Tolker-KU" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://lfavole.eu.pythonanywhere.com"><img src="https://avatars.githubusercontent.com/u/88188568?v=4?s=100" width="100px;" alt="lfavole"/><br /><sub><b>lfavole</b></sub></a><br /><a href="https://github.com/PyFPDF/fpdf2/commits?author=lfavole" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
