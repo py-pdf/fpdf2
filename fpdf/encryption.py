@@ -74,7 +74,6 @@ class CryptFilter:
         self.type = Name("CryptFilter")
         self.c_f_m = Name(mode)
         self.length = int(length / 8)
-        # self.auth_event = Name("DocOpen")
 
     def serialize(self) -> str:
         obj_dict = build_obj_dict({key: getattr(self, key) for key in dir(self)})
@@ -92,14 +91,14 @@ class EncryptionDictionary(PDFObject):
         super().__init__()
         self.filter = Name("Standard")
         self.length = security_handler.key_length
-        self.r = security_handler.r
+        self.r = security_handler.revision
         self.o = f"<{security_handler.o.upper()}>"
         self.u = f"<{security_handler.u.upper()}>"
-        if security_handler.r == 6:
+        if security_handler.revision == 6:
             self.o_e = f"<{security_handler.oe.upper()}>"
             self.u_e = f"<{security_handler.ue.upper()}>"
             self.perms = f"<{security_handler.perms.upper()}>"
-        self.v = security_handler.v
+        self.v = security_handler.version
         self.p = int32(security_handler.access_permission)
         if not security_handler.encrypt_metadata:
             self.encrypt_metadata = "false"
@@ -156,24 +155,24 @@ class StandardSecurityHandler:
                 f" - Import error was: {import_error}"
             )
         if self.encryption_method == EncryptionMethod.AES_128:
-            self.v = 4
-            self.r = 4
+            self.version = 4
+            self.revision = 4
             fpdf._set_min_pdf_version("1.6")
             self.cf = CryptFilter(mode="AESV2", length=self.key_length)
         elif self.encryption_method == EncryptionMethod.AES_256:
-            self.v = 5
-            self.r = 6
+            self.version = 5
+            self.revision = 6
             fpdf._set_min_pdf_version("2.0")
             self.key_length = 256
             self.cf = CryptFilter(mode="AESV3", length=self.key_length)
         elif self.encryption_method == EncryptionMethod.NO_ENCRYPTION:
-            self.v = 4
-            self.r = 4
+            self.version = 4
+            self.revision = 4
             fpdf._set_min_pdf_version("1.6")
             self.cf = CryptFilter(mode="V2", length=self.key_length)
         else:
-            self.v = 2
-            self.r = 3
+            self.version = 2
+            self.revision = 3
             fpdf._set_min_pdf_version("1.5")
             # not including crypt filter because it's only required on V=4
             # if needed, it would be CryptFilter(mode=V2)
@@ -184,8 +183,7 @@ class StandardSecurityHandler:
         """File_id is the first hash of the PDF file id"""
         self.file_id = file_id
         self.info_id = file_id[1:33]
-        LOGGER.debug("Current revision: %s (%s)", self.r, self.info_id)
-        if self.r == 6:
+        if self.revision == 6:
             self.k = self.get_random_bytes(32)
             self.generate_user_password_rev6()
             self.generate_owner_password_rev6()
@@ -472,7 +470,7 @@ class StandardSecurityHandler:
         """
         owner_password = self.prepare_string(self.owner_password)
         if not owner_password:
-            owner_password = bytearray()
+            raise FPDFException(f"Invalid owner password {self.owner_password}")
         owner_validation_salt = self.get_random_bytes(8)
         owner_key_salt = self.get_random_bytes(8)
         o = (
@@ -530,7 +528,7 @@ class StandardSecurityHandler:
             )
         )
         m.update(bytes.fromhex(self.info_id))
-        if self.encrypt_metadata is False and self.v == 4:
+        if self.encrypt_metadata is False and self.version == 4:
             m.update(bytes([0xFF, 0xFF, 0xFF, 0xFF]))
         result = m.digest()[: (math.ceil(self.key_length / 8))]
         for _ in range(50):

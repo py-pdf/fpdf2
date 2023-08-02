@@ -1,11 +1,14 @@
 # pylint: disable=protected-access
+from os import devnull
 from pathlib import Path
 import sys
 
 import pytest
 
 from fpdf import FPDF
+from fpdf.encryption import StandardSecurityHandler as sh
 from fpdf.enums import AccessPermission, EncryptionMethod
+from fpdf.errors import FPDFException
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
@@ -232,3 +235,33 @@ def test_encryption_aes256(tmp_path):
     )
     pdf._security_handler.get_random_bytes = fixed_iv
     assert_pdf_equal(pdf, HERE / "encryption_aes256.pdf", tmp_path)
+
+
+def test_blank_owner_password(tmp_path):
+    pdf = FPDF()
+    pdf.set_encryption(
+        owner_password="",
+        encryption_method=EncryptionMethod.AES_256,
+        permissions=AccessPermission.none(),
+    )
+    with pytest.raises(FPDFException) as e:
+        pdf.output(devnull)
+    assert str(e.value) == "Invalid owner password "
+
+
+def test_password_prep():
+    # The PDF standard requires the passwords to be prepared using the stringprep algorithm
+    # using the SASLprep as per RFC 4013
+    # https://datatracker.ietf.org/doc/html/rfc4013
+    # Those assertions are bases on the examples section of the RFC
+    #
+    assert sh.prepare_string("I\xadX") == b"IX"  # SOFT HYPHEN mapped to nothing
+    assert sh.prepare_string("user") == b"user"  # no transformation
+    assert sh.prepare_string("USER") == b"USER"  # case preserved
+    assert sh.prepare_string("\xaa") == b"a"  # output is NFKC, input in ISO 8859-1
+    assert sh.prepare_string("\u2168") == b"IX"  # output is NFKC, will match #1
+    with pytest.raises(FPDFException) as e:
+        sh.prepare_string("\x07")  # Error - prohibited character
+    assert str(e.value) == "The password  contains prohibited characters"
+    with pytest.raises(FPDFException) as e:
+        sh.prepare_string("\u0627\x31")  # Error - bidirectional check
