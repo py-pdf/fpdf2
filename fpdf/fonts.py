@@ -258,7 +258,7 @@ class TTFFont:
         of the glyphs on the subset and map input characters to the cluster codes
         """
         if len(text) == 0:
-            return zip([], [])
+            return []
         glyph_infos, glyph_positions = self.perform_harfbuzz_shaping(
             text, font_size_pt, text_shaping_parms
         )
