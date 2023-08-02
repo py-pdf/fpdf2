@@ -221,7 +221,7 @@ class TTFFont:
     # pylint: disable=no-member
     def perform_harfbuzz_shaping(self, text, font_size_pt, text_shaping_parms):
         """
-        This method invokes Harfbuzz to performing text shaping of the input string
+        This method invokes Harfbuzz to perform text shaping of the input string
         """
         if not hasattr(self, "hbfont"):
             self.hbfont = hb.Font(hb.Face(hb.Blob.from_file_path(self.ttffile)))
