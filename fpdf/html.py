@@ -5,6 +5,7 @@ from html.parser import HTMLParser
 
 from .enums import TextEmphasis, XPos, YPos
 from .errors import FPDFException
+from .deprecation import get_stack_level
 from .fonts import FontFace
 from .table import Table, TableBordersLayout
 
@@ -266,9 +267,9 @@ class HTML2FPDF(HTMLParser):
             if not data:
                 return
             if "inserted" in self.td_th:
-                tag = self.td_th["tag"]
+                td_th_tag = self.td_th["tag"]
                 raise NotImplementedError(
-                    f"Unsupported nested HTML tags inside <{tag}> element"
+                    f"Unsupported nested HTML tags inside <{td_th_tag}> element: <{self._tags_stack[-1]}>"
                 )
                 # We could potentially support nested <b> / <em> / <font> tags
                 # by building a list of Fragment instances from the HTML cell content
@@ -726,5 +727,5 @@ class HTMLMixin:
             "The HTMLMixin class is deprecated. "
             "Simply use the FPDF class as a replacement.",
             DeprecationWarning,
-            stacklevel=2,
+            stacklevel=get_stack_level(),
         )
