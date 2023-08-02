@@ -21,7 +21,6 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 - [`FPDF.mirror()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.mirror) - New method: [documentation page](https://pyfpdf.github.io/fpdf2/Transformations.html) - Contributed by @sebastiantia
 - [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): new optional parameters `gutter_height`, `gutter_width` and `wrapmode`. Links can also be added to cells by passing a `link` parameter to [`Row.cell()`](https://pyfpdf.github.io/fpdf2/fpdf/table.html#fpdf.table.Row.cell)
 - [`FPDF.multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell): has a new optional `center` parameter to position the cell horizontally at the center of the page
-- Added Tutorial in Khmer language - thanks to @kuth-chi
 - [`FPDF.set_text_shaping()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_shaping): new method to perform text shaping using Harfbuzz - [documentation](https://pyfpdf.github.io/fpdf2/TextShaping.html).
 - Added tutorial in Khmer language: [ភាសខ្មែរ](https://pyfpdf.github.io/fpdf2/Tutorial-km.html) - thanks to @kuth-chi
 - Added tutorial in [日本語](https://pyfpdf.github.io/fpdf2/Tutorial-ja.html) - thanks to @alcnaka

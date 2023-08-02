@@ -6,9 +6,6 @@ from test.conftest import assert_pdf_equal
 HERE = Path(__file__).resolve().parent
 FONTS_DIR = HERE.parent / "fonts"
 
-# Tests to be included:
-# char spacing, word spacing(justified text)
-
 
 def test_indi_text(tmp_path):
     # issue #365

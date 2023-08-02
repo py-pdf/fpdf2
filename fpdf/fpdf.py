@@ -573,14 +573,26 @@ class FPDF(GraphicsStateMixin):
     # pylint: disable=import-outside-toplevel, unused-import
     def set_text_shaping(
         self,
-        use_shaping_engine: bool = False,
+        use_shaping_engine: bool = True,
         features: dict = None,
         direction: str = None,
         script: str = None,
         language: str = None,
     ):
         """
-        True or False value to enable or disable text shaping engine when rendering text
+        Enable or disable text shaping engine when rendering text.
+        If features, direction, script or language are not specified the shaping engine will try
+        to guess the values based on the input text.
+
+        Args:
+            use_shaping_engine: enable or disable the use of the shaping engine to process the text
+            features: a dictionary containing 4 digit OpenType features and whether each feature
+                should be enabled or disabled
+                example: features={"kern": False, "liga": False}
+            direction: the direction the text should be rendered, either "ltr" (left to right)
+                or "rtl" (right to left).
+            script: a valid OpenType script tag like "arab" or "latn"
+            language: a valid OpenType language tag like "eng" or "fra"
         """
         if use_shaping_engine:
             try:

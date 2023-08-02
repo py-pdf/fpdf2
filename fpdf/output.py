@@ -572,7 +572,6 @@ class OutputProducer:
                 # this basically takes the old code of the character
                 # take the glyph associated with it
                 # and then associate to the new code the glyph associated with the old code
-                # code_to_glyph = {}
 
                 code_to_glyph = {
                     font.subset._map[glyph]: font.ttfont.getGlyphID(glyph.glyph_name)
