@@ -221,7 +221,7 @@ class TTFFont:
     # pylint: disable=no-member
     def perform_harfbuzz_shaping(self, text, font_size_pt, text_shaping_parms):
         """
-        This method invokes Harfbuzz to performing text shaping of the input string
+        This method invokes Harfbuzz to perform text shaping of the input string
         """
         if not hasattr(self, "hbfont"):
             self.hbfont = hb.Font(hb.Face(hb.Blob.from_file_path(self.ttffile)))
@@ -258,7 +258,7 @@ class TTFFont:
         of the glyphs on the subset and map input characters to the cluster codes
         """
         if len(text) == 0:
-            return zip([], [])
+            return []
         glyph_infos, glyph_positions = self.perform_harfbuzz_shaping(
             text, font_size_pt, text_shaping_parms
         )
