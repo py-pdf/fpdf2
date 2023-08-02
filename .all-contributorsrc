@@ -728,7 +728,9 @@
         "question",
         "code",
         "research",
-        "bug"
+        "bug",
+        "doc",
+        "ideas"
       ]
     },
     {
