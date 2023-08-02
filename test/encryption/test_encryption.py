@@ -237,6 +237,32 @@ def test_encryption_aes256(tmp_path):
     assert_pdf_equal(pdf, HERE / "encryption_aes256.pdf", tmp_path)
 
 
+def test_encryption_aes256_with_user_password(tmp_path):
+    pdf = FPDF()
+
+    def custom_file_id():
+        return pdf._default_file_id(bytearray([0xFF]))
+
+    pdf.file_id = custom_file_id
+
+    def fixed_iv(size):
+        return bytearray(size)
+
+    pdf.set_author("author")
+    pdf.set_subject("string to be encrypted")
+    pdf.add_page()
+    pdf.set_font("helvetica", size=12)
+    pdf.cell(txt="hello world")
+    pdf.set_encryption(
+        owner_password="fpdf2",
+        user_password="1" * 1000,
+        encryption_method=EncryptionMethod.AES_256,
+        permissions=AccessPermission.all(),
+    )
+    pdf._security_handler.get_random_bytes = fixed_iv
+    assert_pdf_equal(pdf, HERE / "encryption_aes256_user_password.pdf", tmp_path)
+
+
 def test_blank_owner_password(tmp_path):
     pdf = FPDF()
     pdf.set_encryption(
@@ -250,11 +276,12 @@ def test_blank_owner_password(tmp_path):
 
 
 def test_password_prep():
-    # The PDF standard requires the passwords to be prepared using the stringprep algorithm
-    # using the SASLprep as per RFC 4013
-    # https://datatracker.ietf.org/doc/html/rfc4013
-    # Those assertions are bases on the examples section of the RFC
-    #
+    """
+    The PDF standard requires the passwords to be prepared using the stringprep algorithm
+    using the SASLprep as per RFC 4013
+    https://datatracker.ietf.org/doc/html/rfc4013
+    Those assertions are bases on the examples section of the RFC
+    """
     assert sh.prepare_string("I\xadX") == b"IX"  # SOFT HYPHEN mapped to nothing
     assert sh.prepare_string("user") == b"user"  # no transformation
     assert sh.prepare_string("USER") == b"USER"  # case preserved
@@ -265,3 +292,4 @@ def test_password_prep():
     assert str(e.value) == "The password  contains prohibited characters"
     with pytest.raises(FPDFException) as e:
         sh.prepare_string("\u0627\x31")  # Error - bidirectional check
+    assert sh.prepare_string("A" * 300) == b"A" * 127  # test cap 127 chars
