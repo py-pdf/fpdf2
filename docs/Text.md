@@ -11,25 +11,17 @@ There are several ways in fpdf to add text to a PDF document, each of which come
 | [`.write_html()`](#write_html) | several | no | yes | auto |  An extension to `.write()`, with additional parsing of basic HTML tags.
 
 ## Typography and Language Specific Concepts 
+### Supported Features
+With supporting Unicode fonts, fpdf2 should handle the following text shaping features correctly. More details can be found in [TextShaping](TextShaping.html).
+* Automatic ligatures / glyph substitution - Some writing systems (eg. most Indic scripts such as Devaganari, Tamil, Kannada) frequently combine a number of written characters into a single glyph. In latin script, "ff", "fi", "ft", "st" and others are often combined. In programming fonts "<=", "++" "!=" etc. may be combined into more compact representations.
+* Special diacritics that use separate code points (eg. in Diné Bizaad, Hebrew) will be placed in the correct location relative to their base character.
+* Kerning, where the spacing between characters varies depending on their combination (eg. moving the succeeding lowercase character closer to an uppercase "T".
+* Left-to-right and right-to-left text formatting (the latter most prominently in Arabic and Hebrew).
 
 ### Limitations
 There are a few advanced typesetting features that fpdf doesn't currently support.
-
-* Automatic ligatures - Some writing systems (eg. most Indic scripts such as Devaganari, Tamil, Kannada) frequently combine a number of written characters into a single glyph. This would require advanced font analysis capabilities, which aren't currently implemented.
 * Contextual forms - In some writing systems (eg. Arabic, Mongolian, etc.), characters may take a different shape, depending on whether they appear at the beginning, in the middle, or at the end of a word, or isolated. Fpdf will always use the same standard shape in those cases.
 * Vertical writing - Some writing systems are meant to be written vertically. Doing so is not directly supported. In cases where this just means to stack characters on top of each other (eg. Chinese, Japanese, etc.), client software can implement this by placing each character individuall at the correct location. In cases where the characters are connected with each other (eg. Mongolian), this may be more difficult, if possible at all.
-* Right-to-Left writing - Letters of scripts that are written right to left(eg. Arabic, Hebrew) appear in the wrong order
-* Special Diacritics - Special diacritics that use separate code points (eg. in Diné Bizaad, Hebrew) appear displaced
-
-### Right-to-Left & Arabic Script workaround
-For Arabic and RTL scripts there is a temporary solution (using two additional libraries `python-bidi` and `arabic-reshaper`) that works for most languages; only a few (rare) Arabic characters aren't supported. Using it on other scripts(eg. when the input is unknown or mixed scripts) does not affect them:
-```python
-from arabic_reshaper import reshape
-from bidi.algorithm import get_display
-
-some_text = 'اَلْعَرَبِيَّةُכַּף סוֹפִית'
-fixed_text = get_display(reshape(some_text))
-```
 
 ### Character or Word Based Line Wrapping
 By default, `multi_line()` and `write()` will wrap lines based on words, using space characters and soft hyphens as seperators.
