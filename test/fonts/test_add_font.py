@@ -123,7 +123,7 @@ def test_render_en_dash(tmp_path):  # issue-166
 
 
 @pytest.mark.skipif(
-    sys.version_info < (3, 8),
+    sys.version_info < (3, 8) or sys.version_info[:2] == (3, 11),
     reason="fontTools dropped support for 3.7. https://github.com/py-pdf/fpdf2/pull/863",
 )
 def test_add_font_otf(tmp_path):

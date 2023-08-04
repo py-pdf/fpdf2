@@ -159,7 +159,7 @@ def test_encrypt_metadata(tmp_path):
 
 
 @pytest.mark.skipif(
-    sys.version_info < (3, 8),
+    sys.version_info < (3, 8) or sys.version_info[:2] == (3, 11),
     reason="fontTools dropped support for 3.7. https://github.com/py-pdf/fpdf2/pull/863",
 )
 def test_encrypt_font(tmp_path):
