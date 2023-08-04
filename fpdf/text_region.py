@@ -62,7 +62,7 @@ class TextRegion(TextCollectorMixin):
             print_sh=print_sh,
         )
         self._text_fragments = []
-        text_line = multi_line_break.get_line_of_given_width()
+        text_line = multi_line_break.get_line_of_given_width(wordsplit=False)
         while (text_line) is not None:
             text_lines.append(text_line)
             text_line = multi_line_break.get_line_of_given_width()

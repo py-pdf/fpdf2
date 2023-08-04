@@ -78,9 +78,9 @@ from .html import HTML2FPDF
 from .text_region import TextRegionMixin, TextColumns
 from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
 from .linearization import LinearizedOutputProducer
-from .output import OutputProducer, PDFPage, ZOOM_CONFIGS
+from .output import OutputProducer, PDFFontDescriptor, PDFPage, ZOOM_CONFIGS
 from .line_break import Fragment, MultiLineBreak, DynamicMultiLineBreak, TextLine
-from .outline import OutlineSection
+from .outline import OutlineSection  # , serialize_outline
 from .recorder import FPDFRecorder
 from .structure_tree import StructureTreeBuilder
 from .sign import Signature
