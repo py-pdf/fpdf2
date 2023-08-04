@@ -514,7 +514,7 @@ class MultiLineBreak:
         self.idx_last_forced_break = None
 
     # pylint: disable=too-many-return-statements
-    def get_line_of_given_width(self, maximum_width: float):
+    def get_line_of_given_width(self, max_width: float):
         first_char = True  # "Tw" ignores the first character in a text object.
         idx_last_forced_break = self.idx_last_forced_break
         self.idx_last_forced_break = None
@@ -588,11 +588,13 @@ class DynamicMultiLineBreak:
         width_cb: callable,
         justify: bool = False,
         print_sh: bool = False,
+        wrapmode: WrapMode = WrapMode.WORD,
     ):
         self.styled_text_fragments = styled_text_fragments
         self.get_width = width_cb
         self.justify = justify
         self.print_sh = print_sh
+        self.wrapmode = wrapmode
         self.fragment_index = 0
         self.character_index = 0
         self.idx_last_forced_break = None

@@ -3729,7 +3729,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # first line from current x position to right margin
         first_width = self.w - self.x - self.r_margin
         max_width = first_width - 2 * self.c_margin
-        text_line = multi_line_break.get_line_of_given_width(wordsplit=False)
+        text_line = multi_line_break.get_line_of_given_width()
         # remaining lines fill between margins
         full_width = self.w - self.l_margin - self.r_margin
         max_width = full_width - 2 * self.c_margin
