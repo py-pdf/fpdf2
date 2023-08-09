@@ -1,6 +1,7 @@
 import csv
 from fpdf import FPDF
 from fpdf.fonts import FontFace
+from fpdf.enums import TableCellFillMode
 
 
 with open("countries.txt", encoding="utf8") as csv_file:
@@ -25,7 +26,7 @@ headings_style = FontFace(emphasis="BOLD", color=255, fill_color=(255, 100, 0))
 with pdf.table(
     borders_layout="NO_HORIZONTAL_LINES",
     cell_fill_color=(224, 235, 255),
-    cell_fill_logic=lambda i, j: i % 2,
+    cell_fill_mode=TableCellFillMode.ROWS,
     col_widths=(42, 39, 35, 42),
     headings_style=headings_style,
     line_height=6,
