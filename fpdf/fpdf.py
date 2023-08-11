@@ -623,7 +623,7 @@ class FPDF(GraphicsStateMixin):
         # Buffer properties (direction, script and language)
         # if the properties are not provided, Harfbuzz "guessing" logic is used.
         # https://harfbuzz.github.io/setting-buffer-properties.html
-        # Valid harfbuzz directions are lrt (left to right), rtl (right to left),
+        # Valid harfbuzz directions are ltr (left to right), rtl (right to left),
         # ttb (top to bottom) or btt (bottom to top)
 
         if direction and direction not in ("ltr", "rtl"):

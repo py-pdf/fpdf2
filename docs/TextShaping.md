@@ -46,7 +46,7 @@ pip install uharfbuzz
 ⚠️ Text shaping is *not* available for type 1 fonts.
 
 ### Basic usage ###
-The method `set_text_shaping()` is used to control text shaping on a document. The only mandatory argument, `use_shaping_engine` can be set to `True` to enable the shaping mechaning or `False` to disable it.
+The method `set_text_shaping()` is used to control text shaping on a document. The only mandatory argument, `use_shaping_engine` can be set to `True` to enable the shaping mechanism or `False` to disable it.
 
 ```python
 pdf = FPDF()
