@@ -23,20 +23,21 @@ TEXT_5 = " ea sed voluptate commodo amet eiusmod incididunt"
 class FxFPDF(FPDF):
     def write_fragments(self, frags, align=Align.L):
         """Replicate the part of write() that actually renders the fragments."""
+        def _get_width(height):  # pylint: disable=unused-argument
+            return max_width
         text_lines = []
         justify = align == Align.J
-        multi_line_break = MultiLineBreak(frags, justify=justify)
+        multi_line_break = MultiLineBreak(frags, _get_width, justify=justify)
         # first line from current x position to right margin
         first_width = self.w - self.x - self.r_margin
-        text_line = multi_line_break.get_line_of_given_width(
-            first_width - 2 * self.c_margin
-        )
+        max_width = first_width - 2 * self.c_margin
+        text_line = multi_line_break.get_line()
         # remaining lines fill between margins
         full_width = self.w - self.l_margin - self.r_margin
-        fit_width = full_width - 2 * self.c_margin
+        max_width = full_width - 2 * self.c_margin
         while (text_line) is not None:
             text_lines.append(text_line)
-            text_line = multi_line_break.get_line_of_given_width(fit_width)
+            text_line = multi_line_break.get_line()
         if text_line:
             text_lines.append(text_line)
         if not text_lines:
