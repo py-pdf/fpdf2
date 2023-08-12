@@ -1,6 +1,6 @@
 from .errors import FPDFException
 from .enums import Align, XPos, YPos
-from .line_break import Fragment, DynamicMultiLineBreak, TextLine
+from .line_break import Fragment, MultiLineBreak, TextLine
 
 # Since Python doesn't have "friend classes"...
 # pylint: disable=protected-access
@@ -55,17 +55,17 @@ class TextRegion(TextCollectorMixin):
 
     def _build_lines(self, align, print_sh):
         text_lines = []
-        multi_line_break = DynamicMultiLineBreak(
+        multi_line_break = MultiLineBreak(
             self._text_fragments,
-            width_cb=self.get_width,
+            max_width=self.get_width,
             justify=(align == Align.J),
             print_sh=print_sh,
         )
         self._text_fragments = []
-        text_line = multi_line_break.get_line_of_given_width(wordsplit=False)
+        text_line = multi_line_break.get_line()
         while (text_line) is not None:
             text_lines.append(text_line)
-            text_line = multi_line_break.get_line_of_given_width()
+            text_line = multi_line_break.get_line()
         return text_lines
 
     def _render_lines(self, text_lines, align):

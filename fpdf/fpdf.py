@@ -3727,14 +3727,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         normalized_string = self.normalize_text(text).replace("\r", "")
         styled_text_fragments = self._preload_font_styles(normalized_string, False)
 
-        def _get_width(line_height):  # pylint: disable=unused-argument
-            # Since the first line can have a different width, we need DynamicMultiLineBreak
-            # here, which needs this auxiliary callback function to query the current width.
-            # It ignores its argument, and returns the current local value of `max_width`.
+        def _get_width(height):  # pylint: disable=unused-argument
+            # Set the width dynamically, since the first line can have a different width.
             return max_width
-
         text_lines = []
-        multi_line_break = DynamicMultiLineBreak(
+        multi_line_break = MultiLineBreak(
             styled_text_fragments,
             lambda h: max_width,
             (self.c_margin, self.c_margin),
