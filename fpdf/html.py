@@ -720,6 +720,11 @@ def whitespace_repl(matchobj):
 
 
 class HTMLMixin:
+    """
+    [**DEPRECATED since v2.6.0**]
+    You can now directly use the `FPDF.write_html()` method
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         warnings.warn(

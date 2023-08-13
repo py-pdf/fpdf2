@@ -51,8 +51,7 @@ markdown_extensions:
 plugins:
   - search
   - include-markdown
-  # Disabled while waiting for resolution of https://github.com/greenape/mknotebooks/issues/1100
-  # - mknotebooks
+  - mknotebooks
   - minify:
       minify_html: true
   - redirects:

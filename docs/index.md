@@ -99,6 +99,7 @@ or [open a discussion](https://github.com/py-pdf/fpdf2/discussions).
 
 ### They use fpdf2 ###
 <!-- cf. Watchman Pypi & DavHau/pypi-deps-db -->
+* **Harvard University** uses `fpdf2` in their [CS50 introductory class](https://cs50.harvard.edu/python/2022/psets/8/shirtificate/)
 * [Undying Dusk](https://lucas-c.itch.io/undying-dusk) : a **video game in PDF format**, with a gameplay based on exploration and logic puzzles, in the tradition of dungeon crawlers
 * [OpenDroneMap](https://github.com/OpenDroneMap/ODM) : a command line toolkit for processing aerial drone imagery
 * [OpenSfM](https://github.com/mapillary/OpenSfM) : a Structure from Motion library, serving as a processing pipeline for reconstructing camera poses and 3D scenes from multiple images

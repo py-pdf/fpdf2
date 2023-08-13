@@ -1193,15 +1193,12 @@ class FPDF(GraphicsStateMixin):
         Set the current dash pattern for lines and curves.
 
         Args:
-            dash (float >= 0):
-                The length of the dashes in current units.
+            dash (float >= 0): The length of the dashes in current units.
 
-            gap (float >= 0):
-                The length of the gaps between dashes in current units.
+            gap (float >= 0): The length of the gaps between dashes in current units.
                 If omitted, the dash length will be used.
 
-            phase (float >= 0):
-                Where in the sequence to start drawing.
+            phase (float >= 0): Where in the sequence to start drawing.
 
         Omitting 'dash' (= 0) resets the pattern to a solid line.
         """
@@ -1337,7 +1334,6 @@ class FPDF(GraphicsStateMixin):
             y (float): Ordinate of upper-left bounding box.
             w (float): Width.
             h (float): Height.
-
             style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
 
             * `D` or empty string: draw border. This is the default value.
