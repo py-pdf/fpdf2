@@ -461,3 +461,17 @@ def test_html_preserve_initial_text_color(tmp_path):  # issue 846
     pdf.set_font(family="Helvetica", size=13)
     pdf.write_html("one <font size=8>two</font> three")
     assert_pdf_equal(pdf, HERE / "html_preserve_initial_text_color.pdf", tmp_path)
+
+
+def test_html_heading_color_attribute(tmp_path):  # discussion 880
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """
+      <h1>Title</h1>
+      Content
+      <h2 color="#00ff00">Subtitle in green</h2>
+      Content
+    """
+    )
+    assert_pdf_equal(pdf, HERE / "html_heading_color_attribute.pdf", tmp_path)

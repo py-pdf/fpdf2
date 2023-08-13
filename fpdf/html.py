@@ -342,9 +342,8 @@ class HTML2FPDF(HTMLParser):
                 if self.heading_level:
                     self.pdf.start_section(data, self.heading_level - 1, strict=False)
                 LOGGER.debug(
-                    "write '%s' h=%d",
+                    f"write: '%s' h={self.h:.2f}",
                     WHITESPACE.sub(whitespace_repl, data),
-                    self.h,
                 )
                 self.pdf.write(self.h, data)
             self.follows_fmt_tag = False
@@ -383,7 +382,10 @@ class HTML2FPDF(HTMLParser):
             self.font_stack.append((self.font_face, self.font_size, self.font_color))
             self.heading_level = int(tag[1:])
             hsize = self.heading_sizes[tag]
-            self.pdf.set_text_color(150, 0, 0)
+            color = (
+                color_as_decimal(attrs["color"]) if "color" in attrs else (150, 0, 0)
+            )
+            self.pdf.set_text_color(*color)
             self.pdf.ln(self.h + self.heading_above * hsize)  # more space above heading
             self.set_font(size=hsize)
             if attrs:
@@ -644,8 +646,8 @@ class HTML2FPDF(HTMLParser):
         if size:
             self.font_size = size
             self.h = px2mm(size)
-            LOGGER.debug("H %s", self.h)
         style = "".join(s for s in ("b", "i", "u") if self.style.get(s)).upper()
+        LOGGER.debug(f"set_font: %s style=%s h={self.h:.2f}", self.font_face, style)
         if (self.font_face, style) != (self.pdf.font_family, self.pdf.font_style):
             self.pdf.set_font(self.font_face, style, self.font_size)
         if self.font_size != self.pdf.font_size:
