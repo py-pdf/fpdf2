@@ -249,6 +249,9 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Tolker-KU"><img src="https://avatars.githubusercontent.com/u/55140581?v=4?s=100" width="100px;" alt="Tolker-KU"/><br /><sub><b>Tolker-KU</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Tolker-KU" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://lfavole.eu.pythonanywhere.com"><img src="https://avatars.githubusercontent.com/u/88188568?v=4?s=100" width="100px;" alt="lfavole"/><br /><sub><b>lfavole</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=lfavole" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Niwo1403"><img src="https://avatars.githubusercontent.com/u/25332593?v=4?s=100" width="100px;" alt="Nicolai Wolfrom"/><br /><sub><b>Nicolai Wolfrom</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3ANiwo1403" title="Bug reports">🐛</a></td>
+    </tr>
   </tbody>
 </table>
 
