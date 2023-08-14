@@ -139,3 +139,15 @@ def test_features(tmp_path):
     pdf.ln()
 
     assert_pdf_equal(pdf, HERE / "features.pdf", tmp_path)
+
+
+def test_text_with_parentheses(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="SBL_Hbrw", fname=HERE / "SBL_Hbrw.ttf")
+    pdf.set_font("SBL_Hbrw", size=30)
+    pdf.set_text_shaping(30)
+    pdf.cell(txt="אנגלית (באנגלית: English) ה", new_x="LEFT", new_y="NEXT")
+    pdf.ln()
+    pdf.cell(txt="אנגלית (באנגלית: English) ", new_y="NEXT")
+    assert_pdf_equal(pdf, HERE / "text_with_parentheses.pdf", tmp_path)
