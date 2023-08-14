@@ -347,7 +347,7 @@ class PDFFontDescriptor(PDFObject):
         self.font_name = None
 
 
-@dataclass(order=True, frozen=True)
+@dataclass(order=True, unsafe_hash=True)
 class Glyph:
     """
     This represents one glyph on the font
