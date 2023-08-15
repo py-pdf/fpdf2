@@ -38,6 +38,7 @@ MULTILINE_TABLE_DATA = (
     (LOREM_IPSUM[600:800], IMG_DIR / "image_types/circle.bmp"),
 )
 
+
 def test_table_with_image_border_overlap(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -47,6 +48,31 @@ def test_table_with_image_border_overlap(tmp_path):
         row.cell(img=IMG_DIR / "png_indexed/flower1.png", img_fill_width=True)
         row.cell("Other field")
     assert_pdf_equal(pdf, HERE / "table_with_image_border_overlap.pdf", tmp_path)
+
+
+def test_table_with_image_mixed_rows_and_alignment(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table() as table:
+        for i, data_row in enumerate(MULTILINE_TABLE_DATA[:2]):
+            row = table.row()
+            for j, datum in enumerate(data_row):
+                if j == 1 and i > 0:
+                    row.cell(img=datum, img_fill_width=True)
+                else:
+                    row.cell(datum)
+
+        row = table.row()
+        row.cell("Where do I align vertically?")
+        row.cell(
+            "This is a cell with multiple lines\nThis is a cell with multiple lines\nThis is a cell with multiple lines\nThis is a cell with multiple lines\nThis is a cell with multiple lines\nThis is a cell with multiple lines\n"
+        )
+
+    assert_pdf_equal(
+        pdf, HERE / "table_with_multiline_cells_and_images_mixed.pdf", tmp_path
+    )
+
 
 def test_table_with_images(tmp_path):
     pdf = FPDF()

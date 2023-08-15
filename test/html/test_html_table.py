@@ -8,6 +8,7 @@ from test.table.test_table import MULTILINE_TABLE_DATA
 
 
 HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent.parent
 
 
 def test_html_table_simple(tmp_path):
@@ -84,13 +85,15 @@ def test_html_table_with_img(caplog, tmp_path):
         """<table>
         <tr>
             <td width="50%">
-                <img src="test/image/png_images/affc57dfffa5ec448a0795738d456018.png" height="235" width="435"/>
+                <img src="{}/test/image/png_images/affc57dfffa5ec448a0795738d456018.png" height="235" width="435"/>
             </td>
             <td width="50%">
-                <img src="test/image/image_types/insert_images_insert_png.png" height="162" width="154"/>
+                <img src="{}/test/image/image_types/insert_images_insert_png.png" height="162" width="154"/>
             </td>
         </tr>
-    </table>"""
+    </table>""".replace(
+            "{}", str(ROOT)
+        )
     )
     assert_pdf_equal(pdf, HERE / "html_table_with_img.pdf", tmp_path)
     assert 'Ignoring unsupported "width" / "height" set on <img> element' in caplog.text
@@ -103,16 +106,20 @@ def test_html_table_with_img_without_explicit_dimensions(tmp_path):
         """<table>
         <tr>
             <td width="50%">
-                <img src="test/image/png_images/affc57dfffa5ec448a0795738d456018.png"/>
+                <img src="{}/test/image/png_images/affc57dfffa5ec448a0795738d456018.png"/>
             </td>
             <td width="50%">
-                <img src="test/image/image_types/insert_images_insert_png.png"/>
+                <img src="{}/test/image/image_types/insert_images_insert_png.png"/>
             </td>
         </tr>
-    </table>"""
+    </table>""".replace(
+            "{}", str(ROOT)
+        )
     )
     assert_pdf_equal(
-        pdf, HERE / "html_table_with_img_without_explicit_dimensions.pdf", tmp_path
+        pdf,
+        HERE / "html_table_with_img_without_explicit_dimensions.pdf",
+        tmp_path,
     )
 
 
@@ -125,17 +132,21 @@ def test_html_table_with_imgs_captions_and_colspan(caplog, tmp_path):
             <td colspan="2" align="center"><b>Side by side centered pictures and captions</b></td>
         </tr>
         <tr>
-            <td width="50%" align="center"><img src="docs/fpdf2-logo.png"/></td>
-            <td width="50%" align="center"><img src="docs/fpdf2-logo.png"/></td>
+            <td width="50%" align="center"><img src="{}/docs/fpdf2-logo.png"/></td>
+            <td width="50%" align="center"><img src="{}/docs/fpdf2-logo.png"/></td>
         </tr>
         <tr>
             <td width="50%" align="center">left caption</td>
             <td width="50%" align="center">right caption</td>
         </tr>
-    </table>"""
+    </table>""".replace(
+            "{}", str(ROOT)
+        )
     )
     assert_pdf_equal(
-        pdf, HERE / "html_table_with_imgs_captions_and_colspan.pdf", tmp_path
+        pdf,
+        HERE / "html_table_with_imgs_captions_and_colspan.pdf",
+        tmp_path,
     )
     assert (
         'Ignoring width="50%" specified on a <td> that is not in the first <tr>'
