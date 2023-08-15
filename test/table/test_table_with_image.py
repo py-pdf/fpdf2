@@ -70,7 +70,9 @@ def test_table_with_image_mixed_rows_and_alignment(tmp_path):
         )
 
     assert_pdf_equal(
-        pdf, HERE / "table_with_multiline_cells_and_images_mixed.pdf", tmp_path
+        pdf,
+        HERE / "table_with_multiline_cells_and_images_mixed.pdf",
+        tmp_path,
     )
 
 
