@@ -234,9 +234,7 @@ def test_table_with_multiline_cells_and_split_over_3_pages(tmp_path):
                 row.cell(datum)
     assert pdf.pages_count == 4
     assert_pdf_equal(
-        pdf,
-        HERE / "table_with_multiline_cells_and_split_over_3_pages.pdf",
-        tmp_path
+        pdf, HERE / "table_with_multiline_cells_and_split_over_3_pages.pdf", tmp_path
     )
 
 

@@ -453,20 +453,28 @@ class Table:
             cell_border_line_width = self._fpdf.line_width
 
             # apply padding
-            self._fpdf.x += padding.left + cell_border_line_width/2
-            self._fpdf.y += padding.top + cell_border_line_width/2
+            self._fpdf.x += padding.left + cell_border_line_width / 2
+            self._fpdf.y += padding.top + cell_border_line_width / 2
 
             image = self._fpdf.image(
                 cell.img,
                 w=col_width - padding.left - padding.right - cell_border_line_width,
-                h=0 if auto_height else cell_height - padding.top - padding.bottom - cell_border_line_width,
+                h=0
+                if auto_height
+                else cell_height
+                - padding.top
+                - padding.bottom
+                - cell_border_line_width,
                 keep_aspect_ratio=True,
                 link=cell.link,
             )
 
-            img_height = image.rendered_height + padding.top + padding.bottom + cell_border_line_width
-
-
+            img_height = (
+                image.rendered_height
+                + padding.top
+                + padding.bottom
+                + cell_border_line_width
+            )
 
             if img_height + y > self._fpdf.page_break_trigger:
                 page_break_image = True
@@ -583,7 +591,9 @@ class Table:
 
         # The text governs the row height, but if there is no text, then the image governs the row height
         row_height = (
-            max(height for height in dictated_heights_per_cell) if dictated_heights_per_cell else 0
+            max(height for height in dictated_heights_per_cell)
+            if dictated_heights_per_cell
+            else 0
         )
 
         if row_height == 0:
