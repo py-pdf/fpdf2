@@ -40,13 +40,15 @@ def get_padding_tuple(padding: Union[int, float, tuple, list]) -> Padding:
 
 def draw_box_borders(pdf, x1, y1, x2, y2, border, fill=None):
     """Draws a box using the provided style - private helper used by table for drawing the cell and table borders.
-    Difference bewteen this and rect() is that border can be defined as "L,R,T,B" to draw only some of the four borders;
+    Difference between this and rect() is that border can be defined as "L,R,T,B" to draw only some of the four borders;
     compatible with get_border(i,k)
 
     See Also: rect()"""
 
     if fill:
         prev_fill_color = pdf.fill_color
+        if isinstance(fill, (int, float)):
+            fill = [fill]
         pdf.set_fill_color(*fill)
 
     sl = []

@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-from subprocess import Popen
 
 import pytest
 
@@ -151,8 +150,6 @@ def test_table_with_multiline_cells_and_fixed_row_height(tmp_path):
                 row.cell(datum)
     assert pdf.pages_count == 2
 
-    show(pdf)
-
     assert_pdf_equal(
         pdf, HERE / "table_with_multiline_cells_and_fixed_row_height.pdf", tmp_path
     )
@@ -239,7 +236,7 @@ def test_table_with_multiline_cells_and_split_over_3_pages(tmp_path):
     assert_pdf_equal(
         pdf,
         HERE / "table_with_multiline_cells_and_split_over_3_pages.pdf",
-        tmp_path,
+        tmp_path
     )
 
 
