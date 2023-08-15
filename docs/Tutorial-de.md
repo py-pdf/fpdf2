@@ -1,6 +1,6 @@
 # Kurzanleitung #
 
-Vollständige Dokumentation der Methoden: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
+Vollständige Dokumentation der Methoden: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
 
@@ -12,7 +12,7 @@ Beginnen wir mit dem Klassiker:
 {% include "../tutorial/tuto1.py" %}
 ```
 
-[Erzeugtes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
+[Erzeugtes PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto1.pdf)
 
 Nachdem wir die Bibliothek eingebunden haben, erstellen zuerst wir ein `FPDF` Objekt. Der 
 [`FPDF`](fpdf/fpdf.html#fpdf.fpdf.FPDF) Konstruktor wird hier mit den Standardwerten verwendet: Das Seitenformat wird auf A4-Hochformat gesetzt und als Maßeinheit  Millimeter festgelegt.
@@ -67,7 +67,7 @@ Hier ein zweiseitiges Beispiel mit Kopfzeile, Fußzeile und Logo:
 {% include "../tutorial/tuto2.py" %}
 ```
 
-[Erzeugtes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
+[Erzeugtes PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
 
 Dieses Beispiel verwendet die Methoden [`header`](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) und 
 [`footer`](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer), um Kopf- und Fußzeilen zu verarbeiten. Sie
@@ -101,9 +101,9 @@ Fahren wir mit einem Beispiel fort, das Absätze im Blocksatz ausgibt. Es demons
 {% include "../tutorial/tuto3.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)
+[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto3.pdf)
 
-[Jules Verne text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+[Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 Die Methode [`get_string_width`](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) ermöglicht die Bestimmung
 die Breite des übergebenen Textes in der aktuellen Schriftart. Das Beispiel nutzt sie zur Berechnung der
@@ -130,9 +130,9 @@ Alternativ kann man auch mit der rechten Maustaste auf das Dokument klicken und 
 {% include "../tutorial/tuto4.py" %}
 ```
 
-[Erzeugtes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
+[Erzeugtes PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto4.pdf)
 
-[Jules Verne Text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+[Jules Verne Text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 Der Hauptunterschied zur vorherigen Lektion ist die Verwendung der Methoden 
 [`accept_page_break`](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) und `set_col`.
@@ -148,15 +148,15 @@ Sobald det Text der dritten den oben beschriebenen Abstand zum Seitenende erreic
 {% include "../tutorial/tuto5.py" %}
 ```
 
-[Erzeugtes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
-[Länder](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
+[Erzeugtes PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf) -
+[Länder](https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt)
 
-_⚠️ This section has changed a lot and requires a new translation: <https://github.com/PyFPDF/fpdf2/issues/267>_
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
 
 English versions:
 
-* [Tuto 5 - Creating Tables](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
-* [Documentation on tables](https://pyfpdf.github.io/fpdf2/Tables.html)
+* [Tuto 5 - Creating Tables](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
+* [Documentation on tables](https://py-pdf.github.io/fpdf2/Tables.html)
 
 ## Lektion 6 - Links erstellen und Textstile mischen ##
 
@@ -168,12 +168,12 @@ Es wird auch gezeigt, wie man verschiedene Textstile (fett, kursiv, unterstriche
 {% include "../tutorial/tuto6.py" %}
 ```
 
-[Erzeugtes PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
+[Erzeugtes PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
+[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
 
 Die hier gezeigte neue Methode zur Einbindung von Text lautet
- [`write()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). Sie ähnelt der bereits bekannten
- [`multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). Die wichtigsten Unterschiede sind:
+ [`write()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). Sie ähnelt der bereits bekannten
+ [`multi_cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). Die wichtigsten Unterschiede sind:
 
 - Das Ende der Zeile befindet sich am rechten Rand und die nächste Zeile beginnt am linken
  Rand.
@@ -181,16 +181,16 @@ Die hier gezeigte neue Methode zur Einbindung von Text lautet
 
 Die Methode ermöglicht es uns somit, zuerst einen Textabschnitt zu schreiben, dann den Schriftstil zu ändern
 und genau an der Stelle fortzufahren, an der wir aufgehört haben.
-Der größte Nachteil ist jedoch, dass die von [`multi_cell()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) bekannte Möglichkeit zur Festlegung der Textausrichtung fehlt.
+Der größte Nachteil ist jedoch, dass die von [`multi_cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) bekannte Möglichkeit zur Festlegung der Textausrichtung fehlt.
 
-Auf der ersten Seite des Beispiels nutzen wir [`write()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write).
+Auf der ersten Seite des Beispiels nutzen wir [`write()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write).
 Der Anfang des Satzes wird in "normalem" Stil geschrieben, dann mit der Methode
- [`set_font()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) auf Unterstreichung umgestellt und der Satz beendet.
+ [`set_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) auf Unterstreichung umgestellt und der Satz beendet.
 
 Um einen internen Link hinzuzufügen, der auf die zweite Seite verweist, nutzen wir die Methode
- [`add_link()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link), die einen anklickbaren Bereich erzeugt, 
+ [`add_link()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link), die einen anklickbaren Bereich erzeugt, 
  den wir "link" nennen und der auf eine andere Stelle innerhalb des Dokuments verweist.
 
-Um einen externen Link mit Hilfe eines Bildes zu erstellen, verwenden wir [`image()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). Es besteht die Möglichkeit, der Methode ein Linkziel als eines ihrer Argumente zu übergeben. Der Link kann sowohl einer interner als auch ein externer sein.
+Um einen externen Link mit Hilfe eines Bildes zu erstellen, verwenden wir [`image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). Es besteht die Möglichkeit, der Methode ein Linkziel als eines ihrer Argumente zu übergeben. Der Link kann sowohl einer interner als auch ein externer sein.
 
 Eine weitere Möglichkeit, den Schriftstil zu ändern und Links hinzuzufügen, stellt die Verwendung der Methode `write_html()` dar. Sie ist ein HTML-Parser, der das Hinzufügen von Text, Änderung des Schriftstils und Erstellen von Links mittels HTML ermöglicht.

@@ -1,6 +1,6 @@
 ﻿# Tutorial #
 
-Documentation complète des méthodes : [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
+Documentation complète des méthodes : [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
 
@@ -12,7 +12,7 @@ Commençons par un exemple classique :
 {% include "../tutorial/tuto1.py" %}
 ```
 
-[PDF généré](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
+[PDF généré](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto1.pdf)
 
 Après avoir inclus la librairie, on crée un objet `FPDF`. Le constructeur [FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF) est utilisé avec ses valeurs par défaut : 
 les pages sont en format portrait A4 et l'unité de mesure est le millimètre.
@@ -60,7 +60,7 @@ Voici un exemple contenant deux pages avec un en-tête, un bas de page et un log
 {% include "../tutorial/tuto2.py" %}
 ```
 
-[PDF généré](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
+[PDF généré](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
 
 Cet exemple utilise les méthodes [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) et [footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) pour générer des en-têtes et des bas de page. Elles sont appelées automatiquement. Elles existent déjà dans la classe FPDF mais elles ne font rien, il faut donc les redéfinir dans une classe fille.
 
@@ -81,9 +81,9 @@ Continuons avec un exemple qui affiche des paragraphes avec du texte justifié. 
 {% include "../tutorial/tuto3.py" %}
 ```
 
-[PDF généré](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)
+[PDF généré](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto3.pdf)
 
-[Texte de Jules Verne](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+[Texte de Jules Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 La méthode [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) permet de déterminer la largeur d'un texte utilisant la police actuelle, ce qui permet de calculer la position et la largeur du cadre autour du titre. Ensuite les couleurs sont spécifiées (avec [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) et [set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) et on spécifie l'épaisseur de la bordure du cadre à 1 mm (contre 0.2 par défaut) avec [set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Enfin, on affiche la cellule (le dernier paramètre "true" indique que le fond doit être rempli).
 
@@ -99,9 +99,9 @@ Cet exemple est une variante du précédent qui montre comment répartir le text
 {% include "../tutorial/tuto4.py" %}
 ```
 
-[PDF généré](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
+[PDF généré](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto4.pdf)
 
-[Extrait de Jules Verne](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+[Extrait de Jules Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 La principale différence avec le tutoriel précédent est l'utilisation des méthodes [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) et `set_col()`.
 
@@ -116,15 +116,15 @@ Ce tutoriel explique comment créer facilement des tableaux. Deux tableaux diff�
 {% include "../tutorial/tuto5.py" %}
 ```
 
-[PDF généré](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
-[Données CSV des pays](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
+[PDF généré](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf) -
+[Données CSV des pays](https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt)
 
-Le premier exemple est généré de la façon la plus simple possible, en fournissant des données à [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/Tables.html). Le résultat est rudimentaire, mais très rapide à obtenir.
+Le premier exemple est généré de la façon la plus simple possible, en fournissant des données à [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html). Le résultat est rudimentaire, mais très rapide à obtenir.
 
 Le second tableau introduit quelques améliorations : couleurs, largeur réduite de la table, moindre hauteur des lignes de texte, titres centrés, colonnes avec des largeurs propres, nombres alignés à droite...
 De plus, les lignes horizontales ont été supprimées.
 Cela grâce à la sélection d'un `borders_layout` parmi les valeurs disponibles :
- [`TableBordersLayout`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
+ [`TableBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
 
 ## Tuto 6 - Créer des liens et mélanger différents styles de textes ##
 Ce tutoriel explique plusieurs façons d'insérer des liens à l'intérieur d'un document pdf, ainsi que l'ajout de liens vers des sources externes.
@@ -135,21 +135,21 @@ Il montrera également plusieurs façons d'utiliser différents styles de texte 
 {% include "../tutorial/tuto6.py" %}
 ```
 
-[PDF créé dans ce tutoriel](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
+[PDF créé dans ce tutoriel](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
+[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
 
-La nouvelle méthode présentée ici pour imprimer du texte est [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). Elle est très similaire à [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). Les principales différences sont les suivantes :
+La nouvelle méthode présentée ici pour imprimer du texte est [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). Elle est très similaire à [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). Les principales différences sont les suivantes :
 
 - La fin de la ligne se trouve dans la marge de droite et la ligne suivante commence dans la marge de gauche.
 - La position actuelle se déplace à la fin du texte.
 
 Cette méthode nous permet donc d'écrire un morceau de texte, de modifier le style de police et de reprendre exactement là où nous nous sommes arrêtés.
-En revanche, son principal inconvénient est que nous ne pouvons pas justifier le texte comme nous le faisons avec la méthode [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell).
+En revanche, son principal inconvénient est que nous ne pouvons pas justifier le texte comme nous le faisons avec la méthode [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell).
 
-Dans la première page de l'exemple, nous avons utilisé [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) à cette fin. Le début de la phrase est écrit en style normal, puis en utilisant la méthode [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), nous sommes passés au soulignement et avons terminé la phrase.
+Dans la première page de l'exemple, nous avons utilisé [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) à cette fin. Le début de la phrase est écrit en style normal, puis en utilisant la méthode [set_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), nous sommes passés au soulignement et avons terminé la phrase.
 
-Pour ajouter un lien interne pointant vers la deuxième page, nous avons utilisé la méthode [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link), qui crée une zone cliquable que nous avons nommée `link` et qui dirige vers une autre page du document.
+Pour ajouter un lien interne pointant vers la deuxième page, nous avons utilisé la méthode [add_link()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link), qui crée une zone cliquable que nous avons nommée `link` et qui dirige vers une autre page du document.
 
-Pour créer le lien externe à l'aide d'une image, nous avons utilisé [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). Cette méthode a la possibilité de transmettre un lien comme l'un de ses arguments. Le lien peut être interne ou externe.
+Pour créer le lien externe à l'aide d'une image, nous avons utilisé [image()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). Cette méthode a la possibilité de transmettre un lien comme l'un de ses arguments. Le lien peut être interne ou externe.
 
 Comme alternative, une autre option pour changer le style de police et ajouter des liens est d'utiliser la méthode `write_html()`. Celle-ci permet de lire du HTML pour produire du texte, changer le style de police ou encore ajouter des liens.

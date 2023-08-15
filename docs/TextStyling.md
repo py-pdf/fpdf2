@@ -165,10 +165,10 @@ pdf.output("text-modes.pdf")
 ```
 ![](text-modes.png)
 
-More examples from [`test_text_mode.py`](https://github.com/PyFPDF/fpdf2/blob/master/test/text/test_text_mode.py):
+More examples from [`test_text_mode.py`](https://github.com/py-pdf/fpdf2/blob/master/test/text/test_text_mode.py):
 
-* [text_modes.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/text/text_modes.pdf)
-* [clip_text_modes.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/text/clip_text_modes.pdf)
+* [text_modes.pdf](https://github.com/py-pdf/fpdf2/blob/master/test/text/text_modes.pdf)
+* [clip_text_modes.pdf](https://github.com/py-pdf/fpdf2/blob/master/test/text/clip_text_modes.pdf)
 
 
 ## markdown=True ##
@@ -195,8 +195,8 @@ Using other fonts means that their variants (bold, italics)
 must be registered using `add_font` with `style="B"` and `style="I"`.
 Several unit tests in `test/text/` demonstrate that:
 
-* [test_cell_markdown_with_ttf_fonts](https://github.com/PyFPDF/fpdf2/blob/2.6.1/test/text/test_cell.py#L155)
-* [test_multi_cell_markdown_with_ttf_fonts](https://github.com/PyFPDF/fpdf2/blob/2.6.1/test/text/test_multi_cell_markdown.py#L27)
+* [test_cell_markdown_with_ttf_fonts](https://github.com/py-pdf/fpdf2/blob/2.6.1/test/text/test_cell.py#L155)
+* [test_multi_cell_markdown_with_ttf_fonts](https://github.com/py-pdf/fpdf2/blob/2.6.1/test/text/test_multi_cell_markdown.py#L27)
 
 
 ## write_html ##

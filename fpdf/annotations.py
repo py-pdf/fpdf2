@@ -52,12 +52,12 @@ class AnnotationMixin:
         self.f_t = Name(field_type) if field_type else None
         self.v = value
         self.f = sum(flags)
-        self.contents = PDFString(contents) if contents else None
+        self.contents = PDFString(contents, encrypt=True) if contents else None
         self.a = action
         self.dest = dest
         self.c = f"[{color[0]} {color[1]} {color[2]}]" if color else None
-        self.t = PDFString(title) if title else None
-        self.m = PDFDate(modification_time) if modification_time else None
+        self.t = PDFString(title, encrypt=True) if title else None
+        self.m = PDFDate(modification_time, encrypt=True) if modification_time else None
         self.quad_points = (
             pdf_list(f"{quad_point:.2f}" for quad_point in quad_points)
             if quad_points

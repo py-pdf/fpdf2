@@ -1,5 +1,6 @@
 from os import devnull
 from pathlib import Path
+import sys
 
 import pytest
 
@@ -30,28 +31,50 @@ def test_deprecation_warning_for_FPDF_CACHE_DIR():
     # pylint: disable=import-outside-toplevel,pointless-statement,reimported
     from fpdf import fpdf
 
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_DIR
-    with pytest.warns(DeprecationWarning):
+    assert len(record) == 1
+    assert record[0].filename == __file__
+
+    with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_DIR = "/tmp"
-    with pytest.warns(DeprecationWarning):
+    assert len(record) == 1
+    assert record[0].filename == __file__
+
+    with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_MODE
-    with pytest.warns(DeprecationWarning):
+    assert len(record) == 1
+    assert record[0].filename == __file__
+
+    with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_MODE = 1
+    assert len(record) == 1
+    assert record[0].filename == __file__
 
     fpdf.SOME = 1
     assert fpdf.SOME == 1
 
     import fpdf
 
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_DIR
-    with pytest.warns(DeprecationWarning):
+    assert len(record) == 1
+    assert record[0].filename == __file__
+
+    with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_DIR = "/tmp"
-    with pytest.warns(DeprecationWarning):
+    assert len(record) == 1
+    assert record[0].filename == __file__
+
+    with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_MODE
-    with pytest.warns(DeprecationWarning):
+    assert len(record) == 1
+    assert record[0].filename == __file__
+
+    with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_MODE = 1
+    assert len(record) == 1
+    assert record[0].filename == __file__
 
     fpdf.SOME = 1
     assert fpdf.SOME == 1
@@ -60,7 +83,7 @@ def test_deprecation_warning_for_FPDF_CACHE_DIR():
 def test_add_font_with_str_fname_ok(tmp_path):
     font_file_path = str(HERE / "Roboto-Regular.ttf")
     for font_cache_dir in (True, str(tmp_path), None):
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning) as record:
             pdf = FPDF(font_cache_dir=font_cache_dir)
             pdf.add_font(fname=font_file_path)
             pdf.set_font("Roboto-Regular", size=64)
@@ -68,19 +91,26 @@ def test_add_font_with_str_fname_ok(tmp_path):
             pdf.cell(txt="Hello World!")
             assert_pdf_equal(pdf, HERE / "add_font_unicode.pdf", tmp_path)
 
+        for r in record:
+            if r.category == DeprecationWarning:
+                assert r.filename == __file__
+
 
 def test_add_core_fonts():
     font_file_path = HERE / "Roboto-Regular.ttf"
     pdf = FPDF()
     pdf.add_page()
 
-    with pytest.warns(UserWarning):  # "already added".
+    with pytest.warns(UserWarning) as record:  # "already added".
         pdf.add_font("Helvetica", fname=font_file_path)
         pdf.add_font("Helvetica", style="B", fname=font_file_path)
         pdf.add_font("helvetica", style="IB", fname=font_file_path)
         pdf.add_font("times", style="", fname=font_file_path)
         pdf.add_font("courier", fname=font_file_path)
         assert not pdf.fonts  # No fonts added, as all of them are core fonts
+
+    for r in record:
+        assert r.filename == __file__
 
 
 def test_render_en_dash(tmp_path):  # issue-166
@@ -92,6 +122,10 @@ def test_render_en_dash(tmp_path):  # issue-166
     assert_pdf_equal(pdf, HERE / "render_en_dash.pdf", tmp_path)
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 8),
+    reason="fontTools dropped support for 3.7. https://github.com/py-pdf/fpdf2/pull/863",
+)
 def test_add_font_otf(tmp_path):
     pdf = FPDF()
     pdf.add_page()

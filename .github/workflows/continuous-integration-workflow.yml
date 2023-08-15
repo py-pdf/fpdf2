@@ -50,12 +50,12 @@ jobs:
           export PYTHONPATH=$PWD
           # Using Datalogics PDF Checker:
           scripts/install-pdfchecker.sh
-          find . -name '*.pdf' | xargs -n 1 scripts/pdfchecker.py
-          scripts/pdfchecker.py  # printing aggregated report
+          scripts/pdfchecker.py --process-all-test-pdf-files
+          scripts/pdfchecker.py --print-aggregated-report
           # Using VeraPDF:
           scripts/install-verapdf.sh
-          find . -name '*.pdf' | xargs -n 1 scripts/verapdf.py
-          scripts/verapdf.py  # printing aggregated report
+          scripts/verapdf.py --process-all-test-pdf-files
+          scripts/verapdf.py --print-aggregated-report
       - name: Running tests ☑
         env:
           CHECK_EXEC_TIME: ${{ matrix.python-version == '3.9' && 'test-enabled' || '' }}
@@ -80,8 +80,8 @@ jobs:
           sed -i "s/author:.*/author: v$(python setup.py -V 2>/dev/null)/" mkdocs.yml
           cp tutorial/notebook.ipynb docs/
           mkdocs build
-          pdoc --html -o public/ fpdf --config "git_link_template='https://github.com/PyFPDF/fpdf2/blob/{commit}/{path}#L{start_line}-L{end_line}'"
-          cd contributors/ && PYTHONUNBUFFERED=1 ./build_contributors_html_page.py PyFPDF/fpdf2
+          pdoc --html -o public/ fpdf --config "git_link_template='https://github.com/py-pdf/fpdf2/blob/{commit}/{path}#L{start_line}-L{end_line}'"
+          cd contributors/ && PYTHONUNBUFFERED=1 ./build_contributors_html_page.py py-pdf/fpdf2
           cp -t ../public/ contributors.html contributors-map-small.png
       - name: Deploy documentation 🚀
         # GitHub Pages deployment should not be done for all Python versions,

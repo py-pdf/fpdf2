@@ -14,7 +14,7 @@ try:
 
         RESAMPLE = Resampling.LANCZOS
     except ImportError:  # For Pillow < 9.1.0
-        # pylint: disable=no-member
+        # pylint: disable=no-member, useless-suppression
         RESAMPLE = Image.ANTIALIAS
 except ImportError:
     Image = None
@@ -116,6 +116,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         raise EnvironmentError("Pillow not available - fpdf2 cannot insert images")
 
     is_pil_img = True
+    keep_bytes_io_open = False
     jpeg_inverted = False  # flag to check whether a cmyk image is jpeg or not, if set to True the decode array is inverted in output.py
     img_raw_data = None
     if not img or isinstance(img, (Path, str)):
@@ -123,9 +124,8 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         img = Image.open(img_raw_data)
         is_pil_img = False
     elif not isinstance(img, Image.Image):
-        if isinstance(img, bytes):
-            img = BytesIO(img)
-        img_raw_data = img
+        keep_bytes_io_open = isinstance(img, BytesIO)
+        img_raw_data = BytesIO(img) if isinstance(img, bytes) else img
         img = Image.open(img_raw_data)
         is_pil_img = False
 
@@ -293,7 +293,10 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         dp = f"/BlackIs1 true /Columns {w} /K -1 /Rows {h}"
 
     if not is_pil_img:
-        img.close()
+        if keep_bytes_io_open:
+            img.fp = None  # cf. issue #881
+        else:
+            img.close()
 
     info.update(
         {

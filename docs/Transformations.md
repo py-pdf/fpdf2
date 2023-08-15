@@ -1,6 +1,7 @@
 # Transformations #
 
 ## Rotation ##
+
 The [`rotation()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.rotation) context-manager
 will apply a rotation to all objects inserted in its indented block:
 ```python
@@ -45,7 +46,7 @@ with pdf.skew(ax=-45, ay=0, x=100, y=170):
 
 ## Mirror ##
 
-_New in [:octicons-tag-24: 2.7.5](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.7.5](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 The `mirror` context-manager applies a mirror transformation to all objects inserted in its indented block over a given mirror line by specifying starting co-ordinate and angle.
 

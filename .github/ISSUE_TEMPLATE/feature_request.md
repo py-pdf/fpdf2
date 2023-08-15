@@ -10,7 +10,7 @@ Hi there! Thank you for wanting to make fpdf2 better 😉.
 
 Before you submit this, make sure that this feature wasn't already requested,
 or if it is not already implemented in the master branch but not released yet:
-https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md
+https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md
 -->
 
 **Please explain your intent**

@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
-
-# USAGE: ./add_on_page.py $in_filepath $out_filepath
-# Inspired by https://github.com/pmaupin/pdfrw/blob/master/examples/watermark.py
-
 import sys
-
 from fpdf import FPDF
 from pdfrw import PageMerge, PdfReader, PdfWriter
+from pdfrw.pagemerge import RectXObj
 
 IN_FILEPATH = sys.argv[1]
 OUT_FILEPATH = sys.argv[2]
@@ -15,9 +11,12 @@ UNDERNEATH = (
     False  # if True, new content will be placed underneath page (painted first)
 )
 
+reader = PdfReader(IN_FILEPATH)
+area = RectXObj(reader.pages[0])
+
 
 def new_content():
-    fpdf = FPDF()
+    fpdf = FPDF(format=(area.w, area.h), unit="pt")
     fpdf.add_page()
     fpdf.set_font("helvetica", size=36)
     fpdf.text(50, 50, "Hello!")
@@ -25,7 +24,9 @@ def new_content():
     return reader.pages[0]
 
 
-writer = PdfWriter(trailer=PdfReader(IN_FILEPATH))
+writer = PdfWriter()
+writer.pagearray = reader.Root.Pages.Kids
+writer.pagearray = writer.pagearray[0].Kids
 PageMerge(writer.pagearray[ON_PAGE_INDEX]).add(
     new_content(), prepend=UNDERNEATH
 ).render()

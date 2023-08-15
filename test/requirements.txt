@@ -12,3 +12,4 @@ pytest-cov
 qrcode
 semgrep
 tabula-py
+uharfbuzz

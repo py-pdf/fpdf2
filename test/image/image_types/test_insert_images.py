@@ -211,6 +211,7 @@ def test_insert_bytesio(tmp_path):
     img.save(img_bytes, "PNG")
     pdf.image(img_bytes, x=15, y=15, h=140)
     assert_pdf_equal(pdf, HERE / "image_types_insert_png.pdf", tmp_path)
+    assert not img_bytes.closed  # cf. issue #881
 
 
 def test_insert_bytes(tmp_path):

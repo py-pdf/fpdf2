@@ -1,6 +1,7 @@
 import types, warnings
 from copy import deepcopy
 
+from .deprecation import get_stack_level
 from .errors import FPDFException
 
 
@@ -48,7 +49,8 @@ class FPDFRecorder:
                 result = func(*args, **kwargs)
                 if isinstance(result, types.GeneratorType):
                     warnings.warn(
-                        "Detected usage of a context manager inside an unbreakable() section, which is not supported"
+                        "Detected usage of a context manager inside an unbreakable() section, which is not supported",
+                        stacklevel=get_stack_level(),
                     )
                 # The results of other methods can also be invalidated: .pages_count, page_no(), get_x() / get_y(), will_page_break()
             except Exception as error:

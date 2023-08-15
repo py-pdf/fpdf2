@@ -1,6 +1,6 @@
 # チュートリアル #
 
-Methods full documentation: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
+Methods full documentation: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
 
@@ -12,7 +12,7 @@ Methods full documentation: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2
 {% include "../tutorial/tuto1.py" %}
 ```
 
-[生成されるPDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
+[生成されるPDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto1.pdf)
 
 ライブラリをインポートした後、`FPDF` オブジェクトを作成します。
 上の例では、[FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF) コンストラクタはデフォルト値を利用します(A4サイズ縦向きのページとミリメーター単位)。
@@ -68,7 +68,7 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 {% include "../tutorial/tuto2.py" %}
 ```
 
-[生成されるPDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
+[生成されるPDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
 
 この例では、[header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) と
 [footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer)メソッドを使用して、ページのヘッダーとフッターを処理しています。
@@ -100,9 +100,9 @@ FPDFクラスはこれらのメソッドを持っていますが、何もしま�
 {% include "../tutorial/tuto3.py" %}
 ```
 
-[生成されるPDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)
+[生成されるPDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto3.pdf)
 
-[PDF中の本文（Jules Verne text）](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+[PDF中の本文（Jules Verne text）](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) メソッドは現在のフォントでの文字列の幅を求めることができ、ここではタイトルを囲む枠の位置と幅を計算するために使われています。
 次に、色を指定し（[set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color)、 [set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color)、 
@@ -129,9 +129,9 @@ FPDFクラスはこれらのメソッドを持っていますが、何もしま�
 {% include "../tutorial/tuto4.py" %}
 ```
 
-[生成されるPDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
+[生成されるPDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto4.pdf)
 
-[PDF中の本文（Jules Verne text）](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+[PDF中の本文（Jules Verne text）](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 前回のチュートリアルとの大きな違いは、[accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) メソッドと set_col メソッドの 使用です。
 
@@ -149,14 +149,14 @@ FPDFクラスはこれらのメソッドを持っていますが、何もしま�
 {% include "../tutorial/tuto5.py" %}
 ```
 
-[生成されるPDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
-[国別CSVデータ](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
+[生成されるPDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf) -
+[国別CSVデータ](https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt)
 
-1つ目の例は最も基本的な方法で、[`FPDF.table()`](https://pyfpdf.github.io/fpdf2/Tables.html) にデータを与えています。
+1つ目の例は最も基本的な方法で、[`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html) にデータを与えています。
 結果は単純なものですが、非常に短時間で作成できます。
 
 2つ目の例ではいくつかの改善を加えています。色、テーブルの幅の制限、行の高さの縮小、中央寄せされたタイトル、列幅の指定、右寄せの数値などに加え、行を区切る横線を削除しています。
-これは、[`TableBordersLayout`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout) の `borders_layout` を指定することで行うことができます。
+これは、[`TableBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout) の `borders_layout` を指定することで行うことができます。
 
 ## Tuto 6 - リンクの作成と、テキストスタイルの組み合わせ ##
 
@@ -169,29 +169,29 @@ FPDFクラスはこれらのメソッドを持っていますが、何もしま�
 {% include "../tutorial/tuto6.py" %}
 ```
 
-[生成されるPDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
+[生成されるPDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
+[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
 
-ここではテキストを表示するための新しい方法として、 [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) を使っています。
-このメソッドは [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) と非常によく似ており、重要な違いとしては次があります。
+ここではテキストを表示するための新しい方法として、 [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) を使っています。
+このメソッドは [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) と非常によく似ており、重要な違いとしては次があります。
 
 - 行末は右の余白、行頭は左の余白から始まる
 - 現在の位置はテキストの終わりに移動する
 
 したがって、このメソッドを用いてテキストのまとまりを書き込み、フォントスタイルを変更し、
 さらにその続きからテキストを書き込むことができます。
-一方でこの方法の欠点は、 [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) メソッドで行ったようなテキストの字揃えが行えないことです。
+一方でこの方法の欠点は、 [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) メソッドで行ったようなテキストの字揃えが行えないことです。
 
-この例の1ページ目では、[write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) をフォントスタイルの変更に使用しています。文章の始めには通常のスタイルのテキストですが、 [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) メソッドを用いて下線を追加しています。
+この例の1ページ目では、[write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) をフォントスタイルの変更に使用しています。文章の始めには通常のスタイルのテキストですが、 [set_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) メソッドを用いて下線を追加しています。
 
 2ページ目への内部リンクを作成するには、
- [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link)
+ [add_link()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link)
  メソッドを使用します。
  このメソッドは「link」と名付けられたクリック可能なエリアを作成し、
  文書内の別のページに移動させます。
 
 画像を利用した外部リンクを作成するために、ここでは
- [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
+ [image()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
  メソッドを使っています。
 このメソッドは引数の1つとしてリンクを受け取ります。このリンクは内部リンクでも外部リンクでも問題ありません。
 

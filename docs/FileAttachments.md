@@ -28,7 +28,7 @@ pdf.file_attachment_annotation(__file__, x=50, y=50)
 pdf.output("file_attachment_annotation.pdf")
 ```
 
-Resulting PDF: [file_attachment_annotation.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/file_attachment_annotation.pdf)
+Resulting PDF: [file_attachment_annotation.pdf](https://github.com/py-pdf/fpdf2/blob/master/test/file_attachment_annotation.pdf)
 
 Browser PDF viewers do not usually display embedded files & file attachment annotations,
 so you may want to download this file and open it with your desktop PDF viewer in order to visualize the file attachments.

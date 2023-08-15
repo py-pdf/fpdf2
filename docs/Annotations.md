@@ -24,7 +24,7 @@ pdf.text_annotation(
 pdf.output("text_annotation.pdf")
 ```
 
-Method documentation: [`FPDF.text_annotation`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_annotation)
+Method documentation: [`FPDF.text_annotation`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_annotation)
 
 
 ## Highlights ##
@@ -46,7 +46,7 @@ pdf.output("highlighted.pdf")
 Rendering by Sumatra PDF reader:
 ![Screenshot of highlight annotation rendered by Sumatra PDF reader](highlighted.png)
 
-Method documentation: [`FPDF.highlight`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.highlight)
+Method documentation: [`FPDF.highlight`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.highlight)
 
 The appearance of the "highlight effect" can be controlled through the `type` argument:
 it can be `Highlight` (default), `Underline`, `Squiggly` or `StrikeOut`.
@@ -67,7 +67,7 @@ pdf.output("ink_annotation_demo.pdf")
 Rendering by Firefox internal PDF viewer:
 ![Screenshot of ink annotation rendered by Firefox](ink_annotation.png)
 
-Method documentation: [`FPDF.ink_annotation`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ink_annotation)
+Method documentation: [`FPDF.ink_annotation`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ink_annotation)
 
 
 ## File attachments ##

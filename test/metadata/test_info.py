@@ -29,7 +29,7 @@ XMP_METADATA = """<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="fpdf2">
       </dc:creator>
     </rdf:Description>
     <rdf:Description xmlns:pdf="http://ns.adobe.com/pdf/1.3/" rdf:about="" pdf:Keywords="{keywords}"/>
-    <rdf:Description xmlns:pdf="http://ns.adobe.com/pdf/1.3/" rdf:about="" pdf:Producer="PyFPDF/fpdf2.X.Y"/>
+    <rdf:Description xmlns:pdf="http://ns.adobe.com/pdf/1.3/" rdf:about="" pdf:Producer="py-pdf/fpdf2.X.Y"/>
     <rdf:Description xmlns:xmp="http://ns.adobe.com/xap/1.0/" rdf:about="" xmp:CreatorTool="fpdf2"/>
   </rdf:RDF>
 </x:xmpmeta>"""
@@ -51,7 +51,7 @@ def test_put_info_all(tmp_path):
     doc.set_author("sample author")
     doc.set_keywords("sample keywords")
     doc.set_creator("sample creator")
-    doc.set_producer("PyFPDF/fpdf2.X.Y")
+    doc.set_producer("py-pdf/fpdf2.X.Y")
     assert_pdf_equal(doc, HERE / "put_info_all.pdf", tmp_path)
 
 

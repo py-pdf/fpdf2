@@ -1,6 +1,6 @@
 # Tutorial #
 
-Method গুলোর সম্পূর্ণ ডকুমেন্টেশন: [`fpdf.FPDF` API doc](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
+Method গুলোর সম্পূর্ণ ডকুমেন্টেশন: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [ TOC ]
 
@@ -12,7 +12,7 @@ Method গুলোর সম্পূর্ণ ডকুমেন্টেশ�
 {% include "../tutorial/tuto1.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
+[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto1.pdf)
 
 প্রয়োজনীয় লাইব্রেরীগুলো যুক্ত করার পর, আমরা একটা `FPDF` অব্জেক্ট তৈরি করবো. 
 [FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF) কনস্ট্রাক্টরটি এখানে ডিফল্ট ভ্যালুগুলো ব্যবহার করছে: 
@@ -72,7 +72,7 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 {% include "../tutorial/tuto2.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
+[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
 
 এই উদাহরণটি headers এবং footers প্রসেস করার জন্য [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) এবং 
 [footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) মেথডকে ব্যবহারকে দেখায়। এরা স্বয়ংক্রিয়ভাবেই চালিত হয়। 
@@ -107,9 +107,9 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 {% include "../tutorial/tuto3.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)
+[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto3.pdf)
 
-[Jules Verne text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+[Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) মেথড বর্তমান ফন্টে একটি স্ট্রিং এর 
 দৈর্ঘ্য নির্ণয় করে দেয়, যা এখানে অবস্থা এবং টাইটেল সমেত ফ্রেম ও এর আশপাশসহ উইদথ মাপজোকের জন্য ব্যবহার 
@@ -140,9 +140,9 @@ author ([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)) মেথড। 
 {% include "../tutorial/tuto4.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
+[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto4.pdf)
 
-[Jules Verne text](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+[Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 পূর্বের টিউটরিয়ালের সাথে এর মূল পার্থক্য হলো 
 [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) এবং the set_col মেথডের ব্যবহার।
@@ -164,16 +164,16 @@ author ([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)) মেথড। 
 {% include "../tutorial/tuto5.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
-[Countries CSV data](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
+[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf) -
+[Countries CSV data](https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt)
 
-প্রথম উদাহরণটি [`FPDF.table()`](https://pyfpdf.github.io/fpdf2/Tables.html) এর ভেতরে ডেটা সরবরাহের মাধ্যমে 
+প্রথম উদাহরণটি [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html) এর ভেতরে ডেটা সরবরাহের মাধ্যমে 
 খুবই সাধারণভাবেই তৈরি করা যায়।  ফলাফল খুবই সাধারণ কিন্তু খুব সহজেই তৈরি করা যায় এমন।
 
 পরবর্তী টেবিলে কিছু পরিবর্তন আনা হয়েছেঃ কালার, টেবিলের নিয়ন্ত্রিত বিস্তার, হ্রাসকৃত লাইনের উচ্চতা, মাঝ বরাবর এলাইন করা শিরোনাম,
  ডান দিকে এলাইন করা ছবি ... এসবের মাধ্যমে। 
  তাছাড়া, আনুভূমিক লাইনগুলোও সরানো হয়েছে। এটা করা হয়েছে এভেইলেবল ভ্যালু গুলো থেকে `borders_layout` এর একটি ভ্যালু 
- নেবার মাধ্যমে [`TableBordersLayout`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
+ নেবার মাধ্যমে [`TableBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
 
 
 ## টিউটোরিয়াল ৬ - লিংক এবং মিশ্র টেক্সট স্টাইল তৈরি করা ##
@@ -185,13 +185,13 @@ author ([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)) মেথড। 
 {% include "../tutorial/tuto6.py" %}
 ```
 
-[Resulting PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
+[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
+[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
 
 লিখার প্রিন্ট করার নতুন মেথড এখানে দেখানো হলো - 
- [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
+ [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
 । যা 
- [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
+ [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
  এর খুব কাছাকাছি, মূল পার্থক্য হলো:
 
 - লাইনের শেষ হয় ডানপ্রান্ত থেকে এবং পরের লাইনের শুরু হয় বামপ্রান্ত থেকে।
@@ -200,22 +200,22 @@ author ([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)) মেথড। 
 এই মেথডের মাধ্যমে কিছু টেক্সট একসাথে লিখা যায়, ফন্ট স্টাইল পরিবর্তন করা যায়, এবং যেই স্থান হতে লিখা 
  বন্ধ করা হয়েছে পুনরায় সেখান থেকেই শুরু করা যায়।
 অন্যদিকে এই মেথডের মূল প্রতিবন্ধকতা হচ্ছে, টেক্সটগুলোকে জাস্টিফাই করা যায় না যেমনটা আমরা 
- [multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) মেথডের 
+ [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) মেথডের 
  মাধ্যমে করতে পারি।
 
 উদাহরণের প্রথম পৃষ্ঠায়, আমরা এই উদ্দেশ্যে 
- [write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) মেথড ব্যবহার করেছিলাম। 
+ [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) মেথড ব্যবহার করেছিলাম। 
  বাক্যের শুরুটা সাধারণ টেক্সট স্টাইলেই লিখা হয়েছে, এরপরে 
- [set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) মেথড ব্যবহার করে, 
+ [set_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) মেথড ব্যবহার করে, 
  আমরা আন্ডারলাইন করে বাক্যটি শেষ করলাম।
 
 পরবর্তী পৃষ্ঠার একটি আন্তর্বর্তী লিংক যুক্ত করার জন্য, আমরা 
- [add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link) মেথডটি ব্যবহার করেছি, 
+ [add_link()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link) মেথডটি ব্যবহার করেছি, 
  যা ক্লিক করার মত একটি এলাকা তৈরি করে দিলো যেটাকে আমরা "লিংক" বলছি যা ডকুমেন্ট এর ভেতরেরই অন্য একটি 
  পৃষ্ঠায় নিয়ে যায়।
 
 ছবির মাধ্যমে একটি বাহ্যিক লিংক তৈরি করার জন্য, আমরা 
- [image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) মেথডটি ব্যবহার করেছি। 
+ [image()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) মেথডটি ব্যবহার করেছি। 
  এই মেথডের মাধ্যমে আর্গুমেন্ট হিসেবে লিংক পাস করার মত সুবিধা আছে। এই লিংক ডকুমেন্ট এর ভেতরকার বা বাইরের যেকোন 
  লিংকই হতে পারে।
 

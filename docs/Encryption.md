@@ -1,6 +1,6 @@
 # Encryption #
 
-_New in [:octicons-tag-24: 2.6.1](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.6.1](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 A PDF document can be encrypted to protect access to its contents.
 
@@ -81,7 +81,7 @@ If no permission is specified it will default to `all()`.
 
 ## Encryption method ##
 
-There are 3 available encryption methods:
+There are 4 available encryption methods:
 
   * `NO_ENCRYPTION`
     Data is not encrypted, only add the access permission flags.
@@ -90,7 +90,10 @@ There are 3 available encryption methods:
     Default PDF encryption algorithm.
 
   * `AES_128`
-    Encrypts the data with AES algorithm. Requires the `cryptography` package.
+    Encrypts the data with 128 bit key AES algorithm. Requires the `cryptography` package.
+
+  * `AES_256`
+    Encrypts the data with 256 bit key AES algorithm. Requires the `cryptography` package.
 
 ```python
 from fpdf import FPDF

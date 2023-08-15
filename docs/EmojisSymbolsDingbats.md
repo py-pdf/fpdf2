@@ -20,7 +20,7 @@ pdf.text(10, 270, "".join([chr(0x1F0A0 + x) for x in range(15)]))
 pdf.output("fonts_emoji_glyph.pdf")
 ```
 
-This code produces this PDF file: [fonts_emoji_glyph.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/fonts/fonts_emoji_glyph.pdf)
+This code produces this PDF file: [fonts_emoji_glyph.pdf](https://github.com/py-pdf/fpdf2/blob/master/test/fonts/fonts_emoji_glyph.pdf)
 
 Another font supporting emojis is: [twemoji](https://github.com/13rac1/twemoji-color-font)
 

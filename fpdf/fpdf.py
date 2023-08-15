@@ -47,7 +47,7 @@ from .annotations import (
     PDFEmbeddedFile,
     DEFAULT_ANNOT_FLAGS,
 )
-from .deprecation import WarnOnDeprecatedModuleAttributes
+from .deprecation import get_stack_level, WarnOnDeprecatedModuleAttributes
 from .encryption import StandardSecurityHandler
 from .enums import (
     AccessPermission,
@@ -92,7 +92,7 @@ from .util import (
 )
 
 # Public global variables:
-FPDF_VERSION = "2.7.4"
+FPDF_VERSION = "2.7.5"
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),
     "a4": (595.28, 841.89),
@@ -257,7 +257,7 @@ class FPDF(GraphicsStateMixin):
             warnings.warn(
                 '"font_cache_dir" parameter is deprecated, unused and will soon be removed',
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=get_stack_level(),
             )
         super().__init__()
         self.page = 0  # current page number
@@ -390,7 +390,7 @@ class FPDF(GraphicsStateMixin):
     def write_html(self, text, *args, **kwargs):
         """
         Parse HTML and convert it to PDF.
-        cf. https://pyfpdf.github.io/fpdf2/HTML.html
+        cf. https://py-pdf.github.io/fpdf2/HTML.html
 
         Args:
             text (str): HTML content to render
@@ -572,6 +572,76 @@ class FPDF(GraphicsStateMixin):
             raise FPDFException(f"Incorrect zoom display mode: {zoom}")
         self.page_layout = LAYOUT_ALIASES.get(layout, layout)
 
+    # Disabling this check - importing outside toplevel to check module is present
+    # pylint: disable=import-outside-toplevel, unused-import
+    def set_text_shaping(
+        self,
+        use_shaping_engine: bool = True,
+        features: dict = None,
+        direction: str = None,
+        script: str = None,
+        language: str = None,
+    ):
+        """
+        Enable or disable text shaping engine when rendering text.
+        If features, direction, script or language are not specified the shaping engine will try
+        to guess the values based on the input text.
+
+        Args:
+            use_shaping_engine: enable or disable the use of the shaping engine to process the text
+            features: a dictionary containing 4 digit OpenType features and whether each feature
+                should be enabled or disabled
+                example: features={"kern": False, "liga": False}
+            direction: the direction the text should be rendered, either "ltr" (left to right)
+                or "rtl" (right to left).
+            script: a valid OpenType script tag like "arab" or "latn"
+            language: a valid OpenType language tag like "eng" or "fra"
+        """
+        if use_shaping_engine:
+            try:
+                import uharfbuzz
+            except ImportError as exc:
+                raise FPDFException(
+                    "The uharfbuzz package could not be imported, but is required for text shaping. Try: pip install uharfbuzz"
+                ) from exc
+        else:
+            self._text_shaping = None
+            return
+        #
+        # Features must be a dictionary contaning opentype features and a boolean flag
+        # stating wether the feature should be enabled or disabled.
+        #
+        # e.g. features={"liga": True, "kern": False}
+        #
+        # https://harfbuzz.github.io/shaping-opentype-features.html
+        #
+
+        if features and not isinstance(features, dict):
+            raise FPDFException(
+                "Features must be a dictionary. See text shaping documentation"
+            )
+        if not features:
+            features = {}
+
+        # Buffer properties (direction, script and language)
+        # if the properties are not provided, Harfbuzz "guessing" logic is used.
+        # https://harfbuzz.github.io/setting-buffer-properties.html
+        # Valid harfbuzz directions are ltr (left to right), rtl (right to left),
+        # ttb (top to bottom) or btt (bottom to top)
+
+        if direction and direction not in ("ltr", "rtl"):
+            raise FPDFException(
+                "FPDF2 only accept ltr (left to right) or rtl (right to left) directions for now."
+            )
+
+        self._text_shaping = {
+            "use_shaping_engine": True,
+            "features": features,
+            "direction": direction,
+            "script": script,
+            "language": language,
+        }
+
     @property
     def page_layout(self):
         return self._page_layout
@@ -698,7 +768,7 @@ class FPDF(GraphicsStateMixin):
             "set_doc_option() is deprecated and will be removed in a future release. "
             "Simply set the `.core_fonts_encoding` property as a replacement.",
             DeprecationWarning,
-            stacklevel=2,
+            stacklevel=get_stack_level(),
         )
         if opt != "core_fonts_encoding":
             raise FPDFException(f'Unknown document option "{opt}"')
@@ -1126,15 +1196,12 @@ class FPDF(GraphicsStateMixin):
         Set the current dash pattern for lines and curves.
 
         Args:
-            dash (float >= 0):
-                The length of the dashes in current units.
+            dash (float >= 0): The length of the dashes in current units.
 
-            gap (float >= 0):
-                The length of the gaps between dashes in current units.
+            gap (float >= 0): The length of the gaps between dashes in current units.
                 If omitted, the dash length will be used.
 
-            phase (float >= 0):
-                Where in the sequence to start drawing.
+            phase (float >= 0): Where in the sequence to start drawing.
 
         Omitting 'dash' (= 0) resets the pattern to a solid line.
         """
@@ -1196,7 +1263,7 @@ class FPDF(GraphicsStateMixin):
             warnings.warn(
                 '"fill" parameter is deprecated, use style="F" or style="DF" instead',
                 DeprecationWarning,
-                stacklevel=5 if polygon else 3,
+                stacklevel=get_stack_level(),
             )
         if fill and style is None:
             style = RenderStyle.DF
@@ -1253,7 +1320,7 @@ class FPDF(GraphicsStateMixin):
             "dashed_line() is deprecated, and will be removed in a future release. "
             "Use set_dash_pattern() and the normal drawing operations instead.",
             DeprecationWarning,
-            stacklevel=3,
+            stacklevel=get_stack_level(),
         )
         self.set_dash_pattern(dash_length, space_length)
         self.line(x1, y1, x2, y2)
@@ -1270,7 +1337,6 @@ class FPDF(GraphicsStateMixin):
             y (float): Ordinate of upper-left bounding box.
             w (float): Width.
             h (float): Height.
-
             style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
 
             * `D` or empty string: draw border. This is the default value.
@@ -1734,7 +1800,7 @@ class FPDF(GraphicsStateMixin):
             warnings.warn(
                 '"uni" parameter is deprecated, unused and will soon be removed',
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=get_stack_level(),
             )
 
         style = "".join(sorted(style.upper()))
@@ -1759,7 +1825,10 @@ class FPDF(GraphicsStateMixin):
         fontkey = f"{family.lower()}{style}"
         # Check if font already added or one of the core fonts
         if fontkey in self.fonts or fontkey in CORE_FONTS:
-            warnings.warn(f"Core font or font already added '{fontkey}': doing nothing")
+            warnings.warn(
+                f"Core font or font already added '{fontkey}': doing nothing",
+                stacklevel=get_stack_level(),
+            )
             return
 
         self.fonts[fontkey] = TTFFont(self, font_file_path, fontkey, style)
@@ -1808,13 +1877,15 @@ class FPDF(GraphicsStateMixin):
         if family in self.font_aliases and family + style not in self.fonts:
             warnings.warn(
                 f"Substituting font {family} by core font "
-                f"{self.font_aliases[family]}"
+                f"{self.font_aliases[family]}",
+                stacklevel=get_stack_level(),
             )
             family = self.font_aliases[family]
         elif family in ("symbol", "zapfdingbats") and style:
             warnings.warn(
                 f"Built-in font {family} only has a single 'style' and can't be bold "
-                f"or italic"
+                f"or italic",
+                stacklevel=get_stack_level(),
             )
             style = ""
 
@@ -1898,7 +1969,7 @@ class FPDF(GraphicsStateMixin):
     def set_fallback_fonts(self, fallback_fonts, exact_match=True):
         """
         Allows you to specify a list of fonts to be used if any character is not available on the font currently set.
-        Detailed documentation: https://pyfpdf.github.io/fpdf2/Unicode.html#fallback-fonts
+        Detailed documentation: https://py-pdf.github.io/fpdf2/Unicode.html#fallback-fonts
 
         Args:
             fallback_fonts: sequence of fallback font IDs
@@ -2311,20 +2382,10 @@ class FPDF(GraphicsStateMixin):
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         txt = self.normalize_text(txt)
-        if self.is_ttf_font:
-            txt_mapped = ""
-            for char in txt:
-                uni = ord(char)
-                # Instead of adding the actual character to the stream its code is
-                # mapped to a position in the font's subset
-                txt_mapped += chr(self.current_font.subset.pick(uni))
-            txt2 = escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))
-        else:
-            txt2 = escape_parens(txt)
         sl = [f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td"]
         if self.text_mode != TextMode.FILL:
             sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
-        sl.append(f"({txt2}) Tj ET")
+        sl.append(f"{self.current_font.encode_text(txt)} ET")
         if (self.underline and txt != "") or self._record_text_quad_points:
             w = self.get_string_width(txt, normalized=True, markdown=False)
             if self.underline and txt != "":
@@ -2352,7 +2413,7 @@ class FPDF(GraphicsStateMixin):
             "It will be removed in a future release. "
             "Use the rotation() context manager instead.",
             DeprecationWarning,
-            stacklevel=3,
+            stacklevel=get_stack_level(),
         )
         if x is None:
             x = self.x
@@ -2658,7 +2719,8 @@ class FPDF(GraphicsStateMixin):
             )
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
-                'Integer values for "border" parameter other than 1 are currently ignored'
+                'Integer values for "border" parameter other than 1 are currently ignored',
+                stacklevel=get_stack_level(),
             )
             border = 1
         new_x = XPos.coerce(new_x)
@@ -2690,7 +2752,7 @@ class FPDF(GraphicsStateMixin):
                     f" Instead of ln={ln} use new_x=XPos.{new_x.name}, new_y=YPos.{new_y.name}."
                 ),
                 DeprecationWarning,
-                stacklevel=3,
+                stacklevel=get_stack_level(),
             )
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
         txt = self.normalize_text(txt)
@@ -2761,20 +2823,16 @@ class FPDF(GraphicsStateMixin):
                 or transparent (`False`). Default value: False.
             link (str): optional link to add on the cell, internal
                 (identifier returned by `FPDF.add_link`) or external URL.
-            center (bool): **DEPRECATED since 2.5.1**: Use `align="C"` instead.
-            markdown (bool): enable minimal markdown-like markup to render part
-                of text as bold / italics / underlined. Default to False.
+            center (bool): center the cell horizontally on the page.
             padding (Padding or None): optional padding to apply to the cell content.
                 If padding for left and right is non-zero then c_margin is ignored.
 
         Returns: a boolean indicating if page break was triggered
         """
-        if center:
-            warnings.warn('Parameter "center" is deprecated, use "align" instead')
-
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
-                'Integer values for "border" parameter other than 1 are currently ignored'
+                'Integer values for "border" parameter other than 1 are currently ignored',
+                stacklevel=get_stack_level(),
             )
             border = 1
 
@@ -2846,6 +2904,7 @@ class FPDF(GraphicsStateMixin):
         s_width, underlines = 0, []
         # We try to avoid modifying global settings for temporary changes.
         current_ws = frag_ws = 0.0
+        current_lift = 0.0
         current_char_vpos = CharVPos.LINE
         current_font = self.current_font
         current_text_mode = self.text_mode
@@ -2863,8 +2922,6 @@ class FPDF(GraphicsStateMixin):
             if self.fill_color != self.text_color:
                 sl.append(self.text_color.serialize().lower())
 
-            # do this once in advance
-            u_space = escape_parens(" ".encode("utf-16-be").decode("latin-1"))
             word_spacing = 0
             if text_line.justify:
                 # Don't rely on align==Align.J here.
@@ -2895,9 +2952,10 @@ class FPDF(GraphicsStateMixin):
                     current_font = frag.font
                     sl.append(f"/F{frag.font.i} {frag.font_size_pt:.2f} Tf")
                 lift = frag.lift
-                if lift != 0.0:
+                if lift != current_lift:
                     # Use text rise operator:
                     sl.append(f"{lift:.2f} Ts")
+                    current_lift = lift
                 if (
                     frag.text_mode != TextMode.FILL
                     or frag.text_mode != current_text_mode
@@ -2905,48 +2963,28 @@ class FPDF(GraphicsStateMixin):
                     current_text_mode = frag.text_mode
                     sl.append(f"{frag.text_mode} Tr {frag.line_width:.2f} w")
 
-                if frag.is_ttf_font:
-                    mapped_text = ""
-                    for char in frag.string:
-                        uni = ord(char)
-                        mapped_text += chr(frag.font.subset.pick(uni))
-                    if word_spacing:
-                        # "Tw" only has an effect on the ASCII space character and ignores
-                        # space characters from unicode (TTF) fonts. As a workaround,
-                        # we do word spacing using an adjustment before each space.
-                        # Determine the index of the space character (" ") in the current
-                        # subset and split words whenever this mapping code is found
-                        words = mapped_text.split(chr(frag.font.subset.pick(ord(" "))))
-                        words_strl = []
-                        for word_i, word in enumerate(words):
-                            # pylint: disable=redefined-loop-name
-                            word = escape_parens(
-                                word.encode("utf-16-be").decode("latin-1")
-                            )
-                            if word_i == 0:
-                                words_strl.append(f"({word})")
-                            else:
-                                adj = -(frag_ws * frag.k) * 1000 / frag.font_size_pt
-                                words_strl.append(f"{adj:.3f}({u_space}{word})")
-                        escaped_text = " ".join(words_strl)
-                        sl.append(f"[{escaped_text}] TJ")
-                    else:
-                        escaped_text = escape_parens(
-                            mapped_text.encode("utf-16-be").decode("latin-1")
-                        )
-                        sl.append(f"({escaped_text}) Tj")
-                else:  # core fonts
-                    if frag_ws != current_ws:
-                        sl.append(f"{frag_ws * frag.k:.3f} Tw")
-                        current_ws = frag_ws
-                    escaped_text = escape_parens(frag.string)
-                    sl.append(f"({escaped_text}) Tj")
+                r_text = frag.render_pdf_text(
+                    frag_ws,
+                    current_ws,
+                    word_spacing,
+                    self.x + dx + s_width,
+                    self.y + (0.5 * h + 0.3 * max_font_size),
+                    self.h,
+                )
+                if r_text:
+                    sl.append(r_text)
+
                 frag_width = frag.get_width(
                     initial_cs=i != 0
                 ) + word_spacing * frag.characters.count(" ")
                 if frag.underline:
                     underlines.append(
-                        (self.x + dx + s_width, frag_width, frag.font, frag.font_size)
+                        (
+                            self.x + dx + s_width,
+                            frag_width,
+                            frag.font,
+                            frag.font_size,
+                        )
                     )
                 if frag.link:
                     self.link(
@@ -2956,6 +2994,8 @@ class FPDF(GraphicsStateMixin):
                         h=frag.font_size,
                         link=frag.link,
                     )
+                if not frag.is_ttf_font:
+                    current_ws = frag_ws
                 s_width += frag_width
 
             sl.append("ET")
@@ -2984,6 +3024,7 @@ class FPDF(GraphicsStateMixin):
             # pylint: disable=too-many-boolean-expressions
             if (
                 current_ws != 0.0
+                or current_lift != 0.0
                 or current_char_vpos != CharVPos.LINE
                 or current_font != self.current_font
                 or current_text_mode != self.text_mode
@@ -3355,7 +3396,7 @@ class FPDF(GraphicsStateMixin):
                 'The parameter "split_only" is deprecated.'
                 ' Use instead dry_run=True and output="LINES".',
                 DeprecationWarning,
-                stacklevel=3,
+                stacklevel=get_stack_level(),
             )
         if dry_run or split_only:
             with self._disable_writing():
@@ -3416,7 +3457,7 @@ class FPDF(GraphicsStateMixin):
                     f" Instead of ln={ln} use new_x=XPos.{new_x.name}, new_y=YPos.{new_y.name}."
                 ),
                 DeprecationWarning,
-                stacklevel=3,
+                stacklevel=get_stack_level(),
             )
         align = Align.coerce(align)
 
@@ -3739,7 +3780,7 @@ class FPDF(GraphicsStateMixin):
             warnings.warn(
                 '"type" parameter is deprecated, unused and will soon be removed',
                 DeprecationWarning,
-                stacklevel=3,
+                stacklevel=get_stack_level(),
             )
         if str(name).endswith(".svg"):
             # Insert it as a PDF path:
@@ -3881,7 +3922,8 @@ class FPDF(GraphicsStateMixin):
         svg = SVGObject(img.getvalue())
         if not svg.viewbox and svg.width and svg.height:
             warnings.warn(
-                '<svg> has no "viewBox", using its "width" & "height" as default "viewBox"'
+                '<svg> has no "viewBox", using its "width" & "height" as default "viewBox"',
+                stacklevel=get_stack_level(),
             )
             svg.viewbox = 0, 0, svg.width, svg.height
         if w == 0 and h == 0:
@@ -4375,7 +4417,8 @@ class FPDF(GraphicsStateMixin):
             warnings.warn(
                 # pylint: disable=implicit-str-concat
                 "Code 39 input must start and end with a '*' character to be valid."
-                " This method does not insert it automatically."
+                " This method does not insert it automatically.",
+                stacklevel=get_stack_level(),
             )
         chars = {
             "0": "nnnwwnwnn",
@@ -4699,7 +4742,7 @@ class FPDF(GraphicsStateMixin):
     def table(self, *args, **kwargs):
         """
         Inserts a table, that can be built using the `fpdf.table.Table` object yield.
-        Detailed usage documentation: https://pyfpdf.github.io/fpdf2/Tables.html
+        Detailed usage documentation: https://py-pdf.github.io/fpdf2/Tables.html
 
         Args:
             rows: optional. Sequence of rows (iterable) of str to initiate the table cells with text content
@@ -4752,7 +4795,7 @@ class FPDF(GraphicsStateMixin):
             warnings.warn(
                 '"dest" parameter is deprecated, unused and will soon be removed',
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=get_stack_level(),
             )
         # Finish document if necessary:
         if not self.buffer:

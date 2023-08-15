@@ -34,7 +34,7 @@ def test_sign_pkcs12_with_link(tmp_path):
         txt="URL link",
         border=1,
         align="C",
-        link="https://github.com/PyFPDF/fpdf2",
+        link="https://github.com/py-pdf/fpdf2",
     )
     assert_pdf_equal(pdf, HERE / "sign_pkcs12_with_link.pdf", tmp_path)
     check_signature(pdf, TRUSTED_CERT_PEMS)

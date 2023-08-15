@@ -79,8 +79,11 @@ def test_set_font_aliases_as_font():
         with pytest.warns(
             UserWarning,
             match=f"Substituting font {alias.lower()} by core font {alternative}",
-        ):
+        ) as record:
             pdf.set_font(alias)
+
+        assert len(record) == 1
+        assert record[0].filename == __file__
 
         # Test if font family is set correctly
         assert pdf.font_family == alternative
@@ -161,11 +164,14 @@ def test_set_font_zapfdingbats_symbol_with_style():
                     UserWarning,
                     match=f"Built-in font {family} only has a single 'style' and "
                     f"can't be bold or italic",
-                ):
+                ) as record:
                     pdf.set_font(family, style=style)
 
                     # Test if style is set correctly (== no style)
                     assert pdf.font_style == ""
+
+                assert len(record) == 1
+                assert record[0].filename == __file__
 
                 # Test if underline is set correctly
                 assert pdf.underline == int("U" in style)

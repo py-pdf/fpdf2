@@ -11,7 +11,7 @@ with pikepdf.open(sys.argv[1], allow_overwriting_input=True) as pdf:
         meta["dc:description"] = "Description"
         meta["dc:creator"] = "Author"
         meta["pdf:Keywords"] = "keyword1 keyword2 keyword3"
-        meta["pdf:Producer"] = f"PyFPDF/fpdf{FPDF_VERSION}"
+        meta["pdf:Producer"] = f"py-pdf/fpdf{FPDF_VERSION}"
         meta["xmp:CreatorTool"] = __file__
         meta["xmp:MetadataDate"] = datetime.now(
             datetime.utcnow().astimezone().tzinfo

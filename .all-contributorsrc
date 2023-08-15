@@ -1,6 +1,6 @@
 {
   "projectName": "fpdf2",
-  "projectOwner": "PyFPDF",
+  "projectOwner": "py-pdf",
   "repoType": "github",
   "repoHost": "https://github.com",
   "files": [
@@ -728,7 +728,9 @@
         "question",
         "code",
         "research",
-        "bug"
+        "bug",
+        "doc",
+        "ideas"
       ]
     },
     {
@@ -936,6 +938,33 @@
       "profile": "https://github.com/alcnaka",
       "contributions": [
         "translation"
+      ]
+    },
+    {
+      "login": "Tolker-KU",
+      "name": "Tolker-KU",
+      "avatar_url": "https://avatars.githubusercontent.com/u/55140581?v=4",
+      "profile": "https://github.com/Tolker-KU",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "lfavole",
+      "name": "lfavole",
+      "avatar_url": "https://avatars.githubusercontent.com/u/88188568?v=4",
+      "profile": "http://lfavole.eu.pythonanywhere.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Niwo1403",
+      "name": "Nicolai Wolfrom",
+      "avatar_url": "https://avatars.githubusercontent.com/u/25332593?v=4",
+      "profile": "https://github.com/Niwo1403",
+      "contributions": [
+        "bug"
       ]
     }
   ],

@@ -96,7 +96,7 @@ class RowLayoutInfo:
 class Table:
     """
     Object that `fpdf.FPDF.table()` yields, used to build a table in the document.
-    Detailed usage documentation: https://pyfpdf.github.io/fpdf2/Tables.html
+    Detailed usage documentation: https://py-pdf.github.io/fpdf2/Tables.html
     """
 
     def __init__(

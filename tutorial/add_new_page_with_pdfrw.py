@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-
-# USAGE: ./add_new_page.py $in_filepath $out_filepath
-
 import sys
 
 from fpdf import FPDF

@@ -4,40 +4,6 @@ This page has summary information about developing the PyPDF library.
 
 [TOC]
 
-## History
-
-This project, `fpdf2` is a _fork_ of the `PyFPDF` project, which can be found
-[on GitHub at reingart/pyfpdf](https://github.com/reingart/pyfpdf)
-but has been inactive since January of 2018.
-
-About the original `PyFPDF` lib:
-
-> This project started as a Python fork of the [FPDF](http://fpdf.org/) PHP library,
-> ported to Python by Max Pat in 2006: <http://www.fpdf.org/dl.php?id=94>.
-> Later, code for native reading TTF fonts was added.
-> The project aim is to keep the library up to date, to fulfill the goals of its
-> [original roadmap](https://github.com/reingart/pyfpdf/wiki/Roadmap) and provide
-> a general overhaul of the codebase to address technical debt keeping features from being added
-> and bugs to be eradicated.
-> Until 2015 the code was developed at [Google Code](https://code.google.com/p/pyfpdf/):
-> you can still access the [old issues](https://github.com/reingart/pyfpdf_googlecode/issues),
-> and [old wiki](https://github.com/reingart/pyfpdf_googlecode/tree/wiki).
-
-As of version [2.5.4](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md),
-`fpdf2` is fully backward compatible with PyFPDF, with the exception of one minor point:
-for the [`cell()` method](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell), the default value of `h` has changed.
-It used to be `0` and is now set to the current value of `FPDF.font_size`.
-
-
-## Usage
-
-- [PyPI download stats](https://pypistats.org/packages/fpdf2) - Downloads per release on [Pepy](https://pepy.tech/project/fpdf2)
-  - [pip trends: fpdf2 VS other PDF rendering libs](https://piptrends.com/compare/fpdf2-vs-fpdf-vs-PyPDF2-vs-borb-vs-reportlab)
-- packages using `fpdf2` can be listed using [GitHub Dependency graph: Dependents](https://github.com/PyFPDF/fpdf2/network/dependents),
-[Wheelodex](https://www.wheelodex.org/projects/fpdf2/rdepends/) or [Watchman Pypi](http://www.watchman-pypi.com).
-Some are also listed on [its libraries.io page](https://libraries.io/pypi/fpdf2).
-
-
 ## Repository structure
 
   * `.github/` - GitHub Actions configuration
@@ -85,7 +51,7 @@ or globally through the `.pylintrc` file.
 ## Pre-commit hook
 This project uses `git` **pre-commit hooks**: https://pre-commit.com
 
-Those hooks are configured in [`.pre-commit-config.yaml`](https://github.com/PyFPDF/fpdf2/blob/master/.pre-commit-config.yaml).
+Those hooks are configured in [`.pre-commit-config.yaml`](https://github.com/py-pdf/fpdf2/blob/master/.pre-commit-config.yaml).
 
 They are intended to abort your commit if `pylint` found issues
 or `black` detected non-properly formatted code.
@@ -165,13 +131,13 @@ Ask maintainers through comments if some errors in the pipeline seem obscure to 
 ### Release checklist
 1. complete `CHANGELOG.md` and add the version & date of the new release
 2. bump `FPDF_VERSION` in `fpdf/fpdf.py`.
-Also (optionnal, once every year), update `contributors/contributors-map-small.png` based on <https://pyfpdf.github.io/fpdf2/contributors.html>
+Also (optionnal, once every year), update `contributors/contributors-map-small.png` based on <https://py-pdf.github.io/fpdf2/contributors.html>
 3. `git commit` & `git push`
-4. check that [the GitHub Actions succeed](https://github.com/PyFPDF/fpdf2/actions), and that [a new release appears on Pypi](https://pypi.org/project/fpdf2/#history)
-5. perform a [GitHub release](https://github.com/PyFPDF/fpdf2/releases), taking the description from the `CHANGELOG.md`.
+4. check that [the GitHub Actions succeed](https://github.com/py-pdf/fpdf2/actions), and that [a new release appears on Pypi](https://pypi.org/project/fpdf2/#history)
+5. perform a [GitHub release](https://github.com/py-pdf/fpdf2/releases), taking the description from the `CHANGELOG.md`.
 It will create a new `git` tag.
 6. Announce the release on [r/pythonnews](https://www.reddit.com/r/pythonnews/),
-   and add an announcement to the documentation website: [docs/overrides/main.html](https://github.com/PyFPDF/fpdf2/blob/master/docs/overrides/main.html)
+   and add an announcement to the documentation website: [docs/overrides/main.html](https://github.com/py-pdf/fpdf2/blob/master/docs/overrides/main.html)
 
 ## Documentation
 The standalone documentation is in the `docs` subfolder,
@@ -180,10 +146,10 @@ Building instructions are contained in the configuration file `mkdocs.yml`
 and also in `.github/workflows/continuous-integration-workflow.yml`.
 
 Additional documentation is generated from inline comments, and is available
-in the project [home page](https://pyfpdf.github.io/fpdf2/fpdf/).
+in the project [home page](https://py-pdf.github.io/fpdf2/fpdf/).
 
 After being committed to the master branch, code documentation is automatically uploaded to
-[GitHub Pages](https://pyfpdf.github.io/fpdf2/).
+[GitHub Pages](https://py-pdf.github.io/fpdf2/).
 
 There is a useful one-page example Python module with docstrings illustrating how to document code:
 [pdoc3 example_pkg](https://github.com/pdoc3/pdoc/blob/master/pdoc/test/example_pkg/__init__.py).

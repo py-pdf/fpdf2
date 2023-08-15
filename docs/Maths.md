@@ -199,7 +199,7 @@ Result:
 
 ![](plotly_png.png)
 
-You can also embed a figure as [SVG](SVG.md) but this is not recommended because the text data such as the x and y axis bars might not show as illustrated in the result image because plotly places this data in a svg text tag which is currently [not supported](https://github.com/PyFPDF/fpdf2/issues/537) by FPDF2.
+You can also embed a figure as [SVG](SVG.md) but this is not recommended because the text data such as the x and y axis bars might not show as illustrated in the result image because plotly places this data in a svg text tag which is currently [not supported](https://github.com/py-pdf/fpdf2/issues/537) by FPDF2.
 
 Before running this example, please install the required dependencies:
 

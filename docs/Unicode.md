@@ -44,13 +44,13 @@ of [`add_font`](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font).
 
 Some users may encounter a problem where some characters displayed incorrectly. For example, using Thai language in the picture below
 
-![thai-font-problem](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/tutorial/thai-accent-error.png)
+![thai-font-problem](https://raw.githubusercontent.com/py-pdf/fpdf2/master/tutorial/thai-accent-error.png)
 
 The solution is to find and use a font that covers the characters of your language.
 From the error in the image above, Thai characters can be fixed using fonts from  [Fonts-TLWG](http://linux.thai.net/projects/fonts-tlwg/) which can be downloaded from
 [this link](https://linux.thai.net/pub/thailinux/software/fonts-tlwg/fonts/). The example shown below.
 
-![thai-font-working](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/tutorial/thai-accent-working.png)
+![thai-font-working](https://raw.githubusercontent.com/py-pdf/fpdf2/master/tutorial/thai-accent-working.png)
 
 ### Right-to-Left & Arabic Script workaround
 For Arabic and RTL scripts there is a temporary solution (using two additional libraries `python-bidi` and `arabic-reshaper`) that works for most languages; only a few (rare) Arabic characters aren't supported. Using it on other scripts(eg. when the input is unknown or mixed scripts) does not affect them:
@@ -138,7 +138,7 @@ pdf.output("unicode.pdf")
 
 
 View the result here: 
-[unicode.pdf](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/unicode.pdf)
+[unicode.pdf](https://github.com/py-pdf/fpdf2/raw/master/tutorial/unicode.pdf)
 
 ## Free Font Pack and Copyright Restrictions ##
 
@@ -154,7 +154,7 @@ filename.ttf cannot be embedded due to copyright restrictions."
 
 # Fallback fonts #
 
-_New in [:octicons-tag-24: 2.7.0](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.7.0](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 The method [`set_fallback_fonts()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_fonts) allows you to specify a list of fonts to be used if any character is not available on the font currently set. When a character doesn’t exist on the current font, `fpdf2` will look if it’s available on the fallback fonts, on the same order the list was provided.
 
@@ -181,4 +181,4 @@ By default, if it does not find such matching font, the character will not be re
 
 Moreover, for more control over font fallback election logic,
 the [`get_fallback_font()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_fallback_font) can be overriden.
-An example of this can be found in [test/fonts/test_font_fallback.py](https://github.com/PyFPDF/fpdf2/blob/master/test/fonts/test_font_fallback.py).
+An example of this can be found in [test/fonts/test_font_fallback.py](https://github.com/py-pdf/fpdf2/blob/master/test/fonts/test_font_fallback.py).

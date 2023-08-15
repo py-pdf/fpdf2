@@ -41,7 +41,7 @@ tmpl.render(outfile="example.pdf")
 
 The Template() class will create and manage its own FPDF() instance, so you don't need to worry about how it all works together. It also allows to set the page format, title of the document, measuring unit, and other metadata for the PDF file.
 
-For the method signatures, see [pyfpdf.github.io: class Template](https://pyfpdf.github.io/fpdf2/fpdf/template.html#fpdf.template.Template).
+For the method signatures, see [py-pdf.github.io: class Template](https://py-pdf.github.io/fpdf2/fpdf/template.html#fpdf.template.Template).
 
 Setting text values for specific template items is done by treating the class as a dict, with the name of the item as the key:
 
@@ -142,7 +142,7 @@ templ.render(offsetx=120, offsety=120, rotate=30.0, scale=0.5)
 pdf.output("example.pdf")
 ```
 
-For the method signatures, see [pyfpdf.github.io: class FlexTemplate](https://pyfpdf.github.io/fpdf2/fpdf/template.html#fpdf.template.FlexTemplate).
+For the method signatures, see [py-pdf.github.io: class FlexTemplate](https://py-pdf.github.io/fpdf2/fpdf/template.html#fpdf.template.FlexTemplate).
 
 The dict syntax for setting text values is the same as above:
 

@@ -53,7 +53,7 @@ def _add_pages_with_image_background(pdf):
 def add_page_with_image_url_background(pdf):
     """sets the background to an image specified with a link and adds a page with text and a small rectangle"""
     pdf.set_page_background(
-        "https://raw.githubusercontent.com/PyFPDF/fpdf2/master/test/image/image_types/insert_images_insert_jpg.jpg"
+        "https://raw.githubusercontent.com/py-pdf/fpdf2/master/test/image/image_types/insert_images_insert_jpg.jpg"
     )
     pdf.add_page()
     pdf.rect(20, 20, 60, 60, style="F")

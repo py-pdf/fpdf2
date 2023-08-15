@@ -2,7 +2,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: 💬 Start a discussion
-    url: https://github.com/PyFPDF/fpdf2/discussions/new
+    url: https://github.com/py-pdf/fpdf2/discussions/new
     about: Informal discussion about the project organization, considerations that do not expect a definitive answer, etc.
 #  - name: Security issue
 #    url: security@...

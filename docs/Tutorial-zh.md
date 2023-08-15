@@ -1,7 +1,7 @@
 # 使用教程 #
 
 完整说明文件：
-[`fpdf.FPDF` API 文档](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
+[`fpdf.FPDF` API 文档](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
 [TOC]
 
@@ -13,7 +13,7 @@
 {% include "../tutorial/tuto1.py" %}
 ```
 
-[生成的 PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto1.pdf)
+[生成的 PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto1.pdf)
 
 引入库文件后，创建`FPDF`对象。
 [FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF)
@@ -80,7 +80,7 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 {% include "../tutorial/tuto2.py" %}
 ```
 
-[生成的 PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto2.pdf)
+[生成的 PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
 
 此示例使用 
 [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) 与
@@ -120,9 +120,9 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 {% include "../tutorial/tuto3.py" %}
 ```
 
-[生成的 PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto3.pdf)
+[生成的 PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto3.pdf)
 
-[儒勒·凡尔纳的文本](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+[儒勒·凡尔纳的文本](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 调用 [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) 
 函数设定当前字体下字符串的长度，
@@ -158,9 +158,9 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 {% include "../tutorial/tuto4.py" %}
 ```
 
-[生成的 PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto4.pdf)
+[生成的 PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto4.pdf)
 
-[儒勒·凡尔纳的文本](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/20k_c1.txt)
+[儒勒·凡尔纳的文本](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 与上一个教程的主要区别在于使用了
 [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) 
@@ -181,15 +181,15 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 {% include "../tutorial/tuto5.py" %}
 ```
 
-[生成的 PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto5.pdf) -
-[源文本](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/countries.txt)
+[生成的 PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf) -
+[源文本](https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt)
 
-_⚠️ This section has changed a lot and requires a new translation: <https://github.com/PyFPDF/fpdf2/issues/267>_
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
 
 English versions:
 
-* [Tuto 5 - Creating Tables](https://pyfpdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
-* [Documentation on tables](https://pyfpdf.github.io/fpdf2/Tables.html)
+* [Tuto 5 - Creating Tables](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
+* [Documentation on tables](https://py-pdf.github.io/fpdf2/Tables.html)
 
 ## 教程六 - 创建链接和混合文本样式 ##
 
@@ -201,13 +201,13 @@ English versions:
 {% include "../tutorial/tuto6.py" %}
 ```
 
-[生成的 PDF](https://github.com/PyFPDF/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2 图标](https://raw.githubusercontent.com/PyFPDF/fpdf2/master/docs/fpdf2-logo.png)
+[生成的 PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
+[fpdf2 图标](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
 
 此处显示的打印文本的新方法是
-[write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
+[write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
 ，类似于
-[multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
+[multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
 。二者主要区别在于：
 
 - 行尾在右边缘，下一行在左边缘开始
@@ -215,22 +215,22 @@ English versions:
 
 因此，该方法允许在一段文本中更改字体样式，并从初始位置继续。
 反之，它的缺点在于其不能如同
-[multi_cell()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
+[multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
 对齐文本。
 
 因为上述原因，在示例的第一页中，调用了
-[write()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
+[write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
 打印常规字体，然后使用
-[set_font()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font)
+[set_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font)
 方法，切换到下划线样式并继续打印。
 
 为添加指向第二页的内部链接，调用了
-[add_link()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link)
+[add_link()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link)
 。这将创建一个可点击区域，命名为“链接”，指向
 文档中的另一页。
 
 使用图像创建外部链接，则调用
-[image()](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
+[image()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
 。该函数可将链接作为其参数之一。链接也可以指向内部或外部。
 
 作为替代方案，更改字体样式和添加链接的另一种选择是

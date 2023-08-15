@@ -9,7 +9,7 @@ HERE = Path(__file__).resolve().parent
 
 
 @pytest.mark.xfail(
-    reason="Implementation not finished, cf. https://github.com/PyFPDF/fpdf2/issues/62"
+    reason="Implementation not finished, cf. https://github.com/py-pdf/fpdf2/issues/62"
 )
 def test_linearization(tmp_path):
     pdf = FPDF()

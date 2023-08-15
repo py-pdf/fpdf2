@@ -14,7 +14,7 @@ or [borb](https://github.com/jorisschellekens/borb-examples/#76-exporting-html-a
 
 ## write_html usage example
 
-HTML rendering requires the use of [`FPDF.write_html()`](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html):
+HTML rendering requires the use of [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html):
 
 ```python
 from fpdf import FPDF
@@ -30,7 +30,7 @@ pdf.write_html("""
   <section>
     <h2>Section title</h2>
     <p><b>Hello</b> world. <u>I am</u> <i>tired</i>.</p>
-    <p><a href="https://github.com/PyFPDF/fpdf2">PyFPDF/fpdf2 GitHub repo</a></p>
+    <p><a href="https://github.com/py-pdf/fpdf2">py-pdf/fpdf2 GitHub repo</a></p>
     <p align="right">right aligned text</p>
     <p>i am a paragraph <br />in two parts.</p>
     <font color="#00ff00"><p>hello in green</p></font>
@@ -98,8 +98,8 @@ pdf.output("html.pdf")
 `fpdf2` HTML renderer does not support many configuration of nested tags.
 For example:
 
-* `<center>` cannot be used as a parent for several elements - _cf._ [issue #640](https://github.com/PyFPDF/fpdf2/issues/640)
-* `<table>` cells can contain `<td><b><em>nested tags forming a single text block</em></b></td>`, but **not** `<td><b>arbitrarily</b> nested <em>tags</em></td>` - _cf._ [issue #845](https://github.com/PyFPDF/fpdf2/issues/845)
+* `<center>` cannot be used as a parent for several elements - _cf._ [issue #640](https://github.com/py-pdf/fpdf2/issues/640)
+* `<table>` cells can contain `<td><b><em>nested tags forming a single text block</em></b></td>`, but **not** `<td><b>arbitrarily</b> nested <em>tags</em></td>` - _cf._ [issue #845](https://github.com/py-pdf/fpdf2/issues/845)
 
 You can also check the currently open GitHub issues with the tag `html`:
-<https://github.com/PyFPDF/fpdf2/issues?q=is%3Aopen+label%3Ahtml>
+<https://github.com/py-pdf/fpdf2/issues?q=is%3Aopen+label%3Ahtml>

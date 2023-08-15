@@ -1,15 +1,15 @@
 ### 
-# Related docs: https://pyfpdf.github.io/fpdf2/Development.html#documentation
+# Related docs: https://py-pdf.github.io/fpdf2/Development.html#documentation
 #
 # material theme docs: https://squidfunk.github.io/mkdocs-material/
 ### 
 site_name: fpdf2
-site_url: https://pyfpdf.github.io/fpdf2/
+site_url: https://py-pdf.github.io/fpdf2/
 site_author: Lucas Cimon et al
 site_description: fpdf2 - minimalist PDF creation library for Python
 
-repo_url: https://github.com/PyFPDF/fpdf2
-repo_name: PyFPDF/fpdf2
+repo_url: https://github.com/py-pdf/fpdf2
+repo_name: py-pdf/fpdf2
 
 docs_dir: docs/
 site_dir: public/
@@ -58,7 +58,7 @@ plugins:
       redirect_maps:
         'CombineWithChartingLibs.md': 'Maths.md'
   #- git-committers:
-  #    repository: PyFPDF/fpdf2
+  #    repository: py-pdf/fpdf2
   #    branch: master
   - with-pdf:  # https://github.com/orzih/mkdocs-with-pdf
       output_path: fpdf2-manual.pdf
@@ -129,6 +129,7 @@ nav:
   - 'Page breaks':                    'PageBreaks.md'
   - 'Text styling':                   'TextStyling.md'
   - 'Unicode':                        'Unicode.md'
+  - 'Text Shaping':                   'TextShaping.md'
   - 'Emojis, Symbols & Dingbats':     'EmojisSymbolsDingbats.md'
   - 'HTML':                           'HTML.md'
 - 'Graphics Content':
@@ -151,8 +152,8 @@ nav:
   - 'File attachments':               'FileAttachments.md'
 - 'Mixing other libs':
   - 'Combine with borb':              'CombineWithBorb.md'
+  - 'Combine with pypdf':             'CombineWithPypdf.md'
   - 'Combine with pdfrw':             'CombineWithPdfrw.md'
-  - 'Combine with PyPDF2':            'CombineWithPyPDF2.md'
   - 'Matplotlib, Pandas, Plotly, Pygal': 'CombineWithChartingLibs.md'
   - 'Templating with Jinja':          'TemplatingWithJinja.md'
   - 'Usage in web APIs':              'UsageInWebAPI.md'
@@ -160,12 +161,13 @@ nav:
 - 'Development':
   - 'Development guidelines':         'Development.md'
   - 'Logging':                        'Logging.md'
-- 'API':                            'https://pyfpdf.github.io/fpdf2/fpdf/'
+- 'API':                            'https://py-pdf.github.io/fpdf2/fpdf/'
+- 'History':                        'History.md'
 - 'FAQ':                            'FAQ.md'
 
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/PyFPDF/fpdf2
+      link: https://github.com/py-pdf/fpdf2
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/fpdf2/

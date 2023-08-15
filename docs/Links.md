@@ -15,7 +15,7 @@ pdf = FPDF()
 pdf.add_page()
 pdf.set_font("helvetica", size=24)
 pdf.cell(txt="Cell link", border=1, center=True,
-         link="https://github.com/PyFPDF/fpdf2")
+         link="https://github.com/py-pdf/fpdf2")
 pdf.output("hyperlink.pdf")
 ```
 
@@ -30,7 +30,7 @@ pdf.set_font("helvetica", size=24)
 pdf.add_page()
 pdf.multi_cell(
     pdf.epw,
-    txt="**Website:** [fpdf2](https://pyfpdf.github.io/fpdf2/) __Go visit it!__",
+    txt="**Website:** [fpdf2](https://py-pdf.github.io/fpdf2/) __Go visit it!__",
     markdown=True,
 )
 pdf.output("hyperlink.pdf")
@@ -57,7 +57,7 @@ line_height = 10
 text = "Text link"
 pdf.text(x=0, y=line_height, txt=text)
 width = pdf.get_string_width(text)
-pdf.link(x=0, y=0, w=width, h=line_height, link="https://github.com/PyFPDF/fpdf2")
+pdf.link(x=0, y=0, w=width, h=line_height, link="https://github.com/py-pdf/fpdf2")
 pdf.output("hyperlink.pdf")
 ```
 
@@ -72,7 +72,7 @@ from fpdf import FPDF
 pdf = FPDF()
 pdf.set_font_size(16)
 pdf.add_page()
-pdf.write_html('<a href="https://github.com/PyFPDF/fpdf2">Link defined as HTML</a>')
+pdf.write_html('<a href="https://github.com/py-pdf/fpdf2">Link defined as HTML</a>')
 pdf.output("hyperlink.pdf")
 ```
 
@@ -100,11 +100,11 @@ pdf.output("internal_link.pdf")
 
 Other methods can also insert internal links:
 
-* [FPDF.multi_cell](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) using `link=` **or** `markdown=True` and this syntax: `[link text](page number)`
-* [FPDF.link](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.link)
+* [FPDF.multi_cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) using `link=` **or** `markdown=True` and this syntax: `[link text](page number)`
+* [FPDF.link](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.link)
 * [FPDF.write_html](HTML.md) using anchor tags: `<a href="page number">link text</a>`
 
-The unit tests `test_internal_links()` in [test_links.py](https://github.com/PyFPDF/fpdf2/blob/master/test/test_links.py) provides examples for all of those methods.
+The unit tests `test_internal_links()` in [test_links.py](https://github.com/py-pdf/fpdf2/blob/master/test/test_links.py) provides examples for all of those methods.
 
 
 ## Links to other documents on the filesystem ##
@@ -123,11 +123,11 @@ pdf.output("link_to_other_doc.pdf")
 
 Other methods can also insert internal links:
 
-* [FPDF.multi_cell](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) using `link=` **or** `markdown=True` and this syntax: `[link text](other_doc.pdf)`
-* [FPDF.link](https://pyfpdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.link)
+* [FPDF.multi_cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) using `link=` **or** `markdown=True` and this syntax: `[link text](other_doc.pdf)`
+* [FPDF.link](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.link)
 * [FPDF.write_html](HTML.md) using anchor tags: `<a href="other_doc.pdf">link text</a>`
 
-The unit test `test_link_to_other_document()` in [test_links.py](https://github.com/PyFPDF/fpdf2/blob/master/test/test_links.py) provides examples for all of those methods.
+The unit test `test_link_to_other_document()` in [test_links.py](https://github.com/py-pdf/fpdf2/blob/master/test/test_links.py) provides examples for all of those methods.
 
 
 
@@ -136,6 +136,6 @@ The unit test `test_link_to_other_document()` in [test_links.py](https://github.
 An optional textual description of the link can be provided, for accessibility purposes:
 
 ```python
-pdf.link(x=0, y=0, w=width, h=line_height, link="https://github.com/PyFPDF/fpdf2",
+pdf.link(x=0, y=0, w=width, h=line_height, link="https://github.com/py-pdf/fpdf2",
          alt_text="GitHub page for fpdf2")
 ```

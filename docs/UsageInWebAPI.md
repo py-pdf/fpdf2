@@ -203,7 +203,7 @@ async def create_pdf(request: Request):
 
 
 ## Jupyter ##
-Check [tutorial/notebook.ipynb](https://github.com/PyFPDF/fpdf2/blob/master/tutorial/notebook.ipynb)
+Check [tutorial/notebook.ipynb](https://github.com/py-pdf/fpdf2/blob/master/tutorial/notebook.ipynb)
 
 
 ## web2py ##

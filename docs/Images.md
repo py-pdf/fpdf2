@@ -30,7 +30,7 @@ but you can control its dimension on the page using the `w=` & `h=` parameters o
 `fpdf2` allows to embed images with alpha pixels.
 
 Technically, it is implemented by extracting an `/SMask` from images with transparency,
-and inserting it along with the image data in the PDF document. Related code is in the [image_parsing]( https://github.com/PyFPDF/fpdf2/blob/master/fpdf/image_parsing.py) module.
+and inserting it along with the image data in the PDF document. Related code is in the [image_parsing]( https://github.com/py-pdf/fpdf2/blob/master/fpdf/image_parsing.py) module.
 
 
 ## Assembling images ##
@@ -58,8 +58,8 @@ you can set `w` / `h` and also provide `keep_aspect_ratio=True` to the [`image()
 
 The following unit tests illustrate that:
 
-* [test_image_fit.py](https://github.com/PyFPDF/fpdf2/blob/master/test/image/test_image_fit.py)
-* resulting document: [image_fit_in_rect.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/image/image_fit_in_rect.pdf)
+* [test_image_fit.py](https://github.com/py-pdf/fpdf2/blob/master/test/image/test_image_fit.py)
+* resulting document: [image_fit_in_rect.pdf](https://github.com/py-pdf/fpdf2/blob/master/test/image/image_fit_in_rect.pdf)
 
 ### Blending images ###
 
@@ -78,7 +78,7 @@ with pdf.local_context(blend_mode="ColorBurn"):
 pdf.output("blended-images.pdf")
 ```
 
-Demo of all color blend modes: [blending_images.pdf](https://github.com/PyFPDF/fpdf2/blob/master/test/drawing/generated_pdf/blending_images.pdf)
+Demo of all color blend modes: [blending_images.pdf](https://github.com/py-pdf/fpdf2/blob/master/test/drawing/generated_pdf/blending_images.pdf)
 
 
 ## Image clipping ##
@@ -88,14 +88,14 @@ Demo of all color blend modes: [blending_images.pdf](https://github.com/PyFPDF/f
 You can select only a portion of the image to render using clipping methods:
 
 * [`rect_clip()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.rect_clip):
-    - [example code](https://github.com/PyFPDF/fpdf2/blob/master/test/image/test_image_clipping.py#L10)
-    - [resulting PDF](https://github.com/PyFPDF/fpdf2/blob/master/test/image/rect_clip.pdf)
+    - [example code](https://github.com/py-pdf/fpdf2/blob/master/test/image/test_image_clipping.py#L10)
+    - [resulting PDF](https://github.com/py-pdf/fpdf2/blob/master/test/image/rect_clip.pdf)
 * [`round_clip()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.round_clip):
-    - [example code](https://github.com/PyFPDF/fpdf2/blob/master/test/image/test_image_clipping.py#L33)
-    - [resulting PDF](https://github.com/PyFPDF/fpdf2/blob/master/test/image/round_clip.pdf)
+    - [example code](https://github.com/py-pdf/fpdf2/blob/master/test/image/test_image_clipping.py#L33)
+    - [resulting PDF](https://github.com/py-pdf/fpdf2/blob/master/test/image/round_clip.pdf)
 * [`elliptic_clip()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.elliptic_clip):
-    - [example code](https://github.com/PyFPDF/fpdf2/blob/master/test/image/test_image_clipping.py#L56)
-    - [resulting PDF](https://github.com/PyFPDF/fpdf2/blob/master/test/image/elliptic_clip.pdf)
+    - [example code](https://github.com/py-pdf/fpdf2/blob/master/test/image/test_image_clipping.py#L56)
+    - [resulting PDF](https://github.com/py-pdf/fpdf2/blob/master/test/image/elliptic_clip.pdf)
 
 
 ## Alternative description ##
@@ -167,7 +167,7 @@ pdf.output("pdf-with-image.pdf")
 
 Beware that "flattening" images into JPEGs this way will fill transparent areas of your images with color (usually black).
 
-The allowed `image_filter` values are listed in the [image_parsing]( https://github.com/PyFPDF/fpdf2/blob/master/fpdf/image_parsing.py) module and are currently:
+The allowed `image_filter` values are listed in the [image_parsing]( https://github.com/py-pdf/fpdf2/blob/master/fpdf/image_parsing.py) module and are currently:
 `FlateDecode` (lossless zlib/deflate compression), `DCTDecode` (lossy compression with JPEG) and `JPXDecode` (lossy compression with JPEG2000).
 
 ## ICC Profiles
@@ -256,4 +256,4 @@ for ... # loop
 
 This recipe is valid for `fpdf2` v2.5.7+.
 For previous versions of `fpdf2`, a _deepcopy_ of `.images` must be made,
-(_cf._ [issue #501](https://github.com/PyFPDF/fpdf2/issues/501#issuecomment-1224310277)).
+(_cf._ [issue #501](https://github.com/py-pdf/fpdf2/issues/501#issuecomment-1224310277)).

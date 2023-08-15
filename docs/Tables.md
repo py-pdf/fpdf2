@@ -1,6 +1,6 @@
 # Tables
 
-_New in [:octicons-tag-24: 2.7.0](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.7.0](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 Tables can be built using the `table()` method.
 Here is a simple example:
@@ -188,7 +188,7 @@ Result:
 
 ![](table_with_single_top_line_layout.jpg)
 
-All the possible layout values are described there: [`TableBordersLayout`](https://pyfpdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
+All the possible layout values are described there: [`TableBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
 
 ## Insert images
 ```python
@@ -228,7 +228,7 @@ Result:
 
 ## Adding links to cells
 ```python
-                    row.cell(..., link="https://pyfpdf.github.io/fpdf2/")
+                    row.cell(..., link="https://py-pdf.github.io/fpdf2/")
                     row.cell(..., link=pdf.add_link(page=1))
 ```
 
@@ -338,7 +338,7 @@ The PDF file format is not designed to embed structured tables.
 Hence, it can be tricky to extract tables data from PDF documents.
 
 In our tests suite, we ensure that several PDF-tables parsing Python libraries can successfully extract tables in documents generated with `fpdf2`.
-Namely, we test [camelot-py](https://camelot-py.readthedocs.io) & [tabula-py](https://tabula-py.readthedocs.io): [test/table/test_table_extraction.py](https://github.com/PyFPDF/fpdf2/blob/master/test/table/test_table_extraction.py).
+Namely, we test [camelot-py](https://camelot-py.readthedocs.io) & [tabula-py](https://tabula-py.readthedocs.io): [test/table/test_table_extraction.py](https://github.com/py-pdf/fpdf2/blob/master/test/table/test_table_extraction.py).
 
 Based on those tests, if you want to ease table extraction from the documents you produce, we recommend the following guidelines:
 * avoid splitting tables on several pages

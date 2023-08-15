@@ -19,11 +19,11 @@ def test_hyperlinks(tmp_path):
         txt="Cell link",
         border=1,
         align="C",
-        link="https://github.com/PyFPDF/fpdf2",
+        link="https://github.com/py-pdf/fpdf2",
     )
 
     pdf.set_xy(60, 100)
-    pdf.write_html('<a href="https://github.com/PyFPDF/fpdf2">Link defined as HTML</a>')
+    pdf.write_html('<a href="https://github.com/py-pdf/fpdf2">Link defined as HTML</a>')
 
     text = "Text link"
     pdf.text(x=80, y=150, txt=text)
@@ -33,7 +33,7 @@ def test_hyperlinks(tmp_path):
         y=150 - pdf.h,
         w=width,
         h=pdf.h,
-        link="https://github.com/PyFPDF/fpdf2",
+        link="https://github.com/py-pdf/fpdf2",
     )
 
     assert_pdf_equal(pdf, HERE / "hyperlinks.pdf", tmp_path)
@@ -48,7 +48,7 @@ def test_link_alt_text(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("helvetica", size=24)
-    text = "PyFPDF/fpdf2"
+    text = "py-pdf/fpdf2"
     pdf.text(x=80, y=150, txt=text)
     width = pdf.get_string_width(text)
     line_height = 10
@@ -57,7 +57,7 @@ def test_link_alt_text(tmp_path):
         y=150 - line_height,
         w=width,
         h=line_height,
-        link="https://github.com/PyFPDF/fpdf2",
+        link="https://github.com/py-pdf/fpdf2",
         alt_text="GitHub repository of the fpdf2 library",
     )
     assert_pdf_equal(pdf, HERE / "link_alt_text.pdf", tmp_path)
@@ -100,7 +100,7 @@ def test_link_border(tmp_path):
     pdf.add_page()
     pdf.set_font("Helvetica", size=24)
 
-    text = "https://github.com/PyFPDF/fpdf2"
+    text = "https://github.com/py-pdf/fpdf2"
     height = 10
     x, y = 50, 150
 
@@ -110,7 +110,7 @@ def test_link_border(tmp_path):
         y=y - height,
         w=pdf.get_string_width(text),
         h=height,
-        link="https://github.com/PyFPDF/fpdf2",
+        link="https://github.com/py-pdf/fpdf2",
         border_width=4,
     )
 

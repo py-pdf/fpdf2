@@ -4,7 +4,7 @@ Thanks for your interest in the project. Bugs filed and PRs submitted are apprec
 Some guidelines are provided like this, in HTML comments, to expedite the code review before merging your contribution.
 
 First, please make sure that you have read the documentation page on fpdf2 development:
-https://pyfpdf.github.io/fpdf2/Development.html
+https://py-pdf.github.io/fpdf2/Development.html
 
 If you're new to contributing to open source projects,
 you might find this free video course helpful: http://kcd.im/pull-request
@@ -38,4 +38,4 @@ Once a PR is merged, maintainers will add your name to the contributors table in
 If they forget, or you do not wish this to happen, please mention it.
 -->
 
-By submitting this pull request, I confirm that my contribution is made under the terms of the [GNU LGPL 3.0 license](https://github.com/PyFPDF/fpdf2/blob/master/LICENSE).
+By submitting this pull request, I confirm that my contribution is made under the terms of the [GNU LGPL 3.0 license](https://github.com/py-pdf/fpdf2/blob/master/LICENSE).

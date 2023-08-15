@@ -3,7 +3,7 @@
 This module is in work-in-progress state.
 Hint tables / hint streams have not been implemented yet,
 and there are a few "TODO" comment remaining.
-cf. https://github.com/PyFPDF/fpdf2/issues/62
+cf. https://github.com/py-pdf/fpdf2/issues/62
 """
 from .output import ContentWithoutID, OutputProducer, PDFHeader
 from .sign import sign_content

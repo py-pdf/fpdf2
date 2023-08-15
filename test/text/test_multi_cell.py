@@ -170,7 +170,7 @@ def test_multi_cell_ln_3(tmp_path):
 def test_multi_cell_ln_3_table(tmp_path):
     """
     Test rendering of a table with multi-lines cell contents
-    cf. https://github.com/PyFPDF/fpdf2/issues/63
+    cf. https://github.com/py-pdf/fpdf2/issues/63
     """
     pdf = FPDF()
     pdf.add_page()
@@ -260,8 +260,10 @@ def test_multi_cell_split_only():  # discussion 314
     ]
     with pytest.warns(
         DeprecationWarning, match='The parameter "split_only" is deprecated.'
-    ):
+    ) as record:
         assert pdf.multi_cell(w=0, h=LINE_HEIGHT, txt=text, split_only=True) == expected
+    assert len(record) == 1
+    assert record[0].filename == __file__
 
 
 def test_multi_cell_with_empty_contents(tmp_path):  # issue 349
@@ -281,8 +283,11 @@ def test_multicell_newpos_badinput():
     pdf.add_page()
     pdf.set_font("Times", size=16)
     with pytest.raises(ValueError):
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(DeprecationWarning) as record:
             pdf.multi_cell(0, ln=5)
+        assert len(record) == 1
+        assert record[0].filename == __file__
+
     with pytest.raises(TypeError):
         pdf.multi_cell(0, new_x=5)
     with pytest.raises(TypeError):

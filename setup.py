@@ -11,5 +11,5 @@ if __name__ == "__main__":
     )[0]
     setup(
         version=version,
-        download_url=f"https://github.com/PyFPDF/fpdf2/tarball/{version}",
+        download_url=f"https://github.com/py-pdf/fpdf2/tarball/{version}",
     )

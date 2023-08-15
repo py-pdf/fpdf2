@@ -22,7 +22,7 @@ def test_write_soft_hyphen(tmp_path):
     The current behaviour is close to CSS word-break: break-all
     cf. https://developer.mozilla.org/en-US/docs/Web/CSS/overflow-wrap#comparing_overflow-wrap_word-break_and_hyphens
     We used to prefer a line break over a word split without regards to soft hyphens:
-    https://github.com/PyFPDF/fpdf2/blob/2.7.4/test/text/write_soft_hyphen.pdf
+    https://github.com/py-pdf/fpdf2/blob/2.7.4/test/text/write_soft_hyphen.pdf
     But that caused issue with write_html(), cf. issue #847
     """
     s = "Donau\u00addamp\u00adfschiff\u00adfahrts\u00adgesellschafts\u00adkapitäns\u00admützen\u00adstreifen. "

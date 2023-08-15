@@ -9,7 +9,7 @@ assignees: ''
 Hi there! Thank you for wanting to make fpdf2 better 😉.
 
 Please perform a quick search first, in order to check if your problem has already been reported:
-https://github.com/PyFPDF/fpdf2/issues
+https://github.com/py-pdf/fpdf2/issues
 -->
 
 Describe the bug
@@ -38,11 +38,11 @@ Please provide the following information:
 
 Often, there are bugfixes & other changes on fpdf2 git repo `master` branch
 that have not been released yet. They are listed in the ChangeLog:
-https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md
+https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md
 
 Hence, please check that your bug is still present using the latest version of fpdf2 from the git repository,
 by installing it this way:
 
-    pip install git+https://github.com/PyFPDF/fpdf2.git@master
+    pip install git+https://github.com/py-pdf/fpdf2.git@master
 
 -->

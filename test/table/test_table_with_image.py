@@ -142,7 +142,7 @@ def test_table_with_links(tmp_path):
                     row.cell(
                         img=datum,
                         img_fill_width=True,
-                        link="https://pyfpdf.github.io/fpdf2/",
+                        link="https://py-pdf.github.io/fpdf2/",
                     )
                 else:
                     row.cell(datum, link=pdf.add_link(page=1))
