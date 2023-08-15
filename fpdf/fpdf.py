@@ -3495,6 +3495,7 @@ class FPDF(GraphicsStateMixin):
         styled_text_fragments = self._preload_font_styles(normalized_string, markdown)
 
         prev_font_style, prev_underline = self.font_style, self.underline
+        prev_x, prev_y = self.x, self.y
         total_height = 0
 
         if not border:
