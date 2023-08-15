@@ -38,6 +38,15 @@ MULTILINE_TABLE_DATA = (
     (LOREM_IPSUM[600:800], IMG_DIR / "image_types/circle.bmp"),
 )
 
+def test_table_with_image_border_overlap(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table() as table:
+        row = table.row()
+        row.cell(img=IMG_DIR / "png_indexed/flower1.png", img_fill_width=True)
+        row.cell("Other field")
+    assert_pdf_equal(pdf, HERE / "table_with_image_border_overlap.pdf", tmp_path)
 
 def test_table_with_images(tmp_path):
     pdf = FPDF()

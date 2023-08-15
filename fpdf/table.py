@@ -406,6 +406,7 @@ class Table:
         #
         # If cell_height is None then we're still in the phase of calculating the height of the cell meaning that
         # we do not need to set fonts & draw borders yet.
+
         if cell_height is not None:
             x1 = self._fpdf.x
             y1 = self._fpdf.y
@@ -449,20 +450,23 @@ class Table:
             # if cell_height is None or width is given then call image with h=0
             # calling with h=0 means that the image will be rendered with an auto determined height
             auto_height = cell.img_fill_width or cell_height is None
+            cell_border_line_width = self._fpdf.line_width
 
             # apply padding
-            self._fpdf.x += padding.left
-            self._fpdf.y += padding.top
+            self._fpdf.x += padding.left + cell_border_line_width/2
+            self._fpdf.y += padding.top + cell_border_line_width/2
 
             image = self._fpdf.image(
                 cell.img,
-                w=col_width - padding.left - padding.right,
-                h=0 if auto_height else cell_height - padding.top - padding.bottom,
+                w=col_width - padding.left - padding.right - cell_border_line_width,
+                h=0 if auto_height else cell_height - padding.top - padding.bottom - cell_border_line_width,
                 keep_aspect_ratio=True,
                 link=cell.link,
             )
 
-            img_height = image.rendered_height
+            img_height = image.rendered_height + padding.top + padding.bottom + cell_border_line_width
+
+
 
             if img_height + y > self._fpdf.page_break_trigger:
                 page_break_image = True
@@ -506,7 +510,7 @@ class Table:
         else:
             cell_height = 0
 
-        return page_break_text or page_break_image, max(img_height, cell_height)
+        return page_break_text or page_break_image, img_height, cell_height
 
     def _get_col_width(self, i, j, colspan=1):
         """Gets width of a column in a table, this excludes the gutter outside the column but includes the gutter
@@ -537,9 +541,15 @@ class Table:
         """
         Compute the cells heights & detect page jumps,
         but disable actual rendering by using FPDF._disable_writing()
+
+        Text governs the height of a row, images are scaled accordingly.
+        Except if there is no text, then the image height is used.
+
         """
         row = self.rows[i]
-        heights_per_cell = []
+        dictated_heights_per_cell = []
+        image_heights_per_cell = []
+
         rendered_height = (
             dict()
         )  # as dict because j is not continuous in case of colspans
@@ -548,25 +558,41 @@ class Table:
         with self._fpdf._disable_writing():
             j = 0
             for cell in row.cells:
-                page_break, height = self._render_table_cell(
+                page_break, image_height, text_height = self._render_table_cell(
                     i,
                     j,
                     cell,
                     row_height=self._line_height,
                 )
 
+                if cell.img_fill_width:
+                    dictated_height = image_height
+                else:
+                    dictated_height = text_height
+
                 # store the rendered height in the cell as info
                 # Can not store in the cell as this is a frozen dataclass
                 # so store in RowLayoutInfo instead
-                rendered_height[j] = height
+                rendered_height[j] = max(image_height, dictated_height)
 
                 j += cell.colspan
                 any_page_break = any_page_break or page_break
-                heights_per_cell.append(height)
 
+                image_heights_per_cell.append(image_height)
+                dictated_heights_per_cell.append(dictated_height)
+
+        # The text governs the row height, but if there is no text, then the image governs the row height
         row_height = (
-            max(height for height in heights_per_cell) if heights_per_cell else 0
+            max(height for height in dictated_heights_per_cell) if dictated_heights_per_cell else 0
         )
+
+        if row_height == 0:
+            row_height = (
+                max(height for height in image_heights_per_cell)
+                if image_heights_per_cell
+                else 0
+            )
+
         return RowLayoutInfo(row_height, any_page_break, rendered_height)
 
 
