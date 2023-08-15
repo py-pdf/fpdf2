@@ -275,7 +275,7 @@ class Fragment:
             char = chr(ti["mapped_char"]).encode("utf-16-be").decode("latin-1")
             if ti["x_offset"] != 0 or ti["y_offset"] != 0:
                 if text:
-                    ret += f"({text}) Tj "
+                    ret += f"({escape_parens(text)}) Tj "
                     text = ""
                 offsetx = pos_x + adjust_pos(ti["x_offset"])
                 offsety = pos_y - adjust_pos(ti["y_offset"])
@@ -293,12 +293,12 @@ class Fragment:
                 word_spacing and ti["mapped_char"] == space_mapped_code
             ):
                 if text:
-                    ret += f"({text}) Tj "
+                    ret += f"({escape_parens(text)}) Tj "
                     text = ""
                 ret += f"1 0 0 1 {(pos_x) * self.k:.2f} {(h - pos_y) * self.k:.2f} Tm "
 
         if text:
-            ret += f"({text}) Tj"
+            ret += f"({escape_parens(text)}) Tj"
         return ret
 
     def render_pdf_text_core(self, frag_ws, current_ws):
