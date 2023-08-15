@@ -86,10 +86,7 @@ from .sign import Signature
 from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ, PDFDate
 from .table import Table, get_padding_tuple, Padding
-from .util import (
-    escape_parens,
-    get_scale_factor,
-)
+from .util import get_scale_factor
 
 # Public global variables:
 FPDF_VERSION = "2.7.5"

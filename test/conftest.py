@@ -142,13 +142,6 @@ def assert_pdf_equal(
         actual_hash = hashlib.md5(actual_pdf_path.read_bytes()).hexdigest()
         expected_hash = hashlib.md5(expected_pdf_path.read_bytes()).hexdigest()
 
-        # trick to open both files in explorer if they are different
-        if actual_hash != expected_hash:
-            # open both
-            import subprocess
-            subprocess.Popen(f'explorer "{actual_pdf_path}"')
-            subprocess.Popen(f'explorer "{expected_pdf_path}"')
-
         assert actual_hash == expected_hash, f"{actual_hash} != {expected_hash}"
 
 
