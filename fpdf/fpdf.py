@@ -2781,7 +2781,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 styled_txt_frags,
                 text_width=0,
                 number_of_spaces=0,
-                justify=False,
+                align=Align.L if align == Align.J else align,
                 height=h,
                 max_width=w,
                 trailing_nl=False,
@@ -2791,7 +2791,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             border,
             new_x=new_x,
             new_y=new_y,
-            align=align,
             fill=fill,
             link=link,
             center=center,
@@ -2805,7 +2804,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         border: Union[str, int] = 0,
         new_x: XPos = XPos.RIGHT,
         new_y: YPos = YPos.TOP,
-        align: Align = Align.L,
         fill: bool = False,
         link: str = "",
         center: bool = False,
@@ -2835,11 +2833,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 `L`: left ; `T`: top ; `R`: right ; `B`: bottom. Default value: 0.
             new_x (fpdf.enums.XPos): New current position in x after the call.
             new_y (fpdf.enums.YPos): New current position in y after the call.
-            align (fpdf.enums.Align): Allows to align the text inside the cell.
-                Possible values are:
-                `L` or empty string: left align (default value);
-                `C`: center; `X`: center around current x; `R`: right align;
-                `J`: justify (if more than one word)
             fill (bool): Indicates if the cell background must be painted (`True`)
                 or transparent (`False`). Default value: False.
             link (str): optional link to add on the cell, internal
@@ -2931,9 +2924,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         current_font_stretching = self.font_stretching
         current_char_spacing = self.char_spacing
         if text_line.fragments:
-            if align == Align.R:
+            if text_line.align == Align.R:
                 dx = w - horizontal_margin - styled_txt_width
-            elif align in [Align.C, Align.X]:
+            elif text_line.align in [Align.C, Align.X]:
                 dx = (w - styled_txt_width) / 2
             else:
                 dx = horizontal_margin
@@ -2943,21 +2936,20 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 sl.append(self.text_color.serialize().lower())
 
             word_spacing = 0
-            if text_line.justify:
-                # Don't rely on align==Align.J here.
-                # If a line gets broken by an explicit '\n', then MultiLineBreak
-                # will set its justify to False (end of paragraph).
+            if text_line.align == Align.J and text_line.number_of_spaces:
                 word_spacing = (
                     w - horizontal_margin - horizontal_margin - styled_txt_width
                 ) / text_line.number_of_spaces
 
             # XXX
+            """
             print(
                 round(w, 3),
                 round(text_line.text_width, 3),
-                text_line.justify,
+                text_line.align,
                 word_spacing,
             )
+            """
             sl.append(
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
@@ -3544,7 +3536,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         multi_line_break = MultiLineBreak(
             styled_text_fragments,
             maximum_allowed_width,
-            justify=(align == Align.J),
+            align=align,
             print_sh=print_sh,
             wrapmode=wrapmode,
         )
@@ -3559,7 +3551,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     "",
                     text_width=0,
                     number_of_spaces=0,
-                    justify=False,
+                    align=align,
                     height=h,
                     max_width=w,
                     trailing_nl=False,
@@ -3595,7 +3587,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 ),
                 new_x=new_x if not has_line_after else XPos.LEFT,
                 new_y=new_y if not has_line_after else YPos.NEXT,
-                align=Align.L if (align == Align.J and is_last_line) else align,
                 fill=fill,
                 link=link,
                 padding=padding,
@@ -3611,7 +3602,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     "",
                     text_width=0,
                     number_of_spaces=0,
-                    justify=False,
+                    align=Align.L,
                     height=h,
                     max_width=w,
                     trailing_nl=False,
@@ -3637,7 +3628,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             # pretend we started at the top of the text block on the new page.
             # cf. test_multi_cell_table_with_automatic_page_break
             prev_y = self.y
-        # pylint: disable=undefined-loop-variable
         if text_line and text_line.trailing_nl and new_y in (YPos.LAST, YPos.NEXT):
             # The line renderer can't handle trailing newlines in the text.
             self.ln()
@@ -3751,12 +3741,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 border=0,
                 new_x=XPos.WCONT,
                 new_y=YPos.TOP,
-                align=Align.L,
                 fill=False,
                 link=link,
             )
             page_break_triggered = page_break_triggered or new_page
-        # pylint: disable=undefined-loop-variable
         if text_line.trailing_nl:
             # The line renderer can't handle trailing newlines in the text.
             self.ln()

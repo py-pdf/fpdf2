@@ -9,7 +9,7 @@ in non-backward-compatible ways.
 
 from typing import NamedTuple, Any, Optional, Union, Sequence
 
-from .enums import CharVPos, WrapMode
+from .enums import CharVPos, WrapMode, Align
 from .errors import FPDFException
 from .fonts import CoreFont, TTFFont
 from .util import escape_parens
@@ -315,7 +315,7 @@ class TextLine(NamedTuple):
     fragments: tuple
     text_width: float
     number_of_spaces: int
-    justify: bool
+    align: Align
     height: float
     max_width: float
     trailing_nl: bool = False
@@ -454,12 +454,12 @@ class CurrentLine:
         self.number_of_spaces = break_hint.number_of_spaces
         self.width = break_hint.line_width
 
-    def manual_break(self, justify: bool = False, trailing_nl: bool = False):
+    def manual_break(self, align: Align, trailing_nl: bool = False):
         return TextLine(
             fragments=self.fragments,
             text_width=self.width,
             number_of_spaces=self.number_of_spaces,
-            justify=(self.number_of_spaces > 0) and justify,
+            align=align,
             height=self.height,
             max_width=self.max_width,
             trailing_nl=trailing_nl,
@@ -468,7 +468,7 @@ class CurrentLine:
     def automatic_break_possible(self):
         return self.hyphen_break_hint is not None or self.space_break_hint is not None
 
-    def automatic_break(self, justify: bool):
+    def automatic_break(self, align: Align):
         assert self.automatic_break_possible()
         if self.hyphen_break_hint is not None and (
             self.space_break_hint is None
@@ -487,13 +487,13 @@ class CurrentLine:
             return (
                 self.hyphen_break_hint.original_fragment_index,
                 self.hyphen_break_hint.original_character_index,
-                self.manual_break(justify),
+                self.manual_break(align),
             )
         self._apply_automatic_hint(self.space_break_hint)
         return (
             self.space_break_hint.original_fragment_index,
             self.space_break_hint.original_character_index,
-            self.manual_break(justify),
+            self.manual_break(align),
         )
 
 
@@ -503,7 +503,7 @@ class MultiLineBreak:
         self,
         styled_text_fragments: Sequence,
         max_width: Union[float, callable],
-        justify: bool = False,
+        align: Align = Align.L,
         print_sh: bool = False,
         wrapmode: WrapMode = WrapMode.WORD,
     ):
@@ -517,7 +517,7 @@ class MultiLineBreak:
                     applicable width for the line with the given height at the current
                     vertical position. The height is relevant in those cases where the
                     lateral boundaries of the enclosing TextRegion() are not vertical.
-                justify (bool): If True, the text alignment will be justified.
+                align (Align): The horizontal alignment of the current text block.
                 print_sh (bool): If True, a soft-hyphen will be rendered
                     normally, instead of triggering a line break. Default: False
                 wrapmode (WrapMode): Selects word or character based wrapping.
@@ -528,7 +528,7 @@ class MultiLineBreak:
             self.get_width = max_width
         else:
             self.get_width = lambda height: max_width
-        self.justify = justify
+        self.align = align
         self.print_sh = print_sh
         self.wrapmode = wrapmode
         self.fragment_index = 0
@@ -568,23 +568,24 @@ class MultiLineBreak:
 
             if character == NEWLINE:
                 self.character_index += 1
-                return current_line.manual_break(trailing_nl=True)
-
+                return current_line.manual_break(
+                        Align.L if self.align == Align.J else self.align,
+                        trailing_nl=True)
             if current_line.width + character_width > max_width:
                 if character == SPACE:  # must come first, always drop a current space.
                     self.character_index += 1
-                    return current_line.manual_break(self.justify)
+                    return current_line.manual_break(self.align)
                 if self.wrapmode == WrapMode.CHAR:
                     # If the line ends with one or more spaces, then we want to get
                     # rid of them so it can be justified correctly.
                     current_line.trim_trailing_spaces()
-                    return current_line.manual_break(self.justify)
+                    return current_line.manual_break(self.align)
                 if current_line.automatic_break_possible():
                     (
                         self.fragment_index,
                         self.character_index,
                         line,
-                    ) = current_line.automatic_break(self.justify)
+                    ) = current_line.automatic_break(self.align)
                     self.character_index += 1
                     return line
                 if idx_last_forced_break == self.character_index:
@@ -592,7 +593,8 @@ class MultiLineBreak:
                         "Not enough horizontal space to render a single character"
                     )
                 self.idx_last_forced_break = self.character_index
-                return current_line.manual_break()
+                return current_line.manual_break(
+                        Align.L if self.align == Align.J else self.align)
 
             current_line.add_character(
                 character,
@@ -608,6 +610,7 @@ class MultiLineBreak:
             self.character_index += 1
 
         if current_line.width:
-            return current_line.manual_break()
+            return current_line.manual_break(
+                    Align.L if self.align == Align.J else self.align)
         return None
 

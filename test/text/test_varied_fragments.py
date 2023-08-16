@@ -26,8 +26,7 @@ class FxFPDF(FPDF):
         def _get_width(height):  # pylint: disable=unused-argument
             return max_width
         text_lines = []
-        justify = align == Align.J
-        multi_line_break = MultiLineBreak(frags, _get_width, justify=justify)
+        multi_line_break = MultiLineBreak(frags, _get_width, align=align)
         # first line from current x position to right margin
         first_width = self.w - self.x - self.r_margin
         max_width = first_width - 2 * self.c_margin
@@ -57,7 +56,6 @@ class FxFPDF(FPDF):
                 border=0,
                 new_x=XPos.WCONT,
                 new_y=YPos.TOP,
-                align=Align.L if (align == Align.J and is_last_line) else align,
                 fill=False,
                 link=None,
             )
