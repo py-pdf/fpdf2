@@ -2950,12 +2950,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 ) / text_line.number_of_spaces
 
             # XXX
+            """
             print(
                 round(w, 3),
                 round(text_line.text_width, 3),
-                text_line.justify,
+                text_line.align,
                 word_spacing,
             )
+            """
             sl.append(
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
