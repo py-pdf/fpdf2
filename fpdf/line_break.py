@@ -497,7 +497,6 @@ class CurrentLine:
         )
 
 
-
 class MultiLineBreak:
     def __init__(
         self,
@@ -507,20 +506,20 @@ class MultiLineBreak:
         print_sh: bool = False,
         wrapmode: WrapMode = WrapMode.WORD,
     ):
-        """ Accept text as Fragments, to be split into individual lines depending
-            on line width and text height.
-            Args:
-                styled_text_fragments: A sequence of Fragment()s containing text.
-                max_width: Either a fixed width as float or a callback function
-                    get_width(height). If a function, it gets called with the largest
-                    height encountered on the current line, and must return the
-                    applicable width for the line with the given height at the current
-                    vertical position. The height is relevant in those cases where the
-                    lateral boundaries of the enclosing TextRegion() are not vertical.
-                align (Align): The horizontal alignment of the current text block.
-                print_sh (bool): If True, a soft-hyphen will be rendered
-                    normally, instead of triggering a line break. Default: False
-                wrapmode (WrapMode): Selects word or character based wrapping.
+        """Accept text as Fragments, to be split into individual lines depending
+        on line width and text height.
+        Args:
+            styled_text_fragments: A sequence of Fragment()s containing text.
+            max_width: Either a fixed width as float or a callback function
+                get_width(height). If a function, it gets called with the largest
+                height encountered on the current line, and must return the
+                applicable width for the line with the given height at the current
+                vertical position. The height is relevant in those cases where the
+                lateral boundaries of the enclosing TextRegion() are not vertical.
+            align (Align): The horizontal alignment of the current text block.
+            print_sh (bool): If True, a soft-hyphen will be rendered
+                normally, instead of triggering a line break. Default: False
+            wrapmode (WrapMode): Selects word or character based wrapping.
         """
 
         self.styled_text_fragments = styled_text_fragments
@@ -569,8 +568,8 @@ class MultiLineBreak:
             if character == NEWLINE:
                 self.character_index += 1
                 return current_line.manual_break(
-                        Align.L if self.align == Align.J else self.align,
-                        trailing_nl=True)
+                    Align.L if self.align == Align.J else self.align, trailing_nl=True
+                )
             if current_line.width + character_width > max_width:
                 if character == SPACE:  # must come first, always drop a current space.
                     self.character_index += 1
@@ -594,7 +593,8 @@ class MultiLineBreak:
                     )
                 self.idx_last_forced_break = self.character_index
                 return current_line.manual_break(
-                        Align.L if self.align == Align.J else self.align)
+                    Align.L if self.align == Align.J else self.align
+                )
 
             current_line.add_character(
                 character,
@@ -611,6 +611,6 @@ class MultiLineBreak:
 
         if current_line.width:
             return current_line.manual_break(
-                    Align.L if self.align == Align.J else self.align)
+                Align.L if self.align == Align.J else self.align
+            )
         return None
-

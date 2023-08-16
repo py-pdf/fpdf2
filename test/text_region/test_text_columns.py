@@ -11,7 +11,7 @@ def test_tcols_align(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", "", 12)
-    cols = fpdf.TextColumns(pdf)
+    cols = pdf.text_column()
     with cols:
         cols.write(txt=LOREM_IPSUM[:100])
         pdf.set_font("Times", "", 12)
@@ -61,7 +61,7 @@ def test_tcols_2cols(tmp_path):
     pdf.t_margin = 50
     pdf.set_auto_page_break(True, 100)
     pdf.set_font("Helvetica", "", 6)
-    cols = fpdf.TextColumns(pdf, align="J", ncols=3, gap_width=5)
+    cols = pdf.text_columns(align="J", ncols=3, gap_width=5)
     with cols:
         cols.write(txt=LOREM_IPSUM)
         pdf.set_font("Times", "", 8)

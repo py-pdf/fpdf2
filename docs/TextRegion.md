@@ -16,12 +16,13 @@ Using the different region types and combination always follows the same pattern
 * You can use the region instance as a context manager for filling, but you don't have to
   * When used as a context manager, you can change all text styling parameters within that context, and they will be used by the added text, but won't leak to the surroundings
   * For adding text with the already existing settings, just use the region instance as is.
+* Within a region, paragraphs can be inserted. The primary purpose of a paragraph is to apply a different horizontal alignment than the surrounding text. (Other features like top/bottom spacing or first-line indent may be added later.)
 * Once all the desired text is collected to fill a shape or a set of columns, you can call its `.render()` method to actually do so. 
 
 
 ### Text Start Position ###
 
-When rendering, the vertical start position of the text will be either at the lowest point out of the current y position, the top of the region (if it has a defined top), or the top margin of the page. The horizontal start position will either at the current x position or at the left edge of the region, whichever is further to the right. In both horizontal and vertical positioning, regions with multiple columns may follow additional rules and restrictions.
+When rendering, the vertical start position of the text will be at the lowest one out of the current y position, the top of the region (if it has a defined top), or the top margin of the page. The horizontal start position will either at the current x position or at the left edge of the region, whichever is further to the right. In both horizontal and vertical positioning, regions with multiple columns may follow additional rules and restrictions.
 
 
 ### Interaction between Regions ###
@@ -29,4 +30,39 @@ When rendering, the vertical start position of the text will be either at the lo
 Several region instances can exist at the same time. But only one of them can act as context manager at any given time. It is not currently possible to operate them recursively.
 But it is possible to use them intermittingly. This will probably most often make sense between a columnar region and a table. You may have some running text ending at a given height, then insert a table with data, and finally continue the running text at the new height below the table within the existing column.
 
+## Columns ##
 
+The `FPDF.text_column() and ``FPDF.text_columns()` methods allow to create columnar layouts, with one or several columns respectively. Columns will always be of equal width.
+
+#### Single-column example
+
+In this example an inserted paragraph is used in order to format its content with justified alignment, while the rest of the text uses the default left alignment.
+
+```python
+    cols = pdf.text_column()
+    with cols:
+        cols.write(txt=LOREM_IPSUM)
+        with cols.paragraph(align="J") as par:
+            par.write(txt=LOREM_IPSUM[:100])
+        cols.write(txt=LOREM_IPSUM)
+```
+
+#### Multi-column example
+
+Here we have a layout with three columns. Note that font type and text size can be varied within a text region, while still maintaining the justified (in this case) horizontal alignment.
+
+```python
+    cols = pdf.text_columns(align="J", ncols=3, gap_width=5)
+    with cols:
+        cols.write(txt=LOREM_IPSUM)
+        pdf.set_font("Times", "", 8)
+        cols.write(txt=LOREM_IPSUM)
+        pdf.set_font("Courier", "", 10)
+        cols.write(txt=LOREM_IPSUM)
+        pdf.set_font("Helvetica", "", 12)
+```
+
+### Possible future extensions
+
+* Balanced columns, which all end on the same hight. Currently columns are filled to the maximum height from left to right.
+* Columns with differing widths (no balancing possible in this case).

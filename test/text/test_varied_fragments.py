@@ -23,8 +23,10 @@ TEXT_5 = " ea sed voluptate commodo amet eiusmod incididunt"
 class FxFPDF(FPDF):
     def write_fragments(self, frags, align=Align.L):
         """Replicate the part of write() that actually renders the fragments."""
+
         def _get_width(height):  # pylint: disable=unused-argument
             return max_width
+
         text_lines = []
         multi_line_break = MultiLineBreak(frags, _get_width, align=align)
         # first line from current x position to right margin
@@ -48,7 +50,6 @@ class FxFPDF(FPDF):
             else:
                 line_width = full_width
                 self.ln()
-            is_last_line = text_line_index == len(text_lines) - 1
             self._render_styled_text_line(
                 text_line,
                 line_width,

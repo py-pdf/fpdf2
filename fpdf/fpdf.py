@@ -2940,16 +2940,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 word_spacing = (
                     w - horizontal_margin - horizontal_margin - styled_txt_width
                 ) / text_line.number_of_spaces
-
-            # XXX
-            """
-            print(
-                round(w, 3),
-                round(text_line.text_width, 3),
-                text_line.align,
-                word_spacing,
-            )
-            """
             sl.append(
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
@@ -3708,6 +3698,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         def _get_width(height):  # pylint: disable=unused-argument
             # Set the width dynamically, since the first line can have a different width.
             return max_width
+
         text_lines = []
         multi_line_break = MultiLineBreak(
             styled_text_fragments,
@@ -3749,6 +3740,53 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             # The line renderer can't handle trailing newlines in the text.
             self.ln()
         return page_break_triggered
+
+    @check_page
+    def text_column(
+        self,
+        align: Union[Align, str] = "LEFT",
+        l_margin: float = None,
+        r_margin: float = None,
+    ):
+        """Establish a layout with a single column to fill with text.
+        Args:
+            align (Align or str): The alignment of the region, default "LEFT".
+            l_margin (float, optional): Override the current left page margin.
+            r_margin (float, optional): Override the current right page margin.
+        """
+        return TextColumns(
+            self,
+            ncols=1,
+            align=align,
+            l_margin=l_margin,
+            r_margin=r_margin,
+        )
+
+    @check_page
+    def text_columns(
+        self,
+        ncols: int = 2,
+        gap_width: float = 10,
+        align: Union[Align, str] = "LEFT",
+        l_margin: float = None,
+        r_margin: float = None,
+    ):
+        """Establish a layout with multiple columns to fill with text.
+        Args:
+            ncols (int): the number of columns to create.
+            gap_width (float): The distance between the columns.
+            align (Align or str): The alignment of the region, default "LEFT".
+            l_margin (float, optional): Override the current left page margin.
+            r_margin (float, optional): Override the current right page margin.
+        """
+        return TextColumns(
+            self,
+            ncols=ncols,
+            gap_width=gap_width,
+            align=align,
+            l_margin=l_margin,
+            r_margin=r_margin,
+        )
 
     @check_page
     def image(

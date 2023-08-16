@@ -1,6 +1,6 @@
 from .errors import FPDFException
 from .enums import Align, XPos, YPos
-from .line_break import MultiLineBreak, TextLine
+from .line_break import MultiLineBreak
 
 # Since Python doesn't have "friend classes"...
 # pylint: disable=protected-access
@@ -23,7 +23,6 @@ class TextRegionMixin:
         self.__current_text_region = None
 
 
-
 class Paragraph:
     def __init__(self, region, *args, align=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -42,18 +41,17 @@ class Paragraph:
     def __exit__(self, exc_type, exc_value, traceback):
         self.region.end_paragraph()
 
-    def write(self, txt: str, link: str = ""):
+    def write(self, txt: str): #, link: str = ""):
         if not self.pdf.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         normalized_string = self.pdf.normalize_text(txt).replace("\r", "")
-        # XXX _preload_font_styles() should accept a "link" argument.
+        # YYY _preload_font_styles() should accept a "link" argument.
         styled_text_fragments = self.pdf._preload_font_styles(normalized_string, False)
         self._text_fragments.extend(styled_text_fragments)
 
     def _build_lines(self, current_y, print_sh):
         self.current_y = current_y
         text_lines = []
-        align = self.align or self.region.align
         multi_line_break = MultiLineBreak(
             self._text_fragments,
             max_width=self.region.get_width,
@@ -68,10 +66,11 @@ class Paragraph:
             text_line = multi_line_break.get_line()
         return text_lines
 
+
 class ParagraphCollectorMixin:
     def __init__(self, pdf, *args, align="LEFT", **kwargs):
         self.pdf = pdf
-        self.align = Align.coerce(align) # default for auto paragraphs
+        self.align = Align.coerce(align)  # default for auto paragraphs
         self._paragraphs = []
         self._has_paragraph = None
         super().__init__(pdf, *args, **kwargs)
@@ -93,10 +92,11 @@ class ParagraphCollectorMixin:
         self.pdf._pop_local_stack()
         self.render()
 
-    def write(self, txt:str, link: str = ""):
+    def write(self, txt: str): #, link: str = ""):
         if self._has_paragraph == "EXPLICIT":
             raise FPDFException(
-                    "Conflicts with active paragraph. Consider adding your text there.")
+                "Conflicts with active paragraph. Consider adding your text there."
+            )
         if self._has_paragraph is None:
             p = Paragraph(region=self, align=self.align)
             self._paragraphs.append(p)
@@ -118,15 +118,15 @@ class ParagraphCollectorMixin:
 
 
 class TextRegion(ParagraphCollectorMixin):
-    """ Abstract base class for all text region subclasses.
-    """
+    """Abstract base class for all text region subclasses."""
 
     def _ln(self, h=None):
         self.pdf.ln(h)
 
-    def current_x_extents(self, y, height): # pylint: disable=no-self-use,unused-argument
-        """Return the horizontal extents of the current line.
-        """
+    def current_x_extents(
+        self, y, height
+    ):  # xpylint: disable=no-self-use,unused-argument
+        """Return the horizontal extents of the current line."""
         raise NotImplementedError()
 
     def _render_lines(self, text_lines):
@@ -134,7 +134,6 @@ class TextRegion(ParagraphCollectorMixin):
         self.pdf.y = max(self.pdf.y, self.pdf.t_margin)
         text_line = None
         for text_line_index, text_line in enumerate(text_lines):
-            is_last_line = text_line_index == len(text_lines) - 1
             if text_line_index != 0:
                 self._ln()
             # print(self.pdf.y + text_line.height, self.pdf.page_break_trigger)
@@ -171,7 +170,7 @@ class TextRegion(ParagraphCollectorMixin):
     def render(self, print_sh: bool = False):
         if not self._paragraphs:
             return False
-        text_lines = self.collect_lines()
+        text_lines = self.collect_lines(print_sh)
         return self._render_lines(text_lines)
 
     def get_width(self, height):
@@ -185,10 +184,10 @@ class TextColumnarMixin:
 
     def __init__(self, pdf, *args, l_margin=None, r_margin=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.l_margin = self.pdf.l_margin if l_margin is None else l_margin
+        self.l_margin = pdf.l_margin if l_margin is None else l_margin
         left = self.l_margin
-        self.r_margin = self.pdf.r_margin if r_margin is None else r_margin
-        right = self.pdf.w - self.r_margin
+        self.r_margin = pdf.r_margin if r_margin is None else r_margin
+        right = pdf.w - self.r_margin
         self._set_left_right(left, right)
 
     def _set_left_right(self, left, right):
@@ -200,7 +199,7 @@ class TextColumnarMixin:
                 f"Right limit ({self.right}) lower than left limit ({self.left})."
             )
 
-    def current_x_extents(self, y, height): # pylint: disable=unused-argument
+    def current_x_extents(self, y, height):  # pylint: disable=unused-argument
         """Return the horizontal extents of the current line.
         Columnar regions simply return the boundaries of the column.
         Regions with non-vertical boundaries need to check how the largest
@@ -224,7 +223,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
         # differing width.
         c_left = self.left
         self.cols = [(c_left, c_left + self.col_width)]
-        for i in range(1, ncols): # pylint: disable=unused-variable
+        for i in range(1, ncols):  # pylint: disable=unused-variable
             c_left += self.col_width + self.gap_width
             self.cols.append((c_left, c_left + self.col_width))
 
@@ -243,14 +242,14 @@ class TextColumns(TextRegion, TextColumnarMixin):
             self.cur_top = self.pdf.t_margin
         if not text_lines:
             return False
-        if not balance:
-            return self._render_lines(text_lines)
+#        if not balance:
+        return self._render_lines(text_lines)
         # balance the columns.
-        hgt_lines = sum(l.height for l in text_lines)
-        bottom = self.pdf.h - self.pdf.b_margin
-        hgt_avail = bottom - self.pdf.y
-        hgt_avail += (self.ncols - self.cur_column - 1) * (bottom - self.cur_top)
-        # XXX Finish balancing
+#        hgt_lines = sum(l.height for l in text_lines)
+#        bottom = self.pdf.h - self.pdf.b_margin
+#        hgt_avail = bottom - self.pdf.y
+#        hgt_avail += (self.ncols - self.cur_column - 1) * (bottom - self.cur_top)
+        # YYY Finish balancing
 
     def accept_page_break(self):
         if self.cur_column == self.ncols - 1:
@@ -271,4 +270,3 @@ class TextColumns(TextRegion, TextColumnarMixin):
         left = self.cols[self.cur_column][0]
         right = self.cols[self.cur_column][1]
         return left, right
-

@@ -1239,7 +1239,7 @@ def test_last_line_no_justify():
         fragments=fragments,
         text_width=char_width,
         number_of_spaces=0,
-        align=Align.L, # !
+        align=Align.L,  # !
         height=12,
         max_width=max_width,
         trailing_nl=False,
