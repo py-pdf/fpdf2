@@ -1,6 +1,6 @@
 # Text Flow Regions #
 
-**Notice:** As of fpdf2 release 2.5.8, this is an experimental feature. Both the API and the functionality may change before it is finalized, without prior notice.
+**Notice:** As of fpdf2 release 2.7.6, this is an experimental feature. Both the API and the functionality may change before it is finalized, without prior notice.
 
 Text regions are a hierarchy of classes that enable to flow text within a given outline. In the simplest case, it is just the running text column of a page. But it can also be a sequence of outlines, such as several parallel columns or the cells of a table. Other outlines may be combined by addition or subtraction to create more complex shapes.
 
@@ -16,7 +16,7 @@ Using the different region types and combination always follows the same pattern
 * You can use the region instance as a context manager for filling, but you don't have to
   * When used as a context manager, you can change all text styling parameters within that context, and they will be used by the added text, but won't leak to the surroundings
   * For adding text with the already existing settings, just use the region instance as is.
-* Within a region, paragraphs can be inserted. The primary purpose of a paragraph is to apply a different horizontal alignment than the surrounding text. (Other features like top/bottom spacing or first-line indent may be added later.)
+* Within a region, paragraphs can be inserted. The primary purpose of a paragraph is to apply a different horizontal alignment than the surrounding text.
 * Once all the desired text is collected to fill a shape or a set of columns, you can call its `.render()` method to actually do so. 
 
 
@@ -66,3 +66,15 @@ Here we have a layout with three columns. Note that font type and text size can 
 
 * Balanced columns, which all end on the same hight. Currently columns are filled to the maximum height from left to right.
 * Columns with differing widths (no balancing possible in this case).
+
+
+## Paragraphs ##
+
+The primary purpose of paragraphs is simply to enable variations in horizontal text alignment, while the horizontal extents of the text are managed by the text region.
+
+Other than text regions, paragraphs should alway be used as context managers and never be reused. Violating those rules may result in the entered text turning up on the page out of sequence.
+
+### Possible future extensions
+
+* Setting the spacing at the top/bottom of paragraphs
+* first-line indent
