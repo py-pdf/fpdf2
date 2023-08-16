@@ -2948,16 +2948,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 word_spacing = (
                     w - l_c_margin - r_c_margin - styled_txt_width
                 ) / text_line.number_of_spaces
-
-            # XXX
-            """
-            print(
-                round(w, 3),
-                round(text_line.text_width, 3),
-                text_line.align,
-                word_spacing,
-            )
-            """
             sl.append(
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
@@ -3732,6 +3722,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         def _get_width(height):  # pylint: disable=unused-argument
             # Set the width dynamically, since the first line can have a different width.
             return max_width
+
         text_lines = []
         multi_line_break = MultiLineBreak(
             styled_text_fragments,
