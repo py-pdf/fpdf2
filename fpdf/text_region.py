@@ -41,7 +41,7 @@ class Paragraph:
     def __exit__(self, exc_type, exc_value, traceback):
         self.region.end_paragraph()
 
-    def write(self, txt: str): #, link: str = ""):
+    def write(self, txt: str):  # , link: str = ""):
         if not self.pdf.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         normalized_string = self.pdf.normalize_text(txt).replace("\r", "")
@@ -92,7 +92,7 @@ class ParagraphCollectorMixin:
         self.pdf._pop_local_stack()
         self.render()
 
-    def write(self, txt: str): #, link: str = ""):
+    def write(self, txt: str):  # , link: str = ""):
         if self._has_paragraph == "EXPLICIT":
             raise FPDFException(
                 "Conflicts with active paragraph. Consider adding your text there."
@@ -242,14 +242,15 @@ class TextColumns(TextRegion, TextColumnarMixin):
             self.cur_top = self.pdf.t_margin
         if not text_lines:
             return False
-#        if not balance:
+        #        if not balance:
         return self._render_lines(text_lines)
         # balance the columns.
-#        hgt_lines = sum(l.height for l in text_lines)
-#        bottom = self.pdf.h - self.pdf.b_margin
-#        hgt_avail = bottom - self.pdf.y
-#        hgt_avail += (self.ncols - self.cur_column - 1) * (bottom - self.cur_top)
-        # YYY Finish balancing
+
+    #        hgt_lines = sum(l.height for l in text_lines)
+    #        bottom = self.pdf.h - self.pdf.b_margin
+    #        hgt_avail = bottom - self.pdf.y
+    #        hgt_avail += (self.ncols - self.cur_column - 1) * (bottom - self.cur_top)
+    # YYY Finish balancing
 
     def accept_page_break(self):
         if self.cur_column == self.ncols - 1:
