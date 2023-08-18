@@ -41,10 +41,10 @@ class Paragraph:
     def __exit__(self, exc_type, exc_value, traceback):
         self.region.end_paragraph()
 
-    def write(self, txt: str):  # , link: str = ""):
+    def write(self, text: str):  # , link: str = ""):
         if not self.pdf.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
-        normalized_string = self.pdf.normalize_text(txt).replace("\r", "")
+        normalized_string = self.pdf.normalize_text(text).replace("\r", "")
         # YYY _preload_font_styles() should accept a "link" argument.
         styled_text_fragments = self.pdf._preload_font_styles(normalized_string, False)
         self._text_fragments.extend(styled_text_fragments)
@@ -68,12 +68,14 @@ class Paragraph:
 
 
 class ParagraphCollectorMixin:
-    def __init__(self, pdf, *args, align="LEFT", **kwargs):
+    def __init__(self, pdf, *args, text=None, align="LEFT", **kwargs):
         self.pdf = pdf
         self.align = Align.coerce(align)  # default for auto paragraphs
         self._paragraphs = []
         self._has_paragraph = None
         super().__init__(pdf, *args, **kwargs)
+        if text:
+            self.write(text)
 
     def __enter__(self):
         if self.pdf.is_current_text_region(self):
@@ -92,7 +94,7 @@ class ParagraphCollectorMixin:
         self.pdf._pop_local_stack()
         self.render()
 
-    def write(self, txt: str):  # , link: str = ""):
+    def write(self, text: str):  # , link: str = ""):
         if self._has_paragraph == "EXPLICIT":
             raise FPDFException(
                 "Conflicts with active paragraph. Consider adding your text there."
@@ -101,7 +103,7 @@ class ParagraphCollectorMixin:
             p = Paragraph(region=self, align=self.align)
             self._paragraphs.append(p)
             self._has_paragraph = "AUTO"
-        self._paragraphs[-1].write(txt)
+        self._paragraphs[-1].write(text)
 
     def paragraph(self, align=None):
         if self._has_paragraph == "EXPLICIT":

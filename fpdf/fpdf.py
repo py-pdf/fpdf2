@@ -3744,18 +3744,21 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     @check_page
     def text_column(
         self,
+        text: Optional[str] = None,
         align: Union[Align, str] = "LEFT",
         l_margin: float = None,
         r_margin: float = None,
     ):
         """Establish a layout with a single column to fill with text.
         Args:
-            align (Align or str): The alignment of the region, default "LEFT".
+            text (str, optional): A first piece of text to insert.
+            align (Align or str, optional): The alignment of the region, default "LEFT".
             l_margin (float, optional): Override the current left page margin.
             r_margin (float, optional): Override the current right page margin.
         """
         return TextColumns(
             self,
+            text=text,
             ncols=1,
             align=align,
             l_margin=l_margin,
@@ -3765,6 +3768,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     @check_page
     def text_columns(
         self,
+        text: Optional[str] = None,
         ncols: int = 2,
         gap_width: float = 10,
         align: Union[Align, str] = "LEFT",
@@ -3773,14 +3777,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     ):
         """Establish a layout with multiple columns to fill with text.
         Args:
-            ncols (int): the number of columns to create.
-            gap_width (float): The distance between the columns.
-            align (Align or str): The alignment of the region, default "LEFT".
+            text (str, optional): A first piece of text to insert.
+            ncols (int, optional): the number of columns to create, default 2.
+            gap_width (float, optional): The distance between the columns, default 10.
+            align (Align or str, optional): The alignment of the region, default "LEFT".
             l_margin (float, optional): Override the current left page margin.
             r_margin (float, optional): Override the current right page margin.
         """
         return TextColumns(
             self,
+            text=text,
             ncols=ncols,
             gap_width=gap_width,
             align=align,
