@@ -69,6 +69,8 @@ Result:
 
 ## Setting cell padding
 
+_New in [:octicons-tag-24: 2.7.5](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
+
 Cell padding (the space between the cells content and the edge of the cell) can be set globally or on a per-cell basis.
 
 Following the CCS standard the padding can be specified using 1,2 3 or 4 values. 
@@ -80,13 +82,13 @@ Following the CCS standard the padding can be specified using 1,2 3 or 4 values.
 ```python
     ...
     style = FontFace(color=black, fill_color=red)
-    with pdf.table(line_height = pdf.font_size,padding=2) as table:
+    with pdf.table(line_height=pdf.font_size, padding=2) as table:
         for irow in range(5):
             row = table.row()
             for icol in range(5):
                 datum = "Circus"
                 if irow == 3 and icol %2 == 0:
-                    row.cell("custom padding", style=style, padding = (2*icol,8,8,8))
+                    row.cell("custom padding", style=style, padding=(2*icol, 8, 8, 8))
                 else:
                     row.cell(datum)
 ```
@@ -99,14 +101,16 @@ Note: the `c_margin` parameter (default 1.0) also controls the horizontal margin
 
 ## Setting vertical alignment of text in cells
 
+_New in [:octicons-tag-24: 2.7.5](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
+
 Can be set globally or per cell.
 Works the same way as padding, but with the `v_align` parameter.
 
 ```python
 
-    with pdf.table(v_align = VAlign.C) as table:
+    with pdf.table(v_align=VAlign.C) as table:
         ...
-           row.cell(f"custom v-align" v_align = VAlign.T) # <-- align to top
+           row.cell(f"custom v-align", v_align=VAlign.T)  # <-- align to top
 ```
 
 ## Setting row height
