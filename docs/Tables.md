@@ -86,7 +86,7 @@ Following the CCS standard the padding can be specified using 1,2 3 or 4 values.
             for icol in range(5):
                 datum = "Circus"
                 if irow == 3 and icol %2 == 0:
-                    row.cell("custom padding", style=style, padding = (2*icol,8,8,8))
+                    row.cell("custom padding", style=style, padding=(2*icol, 8, 8, 8))
                 else:
                     row.cell(datum)
 ```
