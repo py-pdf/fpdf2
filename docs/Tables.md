@@ -106,7 +106,7 @@ Works the same way as padding, but with the `v_align` parameter.
 
     with pdf.table(v_align = VAlign.C) as table:
         ...
-           row.cell(f"custom v-align" v_align = VAlign.T) # <-- align to top
+           row.cell(f"custom v-align", v_align=VAlign.T)  # <-- align to top
 ```
 
 ## Setting row height
