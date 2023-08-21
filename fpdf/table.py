@@ -230,6 +230,7 @@ class Table:
                         f" it has {row.cols_count} columns,"
                         f" whereas the top row has {cols_count}."
                     )
+
         # Defining table global horizontal position:
         prev_l_margin = self._fpdf.l_margin
         if table_align == Align.C:
@@ -240,6 +241,16 @@ class Table:
             self._fpdf.x = self._fpdf.l_margin
         elif self._fpdf.x != self._fpdf.l_margin:
             self._fpdf.l_margin = self._fpdf.x
+
+        # Pre-Compute the relative x-positions of the individual columns:
+        cell_x_positions = [0]
+        if self.rows:
+            xx = 0
+            for i in range(self.rows[0].cols_count):
+                xx += self._get_col_width(0, i)
+                xx += self._gutter_width
+                cell_x_positions.append(xx)
+
         # Starting the actual rows & cells rendering:
         for i in range(len(self.rows)):
             row_layout_info = self._get_row_layout_info(i)
@@ -247,10 +258,16 @@ class Table:
                 # pylint: disable=protected-access
                 self._fpdf._perform_page_break()
                 if self._first_row_as_headings:  # repeat headings on top:
-                    self._render_table_row(0, self._get_row_layout_info(0))
+                    self._render_table_row(
+                        0,
+                        self._get_row_layout_info(0),
+                        cell_x_positions=cell_x_positions,
+                    )
             elif i and self._gutter_height:
                 self._fpdf.y += self._gutter_height
-            self._render_table_row(i, row_layout_info)
+            self._render_table_row(
+                i, row_layout_info, cell_x_positions=cell_x_positions
+            )
         # Restoring altered FPDF settings:
         self._fpdf.l_margin = prev_l_margin
         self._fpdf.x = self._fpdf.l_margin
@@ -310,7 +327,9 @@ class Table:
                 border.remove("B")
         return "".join(border)
 
-    def _render_table_row(self, i, row_layout_info, fill=False, **kwargs):
+    def _render_table_row(
+        self, i, row_layout_info, cell_x_positions, fill=False, **kwargs
+    ):
         row = self.rows[i]
         j = 0
         for cell in row.cells:
@@ -320,6 +339,7 @@ class Table:
                 cell,
                 row_height=self._line_height,
                 cell_height_info=row_layout_info,
+                cell_x_positions=cell_x_positions,
                 fill=fill,
                 **kwargs,
             )
@@ -334,6 +354,7 @@ class Table:
         row_height,  # height of a row of text including line spacing
         fill=False,
         cell_height_info=None,  # full height of a cell, including padding, used to render borders and images
+        cell_x_positions=None,  # x-positions of the individual columns, pre-calculated for speed. Only relevant when rendering
         **kwargs,
     ):
         # If cell_height_info is provided then we are rendering a cell
@@ -392,10 +413,11 @@ class Table:
         # Instead, we calculate the x position based on the column widths of the previous columns
 
         # place cursor (required for images after images)
-        cell_widths = [
-            self._get_col_width(i, jj, colspan=1) for jj in range(j)
-        ]  # Note that we use colspan=1 here
-        cell_x = sum(cell_widths) + self._gutter_width * j
+
+        if cell_x_positions is None:
+            cell_x = 0  # not rendering anything anyways
+        else:
+            cell_x = cell_x_positions[j]
 
         self._fpdf.set_x(self._fpdf.l_margin + cell_x)
 
