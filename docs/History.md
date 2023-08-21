@@ -22,10 +22,11 @@ On May of 2017, the first release of `fpdf2` was published on Pypi:
 [v2.0.0](https://pypi.org/project/fpdf2/#history).
 
 On 2020, the first PRs were merged from external contributors.
-At the end of the year, Lucas Cimon (`@Lucas-C`) started contributing several improvements, in order to use `fpdf2` for his [Undying Dusk](https://lucas-c.itch.io/undying-dusk) project.
+At the end of the year, Lucas Cimon ([@Lucas-C](https://github.com/Lucas-C/)) started contributing several improvements, in order to use `fpdf2` for his [Undying Dusk](https://lucas-c.itch.io/undying-dusk) project.
 [Version **2.1.0** was released](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md#210---2020-12-07) and on 2021/01/10 `fpdf2` was moved to a dedicated `PyFPDF` GitHub organization, and `@Lucas-C` became another maintainer of the project.
 
 On 2023/08/04, `fpdf2` moved to the `py-pdf` organization: <https://github.com/py-pdf/fpdf2>. The context for this move can be found there: <https://github.com/py-pdf/fpdf2/discussions/752>. On this date, the `PyFPDF` GitHub organization has been **archived**.
+The same month, Georg Mischler ([@gmischler](https://github.com/gmischler)) and Anderson Herzogenrath da Costa ([@andersonhc](https://github.com/andersonhc)) joined the project as new maintainers.
 
 ## Compatibility between PyFPDF & fpdf2 ##
 

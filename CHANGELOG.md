@@ -17,6 +17,7 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.7.6] - Not released yet
+This release is the first performed from the [@py-pdf GitHub org](https://github.com/py-pdf), where `fpdf2` migrated.
 ### Added
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now supports heading colors defined as attributes (_e.g._ `<h2 color="#00ff00">...`)
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): Now supports padding in cells
@@ -29,6 +30,8 @@ This change was made for consistency between row-height governed by text or imag
 
 ### Fixed
 * [`FPDF.image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image), when provided a `BytesIO` instance, does not close it anymore - _cf._ issue [#881](https://github.com/py-pdf/fpdf2/issues/881)
+* Invalid characters were being generated when a string contains parentheses - _cf._ issue [#884](https://github.com/py-pdf/fpdf2/issues/884)
+* Frozen Glyph dataclass was causing problems for FPDFRecorder with TTF fonts - _cf._ issue [#890](https://github.com/py-pdf/fpdf2/issues/890)
 - [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): images no longer overlap with cell borders - _cf._ issue [#892](https://github.com/py-pdf/fpdf2/issues/892)
 
 
@@ -89,7 +92,7 @@ This change was made for consistency between row-height governed by text or imag
 ### Added
 - new method [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): [documentation](https://py-pdf.github.io/fpdf2/Tables.html)
 - [`FPDF.image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) has a new `keep_aspect_ratio` optional boolean parameter, to fit it inside a given rectangle: [documentation](https://py-pdf.github.io/fpdf2/Images.html#fitting-an-image-inside-a-rectangle)
-- [`FPDF.multi_cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) and [`FPDF.write()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) now accept a `wrapmode` argument for word or character based line wrapping ("WORD"/"CHAR"). 
+- [`FPDF.multi_cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) and [`FPDF.write()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) now accept a `wrapmode` argument for word or character based line wrapping ("WORD"/"CHAR"), thanks to @gmischler
 - new method [`FPDF.set_fallback_fonts()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_fonts) allow alternative fonts to be provided if a character on the text is not available on the currently set font - thanks to @andersonhc
 - for inserted images that have an ICC Profile, this profile is now extracted and embedded; they should now be honored by PDF viewers - thanks to @eroux
 - new methods: [`FPDF.preload_image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.preload_image) & [`FPDF.use_font_style()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.use_font_style)

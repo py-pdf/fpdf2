@@ -14,11 +14,11 @@ def new_content():
     pdf.add_page()
     pdf.set_font("times", "B", 30)
     pdf.text(50, 150, "Hello World!")
-    return pdf.output()
+    return io.BytesIO(pdf.output())
 
 
 reader = PdfReader(IN_FILEPATH)
-page_overlay = PdfReader(io.BytesIO(new_content())).pages[0]
+page_overlay = PdfReader(new_content()).pages[0]
 reader.pages[ON_PAGE_INDEX].merge_page(page2=page_overlay)
 
 writer = PdfWriter()

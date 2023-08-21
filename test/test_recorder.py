@@ -1,7 +1,10 @@
+from pathlib import Path
+from test.conftest import assert_pdf_equal, EPOCH, LOREM_IPSUM
+
 from fpdf import FPDF
 from fpdf.recorder import FPDFRecorder
 
-from test.conftest import assert_pdf_equal, EPOCH, LOREM_IPSUM
+HERE = Path(__file__).resolve().parent
 
 
 def init_pdf():
@@ -59,3 +62,18 @@ def test_recorder_preserve_pages_count():
         assert pdf.pages_count == 2
     assert recorder.page_break_triggered
     assert pdf.pages_count == 1
+
+
+def test_recorder_with_ttf_font(tmp_path):
+    pdf = init_pdf()
+    pdf.add_font(fname=str(HERE / "fonts" / "Roboto-Regular.ttf"))
+    pdf.set_font("Roboto-Regular", size=64)
+    pdf.add_page()
+    pdf.cell(txt="Hello!", align="C")
+    recorder = FPDFRecorder(pdf)
+    expected = recorder.output()  # close the document as a side-effect
+    recorder.rewind()  # in order to un-close the document
+    recorder.add_page()
+    recorder.cell(w=recorder.epw, h=10, txt="Hello again!", align="C")
+    recorder.rewind()
+    assert_pdf_equal(recorder, expected, tmp_path)
