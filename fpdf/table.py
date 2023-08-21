@@ -1,4 +1,3 @@
-import logging
 from dataclasses import dataclass
 from numbers import Number
 from typing import Optional, Union, NamedTuple
@@ -415,7 +414,9 @@ class Table:
 
         # place cursor (required for images after images)
 
-        if cell_height_info is None: # not rendering, cell_x_positions is not relevant (and probably not provided)
+        if (
+            cell_height_info is None
+        ):  # not rendering, cell_x_positions is not relevant (and probably not provided)
             cell_x = 0
         else:
             cell_x = cell_x_positions[j]
