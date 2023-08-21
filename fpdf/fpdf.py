@@ -2854,7 +2854,7 @@ class FPDF(GraphicsStateMixin):
                 raise ValueError(
                     "A 'text_line' parameter with fragments must be provided if 'w' is None"
                 )
-            w = styled_txt_width + local_c_margin + local_c_margin
+            w = styled_txt_width + horizontal_margin + horizontal_margin
         if center:
             self.x = (
                 self.w / 2 if align == Align.X else self.l_margin + (self.epw - w) / 2
@@ -2912,11 +2912,11 @@ class FPDF(GraphicsStateMixin):
         current_char_spacing = self.char_spacing
         if text_line.fragments:
             if align == Align.R:
-                dx = w - local_c_margin - styled_txt_width
+                dx = w - horizontal_margin - styled_txt_width
             elif align in [Align.C, Align.X]:
                 dx = (w - styled_txt_width) / 2
             else:
-                dx = local_c_margin
+                dx = horizontal_margin
             s_start += dx
 
             if self.fill_color != self.text_color:
@@ -2928,7 +2928,7 @@ class FPDF(GraphicsStateMixin):
                 # If a line gets broken by an explicit '\n', then MultiLineBreak
                 # will set its justify to False (end of paragraph).
                 word_spacing = (
-                    w - local_c_margin - local_c_margin - styled_txt_width
+                    w - horizontal_margin - horizontal_margin - styled_txt_width
                 ) / text_line.number_of_spaces
             sl.append(
                 f"BT {(self.x + dx) * k:.2f} "
@@ -3049,7 +3049,7 @@ class FPDF(GraphicsStateMixin):
         elif new_x == XPos.END:
             self.x = s_start + s_width
         elif new_x == XPos.WCONT:
-            self.x = s_start + s_width - local_c_margin
+            self.x = s_start + s_width - horizontal_margin
         elif new_x == XPos.CENTER:
             self.x = s_start + s_width / 2.0
         elif new_x == XPos.LMARGIN:
