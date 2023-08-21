@@ -2837,9 +2837,9 @@ class FPDF(GraphicsStateMixin):
             padding = Padding(0, 0, 0, 0)
 
         if padding.left == 0 and padding.right == 0:
-            local_c_margin = self.c_margin
+            horizontal_margin = self.c_margin
         else:
-            local_c_margin = 0
+            horizontal_margin = 0
 
         styled_txt_width = text_line.text_width
         if not styled_txt_width:
