@@ -15,18 +15,7 @@ HERE = Path(__file__).resolve().parent
 
 def run_comparison(pdf, name, tmp_path):
     filename = HERE / f"{name}.pdf"
-
-    try:
-        assert_pdf_equal(pdf, filename, tmp_path, generate=False)
-    except AssertionError as e:
-        # windows only debugging
-        import subprocess
-
-        # subprocess.Popen(rf'explorer "{str(filename)}"')
-        pdf.output(rf"c:\temp\{name}.pdf")
-        subprocess.Popen(rf'explorer "c:\temp\{name}.pdf"')
-
-        raise e
+    assert_pdf_equal(pdf, filename, tmp_path, generate=False)
 
 
 IMG_DIR = HERE.parent / "image"
