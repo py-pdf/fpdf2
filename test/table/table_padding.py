@@ -295,7 +295,6 @@ def test_table_with_gutter_and_padding_and_outer_border_width(tmp_path):
         TABLE_DATA,
         gutter_height=3,
         gutter_width=5,
-        padding=0,
         line_height=pdf.font_size,
         align="L",
         outer_border_width=2,

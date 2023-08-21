@@ -183,7 +183,7 @@ def test_table_without_headings(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(first_row_as_headings=False, padding=0) as table:
+    with pdf.table(first_row_as_headings=False) as table:
         for data_row in TABLE_DATA:
             row = table.row()
             for datum in data_row:
@@ -195,7 +195,7 @@ def test_table_with_multiline_cells_and_without_headings(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(first_row_as_headings=False, padding=0) as table:
+    with pdf.table(first_row_as_headings=False) as table:
         for data_row in MULTILINE_TABLE_DATA + MULTILINE_TABLE_DATA[1:]:
             row = table.row()
             for datum in data_row:
