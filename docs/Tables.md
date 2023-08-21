@@ -69,6 +69,8 @@ Result:
 
 ## Setting cell padding
 
+_New in [:octicons-tag-24: 2.7.5](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
+
 Cell padding (the space between the cells content and the edge of the cell) can be set globally or on a per-cell basis.
 
 Following the CCS standard the padding can be specified using 1,2 3 or 4 values. 
