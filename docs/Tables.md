@@ -80,7 +80,7 @@ Following the CCS standard the padding can be specified using 1,2 3 or 4 values.
 ```python
     ...
     style = FontFace(color=black, fill_color=red)
-    with pdf.table(line_height = pdf.font_size,padding=2) as table:
+    with pdf.table(line_height=pdf.font_size, padding=2) as table:
         for irow in range(5):
             row = table.row()
             for icol in range(5):
