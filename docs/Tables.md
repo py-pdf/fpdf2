@@ -101,6 +101,8 @@ Note: the `c_margin` parameter (default 1.0) also controls the horizontal margin
 
 ## Setting vertical alignment of text in cells
 
+_New in [:octicons-tag-24: 2.7.5](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
+
 Can be set globally or per cell.
 Works the same way as padding, but with the `v_align` parameter.
 
