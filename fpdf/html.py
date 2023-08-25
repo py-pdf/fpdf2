@@ -1,4 +1,9 @@
-"HTML renderer"
+"""
+HTML renderer
+
+The classes & functions in this module are not part of fpdf2 public API.
+They are used only internally and could evolve in a non-backward-compatible way.
+"""
 
 import logging, warnings
 from html.parser import HTMLParser

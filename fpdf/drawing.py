@@ -1,3 +1,10 @@
+"""
+Vector drawing
+
+The classes & functions in this module are not part of fpdf2 public API.
+They are used only internally and could evolve in a non-backward-compatible way.
+"""
+
 import copy, decimal, math, re
 from collections import OrderedDict
 from contextlib import contextmanager
