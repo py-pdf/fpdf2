@@ -18,10 +18,10 @@ def test_multi_cell_markdown(tmp_path):
         " sed do eiusmod __tempor incididunt__ ut labore et dolore --magna aliqua--."
     )
     pdf.multi_cell(
-        w=pdf.epw, txt=text, markdown=True
+        w=pdf.epw, text=text, markdown=True
     )  # This is tricky to get working well
     pdf.ln()
-    pdf.multi_cell(w=pdf.epw, txt=text, markdown=True, align="L")
+    pdf.multi_cell(w=pdf.epw, text=text, markdown=True, align="L")
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown.pdf", tmp_path)
 
 
@@ -37,10 +37,10 @@ def test_multi_cell_markdown_with_ttf_fonts(tmp_path):
         " eiusmod __tempor incididunt__ ut labore et dolore --magna aliqua--."
     )
     pdf.multi_cell(
-        w=pdf.epw, txt=text, markdown=True
+        w=pdf.epw, text=text, markdown=True
     )  # This is tricky to get working well
     pdf.ln()
-    pdf.multi_cell(w=pdf.epw, txt=text, markdown=True, align="L")
+    pdf.multi_cell(w=pdf.epw, text=text, markdown=True, align="L")
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_with_ttf_fonts.pdf", tmp_path)
 
 
@@ -50,7 +50,7 @@ def test_multi_cell_markdown_missing_ttf_font():
     pdf.add_font(fname=FONTS_DIR / "Roboto-Regular.ttf")
     pdf.set_font("Roboto-Regular", size=60)
     with pytest.raises(fpdf.FPDFException) as error:
-        pdf.multi_cell(w=pdf.epw, txt="**Lorem Ipsum**", markdown=True)
+        pdf.multi_cell(w=pdf.epw, text="**Lorem Ipsum**", markdown=True)
     expected_msg = "Undefined font: roboto-regularB - Use built-in fonts or FPDF.add_font() beforehand"
     assert str(error.value) == expected_msg
 
@@ -61,7 +61,7 @@ def test_multi_cell_markdown_with_fill_color(tmp_path):  # issue 348
     pdf.set_font("Times", size=10)
     pdf.set_fill_color(255, 0, 0)
     pdf.multi_cell(
-        50, markdown=True, txt="aa bb cc **dd ee dd ee dd ee dd ee dd ee dd ee**"
+        50, markdown=True, text="aa bb cc **dd ee dd ee dd ee dd ee dd ee dd ee**"
     )
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_with_fill_color.pdf", tmp_path)
 
@@ -76,7 +76,7 @@ def test_multi_cell_markdown_justified(tmp_path):  # issue 327
             190,
             markdown=True,
             align="J",
-            txt=(
+            text=(
                 "Lorem **ipsum** dolor sit amet, **consectetur** adipiscing elit, "
                 "sed do eiusmod tempor incididunt ut labore et dolore magna "
                 "aliqua. Ut enim ad minim veniam, __quis__ nostrud exercitation "
@@ -98,7 +98,7 @@ def test_multi_cell_markdown_link(tmp_path):
     pdf.add_page()
     pdf.multi_cell(
         pdf.epw,
-        txt="**Start** [One Page Dungeon Context](https://www.dungeoncontest.com/) __End__",
+        text="**Start** [One Page Dungeon Context](https://www.dungeoncontest.com/) __End__",
         markdown=True,
     )
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_link.pdf", tmp_path)

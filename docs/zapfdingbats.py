@@ -6,7 +6,7 @@ from fpdf import FPDF
 pdf = FPDF()
 pdf.add_page()
 pdf.set_font("helvetica", size=30)
-pdf.cell(w=pdf.epw, txt="ZapfDingbats", align="C")
+pdf.cell(w=pdf.epw, text="ZapfDingbats", align="C")
 pdf.set_margin(0)
 for i, char in enumerate(
     "!\"#$%&'()*+,-./"
@@ -21,9 +21,9 @@ for i, char in enumerate(
         pdf.x = pdf.l_margin = 10 + (i // 24) * 50
         pdf.y = 30
     pdf.set_font("helvetica", size=30)
-    pdf.cell(txt=char + " = ")
+    pdf.cell(text=char + " = ")
     pdf.set_font("zapfdingbats", size=30)
-    pdf.cell(txt=char, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(text=char, new_x="LMARGIN", new_y="NEXT")
 for i, n in enumerate(chain(range(0x80, 0x8E), range(0xA1, 0xF0), range(0xF1, 0xFF))):
     if i % 26 == 0:
         col = i // 26
@@ -32,7 +32,7 @@ for i, n in enumerate(chain(range(0x80, 0x8E), range(0xA1, 0xF0), range(0xF1, 0x
         pdf.x = pdf.l_margin = 10 + (col % 3) * 65
         pdf.y = 10
     pdf.set_font("helvetica", size=30)
-    pdf.cell(txt=f"\\u00{hex(n)[2:]} = ")
+    pdf.cell(text=f"\\u00{hex(n)[2:]} = ")
     pdf.set_font("zapfdingbats", size=30)
-    pdf.cell(txt=chr(n), new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(text=chr(n), new_x="LMARGIN", new_y="NEXT")
 pdf.output("zapfdingbats.pdf")

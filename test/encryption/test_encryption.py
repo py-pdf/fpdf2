@@ -49,7 +49,7 @@ def test_encryption_rc4(tmp_path):
     pdf.set_subject("string to be encrypted")
     pdf.add_page()
     pdf.set_font("helvetica", size=12)
-    pdf.cell(txt="hello world")
+    pdf.cell(text="hello world")
     pdf.set_encryption(owner_password="fpdf2", permissions=AccessPermission.all())
     assert_pdf_equal(pdf, HERE / "encryption_rc4.pdf", tmp_path)
 
@@ -60,7 +60,7 @@ def test_encryption_rc4_permissions(tmp_path):
     pdf.set_subject("string to be encrypted")
     pdf.add_page()
     pdf.set_font("helvetica", size=12)
-    pdf.cell(txt="hello world")
+    pdf.cell(text="hello world")
     pdf.set_encryption(
         owner_password="fpdf2",
         permissions=AccessPermission.PRINT_LOW_RES | AccessPermission.PRINT_HIGH_RES,
@@ -79,7 +79,7 @@ def test_no_encryption(tmp_path):
     pdf.set_subject("string to be encrypted")
     pdf.add_page()
     pdf.set_font("helvetica", size=12)
-    pdf.cell(txt="hello world")
+    pdf.cell(text="hello world")
     pdf.set_encryption(
         owner_password="fpdf2",
         encryption_method=EncryptionMethod.NO_ENCRYPTION,
@@ -105,7 +105,7 @@ def test_encryption_rc4_user_password(tmp_path):
     pdf.set_subject("string to be encrypted")
     pdf.add_page()
     pdf.set_font("helvetica", size=12)
-    pdf.cell(txt="hello world")
+    pdf.cell(text="hello world")
     pdf.set_encryption(
         owner_password="fpdf2",
         user_password="654321",
@@ -129,7 +129,7 @@ def test_encryption_aes128(tmp_path):
     pdf.set_subject("string to be encrypted")
     pdf.add_page()
     pdf.set_font("helvetica", size=12)
-    pdf.cell(txt="hello world")
+    pdf.cell(text="hello world")
     pdf.set_encryption(
         owner_password="fpdf2",
         encryption_method=EncryptionMethod.AES_128,
@@ -149,7 +149,7 @@ def test_encrypt_metadata(tmp_path):
     pdf.file_id = custom_file_id
     pdf.add_page()
     pdf.set_font("helvetica", size=12)
-    pdf.cell(txt="hello world")
+    pdf.cell(text="hello world")
     pdf.set_encryption(
         owner_password="fpdf2",
         encrypt_metadata=True,
@@ -179,9 +179,9 @@ def test_encrypt_font(tmp_path):
         "Lorem ipsum dolor, **consectetur adipiscing** elit,"
         " eiusmod __tempor incididunt__ ut labore et dolore --magna aliqua--."
     )
-    pdf.multi_cell(w=pdf.epw, txt=text, markdown=True)
+    pdf.multi_cell(w=pdf.epw, text=text, markdown=True)
     pdf.ln()
-    pdf.multi_cell(w=pdf.epw, txt=text, markdown=True, align="L")
+    pdf.multi_cell(w=pdf.epw, text=text, markdown=True, align="L")
     pdf.set_encryption(owner_password="fpdf2")
     assert_pdf_equal(pdf, HERE / "encrypt_fonts.pdf", tmp_path)
 
@@ -190,7 +190,7 @@ def test_encryption_with_hyperlink(tmp_path):  # issue 672
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("helvetica")
-    pdf.cell(txt="hyperlink", link="https://github.com/py-pdf/fpdf2")
+    pdf.cell(text="hyperlink", link="https://github.com/py-pdf/fpdf2")
     pdf.set_encryption(owner_password="fpdf2")
     assert_pdf_equal(pdf, HERE / "encryption_with_hyperlink.pdf", tmp_path)
 
@@ -220,7 +220,7 @@ def test_encryption_aes256(tmp_path):
     pdf.set_subject("string to be encrypted")
     pdf.add_page()
     pdf.set_font("helvetica", size=12)
-    pdf.cell(txt="hello world")
+    pdf.cell(text="hello world")
     pdf.text(50, 50, "Some text")
     pdf.ink_annotation(
         [(40, 50), (70, 25), (100, 50), (70, 75), (40, 50)],
@@ -251,7 +251,7 @@ def test_encryption_aes256_with_user_password(tmp_path):
     pdf.set_subject("string to be encrypted")
     pdf.add_page()
     pdf.set_font("helvetica", size=12)
-    pdf.cell(txt="hello world")
+    pdf.cell(text="hello world")
     pdf.set_encryption(
         owner_password="fpdf2",
         user_password="1" * 1000,
@@ -305,7 +305,7 @@ def test_encryption_unicode(tmp_path):
     pdf.set_font("Garuda", size=12)
     pdf.start_section("ทดสอบภาษาไทย")
     pdf.cell(
-        txt="สวัสดี ทดสอบภาษาไทย กีกี้ กาก้า ก๋า อ้า อ้ำ ฤาษี ทุ่มทุน อุ้งอุ๋ง น้ำใจ ฯลฯ ญาญ่า ฐาน ฎีกา ฏฒัฯนณ ภัทร์ สิทธิ์"
+        text="สวัสดี ทดสอบภาษาไทย กีกี้ กาก้า ก๋า อ้า อ้ำ ฤาษี ทุ่มทุน อุ้งอุ๋ง น้ำใจ ฯลฯ ญาญ่า ฐาน ฎีกา ฏฒัฯนณ ภัทร์ สิทธิ์"
     )
     pdf.set_encryption(owner_password="fpdf2")
     assert_pdf_equal(pdf, HERE / "encryption_unicode.pdf", tmp_path)

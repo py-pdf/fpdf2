@@ -20,7 +20,7 @@ pdf = FPDF()
 pdf.set_title('Initiating a borb doc from a FPDF instance')
 pdf.set_font('helvetica', size=12)
 pdf.add_page()
-pdf.cell(txt="Hello world!")
+pdf.cell(text="Hello world!")
 
 doc = PDF.loads(BytesIO(pdf.output()))
 print(doc.get_document_info().get_title())

@@ -76,7 +76,7 @@ def test_ln_by_lasth():
     # ln() uses self._lasth after writing some text.
     pdf.set_font("helvetica", size=16)
     pdf.x += 20
-    pdf.cell(txt="something")
+    pdf.cell(text="something")
     h = pdf.font_size  # last *used* font height, no cell height given
     prev_y = pdf.y
     pdf.ln(h)
@@ -102,7 +102,7 @@ def test_ln_by_lasth():
     # cell(h=x) should set _lasth to that
     h = 20
     pdf.x += 33
-    pdf.cell(h=h, txt="something")
+    pdf.cell(h=h, text="something")
     prev_y = pdf.y
     pdf.ln()
     assert math.isclose(

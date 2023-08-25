@@ -14,7 +14,7 @@ from fpdf import FPDF
 pdf = FPDF()
 pdf.add_page()
 pdf.set_font("helvetica", size=24)
-pdf.cell(txt="Cell link", border=1, center=True,
+pdf.cell(text="Cell link", border=1, center=True,
          link="https://github.com/py-pdf/fpdf2")
 pdf.output("hyperlink.pdf")
 ```
@@ -30,7 +30,7 @@ pdf.set_font("helvetica", size=24)
 pdf.add_page()
 pdf.multi_cell(
     pdf.epw,
-    txt="**Website:** [fpdf2](https://py-pdf.github.io/fpdf2/) __Go visit it!__",
+    text="**Website:** [fpdf2](https://py-pdf.github.io/fpdf2/) __Go visit it!__",
     markdown=True,
 )
 pdf.output("hyperlink.pdf")
@@ -55,7 +55,7 @@ pdf.add_page()
 pdf.set_font("helvetica", size=36)
 line_height = 10
 text = "Text link"
-pdf.text(x=0, y=line_height, txt=text)
+pdf.text(x=0, y=line_height, text=text)
 width = pdf.get_string_width(text)
 pdf.link(x=0, y=0, w=width, h=line_height, link="https://github.com/py-pdf/fpdf2")
 pdf.output("hyperlink.pdf")
@@ -91,10 +91,10 @@ from fpdf import FPDF
 pdf = FPDF()
 pdf.set_font("helvetica", size=24)
 pdf.add_page()
-pdf.cell(txt="Welcome on first page!", align="C", center=True)
+pdf.cell(text="Welcome on first page!", align="C", center=True)
 pdf.add_page()
 link = pdf.add_link(page=1)
-pdf.cell(txt="Internal link to first page", border=1, link=link)
+pdf.cell(text="Internal link to first page", border=1, link=link)
 pdf.output("internal_link.pdf")
 ```
 
@@ -117,7 +117,7 @@ from fpdf import FPDF
 pdf = FPDF()
 pdf.set_font("helvetica", size=24)
 pdf.add_page()
-pdf.cell(txt="Link to other_doc.pdf", border=1, link="other_doc.pdf")
+pdf.cell(text="Link to other_doc.pdf", border=1, link="other_doc.pdf")
 pdf.output("link_to_other_doc.pdf")
 ```
 

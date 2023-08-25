@@ -169,7 +169,7 @@ def test_table_with_links(tmp_path):
     pdf.set_font("Times", size=16)
     pdf.add_page()
     pdf.y = 100
-    pdf.cell(txt="Page 1", center=True)
+    pdf.cell(text="Page 1", center=True)
     pdf.add_page()
     with pdf.table() as table:
         for i, data_row in enumerate(TABLE_DATA):

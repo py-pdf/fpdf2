@@ -38,7 +38,7 @@ XMP_METADATA = """<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="fpdf2">
 def document_operations(doc):
     doc.add_page()
     doc.set_font("helvetica", size=12)
-    doc.cell(w=72, h=0, border=1, txt="hello world", fill=False, link="")
+    doc.cell(w=72, h=0, border=1, text="hello world", fill=False, link="")
 
 
 def test_put_info_all(tmp_path):

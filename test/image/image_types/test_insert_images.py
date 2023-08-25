@@ -86,7 +86,7 @@ def test_insert_png_alpha(tmp_path):
     pdf.compress = False
     pdf.add_page()
     pdf.set_font("Helvetica", size=30)
-    pdf.cell(w=pdf.epw, h=30, txt="BEHIND")
+    pdf.cell(w=pdf.epw, h=30, text="BEHIND")
     pdf.image(
         HERE / "../png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png", x=25, y=0, h=40
     )
@@ -98,7 +98,7 @@ def test_insert_png_disallow_transparency(tmp_path):
     pdf.allow_images_transparency = False
     pdf.add_page()
     pdf.set_font("Helvetica", size=30)
-    pdf.cell(w=pdf.epw, h=30, txt="BEHIND")
+    pdf.cell(w=pdf.epw, h=30, text="BEHIND")
     pdf.image(
         HERE / "../png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png", x=25, y=0, h=40
     )

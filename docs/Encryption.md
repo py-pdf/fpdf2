@@ -58,7 +58,7 @@ from fpdf.enums import AccessPermission
 pdf = FPDF()
 pdf.add_page()
 pdf.set_font("helvetica", size=12)
-pdf.cell(txt="hello world")
+pdf.cell(text="hello world")
 
 pdf.set_encryption(
     owner_password="98765421",
@@ -102,7 +102,7 @@ from fpdf.enums import AccessPermission, EncryptionMethod
 pdf = FPDF()
 pdf.add_page()
 pdf.set_font("helvetica", size=12)
-pdf.cell(txt="hello world")
+pdf.cell(text="hello world")
 
 pdf.set_encryption(
     owner_password="123",

@@ -62,7 +62,7 @@ if dummy.page_break_triggered:
     # We trigger a page break manually beforehand:
     pdf.add_page()
     # We duplicate the section header:
-    pdf.cell(txt="Appendix C")
+    pdf.cell(text="Appendix C")
 # Now performing our rendering for real:
 pdf.multi_cell(...)
 ```

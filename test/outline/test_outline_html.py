@@ -242,10 +242,10 @@ def test_html_toc_with_h1_as_2nd_heading(tmp_path):  # issue 239
 
 class CustomHTML2FPDF(HTML2FPDF):
     def render_toc(self, pdf, outline):
-        pdf.cell(txt="Table of contents:", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(text="Table of contents:", new_x="LMARGIN", new_y="NEXT")
         for section in outline:
             pdf.cell(
-                txt=f"* {section.name} (page {section.page_number})",
+                text=f"* {section.name} (page {section.page_number})",
                 new_x="LMARGIN",
                 new_y="NEXT",
             )

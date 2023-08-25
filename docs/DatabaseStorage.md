@@ -24,7 +24,7 @@ Base.metadata.create_all(engine)
 pdf = FPDF()
 pdf.add_page()
 pdf.set_font("Helvetica", size=24)
-pdf.cell(txt="My name is Bobby")
+pdf.cell(text="My name is Bobby")
 new_user = User(name="Bobby", pdf=pdf.output())
 
 Session = sessionmaker(bind=engine)

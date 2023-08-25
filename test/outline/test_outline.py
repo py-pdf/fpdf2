@@ -80,7 +80,7 @@ def p(pdf, text, **kwargs):
     pdf.multi_cell(
         w=pdf.epw,
         h=pdf.font_size,
-        txt=text,
+        text=text,
         new_x="LMARGIN",
         new_y="NEXT",
         **kwargs,
@@ -178,7 +178,7 @@ def test_toc_with_nb_and_footer(tmp_path):  # issue-548
             self.set_font(style="", size=12)
             for section in outline:
                 self.ln()
-                self.cell(txt=section.name)
+                self.cell(text=section.name)
 
         def footer(self):
             self.set_y(-15)
@@ -192,7 +192,7 @@ def test_toc_with_nb_and_footer(tmp_path):  # issue-548
     for i in range(1, 80):
         pdf.set_font(style="B")
         pdf.start_section(f"Section {i}")
-        pdf.cell(txt=f"Section {i}")
+        pdf.cell(text=f"Section {i}")
         pdf.ln()
 
     assert_pdf_equal(pdf, HERE / "toc_with_nb_and_footer.pdf", tmp_path)

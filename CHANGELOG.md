@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.7.6] - Not released yet
 This release is the first performed from the [@py-pdf GitHub org](https://github.com/py-pdf), where `fpdf2` migrated.
+This release also marks the arrival of two new maintainers: Georg Mischler ([@gmischler](https://github.com/gmischler)) and Anderson Herzogenrath da Costa ([@andersonhc](https://github.com/andersonhc)).
 ### Added
 * The new experimental method `text_columns()` allows to render text within a single or multiple columns, including height balancing: [documentation](https://py-pdf.github.io/fpdf2/TextColumns.html)
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now supports heading colors defined as attributes (_e.g._ `<h2 color="#00ff00">...`)
@@ -42,6 +43,8 @@ This change was made for consistency between row-height governed by text or imag
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): images no longer overlap with cell borders - _cf._ issue [#892](https://github.com/py-pdf/fpdf2/issues/892)
 * Encryption of strings containing non-latin characters - _cf._ issue [#933](https://github.com/py-pdf/fpdf2/issues/933)
 * Handling of fragments with zero-length - _cf._ issue [#902](https://github.com/py-pdf/fpdf2/issues/902)
+### Deprecated
+* to improve naming consistency, the `txt` parameters of `FPDF.cell()`, `FPDF.multi_cell()`, `FPDF.text()` & `FPDF.write()` have been renamed to `text`
 
 ## [2.7.5] - 2023-08-04
 ### Added

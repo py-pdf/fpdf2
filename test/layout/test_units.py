@@ -12,7 +12,7 @@ def add_cell_page(pdf, cell_text):
     """Add a page with with some text to the PDF"""
     pdf.set_font("Helvetica")
     pdf.add_page()
-    pdf.cell(w=10, h=10, txt=str(cell_text))
+    pdf.cell(w=10, h=10, text=str(cell_text))
 
 
 def test_unit_default(tmp_path):

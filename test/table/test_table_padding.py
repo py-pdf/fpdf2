@@ -540,7 +540,7 @@ def test_draw_box_borders(tmp_path):
         )
         draw_box_borders(pdf, x - 20, y - 20, x + 50, y + 30, border=borders)
         pdf.set_xy(x, y)
-        pdf.cell(txt=borders)
+        pdf.cell(text=borders)
 
     box(40, 40, "L")
     box(140, 40, "R")

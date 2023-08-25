@@ -503,7 +503,7 @@ class Table:
                 page_break_text, cell_height = self._fpdf.multi_cell(
                     w=col_width,
                     h=row_height,
-                    txt=cell.text,
+                    text=cell.text,
                     max_line_height=self._line_height,
                     border=0,
                     align=text_align,

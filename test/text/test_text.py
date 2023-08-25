@@ -95,7 +95,7 @@ def test_text_no_font_set():
     pdf = FPDF()
     pdf.add_page()
     with pytest.raises(FPDFException) as error:
-        pdf.text(20, 20, txt="Hello World!")
+        pdf.text(20, 20, text="Hello World!")
     expected_msg = "No font set, you need to call set_font() beforehand"
     assert str(error.value) == expected_msg
 
@@ -114,3 +114,14 @@ def test_text_badinput():
         pdf.text(20, 20, (1, 2, 3))
     with pytest.raises(AttributeError):
         pdf.text(20, 20, None)
+
+
+def test_text_deprecated_txt_arg():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=10)
+    with pytest.warns(
+        DeprecationWarning, match='The parameter "txt" has been renamed to "text"'
+    ):
+        # pylint: disable=unexpected-keyword-arg
+        pdf.text(20, 20, txt="Lorem ipsum Ut nostrud irure")

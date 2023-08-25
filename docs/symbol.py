@@ -12,11 +12,11 @@ for i, n in enumerate(chain(range(0x21, 0x81), range(0xA0, 0xFF))):
             pdf.add_page()
             pdf.set_font("helvetica", size=30)
             pdf.y = 10
-            pdf.cell(w=pdf.epw, txt="Symbol font", align="C")
+            pdf.cell(w=pdf.epw, text="Symbol font", align="C")
         pdf.x = pdf.l_margin = 10 + (col % 3) * 65
         pdf.y = 30
     pdf.set_font("helvetica", size=30)
-    pdf.cell(txt=f"\\u00{hex(n)[2:]} = ")
+    pdf.cell(text=f"\\u00{hex(n)[2:]} = ")
     pdf.set_font("symbol", size=30)
-    pdf.cell(txt=chr(n), ln=1)
+    pdf.cell(text=chr(n), ln=1)
 pdf.output("symbol.pdf")
