@@ -1,6 +1,6 @@
 # Development
 
-This page has summary information about developing the PyPDF library.
+This page has summary information about developing the fpdf2 library.
 
 [TOC]
 
