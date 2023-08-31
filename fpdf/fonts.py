@@ -150,7 +150,7 @@ class TTFFont:
         # fonttools cmap = unicode char to glyph name
         # saving only the keys we have a tuple with
         # the unicode characters available on the font
-        self.cmap = tuple(self.ttfont.getBestCmap().keys())
+        self.cmap = self.ttfont.getBestCmap()
 
         # saving a list of glyph ids to char to allow
         # subset by unicode (regular) and by glyph
@@ -159,7 +159,7 @@ class TTFFont:
 
         for char in self.cmap:
             # take glyph associated to char
-            glyph = self.ttfont.getBestCmap()[char]
+            glyph = self.cmap[char]
 
             # take width associated to glyph
             w = self.ttfont["hmtx"].metrics[glyph][0]
@@ -420,11 +420,11 @@ class SubsetMap:
             return Glyph(
                 self.font.glyph_ids[unicode],
                 tuple([unicode]),
-                self.font.ttfont.getBestCmap()[unicode],
+                self.font.cmap[unicode],
                 self.font.cw[unicode],
             )
         if unicode == 0x00:
-            return Glyph(self.font.cmap[0], tuple([0x00]), ".notdef", 0)
+            return Glyph(next(iter(self.font.cmap)), tuple([0x00]), ".notdef", 0)
         return None
 
     def get_glyph_by_id(self, cid) -> Glyph:
