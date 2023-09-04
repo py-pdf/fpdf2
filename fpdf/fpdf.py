@@ -269,7 +269,7 @@ class FPDF(GraphicsStateMixin):
         # indicates that we are inside an .unbreakable() code block:
         self._in_unbreakable = False
         self._lasth = 0  # height of last cell printed
-        self.str_alias_nb_pages = "{nb}"
+        self.alias_nb_pages()  # enable alias by default
 
         self._angle = 0  # used by deprecated method: rotate()
         self.xmp_metadata = None

@@ -1,13 +1,21 @@
+import gzip
 from pathlib import Path
 
 import pytest
 
 from fpdf import FPDF, FPDFException
-from test.conftest import assert_pdf_equal, LOREM_IPSUM
-
+from test.conftest import (
+    assert_pdf_equal,
+    ensure_exec_time_below,
+    ensure_rss_memory_below,
+    LOREM_IPSUM,
+)
 
 HERE = Path(__file__).resolve().parent
 FONTS_DIR = HERE.parent / "fonts"
+
+with gzip.open(HERE / "long_text.txt.gz") as text_file:
+    LONG_TEXT_LINES = text_file.read().decode(encoding="utf-8").splitlines()
 
 TEXT_SIZE, SPACING = 36, 1.15
 LINE_HEIGHT = TEXT_SIZE * SPACING
@@ -298,3 +306,15 @@ def test_cell_lasth(tmp_path):  # issue #601
     assert pdf._lasth == 6.35, f"pdf._lasth ({pdf._lasth}) != 5.35 after empty cell"
     pdf.cell(w=100, txt="Hello world", border=True)
     assert_pdf_equal(pdf, HERE / "cell_lasth.pdf", tmp_path)
+
+
+@ensure_exec_time_below(20)
+@ensure_rss_memory_below(mib=1)
+def test_cell_speed_with_long_text():  # issue #907
+    pdf = FPDF()
+    pdf.add_font(fname=FONTS_DIR / "DejaVuSans.ttf")
+    pdf.set_font("DejaVuSans", size=5)
+    pdf.add_page()
+    assert len(LONG_TEXT_LINES) == 26862
+    for line in LONG_TEXT_LINES:
+        pdf.cell(0, 3, line, new_x="LMARGIN", new_y="NEXT")
