@@ -197,16 +197,12 @@ class Table:
             border = list("TB")
             if i == 0 and "T" in border:
                 border.remove("T")
-            if i == rows_count - 1 and "B" in border:
+            elif i == rows_count - 1 and "B" in border:
                 border.remove("B")
         if self._borders_layout == TableBordersLayout.SINGLE_TOP_LINE:
             if rows_count == 1:
                 return 0
-            border = list("TB")
-            if i != 1 and "T" in border:
-                border.remove("T")
-            if i != 0 and "B" in border:
-                border.remove("B")
+            return "B" if i == 0 else 0
         return "".join(border)
 
     def _render_table_row(self, i, row_layout_info, fill=False, **kwargs):
