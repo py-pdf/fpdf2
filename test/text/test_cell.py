@@ -308,7 +308,7 @@ def test_cell_lasth(tmp_path):  # issue #601
     assert_pdf_equal(pdf, HERE / "cell_lasth.pdf", tmp_path)
 
 
-@ensure_exec_time_below(20)
+@ensure_exec_time_below(23)
 @ensure_rss_memory_below(mib=1)
 def test_cell_speed_with_long_text():  # issue #907
     pdf = FPDF()

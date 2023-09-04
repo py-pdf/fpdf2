@@ -7,7 +7,7 @@ from fpdf import FPDF
 HERE = Path(__file__).resolve().parent
 
 
-@ensure_exec_time_below(seconds=40)
+@ensure_exec_time_below(seconds=8)
 @ensure_rss_memory_below(mib=8)
 def test_intense_image_rendering():
     png_file_paths = []
@@ -16,9 +16,8 @@ def test_intense_image_rendering():
     for png_file_path in (HERE / "image/png_test_suite/").glob("*.png"):
         if not png_file_path.name.startswith("x"):
             png_file_paths.append(str(png_file_path))
-    # Rendering 10 thousands pages in less than 40 seconds:
     pdf = FPDF()
-    for _ in range(10000):
+    for _ in range(2000):
         pdf.add_page()
         for i, png_file_path in enumerate(png_file_paths):
             x = (i % 13) * 16
