@@ -1,3 +1,11 @@
+"""
+This module contains the serialization logic that produces a PDF document from a FPDF instance.
+Most of the code in this module is used when FPDF.output() is called.
+
+The contents of this module are internal to fpdf2, and not part of the public API.
+They may change at any time without prior warning or any deprecation period,
+in non-backward-compatible ways.
+"""
 # pylint: disable=protected-access
 import logging
 from collections import defaultdict, OrderedDict

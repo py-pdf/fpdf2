@@ -7,6 +7,10 @@ Quoting the PDF spec:
 > the _structure hierarchy_ or _structure tree_.
 > At the root of the hierarchy is a dictionary object called the _structure tree root_,
 > located by means of the **StructTreeRoot** entry in the document catalog.
+
+The contents of this module are internal to fpdf2, and not part of the public API.
+They may change at any time without prior warning or any deprecation period,
+in non-backward-compatible ways.
 """
 from collections import defaultdict
 from typing import List, Union

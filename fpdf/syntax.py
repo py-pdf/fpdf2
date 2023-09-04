@@ -1,6 +1,5 @@
-"""Classes & functions that represent core elements of the PDF syntax
-
-Functions in this module take variable input and produce PDF Syntax features.
+"""
+Classes & functions that represent core elements of the PDF syntax
 
 Most of what happens in a PDF happens in objects, which are formatted like so:
 ```
@@ -56,8 +55,9 @@ endstream
 endobj
 ```
 
-In this case, the ASCIIHexDecode filter is used because
-"68656c6c6f20776f726c64" is "hello world" in ascii, and 22 is the length of that string.
+The contents of this module are internal to fpdf2, and not part of the public API.
+They may change at any time without prior warning or any deprecation period,
+in non-backward-compatible ways.
 """
 import re, zlib
 from abc import ABC

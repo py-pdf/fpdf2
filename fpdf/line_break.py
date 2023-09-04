@@ -2,8 +2,9 @@
 Routines for organizing lines and larger blocks of text, with manual and
 automatic line wrapping.
 
-The contents of this file are internal to fpdf, and not part of the public API.
-They may change at any time without prior warning or any deprecation period.
+The contents of this module are internal to fpdf2, and not part of the public API.
+They may change at any time without prior warning or any deprecation period,
+in non-backward-compatible ways.
 """
 
 from typing import NamedTuple, Any, Optional, Union, Sequence

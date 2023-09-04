@@ -1,3 +1,11 @@
+"""
+Utilities to manage deprecation errors & warnings.
+
+The contents of this module are internal to fpdf2, and not part of the public API.
+They may change at any time without prior warning or any deprecation period,
+in non-backward-compatible ways.
+"""
+
 import contextlib
 import inspect
 import os.path

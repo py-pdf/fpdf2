@@ -1,7 +1,12 @@
 """
 Font-related classes & constants.
 Includes the definition of the character widths of all PDF standard fonts.
+
+The contents of this module are internal to fpdf2, and not part of the public API.
+They may change at any time without prior warning or any deprecation period,
+in non-backward-compatible ways.
 """
+
 import re
 
 from bisect import bisect_left

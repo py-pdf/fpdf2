@@ -2,6 +2,10 @@
 Quoting section 8.2.2 "Document Outline" of the 2006 PDF spec 1.7:
 > The document outline consists of a tree-structured hierarchy of outline items (sometimes called bookmarks),
 > which serve as a visual table of contents to display the document’s structure to the user.
+
+The contents of this module are internal to fpdf2, and not part of the public API.
+They may change at any time without prior warning or any deprecation period,
+in non-backward-compatible ways.
 """
 from typing import NamedTuple, Optional
 

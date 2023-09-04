@@ -1,8 +1,9 @@
 """
-Vector drawing
+Vector drawing: managing colors, graphics states, paths, transforms...
 
-The classes & functions in this module are not part of fpdf2 public API.
-They are used only internally and could evolve in a non-backward-compatible way.
+The contents of this module are internal to fpdf2, and not part of the public API.
+They may change at any time without prior warning or any deprecation period,
+in non-backward-compatible ways.
 """
 
 import copy, decimal, math, re
