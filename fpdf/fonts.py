@@ -61,6 +61,7 @@ class FontFace:
 
 
 class CoreFont:
+    # RAM usage optimization:
     __slots__ = ("i", "type", "name", "up", "ut", "cw", "fontkey", "emphasis")
 
     def __init__(self, fpdf, fontkey, style):
@@ -86,7 +87,7 @@ class CoreFont:
 
 
 class TTFFont:
-    __slots__ = (
+    __slots__ = (  # RAM usage optimization
         "i",
         "type",
         "name",
@@ -360,7 +361,8 @@ class Glyph:
     can map a sequence of unicode characters to a single glyph
     """
 
-    __slots__ = ["glyph_id", "unicode", "glyph_name", "glyph_width"]
+    # RAM usage optimization:
+    __slots__ = ("glyph_id", "unicode", "glyph_name", "glyph_width")
     glyph_id: int
     unicode: Tuple
     glyph_name: str
@@ -404,14 +406,16 @@ class SubsetMap:
         return self.pick_glyph(glyph)
 
     def pick_glyph(self, glyph):
-        if (glyph) and (glyph not in self._map):
+        glyph_id = self._map.get(glyph)
+        if glyph and glyph_id is None:
             while self._next in self._reserved:
                 self._next += 1
                 if self._next > self._reserved[0]:
                     del self._reserved[0]
-            self._map[glyph] = self._next
+            glyph_id = self._next
+            self._map[glyph] = glyph_id
             self._next += 1
-        return self._map.get(glyph)
+        return glyph_id
 
     def dict(self):
         return self._map.copy()
@@ -421,9 +425,10 @@ class SubsetMap:
     ) -> Glyph:
         if glyph:
             return Glyph(glyph, tuple(unicode), glyph_name, glyph_width)
-        if isinstance(unicode, int) and unicode in self.font.glyph_ids.keys():
+        glyph_id = self.font.glyph_ids.get(unicode)
+        if isinstance(unicode, int) and glyph_id is not None:
             return Glyph(
-                self.font.glyph_ids[unicode],
+                glyph_id,
                 tuple([unicode]),
                 self.font.cmap[unicode],
                 self.font.cw[unicode],
