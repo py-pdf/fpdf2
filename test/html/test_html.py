@@ -333,7 +333,7 @@ def test_html_HTMLMixin_deprecation_warning(tmp_path):
         pass
 
     msg = (
-        "The HTMLMixin class is deprecated. "
+        "The HTMLMixin class is deprecated since v2.6.0. "
         "Simply use the FPDF class as a replacement."
     )
 

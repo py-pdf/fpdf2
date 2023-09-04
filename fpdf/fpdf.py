@@ -252,7 +252,9 @@ class FPDF(GraphicsStateMixin):
         """
         if font_cache_dir != "DEPRECATED":
             warnings.warn(
-                '"font_cache_dir" parameter is deprecated, unused and will soon be removed',
+                # pylint: disable=implicit-str-concat
+                '"font_cache_dir" parameter is deprecated since v2.5.1, '
+                "unused and will soon be removed",
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
@@ -762,7 +764,8 @@ class FPDF(GraphicsStateMixin):
         """
         warnings.warn(
             # pylint: disable=implicit-str-concat
-            "set_doc_option() is deprecated and will be removed in a future release. "
+            "set_doc_option() is deprecated since v2.4.0 "
+            "and will be removed in a future release. "
             "Simply set the `.core_fonts_encoding` property as a replacement.",
             DeprecationWarning,
             stacklevel=get_stack_level(),
@@ -1258,7 +1261,9 @@ class FPDF(GraphicsStateMixin):
         """
         if fill:
             warnings.warn(
-                '"fill" parameter is deprecated, use style="F" or style="DF" instead',
+                # pylint: disable=implicit-str-concat
+                '"fill" parameter is deprecated since v2.5.4, '
+                'use style="F" or style="DF" instead',
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
@@ -1314,7 +1319,8 @@ class FPDF(GraphicsStateMixin):
         """
         warnings.warn(
             # pylint: disable=implicit-str-concat
-            "dashed_line() is deprecated, and will be removed in a future release. "
+            "dashed_line() is deprecated since v2.4.6, "
+            "and will be removed in a future release. "
             "Use set_dash_pattern() and the normal drawing operations instead.",
             DeprecationWarning,
             stacklevel=get_stack_level(),
@@ -1795,7 +1801,9 @@ class FPDF(GraphicsStateMixin):
 
         if uni != "DEPRECATED":
             warnings.warn(
-                '"uni" parameter is deprecated, unused and will soon be removed',
+                # pylint: disable=implicit-str-concat
+                '"uni" parameter is deprecated since v2.5.1, '
+                "unused and will soon be removed",
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
@@ -1880,8 +1888,8 @@ class FPDF(GraphicsStateMixin):
             family = self.font_aliases[family]
         elif family in ("symbol", "zapfdingbats") and style:
             warnings.warn(
-                f"Built-in font {family} only has a single 'style' and can't be bold "
-                f"or italic",
+                f"Built-in font {family} only has a single 'style' "
+                "and can't be bold or italic",
                 stacklevel=get_stack_level(),
             )
             style = ""
@@ -2273,7 +2281,15 @@ class FPDF(GraphicsStateMixin):
         self._text_quad_points = defaultdict(list)
         self._record_text_quad_points = False
 
-    add_highlight = highlight  # For backward compatibilty
+    @contextmanager
+    def add_highlight(self, *args, **kwargs):
+        warnings.warn(
+            "add_highlight() has been renamed to highlight() in v2.5.5.",
+            DeprecationWarning,
+            stacklevel=get_stack_level(),
+        )
+        with self.highlight(*args, **kwargs):
+            yield
 
     @check_page
     def add_text_markup_annotation(
@@ -2406,7 +2422,7 @@ class FPDF(GraphicsStateMixin):
         """
         warnings.warn(
             # pylint: disable=implicit-str-concat
-            "rotate() can produces malformed PDFs and is deprecated. "
+            "rotate() can produces malformed PDFs and is deprecated since v2.1.0. "
             "It will be removed in a future release. "
             "Use the rotation() context manager instead.",
             DeprecationWarning,
@@ -2745,7 +2761,7 @@ class FPDF(GraphicsStateMixin):
                 )
             warnings.warn(
                 (
-                    'The parameter "ln" is deprecated.'
+                    'The parameter "ln" is deprecated since v2.5.2.'
                     f" Instead of ln={ln} use new_x=XPos.{new_x.name}, new_y=YPos.{new_y.name}."
                 ),
                 DeprecationWarning,
@@ -3381,7 +3397,7 @@ class FPDF(GraphicsStateMixin):
         if split_only:
             warnings.warn(
                 # pylint: disable=implicit-str-concat
-                'The parameter "split_only" is deprecated.'
+                'The parameter "split_only" is deprecated since v2.7.4.'
                 ' Use instead dry_run=True and output="LINES".',
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
@@ -3440,7 +3456,7 @@ class FPDF(GraphicsStateMixin):
                 )
             warnings.warn(
                 (
-                    'The parameter "ln" is deprecated.'
+                    'The parameter "ln" is deprecated since v2.5.2.'
                     f" Instead of ln={ln} use new_x=XPos.{new_x.name}, new_y=YPos.{new_y.name}."
                 ),
                 DeprecationWarning,
@@ -3747,7 +3763,9 @@ class FPDF(GraphicsStateMixin):
         """
         if type:
             warnings.warn(
-                '"type" parameter is deprecated, unused and will soon be removed',
+                # pylint: disable=implicit-str-concat
+                '"type" parameter is deprecated since v2.2.0, '
+                "unused and will soon be removed",
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
@@ -4757,7 +4775,9 @@ class FPDF(GraphicsStateMixin):
         """
         if dest:
             warnings.warn(
-                '"dest" parameter is deprecated, unused and will soon be removed',
+                # pylint: disable=implicit-str-concat
+                '"dest" parameter is deprecated since v2.2.0, '
+                "unused and will soon be removed",
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )

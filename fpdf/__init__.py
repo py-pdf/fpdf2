@@ -14,10 +14,10 @@ from .template import Template, FlexTemplate
 from .deprecation import WarnOnDeprecatedModuleAttributes
 
 FPDF_VERSION = _FPDF_VERSION
-"Current FPDF Version, also available via `__version__`"
+"Current fpdf2 version, also available as `__version__`"
 
 FPDF_FONT_DIR = _FPDF_FONT_DIR
-"""This is the location of where to look for fonts."""
+"Extra filesystem folder where fpdf2 looks for fonts files, after the current directory"
 
 # Pattern from sir Guido Von Rossum: https://stackoverflow.com/a/72911884/636849
 # > a module can define a class with the desired functionality, and then at
@@ -41,6 +41,7 @@ __all__ = [
     "YPos",
     "Template",
     "FlexTemplate",
+    "TextMode",
     "TitleStyle",
     "ViewerPreferences",
     "HTMLMixin",

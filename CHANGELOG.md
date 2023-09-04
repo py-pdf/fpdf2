@@ -206,6 +206,8 @@ This release is the first performed from the [@py-pdf GitHub org](https://github
 - documentation on how to control objects transparency: [link to docs](https://py-pdf.github.io/fpdf2/Transparency.html)
 - documentation on how to create tables and charts using [pandas](https://pandas.pydata.org/) DataFrames: [link to docs](https://py-pdf.github.io/fpdf2/Maths.html), thanks to @iwayankurniawan
 - added argument `round_corners` to `FPDF.rect()` that allows to draw rectangles with round corners: [link to docs](https://py-pdf.github.io/fpdf2/Shapes.html#rectangle) - thanks to @gonzalobarbaran
+### Changed
+- `FPDF.add_highlight()` as been renamed into [`FPDF.highlight()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.highlight)
 ### Fixed
 - support for `"x"` & `"y"` attributes in SVG `<use>` tags - _cf._ [#446](https://github.com/py-pdf/fpdf2/issues/446)
 - `CreationDate` of PDFs generated, that was broken - _cf._ [#451](https://github.com/py-pdf/fpdf2/issues/451)

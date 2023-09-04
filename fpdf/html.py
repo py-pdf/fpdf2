@@ -737,7 +737,7 @@ class HTMLMixin:
         super().__init__(*args, **kwargs)
         warnings.warn(
             # pylint: disable=implicit-str-concat
-            "The HTMLMixin class is deprecated. "
+            "The HTMLMixin class is deprecated since v2.6.0. "
             "Simply use the FPDF class as a replacement.",
             DeprecationWarning,
             stacklevel=get_stack_level(),
