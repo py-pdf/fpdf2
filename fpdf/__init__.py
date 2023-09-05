@@ -1,9 +1,25 @@
+"""
+Root module.
+Gives direct access to some classes defined in submodules:
+
+* `fpdf.fpdf.FPDF`
+* `fpdf.enums.Align`
+* `fpdf.enums.TextMode`
+* `fpdf.enums.XPos`
+* `fpdf.enums.YPos`
+* `fpdf.errors.FPDFException`
+* `fpdf.fpdf.TitleStyle`
+* `fpdf.prefs.ViewerPreferences`
+* `fpdf.template.Template`
+* `fpdf.template.FlexTemplate`
+"""
+
 import sys
 
 from .enums import Align, TextMode, XPos, YPos
+from .errors import FPDFException
 from .fpdf import (
     FPDF,
-    FPDFException,
     TitleStyle,
     FPDF_FONT_DIR as _FPDF_FONT_DIR,
     FPDF_VERSION as _FPDF_VERSION,
@@ -28,25 +44,27 @@ __license__ = "LGPL 3.0"
 
 __version__ = FPDF_VERSION
 
-
 __all__ = [
-    # metadata
+    # Metadata:
     "__version__",
     "__license__",
-    # Classes
+    # Classes:
     "FPDF",
     "FPDFException",
     "Align",
+    "TextMode",
     "XPos",
     "YPos",
     "Template",
     "FlexTemplate",
-    "TextMode",
     "TitleStyle",
     "ViewerPreferences",
+    # Deprecated classes:
     "HTMLMixin",
     "HTML2FPDF",
-    # FPDF Constants
+    # FPDF constants:
     "FPDF_VERSION",
     "FPDF_FONT_DIR",
 ]
+
+__pdoc__ = {name: name.startswith("FPDF_") for name in __all__}
