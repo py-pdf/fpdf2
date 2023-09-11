@@ -5,7 +5,9 @@ The contents of this module are internal to fpdf2, and not part of the public AP
 They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
-import math, re, warnings
+import logging, math, re, warnings
+from numbers import Number
+from typing import NamedTuple
 
 from fontTools.svgLib.path import parse_path
 from fontTools.pens.basePen import BasePen
@@ -29,6 +31,10 @@ from .drawing import (
     ClippingPath,
     Transform,
 )
+from .image_datastructures import ImageCacheI, VectorImageInfo
+from .output import stream_content_for_image
+
+LOGGER = logging.getLogger(__name__)
 
 __pdoc__ = {"force_nodocument": False}
 
@@ -656,7 +662,8 @@ class SVGObject:
         with open(filename, "r", encoding=encoding) as svgfile:
             return cls(svgfile.read(), *args, **kwargs)
 
-    def __init__(self, svg_text):
+    def __init__(self, svg_text, img_cache: ImageCacheI = None):
+        self.img_cache = img_cache  # Needed to render images
         self.cross_references = {}
 
         # disabling bandit rule as we use defusedxml:
@@ -845,6 +852,7 @@ class SVGObject:
             debug_stream (io.TextIO): the stream to which rendering debug info will be
                 written.
         """
+        self.img_cache = pdf  # Needed to render images
         _, _, path = self.transform_to_page_viewport(pdf)
 
         old_x, old_y = pdf.x, pdf.y
@@ -925,14 +933,20 @@ class SVGObject:
             self.handle_defs(child)
 
         for child in group:
-            if child.tag in xmlns_lookup("svg", "g"):
+            if child.tag in xmlns_lookup("svg", "defs"):
+                self.handle_defs(child)
+            elif child.tag in xmlns_lookup("svg", "g"):
                 pdf_group.add_item(self.build_group(child))
-            if child.tag in xmlns_lookup("svg", "path"):
+            elif child.tag in xmlns_lookup("svg", "path"):
                 pdf_group.add_item(self.build_path(child))
             elif child.tag in shape_tags:
                 pdf_group.add_item(self.build_shape(child))
-            if child.tag in xmlns_lookup("svg", "use"):
+            elif child.tag in xmlns_lookup("svg", "use"):
                 pdf_group.add_item(self.build_xref(child))
+            elif child.tag in xmlns_lookup("svg", "image"):
+                pdf_group.add_item(self.build_image(child))
+            else:
+                LOGGER.debug("Unsupported SVG tag: <%s>", child.tag)
 
         self.update_xref(group.attrib.get("id"), pdf_group)
 
@@ -944,14 +958,10 @@ class SVGObject:
         pdf_path = PaintedPath()
         apply_styles(pdf_path, path)
         self.apply_clipping_path(pdf_path, path)
-
         svg_path = path.attrib.get("d")
-
         if svg_path is not None:
             svg_path_converter(pdf_path, svg_path)
-
         self.update_xref(path.attrib.get("id"), pdf_path)
-
         return pdf_path
 
     @force_nodocument
@@ -959,17 +969,13 @@ class SVGObject:
         """Convert an SVG shape tag into a PDF path object. Necessary to make xref (because ShapeBuilder doesn't have access to this object.)"""
         shape_path = getattr(ShapeBuilder, shape_tags[shape.tag])(shape)
         self.apply_clipping_path(shape_path, shape)
-
         self.update_xref(shape.attrib.get("id"), shape_path)
-
         return shape_path
 
     @force_nodocument
     def build_clipping_path(self, shape, clip_id):
         clipping_path_shape = getattr(ShapeBuilder, shape_tags[shape.tag])(shape, True)
-
         self.update_xref(clip_id, clipping_path_shape)
-
         return clipping_path_shape
 
     @force_nodocument
@@ -978,3 +984,89 @@ class SVGObject:
         if clipping_path:
             clipping_path_id = re.search(r"url\((\#\w+)\)", clipping_path)
             stylable.clipping_path = self.cross_references[clipping_path_id[1]]
+
+    @force_nodocument
+    def build_image(self, image):
+        if xmlns("xlink", "href") not in image.attrib:
+            raise ValueError("<image> is missing a href attribute")
+        width = float(image.attrib.get("width", 0))
+        height = float(image.attrib.get("height", 0))
+        if "preserveAspectRatio" in image.attrib:
+            raise NotImplementedError(
+                '"preserveAspectRatio" defined on <image> is currently not supported (but contributions are welcome!)'
+            )
+        if "style" in image.attrib:
+            raise NotImplementedError(
+                '"style" defined on <image> is currently not supported (but contributions are welcome!)'
+            )
+        if "transform" in image.attrib:
+            raise NotImplementedError(
+                '"transform" defined on <image> is currently not supported (but contributions are welcome!)'
+            )
+        # Note: at this moment, self.img_cache is not set yet:
+        return SVGImage(
+            href=image.attrib[xmlns("xlink", "href")],
+            x=float(image.attrib.get("x", "0")),
+            y=float(image.attrib.get("y", "0")),
+            width=width,
+            height=height,
+            svg_obj=self,
+        )
+
+
+class SVGImage(NamedTuple):
+    href: str
+    x: Number
+    y: Number
+    width: Number
+    height: Number
+    svg_obj: SVGObject
+
+    def __deepcopy__(self, _memo):
+        # Defining this method is required to avoid the .svg_obj reference to be cloned:
+        return SVGImage(
+            href=self.href,
+            x=self.x,
+            y=self.y,
+            width=self.width,
+            height=self.height,
+            svg_obj=self.svg_obj,
+        )
+
+    @force_nodocument
+    def render(self, _gsd_registry, _style, last_item, initial_point):
+        img_cache = self.svg_obj and self.svg_obj.img_cache
+        if not img_cache:
+            raise AssertionError(
+                "fpdf2 bug - Cannot render a raster image without a SVGObject.img_cache"
+            )
+
+        # We lazy-import this function to circumvent a circular import problem:
+        # pylint: disable=cyclic-import,import-outside-toplevel
+        from .image_parsing import preload_image
+
+        _, _, info = preload_image(img_cache, self.href)
+        if isinstance(info, VectorImageInfo):
+            raise NotImplementedError(
+                "Inserting .svg vector graphics in <image> tags is currently not supported (but contributions are welcome!)"
+            )
+        w, h = info.size_in_document_units(self.width, self.height)
+        stream_content = stream_content_for_image(
+            info=info,
+            x=self.x,
+            y=self.y,
+            w=w,
+            h=h,
+            keep_aspect_ratio=True,
+        )
+        return stream_content, last_item, initial_point
+
+    @force_nodocument
+    def render_debug(
+        self, gsd_registry, style, last_item, initial_point, debug_stream, _pfx
+    ):
+        stream_content, last_item, initial_point = self.render(
+            gsd_registry, style, last_item, initial_point
+        )
+        debug_stream.write(f"{self.href} rendered as: {stream_content}\n")
+        return stream_content, last_item, initial_point

@@ -3,7 +3,8 @@ from typing import NamedTuple, Sequence, List, NewType
 
 from .errors import FPDFException
 from .enums import Align, XPos, YPos, WrapMode
-from .image_parsing import VectorImageInfo
+from .image_datastructures import VectorImageInfo
+from .image_parsing import preload_image
 from .line_break import MultiLineBreak, FORM_FEED
 
 # Since Python doesn't have "friend classes"...
@@ -175,7 +176,7 @@ class ImageParagraph:
     def build_line(self):
         # We do double duty as a "text line wrapper" here, since all the necessary
         # information is already in the ImageParagraph object.
-        self.name, self.img, self.info = self.region.pdf.preload_image(self.name, None)
+        self.name, self.img, self.info = preload_image(self.region.pdf, self.name, None)
         return self
 
     def render(self, col_left, col_width, max_height):

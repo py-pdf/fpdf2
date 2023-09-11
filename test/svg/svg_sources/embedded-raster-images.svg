@@ -1,0 +1,33 @@
+<?xml version="1.0" standalone="no"?>
+<svg width="10cm" height="10cm" viewBox="0 0 1000 1000" version="1.1"
+     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Example image.svg - embedding raster images</title>
+
+  <rect fill="none" stroke="blue" stroke-width="1" x="1" y="1" width="998" height="998" />
+
+  <!-- In order to visualize this SVG file in a browser,
+       and see how the <image> tags are rendered by it,
+       the "test/" base path must be replaced
+       by the relative path "../.." in the xlink:href attributes below: -->
+
+  <!-- Image 1 : relative link to JPEG -->
+  <image x="100" y="100" width="300" height="300"
+         xlink:href="test/image/image_types/insert_images_insert_jpg.jpg"/>
+
+  <!-- Image 2 : data:image/png;base64 -->
+  <image x="500" y="100" width="300" height="300"
+         xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEU0OkArMjhobHEoPUPFEBIuO0L+AAC2FBZ2JyuNICOfGx7xAwTjCAlCNTvVDA1aLzQ3COjMAAAAVUlEQVQI12NgwAaCDSA0888GCItjn0szWGBJTVoGSCjWs8TleQCQYV95evdxkFT8Kpe0PLDi5WfKd4LUsN5zS1sKFolt8bwAZrCaGqNYJAgFDEpQAAAzmxafI4vZWwAAAABJRU5ErkJggg=="/>
+
+  <!-- Image 3 : no height set -->
+  <image x="100" y="450" width="200"
+         xlink:href="test/image/image_types/insert_images_insert_jpg.jpg"/>
+
+  <!-- Image 4 : no width set -->
+  <image x="325" y="450" height="200"
+         xlink:href="test/image/image_types/insert_images_insert_jpg.jpg"/>
+
+  <!-- Image 4 : no height nor width set -->
+  <image x="500" y="450"
+         xlink:href="test/image/image_types/insert_images_insert_jpg.jpg"/>
+
+</svg>

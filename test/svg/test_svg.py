@@ -279,3 +279,13 @@ class TestSVGObject:
         svg.draw_to_page(pdf)
 
         assert_pdf_equal(pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path)
+
+    def test_svg_rendering_image_over_page_break(self, tmp_path):
+        pdf = fpdf.FPDF()
+        pdf.add_page()
+        pdf.y += 150
+        pdf.image(parameters.svgfile("embedded-raster-images.svg"))
+        # In the resulting document, a page break occurs before the image being rendered:
+        assert_pdf_equal(
+            pdf, GENERATED_PDF_DIR / "svg_rendering_image_over_page_break.pdf", tmp_path
+        )

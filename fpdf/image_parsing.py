@@ -1,4 +1,4 @@
-import base64, zlib
+import base64, hashlib, io, zlib
 from dataclasses import dataclass
 from io import BytesIO
 from math import ceil
@@ -20,8 +20,8 @@ try:
 except ImportError:
     Image = None
 
-from .enums import Align
 from .errors import FPDFException
+from .image_datastructures import ImageCacheI, RasterImageInfo, VectorImageInfo
 from .svg import SVGObject
 
 
@@ -67,83 +67,74 @@ TIFFBitRevTable = [
 # fmt: on
 
 
-class ImageInfo(dict):
-    """Information about an image used in the PDF document (base class).
-    We subclass this to distinguish between raster and vector images."""
+def preload_image(img_cache: ImageCacheI, name, dims=None):
+    """
+    Read an image and load it into memory.
+    For raster images: Following this call, the image is inserted in `.images`,
+    and following calls to this method (or `FPDF.image`) will return (or re-use)
+    the same cached values, without re-reading the image.
+    For vector images: The data is loaded and the metadata extracted.
 
-    @property
-    def width(self):
-        "Intrinsic image width"
-        return self["w"]
+    Args:
+        name: either a string representing a file path to an image, an URL to an image,
+            an io.BytesIO, or a instance of `PIL.Image.Image`
+        dims (Tuple[float]): optional dimensions as a tuple (width, height) to resize the image
+            (raster only) before storing it in the PDF.
 
-    @property
-    def height(self):
-        "Intrinsic image height"
-        return self["h"]
+    Returns: A tuple, consisting of the name, the image data, and an instance of a
+        subclass of `ImageInfo`,
+    """
+    # Identify and load SVG data.
+    if str(name).endswith(".svg"):
+        return get_svg_info(name, load_image(str(name)), img_cache=img_cache)
+    if isinstance(name, bytes) and _is_svg(name.strip()):
+        return get_svg_info(name, io.BytesIO(name), img_cache=img_cache)
+    if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
+        return get_svg_info("vector_image", name, img_cache=img_cache)
 
-    @property
-    def rendered_width(self):
-        "Only available if the image has been placed on the document"
-        return self["rendered_width"]
-
-    @property
-    def rendered_height(self):
-        "Only available if the image has been placed on the document"
-        return self["rendered_height"]
-
-    def __str__(self):
-        d = {k: ("..." if k in ("data", "smask") else v) for k, v in self.items()}
-        return f"self.__class__.__name__({d})"
-
-    def scale_inside_box(self, x, y, w, h):
-        """
-        Make an image fit within a bounding box, maintaining its proportions.
-        In the reduced dimension it will be centered within the available space.
-        """
-        ratio = self.width / self.height
-        if h * ratio < w:
-            new_w = h * ratio
-            new_h = h
-            x += (w - new_w) / 2
-        else:  # => too wide, limiting width:
-            new_h = w / ratio
-            new_w = w
-            y += (h - new_h) / 2
-        return x, y, new_w, new_h
-
-    @staticmethod
-    def x_by_align(x, w, pdf, keep_aspect_ratio):
-        if keep_aspect_ratio:
-            raise ValueError(
-                "FPDF.image(): 'keep_aspect_ratio' cannot be used with an enum value provided to `x`"
+    # Load raster data.
+    if isinstance(name, str):
+        img = None
+    elif isinstance(name, Image.Image):
+        bytes_ = name.tobytes()
+        img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
+        img_hash.update(bytes_)
+        name, img = img_hash.hexdigest(), name
+    elif isinstance(name, (bytes, io.BytesIO)):
+        bytes_ = name.getvalue() if isinstance(name, io.BytesIO) else name
+        bytes_ = bytes_.strip()
+        img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
+        img_hash.update(bytes_)
+        name, img = img_hash.hexdigest(), name
+    else:
+        name, img = str(name), name
+    info = img_cache.images.get(name)
+    if info:
+        info["usages"] += 1
+    else:
+        info = get_img_info(name, img, img_cache.image_filter, dims)
+        info["i"] = len(img_cache.images) + 1
+        info["usages"] = 1
+        info["iccp_i"] = None
+        iccp = info.get("iccp")
+        if iccp:
+            LOGGER.debug(
+                "ICC profile found for image %s - It will be inserted in the PDF document",
+                name,
             )
-        x = Align.coerce(x)
-        if x == Align.C:
-            return (pdf.w - w) / 2
-        if x == Align.R:
-            return pdf.w - w - pdf.r_margin
-        if x == Align.L:
-            return pdf.l_margin
-        raise ValueError(f"Unsupported 'x' value passed to .image(): {x}")
+            if iccp in img_cache.icc_profiles:
+                info["iccp_i"] = img_cache.icc_profiles[iccp]
+            else:
+                iccp_i = len(img_cache.icc_profiles)
+                img_cache.icc_profiles[iccp] = iccp_i
+                info["iccp_i"] = iccp_i
+            info["iccp"] = None
+        img_cache.images[name] = info
+    return name, img, info
 
 
-class RasterImageInfo(ImageInfo):
-    "Information about a raster image used in the PDF document"
-
-    def size_in_document_units(self, w, h, k):
-        if w == 0 and h == 0:  # Put image at 72 dpi
-            w = self["w"] / k
-            h = self["h"] / k
-        elif w == 0:
-            w = h * self["w"] / self["h"]
-        elif h == 0:
-            h = w * self["h"] / self["w"]
-        return w, h
-
-
-class VectorImageInfo(ImageInfo):
-    "Information about a vector image used in the PDF document"
-    # pass
+def _is_svg(bytes_):
+    return bytes_.startswith(b"<?xml ") or bytes_.startswith(b"<svg ")
 
 
 def load_image(filename):
@@ -197,8 +188,8 @@ def is_iccp_valid(iccp, filename):
     return True
 
 
-def get_svg_info(filename, img):
-    svg = SVGObject(img.getvalue())
+def get_svg_info(filename, img, img_cache):
+    svg = SVGObject(img.getvalue(), img_cache=img_cache)
     if svg.viewbox:
         _, _, w, h = svg.viewbox
     else:

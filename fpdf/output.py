@@ -15,6 +15,7 @@ from io import BytesIO
 from .annotations import PDFAnnotation
 from .enums import SignatureFlag
 from .errors import FPDFException
+from .image_datastructures import RasterImageInfo
 from .outline import build_outline_objs
 from .sign import Signature, sign_content
 from .syntax import (
@@ -950,6 +951,31 @@ class OutputProducer:
         LOGGER.debug("Final size summary of the biggest document sections:")
         for label, section_size in self.sections_size_per_trace_label.items():
             LOGGER.debug("- %s: %s", label, _sizeof_fmt(section_size))
+
+
+def stream_content_for_image(
+    info: RasterImageInfo,
+    x,
+    y,
+    w,
+    h,
+    keep_aspect_ratio=False,
+    scale=1,
+    pdf_height_to_flip=None,
+):
+    if keep_aspect_ratio:
+        x, y, w, h = info.scale_inside_box(x, y, w, h)
+    if pdf_height_to_flip:
+        stream_h = h
+        stream_y = pdf_height_to_flip - h - y
+    else:
+        stream_h = -h
+        stream_y = y + h
+    return (
+        f"q {w * scale:.2f} 0 0 {stream_h * scale:.2f}"
+        f" {x * scale:.2f} {stream_y * scale:.2f} cm"
+        f" /I{info['i']} Do Q"
+    )
 
 
 def _tt_font_widths(font):

@@ -186,6 +186,7 @@ Additionally, `cairosvg` offers various options for optimizing the rendering per
 - groups
 - paths
 - basic shapes (rect, circle, ellipse, line, polyline, polygon)
+- basic `<image>` elements
 - basic cross-references
 - stroke & fill coloring and opacity
 - basic stroke styling
@@ -211,7 +212,7 @@ In addition to that:
 - patterns
 - gradients
 - a lot of attributes
-- embedded images or other content (including nested SVGs)
+- embedded non-image content (including nested SVGs)
 - CSS styling via `<style>` tags or external *.css files.
 
 {==

@@ -86,19 +86,21 @@ from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingE
 from .fonts import CoreFont, CORE_FONTS, FontFace, TTFFont
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
-from .image_parsing import (
-    SUPPORTED_IMAGE_FILTERS,
-    get_img_info,
-    get_svg_info,
-    load_image,
+from .image_datastructures import (
     ImageInfo,
     RasterImageInfo,
     VectorImageInfo,
 )
+from .image_parsing import (
+    SUPPORTED_IMAGE_FILTERS,
+    get_img_info,
+    load_image,
+    preload_image,
+)
 from .linearization import LinearizedOutputProducer
 from .line_break import Fragment, MultiLineBreak, TextLine
 from .outline import OutlineSection
-from .output import OutputProducer, PDFPage, ZOOM_CONFIGS
+from .output import OutputProducer, PDFPage, ZOOM_CONFIGS, stream_content_for_image
 from .recorder import FPDFRecorder
 from .sign import Signature
 from .structure_tree import StructureTreeBuilder
@@ -255,10 +257,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.page = 0  # current page number
         self.pages = {}  # array of PDFPage objects starting at index 1
         self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
-        self.images = {}  # map image identifiers to dicts describing the raster images
-        self.icc_profiles = {}  # map icc profiles (bytes) to their index (number)
         self.links = {}  # array of Destination objects starting at index 1
         self.embedded_files = []  # array of PDFEmbeddedFile
+
+        # ImageCacheI:
+        self.images = {}  # map image identifiers to dicts describing the raster images
+        self.icc_profiles = {}  # map icc profiles (bytes) to their index (number)
 
         self.in_footer = False  # flag set while rendering footer
         # indicates that we are inside an .unbreakable() code block:
@@ -3891,79 +3895,25 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 stacklevel=get_stack_level(),
             )
 
-        name, img, info = self.preload_image(name, dims)
+        name, img, info = preload_image(self, name, dims)
         if isinstance(info, VectorImageInfo):
             return self._vector_image(
                 img, info, x, y, w, h, link, title, alt_text, keep_aspect_ratio
             )
         return self._raster_image(
-            name, img, info, x, y, w, h, link, title, alt_text, dims, keep_aspect_ratio
+            name,
+            img,
+            info,
+            x,
+            y,
+            w,
+            h,
+            link,
+            title,
+            alt_text,
+            dims,
+            keep_aspect_ratio,
         )
-
-    def preload_image(self, name, dims=None):
-        """
-        Read an image and load it into memory.
-        For raster images: Following this call, the image is inserted in `.images`,
-        and following calls to this method (or `FPDF.image`) will return (or re-use)
-        the same cached values, without re-reading the image.
-        For vector images: The data is loaded and the metadata extracted.
-
-        Args:
-            name: either a string representing a file path to an image, an URL to an image,
-                an io.BytesIO, or a instance of `PIL.Image.Image`
-            dims (Tuple[float]): optional dimensions as a tuple (width, height) to resize the image
-                (raster only) before storing it in the PDF.
-
-        Returns: A tuple, consisting of the name, the image data, and an instance of a
-            subclass of `ImageInfo`,
-        """
-        # Identify and load SVG data.
-        if str(name).endswith(".svg"):
-            return get_svg_info(name, load_image(str(name)))
-        if isinstance(name, bytes) and _is_svg(name.strip()):
-            return get_svg_info(name, io.BytesIO(name))
-        if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
-            return get_svg_info("vector_image", name)
-
-        # Load raster data.
-        if isinstance(name, str):
-            img = None
-        elif isinstance(name, Image):
-            bytes_ = name.tobytes()
-            img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
-            img_hash.update(bytes_)
-            name, img = img_hash.hexdigest(), name
-        elif isinstance(name, (bytes, io.BytesIO)):
-            bytes_ = name.getvalue() if isinstance(name, io.BytesIO) else name
-            bytes_ = bytes_.strip()
-            img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
-            img_hash.update(bytes_)
-            name, img = img_hash.hexdigest(), name
-        else:
-            name, img = str(name), name
-        info = self.images.get(name)
-        if info:
-            info["usages"] += 1
-        else:
-            info = get_img_info(name, img, self.image_filter, dims)
-            info["i"] = len(self.images) + 1
-            info["usages"] = 1
-            info["iccp_i"] = None
-            iccp = info.get("iccp")
-            if iccp:
-                LOGGER.debug(
-                    "ICC profile found for image %s - It will be inserted in the PDF document",
-                    name,
-                )
-                if iccp in self.icc_profiles:
-                    info["iccp_i"] = self.icc_profiles[iccp]
-                else:
-                    iccp_i = len(self.icc_profiles)
-                    self.icc_profiles[iccp] = iccp_i
-                    info["iccp_i"] = iccp_i
-                info["iccp"] = None
-            self.images[name] = info
-        return name, img, info
 
     def _raster_image(
         self,
@@ -3984,10 +3934,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self._set_min_pdf_version("1.4")
 
         # Automatic width and height calculation if needed
-        w, h = info.size_in_document_units(w, h, self.k)
+        w, h = info.size_in_document_units(w, h, scale=self.k)
 
         if self.oversized_images and info["usages"] == 1 and not dims:
-            info = self._downscale_image(name, img, info, w, h)
+            info = self._downscale_image(name, img, info, w, h, scale=self.k)
 
         # Flowing mode
         if y is None:
@@ -3999,13 +3949,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         if not isinstance(x, Number):
             x = info.x_by_align(x, w, self, keep_aspect_ratio)
-        if keep_aspect_ratio:
-            x, y, w, h = info.scale_inside_box(x, y, w, h)
 
-        stream_content = (
-            f"q {w * self.k:.2f} 0 0 {h * self.k:.2f} {x * self.k:.2f} "
-            f"{(self.h - y - h) * self.k:.2f} cm /I{info['i']} Do Q"
+        stream_content = stream_content_for_image(
+            info, x, y, w, h, keep_aspect_ratio, scale=self.k, pdf_height_to_flip=self.h
         )
+
         if title or alt_text:
             with self._marked_sequence(title=title, alt_text=alt_text):
                 self._out(stream_content)
@@ -4102,8 +4050,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         return VectorImageInfo(rendered_width=w, rendered_height=h)
 
-    def _downscale_image(self, name, img, info, w, h):
-        width_in_pt, height_in_pt = w * self.k, h * self.k
+    def _downscale_image(self, name, img, info, w, h, scale):
+        width_in_pt, height_in_pt = w * scale, h * scale
         lowres_name = f"lowres-{name}"
         lowres_info = self.images.get(lowres_name)
         if (
@@ -4955,10 +4903,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 name.write(self.buffer)
             return None
         return self.buffer
-
-
-def _is_svg(bytes):
-    return bytes.startswith(b"<?xml ") or bytes.startswith(b"<svg ")
 
 
 # Pattern from sir Guido Von Rossum: https://stackoverflow.com/a/72911884/636849
