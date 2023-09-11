@@ -3223,7 +3223,7 @@ class FPDF(GraphicsStateMixin):
             # Check that previous & next characters are not identical to the marker:
             if (
                 is_marker
-                and (not txt_frag or txt_frag[0] != half_marker)
+                and (len(txt_frag) < 1 or txt_frag[-1] != half_marker)
                 and (len(txt) < 3 or txt[2] != half_marker)
             ):
                 if txt_frag:

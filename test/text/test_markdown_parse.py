@@ -61,6 +61,15 @@ def test_markdown_parse_line_of_markers():
     frags = tuple(FPDF()._markdown_parse("----------"))
     expected = (Fragment("----------", GSTATE, k=PDF.k),)
     assert frags == expected
+    frags = tuple(FPDF()._markdown_parse("****BOLD**"))
+    expected = (Fragment("****BOLD", GSTATE, k=PDF.k),)
+    assert frags == expected
+    frags = tuple(FPDF()._markdown_parse("* **BOLD**"))
+    expected = (
+        Fragment("* ", GSTATE, k=PDF.k),
+        Fragment("BOLD", GSTATE_B, k=PDF.k),
+    )
+    assert frags == expected
 
 
 def test_markdown_parse_newline_after_markdown_link():  # issue 916

@@ -24,7 +24,7 @@ This release is the first performed from the [@py-pdf GitHub org](https://github
 * [`FPDF.image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image), when provided a `BytesIO` instance, does not close it anymore - _cf._ issue [#881](https://github.com/py-pdf/fpdf2/issues/881)
 * Invalid characters were being generated when a string contains parentheses - _cf._ issue [#884](https://github.com/py-pdf/fpdf2/issues/884)
 * Frozen Glyph dataclass was causing problems for FPDFRecorder with TTF fonts - _cf._ issue [#890](https://github.com/py-pdf/fpdf2/issues/890)
-* Edge case when parsing a Markdown link followed by a newline - _cf._ issue [#916](https://github.com/py-pdf/fpdf2/issues/916)
+* Edge case when parsing a Markdown link followed by a newline - _cf._ issue [#916](https://github.com/py-pdf/fpdf2/issues/916), and when bold/italics/underline markers are repeated
 
 ## [2.7.5] - 2023-08-04
 ### Added
