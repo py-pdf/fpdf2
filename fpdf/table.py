@@ -328,7 +328,7 @@ class Table:
     ):
         row = self.rows[i]
         j = 0
-        y = self._fpdf.y # remember current y position, reset after each cell
+        y = self._fpdf.y  # remember current y position, reset after each cell
 
         for cell in row.cells:
             self._render_table_cell(
