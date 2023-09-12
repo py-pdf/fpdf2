@@ -177,7 +177,7 @@ class Table:
             self._padding = get_padding_tuple(padding)
 
         # check table_border_layout and outer_border_width
-        if self._borders_layout != TableBordersLayout.ALL:
+        if self._borders_layout not in (TableBordersLayout.ALL, TableBordersLayout.NO_HORIZONTAL_LINES):
             if outer_border_width is not None:
                 raise ValueError(
                     "outer_border_width is not allowed when borders_layout is not ALL"
