@@ -85,8 +85,8 @@ from .structure_tree import StructureTreeBuilder
 from .sign import Signature
 from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ, PDFDate
-from .table import Table, get_padding_tuple, Padding
-from .util import get_scale_factor
+from .table import Table
+from .util import get_scale_factor, Padding
 
 # Public global variables:
 FPDF_VERSION = "2.7.5"
@@ -3404,7 +3404,7 @@ class FPDF(GraphicsStateMixin):
         Returns: a single value or a tuple, depending on the `output` parameter value
         """
 
-        padding = get_padding_tuple(padding)
+        padding = Padding.new(padding)
 
         if split_only:
             warnings.warn(

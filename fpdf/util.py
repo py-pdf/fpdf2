@@ -8,10 +8,33 @@ in non-backward-compatible ways.
 import gc, os, warnings
 from numbers import Number
 from tracemalloc import get_traced_memory, is_tracing
-from typing import Iterable, Tuple, Union
+from typing import Iterable, Tuple, Union, NamedTuple
 
 # default block size from src/libImaging/Storage.c:
 PIL_MEM_BLOCK_SIZE_IN_MIB = 16
+
+
+class Padding(NamedTuple):
+    top: Number = 0
+    right: Number = 0
+    bottom: Number = 0
+    left: Number = 0
+
+    @classmethod
+    def new(cls, padding: Union[int, float, tuple, list]):
+        """Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules"""
+        if isinstance(padding, (int, float)):
+            return Padding(padding, padding, padding, padding)
+        if len(padding) == 2:
+            return Padding(padding[0], padding[1], padding[0], padding[1])
+        if len(padding) == 3:
+            return Padding(padding[0], padding[1], padding[2], padding[1])
+        if len(padding) == 4:
+            return Padding(*padding)
+
+        raise ValueError(
+            f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
+        )
 
 
 def buffer_subst(buffer, placeholder, value):

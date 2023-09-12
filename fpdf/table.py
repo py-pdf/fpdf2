@@ -1,55 +1,29 @@
 from dataclasses import dataclass
 from numbers import Number
-from typing import Optional, Union, NamedTuple
-
-try:
-    from types import NoneType
-except ImportError:
-    NoneType = type(None)
+from typing import Optional, Union
 
 from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode, VAlign
 from .enums import MethodReturnValue
 from .errors import FPDFException
 from .fonts import CORE_FONTS, FontFace
+from .util import Padding
 
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
 
 
-class Padding(NamedTuple):
-    top: Number = 0
-    right: Number = 0
-    bottom: Number = 0
-    left: Number = 0
 
-
-def get_padding_tuple(padding: Union[int, float, tuple, list]) -> Padding:
-    """Return a 4-tuple of padding values from a single value or a 2, 3 or 4-tuple according to CSS rules"""
-    if isinstance(padding, (int, float)):
-        return Padding(padding, padding, padding, padding)
-    if len(padding) == 2:
-        return Padding(padding[0], padding[1], padding[0], padding[1])
-    if len(padding) == 3:
-        return Padding(padding[0], padding[1], padding[2], padding[1])
-    if len(padding) == 4:
-        return Padding(*padding)
-
-    raise ValueError(
-        f"padding shall be a number or a sequence of 2, 3 or 4 numbers, got {str(padding)}"
-    )
-
-
-def draw_box_borders(pdf, x1, y1, x2, y2, border, fill=None):
+def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
     """Draws a box using the provided style - private helper used by table for drawing the cell and table borders.
     Difference between this and rect() is that border can be defined as "L,R,T,B" to draw only some of the four borders;
     compatible with get_border(i,k)
 
     See Also: rect()"""
 
-    if fill:
+    if fill_color:
         prev_fill_color = pdf.fill_color
-        if isinstance(fill, (int, float)):
-            fill = [fill]
-        pdf.set_fill_color(*fill)
+        if isinstance(fill_color, (int, float)):
+            fill_color = [fill_color]
+        pdf.set_fill_color(*fill_color)
 
     sl = []
 
@@ -65,7 +39,7 @@ def draw_box_borders(pdf, x1, y1, x2, y2, border, fill=None):
     y2 *= k
     y1 *= k
 
-    if fill:
+    if fill_color:
         op = "B" if border == 1 else "f"
         sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re {op}")
     elif border == 1:
@@ -84,7 +58,7 @@ def draw_box_borders(pdf, x1, y1, x2, y2, border, fill=None):
     s = " ".join(sl)
     pdf._out(s)  # pylint: disable=protected-access
 
-    if fill:
+    if fill_color:
         pdf.set_fill_color(prev_fill_color)
 
 
@@ -150,7 +124,8 @@ class Table:
                 "CHAR" for character based line wrapping.
             padding (number, tuple, Padding): optional. Sets the cell padding. Can be a single number or a sequence of numbers, default:0
                 If padding for left and right ends up being non-zero then c_margin is ignored.
-            outer_border_width (number): optional. Sets the width of the outer borders of the table
+            outer_border_width (number): optional. Sets the width of the outer borders of the table.
+                Only relevant when borders_layout is ALL or NO_HORIZONTAL_LINES. Otherwise, the border widths are controlled by FPDF.set_line_width()
         """
         self._fpdf = fpdf
         self._align = align
@@ -172,15 +147,15 @@ class Table:
         self.rows = []
 
         if padding is None:
-            self._padding = get_padding_tuple(0)
+            self._padding = Padding.new(0)
         else:
-            self._padding = get_padding_tuple(padding)
+            self._padding = Padding.new(padding)
 
         # check table_border_layout and outer_border_width
         if self._borders_layout not in (TableBordersLayout.ALL, TableBordersLayout.NO_HORIZONTAL_LINES):
             if outer_border_width is not None:
                 raise ValueError(
-                    "outer_border_width is not allowed when borders_layout is not ALL"
+                    "outer_border_width is only allowed when borders_layout is ALL or NO_HORIZONTAL_LINES"
                 )
             self._outer_border_width = 0
 
@@ -406,7 +381,7 @@ class Table:
                 else FontFace(fill_color=self._cell_fill_color)
             )
 
-        padding = get_padding_tuple(cell.padding) if cell.padding else self._padding
+        padding = Padding.new(cell.padding) if cell.padding else self._padding
 
         v_align = cell.v_align if cell.v_align else self._v_align
 
@@ -448,7 +423,7 @@ class Table:
                 x2,
                 y2,
                 border=self.get_cell_border(i, j),
-                fill=style.fill_color if fill else None,
+                fill_color=style.fill_color if fill else None,
             )
 
             # draw outer box if needed
@@ -715,7 +690,7 @@ class Cell:
     img: Optional[str]
     img_fill_width: bool
     colspan: int
-    padding: Optional[Union[int, tuple, NoneType]]
+    padding: Optional[Union[int, tuple, type(None)]]
     link: Optional[Union[str, int]]
 
     def write(self, text, align=None):
