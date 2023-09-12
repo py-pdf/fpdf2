@@ -332,6 +332,8 @@ class Table:
     ):
         row = self.rows[i]
         j = 0
+        y = self._fpdf.y # remember current y position, reset after each cell
+
         for cell in row.cells:
             self._render_table_cell(
                 i,
@@ -344,6 +346,8 @@ class Table:
                 **kwargs,
             )
             j += cell.colspan
+            self._fpdf.set_y(y)  # restore y position after each cell
+
         self._fpdf.ln(row_layout_info.height)
 
     def _render_table_cell(
@@ -365,8 +369,10 @@ class Table:
 
         if cell_height_info is None:
             cell_height = None
+            height_query_only = True
         else:
             cell_height = cell_height_info.height
+            height_query_only = False
 
         page_break_text = False
         page_break_image = False
@@ -415,7 +421,7 @@ class Table:
         # place cursor (required for images after images)
 
         if (
-            cell_height_info is None
+            height_query_only
         ):  # not rendering, cell_x_positions is not relevant (and probably not provided)
             cell_x = 0
         else:
@@ -431,7 +437,7 @@ class Table:
         # If cell_height is None then we're still in the phase of calculating the height of the cell meaning that
         # we do not need to set fonts & draw borders yet.
 
-        if cell_height is not None:
+        if not height_query_only:
             x1 = self._fpdf.x
             y1 = self._fpdf.y
             x2 = (
@@ -542,7 +548,9 @@ class Table:
         else:
             cell_height = 0
 
-        return page_break_text or page_break_image, img_height, cell_height
+        do_pagebreak = page_break_text or page_break_image
+
+        return do_pagebreak, img_height, cell_height
 
     def _get_col_width(self, i, j, colspan=1):
         """Gets width of a column in a table, this excludes the gutter outside the column but includes the gutter

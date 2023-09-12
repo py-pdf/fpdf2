@@ -1,12 +1,10 @@
-from math import sin
 from pathlib import Path
 
-import qrcode, pytest
+import pytest
 
 from fpdf import FPDF
 from fpdf.enums import MethodReturnValue, YPos, TableCellFillMode, VAlign
 from fpdf.fonts import FontFace
-from fpdf.table import Padding
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
@@ -152,7 +150,7 @@ def test_multicell_return_value(tmp_path):
 
     # assert pdf.y == old_y + height_with_padding
 
-    run_comparison(pdf, "table_with_padding.pdf", tmp_path)
+    run_comparison(pdf, "table_with_padding", tmp_path)
 
 
 def test_table_with_multiline_cells_and_images_padding_and_pagebreak(tmp_path):
@@ -185,6 +183,27 @@ def test_table_with_multiline_cells_and_images_padding_and_pagebreak(tmp_path):
     )
 
 
+def test_table_with_single_row_of_images(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    pdf.text(60, 100, "All these images should be the same size")
+    with pdf.table(
+        line_height=pdf.font_size,
+        padding=(5, 7, 3, 4),
+        width=120,
+        col_widths=(2, 2, 2, 2),
+        cell_fill_color=(150, 200, 255),
+        cell_fill_mode=TableCellFillMode.ROWS,
+    ) as table:
+        data_row = IMAGES_DATA[0]
+        row = table.row()
+        for datum in data_row:
+            row.cell(img=datum)
+
+    run_comparison(pdf, "table_with_single_row_of_images", tmp_path)
+
+
 def test_table_with_only_images(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -212,6 +231,11 @@ def test_table_vertical_alignment(tmp_path):
 
     red = (255, 100, 100)
     black = (0, 0, 0)
+
+    pdf.rect(pdf.l_margin, pdf.t_margin, pdf.epw, pdf.eph)
+    pdf.rect(0, pdf.t_margin, pdf.l_margin, pdf.eph)
+    pdf.rect(pdf.l_margin + pdf.epw, pdf.t_margin, pdf.r_margin, pdf.eph)
+    # pdf.rect(0, pdf.t_margin, pdf.l_margin, pdf.eph)
 
     deathstyle = FontFace(color=black, fill_color=red)
 
