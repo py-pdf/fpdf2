@@ -549,7 +549,7 @@ class Table:
         return do_pagebreak, img_height, cell_height
 
     def _get_col_width(self, i, j, colspan=1):
-        """Gets width of a column in a table, this excludes the gutter outside the column but includes the gutter
+        """Gets width of a column in a table, this excludes the outer gutter (outside the table) but includes the inner gutter
         between columns if the cell spans multiple columns."""
 
         cols_count = self.rows[i].cols_count
