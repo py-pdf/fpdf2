@@ -38,7 +38,7 @@ jobs:
         run: |
           pylint fpdf test tutorial/tuto*.py
           bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
-          semgrep scan --config auto --lang=py --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
+          semgrep scan --config auto --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
       - name: Ensure code has been autoformatted with black 🖌️
         if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
         run: black --check .

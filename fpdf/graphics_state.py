@@ -1,3 +1,11 @@
+"""
+Mixin class for managing a stack of graphics state variables.
+
+The contents of this module are internal to fpdf2, and not part of the public API.
+They may change at any time without prior warning or any deprecation period,
+in non-backward-compatible ways.
+"""
+
 from .drawing import DeviceGray
 from .enums import CharVPos, TextEmphasis, TextMode
 from .fonts import FontFace

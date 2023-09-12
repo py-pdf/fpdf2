@@ -1,7 +1,12 @@
 """
 Font-related classes & constants.
 Includes the definition of the character widths of all PDF standard fonts.
+
+The contents of this module are internal to fpdf2, and not part of the public API.
+They may change at any time without prior warning or any deprecation period,
+in non-backward-compatible ways.
 """
+
 import re
 
 from bisect import bisect_left
@@ -56,6 +61,7 @@ class FontFace:
 
 
 class CoreFont:
+    # RAM usage optimization:
     __slots__ = ("i", "type", "name", "up", "ut", "cw", "fontkey", "emphasis")
 
     def __init__(self, fpdf, fontkey, style):
@@ -81,7 +87,7 @@ class CoreFont:
 
 
 class TTFFont:
-    __slots__ = (
+    __slots__ = (  # RAM usage optimization
         "i",
         "type",
         "name",
@@ -150,7 +156,7 @@ class TTFFont:
         # fonttools cmap = unicode char to glyph name
         # saving only the keys we have a tuple with
         # the unicode characters available on the font
-        self.cmap = tuple(self.ttfont.getBestCmap().keys())
+        self.cmap = self.ttfont.getBestCmap()
 
         # saving a list of glyph ids to char to allow
         # subset by unicode (regular) and by glyph
@@ -159,7 +165,7 @@ class TTFFont:
 
         for char in self.cmap:
             # take glyph associated to char
-            glyph = self.ttfont.getBestCmap()[char]
+            glyph = self.cmap[char]
 
             # take width associated to glyph
             w = self.ttfont["hmtx"].metrics[glyph][0]
@@ -347,7 +353,7 @@ class PDFFontDescriptor(PDFObject):
         self.font_name = None
 
 
-@dataclass(order=True, unsafe_hash=True)
+@dataclass(order=True)
 class Glyph:
     """
     This represents one glyph on the font
@@ -355,15 +361,20 @@ class Glyph:
     can map a sequence of unicode characters to a single glyph
     """
 
-    __slots__ = ["glyph_id", "unicode", "glyph_name", "glyph_width"]
+    # RAM usage optimization:
+    __slots__ = ("glyph_id", "unicode", "glyph_name", "glyph_width")
     glyph_id: int
     unicode: Tuple
     glyph_name: str
     glyph_width: int
 
+    def __hash__(self):
+        return self.glyph_id
+
 
 class SubsetMap:
-    """Holds a mapping of used characters and their position in the font's subset
+    """
+    Holds a mapping of used characters and their position in the font's subset
 
     Characters that must be mapped on their actual unicode must be part of the
     `identities` list during object instanciation. These non-negative values should
@@ -375,72 +386,78 @@ class SubsetMap:
 
     def __init__(self, font: TTFFont, identities: List[int]):
         super().__init__()
-        self._next = 0
         self.font = font
+        self._next = 0
 
         # sort list to ease deletion once _next
         # becomes higher than first reservation
         self._reserved = sorted(identities)
 
-        # int(x) to ensure values are integers
-        self._map = {}
+        # Maps Glyph instances to character IDs (integers):
+        self._char_id_per_glyph = {}
         for x in self._reserved:
             glyph = self.get_glyph(unicode=x)
             if glyph:
-                self._map[glyph] = int(x)
+                self._char_id_per_glyph[glyph] = int(x)
+        # This is a cache to speed things up:
+        self._char_id_per_unicode = {}
+
+    def __repr__(self):
+        return (
+            f"SubsetMap(font={self.font}, _next={self._next},"
+            f" _reserved={self._reserved}, _char_id_per_glyph={self._char_id_per_glyph})"
+        )
 
     def __len__(self):
-        return len(self._map)
+        return len(self._char_id_per_glyph)
+
+    def items(self):
+        for glyph, char_id in self._char_id_per_glyph.items():
+            yield glyph, char_id
 
     def pick(self, unicode: int):
+        cache_hit = self._char_id_per_unicode.get(unicode)
+        if cache_hit:
+            return cache_hit
         glyph = self.get_glyph(unicode=unicode)
         if glyph is None and unicode not in self.font.missing_glyphs:
             self.font.missing_glyphs.append(unicode)
         return self.pick_glyph(glyph)
 
     def pick_glyph(self, glyph):
-        if (glyph) and (glyph not in self._map):
+        char_id = self._char_id_per_glyph.get(glyph)
+        if glyph and char_id is None:
             while self._next in self._reserved:
                 self._next += 1
                 if self._next > self._reserved[0]:
                     del self._reserved[0]
-            self._map[glyph] = self._next
+            char_id = self._next
+            self._char_id_per_glyph[glyph] = char_id
             self._next += 1
-        return self._map.get(glyph)
-
-    def dict(self):
-        return self._map.copy()
+            # Fill cache:
+            self._char_id_per_unicode[glyph.unicode] = char_id
+        return char_id
 
     def get_glyph(
         self, glyph=None, unicode=None, glyph_name=None, glyph_width=None
     ) -> Glyph:
         if glyph:
             return Glyph(glyph, tuple(unicode), glyph_name, glyph_width)
-        if isinstance(unicode, int) and unicode in self.font.glyph_ids.keys():
+        glyph_id = self.font.glyph_ids.get(unicode)
+        if isinstance(unicode, int) and glyph_id is not None:
             return Glyph(
-                self.font.glyph_ids[unicode],
-                tuple([unicode]),
-                self.font.ttfont.getBestCmap()[unicode],
+                glyph_id,
+                (unicode,),
+                self.font.cmap[unicode],
                 self.font.cw[unicode],
             )
         if unicode == 0x00:
-            return Glyph(self.font.cmap[0], tuple([0x00]), ".notdef", 0)
-        return None
-
-    def get_glyph_by_id(self, cid) -> Glyph:
-        for glyph in self._map:
-            if glyph.glyph_id == cid:
-                return glyph
-        return None
-
-    def get_glyph_by_unicode(self, cid) -> Glyph:
-        for glyph in self._map:
-            if glyph.unicode[0] == cid:
-                return glyph
+            glyph_id = next(iter(self.font.cmap))
+            return Glyph(glyph_id, (0x00,), ".notdef", 0)
         return None
 
     def get_all_glyph_names(self):
-        return [glyph.glyph_name for glyph in self._map]
+        return [glyph.glyph_name for glyph in self._char_id_per_glyph]
 
 
 # Standard fonts

@@ -32,6 +32,7 @@ This change was made for consistency between row-height governed by text or imag
 * [`FPDF.image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image), when provided a `BytesIO` instance, does not close it anymore - _cf._ issue [#881](https://github.com/py-pdf/fpdf2/issues/881)
 * Invalid characters were being generated when a string contains parentheses - _cf._ issue [#884](https://github.com/py-pdf/fpdf2/issues/884)
 * Frozen Glyph dataclass was causing problems for FPDFRecorder with TTF fonts - _cf._ issue [#890](https://github.com/py-pdf/fpdf2/issues/890)
+* Edge case when parsing a Markdown link followed by a newline - _cf._ issue [#916](https://github.com/py-pdf/fpdf2/issues/916), and when bold/italics/underline markers are repeated
 - [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): images no longer overlap with cell borders - _cf._ issue [#892](https://github.com/py-pdf/fpdf2/issues/892)
 
 
@@ -216,6 +217,8 @@ This change was made for consistency between row-height governed by text or imag
 - documentation on how to control objects transparency: [link to docs](https://py-pdf.github.io/fpdf2/Transparency.html)
 - documentation on how to create tables and charts using [pandas](https://pandas.pydata.org/) DataFrames: [link to docs](https://py-pdf.github.io/fpdf2/Maths.html), thanks to @iwayankurniawan
 - added argument `round_corners` to `FPDF.rect()` that allows to draw rectangles with round corners: [link to docs](https://py-pdf.github.io/fpdf2/Shapes.html#rectangle) - thanks to @gonzalobarbaran
+### Changed
+- `FPDF.add_highlight()` as been renamed into [`FPDF.highlight()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.highlight)
 ### Fixed
 - support for `"x"` & `"y"` attributes in SVG `<use>` tags - _cf._ [#446](https://github.com/py-pdf/fpdf2/issues/446)
 - `CreationDate` of PDFs generated, that was broken - _cf._ [#451](https://github.com/py-pdf/fpdf2/issues/451)

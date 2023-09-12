@@ -1,3 +1,11 @@
+"""
+This module contains the serialization logic that produces a PDF document from a FPDF instance.
+Most of the code in this module is used when FPDF.output() is called.
+
+The contents of this module are internal to fpdf2, and not part of the public API.
+They may change at any time without prior warning or any deprecation period,
+in non-backward-compatible ways.
+"""
 # pylint: disable=protected-access
 import logging
 from collections import defaultdict, OrderedDict
@@ -574,8 +582,8 @@ class OutputProducer:
                 # and then associate to the new code the glyph associated with the old code
 
                 code_to_glyph = {
-                    font.subset._map[glyph]: font.ttfont.getGlyphID(glyph.glyph_name)
-                    for glyph in font.subset._map.keys()
+                    char_id: font.ttfont.getGlyphID(glyph.glyph_name)
+                    for glyph, char_id in font.subset.items()
                 }
 
                 # 4. return the ttfile
@@ -618,7 +626,7 @@ class OutputProducer:
                         return f"{code_high:04X}{code_low:04X}"
                     return f"{unicode:04X}"
 
-                for glyph, code_mapped in font.subset._map.items():
+                for glyph, code_mapped in font.subset.items():
                     if len(glyph.unicode) == 0:
                         continue
                     bfChar.append(
@@ -947,7 +955,7 @@ def _tt_font_widths(font):
     interval = False
 
     # Glyphs sorted by mapped character id
-    glyphs = dict(sorted(font.subset._map.items(), key=lambda item: item[1]))
+    glyphs = dict(sorted(font.subset.items(), key=lambda item: item[1]))
 
     for glyph in glyphs:
         cid_mapped = glyphs[glyph]

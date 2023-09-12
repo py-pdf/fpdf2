@@ -1,6 +1,6 @@
 # Development
 
-This page has summary information about developing the PyPDF library.
+This page has summary information about developing the fpdf2 library.
 
 [TOC]
 
@@ -118,6 +118,57 @@ check the output in case of a failed test.
 
 In order to generate a "reference" PDF file, simply call `assert_pdf_equal`
 once with `generate=True`.
+
+## Testing performances
+
+### Code speed & profiling
+First, try to write a really **MINIMAL** Python script that focus strictly
+on the performance point you are investigating.
+Try to choose the input dataset so that the script execution time is between 1 and 15 seconds.
+
+Then, you can use [`cProfile`](https://docs.python.org/3/library/profile.html)
+to profile your code and produce a `.pstats` file:
+```
+python -m cProfile -o profile.pstats script.py
+```
+
+Finally, you can quickly convert this `.pstats` file into a SVG flamegraph using [`flameprof`](https://pypi.org/project/flameprof/):
+```
+pip install flameprof
+flameprof profile.pstats > script-flamegraph.svg
+```
+You will get something like this:
+![](https://user-images.githubusercontent.com/925560/265462163-069ee203-a0d4-47ae-a90b-033ff47bf169.svg)
+
+Source GitHub thread where this was produced: [issue #907](https://github.com/py-pdf/fpdf2/issues/907#issuecomment-1705219932)
+
+### Tracking memory usage
+A good way to track memory usage is to insert calls to `fpdf.util.print_mem_usage()`
+in the code you are investigating.
+This function will display the current process [resident set size (RSS)](https://fr.wikipedia.org/wiki/Resident_set_size)
+which is currently, to the maintainer knowledge, one of the best way to get an accurate measure
+of Python scripts memory usage.
+
+There is an example of using this function to track `fpdf2` memory usage in this issue comment:
+[issue #641](https://github.com/py-pdf/fpdf2/issues/641#issuecomment-1485048161).
+This thread also includes some tests of other libs & tools to track memory usage.
+
+### Non-regression performance tests
+We try to have a small number of unit tests
+that ensure that the library performances do not degrade over time,
+when refactoring are made and new features added.
+
+We have 2 test decorators to help with this:
+
+* [@ensure_exec_time_below](https://github.com/py-pdf/fpdf2/blob/2.7.5/test/conftest.py#L252)
+* [@ensure_rss_memory_below](https://github.com/py-pdf/fpdf2/blob/2.7.5/test/conftest.py#L286)
+
+As of `fpdf2` v2.7.6, we only keep 3 non-regression performance tests:
+
+* [test_intense_image_rendering() in test_perfs.py](https://github.com/py-pdf/fpdf2/blob/2.7.5/test/test_perfs.py)
+* [test_charmap_first_999_chars() in test_charmap.py](https://github.com/py-pdf/fpdf2/blob/2.7.5/test/fonts/test_charmap.py#L41)
+* [test_cell_speed_with_long_text() in test_cell.py](https://github.com/py-pdf/fpdf2/blob/master/test/text/test_cell.py#L311)
+
 
 ## GitHub pipeline
 A [GitHub Actions](https://help.github.com/en/actions/reference) pipeline

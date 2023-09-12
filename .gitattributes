@@ -2,6 +2,7 @@
 * text eol=lf
 
 # Binary files
+*.gz binary
 *.pdf binary
 *.p12 binary
 *.otf binary

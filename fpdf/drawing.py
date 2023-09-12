@@ -1,3 +1,11 @@
+"""
+Vector drawing: managing colors, graphics states, paths, transforms...
+
+The contents of this module are internal to fpdf2, and not part of the public API.
+They may change at any time without prior warning or any deprecation period,
+in non-backward-compatible ways.
+"""
+
 import copy, decimal, math, re
 from collections import OrderedDict
 from contextlib import contextmanager

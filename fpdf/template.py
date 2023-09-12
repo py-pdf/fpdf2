@@ -467,7 +467,9 @@ class FlexTemplate:
     ):
         if x is not None or y is not None or w is not None or h is not None:
             warnings.warn(
-                "code39 arguments x/y/w/h are deprecated, please use x1/y1/y2/size instead",
+                # pylint: disable=implicit-str-concat
+                "code39 arguments x/y/w/h are deprecated since v2.4.4,"
+                " please use x1/y1/y2/size instead",
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
@@ -616,7 +618,7 @@ class Template(FlexTemplate):
         """
         if infile:
             warnings.warn(
-                '"infile" is deprecated, unused and will soon be removed',
+                '"infile" is deprecated since v2.2.0, unused and will soon be removed',
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
@@ -661,7 +663,7 @@ class Template(FlexTemplate):
         """
         if dest:
             warnings.warn(
-                '"dest" is deprecated, unused and will soon be removed',
+                '"dest" is deprecated since v2.2.0, unused and will soon be removed',
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )

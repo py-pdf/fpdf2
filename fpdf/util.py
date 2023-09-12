@@ -1,3 +1,10 @@
+"""
+Various utilities that could not be gathered logically in a specific module.
+
+The contents of this module are internal to fpdf2, and not part of the public API.
+They may change at any time without prior warning or any deprecation period,
+in non-backward-compatible ways.
+"""
 import gc, os, warnings
 from numbers import Number
 from tracemalloc import get_traced_memory, is_tracing

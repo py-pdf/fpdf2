@@ -15,48 +15,73 @@ GSTATE_BI["font_style"] = "BI"
 
 
 def test_markdown_parse_simple_ok():
-    res = tuple(FPDF()._markdown_parse("**bold**, __italics__ and --underlined--"))
-    exp = (
+    frags = tuple(FPDF()._markdown_parse("**bold**, __italics__ and --underlined--"))
+    expected = (
         Fragment("bold", GSTATE_B, k=PDF.k),
         Fragment(", ", GSTATE, k=PDF.k),
         Fragment("italics", GSTATE_I, k=PDF.k),
         Fragment(" and ", GSTATE, k=PDF.k),
         Fragment("underlined", GSTATE_U, k=PDF.k),
     )
-    assert res == exp
+    assert frags == expected
 
 
 def test_markdown_parse_overlapping():
-    res = tuple(FPDF()._markdown_parse("**bold __italics__**"))
-    exp = (
+    frags = tuple(FPDF()._markdown_parse("**bold __italics__**"))
+    expected = (
         Fragment("bold ", GSTATE_B, k=PDF.k),
         Fragment("italics", GSTATE_BI, k=PDF.k),
     )
-    assert res == exp
+    assert frags == expected
 
 
 def test_markdown_parse_crossing_markers():
-    res = tuple(FPDF()._markdown_parse("**bold __and** italics__"))
-    exp = (
+    frags = tuple(FPDF()._markdown_parse("**bold __and** italics__"))
+    expected = (
         Fragment("bold ", GSTATE_B, k=PDF.k),
         Fragment("and", GSTATE_BI, k=PDF.k),
         Fragment(" italics", GSTATE_I, k=PDF.k),
     )
-    assert res == exp
+    assert frags == expected
 
 
 def test_markdown_parse_unterminated():
-    res = tuple(FPDF()._markdown_parse("**bold __italics__"))
-    exp = (
+    frags = tuple(FPDF()._markdown_parse("**bold __italics__"))
+    expected = (
         Fragment("bold ", GSTATE_B, k=PDF.k),
         Fragment("italics", GSTATE_BI, k=PDF.k),
     )
-    assert res == exp
+    assert frags == expected
 
 
 def test_markdown_parse_line_of_markers():
-    res = tuple(FPDF()._markdown_parse("*** woops"))
-    exp = (Fragment("*** woops", GSTATE, k=PDF.k),)
-    res = tuple(FPDF()._markdown_parse("----------"))
-    exp = (Fragment("----------", GSTATE, k=PDF.k),)
-    assert res == exp
+    frags = tuple(FPDF()._markdown_parse("*** woops"))
+    expected = (Fragment("*** woops", GSTATE, k=PDF.k),)
+    assert frags == expected
+    frags = tuple(FPDF()._markdown_parse("----------"))
+    expected = (Fragment("----------", GSTATE, k=PDF.k),)
+    assert frags == expected
+    frags = tuple(FPDF()._markdown_parse("****BOLD**"))
+    expected = (Fragment("****BOLD", GSTATE, k=PDF.k),)
+    assert frags == expected
+    frags = tuple(FPDF()._markdown_parse("* **BOLD**"))
+    expected = (
+        Fragment("* ", GSTATE, k=PDF.k),
+        Fragment("BOLD", GSTATE_B, k=PDF.k),
+    )
+    assert frags == expected
+
+
+def test_markdown_parse_newline_after_markdown_link():  # issue 916
+    text = "[fpdf2](https://py-pdf.github.io/fpdf2/)\nGo visit it!"
+    frags = tuple(FPDF()._markdown_parse(text))
+    expected = (
+        Fragment(
+            "fpdf2",
+            {**GSTATE, "underline": True},
+            k=PDF.k,
+            link="https://py-pdf.github.io/fpdf2/",
+        ),
+        Fragment("\nGo visit it!", GSTATE, k=PDF.k),
+    )
+    assert frags == expected
