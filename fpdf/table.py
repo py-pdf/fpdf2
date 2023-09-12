@@ -11,7 +11,6 @@ from .util import Padding
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
 
 
-
 def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
     """Draws a box using the provided style - private helper used by table for drawing the cell and table borders.
     Difference between this and rect() is that border can be defined as "L,R,T,B" to draw only some of the four borders;
@@ -152,7 +151,10 @@ class Table:
             self._padding = Padding.new(padding)
 
         # check table_border_layout and outer_border_width
-        if self._borders_layout not in (TableBordersLayout.ALL, TableBordersLayout.NO_HORIZONTAL_LINES):
+        if self._borders_layout not in (
+            TableBordersLayout.ALL,
+            TableBordersLayout.NO_HORIZONTAL_LINES,
+        ):
             if outer_border_width is not None:
                 raise ValueError(
                     "outer_border_width is only allowed when borders_layout is ALL or NO_HORIZONTAL_LINES"
@@ -561,9 +563,7 @@ class Table:
         dictated_heights_per_cell = []
         image_heights_per_cell = []
 
-        rendered_height = (
-            dict()
-        )  # as dict because j is not continuous in case of colspans
+        rendered_height = {}  # as dict because j is not continuous in case of colspans
         any_page_break = False
         # pylint: disable=protected-access
         with self._fpdf._disable_writing():

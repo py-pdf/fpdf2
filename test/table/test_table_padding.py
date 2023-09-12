@@ -7,7 +7,6 @@ from fpdf.enums import MethodReturnValue, YPos, TableCellFillMode, VAlign
 from fpdf.fonts import FontFace
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
-
 HERE = Path(__file__).resolve().parent
 
 
@@ -530,7 +529,13 @@ def test_draw_box_borders(tmp_path):
 
     def box(x, y, borders):
         draw_box_borders(
-            pdf, x - 10, y - 10, x + 40, y + 20, fill_color=(200, 200, 200), border="None"
+            pdf,
+            x - 10,
+            y - 10,
+            x + 40,
+            y + 20,
+            fill_color=(200, 200, 200),
+            border="None",
         )
         draw_box_borders(pdf, x - 20, y - 20, x + 50, y + 30, border=borders)
         pdf.set_xy(x, y)
