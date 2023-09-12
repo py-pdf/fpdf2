@@ -298,6 +298,28 @@ def test_table_with_single_top_line_layout(tmp_path):
     assert_pdf_equal(pdf, HERE / "table_with_single_top_line_layout.pdf", tmp_path)
 
 
+def test_table_with_single_top_line_layout_and_page_break(tmp_path):  # PR #912
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    pdf.set_draw_color(50)  # very dark grey
+    pdf.set_line_width(0.5)
+    data = list(MULTILINE_TABLE_DATA)
+    # Reducing the text content on the 3rd line
+    # so that there is an even number of rows on the 1st page:
+    data[2] = (data[2][0][:-30], data[2][1])
+    with pdf.table(
+        borders_layout="SINGLE_TOP_LINE", cell_fill_color=230, cell_fill_mode="ROWS"
+    ) as table:
+        for data_row in data:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum)
+    assert_pdf_equal(
+        pdf, HERE / "table_with_single_top_line_layout_and_page_break.pdf", tmp_path
+    )
+
+
 def test_table_align(tmp_path):
     pdf = FPDF()
     pdf.add_page()
