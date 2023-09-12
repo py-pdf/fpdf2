@@ -152,6 +152,7 @@ nav:
   - 'File attachments':               'FileAttachments.md'
 - 'Mixing other libs':
   - 'Combine with borb':              'CombineWithBorb.md'
+  - 'Combine with livereload':        'CombineWithLivereload.md'
   - 'Combine with pypdf':             'CombineWithPypdf.md'
   - 'Combine with pdfrw':             'CombineWithPdfrw.md'
   - 'Matplotlib, Pandas, Plotly, Pygal': 'CombineWithChartingLibs.md'
