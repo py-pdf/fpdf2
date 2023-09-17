@@ -215,7 +215,7 @@ class VAlign(CoerciveEnum):
     @classmethod
     def coerce(cls, value):
         if value == "":
-            return cls.C
+            return cls.M
         return super(cls, cls).coerce(value)
 
 
