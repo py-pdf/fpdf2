@@ -79,7 +79,6 @@ from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingE
 from .fonts import CoreFont, CORE_FONTS, FontFace, TTFFont
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
-from .text_region import TextRegionMixin, TextColumns
 from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
 from .linearization import LinearizedOutputProducer
 from .line_break import Fragment, MultiLineBreak, TextLine
@@ -3718,10 +3717,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         page_break_triggered = False
         normalized_string = self.normalize_text(text).replace("\r", "")
         styled_text_fragments = self._preload_font_styles(normalized_string, False)
-
-        def _get_width(height):  # pylint: disable=unused-argument
-            # Set the width dynamically, since the first line can have a different width.
-            return max_width
 
         text_lines = []
         multi_line_break = MultiLineBreak(
