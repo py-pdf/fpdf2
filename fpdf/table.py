@@ -80,7 +80,7 @@ class Table:
         rows=(),
         *,
         align="CENTER",
-        v_align="CENTER",
+        v_align="MIDDLE",
         borders_layout=TableBordersLayout.ALL,
         cell_fill_color=None,
         cell_fill_mode=TableCellFillMode.NONE,
@@ -492,7 +492,7 @@ class Table:
             if cell_height is not None:
                 actual_text_height = cell_height_info.rendered_height[j]
 
-                if v_align == VAlign.C:
+                if v_align == VAlign.M:
                     dy = (cell_height - actual_text_height) / 2
                 elif v_align == VAlign.B:
                     dy = cell_height - actual_text_height

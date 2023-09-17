@@ -201,9 +201,9 @@ class Align(CoerciveEnum):
 
 class VAlign(CoerciveEnum):
     """Defines how to vertically render text in a cell.
-    Default value is CENTER"""
+    Default value is MIDDLE"""
 
-    C = intern("CENTER")
+    M = intern("MIDDLE")
     "Center text vertically"
 
     T = intern("TOP")

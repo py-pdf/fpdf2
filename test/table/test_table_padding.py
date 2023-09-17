@@ -238,7 +238,7 @@ def test_table_vertical_alignment(tmp_path):
 
     deathstyle = FontFace(color=black, fill_color=red)
 
-    for v in (VAlign.T, VAlign.C, VAlign.B):
+    for v in (VAlign.T, VAlign.M, VAlign.B):
         pdf.write_html("<h1>Vertical alignment: {}</h1>".format(v))
 
         with pdf.table(line_height=pdf.font_size, padding=3, v_align=v) as table:
@@ -287,7 +287,7 @@ def test_valign_per_cell(tmp_path):
 
     deathstyle = FontFace(color=black, fill_color=red)
 
-    with pdf.table(line_height=pdf.font_size, padding=2, v_align=VAlign.C) as table:
+    with pdf.table(line_height=pdf.font_size, padding=2, v_align=VAlign.M) as table:
         for irow in range(5):
             row = table.row()
             for icol in range(5):
