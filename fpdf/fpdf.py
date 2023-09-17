@@ -75,18 +75,18 @@ from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingE
 from .fonts import CoreFont, CORE_FONTS, FontFace, TTFFont
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
-from .text_region import TextRegionMixin, TextColumns
 from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
 from .linearization import LinearizedOutputProducer
-from .output import OutputProducer, PDFPage, ZOOM_CONFIGS
 from .line_break import Fragment, MultiLineBreak, TextLine
 from .outline import OutlineSection  # , serialize_outline
+from .output import OutputProducer, PDFPage, ZOOM_CONFIGS
 from .recorder import FPDFRecorder
-from .structure_tree import StructureTreeBuilder
 from .sign import Signature
+from .structure_tree import StructureTreeBuilder
 from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ, PDFDate
 from .table import Table
+from .text_region import TextRegionMixin, TextColumns
 from .util import get_scale_factor, Padding
 
 # Public global variables:
@@ -3695,14 +3695,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         normalized_string = self.normalize_text(txt).replace("\r", "")
         styled_text_fragments = self._preload_font_styles(normalized_string, False)
 
-        def _get_width(height):  # pylint: disable=unused-argument
-            # Set the width dynamically, since the first line can have a different width.
-            return max_width
-
         text_lines = []
         multi_line_break = MultiLineBreak(
             styled_text_fragments,
-            _get_width,
+            lambda h: max_width,
             print_sh=print_sh,
             wrapmode=wrapmode,
         )
@@ -3748,6 +3744,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         align: Union[Align, str] = "LEFT",
         l_margin: float = None,
         r_margin: float = None,
+        print_sh: bool = False,
     ):
         """Establish a layout with a single column to fill with text.
         Args:
@@ -3755,6 +3752,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             align (Align or str, optional): The alignment of the region, default "LEFT".
             l_margin (float, optional): Override the current left page margin.
             r_margin (float, optional): Override the current right page margin.
+            print_sh (bool, optional): Treat a soft-hyphen (\\u00ad) as a printable
+                character, instead of a line breaking opportunity. Default value: False
         """
         return TextColumns(
             self,
@@ -3763,6 +3762,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             align=align,
             l_margin=l_margin,
             r_margin=r_margin,
+            print_sh=print_sh,
         )
 
     @check_page
@@ -3770,28 +3770,34 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self,
         text: Optional[str] = None,
         ncols: int = 2,
-        gap_width: float = 10,
+        gutter: float = 10,
+        balance: bool = False,
         align: Union[Align, str] = "LEFT",
         l_margin: float = None,
         r_margin: float = None,
+        print_sh: bool = False,
     ):
         """Establish a layout with multiple columns to fill with text.
         Args:
             text (str, optional): A first piece of text to insert.
             ncols (int, optional): the number of columns to create, default 2.
-            gap_width (float, optional): The distance between the columns, default 10.
+            gutter (float, optional): The distance between the columns, default 10.
             align (Align or str, optional): The alignment of the region, default "LEFT".
             l_margin (float, optional): Override the current left page margin.
             r_margin (float, optional): Override the current right page margin.
+            print_sh (bool, optional): Treat a soft-hyphen (\\u00ad) as a printable
+                character, instead of a line breaking opportunity. Default value: False
         """
         return TextColumns(
             self,
             text=text,
             ncols=ncols,
-            gap_width=gap_width,
+            gutter=gutter,
+            balance=balance,
             align=align,
             l_margin=l_margin,
             r_margin=r_margin,
+            print_sh=print_sh,
         )
 
     @check_page

@@ -34,7 +34,7 @@ But it is possible to use them intermittingly. This will probably most often mak
 
 The `FPDF.text_column() and ``FPDF.text_columns()` methods allow to create columnar layouts, with one or several columns respectively. Columns will always be of equal width.
 
-#### Single-column example
+#### Single-Column Example ####
 
 In this example an inserted paragraph is used in order to format its content with justified alignment, while the rest of the text uses the default left alignment.
 
@@ -47,12 +47,12 @@ In this example an inserted paragraph is used in order to format its content wit
         cols.write(txt=LOREM_IPSUM)
 ```
 
-#### Multi-column example
+#### Multi-Column Example
 
 Here we have a layout with three columns. Note that font type and text size can be varied within a text region, while still maintaining the justified (in this case) horizontal alignment.
 
 ```python
-    cols = pdf.text_columns(align="J", ncols=3, gap_width=5)
+    cols = pdf.text_columns(align="J", ncols=3, gutter=5)
     with cols:
         cols.write(txt=LOREM_IPSUM)
         pdf.set_font("Times", "", 8)
@@ -62,19 +62,34 @@ Here we have a layout with three columns. Note that font type and text size can 
         pdf.set_font("Helvetica", "", 12)
 ```
 
+#### Balanced Columns
+
+Normally the columns will be filled left to right, and if the text ends before the page is full, the rightmost column will end up shorter than the others.
+If you prefer that all columns on a page end on the same height, you can use the `balanced=True` argument. In that case a simple algorithm will be applied that attempts to approximately balance their bottoms.
+
+```python
+    with pdf.text_columns(align="J", ncols=3, gutter=5, balanced=True) as cols:
+        pdf.set_font("Times", "", 14)
+        cols.write(txt=LOREM_IPSUM[:300])
+```
+Note that this only works reliably when the font size (specifically the line height) doesn't change. If parts of the text use a larger or smaller font than the rest, then the balancing will usually be out of whack. Contributions for a more refined balancing algorithm are welcome.
+
 ### Possible future extensions
 
-* Balanced columns, which all end on the same hight. Currently columns are filled to the maximum height from left to right.
+Those features are currently not supported, but Pull Requests are welcome to implement them:
+
 * Columns with differing widths (no balancing possible in this case).
 
 
 ## Paragraphs ##
 
-The primary purpose of paragraphs is simply to enable variations in horizontal text alignment, while the horizontal extents of the text are managed by the text region.
+The primary purpose of paragraphs is to enable variations in horizontal text alignment, while the horizontal extents of the text are managed by the text region.
 
 Other than text regions, paragraphs should alway be used as context managers and never be reused. Violating those rules may result in the entered text turning up on the page out of sequence.
 
 ### Possible future extensions
 
-* Setting the spacing at the top/bottom of paragraphs
+Those features are currently not supported, but Pull Requests are welcome to implement them:
+
+* Setting the spacing between paragraphs
 * first-line indent

@@ -66,7 +66,6 @@ __all__ = [
     # FPDF constants:
     "FPDF_VERSION",
     "FPDF_FONT_DIR",
-    "TextColumns",
 ]
 
 __pdoc__ = {name: name.startswith("FPDF_") for name in __all__}
