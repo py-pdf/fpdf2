@@ -73,7 +73,7 @@ def test_tcols_3cols(tmp_path):
         cols.write(text=LOREM_IPSUM)
         pdf.set_font("Courier", "", 16)
         cols.write(text=LOREM_IPSUM)
-    assert_pdf_equal(pdf, HERE / "tcols_2cols.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "tcols_3cols.pdf", tmp_path)
 
 
 def test_tcols_balance(tmp_path):

@@ -3742,6 +3742,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self,
         text: Optional[str] = None,
         align: Union[Align, str] = "LEFT",
+        line_height: float = 1,
         l_margin: float = None,
         r_margin: float = None,
         print_sh: bool = False,
@@ -3750,6 +3751,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             text (str, optional): A first piece of text to insert.
             align (Align or str, optional): The alignment of the region, default "LEFT".
+            line_height (float, optional): A multiplier relative to the font
+                size changing the vertical space occupied by a line of text. Default 1.0.
             l_margin (float, optional): Override the current left page margin.
             r_margin (float, optional): Override the current right page margin.
             print_sh (bool, optional): Treat a soft-hyphen (\\u00ad) as a printable
@@ -3760,6 +3763,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             text=text,
             ncols=1,
             align=align,
+            line_height=line_height,
             l_margin=l_margin,
             r_margin=r_margin,
             print_sh=print_sh,
@@ -3773,6 +3777,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         gutter: float = 10,
         balance: bool = False,
         align: Union[Align, str] = "LEFT",
+        line_height: float = 1,
         l_margin: float = None,
         r_margin: float = None,
         print_sh: bool = False,
@@ -3783,6 +3788,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             ncols (int, optional): the number of columns to create, default 2.
             gutter (float, optional): The distance between the columns, default 10.
             align (Align or str, optional): The alignment of the region, default "LEFT".
+            line_height (float, optional): A multiplier relative to the font
+                size changing the vertical space occupied by a line of text. Default 1.0.
             l_margin (float, optional): Override the current left page margin.
             r_margin (float, optional): Override the current right page margin.
             print_sh (bool, optional): Treat a soft-hyphen (\\u00ad) as a printable
@@ -3795,6 +3802,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             gutter=gutter,
             balance=balance,
             align=align,
+            line_height=line_height,
             l_margin=l_margin,
             r_margin=r_margin,
             print_sh=print_sh,

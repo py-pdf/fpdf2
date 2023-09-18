@@ -1,11 +1,13 @@
+import sys
+import pathlib
+
+HERE = pathlib.Path(__file__).parent
+sys.path.insert(0, (HERE.parent).as_posix())
+
 from fpdf import FPDF
 
 
 class PDF(FPDF):
-    def __init__(self):
-        super().__init__()
-        self.col = 0  # Current column
-        self.y0 = 0  # Ordinate of column start
 
     def header(self):
         self.set_font("helvetica", "B", 15)
@@ -26,35 +28,12 @@ class PDF(FPDF):
             fill=True,
         )
         self.ln(10)
-        # Saving ordinate position:
-        self.y0 = self.get_y()
 
     def footer(self):
         self.set_y(-15)
         self.set_font("helvetica", "I", 8)
         self.set_text_color(128)
         self.cell(0, 10, f"Page {self.page_no()}", align="C")
-
-    def set_col(self, col):
-        # Set column position:
-        self.col = col
-        x = 10 + col * 65
-        self.set_left_margin(x)
-        self.set_x(x)
-
-    @property
-    def accept_page_break(self):
-        if self.col < 2:
-            # Go to next column:
-            self.set_col(self.col + 1)
-            # Set ordinate to top:
-            self.set_y(self.y0)
-            # Stay on the same page:
-            return False
-        # Go back to first column:
-        self.set_col(0)
-        # Trigger a page break:
-        return True
 
     def chapter_title(self, num, label):
         self.set_font("helvetica", "", 12)
@@ -69,28 +48,24 @@ class PDF(FPDF):
             fill=True,
         )
         self.ln(4)
-        # Saving ordinate position:
-        self.y0 = self.get_y()
 
-    def chapter_body(self, name):
+    def chapter_body(self, fname):
         # Reading text file:
-        with open(name, "rb") as fh:
+        with open(fname, "rb") as fh:
             txt = fh.read().decode("latin-1")
-        # Setting font: Times 12
-        self.set_font("Times", size=12)
-        # Printing text in a 6cm width column:
-        self.multi_cell(60, 5, txt)
-        self.ln()
-        # Final mention in italics:
-        self.set_font(style="I")
-        self.cell(0, 5, "(end of excerpt)")
-        # Start back at first column:
-        self.set_col(0)
+        with self.text_columns(ncols=3, gutter=5, align="J", line_height=1.19) as cols:
+            # Setting font: Times 12
+            self.set_font("Times", size=12)
+            cols.write(txt)
+            cols.ln()
+            # Final mention in italics:
+            self.set_font(style="I")
+            cols.write("(end of excerpt)")
 
-    def print_chapter(self, num, title, name):
+    def print_chapter(self, num, title, fname):
         self.add_page()
         self.chapter_title(num, title)
-        self.chapter_body(name)
+        self.chapter_body(fname)
 
 
 pdf = PDF()

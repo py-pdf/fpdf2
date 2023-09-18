@@ -311,6 +311,10 @@ class Fragment:
         return ret
 
 
+class LnFragment(NamedTuple):
+    height: float
+
+
 class TextLine(NamedTuple):
     fragments: tuple
     text_width: float
@@ -319,6 +323,10 @@ class TextLine(NamedTuple):
     height: float
     max_width: float
     trailing_nl: bool = False
+
+
+class LnTextLine(NamedTuple):
+    height: float
 
 
 class SpaceHint(NamedTuple):
@@ -500,16 +508,17 @@ class CurrentLine:
 class MultiLineBreak:
     def __init__(
         self,
-        styled_text_fragments: Sequence,
+        fragments: Sequence,
         max_width: Union[float, callable],
         align: Align = Align.L,
         print_sh: bool = False,
         wrapmode: WrapMode = WrapMode.WORD,
+        line_height: float = 1.0,
     ):
         """Accept text as Fragments, to be split into individual lines depending
         on line width and text height.
         Args:
-            styled_text_fragments: A sequence of Fragment()s containing text.
+            fragments: A sequence of Fragment()s containing text.
             max_width: Either a fixed width as float or a callback function
                 get_width(height). If a function, it gets called with the largest
                 height encountered on the current line, and must return the
@@ -522,7 +531,7 @@ class MultiLineBreak:
             wrapmode (WrapMode): Selects word or character based wrapping.
         """
 
-        self.styled_text_fragments = styled_text_fragments
+        self.fragments = fragments
         if callable(max_width):
             self.get_width = max_width
         else:
@@ -530,6 +539,7 @@ class MultiLineBreak:
         self.align = align
         self.print_sh = print_sh
         self.wrapmode = wrapmode
+        self.line_height = line_height
         self.fragment_index = 0
         self.character_index = 0
         self.idx_last_forced_break = None
@@ -540,23 +550,36 @@ class MultiLineBreak:
         idx_last_forced_break = self.idx_last_forced_break
         self.idx_last_forced_break = None
 
-        if self.fragment_index == len(self.styled_text_fragments):
+        if self.fragment_index == len(self.fragments):
             return None
 
-        current_line_height = 0
+        current_font_height = 0
 
-        max_width = self.get_width(current_line_height)
+        max_width = self.get_width(current_font_height)
         current_line = CurrentLine(max_width=max_width, print_sh=self.print_sh)
-        while self.fragment_index < len(self.styled_text_fragments):
-            current_fragment = self.styled_text_fragments[self.fragment_index]
+        while self.fragment_index < len(self.fragments):
+            current_fragment = self.fragments[self.fragment_index]
+            # LnFragment and LnTextLine are only used by text regions as a deferred ln().
+            if isinstance(current_fragment, LnFragment):
+                self.character_index = 0
+                self.fragment_index += 1
+                return LnTextLine(current_fragment.height)
 
-            if current_fragment.font_size > current_line_height:
-                current_line_height = current_fragment.font_size  # document units
-                max_width = self.get_width(current_line_height)
+            if current_fragment.font_size > current_font_height:
+                current_font_height = current_fragment.font_size  # document units
+                max_width = self.get_width(current_font_height)
 
             if self.character_index >= len(current_fragment.characters):
                 self.character_index = 0
                 self.fragment_index += 1
+                if self.fragment_index < len(self.fragments) and isinstance(
+                    self.fragments[self.fragment_index], LnFragment
+                ):
+                    # equivalent to a NEWLINE
+                    return current_line.manual_break(
+                        Align.L if self.align == Align.J else self.align,
+                        trailing_nl=False,
+                    )
                 continue
 
             character = current_fragment.characters[self.character_index]
@@ -603,7 +626,7 @@ class MultiLineBreak:
                 current_fragment.k,
                 self.fragment_index,
                 self.character_index,
-                current_line_height,
+                current_font_height * self.line_height,
                 current_fragment.link,
             )
 

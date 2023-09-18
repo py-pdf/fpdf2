@@ -134,13 +134,9 @@ Alternativ kann man auch mit der rechten Maustaste auf das Dokument klicken und 
 
 [Jules Verne Text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-Der Hauptunterschied zur vorherigen Lektion ist die Verwendung der Methoden 
-[`accept_page_break`](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) und `set_col`.
+Der Hauptunterschied zur vorherigen Lektion ist die Verwendung der Methode 
+[`text_columns`](fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns). Diese sammelt zunächst allen text, auch in mehreren Teilen, und verteilt ihn anschließend auf die angegebene Anzahl an Spalten. Eventuell notwendige Seitenumbrüche werden dabei automatisch vorgenommen. Beachtenswert dabei ist, dass während die `TextColumns` instanz als Kontextmanager offen ist, Schriftstile und ander Eigenschaften frei verändert werden können. Nach schließen des Kontextes werden die Einstellungen wieder auf den vorherigen Stand zurückgesetzt.
 
-Wird [`accept_page_break`](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) verwendet, wird die aktuelle Spaltennummer überprüft, sobald 
-die Zelle den zur Auslösung eines Seitenumbruchs festgelegten Abstand zum unteren Seitenrand (Standard 2cm) überschreitet. Ist die Spaltennummer kleiner als 2 (wir haben uns entschieden, die Seite in drei Spalten zu unterteilen), wird die Methode `set_col` aufgerufen. Sie erhöht die Spaltennummer auf die nächsthöhere und setzt die Schreibposition auf den Anfang der nächsten Spalte, damit der Text dort fortgesetzt werden kann.
-
-Sobald det Text der dritten den oben beschriebenen Abstand zum Seitenende erreicht, wird durch die Methode [`accept_page_break`](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) ein Seitenumbruch ausgelöst und die aktive Spalte sowie Schreibposition zurückgesetzt.
 
 ## Lektion 5 - Tabellen erstellen ##
 
