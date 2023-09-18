@@ -462,3 +462,21 @@ def test_table_with_capitalized_font_family_and_emphasis():  # issue 828
         TABLE_DATA, headings_style=FontFace(family="Helvetica", emphasis="ITALICS")
     ):
         pass
+
+
+def test_table_with_no_headers_nor_horizontal_lines(tmp_path):  # discussion 924
+    pdf = FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+    with pdf.table(
+        TABLE_DATA,
+        cell_fill_color=200,
+        cell_fill_mode="ROWS",
+        text_align="LEFT",
+        borders_layout="NO_HORIZONTAL_LINES",
+        first_row_as_headings=False,
+    ):
+        pass
+    assert_pdf_equal(
+        pdf, HERE / "table_with_no_headers_nor_horizontal_lines.pdf", tmp_path
+    )
