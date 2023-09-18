@@ -2,7 +2,7 @@ import math
 
 from .errors import FPDFException
 from .enums import Align, XPos, YPos
-from .line_break import MultiLineBreak
+from .line_break import MultiLineBreak, LnFragment, LnTextLine
 
 # Since Python doesn't have "friend classes"...
 # pylint: disable=protected-access
@@ -26,12 +26,16 @@ class TextRegionMixin:
 
 
 class Paragraph:
-    def __init__(self, region, align=None):
+    def __init__(self, region, align=None, line_height=None):
         self.region = region
         self.pdf = region.pdf
         if align:
             align = Align.coerce(align)
         self.align = align
+        if line_height is None:
+            self.line_height = region.line_height
+        else:
+            self.line_height = line_height
         self._text_fragments = []
 
     def __enter__(self):
@@ -48,6 +52,12 @@ class Paragraph:
         styled_text_fragments = self.pdf._preload_font_styles(normalized_string, False)
         self._text_fragments.extend(styled_text_fragments)
 
+    def ln(self, h=None):
+        if h is None:
+            h = self.pdf.font_size * self.line_height
+        lnfrag = LnFragment(height=h)
+        self._text_fragments.append(lnfrag)
+
     def build_lines(self, print_sh):
         text_lines = []
         multi_line_break = MultiLineBreak(
@@ -55,6 +65,8 @@ class Paragraph:
             max_width=self.region.get_width,
             align=self.align or self.region.align or Align.L,
             print_sh=print_sh,
+            # wrapmode=self.wrapmode,
+            line_height=self.line_height,
         )
         self._text_fragments = []
         text_line = multi_line_break.get_line()
@@ -66,10 +78,18 @@ class Paragraph:
 
 class ParagraphCollectorMixin:
     def __init__(
-        self, pdf, *args, text=None, align="LEFT", print_sh: bool = False, **kwargs
+        self,
+        pdf,
+        *args,
+        text=None,
+        align="LEFT",
+        line_height: float = 1.0,
+        print_sh: bool = False,
+        **kwargs,
     ):
         self.pdf = pdf
         self.align = Align.coerce(align)  # default for auto paragraphs
+        self.line_height = line_height
         self.print_sh = print_sh
         self._paragraphs = []
         self._has_paragraph = None
@@ -94,7 +114,7 @@ class ParagraphCollectorMixin:
         self.pdf._pop_local_stack()
         self.render()
 
-    def write(self, text: str):  # , link: str = ""):
+    def _check_paragraph(self):
         if self._has_paragraph == "EXPLICIT":
             raise FPDFException(
                 "Conflicts with active paragraph. Either close the current paragraph or write your text inside it."
@@ -103,12 +123,19 @@ class ParagraphCollectorMixin:
             p = Paragraph(region=self, align=self.align)
             self._paragraphs.append(p)
             self._has_paragraph = "AUTO"
+
+    def write(self, text: str):  # , link: str = ""):
+        self._check_paragraph()
         self._paragraphs[-1].write(text)
 
-    def paragraph(self, align=None):
+    def ln(self, h=None):
+        self._check_paragraph()
+        self._paragraphs[-1].ln(h)
+
+    def paragraph(self, align=None, line_height=None):
         if self._has_paragraph == "EXPLICIT":
             raise FPDFException("Unable to nest paragraphs.")
-        p = Paragraph(region=self, align=align or self.align)
+        p = Paragraph(region=self, align=align or self.align, line_height=line_height)
         self._paragraphs.append(p)
         self._has_paragraph = "EXPLICIT"
         return p
@@ -122,7 +149,7 @@ class ParagraphCollectorMixin:
 class TextRegion(ParagraphCollectorMixin):
     """Abstract base class for all text region subclasses."""
 
-    def ln(self, h=None):
+    def _do_ln(self, h=None):
         self.pdf.ln(h)
 
     def current_x_extents(
@@ -131,34 +158,40 @@ class TextRegion(ParagraphCollectorMixin):
         """Return the horizontal extents of the current line."""
         raise NotImplementedError()
 
-    def _render_column_lines(self, text_lines, top, bottom):
-        """Return :
-        bool True if reached bottom
-        """
+    def _render_column_lines(
+        self, text_lines, top, bottom
+    ):  # pylint: disable=undefined-loop-variable
+        # caller must ensure there are text lines.
         self.pdf.y = top
         prev_line_height = 0
         last_line_height = None
         rendered_lines = 0
         for text_line_index, text_line in enumerate(text_lines):
-            if text_line_index > 0:
-                self.ln(last_line_height)
+            if text_line_index > 0 and last_line_height > 0:
+                self._do_ln(last_line_height)
             if self.pdf.y + text_line.height > bottom:
                 last_line_height = prev_line_height
                 break
             prev_line_height = last_line_height
-            last_line_height = text_line.height
-            # Don't check the return, we never render past the bottom here.
-            self.pdf._render_styled_text_line(
-                text_line,
-                text_line.max_width,
-                h=text_line.height,
-                border=0,
-                new_x=XPos.WCONT,
-                new_y=YPos.TOP,
-                fill=False,
-                # link=link,  # Must be part of Fragment
-            )
+            if isinstance(text_line, LnTextLine):
+                self._do_ln(text_line.height)
+                last_line_height = 0
+            else:
+                last_line_height = text_line.height
+                # Don't check the return, we never render past the bottom here.
+                self.pdf._render_styled_text_line(
+                    text_line,
+                    w=text_line.max_width + 2 * self.pdf.c_margin,
+                    h=text_line.height,
+                    border=0,
+                    new_x=XPos.WCONT,
+                    new_y=YPos.TOP,
+                    fill=False,
+                    # link=link,  # Must be part of Fragment
+                )
             rendered_lines += 1
+        if not isinstance(text_line, LnTextLine) and text_line.trailing_nl:
+            self._do_ln(text_line.height)
         if rendered_lines:
             del text_lines[:rendered_lines]
         return last_line_height
@@ -249,6 +282,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
         if self.balance:
             self.cur_column = 0
             self.pdf.x = self.cols[self.cur_column][0]
+        return self
 
     def _render_page_lines(self, text_lines, top, bottom):
         """Rendering a set of lines in one or several columns on one page."""
@@ -307,13 +341,12 @@ class TextColumns(TextRegion, TextColumnarMixin):
             return
         page_bottom = self.pdf.h - self.pdf.b_margin
         self._render_page_lines(text_lines, self._first_page_top, page_bottom)
-        page_top = self._first_page_top if self.balance else self.pdf.t_margin
         while text_lines:
             self.pdf.add_page(same=True)
             self.cur_column = 0
-            self._render_page_lines(text_lines, page_top, page_bottom)
+            self._render_page_lines(text_lines, self.pdf.y, page_bottom)
 
-    def ln(self, h=None):
+    def _do_ln(self, h=None):
         self.pdf.ln(h=h)
         self.pdf.x = self.cols[self.cur_column][0]
 
