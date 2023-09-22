@@ -59,7 +59,7 @@ def test_html_table_th_inside_tr_issue_137(tmp_path):
     </tr>
 </table>"""
     )
-    assert_pdf_equal(pdf, HERE / "html_table_line_separators_issue_137.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "html_table_th_inside_tr_issue_137.pdf", tmp_path)
 
 
 def test_html_table_with_border(tmp_path):

@@ -69,3 +69,18 @@ def test_page_mode(page_mode, tmp_path):
     pdf.add_page()
     pdf.cell(txt="page 2")
     assert_pdf_equal(pdf, HERE / f"page-mode-{page_mode}.pdf", tmp_path)
+
+
+def test_page_mode_zoom_numeric(tmp_path):
+    pdf = FPDF()
+    pdf.set_display_mode(zoom=25)
+    pdf.set_font("helvetica", size=30)
+    pdf.add_page()
+    pdf.cell(txt="page 1")
+    pdf.add_page()
+    pdf.cell(txt="page 2")
+    assert_pdf_equal(
+        pdf,
+        HERE / f"page-mode-zoom_numeric.pdf",
+        tmp_path,
+    )

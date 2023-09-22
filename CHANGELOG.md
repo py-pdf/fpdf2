@@ -33,7 +33,7 @@ This change was made for consistency between row-height governed by text or imag
 * Invalid characters were being generated when a string contains parentheses - _cf._ issue [#884](https://github.com/py-pdf/fpdf2/issues/884)
 * Frozen Glyph dataclass was causing problems for FPDFRecorder with TTF fonts - _cf._ issue [#890](https://github.com/py-pdf/fpdf2/issues/890)
 * Edge case when parsing a Markdown link followed by a newline - _cf._ issue [#916](https://github.com/py-pdf/fpdf2/issues/916), and when bold/italics/underline markers are repeated
-- [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): images no longer overlap with cell borders - _cf._ issue [#892](https://github.com/py-pdf/fpdf2/issues/892)
+* [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): images no longer overlap with cell borders - _cf._ issue [#892](https://github.com/py-pdf/fpdf2/issues/892)
 
 
 ## [2.7.5] - 2023-08-04

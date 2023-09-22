@@ -264,27 +264,27 @@ class Table:
         rows_count = len(self.rows)
         border = list("LRTB")
         if self._borders_layout == TableBordersLayout.INTERNAL:
-            if i == 0 and "T" in border:
+            if i == 0:
                 border.remove("T")
-            if i == rows_count - 1 and "B" in border:
+            if i == rows_count - 1:
                 border.remove("B")
-            if j == 0 and "L" in border:
+            if j == 0:
                 border.remove("L")
-            if j == columns_count - 1 and "R" in border:
+            if j == columns_count - 1:
                 border.remove("R")
         if self._borders_layout == TableBordersLayout.MINIMAL:
-            if (i != 1 or rows_count == 1) and "T" in border:
+            if i != 1 or rows_count == 1:
                 border.remove("T")
-            if i != 0 and "B" in border:
+            if i != 0:
                 border.remove("B")
-            if j == 0 and "L" in border:
+            if j == 0:
                 border.remove("L")
-            if j == columns_count - 1 and "R" in border:
+            if j == columns_count - 1:
                 border.remove("R")
         if self._borders_layout == TableBordersLayout.NO_HORIZONTAL_LINES:
-            if i not in (0, 1) and "T" in border:
+            if i > 0 and not (i == 1 and self._first_row_as_headings):
                 border.remove("T")
-            if i not in (0, rows_count - 1) and "B" in border:
+            if i != rows_count - 1:
                 border.remove("B")
         if self._borders_layout == TableBordersLayout.HORIZONTAL_LINES:
             if rows_count == 1:
@@ -292,7 +292,7 @@ class Table:
             border = list("TB")
             if i == 0 and "T" in border:
                 border.remove("T")
-            elif i == rows_count - 1 and "B" in border:
+            elif i == rows_count - 1:
                 border.remove("B")
         if self._borders_layout == TableBordersLayout.SINGLE_TOP_LINE:
             if rows_count == 1:
