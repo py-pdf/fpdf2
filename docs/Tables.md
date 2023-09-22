@@ -76,7 +76,7 @@ Result:
 
 ## Setting cell padding
 
-_New in [:octicons-tag-24: 2.7.5](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.7.6](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
 
 Cell padding (the space between the cells content and the edge of the cell) can be set globally or on a per-cell basis.
 
@@ -111,7 +111,7 @@ left and right is supplied then c_margin is ignored.
 
 ## Setting vertical alignment of text in cells
 
-_New in [:octicons-tag-24: 2.7.5](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.7.6](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
 
 Can be set globally or per cell.
 Works the same way as padding, but with the `v_align` parameter.
