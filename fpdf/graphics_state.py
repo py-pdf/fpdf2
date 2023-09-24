@@ -57,11 +57,14 @@ class GraphicsStateMixin:
         ]
         super().__init__(*args, **kwargs)
 
-    def _push_local_stack(self):
-        self.__statestack.append(self.__statestack[-1].copy())
+    def _push_local_stack(self, new=None):
+        if new:
+            self.__statestack.append(new)
+        else:
+            self.__statestack.append(self.__statestack[-1].copy())
 
     def _pop_local_stack(self):
-        del self.__statestack[-1]
+        return self.__statestack.pop()
 
     def _get_current_graphics_state(self):
         return self.__statestack[-1].copy()

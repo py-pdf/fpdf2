@@ -1,8 +1,9 @@
 import math
+from typing import NamedTuple, Any, Optional, Union, Sequence
 
 from .errors import FPDFException
 from .enums import Align, XPos, YPos
-from .line_break import MultiLineBreak, LnFragment, LnTextLine
+from .line_break import MultiLineBreak
 
 # Since Python doesn't have "friend classes"...
 # pylint: disable=protected-access
@@ -26,7 +27,16 @@ class TextRegionMixin:
 
 
 class Paragraph:
-    def __init__(self, region, align=None, line_height=None):
+    def __init__(
+            self,
+            region,
+            align=None,
+            line_height=None,
+            top_margin: float = 0,
+            bottom_margin: float = 0,
+            skip_leading_spaces: bool = False,
+            ):
+        print("New Paragraph")
         self.region = region
         self.pdf = region.pdf
         if align:
@@ -36,6 +46,9 @@ class Paragraph:
             self.line_height = region.line_height
         else:
             self.line_height = line_height
+        self.top_margin = top_margin
+        self.bottom_margin = bottom_margin
+        self.skip_leading_spaces = skip_leading_spaces
         self._text_fragments = []
 
     def __enter__(self):
@@ -44,19 +57,24 @@ class Paragraph:
     def __exit__(self, exc_type, exc_value, traceback):
         self.region.end_paragraph()
 
-    def write(self, text: str):  # , link: str = ""):
+    def write(self, text: str, link=None):  # pylint: disable=unused-argument
         if not self.pdf.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         normalized_string = self.pdf.normalize_text(text).replace("\r", "")
         # YYY _preload_font_styles() should accept a "link" argument.
-        styled_text_fragments = self.pdf._preload_font_styles(normalized_string, False)
-        self._text_fragments.extend(styled_text_fragments)
+        fragments = self.pdf._preload_font_styles(normalized_string, False)
+        for frag in fragments:
+            print("write:", frag.font.fontkey, f'"{text}"')
+        self._text_fragments.extend(fragments)
 
     def ln(self, h=None):
+        if not self.pdf.font_family:
+            raise FPDFException("No font set, you need to call set_font() beforehand")
         if h is None:
             h = self.pdf.font_size * self.line_height
-        lnfrag = LnFragment(height=h)
-        self._text_fragments.append(lnfrag)
+        fragment = self.pdf._preload_font_styles("\n", False)[0]
+        fragment.graphics_state["font_size_pt"] = h * fragment.k
+        self._text_fragments.append(fragment)
 
     def build_lines(self, print_sh):
         text_lines = []
@@ -67,12 +85,19 @@ class Paragraph:
             print_sh=print_sh,
             # wrapmode=self.wrapmode,
             line_height=self.line_height,
+            skip_leading_spaces=self.skip_leading_spaces or self.region.skip_leading_spaces,
         )
         self._text_fragments = []
         text_line = multi_line_break.get_line()
+        first_line = True
         while (text_line) is not None:
-            text_lines.append(text_line)
+            text_lines.append(LWrapper(text_line, self, first_line=first_line))
+            first_line = False
             text_line = multi_line_break.get_line()
+        if text_lines:
+            last = text_lines[-1]
+            last = LWrapper(last.line, self, first_line=last.first_line, last_line=True)
+            text_lines[-1] = last
         return text_lines
 
 
@@ -85,14 +110,16 @@ class ParagraphCollectorMixin:
         align="LEFT",
         line_height: float = 1.0,
         print_sh: bool = False,
+        skip_leading_spaces: bool = False,
         **kwargs,
     ):
         self.pdf = pdf
         self.align = Align.coerce(align)  # default for auto paragraphs
         self.line_height = line_height
         self.print_sh = print_sh
+        self.skip_leading_spaces = skip_leading_spaces
         self._paragraphs = []
-        self._has_paragraph = None
+        self._active_paragraph = None
         super().__init__(pdf, *args, **kwargs)
         if text:
             self.write(text)
@@ -115,16 +142,16 @@ class ParagraphCollectorMixin:
         self.render()
 
     def _check_paragraph(self):
-        if self._has_paragraph == "EXPLICIT":
+        if self._active_paragraph == "EXPLICIT":
             raise FPDFException(
                 "Conflicts with active paragraph. Either close the current paragraph or write your text inside it."
             )
-        if self._has_paragraph is None:
-            p = Paragraph(region=self, align=self.align)
+        if self._active_paragraph is None:
+            p = Paragraph(region=self, align=self.align, skip_leading_spaces=self.skip_leading_spaces)
             self._paragraphs.append(p)
-            self._has_paragraph = "AUTO"
+            self._active_paragraph = "AUTO"
 
-    def write(self, text: str):  # , link: str = ""):
+    def write(self, text: str, link=None):  # pylint: disable=unused-argument
         self._check_paragraph()
         self._paragraphs[-1].write(text)
 
@@ -132,18 +159,34 @@ class ParagraphCollectorMixin:
         self._check_paragraph()
         self._paragraphs[-1].ln(h)
 
-    def paragraph(self, align=None, line_height=None):
-        if self._has_paragraph == "EXPLICIT":
+    def paragraph(
+            self,
+            align=None,
+            line_height=None,
+            skip_leading_spaces: bool = False,
+            top_margin=0,
+            bottom_margin=0,
+            ):
+        if self._active_paragraph == "EXPLICIT":
             raise FPDFException("Unable to nest paragraphs.")
-        p = Paragraph(region=self, align=align or self.align, line_height=line_height)
+        p = Paragraph(
+                region=self,
+                align=align or self.align,
+                line_height=line_height,
+                skip_leading_spaces=skip_leading_spaces or self.skip_leading_spaces,
+                top_margin=top_margin,
+                bottom_margin=bottom_margin,
+               )
         self._paragraphs.append(p)
-        self._has_paragraph = "EXPLICIT"
+        self._active_paragraph = "EXPLICIT"
         return p
 
     def end_paragraph(self):
-        if not self._has_paragraph:
+        print("Ending Paragraph")
+        if not self._active_paragraph:
             raise FPDFException("No active paragraph to end.")
-        self._has_paragraph = None
+        #self._paragraphs[-1].write("\n")
+        self._active_paragraph = None
 
 
 class TextRegion(ParagraphCollectorMixin):
@@ -160,38 +203,54 @@ class TextRegion(ParagraphCollectorMixin):
 
     def _render_column_lines(
         self, text_lines, top, bottom
-    ):  # pylint: disable=undefined-loop-variable
-        # caller must ensure there are text lines.
+    ):  # xpylint: disable=undefined-loop-variable
+        if not text_lines:
+            return 0  # no rendered height
         self.pdf.y = top
         prev_line_height = 0
         last_line_height = None
         rendered_lines = 0
-        for text_line_index, text_line in enumerate(text_lines):
-            if text_line_index > 0 and last_line_height > 0:
-                self._do_ln(last_line_height)
+        for tl_wrapper in text_lines:
+            text_line = tl_wrapper.line
+#            print("Top-Margin:", tl_wrapper.paragraph.top_margin, tl_wrapper.first_line,
+#                    list(frag.string for frag in text_line.fragments))
+            text_rendered = False
+            for i, frag in enumerate(text_line.fragments):
+                print("render Fragment:", frag.font.fontkey, i, f'"{frag.string}"')
+                if frag.characters:
+                    text_rendered = True
+                    break
+            print(f"Tr:{text_rendered} fl:{tl_wrapper.first_line} tm:{tl_wrapper.paragraph.top_margin}")
+            if (text_rendered and tl_wrapper.first_line
+                    and tl_wrapper.paragraph.top_margin
+                    #and self.pdf.y > self.pdf.t_margin
+                    ):
+                print(f"top-margin moving y by {tl_wrapper.paragraph.top_margin}")
+                self.pdf.y += tl_wrapper.paragraph.top_margin
             if self.pdf.y + text_line.height > bottom:
                 last_line_height = prev_line_height
                 break
             prev_line_height = last_line_height
-            if isinstance(text_line, LnTextLine):
-                self._do_ln(text_line.height)
-                last_line_height = 0
-            else:
-                last_line_height = text_line.height
-                # Don't check the return, we never render past the bottom here.
-                self.pdf._render_styled_text_line(
-                    text_line,
-                    w=text_line.max_width + 2 * self.pdf.c_margin,
-                    h=text_line.height,
-                    border=0,
-                    new_x=XPos.WCONT,
-                    new_y=YPos.TOP,
-                    fill=False,
-                    # link=link,  # Must be part of Fragment
-                )
+            last_line_height = text_line.height
+            extents = self.current_x_extents(self.pdf.y, 0)
+            self.pdf.x = extents[0]
+            # Don't check the return, we never render past the bottom here.
+            self.pdf._render_styled_text_line(
+                text_line,
+                w=text_line.max_width + 2 * self.pdf.c_margin,
+                h=text_line.height,
+                border=0,
+                new_x=XPos.LEFT,
+                new_y=YPos.NEXT,
+                fill=False,
+                # link=link,  # Must be part of Fragment
+            )
+            if tl_wrapper.last_line:
+                margin = tl_wrapper.paragraph.bottom_margin
+                if (text_rendered and (self.pdf.y + margin) < bottom):
+                    print(f"bottom-margin moving y by {margin}")
+                    self.pdf.y += tl_wrapper.paragraph.bottom_margin
             rendered_lines += 1
-        if not isinstance(text_line, LnTextLine) and text_line.trailing_nl:
-            self._do_ln(text_line.height)
         if rendered_lines:
             del text_lines[:rendered_lines]
         return last_line_height
@@ -298,7 +357,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
             page_bottom = bottom
             if not text_lines:
                 return
-            tot_height = sum(l.height for l in text_lines)
+            tot_height = sum(l.line.height for l in text_lines)
             col_height = tot_height / self.ncols
             avail_height = bottom - top
             if col_height < avail_height:
@@ -307,7 +366,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
                 bottom = top + col_height
                 # A bit more generous: Try to keep the rightmost column the shortest.
                 lines_per_column = math.ceil(len(text_lines) / self.ncols) + 0.5
-                mult_height = text_lines[0].height * lines_per_column
+                mult_height = text_lines[0].line.height * lines_per_column
                 if mult_height > col_height:
                     bottom = top + mult_height
                 if bottom > page_bottom:
@@ -340,7 +399,8 @@ class TextColumns(TextRegion, TextColumnarMixin):
         if not text_lines:
             return
         page_bottom = self.pdf.h - self.pdf.b_margin
-        self._render_page_lines(text_lines, self._first_page_top, page_bottom)
+        _first_page_top = max(self.pdf.t_margin, self.pdf.y)
+        self._render_page_lines(text_lines, _first_page_top, page_bottom)
         while text_lines:
             self.pdf.add_page(same=True)
             self.cur_column = 0
@@ -354,3 +414,14 @@ class TextColumns(TextRegion, TextColumnarMixin):
         left = self.cols[self.cur_column][0]
         right = self.cols[self.cur_column][1]
         return left, right
+
+
+class LWrapper(NamedTuple):
+    """Connects each TextLine with the Paragraph it was written to.
+        This allows to access paragraph specific attributes like
+        top/bottom margins when rendering the line.
+    """
+    line: Sequence
+    paragraph: Paragraph
+    first_line: bool = False
+    last_line: bool = False

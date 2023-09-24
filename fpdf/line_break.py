@@ -311,10 +311,6 @@ class Fragment:
         return ret
 
 
-class LnFragment(NamedTuple):
-    height: float
-
-
 class TextLine(NamedTuple):
     fragments: tuple
     text_width: float
@@ -323,10 +319,6 @@ class TextLine(NamedTuple):
     height: float
     max_width: float
     trailing_nl: bool = False
-
-
-class LnTextLine(NamedTuple):
-    height: float
 
 
 class SpaceHint(NamedTuple):
@@ -514,6 +506,7 @@ class MultiLineBreak:
         print_sh: bool = False,
         wrapmode: WrapMode = WrapMode.WORD,
         line_height: float = 1.0,
+        skip_leading_spaces: bool = False,
     ):
         """Accept text as Fragments, to be split into individual lines depending
         on line width and text height.
@@ -540,6 +533,7 @@ class MultiLineBreak:
         self.print_sh = print_sh
         self.wrapmode = wrapmode
         self.line_height = line_height
+        self.skip_leading_spaces = skip_leading_spaces
         self.fragment_index = 0
         self.character_index = 0
         self.idx_last_forced_break = None
@@ -557,13 +551,23 @@ class MultiLineBreak:
 
         max_width = self.get_width(current_font_height)
         current_line = CurrentLine(max_width=max_width, print_sh=self.print_sh)
+
+        if self.skip_leading_spaces:
+            # write_html() with TextColumns uses this, since it can't know in
+            # advance where the lines will be broken.
+            while self.fragment_index < len(self.fragments):
+                if self.character_index >= len(self.fragments[self.fragment_index].characters):
+                    self.character_index = 0
+                    self.fragment_index += 1
+                    continue
+                character = self.fragments[self.fragment_index].characters[self.character_index]
+                if character == SPACE:
+                    self.character_index += 1
+                else:
+                    break
+
         while self.fragment_index < len(self.fragments):
             current_fragment = self.fragments[self.fragment_index]
-            # LnFragment and LnTextLine are only used by text regions as a deferred ln().
-            if isinstance(current_fragment, LnFragment):
-                self.character_index = 0
-                self.fragment_index += 1
-                return LnTextLine(current_fragment.height)
 
             if current_fragment.font_size > current_font_height:
                 current_font_height = current_fragment.font_size  # document units
@@ -572,14 +576,7 @@ class MultiLineBreak:
             if self.character_index >= len(current_fragment.characters):
                 self.character_index = 0
                 self.fragment_index += 1
-                if self.fragment_index < len(self.fragments) and isinstance(
-                    self.fragments[self.fragment_index], LnFragment
-                ):
-                    # equivalent to a NEWLINE
-                    return current_line.manual_break(
-                        Align.L if self.align == Align.J else self.align,
-                        trailing_nl=False,
-                    )
+
                 continue
 
             character = current_fragment.characters[self.character_index]
@@ -590,6 +587,8 @@ class MultiLineBreak:
 
             if character == NEWLINE:
                 self.character_index += 1
+                if not current_line.fragments:
+                    current_line.height = current_font_height * self.line_height
                 return current_line.manual_break(
                     Align.L if self.align == Align.J else self.align, trailing_nl=True
                 )

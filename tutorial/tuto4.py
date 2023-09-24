@@ -2,7 +2,6 @@ from fpdf import FPDF
 
 
 class PDF(FPDF):
-
     def header(self):
         self.set_font("helvetica", "B", 15)
         width = self.get_string_width(self.title) + 6

@@ -2923,6 +2923,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         current_text_mode = self.text_mode
         current_font_stretching = self.font_stretching
         current_char_spacing = self.char_spacing
+        fill_color_changed = False
+        last_used_color = self.fill_color
         if text_line.fragments:
             if text_line.align == Align.R:
                 dx = w - horizontal_margin - styled_txt_width
@@ -2931,10 +2933,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             else:
                 dx = horizontal_margin
             s_start += dx
-
-            if self.fill_color != self.text_color:
-                sl.append(self.text_color.serialize().lower())
-
             word_spacing = 0
             if text_line.align == Align.J and text_line.number_of_spaces:
                 word_spacing = (
@@ -2945,6 +2943,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
             )
             for i, frag in enumerate(text_line.fragments):
+                if frag.graphics_state["text_color"] != last_used_color:
+                    # allow to change color within the line of text.
+                    last_used_color = frag.graphics_state["text_color"]
+                    sl.append(last_used_color.serialize().lower())
+                    fill_color_changed = True
                 if word_spacing and frag.font_stretching != 100:
                     # Space character is already stretched, extra spacing is absolute.
                     frag_ws = word_spacing * 100 / frag.font_stretching
@@ -3045,7 +3048,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 or current_font != self.current_font
                 or current_font_size_pt != self.font_size_pt
                 or current_text_mode != self.text_mode
-                or self.fill_color != self.text_color
+                or fill_color_changed
                 or current_font_stretching != self.font_stretching
                 or current_char_spacing != self.char_spacing
             ):
@@ -3066,7 +3069,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         elif new_x == XPos.END:
             self.x = s_start + s_width
         elif new_x == XPos.WCONT:
-            self.x = s_start + s_width - horizontal_margin
+            if s_width:
+                self.x = s_start + s_width - horizontal_margin
+            else:
+                self.x = s_start
         elif new_x == XPos.CENTER:
             self.x = s_start + s_width / 2.0
         elif new_x == XPos.LMARGIN:
@@ -3746,6 +3752,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         l_margin: float = None,
         r_margin: float = None,
         print_sh: bool = False,
+        skip_leading_spaces: bool = False,
     ):
         """Establish a layout with a single column to fill with text.
         Args:
@@ -3757,6 +3764,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             r_margin (float, optional): Override the current right page margin.
             print_sh (bool, optional): Treat a soft-hyphen (\\u00ad) as a printable
                 character, instead of a line breaking opportunity. Default value: False
+            skip_leading_spaces (bool, optional): On each line, any space characters
+                at the beginning will be skipped. Default value: False.
         """
         return TextColumns(
             self,
@@ -3767,6 +3776,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             l_margin=l_margin,
             r_margin=r_margin,
             print_sh=print_sh,
+            skip_leading_spaces=skip_leading_spaces,
         )
 
     @check_page
@@ -3781,12 +3791,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         l_margin: float = None,
         r_margin: float = None,
         print_sh: bool = False,
+        skip_leading_spaces: bool = False,
     ):
         """Establish a layout with multiple columns to fill with text.
         Args:
             text (str, optional): A first piece of text to insert.
             ncols (int, optional): the number of columns to create, default 2.
-            gutter (float, optional): The distance between the columns, default 10.
+            gutter (float, optional): The distance between the columns, default 10 mm.
             align (Align or str, optional): The alignment of the region, default "LEFT".
             line_height (float, optional): A multiplier relative to the font
                 size changing the vertical space occupied by a line of text. Default 1.0.
@@ -3794,6 +3805,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             r_margin (float, optional): Override the current right page margin.
             print_sh (bool, optional): Treat a soft-hyphen (\\u00ad) as a printable
                 character, instead of a line breaking opportunity. Default value: False
+            skip_leading_spaces (bool, optional): On each line, any space characters
+                at the beginning will be skipped. Default value: False.
         """
         return TextColumns(
             self,
@@ -3806,6 +3819,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             l_margin=l_margin,
             r_margin=r_margin,
             print_sh=print_sh,
+            skip_leading_spaces=skip_leading_spaces,
         )
 
     @check_page
