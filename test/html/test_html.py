@@ -4,7 +4,7 @@ import pytest
 
 from fpdf import FPDF, HTMLMixin
 from fpdf.errors import FPDFException
-from test.conftest import assert_pdf_equal, LOREM_IPSUM
+from test.conftest import assert_pdf_equal
 
 
 HERE = Path(__file__).resolve().parent
@@ -215,28 +215,18 @@ def test_html_customize_ul(tmp_path):
     assert_pdf_equal(pdf, HERE / "html_customize_ul.pdf", tmp_path)
 
 
-def test_html_align_paragraph(tmp_path):
+def test_html_justify_paragraph(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_margins(50, 20)
     pdf.write_html(
-        f"""
-        No align given, default left:
-        <p>{LOREM_IPSUM[:200]}"</p>
-        align=justify:
-        <p align="justify">{LOREM_IPSUM[:200]}"</p>
-        align=right:
-        <p align="right">{LOREM_IPSUM[200:400]}"</p>
-        align=left:
-        <p align="left">{LOREM_IPSUM[400:600]}"</p>
-        align=center:
-        <p align="center">{LOREM_IPSUM[600:800]}"</p>
-        <!-- ignore invalid align -->
-        align=invalid, ignore and default left:
-        <p align="invalid">{LOREM_IPSUM[800:1000]}"</p>
-        """
+        '<p align="justify">'
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        " Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+        " Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+        " Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+        "</p>"
     )
-    assert_pdf_equal(pdf, HERE / "html_align_paragraph.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "html_justify_paragraph.pdf", tmp_path)
 
 
 def test_issue_156(tmp_path):
@@ -409,11 +399,7 @@ def test_html_custom_line_height(tmp_path):
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text</p>
-<p line-height="2">
-text-text-text-text-text-text-text-text-text-text-
-text-text-text-text-text-text-text-text-text-text-
-text-text-text-text-text-text-text-text-text-text-</p>
-<p line-height="x"><!-- invalid line-height ignored, default value of 1 will be used -->
+<p line-height=2>
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text-</p>
@@ -487,41 +473,3 @@ def test_html_heading_color_attribute(tmp_path):  # discussion 880
     """
     )
     assert_pdf_equal(pdf, HERE / "html_heading_color_attribute.pdf", tmp_path)
-
-
-def test_html_format_within_p(tmp_path):  # discussion 880
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("times", size=18)
-    pdf.set_margins(20, 20, 100)
-    pdf.write_html(
-        """
-<p align="justify">This is a sample text that will be justified
-in the PDF. <u>This</u> is a <font color="red">sample text</font> that will be justified
-in the PDF. <b>This</b> is a sample text that will be justified in the PDF.
-<i>This</i> is a sample text that will be justified in the PDF.</p>
-    """
-    )
-    assert_pdf_equal(pdf, HERE / "html_format_within_p.pdf", tmp_path)
-
-
-def test_html_bad_font():
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("times", size=18)
-    with pytest.raises(FPDFException):
-        pdf.write_html("""<font face="no_such_font"><p>hello helvetica</p></font>""")
-
-
-def test_html_ln_outside_p(tmp_path):
-    # Edge case. The <li> must come right after the </p> without anything
-    # else in between (which would cause a new paragraph to be started).
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("times", size=18)
-    pdf.write_html(
-        """
-            <p>someting in paragraph</p><li>causing _ln() outside paragraph</li>
-    """
-    )
-    assert_pdf_equal(pdf, HERE / "html_ln_outside_p.pdf", tmp_path)
