@@ -293,3 +293,20 @@ def test_password_prep():
     with pytest.raises(FPDFException) as e:
         sh.prepare_string("\u0627\x31")  # Error - bidirectional check
     assert sh.prepare_string("A" * 300) == b"A" * 127  # test cap 127 chars
+
+
+def test_encryption_unicode(tmp_path):
+    "Issue #993"
+    pdf = FPDF()
+    pdf.set_author("Thai")
+    pdf.set_subject("ทดสอบภาษาไทย")
+    pdf.add_page()
+    pdf.set_text_shaping()
+    pdf.add_font("Garuda", fname=HERE.parent / "fonts" / "Garuda.ttf")
+    pdf.set_font("Garuda", size=12)
+    pdf.start_section("ทดสอบภาษาไทย")
+    pdf.cell(
+        txt="สวัสดี ทดสอบภาษาไทย กีกี้ กาก้า ก๋า อ้า อ้ำ ฤาษี ทุ่มทุน อุ้งอุ๋ง น้ำใจ ฯลฯ ญาญ่า ฐาน ฎีกา ฏฒัฯนณ ภัทร์ สิทธิ์"
+    )
+    pdf.set_encryption(owner_password="fpdf2")
+    assert_pdf_equal(pdf, HERE / "encryption_unicode.pdf", tmp_path, generate=True)
