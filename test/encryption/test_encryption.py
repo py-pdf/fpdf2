@@ -296,7 +296,7 @@ def test_password_prep():
 
 
 def test_encryption_unicode(tmp_path):
-    "Issue #993"
+    "Issue #933"
     pdf = FPDF()
     pdf.set_author("Thai")
     pdf.set_subject("ทดสอบภาษาไทย")
