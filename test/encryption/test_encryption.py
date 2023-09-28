@@ -309,4 +309,4 @@ def test_encryption_unicode(tmp_path):
         txt="สวัสดี ทดสอบภาษาไทย กีกี้ กาก้า ก๋า อ้า อ้ำ ฤาษี ทุ่มทุน อุ้งอุ๋ง น้ำใจ ฯลฯ ญาญ่า ฐาน ฎีกา ฏฒัฯนณ ภัทร์ สิทธิ์"
     )
     pdf.set_encryption(owner_password="fpdf2")
-    assert_pdf_equal(pdf, HERE / "encryption_unicode.pdf", tmp_path, generate=True)
+    assert_pdf_equal(pdf, HERE / "encryption_unicode.pdf", tmp_path)
