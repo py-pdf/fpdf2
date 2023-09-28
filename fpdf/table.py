@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from numbers import Number
 from typing import Optional, Union
 
-from .drawing import DeviceRGB, DeviceGray, DeviceCMYK
 from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode, VAlign
 from .enums import MethodReturnValue
 from .errors import FPDFException
@@ -10,65 +9,6 @@ from .fonts import CORE_FONTS, FontFace
 from .util import Padding
 
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
-
-
-def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
-    """Draws a box using the provided style - private helper used by table for drawing the cell and table borders.
-    Difference between this and rect() is that border can be defined as "L,R,T,B" to draw only some of the four borders;
-    compatible with get_border(i,k)
-
-    See Also: rect()"""
-
-    if fill_color:
-        prev_fill_color = pdf.fill_color
-        if isinstance(fill_color, (int, float)):
-            fill_color = [fill_color]
-        elif isinstance(fill_color, (DeviceRGB, DeviceGray, DeviceCMYK)):
-            fill_color = fill_color.colors
-        pdf.set_fill_color(*fill_color)
-
-    sl = []
-
-    k = pdf.k
-
-    # y top to bottom instead of bottom to top
-    y1 = pdf.h - y1
-    y2 = pdf.h - y2
-
-    # scale
-    x1 *= k
-    x2 *= k
-    y2 *= k
-    y1 *= k
-
-    if fill_color:
-        op = "B" if border == 1 else "f"
-        sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re {op}")
-    elif border == 1:
-        sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re S")
-
-    if isinstance(border, str):
-        if "L" in border:
-            sl.append(f"{x1:.2f} {y2:.2f} m " f"{x1:.2f} {y1:.2f} l S")
-        if "B" in border:
-            sl.append(f"{x1:.2f} {y2:.2f} m " f"{x2:.2f} {y2:.2f} l S")
-        if "R" in border:
-            sl.append(f"{x2:.2f} {y2:.2f} m " f"{x2:.2f} {y1:.2f} l S")
-        if "T" in border:
-            sl.append(f"{x1:.2f} {y1:.2f} m " f"{x2:.2f} {y1:.2f} l S")
-
-    s = " ".join(sl)
-    pdf._out(s)  # pylint: disable=protected-access
-
-    if fill_color:
-        pdf.set_fill_color(prev_fill_color)
-
-
-@dataclass(frozen=True)
-class RowLayoutInfo:
-    height: float
-    triggers_page_jump: bool
-    rendered_height: dict
 
 
 class Table:
@@ -151,6 +91,7 @@ class Table:
         self._width = fpdf.epw if width is None else width
         self._wrapmode = wrapmode
         self._num_heading_rows = num_heading_rows
+        self._initial_style = None
         self.rows = []
 
         if padding is None:
@@ -187,9 +128,11 @@ class Table:
         for row in rows:
             self.row(row)
 
-    def row(self, cells=()):
+    def row(self, cells=(), style=None):
         "Adds a row to the table. Yields a `Row` object."
-        row = Row(self._fpdf)
+        if self._initial_style is None:
+            self._initial_style = self._fpdf.font_face()
+        row = Row(self, style=style)
         self.rows.append(row)
         for cell in cells:
             row.cell(cell)
@@ -325,9 +268,7 @@ class Table:
             return "B" if i < self._num_heading_rows else 0
         return "".join(border)
 
-    def _render_table_row(
-        self, i, row_layout_info, cell_x_positions, fill=False, **kwargs
-    ):
+    def _render_table_row(self, i, row_layout_info, cell_x_positions, **kwargs):
         row = self.rows[i]
         j = 0
         y = self._fpdf.y  # remember current y position, reset after each cell
@@ -340,7 +281,6 @@ class Table:
                 row_height=self._line_height,
                 cell_height_info=row_layout_info,
                 cell_x_positions=cell_x_positions,
-                fill=fill,
                 **kwargs,
             )
             j += cell.colspan
@@ -354,7 +294,6 @@ class Table:
         j,
         cell,
         row_height,  # height of a row of text including line spacing
-        fill=False,
         cell_height_info=None,  # full height of a cell, including padding, used to render borders and images
         cell_x_positions=None,  # x-positions of the individual columns, pre-calculated for speed. Only relevant when rendering
         **kwargs,
@@ -384,33 +323,15 @@ class Table:
         text_align = cell.align or self._text_align
         if not isinstance(text_align, (Align, str)):
             text_align = text_align[j]
+
+        style = self._initial_style
+        cell_mode_fill = self._cell_fill_mode.should_fill_cell(i, j)
+        if cell_mode_fill and self._cell_fill_color:
+            style = style.replace(fill_color=self._cell_fill_color)
         if i < self._num_heading_rows:
-            # Get the style for this cell by overriding the row style with any provided
-            # headings style, and overriding that with any provided cell style
-            style = FontFace.combine(
-                cell.style, FontFace.combine(self._headings_style, row.style)
-            )
-        else:
-            style = FontFace.combine(cell.style, row.style)
-        if style and style.fill_color:
-            fill = True
-        elif (
-            not fill
-            and self._cell_fill_color
-            and self._cell_fill_mode != TableCellFillMode.NONE
-        ):
-            if self._cell_fill_mode == TableCellFillMode.ALL:
-                fill = True
-            elif self._cell_fill_mode == TableCellFillMode.ROWS:
-                fill = bool(i % 2)
-            elif self._cell_fill_mode == TableCellFillMode.COLUMNS:
-                fill = bool(j % 2)
-        if fill and self._cell_fill_color and not (style and style.fill_color):
-            style = (
-                style.replace(fill_color=self._cell_fill_color)
-                if style
-                else FontFace(fill_color=self._cell_fill_color)
-            )
+            style = FontFace.combine(style, self._headings_style)
+        style = FontFace.combine(style, row.style)
+        style = FontFace.combine(style, cell.style)
 
         padding = Padding.new(cell.padding) if cell.padding else self._padding
 
@@ -454,7 +375,7 @@ class Table:
                 x2,
                 y2,
                 border=self.get_cell_border(i, j),
-                fill_color=style.fill_color if fill else None,
+                fill_color=style.fill_color if style else None,
             )
 
             # draw outer box if needed
@@ -641,10 +562,10 @@ class Table:
 class Row:
     "Object that `Table.row()` yields, used to build a row in a table"
 
-    def __init__(self, fpdf):
-        self._fpdf = fpdf
+    def __init__(self, table, style=None):
+        self._table = table
         self.cells = []
-        self.style = fpdf.font_face()
+        self.style = style
 
     @property
     def cols_count(self):
@@ -696,9 +617,10 @@ class Row:
                 " Pull Requests are welcome to implement this 😊"
             )
         if not style:
+            # pylint: disable=protected-access
             # We capture the current font settings:
-            font_face = self._fpdf.font_face()
-            if font_face != self.style:
+            font_face = self._table._fpdf.font_face()
+            if font_face not in (self.style, self._table._initial_style):
                 style = font_face
         cell = Cell(
             text, align, v_align, style, img, img_fill_width, colspan, padding, link
@@ -733,3 +655,58 @@ class Cell:
 
     def write(self, text, align=None):
         raise NotImplementedError("Not implemented yet")
+
+
+@dataclass(frozen=True)
+class RowLayoutInfo:
+    height: float
+    triggers_page_jump: bool
+    rendered_height: dict
+
+
+def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
+    """Draws a box using the provided style - private helper used by table for drawing the cell and table borders.
+    Difference between this and rect() is that border can be defined as "L,R,T,B" to draw only some of the four borders;
+    compatible with get_border(i,k)
+
+    See Also: rect()"""
+
+    if fill_color:
+        prev_fill_color = pdf.fill_color
+        pdf.set_fill_color(fill_color)
+
+    sl = []
+
+    k = pdf.k
+
+    # y top to bottom instead of bottom to top
+    y1 = pdf.h - y1
+    y2 = pdf.h - y2
+
+    # scale
+    x1 *= k
+    x2 *= k
+    y2 *= k
+    y1 *= k
+
+    if fill_color:
+        op = "B" if border == 1 else "f"
+        sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re {op}")
+    elif border == 1:
+        sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re S")
+
+    if isinstance(border, str):
+        if "L" in border:
+            sl.append(f"{x1:.2f} {y2:.2f} m " f"{x1:.2f} {y1:.2f} l S")
+        if "B" in border:
+            sl.append(f"{x1:.2f} {y2:.2f} m " f"{x2:.2f} {y2:.2f} l S")
+        if "R" in border:
+            sl.append(f"{x2:.2f} {y2:.2f} m " f"{x2:.2f} {y1:.2f} l S")
+        if "T" in border:
+            sl.append(f"{x1:.2f} {y1:.2f} m " f"{x2:.2f} {y1:.2f} l S")
+
+    s = " ".join(sl)
+    pdf._out(s)  # pylint: disable=protected-access
+
+    if fill_color:
+        pdf.set_fill_color(prev_fill_color)

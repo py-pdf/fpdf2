@@ -314,6 +314,17 @@ class TableCellFillMode(CoerciveEnum):
     COLUMNS = intern("COLUMNS")
     "Fill only table cells in odd columns"
 
+    def should_fill_cell(self, i, j):
+        if self is self.NONE:
+            return False
+        if self is self.ALL:
+            return True
+        if self is self.ROWS:
+            return bool(i % 2)
+        if self is self.COLUMNS:
+            return bool(j % 2)
+        raise NotImplementedError
+
 
 class RenderStyle(CoerciveEnum):
     "Defines how to render shapes"

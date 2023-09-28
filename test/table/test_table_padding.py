@@ -5,6 +5,8 @@ import pytest
 from fpdf import FPDF
 from fpdf.enums import MethodReturnValue, YPos, TableCellFillMode, VAlign
 from fpdf.fonts import FontFace
+from fpdf.table import draw_box_borders
+
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 HERE = Path(__file__).resolve().parent
@@ -73,7 +75,7 @@ def test_multicell_with_padding(tmp_path):
     run_comparison(pdf, "multicell_with_padding", tmp_path)
 
 
-def test_multicell_with_padding_check_input(tmp_path):
+def test_multicell_with_padding_check_input():
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
@@ -135,7 +137,6 @@ def test_multicell_return_value(tmp_path):
     pdf.x = 5
     pdf.y += 10
 
-    old_y = pdf.y
     out = pdf.multi_cell(
         0,
         5,
@@ -145,8 +146,6 @@ def test_multicell_return_value(tmp_path):
         output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
         new_y=YPos.NEXT,
     )
-
-    # assert pdf.y == old_y + height_with_padding
 
     run_comparison(pdf, "table_with_padding", tmp_path)
 
@@ -214,7 +213,7 @@ def test_table_with_only_images(tmp_path):
         cell_fill_color=(150, 200, 255),
         cell_fill_mode=TableCellFillMode.ROWS,
     ) as table:
-        for i, data_row in enumerate(IMAGES_DATA):
+        for data_row in IMAGES_DATA:
             row = table.row()
             for datum in data_row:
                 row.cell(img=datum)
@@ -240,7 +239,7 @@ def test_table_vertical_alignment(tmp_path):
     pdf.ln(0.1)
 
     for v in (VAlign.T, VAlign.M, VAlign.B):
-        pdf.write_html("<h1>Vertical alignment: {}</h1>".format(v))
+        pdf.write_html(f"<h1>Vertical alignment: {v}</h1>")
 
         with pdf.table(line_height=pdf.font_size, padding=3, v_align=v) as table:
             for data_row in TABLE_DATA:
@@ -299,7 +298,7 @@ def test_valign_per_cell(tmp_path):
                 elif irow == 3:
                     v_align = VAlign.B
 
-                if irow == 2 or irow == 3:
+                if irow in (2, 3):
                     row.cell(
                         f"{datum}: custom v-align {v_align}",
                         style=deathstyle,
@@ -341,9 +340,9 @@ def test_table_with_colspan(tmp_path):
 
         if n % 4 == 0:
             return f"{a} {b}"
-        elif n % 4 == 1:
+        if n % 4 == 1:
             return f"{a} {b} {a}"
-        elif n % 4 == 2:
+        if n % 4 == 2:
             return f"{b} {a}"
 
         return a
@@ -354,26 +353,14 @@ def test_table_with_colspan(tmp_path):
         for irow in range(10):
             row = table.row()
             for icol in range(10):
-                # if cs>1:
-                #     cs -= 1
-                #     continue
-                #
                 txt = make_text(irow * 10 + icol)
-                # cs = round(sin(irow * 10 + icol)+2)
-                #
-                # if irow == 0:
-                #     cs = 1
-                cs = 1
-
                 txt = str(icol) + " " + txt
-
                 if irow > 0:
                     if icol == 2:
                         row.cell(txt + " SPAN 2", colspan=2)
                         continue
-                    elif icol == 3:
+                    if icol == 3:
                         continue
-
                 row.cell(txt)
 
     run_comparison(pdf, "table_with_colspan", tmp_path)
@@ -385,9 +372,9 @@ def test_outside_border_width(tmp_path):
     pdf.set_font("Times", size=12)
 
     with pdf.table(outer_border_width=1, gutter_height=10, gutter_width=15) as table:
-        for irow in range(5):
+        for _ in range(5):
             row = table.row()
-            for icol in range(5):
+            for _ in range(5):
                 datum = "Circus"
                 row.cell(datum)
 
@@ -525,8 +512,6 @@ def test_draw_box_borders(tmp_path):
     pdf = FPDF()
     pdf.set_font("Times", size=16)
     pdf.add_page()
-
-    from fpdf.table import draw_box_borders
 
     def box(x, y, borders):
         draw_box_borders(

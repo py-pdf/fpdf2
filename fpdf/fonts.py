@@ -21,7 +21,7 @@ try:
 except ImportError:
     hb = None
 
-from .drawing import DeviceGray, DeviceRGB
+from .drawing import convert_to_device_color, DeviceGray, DeviceRGB
 from .enums import FontDescriptorFlags, TextEmphasis
 from .syntax import Name, PDFObject
 from .util import escape_parens
@@ -45,8 +45,8 @@ class FontFace:
     emphasis: Optional[TextEmphasis]  # can be a combination: B | U
     size_pt: Optional[int]
     # Colors are single number grey scales or (red, green, blue) tuples:
-    color: Optional[Union[int, tuple, DeviceGray, DeviceRGB]]
-    fill_color: Optional[Union[int, tuple, DeviceGray, DeviceRGB]]
+    color: Optional[Union[DeviceGray, DeviceRGB]]
+    fill_color: Optional[Union[DeviceGray, DeviceRGB]]
 
     def __init__(
         self, family=None, emphasis=None, size_pt=None, color=None, fill_color=None
@@ -54,18 +54,20 @@ class FontFace:
         self.family = family
         self.emphasis = TextEmphasis.coerce(emphasis) if emphasis else None
         self.size_pt = size_pt
-        self.color = color
-        self.fill_color = fill_color
+        self.color = None if color is None else convert_to_device_color(color)
+        self.fill_color = (
+            None if fill_color is None else convert_to_device_color(fill_color)
+        )
 
     replace = replace
 
     @staticmethod
-    def _override(override_value, current_value):
+    def _override(current_value, override_value):
         """Override the current value if an override value is provided"""
         return current_value if override_value is None else override_value
 
     @staticmethod
-    def combine(override_style, default_style):
+    def combine(default_style, override_style):
         """
         Create a combined FontFace with all the supplied features of the two styles. When both
         the default and override styles provide a feature, prefer the override style.
@@ -82,14 +84,15 @@ class FontFace:
         if not isinstance(default_style, FontFace):
             raise TypeError(f"Cannot combine FontFace with {type(default_style)}")
         return FontFace(
-            family=FontFace._override(override_style.family, default_style.family),
+            family=FontFace._override(default_style.family, override_style.family),
             emphasis=FontFace._override(
-                override_style.emphasis, default_style.emphasis
+                default_style.emphasis,
+                override_style.emphasis,
             ),
-            size_pt=FontFace._override(override_style.size_pt, default_style.size_pt),
-            color=FontFace._override(override_style.color, default_style.color),
+            size_pt=FontFace._override(default_style.size_pt, override_style.size_pt),
+            color=FontFace._override(default_style.color, override_style.color),
             fill_color=FontFace._override(
-                override_style.fill_color, default_style.fill_color
+                default_style.fill_color, override_style.fill_color
             ),
         )
 

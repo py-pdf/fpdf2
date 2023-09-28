@@ -10,7 +10,6 @@
 # ****************************************************************************
 import hashlib, io, logging, math, os, re, sys, types, warnings
 from collections import defaultdict
-from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from functools import wraps
@@ -38,7 +37,6 @@ except ImportError:
         pass
 
 
-from . import drawing
 from .actions import URIAction
 from .annotations import (
     AnnotationDict,
@@ -50,6 +48,16 @@ from .deprecation import (
     support_deprecated_txt_arg,
     get_stack_level,
     WarnOnDeprecatedModuleAttributes,
+)
+from .drawing import (
+    convert_to_device_color,
+    DeviceRGB,
+    GraphicsStateDictRegistry,
+    GraphicsStyle,
+    DrawingContext,
+    PaintedPath,
+    Point,
+    Transform,
 )
 from .encryption import StandardSecurityHandler
 from .enums import (
@@ -328,7 +336,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._fallback_font_exact_match = False
 
         self._current_draw_context = None
-        self._drawing_graphics_state_registry = drawing.GraphicsStateDictRegistry()
+        self._drawing_graphics_state_registry = GraphicsStateDictRegistry()
 
         self._record_text_quad_points = False
 
@@ -986,7 +994,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
-        self.draw_color = _convert_to_drawing_color(r, g, b)
+        self.draw_color = convert_to_device_color(r, g, b)
         if self.page > 0:
             self._out(self.draw_color.serialize().upper())
 
@@ -1002,7 +1010,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
-        self.fill_color = _convert_to_drawing_color(r, g, b)
+        self.fill_color = convert_to_device_color(r, g, b)
         if self.page > 0:
             self._out(self.fill_color.serialize().lower())
 
@@ -1018,7 +1026,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
-        self.text_color = _convert_to_drawing_color(r, g, b)
+        self.text_color = convert_to_device_color(r, g, b)
 
     def get_string_width(self, s, normalized=False, markdown=False):
         """
@@ -1069,9 +1077,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
 
         if isinstance(
-            background, (str, io.BytesIO, Image, drawing.DeviceRGB, tuple, type(None))
+            background, (str, io.BytesIO, Image, DeviceRGB, tuple, type(None))
         ):
-            if isinstance(background, drawing.DeviceRGB):
+            if isinstance(background, DeviceRGB):
                 self.page_background = tuple(255 * v for v in background.colors)
             else:
                 self.page_background = background
@@ -1101,7 +1109,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "cannot create a drawing context while one is already open"
             )
 
-        context = drawing.DrawingContext()
+        context = DrawingContext()
         self._current_draw_context = context
         try:
             yield context
@@ -1111,7 +1119,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         starting_style = self._current_graphic_style()
         render_args = (
             self._drawing_graphics_state_registry,
-            drawing.Point(self.x, self.y),
+            Point(self.x, self.y),
             self.k,
             self.h,
             starting_style,
@@ -1127,7 +1135,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._set_min_pdf_version("1.4")
 
     def _current_graphic_style(self):
-        gs = drawing.GraphicsStyle()
+        gs = GraphicsStyle()
         gs.allow_transparency = self.allow_images_transparency
 
         # This initial stroke_width is ignored when embedding SVGs,
@@ -1167,7 +1175,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         """
         with self.drawing_context(debug_stream=debug_stream) as ctxt:
-            path = drawing.PaintedPath(x=x, y=y)
+            path = PaintedPath(x=x, y=y)
             path.style.paint_rule = paint_rule
             yield path
             ctxt.add_item(path)
@@ -2623,9 +2631,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 raise ValueError(
                     f"Unsupported setting: {key} - This can be controlled through dash_pattern / draw_color / line_width"
                 )
-            if key in drawing.GraphicsStyle.MERGE_PROPERTIES:
+            if key in GraphicsStyle.MERGE_PROPERTIES:
                 if gs is None:
-                    gs = drawing.GraphicsStyle()
+                    gs = GraphicsStyle()
                 setattr(gs, key, value)
                 if key == "blend_mode":
                     self._set_min_pdf_version("1.4")
@@ -4075,7 +4083,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         _, _, path = svg.transform_to_rect_viewport(
             scale=1, width=w, height=h, ignore_svg_top_attrs=True
         )
-        path.transform = path.transform @ drawing.Transform.translation(x, y)
+        path.transform = path.transform @ Transform.translation(x, y)
 
         old_x, old_y = self.x, self.y
         try:
@@ -4947,17 +4955,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 name.write(self.buffer)
             return None
         return self.buffer
-
-
-def _convert_to_drawing_color(r, g, b):
-    if isinstance(r, (drawing.DeviceGray, drawing.DeviceRGB)):
-        # Note: in this case, r is also a Sequence
-        return r
-    if isinstance(r, Sequence):
-        r, g, b = r
-    if (r, g, b) == (0, 0, 0) or g == -1:
-        return drawing.DeviceGray(r / 255)
-    return drawing.DeviceRGB(r / 255, g / 255, b / 255)
 
 
 def _is_svg(bytes):

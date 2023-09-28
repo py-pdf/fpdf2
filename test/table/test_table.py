@@ -673,3 +673,28 @@ def test_table_with_set_fill_color(tmp_path):  # issue 963
         HERE / "table_with_set_fill_color.pdf",
         tmp_path,
     )
+
+
+def test_table_with_fill_color_set_beforehand(tmp_path):  # issue 932
+    pdf = FPDF()
+    pdf.set_font("Helvetica")
+    pdf.set_fill_color((126, 217, 87))  # green
+    pdf.add_page()
+    with pdf.table(
+        cell_fill_color=(200, 200, 200),  # light grey
+        cell_fill_mode="COLUMNS",
+        headings_style=FontFace(fill_color=(255, 255, 255)),  # white
+    ) as table:
+        for i, data_row in enumerate(TABLE_DATA):
+            if i == 2:
+                style = FontFace(fill_color=(250, 128, 114))  # salmon
+            else:
+                style = None
+            row = table.row(style=style)
+            for j, datum in enumerate(data_row):
+                if i == 2 and j == 2:
+                    style = FontFace(fill_color=(50, 50, 50))  # very dark grey
+                else:
+                    style = None
+                row.cell(datum, style=style)
+    assert_pdf_equal(pdf, HERE / "table_with_fill_color_set_beforehand.pdf", tmp_path)

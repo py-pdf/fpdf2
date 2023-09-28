@@ -8,6 +8,7 @@ in non-backward-compatible ways.
 
 import copy, decimal, math, re
 from collections import OrderedDict
+from collections.abc import Sequence
 from contextlib import contextmanager
 from typing import Optional, NamedTuple, Union
 
@@ -380,6 +381,17 @@ def gray8(g, a=None):
         a /= 255.0
 
     return DeviceGray(g / 255.0, a)
+
+
+def convert_to_device_color(r, g=-1, b=-1):
+    if isinstance(r, (DeviceGray, DeviceRGB)):
+        # Note: in this case, r is also a Sequence
+        return r
+    if isinstance(r, Sequence):
+        r, g, b = r
+    if (r, g, b) == (0, 0, 0) or g == -1:
+        return DeviceGray(r / 255)
+    return DeviceRGB(r / 255, g / 255, b / 255)
 
 
 def cmyk8(c, m, y, k, a=None):

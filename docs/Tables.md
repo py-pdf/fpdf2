@@ -199,6 +199,15 @@ Result:
 
 ![](table-with-cells-filled2.jpg)
 
+The cell color is set following those settings, ordered by priority:
+
+1. The cell `style`, provided to `Row.cell()`
+2. The row `style`, provided to `Table.row()`
+3. The table setting `headings_style.fill_color`, if the cell is part of some headings row
+4. The table setting `cell_fill_color`, if `cell_fill_mode` indicates to fill a cell
+5. The document `.fill_color` set before rendering the table
+
+
 ## Set borders layout
 
 ```python

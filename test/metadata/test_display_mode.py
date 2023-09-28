@@ -81,6 +81,6 @@ def test_page_mode_zoom_numeric(tmp_path):
     pdf.cell(text="page 2")
     assert_pdf_equal(
         pdf,
-        HERE / f"page-mode-zoom_numeric.pdf",
+        HERE / "page-mode-zoom_numeric.pdf",
         tmp_path,
     )
