@@ -225,7 +225,7 @@ class StandardSecurityHandler:
         try:
             string.encode("latin-1")
             return f"<{bytes(self.encrypt_bytes(string.encode('latin-1'), obj_id)).hex().upper()}>"
-        except:
+        except UnicodeEncodeError:
             return f'<{hexlify(bytearray(self.encrypt_bytes(BOM_UTF16_BE + string.encode("utf-16-be"), obj_id))).decode("latin-1")}>'
 
     def encrypt_stream(self, stream: bytes, obj_id: int) -> bytes:
