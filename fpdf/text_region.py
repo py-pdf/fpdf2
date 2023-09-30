@@ -1,5 +1,5 @@
 import math
-from typing import NamedTuple, Any, Optional, Union, Sequence
+from typing import NamedTuple, Sequence
 
 from .errors import FPDFException
 from .enums import Align, XPos, YPos
@@ -28,15 +28,14 @@ class TextRegionMixin:
 
 class Paragraph:
     def __init__(
-            self,
-            region,
-            align=None,
-            line_height=None,
-            top_margin: float = 0,
-            bottom_margin: float = 0,
-            skip_leading_spaces: bool = False,
-            ):
-        print("New Paragraph")
+        self,
+        region,
+        align=None,
+        line_height=None,
+        top_margin: float = 0,
+        bottom_margin: float = 0,
+        skip_leading_spaces: bool = False,
+    ):
         self.region = region
         self.pdf = region.pdf
         if align:
@@ -57,14 +56,15 @@ class Paragraph:
     def __exit__(self, exc_type, exc_value, traceback):
         self.region.end_paragraph()
 
-    def write(self, text: str, link=None):  # pylint: disable=unused-argument
+    def write(self, text: str, link=None):
         if not self.pdf.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         normalized_string = self.pdf.normalize_text(text).replace("\r", "")
         # YYY _preload_font_styles() should accept a "link" argument.
         fragments = self.pdf._preload_font_styles(normalized_string, False)
-        for frag in fragments:
-            print("write:", frag.font.fontkey, f'"{text}"')
+        if link:
+            for frag in fragments:
+                frag.link = link
         self._text_fragments.extend(fragments)
 
     def ln(self, h=None):
@@ -81,11 +81,13 @@ class Paragraph:
         multi_line_break = MultiLineBreak(
             self._text_fragments,
             max_width=self.region.get_width,
+            margins=(self.pdf.c_margin, self.pdf.c_margin),
             align=self.align or self.region.align or Align.L,
             print_sh=print_sh,
             # wrapmode=self.wrapmode,
             line_height=self.line_height,
-            skip_leading_spaces=self.skip_leading_spaces or self.region.skip_leading_spaces,
+            skip_leading_spaces=self.skip_leading_spaces
+            or self.region.skip_leading_spaces,
         )
         self._text_fragments = []
         text_line = multi_line_break.get_line()
@@ -147,7 +149,11 @@ class ParagraphCollectorMixin:
                 "Conflicts with active paragraph. Either close the current paragraph or write your text inside it."
             )
         if self._active_paragraph is None:
-            p = Paragraph(region=self, align=self.align, skip_leading_spaces=self.skip_leading_spaces)
+            p = Paragraph(
+                region=self,
+                align=self.align,
+                skip_leading_spaces=self.skip_leading_spaces,
+            )
             self._paragraphs.append(p)
             self._active_paragraph = "AUTO"
 
@@ -160,32 +166,31 @@ class ParagraphCollectorMixin:
         self._paragraphs[-1].ln(h)
 
     def paragraph(
-            self,
-            align=None,
-            line_height=None,
-            skip_leading_spaces: bool = False,
-            top_margin=0,
-            bottom_margin=0,
-            ):
+        self,
+        align=None,
+        line_height=None,
+        skip_leading_spaces: bool = False,
+        top_margin=0,
+        bottom_margin=0,
+    ):
         if self._active_paragraph == "EXPLICIT":
             raise FPDFException("Unable to nest paragraphs.")
         p = Paragraph(
-                region=self,
-                align=align or self.align,
-                line_height=line_height,
-                skip_leading_spaces=skip_leading_spaces or self.skip_leading_spaces,
-                top_margin=top_margin,
-                bottom_margin=bottom_margin,
-               )
+            region=self,
+            align=align or self.align,
+            line_height=line_height,
+            skip_leading_spaces=skip_leading_spaces or self.skip_leading_spaces,
+            top_margin=top_margin,
+            bottom_margin=bottom_margin,
+        )
         self._paragraphs.append(p)
         self._active_paragraph = "EXPLICIT"
         return p
 
     def end_paragraph(self):
-        print("Ending Paragraph")
         if not self._active_paragraph:
             raise FPDFException("No active paragraph to end.")
-        #self._paragraphs[-1].write("\n")
+        # self._paragraphs[-1].write("\n")
         self._active_paragraph = None
 
 
@@ -212,32 +217,31 @@ class TextRegion(ParagraphCollectorMixin):
         rendered_lines = 0
         for tl_wrapper in text_lines:
             text_line = tl_wrapper.line
-#            print("Top-Margin:", tl_wrapper.paragraph.top_margin, tl_wrapper.first_line,
-#                    list(frag.string for frag in text_line.fragments))
             text_rendered = False
-            for i, frag in enumerate(text_line.fragments):
-                print("render Fragment:", frag.font.fontkey, i, f'"{frag.string}"')
+            for frag in text_line.fragments:
                 if frag.characters:
                     text_rendered = True
                     break
-            print(f"Tr:{text_rendered} fl:{tl_wrapper.first_line} tm:{tl_wrapper.paragraph.top_margin}")
-            if (text_rendered and tl_wrapper.first_line
-                    and tl_wrapper.paragraph.top_margin
-                    #and self.pdf.y > self.pdf.t_margin
-                    ):
-                print(f"top-margin moving y by {tl_wrapper.paragraph.top_margin}")
+            if (
+                text_rendered
+                and tl_wrapper.first_line
+                and tl_wrapper.paragraph.top_margin
+                and self.pdf.y > self.pdf.t_margin
+            ):
                 self.pdf.y += tl_wrapper.paragraph.top_margin
-            if self.pdf.y + text_line.height > bottom:
-                last_line_height = prev_line_height
-                break
+            else:
+                if self.pdf.y + text_line.height > bottom:
+                    last_line_height = prev_line_height
+                    break
             prev_line_height = last_line_height
             last_line_height = text_line.height
-            extents = self.current_x_extents(self.pdf.y, 0)
-            self.pdf.x = extents[0]
+            col_left, col_right = self.current_x_extents(self.pdf.y, 0)
+            # self.pdf.x = extents[0]
+            if self.pdf.x < col_left or self.pdf.x >= col_right:
+                self.pdf.x = col_left
             # Don't check the return, we never render past the bottom here.
             self.pdf._render_styled_text_line(
                 text_line,
-                w=text_line.max_width + 2 * self.pdf.c_margin,
                 h=text_line.height,
                 border=0,
                 new_x=XPos.LEFT,
@@ -247,8 +251,7 @@ class TextRegion(ParagraphCollectorMixin):
             )
             if tl_wrapper.last_line:
                 margin = tl_wrapper.paragraph.bottom_margin
-                if (text_rendered and (self.pdf.y + margin) < bottom):
-                    print(f"bottom-margin moving y by {margin}")
+                if margin and text_rendered and (self.pdf.y + margin) < bottom:
                     self.pdf.y += tl_wrapper.paragraph.bottom_margin
             rendered_lines += 1
         if rendered_lines:
@@ -276,7 +279,7 @@ class TextRegion(ParagraphCollectorMixin):
         start, end = self.current_x_extents(self.pdf.y, height)
         if self.pdf.x > start and self.pdf.x < end:
             start = self.pdf.x
-        res = end - start - 2 * self.pdf.c_margin
+        res = end - start
         return res
 
 
@@ -418,9 +421,10 @@ class TextColumns(TextRegion, TextColumnarMixin):
 
 class LWrapper(NamedTuple):
     """Connects each TextLine with the Paragraph it was written to.
-        This allows to access paragraph specific attributes like
-        top/bottom margins when rendering the line.
+    This allows to access paragraph specific attributes like
+    top/bottom margins when rendering the line.
     """
+
     line: Sequence
     paragraph: Paragraph
     first_line: bool = False

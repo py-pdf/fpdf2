@@ -25,7 +25,8 @@ DEFAULT_HEADING_SIZES = dict(h1=24, h2=18, h3=14, h4=12, h5=10, h6=8)
 # The pattern excludes the non-breaking spaces that are included in "\s".
 # We also exclude the OGHAM SPACE MARK for now, because while being a word seperator,
 # it is usually a graphically visible glyph.
-_WS_CHARS = "".join((
+_WS_CHARS = "".join(
+    (
         # "\u0009",  # CHARACTER TABULATION
         # "\u000a",  # LINE FEED
         # "\u000b",  # LINE TABULATION
@@ -53,7 +54,8 @@ _WS_CHARS = "".join((
         # "\u202f",  # NARROW NO-BREAK SPACE (keep)
         "\u205f",  # MEDIUM MATHEMATICAL SPACE
         "\u3000",  # IDEOGRAPHIC SPACE
-        ))
+    )
+)
 _WS_SUB_PAT = re.compile(f"[{_WS_CHARS}]+")
 
 COLOR_DICT = {
@@ -285,8 +287,11 @@ class HTML2FPDF(HTMLParser):
         self.pdf._push_local_stack()  # xpylint: disable=protected-access
 
         self._pre_formatted = False  # preserve whitespace while True.
-        self._pre_started = False  # nothing written yet to <pre>, remove one initial nl.
+        self._pre_started = (
+            False  # nothing written yet to <pre>, remove one initial nl.
+        )
         self.follows_trailing_space = False  # The last write has ended with a space.
+        self.follows_heading = False  # We don't want extra space below a heading.
         self.href = ""
         self.align = ""
         self.font_stack = []
@@ -295,7 +300,7 @@ class HTML2FPDF(HTMLParser):
         self.font_color = tuple((255 * v for v in pdf.text_color.colors))
         self.heading_level = None
         self.heading_above = 0.2  # extra space above heading, relative to font size
-        self.heading_below = 0.2  # extra space below heading, relative to font size
+        self.heading_below = 0.4  # extra space below heading, relative to font size
         self._tags_stack = []
         self._column = self.pdf.text_column(skip_leading_spaces=True)
         self._paragraph = self._column.paragraph()
@@ -307,25 +312,30 @@ class HTML2FPDF(HTMLParser):
         self.td_th = None  # becomes a dict of attributes when processing <td>/<th> tags
         # "inserted" is a special attribute indicating that a cell has be inserted in self.table_row
 
-    def _new_paragraph(self, align=None, line_height=1.0, top_margin=0, bottom_margin=0):
+    def _new_paragraph(
+        self, align=None, line_height=1.0, top_margin=0, bottom_margin=0
+    ):
         self._end_paragraph()
         self.align = align or ""
-        if not top_margin:
+        if not top_margin and not self.follows_heading:
             top_margin = self.font_size / self.pdf.k
         self._paragraph = self._column.paragraph(
-                align=align,
-                line_height=line_height,
-                skip_leading_spaces=True,
-                top_margin=top_margin,
-                bottom_margin=bottom_margin,
-                )
+            align=align,
+            line_height=line_height,
+            skip_leading_spaces=True,
+            top_margin=top_margin,
+            bottom_margin=bottom_margin,
+        )
         self.follows_trailing_space = True
+        self.follows_heading = False
 
     def _end_paragraph(self):
         self.align = ""
         if self._paragraph:
             self._column.end_paragraph()
-            our_context = self.pdf._pop_local_stack()  # pylint: disable=protected-access
+            our_context = (
+                self.pdf._pop_local_stack()  # pylint: disable=protected-access
+            )
             self._column.render()
             self.pdf._push_local_stack(our_context)  # pylint: disable=protected-access
             self._paragraph = None
@@ -381,7 +391,7 @@ class HTML2FPDF(HTMLParser):
         elif self.table is not None:
             # ignore anything else than td inside a table
             pass
-        elif self._pre_formatted: # pre blocks
+        elif self._pre_formatted:  # pre blocks
             s_nl = data.startswith("\n") and self._pre_started
             self._pre_started = False
             e_nl = data.endswith("\n")
@@ -389,7 +399,7 @@ class HTML2FPDF(HTMLParser):
                 data = data[1:-1]
             elif s_nl:
                 data = data[1:]
-            #elif e_nl:
+            # elif e_nl:
             #    data = data[:-1]
             self._write_data(data)
         else:
@@ -410,6 +420,7 @@ class HTML2FPDF(HTMLParser):
             self._write_paragraph(data)
 
     def handle_starttag(self, tag, attrs):
+        self._pre_started = False
         attrs = dict(attrs)
         LOGGER.debug("STARTTAG %s %s", tag, attrs)
         self._tags_stack.append(tag)
@@ -417,7 +428,7 @@ class HTML2FPDF(HTMLParser):
             self._write_paragraph("\n")
             tag = "b"
         if tag == "dd":
-            self._write_paragraph("\n"+"\u00a0" * self.dd_tag_indent)
+            self._write_paragraph("\n" + "\u00a0" * self.dd_tag_indent)
         if tag == "strong":
             tag = "b"
         if tag == "em":
@@ -448,6 +459,7 @@ class HTML2FPDF(HTMLParser):
                 line_height = None
             self._new_paragraph(align=align, line_height=line_height)
         if tag in self.heading_sizes:
+            prev_font_height = self.font_size / self.pdf.k
             self.font_stack.append((self.font_face, self.font_size, self.font_color))
             self.heading_level = int(tag[1:])
             hsize_pt = self.heading_sizes[tag]
@@ -459,10 +471,10 @@ class HTML2FPDF(HTMLParser):
             else:
                 align = None
             self._new_paragraph(
-                    align=align,
-                    top_margin=hsize + self.heading_above * hsize,
-                    bottom_margin=self.heading_below * hsize,
-                    )
+                align=align,
+                top_margin=prev_font_height + self.heading_above * hsize,
+                bottom_margin=self.heading_below * hsize,
+            )
             color = (
                 color_as_decimal(attrs["color"]) if "color" in attrs else (150, 0, 0)
             )
@@ -473,10 +485,10 @@ class HTML2FPDF(HTMLParser):
             self.pdf.add_page(same=True)
         if tag == "code":
             self.font_stack.append((self.font_face, self.font_size, self.font_color))
-            self.set_font(self.pre_code_font, 11)
+            self.set_font(self.pre_code_font, self.font_size)
         if tag == "pre":
             self.font_stack.append((self.font_face, self.font_size, self.font_color))
-            self.set_font(self.pre_code_font, 11)
+            self.set_font(self.pre_code_font, self.font_size)
             self._pre_formatted = True
             self._new_paragraph()
             self._pre_started = True
@@ -499,7 +511,7 @@ class HTML2FPDF(HTMLParser):
                 bullet += 1
                 self.bullet[self.indent - 1] = bullet
                 bullet = f"{bullet}. "
-            indent = '\u00a0' * self.li_tag_indent * self.indent
+            indent = "\u00a0" * self.li_tag_indent * self.indent
             self._write_paragraph(f"{indent}{bullet} ")
             self.set_text_color(*self.font_color)
         if tag == "font":
@@ -654,6 +666,7 @@ class HTML2FPDF(HTMLParser):
             self.set_font(face, size)
             self.set_text_color(*color)
             self._end_paragraph()
+            self.follows_heading = True  # We don't want extra space below a heading.
         if tag == "code":
             face, size, color = self.font_stack.pop()
             self.set_font(face, size)
@@ -734,7 +747,7 @@ class HTML2FPDF(HTMLParser):
         style = "".join(s for s in ("b", "i", "u") if self.style.get(s)).upper()
         LOGGER.debug(f"set_font: %s style=%s h={self.h:.2f}", self.font_face, style)
         prev_page = self.pdf.page
-        if not set_default: # make sure there's at least one font defined in the PDF.
+        if not set_default:  # make sure there's at least one font defined in the PDF.
             self.pdf.page = 0
         if (self.font_face, style) != (self.pdf.font_family, self.pdf.font_style):
             self.pdf.set_font(self.font_face, style, self.font_size)
