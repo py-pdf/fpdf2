@@ -116,9 +116,9 @@ def test_no_fragments():
     """
     char_width = 6
     test_width = char_width * 200
-    multi_line_break = MultiLineBreak([], test_width)
+    multi_line_break = MultiLineBreak([], test_width, [0, 0])
     assert multi_line_break.get_line() is None
-    multi_line_break = MultiLineBreak([], 100)
+    multi_line_break = MultiLineBreak([], 100, [0, 0])
     assert multi_line_break.get_line() is None
 
 
@@ -156,7 +156,7 @@ def test_width_calculation():
     for i, char in enumerate(text):
         alphabet["normal"][char] = char_width + i
     fragments = [FxFragment(alphabet, text, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, _get_width)
+    multi_line_break = MultiLineBreak(fragments, _get_width, [0, 0])
 
     # zero width returns empty line
     max_width = 0
@@ -215,7 +215,7 @@ def test_single_space_in_fragment():
     fragments = [FxFragment(alphabet, text, _gs_normal, 1)]
     for char in text:
         alphabet["normal"][char] = char_width
-    multi_line_break = MultiLineBreak(fragments, test_width)
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0])
     res = multi_line_break.get_line()
     exp = TextLine(
         fragments=fragments,
@@ -248,7 +248,7 @@ def test_single_soft_hyphen_in_fragment():
     for char in text:
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, text, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width)
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0])
     res = multi_line_break.get_line()
     exp = None
     assert res == exp
@@ -270,7 +270,7 @@ def test_single_hard_hyphen_in_fragment():
     for char in text:
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, text, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width)
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0])
     res = multi_line_break.get_line()
     exp = TextLine(
         fragments=fragments,
@@ -301,10 +301,12 @@ def test_real_hyphen_acts_differently_from_soft_hyphen():
     soft_hyphen_line_break = MultiLineBreak(
         [FxFragment(alphabet, words_separated_by_soft_hyphen, _gs_normal, 1)],
         test_width,
+        [0, 0],
     )
     hard_hyphen_line_break = MultiLineBreak(
         [FxFragment(alphabet, words_separated_by_hard_hyphen, _gs_normal, 1)],
         test_width,
+        [0, 0],
     )
     hh_res = soft_hyphen_line_break.get_line()
     sh_res = hard_hyphen_line_break.get_line()
@@ -333,7 +335,7 @@ def test_trailing_soft_hyphen():
     for char in text:
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, text, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width)
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0])
     res = multi_line_break.get_line()
     exp = TextLine(
         fragments=[Fragment("hello", _gs_normal, 1)],
@@ -368,7 +370,7 @@ def test_trailing_whitespace():
     for char in text:
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, text, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width)
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0])
     res = multi_line_break.get_line()
     exp = TextLine(
         fragments=fragments,
@@ -403,7 +405,7 @@ def test_two_words_one_line():
     for char in text:
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, text, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width)
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0])
     res = multi_line_break.get_line()
     exp = TextLine(
         fragments=fragments,
@@ -440,7 +442,7 @@ def test_two_words_one_line_justify():
     for char in text:
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, text, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width, align=Align.J)
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0], align=Align.J)
     res = multi_line_break.get_line()
     exp = TextLine(
         fragments=fragments,
@@ -475,7 +477,7 @@ def test_two_words_two_lines_break_by_space():
     for char in text:
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, text, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width)
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0])
     res = multi_line_break.get_line()
     exp = TextLine(
         fragments=[Fragment("hello", _gs_normal, 1)],
@@ -524,7 +526,7 @@ def test_two_words_two_lines_break_by_space_justify():
     for char in text:
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, text, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width)
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0])
 
     res = multi_line_break.get_line()
     exp = TextLine(
@@ -574,7 +576,7 @@ def test_four_words_two_lines_break_by_space():
     for char in text:
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, text, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width_A)
+    multi_line_break = MultiLineBreak(fragments, test_width_A, [0, 0])
     res = multi_line_break.get_line()
     exp = TextLine(
         fragments=[Fragment(first_line_text, _gs_normal, 1)],
@@ -625,7 +627,7 @@ def test_four_words_two_lines_break_by_space_justify():
     for char in text:
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, text, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width_A, align=Align.J)
+    multi_line_break = MultiLineBreak(fragments, test_width_A, [0, 0], align=Align.J)
     res = multi_line_break.get_line()
     exp = TextLine(
         fragments=[Fragment(first_line_text, _gs_normal, 1)],
@@ -686,7 +688,7 @@ def test_break_fragment_into_two_lines():
     def _get_width(height):  # pylint: disable=unused-argument
         return max_width
 
-    multi_line_break = MultiLineBreak(fragments, _get_width)
+    multi_line_break = MultiLineBreak(fragments, _get_width, [0, 0])
     max_width = test_width_A
     res = multi_line_break.get_line()
     exp = TextLine(
@@ -753,7 +755,7 @@ def test_break_fragment_into_two_lines_justify():
     def _get_width(height):  # pylint: disable=unused-argument
         return max_width
 
-    multi_line_break = MultiLineBreak(fragments, _get_width, align=Align.J)
+    multi_line_break = MultiLineBreak(fragments, _get_width, [0, 0], align=Align.J)
     max_width = test_width_A
     res = multi_line_break.get_line()
     exp = TextLine(
@@ -810,7 +812,7 @@ def test_soft_hyphen_break():
     def _get_width(height):  # pylint: disable=unused-argument
         return max_width
 
-    multi_line_break = MultiLineBreak(fragments, _get_width)
+    multi_line_break = MultiLineBreak(fragments, _get_width, [0, 0])
     max_width = test_width
     res = multi_line_break.get_line()
     exp = TextLine(
@@ -913,7 +915,7 @@ def test_soft_hyphen_break_justify():
     for char in long_string:
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, long_string, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width, align=Align.J)
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0], align=Align.J)
     res = multi_line_break.get_line()
     exp = TextLine(
         fragments=[Fragment("ab cd\u002d", _gs_normal, 1)],
@@ -967,7 +969,7 @@ def test_explicit_break():
     for char in long_string:
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, long_string, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width)
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0])
     res = multi_line_break.get_line()
     exp = TextLine(
         fragments=[Fragment("a", _gs_normal, 1)],
@@ -1033,7 +1035,7 @@ def test_explicit_break_justify():
     for char in long_string:
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, long_string, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width, align=Align.J)
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0], align=Align.J)
     res = multi_line_break.get_line()
     exp = TextLine(
         fragments=[Fragment("a", _gs_normal, 1)],
@@ -1100,7 +1102,7 @@ def test_single_word_doesnt_fit_into_width():
         # glyph space units
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, long_string, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width)
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0])
     res = multi_line_break.get_line()
     exp = TextLine(
         fragments=[Fragment("abcde", _gs_normal, 1)],
@@ -1169,7 +1171,7 @@ def test_single_word_doesnt_fit_into_width_justify():
         # glyph space units
         alphabet["normal"][char] = char_width
     fragments = [FxFragment(alphabet, long_string, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, test_width, align=Align.J)
+    multi_line_break = MultiLineBreak(fragments, test_width, [0, 0], align=Align.J)
     res = multi_line_break.get_line()
     exp = TextLine(
         fragments=[Fragment("abcde", _gs_normal, 1)],
@@ -1232,7 +1234,7 @@ def test_last_line_no_justify():
     def _get_width(height):  # pylint: disable=unused-argument
         return max_width
 
-    multi_line_break = MultiLineBreak(fragments, _get_width, align=Align.J)
+    multi_line_break = MultiLineBreak(fragments, _get_width, [0, 0], align=Align.J)
     max_width = char_width * 5
     res = multi_line_break.get_line()
     exp = TextLine(
@@ -1272,6 +1274,6 @@ def test_line_break_no_initial_newline():  # issue-847
     alphabet = {"normal": {}}
     alphabet["normal"]["X"] = 4.7
     fragments = [FxFragment(alphabet, text, _gs_normal, 1)]
-    multi_line_break = MultiLineBreak(fragments, 188)
+    multi_line_break = MultiLineBreak(fragments, 188, [0, 0])
     text_line = multi_line_break.get_line()
     assert text_line.fragments

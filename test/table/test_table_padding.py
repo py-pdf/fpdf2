@@ -97,7 +97,6 @@ def test_multicell_return_value(tmp_path):
         padding=0,
         output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
     )
-    print(out)
     height_without_padding = out[1]
 
     pdf.x = 5
@@ -237,6 +236,8 @@ def test_table_vertical_alignment(tmp_path):
     # pdf.rect(0, pdf.t_margin, pdf.l_margin, pdf.eph)
 
     deathstyle = FontFace(color=black, fill_color=red)
+    # write_html() doesn't add a nl at the very top of the page anymore.
+    pdf.ln(0.1)
 
     for v in (VAlign.T, VAlign.M, VAlign.B):
         pdf.write_html("<h1>Vertical alignment: {}</h1>".format(v))

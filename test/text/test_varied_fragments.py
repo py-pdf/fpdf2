@@ -28,14 +28,12 @@ class FxFPDF(FPDF):
             return max_width
 
         text_lines = []
-        multi_line_break = MultiLineBreak(frags, _get_width, align=align)
+        multi_line_break = MultiLineBreak(frags, _get_width, [1, 1], align=align)
         # first line from current x position to right margin
-        first_width = self.w - self.x - self.r_margin
-        max_width = first_width - 2 * self.c_margin
+        max_width = self.w - self.x - self.r_margin
         text_line = multi_line_break.get_line()
         # remaining lines fill between margins
-        full_width = self.w - self.l_margin - self.r_margin
-        max_width = full_width - 2 * self.c_margin
+        max_width = self.w - self.l_margin - self.r_margin
         while (text_line) is not None:
             text_lines.append(text_line)
             text_line = multi_line_break.get_line()
@@ -45,14 +43,10 @@ class FxFPDF(FPDF):
             return
         self.ws = 0  # currently only left aligned, so no word spacing
         for text_line_index, text_line in enumerate(text_lines):
-            if text_line_index == 0:
-                line_width = first_width
-            else:
-                line_width = full_width
+            if text_line_index > 0:
                 self.ln()
             self._render_styled_text_line(
                 text_line,
-                line_width,
                 h=None,
                 border=0,
                 new_x=XPos.WCONT,

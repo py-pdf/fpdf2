@@ -502,6 +502,7 @@ class MultiLineBreak:
         self,
         fragments: Sequence,
         max_width: Union[float, callable],
+        margins: Sequence,
         align: Align = Align.L,
         print_sh: bool = False,
         wrapmode: WrapMode = WrapMode.WORD,
@@ -518,10 +519,16 @@ class MultiLineBreak:
                 applicable width for the line with the given height at the current
                 vertical position. The height is relevant in those cases where the
                 lateral boundaries of the enclosing TextRegion() are not vertical.
+            margins (sequence of floats): The extra clearance (usually FPDF.c_margin)
+                that may apply at the beginning and/or end of a line.
             align (Align): The horizontal alignment of the current text block.
             print_sh (bool): If True, a soft-hyphen will be rendered
                 normally, instead of triggering a line break. Default: False
             wrapmode (WrapMode): Selects word or character based wrapping.
+            line_height (float, optional): A multiplier relative to the font
+                size changing the vertical space occupied by a line of text. Default 1.0.
+            skip_leading_spaces (bool, optional): On each line, any space characters
+                at the beginning will be skipped. Default value: False.
         """
 
         self.fragments = fragments
@@ -529,6 +536,7 @@ class MultiLineBreak:
             self.get_width = max_width
         else:
             self.get_width = lambda height: max_width
+        self.margins = margins
         self.align = align
         self.print_sh = print_sh
         self.wrapmode = wrapmode
@@ -550,17 +558,25 @@ class MultiLineBreak:
         current_font_height = 0
 
         max_width = self.get_width(current_font_height)
+        # The full max width will be passed on via TextLine to FPDF._render_styled_text_line().
         current_line = CurrentLine(max_width=max_width, print_sh=self.print_sh)
+        # For line wrapping we need to use the reduced width.
+        for margin in self.margins:
+            max_width -= margin
 
         if self.skip_leading_spaces:
             # write_html() with TextColumns uses this, since it can't know in
             # advance where the lines will be broken.
             while self.fragment_index < len(self.fragments):
-                if self.character_index >= len(self.fragments[self.fragment_index].characters):
+                if self.character_index >= len(
+                    self.fragments[self.fragment_index].characters
+                ):
                     self.character_index = 0
                     self.fragment_index += 1
                     continue
-                character = self.fragments[self.fragment_index].characters[self.character_index]
+                character = self.fragments[self.fragment_index].characters[
+                    self.character_index
+                ]
                 if character == SPACE:
                     self.character_index += 1
                 else:
@@ -572,6 +588,9 @@ class MultiLineBreak:
             if current_fragment.font_size > current_font_height:
                 current_font_height = current_fragment.font_size  # document units
                 max_width = self.get_width(current_font_height)
+                current_line.max_width = max_width
+                for margin in self.margins:
+                    max_width -= margin
 
             if self.character_index >= len(current_fragment.characters):
                 self.character_index = 0

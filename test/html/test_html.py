@@ -473,3 +473,19 @@ def test_html_heading_color_attribute(tmp_path):  # discussion 880
     """
     )
     assert_pdf_equal(pdf, HERE / "html_heading_color_attribute.pdf", tmp_path)
+
+
+def test_html_format_within_p(tmp_path):  # discussion 880
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("times", size=18)
+    pdf.set_margins(20, 20, 100)
+    pdf.write_html(
+        """
+<p align="justify">This is a sample text that will be justified
+in the PDF. <u>This</u> is a <font color="red">sample text</font> that will be justified
+in the PDF. <b>This</b> is a sample text that will be justified in the PDF.
+<i>This</i> is a sample text that will be justified in the PDF.</p>
+    """
+    )
+    assert_pdf_equal(pdf, HERE / "html_format_within_p.pdf", tmp_path)

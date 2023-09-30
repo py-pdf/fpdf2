@@ -143,7 +143,7 @@ def test_cell_missing_text_or_width():
         pdf.cell()
     assert (
         str(error.value)
-        == "A 'text_line' parameter with fragments must be provided if 'w' is None"
+        == "'text_line' must have fragments if 'text_line.text_width' is None"
     )
 
 
