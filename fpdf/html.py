@@ -392,6 +392,8 @@ class HTML2FPDF(HTMLParser):
             # ignore anything else than td inside a table
             pass
         elif self._pre_formatted:  # pre blocks
+            # If we want to mimick the exact HTML semantics about newlines at the
+            # beginning and end of the block, then this needs some more thought.
             s_nl = data.startswith("\n") and self._pre_started
             self._pre_started = False
             e_nl = data.endswith("\n")
@@ -522,11 +524,9 @@ class HTML2FPDF(HTMLParser):
                 self.font_color = color
             if "face" in attrs:
                 face = attrs.get("face").lower()
-                try:
-                    self.set_font(face)
-                    self.font_face = face
-                except RuntimeError:
-                    pass  # font not found, ignore
+                # This may result in a FPDFException "font not found".
+                self.set_font(face)
+                self.font_face = face
             if "size" in attrs:
                 self.font_size = int(attrs.get("size"))
             self.set_font()
