@@ -505,10 +505,15 @@ class HTML2FPDF(HTMLParser):
         if tag == "ol":
             self.indent += 1
             self.bullet.append(0)
+            self._new_paragraph()
         if tag == "li":
             self._ln(2)
             self.set_text_color(190, 0, 0)
-            bullet = self.bullet[self.indent - 1]
+            if self.bullet:
+                bullet = self.bullet[self.indent - 1]
+            else:
+                # Allow <li> to be used outside of <ul> or <ol>.
+                bullet = self.ul_bullet_char
             if not isinstance(bullet, str):
                 bullet += 1
                 self.bullet[self.indent - 1] = bullet
@@ -695,6 +700,7 @@ class HTML2FPDF(HTMLParser):
             self._end_paragraph()
             self.align = ""
         if tag in ("ul", "ol"):
+            self._end_paragraph()
             self.indent -= 1
             self.bullet.pop()
         if tag == "table":

@@ -95,10 +95,9 @@ pdf.output("html.pdf")
 
 ## Known limitations
 
-`fpdf2` HTML renderer does not support many configuration of nested tags.
+`fpdf2` HTML renderer does not support some configurations of nested tags.
 For example:
 
-* `<center>` cannot be used as a parent for several elements - _cf._ [issue #640](https://github.com/py-pdf/fpdf2/issues/640)
 * `<table>` cells can contain `<td><b><em>nested tags forming a single text block</em></b></td>`, but **not** `<td><b>arbitrarily</b> nested <em>tags</em></td>` - _cf._ [issue #845](https://github.com/py-pdf/fpdf2/issues/845)
 
 You can also check the currently open GitHub issues with the tag `html`:

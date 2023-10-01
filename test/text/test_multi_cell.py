@@ -277,7 +277,7 @@ def test_multi_cell_with_empty_contents(tmp_path):  # issue 349
     assert_pdf_equal(pdf, HERE / "multi_cell_with_empty_contents.pdf", tmp_path)
 
 
-def test_multicell_newpos_badinput():
+def test_multicell_badinput():
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
@@ -286,11 +286,16 @@ def test_multicell_newpos_badinput():
             pdf.multi_cell(0, ln=5)
         assert len(record) == 1
         assert record[0].filename == __file__
-
     with pytest.raises(TypeError):
         pdf.multi_cell(0, new_x=5)
     with pytest.raises(TypeError):
         pdf.multi_cell(0, new_y=None)
+    with pytest.raises(ValueError):
+        # w as string instead of float
+        pdf.multi_cell("width")
+    with pytest.raises(ValueError):
+        # h as string instead of float
+        pdf.multi_cell(0, "height")
 
 
 def test_multi_cell_j_paragraphs(tmp_path):  # issue 364
