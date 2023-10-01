@@ -511,7 +511,18 @@ def test_html_bad_font():
     pdf.set_font("times", size=18)
     with pytest.raises(FPDFException):
         pdf.write_html(
+            """<font face="no_such_font"><p>hello helvetica</p></font>"""
+        )
+
+def test_html_ln_outside_p(tmp_path):
+    # Edge case. The <li> must come right after the </p> without anything
+    # else in between (which would cause a new paragraph to be started).
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("times", size=18)
+    pdf.write_html(
             """
-    pdf.write_html('<font face="no_such_font"><p>hello helvetica</p></font>')
+            <p>someting in paragraph</p><li>causing _ln() outside paragraph</li>
     """
         )
+    assert_pdf_equal(pdf, HERE / "html_ln_outside_p.pdf", tmp_path)
