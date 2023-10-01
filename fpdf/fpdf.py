@@ -3419,6 +3419,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
 
         padding = Padding.new(padding)
+        wrapmode = WrapMode.coerce(wrapmode)
 
         if split_only:
             warnings.warn(
@@ -3454,7 +3455,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 )
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
-        wrapmode = WrapMode.coerce(wrapmode)
         if isinstance(w, str) or isinstance(h, str):
             raise ValueError(
                 "Parameter 'w' and 'h' must be numbers, not strings."
@@ -3755,6 +3755,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         l_margin: float = None,
         r_margin: float = None,
         print_sh: bool = False,
+        wrapmode: WrapMode = WrapMode.WORD,
         skip_leading_spaces: bool = False,
     ):
         """Establish a layout with a single column to fill with text.
@@ -3779,6 +3780,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             l_margin=l_margin,
             r_margin=r_margin,
             print_sh=print_sh,
+            wrapmode=wrapmode,
             skip_leading_spaces=skip_leading_spaces,
         )
 
@@ -3794,6 +3796,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         l_margin: float = None,
         r_margin: float = None,
         print_sh: bool = False,
+        wrapmode: WrapMode = WrapMode.WORD,
         skip_leading_spaces: bool = False,
     ):
         """Establish a layout with multiple columns to fill with text.
@@ -3822,6 +3825,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             l_margin=l_margin,
             r_margin=r_margin,
             print_sh=print_sh,
+            wrapmode=wrapmode,
             skip_leading_spaces=skip_leading_spaces,
         )
 

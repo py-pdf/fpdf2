@@ -165,3 +165,17 @@ def test_write_overflow_no_initial_newline(tmp_path):  # issue-847
     pdf.set_font(family="Helvetica", size=20)
     pdf.write(7, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
     assert_pdf_equal(pdf, HERE / "write_overflow_no_initial_newline.pdf", tmp_path)
+
+
+def test_write_empty():
+    # Feeding an empty string to write() should not have any effect
+    # on the internal state of the library.
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font(family="Helvetica", size=20)
+    x = pdf.x
+    y = pdf.y
+    pdf.write(None, "")
+    assert (
+        pdf.x == x and pdf.y == y
+    ), f"write('') has changed pdf.x ({pdf.x} from {x}) or pdf.x ({pdf.y} from {y})"

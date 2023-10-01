@@ -1,6 +1,7 @@
 from pathlib import Path
 
-import fpdf
+import pytest
+from fpdf import FPDF, FPDFException
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 HERE = Path(__file__).resolve().parent
@@ -8,55 +9,45 @@ FONTS_DIR = HERE.parent / "fonts"
 
 
 def test_tcols_align(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", "", 12)
-    cols = pdf.text_column()
-    with cols:
-        cols.write(text=LOREM_IPSUM[:100])
+    col = pdf.text_column()
+    with col:
+        col.write(text=LOREM_IPSUM[:100])
         pdf.set_font("Times", "", 12)
-        cols.write(text=LOREM_IPSUM[100:200])
+        col.write(text=LOREM_IPSUM[100:200])
         pdf.set_font("Courier", "", 12)
-        cols.write(text=LOREM_IPSUM[200:300])
-
-    pdf.ln()
-    pdf.ln()
+        col.write(text=LOREM_IPSUM[200:300])
     pdf.set_font("Helvetica", "I", 12)
-    with cols:
-        with cols.paragraph(align="J") as par:
+    with col:
+        with col.paragraph(align="J", top_margin=pdf.font_size * 2) as par:
             par.write(text=LOREM_IPSUM[:100])
             pdf.set_font("Times", "I", 12)
             par.write(text=LOREM_IPSUM[100:200])
             pdf.set_font("Courier", "I", 12)
             par.write(text=LOREM_IPSUM[200:300])
-
-    pdf.ln()
-    pdf.ln()
     pdf.set_font("Helvetica", "B", 12)
-    with cols:
-        with cols.paragraph(align="R") as par:
+    with col:
+        with col.paragraph(align="R", top_margin=pdf.font_size * 2) as par:
             par.write(text=LOREM_IPSUM[:100])
             pdf.set_font("Times", "B", 12)
             par.write(text=LOREM_IPSUM[100:200])
             pdf.set_font("Courier", "B", 12)
             par.write(text=LOREM_IPSUM[200:300])
-
-    pdf.ln()
-    pdf.ln()
     pdf.set_font("Helvetica", "BI", 12)
-    with cols:
-        with cols.paragraph(align="C") as par:
+    with col:
+        with col.paragraph(align="C", top_margin=pdf.font_size * 2) as par:
             par.write(text=LOREM_IPSUM[:100])
             pdf.set_font("Times", "BI", 12)
             par.write(text=LOREM_IPSUM[100:200])
             pdf.set_font("Courier", "BI", 12)
             par.write(text=LOREM_IPSUM[200:300])
-
     assert_pdf_equal(pdf, HERE / "tcols_align.pdf", tmp_path)
 
 
 def test_tcols_3cols(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.t_margin = 50
     pdf.set_auto_page_break(True, 100)
@@ -77,7 +68,7 @@ def test_tcols_3cols(tmp_path):
 
 
 def test_tcols_balance(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(True, 100)
     pdf.set_font("Helvetica", "", 6)
@@ -98,8 +89,84 @@ def test_tcols_balance(tmp_path):
     assert_pdf_equal(pdf, HERE / "tcols_balance.pdf", tmp_path)
 
 
+def test_tcols_charwrap(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("courier", "", 16)
+    col = pdf.text_column(l_margin=50, r_margin=50)
+    # wrapmode on paragraph
+    with col.paragraph(wrapmode="CHAR", bottom_margin=pdf.font_size) as par:
+        par.write(text=LOREM_IPSUM[:500])
+    col.render()
+    # wrapmode on column
+    with pdf.text_column(
+        # align="J",
+        l_margin=50,
+        r_margin=50,
+        wrapmode="CHAR",
+    ) as col:
+        with col.paragraph() as par:
+            par.write(text=LOREM_IPSUM[500:1000])
+    assert_pdf_equal(pdf, HERE / "tcols_charwrap.pdf", tmp_path)
+
+
+def test_tcols_no_font():
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(FPDFException) as error:
+        col = pdf.text_column()
+        col.write("something")
+    expected_msg = "No font set, you need to call set_font() beforehand"
+    assert str(error.value) == expected_msg
+    with pytest.raises(FPDFException) as error:
+        col.ln()
+    expected_msg = "No font set, you need to call set_font() beforehand"
+    assert str(error.value) == expected_msg
+
+
+def test_tcols_bad_uses():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("courier", "", 16)
+    col = pdf.text_column()
+    # recursive text region context
+    with col:
+        col.write("something")
+        with pytest.raises(FPDFException) as error:
+            with col:
+                pass
+    expected_msg = "Unable to enter the same TextColumns context recursively."
+    assert str(error.value) == expected_msg
+    # recursive use of paragraph context
+    with col.paragraph() as par:
+        par.write("something")
+        with pytest.raises(FPDFException) as error:
+            col.paragraph()
+    expected_msg = "Unable to nest paragraphs."
+    assert str(error.value) == expected_msg
+    # writing to column while we have an explicit paragraph active
+    with col.paragraph() as par:
+        par.write("something")
+        with pytest.raises(FPDFException) as error:
+            col.write("else")
+    expected_msg = "Conflicts with active paragraph. Either close the current paragraph or write your text inside it."
+    assert str(error.value) == expected_msg
+    # ending a non-existent paragraph
+    with pytest.raises(FPDFException) as error:
+        col.end_paragraph()
+    expected_msg = "No active paragraph to end."
+    assert str(error.value) == expected_msg
+    # column with negative width
+    with pytest.raises(FPDFException) as error:
+        col = pdf.text_column(l_margin=150, r_margin=150)
+    expected_msg = (
+        "TextColumns(): Right limit (60.00155555555551) lower than left limit (150)."
+    )
+    assert str(error.value) == expected_msg
+
+
 def xest_tcols_text_shaping(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.t_margin = 50
     pdf.set_text_shaping(True)
