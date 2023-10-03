@@ -48,9 +48,10 @@ def test_simple_outline(tmp_path):
     pdf.start_section("Subtitle 1.1", level=1)
     p(
         pdf,
-        # pylint: disable=implicit-str-concat
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit,"
-        " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        (
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit,"
+            " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        ),
     )
     pdf.add_page()
     pdf.start_section("Subtitle 1.2", level=1)
@@ -162,9 +163,10 @@ def test_2_pages_outline(tmp_path):
         pdf.start_section(f"Title {i}")
         p(
             pdf,
-            # pylint: disable=implicit-str-concat
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit,"
-            " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+            (
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit,"
+                " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+            ),
         )
     assert_pdf_equal(pdf, HERE / "2_pages_outline.pdf", tmp_path)
 

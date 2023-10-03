@@ -16,7 +16,6 @@ from types import ModuleType
 class WarnOnDeprecatedModuleAttributes(ModuleType):
     def __call__(self):
         raise TypeError(
-            # pylint: disable=implicit-str-concat
             "You tried to instantied the fpdf module."
             " You probably want to import the FPDF class instead:"
             " from fpdf import FPDF"
@@ -25,10 +24,11 @@ class WarnOnDeprecatedModuleAttributes(ModuleType):
     def __getattr__(self, name):
         if name in ("FPDF_CACHE_DIR", "FPDF_CACHE_MODE"):
             warnings.warn(
-                # pylint: disable=implicit-str-concat
-                "fpdf.FPDF_CACHE_DIR & fpdf.FPDF_CACHE_MODE"
-                " have been deprecated in favour of"
-                " FPDF(font_cache_dir=...)",
+                (
+                    "fpdf.FPDF_CACHE_DIR & fpdf.FPDF_CACHE_MODE"
+                    " have been deprecated in favour of"
+                    " FPDF(font_cache_dir=...)"
+                ),
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
@@ -38,10 +38,11 @@ class WarnOnDeprecatedModuleAttributes(ModuleType):
     def __setattr__(self, name, value):
         if name in ("FPDF_CACHE_DIR", "FPDF_CACHE_MODE"):
             warnings.warn(
-                # pylint: disable=implicit-str-concat
-                "fpdf.FPDF_CACHE_DIR & fpdf.FPDF_CACHE_MODE"
-                " have been deprecated in favour of"
-                " FPDF(font_cache_dir=...)",
+                (
+                    "fpdf.FPDF_CACHE_DIR & fpdf.FPDF_CACHE_MODE"
+                    " have been deprecated in favour of"
+                    " FPDF(font_cache_dir=...)"
+                ),
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )

@@ -653,7 +653,6 @@ class Row:
         """
         if text and img:
             raise NotImplementedError(
-                # pylint: disable=implicit-str-concat
                 "fpdf2 currently does not support inserting text with an image in the same table cell."
                 "Pull Requests are welcome to implement this 😊"
             )

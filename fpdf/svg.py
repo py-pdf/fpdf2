@@ -47,7 +47,6 @@ _HANDY_NAMESPACES = {
 
 NUMBER_SPLIT = re.compile(r"(?:\s+,\s+|\s+,|,\s+|\s+|,)")
 TRANSFORM_GETTER = re.compile(
-    # pylint: disable=implicit-str-concat
     r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)"
     r"\(((?:\s*(?:[-+]?[\d\.]+,?)+\s*)+)\)"
 )

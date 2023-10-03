@@ -227,7 +227,6 @@ def test_multi_cell_table_with_max_line_height(tmp_path):  # issue 589
     pdf.add_page()
     pdf.set_font("helvetica")
     text = (
-        # pylint: disable=implicit-str-concat
         "Discard the water and serve the boiled gaozis."
         " Tip: If you love spicy dishes, add a bit of our Red Silk Chili"
         " (not included) with the gaozis"

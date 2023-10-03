@@ -252,9 +252,10 @@ class FPDF(GraphicsStateMixin):
         """
         if font_cache_dir != "DEPRECATED":
             warnings.warn(
-                # pylint: disable=implicit-str-concat
-                '"font_cache_dir" parameter is deprecated since v2.5.1, '
-                "unused and will soon be removed",
+                (
+                    '"font_cache_dir" parameter is deprecated since v2.5.1, '
+                    "unused and will soon be removed"
+                ),
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
@@ -763,10 +764,11 @@ class FPDF(GraphicsStateMixin):
             Simply set the `FPDF.core_fonts_encoding` property as a replacement.
         """
         warnings.warn(
-            # pylint: disable=implicit-str-concat
-            "set_doc_option() is deprecated since v2.4.0 "
-            "and will be removed in a future release. "
-            "Simply set the `.core_fonts_encoding` property as a replacement.",
+            (
+                "set_doc_option() is deprecated since v2.4.0 "
+                "and will be removed in a future release. "
+                "Simply set the `.core_fonts_encoding` property as a replacement."
+            ),
             DeprecationWarning,
             stacklevel=get_stack_level(),
         )
@@ -1261,9 +1263,10 @@ class FPDF(GraphicsStateMixin):
         """
         if fill:
             warnings.warn(
-                # pylint: disable=implicit-str-concat
-                '"fill" parameter is deprecated since v2.5.4, '
-                'use style="F" or style="DF" instead',
+                (
+                    '"fill" parameter is deprecated since v2.5.4, '
+                    'use style="F" or style="DF" instead'
+                ),
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
@@ -1318,10 +1321,11 @@ class FPDF(GraphicsStateMixin):
             Use `FPDF.set_dash_pattern()` and the normal drawing operations instead.
         """
         warnings.warn(
-            # pylint: disable=implicit-str-concat
-            "dashed_line() is deprecated since v2.4.6, "
-            "and will be removed in a future release. "
-            "Use set_dash_pattern() and the normal drawing operations instead.",
+            (
+                "dashed_line() is deprecated since v2.4.6, "
+                "and will be removed in a future release. "
+                "Use set_dash_pattern() and the normal drawing operations instead."
+            ),
             DeprecationWarning,
             stacklevel=get_stack_level(),
         )
@@ -1801,9 +1805,10 @@ class FPDF(GraphicsStateMixin):
 
         if uni != "DEPRECATED":
             warnings.warn(
-                # pylint: disable=implicit-str-concat
-                '"uni" parameter is deprecated since v2.5.1, '
-                "unused and will soon be removed",
+                (
+                    '"uni" parameter is deprecated since v2.5.1, '
+                    "unused and will soon be removed"
+                ),
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
@@ -2421,10 +2426,11 @@ class FPDF(GraphicsStateMixin):
             Use `FPDF.rotation()` instead.
         """
         warnings.warn(
-            # pylint: disable=implicit-str-concat
-            "rotate() can produces malformed PDFs and is deprecated since v2.1.0. "
-            "It will be removed in a future release. "
-            "Use the rotation() context manager instead.",
+            (
+                "rotate() can produces malformed PDFs and is deprecated since v2.1.0. "
+                "It will be removed in a future release. "
+                "Use the rotation() context manager instead."
+            ),
             DeprecationWarning,
             stacklevel=get_stack_level(),
         )
@@ -2726,7 +2732,6 @@ class FPDF(GraphicsStateMixin):
             raise FPDFException("No font set, you need to call set_font() beforehand")
         if isinstance(w, str) or isinstance(h, str):
             raise ValueError(
-                # pylint: disable=implicit-str-concat
                 "Parameter 'w' and 'h' must be numbers, not strings."
                 " You can omit them by passing string content with txt="
             )
@@ -3408,9 +3413,10 @@ class FPDF(GraphicsStateMixin):
 
         if split_only:
             warnings.warn(
-                # pylint: disable=implicit-str-concat
-                'The parameter "split_only" is deprecated since v2.7.4.'
-                ' Use instead dry_run=True and output="LINES".',
+                (
+                    'The parameter "split_only" is deprecated since v2.7.4.'
+                    ' Use instead dry_run=True and output="LINES".'
+                ),
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
@@ -3442,7 +3448,6 @@ class FPDF(GraphicsStateMixin):
         wrapmode = WrapMode.coerce(wrapmode)
         if isinstance(w, str) or isinstance(h, str):
             raise ValueError(
-                # pylint: disable=implicit-str-concat
                 "Parameter 'w' and 'h' must be numbers, not strings."
                 " You can omit them by passing string content with txt="
             )
@@ -3676,7 +3681,6 @@ class FPDF(GraphicsStateMixin):
             raise FPDFException("No font set, you need to call set_font() beforehand")
         if isinstance(h, str):
             raise ValueError(
-                # pylint: disable=implicit-str-concat
                 "Parameter 'h' must be a number, not a string."
                 " You can omit it by passing string content with txt="
             )
@@ -3795,9 +3799,10 @@ class FPDF(GraphicsStateMixin):
         """
         if type:
             warnings.warn(
-                # pylint: disable=implicit-str-concat
-                '"type" parameter is deprecated since v2.2.0, '
-                "unused and will soon be removed",
+                (
+                    '"type" parameter is deprecated since v2.2.0, '
+                    "unused and will soon be removed"
+                ),
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
@@ -4019,9 +4024,10 @@ class FPDF(GraphicsStateMixin):
             )
             if self.oversized_images.lower().startswith("warn"):
                 LOGGER.warning(
-                    # pylint: disable=implicit-str-concat
-                    "OVERSIZED: Image %s with size %.1fx%.1fpx is rendered at size %.1fx%.1fpt."
-                    " Set pdf.oversized_images = 'DOWNSCALE' to reduce embedded image size by a factor %.1f",
+                    (
+                        "OVERSIZED: Image %s with size %.1fx%.1fpx is rendered at size %.1fx%.1fpt."
+                        " Set pdf.oversized_images = 'DOWNSCALE' to reduce embedded image size by a factor %.1f"
+                    ),
                     name,
                     info["w"],
                     info["h"],
@@ -4441,9 +4447,10 @@ class FPDF(GraphicsStateMixin):
         dim = {"w": w, "n": w / 3}
         if not txt.startswith("*") or not txt.endswith("*"):
             warnings.warn(
-                # pylint: disable=implicit-str-concat
-                "Code 39 input must start and end with a '*' character to be valid."
-                " This method does not insert it automatically.",
+                (
+                    "Code 39 input must start and end with a '*' character to be valid."
+                    " This method does not insert it automatically."
+                ),
                 stacklevel=get_stack_level(),
             )
         chars = {
@@ -4819,9 +4826,10 @@ class FPDF(GraphicsStateMixin):
         """
         if dest:
             warnings.warn(
-                # pylint: disable=implicit-str-concat
-                '"dest" parameter is deprecated since v2.2.0, '
-                "unused and will soon be removed",
+                (
+                    '"dest" parameter is deprecated since v2.2.0, '
+                    "unused and will soon be removed"
+                ),
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )

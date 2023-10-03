@@ -106,7 +106,6 @@ def test_multi_cell_markdown_with_shaping(tmp_path):
     pdf.set_font("Roboto", size=32)
     pdf.set_text_shaping(True)
     text = (  # Some text where styling occur over line breaks:
-        # pylint: disable=implicit-str-concat
         "Lorem ipsum dolor, **consectetur adipiscing** elit,"
         " eiusmod __tempor incididunt__ ut labore et dolore --magna aliqua--."
     )

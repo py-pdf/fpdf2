@@ -467,9 +467,10 @@ class FlexTemplate:
     ):
         if x is not None or y is not None or w is not None or h is not None:
             warnings.warn(
-                # pylint: disable=implicit-str-concat
-                "code39 arguments x/y/w/h are deprecated since v2.4.4,"
-                " please use x1/y1/y2/size instead",
+                (
+                    "code39 arguments x/y/w/h are deprecated since v2.4.4,"
+                    " please use x1/y1/y2/size instead"
+                ),
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
