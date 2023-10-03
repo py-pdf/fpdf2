@@ -4115,10 +4115,17 @@ class FPDF(GraphicsStateMixin):
 
         Args:
             h (float): The height of the break.
-                By default, the value equals the height of the last printed cell.
+                By default, the value equals the height of the last printed text line
+                (except when written by `.text()`). If no text has been written yet to
+                the document, then the current font height is used.
         """
         self.x = self.l_margin
-        self.y += self._lasth if h is None else h
+        if h:
+            self.y += h
+        elif self._lasth:
+            self.y += self._lasth
+        else:
+            self.y += self.font_size
 
     def get_x(self):
         """Returns the abscissa of the current position."""
