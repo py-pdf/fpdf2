@@ -497,3 +497,18 @@ def test_table_page_break_with_table_in_header(tmp_path):  # issue 943
             for data_row in TABLE_DATA:
                 table.row(data_row)
     assert_pdf_equal(pdf, HERE / "table_page_break_with_table_in_header.pdf", tmp_path)
+
+
+def test_table_with_multiple_headings_and_pagebreak(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("Times", size=12)
+    pdf.add_page()
+    pdf.set_y(240)
+    with pdf.table(
+        TABLE_DATA,
+        num_heading_rows=2,
+    ):
+        pass
+    assert_pdf_equal(
+        pdf, HERE / "table_with_multiple_headings_and_pagebreak.pdf", tmp_path
+    )

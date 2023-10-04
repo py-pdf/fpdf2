@@ -580,6 +580,7 @@ class HTML2FPDF(HTMLParser):
                 # pylint: disable=protected-access
                 self.table._borders_layout = TableBordersLayout.NONE
                 self.table._first_row_as_headings = False
+                self.table._num_heading_rows = 0
             if "height" in attrs:
                 LOGGER.warning(
                     'Ignoring unsupported height="%s" specified on a <%s>',
