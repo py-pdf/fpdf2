@@ -331,12 +331,26 @@ with pdf.table(col_widths=(1, 2, 1, 1)) as table:
     row.cell("B1", colspan=2)
     row.cell("B3")
     row.cell("B4")
-... 
+...
 ```
 
 result:
 
 ![](image-colspan.png)
+
+## Table with multiple heading rows
+
+The number of heading rows is defined by passing the `num_heading_rows` argument to `Table()`. The default value is `1`. To guarantee backwards compatibility with the `first_row_as_headings` argument, the following applies:
+- If `num_heading_rows==1`: The value of `first_row_as_headings` defines whether the first row is treated as heading or standard row.
+- Otherwise, the value of `num_heading_rows` decides the number of heading rows.
+```python
+with pdf.table(TABLE_DATA, num_heading_rows=2):
+    pass
+```
+
+Result:
+
+![](table_with_multiple_headings.png)
 
 ## Table from pandas DataFrame
 
