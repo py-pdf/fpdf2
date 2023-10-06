@@ -252,6 +252,7 @@ This library could only exist thanks to the dedication of many volunteers around
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Niwo1403"><img src="https://avatars.githubusercontent.com/u/25332593?v=4?s=100" width="100px;" alt="Nicolai Wolfrom"/><br /><sub><b>Nicolai Wolfrom</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3ANiwo1403" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/SandraFer"><img src="https://avatars.githubusercontent.com/u/50599578?v=4?s=100" width="100px;" alt="Sandra"/><br /><sub><b>Sandra</b></sub></a><br /><a href="#ideas-SandraFer" title="Ideas, Planning, & Feedback">🤔</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/navitho"><img src="https://avatars.githubusercontent.com/u/48886097?v=4?s=100" width="100px;" alt="navitho"/><br /><sub><b>navitho</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Anavitho" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
