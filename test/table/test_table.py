@@ -493,7 +493,7 @@ def test_table_page_break_with_table_in_header(tmp_path):  # issue 943
     pdf.set_font("helvetica", "B", 8)
     pdf.add_page()
     with pdf.table() as table:
-        for i in range(1, 15):
+        for _ in range(1, 15):
             for data_row in TABLE_DATA:
                 table.row(data_row)
     assert_pdf_equal(pdf, HERE / "table_page_break_with_table_in_header.pdf", tmp_path)
@@ -511,4 +511,33 @@ def test_table_with_multiple_headings_and_pagebreak(tmp_path):
         pass
     assert_pdf_equal(
         pdf, HERE / "table_with_multiple_headings_and_pagebreak.pdf", tmp_path
+    )
+
+
+def test_table_num_heading_rows_and_first_row_as_headings():
+    pdf = FPDF()
+    pdf.set_font("Times", size=12)
+    pdf.add_page()
+    with pytest.raises(ValueError):
+        with pdf.table(TABLE_DATA, first_row_as_headings=True, num_heading_rows=0):
+            pass
+    with pytest.raises(ValueError):
+        with pdf.table(TABLE_DATA, first_row_as_headings=False, num_heading_rows=2):
+            pass
+
+
+def test_table_with_multiple_headings_and_no_horizontal_lines(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("Times", size=12)
+    pdf.add_page()
+    with pdf.table(
+        TABLE_DATA,
+        borders_layout="NO_HORIZONTAL_LINES",
+        num_heading_rows=2,
+    ):
+        pass
+    assert_pdf_equal(
+        pdf,
+        HERE / "table_with_multiple_headings_and_no_horizontal_lines.pdf",
+        tmp_path,
     )
