@@ -480,3 +480,20 @@ def test_table_with_no_headers_nor_horizontal_lines(tmp_path):  # discussion 924
     assert_pdf_equal(
         pdf, HERE / "table_with_no_headers_nor_horizontal_lines.pdf", tmp_path
     )
+
+
+def test_table_page_break_with_table_in_header(tmp_path):  # issue 943
+    class PDF(FPDF):
+        def header(self):
+            with self.table() as t:
+                r = t.row()
+                r.cell("headertext")
+
+    pdf = PDF()
+    pdf.set_font("helvetica", "B", 8)
+    pdf.add_page()
+    with pdf.table() as table:
+        for i in range(1, 15):
+            for data_row in TABLE_DATA:
+                table.row(data_row)
+    assert_pdf_equal(pdf, HERE / "table_page_break_with_table_in_header.pdf", tmp_path)

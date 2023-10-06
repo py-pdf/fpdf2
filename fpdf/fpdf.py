@@ -8,7 +8,7 @@
 # * Maintainer:  David Alexander (daveankin@gmail.com) et al since 2017 est. *
 # * Maintainer:  Lucas Cimon et al since 2021 est.                           *
 # ****************************************************************************
-import hashlib, io, logging, math, os, re, sys, warnings
+import hashlib, io, logging, math, os, re, sys, types, warnings
 from collections import defaultdict
 from collections.abc import Sequence
 from contextlib import contextmanager
@@ -3313,6 +3313,11 @@ class FPDF(GraphicsStateMixin):
 
     @contextmanager
     def _disable_writing(self):
+        if not isinstance(self._out, types.MethodType):
+            # This mean that self._out has already been redefined.
+            # This is the case of a nested call to this method: we do nothing
+            yield
+            return
         self._out = lambda *args, **kwargs: None
         prev_page, prev_x, prev_y = self.page, self.x, self.y
         self._push_local_stack()
