@@ -24,6 +24,7 @@ This release is the first performed from the [@py-pdf GitHub org](https://github
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): Now supports padding in cells
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): Now supports vertical alignment in cells 
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): Now supports outer border width for rendering the outer border of the table with a different line-width.
+* [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): Now supports multiple heading rows.
 * documentation on how to use `livereload` to enable a "watch" mode with PDF generation: [Combine with livereload](https://py-pdf.github.io/fpdf2/CombineWithLivereload.html)
 ### Changed
 * The formatting output by `write_html()` has changed in some aspects. Vertical spacing around headings and paragraphs may be slightly different, and elements at the top of the page don't have any extra spacing above anymore.
