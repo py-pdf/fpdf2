@@ -975,6 +975,15 @@
       "contributions": [
         "ideas"
       ]
+    },
+    {
+      "login": "navitho",
+      "name": "navitho",
+      "avatar_url": "https://avatars.githubusercontent.com/u/48886097?v=4",
+      "profile": "https://github.com/navitho",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
