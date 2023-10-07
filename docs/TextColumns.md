@@ -5,7 +5,7 @@ _New in [:octicons-tag-24: 2.7.7](https://github.com/py-pdf/fpdf2/blob/master/CH
 
 ## Text Columns ##
 
-The `FPDF.text_column() and ``FPDF.text_columns()` methods allow to create columnar layouts, with one or several columns respectively. Columns will always be of equal width.
+The `FPDF.text_columns()` method allows to create columnar layouts, with one or several columns. Columns will always be of equal width.
 
 Beyond the parameters common to all text regions, the following are available for text columns:
 
@@ -23,7 +23,7 @@ Only for `FPDF.text_columns()`:
 In this example an inserted paragraph is used in order to format its content with justified alignment, while the rest of the text uses the default left alignment.
 
 ```python
-    cols = pdf.text_column()
+    cols = pdf.text_columns()
     with cols:
         cols.write(txt=LOREM_IPSUM)
         with cols.paragraph(align="J") as par:
