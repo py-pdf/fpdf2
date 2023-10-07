@@ -302,7 +302,7 @@ class HTML2FPDF(HTMLParser):
         self.heading_above = 0.2  # extra space above heading, relative to font size
         self.heading_below = 0.4  # extra space below heading, relative to font size
         self._tags_stack = []
-        self._column = self.pdf.text_column(skip_leading_spaces=True)
+        self._column = self.pdf.text_columns(skip_leading_spaces=True)
         self._paragraph = self._column.paragraph()
         # <table>-related properties:
         self.table_line_separators = table_line_separators

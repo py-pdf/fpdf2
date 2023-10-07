@@ -12,7 +12,7 @@ def test_tcols_align(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", "", 12)
-    col = pdf.text_column()
+    col = pdf.text_columns()
     with col:
         col.write(text=LOREM_IPSUM[:100])
         pdf.set_font("Times", "", 12)
@@ -93,13 +93,13 @@ def test_tcols_charwrap(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("courier", "", 16)
-    col = pdf.text_column(l_margin=50, r_margin=50)
+    col = pdf.text_columns(l_margin=50, r_margin=50)
     # wrapmode on paragraph
     with col.paragraph(wrapmode="CHAR", bottom_margin=pdf.font_size) as par:
         par.write(text=LOREM_IPSUM[:500])
     col.render()
     # wrapmode on column
-    with pdf.text_column(
+    with pdf.text_columns(
         # align="J",
         l_margin=50,
         r_margin=50,
@@ -114,7 +114,7 @@ def test_tcols_no_font():
     pdf = FPDF()
     pdf.add_page()
     with pytest.raises(FPDFException) as error:
-        col = pdf.text_column()
+        col = pdf.text_columns()
         col.write("something")
     expected_msg = "No font set, you need to call set_font() beforehand"
     assert str(error.value) == expected_msg
@@ -128,7 +128,7 @@ def test_tcols_bad_uses():
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("courier", "", 16)
-    col = pdf.text_column()
+    col = pdf.text_columns()
     # recursive text region context
     with col:
         col.write("something")
@@ -158,7 +158,7 @@ def test_tcols_bad_uses():
     assert str(error.value) == expected_msg
     # column with negative width
     with pytest.raises(FPDFException) as error:
-        col = pdf.text_column(l_margin=150, r_margin=150)
+        col = pdf.text_columns(l_margin=150, r_margin=150)
     expected_msg = (
         "TextColumns(): Right limit (60.00155555555551) lower than left limit (150)."
     )
