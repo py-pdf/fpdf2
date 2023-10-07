@@ -3747,48 +3747,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         return page_break_triggered
 
     @check_page
-    def text_column(
-        self,
-        text: Optional[str] = None,
-        align: Union[Align, str] = "LEFT",
-        line_height: float = 1,
-        l_margin: float = None,
-        r_margin: float = None,
-        print_sh: bool = False,
-        wrapmode: WrapMode = WrapMode.WORD,
-        skip_leading_spaces: bool = False,
-    ):
-        """Establish a layout with a single column to fill with text.
-        Args:
-            text (str, optional): A first piece of text to insert.
-            align (Align or str, optional): The alignment of the region, default "LEFT".
-            line_height (float, optional): A multiplier relative to the font
-                size changing the vertical space occupied by a line of text. Default 1.0.
-            l_margin (float, optional): Override the current left page margin.
-            r_margin (float, optional): Override the current right page margin.
-            print_sh (bool, optional): Treat a soft-hyphen (\\u00ad) as a printable
-                character, instead of a line breaking opportunity. Default value: False
-            skip_leading_spaces (bool, optional): On each line, any space characters
-                at the beginning will be skipped. Default value: False.
-        """
-        return TextColumns(
-            self,
-            text=text,
-            ncols=1,
-            align=align,
-            line_height=line_height,
-            l_margin=l_margin,
-            r_margin=r_margin,
-            print_sh=print_sh,
-            wrapmode=wrapmode,
-            skip_leading_spaces=skip_leading_spaces,
-        )
-
-    @check_page
     def text_columns(
         self,
         text: Optional[str] = None,
-        ncols: int = 2,
+        ncols: int = 1,
         gutter: float = 10,
         balance: bool = False,
         align: Union[Align, str] = "LEFT",
@@ -3802,17 +3764,21 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """Establish a layout with multiple columns to fill with text.
         Args:
             text (str, optional): A first piece of text to insert.
-            ncols (int, optional): the number of columns to create, default 2.
-            gutter (float, optional): The distance between the columns, default 10 mm.
-            align (Align or str, optional): The alignment of the region, default "LEFT".
-            line_height (float, optional): A multiplier relative to the font
-                size changing the vertical space occupied by a line of text. Default 1.0.
+            ncols (int, optional): the number of columns to create. (Default: 1).
+            gutter (float, optional): The distance between the columns. (Default: 10).
+            balance: (bool, optional): Specify whether multiple columns should end at approximately
+                the same height, if they don't fill the page. (Default: False)
+            align (Align or str, optional): The alignment of the region. (Default: "LEFT")
+            line_height (float, optional): A multiplier relative to the font size changing the
+                vertical space occupied by a line of text. (Default: 1.0).
             l_margin (float, optional): Override the current left page margin.
             r_margin (float, optional): Override the current right page margin.
-            print_sh (bool, optional): Treat a soft-hyphen (\\u00ad) as a printable
-                character, instead of a line breaking opportunity. Default value: False
-            skip_leading_spaces (bool, optional): On each line, any space characters
-                at the beginning will be skipped. Default value: False.
+            print_sh (bool, optional): Treat a soft-hyphen (\\u00ad) as a printable character,
+                instead of a line breaking opportunity. (Default: False)
+            wrapmode (fpdf.enums.WrapMode, optional): "WORD" for word based line wrapping,
+                "CHAR" for character based line wrapping. (Default: "WORD")
+            skip_leading_spaces (bool, optional): On each line, any space characters at the
+                beginning will be skipped if True. (Default: False)
         """
         return TextColumns(
             self,
