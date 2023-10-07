@@ -541,3 +541,37 @@ def test_table_with_multiple_headings_and_no_horizontal_lines(tmp_path):
         HERE / "table_with_multiple_headings_and_no_horizontal_lines.pdf",
         tmp_path,
     )
+
+
+def test_table_with_minimal_layout_and_multiple_headings(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("Times", size=12)
+    pdf.add_page()
+    with pdf.table(
+        TABLE_DATA,
+        borders_layout="MINIMAL",
+        num_heading_rows=2,
+    ):
+        pass
+    assert_pdf_equal(
+        pdf,
+        HERE / "table_with_minimal_layout_and_multiple_headings.pdf",
+        tmp_path,
+    )
+
+
+def test_table_with_single_top_line_layout_and_multiple_headings(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("Times", size=12)
+    pdf.add_page()
+    with pdf.table(
+        TABLE_DATA,
+        borders_layout="SINGLE_TOP_LINE",
+        num_heading_rows=2,
+    ):
+        pass
+    assert_pdf_equal(
+        pdf,
+        HERE / "table_with_single_top_line_layout_and_multiple_headings.pdf",
+        tmp_path,
+    )

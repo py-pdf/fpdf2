@@ -296,7 +296,7 @@ class Table:
         if self._borders_layout == TableBordersLayout.MINIMAL:
             if i != 1 or rows_count == 1:
                 border.remove("T")
-            if i != 0:
+            if i >= self._num_heading_rows:
                 border.remove("B")
             if j == 0:
                 border.remove("L")
@@ -318,7 +318,7 @@ class Table:
         if self._borders_layout == TableBordersLayout.SINGLE_TOP_LINE:
             if rows_count == 1:
                 return 0
-            return "B" if i == 0 else 0
+            return "B" if i < self._num_heading_rows else 0
         return "".join(border)
 
     def _render_table_row(
