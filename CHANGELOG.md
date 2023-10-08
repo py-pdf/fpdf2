@@ -36,6 +36,7 @@ This change was made for consistency between row-height governed by text or imag
 * Zoom not set correctly when a numeric value was set in [`set_display_mode()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_display_mode) - _cf._ issue [#926](https://github.com/py-pdf/fpdf2/issues/926)
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): images no longer overlap with cell borders - _cf._ issue [#892](https://github.com/py-pdf/fpdf2/issues/892)
 * Encryption of strings containing non-latin characters - __cf.__ issue [#933](https://github.com/py-pdf/fpdf2/issues/933)
+* Handle preceding whitespaces in write() for line break - _cf._ issue [#902](https://github.com/py-pdf/fpdf2/issues/902)
 
 ## [2.7.5] - 2023-08-04
 ### Added
