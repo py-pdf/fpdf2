@@ -22,6 +22,24 @@ def test_indi_text(tmp_path):
     assert_pdf_equal(pdf, HERE / "shaping_hindi.pdf", tmp_path)
 
 
+def test_mixed_text_shaping(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.r_margin = 100
+    pdf.add_font(
+        family="KFGQPC", fname=HERE / "KFGQPC Uthmanic Script HAFS Regular.otf"
+    )
+    pdf.set_font("KFGQPC", size=36)
+    pdf.set_text_shaping(True)
+    pdf.write(txt="مثال على اللغة العربية. محاذاة لليمين.")
+    pdf.add_font(family="Mangal", fname=HERE / "Mangal 400.ttf")
+    pdf.set_font("Mangal", size=40)
+    # With preceding whitespace
+    pdf.write(txt=" इण्टरनेट पर हिन्दी के साधन")
+
+    assert_pdf_equal(pdf, HERE / "text_mixed_text_shaping.pdf", tmp_path)
+
+
 def test_text_replacement(tmp_path):
     pdf = FPDF()
     pdf.add_page()
