@@ -214,6 +214,11 @@ class TTFFont:
         _, glyph_positions = self.perform_harfbuzz_shaping(
             text, font_size_pt, text_shaping_parms
         )
+
+        # If there is nothing to render (harfbuzz returns None), we return 0 text width
+        if glyph_positions is None:
+            return (0, 0)
+
         text_width = 0
         for pos in glyph_positions:
             text_width += (

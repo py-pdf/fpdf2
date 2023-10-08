@@ -393,13 +393,6 @@ class CurrentLine:
         active_fragment = self.fragments[-1]
 
         if character == SPACE:
-            # If we choose to break at space and we only have an empty fragment
-            # We will add a space to print, so that width doesn't evaluate to 0 when printing
-            if active_fragment.characters == []:
-                # add a space
-                self.number_of_spaces += 1
-                self.width += character_width
-                active_fragment.characters.append(character)
             self.space_break_hint = SpaceHint(
                 original_fragment_index,
                 original_character_index,
