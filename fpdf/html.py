@@ -7,8 +7,7 @@ in non-backward-compatible ways.
 """
 
 from html.parser import HTMLParser
-import logging, warnings
-import re
+import logging, re, warnings
 
 from .enums import TextEmphasis, XPos, YPos
 from .errors import FPDFException
@@ -23,7 +22,7 @@ DEFAULT_HEADING_SIZES = dict(h1=24, h2=18, h3=14, h4=12, h5=10, h6=8)
 # Pattern to substitute whitespace sequences with a single space character each.
 # The following are all Unicode characters with White_Space classification plus the newline.
 # The pattern excludes the non-breaking spaces that are included in "\s".
-# We also exclude the OGHAM SPACE MARK for now, because while being a word seperator,
+# We also exclude the OGHAM SPACE MARK for now, because while being a word separator,
 # it is usually a graphically visible glyph.
 _WS_CHARS = "".join(
     (
