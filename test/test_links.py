@@ -13,27 +13,26 @@ def test_hyperlinks(tmp_path):
     pdf.add_page()
     pdf.set_font("helvetica", size=24)
 
-    pdf.set_xy(80, 50)
+    pdf.y = 50
     pdf.cell(
-        h=pdf.h,
-        txt="Cell link",
-        border=1,
-        align="C",
+        txt="Link from FPDF.cell()",
+        center=True,
         link="https://github.com/py-pdf/fpdf2",
     )
 
     pdf.set_xy(60, 100)
-    pdf.write_html('<a href="https://github.com/py-pdf/fpdf2">Link defined as HTML</a>')
+    pdf.write_html('<a href="https://py-pdf.github.io/fpdf2/">Link defined as HTML</a>')
 
-    text = "Text link"
-    pdf.text(x=80, y=150, txt=text)
+    text = "Link set over an arbitrary area with FPDF.link()"
+    x, y = 20, 150
+    pdf.text(x=x, y=y, txt=text)
     width = pdf.get_string_width(text)
     pdf.link(
-        x=80,
-        y=150 - pdf.h,
+        x=x,
+        y=y - pdf.font_size,
         w=width,
-        h=pdf.h,
-        link="https://github.com/py-pdf/fpdf2",
+        h=pdf.font_size,
+        link="https://github.com/py-pdf/fpdf2/discussions",
     )
 
     assert_pdf_equal(pdf, HERE / "hyperlinks.pdf", tmp_path)

@@ -49,6 +49,8 @@ pip install uharfbuzz
 The method `set_text_shaping()` is used to control text shaping on a document. The only mandatory argument, `use_shaping_engine` can be set to `True` to enable the shaping mechanism or `False` to disable it.
 
 ```python
+from fpdf import FPDF
+
 pdf = FPDF()
 pdf.add_page()
 pdf.add_font(family="ViaodaLibre", fname=HERE / "ViaodaLibre-Regular.ttf")
