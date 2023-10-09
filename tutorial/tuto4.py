@@ -46,7 +46,7 @@ class PDF(FPDF):
         # Reading text file:
         with open(fname, "rb") as fh:
             txt = fh.read().decode("latin-1")
-        with self.text_columns(ncols=3, gutter=5, align="J", line_height=1.19) as cols:
+        with self.text_columns(ncols=3, gutter=5, text_align="J", line_height=1.19) as cols:
             # Setting font: Times 12
             self.set_font("Times", size=12)
             cols.write(txt)
