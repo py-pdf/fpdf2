@@ -15,8 +15,10 @@ There are two general categories of regions. One defines boundaries for running 
 Using the different region types and combination always follows the same pattern. The main difference to the normal `FPDF.write()` method is that all added text will first be buffered, and only gets rendered on the page when the context of the region is closed. This is necessary so that text can be aligned within the given boundaries even if its font, style, or size are arbitrarily varied along the way.
 
 * Create the region instance with an `FPDF` method.
+<!--
 * future: (_If desired, add or subtract other shapes from it (with geometric regions)_).
-* Use the `.write()` method to feed text into its buffer.
+-->
+* Use the `.write()` method of this text region in order to feed text into its buffer.
 * Best practise is to use the region instance as a context manager for filling.
 	* Text will be rendered automatically after closing the context.
 	* When used as a context manager, you can change all text styling parameters within that context, and they will be used by the added text, but won't leak to the surroundings
@@ -25,12 +27,18 @@ Using the different region types and combination always follows the same pattern
 
 ![](tcols-paragraphs.png)
 
-The graphic shows shows the relationship of page, text areas and paragraphs (with varying alignment) for the example of a two-column layout.
+The graphic shows the relationship of page, text areas and paragraphs (with varying alignment) for the example of a two-column layout.
 
 
 ### Text Start Position ###
 
-When rendering, the vertical start position of the text will be at the lowest one out of the current y position, the top of the region (if it has a defined top), or the top margin of the page. The horizontal start position will be either at the current x position if that lies within the boundaries of the region/column, or at the left edge of the region. In both horizontal and vertical positioning, regions with multiple columns may follow additional rules and restrictions.
+When rendering, the vertical start position of the text will be at the lowest one out of:
+* the current y position
+* the top of the region (if it has a defined top)
+* the top margin of the page.
+
+The horizontal start position will be either at the current x position, if that lies within the boundaries of the region/column, or at the left edge of the region.
+In both horizontal and vertical positioning, regions with multiple columns may follow additional rules and restrictions.
 
 
 ### Interaction between Regions ###
@@ -40,7 +48,7 @@ Several region instances can exist at the same time. But only one of them can ac
 
 ### Common parameters ###
 
-All types of text regions have the following constructor paramters in common:
+All types of text regions have the following constructor parameters in common:
 
 * text (str, optional) - text content to add to the region. This is a convenience parameter for cases when all text is available in one piece, and no partition into paragraphs (possibly with different parameters) is required. (Default: None)
 * align (Align/str, optional) - the horizontal alignment of the text in the region. (Default: Align.L)
@@ -54,15 +62,15 @@ All of those values can be overriden for each individual paragraph.
 
 ### Common methods ###
 
-* paragraph() [see characteristics parameters below] - establish a new paragraph in the text. The text added to this paragraph will start on a new line.
-* write(text: str, link: = None) - write text to the region. This is only permitted when no explicit paragraph is currently active.
-* ln(h: float = None) - Start a new line moving either by the current font height or by the parameter "h". Only permitted when no explicit paragraph is currently active.
-* render() - if the region is not used as a context manager with "with", this method must be called to actually process the added text.
+* `.paragraph()` [see characteristics parameters below] - establish a new paragraph in the text. The text added to this paragraph will start on a new line.
+* `.write(text: str, link: = None)` - write text to the region. This is only permitted when no explicit paragraph is currently active.
+* `.ln(h: float = None)` - Start a new line moving either by the current font height or by the parameter "h". Only permitted when no explicit paragraph is currently active.
+* `.render()` - if the region is not used as a context manager with "with", this method must be called to actually process the added text.
 
 
 ## Paragraphs ##
 
-The primary purpose of paragraphs is to enable variations in horizontal text alignment, while the horizontal extents of the text are managed by the text region. To set the alignment, you can use the `align` argument when creating the paragraph, with the same `Align` values as elsewhere in the library.
+The primary purpose of paragraphs is to enable variations in horizontal text alignment, while the horizontal extents of the text are managed by the text region. To set the alignment, you can use the `align` argument when creating the paragraph. Valid values are defined in the [`Align enum`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.Align).
 
 Note that the `write()` methods of paragraphs and text regions in general don't accept any other argument than "text" and "link".
 
@@ -70,12 +78,12 @@ For more typographical control, you can use the following arguments. Most of tho
 
 * align (Align, optional) - The horizontal alignment of the paragraph.
 * line_height (float, optional) - factor by which the line spacing will be different from the font height. (default: by region) 
-* top_margin (float, optional) -  how much spacing is added above the paragraph. No spacing will be added at the top if the paragraph if the current y position is at (or above) the top margin of the page. (Default: 0.0)
+* top_margin (float, optional) -  how much spacing is added above the paragraph. No spacing will be added at the top of the paragraph if the current y position is at (or above) the top margin of the page. (Default: 0.0)
 * bottom_margin (float, optional) - Those two values determine how much spacing is added below the paragraph. No spacing will be added at the bottom if it would result in overstepping the bottom margin of the page. (Default: 0.0)
 * skip_leading_spaces (float, optional) - removes all space characters at the beginning of each line.
 * wrapmode (WrapMode, optional)
 
-Other than text regions, paragraphs should alway be used as context managers and never be reused. Violating those rules may result in the entered text turning up on the page out of sequence.
+Other than text regions, paragraphs should always be used as context managers and never be reused. Violating those rules may result in the entered text turning up on the page out of sequence.
 
 
 ### Possible future extensions

@@ -15,7 +15,7 @@ class Extents(NamedTuple):
 
 
 class TextRegionMixin:
-    """Mix-in to be added FPDF() in order to support text regions."""
+    """Mix-in to be added to FPDF() in order to support text regions."""
 
     def __init__(self, *args, **kwargs):
         self.clear_text_region()
@@ -71,7 +71,7 @@ class Paragraph:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         normalized_string = self.pdf.normalize_text(text).replace("\r", "")
         # YYY _preload_font_styles() should accept a "link" argument.
-        fragments = self.pdf._preload_font_styles(normalized_string, False)
+        fragments = self.pdf._preload_font_styles(normalized_string, markdown=False)
         if link:
             for frag in fragments:
                 frag.link = link
@@ -82,11 +82,11 @@ class Paragraph:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         if h is None:
             h = self.pdf.font_size * self.line_height
-        fragment = self.pdf._preload_font_styles("\n", False)[0]
+        fragment = self.pdf._preload_font_styles("\n", markdown=False)[0]
         fragment.graphics_state["font_size_pt"] = h * fragment.k
         self._text_fragments.append(fragment)
 
-    def build_lines(self, print_sh):
+    def build_lines(self, print_sh) -> List[LineWrapper]:
         text_lines = []
         multi_line_break = MultiLineBreak(
             self._text_fragments,

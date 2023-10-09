@@ -500,9 +500,9 @@ class CurrentLine:
 class MultiLineBreak:
     def __init__(
         self,
-        fragments: Sequence,
+        fragments: Sequence[Fragment],
         max_width: Union[float, callable],
-        margins: Sequence,
+        margins: Sequence[Number],
         align: Align = Align.L,
         print_sh: bool = False,
         wrapmode: WrapMode = WrapMode.WORD,

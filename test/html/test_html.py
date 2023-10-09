@@ -413,7 +413,7 @@ text-text-text-text-text-text-text-text-text-text</p>
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text-</p>
-<p line-height="x"><!-- invalid line-height ignored -->
+<p line-height="x"><!-- invalid line-height ignored, default value of 1 will be used -->
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text-
 text-text-text-text-text-text-text-text-text-text-</p>
