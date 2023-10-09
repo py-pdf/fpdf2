@@ -3753,7 +3753,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         ncols: int = 1,
         gutter: float = 10,
         balance: bool = False,
-        align: Union[Align, str] = "LEFT",
+        text_align: Union[Align, str] = "LEFT",
         line_height: float = 1,
         l_margin: float = None,
         r_margin: float = None,
@@ -3768,7 +3768,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             gutter (float, optional): The distance between the columns. (Default: 10).
             balance: (bool, optional): Specify whether multiple columns should end at approximately
                 the same height, if they don't fill the page. (Default: False)
-            align (Align or str, optional): The alignment of the region. (Default: "LEFT")
+            text_align (Align or str, optional): The alignment of the text within the region.
+                (Default: "LEFT")
             line_height (float, optional): A multiplier relative to the font size changing the
                 vertical space occupied by a line of text. (Default: 1.0).
             l_margin (float, optional): Override the current left page margin.
@@ -3786,7 +3787,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             ncols=ncols,
             gutter=gutter,
             balance=balance,
-            align=align,
+            text_align=text_align,
             line_height=line_height,
             l_margin=l_margin,
             r_margin=r_margin,
