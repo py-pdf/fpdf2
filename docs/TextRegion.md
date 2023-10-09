@@ -1,27 +1,30 @@
-_New in [:octicons-tag-24: 2.7.7](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.7.6](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 # Text Flow Regions #
 
-**Notice:** As of fpdf2 release 2.7.7, this is an experimental feature. Both the API and the functionality may change before it is finalized, without prior notice.
+**Notice:** As of fpdf2 release 2.7.6, this is an experimental feature. Both the API and the functionality may change before it is finalized, without prior notice.
 
 Text regions are a hierarchy of classes that enable to flow text within a given outline. In the simplest case, it is just the running text column of a page. But it can also be a sequence of outlines, such as several parallel columns or the cells of a table. Other outlines may be combined by addition or subtraction to create more complex shapes. 
 
 There are two general categories of regions. One defines boundaries for running text that will just continue in the same manner one the next page. Those include columns and tables. The second category are distinct shapes. Examples would be a circle, a rectangle, a polygon of individual shape or even an image. They may be used individually, in combination, or to modify the outline of a multipage column. Shape regions will typically not cause a page break when they are full. In the future, a possibility to chain them may be implemented, so that a new shape will continue with the text that didn't fit into the previous one.
 
-**The current implementation only supports columns.** Table cells, shaped regions and combinations are still in the design phase.
+The currently implemented text regions are:
+* [Text Columns](TextColumns.html)
+
+Other types like Table cells, shaped regions and combinations are still in the design phase, see [Quo vadis, .write()?](https://github.com/py-pdf/fpdf2/discussions/339).
 
 
 ## General Operation ##
 
 Using the different region types and combination always follows the same pattern. The main difference to the normal `FPDF.write()` method is that all added text will first be buffered, and only gets rendered on the page when the context of the region is closed. This is necessary so that text can be aligned within the given boundaries even if its font, style, or size are arbitrarily varied along the way.
 
-* Create the region instance with an `FPDF` method.
+* Create the region instance with an `FPDF` method, , for example [text_columns()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.text_columns).
 <!--
 * future: (_If desired, add or subtract other shapes from it (with geometric regions)_).
 -->
 * Use the `.write()` method of this text region in order to feed text into its buffer.
 * Best practise is to use the region instance as a context manager for filling.
-	* Text will be rendered automatically after closing the context.
-	* When used as a context manager, you can change all text styling parameters within that context, and they will be used by the added text, but won't leak to the surroundings
+    * Text will be rendered automatically after closing the context.
+    * When used as a context manager, you can change all text styling parameters within that context, and they will be used by the added text, but won't leak to the surroundings
 * Alternatively, eg. for filling a single column of text with the already existing settings, just use the region instance as is. In that case, you'll have to explicitly use the `render()` method after adding the text.
 * Within a region, paragraphs can be inserted. The primary purpose of a paragraph is to apply a different horizontal alignment than the surrounding text. It is also possible to apply margins to the top and bottom of each paragraph.
 
@@ -51,7 +54,7 @@ Several region instances can exist at the same time. But only one of them can ac
 All types of text regions have the following constructor parameters in common:
 
 * text (str, optional) - text content to add to the region. This is a convenience parameter for cases when all text is available in one piece, and no partition into paragraphs (possibly with different parameters) is required. (Default: None)
-* align (Align/str, optional) - the horizontal alignment of the text in the region. (Default: Align.L)
+* text_align (Align/str, optional) - the horizontal alignment of the text in the region. (Default: Align.L)
 * line_height (float, optional) - This is a factor by which the line spacing will be different from the font height. It works similar to the attribute of the same name in HTML/CSS. (default: 1.0)
 * print_sh (bool, optional) - Treat a soft-hyphen (\\u00ad) as a printable character, instead of a line breaking opportunity. (Default: False)
 * skip_leading_spaces (default: False) - This flag is primarily used by `write_html()`, but may also have other uses. It removes all space characters at the beginning of each line.
@@ -72,11 +75,9 @@ All of those values can be overriden for each individual paragraph.
 
 The primary purpose of paragraphs is to enable variations in horizontal text alignment, while the horizontal extents of the text are managed by the text region. To set the alignment, you can use the `align` argument when creating the paragraph. Valid values are defined in the [`Align enum`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.Align).
 
-Note that the `write()` methods of paragraphs and text regions in general don't accept any other argument than "text" and "link".
-
 For more typographical control, you can use the following arguments. Most of those override the settings of the current region when set, and default to the value set there.
 
-* align (Align, optional) - The horizontal alignment of the paragraph.
+* text_align (Align, optional) - The horizontal alignment of the paragraph.
 * line_height (float, optional) - factor by which the line spacing will be different from the font height. (default: by region) 
 * top_margin (float, optional) -  how much spacing is added above the paragraph. No spacing will be added at the top of the paragraph if the current y position is at (or above) the top margin of the page. (Default: 0.0)
 * bottom_margin (float, optional) - Those two values determine how much spacing is added below the paragraph. No spacing will be added at the bottom if it would result in overstepping the bottom margin of the page. (Default: 0.0)

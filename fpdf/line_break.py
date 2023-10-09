@@ -8,6 +8,7 @@ in non-backward-compatible ways.
 """
 
 from typing import NamedTuple, Any, Optional, Union, Sequence
+from numbers import Number
 
 from .enums import CharVPos, WrapMode, Align
 from .errors import FPDFException
@@ -519,8 +520,8 @@ class MultiLineBreak:
                 applicable width for the line with the given height at the current
                 vertical position. The height is relevant in those cases where the
                 lateral boundaries of the enclosing TextRegion() are not vertical.
-            margins (sequence of floats): The extra clearance (usually FPDF.c_margin)
-                that may apply at the beginning and/or end of a line.
+            margins (sequence of floats): The extra clearance that may apply at the beginning
+                and/or end of a line (usually either FPDF.c_margin or 0.0 for each side).
             align (Align): The horizontal alignment of the current text block.
             print_sh (bool): If True, a soft-hyphen will be rendered
                 normally, instead of triggering a line break. Default: False

@@ -319,7 +319,7 @@ class HTML2FPDF(HTMLParser):
         if not top_margin and not self.follows_heading:
             top_margin = self.font_size / self.pdf.k
         self._paragraph = self._column.paragraph(
-            align=align,
+            text_align=align,
             line_height=line_height,
             skip_leading_spaces=True,
             top_margin=top_margin,

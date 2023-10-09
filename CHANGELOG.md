@@ -19,15 +19,20 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.7.6] - Not released yet
 This release is the first performed from the [@py-pdf GitHub org](https://github.com/py-pdf), where `fpdf2` migrated.
 ### Added
+* The new experimental method `text_columns()` allows to render text within a single or multiple columns, including height balancing.
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now supports heading colors defined as attributes (_e.g._ `<h2 color="#00ff00">...`)
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): Now supports padding in cells
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): Now supports vertical alignment in cells 
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): Now supports outer border width for rendering the outer border of the table with a different line-width.
 * documentation on how to use `livereload` to enable a "watch" mode with PDF generation: [Combine with livereload](https://py-pdf.github.io/fpdf2/CombineWithLivereload.html)
 ### Changed
+* The formatting output by `write_html()` has changed in some aspects. Vertical spacing around headings and paragraphs may be slightly different, and elements at the top of the page don't have any extra spacing above anymore.
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): If the height of a row is governed by an image, then the default vertical alignment of the other cells is "center". This was "top". 
 This change was made for consistency between row-height governed by text or images. The old behaviour can be enforced using the new vertical alignment parameter.  
 ### Fixed
+* In multi_cells and table cells with horizontal padding, the text was not given quite enough space.
+* write_html() can now handle formatting tags within paragraphs without adding extra line breaks (except in table cells for now).
+* the font size in HTML <pre> and <code> tags is not fixed to 11 pica anymore, but adapts to the preceding text.
 * [`FPDF.ln()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ln), when called before any text has been written, will now use the current font height instead of doing nothing -  _cf._ issue [#937](https://github.com/py-pdf/fpdf2/issues/937)
 * [`FPDF.image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image), when provided a `BytesIO` instance, does not close it anymore - _cf._ issue [#881](https://github.com/py-pdf/fpdf2/issues/881)
 * Invalid characters were being generated when a string contains parentheses - _cf._ issue [#884](https://github.com/py-pdf/fpdf2/issues/884)

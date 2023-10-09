@@ -1,6 +1,6 @@
-_New in [:octicons-tag-24: 2.7.7](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.7.6](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
-**Notice:** As of fpdf2 release 2.7.7, this is an experimental feature. Both the API and the functionality may change before it is finalized, without prior notice.
+**Notice:** As of fpdf2 release 2.7.6, this is an experimental feature. Both the API and the functionality may change before it is finalized, without prior notice.
 
 
 ## Text Columns ##
@@ -11,11 +11,8 @@ Beyond the parameters common to all text regions, the following are available fo
 
 * l_margin (float, optional) - override the current left page margin.
 * r_margin (float, optional) - override the current right page margin.
-
-Only for `FPDF.text_columns()`:
-
 * ncols (float, optional) - the number of columns to generate (Default: 2).
-* gutter (float, optional) - the space required between each two columns (Default 10).
+* gutter (float, optional) - the horizontal space required between each two columns (Default 10).
 
 
 #### Single-Column Example ####
@@ -23,27 +20,44 @@ Only for `FPDF.text_columns()`:
 In this example an inserted paragraph is used in order to format its content with justified alignment, while the rest of the text uses the default left alignment.
 
 ```python
-    cols = pdf.text_columns()
-    with cols:
-        cols.write(txt=LOREM_IPSUM)
-        with cols.paragraph(align="J") as par:
-            par.write(txt=LOREM_IPSUM[:100])
-        cols.write(txt=LOREM_IPSUM)
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Times", size=12)
+
+cols = pdf.text_columns()
+with cols:
+    cols.write(text=LOREM_IPSUM[:400])
+    with cols.paragraph(
+            text_align="J",
+            top_margin=pdf.font_size,
+            bottom_margin=pdf.font_size
+            ) as par:
+        par.write(text=LOREM_IPSUM[:400])
+    cols.write(text=LOREM_IPSUM[:400])
 ```
+![Single Text Column](tcols-single.png)
 
 #### Multi-Column Example
 
 Here we have a layout with three columns. Note that font type and text size can be varied within a text region, while still maintaining the justified (in this case) horizontal alignment.
 
 ```python
-    with pdf.text_columns(align="J", ncols=3, gutter=5) as cols
-        cols.write(txt=LOREM_IPSUM)
-        pdf.set_font("Times", "", 8)
-        cols.write(txt=LOREM_IPSUM)
-        pdf.set_font("Courier", "", 10)
-        cols.write(txt=LOREM_IPSUM)
-        pdf.set_font("Helvetica", "", 12)
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Helvetica", size=16)
+
+with pdf.text_columns(text_align="J", ncols=3, gutter=5) as cols:
+    cols.write(text=LOREM_IPSUM[:600])
+    pdf.set_font("Times", "", 18)
+    cols.write(text=LOREM_IPSUM[:500])
+    pdf.set_font("Courier", "", 20)
+    cols.write(text=LOREM_IPSUM[:500])
 ```
+![Three Text Columns](tcols-three.png)
 
 #### Balanced Columns
 
@@ -51,20 +65,25 @@ Normally the columns will be filled left to right, and if the text ends before t
 If you prefer that all columns on a page end on the same height, you can use the `balance=True` argument. In that case a simple algorithm will be applied that attempts to approximately balance their bottoms.
 
 ```python
-    cols = pdf.text_columns(align="J", ncols=3, gutter=5, balanced=True)
-	# fill columns with balanced text
-	with cols:
-        pdf.set_font("Times", "", 14)
-        cols.write(txt=LOREM_IPSUM[:300])
-	pdf.ln()
-	# add an image below
-	img_info = pdf.image("image_spanning_the_page_width.png")
-	# move vertical position to below the image
-	pdf.ln(img_info.rendered_hight + pdf.font_size)
-	# continue multi-column text
-	with cols:
-        cols.write(txt=LOREM_IPSUM[300:600])
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Times", size=12)
+
+cols = pdf.text_columns(text_align="J", ncols=3, gutter=5, balance=True)
+# fill columns with balanced text
+with cols:
+    pdf.set_font("Times", "", 14)
+    cols.write(text=LOREM_IPSUM[:300])
+# add an image below
+img_info = pdf.image(".../fpdf2/docs/regular_polygon.png",
+        x=pdf.l_margin, w=pdf.epw)
+# continue multi-column text
+with cols:
+    cols.write(text=LOREM_IPSUM[300:600])
 ```
+![Balanced Columns](tcols-balanced.png)
 
 Note that column balancing only works reliably when the font size (specifically the line height) doesn't change. If parts of the text use a larger or smaller font than the rest, then the balancing will usually be out of whack. Contributions for a more refined balancing algorithm are welcome.
 

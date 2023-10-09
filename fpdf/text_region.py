@@ -1,5 +1,5 @@
 import math
-from typing import NamedTuple, Sequence
+from typing import NamedTuple, Sequence, List, NewType
 
 from .errors import FPDFException
 from .enums import Align, XPos, YPos, WrapMode
@@ -31,11 +31,27 @@ class TextRegionMixin:
         self.__current_text_region = None
 
 
-class Paragraph:
+# forward declaration for LineWrapper.
+Paragraph = NewType("Paragraph", None)
+
+
+class LineWrapper(NamedTuple):
+    """Connects each TextLine with the Paragraph it was written to.
+    This allows to access paragraph specific attributes like
+    top/bottom margins when rendering the line.
+    """
+
+    line: Sequence
+    paragraph: Paragraph
+    first_line: bool = False
+    last_line: bool = False
+
+
+class Paragraph:  # pylint: disable=function-redefined
     def __init__(
         self,
         region,
-        align=None,
+        text_align=None,
         line_height=None,
         top_margin: float = 0,
         bottom_margin: float = 0,
@@ -44,9 +60,9 @@ class Paragraph:
     ):
         self._region = region
         self.pdf = region.pdf
-        if align:
-            align = Align.coerce(align)
-        self.align = align
+        if text_align:
+            text_align = Align.coerce(text_align)
+        self.text_align = text_align
         if line_height is None:
             self.line_height = region.line_height
         else:
@@ -92,7 +108,7 @@ class Paragraph:
             self._text_fragments,
             max_width=self._region.get_width,
             margins=(self.pdf.c_margin, self.pdf.c_margin),
-            align=self.align or self._region.align or Align.L,
+            align=self.text_align or self._region.text_align or Align.L,
             print_sh=print_sh,
             wrapmode=self.wrapmode,
             line_height=self.line_height,
@@ -103,12 +119,14 @@ class Paragraph:
         text_line = multi_line_break.get_line()
         first_line = True
         while (text_line) is not None:
-            text_lines.append(LWrapper(text_line, self, first_line=first_line))
+            text_lines.append(LineWrapper(text_line, self, first_line=first_line))
             first_line = False
             text_line = multi_line_break.get_line()
         if text_lines:
             last = text_lines[-1]
-            last = LWrapper(last.line, self, first_line=last.first_line, last_line=True)
+            last = LineWrapper(
+                last.line, self, first_line=last.first_line, last_line=True
+            )
             text_lines[-1] = last
         return text_lines
 
@@ -119,7 +137,7 @@ class ParagraphCollectorMixin:
         pdf,
         *args,
         text=None,
-        align="LEFT",
+        text_align="LEFT",
         line_height: float = 1.0,
         print_sh: bool = False,
         skip_leading_spaces: bool = False,
@@ -127,7 +145,7 @@ class ParagraphCollectorMixin:
         **kwargs,
     ):
         self.pdf = pdf
-        self.align = Align.coerce(align)  # default for auto paragraphs
+        self.text_align = Align.coerce(text_align)  # default for auto paragraphs
         self.line_height = line_height
         self.print_sh = print_sh
         self.wrapmode = WrapMode.coerce(wrapmode)
@@ -163,7 +181,7 @@ class ParagraphCollectorMixin:
         if self._active_paragraph is None:
             p = Paragraph(
                 region=self,
-                align=self.align,
+                text_align=self.text_align,
                 skip_leading_spaces=self.skip_leading_spaces,
             )
             self._paragraphs.append(p)
@@ -179,7 +197,7 @@ class ParagraphCollectorMixin:
 
     def paragraph(
         self,
-        align=None,
+        text_align=None,
         line_height=None,
         skip_leading_spaces: bool = False,
         top_margin=0,
@@ -190,7 +208,7 @@ class ParagraphCollectorMixin:
             raise FPDFException("Unable to nest paragraphs.")
         p = Paragraph(
             region=self,
-            align=align or self.align,
+            text_align=text_align or self.text_align,
             line_height=line_height,
             skip_leading_spaces=skip_leading_spaces or self.skip_leading_spaces,
             wrapmode=wrapmode,
@@ -414,15 +432,3 @@ class TextColumns(TextRegion, TextColumnarMixin):
     def current_x_extents(self, y, height):
         left, right = self._cols[self._cur_column]
         return left, right
-
-
-class LWrapper(NamedTuple):
-    """Connects each TextLine with the Paragraph it was written to.
-    This allows to access paragraph specific attributes like
-    top/bottom margins when rendering the line.
-    """
-
-    line: Sequence
-    paragraph: Paragraph
-    first_line: bool = False
-    last_line: bool = False

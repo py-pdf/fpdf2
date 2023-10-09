@@ -21,7 +21,7 @@ def test_tcols_align(tmp_path):
         col.write(text=LOREM_IPSUM[200:300])
     pdf.set_font("Helvetica", "I", 12)
     with col:
-        with col.paragraph(align="J", top_margin=pdf.font_size * 2) as par:
+        with col.paragraph(text_align="J", top_margin=pdf.font_size * 2) as par:
             par.write(text=LOREM_IPSUM[:100])
             pdf.set_font("Times", "I", 12)
             par.write(text=LOREM_IPSUM[100:200])
@@ -29,7 +29,7 @@ def test_tcols_align(tmp_path):
             par.write(text=LOREM_IPSUM[200:300])
     pdf.set_font("Helvetica", "B", 12)
     with col:
-        with col.paragraph(align="R", top_margin=pdf.font_size * 2) as par:
+        with col.paragraph(text_align="R", top_margin=pdf.font_size * 2) as par:
             par.write(text=LOREM_IPSUM[:100])
             pdf.set_font("Times", "B", 12)
             par.write(text=LOREM_IPSUM[100:200])
@@ -37,7 +37,7 @@ def test_tcols_align(tmp_path):
             par.write(text=LOREM_IPSUM[200:300])
     pdf.set_font("Helvetica", "BI", 12)
     with col:
-        with col.paragraph(align="C", top_margin=pdf.font_size * 2) as par:
+        with col.paragraph(text_align="C", top_margin=pdf.font_size * 2) as par:
             par.write(text=LOREM_IPSUM[:100])
             pdf.set_font("Times", "BI", 12)
             par.write(text=LOREM_IPSUM[100:200])
@@ -52,7 +52,7 @@ def test_tcols_3cols(tmp_path):
     pdf.t_margin = 50
     pdf.set_auto_page_break(True, 100)
     pdf.set_font("Helvetica", "", 6)
-    cols = pdf.text_columns(text=LOREM_IPSUM, align="J", ncols=3, gutter=5)
+    cols = pdf.text_columns(text=LOREM_IPSUM, text_align="J", ncols=3, gutter=5)
     with cols:
         pdf.set_font("Times", "", 8)
         cols.write(text=LOREM_IPSUM)
@@ -72,8 +72,8 @@ def test_tcols_balance(tmp_path):
     pdf.add_page()
     pdf.set_auto_page_break(True, 100)
     pdf.set_font("Helvetica", "", 6)
-    cols_2 = pdf.text_columns(align="J", ncols=2, gutter=10, balance=True)
-    cols_3 = pdf.text_columns(align="J", ncols=3, gutter=5, balance=True)
+    cols_2 = pdf.text_columns(text_align="J", ncols=2, gutter=10, balance=True)
+    cols_3 = pdf.text_columns(text_align="J", ncols=3, gutter=5, balance=True)
     with cols_2:
         pdf.set_font("Times", "", 8)
         cols_2.write(text=LOREM_IPSUM[:300])
@@ -100,7 +100,6 @@ def test_tcols_charwrap(tmp_path):
     col.render()
     # wrapmode on column
     with pdf.text_columns(
-        # align="J",
         l_margin=50,
         r_margin=50,
         wrapmode="CHAR",
@@ -165,7 +164,8 @@ def test_tcols_bad_uses():
     assert str(error.value) == expected_msg
 
 
-def xest_tcols_text_shaping(tmp_path):
+@pytest.mark.skip(reason="unfinished")
+def test_tcols_text_shaping(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.t_margin = 50
@@ -176,7 +176,7 @@ def xest_tcols_text_shaping(tmp_path):
         family="KFGQPC", fname=tsfontpath / "KFGQPC Uthmanic Script HAFS Regular.otf"
     )
     pdf.add_font(family="Mangal", fname=tsfontpath / "Mangal 400.ttf")
-    cols = pdf.text_columns(align="L", ncols=3, gutter=20)
+    cols = pdf.text_columns(text_align="L", ncols=3, gutter=20)
     with cols:
         #        pdf.set_font("Times", "", 12)
         #        cols.write(text=LOREM_IPSUM[:101])
