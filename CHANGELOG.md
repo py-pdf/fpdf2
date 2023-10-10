@@ -28,6 +28,7 @@ This release is the first performed from the [@py-pdf GitHub org](https://github
 ### Changed
 * The formatting output by `write_html()` has changed in some aspects. Vertical spacing around headings and paragraphs may be slightly different, and elements at the top of the page don't have any extra spacing above anymore.
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): If the height of a row is governed by an image, then the default vertical alignment of the other cells is "center". This was "top". 
+* variable-width non-breaking space (NBSP) support [issue #834](https://github.com/PyFPDF/fpdf2/issues/834)
 This change was made for consistency between row-height governed by text or images. The old behaviour can be enforced using the new vertical alignment parameter.  
 ### Fixed
 * In multi_cells and table cells with horizontal padding, the text was not given quite enough space.
