@@ -281,7 +281,17 @@ class Table:
             return 1
         if self._borders_layout == TableBordersLayout.NONE:
             return 0
-        columns_count = max(row.cols_count for row in self.rows)
+        # In order to figure out whether a cell is the rightmost in its row, we
+        # need to access `colspan` of the corresponding `Cell` instance.
+        # That is because the `j` argument received from `_render_table_cell`
+        # is incremented with the colspan from cell to cell
+        columns_count = len(self.rows[i].cells)
+        colidx = 0
+        column_indexes = [colidx]
+        for jj in range(columns_count - 1):
+            colidx += self.rows[i].cells[jj].colspan
+            column_indexes.append(colidx)
+        rightmost_column = j == column_indexes[-1]
         rows_count = len(self.rows)
         border = list("LRTB")
         if self._borders_layout == TableBordersLayout.INTERNAL:
@@ -291,16 +301,16 @@ class Table:
                 border.remove("B")
             if j == 0:
                 border.remove("L")
-            if j == columns_count - 1:
+            if rightmost_column:
                 border.remove("R")
         if self._borders_layout == TableBordersLayout.MINIMAL:
-            if i != 1 or rows_count == 1:
+            if i == 0 or i > self._num_heading_rows or rows_count == 1:
                 border.remove("T")
-            if i >= self._num_heading_rows:
+            if i > self._num_heading_rows - 1:
                 border.remove("B")
             if j == 0:
                 border.remove("L")
-            if j == columns_count - 1:
+            if rightmost_column:
                 border.remove("R")
         if self._borders_layout == TableBordersLayout.NO_HORIZONTAL_LINES:
             if i > self._num_heading_rows:
