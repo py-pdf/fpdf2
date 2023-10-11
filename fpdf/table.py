@@ -281,17 +281,8 @@ class Table:
             return 1
         if self._borders_layout == TableBordersLayout.NONE:
             return 0
-        # In order to figure out whether a cell is the rightmost in its row, we
-        # need to access `colspan` of the corresponding `Cell` instance.
-        # That is because the `j` argument received from `_render_table_cell`
-        # is incremented with the colspan from cell to cell
-        columns_count = len(self.rows[i].cells)
-        colidx = 0
-        column_indexes = [colidx]
-        for jj in range(columns_count - 1):
-            colidx += self.rows[i].cells[jj].colspan
-            column_indexes.append(colidx)
-        rightmost_column = j == column_indexes[-1]
+
+        is_rightmost_column = j == self.rows[i].column_indices[-1]
         rows_count = len(self.rows)
         border = list("LRTB")
         if self._borders_layout == TableBordersLayout.INTERNAL:
@@ -301,7 +292,7 @@ class Table:
                 border.remove("B")
             if j == 0:
                 border.remove("L")
-            if rightmost_column:
+            if is_rightmost_column:
                 border.remove("R")
         if self._borders_layout == TableBordersLayout.MINIMAL:
             if i == 0 or i > self._num_heading_rows or rows_count == 1:
@@ -310,7 +301,7 @@ class Table:
                 border.remove("B")
             if j == 0:
                 border.remove("L")
-            if rightmost_column:
+            if is_rightmost_column:
                 border.remove("R")
         if self._borders_layout == TableBordersLayout.NO_HORIZONTAL_LINES:
             if i > self._num_heading_rows:
@@ -651,6 +642,16 @@ class Row:
     @property
     def cols_count(self):
         return sum(cell.colspan for cell in self.cells)
+
+    @property
+    def column_indices(self):
+        columns_count = len(self.cells)
+        colidx = 0
+        indices = [colidx]
+        for jj in range(columns_count - 1):
+            colidx += self.cells[jj].colspan
+            indices.append(colidx)
+        return indices
 
     def cell(
         self,
