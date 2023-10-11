@@ -15,21 +15,21 @@ def test_text_modes(tmp_path):
     pdf.add_page()
     pdf.set_font("Helvetica", size=80)
     with pdf.local_context(fill_color=(255, 128, 0)):
-        pdf.cell(txt="FILL default")
+        pdf.cell(text="FILL default")
     with pdf.local_context(text_color=(0, 128, 255)):
-        pdf.cell(txt=" text mode")
+        pdf.cell(text=" text mode")
     pdf.ln()
     with pdf.local_context(text_mode=TextMode.STROKE, line_width=2):
-        pdf.cell(txt="STROKE text mode")
+        pdf.cell(text="STROKE text mode")
     pdf.ln()
     pdf.text_mode = TextMode.FILL_STROKE
     pdf.line_width = 4
     pdf.set_draw_color(255, 0, 255)
-    pdf.cell(txt="FILL_STROKE text mode")
+    pdf.cell(text="FILL_STROKE text mode")
     pdf.ln()
     with pdf.local_context():
         pdf.text_mode = "INVISIBLE"  # testing TextMode.coerce
-        pdf.cell(txt="INVISIBLE text mode")
+        pdf.cell(text="INVISIBLE text mode")
     assert_pdf_equal(pdf, HERE / "text_modes.pdf", tmp_path)
 
 
@@ -39,24 +39,24 @@ def test_clip_text_modes(tmp_path):
     pdf.set_font("Helvetica", size=80)
     pdf.line_width = 1
     with pdf.local_context(text_mode=TextMode.FILL_CLIP, text_color=(0, 255, 255)):
-        pdf.cell(txt="FILL_CLIP text mode")
+        pdf.cell(text="FILL_CLIP text mode")
         for r in range(0, 200, 2):
             pdf.circle(x=110 - r / 2, y=22 - r / 2, r=r)
     pdf.ln()
     with pdf.local_context(text_mode=TextMode.STROKE_CLIP):
-        pdf.cell(txt="STROKE_CLIP text mode")
+        pdf.cell(text="STROKE_CLIP text mode")
         for r in range(0, 200, 2):
             pdf.circle(x=110 - r / 2, y=50 - r / 2, r=r)
     pdf.ln()
     with pdf.local_context(
         text_mode=TextMode.FILL_STROKE_CLIP, text_color=(0, 255, 255)
     ):
-        pdf.cell(txt="FILL_STROKE_CLIP text mode")
+        pdf.cell(text="FILL_STROKE_CLIP text mode")
         for r in range(0, 200, 2):
             pdf.circle(x=110 - r / 2, y=78 - r / 2, r=r)
     pdf.ln()
     with pdf.local_context(text_mode=TextMode.CLIP):
-        pdf.cell(txt="CLIP text mode")
+        pdf.cell(text="CLIP text mode")
         for r in range(0, 200, 2):
             pdf.circle(x=110 - r / 2, y=106 - r / 2, r=r)
     pdf.ln()

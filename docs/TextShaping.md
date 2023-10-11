@@ -56,7 +56,7 @@ pdf.add_page()
 pdf.add_font(family="ViaodaLibre", fname=HERE / "ViaodaLibre-Regular.ttf")
 pdf.set_font("ViaodaLibre", size=40)
 pdf.set_text_shaping(True)
-pdf.cell(txt="final soft stuff")
+pdf.cell(text="final soft stuff")
 pdf.output("Example.pdf")
 ```
 

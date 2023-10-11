@@ -19,7 +19,7 @@ def test_dash_pattern(tmp_path):
         pdf.rect(x, y, 50, 50)
         pdf.ellipse(x, y, 50, 50)
         pdf.set_xy(x, y + 55)
-        pdf.cell(w=50, h=5, txt="cell", border=1)
+        pdf.cell(w=50, h=5, text="cell", border=1)
 
     # solid line
     draw_stuff(20, 20)

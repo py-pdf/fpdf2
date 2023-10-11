@@ -41,7 +41,7 @@ def test_ln_positioning_and_page_breaking_for_cell(tmp_path):
             border=1,
             new_x="LEFT",
             new_y="NEXT",
-            txt=text[i * 100 : i * 100 + 99],
+            text=text[i * 100 : i * 100 + 99],
         )
 
     assert_pdf_equal(
@@ -53,10 +53,10 @@ def test_cell_ln_0(tmp_path):
     doc = FPDF()
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
-    doc.cell(w=45, h=LINE_HEIGHT, border=1, txt="Lorem")
-    doc.cell(w=45, h=LINE_HEIGHT, border=1, txt="ipsum")
-    doc.cell(w=45, h=LINE_HEIGHT, border=1, txt="Ut")
-    doc.cell(w=45, h=LINE_HEIGHT, border=1, txt="nostrud")
+    doc.cell(w=45, h=LINE_HEIGHT, border=1, text="Lorem")
+    doc.cell(w=45, h=LINE_HEIGHT, border=1, text="ipsum")
+    doc.cell(w=45, h=LINE_HEIGHT, border=1, text="Ut")
+    doc.cell(w=45, h=LINE_HEIGHT, border=1, text="nostrud")
     assert_pdf_equal(doc, HERE / "ln_0.pdf", tmp_path)
 
 
@@ -69,19 +69,19 @@ def test_cell_ln_1(tmp_path):
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
     with pytest.warns(DeprecationWarning) as record:
-        doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Lorem ipsum", ln=1)
+        doc.cell(w=100, h=LINE_HEIGHT, border=1, text="Lorem ipsum", ln=1)
     assert len(record) == 1
     assert record[0].filename == __file__
 
-    doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Ut nostrud irure")
+    doc.cell(w=100, h=LINE_HEIGHT, border=1, text="Ut nostrud irure")
     assert_pdf_equal(doc, HERE / "ln_1.pdf", tmp_path)
 
     doc = FPDF()
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
-    doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Lorem ipsum")
+    doc.cell(w=100, h=LINE_HEIGHT, border=1, text="Lorem ipsum")
     doc.ln()
-    doc.cell(w=100, h=LINE_HEIGHT, border=1, txt="Ut nostrud irure")
+    doc.cell(w=100, h=LINE_HEIGHT, border=1, text="Ut nostrud irure")
     assert_pdf_equal(doc, HERE / "ln_1.pdf", tmp_path)
 
 
@@ -120,7 +120,7 @@ def test_cell_without_font_set():
     pdf = FPDF()
     pdf.add_page()
     with pytest.raises(FPDFException) as error:
-        pdf.cell(txt="Hello World!")
+        pdf.cell(text="Hello World!")
     expected_msg = "No font set, you need to call set_font() beforehand"
     assert str(error.value) == expected_msg
 
@@ -129,9 +129,9 @@ def test_cell_without_w_nor_h(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    pdf.cell(txt="Lorem ipsum", border=1)
+    pdf.cell(text="Lorem ipsum", border=1)
     pdf.set_font_size(80)
-    pdf.cell(txt="Lorem ipsum", border=1)
+    pdf.cell(text="Lorem ipsum", border=1)
     assert_pdf_equal(pdf, HERE / "cell_without_w_nor_h.pdf", tmp_path)
 
 
@@ -151,7 +151,7 @@ def test_cell_centering(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=60)
-    pdf.cell(txt="Lorem ipsum", border=1, center=True)
+    pdf.cell(text="Lorem ipsum", border=1, center=True)
     assert_pdf_equal(pdf, HERE / "cell_centering.pdf", tmp_path)
 
 
@@ -159,7 +159,7 @@ def test_cell_centering_and_align_x(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    pdf.cell(txt="Lorem ipsum", border=1, center=True, align="X")
+    pdf.cell(text="Lorem ipsum", border=1, center=True, align="X")
     pdf.set_draw_color(r=0, g=255, b=0)
     pdf.line(pdf.w / 2, 0, pdf.w / 2, pdf.h)
     assert_pdf_equal(pdf, HERE / "cell_centering_and_align_x.pdf", tmp_path)
@@ -169,7 +169,7 @@ def test_cell_markdown(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=60)
-    pdf.cell(txt="**Lorem** __Ipsum__ --dolor--", markdown=True)
+    pdf.cell(text="**Lorem** __Ipsum__ --dolor--", markdown=True)
     assert_pdf_equal(pdf, HERE / "cell_markdown.pdf", tmp_path)
 
 
@@ -180,7 +180,7 @@ def test_cell_markdown_with_ttf_fonts(tmp_path):
     pdf.add_font("Roboto", "B", FONTS_DIR / "Roboto-Bold.ttf")
     pdf.add_font("Roboto", "I", FONTS_DIR / "Roboto-Italic.ttf")
     pdf.set_font("Roboto", size=60)
-    pdf.cell(txt="**Lorem** __Ipsum__ --dolor--", markdown=True)
+    pdf.cell(text="**Lorem** __Ipsum__ --dolor--", markdown=True)
     assert_pdf_equal(pdf, HERE / "cell_markdown_with_ttf_fonts.pdf", tmp_path)
 
 
@@ -190,7 +190,7 @@ def test_cell_markdown_missing_ttf_font():
     pdf.add_font(fname=FONTS_DIR / "Roboto-Regular.ttf")
     pdf.set_font("Roboto-Regular", size=60)
     with pytest.raises(FPDFException) as error:
-        pdf.cell(txt="**Lorem Ipsum**", markdown=True)
+        pdf.cell(text="**Lorem Ipsum**", markdown=True)
     expected_msg = "Undefined font: roboto-regularB - Use built-in fonts or FPDF.add_font() beforehand"
     assert str(error.value) == expected_msg
 
@@ -199,12 +199,12 @@ def test_cell_markdown_bleeding(tmp_path):  # issue 241
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=60)
-    pdf.cell(txt="--Lorem Ipsum dolor--", markdown=True, new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(txt="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(txt="**Lorem Ipsum dolor**", markdown=True, new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(txt="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(txt="__Lorem Ipsum dolor__", markdown=True, new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(txt="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(text="--Lorem Ipsum dolor--", markdown=True, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(text="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(text="**Lorem Ipsum dolor**", markdown=True, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(text="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(text="__Lorem Ipsum dolor__", markdown=True, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(text="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT")
     assert_pdf_equal(pdf, HERE / "cell_markdown_bleeding.pdf", tmp_path)
 
 
@@ -274,15 +274,15 @@ def test_cell_curfont_leak(tmp_path):  # issue #475
     pdf.add_font("Roboto", style="B", fname=FONTS_DIR / "Roboto-Bold.ttf")
     with pdf.local_context():
         pdf.set_font("Roboto", "B", 10)
-        pdf.cell(txt="ABCDEFGH", new_x="LEFT", new_y="NEXT")
+        pdf.cell(text="ABCDEFGH", new_x="LEFT", new_y="NEXT")
     pdf.set_font("Roboto", "", 10)
-    pdf.cell(txt="IJKLMNOP", new_x="LEFT", new_y="NEXT")
+    pdf.cell(text="IJKLMNOP", new_x="LEFT", new_y="NEXT")
     with pdf.local_context():
         pdf.set_font("Roboto", "B", 10)
-        pdf.cell(txt="QRSTUVW", new_x="LEFT", new_y="NEXT")
+        pdf.cell(text="QRSTUVW", new_x="LEFT", new_y="NEXT")
     pdf.set_font("Roboto", "", 10)
-    pdf.cell(txt="XYZ012abc,-", new_x="LEFT", new_y="NEXT")
-    pdf.cell(txt="3,7E-05", new_x="LEFT", new_y="NEXT")
+    pdf.cell(text="XYZ012abc,-", new_x="LEFT", new_y="NEXT")
+    pdf.cell(text="3,7E-05", new_x="LEFT", new_y="NEXT")
     assert_pdf_equal(pdf, HERE / "cell_curfont_leak.pdf", tmp_path)
 
 
@@ -292,20 +292,31 @@ def test_cell_lasth(tmp_path):  # issue #601
     pdf.add_page()
     pdf.set_font("helvetica", size=18)
     pdf.set_fill_color(255, 255, 0)
-    pdf.cell(w=100, txt="Hello world", fill=True)
+    pdf.cell(w=100, text="Hello world", fill=True)
     pdf.ln()
     assert pdf._lasth == 6.35, f"pdf._lasth ({pdf._lasth}) != 5.35"
     pdf.set_fill_color(255, 0, 255)
-    pdf.cell(w=100, txt="Hello world", h=50, fill=True)
+    pdf.cell(w=100, text="Hello world", h=50, fill=True)
     pdf.ln()
     assert pdf._lasth == 50, f"pdf._lasth ({pdf._lasth}) != 50 after cell(h=50)"
     pdf.set_fill_color(0, 255, 255)
-    pdf.cell(w=100, txt="Hello world", fill=True)
-    pdf.cell(w=100, txt="")
+    pdf.cell(w=100, text="Hello world", fill=True)
+    pdf.cell(w=100, text="")
     pdf.ln()
     assert pdf._lasth == 6.35, f"pdf._lasth ({pdf._lasth}) != 5.35 after empty cell"
-    pdf.cell(w=100, txt="Hello world", border=True)
+    pdf.cell(w=100, text="Hello world", border=True)
     assert_pdf_equal(pdf, HERE / "cell_lasth.pdf", tmp_path)
+
+
+def test_cell_deprecated_txt_arg():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=TEXT_SIZE)
+    with pytest.warns(
+        DeprecationWarning, match='The parameter "txt" has been renamed to "text"'
+    ):
+        # pylint: disable=unexpected-keyword-arg
+        pdf.cell(txt="Lorem ipsum Ut nostrud irure")
 
 
 @ensure_exec_time_below(seconds=22)

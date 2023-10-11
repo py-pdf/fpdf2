@@ -25,7 +25,7 @@ def test_multi_cell_without_any_font_set():
     pdf = FPDF()
     pdf.add_page()
     with pytest.raises(FPDFException) as error:
-        pdf.multi_cell(txt="Hello world!", w=pdf.epw)
+        pdf.multi_cell(text="Hello world!", w=pdf.epw)
     assert str(error.value) == "No font set, you need to call set_font() beforehand"
 
 
@@ -38,7 +38,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=144,
         h=LINE_HEIGHT,
         border=1,
-        txt=LOREM_IPSUM[:29],
+        text=LOREM_IPSUM[:29],
         new_x="RIGHT",
         new_y="NEXT",
     )
@@ -46,7 +46,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=180,
         h=LINE_HEIGHT,
         border=1,
-        txt=LOREM_IPSUM[29:60],
+        text=LOREM_IPSUM[29:60],
         new_x="LEFT",
         new_y="NEXT",
     )
@@ -54,7 +54,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=144,
         h=LINE_HEIGHT,
         border=1,
-        txt=LOREM_IPSUM[60:90],
+        text=LOREM_IPSUM[60:90],
         new_x="LMARGIN",
         new_y="NEXT",
     )
@@ -62,7 +62,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=72 * 5,
         h=LINE_HEIGHT,
         border=1,
-        txt=LOREM_IPSUM[0:30],
+        text=LOREM_IPSUM[0:30],
         new_x="LMARGIN",
         new_y="NEXT",
     )
@@ -70,7 +70,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=72 * 5,
         h=LINE_HEIGHT,
         border=1,
-        txt=LOREM_IPSUM[31:60],
+        text=LOREM_IPSUM[31:60],
         new_x="LMARGIN",
         new_y="NEXT",
     )
@@ -78,7 +78,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=72 * 5,
         h=LINE_HEIGHT,
         border=1,
-        txt=LOREM_IPSUM[61:90],
+        text=LOREM_IPSUM[61:90],
         new_x="LMARGIN",
         new_y="NEXT",
     )
@@ -86,7 +86,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=72 * 5,
         h=LINE_HEIGHT,
         border=1,
-        txt=LOREM_IPSUM[91:120],
+        text=LOREM_IPSUM[91:120],
         new_x="LMARGIN",
         new_y="NEXT",
     )
@@ -96,7 +96,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=144,
         h=LINE_HEIGHT,
         border=1,
-        txt=LOREM_IPSUM[30:90],
+        text=LOREM_IPSUM[30:90],
         new_x="LEFT",
         new_y="NEXT",
     )
@@ -104,7 +104,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=72 * 2,
         h=LINE_HEIGHT,
         border=1,
-        txt="Lorem ipsum",
+        text="Lorem ipsum",
         new_x="LEFT",
         new_y="NEXT",
     )
@@ -112,7 +112,7 @@ def test_ln_positioning_and_page_breaking_for_multicell(tmp_path):
         w=72 * 2,
         h=LINE_HEIGHT,
         border=1,
-        txt="Lorem ipsum",
+        text="Lorem ipsum",
         new_x="LEFT",
         new_y="NEXT",
     )
@@ -127,10 +127,10 @@ def test_multi_cell_border_thickness(tmp_path):
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
     doc.set_line_width(3)
-    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="Lorem")
-    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="ipsum")
-    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="Ut")
-    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="nostrud")
+    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, text="Lorem")
+    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, text="ipsum")
+    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, text="Ut")
+    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, text="nostrud")
     assert_pdf_equal(doc, HERE / "multi_cell_border_thickness.pdf", tmp_path)
 
 
@@ -142,11 +142,11 @@ def test_multi_cell_ln_1(tmp_path):
         w=100,
         h=LINE_HEIGHT,
         border=1,
-        txt="Lorem ipsum",
+        text="Lorem ipsum",
         new_x="LMARGIN",
         new_y="NEXT",
     )
-    doc.multi_cell(w=100, h=LINE_HEIGHT, border=1, txt="Ut nostrud irure")
+    doc.multi_cell(w=100, h=LINE_HEIGHT, border=1, text="Ut nostrud irure")
     assert_pdf_equal(doc, HERE / "multi_cell_ln_1.pdf", tmp_path)
 
 
@@ -155,14 +155,14 @@ def test_multi_cell_ln_3(tmp_path):
     doc.add_page()
     doc.set_font("helvetica", size=TEXT_SIZE)
     doc.multi_cell(
-        w=45, h=LINE_HEIGHT, border=1, txt="Lorem", new_x="RIGHT", new_y="TOP"
+        w=45, h=LINE_HEIGHT, border=1, text="Lorem", new_x="RIGHT", new_y="TOP"
     )
     doc.multi_cell(
-        w=45, h=LINE_HEIGHT, border=1, txt="ipsum", new_x="RIGHT", new_y="TOP"
+        w=45, h=LINE_HEIGHT, border=1, text="ipsum", new_x="RIGHT", new_y="TOP"
     )
-    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, txt="Ut", new_x="RIGHT", new_y="TOP")
+    doc.multi_cell(w=45, h=LINE_HEIGHT, border=1, text="Ut", new_x="RIGHT", new_y="TOP")
     doc.multi_cell(
-        w=45, h=LINE_HEIGHT, border=1, txt="nostrud", new_x="RIGHT", new_y="TOP"
+        w=45, h=LINE_HEIGHT, border=1, text="nostrud", new_x="RIGHT", new_y="TOP"
     )
     assert_pdf_equal(doc, HERE / "multi_cell_ln_3.pdf", tmp_path)
 
@@ -231,9 +231,9 @@ def test_multi_cell_table_with_max_line_height(tmp_path):  # issue 589
         " Tip: If you love spicy dishes, add a bit of our Red Silk Chili"
         " (not included) with the gaozis"
     )
-    pdf.multi_cell(w=120, h=50, txt=text, max_line_height=6, border=True)
+    pdf.multi_cell(w=120, h=50, text=text, max_line_height=6, border=True)
     pdf.ln()
-    pdf.multi_cell(w=120, h=18, txt=text, max_line_height=6, border=True)
+    pdf.multi_cell(w=120, h=18, text=text, max_line_height=6, border=True)
     assert_pdf_equal(pdf, HERE / "multi_cell_table_with_max_line_height.pdf", tmp_path)
 
 
@@ -243,7 +243,7 @@ def test_multi_cell_justified_with_unicode_font(tmp_path):  # issue 118
     pdf.add_font(fname=FONTS_DIR / "DejaVuSans.ttf")
     pdf.set_font("DejaVuSans", size=14)
     text = 'Justified line containing "()" that is long enough to trigger wrapping and a line jump'
-    pdf.multi_cell(w=0, h=8, txt=text, new_x="LMARGIN", new_y="NEXT")
+    pdf.multi_cell(w=0, h=8, text=text, new_x="LMARGIN", new_y="NEXT")
     assert_pdf_equal(pdf, HERE / "multi_cell_justified_with_unicode_font.pdf", tmp_path)
 
 
@@ -260,7 +260,9 @@ def test_multi_cell_split_only():  # discussion 314
     with pytest.warns(
         DeprecationWarning, match='The parameter "split_only" is deprecated.'
     ) as record:
-        assert pdf.multi_cell(w=0, h=LINE_HEIGHT, txt=text, split_only=True) == expected
+        assert (
+            pdf.multi_cell(w=0, h=LINE_HEIGHT, text=text, split_only=True) == expected
+        )
     assert len(record) == 1
     assert record[0].filename == __file__
 
@@ -270,10 +272,10 @@ def test_multi_cell_with_empty_contents(tmp_path):  # issue 349
     pdf.add_page()
     pdf.set_font("helvetica", size=10)
     for i in range(1, 5):
-        pdf.multi_cell(20, new_x="RIGHT", new_y="TOP", txt=str(i))
+        pdf.multi_cell(20, new_x="RIGHT", new_y="TOP", text=str(i))
     pdf.ln(10)
     for i in range(1, 5):
-        pdf.multi_cell(20, new_x="RIGHT", new_y="TOP", txt=str(i) if i > 2 else "")
+        pdf.multi_cell(20, new_x="RIGHT", new_y="TOP", text=str(i) if i > 2 else "")
     assert_pdf_equal(pdf, HERE / "multi_cell_with_empty_contents.pdf", tmp_path)
 
 
@@ -318,7 +320,7 @@ Je parvins à faire s’évanouir dans mon esprit toute l’espérance humaine. 
 
 J’ai appelé les bourreaux pour, en périssant, mordre la crosse de leurs fusils. J’ai appelé les fléaux, pour m’étouffer avec le sable, le sang. Le malheur a été mon dieu. Je me suis allongé dans la boue. Je me suis séché à l’air du crime. Et j’ai joué de bons tours à la folie."""
 
-    pdf.multi_cell(w=0, h=None, txt=text, align="J")
+    pdf.multi_cell(w=0, h=None, text=text, align="J")
     assert_pdf_equal(pdf, HERE / "multi_cell_j_paragraphs.pdf", tmp_path)
 
 
@@ -329,16 +331,16 @@ def test_multi_cell_font_leakage(tmp_path):  # Issue #359
     pdf.add_font("Roboto", style="B", fname=FONTS_DIR / "Roboto-Bold.ttf")
     pdf.set_font("Roboto", "", 12)
 
-    pdf.multi_cell(0, txt="xyz **abcde**", markdown=True)
+    pdf.multi_cell(0, text="xyz **abcde**", markdown=True)
     pdf.ln()
     pdf.set_font("Roboto", "", 12)
-    pdf.multi_cell(0, txt="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    pdf.multi_cell(0, text="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
     pdf.ln()
     pdf.ln()
-    pdf.multi_cell(0, txt="xyz **abcde** ", markdown=True)
+    pdf.multi_cell(0, text="xyz **abcde** ", markdown=True)
     pdf.ln()
     pdf.set_font("Roboto", "", 12)
-    pdf.multi_cell(0, txt="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    pdf.multi_cell(0, text="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
     assert_pdf_equal(pdf, HERE / "multi_cell_font_leakage.pdf", tmp_path)
 
 
@@ -346,19 +348,19 @@ def test_multi_cell_with_zero_horizontal_space():  # issue #389
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", "", 10)
-    pdf.multi_cell(w=0, h=5, txt="test")
+    pdf.multi_cell(w=0, h=5, text="test")
     with pytest.raises(FPDFException):
-        pdf.multi_cell(w=0, h=5, txt="test")
+        pdf.multi_cell(w=0, h=5, text="test")
 
 
 def test_multi_cell_with_limited_horizontal_space():  # issue #389
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", "", 10)
-    pdf.multi_cell(w=pdf.epw - 2 * pdf.c_margin - 1, h=5, txt="test")
+    pdf.multi_cell(w=pdf.epw - 2 * pdf.c_margin - 1, h=5, text="test")
     assert pdf.x == pdf.l_margin + pdf.epw - 2 * pdf.c_margin - 1
     with pytest.raises(FPDFException):
-        pdf.multi_cell(w=0, h=5, txt="test")
+        pdf.multi_cell(w=0, h=5, text="test")
 
 
 def test_multi_cell_trailing_nl(tmp_path):  # issue #455
@@ -368,11 +370,11 @@ def test_multi_cell_trailing_nl(tmp_path):  # issue #455
     pdf.set_font("Times", size=16)
     lines = ["Hello\n", "Sweet\n", "World\n"]
     for line in lines:
-        pdf.multi_cell(200, txt=line)
-    pdf.cell(txt="end_mmc")
+        pdf.multi_cell(200, text=line)
+    pdf.cell(text="end_mmc")
     pdf.ln(50)
-    pdf.multi_cell(200, txt="".join(lines))
-    pdf.cell(txt="end_mc")
+    pdf.multi_cell(200, text="".join(lines))
+    pdf.cell(text="end_mc")
     assert_pdf_equal(pdf, HERE / "multi_cell_trailing_nl.pdf", tmp_path)
 
 
@@ -382,20 +384,20 @@ def test_multi_cell_font_stretching(tmp_path):  # issue #478
     # built-in font
     pdf.set_font("Helvetica", "", 8)
     pdf.set_fill_color(255, 255, 0)
-    pdf.multi_cell(w=50, txt=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
+    pdf.multi_cell(w=50, text=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
     pdf.ln()
     pdf.set_stretching(150)
-    pdf.multi_cell(w=50, txt=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
+    pdf.multi_cell(w=50, text=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
     pdf.ln()
     # unicode font
     pdf.set_stretching(100)
     pdf.add_font(fname=FONTS_DIR / "DroidSansFallback.ttf")
     pdf.set_font("DroidSansFallback", size=8)
     pdf.set_fill_color(255, 255, 0)
-    pdf.multi_cell(w=50, txt=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
+    pdf.multi_cell(w=50, text=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
     pdf.ln()
     pdf.set_stretching(150)
-    pdf.multi_cell(w=50, txt=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
+    pdf.multi_cell(w=50, text=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
     assert_pdf_equal(pdf, HERE / "multi_cell_font_stretching.pdf", tmp_path)
 
 
@@ -405,20 +407,20 @@ def test_multi_cell_char_spacing(tmp_path):  # issue #489
     # built-in font
     pdf.set_font("Helvetica", "", 8)
     pdf.set_fill_color(255, 255, 0)
-    pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+    pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
     pdf.ln()
     pdf.set_char_spacing(10)
-    pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+    pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
     pdf.ln()
     # unicode font
     pdf.set_char_spacing(0)
     pdf.add_font(fname=FONTS_DIR / "DroidSansFallback.ttf")
     pdf.set_font("DroidSansFallback", size=8)
     pdf.set_fill_color(255, 255, 0)
-    pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+    pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
     pdf.ln()
     pdf.set_char_spacing(10)
-    pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+    pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
     assert_pdf_equal(pdf, HERE / "multi_cell_char_spacing.pdf", tmp_path)
 
 
@@ -427,17 +429,17 @@ def test_multi_cell_char_wrap(tmp_path):  # issue #649
     pdf.add_page()
     pdf.set_font("Helvetica", "", 10)
     pdf.set_fill_color(255, 255, 0)
-    pdf.multi_cell(w=50, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+    pdf.multi_cell(w=50, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
     pdf.ln()
     pdf.multi_cell(
-        w=50, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True, wrapmode="CHAR"
+        w=50, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True, wrapmode="CHAR"
     )
     pdf.ln()
     pdf.set_font("Courier", "", 10)
     txt = "     " + "abcdefghijklmnopqrstuvwxyz" * 3
-    pdf.multi_cell(w=50, txt=txt, new_x="LEFT", fill=True, align="L")
+    pdf.multi_cell(w=50, text=txt, new_x="LEFT", fill=True, align="L")
     pdf.ln()
-    pdf.multi_cell(w=50, txt=txt, new_x="LEFT", fill=True, align="L", wrapmode="CHAR")
+    pdf.multi_cell(w=50, text=txt, new_x="LEFT", fill=True, align="L", wrapmode="CHAR")
     assert_pdf_equal(pdf, HERE / "multi_cell_char_wrap.pdf", tmp_path)
 
 
@@ -445,7 +447,7 @@ def test_multi_cell_centering(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    pdf.multi_cell(w=120, txt=LOREM_IPSUM, border=1, center=True)
+    pdf.multi_cell(w=120, text=LOREM_IPSUM, border=1, center=True)
     assert_pdf_equal(pdf, HERE / "multi_cell_centering.pdf", tmp_path)
 
 
@@ -454,7 +456,7 @@ def test_multi_cell_align_x(tmp_path):
     pdf.add_page()
     pdf.set_font("Times", size=16)
     pdf.set_x(140)
-    pdf.multi_cell(w=120, txt=LOREM_IPSUM, border=1, align="X")
+    pdf.multi_cell(w=120, text=LOREM_IPSUM, border=1, align="X")
     pdf.set_draw_color(r=0, g=255, b=0)
     pdf.line(140, 0, 140, pdf.h)
     assert_pdf_equal(pdf, HERE / "multi_cell_align_x.pdf", tmp_path)
@@ -464,7 +466,18 @@ def test_multi_cell_centering_and_align_x(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    pdf.multi_cell(w=120, txt=LOREM_IPSUM, border=1, center=True, align="X")
+    pdf.multi_cell(w=120, text=LOREM_IPSUM, border=1, center=True, align="X")
     pdf.set_draw_color(r=0, g=255, b=0)
     pdf.line(pdf.w / 2, 0, pdf.w / 2, pdf.h)
     assert_pdf_equal(pdf, HERE / "multi_cell_centering_and_align_x.pdf", tmp_path)
+
+
+def test_multi_cell_deprecated_txt_arg():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=TEXT_SIZE)
+    with pytest.warns(
+        DeprecationWarning, match='The parameter "txt" has been renamed to "text"'
+    ):
+        # pylint: disable=unexpected-keyword-arg
+        pdf.multi_cell(w=0, txt="Lorem ipsum Ut nostrud irure")

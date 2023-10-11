@@ -489,7 +489,7 @@ def test_flextemplate_leak(tmp_path):  # issue #570
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("helvetica", "", 10)
-    pdf.cell(txt="before", new_x="LEFT", new_y="NEXT")
+    pdf.cell(text="before", new_x="LEFT", new_y="NEXT")
     tmpldata = [
         {
             "name": "template",
@@ -506,5 +506,5 @@ def test_flextemplate_leak(tmp_path):  # issue #570
     templ = FlexTemplate(pdf, elements=tmpldata)
     templ.render(offsetx=pdf.x, offsety=pdf.y)
     pdf.ln()
-    pdf.cell(txt="after", new_x="LEFT", new_y="NEXT")
+    pdf.cell(text="after", new_x="LEFT", new_y="NEXT")
     assert_pdf_equal(pdf, HERE / "flextemplate_leak.pdf", tmp_path)

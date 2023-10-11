@@ -15,13 +15,13 @@ from fpdf import FPDF
 pdf = FPDF()
 pdf.add_page()
 pdf.set_font("Times", size=36)
-pdf.cell(txt="This")
+pdf.cell(text="This")
 pdf.set_font(style="B")
-pdf.cell(txt="is")
+pdf.cell(text="is")
 pdf.set_font(style="I")
-pdf.cell(txt="a")
+pdf.cell(text="a")
 pdf.set_font(style="U")
-pdf.cell(txt="PDF")
+pdf.cell(text="PDF")
 pdf.output("style.pdf")
 ```
 
@@ -37,10 +37,10 @@ pdf = FPDF()
 pdf.add_page()
 pdf.set_font("Helvetica", "", 8)
 pdf.set_fill_color(255, 255, 0)
-pdf.multi_cell(w=50, txt=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
+pdf.multi_cell(w=50, text=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
 pdf.ln()
 pdf.set_stretching(150)
-pdf.multi_cell(w=50, txt=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
+pdf.multi_cell(w=50, text=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
 ```
 ![](font_stretching.png)
 
@@ -59,10 +59,10 @@ pdf = FPDF()
 pdf.add_page()
 pdf.set_font("Helvetica", "", 8)
 pdf.set_fill_color(255, 255, 0)
-pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
 pdf.ln()
 pdf.set_char_spacing(10)
-pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
+pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
 ```
 ![](char_spacing.png)
 
@@ -106,25 +106,25 @@ The example shows the most common use cases:
     pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", "", 20)
-    pdf.write(txt="2")
+    pdf.write(text="2")
     pdf.char_vpos = "SUP"
-    pdf.write(txt="56")
+    pdf.write(text="56")
     pdf.char_vpos = "LINE"
-    pdf.write(txt=" more line text")
+    pdf.write(text=" more line text")
     pdf.char_vpos = "SUB"
-    pdf.write(txt="(idx)")
+    pdf.write(text="(idx)")
     pdf.char_vpos = "LINE"
-    pdf.write(txt=" end")
+    pdf.write(text=" end")
     pdf.ln()
-    pdf.write(txt="1234 + ")
+    pdf.write(text="1234 + ")
     pdf.char_vpos = "NOM"
-    pdf.write(txt="5")
+    pdf.write(text="5")
     pdf.char_vpos = "LINE"
-    pdf.write(txt="/")
+    pdf.write(text="/")
     pdf.char_vpos = "DENOM"
-    pdf.write(txt="16")
+    pdf.write(text="16")
     pdf.char_vpos = "LINE"
-    pdf.write(txt=" + 987 = x")
+    pdf.write(text=" + 987 = x")
 ```
 ![](char_vpos.png)
 
@@ -151,13 +151,13 @@ pdf.add_page()
 pdf.set_font("Helvetica", size=100)
 
 with pdf.local_context(text_mode="STROKE", line_width=2):
-    pdf.cell(txt="Hello world")
+    pdf.cell(text="Hello world")
 # Outside the local context, text_mode & line_width are reverted
 # back to their original default values
 pdf.ln()
 
 with pdf.local_context(text_mode="CLIP"):
-    pdf.cell(txt="CLIP text mode")
+    pdf.cell(text="CLIP text mode")
     for r in range(0, 250, 2):  # drawing concentric circles
         pdf.circle(x=130-r/2, y=70-r/2, r=r)
 
@@ -187,7 +187,7 @@ from fpdf import FPDF
 pdf = fpdf.FPDF()
 pdf.add_page()
 pdf.set_font("Times", size=60)
-pdf.cell(txt="**Lorem** __Ipsum__ --dolor--", markdown=True)
+pdf.cell(text="**Lorem** __Ipsum__ --dolor--", markdown=True)
 pdf.output("markdown-styled.pdf")
 ```
 

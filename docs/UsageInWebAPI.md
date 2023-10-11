@@ -21,7 +21,7 @@ def report(request):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=24)
-    pdf.cell(txt="hello world")
+    pdf.cell(text="hello world")
     return HttpResponse(bytes(pdf.output()), content_type="application/pdf")
 ```
 
@@ -42,7 +42,7 @@ def hello_world():
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=24)
-    pdf.cell(txt="hello world")
+    pdf.cell(text="hello world")
     response = make_response(pdf.output())
     response.headers["Content-Type"] = "application/pdf"
     return response
@@ -60,7 +60,7 @@ def handler(event, context):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=24)
-    pdf.cell(txt="hello world")
+    pdf.cell(text="hello world")
     return {
         'statusCode': 200,
         'headers': {
@@ -131,7 +131,7 @@ def gen_pdf():
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=24)
-    pdf.cell(txt="hello world")
+    pdf.cell(text="hello world")
     return bytes(pdf.output())
 
 # Embed PDF to display it:
@@ -180,8 +180,8 @@ async def create_pdf(request: Request):
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Helvetica", size=24)
-        pdf.cell(txt="hello world")
-        # pdf.cell(txt=data["content"])  # Using the contents of the JSON object to write into the PDF file
+        pdf.cell(text="hello world")
+        # pdf.cell(text=data["content"])  # Using the contents of the JSON object to write into the PDF file
         # Use str(data["content"]) if the content is non-string type
 
 

@@ -29,16 +29,16 @@ def test_skew_text(tmp_path):
     doc.add_page()
     doc.set_font("helvetica", size=12)
     with doc.skew(0, 20, 20, 20):
-        doc.text(20, 20, txt="text skewed on the y-axis")
+        doc.text(20, 20, text="text skewed on the y-axis")
     with doc.skew(0, -20, 20, 60):
-        doc.text(20, 60, txt="text skewed on the y-axis (negative)")
-        doc.text(20, 100, txt="text skewed on the y-axis (negative) - line 2")
+        doc.text(20, 60, text="text skewed on the y-axis (negative)")
+        doc.text(20, 100, text="text skewed on the y-axis (negative) - line 2")
     with doc.skew(20, 0, 20, 140):
-        doc.text(20, 140, txt="text skewed on the x-axis")
+        doc.text(20, 140, text="text skewed on the x-axis")
     with doc.skew(-20, 0, 20, 180):
-        doc.text(20, 180, txt="text skewed on the x-axis (negative)")
+        doc.text(20, 180, text="text skewed on the x-axis (negative)")
     with doc.skew(89, 0, 20, 220):
-        doc.text(20, 220, txt="some extreme skewing")
+        doc.text(20, 220, text="some extreme skewing")
     assert_pdf_equal(doc, HERE / "skew_text.pdf", tmp_path)
 
 
@@ -48,19 +48,19 @@ def test_cell_skew_text(tmp_path):
     doc.set_font("helvetica", size=12)
     doc.ln(40)
     with doc.skew(0, 20):
-        doc.cell(txt="text skewed on the y-axis")
+        doc.cell(text="text skewed on the y-axis")
         doc.ln(40)
     with doc.skew(0, -20):
-        doc.cell(txt="text skewed on the y-axis (negative)")
+        doc.cell(text="text skewed on the y-axis (negative)")
         doc.ln(40)
     with doc.skew(20, 0):
-        doc.cell(txt="text skewed on the x-axis")
+        doc.cell(text="text skewed on the x-axis")
         doc.ln(40)
     with doc.skew(-20, 0):
-        doc.cell(txt="text skewed on the x-axis (negative)")
+        doc.cell(text="text skewed on the x-axis (negative)")
         doc.ln(40)
     with doc.skew(89, 0):
-        doc.cell(txt="some extreme skewing")
+        doc.cell(text="some extreme skewing")
         doc.ln(40)
     assert_pdf_equal(doc, HERE / "cell_skew_text.pdf", tmp_path)
 
@@ -72,11 +72,11 @@ def test_multi_cell_skew_text(tmp_path):
     pdf.set_font("Helvetica", "", 8)
     pdf.set_fill_color(255, 255, 0)
     with pdf.skew(20, 0):
-        pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], fill=True)
+        pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], fill=True)
         pdf.ln(60)
     with pdf.skew(0, 20):
-        pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], fill=True)
+        pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], fill=True)
         pdf.ln(60)
     with pdf.skew(20, 20):
-        pdf.multi_cell(w=150, txt=LOREM_IPSUM[:200], fill=True)
+        pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], fill=True)
     assert_pdf_equal(pdf, HERE / "multi_cell_skew_text.pdf", tmp_path)

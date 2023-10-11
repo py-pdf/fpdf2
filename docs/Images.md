@@ -219,7 +219,7 @@ from fpdf import FPDF
 pdf = FPDF()
 pdf.allow_images_transparency = False
 pdf.set_font("Helvetica", size=15)
-pdf.cell(w=pdf.epw, h=30, txt="Text behind. " * 6)
+pdf.cell(w=pdf.epw, h=30, text="Text behind. " * 6)
 pdf.image("docs/fpdf2-logo.png", x=0)
 pdf.output("pdf-including-image-without-transparency.pdf")
 ```

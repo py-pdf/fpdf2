@@ -777,11 +777,11 @@ class HTML2FPDF(HTMLParser):
         self.pdf.set_text_color(r, g, b)
         self.pdf.page = prev_page
 
-    def put_link(self, txt):
+    def put_link(self, text):
         # Put a hyperlink
         self.set_text_color(0, 0, 255)
         self.set_style("u", True)
-        self._write_paragraph(txt, link=self.href)
+        self._write_paragraph(text, link=self.href)
         self.set_style("u", False)
         self.set_text_color(*self.font_color)
 
@@ -796,7 +796,7 @@ class HTML2FPDF(HTMLParser):
             pdf.multi_cell(
                 w=pdf.epw,
                 h=pdf.font_size,
-                txt=text,
+                text=text,
                 new_x=XPos.LMARGIN,
                 new_y=YPos.NEXT,
                 link=link,

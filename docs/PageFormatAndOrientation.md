@@ -27,10 +27,10 @@ for i in range(9):
     if i == 6:
         pdf.set_page_background('image_path.png')
     pdf.add_page(format=(210 * (1 - i/10), 297 * (1 - i/10)))
-    pdf.cell(txt=str(i))
+    pdf.cell(text=str(i))
 pdf.set_page_background(None)
 pdf.add_page(same=True)
-pdf.cell(txt="9")
+pdf.cell(text="9")
 pdf.output("varying_format.pdf")
 ```
 
@@ -51,9 +51,9 @@ pdf = FPDF()
 pdf.set_display_mode(zoom="default", layout="TWO_COLUMN_LEFT")
 pdf.set_font("helvetica", size=30)
 pdf.add_page()
-pdf.cell(txt="page 1")
+pdf.cell(text="page 1")
 pdf.add_page()
-pdf.cell(txt="page 2")
+pdf.cell(text="page 2")
 pdf.output("two-column.pdf")
 ```
 
@@ -74,9 +74,9 @@ pdf.viewer_preferences = ViewerPreferences(
 )
 pdf.set_font("helvetica", size=30)
 pdf.add_page()
-pdf.cell(txt="page 1")
+pdf.cell(text="page 1")
 pdf.add_page()
-pdf.cell(txt="page 2")
+pdf.cell(text="page 2")
 pdf.output("viewer-prefs.pdf")
 ```
 

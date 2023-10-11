@@ -25,7 +25,7 @@ def test_text_annotation(tmp_path):
     )
     for i, flags in enumerate((("PRINT",), all_visible_flags)):
         for j, flag in enumerate(flags):
-            pdf.text(x=15 + 50 * i, y=10 + 5 * j, txt=flag)
+            pdf.text(x=15 + 50 * i, y=10 + 5 * j, text=flag)
         for j, name in enumerate(
             (None,)
             + tuple(AnnotationName.__members__.keys())
@@ -45,7 +45,7 @@ def test_named_actions(tmp_path):
     pdf = FPDF()
     pdf.set_font("Helvetica", size=24)
     pdf.add_page()
-    pdf.text(x=80, y=140, txt="First page")
+    pdf.text(x=80, y=140, text="First page")
     pdf.add_page()
     pdf.underline = True
     for x, y, named_action in (
@@ -54,7 +54,7 @@ def test_named_actions(tmp_path):
         (40, 200, "FirstPage"),
         (120, 200, "LastPage"),
     ):
-        pdf.text(x=x, y=y, txt=named_action)
+        pdf.text(x=x, y=y, text=named_action)
         pdf.add_action(
             NamedAction(named_action),
             x=x,
@@ -64,7 +64,7 @@ def test_named_actions(tmp_path):
         )
     pdf.underline = False
     pdf.add_page()
-    pdf.text(x=80, y=140, txt="Last page")
+    pdf.text(x=80, y=140, text="Last page")
     assert_pdf_equal(pdf, HERE / "named_actions.pdf", tmp_path)
 
 
@@ -73,7 +73,7 @@ def test_goto_action(tmp_path):
     pdf.set_font("Helvetica", size=24)
     pdf.add_page()
     x, y, text = 80, 140, "GoTo action"
-    pdf.text(x=x, y=y, txt=text)
+    pdf.text(x=x, y=y, text=text)
     pdf.add_action(
         GoToAction(dest=DestinationXYZ(page=2, top=pdf.h_pt)),
         x=x,
@@ -82,7 +82,7 @@ def test_goto_action(tmp_path):
         h=pdf.font_size,
     )
     pdf.add_page()
-    pdf.text(x=80, y=140, txt="Page 2")
+    pdf.text(x=80, y=140, text="Page 2")
     assert_pdf_equal(pdf, HERE / "goto_action.pdf", tmp_path)
 
 
@@ -91,7 +91,7 @@ def test_goto_remote_action(tmp_path):
     pdf.set_font("Helvetica", size=24)
     pdf.add_page()
     x, y, text = 80, 140, "GoTo-Remote action"
-    pdf.text(x=x, y=y, txt=text)
+    pdf.text(x=x, y=y, text=text)
     dest = DestinationXYZ(page=1, top=pdf.h_pt)
     pdf.add_action(
         GoToRemoteAction("goto_action.pdf", dest=dest),
@@ -108,7 +108,7 @@ def test_launch_action(tmp_path):
     pdf.set_font("Helvetica", size=24)
     pdf.add_page()
     x, y, text = 80, 140, "Launch action"
-    pdf.text(x=x, y=y, txt=text)
+    pdf.text(x=x, y=y, text=text)
     pdf.add_action(
         LaunchAction(file="goto_action.pdf"),
         x=x,
@@ -126,8 +126,8 @@ def test_highlighted(tmp_path):
     with pdf.highlight("Highlight comment", type="Squiggly", modification_time=EPOCH):
         pdf.text(50, 50, "Line 1")
         pdf.set_y(50)
-        pdf.multi_cell(w=30, txt="Line 2")
-    pdf.cell(w=60, txt="Not highlighted", border=1)
+        pdf.multi_cell(w=30, text="Line 2")
+    pdf.cell(w=60, text="Not highlighted", border=1)
     assert_pdf_equal(pdf, HERE / "highlighted.pdf", tmp_path)
 
 
@@ -135,10 +135,10 @@ def test_highlighted_over_page_break(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("helvetica", size=24)
-    pdf.write(txt=LOREM_IPSUM)
+    pdf.write(text=LOREM_IPSUM)
     pdf.ln()
     with pdf.highlight("Comment", title="Freddy Mercury", modification_time=EPOCH):
-        pdf.write(txt=LOREM_IPSUM)
+        pdf.write(text=LOREM_IPSUM)
     assert_pdf_equal(pdf, HERE / "highlighted_over_page_break.pdf", tmp_path)
 
 

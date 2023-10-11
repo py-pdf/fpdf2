@@ -14,9 +14,9 @@ def test_default_viewer_preferences(tmp_path):
     pdf.viewer_preferences = ViewerPreferences()
     pdf.set_font("helvetica", size=30)
     pdf.add_page()
-    pdf.cell(txt="page 1")
+    pdf.cell(text="page 1")
     pdf.add_page()
-    pdf.cell(txt="page 2")
+    pdf.cell(text="page 2")
     assert_pdf_equal(pdf, HERE / "default_viewer_preferences.pdf", tmp_path)
 
 
@@ -33,9 +33,9 @@ def test_custom_viewer_preferences(tmp_path):
     )
     pdf.set_font("helvetica", size=30)
     pdf.add_page()
-    pdf.cell(txt="page 1")
+    pdf.cell(text="page 1")
     pdf.add_page()
-    pdf.cell(txt="page 2")
+    pdf.cell(text="page 2")
     assert_pdf_equal(pdf, HERE / "custom_viewer_preferences.pdf", tmp_path)
 
 

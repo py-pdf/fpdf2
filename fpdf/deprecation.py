@@ -7,10 +7,31 @@ in non-backward-compatible ways.
 """
 
 import contextlib
+from functools import wraps
 import inspect
 import os.path
 import warnings
 from types import ModuleType
+
+
+def support_deprecated_txt_arg(fn):
+    """Decorator converting `txt=` arguments into `text=` arguments"""
+
+    @wraps(fn)
+    def wrapper(self, *args, **kwargs):
+        txt_value = kwargs.pop("txt", None)
+        if txt_value is not None:
+            if "text" in kwargs:
+                raise ValueError("Both txt= & text= arguments cannot be provided")
+            kwargs["text"] = txt_value
+            warnings.warn(
+                'The parameter "txt" has been renamed to "text" in 2.7.6',
+                DeprecationWarning,
+                stacklevel=get_stack_level(),
+            )
+        return fn(self, *args, **kwargs)
+
+    return wrapper
 
 
 class WarnOnDeprecatedModuleAttributes(ModuleType):

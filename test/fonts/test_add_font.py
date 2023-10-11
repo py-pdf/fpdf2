@@ -88,7 +88,7 @@ def test_add_font_with_str_fname_ok(tmp_path):
             pdf.add_font(fname=font_file_path)
             pdf.set_font("Roboto-Regular", size=64)
             pdf.add_page()
-            pdf.cell(txt="Hello World!")
+            pdf.cell(text="Hello World!")
             assert_pdf_equal(pdf, HERE / "add_font_unicode.pdf", tmp_path)
 
         for r in record:
@@ -118,7 +118,7 @@ def test_render_en_dash(tmp_path):  # issue-166
     pdf.add_font(fname=HERE / "Roboto-Regular.ttf")
     pdf.set_font("Roboto-Regular", size=120)
     pdf.add_page()
-    pdf.cell(w=pdf.epw, txt="–")  # U+2013
+    pdf.cell(w=pdf.epw, text="–")  # U+2013
     assert_pdf_equal(pdf, HERE / "render_en_dash.pdf", tmp_path)
 
 
@@ -137,9 +137,9 @@ def test_add_font_otf(tmp_path):
         "Lorem ipsum dolor, **consectetur adipiscing** elit,"
         " eiusmod __tempor incididunt__ ut labore et dolore --magna aliqua--."
     )
-    pdf.multi_cell(w=pdf.epw, txt=text, markdown=True)
+    pdf.multi_cell(w=pdf.epw, text=text, markdown=True)
     pdf.ln()
-    pdf.multi_cell(w=pdf.epw, txt=text, markdown=True, align="L")
+    pdf.multi_cell(w=pdf.epw, text=text, markdown=True, align="L")
     assert_pdf_equal(pdf, HERE / "fonts_otf.pdf", tmp_path)
 
 
@@ -154,6 +154,6 @@ def test_font_missing_glyphs(caplog):
     pdf.add_page()
     pdf.add_font(family="Roboto", fname=HERE / "Roboto-Regular.ttf")
     pdf.set_font("Roboto")
-    pdf.cell(txt="Test 𝕥𝕖𝕤𝕥 🆃🅴🆂🆃 😲")
+    pdf.cell(text="Test 𝕥𝕖𝕤𝕥 🆃🅴🆂🆃 😲")
     pdf.output(devnull)
     assert "Roboto is missing the following glyphs: 𝕥, 𝕖, 𝕤, 🆃, 🅴, 🆂, 😲" in caplog.text

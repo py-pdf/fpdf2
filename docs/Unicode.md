@@ -171,7 +171,7 @@ pdf.add_font(fname="Roboto.ttf")
 pdf.add_font(fname="TwitterEmoji.ttf")
 pdf.set_font("Roboto", size=15)
 pdf.set_fallback_fonts(["TwitterEmoji"])
-pdf.write(txt="text with an emoji 🌭")
+pdf.write(text="text with an emoji 🌭")
 pdf.output("text_with_emoji.pdf")
 ```
 

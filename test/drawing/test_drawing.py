@@ -997,7 +997,7 @@ def test_blending_images(tmp_path):
         pdf.image(HERE / "../image/png_test_suite/f04n2c08.png", y=70 * i, h=64)
         with pdf.local_context(blend_mode=blend_mode):
             pdf.image(HERE / "../image/png_test_suite/pp0n6a08.png", y=70 * i, h=64)
-        pdf.text(x=0, y=70 * i + 10, txt=str(blend_mode))
+        pdf.text(x=0, y=70 * i + 10, text=str(blend_mode))
     assert_pdf_equal(pdf, HERE / "generated_pdf/blending_images.pdf", tmp_path)
 
 

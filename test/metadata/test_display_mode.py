@@ -21,7 +21,7 @@ def test_setting_all_zoom(zoom, tmp_path):
         w=72,
         h=0,
         border=1,
-        txt="hello world",
+        text="hello world",
         new_x="LMARGIN",
         new_y="NEXT",
     )
@@ -41,9 +41,9 @@ def test_page_layout(page_layout, tmp_path):
     pdf.set_display_mode(zoom="default", layout=page_layout)
     pdf.set_font("helvetica", size=30)
     pdf.add_page()
-    pdf.cell(txt="page 1")
+    pdf.cell(text="page 1")
     pdf.add_page()
-    pdf.cell(txt="page 2")
+    pdf.cell(text="page 2")
     assert_pdf_equal(pdf, HERE / f"page-layout-{page_layout}.pdf", tmp_path)
 
 
@@ -53,9 +53,9 @@ def test_layout_aliases(layout_alias, tmp_path):
     pdf.set_display_mode(zoom="default", layout=layout_alias)
     pdf.set_font("helvetica", size=30)
     pdf.add_page()
-    pdf.cell(txt="page 1")
+    pdf.cell(text="page 1")
     pdf.add_page()
-    pdf.cell(txt="page 2")
+    pdf.cell(text="page 2")
     assert_pdf_equal(pdf, HERE / f"layout-alias-{layout_alias}.pdf", tmp_path)
 
 
@@ -65,9 +65,9 @@ def test_page_mode(page_mode, tmp_path):
     pdf.page_mode = page_mode
     pdf.set_font("helvetica", size=30)
     pdf.add_page()
-    pdf.cell(txt="page 1")
+    pdf.cell(text="page 1")
     pdf.add_page()
-    pdf.cell(txt="page 2")
+    pdf.cell(text="page 2")
     assert_pdf_equal(pdf, HERE / f"page-mode-{page_mode}.pdf", tmp_path)
 
 
@@ -76,9 +76,9 @@ def test_page_mode_zoom_numeric(tmp_path):
     pdf.set_display_mode(zoom=25)
     pdf.set_font("helvetica", size=30)
     pdf.add_page()
-    pdf.cell(txt="page 1")
+    pdf.cell(text="page 1")
     pdf.add_page()
-    pdf.cell(txt="page 2")
+    pdf.cell(text="page 2")
     assert_pdf_equal(
         pdf,
         HERE / f"page-mode-zoom_numeric.pdf",
