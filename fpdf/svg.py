@@ -26,6 +26,7 @@ from .drawing import (
     GraphicsContext,
     GraphicsStyle,
     PaintedPath,
+    ClippingPath,
     Transform,
 )
 
@@ -323,21 +324,22 @@ def apply_styles(stylable, svg_element):
     if tfstr:
         stylable.transform = convert_transforms(tfstr)
 
-
 @force_nodocument
 class ShapeBuilder:
     """A namespace within which methods for converting basic shapes can be looked up."""
 
     @staticmethod
-    def new_path(tag):
+    def new_path(tag, clipping_path: bool=False):
         """Create a new path with the appropriate styles."""
         path = PaintedPath()
+        if clipping_path:
+            path = ClippingPath()
         apply_styles(path, tag)
 
         return path
 
     @classmethod
-    def rect(cls, tag):
+    def rect(cls, tag, clipping_path: bool=False):
         """Convert an SVG <rect> into a PDF path."""
         # svg rect is wound clockwise
         if "x" in tag.attrib:
@@ -387,7 +389,7 @@ class ShapeBuilder:
         if ry > (height / 2):
             ry = height / 2
 
-        path = cls.new_path(tag)
+        path = cls.new_path(tag, clipping_path)
 
         path.rectangle(x, y, width, height, rx, ry)
         return path
@@ -861,6 +863,13 @@ class SVGObject:
                 self.build_path(child)
             elif child.tag in shape_tags:
                 self.build_shape(child)
+            if child.tag in xmlns_lookup("svg", "clipPath"):
+                try:
+                    clip_id = child.attrib['id']
+                except KeyError:
+                    clip_id = None
+                for child_ in child:
+                    self.build_clipping_path(child_, clip_id)
             
 
             # We could/should also support <defs> that are rect, circle, ellipse, line, polyline, polygon...
@@ -933,6 +942,7 @@ class SVGObject:
         """Convert an SVG <path> tag into a PDF path object."""
         pdf_path = PaintedPath()
         apply_styles(pdf_path, path)
+        self.apply_clipping_path(pdf_path, path)
 
         svg_path = path.attrib.get("d", None)
 
@@ -945,10 +955,12 @@ class SVGObject:
             pass
 
         return pdf_path
-    
+
     @force_nodocument
     def build_shape(self, shape):
+        """Convert an SVG shape tag into a PDF path object. Necessary to make xref (because ShapeBuilder doesn't have access to this object.)"""
         shape_path = getattr(ShapeBuilder, shape_tags[shape.tag])(shape)
+        self.apply_clipping_path(shape_path, shape)
 
         try:
             self.cross_references["#" + shape.attrib["id"]] = shape_path
@@ -956,10 +968,20 @@ class SVGObject:
             pass
 
         return shape_path
+    
+    def build_clipping_path(self, shape, clip_id):
+        clipping_path_shape = getattr(ShapeBuilder, shape_tags[shape.tag])(shape, True)
 
-
-    def assign_to_xrefs(self, tag, assignable):
         try:
-            self.cross_references["#" + tag.attrib["id"]] = assignable
+            self.cross_references["#" + clip_id] = clipping_path_shape
         except KeyError:
             pass
+
+        return clipping_path_shape
+
+    @force_nodocument
+    def apply_clipping_path(self, stylable, svg_element):
+        clipping_path = svg_element.attrib.get("clip-path")
+        if clipping_path:
+            clipping_path_id = re.search(r"url\((\#\w+)\)", clipping_path)
+            stylable.clipping_path = self.cross_references[clipping_path_id[1]]
