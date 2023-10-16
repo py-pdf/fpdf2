@@ -324,12 +324,13 @@ def apply_styles(stylable, svg_element):
     if tfstr:
         stylable.transform = convert_transforms(tfstr)
 
+
 @force_nodocument
 class ShapeBuilder:
     """A namespace within which methods for converting basic shapes can be looked up."""
 
     @staticmethod
-    def new_path(tag, clipping_path: bool=False):
+    def new_path(tag, clipping_path: bool = False):
         """Create a new path with the appropriate styles."""
         path = PaintedPath()
         if clipping_path:
@@ -339,7 +340,7 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def rect(cls, tag, clipping_path: bool=False):
+    def rect(cls, tag, clipping_path: bool = False):
         """Convert an SVG <rect> into a PDF path."""
         # svg rect is wound clockwise
         if "x" in tag.attrib:
@@ -865,12 +866,11 @@ class SVGObject:
                 self.build_shape(child)
             if child.tag in xmlns_lookup("svg", "clipPath"):
                 try:
-                    clip_id = child.attrib['id']
+                    clip_id = child.attrib["id"]
                 except KeyError:
                     clip_id = None
                 for child_ in child:
                     self.build_clipping_path(child_, clip_id)
-            
 
             # We could/should also support <defs> that are rect, circle, ellipse, line, polyline, polygon...
 
@@ -916,7 +916,9 @@ class SVGObject:
 
         # handle defs before anything else
         # TODO: add test
-        for child in [child for child in group if child.tag in xmlns_lookup("svg", "defs")]:
+        for child in [
+            child for child in group if child.tag in xmlns_lookup("svg", "defs")
+        ]:
             self.handle_defs(child)
 
         for child in group:
@@ -935,7 +937,6 @@ class SVGObject:
             pass
 
         return pdf_group
-    
 
     @force_nodocument
     def build_path(self, path):
@@ -968,7 +969,7 @@ class SVGObject:
             pass
 
         return shape_path
-    
+
     def build_clipping_path(self, shape, clip_id):
         clipping_path_shape = getattr(ShapeBuilder, shape_tags[shape.tag])(shape, True)
 
