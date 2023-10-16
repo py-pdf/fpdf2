@@ -859,6 +859,10 @@ class SVGObject:
                 self.build_group(child)
             if child.tag in xmlns_lookup("svg", "path"):
                 self.build_path(child)
+            elif child.tag in shape_tags:
+                self.build_shape(child)
+            
+
             # We could/should also support <defs> that are rect, circle, ellipse, line, polyline, polygon...
 
     # this assumes xrefs only reference already-defined ids.
@@ -869,7 +873,7 @@ class SVGObject:
         pdf_group = GraphicsContext()
         apply_styles(pdf_group, xref)
 
-        for candidate in xmlns_lookup("xlink", "href"):
+        for candidate in xmlns_lookup("xlink", "href", "id"):
             try:
                 ref = xref.attrib[candidate]
                 break
@@ -882,7 +886,7 @@ class SVGObject:
             pdf_group.add_item(self.cross_references[ref])
         except KeyError:
             raise ValueError(
-                f"use {xref} references nonexistent ref id {ref}"
+                f"use {xref} references nonexistent ref id {ref}, existing refs: {self.cross_references.keys()}"
             ) from None
 
         if "x" in xref.attrib or "y" in xref.attrib:
@@ -901,15 +905,18 @@ class SVGObject:
             pdf_group = GraphicsContext()
             apply_styles(pdf_group, group)
 
+        # handle defs before anything else
+        # TODO: add test
+        for child in [child for child in group if child.tag in xmlns_lookup("svg", "defs")]:
+            self.handle_defs(child)
+
         for child in group:
-            if child.tag in xmlns_lookup("svg", "defs"):
-                self.handle_defs(child)
             if child.tag in xmlns_lookup("svg", "g"):
                 pdf_group.add_item(self.build_group(child))
             if child.tag in xmlns_lookup("svg", "path"):
                 pdf_group.add_item(self.build_path(child))
             elif child.tag in shape_tags:
-                pdf_group.add_item(getattr(ShapeBuilder, shape_tags[child.tag])(child))
+                pdf_group.add_item(self.build_shape(child))
             if child.tag in xmlns_lookup("svg", "use"):
                 pdf_group.add_item(self.build_xref(child))
 
@@ -919,6 +926,7 @@ class SVGObject:
             pass
 
         return pdf_group
+    
 
     @force_nodocument
     def build_path(self, path):
@@ -937,3 +945,21 @@ class SVGObject:
             pass
 
         return pdf_path
+    
+    @force_nodocument
+    def build_shape(self, shape):
+        shape_path = getattr(ShapeBuilder, shape_tags[shape.tag])(shape)
+
+        try:
+            self.cross_references["#" + shape.attrib["id"]] = shape_path
+        except KeyError:
+            pass
+
+        return shape_path
+
+
+    def assign_to_xrefs(self, tag, assignable):
+        try:
+            self.cross_references["#" + tag.attrib["id"]] = assignable
+        except KeyError:
+            pass

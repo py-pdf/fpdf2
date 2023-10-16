@@ -70,6 +70,8 @@ pre-commit install
 To run tests, `cd` into `fpdf2` repository, install the dependencies using
 `pip install -r test/requirements.txt`,  and run `pytest`.
 
+You may also need to install [SWIG](https://swig.org/index.html) and [Ghostscript](https://www.ghostscript.com/).
+
 You can run a single test by executing: `pytest -k function_name`.
 
 Alternatively, you can use [Tox](https://tox.readthedocs.io/en/latest/).
