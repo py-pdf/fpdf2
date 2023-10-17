@@ -994,6 +994,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "rakesh-nj",
+      "name": "Rakesh N J",
+      "avatar_url": "https://avatars.githubusercontent.com/u/121295004?v=4",
+      "profile": "https://github.com/rakesh-nj",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
