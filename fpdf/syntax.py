@@ -198,9 +198,16 @@ class PDFObject:
 
 
 class PDFContentStream(PDFObject):
+    # Passed to zlib.compress() - In range 0-9 - Default is currently equivalent to 6:
+    _COMPRESSION_LEVEL = -1
+
     def __init__(self, contents, compress=False):
         super().__init__()
-        self._contents = zlib.compress(contents) if compress else contents
+        self._contents = (
+            zlib.compress(contents, level=self._COMPRESSION_LEVEL)
+            if compress
+            else contents
+        )
         self.filter = Name("FlateDecode") if compress else None
         self.length = len(self._contents)
 

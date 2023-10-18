@@ -70,7 +70,10 @@ pre-commit install
 To run tests, `cd` into `fpdf2` repository, install the dependencies using
 `pip install -r test/requirements.txt`,  and run `pytest`.
 
-You may also need to install [SWIG](https://swig.org/index.html) and [Ghostscript](https://www.ghostscript.com/).
+You may also need to install [SWIG](https://swig.org/index.html) and [Ghostscript](https://www.ghostscript.com/),
+because they are dependencies for `camelot`, a library for table extraction in PDF that we test in `test/table/test_table_extraction.py`.
+Those tests will always be executed by the GitHub Actions pipeline,
+so you can also not bother installing those tools and skip those tests by running `pytest -k "not camelot"`.
 
 You can run a single test by executing: `pytest -k function_name`.
 

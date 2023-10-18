@@ -1,4 +1,5 @@
 import base64, zlib
+from dataclasses import dataclass
 from io import BytesIO
 from math import ceil
 from urllib.request import urlopen
@@ -24,8 +25,15 @@ from .errors import FPDFException
 from .svg import SVGObject
 
 
+@dataclass
+class ImageSettings:
+    # Passed to zlib.compress() - In range 0-9 - Default is currently equivalent to 6:
+    compression_level: int = -1
+
+
 LOGGER = logging.getLogger(__name__)
 SUPPORTED_IMAGE_FILTERS = ("AUTO", "FlateDecode", "DCTDecode", "JPXDecode")
+SETTINGS = ImageSettings()
 
 # fmt: off
 TIFFBitRevTable = [
@@ -163,7 +171,10 @@ def load_image(filename):
 
 def _decode_base64_image(base64Image):
     "Decode the base 64 image string into an io byte stream."
-    imageData = base64Image.split("base64,")[1]
+    frags = base64Image.split("base64,")
+    if len(frags) != 2:
+        raise NotImplementedError("Unsupported non-base64 image data")
+    imageData = frags[1]
     decodedData = base64.b64decode(imageData)
     return BytesIO(decodedData)
 
@@ -562,7 +573,7 @@ def _to_zdata(img, remove_slice=None, select_slice=None):
         data_with_padding.extend(b"\0")
         data_with_padding.extend(data[i : i + row_size])
 
-    return zlib.compress(data_with_padding)
+    return zlib.compress(data_with_padding, level=SETTINGS.compression_level)
 
 
 def _has_alpha(img, alpha_channel):

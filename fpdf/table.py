@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from numbers import Number
 from typing import Optional, Union
 
+from .drawing import DeviceRGB, DeviceGray, DeviceCMYK
 from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode, VAlign
 from .enums import MethodReturnValue
 from .errors import FPDFException
@@ -22,6 +23,8 @@ def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
         prev_fill_color = pdf.fill_color
         if isinstance(fill_color, (int, float)):
             fill_color = [fill_color]
+        elif isinstance(fill_color, (DeviceRGB, DeviceGray, DeviceCMYK)):
+            fill_color = fill_color.colors
         pdf.set_fill_color(*fill_color)
 
     sl = []
@@ -689,8 +692,9 @@ class Row:
         """
         if text and img:
             raise NotImplementedError(
+                # pylint: disable=implicit-str-concat,useless-suppression
                 "fpdf2 currently does not support inserting text with an image in the same table cell."
-                "Pull Requests are welcome to implement this 😊"
+                " Pull Requests are welcome to implement this 😊"
             )
         if not style:
             # We capture the current font settings:
