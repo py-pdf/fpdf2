@@ -759,13 +759,17 @@ test_svg_sources = (
     pytest.param(svgfile("SVG_logo.svg"), id="SVG logo from wikipedia"),
     pytest.param(svgfile("viewbox.svg"), id="weird viewbox"),
     pytest.param(svgfile("search.svg"), id="search icon"),  # issue 356
-    # discovered while investigatin issue 358:
+    # discovered while investigating issue 358:
     pytest.param(svgfile("issue_358b.svg"), id="repeated relative move"),
     pytest.param(svgfile("issue_358.svg"), id="arc start & initial point"),  # issue 358
     pytest.param(svgfile("Ghostscript_colorcircle.svg"), id="ghostscript colorcircle"),
     pytest.param(svgfile("Ghostscript_escher.svg"), id="ghostscript escher"),
     pytest.param(svgfile("use-xlink-href.svg"), id="use xlink:href - issue #446"),
     pytest.param(svgfile("rgb-color-issue-480.svg"), id="rgb() color - issue #480"),
+    pytest.param(
+        svgfile("circle01_def_test.svg"), id="circle defined in 'defs' tag - issue #858"
+    ),
+    pytest.param(svgfile("clip_path.svg"), id="clip path - issue #858"),
 )
 
 svg_path_edge_cases = (

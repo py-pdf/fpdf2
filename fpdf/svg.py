@@ -396,19 +396,19 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def circle(cls, tag):
+    def circle(cls, tag, clipping_path: bool = False):
         """Convert an SVG <circle> into a PDF path."""
         cx = float(tag.attrib.get("cx", 0))
         cy = float(tag.attrib.get("cy", 0))
         r = float(tag.attrib["r"])
 
-        path = cls.new_path(tag)
+        path = cls.new_path(tag, clipping_path)
 
         path.circle(cx, cy, r)
         return path
 
     @classmethod
-    def ellipse(cls, tag):
+    def ellipse(cls, tag, clipping_path: bool = False):
         """Convert an SVG <ellipse> into a PDF path."""
         cx = float(tag.attrib.get("cx", 0))
         cy = float(tag.attrib.get("cy", 0))
@@ -416,7 +416,7 @@ class ShapeBuilder:
         rx = tag.attrib.get("rx", "auto")
         ry = tag.attrib.get("ry", "auto")
 
-        path = cls.new_path(tag)
+        path = cls.new_path(tag, clipping_path)
 
         if (rx == ry == "auto") or (rx == 0) or (ry == 0):
             return path
@@ -460,11 +460,11 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def polygon(cls, tag):
+    def polygon(cls, tag, clipping_path: bool = False):
         """Convert an SVG <polygon> into a PDF path."""
         points = tag.attrib["points"]
 
-        path = cls.new_path(tag)
+        path = cls.new_path(tag, clipping_path)
 
         points = "M" + points + "Z"
         svg_path_converter(path, points)
@@ -667,6 +667,12 @@ class SVGObject:
 
         self.extract_shape_info(svg_tree)
         self.convert_graphics(svg_tree)
+
+    @force_nodocument
+    def update_xref(self, key, referenced):
+        if key:
+            key = "#" + key if not key.startswith("#") else key
+            self.cross_references[key] = referenced
 
     @force_nodocument
     def extract_shape_info(self, root_tag):
@@ -872,8 +878,6 @@ class SVGObject:
                 for child_ in child:
                     self.build_clipping_path(child_, clip_id)
 
-            # We could/should also support <defs> that are rect, circle, ellipse, line, polyline, polygon...
-
     # this assumes xrefs only reference already-defined ids.
     # I don't know if this is required by the SVG spec.
     @force_nodocument
@@ -895,7 +899,7 @@ class SVGObject:
             pdf_group.add_item(self.cross_references[ref])
         except KeyError:
             raise ValueError(
-                f"use {xref} references nonexistent ref id {ref}, existing refs: {self.cross_references.keys()}"
+                f"use {xref} references nonexistent ref id {ref}"
             ) from None
 
         if "x" in xref.attrib or "y" in xref.attrib:
@@ -915,7 +919,6 @@ class SVGObject:
             apply_styles(pdf_group, group)
 
         # handle defs before anything else
-        # TODO: add test
         for child in [
             child for child in group if child.tag in xmlns_lookup("svg", "defs")
         ]:
@@ -931,10 +934,7 @@ class SVGObject:
             if child.tag in xmlns_lookup("svg", "use"):
                 pdf_group.add_item(self.build_xref(child))
 
-        try:
-            self.cross_references["#" + group.attrib["id"]] = pdf_group
-        except KeyError:
-            pass
+        self.update_xref(group.attrib.get("id"), pdf_group)
 
         return pdf_group
 
@@ -945,15 +945,12 @@ class SVGObject:
         apply_styles(pdf_path, path)
         self.apply_clipping_path(pdf_path, path)
 
-        svg_path = path.attrib.get("d", None)
+        svg_path = path.attrib.get("d")
 
         if svg_path is not None:
             svg_path_converter(pdf_path, svg_path)
 
-        try:
-            self.cross_references["#" + path.attrib["id"]] = pdf_path
-        except KeyError:
-            pass
+        self.update_xref(path.attrib.get("id"), pdf_path)
 
         return pdf_path
 
@@ -963,20 +960,15 @@ class SVGObject:
         shape_path = getattr(ShapeBuilder, shape_tags[shape.tag])(shape)
         self.apply_clipping_path(shape_path, shape)
 
-        try:
-            self.cross_references["#" + shape.attrib["id"]] = shape_path
-        except KeyError:
-            pass
+        self.update_xref(shape.attrib.get("id"), shape_path)
 
         return shape_path
 
+    @force_nodocument
     def build_clipping_path(self, shape, clip_id):
         clipping_path_shape = getattr(ShapeBuilder, shape_tags[shape.tag])(shape, True)
 
-        try:
-            self.cross_references["#" + clip_id] = clipping_path_shape
-        except KeyError:
-            pass
+        self.update_xref(clip_id, clipping_path_shape)
 
         return clipping_path_shape
 
