@@ -1003,6 +1003,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "Iamrodos",
+      "name": "rodos",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4513819?v=4",
+      "profile": "https://github.com/Iamrodos",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
