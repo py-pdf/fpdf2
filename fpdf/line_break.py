@@ -33,6 +33,7 @@ class Fragment:
         graphics_state: dict,
         k: float,
         link: Optional[Union[int, str]] = None,
+        text_shaping_parameters: dict = None,
     ):
         if isinstance(characters, str):
             self.characters = list(characters)
@@ -41,6 +42,9 @@ class Fragment:
         self.graphics_state = graphics_state
         self.k = k
         self.link = link
+        self.text_shaping_parameters = (
+            dict(text_shaping_parameters) if text_shaping_parameters else None
+        )
 
     def __repr__(self):
         return (
@@ -139,10 +143,6 @@ class Fragment:
         return lift * self.graphics_state["font_size_pt"]
 
     @property
-    def _text_shaping(self):
-        return self.graphics_state["_text_shaping"]
-
-    @property
     def string(self):
         return "".join(self.characters)
 
@@ -180,7 +180,7 @@ class Fragment:
         if chars is None:
             chars = self.characters[start:end]
         (char_len, w) = self.font.get_text_width(
-            chars, self.font_size_pt, self._text_shaping
+            chars, self.font_size_pt, self.text_shaping_parameters
         )
         char_spacing = self.char_spacing
         if self.font_stretching != 100:
@@ -206,9 +206,9 @@ class Fragment:
 
     def render_pdf_text(self, frag_ws, current_ws, word_spacing, adjust_x, adjust_y, h):
         if self.is_ttf_font:
-            if self._text_shaping:
+            if self.text_shaping_parameters:
                 return self.render_with_text_shaping(
-                    adjust_x, adjust_y, h, word_spacing, self._text_shaping
+                    adjust_x, adjust_y, h, word_spacing
                 )
             return self.render_pdf_text_ttf(frag_ws, word_spacing)
         return self.render_pdf_text_core(frag_ws, current_ws)
@@ -252,9 +252,7 @@ class Fragment:
             ret += f"({escaped_text}) Tj"
         return ret
 
-    def render_with_text_shaping(
-        self, pos_x, pos_y, h, word_spacing, text_shaping_parms
-    ):
+    def render_with_text_shaping(self, pos_x, pos_y, h, word_spacing):
         ret = ""
         text = ""
         space_mapped_code = self.font.subset.pick(ord(" "))
@@ -271,7 +269,7 @@ class Fragment:
 
         char_spacing = self.char_spacing * (self.font_stretching / 100) / self.k
         for ti in self.font.shape_text(
-            self.string, self.font_size_pt, text_shaping_parms
+            self.string, self.font_size_pt, self.text_shaping_parameters
         ):
             if ti["mapped_char"] is None:  # Missing glyph
                 continue
@@ -343,6 +341,7 @@ class HyphenHint(NamedTuple):
     curchar_width: float
     graphics_state: dict
     k: float
+    text_shaping_parameters: dict
 
 
 class CurrentLine:
@@ -384,11 +383,14 @@ class CurrentLine:
         original_character_index: int,
         height: float,
         url: str = None,
+        text_shaping_parameters: dict = None,
     ):
         assert character != NEWLINE
         self.height = height
         if not self.fragments:
-            self.fragments.append(Fragment("", graphics_state, k, url))
+            self.fragments.append(
+                Fragment("", graphics_state, k, url, text_shaping_parameters)
+            )
 
         # characters are expected to be grouped into fragments by font and
         # character attributes. If the last existing fragment doesn't match
@@ -396,8 +398,11 @@ class CurrentLine:
         elif (
             graphics_state != self.fragments[-1].graphics_state
             or k != self.fragments[-1].k
+            or text_shaping_parameters != self.fragments[-1].text_shaping_parameters
         ):
-            self.fragments.append(Fragment("", graphics_state, k, url))
+            self.fragments.append(
+                Fragment("", graphics_state, k, url, text_shaping_parameters)
+            )
         active_fragment = self.fragments[-1]
 
         if character == SPACE:
@@ -426,6 +431,7 @@ class CurrentLine:
                 character_width,
                 graphics_state,
                 k,
+                text_shaping_parameters,
             )
 
         if character != SOFT_HYPHEN or self.print_sh:
@@ -489,6 +495,7 @@ class CurrentLine:
                 self.hyphen_break_hint.original_fragment_index,
                 self.hyphen_break_hint.original_character_index,
                 self.height,
+                self.hyphen_break_hint.text_shaping_parameters,
             )
             return (
                 self.hyphen_break_hint.original_fragment_index,
@@ -652,6 +659,7 @@ class MultiLineBreak:
                 self.character_index,
                 current_font_height * self.line_height,
                 current_fragment.link,
+                current_fragment.text_shaping_parameters,
             )
 
             self.character_index += 1
