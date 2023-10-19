@@ -329,9 +329,11 @@ class GraphicsStateMixin:
     def text_shaping(self):
         return self.__statestack[-1]["text_shaping"]
 
-    @text_shaping.setter
-    def text_shaping(self, v):
-        self.__statestack[-1]["text_shaping"] = v
+    @_text_shaping.setter
+    def _text_shaping(self, v):
+        if v:
+            self.__statestack[-1]["_text_shaping"] = dict(v)
+            self.__statestack[-1]["_text_shaping"]["features"] == dict(v["features"])
 
     def font_face(self):
         """
