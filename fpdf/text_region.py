@@ -3,7 +3,8 @@ from typing import NamedTuple, Sequence, List, NewType
 
 from .errors import FPDFException
 from .enums import Align, XPos, YPos, WrapMode
-from .line_break import MultiLineBreak
+from .image_parsing import VectorImageInfo
+from .line_break import MultiLineBreak, FORM_FEED
 
 # Since Python doesn't have "friend classes"...
 # pylint: disable=protected-access
@@ -131,6 +132,101 @@ class Paragraph:  # pylint: disable=function-redefined
         return text_lines
 
 
+class ImageParagraph:
+    def __init__(
+        self,
+        region,
+        name,
+        align=None,
+        width: float = None,
+        height: float = None,
+        fill_width: bool = False,
+        keep_aspect_ratio=False,
+        top_margin=0,
+        bottom_margin=0,
+        link=None,
+        title=None,
+        alt_text=None,
+    ):
+        self.region = region
+        self.name = name
+        if align:
+            align = Align.coerce(align)
+        self.align = align
+        self.width = width
+        self.height = height
+        self.fill_width = fill_width
+        self.keep_aspect_ratio = keep_aspect_ratio
+        self.top_margin = top_margin
+        self.bottom_margin = bottom_margin
+        self.link = link
+        self.title = title
+        self.alt_text = alt_text
+
+    def build_line(self):
+        # We do double duty as a "text line wrapper" here, since all the necessary
+        # information is already in the ImageParagraph object.
+        self.name, self.img, self.info = self.region.pdf.preload_image(self.name, None)
+        return self
+
+    def render(self, col_left, col_width, max_height):
+        is_svg = isinstance(self.info, VectorImageInfo)
+        if self.height:
+            h = self.height
+        else:
+            native_h = self.info["h"] / self.region.pdf.k
+            if is_svg:
+                # SVG natively uses 90 dpi, not 72.
+                native_h *= 0.8
+        if self.width:
+            w = self.width
+        else:
+            native_w = self.info["w"] / self.region.pdf.k
+            if is_svg:
+                native_w *= 0.8
+            if native_w > col_width or self.fill_width:
+                w = col_width
+            else:
+                w = native_w
+        if not self.height:
+            h = w * native_h / native_w
+        if h > max_height:
+            return None
+        x = col_left
+        if self.align:
+            if self.align == Align.R:
+                x += col_width - w
+            elif self.align == Align.C:
+                x += (col_width - w) / 2
+        if is_svg:
+            return self.region.pdf._vector_image(
+                svg=self.img,
+                info=self.info,
+                x=x,
+                y=None,
+                w=w,
+                h=h,
+                link=self.link,
+                title=self.title,
+                alt_text=self.alt_text,
+                keep_aspect_ratio=self.keep_aspect_ratio,
+            )
+        return self.region.pdf._raster_image(
+            name=self.name,
+            img=self.img,
+            info=self.info,
+            x=x,
+            y=None,
+            w=w,
+            h=h,
+            link=self.link,
+            title=self.title,
+            alt_text=self.alt_text,
+            dims=None,
+            keep_aspect_ratio=self.keep_aspect_ratio,
+        )
+
+
 class ParagraphCollectorMixin:
     def __init__(
         self,
@@ -142,6 +238,8 @@ class ParagraphCollectorMixin:
         print_sh: bool = False,
         skip_leading_spaces: bool = False,
         wrapmode: WrapMode = None,
+        img=None,
+        img_fill_width=False,
         **kwargs,
     ):
         self.pdf = pdf
@@ -155,6 +253,8 @@ class ParagraphCollectorMixin:
         super().__init__(pdf, *args, **kwargs)
         if text:
             self.write(text)
+        if img:
+            self.img(img, fill_width=img_fill_width)
 
     def __enter__(self):
         if self.pdf.is_current_text_region(self):
@@ -225,6 +325,40 @@ class ParagraphCollectorMixin:
         # self._paragraphs[-1].write("\n")
         self._active_paragraph = None
 
+    def image(
+        self,
+        name,
+        align=None,
+        width: float = None,
+        height: float = None,
+        fill_width: bool = False,
+        keep_aspect_ratio=False,
+        top_margin=0,
+        bottom_margin=0,
+        link=None,
+        title=None,
+        alt_text=None,
+    ):
+        if self._active_paragraph == "EXPLICIT":
+            raise FPDFException("Unable to nest paragraphs.")
+        if self._active_paragraph:
+            self.end_paragraph()
+        p = ImageParagraph(
+            self,
+            name,
+            align=align,
+            width=width,
+            height=height,
+            fill_width=fill_width,
+            keep_aspect_ratio=keep_aspect_ratio,
+            top_margin=top_margin,
+            bottom_margin=bottom_margin,
+            link=link,
+            title=title,
+            alt_text=alt_text,
+        )
+        self._paragraphs.append(p)
+
 
 class TextRegion(ParagraphCollectorMixin):
     """Abstract base class for all text region subclasses."""
@@ -239,6 +373,19 @@ class TextRegion(ParagraphCollectorMixin):
         """
         raise NotImplementedError()
 
+    def _render_image_paragraph(self, paragraph):
+        if paragraph.top_margin and self.pdf.y > self.pdf.t_margin:
+            self.pdf.y += paragraph.top_margin
+        col_left, col_right = self.current_x_extents(self.pdf.y, 0)
+        bottom = self.pdf.h - self.pdf.b_margin
+        max_height = bottom - self.pdf.y
+        rendered = paragraph.render(col_left, col_right - col_left, max_height)
+        if rendered:
+            margin = paragraph.bottom_margin
+            if margin and (self.pdf.y + margin) < bottom:
+                self.pdf.y += margin
+        return rendered
+
     def _render_column_lines(self, text_lines, top, bottom):
         if not text_lines:
             return 0  # no rendered height
@@ -247,42 +394,50 @@ class TextRegion(ParagraphCollectorMixin):
         last_line_height = None
         rendered_lines = 0
         for tl_wrapper in text_lines:
-            text_line = tl_wrapper.line
-            text_rendered = False
-            for frag in text_line.fragments:
-                if frag.characters:
-                    text_rendered = True
+            if isinstance(tl_wrapper, ImageParagraph):
+                if self._render_image_paragraph(tl_wrapper):
+                    rendered_lines += 1
+                else:  # not enough room for image
                     break
-            if (
-                text_rendered
-                and tl_wrapper.first_line
-                and tl_wrapper.paragraph.top_margin
-                and self.pdf.y > self.pdf.t_margin
-            ):
-                self.pdf.y += tl_wrapper.paragraph.top_margin
             else:
-                if self.pdf.y + text_line.height > bottom:
-                    last_line_height = prev_line_height
+                text_line = tl_wrapper.line
+                text_rendered = False
+                for frag in text_line.fragments:
+                    if frag.characters:
+                        text_rendered = True
+                        break
+                if (
+                    text_rendered
+                    and tl_wrapper.first_line
+                    and tl_wrapper.paragraph.top_margin
+                    and self.pdf.y > self.pdf.t_margin
+                ):
+                    self.pdf.y += tl_wrapper.paragraph.top_margin
+                else:
+                    if self.pdf.y + text_line.height > bottom:
+                        last_line_height = prev_line_height
+                        break
+                prev_line_height = last_line_height
+                last_line_height = text_line.height
+                col_left, col_right = self.current_x_extents(self.pdf.y, 0)
+                if self.pdf.x < col_left or self.pdf.x >= col_right:
+                    self.pdf.x = col_left
+                # Don't check the return, we never render past the bottom here.
+                self.pdf._render_styled_text_line(
+                    text_line,
+                    h=text_line.height,
+                    border=0,
+                    new_x=XPos.LEFT,
+                    new_y=YPos.NEXT,
+                    fill=False,
+                )
+                if tl_wrapper.last_line:
+                    margin = tl_wrapper.paragraph.bottom_margin
+                    if margin and text_rendered and (self.pdf.y + margin) < bottom:
+                        self.pdf.y += tl_wrapper.paragraph.bottom_margin
+                rendered_lines += 1
+                if text_line.trailing_form_feed:  # column break
                     break
-            prev_line_height = last_line_height
-            last_line_height = text_line.height
-            col_left, col_right = self.current_x_extents(self.pdf.y, 0)
-            if self.pdf.x < col_left or self.pdf.x >= col_right:
-                self.pdf.x = col_left
-            # Don't check the return, we never render past the bottom here.
-            self.pdf._render_styled_text_line(
-                text_line,
-                h=text_line.height,
-                border=0,
-                new_x=XPos.LEFT,
-                new_y=YPos.NEXT,
-                fill=False,
-            )
-            if tl_wrapper.last_line:
-                margin = tl_wrapper.paragraph.bottom_margin
-                if margin and text_rendered and (self.pdf.y + margin) < bottom:
-                    self.pdf.y += tl_wrapper.paragraph.bottom_margin
-            rendered_lines += 1
         if rendered_lines:
             del text_lines[:rendered_lines]
         return last_line_height
@@ -295,10 +450,14 @@ class TextRegion(ParagraphCollectorMixin):
     def collect_lines(self):
         text_lines = []
         for paragraph in self._paragraphs:
-            cur_lines = paragraph.build_lines(self.print_sh)
-            if not cur_lines:
-                continue
-            text_lines.extend(cur_lines)
+            if isinstance(paragraph, ImageParagraph):
+                line = paragraph.build_line()
+                text_lines.append(line)
+            else:
+                cur_lines = paragraph.build_lines(self.print_sh)
+                if not cur_lines:
+                    continue
+                text_lines.extend(cur_lines)
         return text_lines
 
     def render(self):
@@ -365,6 +524,12 @@ class TextColumns(TextRegion, TextColumnarMixin):
             self._cur_column = 0
             self.pdf.x = self._cols[self._cur_column].left
         return self
+
+    def new_column(self):
+        if self._paragraphs:
+            self._paragraphs[-1].write(FORM_FEED)
+        else:
+            self.write(FORM_FEED)
 
     def _render_page_lines(self, text_lines, top, bottom):
         """Rendering a set of lines in one or several columns on one page."""

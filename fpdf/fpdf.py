@@ -47,7 +47,11 @@ from .annotations import (
     PDFEmbeddedFile,
     DEFAULT_ANNOT_FLAGS,
 )
-from .deprecation import get_stack_level, WarnOnDeprecatedModuleAttributes
+from .deprecation import (
+    support_deprecated_txt_arg,
+    get_stack_level,
+    WarnOnDeprecatedModuleAttributes,
+)
 from .encryption import StandardSecurityHandler
 from .enums import (
     AccessPermission,
@@ -75,7 +79,14 @@ from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingE
 from .fonts import CoreFont, CORE_FONTS, FontFace, TTFFont
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
-from .image_parsing import SUPPORTED_IMAGE_FILTERS, get_img_info, load_image
+from .image_parsing import (
+    SUPPORTED_IMAGE_FILTERS,
+    get_img_info,
+    get_svg_info,
+    load_image,
+    RasterImageInfo,
+    VectorImageInfo,
+)
 from .linearization import LinearizedOutputProducer
 from .line_break import Fragment, MultiLineBreak, TextLine
 from .outline import OutlineSection
@@ -90,7 +101,7 @@ from .text_region import TextRegionMixin, TextColumns
 from .util import get_scale_factor, Padding
 
 # Public global variables:
-FPDF_VERSION = "2.7.5"
+FPDF_VERSION = "2.7.6"
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),
     "a4": (595.28, 841.89),
@@ -110,34 +121,6 @@ LAYOUT_ALIASES = {
     "continuous": PageLayout.ONE_COLUMN,
     "two": PageLayout.TWO_COLUMN_LEFT,
 }
-
-
-class ImageInfo(dict):
-    "Information about a raster image used in the PDF document"
-
-    @property
-    def width(self):
-        "Intrinsic image width"
-        return self["w"]
-
-    @property
-    def height(self):
-        "Intrinsic image height"
-        return self["h"]
-
-    @property
-    def rendered_width(self):
-        "Only available if the image has been placed on the document"
-        return self["rendered_width"]
-
-    @property
-    def rendered_height(self):
-        "Only available if the image has been placed on the document"
-        return self["rendered_height"]
-
-    def __str__(self):
-        d = {k: ("..." if k in ("data", "smask") else v) for k, v in self.items()}
-        return f"ImageInfo({d})"
 
 
 class TitleStyle(FontFace):
@@ -2387,7 +2370,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         return annotation
 
     @check_page
-    def text(self, x, y, txt=""):
+    @support_deprecated_txt_arg
+    def text(self, x, y, text=""):
         """
         Prints a character string. The origin is on the left of the first character,
         on the baseline. This method allows placing a string precisely on the page,
@@ -2396,18 +2380,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             x (float): abscissa of the origin
             y (float): ordinate of the origin
-            txt (str): string to print
+            text (str): string to print
+            txt (str): [**DEPRECATED since v2.7.6**] string to print
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
-        txt = self.normalize_text(txt)
+        text = self.normalize_text(text)
         sl = [f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td"]
         if self.text_mode != TextMode.FILL:
             sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
-        sl.append(f"{self.current_font.encode_text(txt)} ET")
-        if (self.underline and txt != "") or self._record_text_quad_points:
-            w = self.get_string_width(txt, normalized=True, markdown=False)
-            if self.underline and txt != "":
+        sl.append(f"{self.current_font.encode_text(text)} ET")
+        if (self.underline and text != "") or self._record_text_quad_points:
+            w = self.get_string_width(text, normalized=True, markdown=False)
+            if self.underline and text != "":
                 sl.append(self._do_underline(x, y, w))
             if self._record_text_quad_points:
                 h = self.font_size
@@ -2677,11 +2662,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         return self.auto_page_break
 
     @check_page
+    @support_deprecated_txt_arg
     def cell(
         self,
         w=None,
         h=None,
-        txt="",
+        text="",
         border=0,
         ln="DEPRECATED",
         align=Align.L,
@@ -2707,7 +2693,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 If 0, the cell extends up to the right margin.
             h (float): Cell height. Default value: None, meaning an height equal
                 to the current font size.
-            txt (str): String to print. Default value: empty string.
+            text (str): String to print. Default value: empty string.
             border: Indicates if borders must be drawn around the cell.
                 The value can be either a number (`0`: no border ; `1`: frame)
                 or a string containing some or all of the following characters
@@ -2726,6 +2712,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             center (bool): center the cell horizontally on the page.
             markdown (bool): enable minimal markdown-like markup to render part
                 of text as bold / italics / underlined. Default to False.
+            txt (str): [**DEPRECATED since v2.7.6**] String to print. Default value: empty string.
 
         Returns: a boolean indicating if page break was triggered
         """
@@ -2734,7 +2721,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if isinstance(w, str) or isinstance(h, str):
             raise ValueError(
                 "Parameter 'w' and 'h' must be numbers, not strings."
-                " You can omit them by passing string content with txt="
+                " You can omit them by passing string content with text="
             )
         if isinstance(border, int) and border not in (0, 1):
             warnings.warn(
@@ -2774,8 +2761,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 stacklevel=get_stack_level(),
             )
         # Font styles preloading must be performed before any call to FPDF.get_string_width:
-        txt = self.normalize_text(txt)
-        styled_txt_frags = self._preload_font_styles(txt, markdown)
+        text = self.normalize_text(text)
+        styled_txt_frags = self._preload_font_styles(text, markdown)
         return self._render_styled_text_line(
             TextLine(
                 styled_txt_frags,
@@ -3106,7 +3093,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             ]
         )
 
-    def _preload_font_styles(self, txt, markdown):
+    def _preload_font_styles(self, text, markdown):
         """
         When Markdown styling is enabled, we require secondary fonts
         to ender text in bold & italics.
@@ -3115,12 +3102,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         so we return the resulting `styled_txt_frags` tuple
         to avoid repeating this processing later on.
         """
-        if not txt:
+        if not text:
             return tuple()
         if not markdown:
-            return self._parse_chars(txt)
+            return self._parse_chars(text)
         prev_font_style = self.font_style
-        styled_txt_frags = tuple(self._markdown_parse(txt))
+        styled_txt_frags = tuple(self._markdown_parse(text))
         page = self.page
         # We set the current to page to zero so that
         # set_font() does not produce any text object on the stream buffer:
@@ -3138,14 +3125,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.page = page
         return styled_txt_frags
 
-    def _parse_chars(self, txt):
+    def _parse_chars(self, text):
         "Check if the font has all the necessary glyphs. If a glyph from a fallback font is used, break into fragments"
         fragments = []
         txt_frag = []
         if not self.is_ttf_font or not self._fallback_font_ids:
-            return tuple([Fragment(txt, self._get_current_graphics_state(), self.k)])
+            return tuple([Fragment(text, self._get_current_graphics_state(), self.k)])
         font_glyphs = self.current_font.cmap
-        for char in txt:
+        for char in text:
             if char == "\n" or ord(char) in font_glyphs:
                 txt_frag.append(char)
             else:
@@ -3195,7 +3182,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             return None
         return fonts_with_char[0]
 
-    def _markdown_parse(self, txt):
+    def _markdown_parse(self, text):
         "Split some text into fragments based on styling: **bold**, __italics__, --underlined--"
         txt_frag, in_bold, in_italics, in_underline = (
             [],
@@ -3220,32 +3207,32 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         else:
             font_glyphs = []
 
-        while txt:
-            is_marker = txt[:2] in (
+        while text:
+            is_marker = text[:2] in (
                 self.MARKDOWN_BOLD_MARKER,
                 self.MARKDOWN_ITALICS_MARKER,
                 self.MARKDOWN_UNDERLINE_MARKER,
             )
-            half_marker = txt[0]
+            half_marker = text[0]
             # Check that previous & next characters are not identical to the marker:
             if (
                 is_marker
-                and (len(txt_frag) < 1 or txt_frag[-1] != half_marker)
-                and (len(txt) < 3 or txt[2] != half_marker)
+                and (not txt_frag or txt_frag[-1] != half_marker)
+                and (len(text) < 3 or text[2] != half_marker)
             ):
                 if txt_frag:
                     yield frag()
-                if txt[:2] == self.MARKDOWN_BOLD_MARKER:
+                if text[:2] == self.MARKDOWN_BOLD_MARKER:
                     in_bold = not in_bold
-                if txt[:2] == self.MARKDOWN_ITALICS_MARKER:
+                if text[:2] == self.MARKDOWN_ITALICS_MARKER:
                     in_italics = not in_italics
-                if txt[:2] == self.MARKDOWN_UNDERLINE_MARKER:
+                if text[:2] == self.MARKDOWN_UNDERLINE_MARKER:
                     in_underline = not in_underline
-                txt = txt[2:]
+                text = text[2:]
                 continue
-            is_link = self.MARKDOWN_LINK_REGEX.match(txt)
+            is_link = self.MARKDOWN_LINK_REGEX.match(text)
             if is_link:
-                link_text, link_dest, txt = is_link.groups()
+                link_text, link_dest, text = is_link.groups()
                 if txt_frag:
                     yield frag()
                 gstate = self._get_current_graphics_state()
@@ -3259,19 +3246,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     pass
                 yield Fragment(list(link_text), gstate, self.k, link=link_dest)
                 continue
-            if self.is_ttf_font and txt[0] != "\n" and not ord(txt[0]) in font_glyphs:
+            if self.is_ttf_font and text[0] != "\n" and not ord(text[0]) in font_glyphs:
                 style = ("B" if in_bold else "") + ("I" if in_italics else "")
-                fallback_font = self.get_fallback_font(txt[0], style)
+                fallback_font = self.get_fallback_font(text[0], style)
                 if fallback_font:
                     if txt_frag:
                         yield frag()
                     gstate = self._get_current_graphics_state()
                     gstate["font_family"] = fallback_font
-                    yield Fragment(txt[0], gstate, self.k)
-                    txt = txt[1:]
+                    yield Fragment(text[0], gstate, self.k)
+                    text = text[1:]
                     continue
-            txt_frag.append(txt[0])
-            txt = txt[1:]
+            txt_frag.append(text[0])
+            text = text[1:]
         if txt_frag:
             yield frag()
 
@@ -3337,11 +3324,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             del self._out
 
     @check_page
+    @support_deprecated_txt_arg
     def multi_cell(
         self,
         w,
         h=None,
-        txt="",
+        text="",
         border=0,
         align=Align.J,
         fill=False,
@@ -3370,7 +3358,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             w (float): cell width. If 0, they extend up to the right margin of the page.
             h (float): height of a single line of text.  Default value: None, meaning to use the current font size.
-            txt (str): string to print.
+            text (str): string to print.
             border: Indicates if borders must be drawn around the cell.
                 The value can be either a number (`0`: no border ; `1`: frame)
                 or a string containing some or all of the following characters
@@ -3400,6 +3388,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 Can be useful when combined with `output`.
             output (fpdf.enums.MethodReturnValue): defines what this method returns.
                 If several enum values are joined, the result will be a tuple.
+            txt (str): [**DEPRECATED since v2.7.6**] string to print.
             center (bool): center the cell horizontally on the page.
             padding (float or Sequence): padding to apply around the text. Default value: 0.
                 When one value is specified, it applies the same padding to all four sides.
@@ -3410,7 +3399,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 If padding for left or right ends up being non-zero then respective c_margin is ignored.
 
         Center overrides values for horizontal padding
-
 
         Using `new_x=XPos.RIGHT, new_y=XPos.TOP, maximum height=pdf.font_size` is
         useful to build tables with multiline text in cells.
@@ -3435,7 +3423,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 return self.multi_cell(
                     w=w,
                     h=h,
-                    txt=txt,
+                    text=text,
                     border=border,
                     align=align,
                     fill=fill,
@@ -3458,7 +3446,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if isinstance(w, str) or isinstance(h, str):
             raise ValueError(
                 "Parameter 'w' and 'h' must be numbers, not strings."
-                " You can omit them by passing string content with txt="
+                " You can omit them by passing string content with text="
             )
         new_x = XPos.coerce(new_x)
         new_y = YPos.coerce(new_y)
@@ -3522,8 +3510,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             )
 
         # Calculate text length
-        txt = self.normalize_text(txt)
-        normalized_string = txt.replace("\r", "")
+        text = self.normalize_text(text)
+        normalized_string = text.replace("\r", "")
         styled_text_fragments = self._preload_font_styles(normalized_string, markdown)
 
         prev_font_style, prev_underline = self.font_style, self.underline
@@ -3667,10 +3655,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         return return_value
 
     @check_page
+    @support_deprecated_txt_arg
     def write(
         self,
         h: float = None,
-        txt: str = "",
+        text: str = "",
         link: str = "",
         print_sh: bool = False,
         wrapmode: WrapMode = WrapMode.WORD,
@@ -3684,13 +3673,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         Args:
             h (float): line height. Default value: None, meaning to use the current font size.
-            txt (str): text content
+            text (str): text content
             link (str): optional link to add on the text, internal
                 (identifier returned by `FPDF.add_link`) or external URL.
             print_sh (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
                 character, instead of a line breaking opportunity. Default value: False
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
                 "CHAR" for character based line wrapping.
+            txt (str): [**DEPRECATED since v2.7.6**] text content
         """
         wrapmode = WrapMode.coerce(wrapmode)
         if not self.font_family:
@@ -3698,13 +3688,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if isinstance(h, str):
             raise ValueError(
                 "Parameter 'h' must be a number, not a string."
-                " You can omit it by passing string content with txt="
+                " You can omit it by passing string content with text="
             )
         if h is None:
             h = self.font_size
 
         page_break_triggered = False
-        normalized_string = self.normalize_text(txt).replace("\r", "")
+        normalized_string = self.normalize_text(text).replace("\r", "")
         styled_text_fragments = self._preload_font_styles(normalized_string, False)
 
         text_lines = []
@@ -3867,17 +3857,111 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
-        if str(name).endswith(".svg"):
-            # Insert it as a PDF path:
-            img = load_image(str(name))
-            return self._vector_image(img, x, y, w, h, link, title, alt_text)
-        if isinstance(name, bytes) and _is_svg(name.strip()):
-            return self._vector_image(
-                io.BytesIO(name), x, y, w, h, link, title, alt_text
-            )
-        if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
-            return self._vector_image(name, x, y, w, h, link, title, alt_text)
+
         name, img, info = self.preload_image(name, dims)
+        if isinstance(info, VectorImageInfo):
+            return self._vector_image(
+                img, info, x, y, w, h, link, title, alt_text, keep_aspect_ratio
+            )
+        return self._raster_image(
+            name, img, info, x, y, w, h, link, title, alt_text, dims, keep_aspect_ratio
+        )
+
+    def preload_image(self, name, dims=None):
+        """
+        Read a raster (= non-vector) image and loads it in memory in this FPDF instance.
+        Following this call, the image is inserted in `.images`,
+        and following calls to this method (or `FPDF.image`) will return (or re-use)
+        the same cached values, without re-reading the image.
+
+        Args:
+            name: either a string representing a file path to an image, an URL to an image,
+                an io.BytesIO, or a instance of `PIL.Image.Image`
+            dims (Tuple[float]): optional dimensions as a tuple (width, height) to resize the image
+                before storing it in the PDF.
+
+        Returns: an instance of `ImageInfo`
+        """
+        # Identify and load SVG data.
+        if str(name).endswith(".svg"):
+            return get_svg_info(name, load_image(str(name)))
+        if isinstance(name, bytes) and _is_svg(name.strip()):
+            return get_svg_info(name, io.BytesIO(name))
+        if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
+            return get_svg_info("vector_image", name)
+
+        # Load raster data.
+        if isinstance(name, str):
+            img = None
+        elif isinstance(name, Image):
+            bytes_ = name.tobytes()
+            img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
+            img_hash.update(bytes_)
+            name, img = img_hash.hexdigest(), name
+        elif isinstance(name, (bytes, io.BytesIO)):
+            bytes_ = name.getvalue() if isinstance(name, io.BytesIO) else name
+            bytes_ = bytes_.strip()
+            img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
+            img_hash.update(bytes_)
+            name, img = img_hash.hexdigest(), name
+        else:
+            name, img = str(name), name
+        info = self.images.get(name)
+        if info:
+            info["usages"] += 1
+        else:
+            info = get_img_info(name, img, self.image_filter, dims)
+            info["i"] = len(self.images) + 1
+            info["usages"] = 1
+            info["iccp_i"] = None
+            iccp = info.get("iccp")
+            if iccp:
+                LOGGER.debug(
+                    "ICC profile found for image %s - It will be inserted in the PDF document",
+                    name,
+                )
+                if iccp in self.icc_profiles:
+                    info["iccp_i"] = self.icc_profiles[iccp]
+                else:
+                    iccp_i = len(self.icc_profiles)
+                    self.icc_profiles[iccp] = iccp_i
+                    info["iccp_i"] = iccp_i
+                info["iccp"] = None
+            self.images[name] = info
+        return name, img, info
+
+    @staticmethod
+    def _limit_to_aspect_ratio(x, y, w, h, asp_w, asp_h):
+        """
+        Make an image fit within a bounding box, maintaining its proportions.
+        In the reduced dimension it will be centered within tha available space.
+        """
+        ratio = asp_w / asp_h
+        if h * ratio < w:
+            nw = h * ratio
+            nh = h
+            x += (w - nw) / 2
+        else:  # => too wide, limiting width:
+            nh = w / ratio
+            nw = w
+            y += (h - nh) / 2
+        return x, y, nw, nh
+
+    def _raster_image(
+        self,
+        name,
+        img,
+        info,
+        x=None,
+        y=None,
+        w=0,
+        h=0,
+        link="",
+        title=None,
+        alt_text=None,
+        dims=None,
+        keep_aspect_ratio=False,
+    ):
         if "smask" in info:
             self._set_min_pdf_version("1.4")
 
@@ -3902,13 +3986,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             x = self.x
 
         if keep_aspect_ratio:
-            ratio = info.width / info.height
-            if h * ratio < w:
-                x += (w - h * ratio) / 2
-                w = h * ratio
-            else:  # => too wide, limiting width:
-                y += (h - w / ratio) / 2
-                h = w / ratio
+            x, y, w, h = self._limit_to_aspect_ratio(
+                x, y, w, h, info.width, info.height
+            )
 
         if not isinstance(x, Number):
             if keep_aspect_ratio:
@@ -3937,65 +4017,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        return ImageInfo(**info, rendered_width=w, rendered_height=h)
-
-    def preload_image(self, name, dims=None):
-        """
-        Read a raster (= non-vector) image and loads it in memory in this FPDF instance.
-        Following this call, the image is inserted in `.images`,
-        and following calls to this method (or `FPDF.image`) will return (or re-use)
-        the same cached values, without re-reading the image.
-
-        Args:
-            name: either a string representing a file path to an image, an URL to an image,
-                an io.BytesIO, or a instance of `PIL.Image.Image`
-            dims (Tuple[float]): optional dimensions as a tuple (width, height) to resize the image
-                before storing it in the PDF.
-
-        Returns: an instance of `ImageInfo`
-        """
-        if isinstance(name, str):
-            img = None
-        elif isinstance(name, Image):
-            bytes_ = name.tobytes()
-            img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
-            img_hash.update(bytes_)
-            name, img = img_hash.hexdigest(), name
-        elif isinstance(name, (bytes, io.BytesIO)):
-            bytes_ = name.getvalue() if isinstance(name, io.BytesIO) else name
-            bytes_ = bytes_.strip()
-            img_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
-            img_hash.update(bytes_)
-            name, img = img_hash.hexdigest(), name
-        else:
-            name, img = str(name), name
-        info = self.images.get(name)
-        if info:
-            info["usages"] += 1
-        else:
-            info = ImageInfo(get_img_info(name, img, self.image_filter, dims))
-            info["i"] = len(self.images) + 1
-            info["usages"] = 1
-            info["iccp_i"] = None
-            iccp = info.get("iccp")
-            if iccp:
-                LOGGER.debug(
-                    "ICC profile found for image %s - It will be inserted in the PDF document",
-                    name,
-                )
-                if iccp in self.icc_profiles:
-                    info["iccp_i"] = self.icc_profiles[iccp]
-                else:
-                    iccp_i = len(self.icc_profiles)
-                    self.icc_profiles[iccp] = iccp_i
-                    info["iccp_i"] = iccp_i
-                info["iccp"] = None
-            self.images[name] = info
-        return name, img, info
+        return RasterImageInfo(**info, rendered_width=w, rendered_height=h)
 
     def _vector_image(
         self,
-        img: io.BytesIO,
+        svg: SVGObject,
+        info,
         x=None,
         y=None,
         w=0,
@@ -4003,8 +4030,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         link="",
         title=None,
         alt_text=None,
+        keep_aspect_ratio=False,
     ):
-        svg = SVGObject(img.getvalue())
         if not svg.viewbox and svg.width and svg.height:
             warnings.warn(
                 '<svg> has no "viewBox", using its "width" & "height" as default "viewBox"',
@@ -4051,6 +4078,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if x is None:
             x = self.x
 
+        if keep_aspect_ratio:
+            x, y, w, h = self._limit_to_aspect_ratio(
+                x, y, w, h, info.width, info.height
+            )
+
         _, _, path = svg.transform_to_rect_viewport(
             scale=1, width=w, height=h, ignore_svg_top_attrs=True
         )
@@ -4060,7 +4092,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         try:
             self.set_xy(0, 0)
             if title or alt_text:
+                # Alt text of vector graphics does NOT show als tool-tip in viewers, but should
+                # be processed by screen readers.
                 with self._marked_sequence(title=title, alt_text=alt_text):
+                    self.rect(x, y, w, h)
                     self.draw_path(path)
             else:
                 self.draw_path(path)
@@ -4069,7 +4104,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        return ImageInfo(rendered_width=w, rendered_height=h)
+        return VectorImageInfo(rendered_width=w, rendered_height=h)
 
     def _downscale_image(self, name, img, info, w, h):
         width_in_pt, height_in_pt = w * self.k, h * self.k
@@ -4119,7 +4154,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         )
                     info["usages"] += 1
                 else:
-                    info = ImageInfo(
+                    info = RasterImageInfo(
                         get_img_info(
                             name, img or load_image(name), self.image_filter, dims
                         )
@@ -4239,20 +4274,20 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.set_y(y)
         self.set_x(x)
 
-    def normalize_text(self, txt):
+    def normalize_text(self, text):
         """Check that text input is in the correct format/encoding"""
         # - for TTF unicode fonts: unicode object (utf8 encoding)
         # - for built-in fonts: string instances (encoding: latin-1, cp1252)
         if not self.is_ttf_font and self.core_fonts_encoding:
             try:
-                return txt.encode(self.core_fonts_encoding).decode("latin-1")
+                return text.encode(self.core_fonts_encoding).decode("latin-1")
             except UnicodeEncodeError as error:
                 raise FPDFUnicodeEncodingException(
                     text_index=error.start,
-                    character=txt[error.start],
+                    character=text[error.start],
                     font_name=self.font_family + self.font_style,
                 ) from error
-        return txt
+        return text
 
     def sign_pkcs12(
         self,
@@ -4447,7 +4482,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.pages[self.page].contents += s + b"\n"
 
     @check_page
-    def interleaved2of5(self, txt, x, y, w=1, h=10):
+    @support_deprecated_txt_arg
+    def interleaved2of5(self, text, x, y, w=1, h=10):
         """Barcode I2of5 (numeric), adds a 0 if odd length"""
         narrow = w / 3
         wide = w
@@ -4469,7 +4505,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         }
         # The caller should do this, or we can't rotate the thing.
         # self.set_fill_color(0)
-        code = txt
+        code = text
         # add leading zero if code-length is odd
         if len(code) % 2 != 0:
             code = f"0{code}"
@@ -4503,10 +4539,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 x += line_width
 
     @check_page
-    def code39(self, txt, x, y, w=1.5, h=5):
+    @support_deprecated_txt_arg
+    def code39(self, text, x, y, w=1.5, h=5):
         """Barcode 3of9"""
         dim = {"w": w, "n": w / 3}
-        if not txt.startswith("*") or not txt.endswith("*"):
+        if not text.startswith("*") or not text.endswith("*"):
             warnings.warn(
                 (
                     "Code 39 input must start and end with a '*' character to be valid."
@@ -4562,7 +4599,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         }
         # The caller should do this, or we can't rotate the thing.
         # self.set_fill_color(0)
-        for c in txt.upper():
+        for c in text.upper():
             if c not in chars:
                 raise RuntimeError(f'Invalid char "{c}" for Code39')
             for i, d in enumerate(chars[c]):
@@ -4766,7 +4803,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     pdf.multi_cell(
                         w=pdf.epw,
                         h=pdf.font_size,
-                        txt=name,
+                        text=name,
                         new_x=XPos.LMARGIN,
                         new_y=YPos.NEXT,
                     )
@@ -4779,7 +4816,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     self.multi_cell(
                         w=self.epw,
                         h=self.font_size,
-                        txt=name,
+                        text=name,
                         new_x=XPos.LMARGIN,
                         new_y=YPos.NEXT,
                     )
@@ -4952,7 +4989,8 @@ __all__ = [
     "XPos",
     "YPos",
     "get_page_format",
-    "ImageInfo",
+    "RasterImageInfo",
+    "VectorImageInfo",
     "TextMode",
     "TitleStyle",
     "PAGE_FORMATS",

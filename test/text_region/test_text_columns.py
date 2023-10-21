@@ -109,6 +109,117 @@ def test_tcols_charwrap(tmp_path):
     assert_pdf_equal(pdf, HERE / "tcols_charwrap.pdf", tmp_path)
 
 
+def test_tcols_images(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "", 12)
+    cols = pdf.text_columns(ncols=3, text_align="J")
+    left, right = cols.current_x_extents(pdf.y, 0)
+    pdf.line(left, pdf.t_margin, left, pdf.h - pdf.b_margin)
+    pdf.line(right, pdf.t_margin, right, pdf.h - pdf.b_margin)
+    with cols:
+        cols.write(text="Images at Native Size\n(Raster 72 dpi, SVG 90 dpi)\n\n")
+        cols.write(text=LOREM_IPSUM[:100])
+        cols.image(HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png")
+        cols.write(text=LOREM_IPSUM[100:200])
+        cols.image(HERE / "../svg/svg_sources/SVG_logo.svg")
+        cols.write(text=LOREM_IPSUM[200:300])
+
+        cols.new_column()
+        cols.write(text="Images at Full Column Width\n\n")
+        cols.write(text=LOREM_IPSUM[:100])
+        cols.image(
+            HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png",
+            fill_width=True,
+        )
+        cols.write(text=LOREM_IPSUM[100:200])
+        cols.image(HERE / "../svg/svg_sources/SVG_logo.svg", fill_width=True)
+        cols.write(text=LOREM_IPSUM[200:300])
+
+        cols.new_column()
+        cols.write(text="Images Aligned Right and Center\n\n")
+        cols.write(text=LOREM_IPSUM[:100])
+        cols.image(
+            HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png",
+            align="RIGHT",
+        )
+        cols.write(text=LOREM_IPSUM[100:200])
+        cols.image(HERE / "../svg/svg_sources/SVG_logo.svg", align="CENTER")
+        cols.write(text=LOREM_IPSUM[200:300])
+
+        cols.new_column()
+        cols.write(text="Images at Size 50x20\ntop/bottom margin\n\n")
+        cols.write(text=LOREM_IPSUM[:100])
+        cols.image(
+            HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png",
+            width=50,
+            height=20,
+            top_margin=10,
+        )
+        cols.write(text=LOREM_IPSUM[100:200])
+        cols.image(
+            HERE / "../svg/svg_sources/SVG_logo.svg",
+            width=50,
+            height=20,
+            bottom_margin=10,
+        )
+        cols.write(text=LOREM_IPSUM[200:300])
+
+        cols.new_column()
+        cols.write(text="Images at Size 50x20 and keep_aspect_ratio=True\n\n")
+        cols.write(text=LOREM_IPSUM[:100])
+        cols.image(
+            HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png",
+            width=50,
+            height=20,
+            keep_aspect_ratio=True,
+        )
+        cols.write(text=LOREM_IPSUM[100:200])
+        cols.image(
+            HERE / "../svg/svg_sources/SVG_logo.svg",
+            width=50,
+            height=20,
+            keep_aspect_ratio=True,
+        )
+        cols.write(text=LOREM_IPSUM[200:300])
+
+        cols.new_column()
+        cols.write(text="Images at Size 20x50 and keep_aspect_ratio=True\n\n")
+        cols.write(text=LOREM_IPSUM[:100])
+        cols.image(
+            HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png",
+            width=20,
+            height=50,
+            keep_aspect_ratio=True,
+        )
+        cols.write(text=LOREM_IPSUM[100:200])
+        cols.image(
+            HERE / "../svg/svg_sources/SVG_logo.svg",
+            width=20,
+            height=50,
+            keep_aspect_ratio=True,
+        )
+        cols.write(text=LOREM_IPSUM[200:300])
+
+        cols.new_column()
+        cols.write(text="Column break by image\n\n")
+        cols.write(text=LOREM_IPSUM[:100])
+        cols.image(
+            HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png",
+            fill_width=True,
+        )
+        cols.write(text=LOREM_IPSUM[100:200])
+        cols.image(HERE / "../svg/svg_sources/SVG_logo.svg", fill_width=True)
+        cols.write(text=LOREM_IPSUM[200:300])
+        cols.image(
+            HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png",
+            fill_width=True,
+        )
+        cols.image(HERE / "../svg/svg_sources/SVG_logo.svg", fill_width=True)
+
+    assert_pdf_equal(pdf, HERE / "tcols_images.pdf", tmp_path)
+
+
 def test_tcols_no_font():
     pdf = FPDF()
     pdf.add_page()

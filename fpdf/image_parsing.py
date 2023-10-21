@@ -19,6 +19,7 @@ try:
 except ImportError:
     Image = None
 
+from .svg import SVGObject
 from .errors import FPDFException
 
 
@@ -55,6 +56,45 @@ TIFFBitRevTable = [
     0x5F, 0xDF, 0x3F, 0xBF, 0x7F, 0xFF,
 ]
 # fmt: on
+
+
+class ImageInfo(dict):
+    """Information about an image used in the PDF document (base class).
+    We subclass this to distinguish between raster and vector images."""
+
+    @property
+    def width(self):
+        "Intrinsic image width"
+        return self["w"]
+
+    @property
+    def height(self):
+        "Intrinsic image height"
+        return self["h"]
+
+    @property
+    def rendered_width(self):
+        "Only available if the image has been placed on the document"
+        return self["rendered_width"]
+
+    @property
+    def rendered_height(self):
+        "Only available if the image has been placed on the document"
+        return self["rendered_height"]
+
+    def __str__(self):
+        d = {k: ("..." if k in ("data", "smask") else v) for k, v in self.items()}
+        return f"self.__class__.__name__({d})"
+
+
+class RasterImageInfo(ImageInfo):
+    "Information about a raster image used in the PDF document"
+    # pass
+
+
+class VectorImageInfo(ImageInfo):
+    "Information about a vector image used in the PDF document"
+    # pass
 
 
 def load_image(filename):
@@ -105,6 +145,20 @@ def is_iccp_valid(iccp, filename):
     return True
 
 
+def get_svg_info(filename, img):
+    svg = SVGObject(img.getvalue())
+    if svg.viewbox:
+        _, _, w, h = svg.viewbox
+    else:
+        w = h = 0.0
+    if svg.width:
+        w = svg.width
+    if svg.height:
+        h = svg.height
+    info = VectorImageInfo(data=svg, w=w, h=h)
+    return filename, svg, info
+
+
 def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
     """
     Args:
@@ -153,7 +207,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         img_altered = True
 
     w, h = img.size
-    info = {}
+    info = RasterImageInfo()
 
     iccp = None
     if "icc_profile" in img.info:

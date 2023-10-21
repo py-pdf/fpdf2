@@ -44,12 +44,12 @@ The horizontal start position will be either at the current x position, if that 
 In both horizontal and vertical positioning, regions with multiple columns may follow additional rules and restrictions.
 
 
-### Interaction between Regions ###
+### Interaction Between Regions ###
 
 Several region instances can exist at the same time. But only one of them can act as context manager at any given time. It is not currently possible to activate them recursively. But it is possible to use them intermittingly. This will probably most often make sense between a columnar region and a table or a graphic. You may have some running text ending at a given height, then insert a table/graphic, and finally continue the running text at the new height below the table within the existing column(s).
 
 
-### Common parameters ###
+### Common Parameters ###
 
 All types of text regions have the following constructor parameters in common:
 
@@ -59,14 +59,17 @@ All types of text regions have the following constructor parameters in common:
 * print_sh (bool, optional) - Treat a soft-hyphen (\\u00ad) as a printable character, instead of a line breaking opportunity. (Default: False)
 * skip_leading_spaces (default: False) - This flag is primarily used by `write_html()`, but may also have other uses. It removes all space characters at the beginning of each line.
 * wrapmode (default "WORD") - 
+* image (str or PIL.Image.Image or io.BytesIO, optional) - An image to add to the region. This is a convenience parameter for cases when no further text or images need to be added to the paragraph. If both "text" and "image" arguments are present, the text will be inserted first. (Default: None)
+* image_fill_width (bool, optional) - Indicates whether increase the size of the image to fill the width of the column. Larger images will always be reduced to column width. (Default: False)
 
 All of those values can be overriden for each individual paragraph.
 
 
-### Common methods ###
+### Common Methods ###
 
-* `.paragraph()` [see characteristics parameters below] - establish a new paragraph in the text. The text added to this paragraph will start on a new line.
+* `.paragraph()` [see characteristic parameters below] - establish a new paragraph in the text. The text added to this paragraph will start on a new line.
 * `.write(text: str, link: = None)` - write text to the region. This is only permitted when no explicit paragraph is currently active.
+* `.image()` [see characteristic parameters below] - insert a vector or raster image in the region, flowing with the text like a paragraph.
 * `.ln(h: float = None)` - Start a new line moving either by the current font height or by the parameter "h". Only permitted when no explicit paragraph is currently active.
 * `.render()` - if the region is not used as a context manager with "with", this method must be called to actually process the added text.
 
@@ -87,9 +90,18 @@ For more typographical control, you can use the following arguments. Most of tho
 Other than text regions, paragraphs should always be used as context managers and never be reused. Violating those rules may result in the entered text turning up on the page out of sequence.
 
 
-### Possible future extensions
+### Possible Future Extensions ###
 
 Those features are currently not supported, but Pull Requests are welcome to implement them:
 
 * per-paragraph indentation
 * first-line indentation
+
+
+## Images ##
+
+Most arguments for inserting images into text regions are the same as for the `FPDF.image()` method, and have the same or equivalent meaning.
+Since the image will be placed automatically, the "x" and "y" parameters are not available. The positioning can be controlled with "align", where the default is "LEFT", with the alternatives "RIGHT" and "CENTER".
+If neither width nor height are specified, the image will be inserted in its native size (72 dpi for raster, 90 dpi for vectore images). If the "fill_width" parameter is set to True, it increases the size to fill the full column width if necessary. If the image is wider than the column width, it will always be reduced in size proportionally.
+The "top_margin" and "bottom_margin" parameters have the same effect as with text paragraphs.
+
