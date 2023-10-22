@@ -196,7 +196,7 @@ def test_svg_image_fit_rect(tmp_path):
     """
     pdf = fpdf.FPDF()
     pdf.add_page()
-    test_file = SVG_SRCDIR / "svg_logo.svg"
+    test_file = SVG_SRCDIR / "SVG_logo.svg"
 
     rect1 = 30, 30, 60, 100
     pdf.rect(*rect1)
@@ -213,7 +213,7 @@ IMG_DESCRIPTION = "The Mighty SVG Logo"
 
 
 def test_svg_image_altt_title(tmp_path):
-    test_file = SVG_SRCDIR / "svg_logo.svg"
+    test_file = SVG_SRCDIR / "SVG_logo.svg"
     pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.image(test_file, alt_text=IMG_DESCRIPTION, w=50, h=50)
@@ -223,7 +223,7 @@ def test_svg_image_altt_title(tmp_path):
 
 
 def test_svg_image_altt_two_pages(tmp_path):
-    test_file = SVG_SRCDIR / "svg_logo.svg"
+    test_file = SVG_SRCDIR / "SVG_logo.svg"
     pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.image(test_file, alt_text=IMG_DESCRIPTION, w=50, h=50)
