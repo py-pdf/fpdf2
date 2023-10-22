@@ -126,9 +126,7 @@ View the result here:
 ## Free Font Pack ##
 
 For your convenience, the author of the original PyFPDF has collected 96 TTF files in an optional 
-["Free Unicode TrueType Font Pack for FPDF"](https://github.com/reingart/pyfpdf/releases/download/binary/fpdf_unicode_font_pack.zip),
-with useful fonts commonly distributed with GNU/Linux operating systems (see 
-above for a complete description).
+["Free Unicode TrueType Font Pack for FPDF"](https://github.com/reingart/pyfpdf/releases/download/binary/fpdf_unicode_font_pack.zip), with useful fonts commonly distributed with GNU/Linux operating systems. Note that this collection is from 2015, so it will not contain any newer fonts or possible updates.
 
 
 # Fallback fonts #
