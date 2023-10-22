@@ -4095,7 +4095,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 # Alt text of vector graphics does NOT show als tool-tip in viewers, but should
                 # be processed by screen readers.
                 with self._marked_sequence(title=title, alt_text=alt_text):
-                    self.rect(x, y, w, h)
                     self.draw_path(path)
             else:
                 self.draw_path(path)
