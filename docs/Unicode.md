@@ -1,46 +1,27 @@
 # Unicode #
 
-The FPDF class was modified adding UTF-8 support.
-Moreover, it embeds only the necessary parts of the fonts that are used in the 
-document, making the file size much smaller than if the whole fonts were 
-embedded. These features were originally developed for the 
-[mPDF](http://mpdf.bpm1.com/) project, and ported from 
-[Ian Back](mailto:ian@bpm1.com?subject=sFPDF)'s
-[sFPDF](http://www.fpdf.org/en/script/script91.php) LGPL PHP version.
+Besides the limited set of latin fonts built into the PDF format, Fpdf2 offers full support for using and embedding Unicode (TrueType "ttf" and OpenType "otf") fonts. To keep the output file size small, it only embeds the subset of each font that is actually used in the document. This part of the code has been completely rewritten since the fork from PyFPDF. It uses the [fonttools](https://fonttools.readthedocs.io/en/latest/) library for parsing the font data, and [harfbuzz](https://harfbuzz.github.io/) (via [uharfbuzz](https://github.com/harfbuzz/uharfbuzz)) for [text shaping](TextShaping.html).
 
-Before you can use UTF-8, you have to install at least one Unicode font in the 
-font directory (or system font folder). Some free font packages are available 
-for download (extract them into the font folder):
+To make use of that functionality, you have to install at least one Unicode font, either in the system font folder or in some other location accessible to your program.
+For professional work, many designers prefer commercial fonts, suitable to their specific needs. There are also many sources of free TTF fonts that can be downloaded online and used free of cost (some of them may have restrictions on commercial redistribution, such as server installations or including them in a software project).
 
-  * [DejaVu](http://dejavu-fonts.org/) family: Sans, Sans Condensed, Serif,
-Serif Condensed, Sans Mono (Supports more than 200 languages)
+  * [Font Library](https://fontlibrary.org/) - A collection of fonts for many languates with an open source type license.
+
+  * [Google Fonts](https://fonts.google.com/) - A collection of free to use fonts for many languages.
+
+  * [Microsoft Font Library](https://learn.microsoft.com/en-gb/typography/font-list/) - A large collection of fonts that are free to use.
+
+  * [GitHub: Fonts](https://github.com/topics/fonts) - Links to public repositories of open source font projects as well as font related software projects.
 
   * [GNU FreeFont](http://www.gnu.org/software/freefont/) family: FreeSans,
 FreeSerif, FreeMono
 
-  * [Indic](http://en.wikipedia.org/wiki/Help:Multilingual_support_(Indic))
-(ttf-indic-fonts Debian and Ubuntu package) for Bengali, Devanagari, Gujarati,
-Gurmukhi (including the variants for Punjabi), Kannada, Malayalam, Oriya,
-Tamil, Telugu, Tibetan
+To use a Unicode font in your program, use the [`add_font()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font), and then the  [`set_font()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) method calls.
 
-  * [AR PL New Sung](http://www.study-area.org/apt/firefly-font/) (firefly):
-The Open Source Chinese Font (also supports other east Asian languages)
-
-  * [Alee](https://wiki.archlinux.org/index.php/Fonts) (ttf-alee Arch Linux
-package): General purpose Hangul Truetype fonts that contain Korean syllable
-and Latin9 (iso8859-15) characters.
-
-  * [Fonts-TLWG](http://linux.thai.net/projects/fonts-tlwg/) (formerly
-ThaiFonts-Scalable)
-
-These fonts are included with this library's installers; see 
-[Free Font Pack for FPDF](#free-font-pack-and-copyright-restrictions) below for
-more information.
-
-Then, to use a Unicode font in your script, pass `True` as the fourth parameter 
-of [`add_font`](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font).
 
 ### Notes on non-latin languages
+
+Many non-latin writing systems have complex ways to combine characters, ligatures, and possibly multiple diacritic symbols together. To make sure those scripts to be rendered correctly, [text shaping](TextShaping.html) must be enabled with `.set_text_shaping(True)`. 
 
 Some users may encounter a problem where some characters displayed incorrectly. For example, using Thai language in the picture below
 
@@ -52,7 +33,9 @@ From the error in the image above, Thai characters can be fixed using fonts from
 
 ![thai-font-working](https://raw.githubusercontent.com/py-pdf/fpdf2/master/tutorial/thai-accent-working.png)
 
+
 ### Right-to-Left & Arabic Script workaround
+
 For Arabic and RTL scripts there is a temporary solution (using two additional libraries `python-bidi` and `arabic-reshaper`) that works for most languages; only a few (rare) Arabic characters aren't supported. Using it on other scripts(eg. when the input is unknown or mixed scripts) does not affect them:
 ```python
 from arabic_reshaper import reshape
@@ -140,17 +123,13 @@ pdf.output("unicode.pdf")
 View the result here: 
 [unicode.pdf](https://github.com/py-pdf/fpdf2/raw/master/tutorial/unicode.pdf)
 
-## Free Font Pack and Copyright Restrictions ##
+## Free Font Pack ##
 
-For your convenience, this library collected 96 TTF files in an optional 
+For your convenience, the author of the original PyFPDF has collected 96 TTF files in an optional 
 ["Free Unicode TrueType Font Pack for FPDF"](https://github.com/reingart/pyfpdf/releases/download/binary/fpdf_unicode_font_pack.zip),
 with useful fonts commonly distributed with GNU/Linux operating systems (see 
-above for a complete description). This pack is included in the Windows 
-installers, or can be downloaded separately (for any operating system).
+above for a complete description).
 
-You could use any TTF font file as long embedding usage is allowed in the licence.
-If not, a runtime exception will be raised saying: "ERROR - Font file 
-filename.ttf cannot be embedded due to copyright restrictions."
 
 # Fallback fonts #
 
