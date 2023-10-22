@@ -133,12 +133,13 @@ FPDFクラスはこれらのメソッドを持っていますが、何もしま�
 
 [PDF中の本文（Jules Verne text）](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-前回のチュートリアルとの大きな違いは、[accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) メソッドと set_col メソッドの 使用です。
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
 
-[accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) メソッドは、セルがページの下端に到達した際に、現在の列番号をチェックします。
-列番号が2より小さい場合（今回はページを3分割にする）、set_col メソッドを呼び出し、列番号のインクリメントと次の列の位置への変更を行います。
+English versions:
 
-3列目の下端に到達すると、[accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) メソッドはリセットされて1列目に戻り、改ページが実行されます。
+* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
+* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
+
 
 ## Tuto 5 - 表の作成 ##
 

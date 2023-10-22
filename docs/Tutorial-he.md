@@ -106,11 +106,13 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-ההבדל העיקרי בין דוגמא זו לקודמת הוא השימוש במתודות [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) וset_col
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
 
-ע"י שימוש במתודה [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break), ברגע שתא חורג מהגבול התחתון של הדף, המתודה בודקת את מספר העמודה הנוכחי. אם הוא קטן מ2 (בחרנו לחלק את הדף ל3 עמודות) תיקרא המתודה set_col, שמגדילה את מספר העמודה ומשנה את הפוזיציה של העמודה הבאה כך שהטקסט ימשיך בה.
+English versions:
 
-ברגע שהגענו לגבול התחתון של העמודה השלישית, המתודה [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) תאותחל, תחזור לעמודה הראשונה ותיצור מעבר עמוד.
+* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
+* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
+
 
 ## 5 - יצירת טבלאות ##
 
