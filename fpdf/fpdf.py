@@ -3740,6 +3740,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def text_columns(
         self,
         text: Optional[str] = None,
+        img: str = None,
+        img_fill_width: bool = False,
         ncols: int = 1,
         gutter: float = 10,
         balance: bool = False,
@@ -3774,6 +3776,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         return TextColumns(
             self,
             text=text,
+            img=img,
+            img_fill_width=img_fill_width,
             ncols=ncols,
             gutter=gutter,
             balance=balance,

@@ -6,6 +6,8 @@ from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 HERE = Path(__file__).resolve().parent
 FONTS_DIR = HERE.parent / "fonts"
+PNG_DIR = HERE.parent / "image/png_images"
+SVG_DIR = HERE.parent / "svg/svg_sources"
 
 
 def test_tcols_align(tmp_path):
@@ -52,7 +54,14 @@ def test_tcols_3cols(tmp_path):
     pdf.t_margin = 50
     pdf.set_auto_page_break(True, 100)
     pdf.set_font("Helvetica", "", 6)
-    cols = pdf.text_columns(text=LOREM_IPSUM, text_align="J", ncols=3, gutter=5)
+    cols = pdf.text_columns(
+        text=LOREM_IPSUM,
+        text_align="J",
+        img=SVG_DIR / "SVG_logo.svg",
+        img_fill_width=True,
+        ncols=3,
+        gutter=5,
+    )
     with cols:
         pdf.set_font("Times", "", 8)
         cols.write(text=LOREM_IPSUM)
@@ -120,45 +129,45 @@ def test_tcols_images(tmp_path):
     with cols:
         cols.write(text="Images at Native Size\n(Raster 72 dpi, SVG 90 dpi)\n\n")
         cols.write(text=LOREM_IPSUM[:100])
-        cols.image(HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png")
+        cols.image(PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png")
         cols.write(text=LOREM_IPSUM[100:200])
-        cols.image(HERE / "../svg/svg_sources/SVG_logo.svg")
+        cols.image(SVG_DIR / "SVG_logo.svg")
         cols.write(text=LOREM_IPSUM[200:300])
 
         cols.new_column()
         cols.write(text="Images at Full Column Width\n\n")
         cols.write(text=LOREM_IPSUM[:100])
         cols.image(
-            HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png",
+            PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png",
             fill_width=True,
         )
         cols.write(text=LOREM_IPSUM[100:200])
-        cols.image(HERE / "../svg/svg_sources/SVG_logo.svg", fill_width=True)
+        cols.image(SVG_DIR / "SVG_logo.svg", fill_width=True)
         cols.write(text=LOREM_IPSUM[200:300])
 
         cols.new_column()
         cols.write(text="Images Aligned Right and Center\n\n")
         cols.write(text=LOREM_IPSUM[:100])
         cols.image(
-            HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png",
+            PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png",
             align="RIGHT",
         )
         cols.write(text=LOREM_IPSUM[100:200])
-        cols.image(HERE / "../svg/svg_sources/SVG_logo.svg", align="CENTER")
+        cols.image(SVG_DIR / "SVG_logo.svg", align="CENTER")
         cols.write(text=LOREM_IPSUM[200:300])
 
         cols.new_column()
         cols.write(text="Images at Size 50x20\ntop/bottom margin\n\n")
         cols.write(text=LOREM_IPSUM[:100])
         cols.image(
-            HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png",
+            PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png",
             width=50,
             height=20,
             top_margin=10,
         )
         cols.write(text=LOREM_IPSUM[100:200])
         cols.image(
-            HERE / "../svg/svg_sources/SVG_logo.svg",
+            SVG_DIR / "SVG_logo.svg",
             width=50,
             height=20,
             bottom_margin=10,
@@ -169,14 +178,14 @@ def test_tcols_images(tmp_path):
         cols.write(text="Images at Size 50x20 and keep_aspect_ratio=True\n\n")
         cols.write(text=LOREM_IPSUM[:100])
         cols.image(
-            HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png",
+            PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png",
             width=50,
             height=20,
             keep_aspect_ratio=True,
         )
         cols.write(text=LOREM_IPSUM[100:200])
         cols.image(
-            HERE / "../svg/svg_sources/SVG_logo.svg",
+            SVG_DIR / "SVG_logo.svg",
             width=50,
             height=20,
             keep_aspect_ratio=True,
@@ -187,14 +196,14 @@ def test_tcols_images(tmp_path):
         cols.write(text="Images at Size 20x50 and keep_aspect_ratio=True\n\n")
         cols.write(text=LOREM_IPSUM[:100])
         cols.image(
-            HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png",
+            PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png",
             width=20,
             height=50,
             keep_aspect_ratio=True,
         )
         cols.write(text=LOREM_IPSUM[100:200])
         cols.image(
-            HERE / "../svg/svg_sources/SVG_logo.svg",
+            SVG_DIR / "SVG_logo.svg",
             width=20,
             height=50,
             keep_aspect_ratio=True,
@@ -205,17 +214,17 @@ def test_tcols_images(tmp_path):
         cols.write(text="Column break by image\n\n")
         cols.write(text=LOREM_IPSUM[:100])
         cols.image(
-            HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png",
+            PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png",
             fill_width=True,
         )
         cols.write(text=LOREM_IPSUM[100:200])
-        cols.image(HERE / "../svg/svg_sources/SVG_logo.svg", fill_width=True)
+        cols.image(SVG_DIR / "SVG_logo.svg", fill_width=True)
         cols.write(text=LOREM_IPSUM[200:300])
         cols.image(
-            HERE / "../image/png_images/ac6343a98f8edabfcc6e536dd75aacb0.png",
+            PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png",
             fill_width=True,
         )
-        cols.image(HERE / "../svg/svg_sources/SVG_logo.svg", fill_width=True)
+        cols.image(SVG_DIR / "SVG_logo.svg", fill_width=True)
 
     assert_pdf_equal(pdf, HERE / "tcols_images.pdf", tmp_path)
 
@@ -282,7 +291,7 @@ def test_tcols_text_shaping(tmp_path):
     pdf.t_margin = 50
     pdf.set_text_shaping(True)
     pdf.set_font("Helvetica", "", 6)
-    tsfontpath = HERE / ".." / "text_shaping"
+    tsfontpath = HERE.parent / "text_shaping"
     pdf.add_font(
         family="KFGQPC", fname=tsfontpath / "KFGQPC Uthmanic Script HAFS Regular.otf"
     )

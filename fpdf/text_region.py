@@ -254,7 +254,7 @@ class ParagraphCollectorMixin:
         if text:
             self.write(text)
         if img:
-            self.img(img, fill_width=img_fill_width)
+            self.image(img, fill_width=img_fill_width)
 
     def __enter__(self):
         if self.pdf.is_current_text_region(self):
