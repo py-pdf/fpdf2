@@ -124,4 +124,4 @@ def test_text_deprecated_txt_arg():
         DeprecationWarning, match='The parameter "txt" has been renamed to "text"'
     ):
         # pylint: disable=unexpected-keyword-arg
-        pdf.text(20, 20, text="Lorem ipsum Ut nostrud irure")
+        pdf.text(20, 20, txt="Lorem ipsum Ut nostrud irure")

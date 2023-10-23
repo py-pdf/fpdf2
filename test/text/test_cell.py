@@ -316,7 +316,7 @@ def test_cell_deprecated_txt_arg():
         DeprecationWarning, match='The parameter "txt" has been renamed to "text"'
     ):
         # pylint: disable=unexpected-keyword-arg
-        pdf.cell(text="Lorem ipsum Ut nostrud irure")
+        pdf.cell(txt="Lorem ipsum Ut nostrud irure")
 
 
 @ensure_exec_time_below(seconds=22)

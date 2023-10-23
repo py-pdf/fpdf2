@@ -480,4 +480,4 @@ def test_multi_cell_deprecated_txt_arg():
         DeprecationWarning, match='The parameter "txt" has been renamed to "text"'
     ):
         # pylint: disable=unexpected-keyword-arg
-        pdf.multi_cell(w=0, text="Lorem ipsum Ut nostrud irure")
+        pdf.multi_cell(w=0, txt="Lorem ipsum Ut nostrud irure")
