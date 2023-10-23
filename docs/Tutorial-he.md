@@ -102,19 +102,35 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 {% include "../tutorial/tuto4.py" %}
 ```
 
-[תוצר](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto4.pdf)
+[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto4.pdf)
 
 [Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
-
-English versions:
-
-* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
-* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
-
+ההבדל העיקרי מהדוגמא הקודמת הוא השימוש במתודת ה
+[`text_columns`](fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column). 
+היא אוספת את כל הטקסט, ומפזרת אותו על מספר העמודות המבוקש (לפעמים מגדילה אותו), ואוטומטית מעבירה עמוד כשצריך. שימו לב שבזמן שמופע של `TextColumns` פועל כמנהל הקשר (context manager), עיצוב של טקסט ואלמנטים נוספים עשויים להשתנות. שינויים אלה מוכלים בהקשר.
+ברגע שהמופע נסגר, ההגדרות הקודמות יוחלו שוב.
 
 ## 5 - יצירת טבלאות ##
+דוגמא זו מסבירה כיצד ניתן ליצור שתי טבלאותשונות, על מנת להדגים מה ניתן להשיג באמצעות התאמות קטנות.
+
+```python
+{% include "../tutorial/tuto5.py" %}
+```
+
+[תוצר](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf) -
+[Countries CSV data](https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt)
+
+את הטבלא הראשונה ניתן לייצר בדרך הפשוטה ביותר, על ידי הזנת דאטה [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html).
+התוצאה היא בסיסית אבל קלה ומהירה.
+
+The second table brings some improvements: colors, limited table width, reduced line height,
+הטבלא השניה מציגה מספר שיפורים: צבעיםת רוחב טבא מוגבלת גובה קווים מופח, כותרות ממורכזות, רוחב עמודות מותאם אישית, יישור לימין...
+בנוסף, קווים אופקיים הוסרו.
+זה נעשה על ידי בחירת `borders_layout` עם הערכים הזמינים:
+ [`TableBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
+
+
 
 ```python
 {% include "../tutorial/tuto5.py" %}
