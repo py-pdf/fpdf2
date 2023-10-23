@@ -351,14 +351,17 @@ def test_table_capture_font_settings(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
+    black = (0, 0, 0)
     lightblue = (173, 216, 230)
-    with pdf.table() as table:
-        for data_row in TABLE_DATA:
+    with pdf.table(headings_style=FontFace(color=black, emphasis="B")) as table:
+        for row_num, data_row in enumerate(TABLE_DATA):
             with pdf.local_context(text_color=lightblue):
                 row = table.row()
-                for i, datum in enumerate(data_row):
-                    pdf.font_style = "I" if i == 0 else ""
-                    row.cell(datum)
+                for col_num, datum in enumerate(data_row):
+                    font_style = FontFace(
+                        emphasis="I" if row_num > 0 and col_num == 0 else None
+                    )
+                    row.cell(datum, style=font_style)
     assert_pdf_equal(pdf, HERE / "table_capture_font_settings.pdf", tmp_path)
 
 
@@ -631,3 +634,27 @@ def test_table_with_no_horizontal_lines_layout(tmp_path):
         HERE / "table_with_no_horizontal_lines_layout.pdf",
         tmp_path,
     )
+
+
+def test_table_with_heading_style_overrides(tmp_path):
+    pdf = FPDF()
+    pdf.set_font(family="helvetica", size=10)
+    pdf.add_page()
+
+    with pdf.table(
+        headings_style=FontFace(emphasis="B", size_pt=18), num_heading_rows=2
+    ) as table:
+        # should be Helvetica bold size 18
+        table.row().cell("Big Heading", colspan=3)
+        second_header = table.row()
+        # should be Helvetica bold size 14:
+        second_header_style_1 = FontFace(size_pt=14)
+        second_header.cell("First", style=second_header_style_1)
+        # should be Times italic size 14
+        second_header_style_2_3 = FontFace(family="times", emphasis="I", size_pt=14)
+        second_header.cell("Second", style=second_header_style_2_3)
+        second_header.cell("Third", style=second_header_style_2_3)
+        # should be helvetica normal size 10
+        table.row(("Some", "Normal", "Data"))
+
+    assert_pdf_equal(pdf, HERE / "table_with_heading_style_overrides.pdf", tmp_path)

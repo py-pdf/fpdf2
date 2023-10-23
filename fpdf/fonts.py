@@ -59,6 +59,40 @@ class FontFace:
 
     replace = replace
 
+    @staticmethod
+    def _override(override_value, current_value):
+        """Override the current value if an override value is provided"""
+        return current_value if override_value is None else override_value
+
+    @staticmethod
+    def combine(override_style, default_style):
+        """
+        Create a combined FontFace with all the supplied features of the two styles. When both
+        the default and override styles provide a feature, prefer the override style.
+        Override specified FontFace style features
+        Override this FontFace's values with the values of `other`.
+        Values of `other` that are None in this FontFace will be kept unchanged.
+        """
+        if override_style is None:
+            return default_style
+        if default_style is None:
+            return override_style
+        if not isinstance(override_style, FontFace):
+            raise TypeError(f"Cannot combine FontFace with {type(override_style)}")
+        if not isinstance(default_style, FontFace):
+            raise TypeError(f"Cannot combine FontFace with {type(default_style)}")
+        return FontFace(
+            family=FontFace._override(override_style.family, default_style.family),
+            emphasis=FontFace._override(
+                override_style.emphasis, default_style.emphasis
+            ),
+            size_pt=FontFace._override(override_style.size_pt, default_style.size_pt),
+            color=FontFace._override(override_style.color, default_style.color),
+            fill_color=FontFace._override(
+                override_style.fill_color, default_style.fill_color
+            ),
+        )
+
 
 class CoreFont:
     # RAM usage optimization:

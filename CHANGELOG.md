@@ -24,6 +24,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Fixed
 * Previously set dash patterns were not transferred correctly to new pages.
 * Inserted Vector images used to ignore the `keep_aspect_ratio` argument.
+* [`FPDF.fonts.FontFace`](https://py-pdf.github.io/fpdf2/fpdf/fonts.html#fpdf.fonts.FontFace): Now has a static `combine` method that allows overriding a default FontFace (e.g. for specific cells in a table). Unspecified properties of the override FontFace retain the values of the default.
+### Changed
+* [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): If cell styles are provided for cells in heading rows, combine the cell style as an override with the overall heading style.
 
 ## [2.7.6] - 2023-10-11
 This release is the first performed from the [@py-pdf GitHub org](https://github.com/py-pdf), where `fpdf2` migrated.
@@ -40,7 +43,7 @@ This release also marks the arrival of two new maintainers: Georg Mischler ([@gm
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): the formatting output has changed in some aspects. Vertical spacing around headings and paragraphs may be slightly different, and elements at the top of the page don't have any extra spacing above anymore.
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): If the height of a row is governed by an image, then the default vertical alignment of the other cells is "center". This was "top". 
 * variable-width non-breaking space (NBSP) support [issue #834](https://github.com/PyFPDF/fpdf2/issues/834)
-This change was made for consistency between row-height governed by text or images. The old behaviour can be enforced using the new vertical alignment parameter.  
+This change was made for consistency between row-height governed by text or images. The old behaviour can be enforced using the new vertical alignment parameter.
 ### Fixed
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table) & [`FPDF.multi_cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell): when some horizontal padding was set, the text was not given quite enough space - thanks to @gmischler
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) can now handle formatting tags within paragraphs without adding extra line breaks (except in table cells for now) - thanks to @gmischler

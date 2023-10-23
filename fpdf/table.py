@@ -382,9 +382,13 @@ class Table:
         if not isinstance(text_align, (Align, str)):
             text_align = text_align[j]
         if i < self._num_heading_rows:
-            style = self._headings_style
+            # Get the style for this cell by overriding the row style with any provided
+            # headings style, and overriding that with any provided cell style
+            style = FontFace.combine(
+                cell.style, FontFace.combine(self._headings_style, row.style)
+            )
         else:
-            style = cell.style or row.style
+            style = FontFace.combine(cell.style, row.style)
         if style and style.fill_color:
             fill = True
         elif (
