@@ -1,11 +1,6 @@
 # my files
 .env
-testo.py
-test_svgs.py
-clipping-tests/*
 .DS_Store
-.ipynb_checkpoints/*
-fpdf_scrap.ipynb
 
 # codecov.io
 coverage.xml

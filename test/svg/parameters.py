@@ -767,7 +767,7 @@ test_svg_sources = (
     pytest.param(svgfile("use-xlink-href.svg"), id="use xlink:href - issue #446"),
     pytest.param(svgfile("rgb-color-issue-480.svg"), id="rgb() color - issue #480"),
     pytest.param(
-        svgfile("circle01_def_test.svg"), id="circle defined in 'defs' tag - issue #858"
+        svgfile("shapes_def_test.svg"), id="shapes defined in 'defs' tag - issue #858"
     ),
     pytest.param(svgfile("clip_path.svg"), id="clip path - issue #858"),
 )
