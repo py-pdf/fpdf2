@@ -155,17 +155,13 @@ Este ejemplo es una variante del anterior, mostrando cómo poner el texto en mú
 
 [Texto de Julio Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-La diferencia clave con el tutorial anterior es el uso de los métodos 
-[accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) y set_col.
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
 
-Utilizando el método [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break), una vez 
-la celda cruce el límite inferior de la página, éste comprobará el número de la columna actual. Si 
-es menor que 2 (decidimos dividir la página en tres columnas) éste invocará al método set_col, 
-incrementando el número de columna y alterando la posición de la siguiente columna tal que el texto pueda continuar aquí.
+English versions:
 
-Una vez el límite inferior de la tercera columna es alcanzado, el 
-método [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) se reiniciará y 
-volverá a la primera columna, desencadenando un salto de página.
+* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
+* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
+
 
 ## Tutorial 5 - Creando tablas ##
 

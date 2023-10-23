@@ -97,11 +97,13 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [Текст Жюля Верна](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-Ключевым отличием от предыдущего урока является использование методов [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) и set_col.
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
 
-С помощью метода [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break), в тот момент, когда ячейка пересекает нижнюю границу страницы, проверяется номер текущей колонки. Если он меньше 2 (мы решили разделить страницу на три колонки), то будет вызван метод set_col, увеличивающий номер колонки и изменяющий положение следующей колонки, чтобы текст мог быть продолжен в ней.
+English versions:
 
-Как только будет достигнута нижняя граница третьей колонки, метод [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) произведет сброс и возврат к первой колонке и инициирует разрыв страницы.
+* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
+* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
+
 
 ## Руковдство 5 - Создание таблиц ##
 

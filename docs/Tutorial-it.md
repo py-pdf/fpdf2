@@ -121,12 +121,13 @@ Questo esempio è una variante del precedente, mostra come disporre il test attr
 
 [Testo Jules Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-La differenza dal precedente tutoria è l'utilizzo dei metodi 
-[accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) e set_col.
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
 
-Usando [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break), una volta che la cella oltrepasserà il limite basso della pagina, il numero della colonna corrente verrà controllato. Se sarà meno di 2 (abbiamo deciso di dividere la pagina in 3 colonne) chiamerà il metodo set_cal, incrementando il numero della colonna e modificando la posizione della prossima colonna in modo e il testo continui lì.
+English versions:
 
-Una volta che il limite inferiore della terza colonna sarà raggiunto, [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) resetterà e andrà alla prima colonna provocando una interruzione di pagina.
+* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
+* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
+
 
 ## Tuto 5 - Creare tabelle ##
 
