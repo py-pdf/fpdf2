@@ -17,7 +17,8 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.7.7] - Not released yet
-
+### Added
+* SVG importing now supports clipping paths, and `defs` tags anywhere in the SVG file
 
 ## [2.7.6] - 2023-10-11
 This release is the first performed from the [@py-pdf GitHub org](https://github.com/py-pdf), where `fpdf2` migrated.
@@ -35,7 +36,6 @@ This release also marks the arrival of two new maintainers: Georg Mischler ([@gm
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): If the height of a row is governed by an image, then the default vertical alignment of the other cells is "center". This was "top". 
 * variable-width non-breaking space (NBSP) support [issue #834](https://github.com/PyFPDF/fpdf2/issues/834)
 This change was made for consistency between row-height governed by text or images. The old behaviour can be enforced using the new vertical alignment parameter.  
-* SVG importing now supports clipping paths, and `defs` tags anywhere in the SVG file
 ### Fixed
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table) & [`FPDF.multi_cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell): when some horizontal padding was set, the text was not given quite enough space - thanks to @gmischler
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) can now handle formatting tags within paragraphs without adding extra line breaks (except in table cells for now) - thanks to @gmischler
