@@ -162,18 +162,13 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [儒勒·凡尔纳的文本](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-与上一个教程的主要区别在于使用了
-[accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) 
-与 set_col 方法。
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
 
-在 [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) 
-函数中，一当单元格越过页面的底部，
-若当前列号小于2（页面分为三列），则调用 set_col，
-递增列号并移动到下一列的位置，继续打印文本。
+English versions:
 
-一旦达到第三列的底部，
-[accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) 
-将分页并回到第一列。
+* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
+* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
+
 
 ## 教程五 - 创建表 ##
 

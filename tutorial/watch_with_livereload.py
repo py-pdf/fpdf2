@@ -23,7 +23,7 @@ def build_pdf():
         h=10,
         w=0,
         align="C",
-        txt="""Hello fpdf2 user!
+        text="""Hello fpdf2 user!
 Launch this script with --watch
 and then try to modify this text while the script is running""",
     )

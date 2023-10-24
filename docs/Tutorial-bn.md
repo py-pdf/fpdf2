@@ -144,16 +144,13 @@ author ([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)) মেথড। 
 
 [Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-পূর্বের টিউটরিয়ালের সাথে এর মূল পার্থক্য হলো 
-[accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) এবং the set_col মেথডের ব্যবহার।
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
 
-[accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) মেথড ব্যবহার করে, যদি cell পৃষ্ঠার বর্তমান
- সর্বনিম্ন লিমিট পার করে, এই মেথড তখন বর্তমান কলাম নাম্বার চেক করে। যখন তা ২ এর ছোট হয় (আমরা একটি পৃষ্ঠাকে তিনটি 
- কলামে ভাগ করেছি), তখন set_col মেথডটি কল হয়, কলাম নাম্বার বেড়ে যায় এবং লিখার অবস্থান পরবর্তী কলামে চলে যায় যাতে 
- করে লিখা সেখানেই চলমান থাকে। 
+English versions:
 
-যখন ৩য় কলামের সর্বনিম্ন লিমিটে পৌছায়, [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) মেথডটি 
-রিসেট হয় এবং একটি পেজ ব্রেক এপ্লাই করে আবার প্রথম কলামে চলে যায়। 
+* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
+* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
+
 
 ## টিউটোরিয়াল ৫ - টেবিল তৈরি করা ##
 
