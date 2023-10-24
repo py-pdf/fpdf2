@@ -131,7 +131,7 @@ nav:
   - 'Line breaks':                    'LineBreaks.md'
   - 'Page breaks':                    'PageBreaks.md'
   - 'Text styling':                   'TextStyling.md'
-  - 'Unicode':                        'Unicode.md'
+  - 'Fonts and Unicode':                        'Unicode.md'
   - 'Text Shaping':                   'TextShaping.md'
   - 'Emojis, Symbols & Dingbats':     'EmojisSymbolsDingbats.md'
   - 'HTML':                           'HTML.md'

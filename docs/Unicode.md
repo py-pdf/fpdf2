@@ -1,4 +1,4 @@
-# Unicode #
+# Fonts and Unicode #
 
 Besides the limited set of latin fonts built into the PDF format, Fpdf2 offers full support for using and embedding Unicode (TrueType "ttf" and OpenType "otf") fonts. To keep the output file size small, it only embeds the subset of each font that is actually used in the document. This part of the code has been completely rewritten since the fork from PyFPDF. It uses the [fonttools](https://fonttools.readthedocs.io/en/latest/) library for parsing the font data, and [harfbuzz](https://harfbuzz.github.io/) (via [uharfbuzz](https://github.com/harfbuzz/uharfbuzz)) for [text shaping](TextShaping.html).
 
@@ -27,6 +27,49 @@ While that may seem convenient, there's a big drawback. Those fonts only support
 So if you want to create documents with any characters other than those common in English and a small number of european languages, then you need to add a Unicode font containing the respective glyph as described in this document.
 
 Note that even if you have a font eg. named "Courier" installed as a system font on your computer, by default this will not be used. You'll have to explicitly call eg. `.add_font("courier2", "", r"C:\Windows\Fonts\cour.ttf")` to make it available. If the name is really the same (ignoring case), then you'll have to use a suitable variation, since trying to overwrite one of the "standard" names with `.add_font()` will result in an error.
+
+
+### Adding and Using Fonts ###
+
+Before using a Unicode font, you need to load it from a font file. Usually you'll have call `add_font()` for each style of the same font family you want to use. The styles that fpdf2 understands are:
+
+* Regular: ""
+* Bold: "b"
+* Italic/Oblique: "i"
+* Bold-Italic: "bi"
+
+Note that we use the same family name for each of them, but load them from different files. Only when a font has variants (eg. "narrow"), or there are more styles than the four standard ones (eg. "black" or "extra light"), you'll have to add those with a different family name. If the font files are not located in the current directory, you'll have to provide a file name with a relative or absolute path.
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+# Different styles of the same font family.
+pdf.add_font("dejavu-sans", style="", fname="DejaVuSans.ttf")
+pdf.add_font("dejavu-sans", style="b", fname="DejaVuSans-Bold.ttf")
+pdf.add_font("dejavu-sans", style="i", fname="DejaVuSans-Oblique.ttf")
+pdf.add_font("dejavu-sans", style="bi", fname="DejaVuSans-BoldOblique.ttf")
+# Different type of the same font design.
+pdf.add_font("dejavu-sans-narrow", style="", fname="DejaVuSansCondensed.ttf")
+pdf.add_font("dejavu-sans-narrow", style="i", fname="DejaVuSansCondensed-Oblique.ttf")
+```
+
+To actually use the loaded font, or to use one of the standard built-in fonts, you'll have to set the current font before calling any text generating method. `.set_font()` uses the same combinations of family name and style as arguments, plus the font size in typographic points. In addition to the previously mentioned styles, the letter "u" may be included for creating underlined text. If the family or size are omitted, the already set values will be retained. If the style is omitted, it defaults to regular.
+
+```python
+# Set and use first family in regular style.
+pdf.set_font(family="dejavu-sans", style="", size=12)
+pdf.cell(text="Hello")
+# Set and use the same family in bold style.
+pdf.set_font(style="b", size=18)  # still uses the same dejavu-sans font family.
+pdf.cell(text="Fat World")
+# Set and use a variant in italic and underlined.
+pdf.set_font(family="dejavu-sans-narrow", style="iu", size=12)
+pdf.cell(text="lean on me")
+```
+
+![add-unicode-font](add-unicode-font.png)
 
 
 ### Notes on non-latin languages
