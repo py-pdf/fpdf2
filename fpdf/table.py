@@ -1,11 +1,10 @@
 from dataclasses import dataclass, replace
 from numbers import Number
-from typing import Optional, Union
+from typing import Optional, Union, Tuple, Sequence, Protocol
 
 from .enums import (
     Align,
     MethodReturnValue,
-    TableBordersLayout,
     TableCellFillMode,
     TableHeadingsDisplay,
     WrapMode,
@@ -16,8 +15,434 @@ from .enums import (
 from .errors import FPDFException
 from .fonts import CORE_FONTS, FontFace
 from .util import Padding
+from .drawing import DeviceGray, DeviceRGB
 
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
+
+
+def wrap_in_local_context(draw_commands):
+    return ["q"] + draw_commands + ["Q"]
+
+
+def convert_to_drawing_color(color):
+    if isinstance(color, (DeviceGray, DeviceRGB)):
+        # Note: in this case, r is also a Sequence
+        return color
+    if isinstance(color, int):
+        return DeviceGray(color / 255)
+    if isinstance(color, Sequence):
+        return DeviceRGB(*(_x / 255 for _x in color))
+    raise ValueError(f"Unsupported color type: {type(color)}")
+
+
+@dataclass(slots=True)
+class TableBorderStyle:
+    """
+    A helper class for drawing one border of a table
+
+    Attributes:
+        thickness: The thickness of the border. If None use default. If <= 0 don't draw the border.
+        color: The color of the border. If None use default.
+    """
+
+    thickness: Optional[float] = None
+    color: Union[int, Tuple[int, int, int]] = None
+    dash: Optional[float] = None
+    gap: float = 0.0
+    phase: float = 0.0
+
+    @staticmethod
+    def from_bool(should_draw):
+        if isinstance(should_draw, TableBorderStyle):
+            return should_draw  # don't change specified TableBorderStyle
+        if should_draw:
+            return TableBorderStyle()  # keep default stroke
+        return TableBorderStyle(thickness=0.0)  # don't draw the border
+
+    def _changes_thickness(self, pdf):
+        return (
+            self.thickness is not None
+            and self.thickness > 0.0
+            and self.thickness != pdf.line_width
+        )
+
+    def _changes_color(self, pdf):
+        return self.color is not None and self.color != pdf.draw_color
+
+    @property
+    def dash_dict(self):
+        return {"dash": self.dash, "gap": self.gap, "phase": self.phase}
+
+    def _changes_dash(self, pdf):
+        return self.dash is not None and self.dash_dict != pdf.dash
+
+    def changes_stroke(self, pdf):
+        return self.should_render() and (
+            self._changes_color(pdf)
+            or self._changes_thickness(pdf)
+            or self._changes_dash(pdf)
+        )
+
+    def should_render(self):
+        return self.thickness is None or self.thickness > 0.0
+
+    def _get_change_thickness_command(self, scale):
+        return [] if self.thickness is None else [f"{self.thickness * scale:.2f} w"]
+
+    def _get_change_line_color_command(self):
+        return (
+            []
+            if self.color is None
+            else [convert_to_drawing_color(self.color).serialize().upper()]
+        )
+
+    def _get_change_dash_command(self, scale):
+        return (
+            []
+            if self.dash is None
+            else [
+                "[] 0 d"
+                if self.dash <= 0
+                else f"[{self.dash * scale:.3f}] {self.phase * scale:.3f} d"
+                if self.gap <= 0
+                else f"[{self.dash * scale:.3f} {self.gap * scale:.3f}] {self.phase * scale:.3f} d"
+            ]
+        )
+
+    def get_change_stroke_commands(self, scale):
+        return (
+            self._get_change_dash_command(scale)
+            + self._get_change_line_color_command()
+            + self._get_change_thickness_command(scale)
+        )
+
+    @staticmethod
+    def get_line_command(x1, y1, x2, y2):
+        return [f"{x1:.2f} {y1:.2f} m " f"{x2:.2f} {y2:.2f} l S"]
+
+    def get_draw_commands(self, pdf, x1, y1, x2, y2):
+        """
+        Get draw commands for this section of a cell border. x and y are presumed to be already
+        shifted and scaled.
+        """
+        if not self.should_render():
+            return []
+
+        if self.changes_stroke(pdf):
+            draw_commands = self.get_change_stroke_commands(
+                scale=pdf.k
+            ) + self.get_line_command(x1, y1, x2, y2)
+            # wrap in local context to prevent stroke changes from affecting later rendering
+            return wrap_in_local_context(draw_commands)
+        return self.get_line_command(x1, y1, x2, y2)
+
+
+@dataclass(slots=True)
+class TableCellStyle:
+    left: Union[bool, TableBorderStyle] = False
+    bottom: Union[bool, TableBorderStyle] = False
+    right: Union[bool, TableBorderStyle] = False
+    top: Union[bool, TableBorderStyle] = False
+
+    def _get_common_border_style(self):
+        if all(
+            isinstance(border, bool)
+            for border in [self.left, self.bottom, self.right, self.top]
+        ):
+            if all(border for border in [self.left, self.bottom, self.right, self.top]):
+                return True
+            if all(
+                not border for border in [self.left, self.bottom, self.right, self.top]
+            ):
+                return False
+        elif all(
+            isinstance(border, TableBorderStyle)
+            for border in [self.left, self.bottom, self.right, self.top]
+        ):
+            common = self.left
+            if all(border == common for border in [self.bottom, self.right, self.top]):
+                return common
+        return None
+
+    @staticmethod
+    def get_change_fill_color_command(color):
+        return (
+            []
+            if color is None
+            else [convert_to_drawing_color(color).serialize().lower()]
+        )
+
+    def get_draw_commands(self, pdf, x1, y1, x2, y2, fill_color=None):
+        """
+        Get list of primitive commands to draw the cell border for this cell, and fill it with the
+        given fill color.
+        """
+        # y top to bottom instead of bottom to top
+        y1 = pdf.h - y1
+        y2 = pdf.h - y2
+        # scale coordinates and thickness
+        scale = pdf.k
+        x1 *= scale
+        y1 *= scale
+        x2 *= scale
+        y2 *= scale
+
+        draw_commands = []
+        needs_wrap = False
+        common_border_style = self._get_common_border_style()
+        if common_border_style is None:
+            # some borders are different from others, draw them individually
+            if fill_color is not None:
+                # draw fill with no box
+                if fill_color != pdf.fill_color:
+                    needs_wrap = True
+                    draw_commands.extend(self.get_change_fill_color_command(fill_color))
+                draw_commands.append(
+                    f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re f"
+                )
+            # draw the individual borders
+            draw_commands.extend(
+                TableBorderStyle.from_bool(self.left).get_draw_commands(
+                    pdf, x1, y2, x1, y1
+                )
+                + TableBorderStyle.from_bool(self.bottom).get_draw_commands(
+                    pdf, x1, y2, x2, y2
+                )
+                + TableBorderStyle.from_bool(self.right).get_draw_commands(
+                    pdf, x2, y2, x2, y1
+                )
+                + TableBorderStyle.from_bool(self.top).get_draw_commands(
+                    pdf, x1, y1, x2, y1
+                )
+            )
+        elif common_border_style is False:
+            # don't draw border
+            if fill_color is not None:
+                # draw fill with no box
+                if fill_color != pdf.fill_color:
+                    needs_wrap = True
+                    draw_commands.extend(self.get_change_fill_color_command(fill_color))
+                draw_commands.append(
+                    f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re f"
+                )
+        else:
+            # all borders are the same
+            if isinstance(
+                common_border_style, TableBorderStyle
+            ) and common_border_style.changes_stroke(pdf):
+                # the border styles aren't default, so
+                draw_commands.extend(
+                    common_border_style.get_change_stroke_commands(scale)
+                )
+                needs_wrap = True
+            if fill_color is not None:
+                # draw filled rectangle
+                if fill_color != pdf.fill_color:
+                    needs_wrap = True
+                    draw_commands.extend(self.get_change_fill_color_command(fill_color))
+                draw_commands.append(
+                    f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re B"
+                )
+            else:
+                # draw empty rectangle
+                draw_commands.append(
+                    f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re S"
+                )
+
+        if needs_wrap:
+            draw_commands = wrap_in_local_context(draw_commands)
+        return draw_commands
+
+    def draw_cell_border(self, pdf, x1, y1, x2, y2, fill_color=None):
+        """
+        Draw the cell border for this cell, and fill it with the given fill color.
+        """
+        pdf._out(  # pylint: disable=protected-access
+            " ".join(self.get_draw_commands(pdf, x1, y1, x2, y2, fill_color=fill_color))
+        )
+
+
+class CallStyleGetter(Protocol):
+    def __call__(
+        self,
+        row_num: int,
+        col_num: int,
+        num_heading_rows: int,
+        num_rows: int,
+        num_cols: int,
+    ) -> TableCellStyle:
+        ...
+
+
+@dataclass(slots=True)
+class TableBordersLayout:
+    """
+    Customizable class for setting the drawing style of cell borders for the whole table.
+    Standard TableBordersLayouts are available as static members of this class
+
+    Attributes:
+        cell_style_getter: a callable that takes row_num, column_num,
+            num_heading_rows, num_rows, num_columns; and returns the drawing style of
+            the cell border (as a TableCellStyle object)
+        ALL: static TableBordersLayout that draws all table cells borders
+        NONE: static TableBordersLayout that draws no table cells borders
+        INTERNAL: static TableBordersLayout that draws only internal horizontal & vertical borders
+        MINIMAL: static TableBordersLayout that draws only the top horizontal border, below the
+            headings, and internal vertical borders
+        HORIZONTAL_LINES: static TableBordersLayout that draws only horizontal lines
+        NO_HORIZONTAL_LINES: static TableBordersLayout that draws all cells border except interior
+            horizontal lines after the headings
+        SINGLE_TOP_LINE: static TableBordersLayout that draws only the top horizontal border, below
+            the headings
+    """
+
+    cell_style_getter: CallStyleGetter
+
+    @classmethod
+    def coerce(cls, value):
+        """
+        Attempt to coerce `value` into a member of this class.
+
+        If value is already a member of this enumeration it is returned unchanged.
+        Otherwise, if it is a string, attempt to convert it as an enumeration value. If
+        that fails, attempt to convert it (case insensitively, by upcasing) as an
+        enumeration name.
+
+        If all different conversion attempts fail, an exception is raised.
+
+        Args:
+            value (Enum, str): the value to be coerced.
+
+        Raises:
+            ValueError: if `value` is a string but neither a member by name nor value.
+            TypeError: if `value`'s type is neither a member of the enumeration nor a
+                string.
+        """
+
+        if isinstance(value, cls):
+            return value
+
+        if isinstance(value, str):
+            try:
+                coerced_value = getattr(cls, value.upper())
+                if isinstance(coerced_value, cls):
+                    return coerced_value
+            except ValueError:
+                pass
+
+        raise ValueError(f"{value} is not a valid {cls.__name__}")
+
+
+# Draw all table cells borders
+TableBordersLayout.ALL = TableBordersLayout(
+    cell_style_getter=lambda row_num, col_num, num_heading_rows, num_rows, num_cols: TableCellStyle(
+        left=True, bottom=True, right=True, top=True
+    )
+)
+# Draw zero cells border
+TableBordersLayout.NONE = TableBordersLayout(
+    cell_style_getter=lambda row_num, col_num, num_heading_rows, num_rows, num_cols: TableCellStyle(
+        left=False, bottom=False, right=False, top=False
+    )
+)
+# Draw only internal horizontal & vertical borders
+TableBordersLayout.INTERNAL = TableBordersLayout(
+    cell_style_getter=lambda row_num, col_num, num_heading_rows, num_rows, num_cols: TableCellStyle(
+        left=col_num > 0,
+        bottom=col_num < num_cols - 1,
+        right=row_num < num_rows - 1,
+        top=row_num > 0,
+    )
+)
+# Draw only the top horizontal border, below the headings, and internal vertical borders
+TableBordersLayout.MINIMAL = TableBordersLayout(
+    cell_style_getter=lambda row_num, col_num, num_heading_rows, num_rows, num_cols: TableCellStyle(
+        left=col_num > 0,
+        bottom=row_num < num_heading_rows,
+        right=col_num < num_cols - 1,  # could remove (set False)
+        top=0 < row_num <= num_heading_rows,  # could remove (set False)
+    )
+)
+# Draw only horizontal lines
+TableBordersLayout.HORIZONTAL_LINES = TableBordersLayout(
+    cell_style_getter=lambda row_num, col_num, num_heading_rows, num_rows, num_cols: TableCellStyle(
+        left=False, bottom=row_num < num_heading_rows - 1, right=False, top=row_num > 0
+    )
+)
+# Draw all cells border except interior horizontal lines after the headings
+TableBordersLayout.NO_HORIZONTAL_LINES = TableBordersLayout(
+    cell_style_getter=lambda row_num, col_num, num_heading_rows, num_rows, num_cols: TableCellStyle(
+        left=True,
+        bottom=row_num == num_rows - 1,
+        right=True,
+        top=row_num <= num_heading_rows,
+    )
+)
+TableBordersLayout.SINGLE_TOP_LINE = TableBordersLayout(
+    cell_style_getter=lambda row_num, col_num, num_heading_rows, num_rows, num_cols: TableCellStyle(
+        left=False,
+        bottom=row_num <= num_heading_rows - 1,
+        right=False,
+        top=False,
+    )
+)
+
+
+def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
+    """Draws a box using the provided style - private helper used by table for drawing the cell and table borders.
+    Difference between this and rect() is that border can be defined as "L,R,T,B" to draw only some of the four borders;
+    compatible with get_border(i,k)
+
+    See Also: rect()"""
+
+    if fill_color:
+        prev_fill_color = pdf.fill_color
+        if isinstance(fill_color, (int, float)):
+            fill_color = [fill_color]
+        pdf.set_fill_color(*fill_color)
+
+    sl = []
+
+    k = pdf.k
+
+    # y top to bottom instead of bottom to top
+    y1 = pdf.h - y1
+    y2 = pdf.h - y2
+
+    # scale
+    x1 *= k
+    x2 *= k
+    y2 *= k
+    y1 *= k
+
+    if fill_color:
+        op = "B" if border == 1 else "f"
+        sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re {op}")
+    elif border == 1:
+        sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re S")
+
+    if isinstance(border, str):
+        if "L" in border:
+            sl.append(f"{x1:.2f} {y2:.2f} m " f"{x1:.2f} {y1:.2f} l S")
+        if "B" in border:
+            sl.append(f"{x1:.2f} {y2:.2f} m " f"{x2:.2f} {y2:.2f} l S")
+        if "R" in border:
+            sl.append(f"{x2:.2f} {y2:.2f} m " f"{x2:.2f} {y1:.2f} l S")
+        if "T" in border:
+            sl.append(f"{x1:.2f} {y1:.2f} m " f"{x2:.2f} {y1:.2f} l S")
+
+    s = " ".join(sl)
+    pdf._out(s)  # pylint: disable=protected-access
+
+    if fill_color:
+        pdf.set_fill_color(prev_fill_color)
+
+
+@dataclass(frozen=True)
+class RowLayoutInfo:
+    height: float
+    triggers_page_jump: bool
+    rendered_height: dict
 
 
 class Table:
@@ -425,7 +850,13 @@ class Table:
             )  # already includes gutter for cells spanning multiple columns
             y2 = y1 + cell_height
 
-            draw_box_borders(
+            self._borders_layout.cell_style_getter(
+                row_num=i,
+                col_num=j,
+                num_heading_rows=self._num_heading_rows,
+                num_rows=len(self.rows),
+                num_cols=self.rows[i].column_indices[-1] + 1,
+            ).draw_cell_border(
                 self._fpdf,
                 x1,
                 y1,
@@ -463,7 +894,6 @@ class Table:
 
                 self._fpdf.set_line_width(_remember_linewidth)
 
-        # render image:
         if cell.img:
             x, y = self._fpdf.x, self._fpdf.y
 
