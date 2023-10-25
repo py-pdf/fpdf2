@@ -155,15 +155,15 @@ Este ejemplo es una variante del anterior, mostrando cómo poner el texto en mú
 
 [Texto de Julio Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
-
-English versions:
-
-* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
-* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
+La diferencia clave respecto al tutorial anterior es el uso del 
+método [`text_columns`](fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column). 
+Este recoge todo el texto, posiblemente en incrementos, y lo distribuye entre el número de columnas solicitadas, insertando automáticamente saltos de página según sea necesario. Nota que mientras la instancia de `TextColumns` está activa como gestor de contexto, los estilos de texto y otras propiedades de la fuente pueden cambiarse. Estos cambios estarán contenidos en el contexto. Una vez se cierre, la configuración previa será reestablecida.
 
 
 ## Tutorial 5 - Creando tablas ##
+
+Este tutorial explicará cómo crear dos tablas diferentes,
+ para demostrar lo que se puede lograr con algunos ajustes simples.
 
 ```python
 {% include "../tutorial/tuto5.py" %}
@@ -172,12 +172,13 @@ English versions:
 [PDF resultante](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf) -
 [Archivo de texto con países](https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt)
 
-_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
+El primer ejemplo es alcanzado de la forma más básica posible, alimentando datos a [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html). El resultado es rudimentario pero muy rápido de obtener.
 
-English versions:
-
-* [Tuto 5 - Creating Tables](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
-* [Documentation on tables](https://py-pdf.github.io/fpdf2/Tables.html)
+La segunda tabla trae algunas mejoras: colores, ancho de tabla limitado, altura de línea reducida,
+ títulos centrados, columnas con anchos personalizados, figuras alineadas a la derecha...
+ Aún más, las líneas horizontales han sido removidas.
+ Esto se hizo escogiendo un `borders_layout` entre los valores disponibles:
+ [`TableBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
 
 ## Tutorial 6 - Creando enlaces y combinando estilos de texto ##
 
