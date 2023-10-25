@@ -72,24 +72,22 @@ pdf.cell(text="lean on me")
 ![add-unicode-font](add-unicode-font.png)
 
 
-### Notes on non-latin languages
+### Note on non-latin languages ###
 
-Many non-latin writing systems have complex ways to combine characters, ligatures, and possibly multiple diacritic symbols together. To make sure those scripts to be rendered correctly, [text shaping](TextShaping.html) must be enabled with `.set_text_shaping(True)`. 
+Many non-latin writing systems have complex ways to combine characters, ligatures, and possibly multiple diacritic symbols together, change the shape of characters depending on its location in a word, or use a different writing direction. A small number of examples are:
 
-Some users may encounter a problem where some characters displayed incorrectly. For example, using Thai language in the picture below
+* Hebrew - right-to-left, placement of diacritics
+* Arabic - right-to-left, contextual shapes
+* Thai - stacked diacritics
+* Devanagari (and other indic scripts) - multi-character ligatures, reordering
 
-![thai-font-problem](https://raw.githubusercontent.com/py-pdf/fpdf2/master/tutorial/thai-accent-error.png)
-
-The solution is to find and use a font that covers the characters of your language.
-From the error in the image above, Thai characters can be fixed using fonts from  [Fonts-TLWG](http://linux.thai.net/projects/fonts-tlwg/) which can be downloaded from
-[this link](https://linux.thai.net/pub/thailinux/software/fonts-tlwg/fonts/). The example shown below.
-
-![thai-font-working](https://raw.githubusercontent.com/py-pdf/fpdf2/master/tutorial/thai-accent-working.png)
+To make sure those scripts to be rendered correctly, [text shaping](TextShaping.html) must be enabled with `.set_text_shaping(True)`. 
 
 
-### Right-to-Left & Arabic Script workaround
+### Right-to-Left & Arabic Script workaround ###
 
-For Arabic and RTL scripts there is a temporary solution (using two additional libraries `python-bidi` and `arabic-reshaper`) that works for most languages; only a few (rare) Arabic characters aren't supported. Using it on other scripts(eg. when the input is unknown or mixed scripts) does not affect them:
+Arabic, Hebrew and other scripts written right-to-left (RTL) should work correctly when text is added that only contains one script at a time. As of release 2.7.6, more complete support for mixing RTL and LTR text is being worked on.
+In the mean time, there is a temporary solution for Arabic and other RTL scripts using two additional libraries `python-bidi` and `arabic-reshaper`. It works for most languages; only a few (rare) Arabic characters aren't supported. Using it on other scripts (eg. when the input is unknown or mixed scripts) does not affect them:
 ```python
 from arabic_reshaper import reshape
 from bidi.algorithm import get_display
