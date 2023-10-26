@@ -9,6 +9,7 @@ from .fonts import CORE_FONTS, FontFace
 from .util import Padding
 
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
+DEFAULT_INDEX_STYLE = FontFace(emphasis="BOLD")
 
 
 def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
@@ -89,6 +90,7 @@ class Table:
         gutter_height=0,
         gutter_width=0,
         headings_style=DEFAULT_HEADINGS_STYLE,
+        index_style=DEFAULT_INDEX_STYLE,
         line_height=None,
         markdown=False,
         text_align="JUSTIFY",
@@ -97,6 +99,7 @@ class Table:
         padding=None,
         outer_border_width=None,
         num_heading_rows=1,
+        num_index_columns=0,
     ):
         """
         Args:
@@ -149,6 +152,8 @@ class Table:
         self._wrapmode = wrapmode
         self._num_heading_rows = num_heading_rows
         self.rows = []
+        self.index_style = index_style
+        self.n_index_columns = num_index_columns
 
         if padding is None:
             self._padding = Padding.new(0)
@@ -185,11 +190,14 @@ class Table:
             self.row(row)
 
     def row(self, cells=()):
-        "Adds a row to the table. Yields a `Row` object."
+        "Adds a row to the table. Yields a `Row` object. Styles first `self.n_index_columns` cells  with `self.index_style`"
         row = Row(self._fpdf)
         self.rows.append(row)
-        for cell in cells:
-            row.cell(cell)
+        for n, cell in enumerate(cells):
+            if n < self.n_index_columns:
+                row.cell(cell, style=self.index_style)
+            else:
+                row.cell(cell)
         return row
 
     def render(self):
@@ -255,10 +263,10 @@ class Table:
                 # pylint: disable=protected-access
                 self._fpdf._perform_page_break()
                 # repeat headings on top:
-                for row_idx in range(self._num_heading_rows):
+                for row_lbl in range(self._num_heading_rows):
                     self._render_table_row(
-                        row_idx,
-                        self._get_row_layout_info(row_idx),
+                        row_lbl,
+                        self._get_row_layout_info(row_lbl),
                         cell_x_positions=cell_x_positions,
                     )
             elif i and self._gutter_height:
@@ -646,11 +654,11 @@ class Row:
     @property
     def column_indices(self):
         columns_count = len(self.cells)
-        colidx = 0
-        indices = [colidx]
+        collbl = 0
+        indices = [collbl]
         for jj in range(columns_count - 1):
-            colidx += self.cells[jj].colspan
-            indices.append(colidx)
+            collbl += self.cells[jj].colspan
+            indices.append(collbl)
         return indices
 
     def cell(
@@ -726,3 +734,49 @@ class Cell:
 
     def write(self, text, align=None):
         raise NotImplementedError("Not implemented yet")
+
+
+def format_label_tuples(lbl, char=" "):
+    """
+    Formats columns and indexes to match DataFrame formatting.
+    """
+    indexes = [lbl[0]]
+    for i, j in zip(lbl, lbl[1:]):
+        next_label = []
+        for i_, j_ in zip(i, j):
+            if j_ == i_:
+                next_label.append(char)
+            else:
+                next_label.append(j_)
+        indexes.append(tuple(next_label))
+    return indexes
+
+
+def add_labels_to_data(data, indexes, columns, include_index: bool = True, char=" "):
+    """Combines index and column labels with data for table output"""
+    if include_index:
+        index_header_padding = [tuple(char) * len(indexes[0])] * len(columns[0])
+        formatted_indexes = format_label_tuples(indexes)
+        new_values = []
+        for i, v in zip(formatted_indexes, data):
+            new_values.append(list(i) + list(v))
+        formatted_columns = [
+            list(c)
+            for c in zip(*format_label_tuples(index_header_padding + list(columns)))
+        ]
+        new_data = formatted_columns + new_values
+
+    else:
+        formatted_columns = [list(c) for c in zip(*format_label_tuples(list(columns)))]
+        new_data = formatted_columns + data.tolist()
+
+    return new_data
+
+
+def format_dataframe(df, include_index: bool = True):
+    """Fully formats a dataframe for conversion into pdf"""
+    data = df.map(str).values
+    columns = df.columns
+    indexes = df.index
+    table_data = add_labels_to_data(data, indexes, columns, include_index=include_index)
+    return table_data

@@ -110,6 +110,7 @@ Result:
 Create a table with pandas [DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html):
 ```python
 from fpdf import FPDF
+from fpdf.table import format_dataframe
 import pandas as pd
 
 df = pd.DataFrame(
@@ -121,11 +122,7 @@ df = pd.DataFrame(
     }
 )
 
-df = df.applymap(str)  # Convert all data inside dataframe into string type
-
-columns = [list(df)]  # Get list of dataframe columns
-rows = df.values.tolist()  # Get list of dataframe rows
-data = columns + rows  # Combine columns and rows in one list
+data = format_dataframe(df) # converts data to string and formats column and index labels
 
 pdf = FPDF()
 pdf.add_page()
@@ -137,9 +134,7 @@ with pdf.table(borders_layout="MINIMAL",
                text_align="CENTER",
                width=160) as table:
     for data_row in data:
-        row = table.row()
-        for datum in data_row:
-            row.cell(datum)
+        table.row(data_row)
 pdf.output("table_from_pandas.pdf")
 ```
 

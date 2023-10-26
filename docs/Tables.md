@@ -352,6 +352,8 @@ Result:
 
 ![](table_with_multiple_headings.png)
 
+This also works with index columns. Pass any integer to the `num_index_columns` argument when calling `Table()` and that many columns will be formatted according to the `index_style` argument.
+
 ## Table from pandas DataFrame
 
 _cf._ [Maths documentation page](Maths.md#using-pandas)
