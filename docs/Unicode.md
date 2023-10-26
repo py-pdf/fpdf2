@@ -38,7 +38,7 @@ Before using a Unicode font, you need to load it from a font file. Usually you'l
 * Italic/Oblique: "i"
 * Bold-Italic: "bi"
 
-Note that we use the same family name for each of them, but load them from different files. Only when a font has variants (eg. "narrow"), or there are more styles than the four standard ones (eg. "black" or "extra light"), you'll have to add those with a different family name. If the font files are not located in the current directory, you'll have to provide a file name with a relative or absolute path.
+Note that we use the same family name for each of them, but load them from different files. Only when a font has variants (eg. "narrow"), or there are more styles than the four standard ones (eg. "black" or "extra light"), you'll have to add those with a different family name. If the font files are not located in the current directory, you'll have to provide a file name with a relative or absolute path. If the font is not found elsewhere, then fpdf2 will look for it in a subdirectory named "font".
 
 ```python
 from fpdf import FPDF
@@ -109,6 +109,7 @@ from fpdf import FPDF
 
 pdf = FPDF()
 pdf.add_page()
+pdf.set_text_shaping(True)
 
 # Add a DejaVu Unicode font (uses UTF-8)
 # Supports more than 200 languages. For a coverage status see:
@@ -180,7 +181,7 @@ For your convenience, the author of the original PyFPDF has collected 96 TTF fil
 ["Free Unicode TrueType Font Pack for FPDF"](https://github.com/reingart/pyfpdf/releases/download/binary/fpdf_unicode_font_pack.zip), with useful fonts commonly distributed with GNU/Linux operating systems. Note that this collection is from 2015, so it will not contain any newer fonts or possible updates.
 
 
-# Fallback fonts #
+## Fallback fonts ##
 
 _New in [:octicons-tag-24: 2.7.0](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
