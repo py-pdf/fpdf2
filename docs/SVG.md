@@ -190,6 +190,8 @@ Additionally, `cairosvg` offers various options for optimizing the rendering per
 - stroke & fill coloring and opacity
 - basic stroke styling
 - Inline CSS styling via `style="..."` attributes.
+- clipping paths
+- `defs` tags anywhere in the SVG code
 
 ## Currently Unsupported Notable SVG Features ##
 

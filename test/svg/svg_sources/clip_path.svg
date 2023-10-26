@@ -1,0 +1,18 @@
+<?xml version="1.0" standalone="no"?>
+<svg width="12cm" height="4cm" viewBox="0 0 1200 400"
+     xmlns="http://www.w3.org/2000/svg" version="1.1">
+  <desc>Example clip_path - green circle clipped by rectangular clipping path</desc>
+
+  <!-- Show outline of viewport using 'rect' element -->
+  <rect x="1" y="1" width="1198" height="398"
+        fill="none" stroke="blue" stroke-width="2"/>
+
+  <circle cx="600" cy="200" r="100"
+        fill="lime" clip-path="url(#clipper)"/>
+  
+  <defs>
+    <clipPath id="clipper">
+      <rect x="100" y="60" width="500" height="300" />
+    </clipPath>
+  </defs>
+</svg>

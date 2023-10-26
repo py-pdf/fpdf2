@@ -1,0 +1,25 @@
+<?xml version="1.0" standalone="no"?>
+<svg width="12cm" height="4cm" viewBox="0 0 1200 400"
+     xmlns="http://www.w3.org/2000/svg" version="1.1">
+  <desc>Example circle01 - circle filled with red and stroked with blue</desc>
+
+  <!-- Show outline of viewport using 'rect' element -->
+  <rect x="1" y="1" width="1198" height="398"
+        fill="none" stroke="blue" stroke-width="2"/>
+
+  <use href="#def_circle" x="400" y="10" />
+  <use href="#def_rect" x="300" y="50" />
+  <use href="#def_ellipse" x="600" y="100" />
+  <use href="#def_polygon" x="70" y="100"/>
+  <defs>
+    <circle id="def_circle" cx="600" cy="200" r="100"
+        fill="red" stroke="blue" stroke-width="10"  />
+    <rect id="def_rect" width="150" height="150"
+        fill="lime" stroke="orange" stroke-width="10" />
+    <ellipse id="def_ellipse" cx="50" cy="50" rx="100" ry="50" 
+      fill="blue" />
+    <polygon id="def_polygon" points="10,10 100,10 50,100" fill="purple"
+      stroke="green" stroke-width="10" />
+  </defs>
+</svg>
+

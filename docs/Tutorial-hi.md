@@ -144,12 +144,12 @@ Logo को निर्दिष्ट करके [image](fpdf/fpdf.html#fpdf
 
 [Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-पिछले ट्यूटोरियल से मुख्य अंतर [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) और set_col विधियों का उपयोग है।
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
 
-[accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) विधि का उपयोग करते हुए, एक बार जब सेल पृष्ठ की निचली सीमा को पार कर जाता है, तो यह वर्तमान कॉलम संख्या की जांच करेगा।
-यदि यह 2 से कम है (हमने पृष्ठ को तीन स्तंभों में विभाजित करना चुना है) तो यह set_col विधि को कॉल करेगा,
-कॉलम संख्या बढ़ाना और अगले कॉलम की स्थिति बदलना ताकि टेक्स्ट वहां जारी रह सके।
-एक बार तीसरे कॉलम की निचली सीमा तक पहुँच जाने पर, [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) विधि रीसेट हो जाएगी और पहले कॉलम पर वापस जाएगी और एक पेज ब्रेक को ट्रिगर करेगी।
+English versions:
+
+* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
+* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
 
 
 ## Tuto 5 - टेबल बनाना ##

@@ -1,5 +1,6 @@
 # my files
 .env
+.DS_Store
 
 # codecov.io
 coverage.xml
