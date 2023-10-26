@@ -17,8 +17,10 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.7.7] - Not released yet
-• Tables can now handle multi-index formatting similar to how multi-column formatted is currently implemented.
-• Code added to format multi-index and multi-header to match Pandas (repeat labels are now omitted but spaced correctly)
+### Added
+* SVG importing now supports clipping paths, and `defs` tags anywhere in the SVG file
+* Tables can now handle multi-index formatting similar to how multi-column formatted is currently implemented.
+* Code added to format multi-index and multi-header to match Pandas (repeat labels are now omitted but spaced correctly)
 
 
 ## [2.7.6] - 2023-10-11

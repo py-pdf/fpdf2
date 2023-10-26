@@ -26,6 +26,7 @@ from .drawing import (
     GraphicsContext,
     GraphicsStyle,
     PaintedPath,
+    ClippingPath,
     Transform,
 )
 
@@ -329,15 +330,17 @@ class ShapeBuilder:
     """A namespace within which methods for converting basic shapes can be looked up."""
 
     @staticmethod
-    def new_path(tag):
+    def new_path(tag, clipping_path: bool = False):
         """Create a new path with the appropriate styles."""
         path = PaintedPath()
+        if clipping_path:
+            path = ClippingPath()
         apply_styles(path, tag)
 
         return path
 
     @classmethod
-    def rect(cls, tag):
+    def rect(cls, tag, clipping_path: bool = False):
         """Convert an SVG <rect> into a PDF path."""
         # svg rect is wound clockwise
         if "x" in tag.attrib:
@@ -387,25 +390,25 @@ class ShapeBuilder:
         if ry > (height / 2):
             ry = height / 2
 
-        path = cls.new_path(tag)
+        path = cls.new_path(tag, clipping_path)
 
         path.rectangle(x, y, width, height, rx, ry)
         return path
 
     @classmethod
-    def circle(cls, tag):
+    def circle(cls, tag, clipping_path: bool = False):
         """Convert an SVG <circle> into a PDF path."""
         cx = float(tag.attrib.get("cx", 0))
         cy = float(tag.attrib.get("cy", 0))
         r = float(tag.attrib["r"])
 
-        path = cls.new_path(tag)
+        path = cls.new_path(tag, clipping_path)
 
         path.circle(cx, cy, r)
         return path
 
     @classmethod
-    def ellipse(cls, tag):
+    def ellipse(cls, tag, clipping_path: bool = False):
         """Convert an SVG <ellipse> into a PDF path."""
         cx = float(tag.attrib.get("cx", 0))
         cy = float(tag.attrib.get("cy", 0))
@@ -413,7 +416,7 @@ class ShapeBuilder:
         rx = tag.attrib.get("rx", "auto")
         ry = tag.attrib.get("ry", "auto")
 
-        path = cls.new_path(tag)
+        path = cls.new_path(tag, clipping_path)
 
         if (rx == ry == "auto") or (rx == 0) or (ry == 0):
             return path
@@ -457,11 +460,11 @@ class ShapeBuilder:
         return path
 
     @classmethod
-    def polygon(cls, tag):
+    def polygon(cls, tag, clipping_path: bool = False):
         """Convert an SVG <polygon> into a PDF path."""
         points = tag.attrib["points"]
 
-        path = cls.new_path(tag)
+        path = cls.new_path(tag, clipping_path)
 
         points = "M" + points + "Z"
         svg_path_converter(path, points)
@@ -666,6 +669,12 @@ class SVGObject:
         self.convert_graphics(svg_tree)
 
     @force_nodocument
+    def update_xref(self, key, referenced):
+        if key:
+            key = "#" + key if not key.startswith("#") else key
+            self.cross_references[key] = referenced
+
+    @force_nodocument
     def extract_shape_info(self, root_tag):
         """Collect shape info from the given SVG."""
 
@@ -859,7 +868,15 @@ class SVGObject:
                 self.build_group(child)
             if child.tag in xmlns_lookup("svg", "path"):
                 self.build_path(child)
-            # We could/should also support <defs> that are rect, circle, ellipse, line, polyline, polygon...
+            elif child.tag in shape_tags:
+                self.build_shape(child)
+            if child.tag in xmlns_lookup("svg", "clipPath"):
+                try:
+                    clip_id = child.attrib["id"]
+                except KeyError:
+                    clip_id = None
+                for child_ in child:
+                    self.build_clipping_path(child_, clip_id)
 
     # this assumes xrefs only reference already-defined ids.
     # I don't know if this is required by the SVG spec.
@@ -869,7 +886,7 @@ class SVGObject:
         pdf_group = GraphicsContext()
         apply_styles(pdf_group, xref)
 
-        for candidate in xmlns_lookup("xlink", "href"):
+        for candidate in xmlns_lookup("xlink", "href", "id"):
             try:
                 ref = xref.attrib[candidate]
                 break
@@ -901,22 +918,23 @@ class SVGObject:
             pdf_group = GraphicsContext()
             apply_styles(pdf_group, group)
 
+        # handle defs before anything else
+        for child in [
+            child for child in group if child.tag in xmlns_lookup("svg", "defs")
+        ]:
+            self.handle_defs(child)
+
         for child in group:
-            if child.tag in xmlns_lookup("svg", "defs"):
-                self.handle_defs(child)
             if child.tag in xmlns_lookup("svg", "g"):
                 pdf_group.add_item(self.build_group(child))
             if child.tag in xmlns_lookup("svg", "path"):
                 pdf_group.add_item(self.build_path(child))
             elif child.tag in shape_tags:
-                pdf_group.add_item(getattr(ShapeBuilder, shape_tags[child.tag])(child))
+                pdf_group.add_item(self.build_shape(child))
             if child.tag in xmlns_lookup("svg", "use"):
                 pdf_group.add_item(self.build_xref(child))
 
-        try:
-            self.cross_references["#" + group.attrib["id"]] = pdf_group
-        except KeyError:
-            pass
+        self.update_xref(group.attrib.get("id"), pdf_group)
 
         return pdf_group
 
@@ -925,15 +943,38 @@ class SVGObject:
         """Convert an SVG <path> tag into a PDF path object."""
         pdf_path = PaintedPath()
         apply_styles(pdf_path, path)
+        self.apply_clipping_path(pdf_path, path)
 
-        svg_path = path.attrib.get("d", None)
+        svg_path = path.attrib.get("d")
 
         if svg_path is not None:
             svg_path_converter(pdf_path, svg_path)
 
-        try:
-            self.cross_references["#" + path.attrib["id"]] = pdf_path
-        except KeyError:
-            pass
+        self.update_xref(path.attrib.get("id"), pdf_path)
 
         return pdf_path
+
+    @force_nodocument
+    def build_shape(self, shape):
+        """Convert an SVG shape tag into a PDF path object. Necessary to make xref (because ShapeBuilder doesn't have access to this object.)"""
+        shape_path = getattr(ShapeBuilder, shape_tags[shape.tag])(shape)
+        self.apply_clipping_path(shape_path, shape)
+
+        self.update_xref(shape.attrib.get("id"), shape_path)
+
+        return shape_path
+
+    @force_nodocument
+    def build_clipping_path(self, shape, clip_id):
+        clipping_path_shape = getattr(ShapeBuilder, shape_tags[shape.tag])(shape, True)
+
+        self.update_xref(clip_id, clipping_path_shape)
+
+        return clipping_path_shape
+
+    @force_nodocument
+    def apply_clipping_path(self, stylable, svg_element):
+        clipping_path = svg_element.attrib.get("clip-path")
+        if clipping_path:
+            clipping_path_id = re.search(r"url\((\#\w+)\)", clipping_path)
+            stylable.clipping_path = self.cross_references[clipping_path_id[1]]

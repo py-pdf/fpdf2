@@ -145,14 +145,12 @@ Der Hauptunterschied zur vorherigen Lektion ist die Verwendung der Methode
 ```
 
 [Erzeugtes PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf) -
-[Länder](https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt)
+[Länderdaten](https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt)
 
-_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
+Das erste Beispiel wird auf die einfachst mögliche Weise umgesetzt, und einfach nur die Daten in die Tabelle eingefügt. Das Ergebnis ist eine sehr schlichte Darstellung, kann aber sehr schnell erzeugt werden.
 
-English versions:
+Die zweite Tabelle bringt einige Verfeinerungen: Farben, reduzierte Gesamtbreite, geringere Zeilenhöhe, zentrierter Text, individuelle Spaltenbreiten und rechts justierte Zahlenwerte. Zusätzliche wurden die horizontalen Linien ausgeblendet. Dies wird dadurch erreicht, dass das Argument `borders_layout` einen geeigneten Wert des Enums  [`TableBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout) erhält.
 
-* [Tuto 5 - Creating Tables](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
-* [Documentation on tables](https://py-pdf.github.io/fpdf2/Tables.html)
 
 ## Lektion 6 - Links erstellen und Textstile mischen ##
 

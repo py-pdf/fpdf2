@@ -106,13 +106,31 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-ההבדל העיקרי בין דוגמא זו לקודמת הוא השימוש במתודות [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) וset_col
-
-ע"י שימוש במתודה [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break), ברגע שתא חורג מהגבול התחתון של הדף, המתודה בודקת את מספר העמודה הנוכחי. אם הוא קטן מ2 (בחרנו לחלק את הדף ל3 עמודות) תיקרא המתודה set_col, שמגדילה את מספר העמודה ומשנה את הפוזיציה של העמודה הבאה כך שהטקסט ימשיך בה.
-
-ברגע שהגענו לגבול התחתון של העמודה השלישית, המתודה [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) תאותחל, תחזור לעמודה הראשונה ותיצור מעבר עמוד.
+ההבדל העיקרי מהדוגמא הקודמת הוא השימוש במתודת ה
+[`text_columns`](fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column). 
+היא אוספת את כל הטקסט, ומפזרת אותו על מספר העמודות המבוקש (לפעמים מגדילה אותו), ואוטומטית מעבירה עמוד כשצריך. שימו לב שבזמן שמופע של `TextColumns` פועל כמנהל הקשר (context manager), עיצוב של טקסט ואלמנטים נוספים עשויים להשתנות. שינויים אלה מוכלים בהקשר.
+ברגע שהמופע נסגר, ההגדרות הקודמות יוחלו שוב.
 
 ## 5 - יצירת טבלאות ##
+דוגמא זו מסבירה כיצד ניתן ליצור שתי טבלאותשונות, על מנת להדגים מה ניתן להשיג באמצעות התאמות קטנות.
+
+```python
+{% include "../tutorial/tuto5.py" %}
+```
+
+[תוצר](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf) -
+[Countries CSV data](https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt)
+
+את הטבלא הראשונה ניתן לייצר בדרך הפשוטה ביותר, על ידי הזנת דאטה [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html).
+התוצאה היא בסיסית אבל קלה ומהירה.
+
+The second table brings some improvements: colors, limited table width, reduced line height,
+הטבלא השניה מציגה מספר שיפורים: צבעיםת רוחב טבא מוגבלת גובה קווים מופח, כותרות ממורכזות, רוחב עמודות מותאם אישית, יישור לימין...
+בנוסף, קווים אופקיים הוסרו.
+זה נעשה על ידי בחירת `borders_layout` עם הערכים הזמינים:
+ [`TableBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
+
+
 
 ```python
 {% include "../tutorial/tuto5.py" %}
