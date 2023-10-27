@@ -122,19 +122,19 @@ df = pd.DataFrame(
     }
 )
 
-data = format_dataframe(df) # converts data to string and formats column and index labels
 
 pdf = FPDF()
 pdf.add_page()
 pdf.set_font("Times", size=10)
-with pdf.table(borders_layout="MINIMAL",
-               cell_fill_color=200,  # grey
-               cell_fill_mode="ROWS",
-               line_height=pdf.font_size * 2.5,
-               text_align="CENTER",
-               width=160) as table:
-    for data_row in data:
-        table.row(data_row)
+pdf.create_table_from_dataframe(
+    df,
+    borders_layout="MINIMAL",
+    cell_fill_color=200,  # grey
+    cell_fill_mode="ROWS",
+    line_height=pdf.font_size * 2.5,
+    text_align="CENTER",
+    width=160
+    )
 pdf.output("table_from_pandas.pdf")
 ```
 

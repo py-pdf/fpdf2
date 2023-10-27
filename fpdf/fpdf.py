@@ -89,7 +89,7 @@ from .sign import Signature
 from .structure_tree import StructureTreeBuilder
 from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ, PDFDate
-from .table import Table
+from .table import Table, format_dataframe
 from .text_region import TextRegionMixin, TextColumns
 from .util import get_scale_factor, Padding
 
@@ -4881,6 +4881,23 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         table = Table(self, *args, **kwargs)
         yield table
         table.render()
+
+    def create_table_from_dataframe(self, df, *args, **kwargs):
+        """
+        Converts a Pandas dataframe into a table.
+        Automatically formats index and column styling with metadata from the dataframe.
+
+        Can add more here if we want to expand Pandas functionality!
+        """
+        table_data = format_dataframe(df)
+        with self.table(
+            num_index_columns=df.columns.nlevels,
+            num_heading_rows=df.index.nlevels,
+            *args,
+            **kwargs,
+        ) as table:
+            for data_row in table_data:
+                table.row(data_row)
 
     def output(
         self, name="", dest="", linearize=False, output_producer_class=OutputProducer

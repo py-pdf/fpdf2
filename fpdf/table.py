@@ -153,7 +153,7 @@ class Table:
         self._num_heading_rows = num_heading_rows
         self.rows = []
         self.index_style = index_style
-        self.n_index_columns = num_index_columns
+        self.num_index_columns = num_index_columns
 
         if padding is None:
             self._padding = Padding.new(0)
@@ -190,11 +190,11 @@ class Table:
             self.row(row)
 
     def row(self, cells=()):
-        "Adds a row to the table. Yields a `Row` object. Styles first `self.n_index_columns` cells  with `self.index_style`"
+        "Adds a row to the table. Yields a `Row` object. Styles first `self.num_index_columns` cells  with `self.index_style`"
         row = Row(self._fpdf)
         self.rows.append(row)
         for n, cell in enumerate(cells):
-            if n < self.n_index_columns:
+            if n < self.num_index_columns:
                 row.cell(cell, style=self.index_style)
             else:
                 row.cell(cell)
@@ -774,7 +774,7 @@ def add_labels_to_data(data, indexes, columns, include_index: bool = True, char=
 
 
 def format_dataframe(df, include_index: bool = True):
-    """Fully formats a dataframe for conversion into pdf"""
+    """Fully formats a Pandas dataframe for conversion into pdf"""
     data = df.map(str).values
     columns = df.columns
     indexes = df.index

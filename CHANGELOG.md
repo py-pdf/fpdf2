@@ -21,6 +21,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * SVG importing now supports clipping paths, and `defs` tags anywhere in the SVG file
 * Tables can now handle multi-index formatting similar to how multi-column formatted is currently implemented.
 * Code added to format multi-index and multi-header to match Pandas (repeat labels are now omitted but spaced correctly)
+* Table generation from Pandas dataframes fully integrated into `pdf` object
 
 
 ## [2.7.6] - 2023-10-11

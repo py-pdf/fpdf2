@@ -1,5 +1,7 @@
 import logging
 from pathlib import Path
+import os
+import pandas as pd
 
 import pytest
 
@@ -48,6 +50,30 @@ def test_table_simple(tmp_path):
             for datum in data_row:
                 row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
+
+
+def test_pandas_table(tmp_path):
+    df = pd.read_csv(os.path.join(HERE, "multi_index_test_data.csv"))
+    df = (
+        df.groupby(["sex", "smoker", "time"])[["tip", "size", "total_bill"]]
+        .mean()
+        .round(1)
+        .reset_index()
+        .pivot(index=["smoker", "time"], columns=["sex"])
+    )
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=10)
+    pdf.create_table_from_dataframe(
+        df,
+        borders_layout="MINIMAL",
+        cell_fill_color=200,  # grey
+        cell_fill_mode="ROWS",
+        line_height=pdf.font_size * 2.5,
+        text_align="CENTER",
+        width=160,
+    )
+    assert_pdf_equal(pdf, HERE / "pandas_df_multi_level.pdf", tmp_path)
 
 
 def test_table_with_no_row():
