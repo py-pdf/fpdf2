@@ -175,15 +175,10 @@ class ImageParagraph:
             h = self.height
         else:
             native_h = self.info["h"] / self.region.pdf.k
-            if is_svg:
-                # SVG natively uses 90 dpi, not 72.
-                native_h *= 0.8
         if self.width:
             w = self.width
         else:
             native_w = self.info["w"] / self.region.pdf.k
-            if is_svg:
-                native_w *= 0.8
             if native_w > col_width or self.fill_width:
                 w = col_width
             else:
