@@ -104,6 +104,6 @@ _New in [:octicons-tag-24: 2.7.7](https://github.com/py-pdf/fpdf2/blob/master/CH
 
 Most arguments for inserting images into text regions are the same as for the `FPDF.image()` method, and have the same or equivalent meaning.
 Since the image will be placed automatically, the "x" and "y" parameters are not available. The positioning can be controlled with "align", where the default is "LEFT", with the alternatives "RIGHT" and "CENTER".
-If neither width nor height are specified, the image will be inserted in its native size (72 dpi for raster, 90 dpi for vectore images). If the "fill_width" parameter is set to True, it increases the size to fill the full column width if necessary. If the image is wider than the column width, it will always be reduced in size proportionally.
+If neither width nor height are specified, the image will be inserted with the size resulting from the PDF default resolution of 72 dpi. If the "fill_width" parameter is set to True, it increases the size to fill the full column width if necessary. If the image is wider than the column width, it will always be reduced in size proportionally.
 The "top_margin" and "bottom_margin" parameters have the same effect as with text paragraphs.
 
