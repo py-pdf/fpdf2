@@ -3741,7 +3741,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def text_columns(
         self,
         text: Optional[str] = None,
-        img: str = None,
+        img: Optional[str] = None,
         img_fill_width: bool = False,
         ncols: int = 1,
         gutter: float = 10,
@@ -3956,7 +3956,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self,
         name,
         img,
-        info,
+        info: RasterImageInfo,
         x=None,
         y=None,
         w=0,
@@ -4027,7 +4027,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def _vector_image(
         self,
         svg: SVGObject,
-        info,
+        info:  VectorImageInfo,
         x=None,
         y=None,
         w=0,
