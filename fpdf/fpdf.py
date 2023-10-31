@@ -4027,7 +4027,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def _vector_image(
         self,
         svg: SVGObject,
-        info:  VectorImageInfo,
+        info: VectorImageInfo,
         x=None,
         y=None,
         w=0,
