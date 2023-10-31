@@ -84,6 +84,7 @@ from .image_parsing import (
     get_img_info,
     get_svg_info,
     load_image,
+    ImageInfo,
     RasterImageInfo,
     VectorImageInfo,
 )
@@ -3850,7 +3851,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 while preserving its original aspect ratio. Defaults to False.
                 Only meaningful if both `w` & `h` are provided.
 
-        Returns: an instance of `ImageInfo`
+        Returns: an instance of a subclass of `ImageInfo`.
         """
         if type:
             warnings.warn(
@@ -3884,7 +3885,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             dims (Tuple[float]): optional dimensions as a tuple (width, height) to resize the image
                 before storing it in the PDF.
 
-        Returns: an instance of `ImageInfo`
+        Returns: an instance of a subclass of `ImageInfo`
         """
         # Identify and load SVG data.
         if str(name).endswith(".svg"):
@@ -3935,21 +3936,21 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         return name, img, info
 
     @staticmethod
-    def _limit_to_aspect_ratio(x, y, w, h, asp_w, asp_h):
+    def _limit_to_aspect_ratio(x, y, w, h, aspect_w, aspect_h):
         """
         Make an image fit within a bounding box, maintaining its proportions.
         In the reduced dimension it will be centered within tha available space.
         """
-        ratio = asp_w / asp_h
+        ratio = aspect_w / aspect_h
         if h * ratio < w:
-            nw = h * ratio
-            nh = h
-            x += (w - nw) / 2
+            new_w = h * ratio
+            new_h = h
+            x += (w - new_w) / 2
         else:  # => too wide, limiting width:
-            nh = w / ratio
-            nw = w
-            y += (h - nh) / 2
-        return x, y, nw, nh
+            new_h = w / ratio
+            new_w = w
+            y += (h - new_h) / 2
+        return x, y, new_w, new_h
 
     def _raster_image(
         self,
@@ -4096,7 +4097,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         try:
             self.set_xy(0, 0)
             if title or alt_text:
-                # Alt text of vector graphics does NOT show als tool-tip in viewers, but should
+                # Alt text of vector graphics does NOT show as tool-tip in viewers, but should
                 # be processed by screen readers.
                 with self._marked_sequence(title=title, alt_text=alt_text):
                     self.draw_path(path)
@@ -4992,6 +4993,7 @@ __all__ = [
     "XPos",
     "YPos",
     "get_page_format",
+    "ImageInfo",
     "RasterImageInfo",
     "VectorImageInfo",
     "TextMode",

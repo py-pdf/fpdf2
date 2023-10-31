@@ -63,6 +63,10 @@ class Paragraph:  # pylint: disable=function-redefined
         self.pdf = region.pdf
         if text_align:
             text_align = Align.coerce(text_align)
+            if text_align not in (Align.L, Align.C, Align.R, Align.J):
+                raise ValueError(
+                    f"Text_align must be 'LEFT', 'CENTER', 'RIGHT', or 'JUSTIFY', not '{text_align.value}'."
+                )
         self.text_align = text_align
         if line_height is None:
             self.line_height = region.line_height
@@ -152,6 +156,10 @@ class ImageParagraph:
         self.name = name
         if align:
             align = Align.coerce(align)
+            if align not in (Align.L, Align.C, Align.R):
+                raise ValueError(
+                    f"Align must be 'LEFT', 'CENTER', or 'RIGHT', not '{align.value}'."
+                )
         self.align = align
         self.width = width
         self.height = height
@@ -162,6 +170,7 @@ class ImageParagraph:
         self.link = link
         self.title = title
         self.alt_text = alt_text
+        self.img = self.info = None
 
     def build_line(self):
         # We do double duty as a "text line wrapper" here, since all the necessary
@@ -170,6 +179,10 @@ class ImageParagraph:
         return self
 
     def render(self, col_left, col_width, max_height):
+        if not self.img:
+            raise RuntimeError(
+                "ImageParagraph.build_line() must be called before render()."
+            )
         is_svg = isinstance(self.info, VectorImageInfo)
         if self.height:
             h = self.height
@@ -239,6 +252,10 @@ class ParagraphCollectorMixin:
     ):
         self.pdf = pdf
         self.text_align = Align.coerce(text_align)  # default for auto paragraphs
+        if self.text_align not in (Align.L, Align.C, Align.R, Align.J):
+            raise ValueError(
+                f"Text_align must be 'LEFT', 'CENTER', 'RIGHT', or 'JUSTIFY', not '{self.text_align.value}'."
+            )
         self.line_height = line_height
         self.print_sh = print_sh
         self.wrapmode = WrapMode.coerce(wrapmode)

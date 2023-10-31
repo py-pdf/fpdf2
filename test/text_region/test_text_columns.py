@@ -282,6 +282,29 @@ def test_tcols_bad_uses():
         "TextColumns(): Right limit (60.00155555555551) lower than left limit (150)."
     )
     assert str(error.value) == expected_msg
+    # invalid alignment values
+    with pytest.raises(ValueError) as error:
+        col = pdf.text_columns(text_align="X_CENTER")
+    expected_msg = (
+        "Text_align must be 'LEFT', 'CENTER', 'RIGHT', or 'JUSTIFY', not 'X_CENTER'."
+    )
+    assert str(error.value) == expected_msg
+    with pytest.raises(ValueError) as error:
+        with pdf.text_columns() as col:
+            par = col.paragraph(text_align="X_CENTER")
+    assert str(error.value) == expected_msg
+    with pytest.raises(ValueError) as error:
+        with pdf.text_columns() as col:
+            col.image(name="foo", align="JUSTIFY")
+    expected_msg = "Align must be 'LEFT', 'CENTER', or 'RIGHT', not 'JUSTIFY'."
+    assert str(error.value) == expected_msg
+    # Wrong call sequence for ImageParagraph.
+    with pdf.text_columns() as col:
+        col.image(name=PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png")
+        with pytest.raises(RuntimeError) as error:
+            col._paragraphs[-1].render(1, 2, 3)  # pylint: disable=protected-access
+    expected_msg = "ImageParagraph.build_line() must be called before render()."
+    assert str(error.value) == expected_msg
 
 
 @pytest.mark.skip(reason="unfinished")

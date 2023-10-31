@@ -212,21 +212,21 @@ def test_svg_image_fit_rect(tmp_path):
 IMG_DESCRIPTION = "The Mighty SVG Logo"
 
 
-def test_svg_image_altt_title(tmp_path):
+def test_svg_image_alt_text_title(tmp_path):
     test_file = SVG_SRCDIR / "SVG_logo.svg"
     pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.image(test_file, alt_text=IMG_DESCRIPTION, w=50, h=50)
     pdf.image(test_file, title=IMG_DESCRIPTION, w=50, h=50)
     pdf.image(test_file, alt_text=IMG_DESCRIPTION, title=IMG_DESCRIPTION, w=50, h=50)
-    assert_pdf_equal(pdf, HERE / "svg_image_altt_title.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "svg_image_alt_text_title.pdf", tmp_path)
 
 
-def test_svg_image_altt_two_pages(tmp_path):
+def test_svg_image_alt_text_two_pages(tmp_path):
     test_file = SVG_SRCDIR / "SVG_logo.svg"
     pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.image(test_file, alt_text=IMG_DESCRIPTION, w=50, h=50)
     pdf.add_page()
     pdf.image(test_file, alt_text=IMG_DESCRIPTION, w=50, h=50)
-    assert_pdf_equal(pdf, HERE / "svg_image_altt_two_pages.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "svg_image_alt_text_two_pages.pdf", tmp_path)
