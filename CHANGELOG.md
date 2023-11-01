@@ -22,6 +22,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * [`TextColumns()`](https://py-pdf.github.io/fpdf2/TextColumns.html) can now have images inserted (both raster and vector).
 * [`TextColumns()`](https://py-pdf.github.io/fpdf2/TextColumns.html) can now advance to the next column with the new `new_column()` method or a FORM_FEED character (`\u000c`) in the text.
 ### Fixed
+* Previously set dash patterns were not transferred correctly to new pages.
 * Inserted Vector images used to ignore the `keep_aspect_ratio` argument.
 
 ## [2.7.6] - 2023-10-11
