@@ -141,7 +141,7 @@ class Fragment:
 
     @property
     def _text_shaping(self):
-        return self.graphics_state["_text_shaping"]
+        return self.graphics_state["text_shaping"]
 
     @property
     def string(self):

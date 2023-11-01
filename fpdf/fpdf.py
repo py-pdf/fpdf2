@@ -590,7 +590,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     "The uharfbuzz package could not be imported, but is required for text shaping. Try: pip install uharfbuzz"
                 ) from exc
         else:
-            self._text_shaping = None
+            self.text_shaping = None
             return
         #
         # Features must be a dictionary contaning opentype features and a boolean flag
@@ -619,7 +619,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "FPDF2 only accept ltr (left to right) or rtl (right to left) directions for now."
             )
 
-        self._text_shaping = {
+        self.text_shaping = {
             "use_shaping_engine": True,
             "features": features,
             "direction": direction,
@@ -843,6 +843,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         tc = self.text_color
         stretching = self.font_stretching
         char_spacing = self.char_spacing
+        dash_pattern = self.dash_pattern
 
         if self.page > 0:
             # Page footer
@@ -907,6 +908,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.set_stretching(stretching)
         if char_spacing != 0:
             self.set_char_spacing(char_spacing)
+        if dash_pattern != dict(dash=0, gap=0, phase=0):
+            self._write_dash_pattern(
+                dash_pattern["dash"], dash_pattern["gap"], dash_pattern["phase"]
+            )
+
         # END Page header
 
     def _beginpage(
@@ -1203,16 +1209,17 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         if pattern != self.dash_pattern:
             self.dash_pattern = pattern
+            self._write_dash_pattern(dash, gap, phase)
 
-            if dash:
-                if gap:
-                    dstr = f"[{dash * self.k:.3f} {gap * self.k:.3f}] {phase *self.k:.3f} d"
-                else:
-                    dstr = f"[{dash * self.k:.3f}] {phase *self.k:.3f} d"
+    def _write_dash_pattern(self, dash, gap, phase):
+        if dash:
+            if gap:
+                dstr = f"[{dash * self.k:.3f} {gap * self.k:.3f}] {phase *self.k:.3f} d"
             else:
-                dstr = "[] 0 d"
-
-            self._out(dstr)
+                dstr = f"[{dash * self.k:.3f}] {phase *self.k:.3f} d"
+        else:
+            dstr = "[] 0 d"
+        self._out(dstr)
 
     @check_page
     def line(self, x1, y1, x2, y2):

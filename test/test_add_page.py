@@ -70,3 +70,42 @@ def test_break_or_add_page_with_different_draw_and_fill_color(tmp_path):
         pdf.set_x(100)
         pdf.multi_cell(50, 10, f"Text {i} - Page {pdf.page}", 1, "C")
     assert_pdf_equal(pdf, HERE / "break_or_add_page_draw_fill.pdf", tmp_path)
+
+
+def test_new_page_graphics_state(tmp_path):
+    # Make sure that on a page break, all graphics state items are
+    # carried over correctly.
+    # issue #992 - dash patterns were not handled correctly.
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=False)
+    pdf.set_font("Courier", "iu", 16)
+    pdf.set_draw_color(255, 100, 0)
+    pdf.set_fill_color(100, 255, 0)
+    pdf.set_text_color(0, 0, 255)
+    # underline -> set_font()
+    # font_style -> set_font()
+    pdf.set_stretching(50)
+    pdf.set_char_spacing(5)
+    # font_family -> set_font()
+    # font_size_pt -> set_font()
+    # current_font -> set_font()
+    pdf.set_dash_pattern(dash=2, gap=4)
+    pdf.set_line_width(2)
+    # text_mode -> applied via Fragments
+    # char lift/scale -> applied via Fragments
+    # text_shaping -> applied in the creation of Fragments
+
+    def draw_stuff():
+        pdf.cell(
+            text="This text is blue, italic, underlined, and squished with wide char spacing.",
+            new_x="LEFT",
+            new_y="NEXT",
+        )
+        pdf.cell(text="The box below is green, with a thick, dashed, orange border.")
+        pdf.rect(50, 50, 60, 30, style="DF")
+
+    draw_stuff()
+    pdf.add_page()
+    draw_stuff()
+    assert_pdf_equal(pdf, HERE / "new_page_graphics_state.pdf", tmp_path)
