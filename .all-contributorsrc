@@ -1022,6 +1022,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "afriedman412",
+      "name": "Andy Friedman",
+      "avatar_url": "https://avatars.githubusercontent.com/u/26656754?v=4",
+      "profile": "https://dnpdata.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
