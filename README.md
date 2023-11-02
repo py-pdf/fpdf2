@@ -256,6 +256,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/SaiHarshaK"><img src="https://avatars.githubusercontent.com/u/30663807?v=4?s=100" width="100px;" alt="Sai Harsha Kottapalli"/><br /><sub><b>Sai Harsha Kottapalli</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=SaiHarshaK" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/rakesh-nj"><img src="https://avatars.githubusercontent.com/u/121295004?v=4?s=100" width="100px;" alt="Rakesh N J"/><br /><sub><b>Rakesh N J</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=rakesh-nj" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Iamrodos"><img src="https://avatars.githubusercontent.com/u/4513819?v=4?s=100" width="100px;" alt="rodos"/><br /><sub><b>rodos</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3AIamrodos" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/TedBrookings"><img src="https://avatars.githubusercontent.com/u/6463752?v=4?s=100" width="100px;" alt="Ted Brookings"/><br /><sub><b>Ted Brookings</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=TedBrookings" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
