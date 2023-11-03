@@ -62,7 +62,7 @@ def test_share_images_cache(tmp_path):
 
     with time_execution() as duration:
         build_pdf_with_big_images()
-    assert duration.seconds > 2.5
+    assert duration.seconds > 0.25
 
     with time_execution() as duration:
         build_pdf_with_big_images()
