@@ -19,8 +19,9 @@ try:
 except ImportError:
     Image = None
 
-from .svg import SVGObject
+from .enums import Align
 from .errors import FPDFException
+from .svg import SVGObject
 
 
 LOGGER = logging.getLogger(__name__)
@@ -86,10 +87,50 @@ class ImageInfo(dict):
         d = {k: ("..." if k in ("data", "smask") else v) for k, v in self.items()}
         return f"self.__class__.__name__({d})"
 
+    def scale_inside_box(self, x, y, w, h):
+        """
+        Make an image fit within a bounding box, maintaining its proportions.
+        In the reduced dimension it will be centered within the available space.
+        """
+        ratio = self.width / self.height
+        if h * ratio < w:
+            new_w = h * ratio
+            new_h = h
+            x += (w - new_w) / 2
+        else:  # => too wide, limiting width:
+            new_h = w / ratio
+            new_w = w
+            y += (h - new_h) / 2
+        return x, y, new_w, new_h
+
+    @staticmethod
+    def x_by_align(x, w, pdf, keep_aspect_ratio):
+        if keep_aspect_ratio:
+            raise ValueError(
+                "FPDF.image(): 'keep_aspect_ratio' cannot be used with an enum value provided to `x`"
+            )
+        x = Align.coerce(x)
+        if x == Align.C:
+            return (pdf.w - w) / 2
+        if x == Align.R:
+            return pdf.w - w - pdf.r_margin
+        if x == Align.L:
+            return pdf.l_margin
+        raise ValueError(f"Unsupported 'x' value passed to .image(): {x}")
+
 
 class RasterImageInfo(ImageInfo):
     "Information about a raster image used in the PDF document"
-    # pass
+
+    def size_in_document_units(self, w, h, k):
+        if w == 0 and h == 0:  # Put image at 72 dpi
+            w = self["w"] / k
+            h = self["h"] / k
+        elif w == 0:
+            w = h * self["w"] / self["h"]
+        elif h == 0:
+            h = w * self["h"] / self["w"]
+        return w, h
 
 
 class VectorImageInfo(ImageInfo):
@@ -171,7 +212,9 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
 
     is_pil_img = True
     keep_bytes_io_open = False
-    jpeg_inverted = False  # flag to check whether a cmyk image is jpeg or not, if set to True the decode array is inverted in output.py
+    # Flag to check whether a cmyk image is jpeg or not, if set to True the decode array
+    # is inverted in output.py
+    jpeg_inverted = False
     img_raw_data = None
     if not img or isinstance(img, (Path, str)):
         img_raw_data = load_image(filename)
@@ -225,18 +268,21 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
             if img.mode == "L":
                 dpn, bpc, colspace = 1, 8, "DeviceGray"
             img_raw_data.seek(0)
-            return {
-                "data": img_raw_data.read(),
-                "w": w,
-                "h": h,
-                "cs": colspace,
-                "iccp": iccp,
-                "dpn": dpn,
-                "bpc": bpc,
-                "f": image_filter,
-                "inverted": jpeg_inverted,
-                "dp": f"/Predictor 15 /Colors {dpn} /Columns {w}",
-            }
+            info.update(
+                {
+                    "data": img_raw_data.read(),
+                    "w": w,
+                    "h": h,
+                    "cs": colspace,
+                    "iccp": iccp,
+                    "dpn": dpn,
+                    "bpc": bpc,
+                    "f": image_filter,
+                    "inverted": jpeg_inverted,
+                    "dp": f"/Predictor 15 /Colors {dpn} /Columns {w}",
+                }
+            )
+            return info
         # We can directly copy the data out of a CCITT Group 4 encoded TIFF, if it
         # only contains a single strip
         if (
@@ -270,18 +316,21 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
             else:
                 raise ValueError(f"unsupported FillOrder: {fillorder}")
             dpn, bpc, colspace = 1, 1, "DeviceGray"
-            return {
-                "data": ccittrawdata,
-                "w": w,
-                "h": h,
-                "iccp": None,
-                "dpn": dpn,
-                "cs": colspace,
-                "bpc": bpc,
-                "f": image_filter,
-                "inverted": jpeg_inverted,
-                "dp": f"/BlackIs1 {str(not inverted).lower()} /Columns {w} /K -1 /Rows {h}",
-            }
+            info.update(
+                {
+                    "data": ccittrawdata,
+                    "w": w,
+                    "h": h,
+                    "iccp": None,
+                    "dpn": dpn,
+                    "cs": colspace,
+                    "bpc": bpc,
+                    "f": image_filter,
+                    "inverted": jpeg_inverted,
+                    "dp": f"/BlackIs1 {str(not inverted).lower()} /Columns {w} /K -1 /Rows {h}",
+                }
+            )
+            return info
 
     # garbage collection
     img_raw_data = None
@@ -365,7 +414,6 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
             "dp": dp,
         }
     )
-
     return info
 
 

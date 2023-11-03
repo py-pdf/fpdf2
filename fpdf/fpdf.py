@@ -3881,18 +3881,20 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def preload_image(self, name, dims=None):
         """
-        Read a raster (= non-vector) image and loads it in memory in this FPDF instance.
-        Following this call, the image is inserted in `.images`,
+        Read an image and load it into memory.
+        For raster images: Following this call, the image is inserted in `.images`,
         and following calls to this method (or `FPDF.image`) will return (or re-use)
         the same cached values, without re-reading the image.
+        For vector images: The data is loaded and the metadata extracted.
 
         Args:
             name: either a string representing a file path to an image, an URL to an image,
                 an io.BytesIO, or a instance of `PIL.Image.Image`
             dims (Tuple[float]): optional dimensions as a tuple (width, height) to resize the image
-                before storing it in the PDF.
+                (raster only) before storing it in the PDF.
 
-        Returns: an instance of a subclass of `ImageInfo`
+        Returns: A tuple, consisting of the name, the image data, and an instance of a
+            subclass of `ImageInfo`,
         """
         # Identify and load SVG data.
         if str(name).endswith(".svg"):
@@ -3942,23 +3944,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.images[name] = info
         return name, img, info
 
-    @staticmethod
-    def _limit_to_aspect_ratio(x, y, w, h, aspect_w, aspect_h):
-        """
-        Make an image fit within a bounding box, maintaining its proportions.
-        In the reduced dimension it will be centered within tha available space.
-        """
-        ratio = aspect_w / aspect_h
-        if h * ratio < w:
-            new_w = h * ratio
-            new_h = h
-            x += (w - new_w) / 2
-        else:  # => too wide, limiting width:
-            new_h = w / ratio
-            new_w = w
-            y += (h - new_h) / 2
-        return x, y, new_w, new_h
-
     def _raster_image(
         self,
         name,
@@ -3978,13 +3963,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self._set_min_pdf_version("1.4")
 
         # Automatic width and height calculation if needed
-        if w == 0 and h == 0:  # Put image at 72 dpi
-            w = info["w"] / self.k
-            h = info["h"] / self.k
-        elif w == 0:
-            w = h * info["w"] / info["h"]
-        elif h == 0:
-            h = w * info["h"] / info["w"]
+        w, h = info.size_in_document_units(w, h, self.k)
 
         if self.oversized_images and info["usages"] == 1 and not dims:
             info = self._downscale_image(name, img, info, w, h)
@@ -3997,25 +3976,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if x is None:
             x = self.x
 
-        if keep_aspect_ratio:
-            x, y, w, h = self._limit_to_aspect_ratio(
-                x, y, w, h, info.width, info.height
-            )
-
         if not isinstance(x, Number):
-            if keep_aspect_ratio:
-                raise ValueError(
-                    "FPDF.image(): 'keep_aspect_ratio' cannot be used with an enum value provided to `x`"
-                )
-            x = Align.coerce(x)
-            if x == Align.C:
-                x = (self.w - w) / 2
-            elif x == Align.R:
-                x = self.w - w - self.r_margin
-            elif x == Align.L:
-                x = self.l_margin
-            else:
-                raise ValueError(f"Unsupported 'x' value passed to .image(): {x}")
+            x = info.x_by_align(x, w, self, keep_aspect_ratio)
+        if keep_aspect_ratio:
+            x, y, w, h = info.scale_inside_box(x, y, w, h)
 
         stream_content = (
             f"q {w * self.k:.2f} 0 0 {h * self.k:.2f} {x * self.k:.2f} "
@@ -4090,10 +4054,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if x is None:
             x = self.x
 
+        if not isinstance(x, Number):
+            x = info.x_by_align(x, w, self, keep_aspect_ratio)
         if keep_aspect_ratio:
-            x, y, w, h = self._limit_to_aspect_ratio(
-                x, y, w, h, info.width, info.height
-            )
+            x, y, w, h = info.scale_inside_box(x, y, w, h)
 
         _, _, path = svg.transform_to_rect_viewport(
             scale=1, width=w, height=h, ignore_svg_top_attrs=True
