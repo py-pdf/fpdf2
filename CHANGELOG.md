@@ -19,6 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.7.7] - Not released yet
 ### Added
 * SVG importing now supports clipping paths, and `defs` tags anywhere in the SVG file
+* `table_pandas` module added, mostly to handle formatting of multi-index dataframes right now
 
 ## [2.7.6] - 2023-10-11
 This release is the first performed from the [@py-pdf GitHub org](https://github.com/py-pdf), where `fpdf2` migrated.
