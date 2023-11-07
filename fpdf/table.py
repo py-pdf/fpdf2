@@ -118,6 +118,8 @@ class Table:
             gutter_width (float): optional horizontal space between columns
             headings_style (fpdf.fonts.FontFace): optional, default to bold.
                 Defines the visual style of the top headings row: size, color, emphasis...
+            index_style (fpdf.fonts.FontFace): optional, default to bold.
+                Defines the visual style of the top headings row: size, color, emphasis...
             line_height (number): optional. Defines how much vertical space a line of text will occupy
             markdown (bool): optional, default to False. Enable markdown interpretation of cells textual content
             text_align (str, fpdf.enums.Align): optional, default to JUSTIFY. Control text alignment inside cells.
@@ -132,6 +134,7 @@ class Table:
             num_heading_rows (number): optional. Sets the number of heading rows, default value is 1. If this value is not 1,
                 first_row_as_headings needs to be True if num_heading_rows>1 and False if num_heading_rows=0. For backwards compatibility,
                 first_row_as_headings is used in case num_heading_rows is 1.
+            num_index_cols (number): optional. Sets the number of index columns, default value is 0.
         """
         self._fpdf = fpdf
         self._align = align
@@ -145,12 +148,14 @@ class Table:
         self._gutter_height = gutter_height
         self._gutter_width = gutter_width
         self._headings_style = headings_style
+        self._index_style = index_style
         self._line_height = 2 * fpdf.font_size if line_height is None else line_height
         self._markdown = markdown
         self._text_align = text_align
         self._width = fpdf.epw if width is None else width
         self._wrapmode = wrapmode
         self._num_heading_rows = num_heading_rows
+        self._num_index_cols = num_index_columns
         self.rows = []
         self.index_style = index_style
         self.num_index_columns = num_index_columns
@@ -391,6 +396,8 @@ class Table:
             text_align = text_align[j]
         if i < self._num_heading_rows:
             style = self._headings_style
+        elif j < self._num_index_cols:
+            style = self._index_style
         else:
             style = cell.style or row.style
         if style and style.fill_color:

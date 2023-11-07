@@ -109,8 +109,7 @@ Result:
 
 Create a table with pandas [DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html):
 ```python
-from fpdf import FPDF
-from fpdf.table import format_dataframe
+from fpdf.adapters.table_pandas import FPDF_pandas
 import pandas as pd
 
 df = pd.DataFrame(
@@ -122,19 +121,17 @@ df = pd.DataFrame(
     }
 )
 
-
-pdf = FPDF()
+pdf = FPDF_pandas()
 pdf.add_page()
 pdf.set_font("Times", size=10)
-pdf.create_table_from_dataframe(
-    df,
-    borders_layout="MINIMAL",
-    cell_fill_color=200,  # grey
-    cell_fill_mode="ROWS",
-    line_height=pdf.font_size * 2.5,
-    text_align="CENTER",
-    width=160
-    )
+pdf.dataframe(df,
+        borders_layout="MINIMAL",
+        cell_fill_color=200,  # grey
+        cell_fill_mode="ROWS",
+        line_height=pdf.font_size * 2.5,
+        text_align="CENTER",
+        width=160)
+
 pdf.output("table_from_pandas.pdf")
 ```
 

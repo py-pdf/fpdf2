@@ -19,10 +19,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.7.7] - Not released yet
 ### Added
 * SVG importing now supports clipping paths, and `defs` tags anywhere in the SVG file
-* Tables can now handle multi-index formatting similar to how multi-column formatted is currently implemented.
-* Code added to format multi-index and multi-header to match Pandas (repeat labels are now omitted but spaced correctly)
-* Table generation from Pandas dataframes fully integrated into `pdf` object
-
+* `table_pandas` module added, mostly to handle formatting of multi-index dataframes right now
+* tables now support formatting for multiple index columns (as well as multiple header rows)
 
 ## [2.7.6] - 2023-10-11
 This release is the first performed from the [@py-pdf GitHub org](https://github.com/py-pdf), where `fpdf2` migrated.
