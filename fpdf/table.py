@@ -69,86 +69,6 @@ class RowLayoutInfo:
     rendered_height: dict
 
 
-def process_table_data(
-    rows,
-    headings=(),
-    index=(),
-    first_row_as_headings: bool = True,
-    num_heading_rows: int = 1,
-    num_index_cols: int = 0,
-    hide_index: bool = False,
-    reassemble: bool = True,
-):
-    """
-    Parses table data into data (rows), heading (column labels) and index (row labels).
-
-    Default uses first row of `data` for `heading` and `range(len(data))` for `index`.
-
-    Args:
-        rows (Iterable): table data
-        heading (Iterable): column labels
-        index (Iterable): row labels
-        first_row_as_headings (bool): use first row of data as column labels
-        num_heading_rows (int): number of first rows fo data to use as column labels, overridden by `first_row_as_headings`
-        num_index_cols (int): number of first columns of data to use as index labels
-        reassemble (bool): toggle merging headings and index back into table data
-        hide_index (bool): don't merge index back into table when reassembling (mostly to hide numerical index)
-
-    Output:
-        rows (Iterable) - table data
-        heading (Iterable) - column labels (optional)
-        index (Iterable) - row labels (optional)
-    """
-    # parse heading...
-    if not headings:
-        if first_row_as_headings:
-            num_heading_rows = 1
-
-        if num_heading_rows:
-            headings = rows[:num_heading_rows]
-            rows = rows[num_heading_rows:]
-
-        else:
-            headings = [[i] for i in range(len(rows[0]))]
-            num_heading_rows = len(headings)
-
-    # parse index...
-    if not index:
-        if num_index_cols:
-            index = [r[:num_index_cols] for r in rows]
-            rows = [r[num_index_cols:] for r in rows]
-        else:
-            index = [[i] for i in range(len(rows))]
-            num_index_cols = len(index[0])
-
-    # check for consistent dimensions
-    if len(rows) != len(index):
-        raise ValueError(
-            f"Index length ({len(index)}) does not equal number of rows ({len(rows)})"
-        )
-    if num_index_cols != len(index[0]):
-        raise ValueError(
-            f"Index length ({len(index[0])}) does not equal number of num_index_cols ({num_index_cols})"
-        )
-    if len(rows[0]) != len(headings[0]):
-        raise ValueError(
-            f"Number of headings ({len(headings[0])}) does not equal number of columns ({len(rows[0])})"
-        )
-    if num_heading_rows != len(headings):
-        raise ValueError(
-            f"Number of headings ({len(headings)}) does not equal num_heading_rows ({num_heading_rows})"
-        )
-
-    if reassemble:
-        rows = headings + rows
-        if not hide_index:
-            index = [[""] * num_index_cols] * num_heading_rows + index
-            rows = [list(i) + list(j) for i, j in zip(index, rows)]
-        return rows
-
-    return rows, headings, index
-
-
 class Table:
     """
     Object that `fpdf.FPDF.table()` yields, used to build a table in the document.
@@ -159,8 +79,6 @@ class Table:
         self,
         fpdf,
         rows=(),
-        headings=(),
-        index=(),
         *,
         align="CENTER",
         v_align="MIDDLE",
@@ -182,7 +100,6 @@ class Table:
         outer_border_width=None,
         num_heading_rows=1,
         num_index_cols=0,
-        hide_index: bool = True,
     ):
         """
         Args:
@@ -218,10 +135,6 @@ class Table:
                 first_row_as_headings needs to be True if num_heading_rows>1 and False if num_heading_rows=0. For backwards compatibility,
                 first_row_as_headings is used in case num_heading_rows is 1.
             num_index_cols (number): optional. Sets the number of index columns, default value is 0.
-            hide_index (bool): optional.
-            If data doesn't have an index (row labels),
-            this will hide the automatically generated numerical index
-            (when rendering to pdf)
         """
         self._fpdf = fpdf
         self._align = align
@@ -275,16 +188,6 @@ class Table:
         else:
             if not self._first_row_as_headings:
                 self._num_heading_rows = 0
-        if rows:
-            rows = process_table_data(
-                rows,
-                headings,
-                index,
-                first_row_as_headings,
-                num_heading_rows,
-                num_index_cols,
-                hide_index,
-            )
 
         for row in rows:
             self.row(row)

@@ -1,44 +1,38 @@
-def format_dataframe(df, include_index: bool = True):
-    """Fully formats a Pandas dataframe for conversion into pdf"""
-    data = df.map(str).values
-    columns = df.columns
-    indexes = df.index
-    table_data = add_labels_to_data(data, indexes, columns, include_index=include_index)
-    return table_data
+from pandas import MultiIndex
+from fpdf import FPDF
 
 
-def add_labels_to_data(data, indexes, columns, include_index: bool = True, char=" "):
-    """Combines index and column labels with data for table output"""
-    if include_index:
-        index_header_padding = [tuple(char) * len(indexes[0])] * len(columns[0])
-        formatted_indexes = format_label_tuples(indexes)
-        new_values = []
-        for i, v in zip(formatted_indexes, data):
-            new_values.append(list(i) + list(v))
-        formatted_columns = [
-            list(c)
-            for c in zip(*format_label_tuples(index_header_padding + list(columns)))
-        ]
-        new_data = formatted_columns + new_values
+class FPDF_pandas(FPDF):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
+    def dataframe(self, df, **kwargs):
+        with self.table(
+            num_index_cols=df.index.nlevels,
+            num_heading_rows=df.columns.nlevels,
+            **kwargs
+        ) as table:
+            TABLE_DATA = format_df(df)
+            for data_row in TABLE_DATA:
+                row = table.row()
+                for datum in data_row:
+                    row.cell(datum)
+
+
+def format_df(df, char: str = " ", convert_to_string: bool = True) -> list:
+    data = df.map(str).values.tolist()
+    if isinstance(df.columns, MultiIndex):
+        heading = [list(c) for c in zip(*df.columns)]
     else:
-        formatted_columns = [list(c) for c in zip(*format_label_tuples(list(columns)))]
-        new_data = formatted_columns + data.tolist()
+        heading = df.columns.values.reshape(1, len(df.columns)).tolist()
 
-    return new_data
+    if isinstance(df.index, MultiIndex):
+        index = [list(c) for c in df.index]
+    else:
+        index = df.index.values.reshape(len(df), 1).tolist()
+    padding = [list(char) * df.index.nlevels] * df.columns.nlevels
 
-
-def format_label_tuples(lbl, char=" "):
-    """
-    Formats columns and indexes to match DataFrame formatting.
-    """
-    indexes = [lbl[0]]
-    for i, j in zip(lbl, lbl[1:]):
-        next_label = []
-        for i_, j_ in zip(i, j):
-            if j_ == i_:
-                next_label.append(char)
-            else:
-                next_label.append(j_)
-        indexes.append(tuple(next_label))
-    return indexes
+    output = [i + j for i, j in zip(padding + index, heading + data)]
+    if convert_to_string:
+        output = [[str(d) for d in row] for row in output]
+    return output
