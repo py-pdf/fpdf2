@@ -19,6 +19,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.7.7] - Not released yet
 ### Added
 * SVG importing now supports clipping paths, and `defs` tags anywhere in the SVG file
+* `table_pandas` module added, mostly to handle formatting of multi-index dataframes right now
+* tables now support formatting for multiple index columns (as well as multiple header rows)
 * [`TextColumns()`](https://py-pdf.github.io/fpdf2/TextColumns.html) can now have images inserted (both raster and vector).
 * [`TextColumns()`](https://py-pdf.github.io/fpdf2/TextColumns.html) can now advance to the next column with the new `new_column()` method or a FORM_FEED character (`\u000c`) in the text.
 ### Fixed

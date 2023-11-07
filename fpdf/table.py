@@ -9,6 +9,7 @@ from .fonts import CORE_FONTS, FontFace
 from .util import Padding
 
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
+DEFAULT_INDEX_STYLE = FontFace(emphasis="BOLD")
 
 
 def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
@@ -89,6 +90,7 @@ class Table:
         gutter_height=0,
         gutter_width=0,
         headings_style=DEFAULT_HEADINGS_STYLE,
+        index_style=DEFAULT_INDEX_STYLE,
         line_height=None,
         markdown=False,
         text_align="JUSTIFY",
@@ -97,6 +99,7 @@ class Table:
         padding=None,
         outer_border_width=None,
         num_heading_rows=1,
+        num_index_columns=0,
     ):
         """
         Args:
@@ -115,6 +118,8 @@ class Table:
             gutter_width (float): optional horizontal space between columns
             headings_style (fpdf.fonts.FontFace): optional, default to bold.
                 Defines the visual style of the top headings row: size, color, emphasis...
+            index_style (fpdf.fonts.FontFace): optional, default to bold.
+                Defines the visual style of the top headings row: size, color, emphasis...
             line_height (number): optional. Defines how much vertical space a line of text will occupy
             markdown (bool): optional, default to False. Enable markdown interpretation of cells textual content
             text_align (str, fpdf.enums.Align, tuple): optional, default to JUSTIFY. Control text alignment inside cells.
@@ -129,6 +134,7 @@ class Table:
             num_heading_rows (number): optional. Sets the number of heading rows, default value is 1. If this value is not 1,
                 first_row_as_headings needs to be True if num_heading_rows>1 and False if num_heading_rows=0. For backwards compatibility,
                 first_row_as_headings is used in case num_heading_rows is 1.
+            num_index_cols (number): optional. Sets the number of index columns, default value is 0.
         """
         self._fpdf = fpdf
         self._align = align
@@ -142,12 +148,14 @@ class Table:
         self._gutter_height = gutter_height
         self._gutter_width = gutter_width
         self._headings_style = headings_style
+        self._index_style = index_style
         self._line_height = 2 * fpdf.font_size if line_height is None else line_height
         self._markdown = markdown
         self._text_align = text_align
         self._width = fpdf.epw if width is None else width
         self._wrapmode = wrapmode
         self._num_heading_rows = num_heading_rows
+        self.num_index_columns = num_index_columns
         self.rows = []
 
         if padding is None:
@@ -185,11 +193,14 @@ class Table:
             self.row(row)
 
     def row(self, cells=()):
-        "Adds a row to the table. Yields a `Row` object."
+        "Adds a row to the table. Yields a `Row` object. Styles first `self.num_index_columns` cells  with `self.index_style`"
         row = Row(self._fpdf)
         self.rows.append(row)
-        for cell in cells:
-            row.cell(cell)
+        for n, cell in enumerate(cells):
+            if n < self.num_index_columns:
+                row.cell(cell, style=self._index_style)
+            else:
+                row.cell(cell)
         return row
 
     def render(self):
