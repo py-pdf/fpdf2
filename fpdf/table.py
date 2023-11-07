@@ -9,6 +9,7 @@ from .fonts import CORE_FONTS, FontFace
 from .util import Padding
 
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
+DEFAULT_INDEX_STYLE = FontFace(emphasis="BOLD")
 
 
 def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
@@ -68,6 +69,86 @@ class RowLayoutInfo:
     rendered_height: dict
 
 
+def process_table_data(
+    rows,
+    headings=(),
+    index=(),
+    first_row_as_headings: bool = True,
+    num_heading_rows: int = 1,
+    num_index_cols: int = 0,
+    hide_index: bool = False,
+    reassemble: bool = True,
+):
+    """
+    Parses table data into data (rows), heading (column labels) and index (row labels).
+
+    Default uses first row of `data` for `heading` and `range(len(data))` for `index`.
+
+    Args:
+        rows (Iterable): table data
+        heading (Iterable): column labels
+        index (Iterable): row labels
+        first_row_as_headings (bool): use first row of data as column labels
+        num_heading_rows (int): number of first rows fo data to use as column labels, overridden by `first_row_as_headings`
+        num_index_cols (int): number of first columns of data to use as index labels
+        reassemble (bool): toggle merging headings and index back into table data
+        hide_index (bool): don't merge index back into table when reassembling (mostly to hide numerical index)
+
+    Output:
+        rows (Iterable) - table data
+        heading (Iterable) - column labels (optional)
+        index (Iterable) - row labels (optional)
+    """
+    # parse heading...
+    if not headings:
+        if first_row_as_headings:
+            num_heading_rows = 1
+
+        if num_heading_rows:
+            headings = rows[:num_heading_rows]
+            rows = rows[num_heading_rows:]
+
+        else:
+            headings = [[i] for i in range(len(rows[0]))]
+            num_heading_rows = len(headings)
+
+    # parse index...
+    if not index:
+        if num_index_cols:
+            index = [r[:num_index_cols] for r in rows]
+            rows = [r[num_index_cols:] for r in rows]
+        else:
+            index = [[i] for i in range(len(rows))]
+            num_index_cols = len(index[0])
+
+    # check for consistent dimensions
+    if len(rows) != len(index):
+        raise ValueError(
+            f"Index length ({len(index)}) does not equal number of rows ({len(rows)})"
+        )
+    if num_index_cols != len(index[0]):
+        raise ValueError(
+            f"Index length ({len(index[0])}) does not equal number of num_index_cols ({num_index_cols})"
+        )
+    if len(rows[0]) != len(headings[0]):
+        raise ValueError(
+            f"Number of headings ({len(headings[0])}) does not equal number of columns ({len(rows[0])})"
+        )
+    if num_heading_rows != len(headings):
+        raise ValueError(
+            f"Number of headings ({len(headings)}) does not equal num_heading_rows ({num_heading_rows})"
+        )
+
+    if reassemble:
+        rows = headings + rows
+        if not hide_index:
+            index = [[""] * num_index_cols] * num_heading_rows + index
+            rows = [list(i) + list(j) for i, j in zip(index, rows)]
+        return rows
+
+    return rows, headings, index
+
+
 class Table:
     """
     Object that `fpdf.FPDF.table()` yields, used to build a table in the document.
@@ -78,6 +159,8 @@ class Table:
         self,
         fpdf,
         rows=(),
+        headings=(),
+        index=(),
         *,
         align="CENTER",
         v_align="MIDDLE",
@@ -89,6 +172,7 @@ class Table:
         gutter_height=0,
         gutter_width=0,
         headings_style=DEFAULT_HEADINGS_STYLE,
+        index_style=DEFAULT_INDEX_STYLE,
         line_height=None,
         markdown=False,
         text_align="JUSTIFY",
@@ -97,6 +181,8 @@ class Table:
         padding=None,
         outer_border_width=None,
         num_heading_rows=1,
+        num_index_cols=0,
+        hide_index: bool = True,
     ):
         """
         Args:
@@ -115,6 +201,8 @@ class Table:
             gutter_width (float): optional horizontal space between columns
             headings_style (fpdf.fonts.FontFace): optional, default to bold.
                 Defines the visual style of the top headings row: size, color, emphasis...
+            index_style (fpdf.fonts.FontFace): optional, default to bold.
+                Defines the visual style of the top headings row: size, color, emphasis...
             line_height (number): optional. Defines how much vertical space a line of text will occupy
             markdown (bool): optional, default to False. Enable markdown interpretation of cells textual content
             text_align (str, fpdf.enums.Align): optional, default to JUSTIFY. Control text alignment inside cells.
@@ -129,6 +217,11 @@ class Table:
             num_heading_rows (number): optional. Sets the number of heading rows, default value is 1. If this value is not 1,
                 first_row_as_headings needs to be True if num_heading_rows>1 and False if num_heading_rows=0. For backwards compatibility,
                 first_row_as_headings is used in case num_heading_rows is 1.
+            num_index_cols (number): optional. Sets the number of index columns, default value is 0.
+            hide_index (bool): optional.
+            If data doesn't have an index (row labels),
+            this will hide the automatically generated numerical index
+            (when rendering to pdf)
         """
         self._fpdf = fpdf
         self._align = align
@@ -142,12 +235,14 @@ class Table:
         self._gutter_height = gutter_height
         self._gutter_width = gutter_width
         self._headings_style = headings_style
+        self._index_style = index_style
         self._line_height = 2 * fpdf.font_size if line_height is None else line_height
         self._markdown = markdown
         self._text_align = text_align
         self._width = fpdf.epw if width is None else width
         self._wrapmode = wrapmode
         self._num_heading_rows = num_heading_rows
+        self._num_index_cols = num_index_cols
         self.rows = []
 
         if padding is None:
@@ -180,6 +275,16 @@ class Table:
         else:
             if not self._first_row_as_headings:
                 self._num_heading_rows = 0
+        if rows:
+            rows = process_table_data(
+                rows,
+                headings,
+                index,
+                first_row_as_headings,
+                num_heading_rows,
+                num_index_cols,
+                hide_index,
+            )
 
         for row in rows:
             self.row(row)
@@ -383,6 +488,8 @@ class Table:
             text_align = text_align[j]
         if i < self._num_heading_rows:
             style = self._headings_style
+        elif j < self._num_index_cols:
+            style = self._index_style
         else:
             style = cell.style or row.style
         if style and style.fill_color:

@@ -37,6 +37,13 @@ MULTI_HEADING_TABLE_DATA = (
     ("3", "4", "5", "6", "7", "8"),
 )
 
+MULTI_INDEX_TABLE_DATA = {
+    ("tall", "fat"): {"color": "red", "number": 7, "happy": False},
+    ("short", "fat"): {"color": "green", "number": 8, "happy": True},
+    ("tall", "lean"): {"color": "blue", "number": 9, "happy": True},
+    ("short", "lean"): {"color": "yellow", "number": 15, "happy": False},
+}
+
 
 def test_table_simple(tmp_path):
     pdf = FPDF()
