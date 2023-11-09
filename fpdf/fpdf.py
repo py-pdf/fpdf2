@@ -3512,7 +3512,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             clearance_margins.append(self.c_margin)
         if not padding.right:
             clearance_margins.append(self.c_margin)
-        self.x += padding.left
+        if align != Align.X:
+            self.x += padding.left
         self.y += padding.top
 
         # Center overrides padding
@@ -3603,7 +3604,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             total_height += current_cell_height
             if not is_last_line and align == Align.X:
                 # prevent cumulative shift to the left
-                self.x = prev_x + padding.left
+                self.x = prev_x
         if should_render_bottom_blank_cell:
             new_page = self._render_styled_text_line(
                 TextLine(
