@@ -3652,10 +3652,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 self.current_font = self.fonts[self.font_family + self.font_style]
             self.underline = prev_underline
 
-        if new_x == XPos.RIGHT: # move right by right padding
+        if new_x == XPos.RIGHT: # move right by right padding to align outer RHS edge
             self.x += padding.right
-        else:
-            self.x = prev_x
+        elif new_x == XPos.LEFT: # move left by left padding to align outer LHS edge
+            self.x -= padding.left
 
         output = MethodReturnValue.coerce(output)
         return_value = ()
