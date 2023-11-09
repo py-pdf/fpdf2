@@ -3562,6 +3562,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             ]
         should_render_bottom_blank_cell = False
         for text_line_index, text_line in enumerate(text_lines):
+            is_first_line = text_line_index == 0
             is_last_line = text_line_index == len(text_lines) - 1
             should_render_bottom_blank_cell = False
             if max_line_height is not None and h > max_line_height:
@@ -3581,7 +3582,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 h=current_cell_height,
                 border="".join(
                     (
-                        "T" if "T" in border and text_line_index == 0 else "",
+                        "T" if "T" in border and is_first_line else "",
                         "L" if "L" in border else "",
                         "R" if "R" in border else "",
                         "B" if "B" in border and not has_line_after else "",
@@ -3591,7 +3592,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 new_y=new_y if not has_line_after else YPos.NEXT,
                 fill=fill,
                 link=link,
-                padding=padding,
+                padding=Padding(
+                    padding.top if is_first_line else 0,
+                    padding.right,
+                    padding.bottom if not has_line_after else 0,
+                    padding.left
+                )
             )
             page_break_triggered = page_break_triggered or new_page
             total_height += current_cell_height
