@@ -3521,6 +3521,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.x = (
                 self.w / 2 if align == Align.X else self.l_margin + (self.epw - w) / 2
             )
+            prev_x = self.x
 
         # Calculate text length
         text = self.normalize_text(text)
