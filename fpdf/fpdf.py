@@ -3499,6 +3499,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if w == 0:
             w = self.w - self.r_margin - self.x
 
+        # Store the starting position before applying padding
         prev_x, prev_y = self.x, self.y
 
         # Apply padding to contents
@@ -3526,7 +3527,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         styled_text_fragments = self._preload_font_styles(normalized_string, markdown)
 
         prev_font_style, prev_underline = self.font_style, self.underline
-        prev_x, prev_y = self.x, self.y
         total_height = 0
 
         if not border:
