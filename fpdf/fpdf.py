@@ -1027,6 +1027,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Returns the length of a string in user unit. A font must be selected.
         The value is calculated with stretching and spacing.
 
+        Note that the width of a cell has some extra padding added to this width, 
+        on the left & right sides, equal to the .c_margin property.
+
         Args:
             s (str): the string whose length is to be computed.
             normalized (bool): whether normalization needs to be performed on the input string.
@@ -2691,7 +2694,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         character string. The upper-left corner of the cell corresponds to the current
         position. The text can be aligned or centered. After the call, the current
         position moves to the selected `new_x`/`new_y` position. It is possible to put a link
-        on the text.
+        on the text. A cell has an horizontal padding, on the left & right sides, defined by 
+        the.c_margin property.
 
         If automatic page breaking is enabled and the cell goes beyond the limit, a
         page break is performed before outputting.
@@ -3361,7 +3365,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         reaches the right border of the cell, or explicit (via the `\\n` character).
         As many cells as necessary are stacked, one below the other.
         Text can be aligned, centered or justified. The cell block can be framed and
-        the background painted.
+        the background painted. A cell has an horizontal padding, on the left & right sides, 
+        defined by the.c_margin property.
 
         Args:
             w (float): cell width. If 0, they extend up to the right margin of the page.
