@@ -4,6 +4,7 @@
 
 import unicodedata
 from collections import deque
+from copy import deepcopy
 from dataclasses import dataclass, replace
 from operator import itemgetter
 from typing import List, Tuple
@@ -171,8 +172,13 @@ class BidiCharacter:
     def get_direction_from_level(self):
         return "R" if self.embedding_level % 2 else "L"
 
+    def set_class(self, cls):
+        self.bidi_class = cls
+
     def __repr__(self):
-        return f"character_index: {self.character_index} character: {self.character} bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class} embedding_level: {self.embedding_level} direction: {self.direction}"
+        return f"character_index: {self.character_index} character: {self.character}" + \
+                f" bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}" + \
+                f" embedding_level: {self.embedding_level} direction: {self.direction}"
 
 
 @dataclass
@@ -205,39 +211,39 @@ class IsolatingRun:
         for i, bidi_char in enumerate(self.characters):
             if bidi_char.bidi_class == "NSM":
                 if i == 0:
-                    bidi_char.bidi_class = self.previous_direction
+                    bidi_char.set_class(self.previous_direction)
                 else:
-                    bidi_char.bidi_class = (
+                    bidi_char.set_class(
                         "ON"
                         if self.characters[i - 1].bidi_class
                         in ("LRI", "RLI", "FSI", "PDI")
                         else self.characters[i - 1].bidi_class
                     )
 
-            # W2. Search backward from each instance of a European number until the first strong type (R, L, AL, or sos) is found.
-            #     If an AL is found, change the type of the European number to Arabic number.
-            # W3. Change all ALs to R.
+        # W2. Search backward from each instance of a European number until the first strong type (R, L, AL, or sos) is found.
+        #     If an AL is found, change the type of the European number to Arabic number.
+        # W3. Change all ALs to R.
 
-            last_strong_type = self.previous_direction
-            for bidi_char in self.characters:
-                if bidi_char.bidi_class in ("R", "L", "AL"):
-                    last_strong_type = bidi_char.bidi_class
-                if bidi_char.bidi_class == "AL":
-                    bidi_char.bidi_class = "R"
-                if bidi_char.bidi_class == "EN" and last_strong_type == "AL":
-                    bidi_char.bidi_class = "AN"
+        last_strong_type = self.previous_direction
+        for bidi_char in self.characters:
+            if bidi_char.bidi_class in ("R", "L", "AL"):
+                last_strong_type = bidi_char.bidi_class
+            if bidi_char.bidi_class == "AL":
+                bidi_char.set_class("R")
+            if bidi_char.bidi_class == "EN" and last_strong_type == "AL":
+                bidi_char.set_class("AN")
 
         # W4. A single European separator between two European numbers changes to a European number.
         #     A single common separator between two numbers of the same type changes to that type.
         for i, bidi_char in enumerate(self.characters):
-            if i == 0 or i == len(self.characters) - 1:
+            if i in (0, len(self.characters) - 1):
                 continue
             if (
                 bidi_char.bidi_class == "ES"
                 and self.characters[i - 1].bidi_class == "EN"
                 and self.characters[i + 1].bidi_class == "EN"
             ):
-                bidi_char.bidi_class = "EN"
+                bidi_char.set_class("EN")
 
             if (
                 bidi_char.bidi_class == "CS"
@@ -245,7 +251,7 @@ class IsolatingRun:
                 and self.characters[i + 1].bidi_class
                 == self.characters[i - 1].bidi_class
             ):
-                bidi_char.bidi_class = self.characters[i - 1].bidi_class
+                bidi_char.set_class(self.characters[i - 1].bidi_class)
 
         # W5. A sequence of European terminators adjacent to European numbers changes to all European numbers.
         # W6. All remaining separators and terminators (after the application of W4 and W5) change to Other Neutral.
@@ -266,10 +272,10 @@ class IsolatingRun:
         for i, bidi_char in enumerate(self.characters):
             if bidi_char.bidi_class == "ET":
                 if prev_is_en(i) or next_is_en(i):
-                    bidi_char.bidi_class = "EN"
+                    bidi_char.set_class("EN")
 
             if bidi_char.bidi_class in ("ET", "ES", "CS"):
-                bidi_char.bidi_class = "ON"
+                bidi_char.set_class("ON")
         # W7. Search backward from each instance of a European number until the first strong type (R, L, or sos) is found.
         #     If an L is found, then change the type of the European number to L.
         last_strong_type = self.previous_direction
@@ -277,7 +283,7 @@ class IsolatingRun:
             if bidi_char.bidi_class in ("R", "L", "AL"):
                 last_strong_type = bidi_char.bidi_class
             if bidi_char.bidi_class == "EN" and last_strong_type == "L":
-                bidi_char.bidi_class = "L"
+                bidi_char.set_class("L")
 
     def pair_brackets(self) -> List[Tuple[int, int]]:
         """
@@ -530,7 +536,7 @@ class BidiParagraph:
 
     def get_reordered_string(self):
         return "".join(c.character for c in self.reordered_characters)
-    
+
     def get_bidi_fragments(self):
         return self.bidi_fragments
 
@@ -625,7 +631,7 @@ class BidiParagraph:
                 elif valid_isolate_count > 0:
                     overflow_embedding_count = 0
                     while True:
-                        if stack[-1].directional_isolate_status == False:
+                        if not stack[-1].directional_isolate_status:
                             stack.pop()
                             continue
                         break
@@ -675,7 +681,7 @@ class BidiParagraph:
 
     def split_bidi_fragments(self):
         if len(self.characters) == 0:
-            return []
+            return
         current_fragment = ""
         current_direction = ""
         for c in self.characters:
@@ -723,7 +729,7 @@ class BidiParagraph:
 
         # Rule L2. From the highest level found in the text to the lowest odd level on each line,
         # reverse any contiguous sequence of characters that are at that level or higher.
-        reordered_paragraph = [c for c in self.characters]
+        reordered_paragraph = deepcopy(self.characters)
         for level in range(max_level, min_odd_level - 1, -1):
             temp_results = []
             rev = []

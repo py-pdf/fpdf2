@@ -1044,7 +1044,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     s,
                     self._get_current_graphics_state(),
                     self.k,
-                    text_shaping_parameters=self._text_shaping,
+                    text_shaping_parameters=self.text_shaping,
                 ),
             )
         ):
@@ -2780,7 +2780,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         text = self.normalize_text(text)
         styled_txt_frags = (
             self._preload_bidirectional_text(text, markdown)
-            if self._text_shaping
+            if self.text_shaping
             else self._preload_font_styles(text, markdown)
         )
         return self._render_styled_text_line(
@@ -2884,8 +2884,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         max_font_size = 0  # how much height we need to accomodate.
         # currently all font sizes within a line are vertically aligned on the baseline.
         fragments = text_line.fragments
-        if self._text_shaping:
-            if self._text_shaping["paragraph_direction"] == "R":
+        if self.text_shaping:
+            if self.text_shaping["paragraph_direction"] == "R":
                 fragments = text_line.fragments[::-1]
         for frag in fragments:
             if frag.font_size > max_font_size:
@@ -3121,19 +3121,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """ "
         Break the text into bidirectional segments and preload font styles for each fragment
         """
-        if not self._text_shaping:
+        if not self.text_shaping:
             return self._preload_font_styles(text, markdown)
-        paragraph_direction = self._text_shaping["direction"]
+        paragraph_direction = self.text_shaping["direction"]
         if not paragraph_direction:
             paragraph_direction = auto_detect_base_direction(text)
-        self._text_shaping["paragraph_direction"] = paragraph_direction
+        self.text_shaping["paragraph_direction"] = paragraph_direction
 
         directional_segments = BidiParagraph(
             text=text, base_direction=paragraph_direction
         ).get_bidi_fragments()
         fragments = []
         for bidi_text, bidi_direction in directional_segments:
-            self._text_shaping["fragment_direction"] = bidi_direction
+            self.text_shaping["fragment_direction"] = bidi_direction
             fragments += self._preload_font_styles(bidi_text, markdown)
         return tuple(fragments)
 
@@ -3180,7 +3180,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         text,
                         self._get_current_graphics_state(),
                         self.k,
-                        text_shaping_parameters=self._text_shaping,
+                        text_shaping_parameters=self.text_shaping,
                     )
                 ]
             )
@@ -3195,7 +3195,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                             txt_frag,
                             self._get_current_graphics_state(),
                             self.k,
-                            text_shaping_parameters=self._text_shaping,
+                            text_shaping_parameters=self.text_shaping,
                         )
                     )
                     txt_frag = []
@@ -3204,7 +3204,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     gstate = self._get_current_graphics_state()
                     gstate["font_family"] = fallback_font
                     frag = Fragment(
-                        char, gstate, self.k, text_shaping_parameters=self._text_shaping
+                        char, gstate, self.k, text_shaping_parameters=self.text_shaping
                     )
                     frag.font = self.fonts[fallback_font]
                     fragments.append(frag)
@@ -3218,7 +3218,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     txt_frag,
                     self._get_current_graphics_state(),
                     self.k,
-                    text_shaping_parameters=self._text_shaping,
+                    text_shaping_parameters=self.text_shaping,
                 )
             )
         return tuple(fragments)
@@ -3264,7 +3264,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             gstate["underline"] = in_underline
             nonlocal txt_frag
             fragment = Fragment(
-                txt_frag, gstate, self.k, text_shaping_parameters=self._text_shaping
+                txt_frag, gstate, self.k, text_shaping_parameters=self.text_shaping
             )
             txt_frag = []
             return fragment
@@ -3316,7 +3316,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     gstate,
                     self.k,
                     link=link_dest,
-                    text_shaping_parameters=self._text_shaping,
+                    text_shaping_parameters=self.text_shaping,
                 )
                 continue
             if self.is_ttf_font and text[0] != "\n" and not ord(text[0]) in font_glyphs:
@@ -3331,7 +3331,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         text[0],
                         gstate,
                         self.k,
-                        text_shaping_parameters=self._text_shaping,
+                        text_shaping_parameters=self.text_shaping,
                     )
                     text = text[1:]
                     continue
@@ -3592,7 +3592,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         normalized_string = text.replace("\r", "")
         styled_text_fragments = (
             self._preload_bidirectional_text(normalized_string, markdown)
-            if self._text_shaping
+            if self.text_shaping
             else self._preload_font_styles(normalized_string, markdown)
         )
 
@@ -3779,7 +3779,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         normalized_string = self.normalize_text(text).replace("\r", "")
         styled_text_fragments = (
             self._preload_bidirectional_text(normalized_string, False)
-            if self._text_shaping
+            if self.text_shaping
             else self._preload_font_styles(normalized_string, False)
         )
 

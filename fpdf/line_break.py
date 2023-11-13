@@ -147,6 +147,7 @@ class Fragment:
     def _text_shaping(self):
         return self.graphics_state["text_shaping"]
 
+    @property
     def string(self):
         return "".join(self.characters)
 
