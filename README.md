@@ -261,6 +261,7 @@ This library could only exist thanks to the dedication of many volunteers around
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://dnpdata.com"><img src="https://avatars.githubusercontent.com/u/26656754?v=4?s=100" width="100px;" alt="Andy Friedman"/><br /><sub><b>Andy Friedman</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=afriedman412" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/matt-b8"><img src="https://avatars.githubusercontent.com/u/76793516?v=4?s=100" width="100px;" alt="Matt"/><br /><sub><b>Matt</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=matt-b8" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/matipos2"><img src="https://avatars.githubusercontent.com/u/143452309?v=4?s=100" width="100px;" alt="matipos2"/><br /><sub><b>matipos2</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=matipos2" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
