@@ -57,12 +57,12 @@ def test_bidi_conformance():
         for indx, char in enumerate(characters):
             if levels[indx] != "x" and levels[indx] != str(char.embedding_level):
                 return False
-        for indx, char in enumerate(reordered_characters):
-            if reorder[indx] != str(char.character_index):
-                return False
-        return True
+        return not any(
+            reorder[indx] != str(char.character_index)
+            for (indx, char) in enumerate(reordered_characters)
+        )
 
-    with open(HERE / "BidiTest.txt", "r") as f:
+    with open(HERE / "BidiTest.txt", "r", encoding="utf8") as f:
         data = f.read().split("\n")
 
     levels = []
@@ -105,7 +105,7 @@ def test_bidi_character():
     There are 91,707 tests on this file
     """
 
-    with open(HERE / "BidiCharacterTest.txt", "r") as f:
+    with open(HERE / "BidiCharacterTest.txt", "r", encoding="utf8") as f:
         data = f.read().split("\n")
 
     test_count = 0
@@ -150,7 +150,14 @@ def test_bidi_character():
 
 
 def test_bidi_string(tmp_path):
-    string = "عندما يريد العالم أن ‪يتكلّم ‬ ، فهو يتحدّث بلغة يونيكود. تسجّل الآن لحضور المؤتمر الدولي العاشر ليونيكود (Unicode Conference)، الذي سيعقد في 10-12 آذار 1997 بمدينة مَايِنْتْس، ألمانيا. و سيجمع المؤتمر بين خبراء من كافة قطاعات الصناعة على الشبكة العالمية انترنيت ويونيكود، حيث ستتم، على الصعيدين الدولي والمحلي على حد سواء مناقشة سبل استخدام يونكود في النظم القائمة وفيما يخص التطبيقات الحاسوبية، الخطوط، تصميم النصوص والحوسبة متعددة اللغات."
+    # pylint: disable=bidirectional-unicode
+    string = (
+        "عندما يريد العالم أن ‪يتكلّم ‬ ،"
+        + " فهو يتحدّث بلغة يونيكود. تسجّل الآن لحضور المؤتمر الدولي العاشر ليونيكود (Unicode Conference)، "
+        + "الذي سيعقد في 10-12 آذار 1997 بمدينة مَايِنْتْس، ألمانيا. و سيجمع المؤتمر بين خبراء من كافة قطاعات الصناعة على الشبكة"
+        + " العالمية انترنيت ويونيكود، حيث ستتم، على الصعيدين الدولي والمحلي على حد سواء مناقشة سبل استخدام"
+        + " يونكود في النظم القائمة وفيما يخص التطبيقات الحاسوبية، الخطوط، تصميم النصوص والحوسبة متعددة اللغات."
+    )
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font(family="NotoSansArabic", fname=HERE / "NotoSansArabic-Regular.ttf")
