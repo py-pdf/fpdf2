@@ -162,15 +162,12 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [儒勒·凡尔纳的文本](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
-
-English versions:
-
-* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
-* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
+此版本与先例的重点区别于调用了[text_columns](/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column)。此函数用于（逐段）收集文本并把其放置于多个栏目中，自主按需插入换页符。需注意，虽(`TextColumns`)实例会起到上下文管理器的作用，但文本样式与其他字体属性依旧可被更改。此类变更仅会被使用与当前的执行环境中，若退出执行环境则会恢复原定设置。
 
 
 ## 教程五 - 创建表 ##
+
+本教程将演示如何创建两份不同的表格，以此展示简单改动参数可带来的效果。
 
 ```python
 {% include "../tutorial/tuto5.py" %}
@@ -179,12 +176,9 @@ English versions:
 [生成的 PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf) -
 [源文本](https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt)
 
-_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
+案例一最为基础，仅使用了[FPDF.table()](https://py-pdf.github.io/fpdf2/Tables.html)来快速生成一张基础表格。
 
-English versions:
-
-* [Tuto 5 - Creating Tables](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-5-creating-tables)
-* [Documentation on tables](https://py-pdf.github.io/fpdf2/Tables.html)
+案例二在此基础上进行了色彩、表格限宽、缩减文本高度、标题居中、自定义项目栏宽度、右对齐数据等方面的改良。并选用了[TableBordersLayout](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout)中合适的(`borders_layout`)参数来去除下边框。
 
 ## 教程六 - 创建链接和混合文本样式 ##
 
