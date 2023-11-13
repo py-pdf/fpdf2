@@ -176,9 +176,11 @@ class BidiCharacter:
         self.bidi_class = cls
 
     def __repr__(self):
-        return f"character_index: {self.character_index} character: {self.character}" + \
-                f" bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}" + \
-                f" embedding_level: {self.embedding_level} direction: {self.direction}"
+        return (
+            f"character_index: {self.character_index} character: {self.character}"
+            + f" bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}"
+            + f" embedding_level: {self.embedding_level} direction: {self.direction}"
+        )
 
 
 @dataclass
