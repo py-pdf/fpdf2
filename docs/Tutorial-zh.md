@@ -162,7 +162,7 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [儒勒·凡尔纳的文本](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-此版本与先例的重点区别于调用了[text_columns](/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column)。此函数用于（逐段）收集文本并把其放置于多个栏目中，自主按需插入换页符。需注意，虽(`TextColumns`)实例会起到上下文管理器的作用，但文本样式与其他字体属性依旧可被更改。此类变更仅会被使用与当前的执行环境中，若退出执行环境则会恢复原定设置。
+此版本与先例的重点区别于使用了[text_columns](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column)。此函数用于（逐段）收集文本并把其放置于多个栏目中，自主按需插入换页符。需注意，虽(`TextColumns`)实例会起到上下文管理器的作用，但文本样式与其他字体属性依旧可被更改。此类变更仅会被使用与当前的执行环境中，若退出执行环境则会恢复原定设置。
 
 
 ## 教程五 - 创建表 ##
