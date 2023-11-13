@@ -19,6 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.7.7] - Not released yet
 ### Added
 * SVG importing now supports clipping paths, and `defs` tags anywhere in the SVG file
+* [`FPDF.fonts.FontFace`](https://py-pdf.github.io/fpdf2/fpdf/fonts.html#fpdf.fonts.FontFace): Now has a static `combine` method that allows overriding a default FontFace (e.g. for specific cells in a table). Unspecified properties of the override FontFace retain the values of the default.
 * [`TextColumns()`](https://py-pdf.github.io/fpdf2/TextColumns.html) can now have images inserted (both raster and vector).
 * [`TextColumns()`](https://py-pdf.github.io/fpdf2/TextColumns.html) can now advance to the next column with the new `new_column()` method or a FORM_FEED character (`\u000c`) in the text.
 ### Fixed
@@ -26,7 +27,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `FPDF.image(x=Align.C)` used to fail for SVG images.
 * Previously set dash patterns were not transferred correctly to new pages.
 * Inserted Vector images used to ignore the `keep_aspect_ratio` argument.
-* [`FPDF.fonts.FontFace`](https://py-pdf.github.io/fpdf2/fpdf/fonts.html#fpdf.fonts.FontFace): Now has a static `combine` method that allows overriding a default FontFace (e.g. for specific cells in a table). Unspecified properties of the override FontFace retain the values of the default.
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now properly honor the current text font color when styling table cells
 ### Changed
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): If cell styles are provided for cells in heading rows, combine the cell style as an override with the overall heading style.
 

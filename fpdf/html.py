@@ -384,7 +384,9 @@ class HTML2FPDF(HTMLParser):
                 emphasis |= TextEmphasis.U
             style = None
             if bgcolor or emphasis:
-                style = FontFace(emphasis=emphasis, fill_color=bgcolor)
+                style = FontFace(
+                    emphasis=emphasis, fill_color=bgcolor, color=self.pdf.text_color
+                )
             self.table_row.cell(text=data, align=align, style=style, colspan=colspan)
             self.td_th["inserted"] = True
         elif self.table is not None:

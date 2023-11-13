@@ -305,3 +305,28 @@ def test_html_table_with_nested_tags():  # issue 845
             <td>This <font size=20>is not</font> <b>supported</b></td>
         </tr></table>"""
         )
+
+
+def test_html_table_with_font_tags_used_to_set_text_color(tmp_path):  # issue 1013
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=8)
+    pdf.write_html(
+        """<table>
+    <thead>
+        <tr bgcolor="#711C45">
+            <th width="25%"><font color="#711C45">Mark</font></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr bgcolor="#E4E4E4">
+            <td align="center"><font color="#E4E4E4">less than 2</font></td>
+        </tr>
+    </tbody>
+    </table>"""
+    )
+    assert_pdf_equal(
+        pdf,
+        HERE / "html_table_with_font_tags_used_to_set_text_color.pdf",
+        tmp_path,
+    )
