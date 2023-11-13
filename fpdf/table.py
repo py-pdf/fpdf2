@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from numbers import Number
 from typing import Optional, Union
 
+from .drawing import DeviceRGB, DeviceGray, DeviceCMYK
 from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode, VAlign
 from .enums import MethodReturnValue
 from .errors import FPDFException
@@ -22,6 +23,8 @@ def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
         prev_fill_color = pdf.fill_color
         if isinstance(fill_color, (int, float)):
             fill_color = [fill_color]
+        elif isinstance(fill_color, (DeviceRGB, DeviceGray, DeviceCMYK)):
+            fill_color = fill_color.colors
         pdf.set_fill_color(*fill_color)
 
     sl = []
@@ -117,7 +120,7 @@ class Table:
                 Defines the visual style of the top headings row: size, color, emphasis...
             line_height (number): optional. Defines how much vertical space a line of text will occupy
             markdown (bool): optional, default to False. Enable markdown interpretation of cells textual content
-            text_align (str, fpdf.enums.Align): optional, default to JUSTIFY. Control text alignment inside cells.
+            text_align (str, fpdf.enums.Align, tuple): optional, default to JUSTIFY. Control text alignment inside cells.
             v_align (str, fpdf.enums.AlignV): optional, default to CENTER. Control vertical alignment of cells content
             width (number): optional. Sets the table width
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
@@ -382,9 +385,13 @@ class Table:
         if not isinstance(text_align, (Align, str)):
             text_align = text_align[j]
         if i < self._num_heading_rows:
-            style = self._headings_style
+            # Get the style for this cell by overriding the row style with any provided
+            # headings style, and overriding that with any provided cell style
+            style = FontFace.combine(
+                cell.style, FontFace.combine(self._headings_style, row.style)
+            )
         else:
-            style = cell.style or row.style
+            style = FontFace.combine(cell.style, row.style)
         if style and style.fill_color:
             fill = True
         elif (
@@ -685,8 +692,9 @@ class Row:
         """
         if text and img:
             raise NotImplementedError(
+                # pylint: disable=implicit-str-concat,useless-suppression
                 "fpdf2 currently does not support inserting text with an image in the same table cell."
-                "Pull Requests are welcome to implement this 😊"
+                " Pull Requests are welcome to implement this 😊"
             )
         if not style:
             # We capture the current font settings:

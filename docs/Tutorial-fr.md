@@ -103,11 +103,13 @@ Cet exemple est une variante du précédent qui montre comment répartir le text
 
 [Extrait de Jules Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-La principale différence avec le tutoriel précédent est l'utilisation des méthodes [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) et `set_col()`.
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
 
-En utilisant la méthode [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break), une fois que la cellule franchit la limite inférieure de la page, elle vérifie le numéro de la colonne actuelle. Si celui-ci est inférieur à 2 (nous avons choisi de diviser la page en trois colonnes), il appelle la méthode `set_col()`, en augmentant le numéro de la colonne et en modifiant la position de la colonne suivante pour que le texte puisse s'y poursuivre.
+English versions:
 
-Une fois que la limite inférieure de la troisième colonne est atteinte, la méthode [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) sera réinitialisée et retournera à la première colonne. Cela déclenchera un saut de page.
+* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
+* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
+
 
 ## Tuto 5 - Créer des tables ##
 Ce tutoriel explique comment créer facilement des tableaux. Deux tableaux différents sont générés, pour illustrer ce qui peut être produit avec de très simples changements.

@@ -20,6 +20,7 @@ HYPHEN = "\u002d"
 SPACE = " "
 NBSP = "\u00a0"
 NEWLINE = "\n"
+FORM_FEED = "\u000c"
 
 
 class Fragment:
@@ -143,6 +144,9 @@ class Fragment:
         return lift * self.graphics_state["font_size_pt"]
 
     @property
+    def _text_shaping(self):
+        return self.graphics_state["text_shaping"]
+
     def string(self):
         return "".join(self.characters)
 
@@ -319,6 +323,7 @@ class TextLine(NamedTuple):
     height: float
     max_width: float
     trailing_nl: bool = False
+    trailing_form_feed: bool = False
 
 
 class SpaceHint(NamedTuple):
@@ -466,7 +471,9 @@ class CurrentLine:
         self.number_of_spaces = break_hint.number_of_spaces
         self.width = break_hint.line_width
 
-    def manual_break(self, align: Align, trailing_nl: bool = False):
+    def manual_break(
+        self, align: Align, trailing_nl: bool = False, trailing_form_feed: bool = False
+    ):
         return TextLine(
             fragments=self.fragments,
             text_width=self.width,
@@ -475,6 +482,7 @@ class CurrentLine:
             height=self.height,
             max_width=self.max_width,
             trailing_nl=trailing_nl,
+            trailing_form_feed=trailing_form_feed,
         )
 
     def automatic_break_possible(self):
@@ -617,12 +625,14 @@ class MultiLineBreak:
             )
             first_char = False
 
-            if character == NEWLINE:
+            if character in (NEWLINE, FORM_FEED):
                 self.character_index += 1
                 if not current_line.fragments:
                     current_line.height = current_font_height * self.line_height
                 return current_line.manual_break(
-                    Align.L if self.align == Align.J else self.align, trailing_nl=True
+                    Align.L if self.align == Align.J else self.align,
+                    trailing_nl=character == NEWLINE,
+                    trailing_form_feed=character == FORM_FEED,
                 )
             if current_line.width + character_width > max_width:
                 if character == SPACE:  # must come first, always drop a current space.

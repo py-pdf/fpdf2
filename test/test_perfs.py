@@ -7,7 +7,7 @@ from fpdf import FPDF
 HERE = Path(__file__).resolve().parent
 
 
-@ensure_exec_time_below(seconds=8)
+@ensure_exec_time_below(seconds=9)
 @ensure_rss_memory_below(mib=8)
 def test_intense_image_rendering():
     png_file_paths = []

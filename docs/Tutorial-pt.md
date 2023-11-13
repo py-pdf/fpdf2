@@ -116,11 +116,12 @@ Este exemplo é uma variante do anterior, mostrando como colocar o texto em vár
 
 [Texto de Júlio Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-A principal diferença em relação ao tutorial anterior é o uso do [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) e os métodos set_col.
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
 
-Usando o método [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break), quando a célula ultrapassar o limite inferior da página, ela verificará o número da coluna atual. Se isso for menor que 2 (optamos por dividir a página em três colunas), chamando o método set_col, aumentando o número da coluna e alterando a posição da próxima coluna para que o texto continue aí.
+English versions:
 
-Quando o limite inferior da terceira coluna é alcançado, o método [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) será redefinido e vai voltar para a primeira coluna e adicionar uma quebra de página.
+* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
+* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
 
 
 ## Tuto 5 - Criar Tabelas ##

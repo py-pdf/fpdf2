@@ -7,12 +7,25 @@ _New in [:octicons-tag-24: 2.7.6](https://github.com/py-pdf/fpdf2/blob/master/CH
 
 The `FPDF.text_columns()` method allows to create columnar layouts, with one or several columns. Columns will always be of equal width.
 
+### Parameters ###
+
 Beyond the parameters common to all text regions, the following are available for text columns:
 
 * l_margin (float, optional) - override the current left page margin.
 * r_margin (float, optional) - override the current right page margin.
 * ncols (float, optional) - the number of columns to generate (Default: 2).
 * gutter (float, optional) - the horizontal space required between each two columns (Default 10).
+* balance (bool, optional) - Create height balanced columns, starting at the current height and ending at approximately the same level.
+
+### Methods ###
+
+Text columns support all the standard text region methods like `.paragraph()`, `.write()`, `.ln()`, and `.render()`. In addition to that:
+
+* `.new_column()` - End the current column and continue at the top of the next one.
+
+A FORM_FEED character (`\u000c`) in the text will have the same effect as an explicit call to `.new_column()`,
+
+Note that when used within balanced columns, switching to a new column manually will result in incorrect balancing.
 
 
 #### Single-Column Example ####
@@ -85,7 +98,7 @@ with cols:
 ```
 ![Balanced Columns](tcols-balanced.png)
 
-Note that column balancing only works reliably when the font size (specifically the line height) doesn't change. If parts of the text use a larger or smaller font than the rest, then the balancing will usually be out of whack. Contributions for a more refined balancing algorithm are welcome.
+Note that column balancing only works reliably when the font size (specifically the line height) doesn't change, and if there are no images included. If parts of the text use a larger or smaller font than the rest, then the balancing will usually be out of whack. Contributions for a more refined balancing algorithm are welcome.
 
 
 ### Possible future extensions

@@ -70,6 +70,11 @@ pre-commit install
 To run tests, `cd` into `fpdf2` repository, install the dependencies using
 `pip install -r test/requirements.txt`,  and run `pytest`.
 
+You may also need to install [SWIG](https://swig.org/index.html) and [Ghostscript](https://www.ghostscript.com/),
+because they are dependencies for `camelot`, a library for table extraction in PDF that we test in `test/table/test_table_extraction.py`.
+Those tests will always be executed by the GitHub Actions pipeline,
+so you can also not bother installing those tools and skip those tests by running `pytest -k "not camelot"`.
+
 You can run a single test by executing: `pytest -k function_name`.
 
 Alternatively, you can use [Tox](https://tox.readthedocs.io/en/latest/).
@@ -116,8 +121,25 @@ All generated PDF files (including those processed by `qpdf`) will be stored in
 last test runs will be saved and then automatically deleted, so you can
 check the output in case of a failed test.
 
+### Generating PDF files for testing
 In order to generate a "reference" PDF file, simply call `assert_pdf_equal`
 once with `generate=True`.
+
+```
+import fpdf
+
+svg = fpdf.svg.SVGObject.from_file("path/to/file.svg")
+pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
+pdf.add_page()
+svg.draw_to_page(pdf)
+
+assert_pdf_equal(
+    pdf,  
+    "path/for/pdf/output.pdf",
+    "path/for/pdf/",
+    generate=True
+)
+```
 
 ## Testing performances
 

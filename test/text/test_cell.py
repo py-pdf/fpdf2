@@ -319,7 +319,7 @@ def test_cell_deprecated_txt_arg():
         pdf.cell(txt="Lorem ipsum Ut nostrud irure")
 
 
-@ensure_exec_time_below(seconds=22)
+@ensure_exec_time_below(seconds=24)
 @ensure_rss_memory_below(mib=1)
 def test_cell_speed_with_long_text():  # issue #907
     pdf = FPDF()

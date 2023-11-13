@@ -669,7 +669,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/43534411?v=4",
       "profile": "https://github.com/TzviGreenfeld",
       "contributions": [
-        "doc"
+        "doc",
+        "translation"
       ]
     },
     {
@@ -698,7 +699,8 @@
       "profile": "https://github.com/jmunoz94",
       "contributions": [
         "test",
-        "doc"
+        "doc",
+        "translation"
       ]
     },
     {
@@ -1011,6 +1013,33 @@
       "profile": "https://github.com/Iamrodos",
       "contributions": [
         "bug"
+      ]
+    },
+    {
+      "login": "TedBrookings",
+      "name": "Ted Brookings",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6463752?v=4",
+      "profile": "https://github.com/TedBrookings",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "afriedman412",
+      "name": "Andy Friedman",
+      "avatar_url": "https://avatars.githubusercontent.com/u/26656754?v=4",
+      "profile": "https://dnpdata.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "matt-b8",
+      "name": "Matt",
+      "avatar_url": "https://avatars.githubusercontent.com/u/76793516?v=4",
+      "profile": "https://github.com/matt-b8",
+      "contributions": [
+        "doc"
       ]
     }
   ],

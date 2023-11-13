@@ -1,4 +1,5 @@
 import base64, zlib
+from dataclasses import dataclass
 from io import BytesIO
 from math import ceil
 from urllib.request import urlopen
@@ -19,11 +20,20 @@ try:
 except ImportError:
     Image = None
 
+from .enums import Align
 from .errors import FPDFException
+from .svg import SVGObject
+
+
+@dataclass
+class ImageSettings:
+    # Passed to zlib.compress() - In range 0-9 - Default is currently equivalent to 6:
+    compression_level: int = -1
 
 
 LOGGER = logging.getLogger(__name__)
 SUPPORTED_IMAGE_FILTERS = ("AUTO", "FlateDecode", "DCTDecode", "JPXDecode")
+SETTINGS = ImageSettings()
 
 # fmt: off
 TIFFBitRevTable = [
@@ -57,6 +67,85 @@ TIFFBitRevTable = [
 # fmt: on
 
 
+class ImageInfo(dict):
+    """Information about an image used in the PDF document (base class).
+    We subclass this to distinguish between raster and vector images."""
+
+    @property
+    def width(self):
+        "Intrinsic image width"
+        return self["w"]
+
+    @property
+    def height(self):
+        "Intrinsic image height"
+        return self["h"]
+
+    @property
+    def rendered_width(self):
+        "Only available if the image has been placed on the document"
+        return self["rendered_width"]
+
+    @property
+    def rendered_height(self):
+        "Only available if the image has been placed on the document"
+        return self["rendered_height"]
+
+    def __str__(self):
+        d = {k: ("..." if k in ("data", "smask") else v) for k, v in self.items()}
+        return f"self.__class__.__name__({d})"
+
+    def scale_inside_box(self, x, y, w, h):
+        """
+        Make an image fit within a bounding box, maintaining its proportions.
+        In the reduced dimension it will be centered within the available space.
+        """
+        ratio = self.width / self.height
+        if h * ratio < w:
+            new_w = h * ratio
+            new_h = h
+            x += (w - new_w) / 2
+        else:  # => too wide, limiting width:
+            new_h = w / ratio
+            new_w = w
+            y += (h - new_h) / 2
+        return x, y, new_w, new_h
+
+    @staticmethod
+    def x_by_align(x, w, pdf, keep_aspect_ratio):
+        if keep_aspect_ratio:
+            raise ValueError(
+                "FPDF.image(): 'keep_aspect_ratio' cannot be used with an enum value provided to `x`"
+            )
+        x = Align.coerce(x)
+        if x == Align.C:
+            return (pdf.w - w) / 2
+        if x == Align.R:
+            return pdf.w - w - pdf.r_margin
+        if x == Align.L:
+            return pdf.l_margin
+        raise ValueError(f"Unsupported 'x' value passed to .image(): {x}")
+
+
+class RasterImageInfo(ImageInfo):
+    "Information about a raster image used in the PDF document"
+
+    def size_in_document_units(self, w, h, k):
+        if w == 0 and h == 0:  # Put image at 72 dpi
+            w = self["w"] / k
+            h = self["h"] / k
+        elif w == 0:
+            w = h * self["w"] / self["h"]
+        elif h == 0:
+            h = w * self["h"] / self["w"]
+        return w, h
+
+
+class VectorImageInfo(ImageInfo):
+    "Information about a vector image used in the PDF document"
+    # pass
+
+
 def load_image(filename):
     """
     This method is used to load external resources, such as images.
@@ -82,7 +171,10 @@ def load_image(filename):
 
 def _decode_base64_image(base64Image):
     "Decode the base 64 image string into an io byte stream."
-    imageData = base64Image.split("base64,")[1]
+    frags = base64Image.split("base64,")
+    if len(frags) != 2:
+        raise NotImplementedError("Unsupported non-base64 image data")
+    imageData = frags[1]
     decodedData = base64.b64decode(imageData)
     return BytesIO(decodedData)
 
@@ -105,6 +197,20 @@ def is_iccp_valid(iccp, filename):
     return True
 
 
+def get_svg_info(filename, img):
+    svg = SVGObject(img.getvalue())
+    if svg.viewbox:
+        _, _, w, h = svg.viewbox
+    else:
+        w = h = 0.0
+    if svg.width:
+        w = svg.width
+    if svg.height:
+        h = svg.height
+    info = VectorImageInfo(data=svg, w=w, h=h)
+    return filename, svg, info
+
+
 def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
     """
     Args:
@@ -117,7 +223,9 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
 
     is_pil_img = True
     keep_bytes_io_open = False
-    jpeg_inverted = False  # flag to check whether a cmyk image is jpeg or not, if set to True the decode array is inverted in output.py
+    # Flag to check whether a cmyk image is jpeg or not, if set to True the decode array
+    # is inverted in output.py
+    jpeg_inverted = False
     img_raw_data = None
     if not img or isinstance(img, (Path, str)):
         img_raw_data = load_image(filename)
@@ -153,7 +261,7 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
         img_altered = True
 
     w, h = img.size
-    info = {}
+    info = RasterImageInfo()
 
     iccp = None
     if "icc_profile" in img.info:
@@ -171,18 +279,21 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
             if img.mode == "L":
                 dpn, bpc, colspace = 1, 8, "DeviceGray"
             img_raw_data.seek(0)
-            return {
-                "data": img_raw_data.read(),
-                "w": w,
-                "h": h,
-                "cs": colspace,
-                "iccp": iccp,
-                "dpn": dpn,
-                "bpc": bpc,
-                "f": image_filter,
-                "inverted": jpeg_inverted,
-                "dp": f"/Predictor 15 /Colors {dpn} /Columns {w}",
-            }
+            info.update(
+                {
+                    "data": img_raw_data.read(),
+                    "w": w,
+                    "h": h,
+                    "cs": colspace,
+                    "iccp": iccp,
+                    "dpn": dpn,
+                    "bpc": bpc,
+                    "f": image_filter,
+                    "inverted": jpeg_inverted,
+                    "dp": f"/Predictor 15 /Colors {dpn} /Columns {w}",
+                }
+            )
+            return info
         # We can directly copy the data out of a CCITT Group 4 encoded TIFF, if it
         # only contains a single strip
         if (
@@ -216,18 +327,21 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
             else:
                 raise ValueError(f"unsupported FillOrder: {fillorder}")
             dpn, bpc, colspace = 1, 1, "DeviceGray"
-            return {
-                "data": ccittrawdata,
-                "w": w,
-                "h": h,
-                "iccp": None,
-                "dpn": dpn,
-                "cs": colspace,
-                "bpc": bpc,
-                "f": image_filter,
-                "inverted": jpeg_inverted,
-                "dp": f"/BlackIs1 {str(not inverted).lower()} /Columns {w} /K -1 /Rows {h}",
-            }
+            info.update(
+                {
+                    "data": ccittrawdata,
+                    "w": w,
+                    "h": h,
+                    "iccp": None,
+                    "dpn": dpn,
+                    "cs": colspace,
+                    "bpc": bpc,
+                    "f": image_filter,
+                    "inverted": jpeg_inverted,
+                    "dp": f"/BlackIs1 {str(not inverted).lower()} /Columns {w} /K -1 /Rows {h}",
+                }
+            )
+            return info
 
     # garbage collection
     img_raw_data = None
@@ -311,7 +425,6 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
             "dp": dp,
         }
     )
-
     return info
 
 
@@ -460,7 +573,7 @@ def _to_zdata(img, remove_slice=None, select_slice=None):
         data_with_padding.extend(b"\0")
         data_with_padding.extend(data[i : i + row_size])
 
-    return zlib.compress(data_with_padding)
+    return zlib.compress(data_with_padding, level=SETTINGS.compression_level)
 
 
 def _has_alpha(img, alpha_channel):

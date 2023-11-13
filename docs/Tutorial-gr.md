@@ -101,11 +101,13 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [Κείμενο του Jules Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-Η κύρια διαφορά από το προηγούμενο παράδειγμα είναι η χρήση των μεθόδων [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) και set_col.
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
 
-Χρησιμοποιώντας την μέθοδο [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break), μόλις το κελί ξεπεράσει το κάτω όριο της σελίδας, γίνεται έλεγχος του αριθμού της τωρινής στήλης. Εάν ο αριθμός αυτός είναι μικρότερος του 2 (επιλέξαμε την κατανομή της σελίδας σε τρεις στήλες) θα κληθεί η μέθοδος set_col, αυξάνοντας τον αριθμό στήλης και αλλάζοντας την θέση της αμέσως επόμενης στήλης έτσι ώστε το κείμενο να συνεχιστεί εκεί.
+English versions:
 
-Μόλις φτάσουμε στο το κάτω όριο σελίδας της τρίτης στήλης, η μέθοδος [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) επαναφέρεται και μεταφερόμαστε ξανά πίσω στην πρώτη στήλη όπου πραγματοποιείται αλλαγή σελίδας.
+* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
+* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
+
 
 ## Μάθημα 5 - Δημιουργία Πινάκων ##
 

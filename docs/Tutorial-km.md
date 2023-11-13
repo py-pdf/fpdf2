@@ -124,13 +124,13 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [អត្ថបទ Jules Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-មេរៀននេះមានគន្លិះខុសគ្នាពីមេរៀនមុនៗគឺវិធីប្រើ [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) និង set_col។
+_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
 
-វិធីប្រើប្រាស [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) ពេលដែលចុះដល់អស់បន្ទាត់នៃទំព័រវាគិតចំនួនជួរឈរ។ ប្រសិនបើវាតូចជាងពីរ (យើងជ្រើសរើសដើម្បីញែកទំព័រមួយជាបីជួរឈរ) យើងត្រូវប្រើ set_col ។ 
-បង្កើនជួរឈរវានឹងបង្ហាញទីតាំងបន្តបន្ទាប់ហើយអាចសរសេរអត្ថបទទីនោះបាន។
+English versions:
 
-ពេលយើងប្រើអស់ជួរឈរទាំងបី [accept_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) នឹងបង្កើតទំព័រថ្មីហើយញែកបន្តទៀតដោយចាប់ផ្តើមពីជួរឈរទីមួយមកវិញម្តងទៀតនៅលើទំព័រថ្មី។
-.
+* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
+* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
+
 
 ## មេរៀនទី 5 - បង្កើតតារាង ##
 

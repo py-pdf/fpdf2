@@ -156,6 +156,25 @@ Result:
 
 ![](table-styled.jpg)
 
+It's possible to override the style of individual cells in the heading. The overriding style will take
+precedence for any specified values, while retaining the default style for unspecified values:
+```python
+...
+headings_style = FontFace(emphasis="ITALICS", color=blue, fill_color=grey)
+override_style = FontFace(emphasis="BOLD")
+with pdf.table(headings_style=headings_style) as table:
+    headings = table.row()
+    headings.cell("First name", style=override_style)
+    headings.cell("Last name", style=override_style)
+    headings.cell("Age")
+    headings.cell("City")
+    ...
+```
+
+Result:
+
+![](table-styled-override.jpg)
+
 ## Set cells background
 
 ```python

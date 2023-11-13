@@ -6,6 +6,8 @@ from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 HERE = Path(__file__).resolve().parent
 FONTS_DIR = HERE.parent / "fonts"
+PNG_DIR = HERE.parent / "image/png_images"
+SVG_DIR = HERE.parent / "svg/svg_sources"
 
 
 def test_tcols_align(tmp_path):
@@ -52,7 +54,14 @@ def test_tcols_3cols(tmp_path):
     pdf.t_margin = 50
     pdf.set_auto_page_break(True, 100)
     pdf.set_font("Helvetica", "", 6)
-    cols = pdf.text_columns(text=LOREM_IPSUM, text_align="J", ncols=3, gutter=5)
+    cols = pdf.text_columns(
+        text=LOREM_IPSUM,
+        text_align="J",
+        img=SVG_DIR / "SVG_logo.svg",
+        img_fill_width=True,
+        ncols=3,
+        gutter=5,
+    )
     with cols:
         pdf.set_font("Times", "", 8)
         cols.write(text=LOREM_IPSUM)
@@ -109,6 +118,117 @@ def test_tcols_charwrap(tmp_path):
     assert_pdf_equal(pdf, HERE / "tcols_charwrap.pdf", tmp_path)
 
 
+def test_tcols_images(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "", 12)
+    cols = pdf.text_columns(ncols=3, text_align="J")
+    left, right = cols.current_x_extents(pdf.y, 0)
+    pdf.line(left, pdf.t_margin, left, pdf.h - pdf.b_margin)
+    pdf.line(right, pdf.t_margin, right, pdf.h - pdf.b_margin)
+    with cols:
+        cols.write(text="Images at Native Size\n(Raster 72 dpi, SVG 90 dpi)\n\n")
+        cols.write(text=LOREM_IPSUM[:100])
+        cols.image(PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png")
+        cols.write(text=LOREM_IPSUM[100:200])
+        cols.image(SVG_DIR / "SVG_logo.svg")
+        cols.write(text=LOREM_IPSUM[200:300])
+
+        cols.new_column()
+        cols.write(text="Images at Full Column Width\n\n")
+        cols.write(text=LOREM_IPSUM[:100])
+        cols.image(
+            PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png",
+            fill_width=True,
+        )
+        cols.write(text=LOREM_IPSUM[100:200])
+        cols.image(SVG_DIR / "SVG_logo.svg", fill_width=True)
+        cols.write(text=LOREM_IPSUM[200:300])
+
+        cols.new_column()
+        cols.write(text="Images Aligned Right and Center\n\n")
+        cols.write(text=LOREM_IPSUM[:100])
+        cols.image(
+            PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png",
+            align="RIGHT",
+        )
+        cols.write(text=LOREM_IPSUM[100:200])
+        cols.image(SVG_DIR / "SVG_logo.svg", align="CENTER")
+        cols.write(text=LOREM_IPSUM[200:300])
+
+        cols.new_column()
+        cols.write(text="Images at Size 50x20\ntop/bottom margin\n\n")
+        cols.write(text=LOREM_IPSUM[:100])
+        cols.image(
+            PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png",
+            width=50,
+            height=20,
+            top_margin=10,
+        )
+        cols.write(text=LOREM_IPSUM[100:200])
+        cols.image(
+            SVG_DIR / "SVG_logo.svg",
+            width=50,
+            height=20,
+            bottom_margin=10,
+        )
+        cols.write(text=LOREM_IPSUM[200:300])
+
+        cols.new_column()
+        cols.write(text="Images at Size 50x20 and keep_aspect_ratio=True\n\n")
+        cols.write(text=LOREM_IPSUM[:100])
+        cols.image(
+            PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png",
+            width=50,
+            height=20,
+            keep_aspect_ratio=True,
+        )
+        cols.write(text=LOREM_IPSUM[100:200])
+        cols.image(
+            SVG_DIR / "SVG_logo.svg",
+            width=50,
+            height=20,
+            keep_aspect_ratio=True,
+        )
+        cols.write(text=LOREM_IPSUM[200:300])
+
+        cols.new_column()
+        cols.write(text="Images at Size 20x50 and keep_aspect_ratio=True\n\n")
+        cols.write(text=LOREM_IPSUM[:100])
+        cols.image(
+            PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png",
+            width=20,
+            height=50,
+            keep_aspect_ratio=True,
+        )
+        cols.write(text=LOREM_IPSUM[100:200])
+        cols.image(
+            SVG_DIR / "SVG_logo.svg",
+            width=20,
+            height=50,
+            keep_aspect_ratio=True,
+        )
+        cols.write(text=LOREM_IPSUM[200:300])
+
+        cols.new_column()
+        cols.write(text="Column break by image\n\n")
+        cols.write(text=LOREM_IPSUM[:100])
+        cols.image(
+            PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png",
+            fill_width=True,
+        )
+        cols.write(text=LOREM_IPSUM[100:200])
+        cols.image(SVG_DIR / "SVG_logo.svg", fill_width=True)
+        cols.write(text=LOREM_IPSUM[200:300])
+        cols.image(
+            PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png",
+            fill_width=True,
+        )
+        cols.image(SVG_DIR / "SVG_logo.svg", fill_width=True)
+
+    assert_pdf_equal(pdf, HERE / "tcols_images.pdf", tmp_path)
+
+
 def test_tcols_no_font():
     pdf = FPDF()
     pdf.add_page()
@@ -162,6 +282,29 @@ def test_tcols_bad_uses():
         "TextColumns(): Right limit (60.00155555555551) lower than left limit (150)."
     )
     assert str(error.value) == expected_msg
+    # invalid alignment values
+    with pytest.raises(ValueError) as error:
+        col = pdf.text_columns(text_align="X_CENTER")
+    expected_msg = (
+        "Text_align must be 'LEFT', 'CENTER', 'RIGHT', or 'JUSTIFY', not 'X_CENTER'."
+    )
+    assert str(error.value) == expected_msg
+    with pytest.raises(ValueError) as error:
+        with pdf.text_columns() as col:
+            par = col.paragraph(text_align="X_CENTER")
+    assert str(error.value) == expected_msg
+    with pytest.raises(ValueError) as error:
+        with pdf.text_columns() as col:
+            col.image(name="foo", align="JUSTIFY")
+    expected_msg = "Align must be 'LEFT', 'CENTER', or 'RIGHT', not 'JUSTIFY'."
+    assert str(error.value) == expected_msg
+    # Wrong call sequence for ImageParagraph.
+    with pdf.text_columns() as col:
+        col.image(name=PNG_DIR / "ac6343a98f8edabfcc6e536dd75aacb0.png")
+        with pytest.raises(RuntimeError) as error:
+            col._paragraphs[-1].render(1, 2, 3)  # pylint: disable=protected-access
+    expected_msg = "ImageParagraph.build_line() must be called before render()."
+    assert str(error.value) == expected_msg
 
 
 @pytest.mark.skip(reason="unfinished")
@@ -171,7 +314,7 @@ def test_tcols_text_shaping(tmp_path):
     pdf.t_margin = 50
     pdf.set_text_shaping(True)
     pdf.set_font("Helvetica", "", 6)
-    tsfontpath = HERE / ".." / "text_shaping"
+    tsfontpath = HERE.parent / "text_shaping"
     pdf.add_font(
         family="KFGQPC", fname=tsfontpath / "KFGQPC Uthmanic Script HAFS Regular.otf"
     )
