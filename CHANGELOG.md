@@ -31,6 +31,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) delays unescaping data so as not to confuse entity names as nested tags
 ### Changed
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): If cell styles are provided for cells in heading rows, combine the cell style as an override with the overall heading style.
+* Update .pre-commit-config.yaml to pull in version 1.5.4
 
 ## [2.7.6] - 2023-10-11
 This release is the first performed from the [@py-pdf GitHub org](https://github.com/py-pdf), where `fpdf2` migrated.

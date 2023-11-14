@@ -2,7 +2,7 @@
 exclude: ^(\.[^/]*cache(__)?/.*|(.*/)?\.coverage)$
 repos:
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.1
+    rev: v1.5.4
     hooks:
       - id: remove-crlf
       - id: remove-tabs
