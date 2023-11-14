@@ -33,7 +33,8 @@ HERE = Path(__file__).resolve().parent
         for font_file in HERE.glob("*.*tf")
         if not any(
             exclude in font_file.stem
-            for exclude in ("Bold", "Italic", "NotoColorEmoji")
+            # cmss12.ttf is excluded due to fonttools 4.44.1 - cf. https://github.com/py-pdf/fpdf2/issues/1021
+            for exclude in ("cmss12", "Bold", "Italic", "NotoColorEmoji")
         )
     ],
 )
