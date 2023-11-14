@@ -481,3 +481,39 @@ def test_multi_cell_deprecated_txt_arg():
     ):
         # pylint: disable=unexpected-keyword-arg
         pdf.multi_cell(w=0, txt="Lorem ipsum Ut nostrud irure")
+
+
+def test_multi_cell_align_with_padding(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=10)
+    pdf.set_fill_color(222)
+
+    # show alignment markers
+    with pdf.local_context(draw_color=(0, 255, 0)):
+        pdf.line(pdf.l_margin, 0, pdf.l_margin, pdf.h)
+        pdf.line(pdf.w / 2, 0, pdf.w / 2, pdf.h)
+
+    def create_boxes(new_x, new_y, align, padding=2):
+        w = (pdf.w - pdf.l_margin - pdf.r_margin) / 6
+        for ch in "ABC":
+            text = f"{ch}1\n{ch}{ch}2\n{ch}{ch}{ch}3"
+            pdf.multi_cell(
+                w=w,
+                text=text,
+                fill=True,
+                border=True,
+                padding=padding,
+                new_x=new_x,
+                new_y=new_y,
+                align=align,
+            )
+
+    create_boxes("LMARGIN", "NEXT", "JUSTIFY")
+    create_boxes("RIGHT", "TOP", "CENTER")
+    create_boxes("LEFT", "NEXT", "RIGHT")
+    create_boxes("CENTER", "NEXT", "X")
+    pdf.ln()
+    create_boxes("START", "NEXT", "LEFT")
+    create_boxes("END", "NEXT", "RIGHT")
+    assert_pdf_equal(pdf, HERE / "multi_cell_align_with_padding.pdf", tmp_path)
