@@ -14,7 +14,6 @@ from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from functools import wraps
-from html import unescape
 from math import isclose
 from numbers import Number
 from os.path import splitext
@@ -393,7 +392,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # Method arguments must override class & instance attributes:
         kwargs2.update(kwargs)
         html2pdf = self.HTML2FPDF_CLASS(self, *args, **kwargs2)
-        text = unescape(text)  # To deal with HTML entities
         html2pdf.feed(text)
 
     def _set_min_pdf_version(self, version):

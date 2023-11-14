@@ -330,3 +330,28 @@ def test_html_table_with_font_tags_used_to_set_text_color(tmp_path):  # issue 10
         HERE / "html_table_with_font_tags_used_to_set_text_color.pdf",
         tmp_path,
     )
+
+
+def test_html_table_with_data_that_contains_entity_names(tmp_path):  # issue 1010
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=8)
+    pdf.write_html(
+        """<table>
+    <thead>
+        <tr>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Pi &lt; 22 &divide; 7</td>
+        </tr>
+    </tbody>
+    </table>"""
+    )
+    assert_pdf_equal(
+        pdf,
+        HERE / "html_table_with_data_that_contains_entity_names.pdf",
+        tmp_path,
+    )
