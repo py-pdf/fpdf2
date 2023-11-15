@@ -11,7 +11,6 @@ and this seems to be okay.
 """
 import logging
 from pathlib import Path
-import sys
 
 from fontTools.ttLib import TTFont
 import pytest
@@ -22,10 +21,6 @@ from test.conftest import assert_pdf_equal, ensure_exec_time_below
 HERE = Path(__file__).resolve().parent
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 8),
-    reason="fontTools dropped support for 3.7. https://github.com/py-pdf/fpdf2/pull/863",
-)
 @pytest.mark.parametrize(
     "font_filename",
     [
@@ -33,8 +28,7 @@ HERE = Path(__file__).resolve().parent
         for font_file in HERE.glob("*.*tf")
         if not any(
             exclude in font_file.stem
-            # cmss12.ttf is excluded due to fonttools 4.44.1 - cf. https://github.com/py-pdf/fpdf2/issues/1021
-            for exclude in ("cmss12", "Bold", "Italic", "NotoColorEmoji")
+            for exclude in ("Bold", "Italic", "NotoColorEmoji")
         )
     ],
 )

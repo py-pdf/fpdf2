@@ -365,9 +365,6 @@ def test_table_capture_font_settings(tmp_path):
     assert_pdf_equal(pdf, HERE / "table_capture_font_settings.pdf", tmp_path)
 
 
-@pytest.mark.skip(
-    reason="Due to fonttools 4.44.1 - cf. https://github.com/py-pdf/fpdf2/issues/1021"
-)
 def test_table_with_ttf_font(caplog, tmp_path):  # issue 749
     caplog.set_level(logging.ERROR)  # hides fonttool warnings
     pdf = FPDF()
