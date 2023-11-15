@@ -2,7 +2,6 @@ import pytest
 
 from os import devnull
 from pathlib import Path
-import sys
 
 from fpdf import FPDF
 from fpdf.enums import XPos, YPos
@@ -125,10 +124,6 @@ def test_fallback_font_ignore_style(tmp_path):
     )
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 8),
-    reason="fontTools dropped support for 3.7. https://github.com/py-pdf/fpdf2/pull/863",
-)
 def test_fallback_font_with_overriden_get_fallback_font(tmp_path):
     class PDF(FPDF):
         def get_fallback_font(self, char, style=""):
