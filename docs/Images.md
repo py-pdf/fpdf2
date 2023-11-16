@@ -242,16 +242,18 @@ If you create several PDF files that use the same illustrations,
 you can share the images cache among FPDF instances:
 
 ```python
-images_cache = {}
+image_cache = None
 
 for ... # loop
     pdf = FPDF()
-    pdf.images = images_cache
+    if image_cache is None:
+        image_cache = pdf.image_cache
+    else:
+        pdf.image_cache = image_cache
     ... # build the PDF
     pdf.output(...)
     # Reset the "usages" count, to avoid ALL images to be inserted in subsequent PDFs:
-    for img in images_cache.values():
-        img["usages"] = 0
+    image_cache.reset_usages()
 ```
 
 This recipe is valid for `fpdf2` v2.5.7+.

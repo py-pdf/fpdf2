@@ -693,7 +693,9 @@ class OutputProducer:
 
     def _add_images(self):
         img_objs_per_index = {}
-        for img in sorted(self.fpdf.images.values(), key=lambda img: img["i"]):
+        for img in sorted(
+            self.fpdf.image_cache.images.values(), key=lambda img: img["i"]
+        ):
             if img["usages"] > 0:
                 img_objs_per_index[img["i"]] = self._add_image(img)
         return img_objs_per_index
@@ -707,7 +709,7 @@ class OutputProducer:
         if iccp_i in self.iccp_i_to_pdf_i:
             return self.iccp_i_to_pdf_i[iccp_i]
         iccp_content = None
-        for iccp_c, i in self.fpdf.icc_profiles.items():
+        for iccp_c, i in self.fpdf.image_cache.icc_profiles.items():
             if iccp_i == i:
                 iccp_content = iccp_c
                 break
@@ -953,7 +955,7 @@ class OutputProducer:
             LOGGER.debug("- %s: %s", label, _sizeof_fmt(section_size))
 
 
-def stream_content_for_image(
+def stream_content_for_raster_image(
     info: RasterImageInfo,
     x,
     y,

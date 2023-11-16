@@ -44,21 +44,22 @@ def test_load_invalid_base64_data():
 # ensure memory usage does not get too high - this value depends on Python version:
 @ensure_rss_memory_below(mib=6)
 def test_share_images_cache(tmp_path):
-    images_cache = {}
-    icc_profiles_cache = {}
+    image_cache = None
 
     def build_pdf_with_big_images():
+        nonlocal image_cache
         pdf = fpdf.FPDF()
-        pdf.images = images_cache
-        pdf.icc_profiles = icc_profiles_cache
+        if image_cache is None:
+            image_cache = pdf.image_cache
+        else:
+            pdf.image_cache = image_cache
         pdf.add_page()
         for img_path in glob(f"{HERE}/png_images/*.png"):
             pdf.image(img_path, h=pdf.eph)
         with (tmp_path / "out.pdf").open("wb") as pdf_file:
             pdf.output(pdf_file)
         # Reset the "usages" count:
-        for img in images_cache.values():
-            img["usages"] = 0
+        image_cache.reset_usages()
 
     with time_execution() as duration:
         build_pdf_with_big_images()

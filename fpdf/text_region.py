@@ -176,7 +176,9 @@ class ImageParagraph:
     def build_line(self):
         # We do double duty as a "text line wrapper" here, since all the necessary
         # information is already in the ImageParagraph object.
-        self.name, self.img, self.info = preload_image(self.region.pdf, self.name, None)
+        self.name, self.img, self.info = preload_image(
+            self.region.pdf.image_cache, self.name
+        )
         return self
 
     def render(self, col_left, col_width, max_height):

@@ -87,6 +87,7 @@ from .fonts import CoreFont, CORE_FONTS, FontFace, TTFFont
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
 from .image_datastructures import (
+    ImageCache,
     ImageInfo,
     RasterImageInfo,
     VectorImageInfo,
@@ -100,7 +101,12 @@ from .image_parsing import (
 from .linearization import LinearizedOutputProducer
 from .line_break import Fragment, MultiLineBreak, TextLine
 from .outline import OutlineSection
-from .output import OutputProducer, PDFPage, ZOOM_CONFIGS, stream_content_for_image
+from .output import (
+    OutputProducer,
+    PDFPage,
+    ZOOM_CONFIGS,
+    stream_content_for_raster_image,
+)
 from .recorder import FPDFRecorder
 from .sign import Signature
 from .structure_tree import StructureTreeBuilder
@@ -259,11 +265,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
         self.links = {}  # array of Destination objects starting at index 1
         self.embedded_files = []  # array of PDFEmbeddedFile
-
-        # ImageCacheI:
-        self.images = {}  # map image identifiers to dicts describing the raster images
-        self.icc_profiles = {}  # map icc profiles (bytes) to their index (number)
-
+        self.image_cache = ImageCache()
         self.in_footer = False  # flag set while rendering footer
         # indicates that we are inside an .unbreakable() code block:
         self._in_unbreakable = False
@@ -273,7 +275,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._angle = 0  # used by deprecated method: rotate()
         self.xmp_metadata = None
         # Define the compression algorithm used when embedding images:
-        self.image_filter = "AUTO"
         self.page_duration = 0  # optional pages display duration, cf. add_page()
         self.page_transition = None  # optional pages transition, cf. add_page()
         self.allow_images_transparency = True
@@ -786,7 +787,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f"'{image_filter}' is not a supported image filter"
                 f" - Allowed values: {''.join(SUPPORTED_IMAGE_FILTERS)}"
             )
-        self.image_filter = image_filter
+        self.image_cache.image_filter = image_filter
         if image_filter == "JPXDecode":
             self._set_min_pdf_version("1.5")
 
@@ -3895,7 +3896,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 stacklevel=get_stack_level(),
             )
 
-        name, img, info = preload_image(self, name, dims)
+        name, img, info = preload_image(self.image_cache, name, dims)
         if isinstance(info, VectorImageInfo):
             return self._vector_image(
                 img, info, x, y, w, h, link, title, alt_text, keep_aspect_ratio
@@ -3950,7 +3951,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if not isinstance(x, Number):
             x = info.x_by_align(x, w, self, keep_aspect_ratio)
 
-        stream_content = stream_content_for_image(
+        stream_content = stream_content_for_raster_image(
             info, x, y, w, h, keep_aspect_ratio, scale=self.k, pdf_height_to_flip=self.h
         )
 
@@ -4051,9 +4052,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         return VectorImageInfo(rendered_width=w, rendered_height=h)
 
     def _downscale_image(self, name, img, info, w, h, scale):
+        images = self.image_cache.images
         width_in_pt, height_in_pt = w * scale, h * scale
         lowres_name = f"lowres-{name}"
-        lowres_info = self.images.get(lowres_name)
+        lowres_info = images.get(lowres_name)
         if (
             info["w"] > width_in_pt * self.oversized_images_ratio
             and info["h"] > height_in_pt * self.oversized_images_ratio
@@ -4087,7 +4089,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         # The existing low-res image is too small, we need a bigger low-res image:
                         info.update(
                             get_img_info(
-                                name, img or load_image(name), self.image_filter, dims
+                                name,
+                                img or load_image(name),
+                                self.image_cache.image_filter,
+                                dims,
                             )
                         )
                         LOGGER.debug(
@@ -4100,12 +4105,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 else:
                     info = RasterImageInfo(
                         get_img_info(
-                            name, img or load_image(name), self.image_filter, dims
+                            name,
+                            img or load_image(name),
+                            self.image_cache.image_filter,
+                            dims,
                         )
                     )
-                    info["i"] = len(self.images) + 1
+                    info["i"] = len(images) + 1
                     info["usages"] = 1
-                    self.images[lowres_name] = info
+                    images[lowres_name] = info
                     LOGGER.debug(
                         "OVERSIZED: Generated new low-res image with name=%s dims=%s id=%d",
                         lowres_name,
@@ -4119,7 +4127,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         elif lowres_info:
             # Embedding the same image in high-res after inserting it in low-res:
             lowres_info.update(info)
-            del self.images[name]
+            del images[name]
             info = lowres_info
         return info
 

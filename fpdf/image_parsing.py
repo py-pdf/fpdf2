@@ -21,7 +21,7 @@ except ImportError:
     Image = None
 
 from .errors import FPDFException
-from .image_datastructures import ImageCacheI, RasterImageInfo, VectorImageInfo
+from .image_datastructures import ImageCache, RasterImageInfo, VectorImageInfo
 from .svg import SVGObject
 
 
@@ -67,7 +67,7 @@ TIFFBitRevTable = [
 # fmt: on
 
 
-def preload_image(img_cache: ImageCacheI, name, dims=None):
+def preload_image(image_cache: ImageCache, name, dims=None):
     """
     Read an image and load it into memory.
     For raster images: Following this call, the image is inserted in `.images`,
@@ -86,11 +86,11 @@ def preload_image(img_cache: ImageCacheI, name, dims=None):
     """
     # Identify and load SVG data.
     if str(name).endswith(".svg"):
-        return get_svg_info(name, load_image(str(name)), img_cache=img_cache)
+        return get_svg_info(name, load_image(str(name)), image_cache=image_cache)
     if isinstance(name, bytes) and _is_svg(name.strip()):
-        return get_svg_info(name, io.BytesIO(name), img_cache=img_cache)
+        return get_svg_info(name, io.BytesIO(name), image_cache=image_cache)
     if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
-        return get_svg_info("vector_image", name, img_cache=img_cache)
+        return get_svg_info("vector_image", name, image_cache=image_cache)
 
     # Load raster data.
     if isinstance(name, str):
@@ -108,12 +108,12 @@ def preload_image(img_cache: ImageCacheI, name, dims=None):
         name, img = img_hash.hexdigest(), name
     else:
         name, img = str(name), name
-    info = img_cache.images.get(name)
+    info = image_cache.images.get(name)
     if info:
         info["usages"] += 1
     else:
-        info = get_img_info(name, img, img_cache.image_filter, dims)
-        info["i"] = len(img_cache.images) + 1
+        info = get_img_info(name, img, image_cache.image_filter, dims)
+        info["i"] = len(image_cache.images) + 1
         info["usages"] = 1
         info["iccp_i"] = None
         iccp = info.get("iccp")
@@ -122,14 +122,14 @@ def preload_image(img_cache: ImageCacheI, name, dims=None):
                 "ICC profile found for image %s - It will be inserted in the PDF document",
                 name,
             )
-            if iccp in img_cache.icc_profiles:
-                info["iccp_i"] = img_cache.icc_profiles[iccp]
+            if iccp in image_cache.icc_profiles:
+                info["iccp_i"] = image_cache.icc_profiles[iccp]
             else:
-                iccp_i = len(img_cache.icc_profiles)
-                img_cache.icc_profiles[iccp] = iccp_i
+                iccp_i = len(image_cache.icc_profiles)
+                image_cache.icc_profiles[iccp] = iccp_i
                 info["iccp_i"] = iccp_i
             info["iccp"] = None
-        img_cache.images[name] = info
+        image_cache.images[name] = info
     return name, img, info
 
 
@@ -188,8 +188,8 @@ def is_iccp_valid(iccp, filename):
     return True
 
 
-def get_svg_info(filename, img, img_cache):
-    svg = SVGObject(img.getvalue(), img_cache=img_cache)
+def get_svg_info(filename, img, image_cache):
+    svg = SVGObject(img.getvalue(), image_cache=image_cache)
     if svg.viewbox:
         _, _, w, h = svg.viewbox
     else:

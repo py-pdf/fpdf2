@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from typing import Dict
 
 from .enums import Align
@@ -82,11 +83,15 @@ class VectorImageInfo(ImageInfo):
     # pass
 
 
-# Interface implemented by FPDF:
-class ImageCacheI:
-    # map image identifiers to dicts describing the raster images
-    images: Dict[str, dict]
-    # map icc profiles (bytes) to their index (number)
-    icc_profiles: Dict[bytes, int]
+@dataclass
+class ImageCache:
+    # Map image identifiers to dicts describing the raster images
+    images: Dict[str, dict] = field(default_factory=dict)
+    # Map icc profiles (bytes) to their index (number)
+    icc_profiles: Dict[bytes, int] = field(default_factory=dict)
     # Must be one of SUPPORTED_IMAGE_FILTERS values
-    image_filter: str
+    image_filter: str = "AUTO"
+
+    def reset_usages(self):
+        for img in self.images.values():
+            img["usages"] = 0

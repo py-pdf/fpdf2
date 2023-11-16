@@ -31,8 +31,8 @@ from .drawing import (
     ClippingPath,
     Transform,
 )
-from .image_datastructures import ImageCacheI, VectorImageInfo
-from .output import stream_content_for_image
+from .image_datastructures import ImageCache, VectorImageInfo
+from .output import stream_content_for_raster_image
 
 LOGGER = logging.getLogger(__name__)
 
@@ -662,8 +662,8 @@ class SVGObject:
         with open(filename, "r", encoding=encoding) as svgfile:
             return cls(svgfile.read(), *args, **kwargs)
 
-    def __init__(self, svg_text, img_cache: ImageCacheI = None):
-        self.img_cache = img_cache  # Needed to render images
+    def __init__(self, svg_text, image_cache: ImageCache = None):
+        self.image_cache = image_cache  # Needed to render images
         self.cross_references = {}
 
         # disabling bandit rule as we use defusedxml:
@@ -852,7 +852,7 @@ class SVGObject:
             debug_stream (io.TextIO): the stream to which rendering debug info will be
                 written.
         """
-        self.img_cache = pdf  # Needed to render images
+        self.image_cache = pdf.image_cache  # Needed to render images
         _, _, path = self.transform_to_page_viewport(pdf)
 
         old_x, old_y = pdf.x, pdf.y
@@ -987,7 +987,11 @@ class SVGObject:
 
     @force_nodocument
     def build_image(self, image):
-        if xmlns("xlink", "href") not in image.attrib:
+        if xmlns("xlink", "href") in image.attrib:
+            href = image.attrib[xmlns("xlink", "href")]
+        else:
+            href = image.attrib.get("href")
+        if not href:
             raise ValueError("<image> is missing a href attribute")
         width = float(image.attrib.get("width", 0))
         height = float(image.attrib.get("height", 0))
@@ -1003,9 +1007,9 @@ class SVGObject:
             raise NotImplementedError(
                 '"transform" defined on <image> is currently not supported (but contributions are welcome!)'
             )
-        # Note: at this moment, self.img_cache is not set yet:
+        # Note: at this moment, self.image_cache is not set yet:
         return SVGImage(
-            href=image.attrib[xmlns("xlink", "href")],
+            href=href,
             x=float(image.attrib.get("x", "0")),
             y=float(image.attrib.get("y", "0")),
             width=width,
@@ -1035,23 +1039,23 @@ class SVGImage(NamedTuple):
 
     @force_nodocument
     def render(self, _gsd_registry, _style, last_item, initial_point):
-        img_cache = self.svg_obj and self.svg_obj.img_cache
-        if not img_cache:
+        image_cache = self.svg_obj and self.svg_obj.image_cache
+        if not image_cache:
             raise AssertionError(
-                "fpdf2 bug - Cannot render a raster image without a SVGObject.img_cache"
+                "fpdf2 bug - Cannot render a raster image without a SVGObject.image_cache"
             )
 
         # We lazy-import this function to circumvent a circular import problem:
         # pylint: disable=cyclic-import,import-outside-toplevel
         from .image_parsing import preload_image
 
-        _, _, info = preload_image(img_cache, self.href)
+        _, _, info = preload_image(image_cache, self.href)
         if isinstance(info, VectorImageInfo):
             raise NotImplementedError(
                 "Inserting .svg vector graphics in <image> tags is currently not supported (but contributions are welcome!)"
             )
         w, h = info.size_in_document_units(self.width, self.height)
-        stream_content = stream_content_for_image(
+        stream_content = stream_content_for_raster_image(
             info=info,
             x=self.x,
             y=self.y,

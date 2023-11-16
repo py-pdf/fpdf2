@@ -11,22 +11,26 @@
        by the relative path "../.." in the xlink:href attributes below: -->
 
   <!-- Image 1 : relative link to JPEG -->
-  <image x="100" y="100" width="300" height="300"
+  <image x="100" y="100" width="200" height="200"
          xlink:href="test/image/image_types/insert_images_insert_jpg.jpg"/>
 
   <!-- Image 2 : data:image/png;base64 -->
-  <image x="500" y="100" width="300" height="300"
+  <image x="350" y="100" width="200" height="200"
          xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEU0OkArMjhobHEoPUPFEBIuO0L+AAC2FBZ2JyuNICOfGx7xAwTjCAlCNTvVDA1aLzQ3COjMAAAAVUlEQVQI12NgwAaCDSA0888GCItjn0szWGBJTVoGSCjWs8TleQCQYV95evdxkFT8Kpe0PLDi5WfKd4LUsN5zS1sKFolt8bwAZrCaGqNYJAgFDEpQAAAzmxafI4vZWwAAAABJRU5ErkJggg=="/>
 
-  <!-- Image 3 : no height set -->
+  <!-- Image 3 : embedded without the xlink namespace (SVG 2) -->
+  <image x="600" y="100" width="200" height="200"
+         href="test/image/image_types/insert_images_insert_jpg.jpg"/>
+
+  <!-- Image 4 : no height set -->
   <image x="100" y="450" width="200"
          xlink:href="test/image/image_types/insert_images_insert_jpg.jpg"/>
 
-  <!-- Image 4 : no width set -->
+  <!-- Image 5 : no width set -->
   <image x="325" y="450" height="200"
          xlink:href="test/image/image_types/insert_images_insert_jpg.jpg"/>
 
-  <!-- Image 4 : no height nor width set -->
+  <!-- Image 6 : no height nor width set -->
   <image x="500" y="450"
          xlink:href="test/image/image_types/insert_images_insert_jpg.jpg"/>
 
