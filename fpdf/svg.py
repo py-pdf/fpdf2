@@ -342,21 +342,14 @@ class ShapeBuilder:
         if clipping_path:
             path = ClippingPath()
         apply_styles(path, tag)
-
         return path
 
     @classmethod
     def rect(cls, tag, clipping_path: bool = False):
         """Convert an SVG <rect> into a PDF path."""
         # svg rect is wound clockwise
-        if "x" in tag.attrib:
-            x = resolve_length(tag.attrib["x"])
-        else:
-            x = 0
-        if "y" in tag.attrib:
-            y = resolve_length(tag.attrib["y"])
-        else:
-            y = 0
+        x = resolve_length(tag.attrib.get("x", "0"))
+        y = resolve_length(tag.attrib.get("y", "0"))
         width = tag.attrib.get("width", "0")
         if width.endswith("%"):
             width = Percent(width[:-1])
@@ -397,7 +390,6 @@ class ShapeBuilder:
             ry = height / 2
 
         path = cls.new_path(tag, clipping_path)
-
         path.rectangle(x, y, width, height, rx, ry)
         return path
 
@@ -409,7 +401,6 @@ class ShapeBuilder:
         r = float(tag.attrib["r"])
 
         path = cls.new_path(tag, clipping_path)
-
         path.circle(cx, cy, r)
         return path
 
@@ -447,34 +438,24 @@ class ShapeBuilder:
         y2 = float(tag.attrib["y2"])
 
         path = cls.new_path(tag)
-
         path.move_to(x1, y1)
         path.line_to(x2, y2)
-
         return path
 
     @classmethod
     def polyline(cls, tag):
         """Convert an SVG <polyline> into a PDF path."""
-        points = tag.attrib["points"]
-
         path = cls.new_path(tag)
-
-        points = "M" + points
+        points = "M" + tag.attrib["points"]
         svg_path_converter(path, points)
-
         return path
 
     @classmethod
     def polygon(cls, tag, clipping_path: bool = False):
         """Convert an SVG <polygon> into a PDF path."""
-        points = tag.attrib["points"]
-
         path = cls.new_path(tag, clipping_path)
-
-        points = "M" + points + "Z"
+        points = "M" + tag.attrib["points"] + "Z"
         svg_path_converter(path, points)
-
         return path
 
 
