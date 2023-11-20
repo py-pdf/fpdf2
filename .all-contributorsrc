@@ -1067,7 +1067,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/146605?v=4",
       "profile": "https://github.com/mjasperse",
       "contributions": [
-        "code"
+        "code",
+        "bug"
       ]
     }
   ],
