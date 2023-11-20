@@ -929,7 +929,10 @@ class SVGObject:
             elif child.tag in xmlns_lookup("svg", "image"):
                 pdf_group.add_item(self.build_image(child))
             else:
-                LOGGER.debug("Unsupported SVG tag: <%s>", child.tag)
+                LOGGER.warning(
+                    "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
+                    child.tag,
+                )
 
         self.update_xref(group.attrib.get("id"), pdf_group)
 
@@ -980,16 +983,16 @@ class SVGObject:
         width = float(image.attrib.get("width", 0))
         height = float(image.attrib.get("height", 0))
         if "preserveAspectRatio" in image.attrib:
-            raise NotImplementedError(
-                '"preserveAspectRatio" defined on <image> is currently not supported (but contributions are welcome!)'
+            LOGGER.warning(
+                '"preserveAspectRatio" defined on <image> is currently not supported (contributions are welcome to add support for it)'
             )
         if "style" in image.attrib:
-            raise NotImplementedError(
-                '"style" defined on <image> is currently not supported (but contributions are welcome!)'
+            LOGGER.warning(
+                '"style" defined on <image> is currently not supported (contributions are welcome to add support for it)'
             )
         if "transform" in image.attrib:
-            raise NotImplementedError(
-                '"transform" defined on <image> is currently not supported (but contributions are welcome!)'
+            LOGGER.warning(
+                '"transform" defined on <image> is currently not supported (contributions are welcome to add support for it)'
             )
         # Note: at this moment, self.image_cache is not set yet:
         svg_image = SVGImage(
@@ -1037,9 +1040,10 @@ class SVGImage(NamedTuple):
 
         _, _, info = preload_image(image_cache, self.href)
         if isinstance(info, VectorImageInfo):
-            raise NotImplementedError(
-                "Inserting .svg vector graphics in <image> tags is currently not supported (but contributions are welcome!)"
+            LOGGER.warning(
+                "Inserting .svg vector graphics in <image> tags is currently not supported (contributions are welcome to add support for it)"
             )
+            return "", last_item, initial_point
         w, h = info.size_in_document_units(self.width, self.height)
         stream_content = stream_content_for_raster_image(
             info=info,
