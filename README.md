@@ -263,6 +263,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/matt-b8"><img src="https://avatars.githubusercontent.com/u/76793516?v=4?s=100" width="100px;" alt="Matt"/><br /><sub><b>Matt</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=matt-b8" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/matipos2"><img src="https://avatars.githubusercontent.com/u/143452309?v=4?s=100" width="100px;" alt="matipos2"/><br /><sub><b>matipos2</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=matipos2" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/lry12138"><img src="https://avatars.githubusercontent.com/u/17554717?v=4?s=100" width="100px;" alt="lry12138"/><br /><sub><b>lry12138</b></sub></a><br /><a href="#translation-lry12138" title="Translation">🌍</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/mjasperse"><img src="https://avatars.githubusercontent.com/u/146605?v=4?s=100" width="100px;" alt="Martijn Jasperse"/><br /><sub><b>Martijn Jasperse</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=mjasperse" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
