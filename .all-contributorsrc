@@ -1070,6 +1070,15 @@
         "bug",
         "code"
       ]
+    },
+    {
+      "login": "demiurgepy",
+      "name": "demiurgepy",
+      "avatar_url": "https://avatars.githubusercontent.com/u/101707731?v=4",
+      "profile": "https://github.com/demiurgepy",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
