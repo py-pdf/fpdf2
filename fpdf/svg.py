@@ -874,11 +874,13 @@ class SVGObject:
         for child in defs:
             if child.tag in xmlns_lookup("svg", "g"):
                 self.build_group(child)
-            if child.tag in xmlns_lookup("svg", "path"):
+            elif child.tag in xmlns_lookup("svg", "path"):
                 self.build_path(child)
+            elif child.tag in xmlns_lookup("svg", "image"):
+                self.build_image(child)
             elif child.tag in shape_tags:
                 self.build_shape(child)
-            if child.tag in xmlns_lookup("svg", "clipPath"):
+            elif child.tag in xmlns_lookup("svg", "clipPath"):
                 try:
                     clip_id = child.attrib["id"]
                 except KeyError:
@@ -987,10 +989,11 @@ class SVGObject:
 
     @force_nodocument
     def build_image(self, image):
-        if xmlns("xlink", "href") in image.attrib:
-            href = image.attrib[xmlns("xlink", "href")]
-        else:
-            href = image.attrib.get("href")
+        href = None
+        for key in xmlns_lookup("xlink", "href"):
+            if key in image.attrib:
+                href = image.attrib[key]
+                break
         if not href:
             raise ValueError("<image> is missing a href attribute")
         width = float(image.attrib.get("width", 0))
@@ -1008,7 +1011,7 @@ class SVGObject:
                 '"transform" defined on <image> is currently not supported (but contributions are welcome!)'
             )
         # Note: at this moment, self.image_cache is not set yet:
-        return SVGImage(
+        svg_image = SVGImage(
             href=href,
             x=float(image.attrib.get("x", "0")),
             y=float(image.attrib.get("y", "0")),
@@ -1016,6 +1019,8 @@ class SVGObject:
             height=height,
             svg_obj=self,
         )
+        self.update_xref(image.attrib.get("id"), svg_image)
+        return svg_image
 
 
 class SVGImage(NamedTuple):

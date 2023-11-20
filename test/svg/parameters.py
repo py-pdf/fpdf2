@@ -771,6 +771,10 @@ test_svg_sources = (
     ),
     pytest.param(svgfile("clip_path.svg"), id="clip path - issue #858"),
     pytest.param(svgfile("embedded-raster-images.svg"), id="Raster <image> tests"),
+    pytest.param(
+        svgfile("use-image-def.svg"),
+        id="Use xlink:href to insert an <image> from <defs>",
+    ),
 )
 
 svg_path_edge_cases = (
