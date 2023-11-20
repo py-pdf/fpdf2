@@ -1060,6 +1060,15 @@
       "contributions": [
         "translation"
       ]
+    },
+    {
+      "login": "mjasperse",
+      "name": "Martijn Jasperse",
+      "avatar_url": "https://avatars.githubusercontent.com/u/146605?v=4",
+      "profile": "https://github.com/mjasperse",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
