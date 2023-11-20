@@ -288,7 +288,7 @@ Result:
 ## Adding links to cells
 
 ```python
-                    row.cell(..., link="https://py-pdf.github.io/fpdf2/")
+row.cell(..., link="https://py-pdf.github.io/fpdf2/")
 row.cell(..., link=pdf.add_link(page=1))
 ```
 

@@ -464,6 +464,7 @@ class Table:
                     output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
                     wrapmode=self._wrapmode,
                     padding=padding,
+                    link=cell.link,
                     **kwargs,
                 )
 

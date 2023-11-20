@@ -8,6 +8,7 @@ Gives direct access to some classes defined in submodules:
 * `fpdf.enums.XPos`
 * `fpdf.enums.YPos`
 * `fpdf.errors.FPDFException`
+* `fpdf.fonts.FontFace`
 * `fpdf.fpdf.TitleStyle`
 * `fpdf.prefs.ViewerPreferences`
 * `fpdf.template.Template`
@@ -24,6 +25,7 @@ from .fpdf import (
     FPDF_FONT_DIR as _FPDF_FONT_DIR,
     FPDF_VERSION as _FPDF_VERSION,
 )
+from .fonts import FontFace
 from .html import HTMLMixin, HTML2FPDF
 from .prefs import ViewerPreferences
 from .template import Template, FlexTemplate
@@ -51,6 +53,7 @@ __all__ = [
     # Classes:
     "FPDF",
     "FPDFException",
+    "FontFace",
     "Align",
     "TextMode",
     "XPos",
