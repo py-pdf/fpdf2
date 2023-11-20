@@ -283,7 +283,7 @@ class COLRFont(Type3Font):
             glyph.draw(pen)
             path.style.fill_color = self.get_color(layer.colorID)
             path.style.stroke_color = self.get_color(layer.colorID)
-            gc.add_item(item=path, _copy=False)
+            gc.add_item(item=path, clone=False)
         return gc
 
     def draw_glyph_colrv1(self, glyph_name):
@@ -318,7 +318,7 @@ class COLRFont(Type3Font):
                     parent=group,
                     ctm=ctm,
                 )
-            parent.add_item(item=group, _copy=False)
+            parent.add_item(item=group, clone=False)
             return parent, target_path
 
         if paint.Format in (
@@ -403,8 +403,8 @@ class COLRFont(Type3Font):
                 ctm=Transform.identity(),
             )
             if surface_path is not None:
-                group.add_item(item=surface_path, _copy=False)
-            parent.add_item(item=group, _copy=False)
+                group.add_item(item=surface_path, clone=False)
+            parent.add_item(item=group, clone=False)
             return parent, None
 
         if paint.Format == PaintFormat.PaintColrGlyph:
@@ -419,7 +419,7 @@ class COLRFont(Type3Font):
 
             group = GraphicsContext()
             self.draw_colrv1_paint(paint=rec.Paint, parent=group, ctm=ctm)
-            parent.add_item(item=group, _copy=False)
+            parent.add_item(item=group, clone=False)
             return parent, target_path
 
         if paint.Format in (
@@ -465,7 +465,7 @@ class COLRFont(Type3Font):
                 ctm=ctm,
             )
             if backdrop_path is not None:
-                backdrop_node.add_item(item=backdrop_path, _copy=False)
+                backdrop_node.add_item(item=backdrop_path, clone=False)
 
             source_node = GraphicsContext()
             _, source_path = self.draw_colrv1_paint(
@@ -474,20 +474,20 @@ class COLRFont(Type3Font):
                 ctm=ctm,
             )
             if source_path is not None:
-                source_node.add_item(item=source_path, _copy=False)
+                source_node.add_item(item=source_path, clone=False)
 
             composite_type, composite_mode = self.get_composite_mode(
                 paint.CompositeMode
             )
             if composite_type == "Blend":
                 source_node.style.blend_mode = composite_mode
-                parent.add_item(item=backdrop_node, _copy=False)
-                parent.add_item(item=source_node, _copy=False)
+                parent.add_item(item=backdrop_node, clone=False)
+                parent.add_item(item=source_node, clone=False)
             elif composite_type == "Compositing":
                 composite_node = PaintComposite(
                     backdrop=backdrop_node, source=source_node, operation=composite_mode
                 )
-                parent.add_item(item=composite_node, _copy=False)
+                parent.add_item(item=composite_node, clone=False)
             else:
                 raise ValueError(""" Composite operation not supported """)
             return parent, None
