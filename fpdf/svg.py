@@ -852,6 +852,8 @@ class SVGObject:
                 self.build_path(child)
             elif child.tag in xmlns_lookup("svg", "image"):
                 self.build_image(child)
+            elif child.tag in xmlns_lookup("svg", "text"):
+                self.build_text(child)
             elif child.tag in shape_tags:
                 self.build_shape(child)
             elif child.tag in xmlns_lookup("svg", "clipPath"):
@@ -926,6 +928,8 @@ class SVGObject:
                 pdf_group.add_item(self.build_xref(child), False)
             elif child.tag in xmlns_lookup("svg", "image"):
                 pdf_group.add_item(self.build_image(child), False)
+            elif child.tag in xmlns_lookup("svg", "text"):
+                pdf_group.add_item(self.build_text(child), False)
             else:
                 LOGGER.warning(
                     "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
@@ -983,6 +987,43 @@ class SVGObject:
         if clipping_path:
             clipping_path_id = re.search(r"url\((\#\w+)\)", clipping_path)
             stylable.clipping_path = self.cross_references[clipping_path_id[1]]
+
+    @force_nodocument
+    def build_text(self, text):
+        if "dx" in text.attrib or "dy" in text.attrib:
+            raise NotImplementedError(
+                '"dx" / "dy" defined on <text> is currently not supported (but contributions are welcome!)'
+            )
+        if "lengthAdjust" in text.attrib:
+            raise NotImplementedError(
+                '"lengthAdjust" defined on <text> is currently not supported (but contributions are welcome!)'
+            )
+        if "rotate" in text.attrib:
+            raise NotImplementedError(
+                '"rotate" defined on <text> is currently not supported (but contributions are welcome!)'
+            )
+        if "style" in text.attrib:
+            raise NotImplementedError(
+                '"style" defined on <text> is currently not supported (but contributions are welcome!)'
+            )
+        if "textLength" in text.attrib:
+            raise NotImplementedError(
+                '"textLength" defined on <text> is currently not supported (but contributions are welcome!)'
+            )
+        if "transform" in text.attrib:
+            raise NotImplementedError(
+                '"transform" defined on <text> is currently not supported (but contributions are welcome!)'
+            )
+        font_family = text.attrib.get("font-family")
+        font_size = text.attrib.get("font-size")
+        # TODO: reuse code from line_break & text_region modules.
+        # We could either:
+        # 1. handle text regions in this module (svg), with a dedicated SVGText class.
+        # 2. handle text regions in the drawing module, maybe by defining a PaintedPath.text() method.
+        #    This may be the best approach, as we would benefit from the global transformation performed in SVGObject.transform_to_rect_viewport()
+        svg_text = None
+        self.update_xref(text.attrib.get("id"), svg_text)
+        return svg_text
 
     @force_nodocument
     def build_image(self, image):
