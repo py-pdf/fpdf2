@@ -8,6 +8,7 @@ import functools
 import gc
 import hashlib
 import linecache
+import logging
 import os
 import pathlib
 import shutil
@@ -332,6 +333,11 @@ def pytest_addoption(parser):
         action="store_true",
         help="Trace main memory allocations differences during the whole execution",
     )
+
+
+def pytest_configure():
+    "Disable some loggers."
+    logging.getLogger("fpdf.svg").propagate = False
 
 
 @pytest.fixture(scope="module", autouse=True)

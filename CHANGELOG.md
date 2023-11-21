@@ -36,7 +36,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Changed
 * the public `.images`, `.icc_profiles` & `.image_filter` attributes of `FPDF` instances have been moved inside a nested `FPDF.image_cache` attribute
 * the `fpdf.svg` module now produces `WARNING` log messages for unsupported SVG tags & attributes.
-  If those logs annoy you, you can suppress them: `logging.getLogger("fpdf.svg").level = logging.ERROR`
+  If those logs annoy you, you can suppress them: `logging.getLogger("fpdf.svg").propagate = False`
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): If cell styles are provided for cells in heading rows, combine the cell style as an override with the overall heading style.
 
 ## [2.7.6] - 2023-10-11
