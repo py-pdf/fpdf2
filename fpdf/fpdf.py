@@ -4063,6 +4063,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         text: Optional[str] = None,
         img: Optional[str] = None,
         img_fill_width: bool = False,
+        link: Optional[str] = None,
         ncols: int = 1,
         gutter: float = 10,
         balance: bool = False,
@@ -4074,24 +4075,32 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         wrapmode: WrapMode = WrapMode.WORD,
         skip_leading_spaces: bool = False,
     ):
-        """Establish a layout with multiple columns to fill with text.
+        """Establish a layout with multiple columns to fill with text and/or images.
         Args:
-            text (str, optional): A first piece of text to insert.
-            ncols (int, optional): the number of columns to create. (Default: 1).
-            gutter (float, optional): The distance between the columns. (Default: 10).
-            balance: (bool, optional): Specify whether multiple columns should end at approximately
+            text (str; optional): A first piece of text to insert. Text with varying formatting can be added
+                with the `.write()` method of the instance.
+            img (str, bytes, io.BytesIO, PIL.Image.Image; optional)
+                a file path or URL, bytes or io.BytesIO representing raw image data, or PIL Image instance
+                to be inserted into the column. If both `text` and `img` arguments are given, the text will
+                be inserted first. Images can also be added with the `.image()` method.
+            link (str, int; optional): Link, either an URL or an integer returned by `FPDF.add_link`, defining
+                an internal link to a page. This link will apply only to any `text` or `img` arguments supplied,
+                and not to content added with `.write()` or `.image()`.
+            ncols (int; optional): the number of columns to create. (Default: 1).
+            gutter (float; optional): The distance between the columns. (Default: 10).
+            balance: (bool; optional): Specify whether multiple columns should end at approximately
                 the same height, if they don't fill the page. (Default: False)
-            text_align (Align or str, optional): The alignment of the text within the region.
+            text_align (Align or str; optional): The alignment of the text within the region.
                 (Default: "LEFT")
-            line_height (float, optional): A multiplier relative to the font size changing the
+            line_height (float; optional): A multiplier relative to the font size changing the
                 vertical space occupied by a line of text. (Default: 1.0).
-            l_margin (float, optional): Override the current left page margin.
-            r_margin (float, optional): Override the current right page margin.
-            print_sh (bool, optional): Treat a soft-hyphen (\\u00ad) as a printable character,
+            l_margin (float; optional): Override the current left page margin.
+            r_margin (float; optional): Override the current right page margin.
+            print_sh (bool; optional): Treat a soft-hyphen (\\u00ad) as a printable character,
                 instead of a line breaking opportunity. (Default: False)
-            wrapmode (fpdf.enums.WrapMode, optional): "WORD" for word based line wrapping,
+            wrapmode (fpdf.enums.WrapMode; optional): "WORD" for word based line wrapping,
                 "CHAR" for character based line wrapping. (Default: "WORD")
-            skip_leading_spaces (bool, optional): On each line, any space characters at the
+            skip_leading_spaces (bool; optional): On each line, any space characters at the
                 beginning will be skipped if True. (Default: False)
         """
         return TextColumns(

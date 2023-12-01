@@ -83,7 +83,13 @@ def test_table_with_images(tmp_path):
             row = table.row()
             for j, datum in enumerate(data_row):
                 if j == 2 and i > 0:
-                    row.cell(img=datum)
+                    img_cell = row.cell()
+                    img_cell.image(
+                        name=datum,
+                        height=pdf.font_size * 2,
+                        keep_aspect_ratio=True,
+                        align="CENTER",
+                    )
                 else:
                     row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_with_images.pdf", tmp_path)
@@ -132,6 +138,7 @@ def test_table_with_images_and_text():
                         row.cell(datum.name, img=datum)
                     else:
                         row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_images_and_text.pdf", tmp_path)
 
 
 def test_table_with_qrcode(tmp_path):  # issue 771
