@@ -2243,9 +2243,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         text,
         w=1,
         h=1,
-        name=None,
         flags=DEFAULT_ANNOT_FLAGS,
-        default_appearance=False,
     ):
         """
         Puts a free text annotation on a rectangular area of the page.
@@ -2256,9 +2254,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             text (str): text to display
             w (float): optional width of the link rectangle
             h (float): optional height of the link rectangle
-            name (fpdf.enums.AnnotationName, str): optional icon that shall be used in displaying the annotation
             flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
         """
+        if not self.font_family:
+            raise FPDFException("No font set, you need to call set_font() beforehand")
         annotation = AnnotationDict(
             "FreeText",
             x * self.k,
@@ -2266,9 +2265,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             w * self.k,
             h * self.k,
             contents=text,
-            name=AnnotationName.coerce(name) if name else None,
             flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
-            default_appearance=default_appearance,
+            default_appearance=f"({self.draw_color.serialize()} /F{self.current_font.i} {self.font_size_pt:.2f} Tf)",
         )
         self.pages[self.page].annots.append(annotation)
         return annotation

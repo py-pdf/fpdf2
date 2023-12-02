@@ -72,7 +72,7 @@ class AnnotationMixin:
             else None
         )
         self.f_s = file_spec
-        self.d_a = "(0 1 0 rg /Helv 12 Tf)" if default_appearance else None
+        self.d_a = default_appearance
 
 
 class PDFAnnotation(AnnotationMixin, PDFObject):
