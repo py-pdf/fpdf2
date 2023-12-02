@@ -153,3 +153,20 @@ def test_ink_annotation(tmp_path):
         contents="Hello world!",
     )
     assert_pdf_equal(pdf, HERE / "ink_annotation.pdf", tmp_path)
+
+
+def test_free_text_annotation(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=24)
+    pdf.text(x=50, y=50, text="Some text.")
+    pdf.set_font_size(12)
+    pdf.set_draw_color(255, 0, 0)
+    pdf.free_text_annotation(
+        x=100,
+        y=130,
+        text="This is a free text annotation.",
+        w=150,
+        h=15,
+    )
+    assert_pdf_equal(pdf, HERE / "free_text_annotation.pdf", tmp_path)
