@@ -26,6 +26,32 @@ pdf.output("text_annotation.pdf")
 
 Method documentation: [`FPDF.text_annotation`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_annotation)
 
+## Free Text Annotations
+
+They are rendered this way by Adobe Acrobat Reader:
+
+![Screenshot of text annotation rendered by Adobe Acrobat Reader](free-text-annotation.png)
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Helvetica",size=24)
+pdf.text(x=60, y=140, text="Some text.")
+pdf.set_draw_color(255,0,0)
+pdf.set_font_size(12)
+pdf.free_text_annotation(
+    x=100,
+    y=130,
+    text="This is a free text annotation.",
+    w=150,
+    h=15,
+)
+pdf.output("free_text_annotation.pdf")
+```
+Method documentation: [`FPDF.free_text_annotation`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.free_text_annotation)
+
 
 ## Highlights ##
 
