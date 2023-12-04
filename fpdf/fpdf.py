@@ -263,7 +263,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.page = 0  # current page number
         self.pages = {}  # array of PDFPage objects starting at index 1
         self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
-        self.patterns = {} # map pattern fill objects 
+        self.patterns = {}  # map pattern fill objects
         self.links = {}  # array of Destination objects starting at index 1
         self.embedded_files = []  # array of PDFEmbeddedFile
         self.image_cache = ImageCache()
@@ -1020,7 +1020,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.fill_color = convert_to_device_color(r, g, b)
         if self.page > 0:
             self._out(self.fill_color.serialize().lower())
-    
+
     def set_fill_pattern(self):
         """
         Defines the pattern used for all filling operations (filled rectangles and cell backgrounds).
@@ -2686,7 +2686,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if fill_color is not None:
             self.set_fill_color(fill_color)
         if fill_pattern is not None:
-            self.set_fill_pattern(fill_pattern)
+            self.set_fill_pattern()
         if text_color is not None:
             self.set_text_color(text_color)
         if dash_pattern is not None:
