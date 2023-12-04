@@ -1085,6 +1085,7 @@ class GraphicsStyle:
         "intersection_rule",
         "fill_color",
         "fill_opacity",
+        "fill_pattern",
         "stroke_color",
         "stroke_opacity",
         "blend_mode",
@@ -1149,6 +1150,7 @@ class GraphicsStyle:
         self.intersection_rule = self.INHERIT
         self.fill_color = self.INHERIT
         self.fill_opacity = self.INHERIT
+        self.fill_pattern = self.INHERIT
         self.stroke_color = self.INHERIT
         self.stroke_opacity = self.INHERIT
         self.blend_mode = self.INHERIT
@@ -1263,6 +1265,17 @@ class GraphicsStyle:
             _check_range(new)
 
         super().__setattr__(PDFStyleKeys.FILL_ALPHA.value, new)
+
+    @property
+    def fill_pattern(self):
+        """The desired fill pattern for this path/group."""
+        pass
+
+    @fill_pattern.setter
+    def fill_pattern(self, new):
+        """The desired fill pattern for this path/group."""
+        pass
+          
 
     @property
     def stroke_color(self):
@@ -4206,3 +4219,17 @@ class GraphicsContext:
             pfx,
             _push_stack=_push_stack,
         )
+    
+class TilingPattern:
+    def __init__(self, pattern_type=1, paint_type=1, tiling_type=1, bbox=[0, 0, 10, 10], x_step= 20, y_step=20, resources=None, matrix=None):
+        self.pattern_type = pattern_type  
+        self.paint_type = paint_type      
+        self.tiling_type = tiling_type    
+        self.bbox = bbox                  
+        self.x_step = x_step              
+        self.y_step = y_step              
+        self.resources = resources if resources is not None else {}  
+        self.matrix = matrix if matrix is not None else [1, 0, 0, 1, 0, 0]  
+
+    def serialize(self):
+        return "/Pattern cs /P1 scn" # place holder to be fixed
