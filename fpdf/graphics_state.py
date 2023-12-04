@@ -6,7 +6,7 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-from .drawing import DeviceGray
+from .drawing import DeviceGray, TilingPattern
 from .enums import CharVPos, TextEmphasis, TextMode
 from .fonts import FontFace
 
@@ -26,6 +26,7 @@ class GraphicsStateMixin:
     DEFAULT_DRAW_COLOR = DeviceGray(0)
     DEFAULT_FILL_COLOR = DeviceGray(0)
     DEFAULT_TEXT_COLOR = DeviceGray(0)
+    DEFAULT_FILL_PATTERN = TilingPattern()
 
     def __init__(self, *args, **kwargs):
         self.__statestack = [
