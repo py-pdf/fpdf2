@@ -2238,26 +2238,38 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     @check_page
     def free_text_annotation(
         self,
-        x,
-        y,
         text,
-        w=1,
-        h=1,
+        x=None,
+        y=None,
+        w=None,
+        h=None,
         flags=DEFAULT_ANNOT_FLAGS,
     ):
         """
         Puts a free text annotation on a rectangular area of the page.
 
         Args:
-            x (float): horizontal position (from the left) to the left side of the link rectangle
-            y (float): vertical position (from the top) to the bottom side of the link rectangle
             text (str): text to display
-            w (float): optional width of the link rectangle
-            h (float): optional height of the link rectangle
+            x (float): optional horizontal position (from the left) to the left side of the link rectangle.
+                Default value: None, meaning the current abscissa is used
+            y (float): vertical position (from the top) to the bottom side of the link rectangle.
+                Default value: None, meaning the current ordinate is used
+            w (float): optional width of the link rectangle. Default value: None, meaning the length of text in user unit
+            h (float): optional height of the link rectangle. Default value: None, meaning an height equal
+                to the current font size
             flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
+        if x is None:
+            x = self.x
+        if y is None:
+            y = self.y
+        if h is None:
+            h = self.font_size
+        if w is None:
+            w = self.get_string_width(text, normalized=True, markdown=False)
+
         annotation = AnnotationDict(
             "FreeText",
             x * self.k,
