@@ -1267,16 +1267,6 @@ class GraphicsStyle:
         super().__setattr__(PDFStyleKeys.FILL_ALPHA.value, new)
 
     @property
-    def fill_pattern(self):
-        """The desired fill pattern for this path/group."""
-        pass
-
-    @fill_pattern.setter
-    def fill_pattern(self, new):
-        """The desired fill pattern for this path/group."""
-        pass
-
-    @property
     def stroke_color(self):
         """
         The desired stroke color for this path/group.
@@ -4226,7 +4216,7 @@ class TilingPattern:
         pattern_type=1,
         paint_type=1,
         tiling_type=1,
-        bbox=[0, 0, 10, 10],
+        bbox=None,
         x_step=20,
         y_step=20,
         resources=None,
@@ -4235,11 +4225,11 @@ class TilingPattern:
         self.pattern_type = pattern_type
         self.paint_type = paint_type
         self.tiling_type = tiling_type
-        self.bbox = bbox
+        self.bbox = bbox if bbox is not None else [0, 0, 10, 10]
         self.x_step = x_step
         self.y_step = y_step
         self.resources = resources if resources is not None else {}
         self.matrix = matrix if matrix is not None else [1, 0, 0, 1, 0, 0]
-
-    def serialize(self):
+    @staticmethod # remove once the serialize is fully implememented
+    def serialize():
         return "/Pattern cs /P1 scn"  # place holder to be fixed
