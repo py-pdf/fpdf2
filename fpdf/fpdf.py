@@ -1400,7 +1400,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                             self.set_fill_color(*pattern.paint_type)
                             self.ellipse(pattern_x, pattern_y, pattern_width, pattern_height, 'F')
                         self.ellipse(pattern_x, pattern_y, pattern_width, pattern_height, 'D')
-                    if pattern.pattern_type == "squares":  
+                    elif pattern.pattern_type == "squares":  
                         if pattern.paint_type is not None: 
                             self.set_fill_color(*pattern.paint_type)
                             self.rect(pattern_x, pattern_y, pattern_width, pattern_height, 'F')
