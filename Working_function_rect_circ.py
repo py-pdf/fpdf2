@@ -10,7 +10,9 @@ pdf.set_fill_color(255, 205, 0)  # Setting the color to yellow
 
 # Draw the outer rectangle
 outer_rect_x, outer_rect_y, outer_rect_w, outer_rect_h = 10, 10, 50, 30
-pdf.ellipse(outer_rect_x, outer_rect_y, outer_rect_w, outer_rect_h, 'F')  # Fill the outer rectangle
+pdf.ellipse(
+    outer_rect_x, outer_rect_y, outer_rect_w, outer_rect_h, "F"
+)  # Fill the outer rectangle
 
 # Pattern properties
 pattern_width, pattern_height = 5, 10  # Width and height of the small rectangles
@@ -26,10 +28,10 @@ for i in range(cols):
         if (i + j) % 2 == 0:  # Check for alternate placement
             x = outer_rect_x + i * pattern_width
             y = outer_rect_y + j * pattern_height
-            pdf.rect(x, y, pattern_width, pattern_height, 'F')
-            
+            pdf.rect(x, y, pattern_width, pattern_height, "F")
+
 pdf.set_draw_color(0, 0, 0)  # Black border
 pdf.ellipse(outer_rect_x, outer_rect_y, outer_rect_w, outer_rect_h)
 
 # Output the PDF
-pdf.output('pattern_filled_rectangle.pdf')
+pdf.output("pattern_filled_rectangle.pdf")
