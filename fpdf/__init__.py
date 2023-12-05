@@ -15,7 +15,7 @@ Gives direct access to some classes defined in submodules:
 * `fpdf.template.FlexTemplate`
 """
 
-import sys
+import warnings, sys
 
 from .enums import Align, TextMode, XPos, YPos
 from .errors import FPDFException
@@ -30,6 +30,12 @@ from .html import HTMLMixin, HTML2FPDF
 from .prefs import ViewerPreferences
 from .template import Template, FlexTemplate
 from .deprecation import WarnOnDeprecatedModuleAttributes
+
+try:
+    import .ttfonts  # this module only exists in PyFPDF, it has been removed in fpdf2 since v2.5.7
+    warnings.warn("You have both PyFPDF & fpdf2 installed - To only keep fpdf2 run: pip uninstall --yes pypdf && pip install --upgrade fpdf2")
+except ImportError:
+    pass  # no PyFPDF installation detected
 
 FPDF_VERSION = _FPDF_VERSION
 "Current fpdf2 version, also available as `__version__`"

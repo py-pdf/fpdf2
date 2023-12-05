@@ -18,8 +18,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.7.7] - Not released yet
 ### Added
-* basic support for `<image>` elements in SVG vector graphics inserted
-* SVG importing now supports clipping paths, and `defs` tags anywhere in the SVG file
+* Basic support for `<image>` elements in SVG vector graphics inserted
+* SVG importing now supports clipping paths, and `<defs>` tags anywhere in the SVG file
 * [`FPDF.fonts.FontFace`](https://py-pdf.github.io/fpdf2/fpdf/fonts.html#fpdf.fonts.FontFace): Now has a static `combine` method that allows overriding a default FontFace (e.g. for specific cells in a table). Unspecified properties of the override FontFace retain the values of the default.
 * [`TextColumns()`](https://py-pdf.github.io/fpdf2/TextColumns.html) can now have images inserted (both raster and vector).
 * [`TextColumns()`](https://py-pdf.github.io/fpdf2/TextColumns.html) can now advance to the next column with the new `new_column()` method or a FORM_FEED character (`\u000c`) in the text.
