@@ -2903,6 +2903,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 stacklevel=get_stack_level(),
             )
             border = 1
+        elif isinstance(border, str) and len(border) == 4:
+            border = 1
 
         if padding is None:
             padding = Padding(0, 0, 0, 0)
@@ -3593,11 +3595,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         prev_font_style, prev_underline = self.font_style, self.underline
         total_height = 0
-
-        if not border:
-            border = ""
-        elif border == 1:
-            border = "LTRB"
 
         text_lines = []
         multi_line_break = MultiLineBreak(
