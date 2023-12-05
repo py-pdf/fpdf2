@@ -32,8 +32,8 @@ from .template import Template, FlexTemplate
 from .deprecation import WarnOnDeprecatedModuleAttributes
 
 try:
-    import .ttfonts  # this module only exists in PyFPDF, it has been removed in fpdf2 since v2.5.7
-    warnings.warn("You have both PyFPDF & fpdf2 installed - To only keep fpdf2 run: pip uninstall --yes pypdf && pip install --upgrade fpdf2")
+    from . import ttfonts  # this module only exists in PyFPDF, it has been removed in fpdf2 since v2.5.7
+    warnings.warn("You have both PyFPDF & fpdf2 installed. Both packages cannot be installed at the same time as they share the same module namespace. To only keep fpdf2, run: pip uninstall --yes pypdf && pip install --upgrade fpdf2")
 except ImportError:
     pass  # no PyFPDF installation detected
 
