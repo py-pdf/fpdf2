@@ -263,6 +263,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.page = 0  # current page number
         self.pages = {}  # array of PDFPage objects starting at index 1
         self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
+        self.patterns = {}  # map pattern fill objects
         self.links = {}  # array of Destination objects starting at index 1
         self.embedded_files = []  # array of PDFEmbeddedFile
         self.image_cache = ImageCache()
@@ -311,6 +312,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
+        self.fill_pattern = self.DEFAULT_FILL_PATTERN
         self.text_color = self.DEFAULT_TEXT_COLOR
         self.page_background = None
         self.dash_pattern = dict(dash=0, gap=0, phase=0)
@@ -1018,6 +1020,24 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.fill_color = convert_to_device_color(r, g, b)
         if self.page > 0:
             self._out(self.fill_color.serialize().lower())
+
+    def set_fill_pattern(self):
+        """
+        Defines the pattern used for all filling operations (filled rectangles and cell backgrounds).
+        It can be expressed in RGB components or grey scale.
+        The method can be called before the first page is created and the value is retained from page to page.
+
+        Args:
+            r (int, tuple, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): if `g` and `b` are given, this indicates the red component.
+                Else, this indicates the grey level. The value must be between 0 and 255.
+            g (int): green component (between 0 and 255)
+            b (int): blue component (between 0 and 255)
+        """
+        print("Hello")
+        print(self.fill_pattern)
+        if self.page > 0:
+            print(self.fill_pattern.serialize().lower())
+            self._out(self.fill_pattern.serialize())
 
     def set_text_color(self, r, g=-1, b=-1):
         """
@@ -2581,6 +2601,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         line_width=None,
         draw_color=None,
         fill_color=None,
+        fill_pattern=None,
         text_color=None,
         dash_pattern=None,
         **kwargs,
@@ -2664,6 +2685,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.set_draw_color(draw_color)
         if fill_color is not None:
             self.set_fill_color(fill_color)
+        if fill_pattern is not None:
+            self.set_fill_pattern()
         if text_color is not None:
             self.set_text_color(text_color)
         if dash_pattern is not None:
