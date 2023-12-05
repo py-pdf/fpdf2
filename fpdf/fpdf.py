@@ -1046,7 +1046,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             matrix=matrix
         )
 
-        
+        # Add the pattern to a patterns dictionary in the PDF document
+        pattern_id = len(self.patterns) + 1  
+        self.patterns[pattern_id] = pattern
+        #print(self.patterns)
+        # Set this pattern as the current fill pattern
+        self.current_fill_pattern = pattern_id
+        #print(self.current_fill_pattern)
 
 
     def set_text_color(self, r, g=-1, b=-1):
