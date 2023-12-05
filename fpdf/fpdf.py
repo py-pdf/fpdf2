@@ -1405,7 +1405,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                             self.set_fill_color(*pattern.paint_type)
                             self.rect(pattern_x, pattern_y, pattern_width, pattern_height, 'F')
                         self.rect(pattern_x, pattern_y, pattern_width, pattern_height, 'D')
-                     
+                    else:
+                        raise ValueError('Not defined pattern type')
+                    
     @check_page
     def rect(self, x, y, w, h, style=None, round_corners=False, corner_radius=0):
         """
