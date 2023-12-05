@@ -1446,18 +1446,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
             corner_radius: Optional radius of the corners
         """
-
+        
         style = RenderStyle.coerce(style)
 
+        
+        if style == RenderStyle.P:
 
-print("these are the patterns", self.patterns)
-print("current pattern,", self.current_fill_pattern)
-       if style == RenderStyle.P:
            # Check if a current pattern is set and apply it
            if self.current_fill_pattern is not None:
-               self.apply_fill_pattern(self.current_fill_pattern, x, y, w, h)
-               return None
                
+               self.apply_fill_pattern(self.current_fill_pattern, x, y, w, h)
+               
+               return None
+
         if round_corners is not False:
             self._draw_rounded_rect(x, y, w, h, style, round_corners, corner_radius)
         else:
