@@ -3671,7 +3671,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             # pretend we started at the top of the text block on the new page.
             # cf. test_multi_cell_table_with_automatic_page_break
             prev_y = self.y
-        if text_line and text_line.trailing_nl and new_y in (YPos.LAST, YPos.NEXT):
+
+        last_line = text_lines[-1]
+        if last_line and last_line.trailing_nl and new_y in (YPos.LAST, YPos.NEXT):
             # The line renderer can't handle trailing newlines in the text.
             self.ln()
 
