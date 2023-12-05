@@ -1,9 +1,11 @@
 import logging
 from pathlib import Path
+import pandas as pd
 
 import pytest
 
 from fpdf import FPDF, FPDFException
+from fpdf.adapters.table_pandas import FPDF_pandas
 from fpdf.drawing import DeviceRGB
 from fpdf.fonts import FontFace
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
@@ -36,6 +38,13 @@ MULTI_HEADING_TABLE_DATA = (
     ("2", "3", "4", "5", "6", "7"),
     ("3", "4", "5", "6", "7", "8"),
 )
+
+MULTI_LABEL_TABLE_DATA = {
+    ("tall", "fat"): {"color": "red", "number": 7, "happy": False},
+    ("short", "fat"): {"color": "green", "number": 8, "happy": True},
+    ("tall", "lean"): {"color": "blue", "number": 9, "happy": True},
+    ("short", "lean"): {"color": "yellow", "number": 15, "happy": False},
+}
 
 
 def test_table_simple(tmp_path):
@@ -85,6 +94,17 @@ def test_table_with_syntactic_sugar(tmp_path):
         table.row(TABLE_DATA[3])
         table.row(TABLE_DATA[4])
     assert_pdf_equal(pdf, HERE / "table_simple.pdf", tmp_path)
+
+def test_pandas_multi_label(tmp_path):
+    for df, i in zip(
+        [pd.DataFrame(MULTI_LABEL_TABLE_DATA), pd.DataFrame(MULTI_LABEL_TABLE_DATA).T],
+        ["heading", "index"],
+    ):
+        pdf = FPDF_pandas()
+        pdf.add_page()
+        pdf.set_font("Times", size=10)
+        pdf.dataframe(df, borders_layout="MINIMAL", text_align="CENTER", width=160)
+        assert_pdf_equal(pdf, HERE / f"table_pandas_multi{i}.pdf", tmp_path)
 
 
 def test_table_with_fixed_col_width(tmp_path):
