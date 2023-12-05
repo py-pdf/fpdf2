@@ -155,7 +155,7 @@ def test_ink_annotation(tmp_path):
     assert_pdf_equal(pdf, HERE / "ink_annotation.pdf", tmp_path)
 
 
-def test_free_text_annotation(tmp_path):
+def test_free_text_annotation_all_parameters(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=24)
@@ -169,4 +169,24 @@ def test_free_text_annotation(tmp_path):
         w=150,
         h=15,
     )
-    assert_pdf_equal(pdf, HERE / "free_text_annotation.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "free_text_annotation_all_parameters.pdf", tmp_path)
+
+
+def test_free_text_annotation_text_parameter(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=24)
+    pdf.text(x=50, y=50, text="Some text.")
+    pdf.set_font_size(12)
+    pdf.free_text_annotation(text="This is a free text annotation.")
+    assert_pdf_equal(pdf, HERE / "free_text_annotation_text_parameter.pdf", tmp_path)
+
+
+def test_free_text_annotation_width_parameter(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=24)
+    pdf.text(x=50, y=50, text="Some text.")
+    pdf.set_font_size(12)
+    pdf.free_text_annotation(text="This is a free text annotation.", w=80)
+    assert_pdf_equal(pdf, HERE / "free_text_annotation_width_parameter.pdf", tmp_path)
