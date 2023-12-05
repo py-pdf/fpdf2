@@ -3630,7 +3630,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             page_break_required = self.will_page_break(h + padding.bottom)
             if page_break_required:
                 page_break_triggered = True
-                self.add_page()
+                x = self.x
+                self.add_page(same = True)
+                self.x = x
                 self.y += padding.top
 
             if box_required and (text_line_index == 0 or page_break_required):
