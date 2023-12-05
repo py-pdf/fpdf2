@@ -1375,6 +1375,37 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.line(x1, y1, x2, y2)
         self.set_dash_pattern()
 
+    def apply_fill_pattern(self, pattern_id, x, y, w, h):
+        pattern = self.patterns.get(pattern_id)
+        if pattern:
+            
+            # Use the pattern's bbox to determine the size of each tile
+            pattern_width, pattern_height = pattern.bbox[2], pattern.bbox[3]
+
+            # Use the pattern's x_step and y_step for spacing
+            x_step, y_step = pattern.x_step, pattern.y_step
+
+            # Calculate how many times the pattern will repeat
+            x_repeat = int(w / x_step)
+            y_repeat = int(h / y_step)
+
+            # Loop through and draw the pattern
+            for i in range(x_repeat):
+                for j in range(y_repeat):
+                    # Calculate the top-left corner of the current pattern tile
+                    pattern_x = x + i * x_step
+                    pattern_y = y + j * y_step
+                    if pattern.pattern_type == "circles": 
+                        if pattern.paint_type is not None: 
+                            self.set_fill_color(*pattern.paint_type)
+                            self.ellipse(pattern_x, pattern_y, pattern_width, pattern_height, 'F')
+                        self.ellipse(pattern_x, pattern_y, pattern_width, pattern_height, 'D')
+                    if pattern.pattern_type == "squares":  
+                        if pattern.paint_type is not None: 
+                            self.set_fill_color(*pattern.paint_type)
+                            self.rect(pattern_x, pattern_y, pattern_width, pattern_height, 'F')
+                        self.rect(pattern_x, pattern_y, pattern_width, pattern_height, 'D')
+                     
     @check_page
     def rect(self, x, y, w, h, style=None, round_corners=False, corner_radius=0):
         """
