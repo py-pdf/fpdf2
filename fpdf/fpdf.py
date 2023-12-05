@@ -106,6 +106,7 @@ from .output import (
     PDFPage,
     ZOOM_CONFIGS,
     stream_content_for_raster_image,
+    PDFPattern
 )
 from .recorder import FPDFRecorder
 from .sign import Signature
@@ -1021,7 +1022,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if self.page > 0:
             self._out(self.fill_color.serialize().lower())
 
-    def set_fill_pattern(self):
+    def set_fill_pattern(self, bbox, x_step, y_step, pattern_type, paint_type=None, tiling_type=1, resources=None, matrix=None):
         """
         Defines the pattern used for all filling operations (filled rectangles and cell backgrounds).
         It can be expressed in RGB components or grey scale.
@@ -1033,11 +1034,20 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
-        print("Hello")
-        print(self.fill_pattern)
-        if self.page > 0:
-            print(self.fill_pattern.serialize().lower())
-            self._out(self.fill_pattern.serialize())
+        #print("Hello")
+        pattern = PDFPattern(
+            pattern_type= pattern_type,  # Assuming tiling pattern is always used
+            paint_type=paint_type,
+            tiling_type=tiling_type,
+            bbox=bbox,
+            x_step=x_step,
+            y_step=y_step,
+            resources=resources,
+            matrix=matrix
+        )
+
+        
+
 
     def set_text_color(self, r, g=-1, b=-1):
         """
