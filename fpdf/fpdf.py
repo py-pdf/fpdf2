@@ -1055,9 +1055,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         #print(self.current_fill_pattern)
 
     def set_current_pattern(self, pattern_id):
+      
        if pattern_id in self.patterns:
+
            self.current_fill_pattern = pattern_id
+
        else:
+        
            raise ValueError(f"Pattern ID '{pattern_id}' not found in patterns.")
 
     def set_text_color(self, r, g=-1, b=-1):
