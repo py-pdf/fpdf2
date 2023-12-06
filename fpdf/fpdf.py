@@ -3666,6 +3666,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 border=0,  # already rendered
                 fill=False,  # already rendered
                 link=link,
+                padding=Padding(0, padding.right, 0, padding.left),
             )
             total_height += h
             if not is_last_line and align == Align.X:
