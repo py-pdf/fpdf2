@@ -3560,8 +3560,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         if h is None:
             h = self.font_size
-        if max_line_height and h > max_line_height:
-            h = max_line_height
 
         # If width is 0, set width to available width between margins
         if w == 0:
@@ -3626,6 +3624,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 )
             ]
 
+        if max_line_height is None or len(text_lines) == 1:
+            line_height = h
+        else:
+            line_height = min(h, max_line_height)
+
         box_required = fill or border
         page_break_triggered = False
 
@@ -3642,9 +3645,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 # estimate how many cells can fit on this page
                 top_gap = self.y + padding.top
                 bottom_gap = padding.bottom + self.b_margin
-                lines_before_break = int((self.h - top_gap - bottom_gap) / h)
+                lines_before_break = int((self.h - top_gap - bottom_gap) // line_height)
                 # check how many cells should be rendered
                 num_lines = min(lines_before_break, len(text_lines) - text_line_index)
+                box_height = max(
+                    h - text_line_index * line_height, num_lines * line_height
+                )
                 # render the box
                 x = self.x - (w / 2 if align == Align.X else 0)
                 draw_box_borders(
@@ -3652,15 +3658,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     x - padding.left,
                     self.y - padding.top,
                     x + w + padding.right,
-                    self.y + num_lines * h + padding.bottom,
+                    self.y + box_height + padding.bottom,
                     border,
                     self.fill_color if fill else None,
                 )
-
             is_last_line = text_line_index == len(text_lines) - 1
             self._render_styled_text_line(
                 text_line,
-                h=h,
+                h=line_height,
                 new_x=new_x if is_last_line else XPos.LEFT,
                 new_y=new_y if is_last_line else YPos.NEXT,
                 border=0,  # already rendered
@@ -3668,10 +3673,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 link=link,
                 padding=Padding(0, padding.right, 0, padding.left),
             )
-            total_height += h
+            total_height += line_height
             if not is_last_line and align == Align.X:
                 # prevent cumulative shift to the left
                 self.x = prev_x
+
+        if total_height < h:
+            # Move to the bottom of the multi_cell
+            if new_y == YPos.NEXT:
+                self.y += h - total_height
+            total_height = h
 
         if page_break_triggered and new_y == YPos.TOP:
             # When a page jump is performed and the requested y is TOP,
