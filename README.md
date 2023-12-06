@@ -105,7 +105,7 @@ This library relies on community interactions. Please consider sharing a post ab
 
 - [Documentation Home](https://py-pdf.github.io/fpdf2/)
 - Tutorial in several languages: [English](https://py-pdf.github.io/fpdf2/Tutorial.html) - [Deutsch](https://py-pdf.github.io/fpdf2/Tutorial-de.html) - [español](https://py-pdf.github.io/fpdf2/Tutorial-es.html) - [हिंदी](https://py-pdf.github.io/fpdf2/Tutorial-hi.html) - [português](https://py-pdf.github.io/fpdf2/Tutorial-pt.html) - [Русский](https://py-pdf.github.io/fpdf2/Tutorial-ru.html) - [Italian](https://py-pdf.github.io/fpdf2/Tutorial-it.html) - [français](https://py-pdf.github.io/fpdf2/Tutorial-fr.html) - [Ελληνικά](https://py-pdf.github.io/fpdf2/Tutorial-gr.html) - [עברית](https://py-pdf.github.io/fpdf2/Tutorial-he.html) - [简体中文](https://py-pdf.github.io/fpdf2/Tutorial-zh.html) - [বাংলা](https://py-pdf.github.io/fpdf2/Tutorial-bn.html) - [ភាសខ្មែរ](https://py-pdf.github.io/fpdf2/Tutorial-km.md) - [日本語](https://py-pdf.github.io/fpdf2/Tutorial-ja.html)
-- Release notes: [CHANGELOG.md](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)
+- Release notes: [CHANGELOG.md](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md) - [Nederlands](https://py-pdf.github.io/fpdf2/Tutorial-nl.html)
 - A series of blog posts: [fpdf2 tag @ ludochaordic](https://chezsoi.org/lucas/blog/tag/fpdf2.html)
 
 You can also have a look at the `tests/`, they're great usage examples!
