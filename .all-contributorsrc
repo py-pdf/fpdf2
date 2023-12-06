@@ -1088,6 +1088,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "Polderrider",
+      "name": "Polderrider",
+      "avatar_url": "https://avatars.githubusercontent.com/u/51285379?v=4",
+      "profile": "https://github.com/Polderrider",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
