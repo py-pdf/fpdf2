@@ -119,7 +119,7 @@ nav:
   - 'מדריך בעברית':                     'Tutorial-he.md'
   - '简体中文教程':                   'Tutorial-zh.md'
   - '日本語チュートリアル':           'Tutorial-ja.md'
-  - 'Handleiding in Nederlands':    'Tutorial-nl.md'
+  - 'Handleiding in Dutch':    'Tutorial-nl.md'
 - 'Page Layout':
   - 'Page Format and Orientation':    'PageFormatAndOrientation.md'
   - 'Margins':                        'Margins.md'
