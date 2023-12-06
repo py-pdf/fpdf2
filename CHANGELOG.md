@@ -24,7 +24,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * [`TextColumns()`](https://py-pdf.github.io/fpdf2/TextColumns.html) can now have images inserted (both raster and vector).
 * [`TextColumns()`](https://py-pdf.github.io/fpdf2/TextColumns.html) can now advance to the next column with the new `new_column()` method or a FORM_FEED character (`\u000c`) in the text.
 * Added support for Free Text annotations: [documentation](https://py-pdf.github.io/fpdf2/Annotations.html#free-text-annotations)
-* Tutorial in Dutch: [Handleiding](https://py-pdf.github.io/fpdf2/Tutorial-nl.md)
+* Tutorial in Dutch: [Handleiding](https://py-pdf.github.io/fpdf2/Tutorial-nl.md) - thanks to @Polderrider
 ### Fixed
 * Links over text in tables were broken in release 2.7.6, this is now fixed
 * `FPDF.set_font_color()` raised a `TypeError` when used in tables
