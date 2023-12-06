@@ -3559,6 +3559,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         if h is None:
             h = self.font_size
+        if max_line_height and h > max_line_height:
+            h = max_line_height
 
         # If width is 0, set width to available width between margins
         if w == 0:
@@ -3664,6 +3666,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 fill=False,  # already rendered
                 link=link,
             )
+            total_height += h
             if not is_last_line and align == Align.X:
                 # prevent cumulative shift to the left
                 self.x = prev_x
