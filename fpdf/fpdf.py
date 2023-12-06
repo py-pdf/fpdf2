@@ -2903,7 +2903,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 stacklevel=get_stack_level(),
             )
             border = 1
-        elif isinstance(border, str) and set(border).issuperset('LTRB'):
+        elif isinstance(border, str) and set(border).issuperset("LTRB"):
             border = 1
 
         if padding is None:
@@ -3633,7 +3633,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if page_break_required:
                 page_break_triggered = True
                 x = self.x
-                self.add_page(same = True)
+                self.add_page(same=True)
                 self.x = x
                 self.y += padding.top
 
