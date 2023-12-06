@@ -2903,7 +2903,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 stacklevel=get_stack_level(),
             )
             border = 1
-        elif isinstance(border, str) and len(border) == 4:
+        elif isinstance(border, str) and set(border).issuperset('LTRB'):
             border = 1
 
         if padding is None:

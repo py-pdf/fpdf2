@@ -690,7 +690,7 @@ def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
     y2 *= k
     y1 *= k
 
-    if isinstance(border, str) and len(border) == 4:
+    if isinstance(border, str) and set(border).issuperset('LTRB'):
         border = 1
 
     if fill_color:
