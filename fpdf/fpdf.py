@@ -1015,8 +1015,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
-        self.fill_color = convert_to_device_color(r, g, b)
-        if self.page > 0:
+        fill_color = convert_to_device_color(r, g, b)
+        if self.page > 0 and fill_color != self.fill_color:
+            self.fill_color = fill_color
             self._out(self.fill_color.serialize().lower())
 
     def set_text_color(self, r, g=-1, b=-1):
@@ -4858,10 +4859,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if font_face.color is not None and font_face.color != self.text_color:
             self.set_text_color(font_face.color)
         prev_fill_color = self.fill_color
-        if font_face.fill_color is not None and font_face.fill_color != self.fill_color:
+        if font_face.fill_color is not None:
             self.set_fill_color(font_face.fill_color)
         yield
-        if font_face.fill_color is not None and font_face.fill_color != prev_fill_color:
+        if font_face.fill_color is not None:
             self.set_fill_color(prev_fill_color)
         self.text_color = prev_text_color
         self.set_font(*prev_font)
