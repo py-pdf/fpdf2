@@ -267,6 +267,9 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/demiurgepy"><img src="https://avatars.githubusercontent.com/u/101707731?v=4?s=100" width="100px;" alt="demiurgepy"/><br /><sub><b>demiurgepy</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Ademiurgepy" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/MarekT0v"><img src="https://avatars.githubusercontent.com/u/147847966?v=4?s=100" width="100px;" alt="Marek Tovlin"/><br /><sub><b>Marek Tovlin</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=MarekT0v" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Polderrider"><img src="https://avatars.githubusercontent.com/u/51285379?v=4?s=100" width="100px;" alt="Polderrider"/><br /><sub><b>Polderrider</b></sub></a><br /><a href="#translation-Polderrider" title="Translation">🌍</a></td>
+    </tr>
   </tbody>
 </table>
 
