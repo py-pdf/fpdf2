@@ -44,8 +44,7 @@ met een lege string (of een combinatie daarvan). Houd er rekening mee dat de let
 punten, geen millimeters (of een andere gebruikerseenheid); het is de enige uitzondering.
 De andere ingebouwde lettertypen zijn `Times`, `Courier`, `Symbol` en `ZapfDingbats`.
 
-We kunnen nu een cel afdrukken met [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell).Een cel is een rechthoekig gebied,
-eventueel omkaderd, dat wat tekst bevat. Het wordt weergegeven op de huidige positie. 
+We kunnen nu een cel afdrukken met [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell). Een cel is een rechthoekig gebied, eventueel omkaderd, dat wat tekst bevat. Het wordt weergegeven op de huidige positie. 
 We specificeren de afmetingen, de tekst (gecentreerd of uitgelijnd), of er randen moeten worden getekend 
 en waar de huidige positie daarnaheen beweegt (naar rechts, onder of naar het begin van de volgende regel). 
 Om een frame toe te voegen, doen we dit:
@@ -60,13 +59,6 @@ zou doen:
 ```python
 pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 ```
-
-**Remark**: the line break can also be done with . This
-method allows to specify in addition the height of the break.
-
-Finally, the document is closed and saved under the provided file path using
-. Without any parameter provided, `output()`
-returns the PDF `bytearray` buffer.
 
 **Let op!**: het regeleinde kan ook met [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). Dit
 methode maakt het mogelijk om bovendien de hoogte van de pauze te specificeren.
@@ -127,23 +119,6 @@ illustreert het gebruik van kleuren.
 
 [Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-The [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) method allows determining
-the length of a string in the current font, which is used here to calculate the
-position and the width of the frame surrounding the title. Then colors are set
-(via [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color),
-[set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) and 
-[set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) and the thickness of the line is set
-to 1 mm (against 0.2 by default) with
-[set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Finally, we output the cell (the
-last parameter to true indicates that the background must be filled).
-
-The method used to print the paragraphs is [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). 
-Text is justified by default.
-Each time a line reaches the right extremity of the cell or a carriage return character (`\n`) is met,
-a line break is issued and a new cell automatically created under the current one.
-An automatic break is performed at the location of the nearest space or soft-hyphen (`\u00ad`) character before the right limit.
-A soft-hyphen will be replaced by a normal hyphen when triggering a line break, and ignored otherwise.
-
 Met de methode [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) kunt u bepalen
 de lengte van een string in het huidige lettertype, die hier wordt gebruikt om de
 positie en de breedte van het kader rond de titel. Vervolgens worden de kleuren ingesteld
@@ -183,16 +158,12 @@ Dit voorbeeld is een variant van het vorige en laat zien hoe u de tekst over mee
 Het belangrijkste verschil met de vorige tutorial is het gebruik van de 
 [`text_columns`](fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column) methode. 
 Het verzamelt alle tekst, mogelijk in stappen, en verdeelt deze over het gevraagde aantal kolommen, waarbij 
-indien nodig automatisch pagina-einden worden ingevoegd. Houd er rekening mee dat, hoewel de instantie `TextColumns`
-actief is als contextmanager, tekststijlen en andere lettertype-eigenschappen kunnen worden gewijzigd. 
-Deze wijzigingen zullen in de context worden opgenomen. Zodra het wordt gesloten, worden de vorige instellingen 
-hersteld.
+indien nodig automatisch pagina-einden worden ingevoegd. Houd er rekening mee dat, hoewel de instantie `TextColumns` actief is als contextmanager, tekststijlen en andere lettertype-eigenschappen kunnen worden gewijzigd. Deze wijzigingen zullen in de context worden opgenomen. Zodra het wordt gesloten, worden de vorige instellingen hersteld.
 
 
 ## Tuto 5 - Tabellen maken ##
 
-In deze tutorial wordt uitgelegd hoe u twee verschillende tabellen kunt maken,
-  om te demonstreren wat met enkele eenvoudige aanpassingen kan worden bereikt.
+In deze tutorial wordt uitgelegd hoe u twee verschillende tabellen kunt maken,  om te demonstreren wat met enkele eenvoudige aanpassingen kan worden bereikt.
 
 ```python
 {% include "../tutorial/tuto5.py" %}
@@ -242,10 +213,9 @@ niet kunnen rechtvaardigen wij doen met de
 
 Op de eerste pagina van het voorbeeld gebruikten we
  [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
- for this purpose. The beginning of the sentence is written in regular style
- text, then using the
+Voor dit doeleinde. Het begin van de zin is in normale stijl geschreven  tekst en gebruik vervolgens de
  [set_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font)
- method, we switched to underline and finished the sentence.
+methode schakelden we over op onderstrepen en maakten de zin af.
 
 Om een interne link toe te voegen die naar de tweede pagina verwijst, hebben we de
  [add_link()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link)
@@ -253,9 +223,7 @@ methode, die een klikbaar gebied creëert dat we "link" noemden en dat naar een 
 in het document verwijst.
 
 Om de externe link te maken met behulp van een afbeelding, hebben we gebruikt
- [image()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
-. De methode heeft de mogelijkheid om een link als een van zijn argumenten door te geven. 
-De link kan zowel intern als extern zijn.
+ [image()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). De methode heeft de mogelijkheid om een link als een van zijn argumenten door te geven. De link kan zowel intern als extern zijn.
 
 Als alternatief is een andere optie om de lettertypestijl te wijzigen en links toe te voegen 
 het gebruik van de methode `write_html()`. Het is een html-parser waarmee u tekst kunt toevoegen, 
