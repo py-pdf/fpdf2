@@ -16,7 +16,10 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.7.7] - Not released yet
+## [2.7.8] - Not released yet
+
+
+## [2.7.7] - 2023-12-10
 ### Added
 * Basic support for `<image>` elements in SVG vector graphics inserted
 * SVG importing now supports clipping paths, and `<defs>` tags anywhere in the SVG file - thanks to @afriedman412 - cf. [#968](https://github.com/py-pdf/fpdf2/pull/968)
