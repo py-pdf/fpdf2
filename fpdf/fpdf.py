@@ -111,7 +111,7 @@ from .recorder import FPDFRecorder
 from .sign import Signature
 from .structure_tree import StructureTreeBuilder
 from .svg import Percent, SVGObject
-from .syntax import DestinationXYZ, PDFDate
+from .syntax import DestinationXYZ, PDFArray, PDFDate
 from .table import Table
 from .text_region import TextRegionMixin, TextColumns
 from .util import get_scale_factor, Padding
@@ -3381,6 +3381,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             return
         self._out = lambda *args, **kwargs: None
         prev_page, prev_x, prev_y = self.page, self.x, self.y
+        annots = PDFArray(self.pages[self.page].annots)
         self._push_local_stack()
         try:
             yield
@@ -3390,6 +3391,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             for p in range(prev_page + 1, self.page + 1):
                 del self.pages[p]
             self.page = prev_page
+            self.pages[self.page].annots = annots
             self.set_xy(prev_x, prev_y)
             # restore writing function:
             del self._out
