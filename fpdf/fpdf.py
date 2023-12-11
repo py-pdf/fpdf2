@@ -1016,9 +1016,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             b (int): blue component (between 0 and 255)
         """
         fill_color = convert_to_device_color(r, g, b)
-        if self.page > 0 and fill_color != self.fill_color:
+        if fill_color != self.fill_color:
             self.fill_color = fill_color
-            self._out(self.fill_color.serialize().lower())
+            if self.page > 0:
+                self._out(self.fill_color.serialize().lower())
 
     def set_text_color(self, r, g=-1, b=-1):
         """
