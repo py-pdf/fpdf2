@@ -443,6 +443,11 @@ class HTML2FPDF(HTMLParser):
                 self.set_style(tag, True)
         if tag == "a":
             self.href = attrs["href"]
+            try:
+                page = int(self.href)
+                self.href = self.pdf.add_link(page=page)
+            except ValueError:
+                pass
         if tag == "br":
             self._write_paragraph("\n")
         if tag == "p":
