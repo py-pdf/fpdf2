@@ -999,9 +999,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
-        self.draw_color = convert_to_device_color(r, g, b)
-        if self.page > 0:
-            self._out(self.draw_color.serialize().upper())
+        draw_color = convert_to_device_color(r, g, b)
+        if draw_color != self.draw_color:
+            self.draw_color = draw_color
+            if self.page > 0:
+                self._out(self.draw_color.serialize().upper())
 
     def set_fill_color(self, r, g=-1, b=-1):
         """
@@ -1068,9 +1070,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             width (float): the width in user unit
         """
-        self.line_width = width
-        if self.page > 0:
-            self._out(f"{width * self.k:.2f} w")
+        if width != self.line_width:
+            self.line_width = width
+            if self.page > 0:
+                self._out(f"{width * self.k:.2f} w")
 
     def set_page_background(self, background):
         """
