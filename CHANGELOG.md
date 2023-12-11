@@ -19,6 +19,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.7.8] - Not released yet
 ### Fixed
 * When adding a link on a table cell, an extra link was added erroneously on the left. Moreover, now `FPDF._disable_writing()` properly disable link writing.
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now handles linking directly to other pages - thanks to @mjasperse
+### Changed
+* Refactored [`FPDF.multi_cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) to generate fewer PDF component objects - thanks to @mjasperse
 
 ## [2.7.7] - 2023-12-10
 ### Added

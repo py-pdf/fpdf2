@@ -78,7 +78,7 @@ pdf.output("html.pdf")
 * `<b>`, `<i>`, `<u>`: bold, italic, underline
 * `<font>`: (and `face`, `size`, `color` attributes)
 * `<center>` for aligning
-* `<a>`: links (and `href` attribute)
+* `<a>`: links (and `href` attribute) to a file, URL, or page number.
 * `<pre>` & `<code>` tags
 * `<img>`: images (and `src`, `width`, `height` attributes)
 * `<ol>`, `<ul>`, `<li>`: ordered, unordered and list items (can be nested)
