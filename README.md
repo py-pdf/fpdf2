@@ -110,7 +110,7 @@ This library relies on community interactions. Please consider sharing a post ab
 
 You can also have a look at the `tests/`, they're great usage examples!
 
-## Developement
+## Development
 
 Please check the [dedicated documentation page](https://py-pdf.github.io/fpdf2/Development.html).
 
