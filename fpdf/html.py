@@ -312,12 +312,18 @@ class HTML2FPDF(HTMLParser):
         self.td_th = None  # becomes a dict of attributes when processing <td>/<th> tags
         # "inserted" is a special attribute indicating that a cell has be inserted in self.table_row
 
-        _old_default_colors: dict[str, tuple[int, int, int]] = {"link": (0, 0, 255)}
+        _old_default_colors: dict[str, tuple[int, int, int]] = {
+            "link": (0, 0, 255),
+            "li": (190, 0, 0),
+        }
         if not element_colors:
             element_colors = {}
 
         self.link_color: tuple[int, int, int] = element_colors.get(
             "link", _old_default_colors["link"]
+        )
+        self.li_color: tuple[int, int, int] = element_colors.get(
+            "li", _old_default_colors["li"]
         )
 
     def _new_paragraph(
@@ -518,7 +524,7 @@ class HTML2FPDF(HTMLParser):
             self._new_paragraph()
         if tag == "li":
             self._ln(2)
-            self.set_text_color(190, 0, 0)
+            self.set_text_color(*self.li_color)
             if self.bullet:
                 bullet = self.bullet[self.indent - 1]
             else:
