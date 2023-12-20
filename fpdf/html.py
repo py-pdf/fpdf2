@@ -5,7 +5,7 @@ The contents of this module are internal to fpdf2, and not part of the public AP
 They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
-
+from __future__ import annotations
 from html.parser import HTMLParser
 import logging, re, warnings
 
@@ -244,6 +244,7 @@ class HTML2FPDF(HTMLParser):
         heading_sizes=None,
         pre_code_font="courier",
         warn_on_tags_not_matching=True,
+        element_colors: dict[str, tuple[int, int, int]] | None = None,
         **_,
     ):
         """
@@ -310,6 +311,14 @@ class HTML2FPDF(HTMLParser):
         self.tr = None  # becomes a dict of attributes when processing <tr> tags
         self.td_th = None  # becomes a dict of attributes when processing <td>/<th> tags
         # "inserted" is a special attribute indicating that a cell has be inserted in self.table_row
+
+        _old_default_colors: dict[str, tuple[int, int, int]] = {"link": (0, 0, 255)}
+        if not element_colors:
+            element_colors = {}
+
+        self.link_color: tuple[int, int, int] = element_colors.get(
+            "link", _old_default_colors["link"]
+        )
 
     def _new_paragraph(
         self, align=None, line_height=1.0, top_margin=0, bottom_margin=0
@@ -781,7 +790,7 @@ class HTML2FPDF(HTMLParser):
 
     def put_link(self, text):
         # Put a hyperlink
-        self.set_text_color(0, 0, 255)
+        self.set_text_color(*self.link_color)
         self.set_style("u", True)
         self._write_paragraph(text, link=self.href)
         self.set_style("u", False)

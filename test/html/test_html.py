@@ -525,3 +525,11 @@ def test_html_ln_outside_p(tmp_path):
     """
     )
     assert_pdf_equal(pdf, HERE / "html_ln_outside_p.pdf", tmp_path)
+
+
+def test_html_link_color(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    text = '<a href="www.example.com">foo</a>'
+    pdf.write_html(text, element_colors={"link": (255, 0, 0)})
+    assert_pdf_equal(pdf, HERE / "html_link_color.pdf", tmp_path)
