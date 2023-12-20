@@ -316,6 +316,7 @@ class HTML2FPDF(HTMLParser):
             "link": (0, 0, 255),
             "li": (190, 0, 0),
             "blockquote": (100, 0, 45),
+            "headings": (150, 0, 0),
         }
         if not element_colors:
             element_colors = {}
@@ -328,6 +329,10 @@ class HTML2FPDF(HTMLParser):
         )
         self.blockquote_color: tuple[int, int, int] = element_colors.get(
             "blockquote", _old_default_colors["blockquote"]
+        )
+
+        self.headings_color: tuple[int, int, int] = element_colors.get(
+            "headings", _old_default_colors["headings"]
         )
 
     def _new_paragraph(
@@ -498,7 +503,9 @@ class HTML2FPDF(HTMLParser):
                 bottom_margin=self.heading_below * hsize,
             )
             color = (
-                color_as_decimal(attrs["color"]) if "color" in attrs else (150, 0, 0)
+                color_as_decimal(attrs["color"])
+                if "color" in attrs
+                else self.headings_color
             )
             self.set_text_color(*color)
             self.set_font(size=hsize_pt)
