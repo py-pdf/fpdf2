@@ -19,7 +19,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.7.8] - Not released yet
 ### Fixed
 * When adding a link on a table cell, an extra link was added erroneously on the left. Moreover, now `FPDF._disable_writing()` properly disable link writing.
-
+### Added
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now accepts a dictionary of colors for HTML elements (link, blockquote, li and headings)
 ## [2.7.7] - 2023-12-10
 ### Added
 * Basic support for `<image>` elements in SVG vector graphics inserted
