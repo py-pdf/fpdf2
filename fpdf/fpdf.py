@@ -409,6 +409,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             heading_sizes (dict): font size per heading level names ("h1", "h2"...)
             pre_code_font (str): font to use for <pre> & <code> blocks
             warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags
+            element_colors (dict): dictionary of colors for elements. Possible keys:
+            * "link" sets the link color for a href tag
+            * "li" sets the bullet or number for <li> tags
+            * "blockquote" sets the color for <blockquote> tags
+            * "headings" sets the color is not specified in a h1, h2 etc. heading tag
+
+            The values for the dictionary are a tuple of three ints, being the r,g and b values
         """
         kwargs2 = vars(self)
         # Method arguments must override class & instance attributes:
