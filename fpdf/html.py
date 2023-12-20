@@ -315,6 +315,7 @@ class HTML2FPDF(HTMLParser):
         _old_default_colors: dict[str, tuple[int, int, int]] = {
             "link": (0, 0, 255),
             "li": (190, 0, 0),
+            "blockquote": (100, 0, 45),
         }
         if not element_colors:
             element_colors = {}
@@ -324,6 +325,9 @@ class HTML2FPDF(HTMLParser):
         )
         self.li_color: tuple[int, int, int] = element_colors.get(
             "li", _old_default_colors["li"]
+        )
+        self.blockquote_color: tuple[int, int, int] = element_colors.get(
+            "blockquote", _old_default_colors["blockquote"]
         )
 
     def _new_paragraph(
@@ -511,7 +515,7 @@ class HTML2FPDF(HTMLParser):
             self._new_paragraph()
             self._pre_started = True
         if tag == "blockquote":
-            self.set_text_color(100, 0, 45)
+            self.set_text_color(*self.blockquote_color)
             self.indent += 1
             self._new_paragraph(top_margin=3, bottom_margin=3)
         if tag == "ul":

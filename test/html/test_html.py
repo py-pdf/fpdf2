@@ -543,9 +543,9 @@ def test_html_unordered_li_color(tmp_path):
     assert_pdf_equal(pdf, HERE / "html_unordered_li_color.pdf", tmp_path)
 
 
-def test_html_ordered_li_color(tmp_path):
+def test_html_blockquote_color(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    text = "<ol><li>foo</li></ol>"
-    pdf.write_html(text, element_colors={"li": (0, 255, 0)})
-    assert_pdf_equal(pdf, HERE / "html_ordered_li_color.pdf", tmp_path)
+    text = "Text before<blockquote>foo</blockquote>Text afterwards"
+    pdf.write_html(text, element_colors={"blockquote": (125, 125, 0)})
+    assert_pdf_equal(pdf, HERE / "html_blockquote.pdf", tmp_path)
