@@ -312,26 +312,31 @@ class HTML2FPDF(HTMLParser):
         self.td_th = None  # becomes a dict of attributes when processing <td>/<th> tags
         # "inserted" is a special attribute indicating that a cell has be inserted in self.table_row
 
+        self.link_color: tuple[int, int, int]
+        self.li_color: tuple[int, int, int]
+        self.blockquote_color: tuple[int, int, int]
+        self.headings_color: tuple[int, int, int]
+        self._set_color_scheme(element_colors)
+
+    def _set_color_scheme(
+        self, element_colors: dict[str, tuple[int, int, int]] | None
+    ) -> None:
         _old_default_colors: dict[str, tuple[int, int, int]] = {
             "link": (0, 0, 255),
             "li": (190, 0, 0),
             "blockquote": (100, 0, 45),
             "headings": (150, 0, 0),
         }
-        if not element_colors:
+
+        if element_colors is None:
             element_colors = {}
 
-        self.link_color: tuple[int, int, int] = element_colors.get(
-            "link", _old_default_colors["link"]
-        )
-        self.li_color: tuple[int, int, int] = element_colors.get(
-            "li", _old_default_colors["li"]
-        )
-        self.blockquote_color: tuple[int, int, int] = element_colors.get(
+        self.link_color = element_colors.get("link", _old_default_colors["link"])
+        self.li_color = element_colors.get("li", _old_default_colors["li"])
+        self.blockquote_color = element_colors.get(
             "blockquote", _old_default_colors["blockquote"]
         )
-
-        self.headings_color: tuple[int, int, int] = element_colors.get(
+        self.headings_color = element_colors.get(
             "headings", _old_default_colors["headings"]
         )
 
