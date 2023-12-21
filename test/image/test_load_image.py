@@ -63,7 +63,7 @@ def test_share_images_cache(tmp_path):
 
     with time_execution() as duration:
         build_pdf_with_big_images()
-    first_time_duration =  duration.seconds
+    first_time_duration = duration.seconds
 
     with time_execution() as duration:
         build_pdf_with_big_images()
