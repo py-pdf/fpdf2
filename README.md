@@ -269,6 +269,7 @@ This library could only exist thanks to the dedication of many volunteers around
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Polderrider"><img src="https://avatars.githubusercontent.com/u/51285379?v=4?s=100" width="100px;" alt="Polderrider"/><br /><sub><b>Polderrider</b></sub></a><br /><a href="#translation-Polderrider" title="Translation">🌍</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/valholl"><img src="https://avatars.githubusercontent.com/u/301204?v=4?s=100" width="100px;" alt="Elena ``of Valhalla''"/><br /><sub><b>Elena ``of Valhalla''</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=valholl" title="Tests">⚠️</a></td>
     </tr>
   </tbody>
 </table>
