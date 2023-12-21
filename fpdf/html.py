@@ -5,7 +5,7 @@ The contents of this module are internal to fpdf2, and not part of the public AP
 They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
-
+from __future__ import annotations
 from html.parser import HTMLParser
 import logging, re, warnings
 
@@ -244,6 +244,7 @@ class HTML2FPDF(HTMLParser):
         heading_sizes=None,
         pre_code_font="courier",
         warn_on_tags_not_matching=True,
+        element_colors: dict[str, tuple[int, int, int]] | None = None,
         **_,
     ):
         """
@@ -310,6 +311,34 @@ class HTML2FPDF(HTMLParser):
         self.tr = None  # becomes a dict of attributes when processing <tr> tags
         self.td_th = None  # becomes a dict of attributes when processing <td>/<th> tags
         # "inserted" is a special attribute indicating that a cell has be inserted in self.table_row
+
+        self.link_color: tuple[int, int, int]
+        self.li_color: tuple[int, int, int]
+        self.blockquote_color: tuple[int, int, int]
+        self.headings_color: tuple[int, int, int]
+        self._set_color_scheme(element_colors)
+
+    def _set_color_scheme(
+        self, element_colors: dict[str, tuple[int, int, int]] | None
+    ) -> None:
+        _old_default_colors: dict[str, tuple[int, int, int]] = {
+            "link": (0, 0, 255),
+            "li": (190, 0, 0),
+            "blockquote": (100, 0, 45),
+            "headings": (150, 0, 0),
+        }
+
+        if element_colors is None:
+            element_colors = {}
+
+        self.link_color = element_colors.get("link", _old_default_colors["link"])
+        self.li_color = element_colors.get("li", _old_default_colors["li"])
+        self.blockquote_color = element_colors.get(
+            "blockquote", _old_default_colors["blockquote"]
+        )
+        self.headings_color = element_colors.get(
+            "headings", _old_default_colors["headings"]
+        )
 
     def _new_paragraph(
         self, align=None, line_height=1.0, top_margin=0, bottom_margin=0
@@ -479,7 +508,9 @@ class HTML2FPDF(HTMLParser):
                 bottom_margin=self.heading_below * hsize,
             )
             color = (
-                color_as_decimal(attrs["color"]) if "color" in attrs else (150, 0, 0)
+                color_as_decimal(attrs["color"])
+                if "color" in attrs
+                else self.headings_color
             )
             self.set_text_color(*color)
             self.set_font(size=hsize_pt)
@@ -496,7 +527,7 @@ class HTML2FPDF(HTMLParser):
             self._new_paragraph()
             self._pre_started = True
         if tag == "blockquote":
-            self.set_text_color(100, 0, 45)
+            self.set_text_color(*self.blockquote_color)
             self.indent += 1
             self._new_paragraph(top_margin=3, bottom_margin=3)
         if tag == "ul":
@@ -509,7 +540,7 @@ class HTML2FPDF(HTMLParser):
             self._new_paragraph()
         if tag == "li":
             self._ln(2)
-            self.set_text_color(190, 0, 0)
+            self.set_text_color(*self.li_color)
             if self.bullet:
                 bullet = self.bullet[self.indent - 1]
             else:
@@ -781,7 +812,7 @@ class HTML2FPDF(HTMLParser):
 
     def put_link(self, text):
         # Put a hyperlink
-        self.set_text_color(0, 0, 255)
+        self.set_text_color(*self.link_color)
         self.set_style("u", True)
         self._write_paragraph(text, link=self.href)
         self.set_style("u", False)
