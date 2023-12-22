@@ -384,14 +384,16 @@ class Table:
                 _remember_linewidth = self._fpdf.line_width
                 self._fpdf.set_line_width(self._outer_border_width)
 
+                gutter_x = self._gutter_width if j != 0 else 0
+                gutter_y = self._gutter_height if i != 0 else 0
                 if i == 0:
-                    self._fpdf.line(x1, y1, x2, y1)
+                    self._fpdf.line(x1 - gutter_x, y1, x2, y1)
                 if i == len(self.rows) - 1:
-                    self._fpdf.line(x1, y2, x2, y2)
+                    self._fpdf.line(x1 - gutter_x, y2, x2, y2)
                 if j == 0:
-                    self._fpdf.line(x1, y1, x1, y2)
+                    self._fpdf.line(x1, y1 - gutter_y, x1, y2)
                 if j == len(row.cells) - 1:
-                    self._fpdf.line(x2, y1, x2, y2)
+                    self._fpdf.line(x2, y1 - gutter_y, x2, y2)
 
                 self._fpdf.set_line_width(_remember_linewidth)
 
