@@ -186,15 +186,17 @@ class Table:
             self._fpdf.l_margin = self._fpdf.x
 
         # Pre-Compute the relative x-positions of the individual columns:
-        cell_x_positions = [0]
+        xx = self._gutter_width if self._outer_border_width else 0
+        cell_x_positions = [xx]
         if self.rows:
-            xx = 0
             for i in range(self.rows[0].cols_count):
                 xx += self._get_col_width(0, i)
                 xx += self._gutter_width
                 cell_x_positions.append(xx)
 
         # Starting the actual rows & cells rendering:
+        if self._outer_border_width:
+            self._fpdf.y += self._gutter_height
         for i in range(len(self.rows)):
             row_layout_info = self._get_row_layout_info(i)
             if row_layout_info.triggers_page_jump:
@@ -384,16 +386,22 @@ class Table:
                 _remember_linewidth = self._fpdf.line_width
                 self._fpdf.set_line_width(self._outer_border_width)
 
-                gutter_x = self._gutter_width if j != 0 else 0
-                gutter_y = self._gutter_height if i != 0 else 0
-                if i == 0:
-                    self._fpdf.line(x1 - gutter_x, y1, x2, y1)
-                if i == len(self.rows) - 1:
-                    self._fpdf.line(x1 - gutter_x, y2, x2, y2)
+                # draw the outer box separated by the gutter dimensions
                 if j == 0:
-                    self._fpdf.line(x1, y1 - gutter_y, x1, y2)
+                    x1 = x1 - self._gutter_width
+                if i == 0:
+                    y1 = y1 - self._gutter_height
+                x2 = x2 + self._gutter_width
+                y2 = y2 + self._gutter_height
+
+                if i == 0:
+                    self._fpdf.line(x1, y1, x2, y1)
+                if i == len(self.rows) - 1:
+                    self._fpdf.line(x1, y2, x2, y2)
+                if j == 0:
+                    self._fpdf.line(x1, y1, x1, y2)
                 if j == len(row.cells) - 1:
-                    self._fpdf.line(x2, y1 - gutter_y, x2, y2)
+                    self._fpdf.line(x2, y1, x2, y2)
 
                 self._fpdf.set_line_width(_remember_linewidth)
 
@@ -484,6 +492,8 @@ class Table:
 
         cols_count = self.rows[i].cols_count
         width = self._width - (cols_count - 1) * self._gutter_width
+        if self._outer_border_width:
+            width -= 2 * self._gutter_width
 
         gutter_within_cell = max((colspan - 1) * self._gutter_width, 0)
 
