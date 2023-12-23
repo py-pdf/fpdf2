@@ -109,6 +109,13 @@ class Table:
                     "outer_border_width is only allowed when borders_layout is ALL or NO_HORIZONTAL_LINES"
                 )
             self._outer_border_width = 0
+        if self._outer_border_width:
+            self._outer_border_margin = (
+                (gutter_width + outer_border_width / 2),
+                (gutter_height + outer_border_width / 2),
+            )
+        else:
+            self._outer_border_margin = (0, 0)
 
         # check first_row_as_headings for non-default case num_heading_rows != 1
         if self._num_heading_rows != 1:
@@ -186,7 +193,7 @@ class Table:
             self._fpdf.l_margin = self._fpdf.x
 
         # Pre-Compute the relative x-positions of the individual columns:
-        xx = self._gutter_width if self._outer_border_width else 0
+        xx = self._outer_border_margin[0]
         cell_x_positions = [xx]
         if self.rows:
             for i in range(self.rows[0].cols_count):
@@ -195,13 +202,13 @@ class Table:
                 cell_x_positions.append(xx)
 
         # Starting the actual rows & cells rendering:
-        if self._outer_border_width:
-            self._fpdf.y += self._gutter_height
+        self._fpdf.y += self._outer_border_margin[1]
         for i in range(len(self.rows)):
             row_layout_info = self._get_row_layout_info(i)
             if row_layout_info.triggers_page_jump:
                 # pylint: disable=protected-access
                 self._fpdf._perform_page_break()
+                self._fpdf.y += self._outer_border_margin[1]
                 # repeat headings on top:
                 for row_idx in range(self._num_heading_rows):
                     self._render_table_row(
@@ -388,11 +395,11 @@ class Table:
 
                 # draw the outer box separated by the gutter dimensions
                 if j == 0:
-                    x1 = x1 - self._gutter_width
+                    x1 = x1 - self._outer_border_margin[0]
                 if i == 0:
-                    y1 = y1 - self._gutter_height
-                x2 = x2 + self._gutter_width
-                y2 = y2 + self._gutter_height
+                    y1 = y1 - self._outer_border_margin[1]
+                x2 = x2 + self._outer_border_margin[0]
+                y2 = y2 + self._outer_border_margin[1]
 
                 if i == 0:
                     self._fpdf.line(x1, y1, x2, y1)
@@ -491,10 +498,11 @@ class Table:
         between columns if the cell spans multiple columns."""
 
         cols_count = self.rows[i].cols_count
-        width = self._width - (cols_count - 1) * self._gutter_width
-        if self._outer_border_width:
-            width -= 2 * self._gutter_width
-
+        width = (
+            self._width
+            - (cols_count - 1) * self._gutter_width
+            - 2 * self._outer_border_margin[0]
+        )
         gutter_within_cell = max((colspan - 1) * self._gutter_width, 0)
 
         if not self._col_widths:
