@@ -216,6 +216,7 @@ class Table:
                         self._get_row_layout_info(row_idx),
                         cell_x_positions=cell_x_positions,
                     )
+                    self._fpdf.y += self._gutter_height
             elif i and self._gutter_height:
                 self._fpdf.y += self._gutter_height
             self._render_table_row(
