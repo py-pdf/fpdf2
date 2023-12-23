@@ -209,7 +209,7 @@ class Table:
         # First pass: estimate individual cell sizes
         for i, row in enumerate(self.rows):
             j = 0
-            min_height = self._line_height
+            min_height = self._line_height # in case of fully-spanned row
             rowspan_cols.append([])
             rendered_heights.append({})
             row_col_idx.append([])
@@ -225,11 +225,12 @@ class Table:
                 rendered_heights[i][j] = dictated_height
 
                 if cell.rowspan > 1:
-                    rowspan_ends[j] = i + cell.rowspan
-                    rowspan_list.append(
-                        RowSpanLayoutInfo(j, i, cell.rowspan, dictated_height)
-                    )
-                    rowspan_cols[-1].append(j)
+                    for k in range(j, j+cell.colspan):
+                        rowspan_ends[k] = i + cell.rowspan
+                        rowspan_list.append(
+                            RowSpanLayoutInfo(k, i, cell.rowspan, dictated_height)
+                        )
+                        rowspan_cols[-1].append(k)
                 else:
                     min_height = max(min_height, dictated_height)
 
@@ -777,11 +778,7 @@ class Row:
                 "fpdf2 currently does not support inserting text with an image in the same table cell."
                 " Pull Requests are welcome to implement this 😊"
             )
-        if rowspan > 1 and colspan > 1:
-            raise NotImplementedError(
-                "fpdf2 currently does not support combining rowspan with colspan in the same table cell."
-                " Pull Requests are welcome to implement this 😊"
-            )
+        #if rowspan > 1 and colspan > 1:
         if not style:
             # pylint: disable=protected-access
             # We capture the current font settings:
