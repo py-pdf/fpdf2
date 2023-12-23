@@ -394,21 +394,25 @@ class Table:
                 self._fpdf.set_line_width(self._outer_border_width)
 
                 # draw the outer box separated by the gutter dimensions
-                if j == 0:
-                    x1 = x1 - self._outer_border_margin[0]
-                if i == 0:
-                    y1 = y1 - self._outer_border_margin[1]
-                x2 = x2 + self._outer_border_margin[0]
+                # the top and bottom borders are one continuous line
+                # whereas the left and right borders are segments beause of possible pagebreaks
+                x1 = self._fpdf.l_margin
+                x2 = x1 + self._width
+                y1 = y1 - self._outer_border_margin[1]
                 y2 = y2 + self._outer_border_margin[1]
 
-                if i == 0:
-                    self._fpdf.line(x1, y1, x2, y1)
-                if i == len(self.rows) - 1:
-                    self._fpdf.line(x1, y2, x2, y2)
                 if j == 0:
+                    # lhs border
                     self._fpdf.line(x1, y1, x1, y2)
                 if j == len(row.cells) - 1:
+                    # rhs border
                     self._fpdf.line(x2, y1, x2, y2)
+                    # continuous top line border
+                    if i == 0:
+                        self._fpdf.line(x1, y1, x2, y1)
+                    # continuous bottom line border
+                    if i == len(self.rows) - 1:
+                        self._fpdf.line(x1, y2, x2, y2)
 
                 self._fpdf.set_line_width(_remember_linewidth)
 
