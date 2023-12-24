@@ -769,7 +769,8 @@ class Row:
         reverse_rowspans = []
         for i, cell in enumerate(cells):
             if isinstance(cell, Cell) and cell.rowspan > 1:
-                remaining_rowspans[i] = cell.rowspan - 1
+                for k in range(i, i+cell.colspan):
+                    remaining_rowspans[k] = cell.rowspan - 1
             elif cell == TableSpan.ROW:
                 reverse_rowspans.append(i)
                 cells[i] = None  # processed
