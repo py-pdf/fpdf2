@@ -568,12 +568,16 @@ class HTML2FPDF(HTMLParser):
                     else "SINGLE_TOP_LINE"
                 )
             align = attrs.get("align", "center").upper()
+            padding = float(attrs["cellpadding"]) if "cellpadding" in attrs else None
             self.table = Table(
                 self.pdf,
                 align=align,
                 borders_layout=borders_layout,
                 line_height=self.h * 1.30,
                 width=width,
+                padding=padding,
+                gutter_width=float(attrs.get("cellspacing", 0)),
+                gutter_height=float(attrs.get("cellspacing", 0)),
             )
             self._ln()
         if tag == "tr":
