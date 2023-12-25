@@ -233,6 +233,15 @@ class Table:
             min_height = self._line_height  # in case of fully-spanned row
             rendered_heights.append({})
 
+            # Sanity-check the total number of columns
+            # TODO: not necessary?
+            if len(row.cells) != self._cols_count:
+                raise FPDFException(
+                    f"Inconsistent column count detected on row {i}:"
+                    f" it has {j} columns,"
+                    f" whereas the table has {self._cols_count}."
+                )
+
             for j, cell in enumerate(row.cells):
                 if cell is None:
                     continue
@@ -251,15 +260,6 @@ class Table:
                     min_height = max(min_height, dictated_height)
 
             row_min_heights[i] = min_height
-
-            # Sanity-check the total number of columns
-            # TODO: not necessary?
-            if j != self._cols_count - 1:
-                raise FPDFException(
-                    f"Inconsistent column count detected on row {i}:"
-                    f" it has {j} columns,"
-                    f" whereas the top row has {self._cols_count}."
-                )
 
         # Second pass: allocate space required for rowspans
         for span in rowspan_list:
@@ -356,7 +356,7 @@ class Table:
         if self._borders_layout == TableBordersLayout.NONE:
             return 0
 
-        is_rightmost_column = j == self.rows[i].column_indices[-1]
+        is_rightmost_column = j == len(self.rows[i].cells) - 1
         rows_count = len(self.rows)
         border = list("LRTB")
         if self._borders_layout == TableBordersLayout.INTERNAL:
@@ -725,23 +725,9 @@ class Row:
         self.style = style
 
     @property
-    def cols_count(self):
-        return sum(cell.colspan for cell in self.cells)
-
-    @property
     def max_rowspan(self):
         spans = {cell.rowspan for cell in self.cells if cell is not None}
         return max(spans) if len(spans) else 1
-
-    @property
-    def column_indices(self):
-        columns_count = len(self.cells)
-        colidx = 0
-        indices = [colidx]
-        for jj in range(columns_count - 1):
-            colidx += self.cells[jj].colspan
-            indices.append(colidx)
-        return indices
 
     def convert_spans(self, active_rowspans):
         # convert colspans
@@ -769,7 +755,7 @@ class Row:
         reverse_rowspans = []
         for i, cell in enumerate(cells):
             if isinstance(cell, Cell) and cell.rowspan > 1:
-                for k in range(i, i+cell.colspan):
+                for k in range(i, i + cell.colspan):
                     remaining_rowspans[k] = cell.rowspan - 1
             elif cell == TableSpan.ROW:
                 reverse_rowspans.append(i)
