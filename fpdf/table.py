@@ -338,7 +338,9 @@ class Table:
                 )
                 self._fpdf.set_y(y)  # restore y position after each cell
 
-            self._fpdf.ln(this_row_height + self._gutter_height)
+            if i > 0:
+                self._fpdf.y += self._gutter_height
+            self._fpdf.ln(this_row_height)
 
         # Restoring altered FPDF settings:
         self._fpdf.l_margin = prev_l_margin
