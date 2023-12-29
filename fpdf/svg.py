@@ -958,16 +958,30 @@ class SVGObject:
     @force_nodocument
     def build_shape(self, shape):
         """Convert an SVG shape tag into a PDF path object. Necessary to make xref (because ShapeBuilder doesn't have access to this object.)"""
-        shape_path = getattr(ShapeBuilder, shape_tags[shape.tag])(shape)
+        shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
+        shape_path = shape_builder(shape)
         self.apply_clipping_path(shape_path, shape)
         self.update_xref(shape.attrib.get("id"), shape_path)
         return shape_path
 
     @force_nodocument
     def build_clipping_path(self, shape, clip_id):
-        clipping_path_shape = getattr(ShapeBuilder, shape_tags[shape.tag])(shape, True)
+        if shape.tag in shape_tags:
+            shape_builder = getattr(ShapeBuilder, shape_tags[shape.tag])
+            clipping_path_shape = shape_builder(shape, True)
+        elif shape.tag in xmlns_lookup("svg", "path"):
+            clipping_path_shape = PaintedPath()
+            apply_styles(clipping_path_shape, shape)
+            svg_path = shape.attrib.get("d")
+            if svg_path is not None:
+                svg_path_converter(clipping_path_shape, svg_path)
+        else:
+            LOGGER.warning(
+                "Ignoring unsupported <clipPath> child tag: <%s> (contributions are welcome to add support for it)",
+                shape.tag,
+            )
+            return
         self.update_xref(clip_id, clipping_path_shape)
-        return clipping_path_shape
 
     @force_nodocument
     def apply_clipping_path(self, stylable, svg_element):
