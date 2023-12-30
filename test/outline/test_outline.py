@@ -231,3 +231,12 @@ def test_toc_without_font_style(tmp_path):  # issue-676
     pdf.start_section("Title")
     pdf.start_section("Subtitle", level=1)
     assert_pdf_equal(pdf, HERE / "toc_without_font_style.pdf", tmp_path)
+
+
+def test_toc_with_font_style_override_bold(tmp_path):  # issue-1072
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B")
+    pdf.set_section_title_styles(TitleStyle("Helvetica", "", 20, (0, 0, 0)))
+    pdf.start_section("foo")
+    assert_pdf_equal(pdf, HERE / "toc_with_font_style_override_bold.pdf", tmp_path)

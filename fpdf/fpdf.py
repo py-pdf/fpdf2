@@ -4871,9 +4871,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         prev_font = (self.font_family, self.font_style, self.font_size_pt)
         self.set_font(
             font_face.family or self.font_family,
-            font_face.emphasis.style
-            if font_face.emphasis is not None
-            else self.font_style,
+            font_face.emphasis.style if font_face.emphasis is not None else "",
             font_face.size_pt or self.font_size_pt,
         )
         prev_text_color = self.text_color
