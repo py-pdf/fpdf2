@@ -20,8 +20,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 * support for `<path>` elements in SVG `<clipPath>` elements
 ### Fixed
-* When adding a link on a table cell, an extra link was added erroneously on the left. Moreover, now `FPDF._disable_writing()` properly disable link writing.
+* when adding a link on a table cell, an extra link was added erroneously on the left. Moreover, now `FPDF._disable_writing()` properly disable link writing.
 * non-bold `TitleStyle` is now rendered as non-bold even when the current font is bold
+* calling `.table()` inside the `render_toc_function`
 
 ## [2.7.7] - 2023-12-10
 ### Added

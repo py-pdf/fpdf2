@@ -240,3 +240,20 @@ def test_toc_with_font_style_override_bold(tmp_path):  # issue-1072
     pdf.set_section_title_styles(TitleStyle("Helvetica", "", 20, (0, 0, 0)))
     pdf.start_section("foo")
     assert_pdf_equal(pdf, HERE / "toc_with_font_style_override_bold.pdf", tmp_path)
+
+
+def test_toc_with_table(tmp_path):  # issue-1079
+    def render_toc_with_table(pdf: FPDF, outline: list):
+        pdf.set_font(size=20)
+        with pdf.table([[x.name, str(x.page_number)] for x in outline]):
+            pass
+
+    pdf = FPDF()
+    pdf.set_font(family="helvetica", style="", size=30)
+    pdf.add_page()
+    pdf.insert_toc_placeholder(render_toc_function=render_toc_with_table, pages=4)
+    for i in range(60):
+        pdf.start_section(name=str(i), level=0)
+        pdf.cell(text=str(i))
+        pdf.ln()
+    assert_pdf_equal(pdf, HERE / "toc_with_table.pdf", tmp_path)

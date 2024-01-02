@@ -515,7 +515,7 @@ class Table:
         image_heights_per_cell = []
 
         rendered_height = {}  # as dict because j is not continuous in case of colspans
-        any_page_break = False
+        page_breaks = 0
         # pylint: disable=protected-access
         with self._fpdf._disable_writing():
             j = 0
@@ -538,7 +538,7 @@ class Table:
                 rendered_height[j] = max(image_height, dictated_height)
 
                 j += cell.colspan
-                any_page_break = any_page_break or page_break
+                page_breaks += 1 if page_break else 0
 
                 image_heights_per_cell.append(image_height)
                 dictated_heights_per_cell.append(dictated_height)
@@ -557,7 +557,7 @@ class Table:
                 else 0
             )
 
-        return RowLayoutInfo(row_height, any_page_break, rendered_height)
+        return RowLayoutInfo(row_height, page_breaks > 0, rendered_height)
 
 
 class Row:

@@ -3380,7 +3380,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             yield
             return
         self._out = lambda *args, **kwargs: None
-        prev_page, prev_x, prev_y = self.page, self.x, self.y
+        prev_page, prev_pages_count, prev_x, prev_y = (
+            self.page,
+            self.pages_count,
+            self.x,
+            self.y,
+        )
         annots = PDFArray(self.pages[self.page].annots)
         self._push_local_stack()
         try:
@@ -3388,7 +3393,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         finally:
             self._pop_local_stack()
             # restore location:
-            for p in range(prev_page + 1, self.page + 1):
+            for p in range(prev_pages_count + 1, self.pages_count + 1):
                 del self.pages[p]
             self.page = prev_page
             self.pages[self.page].annots = annots
