@@ -169,6 +169,7 @@ def test_text_with_parentheses(tmp_path):
     pdf.cell(text="אנגלית (באנגלית: English) ", new_y="NEXT")
     assert_pdf_equal(pdf, HERE / "text_with_parentheses.pdf", tmp_path)
 
+
 def test_with_offset_rendering(tmp_path):
     # issue 1075
     pdf = FPDF()
@@ -189,7 +190,9 @@ def test_with_offset_rendering(tmp_path):
     col_width = pdf.epw / 4  # distribute content evenly
     for i in range(5):  # repeat table 4 times
         with pdf.offset_rendering() as dummy:
-            for row in data:  # data comes from snippets on the Tables documentation page
+            for (
+                row
+            ) in data:  # data comes from snippets on the Tables documentation page
                 for datum in row:
                     dummy.cell(col_width, line_height, f"{datum} ({i})", border=1)
                 dummy.ln(line_height)
