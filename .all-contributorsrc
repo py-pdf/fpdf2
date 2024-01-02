@@ -1106,6 +1106,15 @@
       "contributions": [
         "test"
       ]
+    },
+    {
+      "login": "nocalla",
+      "name": "Niall O'Callaghan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/16230431?v=4",
+      "profile": "https://github.com/nocalla",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
