@@ -168,3 +168,39 @@ def test_text_with_parentheses(tmp_path):
     pdf.ln()
     pdf.cell(text="אנגלית (באנגלית: English) ", new_y="NEXT")
     assert_pdf_equal(pdf, HERE / "text_with_parentheses.pdf", tmp_path)
+
+def test_with_offset_rendering(tmp_path):
+    # issue 1075
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="Roboto", fname=FONTS_DIR / "Roboto-Regular.ttf")
+    pdf.set_font("Roboto", size=16)
+    pdf.set_text_shaping(True)
+
+    data = (
+        ("01", "A", "6"),
+        ("02", "B", "6"),
+        ("03", "C", "1"),
+        ("04", "D", "1"),
+        ("05", "E", "4"),
+    )
+
+    line_height = pdf.font_size * 2
+    col_width = pdf.epw / 4  # distribute content evenly
+    for i in range(5):  # repeat table 4 times
+        with pdf.offset_rendering() as dummy:
+            for row in data:  # data comes from snippets on the Tables documentation page
+                for datum in row:
+                    dummy.cell(col_width, line_height, f"{datum} ({i})", border=1)
+                dummy.ln(line_height)
+            dummy.ln(line_height * 2)
+        if dummy.page_break_triggered:
+            pdf.add_page()
+            pdf.cell(text="Appendix C")
+            pdf.ln(line_height)
+        for row in data:  # data comes from snippets on the Tables documentation page
+            for datum in row:
+                pdf.cell(col_width, line_height, f"{datum} ({i})", border=1)
+            pdf.ln(line_height)
+        pdf.ln(line_height * 2)
+    assert_pdf_equal(pdf, HERE / "shaping_and_offset_rendering.pdf", tmp_path)

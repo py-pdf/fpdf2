@@ -10,6 +10,7 @@ in non-backward-compatible ways.
 import re
 
 from bisect import bisect_left
+from copy import deepcopy
 from collections import defaultdict
 from dataclasses import dataclass, replace
 from typing import List, Optional, Tuple, Union
@@ -149,6 +150,7 @@ class TTFFont:
         self.type = "TTF"
         self.ttffile = font_file_path
         self.fontkey = fontkey
+        self.hbfont = None
 
         # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
         # if we leave recalcTimestamp=True the tests will break every time
@@ -232,7 +234,18 @@ class TTFFont:
 
     def __repr__(self):
         return f"TTFFont(i={self.i}, fontkey={self.fontkey})"
-
+    
+    def __deepcopy__(self, memo):
+        self.hbfont = None
+        dpcpy = self.__class__
+        memo[id(self)] = dpcpy
+        for attr in dir(self):
+            if not attr.startswith('__'):
+                print(attr)
+                value = getattr(self, attr)
+                setattr(dpcpy, attr, deepcopy(value, memo))
+        return dpcpy
+   
     def close(self):
         self.ttfont.close()
         self.hbfont = None
@@ -271,7 +284,7 @@ class TTFFont:
         """
         This method invokes Harfbuzz to perform text shaping of the input string
         """
-        if not hasattr(self, "hbfont"):
+        if not self.hbfont:
             self.hbfont = hb.Font(hb.Face(hb.Blob.from_file_path(self.ttffile)))
         self.hbfont.ptem = font_size_pt
         buf = hb.Buffer()

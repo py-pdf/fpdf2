@@ -23,6 +23,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * when adding a link on a table cell, an extra link was added erroneously on the left. Moreover, now `FPDF._disable_writing()` properly disable link writing.
 * non-bold `TitleStyle` is now rendered as non-bold even when the current font is bold
 * calling `.table()` inside the `render_toc_function`
+* error on deepcopy of `TTFFont()` [issue #1075](https://github.com/py-pdf/fpdf2/issues/1075)
 
 ## [2.7.7] - 2023-12-10
 ### Added
