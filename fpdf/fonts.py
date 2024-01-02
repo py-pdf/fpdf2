@@ -296,6 +296,7 @@ class TTFFont:
             )
         return (len(glyph_positions), text_width)
 
+    # pylint: disable=no-member
     def perform_harfbuzz_shaping(self, text, font_size_pt, text_shaping_parms):
         """
         This method invokes Harfbuzz to perform text shaping of the input string
