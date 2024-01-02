@@ -234,18 +234,17 @@ class TTFFont:
 
     def __repr__(self):
         return f"TTFFont(i={self.i}, fontkey={self.fontkey})"
-    
+
     def __deepcopy__(self, memo):
         self.hbfont = None
         dpcpy = self.__class__
         memo[id(self)] = dpcpy
         for attr in dir(self):
-            if not attr.startswith('__'):
-                print(attr)
+            if not attr.startswith("__"):
                 value = getattr(self, attr)
                 setattr(dpcpy, attr, deepcopy(value, memo))
         return dpcpy
-   
+
     def close(self):
         self.ttfont.close()
         self.hbfont = None
