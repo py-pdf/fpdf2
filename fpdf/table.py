@@ -578,7 +578,7 @@ class Table:
                 )
 
             for j, cell in enumerate(row.cells):
-                if cell is None:
+                if cell is None:  # placeholder cell
                     continue
 
                 # NB: ignore page_break since we might need to assign rowspan padding
@@ -587,9 +587,15 @@ class Table:
                 rendered_heights[i][j] = dictated_height
 
                 if cell.rowspan > 1:
-                    for k in range(j, j + cell.colspan):
-                        rowspan_list.append(
-                            RowSpanLayoutInfo(k, i, cell.rowspan, dictated_height)
+                    rowspan_list.append(
+                        RowSpanLayoutInfo(j, i, cell.rowspan, dictated_height)
+                    )
+                    # Often we want rowspans in headings, but issues arise if the span crosses outside the heading
+                    is_heading = i < self._num_heading_rows
+                    span_outside_heading = i + cell.rowspan > self._num_heading_rows
+                    if is_heading and span_outside_heading:
+                        raise FPDFException(
+                            "Heading includes rowspan beyond the number of heading rows"
                         )
                 else:
                     min_height = max(min_height, dictated_height)
