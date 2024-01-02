@@ -131,7 +131,6 @@ class TTFFont:
         "name",
         "desc",
         "glyph_ids",
-        "hbfont",
         "up",
         "ut",
         "cw",
@@ -141,8 +140,9 @@ class TTFFont:
         "scale",
         "subset",
         "cmap",
-        "ttfont",
         "missing_glyphs",
+        "_hbfont",
+        "_ttfont",
     )
 
     def __init__(self, fpdf, font_file_path, fontkey, style):
@@ -150,13 +150,8 @@ class TTFFont:
         self.type = "TTF"
         self.ttffile = font_file_path
         self.fontkey = fontkey
-        self.hbfont = None
-
-        # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
-        # if we leave recalcTimestamp=True the tests will break every time
-        self.ttfont = ttLib.TTFont(
-            self.ttffile, recalcTimestamp=False, fontNumber=0, lazy=True
-        )
+        self._hbfont = None
+        self._ttfont = None
 
         self.scale = 1000 / self.ttfont["head"].unitsPerEm
         default_width = round(self.scale * self.ttfont["hmtx"].metrics[".notdef"][0])
@@ -232,22 +227,45 @@ class TTFFont:
         self.emphasis = TextEmphasis.coerce(style)
         self.subset = SubsetMap(self, [ord(char) for char in sbarr])
 
+    @property
+    def ttfont(self):
+        if not self._ttfont:
+            # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
+            # if we leave recalcTimestamp=True the tests will break every time
+            self._ttfont = ttLib.TTFont(
+                self.ttffile, recalcTimestamp=False, fontNumber=0, lazy=True
+            )
+        return self._ttfont
+
+    @property
+    def hbfont(self):
+        if not self._hbfont:
+            self._hbfont = hb.Font(hb.Face(hb.Blob.from_file_path(self.ttffile)))
+        return self._hbfont
+
     def __repr__(self):
         return f"TTFFont(i={self.i}, fontkey={self.fontkey})"
 
     def __deepcopy__(self, memo):
-        self.hbfont = None
-        dpcpy = self.__class__
+        self._hbfont = None
+        self._ttfont = None
+        cls = self.__class__
+        dpcpy = cls.__new__(cls)
         memo[id(self)] = dpcpy
         for attr in dir(self):
+            if attr in ("hbfont", "ttfont"):
+                continue
             if not attr.startswith("__"):
                 value = getattr(self, attr)
+                if callable(value):
+                    continue
                 setattr(dpcpy, attr, deepcopy(value, memo))
         return dpcpy
 
     def close(self):
-        self.ttfont.close()
-        self.hbfont = None
+        if self._ttfont:
+            self.ttfont.close()
+        self._hbfont = None
 
     def get_text_width(self, text, font_size_pt, text_shaping_parms):
         if text_shaping_parms:
@@ -283,8 +301,6 @@ class TTFFont:
         """
         This method invokes Harfbuzz to perform text shaping of the input string
         """
-        if not self.hbfont:
-            self.hbfont = hb.Font(hb.Face(hb.Blob.from_file_path(self.ttffile)))
         self.hbfont.ptem = font_size_pt
         buf = hb.Buffer()
         buf.cluster_level = 1
