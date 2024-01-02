@@ -168,3 +168,18 @@ def test_text_with_parentheses(tmp_path):
     pdf.ln()
     pdf.cell(text="אנגלית (באנגלית: English) ", new_y="NEXT")
     assert_pdf_equal(pdf, HERE / "text_with_parentheses.pdf", tmp_path)
+
+
+def test_text_shaping_and_offset_rendering(tmp_path):
+    # issue #1075
+    pdf = FPDF()
+    pdf.add_font("Garuda", fname=FONTS_DIR / "Garuda.ttf")
+    pdf.set_font("Garuda", size=16)
+    pdf.set_text_shaping(True)
+    pdf.add_page()
+    line_height, col_width = pdf.font_size * 2, pdf.epw / 4
+    for i in range(2):
+        with pdf.offset_rendering():
+            pdf.cell(col_width, line_height, f"Cell ({i})")
+        pdf.cell(col_width, line_height, f"Cell ({i})")
+    assert_pdf_equal(pdf, HERE / "text_shaping_and_offset_rendering.pdf", tmp_path)

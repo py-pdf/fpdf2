@@ -18,6 +18,15 @@ from fontTools import ttLib
 
 try:
     import uharfbuzz as hb
+
+    # pylint: disable=no-member
+    class HarfBuzzFont(hb.Font):
+        "uharfbuzz.Font than can be deepcopied"
+
+        # cf. issue #1075, avoids: TypeError: no default __reduce__ due to non-trivial __cinit__
+        def __deepcopy__(self, _memo):
+            return self
+
 except ImportError:
     hb = None
 
@@ -272,7 +281,7 @@ class TTFFont:
         This method invokes Harfbuzz to perform text shaping of the input string
         """
         if not hasattr(self, "hbfont"):
-            self.hbfont = hb.Font(hb.Face(hb.Blob.from_file_path(self.ttffile)))
+            self.hbfont = HarfBuzzFont(hb.Face(hb.Blob.from_file_path(self.ttffile)))
         self.hbfont.ptem = font_size_pt
         buf = hb.Buffer()
         buf.cluster_level = 1
