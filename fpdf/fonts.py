@@ -238,6 +238,7 @@ class TTFFont:
         return self._ttfont
 
     @property
+    # pylint: disable=no-member
     def hbfont(self):
         if not self._hbfont:
             self._hbfont = hb.Font(hb.Face(hb.Blob.from_file_path(self.ttffile)))
@@ -295,8 +296,6 @@ class TTFFont:
             )
         return (len(glyph_positions), text_width)
 
-    # Disabling this check - looks like cython confuses pylint:
-    # pylint: disable=no-member
     def perform_harfbuzz_shaping(self, text, font_size_pt, text_shaping_parms):
         """
         This method invokes Harfbuzz to perform text shaping of the input string
