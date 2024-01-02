@@ -4851,13 +4851,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @contextmanager
     def _use_title_style(self, title_style: TitleStyle):
-        if title_style.t_margin:
-            self.ln(title_style.t_margin)
-        if title_style.l_margin:
-            self.set_x(title_style.l_margin)
+        if title_style:
+            if title_style.t_margin:
+                self.ln(title_style.t_margin)
+            if title_style.l_margin:
+                self.set_x(title_style.l_margin)
         with self.use_font_face(title_style):
             yield
-        if title_style.b_margin:
+        if title_style and title_style.b_margin:
             self.ln(title_style.b_margin)
 
     @contextmanager

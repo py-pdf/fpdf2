@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, HTMLMixin
+from fpdf import FPDF, HTMLMixin, TitleStyle
 from fpdf.errors import FPDFException
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
@@ -525,3 +525,19 @@ def test_html_ln_outside_p(tmp_path):
     """
     )
     assert_pdf_equal(pdf, HERE / "html_ln_outside_p.pdf", tmp_path)
+
+
+def test_html_and_section_title_styles():  # issue 1080
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=10)
+    pdf.set_section_title_styles(TitleStyle("Helvetica", "B", 20, (0, 0, 0)))
+    with pytest.raises(NotImplementedError):
+        pdf.write_html(
+            """
+        <h1>Heading One</h1>
+        <p>Just enough text to show how bad the situation really is</p>
+        <h2>Heading Two</h2>
+        <p>This will not overflow</p>
+        """
+        )
