@@ -597,7 +597,7 @@ class HTML2FPDF(HTMLParser):
                 # => we are in the 1st <tr>, and the 1st cell is a <td>
                 # => we do not treat the first row as a header
                 # pylint: disable=protected-access
-                self.table._borders_layout = TableBordersLayout.NONE
+                self.table._first_row_as_headings = False
                 self.table._num_heading_rows = 0
             if "height" in attrs:
                 LOGGER.warning(
