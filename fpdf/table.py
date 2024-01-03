@@ -414,7 +414,7 @@ class Table:
                 if j == 0:
                     # lhs border
                     self._fpdf.line(x1, y1, x1, y2)
-                if j + cell.colspan == len(row.cells):
+                if j + cell.colspan == self._cols_count:
                     # rhs border
                     self._fpdf.line(x2, y1, x2, y2)
                     # continuous top line border
@@ -540,25 +540,23 @@ class Table:
     def _process_rowpans_entries(self):
         # First pass: Regularise the table by processing the rowspan and colspan entries
         active_rowspans = {}
-        prev_cell_in_col = {}
+        prev_row_in_col = {}
         for i, row in enumerate(self.rows):
             # Link up rowspans
             active_rowspans, prior_rowspans = row.convert_spans(active_rowspans)
             for col_idx in prior_rowspans:
                 # This cell is TableSpan.ROW, so accumulate to the previous row
-                row_idx = prev_cell_in_col.get(col_idx, None)
-                if row_idx is not None:
+                prev_row = prev_row_in_col[col_idx]
+                if prev_row is not None:
                     # Since Cell objects are frozen, we need to recreate them to update the rowspan
-                    cell = self.rows[row_idx].cells[col_idx]
-                    self.rows[row_idx].cells[col_idx] = replace(
-                        cell, rowspan=cell.rowspan + 1
-                    )
+                    cell = prev_row.cells[col_idx]
+                    prev_row.cells[col_idx] = replace(cell, rowspan=cell.rowspan + 1)
             for j, cell in enumerate(row.cells):
                 if isinstance(cell, Cell):
                     # Keep track of the non-span cells
-                    prev_cell_in_col[j] = i
-                    for k in range(1, cell.colspan):
-                        prev_cell_in_col[j + k] = None
+                    prev_row_in_col[j] = row
+                    for k in range(j + 1, j + cell.colspan):
+                        prev_row_in_col[k] = None
         if len(active_rowspans) != 0:
             raise FPDFException("Rowspan extends beyond end of table")
 
@@ -780,17 +778,18 @@ class Row:
                 "fpdf2 currently does not support inserting text with an image in the same table cell."
                 " Pull Requests are welcome to implement this 😊"
             )
+
+        if isinstance(text, TableSpan):
+            # Special placeholder object, converted to colspan/rowspan during processing
+            self.cells.append(text)
+            return
+
         if not style:
             # pylint: disable=protected-access
             # We capture the current font settings:
             font_face = self._table._fpdf.font_face()
             if font_face not in (self.style, self._table._initial_style):
                 style = font_face
-
-        if isinstance(text, TableSpan):
-            # Special placeholder object, converted to colspan/rowspan during processing
-            self.cells.append(text)
-            return
 
         cell = Cell(
             text,
