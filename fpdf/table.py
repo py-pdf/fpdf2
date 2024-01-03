@@ -566,35 +566,37 @@ class Table:
         row_min_heights = []
         row_span_max = []
         rendered_heights = []
-        for i, row in enumerate(self.rows):
-            min_height = self._line_height  # in case of fully-spanned row
-            rendered_heights.append({})
+        # pylint: disable=protected-access
+        with self._fpdf._disable_writing():
+            for i, row in enumerate(self.rows):
+                min_height = self._line_height  # in case of fully-spanned row
+                rendered_heights.append({})
 
-            for j, cell in enumerate(row.cells):
-                if cell is None:  # placeholder cell
-                    continue
+                for j, cell in enumerate(row.cells):
+                    if cell is None:  # placeholder cell
+                        continue
 
-                # NB: ignore page_break since we might need to assign rowspan padding
-                _, dictated_height, img_height = self._get_cell_layout_info(cell, i, j)
-                dictated_height = max(dictated_height, img_height)
-                rendered_heights[i][j] = dictated_height
+                    # NB: ignore page_break since we might need to assign rowspan padding
+                    _, dictated_height, img_height = self._get_cell_layout_info(cell, i, j)
+                    dictated_height = max(dictated_height, img_height)
+                    rendered_heights[i][j] = dictated_height
 
-                if cell.rowspan > 1:
-                    rowspan_list.append(
-                        RowSpanLayoutInfo(j, i, cell.rowspan, dictated_height)
-                    )
-                    # Often we want rowspans in headings, but issues arise if the span crosses outside the heading
-                    is_heading = i < self._num_heading_rows
-                    span_outside_heading = i + cell.rowspan > self._num_heading_rows
-                    if is_heading and span_outside_heading:
-                        raise FPDFException(
-                            "Heading includes rowspan beyond the number of heading rows"
+                    if cell.rowspan > 1:
+                        rowspan_list.append(
+                            RowSpanLayoutInfo(j, i, cell.rowspan, dictated_height)
                         )
-                else:
-                    min_height = max(min_height, dictated_height)
+                        # Often we want rowspans in headings, but issues arise if the span crosses outside the heading
+                        is_heading = i < self._num_heading_rows
+                        span_outside_heading = i + cell.rowspan > self._num_heading_rows
+                        if is_heading and span_outside_heading:
+                            raise FPDFException(
+                                "Heading includes rowspan beyond the number of heading rows"
+                            )
+                    else:
+                        min_height = max(min_height, dictated_height)
 
-            row_min_heights.append(min_height)
-            row_span_max.append(row.max_rowspan)
+                row_min_heights.append(min_height)
+                row_span_max.append(row.max_rowspan)
 
         # Third pass: allocate space required for the rowspans
         row_span_padding = [0 for row in self.rows]
