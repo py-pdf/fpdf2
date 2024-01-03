@@ -2,7 +2,14 @@ from dataclasses import dataclass
 from numbers import Number
 from typing import Optional, Union
 
-from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode, VAlign, TableSpan
+from .enums import (
+    Align,
+    TableBordersLayout,
+    TableCellFillMode,
+    WrapMode,
+    VAlign,
+    TableSpan,
+)
 from .enums import MethodReturnValue
 from .errors import FPDFException
 from .fonts import CORE_FONTS, FontFace
@@ -186,43 +193,34 @@ class Table:
         elif self._fpdf.x != self._fpdf.l_margin:
             self._fpdf.l_margin = self._fpdf.x
 
-        rowspan_ends = {}
+        rowspans = {}
+        prev_row = {}
+        self._cols_count = 0
+
+        for i, row in enumerate(self.rows):
+            rowspans, prior_rowspans = row.convert_spans(rowspans)
+            # don't require all rows to have the same column count
+            self._cols_count = max(self._cols_count, len(row.cells))
+            # link up rowspans
+            for col_idx in prior_rowspans:
+                if prev_row[col_idx] is not None:
+                    prev_row[col_idx].rowspan += 1  # TODO: fix for frozen
+            for j, cell in enumerate(row.cells):
+                if isinstance(cell, Cell):
+                    prev_row[j] = cell
+                    for k in range(1, cell.colspan):
+                        prev_row[j + k] = None
+        assert len(rowspans) == 0, "Rowspan beyond end of table"
+
         rowspan_list = []
-        rowspan_cols = []
         row_min_heights = [0] * len(self.rows)
         row_span_padding = [0] * len(self.rows)
-        row_col_idx = []
         rendered_heights = []
-
-        # Zero pass: convert from ENUM representations
-        # TODO: improve handling when combined with colspan/rowspan attributes
-        # TODO: resolve "frozen" modifications
-        prev_row = {}
-        for i,row in enumerate(self.rows):
-            prev_col = None
-            for j,cell in enumerate(row.cells):
-                if cell == TableSpan.COL:
-                    assert prev_col is not None
-                    assert prev_col.rowspan == 1
-                    prev_col.colspan += 1
-                    prev_row[j] = prev_col
-                elif cell == TableSpan.ROW:
-                    assert i > 0
-                    assert prev_row[j].colspan == 1
-                    prev_row[j].rowspan += 1
-                else:
-                    prev_col = cell
-                    prev_row[j] = cell
-            # now remove them
-            for i,cell in list(enumerate(row.cells))[::-1]:
-                if isinstance(cell, TableSpan):
-                    row.cells.pop(i)
 
         # Pre-Compute the relative x-positions of the individual columns:
         xx = self._outer_border_margin[0]
         cell_x_positions = [xx]
         if len(self.rows):
-            self._cols_count = sum(cell.colspan for cell in self.rows[0].cells)
             for i in range(self._cols_count):
                 xx += self._get_col_width(0, i)
                 xx += self._gutter_width
@@ -232,16 +230,12 @@ class Table:
 
         # First pass: estimate individual cell sizes
         for i, row in enumerate(self.rows):
-            j = 0
-            min_height = self._line_height # in case of fully-spanned row
-            rowspan_cols.append([])
+            min_height = self._line_height  # in case of fully-spanned row
             rendered_heights.append({})
-            row_col_idx.append([])
-            for cell in row.cells:
-                # skip columns populated by active rowspans
-                while i < rowspan_ends.get(j, 0):
-                    j += 1
-                row_col_idx[-1].append(j)
+
+            for j, cell in enumerate(row.cells):
+                if cell is None:
+                    continue
 
                 # NB: ignore page_break since we might need to assign rowspan padding
                 _, dictated_height, img_height = self._get_cell_layout_info(cell, i, j)
@@ -249,25 +243,18 @@ class Table:
                 rendered_heights[i][j] = dictated_height
 
                 if cell.rowspan > 1:
-                    for k in range(j, j+cell.colspan):
-                        rowspan_ends[k] = i + cell.rowspan
+                    for k in range(j, j + cell.colspan):
                         rowspan_list.append(
                             RowSpanLayoutInfo(k, i, cell.rowspan, dictated_height)
                         )
-                        rowspan_cols[-1].append(k)
                 else:
                     min_height = max(min_height, dictated_height)
 
-                j += cell.colspan
-
             row_min_heights[i] = min_height
 
-            # rowspan might be at the end
-            while i < rowspan_ends.get(j, 0):
-                j += 1
-
             # Sanity-check the total number of columns
-            if j != self._cols_count:
+            # TODO: not necessary?
+            if j != self._cols_count - 1:
                 raise FPDFException(
                     f"Inconsistent column count detected on row {i}:"
                     f" it has {j} columns,"
@@ -302,7 +289,7 @@ class Table:
                     for i in span.row_range():
                         row_span_padding[i] += extra / span.length
 
-        # Third pass: render the cells
+        # Third pass: actually render the cells
         any_page_break = False
         self._fpdf.y += self._outer_border_margin[1]
         for i, row in enumerate(self.rows):
@@ -316,9 +303,7 @@ class Table:
             h = 0
             while k < last_row:
                 h += row_min_heights[k] + row_span_padding[k]
-                if len(self.rows[k].cells):
-                    max_span = max(cell.rowspan for cell in self.rows[k].cells)
-                    last_row = max(last_row, k + max_span)
+                last_row = max(last_row, k + self.rows[k].max_rowspan)
                 k += 1
 
             # pylint: disable=protected-access
@@ -334,28 +319,23 @@ class Table:
             any_page_break = any_page_break or page_break
 
             y = self._fpdf.y  # remember current y position, reset after each cell
-            for j, cell in zip(row_col_idx[i], row.cells):
+            for j, cell in enumerate(row.cells):
+                if cell is None:
+                    continue
+                info = row_layout_info
                 if cell.rowspan > 1:
                     h = self._gutter_height * (cell.rowspan - 1)
                     for k in range(i, i + cell.rowspan):
                         h += row_min_heights[k] + row_span_padding[k]
-                    self._render_table_cell(
-                        i,
-                        j,
-                        cell,
-                        self._line_height,
-                        RowLayoutInfo(h, False, rendered_heights[i]),
-                        cell_x_positions,
-                    )
-                else:
-                    self._render_table_cell(
-                        i,
-                        j,
-                        cell,
-                        row_height=self._line_height,
-                        cell_height_info=row_layout_info,
-                        cell_x_positions=cell_x_positions,
-                    )
+                    info = RowLayoutInfo(h, False, rendered_heights[i])  # TODO: fixup
+                self._render_table_cell(
+                    i,
+                    j,
+                    cell,
+                    row_height=self._line_height,
+                    cell_height_info=info,
+                    cell_x_positions=cell_x_positions,
+                )
                 self._fpdf.set_y(y)  # restore y position after each cell
 
             self._fpdf.ln(this_row_height + self._gutter_height)
@@ -418,10 +398,11 @@ class Table:
 
     def _render_table_row(self, i, row_layout_info, cell_x_positions, **kwargs):
         row = self.rows[i]
-        j = 0
         y = self._fpdf.y  # remember current y position, reset after each cell
 
-        for cell in row.cells:
+        for j, cell in enumerate(row.cells):
+            if cell is None:
+                continue
             self._render_table_cell(
                 i,
                 j,
@@ -431,7 +412,6 @@ class Table:
                 cell_x_positions=cell_x_positions,
                 **kwargs,
             )
-            j += cell.colspan
             self._fpdf.set_y(y)  # restore y position after each cell
 
         self._fpdf.ln(row_layout_info.height)
@@ -700,11 +680,9 @@ class Table:
         page_breaks = 0
         # pylint: disable=protected-access
         with self._fpdf._disable_writing():
-            j = 0
-            for cell in row.cells:
-                # rows with span are handled elsewhere
-                if cell.rowspan > 1:
-                    j += cell.colspan
+            for j, cell in enumerate(row.cells):
+                # spans are handled elsewhere
+                if cell is None:
                     continue
 
                 page_break, dictated_height, image_height = self._get_cell_layout_info(
@@ -716,7 +694,6 @@ class Table:
                 # so store in RowLayoutInfo instead
                 rendered_height[j] = max(image_height, dictated_height)
 
-                j += cell.colspan
                 page_breaks += 1 if page_break else 0
 
                 image_heights_per_cell.append(image_height)
@@ -753,7 +730,8 @@ class Row:
 
     @property
     def max_rowspan(self):
-        return max(cell.rowspan for cell in self.cells)
+        spans = {cell.rowspan for cell in self.cells if cell is not None}
+        return max(spans) if len(spans) else 1
 
     @property
     def column_indices(self):
@@ -764,6 +742,39 @@ class Row:
             colidx += self.cells[jj].colspan
             indices.append(colidx)
         return indices
+
+    def convert_spans(self, active_rowspans):
+        # convert colspans
+        prev_cell = None
+        cells = []
+        for i, cell in enumerate(self.cells):
+            if cell is None:
+                continue
+            if cell == TableSpan.COL:
+                assert isinstance(prev_cell, Cell)
+                prev_cell.colspan += 1
+                cells.append(None)  # processed
+            else:
+                cells.append(cell)
+                prev_cell = cell
+                if isinstance(cell, Cell) and cell.colspan > 1:  # expand any colspans
+                    cells.extend([None] * (cell.colspan - 1))
+        # now we can correctly interpret active_rowspans
+        remaining_rowspans = {}
+        for k, v in active_rowspans.items():
+            cells.insert(k, None)
+            if v > 1:
+                remaining_rowspans[k] = v - 1
+        # accumulate any rowspans
+        reverse_rowspans = []
+        for i, cell in enumerate(cells):
+            if isinstance(cell, Cell) and cell.rowspan > 1:
+                remaining_rowspans[i] = cell.rowspan - 1
+            elif cell == TableSpan.ROW:
+                reverse_rowspans.append(i)
+                cells[i] = None  # processed
+        self.cells = cells
+        return remaining_rowspans, reverse_rowspans
 
     def cell(
         self,
@@ -802,7 +813,6 @@ class Row:
                 "fpdf2 currently does not support inserting text with an image in the same table cell."
                 " Pull Requests are welcome to implement this 😊"
             )
-        #if rowspan > 1 and colspan > 1:
         if not style:
             # pylint: disable=protected-access
             # We capture the current font settings:
