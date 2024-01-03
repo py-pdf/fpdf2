@@ -170,23 +170,30 @@ External|East|4-1|4-2|4-3|4-4|4-5|<
     y0 = pdf.h - pdf.b_margin
     with pdf.local_context(**line_opts):
         pdf.line(0, y0, pdf.w, y0)
+
     # simple table
     # with pdf.table(TABLE_DATA, **table_opts):
     with pdf.table(TABLE_DATA, **table_opts):
         pass
+
     # test breaking within a rowspan of the data block
     # -- verify break occurs before the offending rowspan
     # -- verify header reproduction
     pdf.set_y(pdf.h - 85)
+    with pdf.local_context(**line_opts):
+        pdf.line(0, pdf.y, pdf.w, pdf.y)
     with pdf.table(TABLE_DATA, **table_opts):
         pass
-    with pdf.local_context(**line_opts):
-        pdf.line(0, y0, pdf.w, y0)
+
     # test breaking within the header
     # allow room for two rows of the table, but not three
     pdf.set_y(pdf.h - 40)
+    with pdf.local_context(**line_opts):
+        pdf.line(0, y0, pdf.w, y0)
+        pdf.line(0, pdf.y, pdf.w, pdf.y)
     with pdf.table(TABLE_DATA, **table_opts):
         pass
+
     # test breaking inside a rowspan in the header
     # allow room for one row of the table, but not two
     pdf.set_y(pdf.h - 35)
@@ -196,4 +203,23 @@ External|East|4-1|4-2|4-3|4-4|4-5|<
     with pdf.table(TABLE_DATA, **table_opts):
         pass
 
-    assert_pdf_equal(pdf, HERE / "table_with_rowspan_and_pgbreak.pdf", tmp_path)
+    # test breaking when there's nowhere good to do it
+    # the continually overlapping rowspans mean the whole table must be kept together
+    pdf.set_y(pdf.h * 2 / 3)
+    with pdf.local_context(**line_opts):
+        pdf.line(0, y0, pdf.w, y0)
+        pdf.line(0, pdf.y, pdf.w, pdf.y)
+    with pdf.table(text_align="CENTER") as table:
+        table.row(["H1", "H2", "H3", "H4"])
+        for i in range(15):
+            row = table.row()
+            for j, c in enumerate("ABCD"):
+                ij = (5 + i - j) % 5
+                rowspan = 3 if ij == 0 else 1
+                if i <= j or ij == 0 or ij > 2:
+                    row.cell(f"{c}{i}", rowspan=rowspan)
+        table.row(["A15", "B15", "C15"])
+
+    assert_pdf_equal(
+        pdf, HERE / "table_with_rowspan_and_pgbreak.pdf", tmp_path, generate=True
+    )

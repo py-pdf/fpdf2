@@ -638,7 +638,6 @@ class Table:
                         row_span_padding[i] = padding
                 else:
                     # add proportional padding to the rows
-                    # TODO: try to increase towards max_padding instead of evenly accmulating
                     extra = span.contents_height - assigned_height - assigned_padding
                     for i in span.row_range():
                         row_span_padding[i] += extra / span.length
@@ -646,9 +645,8 @@ class Table:
         # Fourth pass: compute the final element sizes
         for i, row in enumerate(self.rows):
             row_height = row_min_heights[i] + row_span_padding[i]
+            # Compute the size of merged cells
             merged_sizes = [0, row_height]
-            # Pagebreak should not occur within any rowspan, so validate accumulated rowspans
-            # TODO: simplify?
             pagebreak_row = i + row_span_max[i]
             for j in range(i + 1, i + row_span_max[i]):
                 pagebreak_row = max(pagebreak_row, j + row_span_max[j])
@@ -658,11 +656,14 @@ class Table:
                     + row_min_heights[j]
                     + row_span_padding[j]
                 )
-            pagebreak_height = (
-                sum(row_min_heights[i:pagebreak_row])
-                + sum(row_span_padding[i:pagebreak_row])
-                + (pagebreak_row - i - 1) * self._gutter_height
-            )
+            # Pagebreak should not occur within ANY rowspan, so validate ACCUMULATED rowspans
+            # This gets complicated because of overlapping rowspans (see `test_table_with_rowspan_and_pgbreak()`)
+            # Eventually, this should be refactored to rearrange cells to permit breaks within spans
+            pagebreak_height = merged_sizes[-1]
+            while j < pagebreak_row:
+                pagebreak_row = max(pagebreak_row, j + row_span_max[j])
+                pagebreak_height += self._gutter_height + row_min_heights[j] + row_span_padding[j]
+                j += 1
 
             yield RowLayoutInfo(
                 merged_sizes[1], pagebreak_height, rendered_heights[i], merged_sizes
