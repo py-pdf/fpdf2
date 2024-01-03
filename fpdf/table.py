@@ -624,6 +624,9 @@ class Table:
                 row_min_heights.append(min_height)
                 row_span_max.append(row.max_rowspan)
 
+        # Sort the spans so we allocate padding to the smallest spans first
+        rowspan_list = sorted(rowspan_list, key=lambda span: span.length)
+
         # Third pass: allocate space required for the rowspans
         row_span_padding = [0 for row in self.rows]
         for span in rowspan_list:

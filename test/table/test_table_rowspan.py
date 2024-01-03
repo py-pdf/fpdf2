@@ -6,6 +6,7 @@ from fpdf.enums import TableSpan
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
+IMG_DIR = HERE.parent / "image"
 
 
 def test_table_with_rowspan(tmp_path):
@@ -220,6 +221,42 @@ External|East|4-1|4-2|4-3|4-4|4-5|<
                     row.cell(f"{c}{i}", rowspan=rowspan)
         table.row(["A15", "B15", "C15"])
 
-    assert_pdf_equal(
-        pdf, HERE / "table_with_rowspan_and_pgbreak.pdf", tmp_path, generate=True
-    )
+    assert_pdf_equal(pdf, HERE / "table_with_rowspan_and_pgbreak.pdf", tmp_path)
+
+
+def test_table_with_rowspan_images(tmp_path):
+    # Verify that the rowspans interact correctly with pagebreaks
+    pdf = FPDF()
+    pdf.set_font("Helvetica")
+    pdf.add_page()
+
+    with pdf.table(text_align="CENTER", col_widths=(8, 10, 6)) as table:
+        table.row(["Image", "Text", "Image"])
+
+        row = table.row()
+        row.cell(
+            img=IMG_DIR / "png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png", rowspan=3
+        )
+        row.cell("One line of text")
+        row.cell(img=IMG_DIR / "image_types/insert_images_insert_jpg.jpg", rowspan=2)
+
+        table.row().cell("Two lines\nof text")
+
+        row = table.row()
+        # row.cell("Three\nlines\nof text")
+        row.cell("One line of text")
+        row.cell(img=IMG_DIR / "image_types/insert_images_insert_png.png", rowspan=2)
+
+        row = table.row()
+        row.cell(img=IMG_DIR / "image_types/circle.gif")
+        row.cell("Two lines\nof text")
+
+        row = table.row()
+        row.cell(img=IMG_DIR / "image_types/insert_images_insert_jpg.jpg", rowspan=2)
+        row.cell("One line of text")
+        row.cell(img=IMG_DIR / "image_types/pythonknight.png", rowspan=2)
+
+        row = table.row()
+        row.cell("Four\nlines\nof\ntext")
+
+    assert_pdf_equal(pdf, HERE / "table_with_rowspan_images.pdf", tmp_path)

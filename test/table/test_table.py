@@ -731,6 +731,4 @@ def test_table_with_varying_col_count(tmp_path):
             subset = data_row[:i]
             table.row(subset)
 
-    assert_pdf_equal(
-        pdf, HERE / "table_with_varying_col_count.pdf", tmp_path, generate=True
-    )
+    assert_pdf_equal(pdf, HERE / "table_with_varying_col_count.pdf", tmp_path)
