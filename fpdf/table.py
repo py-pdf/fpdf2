@@ -559,7 +559,8 @@ class Table:
                     prev_cell_in_col[j] = i
                     for k in range(1, cell.colspan):
                         prev_cell_in_col[j + k] = None
-        assert len(active_rowspans) == 0, "Rowspan beyond end of table"
+        if len(active_rowspans) != 0:
+            raise FPDFException("Rowspan extends beyond end of table")
 
         # Second pass: Estimate the cell sizes
         rowspan_list = []
@@ -713,7 +714,10 @@ class Row:
                 continue
             if cell == TableSpan.COL:
                 cell = cells[prev_col]
-                assert isinstance(cell, Cell), "Incompatible colspan configuration"
+                if not isinstance(cell, Cell):
+                    raise FPDFException(
+                        "Invalid location for TableSpan.COL placeholder entry"
+                    )
                 cells[prev_col] = replace(cell, colspan=cell.colspan + 1)
                 cells.append(None)  # processed
             else:
