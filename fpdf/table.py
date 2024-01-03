@@ -569,7 +569,8 @@ class Table:
         # pylint: disable=protected-access
         with self._fpdf._disable_writing():
             for i, row in enumerate(self.rows):
-                min_height = self._line_height  # in case of fully-spanned row
+                dictated_heights = []
+                img_heights = []
                 rendered_heights.append({})
 
                 for j, cell in enumerate(row.cells):
@@ -577,13 +578,18 @@ class Table:
                         continue
 
                     # NB: ignore page_break since we might need to assign rowspan padding
-                    _, dictated_height, img_height = self._get_cell_layout_info(cell, i, j)
-                    dictated_height = max(dictated_height, img_height)
+                    _, dictated_height, img_height = self._get_cell_layout_info(
+                        cell, i, j
+                    )
+                    # Store the dictated heights in a dict (not list) because of span elements
                     rendered_heights[i][j] = dictated_height
 
                     if cell.rowspan > 1:
+                        # For spanned rows, use img_height if dictated_height is zero
                         rowspan_list.append(
-                            RowSpanLayoutInfo(j, i, cell.rowspan, dictated_height)
+                            RowSpanLayoutInfo(
+                                j, i, cell.rowspan, dictated_height or img_height
+                            )
                         )
                         # Often we want rowspans in headings, but issues arise if the span crosses outside the heading
                         is_heading = i < self._num_heading_rows
@@ -593,7 +599,20 @@ class Table:
                                 "Heading includes rowspan beyond the number of heading rows"
                             )
                     else:
-                        min_height = max(min_height, dictated_height)
+                        dictated_heights.append(dictated_height)
+                        img_heights.append(img_height)
+
+                # The height of the rows is chosen as follows:
+                # The "dictated height" is the space required for text/image, so pick the largest in the row
+                # If this is zero, we will fill the space with images, so pick the largest image height
+                # If this is still zero (e.g. empty/fully spanned row), use a sensible default
+                min_height = 0
+                if len(dictated_heights):
+                    min_height = max(dictated_heights)
+                    if min_height == 0:
+                        min_height = max(img_heights)
+                if min_height == 0:
+                    min_height = self._line_height
 
                 row_min_heights.append(min_height)
                 row_span_max.append(row.max_rowspan)
@@ -678,7 +697,7 @@ class Row:
 
     @property
     def cols_count(self):
-        return sum(getattr(cell, 'colspan', cell is not None) for cell in self.cells)
+        return sum(getattr(cell, "colspan", cell is not None) for cell in self.cells)
 
     @property
     def max_rowspan(self):
