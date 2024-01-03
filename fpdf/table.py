@@ -4,13 +4,13 @@ from typing import Optional, Union
 
 from .enums import (
     Align,
+    MethodReturnValue,
     TableBordersLayout,
     TableCellFillMode,
     WrapMode,
     VAlign,
     TableSpan,
 )
-from .enums import MethodReturnValue
 from .errors import FPDFException
 from .fonts import CORE_FONTS, FontFace
 from .util import Padding
@@ -577,9 +577,17 @@ class Table:
                         continue
 
                     # NB: ignore page_break since we might need to assign rowspan padding
-                    _, dictated_height, img_height = self._get_cell_layout_info(
-                        cell, i, j
+                    _, img_height, text_height = self._render_table_cell(
+                        i,
+                        j,
+                        cell,
+                        row_height=self._line_height,
                     )
+                    if cell.img_fill_width:
+                        dictated_height = img_height
+                    else:
+                        dictated_height = text_height
+
                     # Store the dictated heights in a dict (not list) because of span elements
                     rendered_heights[i][j] = dictated_height
 
@@ -662,29 +670,14 @@ class Table:
             pagebreak_height = merged_sizes[-1]
             while j < pagebreak_row:
                 pagebreak_row = max(pagebreak_row, j + row_span_max[j])
-                pagebreak_height += self._gutter_height + row_min_heights[j] + row_span_padding[j]
+                pagebreak_height += (
+                    self._gutter_height + row_min_heights[j] + row_span_padding[j]
+                )
                 j += 1
 
             yield RowLayoutInfo(
                 merged_sizes[1], pagebreak_height, rendered_heights[i], merged_sizes
             )
-
-    def _get_cell_layout_info(self, cell, i, j):
-        # pylint: disable=protected-access
-        with self._fpdf._disable_writing():
-            page_break, image_height, text_height = self._render_table_cell(
-                i,
-                j,
-                cell,
-                row_height=self._line_height,
-            )
-
-            if cell.img_fill_width:
-                dictated_height = image_height
-            else:
-                dictated_height = text_height
-
-            return page_break, dictated_height, image_height
 
 
 class Row:
