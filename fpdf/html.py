@@ -571,6 +571,7 @@ class HTML2FPDF(HTMLParser):
                 borders_layout = "NONE"
             align = attrs.get("align", "center").upper()
             padding = float(attrs["cellpadding"]) if "cellpadding" in attrs else None
+            spacing = float(attrs.get("cellspacing", 0))
             self.table = Table(
                 self.pdf,
                 align=align,
@@ -578,8 +579,8 @@ class HTML2FPDF(HTMLParser):
                 line_height=self.h * 1.30,
                 width=width,
                 padding=padding,
-                gutter_width=float(attrs.get("cellspacing", 0)),
-                gutter_height=float(attrs.get("cellspacing", 0)),
+                gutter_width=spacing,
+                gutter_height=spacing,
             )
             self._ln()
         if tag == "tr":
