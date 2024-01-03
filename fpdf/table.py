@@ -197,7 +197,7 @@ class Table:
         xx = self._outer_border_margin[0]
         cell_x_positions = [xx]
         if len(self.rows):
-            self._cols_count = self.rows[0].cols_count
+            self._cols_count = max(row.cols_count for row in self.rows)
             for i in range(self._cols_count):
                 xx += self._get_col_width(0, i)
                 xx += self._gutter_width
@@ -569,14 +569,6 @@ class Table:
         for i, row in enumerate(self.rows):
             min_height = self._line_height  # in case of fully-spanned row
             rendered_heights.append({})
-
-            # Sanity-check the total number of columns
-            if len(row.cells) != self._cols_count:
-                raise FPDFException(
-                    f"Inconsistent column count detected on row {i}:"
-                    f" it has {j} columns,"
-                    f" whereas the table has {self._cols_count}."
-                )
 
             for j, cell in enumerate(row.cells):
                 if cell is None:  # placeholder cell
