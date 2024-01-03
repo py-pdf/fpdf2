@@ -4914,6 +4914,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             line_height (number): optional. Defines how much vertical space a line of text will occupy.
             markdown (bool): optional, default to False. Enable markdown interpretation of cells textual content.
             text_align (str, fpdf.enums.Align): optional, default to JUSTIFY. Control text alignment inside cells.
+            v_align (str, fpdf.enums.AlignV): optional, default to CENTER. Control vertical alignment of cells content.
             width (number): optional. Sets the table width.
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
                 "CHAR" for character based line wrapping.
@@ -4922,6 +4923,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 If padding for left or right ends up being non-zero then the respective c_margin is ignored.
             outer_border_width (number): optional. The outer_border_width will trigger rendering of the outer
                 border of the table with the given width regardless of any other defined border styles.
+            num_heading_rows (number): optional. Sets the number of heading rows, default value is 1. If this value is not 1,
+                first_row_as_headings needs to be True if num_heading_rows>1 and False if num_heading_rows=0. For backwards compatibility,
+                first_row_as_headings is used in case num_heading_rows is 1.
         """
         table = Table(self, *args, **kwargs)
         yield table
