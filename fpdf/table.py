@@ -658,9 +658,7 @@ class Table:
             row_height = row_min_heights[i] + row_span_padding[i]
             # Compute the size of merged cells
             merged_sizes = [0, row_height]
-            pagebreak_row = i + row_span_max[i]
             for j in range(i + 1, i + row_span_max[i]):
-                pagebreak_row = max(pagebreak_row, j + row_span_max[j])
                 merged_sizes.append(
                     merged_sizes[-1]
                     + self._gutter_height
@@ -670,8 +668,11 @@ class Table:
             # Pagebreak should not occur within ANY rowspan, so validate ACCUMULATED rowspans
             # This gets complicated because of overlapping rowspans (see `test_table_with_rowspan_and_pgbreak()`)
             # Eventually, this should be refactored to rearrange cells to permit breaks within spans
-            pagebreak_height = merged_sizes[-1]
+            pagebreak_height = row_height
+            pagebreak_row = i + row_span_max[i]
+            j = i + 1
             while j < pagebreak_row:
+                # NB: this can't be a for loop because the upper limit might keep changing
                 pagebreak_row = max(pagebreak_row, j + row_span_max[j])
                 pagebreak_height += (
                     self._gutter_height + row_min_heights[j] + row_span_padding[j]

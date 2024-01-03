@@ -188,7 +188,7 @@ External|East|4-1|4-2|4-3|4-4|4-5|<
 
     # test breaking within the header
     # allow room for two rows of the table, but not three
-    pdf.set_y(pdf.h - 40)
+    pdf.set_y(y0 - 20)
     with pdf.local_context(**line_opts):
         pdf.line(0, y0, pdf.w, y0)
         pdf.line(0, pdf.y, pdf.w, pdf.y)
@@ -197,7 +197,7 @@ External|East|4-1|4-2|4-3|4-4|4-5|<
 
     # test breaking inside a rowspan in the header
     # allow room for one row of the table, but not two
-    pdf.set_y(pdf.h - 35)
+    pdf.set_y(y0 - 15)
     with pdf.local_context(**line_opts):
         pdf.line(0, y0, pdf.w, y0)
         pdf.line(0, pdf.y, pdf.w, pdf.y)
