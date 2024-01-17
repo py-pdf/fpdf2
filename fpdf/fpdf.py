@@ -3189,6 +3189,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if any("I" in frag.font_style for frag in styled_txt_frags):
             # Ensuring italics font is supported:
             self.set_font(style="I")
+        if any("BI" in frag.font_style for frag in styled_txt_frags):
+            # Ensuring bold italics font is supported:
+            self.set_font(style="BI")
+        if any("" in frag.font_style for frag in styled_txt_frags):
+            # Ensuring base font is supported:
+            self.set_font(style="")
         for frag in styled_txt_frags:
             frag.font = self.fonts[frag.font_family + frag.font_style]
         # Restoring initial style:
