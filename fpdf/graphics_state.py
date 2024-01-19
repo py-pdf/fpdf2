@@ -5,6 +5,7 @@ The contents of this module are internal to fpdf2, and not part of the public AP
 They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
+from copy import copy
 
 from .drawing import DeviceGray
 from .enums import CharVPos, TextEmphasis, TextMode
@@ -61,13 +62,18 @@ class GraphicsStateMixin:
         if new:
             self.__statestack.append(new)
         else:
-            self.__statestack.append(self.__statestack[-1].copy())
+            self.__statestack.append(self._get_current_graphics_state())
 
     def _pop_local_stack(self):
         return self.__statestack.pop()
 
     def _get_current_graphics_state(self):
-        return self.__statestack[-1].copy()
+        # "current_font" must be shallow copied
+        # "text_shaping" must be deep copied (different fragments may have different languages/direction)
+        # Doing a whole copy and then creating a copy of text_shaping to achieve this result
+        gs = copy(self.__statestack[-1])
+        gs["text_shaping"] = copy(gs["text_shaping"])
+        return gs
 
     @property
     def draw_color(self):
@@ -329,11 +335,10 @@ class GraphicsStateMixin:
     def text_shaping(self):
         return self.__statestack[-1]["text_shaping"]
 
-    @_text_shaping.setter
-    def _text_shaping(self, v):
+    @text_shaping.setter
+    def text_shaping(self, v):
         if v:
-            self.__statestack[-1]["text_shaping"] = dict(v)
-            self.__statestack[-1]["text_shaping"]["features"] = dict(v["features"])
+            self.__statestack[-1]["text_shaping"] = v
 
     def font_face(self):
         """

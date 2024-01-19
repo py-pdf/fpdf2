@@ -513,6 +513,14 @@ def calculate_isolate_runs(paragraph: List[BidiCharacter]) -> List[IsolatingRun]
 
 
 class BidiParagraph:
+    __slots__ = (
+        "text",
+        "base_direction",
+        "debug",
+        "base_embedding_level",
+        "characters",
+    )
+
     def __init__(self, text: str, base_direction: str = None, debug: bool = False):
         self.text = text
         self.base_direction = (
@@ -523,24 +531,29 @@ class BidiParagraph:
         self.debug = debug
         self.base_embedding_level = 0 if self.base_direction == "L" else 1  # base level
         self.characters: List[BidiCharacter] = []
-        self.reordered_characters: List[BidiCharacter] = []
-        self.bidi_fragments = []
         self.get_bidi_characters()
 
     def get_characters(self) -> List[BidiCharacter]:
         return self.characters
 
+    def get_characters_with_embedding_level(self) -> List[BidiCharacter]:
+        # Calculate embedding level for each character after breaking isolating runs.
+        # Only used on conformance testing
+        self.reorder_resolved_levels()
+        return self.characters
+
     def get_reordered_characters(self) -> List[BidiCharacter]:
-        return self.reordered_characters
+        return self.reorder_resolved_levels()
 
     def get_all(self):
-        return self.characters, self.reordered_characters
+        return self.characters, self.reorder_resolved_levels()
 
     def get_reordered_string(self):
-        return "".join(c.character for c in self.reordered_characters)
+        "Used for conformance validation"
+        return "".join(c.character for c in self.reorder_resolved_levels())
 
     def get_bidi_fragments(self):
-        return self.bidi_fragments
+        return self.split_bidi_fragments()
 
     def get_bidi_characters(self) -> List[BidiCharacter]:
         # Explicit leves and directions. Rule X1
@@ -678,23 +691,23 @@ class BidiParagraph:
             return
         self.characters = results
         calculate_isolate_runs(results)
-        self.split_bidi_fragments()
-        self.reorder_resolved_levels()
 
     def split_bidi_fragments(self):
+        bidi_fragments = []
         if len(self.characters) == 0:
-            return
+            return ()
         current_fragment = ""
         current_direction = ""
         for c in self.characters:
             if c.get_direction_from_level() != current_direction:
                 if current_fragment:
-                    self.bidi_fragments.append((current_fragment, current_direction))
+                    bidi_fragments.append((current_fragment, current_direction))
                 current_fragment = ""
                 current_direction = c.get_direction_from_level()
             current_fragment += c.character
         if current_fragment:
-            self.bidi_fragments.append((current_fragment, current_direction))
+            bidi_fragments.append((current_fragment, current_direction))
+        return tuple(bidi_fragments)
 
     def reorder_resolved_levels(self):
         before_separator = True
@@ -748,4 +761,4 @@ class BidiParagraph:
                 rev.reverse()
                 temp_results += rev
             reordered_paragraph = temp_results
-        self.reordered_characters = reordered_paragraph
+        return tuple(reordered_paragraph)

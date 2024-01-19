@@ -137,9 +137,11 @@ def test_bidi_character():
 
         characters = BidiParagraph(
             text=string, base_direction=base_direction
-        ).get_characters()
+        ).get_characters_with_embedding_level()
 
         result_index = 0
+        print(test_data)
+        print(characters)
         for level in test_data[3].split(" "):
             if level == "x":
                 continue
@@ -149,29 +151,31 @@ def test_bidi_character():
     assert test_count == 91707
 
 
-def test_bidi_string(tmp_path):
-    # pylint: disable=bidirectional-unicode
-    string = (
-        "عندما يريد العالم أن ‪يتكلّم ‬ ،"
-        + " فهو يتحدّث بلغة يونيكود. تسجّل الآن لحضور المؤتمر الدولي العاشر ليونيكود (Unicode Conference)، "
-        + "الذي سيعقد في 10-12 آذار 1997 بمدينة مَايِنْتْس، ألمانيا. و سيجمع المؤتمر بين خبراء من كافة قطاعات الصناعة على الشبكة"
-        + " العالمية انترنيت ويونيكود، حيث ستتم، على الصعيدين الدولي والمحلي على حد سواء مناقشة سبل استخدام"
-        + " يونكود في النظم القائمة وفيما يخص التطبيقات الحاسوبية، الخطوط، تصميم النصوص والحوسبة متعددة اللغات."
-    )
+def test_bidi_lorem_ipsum(tmp_path):
+    # taken from https://ar.lipsum.com/ - contains Arabic (RTL) with portions in english (LTR) within the text
+    ARABIC_LOREM_IPSUM = """
+ما فائدته ؟
+هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما سيلهي القارئ عن التركيز على الشكل الخارجي للنص أو شكل توضع الفقرات في الصفحة التي يقرأها. ولذلك يتم استخدام طريقة لوريم إيبسوم لأنها تعطي توزيعاَ طبيعياَ -إلى حد ما- للأحرف عوضاً عن استخدام "هنا يوجد محتوى نصي، هنا يوجد محتوى نصي" فتجعلها تبدو (أي الأحرف) وكأنها نص مقروء. العديد من برامح النشر المكتبي وبرامح تحرير صفحات الويب تستخدم لوريم إيبسوم بشكل إفتراضي كنموذج عن النص، وإذا قمت بإدخال "lorem ipsum" في أي محرك بحث ستظهر العديد من المواقع الحديثة العهد في نتائج البحث. على مدى السنين ظهرت نسخ جديدة ومختلفة من نص لوريم إيبسوم، أحياناً عن طريق الصدفة، وأحياناً عن عمد كإدخال بعض العبارات الفكاهية إليها.
+
+ما أصله ؟
+خلافاَ للإعتقاد السائد فإن لوريم إيبسوم ليس نصاَ عشوائياً، بل إن له جذور في الأدب اللاتيني الكلاسيكي منذ العام 45 قبل الميلاد، مما يجعله أكثر من 2000 عام في القدم. قام البروفيسور "ريتشارد ماك لينتوك" (Richard McClintock) وهو بروفيسور اللغة اللاتينية في جامعة هامبدن-سيدني في فيرجينيا بالبحث عن أصول كلمة لاتينية غامضة في نص لوريم إيبسوم وهي "consectetur"، وخلال تتبعه لهذه الكلمة في الأدب اللاتيني اكتشف المصدر الغير قابل للشك. فلقد اتضح أن كلمات نص لوريم إيبسوم تأتي من الأقسام 1.10.32 و 1.10.33 من كتاب "حول أقاصي الخير والشر" (de Finibus Bonorum et Malorum) للمفكر شيشيرون (Cicero) والذي كتبه في عام 45 قبل الميلاد. هذا الكتاب هو بمثابة مقالة علمية مطولة في نظرية الأخلاق، وكان له شعبية كبيرة في عصر النهضة. السطر الأول من لوريم إيبسوم "Lorem ipsum dolor sit amet.." يأتي من سطر في القسم 1.20.32 من هذا الكتاب.
+
+للمهتمين قمنا بوضع نص لوريم إبسوم القياسي والمُستخدم منذ القرن الخامس عشر في الأسفل. وتم أيضاً توفير الأقسام 1.10.32 و 1.10.33 من "حول أقاصي الخير والشر" (de Finibus Bonorum et Malorum) لمؤلفه شيشيرون (Cicero) بصيغها الأصلية، مرفقة بالنسخ الإنكليزية لها والتي قام بترجمتها هـ.راكهام (H. Rackham) في عام 1914.
+
+"""
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font(family="NotoSansArabic", fname=HERE / "NotoSansArabic-Regular.ttf")
+    pdf.add_font(family="NotoArabic", fname=HERE / "NotoNaskhArabic-Regular.ttf")
     pdf.add_font(family="NotoSans", fname=HERE / "NotoSans-Regular.ttf")
     pdf.set_fallback_fonts(["NotoSans"])
-    pdf.set_font("NotoSansArabic", size=20)
-    pdf.set_text_shaping(False)
-    pdf.multi_cell(text=string, w=pdf.epw, h=10, new_x="LEFT", new_y="NEXT", align="R")
-    pdf.ln()
+    pdf.set_font("NotoArabic", size=20)
     pdf.set_text_shaping(True)
-    pdf.multi_cell(text=string, w=pdf.epw, h=10, new_x="LEFT", new_y="NEXT", align="R")
+    pdf.multi_cell(
+        text=ARABIC_LOREM_IPSUM, w=pdf.epw, h=10, new_x="LEFT", new_y="NEXT", align="R"
+    )
 
     assert_pdf_equal(
         pdf,
-        HERE / "bidi_arabic.pdf",
+        HERE / "bidi_arabic_lorem_ipsum.pdf",
         tmp_path,
     )

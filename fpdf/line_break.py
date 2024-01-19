@@ -7,7 +7,7 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-from typing import NamedTuple, Any, Optional, Union, Sequence
+from typing import NamedTuple, Any, List, Optional, Union, Sequence
 from numbers import Number
 
 from .enums import CharVPos, WrapMode, Align
@@ -34,7 +34,6 @@ class Fragment:
         graphics_state: dict,
         k: float,
         link: Optional[Union[int, str]] = None,
-        text_shaping_parameters: dict = None,
     ):
         if isinstance(characters, str):
             self.characters = list(characters)
@@ -43,9 +42,6 @@ class Fragment:
         self.graphics_state = graphics_state
         self.k = k
         self.link = link
-        self.text_shaping_parameters = (
-            dict(text_shaping_parameters) if text_shaping_parameters else None
-        )
 
     def __repr__(self):
         return (
@@ -146,6 +142,30 @@ class Fragment:
     @property
     def string(self):
         return "".join(self.characters)
+
+    @property
+    def width(self):
+        return self.get_width()
+
+    @property
+    def text_shaping_parameters(self):
+        return self.graphics_state["text_shaping"]
+
+    @property
+    def paragraph_direction(self):
+        return (
+            self.text_shaping_parameters["paragraph_direction"]
+            if self.text_shaping_parameters
+            else "L"
+        )
+
+    @property
+    def fragment_direction(self):
+        return (
+            self.text_shaping_parameters["fragment_direction"]
+            if self.text_shaping_parameters
+            else "L"
+        )
 
     def trim(self, index: int):
         self.characters = self.characters[:index]
@@ -322,6 +342,27 @@ class TextLine(NamedTuple):
     trailing_nl: bool = False
     trailing_form_feed: bool = False
 
+    def get_ordered_fragments(self):
+        if not self.fragments:
+            return tuple()
+        directional_runs = []
+        direction = ""
+        for fragment in self.fragments:
+            if fragment.fragment_direction == direction:
+                directional_runs[-1].append(fragment)
+            else:
+                directional_runs.append([fragment])
+                direction = fragment.fragment_direction
+        if self.fragments[0].paragraph_direction == "R" or (
+            not self.fragments[0].paragraph_direction
+            and self.fragments[0].fragment_direction == "R"
+        ):
+            directional_runs = directional_runs[::-1]
+        ordered_fragments = []
+        for run in directional_runs:
+            ordered_fragments += run[::1] if run[0].fragment_direction == "R" else run
+        return tuple(ordered_fragments)
+
 
 class SpaceHint(NamedTuple):
     original_fragment_index: int
@@ -343,7 +384,6 @@ class HyphenHint(NamedTuple):
     curchar_width: float
     graphics_state: dict
     k: float
-    text_shaping_parameters: dict
 
 
 class CurrentLine:
@@ -356,8 +396,7 @@ class CurrentLine:
         """
         self.max_width = max_width
         self.print_sh = print_sh
-        self.fragments = []
-        self.width = 0
+        self.fragments: List[Fragment] = []
         self.height = 0
         self.number_of_spaces = 0
 
@@ -375,6 +414,13 @@ class CurrentLine:
         self.space_break_hint = None
         self.hyphen_break_hint = None
 
+    @property
+    def width(self):
+        width = 0
+        for i, fragment in enumerate(self.fragments):
+            width += fragment.get_width(initial_cs=i > 0)
+        return width
+
     def add_character(
         self,
         character: str,
@@ -385,14 +431,11 @@ class CurrentLine:
         original_character_index: int,
         height: float,
         url: str = None,
-        text_shaping_parameters: dict = None,
     ):
         assert character != NEWLINE
         self.height = height
         if not self.fragments:
-            self.fragments.append(
-                Fragment("", graphics_state, k, url, text_shaping_parameters)
-            )
+            self.fragments.append(Fragment("", graphics_state, k, url))
 
         # characters are expected to be grouped into fragments by font and
         # character attributes. If the last existing fragment doesn't match
@@ -400,11 +443,8 @@ class CurrentLine:
         elif (
             graphics_state != self.fragments[-1].graphics_state
             or k != self.fragments[-1].k
-            or text_shaping_parameters != self.fragments[-1].text_shaping_parameters
         ):
-            self.fragments.append(
-                Fragment("", graphics_state, k, url, text_shaping_parameters)
-            )
+            self.fragments.append(Fragment("", graphics_state, k, url))
         active_fragment = self.fragments[-1]
 
         if character == SPACE:
@@ -433,11 +473,9 @@ class CurrentLine:
                 character_width,
                 graphics_state,
                 k,
-                text_shaping_parameters,
             )
 
         if character != SOFT_HYPHEN or self.print_sh:
-            self.width += character_width
             active_fragment.characters.append(character)
 
     def trim_trailing_spaces(self):
@@ -446,8 +484,6 @@ class CurrentLine:
         last_frag = self.fragments[-1]
         last_char = last_frag.characters[-1]
         while last_char == " ":
-            char_width = last_frag.get_character_width(" ")
-            self.width -= char_width
             last_frag.trim(-1)
             if not last_frag.characters:
                 del self.fragments[-1]
@@ -466,7 +502,6 @@ class CurrentLine:
         if self.fragments:
             self.fragments[-1].trim(break_hint.current_line_character_index)
         self.number_of_spaces = break_hint.number_of_spaces
-        self.width = break_hint.line_width
 
     def manual_break(
         self, align: Align, trailing_nl: bool = False, trailing_form_feed: bool = False
@@ -500,7 +535,6 @@ class CurrentLine:
                 self.hyphen_break_hint.original_fragment_index,
                 self.hyphen_break_hint.original_character_index,
                 self.height,
-                self.hyphen_break_hint.text_shaping_parameters,
             )
             return (
                 self.hyphen_break_hint.original_fragment_index,
@@ -666,7 +700,6 @@ class MultiLineBreak:
                 self.character_index,
                 current_font_height * self.line_height,
                 current_fragment.link,
-                current_fragment.text_shaping_parameters,
             )
 
             self.character_index += 1

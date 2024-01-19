@@ -17,7 +17,7 @@ from math import isclose
 from numbers import Number
 from os.path import splitext
 from pathlib import Path
-from typing import Callable, NamedTuple, Optional, Union
+from typing import Callable, Iterator, NamedTuple, Optional, Union
 
 try:
     from endesive import signer
@@ -637,6 +637,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             "direction": direction,
             "script": script,
             "language": language,
+            "fragment_direction": None,
+            "paragraph_direction": None,
         }
 
     @property
@@ -1050,18 +1052,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # normalized is parameter for internal use
         s = s if normalized else self.normalize_text(s)
         w = 0
-        for frag in (
-            self._markdown_parse(s)
-            if markdown
-            else (
-                Fragment(
-                    s,
-                    self._get_current_graphics_state(),
-                    self.k,
-                    text_shaping_parameters=self.text_shaping,
-                ),
-            )
-        ):
+        for frag in self._parse_chars(s, markdown):
             w += frag.get_width()
         return w
 
@@ -2946,10 +2937,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         max_font_size = 0  # how much height we need to accomodate.
         # currently all font sizes within a line are vertically aligned on the baseline.
-        fragments = text_line.fragments
-        if self.text_shaping:
-            if self.text_shaping["paragraph_direction"] == "R":
-                fragments = text_line.fragments[::-1]
+        fragments = text_line.get_ordered_fragments()
         for frag in fragments:
             if frag.font_size > max_font_size:
                 max_font_size = frag.font_size
@@ -3000,7 +2988,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         current_char_spacing = self.char_spacing
         fill_color_changed = False
         last_used_color = self.fill_color
-        if text_line.fragments:
+        if fragments:
             if text_line.align == Align.R:
                 dx = w - l_c_margin - styled_txt_width
             elif text_line.align in [Align.C, Align.X]:
@@ -3017,7 +3005,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
             )
-            for i, frag in enumerate(text_line.fragments):
+            for i, frag in enumerate(fragments):
                 if frag.graphics_state["text_color"] != last_used_color:
                     # allow to change color within the line of text.
                     last_used_color = frag.graphics_state["text_color"]
@@ -3186,14 +3174,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         if not self.text_shaping:
             return self._preload_font_styles(text, markdown)
-        paragraph_direction = self.text_shaping["direction"]
-        if not paragraph_direction:
-            paragraph_direction = auto_detect_base_direction(text)
-        self.text_shaping["paragraph_direction"] = paragraph_direction
+        paragraph_direction = (
+            self.text_shaping["direction"]
+            if self.text_shaping["direction"]
+            else auto_detect_base_direction(text)
+        )
 
-        directional_segments = BidiParagraph(
-            text=text, base_direction=paragraph_direction
-        ).get_bidi_fragments()
+        paragraph = BidiParagraph(text=text, base_direction=paragraph_direction)
+        directional_segments = paragraph.get_bidi_fragments()
+        self.text_shaping["paragraph_direction"] = paragraph.base_direction
+
         fragments = []
         for bidi_text, bidi_direction in directional_segments:
             self.text_shaping["fragment_direction"] = bidi_direction
@@ -3211,80 +3201,30 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         if not text:
             return tuple()
-        if not markdown:
-            return self._parse_chars(text)
         prev_font_style = self.font_style
-        styled_txt_frags = tuple(self._markdown_parse(text))
-        page = self.page
-        # We set the current to page to zero so that
-        # set_font() does not produce any text object on the stream buffer:
-        self.page = 0
-        if any("B" in frag.font_style for frag in styled_txt_frags):
-            # Ensuring bold font is supported:
-            self.set_font(style="B")
-        if any("I" in frag.font_style for frag in styled_txt_frags):
-            # Ensuring italics font is supported:
-            self.set_font(style="I")
-        for frag in styled_txt_frags:
-            frag.font = self.fonts[frag.font_family + frag.font_style]
-        # Restoring initial style:
-        self.set_font(style=prev_font_style)
-        self.page = page
+        if self.underline:
+            prev_font_style += "U"
+        styled_txt_frags = tuple(self._parse_chars(text, markdown))
+        if markdown:
+            # Know problem:
+            # If a bold italic font is present (like courierBI) fpdf2 will add
+            # courierB, courierI and courierBI to the output pdf
+            page = self.page
+            # We set the current to page to zero so that
+            # set_font() does not produce any text object on the stream buffer:
+            self.page = 0
+            if any("B" in frag.font_style for frag in styled_txt_frags):
+                # Ensuring bold font is supported:
+                self.set_font(style="B")
+            if any("I" in frag.font_style for frag in styled_txt_frags):
+                # Ensuring italics font is supported:
+                self.set_font(style="I")
+            for frag in styled_txt_frags:
+                frag.font = self.fonts[frag.font_family + frag.font_style]
+            # Restoring initial style:
+            self.set_font(style=prev_font_style)
+            self.page = page
         return styled_txt_frags
-
-    def _parse_chars(self, text):
-        "Check if the font has all the necessary glyphs. If a glyph from a fallback font is used, break into fragments"
-        fragments = []
-        txt_frag = []
-        if not self.is_ttf_font or not self._fallback_font_ids:
-            return tuple(
-                [
-                    Fragment(
-                        text,
-                        self._get_current_graphics_state(),
-                        self.k,
-                        text_shaping_parameters=self.text_shaping,
-                    )
-                ]
-            )
-        font_glyphs = self.current_font.cmap
-        for char in text:
-            if char == "\n" or ord(char) in font_glyphs:
-                txt_frag.append(char)
-            else:
-                if txt_frag:
-                    fragments.append(
-                        Fragment(
-                            txt_frag,
-                            self._get_current_graphics_state(),
-                            self.k,
-                            text_shaping_parameters=self.text_shaping,
-                        )
-                    )
-                    txt_frag = []
-                fallback_font = self.get_fallback_font(char, self.font_style)
-                if fallback_font:
-                    gstate = self._get_current_graphics_state()
-                    gstate["font_family"] = fallback_font
-                    frag = Fragment(
-                        char, gstate, self.k, text_shaping_parameters=self.text_shaping
-                    )
-                    frag.font = self.fonts[fallback_font]
-                    fragments.append(frag)
-                else:
-                    # no fallback font has this character.
-                    # add it anyway with the current font
-                    txt_frag.append(char)
-        if txt_frag:
-            fragments.append(
-                Fragment(
-                    txt_frag,
-                    self._get_current_graphics_state(),
-                    self.k,
-                    text_shaping_parameters=self.text_shaping,
-                )
-            )
-        return tuple(fragments)
 
     def get_fallback_font(self, char, style=""):
         """
@@ -3310,24 +3250,39 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             return None
         return fonts_with_char[0]
 
-    def _markdown_parse(self, text):
-        "Split some text into fragments based on styling: **bold**, __italics__, --underlined--"
+    def _parse_chars(self, text: str, markdown: bool) -> Iterator[Fragment]:
+        "Split text into fragments"
+        if not markdown and (not self.is_ttf_font or not self._fallback_font_ids):
+            yield Fragment(text, self._get_current_graphics_state(), self.k)
+            return
         txt_frag, in_bold, in_italics, in_underline = (
             [],
             "B" in self.font_style,
             "I" in self.font_style,
             bool(self.underline),
         )
+        current_fallback_font = None
 
         def frag():
+            nonlocal txt_frag, current_fallback_font
             gstate = self._get_current_graphics_state()
             gstate["font_style"] = ("B" if in_bold else "") + (
                 "I" if in_italics else ""
             )
             gstate["underline"] = in_underline
-            nonlocal txt_frag
+            if current_fallback_font:
+                gstate["font_family"] = "".join(
+                    c for c in current_fallback_font if c.islower()
+                )
+                gstate["font_style"] = "".join(
+                    c for c in current_fallback_font if c.isupper()
+                )
+                gstate["current_font"] = self.fonts[current_fallback_font]
+                current_fallback_font = None
             fragment = Fragment(
-                txt_frag, gstate, self.k, text_shaping_parameters=self.text_shaping
+                txt_frag,
+                gstate,
+                self.k,
             )
             txt_frag = []
             return fragment
@@ -3345,59 +3300,61 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             )
             half_marker = text[0]
             # Check that previous & next characters are not identical to the marker:
-            if (
-                is_marker
-                and (not txt_frag or txt_frag[-1] != half_marker)
-                and (len(text) < 3 or text[2] != half_marker)
-            ):
-                if txt_frag:
-                    yield frag()
-                if text[:2] == self.MARKDOWN_BOLD_MARKER:
-                    in_bold = not in_bold
-                if text[:2] == self.MARKDOWN_ITALICS_MARKER:
-                    in_italics = not in_italics
-                if text[:2] == self.MARKDOWN_UNDERLINE_MARKER:
-                    in_underline = not in_underline
-                text = text[2:]
-                continue
-            is_link = self.MARKDOWN_LINK_REGEX.match(text)
-            if is_link:
-                link_text, link_dest, text = is_link.groups()
-                if txt_frag:
-                    yield frag()
-                gstate = self._get_current_graphics_state()
-                gstate["underline"] = self.MARKDOWN_LINK_UNDERLINE
-                if self.MARKDOWN_LINK_COLOR:
-                    gstate["text_color"] = self.MARKDOWN_LINK_COLOR
-                try:
-                    page = int(link_dest)
-                    link_dest = self.add_link(page=page)
-                except ValueError:
-                    pass
-                yield Fragment(
-                    list(link_text),
-                    gstate,
-                    self.k,
-                    link=link_dest,
-                    text_shaping_parameters=self.text_shaping,
-                )
-                continue
+            if markdown:
+                if (
+                    is_marker
+                    and (not txt_frag or txt_frag[-1] != half_marker)
+                    and (len(text) < 3 or text[2] != half_marker)
+                ):
+                    if txt_frag:
+                        yield frag()
+                    if text[:2] == self.MARKDOWN_BOLD_MARKER:
+                        in_bold = not in_bold
+                    if text[:2] == self.MARKDOWN_ITALICS_MARKER:
+                        in_italics = not in_italics
+                    if text[:2] == self.MARKDOWN_UNDERLINE_MARKER:
+                        in_underline = not in_underline
+                    text = text[2:]
+                    continue
+                is_link = self.MARKDOWN_LINK_REGEX.match(text)
+                if is_link:
+                    link_text, link_dest, text = is_link.groups()
+                    if txt_frag:
+                        yield frag()
+                    gstate = self._get_current_graphics_state()
+                    gstate["underline"] = self.MARKDOWN_LINK_UNDERLINE
+                    if self.MARKDOWN_LINK_COLOR:
+                        gstate["text_color"] = self.MARKDOWN_LINK_COLOR
+                    try:
+                        page = int(link_dest)
+                        link_dest = self.add_link(page=page)
+                    except ValueError:
+                        pass
+                    yield Fragment(
+                        list(link_text),
+                        gstate,
+                        self.k,
+                        link=link_dest,
+                    )
+                    continue
             if self.is_ttf_font and text[0] != "\n" and not ord(text[0]) in font_glyphs:
                 style = ("B" if in_bold else "") + ("I" if in_italics else "")
                 fallback_font = self.get_fallback_font(text[0], style)
                 if fallback_font:
+                    if fallback_font == current_fallback_font:
+                        txt_frag.append(text[0])
+                        text = text[1:]
+                        continue
                     if txt_frag:
                         yield frag()
-                    gstate = self._get_current_graphics_state()
-                    gstate["font_family"] = fallback_font
-                    yield Fragment(
-                        text[0],
-                        gstate,
-                        self.k,
-                        text_shaping_parameters=self.text_shaping,
-                    )
+                    current_fallback_font = fallback_font
+                    txt_frag.append(text[0])
                     text = text[1:]
                     continue
+            if current_fallback_font:
+                if txt_frag:
+                    yield frag()
+                current_fallback_font = None
             txt_frag.append(text[0])
             text = text[1:]
         if txt_frag:
