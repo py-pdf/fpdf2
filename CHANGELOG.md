@@ -19,6 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.7.8] - Not released yet
 ### Added
 * support for `<path>` elements in SVG `<clipPath>` elements
+* support for `bidirectional` text shaping
 ### Fixed
 * when adding a link on a table cell, an extra link was added erroneously on the left. Moreover, now `FPDF._disable_writing()` properly disable link writing.
 * non-bold `TitleStyle` is now rendered as non-bold even when the current font is bold

@@ -84,17 +84,9 @@ Many non-latin writing systems have complex ways to combine characters, ligature
 To make sure those scripts to be rendered correctly, [text shaping](TextShaping.html) must be enabled with `.set_text_shaping(True)`. 
 
 
-### Right-to-Left & Arabic Script workaround ###
+### Right-to-Left scripts ###
 
-Arabic, Hebrew and other scripts written right-to-left (RTL) should work correctly when text is added that only contains one script at a time. As of release 2.7.6, more complete support for mixing RTL and LTR text is being worked on.
-In the mean time, there is a temporary solution for Arabic and other RTL scripts using two additional libraries `python-bidi` and `arabic-reshaper`. It works for most languages; only a few (rare) Arabic characters aren't supported. Using it on other scripts (eg. when the input is unknown or mixed scripts) does not affect them:
-```python
-from arabic_reshaper import reshape
-from bidi.algorithm import get_display
-
-some_text = 'اَلْعَرَبِيَّةُכַּף סוֹפִית'
-fixed_text = get_display(reshape(some_text))
-```
+When [text shaping](TextShaping.html) is enabled, `fpdf2` will apply the [Unicode Bidirectional Algorithm](https://www.unicode.org/reports/tr9/) to render correctly any text, including bidirectional (mix of right-to-left and left-to-right scripts).
 
 ## Example ##
 
