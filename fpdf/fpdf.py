@@ -44,7 +44,7 @@ from .annotations import (
     PDFEmbeddedFile,
     DEFAULT_ANNOT_FLAGS,
 )
-from .bidi import BidiParagraph
+from .bidi import BidiParagraph, auto_detect_base_direction
 from .deprecation import (
     support_deprecated_txt_arg,
     get_stack_level,
