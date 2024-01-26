@@ -69,7 +69,7 @@
                 if (contributor.issues || contributor.pulls) {
                     popupHtml += `</a>`;
                 }
-                L.marker(topResult.center).bindPopup(popupHtml).addTo(cMap);
+                L.marker(jitterSimilarPositions(topResult.center)).bindPopup(popupHtml).addTo(cMap);
             }
             contributors.shift();
             if (contributors.length > 0) {
@@ -78,5 +78,36 @@
         });
     }
     placeNextContributor();
+
+    /*
+     * Sometimes, several users have the exact same location.
+     * For those cases, we introduce some jitter in their lat/lng coordinates
+     * in order for the map markers to be visually distinct.
+     */
+    const POS_INCRS = [
+        { dlat: 0.1, dlng: 0.1},
+        { dlat: 0.1, dlng: -0.1},
+        { dlat: -0.1, dlng: -0.1},
+        { dlat: -0.1, dlng: 0.1},
+    ];
+    const positionsVisited = new Set();
+    function jitterSimilarPositions(pos) {
+        const origLat = pos.lat, origLng = pos.lng;
+        let posStr = `${pos.lat}-${pos.lng}`;
+        let incr_i = 0;
+        let incr_factor = 1;
+        while (positionsVisited.has(posStr)) {
+            pos.lat = origLat + POS_INCRS[incr_i].dlat * incr_factor;
+            pos.lng = origLng + POS_INCRS[incr_i].dlng * incr_factor;
+            posStr = `${pos.lat}-${pos.lng}`;
+            incr_i++;
+            if (incr_i === POS_INCRS.length) {
+                incr_factor++;
+                incr_i = 0;
+            }
+        }
+        positionsVisited.add(posStr);
+        return pos;
+    }
     </script>
 </body></html>

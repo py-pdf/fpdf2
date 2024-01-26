@@ -206,7 +206,7 @@ Ask maintainers through comments if some errors in the pipeline seem obscure to 
 2. bump `FPDF_VERSION` in `fpdf/fpdf.py`.
 Also (optionnal, once every year), update `contributors/contributors-map-small.png` based on <https://py-pdf.github.io/fpdf2/contributors.html>
 3. update the `announce` block in `docs/overrides/main.html` to mention the new release
-4. `git commit` & `git push`
+4. `git commit` & `git push` (if editing in a fork: submit and merge a PR)
 5. check that [the GitHub Actions succeed](https://github.com/py-pdf/fpdf2/actions), and that [a new release appears on Pypi](https://pypi.org/project/fpdf2/#history)
 6. perform a [GitHub release](https://github.com/py-pdf/fpdf2/releases), taking the description from the `CHANGELOG.md`.
 It will create a new `git` tag.

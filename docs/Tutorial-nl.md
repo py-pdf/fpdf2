@@ -44,7 +44,9 @@ met een lege string (of een combinatie daarvan). Houd er rekening mee dat de let
 punten, geen millimeters (of een andere gebruikerseenheid); het is de enige uitzondering.
 De andere ingebouwde lettertypen zijn `Times`, `Courier`, `Symbol` en `ZapfDingbats`.
 
-We kunnen nu een cel afdrukken met [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell). Een cel is een rechthoekig gebied, eventueel omkaderd, dat wat tekst bevat. Het wordt weergegeven op de huidige positie. 
+We kunnen nu een cel afdrukken met [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell).Een cel is een rechthoekig gebied,
+eventueel omkaderd, dat wat tekst bevat. Het wordt weergegeven op de huidige positie. 
+
 We specificeren de afmetingen, de tekst (gecentreerd of uitgelijnd), of er randen moeten worden getekend 
 en waar de huidige positie daarnaheen beweegt (naar rechts, onder of naar het begin van de volgende regel). 
 Om een frame toe te voegen, doen we dit:
@@ -158,12 +160,16 @@ Dit voorbeeld is een variant van het vorige en laat zien hoe u de tekst over mee
 Het belangrijkste verschil met de vorige tutorial is het gebruik van de 
 [`text_columns`](fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column) methode. 
 Het verzamelt alle tekst, mogelijk in stappen, en verdeelt deze over het gevraagde aantal kolommen, waarbij 
-indien nodig automatisch pagina-einden worden ingevoegd. Houd er rekening mee dat, hoewel de instantie `TextColumns` actief is als contextmanager, tekststijlen en andere lettertype-eigenschappen kunnen worden gewijzigd. Deze wijzigingen zullen in de context worden opgenomen. Zodra het wordt gesloten, worden de vorige instellingen hersteld.
+indien nodig automatisch pagina-einden worden ingevoegd. Houd er rekening mee dat, hoewel de instantie `TextColumns`
+actief is als contextmanager, tekststijlen en andere lettertype-eigenschappen kunnen worden gewijzigd. 
+Deze wijzigingen zullen in de context worden opgenomen. Zodra het wordt gesloten, worden de vorige instellingen 
+hersteld.
 
 
 ## Tuto 5 - Tabellen maken ##
 
-In deze tutorial wordt uitgelegd hoe u twee verschillende tabellen kunt maken,  om te demonstreren wat met enkele eenvoudige aanpassingen kan worden bereikt.
+In deze tutorial wordt uitgelegd hoe u twee verschillende tabellen kunt maken,
+  om te demonstreren wat met enkele eenvoudige aanpassingen kan worden bereikt.
 
 ```python
 {% include "../tutorial/tuto5.py" %}
@@ -223,7 +229,9 @@ methode, die een klikbaar gebied creëert dat we "link" noemden en dat naar een 
 in het document verwijst.
 
 Om de externe link te maken met behulp van een afbeelding, hebben we gebruikt
- [image()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). De methode heeft de mogelijkheid om een link als een van zijn argumenten door te geven. De link kan zowel intern als extern zijn.
+ [image()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
+. De methode heeft de mogelijkheid om een link als een van zijn argumenten door te geven. 
+De link kan zowel intern als extern zijn.
 
 Als alternatief is een andere optie om de lettertypestijl te wijzigen en links toe te voegen 
 het gebruik van de methode `write_html()`. Het is een html-parser waarmee u tekst kunt toevoegen, 

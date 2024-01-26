@@ -110,7 +110,7 @@ This library relies on community interactions. Please consider sharing a post ab
 
 You can also have a look at the `tests/`, they're great usage examples!
 
-## Developement
+## Development
 
 Please check the [dedicated documentation page](https://py-pdf.github.io/fpdf2/Development.html).
 
@@ -266,6 +266,12 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/mjasperse"><img src="https://avatars.githubusercontent.com/u/146605?v=4?s=100" width="100px;" alt="Martijn Jasperse"/><br /><sub><b>Martijn Jasperse</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Amjasperse" title="Bug reports">🐛</a> <a href="https://github.com/py-pdf/fpdf2/commits?author=mjasperse" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/demiurgepy"><img src="https://avatars.githubusercontent.com/u/101707731?v=4?s=100" width="100px;" alt="demiurgepy"/><br /><sub><b>demiurgepy</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Ademiurgepy" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/MarekT0v"><img src="https://avatars.githubusercontent.com/u/147847966?v=4?s=100" width="100px;" alt="Marek Tovlin"/><br /><sub><b>Marek Tovlin</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=MarekT0v" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Polderrider"><img src="https://avatars.githubusercontent.com/u/51285379?v=4?s=100" width="100px;" alt="Polderrider"/><br /><sub><b>Polderrider</b></sub></a><br /><a href="#translation-Polderrider" title="Translation">🌍</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/valholl"><img src="https://avatars.githubusercontent.com/u/301204?v=4?s=100" width="100px;" alt="Elena ``of Valhalla''"/><br /><sub><b>Elena ``of Valhalla''</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=valholl" title="Tests">⚠️</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/nocalla"><img src="https://avatars.githubusercontent.com/u/16230431?v=4?s=100" width="100px;" alt="Niall O'Callaghan"/><br /><sub><b>Niall O'Callaghan</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Anocalla" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/jsid72"><img src="https://avatars.githubusercontent.com/u/51690199?v=4?s=100" width="100px;" alt="jsid72"/><br /><sub><b>jsid72</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Ajsid72" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>

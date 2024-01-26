@@ -164,7 +164,7 @@ def test_table_with_page_break_over_image(tmp_path):
     assert_pdf_equal(pdf, HERE / "table_with_page_break_over_image.pdf", tmp_path)
 
 
-def test_table_with_links(tmp_path):
+def test_table_with_images_and_links(tmp_path):
     pdf = FPDF()
     pdf.set_font("Times", size=16)
     pdf.add_page()
@@ -183,4 +183,4 @@ def test_table_with_links(tmp_path):
                     )
                 else:
                     row.cell(datum, link=pdf.add_link(page=1))
-    assert_pdf_equal(pdf, HERE / "table_with_links.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "table_with_images_and_links.pdf", tmp_path)

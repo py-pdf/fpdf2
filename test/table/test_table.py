@@ -698,3 +698,18 @@ def test_table_with_fill_color_set_beforehand(tmp_path):  # issue 932
                     style = None
                 row.cell(datum, style=style)
     assert_pdf_equal(pdf, HERE / "table_with_fill_color_set_beforehand.pdf", tmp_path)
+
+
+def test_table_with_links(tmp_path):  # issue 1031
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table() as table:
+        for i, data_row in enumerate(TABLE_DATA):
+            row = table.row()
+            for j, datum in enumerate(data_row):
+                if j == 2 and i > 0:
+                    row.cell(text=datum, link="https://py-pdf.github.io/fpdf2/")
+                else:
+                    row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_with_links.pdf", tmp_path)

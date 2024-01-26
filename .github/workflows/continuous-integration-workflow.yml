@@ -81,6 +81,7 @@ jobs:
           cp tutorial/notebook.ipynb docs/
           mkdocs build
           pdoc --html -o public/ fpdf --config "git_link_template='https://github.com/py-pdf/fpdf2/blob/{commit}/{path}#L{start_line}-L{end_line}'"
+          scripts/add_pdoc_to_search_index.py
           cd contributors/ && PYTHONUNBUFFERED=1 ./build_contributors_html_page.py py-pdf/fpdf2
           cp -t ../public/ contributors.html contributors-map-small.png
       - name: Deploy documentation 🚀
