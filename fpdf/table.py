@@ -412,12 +412,14 @@ class Table:
             image = self._fpdf.image(
                 cell.img,
                 w=col_width - padding.left - padding.right - cell_border_line_width,
-                h=0
-                if auto_height
-                else cell_height
-                - padding.top
-                - padding.bottom
-                - cell_border_line_width,
+                h=(
+                    0
+                    if auto_height
+                    else cell_height
+                    - padding.top
+                    - padding.bottom
+                    - cell_border_line_width
+                ),
                 keep_aspect_ratio=True,
                 link=cell.link,
             )

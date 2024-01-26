@@ -342,10 +342,10 @@ class GraphicsStateMixin:
             family=self.font_family,
             emphasis=TextEmphasis.coerce(self.font_style),
             size_pt=self.font_size_pt,
-            color=self.text_color
-            if self.text_color != self.DEFAULT_TEXT_COLOR
-            else None,
-            fill_color=self.fill_color
-            if self.fill_color != self.DEFAULT_FILL_COLOR
-            else None,
+            color=(
+                self.text_color if self.text_color != self.DEFAULT_TEXT_COLOR else None
+            ),
+            fill_color=(
+                self.fill_color if self.fill_color != self.DEFAULT_FILL_COLOR else None
+            ),
         )
