@@ -48,10 +48,10 @@ jobs:
           # Using qpdf
           find . -name '*.pdf' | xargs -n 1 qpdf --check --password=fpdf2
           export PYTHONPATH=$PWD
-          # Using Datalogics PDF Checker:
-          scripts/install-pdfchecker.sh
-          scripts/pdfchecker.py --process-all-test-pdf-files
-          scripts/pdfchecker.py --print-aggregated-report
+          # Using Datalogics PDF Checker: (disabled while download link is broken)
+          # scripts/install-pdfchecker.sh
+          # scripts/pdfchecker.py --process-all-test-pdf-files
+          # scripts/pdfchecker.py --print-aggregated-report
           # Using VeraPDF:
           scripts/install-verapdf.sh
           scripts/verapdf.py --process-all-test-pdf-files
