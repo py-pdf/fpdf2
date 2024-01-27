@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from numbers import Number
 from typing import Optional, Union
 
-from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode, VAlign
+from .enums import Align, TableBordersLayout, TableCellFillMode, WrapMode, VAlign, TableSpan
 from .enums import MethodReturnValue
 from .errors import FPDFException
 from .fonts import CORE_FONTS, FontFace
@@ -186,18 +186,6 @@ class Table:
         elif self._fpdf.x != self._fpdf.l_margin:
             self._fpdf.l_margin = self._fpdf.x
 
-        # Pre-Compute the relative x-positions of the individual columns:
-        xx = self._outer_border_margin[0]
-        cell_x_positions = [xx]
-        if len(self.rows):
-            self._cols_count = sum(cell.colspan for cell in self.rows[0].cells)
-            for i in range(self.rows[0].cols_count):
-                xx += self._get_col_width(0, i)
-                xx += self._gutter_width
-                cell_x_positions.append(xx)
-        else:
-            self._cols_count = 0
-
         rowspan_ends = {}
         rowspan_list = []
         rowspan_cols = []
@@ -205,6 +193,42 @@ class Table:
         row_span_padding = [0] * len(self.rows)
         row_col_idx = []
         rendered_heights = []
+
+        # Zero pass: convert from ENUM representations
+        # TODO: improve handling when combined with colspan/rowspan attributes
+        # TODO: resolve "frozen" modifications
+        prev_row = {}
+        for i,row in enumerate(self.rows):
+            prev_col = None
+            for j,cell in enumerate(row.cells):
+                if cell == TableSpan.COL:
+                    assert prev_col is not None
+                    assert prev_col.rowspan == 1
+                    prev_col.colspan += 1
+                    prev_row[j] = prev_col
+                elif cell == TableSpan.ROW:
+                    assert i > 0
+                    assert prev_row[j].colspan == 1
+                    prev_row[j].rowspan += 1
+                else:
+                    prev_col = cell
+                    prev_row[j] = cell
+            # now remove them
+            for i,cell in list(enumerate(row.cells))[::-1]:
+                if isinstance(cell, TableSpan):
+                    row.cells.pop(i)
+
+        # Pre-Compute the relative x-positions of the individual columns:
+        xx = self._outer_border_margin[0]
+        cell_x_positions = [xx]
+        if len(self.rows):
+            self._cols_count = sum(cell.colspan for cell in self.rows[0].cells)
+            for i in range(self._cols_count):
+                xx += self._get_col_width(0, i)
+                xx += self._gutter_width
+                cell_x_positions.append(xx)
+        else:
+            self._cols_count = 0
 
         # First pass: estimate individual cell sizes
         for i, row in enumerate(self.rows):
@@ -786,6 +810,10 @@ class Row:
             if font_face not in (self.style, self._table._initial_style):
                 style = font_face
 
+        if isinstance(text, TableSpan):
+            self.cells.append(text)
+            return
+
         cell = Cell(
             text,
             align,
@@ -802,7 +830,7 @@ class Row:
         return cell
 
 
-@dataclass(frozen=True)
+@dataclass
 class Cell:
     "Internal representation of a table cell"
     __slots__ = (  # RAM usage optimization
