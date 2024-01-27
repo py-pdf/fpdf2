@@ -375,6 +375,7 @@ class HTML2FPDF(HTMLParser):
                 self.td_th.get("bgcolor", self.tr.get("bgcolor", None))
             )
             colspan = int(self.td_th.get("colspan", "1"))
+            rowspan = int(self.td_th.get("rowspan", "1"))
             emphasis = 0
             if self.td_th.get("b"):
                 emphasis |= TextEmphasis.B
@@ -387,7 +388,9 @@ class HTML2FPDF(HTMLParser):
                 style = FontFace(
                     emphasis=emphasis, fill_color=bgcolor, color=self.pdf.text_color
                 )
-            self.table_row.cell(text=data, align=align, style=style, colspan=colspan)
+            self.table_row.cell(
+                text=data, align=align, style=style, colspan=colspan, rowspan=rowspan
+            )
             self.td_th["inserted"] = True
         elif self.table is not None:
             # ignore anything else than td inside a table

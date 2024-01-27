@@ -136,13 +136,16 @@ class Table:
             self.row(row)
 
     def row(self, cells=(), style=None):
-        "Adds a row to the table. Yields a `Row` object."
+        "Adds a row to the table. Returns a `Row` object."
         if self._initial_style is None:
             self._initial_style = self._fpdf.font_face()
         row = Row(self, style=style)
         self.rows.append(row)
         for cell in cells:
-            row.cell(cell)
+            if isinstance(cell, dict):
+                row.cell(**cell)
+            else:
+                row.cell(cell)
         return row
 
     def render(self):
@@ -171,15 +174,6 @@ class Table:
                     raise FPDFException(
                         f"Using font emphasis '{emphasis.style}' in table headings require the corresponding font style to be added using add_font()"
                     )
-        if self.rows:
-            cols_count = self.rows[0].cols_count
-            for i, row in enumerate(self.rows[1:], start=2):
-                if row.cols_count != cols_count:
-                    raise FPDFException(
-                        f"Inconsistent column count detected on row {i}:"
-                        f" it has {row.cols_count} columns,"
-                        f" whereas the top row has {cols_count}."
-                    )
 
         # Defining table global horizontal position:
         prev_l_margin = self._fpdf.l_margin
@@ -195,20 +189,116 @@ class Table:
         # Pre-Compute the relative x-positions of the individual columns:
         xx = self._outer_border_margin[0]
         cell_x_positions = [xx]
-        if self.rows:
+        if len(self.rows):
+            self._cols_count = sum(cell.colspan for cell in self.rows[0].cells)
             for i in range(self.rows[0].cols_count):
                 xx += self._get_col_width(0, i)
                 xx += self._gutter_width
                 cell_x_positions.append(xx)
+        else:
+            self._cols_count = 0
 
-        # Starting the actual rows & cells rendering:
+        rowspan_ends = {}
+        rowspan_list = []
+        rowspan_cols = []
+        row_min_heights = [0] * len(self.rows)
+        row_span_padding = [0] * len(self.rows)
+        row_col_idx = []
+        rendered_heights = []
+
+        # First pass: estimate individual cell sizes
+        for i, row in enumerate(self.rows):
+            j = 0
+            min_height = self._line_height
+            rowspan_cols.append([])
+            rendered_heights.append({})
+            row_col_idx.append([])
+            for cell in row.cells:
+                # skip columns populated by active rowspans
+                while i < rowspan_ends.get(j, 0):
+                    j += 1
+                row_col_idx[-1].append(j)
+
+                # NB: ignore page_break since we might need to assign rowspan padding
+                _, dictated_height, img_height = self._get_cell_layout_info(cell, i, j)
+                dictated_height = max(dictated_height, img_height)
+                rendered_heights[i][j] = dictated_height
+
+                if cell.rowspan > 1:
+                    rowspan_ends[j] = i + cell.rowspan
+                    rowspan_list.append(
+                        RowSpanLayoutInfo(j, i, cell.rowspan, dictated_height)
+                    )
+                    rowspan_cols[-1].append(j)
+                else:
+                    min_height = max(min_height, dictated_height)
+
+                j += cell.colspan
+
+            row_min_heights[i] = min_height
+
+            # rowspan might be at the end
+            while i < rowspan_ends.get(j, 0):
+                j += 1
+
+            # Sanity-check the total number of columns
+            if j != self._cols_count:
+                raise FPDFException(
+                    f"Inconsistent column count detected on row {i}:"
+                    f" it has {j} columns,"
+                    f" whereas the top row has {self._cols_count}."
+                )
+
+        # Second pass: allocate space required for rowspans
+        for span in rowspan_list:
+            # accumulate already assigned properties
+            max_padding = 0
+            assigned_height = self._gutter_height * (span.length - 1)
+            assigned_padding = 0
+            assert span.start + span.length <= len(self.rows)
+            for i in span.row_range():
+                max_padding = max(max_padding, row_span_padding[i])
+                assigned_height += row_min_heights[i]
+                assigned_padding += row_span_padding[i]
+
+            # does additional padding need to be distributed?
+            if assigned_height + assigned_padding < span.contents_height:
+                # when there are overlapping rowspans, can we stretch the cells to be evenly padded?
+                if span.contents_height > assigned_height + span.length * max_padding:
+                    # stretch all cells to have the same padding, for asthetic reasons
+                    padding = (span.contents_height - assigned_height) / span.length
+                    for i in span.row_range():
+                        assert row_span_padding[i] < padding
+                        row_span_padding[i] = padding
+                else:
+                    # add proportional padding to the rows
+                    # TODO: try to increase towards max_padding instead of evenly accmulating
+                    extra = span.contents_height - assigned_height - assigned_padding
+                    for i in span.row_range():
+                        row_span_padding[i] += extra / span.length
+
+        # Third pass: render the cells
+        any_page_break = False
         self._fpdf.y += self._outer_border_margin[1]
-        for i in range(len(self.rows)):
-            row_layout_info = self._get_row_layout_info(i)
-            if row_layout_info.triggers_page_jump:
-                # pylint: disable=protected-access
-                self._fpdf._perform_page_break()
-                self._fpdf.y += self._outer_border_margin[1]
+        for i, row in enumerate(self.rows):
+            this_row_height = row_min_heights[i] + row_span_padding[i]
+            row_layout_info = RowLayoutInfo(this_row_height, False, rendered_heights[i])
+
+            # check whether there needs to be a pagebreak before this row
+            # complicated because of potential nested rowspans
+            last_row = i + 1
+            k = i
+            h = 0
+            while k < last_row:
+                h += row_min_heights[k] + row_span_padding[k]
+                if len(self.rows[k].cells):
+                    max_span = max(cell.rowspan for cell in self.rows[k].cells)
+                    last_row = max(last_row, k + max_span)
+                k += 1
+
+            # pylint: disable=protected-access
+            page_break = self._fpdf._perform_page_break_if_need_be(h)
+            if page_break and i >= self._num_heading_rows:
                 # repeat headings on top:
                 for row_idx in range(self._num_heading_rows):
                     self._render_table_row(
@@ -216,12 +306,35 @@ class Table:
                         self._get_row_layout_info(row_idx),
                         cell_x_positions=cell_x_positions,
                     )
-                    self._fpdf.y += self._gutter_height
-            elif i and self._gutter_height:
-                self._fpdf.y += self._gutter_height
-            self._render_table_row(
-                i, row_layout_info, cell_x_positions=cell_x_positions
-            )
+            any_page_break = any_page_break or page_break
+
+            y = self._fpdf.y  # remember current y position, reset after each cell
+            for j, cell in zip(row_col_idx[i], row.cells):
+                if cell.rowspan > 1:
+                    h = self._gutter_height * (cell.rowspan - 1)
+                    for k in range(i, i + cell.rowspan):
+                        h += row_min_heights[k] + row_span_padding[k]
+                    self._render_table_cell(
+                        i,
+                        j,
+                        cell,
+                        self._line_height,
+                        RowLayoutInfo(h, False, rendered_heights[i]),
+                        cell_x_positions,
+                    )
+                else:
+                    self._render_table_cell(
+                        i,
+                        j,
+                        cell,
+                        row_height=self._line_height,
+                        cell_height_info=row_layout_info,
+                        cell_x_positions=cell_x_positions,
+                    )
+                self._fpdf.set_y(y)  # restore y position after each cell
+
+            self._fpdf.ln(this_row_height + self._gutter_height)
+
         # Restoring altered FPDF settings:
         self._fpdf.l_margin = prev_l_margin
         self._fpdf.x = self._fpdf.l_margin
@@ -504,7 +617,7 @@ class Table:
         """Gets width of a column in a table, this excludes the outer gutter (outside the table) but includes the inner gutter
         between columns if the cell spans multiple columns."""
 
-        cols_count = self.rows[i].cols_count
+        cols_count = self._cols_count
         width = (
             self._width
             - (cols_count - 1) * self._gutter_width
@@ -528,6 +641,23 @@ class Table:
                 col_width += self._gutter_width
         return col_width
 
+    def _get_cell_layout_info(self, cell, i, j):
+        # pylint: disable=protected-access
+        with self._fpdf._disable_writing():
+            page_break, image_height, text_height = self._render_table_cell(
+                i,
+                j,
+                cell,
+                row_height=self._line_height,
+            )
+
+            if cell.img_fill_width:
+                dictated_height = image_height
+            else:
+                dictated_height = text_height
+
+            return page_break, dictated_height, image_height
+
     def _get_row_layout_info(self, i):
         """
         Compute the cells heights & detect page jumps,
@@ -547,17 +677,14 @@ class Table:
         with self._fpdf._disable_writing():
             j = 0
             for cell in row.cells:
-                page_break, image_height, text_height = self._render_table_cell(
-                    i,
-                    j,
-                    cell,
-                    row_height=self._line_height,
-                )
+                # rows with span are handled elsewhere
+                if cell.rowspan > 1:
+                    j += cell.colspan
+                    continue
 
-                if cell.img_fill_width:
-                    dictated_height = image_height
-                else:
-                    dictated_height = text_height
+                page_break, dictated_height, image_height = self._get_cell_layout_info(
+                    cell, i, j
+                )
 
                 # store the rendered height in the cell as info
                 # Can not store in the cell as this is a frozen dataclass
@@ -600,6 +727,10 @@ class Row:
         return sum(cell.colspan for cell in self.cells)
 
     @property
+    def max_rowspan(self):
+        return max(cell.rowspan for cell in self.cells)
+
+    @property
     def column_indices(self):
         columns_count = len(self.cells)
         colidx = 0
@@ -618,6 +749,7 @@ class Row:
         img=None,
         img_fill_width=False,
         colspan=1,
+        rowspan=1,
         padding=None,
         link=None,
     ):
@@ -635,6 +767,7 @@ class Row:
             img_fill_width (bool): optional, defaults to False. Indicates to render the image
                 using the full width of the current table column.
             colspan (int): optional number of columns this cell should span.
+            rowspan (int): optional number of rows this cell should span.
             padding (tuple): optional padding (left, top, right, bottom) for the cell.
             link (str, int): optional link, either an URL or an integer returned by `FPDF.add_link`, defining an internal link to a page
 
@@ -644,14 +777,29 @@ class Row:
                 "fpdf2 currently does not support inserting text with an image in the same table cell."
                 " Pull Requests are welcome to implement this 😊"
             )
+        if rowspan > 1 and colspan > 1:
+            raise NotImplementedError(
+                "fpdf2 currently does not support combining rowspan with colspan in the same table cell."
+                " Pull Requests are welcome to implement this 😊"
+            )
         if not style:
             # pylint: disable=protected-access
             # We capture the current font settings:
             font_face = self._table._fpdf.font_face()
             if font_face not in (self.style, self._table._initial_style):
                 style = font_face
+
         cell = Cell(
-            text, align, v_align, style, img, img_fill_width, colspan, padding, link
+            text,
+            align,
+            v_align,
+            style,
+            img,
+            img_fill_width,
+            colspan,
+            rowspan,
+            padding,
+            link,
         )
         self.cells.append(cell)
         return cell
@@ -668,6 +816,7 @@ class Cell:
         "img",
         "img_fill_width",
         "colspan",
+        "rowspan",
         "padding",
         "link",
     )
@@ -678,6 +827,7 @@ class Cell:
     img: Optional[str]
     img_fill_width: bool
     colspan: int
+    rowspan: int
     padding: Optional[Union[int, tuple, type(None)]]
     link: Optional[Union[str, int]]
 
@@ -690,6 +840,17 @@ class RowLayoutInfo:
     height: float
     triggers_page_jump: bool
     rendered_height: dict
+
+
+@dataclass(frozen=True)
+class RowSpanLayoutInfo:
+    column: int
+    start: int
+    length: int
+    contents_height: float
+
+    def row_range(self):
+        return range(self.start, self.start + self.length)
 
 
 def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
