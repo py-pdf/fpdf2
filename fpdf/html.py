@@ -557,16 +557,18 @@ class HTML2FPDF(HTMLParser):
                     width = self.pdf.epw * int(width[:-1]) / 100
                 else:
                     width = int(width) / self.pdf.k
-            if "border" in attrs:
-                borders_layout = (
-                    "ALL" if self.table_line_separators else "NO_HORIZONTAL_LINES"
-                )
-            else:
+            if "border" not in attrs:  # default borders
                 borders_layout = (
                     "HORIZONTAL_LINES"
                     if self.table_line_separators
                     else "SINGLE_TOP_LINE"
                 )
+            elif int(attrs["border"]):  # explicitly enabled borders
+                borders_layout = (
+                    "ALL" if self.table_line_separators else "NO_HORIZONTAL_LINES"
+                )
+            else:  # explicitly disabled borders
+                borders_layout = "NONE"
             align = attrs.get("align", "center").upper()
             padding = float(attrs["cellpadding"]) if "cellpadding" in attrs else None
             self.table = Table(

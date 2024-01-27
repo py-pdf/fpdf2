@@ -27,6 +27,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * calling `.table()` inside the `render_toc_function`
 * using `.set_text_shaping(True)` & `.offset_rendering()`
 * Fixed gutter handing when a pagebreak occurs within a table with header rows - thanks to @mjasperse
+* Fixed handling of `border=0` in HTML table - thanks to @mjasperse
 ### Changed
 * Refactored [`FPDF.multi_cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) to generate fewer PDF component objects - thanks to @mjasperse
 * Outer table borders are now drawn continuously for nonzero `gutter_width`/`gutter_height`, with spacing applied inside the border similar to HTML tables - thanks to @mjasperse - cf. [#1071](https://github.com/py-pdf/fpdf2/issues/1071)
