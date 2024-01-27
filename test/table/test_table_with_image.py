@@ -65,9 +65,7 @@ def test_table_with_image_mixed_rows_and_alignment(tmp_path):
 
         row = table.row()
         row.cell("Where do I align vertically?")
-        row.cell(
-            "This is a cell with multiple lines\nThis is a cell with multiple lines\nThis is a cell with multiple lines\nThis is a cell with multiple lines\nThis is a cell with multiple lines\nThis is a cell with multiple lines\n"
-        )
+        row.cell("This is a cell with multiple lines\n" * 6)
 
     assert_pdf_equal(
         pdf,

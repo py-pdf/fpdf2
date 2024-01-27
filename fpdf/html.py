@@ -13,7 +13,7 @@ from .enums import TextEmphasis, XPos, YPos
 from .errors import FPDFException
 from .deprecation import get_stack_level
 from .fonts import FontFace
-from .table import Table, TableBordersLayout
+from .table import Table
 
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding

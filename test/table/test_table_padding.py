@@ -53,10 +53,14 @@ TABLE_DATA = (
     ("Lucas", "Cimon", "31", "Angers"),
 )
 
-LONG_TEXT = """
-Professor: (Eric Idle) It's an entirely new strain of sheep, a killer sheep that can not only hold a rifle but is also a first-class shot.
-Assistant: But where are they coming from, professor?
-Professor: That I don't know. I just don't know. I really just don't know. I'm afraid I really just don't know. I'm afraid even I really just don't know. I have to tell you I'm afraid even I really just don't know. I'm afraid I have to tell you... (she hands him a glass of water which she had been busy getting as soon as he started into this speech) ... thank you ... (resuming normal breezy voice) ... I don't know. Our only clue is this portion of wolf's clothing which the killer sheep ..."""
+LONG_TEXT = (
+    "\nProfessor: (Eric Idle) It's an entirely new strain of sheep, a killer sheep that can not only hold a rifle but is also a first-class shot.\n"
+    "Assistant: But where are they coming from, professor?\n"
+    "Professor: That I don't know. I just don't know. I really just don't know. I'm afraid I really just don't know. I'm afraid even I really just"
+    " don't know. I have to tell you I'm afraid even I really just don't know. I'm afraid I have to tell you... (she hands him a glass of water"
+    " which she had been busy getting as soon as he started into this speech) ... thank you ... (resuming normal breezy voice) ... I don't know."
+    " Our only clue is this portion of wolf's clothing which the killer sheep ..."
+)
 
 
 TABLE_DATA_LIST = ["And", "now", "for", "something", "completely", "different"]
@@ -346,8 +350,6 @@ def test_table_with_colspan(tmp_path):
             return f"{b} {a}"
 
         return a
-
-    cs = 1
 
     with pdf.table(line_height=pdf.font_size, gutter_height=3, gutter_width=3) as table:
         for irow in range(10):

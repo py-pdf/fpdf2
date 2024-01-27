@@ -196,7 +196,7 @@ class Table:
         # Pre-Compute the relative x-positions of the individual columns:
         xx = self._outer_border_margin[0]
         cell_x_positions = [xx]
-        if len(self.rows):
+        if self.rows:
             self._cols_count = max(row.cols_count for row in self.rows)
             for i in range(self._cols_count):
                 xx += self._get_col_width(0, i)
@@ -614,7 +614,7 @@ class Table:
                 # If this is zero, we will fill the space with images, so pick the largest image height
                 # If this is still zero (e.g. empty/fully spanned row), use a sensible default
                 min_height = 0
-                if len(dictated_heights):
+                if dictated_heights:
                     min_height = max(dictated_heights)
                     if min_height == 0:
                         min_height = max(img_heights)
@@ -708,12 +708,12 @@ class Row:
             if cell is None:
                 continue
             if cell == TableSpan.COL:
-                cell = cells[prev_col]
-                if not isinstance(cell, Cell):
+                prev_cell = cells[prev_col]
+                if not isinstance(prev_cell, Cell):
                     raise FPDFException(
                         "Invalid location for TableSpan.COL placeholder entry"
                     )
-                cells[prev_col] = replace(cell, colspan=cell.colspan + 1)
+                cells[prev_col] = replace(prev_cell, colspan=prev_cell.colspan + 1)
                 cells.append(None)  # processed
             else:
                 cells.append(cell)
@@ -779,7 +779,7 @@ class Row:
         if isinstance(text, TableSpan):
             # Special placeholder object, converted to colspan/rowspan during processing
             self.cells.append(text)
-            return
+            return text
 
         if not style:
             # pylint: disable=protected-access
