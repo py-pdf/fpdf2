@@ -217,6 +217,7 @@ class Table:
             )
             if page_break and i >= self._num_heading_rows:
                 # repeat headings on top:
+                self._fpdf.y += self._outer_border_margin[1]
                 for row_idx in range(self._num_heading_rows):
                     self._render_table_row(
                         row_idx,
