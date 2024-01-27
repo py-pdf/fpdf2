@@ -197,7 +197,7 @@ class Table:
         xx = self._outer_border_margin[0]
         cell_x_positions = [xx]
         if len(self.rows):
-            self._cols_count = len(self.rows[0].cells)
+            self._cols_count = self.rows[0].cols_count
             for i in range(self._cols_count):
                 xx += self._get_col_width(0, i)
                 xx += self._gutter_width
@@ -231,7 +231,7 @@ class Table:
         self._fpdf.l_margin = prev_l_margin
         self._fpdf.x = self._fpdf.l_margin
 
-    def get_cell_border(self, i, j):
+    def get_cell_border(self, i, j, cell):
         """
         Defines which cell borders should be drawn.
         Returns a string containing some or all of the letters L/R/T/B,
@@ -243,7 +243,7 @@ class Table:
         if self._borders_layout == TableBordersLayout.NONE:
             return 0
 
-        is_rightmost_column = j == len(self.rows[i].cells) - 1
+        is_rightmost_column = j + cell.colspan == len(self.rows[i].cells)
         rows_count = len(self.rows)
         border = list("LRTB")
         if self._borders_layout == TableBordersLayout.INTERNAL:
@@ -392,7 +392,7 @@ class Table:
                 y1,
                 x2,
                 y2,
-                border=self.get_cell_border(i, j),
+                border=self.get_cell_border(i, j, cell),
                 fill_color=style.fill_color if style else None,
             )
 
@@ -680,6 +680,10 @@ class Row:
         self._table = table
         self.cells = []
         self.style = style
+
+    @property
+    def cols_count(self):
+        return sum(getattr(cell, 'colspan', cell is not None) for cell in self.cells)
 
     @property
     def max_rowspan(self):
