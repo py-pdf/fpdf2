@@ -418,6 +418,11 @@ class HTML2FPDF(HTMLParser):
             self.put_link(data)
         else:
             if self.heading_level:
+                if self.pdf.section_title_styles:
+                    raise NotImplementedError(
+                        "Combining write_html() & section styles is currently not supported."
+                        " You can open up an issue on github.com/py-pdf/fpdf2 if this is something you would like to see implemented."
+                    )
                 self.pdf.start_section(data, self.heading_level - 1, strict=False)
             LOGGER.debug(f"write: '%s' h={self.h:.2f}", data)
             self._write_paragraph(data)

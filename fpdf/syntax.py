@@ -59,6 +59,7 @@ The contents of this module are internal to fpdf2, and not part of the public AP
 They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
+
 import re, zlib
 from abc import ABC
 from binascii import hexlify
@@ -334,10 +335,12 @@ class PDFArray(list):
             serialized_elems = " ".join(str(elem) for elem in self)
         else:
             serialized_elems = "\n".join(
-                elem.ref
-                if isinstance(elem, PDFObject)
-                else elem.serialize(
-                    _security_handler=_security_handler, _obj_id=_obj_id
+                (
+                    elem.ref
+                    if isinstance(elem, PDFObject)
+                    else elem.serialize(
+                        _security_handler=_security_handler, _obj_id=_obj_id
+                    )
                 )
                 for elem in self
             )

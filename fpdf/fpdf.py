@@ -3387,7 +3387,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             yield
             return
         self._out = lambda *args, **kwargs: None
-        prev_page, prev_x, prev_y = self.page, self.x, self.y
+        prev_page, prev_pages_count, prev_x, prev_y = (
+            self.page,
+            self.pages_count,
+            self.x,
+            self.y,
+        )
         annots = PDFArray(self.pages[self.page].annots)
         self._push_local_stack()
         try:
@@ -3395,7 +3400,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         finally:
             self._pop_local_stack()
             # restore location:
-            for p in range(prev_page + 1, self.page + 1):
+            for p in range(prev_pages_count + 1, self.pages_count + 1):
                 del self.pages[p]
             self.page = prev_page
             self.pages[self.page].annots = annots
@@ -4841,13 +4846,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @contextmanager
     def _use_title_style(self, title_style: TitleStyle):
-        if title_style.t_margin:
-            self.ln(title_style.t_margin)
-        if title_style.l_margin:
-            self.set_x(title_style.l_margin)
+        if title_style:
+            if title_style.t_margin:
+                self.ln(title_style.t_margin)
+            if title_style.l_margin:
+                self.set_x(title_style.l_margin)
         with self.use_font_face(title_style):
             yield
-        if title_style.b_margin:
+        if title_style and title_style.b_margin:
             self.ln(title_style.b_margin)
 
     @contextmanager
@@ -4866,9 +4872,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         prev_font = (self.font_family, self.font_style, self.font_size_pt)
         self.set_font(
             font_face.family or self.font_family,
-            font_face.emphasis.style
-            if font_face.emphasis is not None
-            else self.font_style,
+            font_face.emphasis.style if font_face.emphasis is not None else "",
             font_face.size_pt or self.font_size_pt,
         )
         prev_text_color = self.text_color

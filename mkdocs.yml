@@ -101,6 +101,10 @@ plugins:
       #debug_html: true
       #show_anchors: true
       #verbose: true
+
+hooks:
+  - docs/overrides/.hooks/log_manager.py
+
 nav:
 - 'Project Home':                   'index.md'
 - 'Tutorial':
