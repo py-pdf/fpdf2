@@ -245,11 +245,12 @@ class Table:
 
         is_rightmost_column = j + cell.colspan == len(self.rows[i].cells)
         rows_count = len(self.rows)
+        is_bottom_row = i + cell.rowspan == rows_count
         border = list("LRTB")
         if self._borders_layout == TableBordersLayout.INTERNAL:
             if i == 0:
                 border.remove("T")
-            if i == rows_count - 1:
+            if is_bottom_row:
                 border.remove("B")
             if j == 0:
                 border.remove("L")
@@ -267,7 +268,7 @@ class Table:
         if self._borders_layout == TableBordersLayout.NO_HORIZONTAL_LINES:
             if i > self._num_heading_rows:
                 border.remove("T")
-            if i != rows_count - 1:
+            if not is_bottom_row:
                 border.remove("B")
         if self._borders_layout == TableBordersLayout.HORIZONTAL_LINES:
             if rows_count == 1:
@@ -275,7 +276,7 @@ class Table:
             border = list("TB")
             if i == 0 and "T" in border:
                 border.remove("T")
-            elif i == rows_count - 1:
+            elif is_bottom_row:
                 border.remove("B")
         if self._borders_layout == TableBordersLayout.SINGLE_TOP_LINE:
             if rows_count == 1:
@@ -413,14 +414,14 @@ class Table:
                 if j == 0:
                     # lhs border
                     self._fpdf.line(x1, y1, x1, y2)
-                if j == len(row.cells) - 1:
+                if j + cell.colspan == len(row.cells):
                     # rhs border
                     self._fpdf.line(x2, y1, x2, y2)
                     # continuous top line border
                     if i == 0:
                         self._fpdf.line(x1, y1, x2, y1)
                     # continuous bottom line border
-                    if i == len(self.rows) - 1:
+                    if i + cell.rowspan == len(self.rows):
                         self._fpdf.line(x1, y2, x2, y2)
 
                 self._fpdf.set_line_width(_remember_linewidth)
