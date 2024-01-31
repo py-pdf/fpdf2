@@ -9,89 +9,89 @@ on:  # cf. https://github.community/t/how-to-trigger-an-action-on-push-or-pull-r
     - master
 
 jobs:
-  # test:
-  #   strategy:
-  #     matrix:
-  #       python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
-  #       platform: [ubuntu-latest, windows-latest]
-  #   runs-on: ${{ matrix.platform }}
-  #   steps:
-  #     - name: Checkout 🛎️
-  #       uses: actions/checkout@v3
-  #     - name: Set up Python ${{ matrix.python-version }} 🔧
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
-  #     - name: Install system dependencies ⚙️
-  #       if: matrix.platform == 'ubuntu-latest'
-  #       run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install ghostscript libjpeg-dev
-  #     - name: Install qpdf ⚙️
-  #       if: matrix.platform == 'ubuntu-latest' && matrix.python-version != '3.9'
-  #       # We run the unit tests WITHOUT qpdf for a single parallel execution / Python version:
-  #       run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install qpdf
-  #     - name: Install Python dependencies ⚙️
-  #       run: |
-  #         python -m pip install --upgrade pip setuptools wheel
-  #         pip install --upgrade . -r test/requirements.txt -r docs/requirements.txt -r contributors/requirements.txt
-  #     - name: Statically checking code 🔎
-  #       if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
-  #       run: |
-  #         pylint fpdf test tutorial/tuto*.py
-  #         bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
-  #         semgrep scan --config auto --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
-  #     - name: Ensure code has been autoformatted with black 🖌️
-  #       if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
-  #       run: black --check .
-  #     - name: Checking all PDF samples ☑
-  #       if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
-  #       run: |
-  #         # Using qpdf
-  #         find . -name '*.pdf' | xargs -n 1 qpdf --check --password=fpdf2
-  #         export PYTHONPATH=$PWD
-  #         # Using Datalogics PDF Checker:
-  #         scripts/install-pdfchecker.sh
-  #         scripts/pdfchecker.py --process-all-test-pdf-files
-  #         scripts/pdfchecker.py --print-aggregated-report
-  #         # Using VeraPDF:
-  #         scripts/install-verapdf.sh
-  #         scripts/verapdf.py --process-all-test-pdf-files
-  #         scripts/verapdf.py --print-aggregated-report
-  #     - name: Running tests ☑
-  #       env:
-  #         CHECK_EXEC_TIME: ${{ matrix.python-version == '3.9' && 'test-enabled' || '' }}
-  #         CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.11' && 'test-enabled' || '' }}
-  #       run: |
-  #         # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
-  #         grep -IRF generate=True test/ && exit 1
-  #         # Executing all tests:
-  #         pytest -vv --trace-memory-usage
-  #     - name: Uploading coverage report to codecov.io ☑
-  #       if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
-  #       run: bash <(curl -s https://codecov.io/bash)
-  #     - name: Generating HTML documentation 🏗️
-  #       # As build_contributors_html_page.py can hang due to GitHub rate-limiting,
-  #       # we only execute this on master for now. And it should always be executed for one Python version only.
-  #       if: github.ref == 'refs/heads/master' && matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
-  #       run: |
-  #         mkdir -p public/
-  #         # Setting PDF manual version:
-  #         sed -i "s/author:.*/author: v$(python setup.py -V 2>/dev/null)/" mkdocs.yml
-  #         cp tutorial/notebook.ipynb docs/
-  #         mkdocs build
-  #         pdoc --html -o public/ fpdf --config "git_link_template='https://github.com/py-pdf/fpdf2/blob/{commit}/{path}#L{start_line}-L{end_line}'"
-  #         scripts/add_pdoc_to_search_index.py
-  #         cd contributors/ && PYTHONUNBUFFERED=1 ./build_contributors_html_page.py py-pdf/fpdf2
-  #         cp -t ../public/ contributors.html contributors-map-small.png
-  #     - name: Deploy documentation 🚀
-  #       # GitHub Pages deployment should not be done for all Python versions,
-  #       # otherwise commits will conflict on the gh-pages branch:
-  #       if: github.ref == 'refs/heads/master' && matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
-  #       uses: peaceiris/actions-gh-pages@v3
-  #       with:
-  #         github_token: ${{ secrets.GITHUB_TOKEN }}
-  #         publish_dir: public/
+  test:
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        platform: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }} 🔧
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install system dependencies ⚙️
+        if: matrix.platform == 'ubuntu-latest'
+        run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install ghostscript libjpeg-dev
+      - name: Install qpdf ⚙️
+        if: matrix.platform == 'ubuntu-latest' && matrix.python-version != '3.9'
+        # We run the unit tests WITHOUT qpdf for a single parallel execution / Python version:
+        run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install qpdf
+      - name: Install Python dependencies ⚙️
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install --upgrade . -r test/requirements.txt -r docs/requirements.txt -r contributors/requirements.txt
+      - name: Statically checking code 🔎
+        if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
+        run: |
+          pylint fpdf test tutorial/tuto*.py
+          bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
+          semgrep scan --config auto --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
+      - name: Ensure code has been autoformatted with black 🖌️
+        if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
+        run: black --check .
+      - name: Checking all PDF samples ☑
+        if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
+        run: |
+          # Using qpdf
+          find . -name '*.pdf' | xargs -n 1 qpdf --check --password=fpdf2
+          export PYTHONPATH=$PWD
+          # Using Datalogics PDF Checker:
+          scripts/install-pdfchecker.sh
+          scripts/pdfchecker.py --process-all-test-pdf-files
+          scripts/pdfchecker.py --print-aggregated-report
+          # Using VeraPDF:
+          scripts/install-verapdf.sh
+          scripts/verapdf.py --process-all-test-pdf-files
+          scripts/verapdf.py --print-aggregated-report
+      - name: Running tests ☑
+        env:
+          CHECK_EXEC_TIME: ${{ matrix.python-version == '3.9' && 'test-enabled' || '' }}
+          CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.11' && 'test-enabled' || '' }}
+        run: |
+          # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
+          grep -IRF generate=True test/ && exit 1
+          # Executing all tests:
+          pytest -vv --trace-memory-usage
+      - name: Uploading coverage report to codecov.io ☑
+        if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
+        run: bash <(curl -s https://codecov.io/bash)
+      - name: Generating HTML documentation 🏗️
+        # As build_contributors_html_page.py can hang due to GitHub rate-limiting,
+        # we only execute this on master for now. And it should always be executed for one Python version only.
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
+        run: |
+          mkdir -p public/
+          # Setting PDF manual version:
+          sed -i "s/author:.*/author: v$(python setup.py -V 2>/dev/null)/" mkdocs.yml
+          cp tutorial/notebook.ipynb docs/
+          mkdocs build
+          pdoc --html -o public/ fpdf --config "git_link_template='https://github.com/py-pdf/fpdf2/blob/{commit}/{path}#L{start_line}-L{end_line}'"
+          scripts/add_pdoc_to_search_index.py
+          cd contributors/ && PYTHONUNBUFFERED=1 ./build_contributors_html_page.py py-pdf/fpdf2
+          cp -t ../public/ contributors.html contributors-map-small.png
+      - name: Deploy documentation 🚀
+        # GitHub Pages deployment should not be done for all Python versions,
+        # otherwise commits will conflict on the gh-pages branch:
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: public/
   publish:
-    if: github.ref == 'refs/pull/1105/merge'
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -112,17 +112,16 @@ jobs:
           pip install --upgrade setuptools twine wheel .
           echo Current code version: $(python setup.py -V)
           # Checking if current code version has already been released:
-          if curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]' | grep "^$(python setup.py -V)\$"; then echo publish=yes >> "$GITHUB_OUTPUT"; python setup.py sdist bdist_wheel; twine check dist/*; fi
+          if ! curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]' | grep "^$(python setup.py -V)\$"; then echo publish=yes >> "$GITHUB_OUTPUT"; python setup.py sdist bdist_wheel; twine check dist/*; fi
       - name: Publish package distributions to PyPI 🚀
         if: steps.build.outputs.publish == 'yes'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           print-hash: true
-          skip-existing: true
       - name: Generate & release sigstore signatures 🔑
         if: steps.build.outputs.publish == 'yes'
         uses: sigstore/gh-action-sigstore-python@v2.1.1
         with:
           inputs: ./dist/*.tar.gz ./dist/*.whl
+          # For this setting to work, this pipeline should be triggered by a "release" event:
           release-signing-artifacts: true
-      
