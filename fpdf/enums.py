@@ -326,44 +326,43 @@ class TableCellFillMode(CoerciveEnum):
         raise NotImplementedError
 
 
+
 class RenderStyle(CoerciveEnum):
-    "Defines how to render shapes"
+   "Defines how to render shapes"
+D = intern("DRAW")
+"""
+Draw lines.
+Line color can be controlled with `fpdf.fpdf.FPDF.set_draw_color()`.
+Line thickness can be controlled with `fpdf.fpdf.FPDF.set_line_width()`.
+"""
+F = intern("FILL")
+"""
+Fill areas.
+Filling color can be controlled with `fpdf.fpdf.FPDF.set_fill_color()`.
+"""
+DF = intern("DRAW_FILL")
+"Draw lines and fill areas"
+# adding pattern
+P = intern("PATTERN")
+@property
+def operator(self):
+    return {self.D: "S", self.F: "f", self.DF: "B", self.P: "f"}[self]
 
-    D = intern("DRAW")
-    """
-    Draw lines.
-    Line color can be controlled with `fpdf.fpdf.FPDF.set_draw_color()`.
-    Line thickness can be controlled with `fpdf.fpdf.FPDF.set_line_width()`.
-    """
+@property
+   def is_draw(self):
+       return self in (self.D, self.DF, self.P)  # Include pattern in drawing
+   @property
+   def is_fill(self):
+       return self in (self.F, self.DF, self.P)
+   @classmethod
+   def coerce(cls, value):
+       if not value:
+           return cls.D
+       if value == "FD":
+           value = "DF"
+return super(cls, cls).coerce(value)
 
-    F = intern("FILL")
-    """
-    Fill areas.
-    Filling color can be controlled with `fpdf.fpdf.FPDF.set_fill_color()`.
-    """
-
-    DF = intern("DRAW_FILL")
-    "Draw lines and fill areas"
-
-    @property
-    def operator(self):
-        return {self.D: "S", self.F: "f", self.DF: "B"}[self]
-
-    @property
-    def is_draw(self):
-        return self in (self.D, self.DF)
-
-    @property
-    def is_fill(self):
-        return self in (self.F, self.DF)
-
-    @classmethod
-    def coerce(cls, value):
-        if not value:
-            return cls.D
-        if value == "FD":
-            value = "DF"
-        return super(cls, cls).coerce(value)
+ 
 
 
 class TextMode(CoerciveIntEnum):

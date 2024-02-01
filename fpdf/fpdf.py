@@ -106,6 +106,7 @@ from .output import (
     PDFPage,
     ZOOM_CONFIGS,
     stream_content_for_raster_image,
+    PDFPattern
 )
 from .recorder import FPDFRecorder
 from .sign import Signature
@@ -263,6 +264,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.page = 0  # current page number
         self.pages = {}  # array of PDFPage objects starting at index 1
         self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
+        self.patterns = {}  # map pattern fill objects
         self.links = {}  # array of Destination objects starting at index 1
         self.embedded_files = []  # array of PDFEmbeddedFile
         self.image_cache = ImageCache()
@@ -311,6 +313,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
+        self.fill_pattern = self.DEFAULT_FILL_PATTERN
         self.text_color = self.DEFAULT_TEXT_COLOR
         self.page_background = None
         self.dash_pattern = dict(dash=0, gap=0, phase=0)
@@ -1023,6 +1026,48 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if self.page > 0:
                 self._out(self.fill_color.serialize().lower())
 
+    def set_fill_pattern(self, bbox, x_step, y_step, pattern_type, paint_type=None, tiling_type=1, resources=None, matrix=None):
+        """
+        Defines the pattern used for all filling operations (filled rectangles and cell backgrounds).
+        It can be expressed in RGB components or grey scale.
+        The method can be called before the first page is created and the value is retained from page to page.
+
+        Args:
+            r (int, tuple, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): if `g` and `b` are given, this indicates the red component.
+                Else, this indicates the grey level. The value must be between 0 and 255.
+            g (int): green component (between 0 and 255)
+            b (int): blue component (between 0 and 255)
+        """
+        #print("Hello")
+        pattern = PDFPattern(
+            pattern_type= pattern_type,  # Assuming tiling pattern is always used
+            paint_type=paint_type,
+            tiling_type=tiling_type,
+            bbox=bbox,
+            x_step=x_step,
+            y_step=y_step,
+            resources=resources,
+            matrix=matrix
+        )
+
+        # Add the pattern to a patterns dictionary in the PDF document
+        pattern_id = len(self.patterns) + 1  
+        self.patterns[pattern_id] = pattern
+        #print(self.patterns)
+        # Set this pattern as the current fill pattern
+        self.current_fill_pattern = pattern_id
+        #print(self.current_fill_pattern)
+
+    def set_current_pattern(self, pattern_id):
+      
+       if pattern_id in self.patterns:
+
+           self.current_fill_pattern = pattern_id
+
+       else:
+
+           raise ValueError(f"Pattern ID '{pattern_id}' not found in patterns.")
+
     def set_text_color(self, r, g=-1, b=-1):
         """
         Defines the color used for text.
@@ -1344,6 +1389,39 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.line(x1, y1, x2, y2)
         self.set_dash_pattern()
 
+    def apply_fill_pattern(self, pattern_id, x, y, w, h):
+        pattern = self.patterns.get(pattern_id)
+        if pattern:
+            
+            # Use the pattern's bbox to determine the size of each tile
+            pattern_width, pattern_height = pattern.bbox[2], pattern.bbox[3]
+
+            # Use the pattern's x_step and y_step for spacing
+            x_step, y_step = pattern.x_step, pattern.y_step
+
+            # Calculate how many times the pattern will repeat
+            x_repeat = int(w / x_step)
+            y_repeat = int(h / y_step)
+
+            # Loop through and draw the pattern
+            for i in range(x_repeat):
+                for j in range(y_repeat):
+                    # Calculate the top-left corner of the current pattern tile
+                    pattern_x = x + i * x_step
+                    pattern_y = y + j * y_step
+                    if pattern.pattern_type == "circles": 
+                        if pattern.paint_type is not None: 
+                            self.set_fill_color(*pattern.paint_type)
+                            self.ellipse(pattern_x, pattern_y, pattern_width, pattern_height, 'F')
+                        self.ellipse(pattern_x, pattern_y, pattern_width, pattern_height, 'D')
+                    elif pattern.pattern_type == "squares":  
+                        if pattern.paint_type is not None: 
+                            self.set_fill_color(*pattern.paint_type)
+                            self.rect(pattern_x, pattern_y, pattern_width, pattern_height, 'F')
+                        self.rect(pattern_x, pattern_y, pattern_width, pattern_height, 'D')
+                    else:
+                        raise ValueError('Not defined pattern type')
+                    
     @check_page
     def rect(self, x, y, w, h, style=None, round_corners=False, corner_radius=0):
         """
@@ -1373,8 +1451,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
             corner_radius: Optional radius of the corners
         """
-
+        
         style = RenderStyle.coerce(style)
+
+        
+        if style == RenderStyle.P:
+
+           # Check if a current pattern is set and apply it
+           if self.current_fill_pattern is not None:
+               
+               self.apply_fill_pattern(self.current_fill_pattern, x, y, w, h)
+               
+               return None
+
         if round_corners is not False:
             self._draw_rounded_rect(x, y, w, h, style, round_corners, corner_radius)
         else:
@@ -2634,6 +2723,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         line_width=None,
         draw_color=None,
         fill_color=None,
+        fill_pattern=None,
         text_color=None,
         dash_pattern=None,
         **kwargs,
@@ -2717,6 +2807,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.set_draw_color(draw_color)
         if fill_color is not None:
             self.set_fill_color(fill_color)
+        if fill_pattern is not None:
+            self.set_fill_pattern()
         if text_color is not None:
             self.set_text_color(text_color)
         if dash_pattern is not None:
