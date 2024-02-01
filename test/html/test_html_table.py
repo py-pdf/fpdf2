@@ -144,9 +144,7 @@ def test_html_table_with_imgs_captions_and_colspan(caplog, tmp_path):
         )
     )
     assert_pdf_equal(
-        pdf,
-        HERE / "html_table_with_imgs_captions_and_colspan.pdf",
-        tmp_path,
+        pdf, HERE / "html_table_with_imgs_captions_and_colspan.pdf", tmp_path
     )
     assert (
         'Ignoring width="50%" specified on a <td> that is not in the first <tr>'

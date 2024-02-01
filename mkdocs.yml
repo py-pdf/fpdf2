@@ -60,6 +60,47 @@ plugins:
   #- git-committers:
   #    repository: py-pdf/fpdf2
   #    branch: master
+  - with-pdf:  # https://github.com/orzih/mkdocs-with-pdf
+      output_path: fpdf2-manual.pdf
+      cover_title: fpdf2 manual
+      cover_subtitle: A minimalist PDF creation library for Python
+      author: ' '
+      copyright: ' '
+      exclude_pages:
+        - 'Tutorial-de'
+        - 'Tutorial-es'
+        - 'Tutorial-fr'
+        - 'Tutorial-gr'
+        - 'Tutorial-it'
+        - 'Tutorial-km'
+        - 'Tutorial-pt'
+        - 'Tutorial-ru'
+        - 'Tutorial-hi'
+        - 'Tutorial-bn'
+        - 'Tutorial-he'
+        - 'Tutorial-zh'
+        - 'Tutorial-ja'
+        - 'Tutorial-nl'
+      #cover: false
+      #back_cover: true
+      #custom_template_path: TEMPLATES PATH
+      #toc_title: TOC TITLE TEXT
+      #heading_shift: false
+      #toc_level: 3
+      #ordered_chapter_level: 2
+      #excludes_children:
+      #    - 'release-notes/:upgrading'
+      #convert_iframe:
+      #    - src: IFRAME SRC
+      #      img: POSTER IMAGE URL
+      #      text: ALTERNATE TEXT
+      #two_columns_level: 3
+      #render_js: true
+      #headless_chrome_path: headless-chromium
+      #enabled_if_env: ENABLE_PDF_EXPORT
+      #debug_html: true
+      #show_anchors: true
+      #verbose: true
 
 hooks:
   - docs/overrides/.hooks/log_manager.py

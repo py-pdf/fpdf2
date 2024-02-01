@@ -36,6 +36,13 @@ A table:
 | ---:|:---:|:--- |
 | Foo | Bar | Baz |
 
+Actual HTML:
+
+<dl>
+  <dt>Term1</dt><dd>Definition1</dd>
+  <dt>Term2</dt><dd>Definition2</dd>
+</dl>
+
 Some horizontal thematic breaks:
 
 ***

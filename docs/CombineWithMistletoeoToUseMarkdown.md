@@ -24,3 +24,13 @@ print(msg)
     msg = "This is some code in an indented code block"
     print(msg)
 -->
+
+## Rendering unicode characters
+
+```python
+{% include "../tutorial/markdown2pdf_unicode.py" %}
+```
+
+Result:
+
+![](docs/markdown2pdf_unicode.png)
