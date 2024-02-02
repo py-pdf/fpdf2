@@ -322,9 +322,9 @@ class DeviceCMYK(
 
 __pdoc__["DeviceCMYK.OPERATOR"] = False
 __pdoc__["DeviceCMYK.c"] = "The cyan color component. Must be in the interval [0, 1]."
-__pdoc__[
-    "DeviceCMYK.m"
-] = "The magenta color component. Must be in the interval [0, 1]."
+__pdoc__["DeviceCMYK.m"] = (
+    "The magenta color component. Must be in the interval [0, 1]."
+)
 __pdoc__["DeviceCMYK.y"] = "The yellow color component. Must be in the interval [0, 1]."
 __pdoc__["DeviceCMYK.k"] = "The black color component. Must be in the interval [0, 1]."
 __pdoc__[

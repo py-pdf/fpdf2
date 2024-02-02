@@ -12,9 +12,9 @@ from test.conftest import assert_pdf_equal, LOREM_IPSUM
 HERE = Path(__file__).resolve().parent
 
 
-def run_comparison(pdf, name, tmp_path):
+def run_comparison(pdf, name, tmp_path, generate=False):
     filename = HERE / f"{name}.pdf"
-    assert_pdf_equal(pdf, filename, tmp_path, generate=False)
+    assert_pdf_equal(pdf, filename, tmp_path, generate=generate)
 
 
 IMG_DIR = HERE.parent / "image"
