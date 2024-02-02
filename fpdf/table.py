@@ -179,7 +179,9 @@ class Table:
                 if font_key not in CORE_FONTS and font_key not in self._fpdf.fonts:
                     # Raising a more explicit error than the one from set_font():
                     raise FPDFException(
-                        f"Using font emphasis '{emphasis.style}' in table headings require the corresponding font style to be added using add_font()"
+                        f"Using font '{family}' with emphasis '{emphasis.style}'"
+                        " in table headings require the corresponding font style"
+                        " to be added using add_font()"
                     )
 
         # Defining table global horizontal position:

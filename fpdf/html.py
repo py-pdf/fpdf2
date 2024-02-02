@@ -496,7 +496,6 @@ class HTML2FPDF(HTMLParser):
             )
             self.set_text_color(*color)
             self.set_font(size=hsize_pt)
-
         if tag == "hr":
             self.pdf.add_page(same=True)
         if tag == "code":
@@ -594,7 +593,8 @@ class HTML2FPDF(HTMLParser):
             self.td_th = {k.lower(): v for k, v in attrs.items()}
             self.td_th["tag"] = tag
             if tag == "th":
-                self.td_th["align"] = "CENTER"
+                if "align" not in self.td_th:
+                    self.td_th["align"] = "CENTER"
                 self.td_th["b"] = True
             elif len(self.table.rows) == 1 and not self.table_row.cells:
                 # => we are in the 1st <tr>, and the 1st cell is a <td>

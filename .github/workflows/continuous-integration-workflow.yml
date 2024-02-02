@@ -34,16 +34,16 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install --upgrade . -r test/requirements.txt -r docs/requirements.txt -r contributors/requirements.txt
       - name: Statically checking code 🔎
-        if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
+        if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
         run: |
           pylint fpdf test tutorial/tuto*.py
           bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
           semgrep scan --config auto --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
       - name: Ensure code has been autoformatted with black 🖌️
-        if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
+        if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
         run: black --check .
       - name: Checking all PDF samples ☑
-        if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
+        if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
         run: |
           # Using qpdf
           find . -name '*.pdf' | xargs -n 1 qpdf --check --password=fpdf2
@@ -59,20 +59,21 @@ jobs:
       - name: Running tests ☑
         env:
           CHECK_EXEC_TIME: ${{ matrix.python-version == '3.9' && 'test-enabled' || '' }}
-          CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.11' && 'test-enabled' || '' }}
+          CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.12' && 'test-enabled' || '' }}
         run: |
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
           # Executing all tests:
           pytest -vv --trace-memory-usage
       - name: Uploading coverage report to codecov.io ☑
-        if: matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
+        if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
         run: bash <(curl -s https://codecov.io/bash)
       - name: Generating HTML documentation 🏗️
         # As build_contributors_html_page.py can hang due to GitHub rate-limiting,
         # we only execute this on master for now. And it should always be executed for one Python version only.
-        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
         env:
+          # Needed by contributors/build_contributors_html_page.py:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p public/
@@ -87,24 +88,46 @@ jobs:
       - name: Deploy documentation 🚀
         # GitHub Pages deployment should not be done for all Python versions,
         # otherwise commits will conflict on the gh-pages branch:
-        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: public/
-      - name: Publish on Pypi 🚀
-        # Similarly, we only publish a new version on Pypi once per pipeline running on master:
-        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.10' && matrix.platform == 'ubuntu-latest'
+  publish:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/fpdf2
+    permissions:
+      # Trusted publishing configured there: https://pypi.org/manage/project/fpdf2/settings/publishing/
+      id-token: write
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+      - name: Set up Python 3.12 🔧
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      - name: Building distributions for Pypi 🏗️
+        id: build
         run: |
           echo Versions already released on Pypi: $(curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]')
+          pip install --upgrade setuptools twine wheel .
           echo Current code version: $(python setup.py -V)
           # Checking if current code version has already been released:
-          curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]' | grep "^$(python setup.py -V)\$" && exit 0
-          # No? Then performing a release on Pypi now:
-          pip install --upgrade twine wheel
-          python setup.py sdist bdist_wheel
-          twine check dist/*
-          twine upload dist/*
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.FPDF2_GITHUB_ACTION_PUBLISH }}
+          if ! curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]' | grep "^$(python setup.py -V)\$"; then echo publish=yes >> "$GITHUB_OUTPUT"; python setup.py sdist bdist_wheel; twine check dist/*; fi
+      - name: Publish package distributions to PyPI 🚀
+        if: steps.build.outputs.publish == 'yes'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # Doc: https://github.com/marketplace/actions/pypi-publish
+        with:
+          print-hash: true
+      - name: Generate & release sigstore signatures 🔑
+        if: steps.build.outputs.publish == 'yes'
+        uses: sigstore/gh-action-sigstore-python@v2.1.1
+        # Doc: https://github.com/marketplace/actions/gh-action-sigstore-python
+        with:
+          inputs: ./dist/*.tar.gz ./dist/*.whl
+          # For this setting to work, this pipeline should be triggered by a "release" event:
+          release-signing-artifacts: true

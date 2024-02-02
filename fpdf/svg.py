@@ -170,6 +170,15 @@ def xmlns_lookup(space, *names):
     return result
 
 
+@force_nodocument
+def without_ns(qualified_tag):
+    """Remove the xmlns namespace from a qualified XML tag name"""
+    i = qualified_tag.index("}")
+    if i >= 0:
+        return qualified_tag[i + 1 :]
+    return qualified_tag
+
+
 shape_tags = xmlns_lookup(
     "svg", "rect", "circle", "ellipse", "line", "polyline", "polygon"
 )
@@ -872,7 +881,7 @@ class SVGObject:
             else:
                 LOGGER.warning(
                     "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
-                    child.tag,
+                    without_ns(child.tag),
                 )
 
     # this assumes xrefs only reference already-defined ids.
@@ -937,7 +946,7 @@ class SVGObject:
             else:
                 LOGGER.warning(
                     "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
-                    child.tag,
+                    without_ns(child.tag),
                 )
 
         self.update_xref(group.attrib.get("id"), pdf_group)
@@ -979,7 +988,7 @@ class SVGObject:
         else:
             LOGGER.warning(
                 "Ignoring unsupported <clipPath> child tag: <%s> (contributions are welcome to add support for it)",
-                shape.tag,
+                without_ns(shape.tag),
             )
             return
         self.update_xref(clip_id, clipping_path_shape)

@@ -101,4 +101,9 @@ For example:
 * `<table>` cells can contain `<td><b><em>nested tags forming a single text block</em></b></td>`, but **not** `<td><b>arbitrarily</b> nested <em>tags</em></td>` - _cf._ [issue #845](https://github.com/py-pdf/fpdf2/issues/845)
 
 You can also check the currently open GitHub issues with the tag `html`:
-<https://github.com/py-pdf/fpdf2/issues?q=is%3Aopen+label%3Ahtml>
+[label:html is:open](https://github.com/py-pdf/fpdf2/issues?q=is%3Aopen+label%3Ahtml)
+
+
+## Using Markdown
+
+Check [Combine with mistletoe to use Markdown](CombineWithMistletoeoToUseMarkdown.md)

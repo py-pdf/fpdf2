@@ -407,7 +407,7 @@ def test_table_with_ttf_font_and_headings_but_missing_bold_font():
                     row.cell(datum)
     assert (
         str(error.value)
-        == "Using font emphasis 'B' in table headings require the corresponding font style to be added using add_font()"
+        == "Using font 'quicksand' with emphasis 'B' in table headings require the corresponding font style to be added using add_font()"
     )
 
 

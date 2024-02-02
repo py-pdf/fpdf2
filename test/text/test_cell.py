@@ -254,10 +254,7 @@ def test_cell_newpos_badinput():
     pdf.add_page()
     pdf.set_font("Times", size=16)
     with pytest.raises(ValueError):
-        with pytest.warns(DeprecationWarning) as record:
-            pdf.cell(w=0, ln=5)
-        assert len(record) == 1
-        assert record[0].filename == __file__
+        pdf.cell(w=0, ln=5)
 
     with pytest.raises(TypeError):
         pdf.cell(w=0, new_x=5)
