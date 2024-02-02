@@ -63,9 +63,11 @@ def test_bidi_conformance():
             for (indx, char) in enumerate(reordered_characters)
         )
 
-    with urlopen("https://www.unicode.org/Public/15.1.0/ucd/BidiTest.txt") as url_file:  # nosec B310
+    with urlopen(
+        "https://www.unicode.org/Public/15.1.0/ucd/BidiTest.txt"
+    ) as url_file:  # nosec B310
         data = url_file.read().decode("utf-8").split("\n")
-    
+
     levels = []
     reorder = []
     test_count = 0
@@ -106,7 +108,9 @@ def test_bidi_character():
     There are 91,707 tests on this file
     """
 
-    with urlopen("https://www.unicode.org/Public/15.1.0/ucd/BidiCharacterTest.txt") as url_file:  # nosec B310
+    with urlopen(
+        "https://www.unicode.org/Public/15.1.0/ucd/BidiCharacterTest.txt"
+    ) as url_file:  # nosec B310
         data = url_file.read().decode("utf-8").split("\n")
 
     test_count = 0
