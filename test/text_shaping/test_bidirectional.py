@@ -145,8 +145,6 @@ def test_bidi_character():
         ).get_characters_with_embedding_level()
 
         result_index = 0
-        print(test_data)
-        print(characters)
         for level in test_data[3].split(" "):
             if level == "x":
                 continue

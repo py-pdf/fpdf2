@@ -4,7 +4,6 @@
 
 import unicodedata
 from collections import deque
-from copy import deepcopy
 from dataclasses import dataclass, replace
 from operator import itemgetter
 from typing import List, Tuple
@@ -744,7 +743,7 @@ class BidiParagraph:
 
         # Rule L2. From the highest level found in the text to the lowest odd level on each line,
         # reverse any contiguous sequence of characters that are at that level or higher.
-        reordered_paragraph = deepcopy(self.characters)
+        reordered_paragraph = self.characters.copy()
         for level in range(max_level, min_odd_level - 1, -1):
             temp_results = []
             rev = []
