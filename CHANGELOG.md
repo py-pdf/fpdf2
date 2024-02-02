@@ -19,7 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.7.8] - Not released yet
 ### Added
 * support for `<path>` elements in SVG `<clipPath>` elements
-* support for `bidirectional` text shaping
+* support for `bidirectional` text shaping - thanks to @andersonhc
 * documentation on how to combine `fpdf2` with [mistletoe](https://pypi.org/project/kaleido/) in order to [generate PDF documents from Markdown (link)](https://py-pdf.github.io/fpdf2/CombineWithMistletoeoToUseMarkdown.html)
 * tutorial in Dutch: [Handleiding](https://py-pdf.github.io/fpdf2/Tutorial-nl.md) - thanks to @Polderrider
 * support for `Table` cells that span multiple rows via the `rowspan` attribute, which can be combined with `colspan` - thanks to @mjasperse
