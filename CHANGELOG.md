@@ -20,11 +20,19 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 * support for `<path>` elements in SVG `<clipPath>` elements
 * support for `bidirectional` text shaping
+* documentation on how to combine `fpdf2` with [mistletoe](https://pypi.org/project/kaleido/) in order to [generate PDF documents from Markdown (link)](https://py-pdf.github.io/fpdf2/CombineWithMistletoeoToUseMarkdown.html)
+* tutorial in Dutch: [Handleiding](https://py-pdf.github.io/fpdf2/Tutorial-nl.md) - thanks to @Polderrider
 ### Fixed
 * when adding a link on a table cell, an extra link was added erroneously on the left. Moreover, now `FPDF._disable_writing()` properly disable link writing.
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now handles linking directly to other pages - thanks to @mjasperse
 * non-bold `TitleStyle` is now rendered as non-bold even when the current font is bold
 * calling `.table()` inside the `render_toc_function`
 * using `.set_text_shaping(True)` & `.offset_rendering()`
+* fixed gutter handing when a pagebreak occurs within a table with header rows - thanks to @mjasperse
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now properly honors `align=` attributes in `<th>` tags
+### Changed
+* refactored [`FPDF.multi_cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) to generate fewer PDF component objects - thanks to @mjasperse
+* outer table borders are now drawn continuously for nonzero `gutter_width`/`gutter_height`, with spacing applied inside the border similar to HTML tables - thanks to @mjasperse - cf. [#1071](https://github.com/py-pdf/fpdf2/issues/1071)
 
 ## [2.7.7] - 2023-12-10
 ### Added

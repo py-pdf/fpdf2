@@ -78,7 +78,7 @@ pdf.output("html.pdf")
 * `<b>`, `<i>`, `<u>`: bold, italic, underline
 * `<font>`: (and `face`, `size`, `color` attributes)
 * `<center>` for aligning
-* `<a>`: links (and `href` attribute)
+* `<a>`: links (and `href` attribute) to a file, URL, or page number.
 * `<pre>` & `<code>` tags
 * `<img>`: images (and `src`, `width`, `height` attributes)
 * `<ol>`, `<ul>`, `<li>`: ordered, unordered and list items (can be nested)
@@ -101,4 +101,9 @@ For example:
 * `<table>` cells can contain `<td><b><em>nested tags forming a single text block</em></b></td>`, but **not** `<td><b>arbitrarily</b> nested <em>tags</em></td>` - _cf._ [issue #845](https://github.com/py-pdf/fpdf2/issues/845)
 
 You can also check the currently open GitHub issues with the tag `html`:
-<https://github.com/py-pdf/fpdf2/issues?q=is%3Aopen+label%3Ahtml>
+[label:html is:open](https://github.com/py-pdf/fpdf2/issues?q=is%3Aopen+label%3Ahtml)
+
+
+## Using Markdown
+
+Check [Combine with mistletoe to use Markdown](CombineWithMistletoeoToUseMarkdown.md)

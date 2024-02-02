@@ -284,10 +284,7 @@ def test_multicell_badinput():
     pdf.add_page()
     pdf.set_font("Times", size=16)
     with pytest.raises(ValueError):
-        with pytest.warns(DeprecationWarning) as record:
-            pdf.multi_cell(0, ln=5)
-        assert len(record) == 1
-        assert record[0].filename == __file__
+        pdf.multi_cell(0, ln=5)
     with pytest.raises(TypeError):
         pdf.multi_cell(0, new_x=5)
     with pytest.raises(TypeError):

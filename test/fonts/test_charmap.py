@@ -9,6 +9,7 @@ the range of the C 'short' data type (2 bytes, 0 - 65535):
   fpdf/ttfonts.py:671: UserWarning: cmap value too big/small:
 and this seems to be okay.
 """
+
 import logging
 from pathlib import Path
 

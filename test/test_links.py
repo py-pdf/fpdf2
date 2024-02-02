@@ -214,9 +214,9 @@ def test_link_to_other_document(tmp_path):
     width = pdf.get_string_width(text)
     pdf.link(
         x=80,
-        y=250 - pdf.h,
+        y=250 - pdf.font_size,
         w=width,
-        h=pdf.h,
+        h=pdf.h - 250,
         link="links.pdf",
     )
 
@@ -267,9 +267,9 @@ def test_internal_links(tmp_path):
     width = pdf.get_string_width(text)
     pdf.link(
         x=80,
-        y=250 - pdf.h,
+        y=250 - pdf.font_size,
         w=width,
-        h=pdf.h,
+        h=pdf.h - 250,
         link=pdf.add_link(page=1),
     )
 

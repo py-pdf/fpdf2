@@ -113,7 +113,7 @@ from .sign import Signature
 from .structure_tree import StructureTreeBuilder
 from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ, PDFArray, PDFDate
-from .table import Table
+from .table import Table, draw_box_borders
 from .text_region import TextRegionMixin, TextColumns
 from .util import get_scale_factor, Padding
 
@@ -1002,9 +1002,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
-        self.draw_color = convert_to_device_color(r, g, b)
-        if self.page > 0:
-            self._out(self.draw_color.serialize().upper())
+        draw_color = convert_to_device_color(r, g, b)
+        if draw_color != self.draw_color:
+            self.draw_color = draw_color
+            if self.page > 0:
+                self._out(self.draw_color.serialize().upper())
 
     def set_fill_color(self, r, g=-1, b=-1):
         """
@@ -1018,9 +1020,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             g (int): green component (between 0 and 255)
             b (int): blue component (between 0 and 255)
         """
-        self.fill_color = convert_to_device_color(r, g, b)
-        if self.page > 0:
-            self._out(self.fill_color.serialize().lower())
+        fill_color = convert_to_device_color(r, g, b)
+        if fill_color != self.fill_color:
+            self.fill_color = fill_color
+            if self.page > 0:
+                self._out(self.fill_color.serialize().lower())
 
     def set_text_color(self, r, g=-1, b=-1):
         """
@@ -1065,9 +1069,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             width (float): the width in user unit
         """
-        self.line_width = width
-        if self.page > 0:
-            self._out(f"{width * self.k:.2f} w")
+        if width != self.line_width:
+            self.line_width = width
+            if self.page > 0:
+                self._out(f"{width * self.k:.2f} w")
 
     def set_page_background(self, background):
         """
@@ -2906,6 +2911,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 stacklevel=get_stack_level(),
             )
             border = 1
+        elif isinstance(border, str) and set(border).issuperset("LTRB"):
+            border = 1
 
         if padding is None:
             padding = Padding(0, 0, 0, 0)
@@ -3630,11 +3637,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         prev_font_style, prev_underline = self.font_style, self.underline
         total_height = 0
 
-        if not border:
-            border = ""
-        elif border == 1:
-            border = "LTRB"
-
         text_lines = []
         multi_line_break = MultiLineBreak(
             styled_text_fragments,
@@ -3661,82 +3663,75 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     trailing_nl=False,
                 )
             ]
-        should_render_bottom_blank_cell = False
+
+        if max_line_height is None or len(text_lines) == 1:
+            line_height = h
+        else:
+            line_height = min(h, max_line_height)
+
+        box_required = fill or border
+        page_break_triggered = False
+
         for text_line_index, text_line in enumerate(text_lines):
-            is_first_line = text_line_index == 0
+            page_break_required = self.will_page_break(h + padding.bottom)
+            if page_break_required:
+                page_break_triggered = True
+                x = self.x
+                self.add_page(same=True)
+                self.x = x
+                self.y += padding.top
+
+            if box_required and (text_line_index == 0 or page_break_required):
+                # estimate how many cells can fit on this page
+                top_gap = self.y + padding.top
+                bottom_gap = padding.bottom + self.b_margin
+                lines_before_break = int((self.h - top_gap - bottom_gap) // line_height)
+                # check how many cells should be rendered
+                num_lines = min(lines_before_break, len(text_lines) - text_line_index)
+                box_height = max(
+                    h - text_line_index * line_height, num_lines * line_height
+                )
+                # render the box
+                x = self.x - (w / 2 if align == Align.X else 0)
+                draw_box_borders(
+                    self,
+                    x - padding.left,
+                    self.y - padding.top,
+                    x + w + padding.right,
+                    self.y + box_height + padding.bottom,
+                    border,
+                    self.fill_color if fill else None,
+                )
             is_last_line = text_line_index == len(text_lines) - 1
-            should_render_bottom_blank_cell = False
-            if max_line_height is not None and h > max_line_height:
-                current_cell_height = max_line_height
-                h -= current_cell_height
-                if is_last_line:
-                    if h > 0 and len(text_lines) > 1:
-                        should_render_bottom_blank_cell = True
-                    else:
-                        h += current_cell_height
-                        current_cell_height = h
-            else:
-                current_cell_height = h
-            has_line_after = not is_last_line or should_render_bottom_blank_cell
-            new_page = self._render_styled_text_line(
+            self._render_styled_text_line(
                 text_line,
-                h=current_cell_height,
-                border="".join(
-                    (
-                        "T" if "T" in border and is_first_line else "",
-                        "L" if "L" in border else "",
-                        "R" if "R" in border else "",
-                        "B" if "B" in border and not has_line_after else "",
-                    )
-                ),
-                new_x=new_x if not has_line_after else XPos.LEFT,
-                new_y=new_y if not has_line_after else YPos.NEXT,
-                fill=fill,
+                h=line_height,
+                new_x=new_x if is_last_line else XPos.LEFT,
+                new_y=new_y if is_last_line else YPos.NEXT,
+                border=0,  # already rendered
+                fill=False,  # already rendered
                 link=link,
-                padding=Padding(
-                    padding.top if is_first_line else 0,
-                    padding.right,
-                    padding.bottom if not has_line_after else 0,
-                    padding.left,
-                ),
+                padding=Padding(0, padding.right, 0, padding.left),
             )
-            page_break_triggered = page_break_triggered or new_page
-            total_height += current_cell_height
+            total_height += line_height
             if not is_last_line and align == Align.X:
                 # prevent cumulative shift to the left
                 self.x = prev_x
-        if should_render_bottom_blank_cell:
-            new_page = self._render_styled_text_line(
-                TextLine(
-                    "",
-                    text_width=0,
-                    number_of_spaces=0,
-                    align=Align.L,
-                    height=h,
-                    max_width=w,
-                    trailing_nl=False,
-                ),
-                h=h,
-                border="".join(
-                    (
-                        "L" if "L" in border else "",
-                        "R" if "R" in border else "",
-                        "B" if "B" in border else "",
-                    )
-                ),
-                new_x=new_x,
-                new_y=new_y,
-                fill=fill,
-                link=link,
-                padding=padding,
-            )
-            page_break_triggered = page_break_triggered or new_page
-        if new_page and new_y == YPos.TOP:
+
+        if total_height < h:
+            # Move to the bottom of the multi_cell
+            if new_y == YPos.NEXT:
+                self.y += h - total_height
+            total_height = h
+
+        if page_break_triggered and new_y == YPos.TOP:
             # When a page jump is performed and the requested y is TOP,
             # pretend we started at the top of the text block on the new page.
             # cf. test_multi_cell_table_with_automatic_page_break
             prev_y = self.y
-        if text_line and text_line.trailing_nl and new_y in (YPos.LAST, YPos.NEXT):
+
+        last_line = text_lines[-1]
+        if last_line and last_line.trailing_nl and new_y in (YPos.LAST, YPos.NEXT):
             # The line renderer can't handle trailing newlines in the text.
             self.ln()
 
@@ -4919,10 +4914,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if font_face.color is not None and font_face.color != self.text_color:
             self.set_text_color(font_face.color)
         prev_fill_color = self.fill_color
-        if font_face.fill_color is not None and font_face.fill_color != self.fill_color:
+        if font_face.fill_color is not None:
             self.set_fill_color(font_face.fill_color)
         yield
-        if font_face.fill_color is not None and font_face.fill_color != prev_fill_color:
+        if font_face.fill_color is not None:
             self.set_fill_color(prev_fill_color)
         self.text_color = prev_text_color
         self.set_font(*prev_font)
