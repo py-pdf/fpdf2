@@ -713,3 +713,22 @@ def test_table_with_links(tmp_path):  # issue 1031
                 else:
                     row.cell(datum)
     assert_pdf_equal(pdf, HERE / "table_with_links.pdf", tmp_path)
+
+
+def test_table_with_varying_col_count(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica")
+    # test table with reducing number of rows
+    with pdf.table() as table:
+        for i, data_row in enumerate(TABLE_DATA):
+            subset = data_row[:-i] if i else data_row
+            table.row(subset)
+    pdf.ln(3)
+    # table with less columns in first row
+    with pdf.table(first_row_as_headings=False) as table:
+        for i, data_row in enumerate(TABLE_DATA[1:], start=1):
+            subset = data_row[:i]
+            table.row(subset)
+
+    assert_pdf_equal(pdf, HERE / "table_with_varying_col_count.pdf", tmp_path)

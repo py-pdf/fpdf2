@@ -326,6 +326,14 @@ class TableCellFillMode(CoerciveEnum):
         raise NotImplementedError
 
 
+class TableSpan(CoerciveEnum):
+    ROW = intern("ROW")
+    "Mark this cell as a continuation of the previous row"
+
+    COL = intern("COL")
+    "Mark this cell as a continuation of the previous column"
+
+
 class RenderStyle(CoerciveEnum):
     "Defines how to render shapes"
 

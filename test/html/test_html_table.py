@@ -127,7 +127,7 @@ def test_html_table_with_imgs_captions_and_colspan(caplog, tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
-        """<table border="1">
+        """<table border="0">
         <tr>
             <td colspan="2" align="center"><b>Side by side centered pictures and captions</b></td>
         </tr>

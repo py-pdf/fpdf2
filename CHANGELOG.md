@@ -22,6 +22,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support for `bidirectional` text shaping
 * documentation on how to combine `fpdf2` with [mistletoe](https://pypi.org/project/kaleido/) in order to [generate PDF documents from Markdown (link)](https://py-pdf.github.io/fpdf2/CombineWithMistletoeoToUseMarkdown.html)
 * tutorial in Dutch: [Handleiding](https://py-pdf.github.io/fpdf2/Tutorial-nl.md) - thanks to @Polderrider
+* support for `Table` cells that span multiple rows via the `rowspan` attribute, which can be combined with `colspan` - thanks to @mjasperse
+* `TableSpan.COL` and `TableSpan.ROW` enums that can be used as placeholder table entries to identify span extents - thanks to @mjasperse
 ### Fixed
 * when adding a link on a table cell, an extra link was added erroneously on the left. Moreover, now `FPDF._disable_writing()` properly disable link writing.
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now handles linking directly to other pages - thanks to @mjasperse
@@ -29,10 +31,12 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * calling `.table()` inside the `render_toc_function`
 * using `.set_text_shaping(True)` & `.offset_rendering()`
 * fixed gutter handing when a pagebreak occurs within a table with header rows - thanks to @mjasperse
+* fixed handling of `border=0` in HTML table - thanks to @mjasperse
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now properly honors `align=` attributes in `<th>` tags
 ### Changed
 * refactored [`FPDF.multi_cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) to generate fewer PDF component objects - thanks to @mjasperse
 * outer table borders are now drawn continuously for nonzero `gutter_width`/`gutter_height`, with spacing applied inside the border similar to HTML tables - thanks to @mjasperse - cf. [#1071](https://github.com/py-pdf/fpdf2/issues/1071)
+* removed the requirement that all rows in a `Table` have the same number of columns - thanks to @mjasperse
 
 ## [2.7.7] - 2023-12-10
 ### Added

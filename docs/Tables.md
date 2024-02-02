@@ -41,6 +41,7 @@ Result:
 * control table width & position
 * control over text alignment in cells, globally or per row
 * allow to embed images in cells
+* merge cells across columns and rows
 
 ## Setting table & column widths
 
@@ -336,9 +337,9 @@ Result:
 
 ![](table_with_gutter.jpg)
 
-## Column span
+## Column span and row span
 
-Cells spanning multiple columns can be defined by passing a `colspan` argument to `.cell()`.
+Cells spanning multiple columns or rows can be defined by passing a `colspan` or `rowspan` argument to `.cell()`.
 Only the cells with data in them need to be defined. This means that the number of cells on each row can be different.
 
 ```python
@@ -365,6 +366,73 @@ with pdf.table(col_widths=(1, 2, 1, 1)) as table:
 result:
 
 ![](image-colspan.png)
+
+
+
+```python
+    ...
+with pdf.table(text_align="CENTER") as table:
+    row = table.row()
+    row.cell("A1", colspan=2, rowspan=3)
+    row.cell("C1", colspan=2)
+    
+    row = table.row()
+    row.cell("C2", colspan=2, rowspan=2)
+    
+    row = table.row()
+    # all columns of this row are spanned by previous rows
+    
+    row = table.row()
+    row.cell("A4", colspan=4)
+    
+    row = table.row()
+    row.cell("A5", colspan=2)
+    row.cell("C5")
+    row.cell("D5")
+    
+    row = table.row()
+    row.cell("A6")
+    row.cell("B6", colspan=2, rowspan=2)
+    row.cell("D6", rowspan=2)
+    
+    row = table.row()
+    row.cell("A7")
+...
+```
+
+result:
+
+![](image-rowspan.png)
+
+Alternatively, the spans can be defined using the placeholder elements `TableSpan.COL` and `TableSpan.ROW`.
+These elements merge the current cell with the previous column or row respectively.
+
+For example, the previous example table can be defined as follows:
+
+```python
+    ...
+TABLE_DATA = [
+    ["A",           "B",            "C",            "D"],
+    ["A1",          TableSpan.COL,  "C1",           TableSpan.COL],
+    [TableSpan.ROW, TableSpan.ROW,  "C2",           TableSpan.COL],
+    [TableSpan.ROW, TableSpan.ROW,  TableSpan.ROW,  TableSpan.ROW],
+    ["A4",          TableSpan.COL,  TableSpan.COL,  TableSpan.COL],
+    ["A5",          TableSpan.COL,  "C5",           "D5"],
+    ["A6",          "B6",           TableSpan.COL,  "D6"],
+    ["A7",          TableSpan.ROW,  TableSpan.ROW,  TableSpan.ROW],
+]
+
+with pdf.table(TABLE_DATA, text_align="CENTER"):
+    pass
+...
+```
+
+result:
+
+![](image-rowspan.png)
+
+
+
 
 ## Table with multiple heading rows
 

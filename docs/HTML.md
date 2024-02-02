@@ -84,13 +84,13 @@ pdf.output("html.pdf")
 * `<ol>`, `<ul>`, `<li>`: ordered, unordered and list items (can be nested)
 * `<dl>`, `<dt>`, `<dd>`: description list, title, details (can be nested)
 * `<sup>`, `<sub>`: superscript and subscript text
-* `<table>`: (with `align`, `border`, `width` attributes)
+* `<table>`: (with `align`, `border`, `width`, `cellpadding`, `cellspacing` attributes)
     + `<thead>`: optional tag, wraps the table header row
     + `<tfoot>`: optional tag, wraps the table footer row
     + `<tbody>`: optional tag, wraps the table rows with actual content
     + `<tr>`: rows (with `align`, `bgcolor` attributes)
     + `<th>`: heading cells (with `align`, `bgcolor`, `width` attributes)
-    * `<td>`: cells (with `align`, `bgcolor`, `width` attributes)
+    * `<td>`: cells (with `align`, `bgcolor`, `width`, `rowspan`, `colspan` attributes)
 
 
 ## Known limitations

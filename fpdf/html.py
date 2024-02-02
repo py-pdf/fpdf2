@@ -13,7 +13,7 @@ from .enums import TextEmphasis, XPos, YPos
 from .errors import FPDFException
 from .deprecation import get_stack_level
 from .fonts import FontFace
-from .table import Table, TableBordersLayout
+from .table import Table
 
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
@@ -375,6 +375,7 @@ class HTML2FPDF(HTMLParser):
                 self.td_th.get("bgcolor", self.tr.get("bgcolor", None))
             )
             colspan = int(self.td_th.get("colspan", "1"))
+            rowspan = int(self.td_th.get("rowspan", "1"))
             emphasis = 0
             if self.td_th.get("b"):
                 emphasis |= TextEmphasis.B
@@ -387,7 +388,9 @@ class HTML2FPDF(HTMLParser):
                 style = FontFace(
                     emphasis=emphasis, fill_color=bgcolor, color=self.pdf.text_color
                 )
-            self.table_row.cell(text=data, align=align, style=style, colspan=colspan)
+            self.table_row.cell(
+                text=data, align=align, style=style, colspan=colspan, rowspan=rowspan
+            )
             self.td_th["inserted"] = True
         elif self.table is not None:
             # ignore anything else than td inside a table
@@ -553,23 +556,30 @@ class HTML2FPDF(HTMLParser):
                     width = self.pdf.epw * int(width[:-1]) / 100
                 else:
                     width = int(width) / self.pdf.k
-            if "border" in attrs:
-                borders_layout = (
-                    "ALL" if self.table_line_separators else "NO_HORIZONTAL_LINES"
-                )
-            else:
+            if "border" not in attrs:  # default borders
                 borders_layout = (
                     "HORIZONTAL_LINES"
                     if self.table_line_separators
                     else "SINGLE_TOP_LINE"
                 )
+            elif int(attrs["border"]):  # explicitly enabled borders
+                borders_layout = (
+                    "ALL" if self.table_line_separators else "NO_HORIZONTAL_LINES"
+                )
+            else:  # explicitly disabled borders
+                borders_layout = "NONE"
             align = attrs.get("align", "center").upper()
+            padding = float(attrs["cellpadding"]) if "cellpadding" in attrs else None
+            spacing = float(attrs.get("cellspacing", 0))
             self.table = Table(
                 self.pdf,
                 align=align,
                 borders_layout=borders_layout,
                 line_height=self.h * 1.30,
                 width=width,
+                padding=padding,
+                gutter_width=spacing,
+                gutter_height=spacing,
             )
             self._ln()
         if tag == "tr":
@@ -590,7 +600,7 @@ class HTML2FPDF(HTMLParser):
                 # => we are in the 1st <tr>, and the 1st cell is a <td>
                 # => we do not treat the first row as a header
                 # pylint: disable=protected-access
-                self.table._borders_layout = TableBordersLayout.NONE
+                self.table._first_row_as_headings = False
                 self.table._num_heading_rows = 0
             if "height" in attrs:
                 LOGGER.warning(
