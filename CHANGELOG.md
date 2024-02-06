@@ -36,6 +36,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * refactored [`FPDF.multi_cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) to generate fewer PDF component objects - thanks to @mjasperse
 * outer table borders are now drawn continuously for nonzero `gutter_width`/`gutter_height`, with spacing applied inside the border similar to HTML tables - thanks to @mjasperse - cf. [#1071](https://github.com/py-pdf/fpdf2/issues/1071)
 * removed the requirement that all rows in a `Table` have the same number of columns - thanks to @mjasperse
+### Deprecated
+- font aliases (`Arial` → `Helvetica`, `CourierNew` → `Courer`, `TimesNewRoman` → `Times`). They will be removed in a later release.
 
 ## [2.7.7] - 2023-12-10
 ### Added

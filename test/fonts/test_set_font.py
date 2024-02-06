@@ -77,8 +77,8 @@ def test_set_font_aliases_as_font():
     for alias, alternative in zip(aliases, alternatives):
         # Test if warning get's emitted
         with pytest.warns(
-            UserWarning,
-            match=f"Substituting font {alias.lower()} by core font {alternative}",
+            DeprecationWarning,
+            match=f"Substituting font {alias.lower()} by core font {alternative} - This is deprecated since v2.7.8, and will soon be removed",
         ) as record:
             pdf.set_font(alias)
 

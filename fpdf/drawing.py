@@ -387,6 +387,8 @@ def convert_to_device_color(r, g=-1, b=-1):
     if isinstance(r, (DeviceGray, DeviceRGB)):
         # Note: in this case, r is also a Sequence
         return r
+    if isinstance(r, str) and r.startswith("#"):
+        return color_from_hex_string(r)
     if isinstance(r, Sequence):
         r, g, b = r
     if (r, g, b) == (0, 0, 0) or g == -1:

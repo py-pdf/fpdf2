@@ -1897,8 +1897,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         if family in self.font_aliases and family + style not in self.fonts:
             warnings.warn(
-                f"Substituting font {family} by core font "
-                f"{self.font_aliases[family]}",
+                f"Substituting font {family} by core font {self.font_aliases[family]}"
+                " - This is deprecated since v2.7.8, and will soon be removed",
+                DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
             family = self.font_aliases[family]
