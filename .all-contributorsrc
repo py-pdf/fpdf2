@@ -1124,6 +1124,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "Alan-Collins",
+      "name": "Alan Collins",
+      "avatar_url": "https://avatars.githubusercontent.com/u/38288262?v=4",
+      "profile": "https://www.linkedin.com/in/alan-collins/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
