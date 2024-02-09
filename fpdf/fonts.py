@@ -286,17 +286,16 @@ class TTFFont:
         buf = hb.Buffer()
         buf.cluster_level = 1
         buf.add_str("".join(text))
+        buf.guess_segment_properties()
         features = text_shaping_parms["features"]
-        if (
-            text_shaping_parms["direction"]
-            or text_shaping_parms["script"]
-            or text_shaping_parms["language"]
-        ):
-            buf.direction = text_shaping_parms["direction"]
+        if text_shaping_parms["fragment_direction"]:
+            buf.direction = (
+                "RTL" if text_shaping_parms["fragment_direction"] == "R" else "LTR"
+            )
+        if text_shaping_parms["script"]:
             buf.script = text_shaping_parms["script"]
+        if text_shaping_parms["language"]:
             buf.language = text_shaping_parms["language"]
-        else:
-            buf.guess_segment_properties()
         hb.shape(self.hbfont, buf, features)
         return buf.glyph_infos, buf.glyph_positions
 

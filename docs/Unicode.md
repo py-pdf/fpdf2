@@ -1,6 +1,6 @@
 # Fonts and Unicode #
 
-Besides the limited set of latin fonts built into the PDF format, Fpdf2 offers full support for using and embedding Unicode (TrueType "ttf" and OpenType "otf") fonts. To keep the output file size small, it only embeds the subset of each font that is actually used in the document. This part of the code has been completely rewritten since the fork from PyFPDF. It uses the [fonttools](https://fonttools.readthedocs.io/en/latest/) library for parsing the font data, and [harfbuzz](https://harfbuzz.github.io/) (via [uharfbuzz](https://github.com/harfbuzz/uharfbuzz)) for [text shaping](TextShaping.html).
+Besides the limited set of latin fonts built into the PDF format, `fpdf2` offers full support for using and embedding Unicode (TrueType "ttf" and OpenType "otf") fonts. To keep the output file size small, it only embeds the subset of each font that is actually used in the document. This part of the code has been completely rewritten since the fork from PyFPDF. It uses the [fonttools](https://fonttools.readthedocs.io/en/latest/) library for parsing the font data, and [harfbuzz](https://harfbuzz.github.io/) (via [uharfbuzz](https://github.com/harfbuzz/uharfbuzz)) for [text shaping](TextShaping.html).
 
 To make use of that functionality, you have to install at least one Unicode font, either in the system font folder or in some other location accessible to your program.
 For professional work, many designers prefer commercial fonts, suitable to their specific needs. There are also many sources of free TTF fonts that can be downloaded online and used free of cost (some of them may have restrictions on commercial redistribution, such as server installations or including them in a software project).
@@ -21,12 +21,20 @@ To use a Unicode font in your program, use the [`add_font()`](fpdf/fpdf.html#fpd
 
 ### Built-in Fonts vs. Unicode Fonts ###
 
-The PDF file format knows a small number of "standard" fonts, namely "courier", "helvetica", "times", "symbol", and "zapfdingbats". The first three are available in regular, bold, italic, and bold-italic versions. Any PDF processor (eg. a viewer) must provide those fonts for display. To use them, you don't need to call `.add_font()`, but only `.set_font()`.
+The PDF file format knows a small number of "standard" fonts, namely **Courier**, **Helvetica**, **Times**, **Symbol**, and **ZapfDingbats**.
+The first three are available in regular, bold, italic, and bold-italic versions.
+This gives us a set of fonts known as "14 Standard PDF fonts".
+Any PDF processor (eg. a viewer) must provide those fonts for display.
+To use them, you don't need to call `.add_font()`, but only `.set_font()`.
+
+![PDF builtin fonts](core_fonts.png)
+
+( script used to generate this: [tutorial/core_fonts.py](https://github.com/py-pdf/fpdf2/blob/master/tutorial/core_fonts.py) )
 
 While that may seem convenient, there's a big drawback. Those fonts only support latin characters, or a set of special characters for the last two. If you try to render any Unicode character outside of those ranges, then you'll get an error like: "`Character "θ" at index 13 in text is outside the range of characters supported by the font used: "courier". Please consider using a Unicode font.`".
 So if you want to create documents with any characters other than those common in English and a small number of european languages, then you need to add a Unicode font containing the respective glyph as described in this document.
 
-Note that even if you have a font eg. named "Courier" installed as a system font on your computer, by default this will not be used. You'll have to explicitly call eg. `.add_font("courier2", "", r"C:\Windows\Fonts\cour.ttf")` to make it available. If the name is really the same (ignoring case), then you'll have to use a suitable variation, since trying to overwrite one of the "standard" names with `.add_font()` will result in an error.
+Note that even if you have a font eg. named "Courier" installed as a system font on your computer, by default this will not be used. You'll have to explicitly call eg. `.add_font("Courier2", fname=r"C:\Windows\Fonts\cour.ttf")` to make it available. If the name is really the same (ignoring case), then you'll have to use a suitable variation, since trying to overwrite one of the "standard" names with `.add_font()` will result in an error.
 
 
 ### Adding and Using Fonts ###
@@ -84,17 +92,9 @@ Many non-latin writing systems have complex ways to combine characters, ligature
 To make sure those scripts to be rendered correctly, [text shaping](TextShaping.html) must be enabled with `.set_text_shaping(True)`. 
 
 
-### Right-to-Left & Arabic Script workaround ###
+### Right-to-Left scripts ###
 
-Arabic, Hebrew and other scripts written right-to-left (RTL) should work correctly when text is added that only contains one script at a time. As of release 2.7.6, more complete support for mixing RTL and LTR text is being worked on.
-In the mean time, there is a temporary solution for Arabic and other RTL scripts using two additional libraries `python-bidi` and `arabic-reshaper`. It works for most languages; only a few (rare) Arabic characters aren't supported. Using it on other scripts (eg. when the input is unknown or mixed scripts) does not affect them:
-```python
-from arabic_reshaper import reshape
-from bidi.algorithm import get_display
-
-some_text = 'اَلْعَرَبِيَّةُכַּף סוֹפִית'
-fixed_text = get_display(reshape(some_text))
-```
+When [text shaping](TextShaping.html) is enabled, `fpdf2` will apply the [Unicode Bidirectional Algorithm](https://www.unicode.org/reports/tr9/) to render correctly any text, including bidirectional (mix of right-to-left and left-to-right scripts).
 
 ## Example ##
 

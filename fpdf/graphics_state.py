@@ -6,6 +6,8 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
+from copy import copy
+
 from .drawing import DeviceGray
 from .enums import CharVPos, TextEmphasis, TextMode
 from .fonts import FontFace
@@ -61,13 +63,18 @@ class GraphicsStateMixin:
         if new:
             self.__statestack.append(new)
         else:
-            self.__statestack.append(self.__statestack[-1].copy())
+            self.__statestack.append(self._get_current_graphics_state())
 
     def _pop_local_stack(self):
         return self.__statestack.pop()
 
     def _get_current_graphics_state(self):
-        return self.__statestack[-1].copy()
+        # "current_font" must be shallow copied
+        # "text_shaping" must be deep copied (different fragments may have different languages/direction)
+        # Doing a whole copy and then creating a copy of text_shaping to achieve this result
+        gs = copy(self.__statestack[-1])
+        gs["text_shaping"] = copy(gs["text_shaping"])
+        return gs
 
     @property
     def draw_color(self):
@@ -331,7 +338,8 @@ class GraphicsStateMixin:
 
     @text_shaping.setter
     def text_shaping(self, v):
-        self.__statestack[-1]["text_shaping"] = v
+        if v:
+            self.__statestack[-1]["text_shaping"] = v
 
     def font_face(self):
         """
@@ -342,10 +350,10 @@ class GraphicsStateMixin:
             family=self.font_family,
             emphasis=TextEmphasis.coerce(self.font_style),
             size_pt=self.font_size_pt,
-            color=self.text_color
-            if self.text_color != self.DEFAULT_TEXT_COLOR
-            else None,
-            fill_color=self.fill_color
-            if self.fill_color != self.DEFAULT_FILL_COLOR
-            else None,
+            color=(
+                self.text_color if self.text_color != self.DEFAULT_TEXT_COLOR else None
+            ),
+            fill_color=(
+                self.fill_color if self.fill_color != self.DEFAULT_FILL_COLOR else None
+            ),
         )

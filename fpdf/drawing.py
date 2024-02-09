@@ -322,9 +322,9 @@ class DeviceCMYK(
 
 __pdoc__["DeviceCMYK.OPERATOR"] = False
 __pdoc__["DeviceCMYK.c"] = "The cyan color component. Must be in the interval [0, 1]."
-__pdoc__[
-    "DeviceCMYK.m"
-] = "The magenta color component. Must be in the interval [0, 1]."
+__pdoc__["DeviceCMYK.m"] = (
+    "The magenta color component. Must be in the interval [0, 1]."
+)
 __pdoc__["DeviceCMYK.y"] = "The yellow color component. Must be in the interval [0, 1]."
 __pdoc__["DeviceCMYK.k"] = "The black color component. Must be in the interval [0, 1]."
 __pdoc__[
@@ -387,6 +387,8 @@ def convert_to_device_color(r, g=-1, b=-1):
     if isinstance(r, (DeviceGray, DeviceRGB)):
         # Note: in this case, r is also a Sequence
         return r
+    if isinstance(r, str) and r.startswith("#"):
+        return color_from_hex_string(r)
     if isinstance(r, Sequence):
         r, g, b = r
     if (r, g, b) == (0, 0, 0) or g == -1:

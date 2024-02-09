@@ -7,7 +7,7 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-from typing import NamedTuple, Any, Optional, Union, Sequence
+from typing import NamedTuple, Any, List, Optional, Union, Sequence
 from numbers import Number
 
 from .enums import CharVPos, WrapMode, Align
@@ -140,12 +140,32 @@ class Fragment:
         return lift * self.graphics_state["font_size_pt"]
 
     @property
-    def _text_shaping(self):
+    def string(self):
+        return "".join(self.characters)
+
+    @property
+    def width(self):
+        return self.get_width()
+
+    @property
+    def text_shaping_parameters(self):
         return self.graphics_state["text_shaping"]
 
     @property
-    def string(self):
-        return "".join(self.characters)
+    def paragraph_direction(self):
+        return (
+            self.text_shaping_parameters["paragraph_direction"]
+            if self.text_shaping_parameters
+            else "L"
+        )
+
+    @property
+    def fragment_direction(self):
+        return (
+            self.text_shaping_parameters["fragment_direction"]
+            if self.text_shaping_parameters
+            else "L"
+        )
 
     def trim(self, index: int):
         self.characters = self.characters[:index]
@@ -181,7 +201,7 @@ class Fragment:
         if chars is None:
             chars = self.characters[start:end]
         (char_len, w) = self.font.get_text_width(
-            chars, self.font_size_pt, self._text_shaping
+            chars, self.font_size_pt, self.text_shaping_parameters
         )
         char_spacing = self.char_spacing
         if self.font_stretching != 100:
@@ -207,9 +227,9 @@ class Fragment:
 
     def render_pdf_text(self, frag_ws, current_ws, word_spacing, adjust_x, adjust_y, h):
         if self.is_ttf_font:
-            if self._text_shaping:
+            if self.text_shaping_parameters:
                 return self.render_with_text_shaping(
-                    adjust_x, adjust_y, h, word_spacing, self._text_shaping
+                    adjust_x, adjust_y, h, word_spacing
                 )
             return self.render_pdf_text_ttf(frag_ws, word_spacing)
         return self.render_pdf_text_core(frag_ws, current_ws)
@@ -253,9 +273,7 @@ class Fragment:
             ret += f"({escaped_text}) Tj"
         return ret
 
-    def render_with_text_shaping(
-        self, pos_x, pos_y, h, word_spacing, text_shaping_parms
-    ):
+    def render_with_text_shaping(self, pos_x, pos_y, h, word_spacing):
         ret = ""
         text = ""
         space_mapped_code = self.font.subset.pick(ord(" "))
@@ -272,7 +290,7 @@ class Fragment:
 
         char_spacing = self.char_spacing * (self.font_stretching / 100) / self.k
         for ti in self.font.shape_text(
-            self.string, self.font_size_pt, text_shaping_parms
+            self.string, self.font_size_pt, self.text_shaping_parameters
         ):
             if ti["mapped_char"] is None:  # Missing glyph
                 continue
@@ -324,6 +342,27 @@ class TextLine(NamedTuple):
     trailing_nl: bool = False
     trailing_form_feed: bool = False
 
+    def get_ordered_fragments(self):
+        if not self.fragments:
+            return tuple()
+        directional_runs = []
+        direction = ""
+        for fragment in self.fragments:
+            if fragment.fragment_direction == direction:
+                directional_runs[-1].append(fragment)
+            else:
+                directional_runs.append([fragment])
+                direction = fragment.fragment_direction
+        if self.fragments[0].paragraph_direction == "R" or (
+            not self.fragments[0].paragraph_direction
+            and self.fragments[0].fragment_direction == "R"
+        ):
+            directional_runs = directional_runs[::-1]
+        ordered_fragments = []
+        for run in directional_runs:
+            ordered_fragments += run[::1] if run[0].fragment_direction == "R" else run
+        return tuple(ordered_fragments)
+
 
 class SpaceHint(NamedTuple):
     original_fragment_index: int
@@ -357,8 +396,7 @@ class CurrentLine:
         """
         self.max_width = max_width
         self.print_sh = print_sh
-        self.fragments = []
-        self.width = 0
+        self.fragments: List[Fragment] = []
         self.height = 0
         self.number_of_spaces = 0
 
@@ -375,6 +413,13 @@ class CurrentLine:
         # to break in multiple places, depending on condition.
         self.space_break_hint = None
         self.hyphen_break_hint = None
+
+    @property
+    def width(self):
+        width = 0
+        for i, fragment in enumerate(self.fragments):
+            width += fragment.get_width(initial_cs=i > 0)
+        return width
 
     def add_character(
         self,
@@ -431,7 +476,6 @@ class CurrentLine:
             )
 
         if character != SOFT_HYPHEN or self.print_sh:
-            self.width += character_width
             active_fragment.characters.append(character)
 
     def trim_trailing_spaces(self):
@@ -440,8 +484,6 @@ class CurrentLine:
         last_frag = self.fragments[-1]
         last_char = last_frag.characters[-1]
         while last_char == " ":
-            char_width = last_frag.get_character_width(" ")
-            self.width -= char_width
             last_frag.trim(-1)
             if not last_frag.characters:
                 del self.fragments[-1]
@@ -460,7 +502,6 @@ class CurrentLine:
         if self.fragments:
             self.fragments[-1].trim(break_hint.current_line_character_index)
         self.number_of_spaces = break_hint.number_of_spaces
-        self.width = break_hint.line_width
 
     def manual_break(
         self, align: Align, trailing_nl: bool = False, trailing_form_feed: bool = False
