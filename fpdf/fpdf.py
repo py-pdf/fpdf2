@@ -3214,23 +3214,20 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             prev_font_style += "U"
         styled_txt_frags = tuple(self._parse_chars(text, markdown))
         if markdown:
-            # Know problem:
-            # If a bold italic font is present (like courierBI) fpdf2 will add
-            # courierB, courierI and courierBI to the output pdf
             page = self.page
             # We set the current to page to zero so that
             # set_font() does not produce any text object on the stream buffer:
             self.page = 0
-            if any("B" in frag.font_style for frag in styled_txt_frags):
+            if any(frag.font_style == "B" for frag in styled_txt_frags):
                 # Ensuring bold font is supported:
                 self.set_font(style="B")
-            if any("I" in frag.font_style for frag in styled_txt_frags):
+            if any(frag.font_style == "I" for frag in styled_txt_frags):
                 # Ensuring italics font is supported:
                 self.set_font(style="I")
-            if any("BI" in frag.font_style for frag in styled_txt_frags):
+            if any(frag.font_style == "BI" for frag in styled_txt_frags):
                 # Ensuring bold italics font is supported:
                 self.set_font(style="BI")
-            if any("" in frag.font_style for frag in styled_txt_frags):
+            if any(frag.font_style == "" for frag in styled_txt_frags):
                 # Ensuring base font is supported:
                 self.set_font(style="")
             for frag in styled_txt_frags:

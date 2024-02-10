@@ -33,6 +33,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * fixed gutter handing when a pagebreak occurs within a table with header rows - thanks to @mjasperse
 * fixed handling of `border=0` in HTML table - thanks to @mjasperse
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now properly honors `align=` attributes in `<th>` tags
+* fixed problem using bold italic standard fonts in markdown - thanks to @Alan-Collins
 ### Changed
 * refactored [`FPDF.multi_cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) to generate fewer PDF component objects - thanks to @mjasperse
 * outer table borders are now drawn continuously for nonzero `gutter_width`/`gutter_height`, with spacing applied inside the border similar to HTML tables - thanks to @mjasperse - cf. [#1071](https://github.com/py-pdf/fpdf2/issues/1071)

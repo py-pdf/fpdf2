@@ -173,6 +173,15 @@ def test_cell_markdown(tmp_path):
     assert_pdf_equal(pdf, HERE / "cell_markdown.pdf", tmp_path)
 
 
+def test_cell_markdown_bold_italic(tmp_path):
+    # issue 1094
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=60)
+    pdf.cell(text="**__Lorem --Ipsum--__**", markdown=True)
+    assert_pdf_equal(pdf, HERE / "cell_markdown_bold_italic.pdf", tmp_path)
+
+
 def test_cell_markdown_with_ttf_fonts(tmp_path):
     pdf = FPDF()
     pdf.add_page()
