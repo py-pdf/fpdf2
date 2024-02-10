@@ -118,7 +118,7 @@ from .text_region import TextRegionMixin, TextColumns
 from .util import get_scale_factor, Padding
 
 # Public global variables:
-FPDF_VERSION = "2.7.7"
+FPDF_VERSION = "2.7.8"
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),
     "a4": (595.28, 841.89),

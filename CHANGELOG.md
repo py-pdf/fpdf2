@@ -16,7 +16,15 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.7.8] - Not released yet
+## [2.7.9] - Not released yet
+### Added
+
+### Fixed
+
+### Changed
+
+
+## [2.7.8] - 2024-02-09
 ### Added
 * support for `<path>` elements in SVG `<clipPath>` elements
 * support for `bidirectional` text shaping - thanks to @andersonhc
