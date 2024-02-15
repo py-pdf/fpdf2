@@ -18,7 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.7.9] - Not released yet
 ### Added
-
+* support for overriding paragraph direction on bidirectional text
 ### Fixed
 
 ### Changed
