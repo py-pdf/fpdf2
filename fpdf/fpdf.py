@@ -76,6 +76,7 @@ from .enums import (
     PageMode,
     PathPaintRule,
     RenderStyle,
+    TextDirection,
     TextEmphasis,
     TextMarkupType,
     TextMode,
@@ -575,7 +576,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self,
         use_shaping_engine: bool = True,
         features: dict = None,
-        direction: str = None,
+        direction: Union[str, TextDirection] = None,
         script: str = None,
         language: str = None,
     ):
@@ -626,15 +627,22 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # Valid harfbuzz directions are ltr (left to right), rtl (right to left),
         # ttb (top to bottom) or btt (bottom to top)
 
-        if direction and direction not in ("ltr", "rtl"):
-            raise FPDFException(
-                "FPDF2 only accept ltr (left to right) or rtl (right to left) directions for now."
+        text_direction = None
+        if direction:
+            text_direction = (
+                direction
+                if isinstance(direction, TextDirection)
+                else TextDirection.coerce(direction)
             )
+            if text_direction not in [TextDirection.LTR, TextDirection.RTL]:
+                raise FPDFException(
+                    "FPDF2 only accept ltr (left to right) or rtl (right to left) directions for now."
+                )
 
         self.text_shaping = {
             "use_shaping_engine": True,
             "features": features,
-            "direction": direction,
+            "direction": text_direction,
             "script": script,
             "language": language,
             "fragment_direction": None,

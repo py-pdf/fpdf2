@@ -885,3 +885,18 @@ class EncryptionMethod(Enum):
     RC4 = 1
     AES_128 = 2
     AES_256 = 3
+
+
+class TextDirection(CoerciveEnum):
+    "Text rendering direction for text shaping"
+    LTR = intern("LTR")
+    "left to right"
+
+    RTL = intern("RTL")
+    "right to left"
+
+    TTB = intern("TTB")
+    "top to bottom"
+
+    BTT = intern("BTT")
+    "bottom to top"

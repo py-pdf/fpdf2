@@ -3,6 +3,7 @@ from urllib.request import urlopen
 
 from fpdf import FPDF
 from fpdf.bidi import BidiParagraph, auto_detect_base_direction
+from fpdf.enums import TextDirection
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
@@ -94,10 +95,10 @@ def test_bidi_conformance():
             assert check_result(string, None, levels, reorder)
             test_count += 1
         if int(bitset) & 2 > 0:  # force LTR
-            assert check_result(string, "L", levels, reorder)
+            assert check_result(string, TextDirection.LTR, levels, reorder)
             test_count += 1
         if int(bitset) & 4 > 0:  # force RTL
-            assert check_result(string, "R", levels, reorder)
+            assert check_result(string, TextDirection.RTL, levels, reorder)
             test_count += 1
     assert test_count == 770241
 
@@ -128,17 +129,21 @@ def test_bidi_character():
             string += chr(int(char, 16))
         assert test_data[1] in ("0", "1", "2")
         if test_data[1] == "0":
-            base_direction = "L"
+            base_direction = TextDirection.LTR
         elif test_data[1] == "1":
-            base_direction = "R"
+            base_direction = TextDirection.RTL
         elif test_data[1] == "2":
             base_direction = None  # auto
 
         if not base_direction:
             # test the auto detect direction algorithm
             assert (
-                auto_detect_base_direction(string) == "L" and test_data[2] == "0"
-            ) or (auto_detect_base_direction(string) == "R" and test_data[2] == "1")
+                auto_detect_base_direction(string) == TextDirection.LTR
+                and test_data[2] == "0"
+            ) or (
+                auto_detect_base_direction(string) == TextDirection.RTL
+                and test_data[2] == "1"
+            )
 
         characters = BidiParagraph(
             text=string, base_direction=base_direction
@@ -180,5 +185,50 @@ def test_bidi_lorem_ipsum(tmp_path):
     assert_pdf_equal(
         pdf,
         HERE / "bidi_arabic_lorem_ipsum.pdf",
+        tmp_path,
+    )
+
+
+def test_bidi_paragraph_direction(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="SBL_Hbrw", fname=HERE / "SBL_Hbrw.ttf")
+    pdf.set_font("SBL_Hbrw", "", 18)
+
+    text1 = "אנגלית (באנגלית: English)"  # first char is RTL
+    text2 = "The test is: אנגלית (באנגלית: English)"  # first char is LTR
+
+    pdf.cell(text="No text shaping (not bidirectional)", new_x="left", new_y="next")
+    pdf.cell(text=text1, new_x="left", new_y="next")
+    pdf.cell(text=text2, new_x="left", new_y="next")
+    pdf.ln()
+
+    pdf.set_text_shaping(use_shaping_engine=True)
+    pdf.cell(
+        text="Text shaping-Automatic paragraph direction", new_x="left", new_y="next"
+    )
+    pdf.cell(text=text1, new_x="left", new_y="next")
+    pdf.cell(text=text2, new_x="left", new_y="next")
+    pdf.ln()
+
+    pdf.set_text_shaping(use_shaping_engine=True, direction="rtl")
+    pdf.cell(
+        text="Text shaping-Force paragraph direction RTL", new_x="left", new_y="next"
+    )
+    pdf.cell(text=text1, new_x="left", new_y="next")
+    pdf.cell(text=text2, new_x="left", new_y="next")
+    pdf.ln()
+
+    pdf.set_text_shaping(use_shaping_engine=True, direction="ltr")
+    pdf.cell(
+        text="Text shaping-Force paragraph direction LTR", new_x="left", new_y="next"
+    )
+    pdf.cell(text=text1, new_x="left", new_y="next")
+    pdf.cell(text=text2, new_x="left", new_y="next")
+    pdf.ln()
+
+    assert_pdf_equal(
+        pdf,
+        HERE / "bidi_paragraph_direction.pdf",
         tmp_path,
     )

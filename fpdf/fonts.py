@@ -289,9 +289,7 @@ class TTFFont:
         buf.guess_segment_properties()
         features = text_shaping_parms["features"]
         if text_shaping_parms["fragment_direction"]:
-            buf.direction = (
-                "RTL" if text_shaping_parms["fragment_direction"] == "R" else "LTR"
-            )
+            buf.direction = text_shaping_parms["fragment_direction"].value
         if text_shaping_parms["script"]:
             buf.script = text_shaping_parms["script"]
         if text_shaping_parms["language"]:

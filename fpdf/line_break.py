@@ -10,7 +10,7 @@ in non-backward-compatible ways.
 from typing import NamedTuple, Any, List, Optional, Union, Sequence
 from numbers import Number
 
-from .enums import CharVPos, WrapMode, Align
+from .enums import Align, CharVPos, TextDirection, WrapMode
 from .errors import FPDFException
 from .fonts import CoreFont, TTFFont
 from .util import escape_parens
@@ -156,7 +156,7 @@ class Fragment:
         return (
             self.text_shaping_parameters["paragraph_direction"]
             if self.text_shaping_parameters
-            else "L"
+            else TextDirection.LTR
         )
 
     @property
@@ -164,7 +164,7 @@ class Fragment:
         return (
             self.text_shaping_parameters["fragment_direction"]
             if self.text_shaping_parameters
-            else "L"
+            else TextDirection.LTR
         )
 
     def trim(self, index: int):
@@ -346,21 +346,23 @@ class TextLine(NamedTuple):
         if not self.fragments:
             return tuple()
         directional_runs = []
-        direction = ""
+        direction = None
         for fragment in self.fragments:
             if fragment.fragment_direction == direction:
                 directional_runs[-1].append(fragment)
             else:
                 directional_runs.append([fragment])
                 direction = fragment.fragment_direction
-        if self.fragments[0].paragraph_direction == "R" or (
+        if self.fragments[0].paragraph_direction == TextDirection.RTL or (
             not self.fragments[0].paragraph_direction
-            and self.fragments[0].fragment_direction == "R"
+            and self.fragments[0].fragment_direction == TextDirection.RTL
         ):
             directional_runs = directional_runs[::-1]
         ordered_fragments = []
         for run in directional_runs:
-            ordered_fragments += run[::1] if run[0].fragment_direction == "R" else run
+            ordered_fragments += (
+                run[::1] if run[0].fragment_direction == TextDirection.RTL else run
+            )
         return tuple(ordered_fragments)
 
 

@@ -86,3 +86,27 @@ Direction can be `ltr` (left to right) or `rtl` (right to left). The `ttb` (top 
 [Valid OpenType script tags](https://learn.microsoft.com/en-us/typography/opentype/spec/scripttags)
 
 [Valid OpenType language codes](https://learn.microsoft.com/en-us/typography/opentype/spec/languagetags)
+
+# Bidirectional Text #
+
+_New in [:octicons-tag-24: 2.7.8](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+Bidirectional text refers to text containing both left-to-right (LTR) and right-to-left (RTL) language scripts. Languages such as Arabic, Hebrew, and Persian are written from right to left, whereas languages like English, Spanish, and French are written from left to right. The Unicode Bidirectional Algorithm is a set of rules defined by the Unicode Consortium to properly display mixed-directional text. This algorithm ensures that characters are shown in their correct order, preserving the logical sequence of the text.
+
+## Unicode Bidirectional Algorithm ##
+The Unicode Bidirectional Algorithm, often abbreviated as the *Bidi* Algorithm, is essential for displaying text containing both RTL and LTR scripts. It determines the directionality of characters and arranges them in a visually correct order. This algorithm takes into account the inherent directionality of characters (such as those in Arabic or Hebrew being inherently RTL) and the surrounding context to decide how text should be displayed.
+
+## Paragraph direction ##
+
+![](bidi_paragraph.svg)
+
+## Bidirectional text in fpdf2 ##
+fpdf2 will automatically apply the unicode bidirectional algorithm if text shaping is enabled.
+
+If no `direction` parameter is provided - or `direction` is `None` - paragraph direction will be set according to the first directional character present on the text.
+
+If there is a need to explicitly set the direction of a paragraph, regardless of the content, you can force the paragraph direction to either RTL or LTR.
+
+```python
+fpdf.set_text_shaping(use_shaping_engine=True, direction="rtl")
+```

@@ -8,6 +8,8 @@ from dataclasses import dataclass, replace
 from operator import itemgetter
 from typing import List, Tuple
 
+from .enums import TextDirection
+
 MAX_DEPTH = 125
 
 # BidiBrackets 15.1.0 2023-01-18
@@ -418,7 +420,7 @@ class IsolatingRun:
 
 def auto_detect_base_direction(
     string: str, stop_at_pdi: bool = False, debug: bool = False
-) -> str:
+) -> TextDirection:
     """
     This function applies rules P2 and P3 to detect the direction of a paragraph, retuning
     the first strong direction and skipping over isolate sequences.
@@ -432,16 +434,16 @@ def auto_detect_base_direction(
         if debug and bidi_class.isupper():
             bidi_class = "R"
         if bidi_class == "PDI" and isolate == 0 and stop_at_pdi:
-            return "L"
+            return TextDirection.LTR
         if bidi_class in ("LRI", "RLI", "FSI"):
             isolate += 1
         if bidi_class == "PDI" and isolate > 0:
             isolate -= 1
         if bidi_class in ("R", "AL") and isolate == 0:
-            return "R"
+            return TextDirection.RTL
         if bidi_class == "L" and isolate == 0:
-            return "L"
-    return "L"
+            return TextDirection.LTR
+    return TextDirection.LTR
 
 
 def calculate_isolate_runs(paragraph: List[BidiCharacter]) -> List[IsolatingRun]:
@@ -520,7 +522,9 @@ class BidiParagraph:
         "characters",
     )
 
-    def __init__(self, text: str, base_direction: str = None, debug: bool = False):
+    def __init__(
+        self, text: str, base_direction: TextDirection = None, debug: bool = False
+    ):
         self.text = text
         self.base_direction = (
             auto_detect_base_direction(self.text, debug)
@@ -528,7 +532,9 @@ class BidiParagraph:
             else base_direction
         )
         self.debug = debug
-        self.base_embedding_level = 0 if self.base_direction == "L" else 1  # base level
+        self.base_embedding_level = (
+            0 if self.base_direction == TextDirection.LTR else 1
+        )  # base level
         self.characters: List[BidiCharacter] = []
         self.get_bidi_characters()
 
@@ -582,7 +588,7 @@ class BidiParagraph:
                     if auto_detect_base_direction(
                         self.text[index + 1 :], stop_at_pdi=True, debug=self.debug
                     )
-                    == "L"
+                    == TextDirection.LTR
                     else "RLI"
                 )
 
@@ -700,12 +706,30 @@ class BidiParagraph:
         for c in self.characters:
             if c.get_direction_from_level() != current_direction:
                 if current_fragment:
-                    bidi_fragments.append((current_fragment, current_direction))
+                    bidi_fragments.append(
+                        (
+                            current_fragment,
+                            (
+                                TextDirection.RTL
+                                if current_direction == "R"
+                                else TextDirection.LTR
+                            ),
+                        )
+                    )
                 current_fragment = ""
                 current_direction = c.get_direction_from_level()
             current_fragment += c.character
         if current_fragment:
-            bidi_fragments.append((current_fragment, current_direction))
+            bidi_fragments.append(
+                (
+                    current_fragment,
+                    (
+                        TextDirection.RTL
+                        if current_direction == "R"
+                        else TextDirection.LTR
+                    ),
+                )
+            )
         return tuple(bidi_fragments)
 
     def reorder_resolved_levels(self):
