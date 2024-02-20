@@ -54,7 +54,7 @@ class CoerciveEnum(Enum):
 
             raise ValueError(f"{value} is not a valid {cls.__name__}")
 
-        raise TypeError(f"{value} cannot convert to a {cls.__name__}")
+        raise TypeError(f"{value} cannot be converted to a {cls.__name__}")
 
 
 class CoerciveIntEnum(IntEnum):
@@ -316,6 +316,13 @@ class TableCellFillMode(CoerciveEnum):
 
     COLUMNS = intern("COLUMNS")
     "Fill only table cells in odd columns"
+
+    @classmethod
+    def coerce(cls, value):
+        "Any class that has a .should_fill_cell() method is considered a valid 'TableCellFillMode' (duck-typing)"
+        if callable(getattr(value, "should_fill_cell", None)):
+            return value
+        return super().coerce(value)
 
     def should_fill_cell(self, i, j):
         if self is self.NONE:

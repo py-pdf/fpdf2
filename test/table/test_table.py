@@ -267,6 +267,24 @@ def test_table_with_cell_fill(tmp_path):
     assert_pdf_equal(pdf, HERE / "table_with_cell_fill.pdf", tmp_path)
 
 
+class EvenOddCellFillMode():
+    def should_fill_cell(self, i, j):
+        return i % 2 and j % 2
+
+
+def test_table_with_cell_fill_custom_class(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    lightblue = (173, 216, 230)
+    with pdf.table(cell_fill_color=lightblue, cell_fill_mode=EvenOddCellFillMode()) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_with_cell_fill_custom_class.pdf", tmp_path)
+
+
 def test_table_with_internal_layout(tmp_path):
     pdf = FPDF()
     pdf.add_page()
