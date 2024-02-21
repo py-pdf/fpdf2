@@ -508,3 +508,45 @@ def test_flextemplate_leak(tmp_path):  # issue #570
     pdf.ln()
     pdf.cell(text="after", new_x="LEFT", new_y="NEXT")
     assert_pdf_equal(pdf, HERE / "flextemplate_leak.pdf", tmp_path)
+
+
+def test_flextemplate_keep_aspect_ratio(tmp_path):
+    """
+    Tries to render a square image inside a rectangle with keep_aspect_ratio=True.
+    The image should be fit the rectangle but should remain a square.
+    """
+
+    tmpl = [
+        {
+            "name": "box",
+            "type": "B",
+            "x1": 0,
+            "y1": 0,
+            "x2": 50,
+            "y2": 25,
+        },
+        {
+            "name": "img",
+            "type": "I",
+            "x1": 0,
+            "y1": 0,
+            "x2": 50,
+            "y2": 25,
+            "keep_aspect_ratio": True,
+        },
+    ]
+
+    img = qrcode.make("Test keep_aspect_ratio").get_image()
+
+    pdf = FPDF()
+    pdf.add_page()
+    templ1 = FlexTemplate(pdf, tmpl)
+    templ1["img"] = img
+    templ1.render(offsetx=20, offsety=20)
+
+    templ2 = FlexTemplate(pdf)
+    templ2.parse_csv(HERE / "keep_aspect_ratio.csv", delimiter=";")
+    templ2["img"] = img
+    templ2.render(offsetx=20, offsety=50)
+
+    assert_pdf_equal(pdf, HERE / "flextemplate_keep_aspect_ratio.pdf", tmp_path)

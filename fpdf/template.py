@@ -84,6 +84,7 @@ class FlexTemplate:
             "priority": int,
             "multiline": (bool, type(None)),
             "rotate": (int, float),
+            "keep_aspect_ratio": object,  # "bool or equivalent",
         }
 
         self.elements = elements
@@ -190,6 +191,7 @@ class FlexTemplate:
             ("priority", int, False),
             ("multiline", self._parse_multiline, False),
             ("rotate", _varsep_float, False),
+            ("keep_aspect_ratio", int, False),
         )
         self.elements = []
         if encoding is None:
@@ -423,9 +425,19 @@ class FlexTemplate:
         pdf.set_line_width(size * scale)
         pdf.ellipse(x1, y1, x2 - x1, y2 - y1, style=style)
 
-    def _image(self, *_, x1=0, y1=0, x2=0, y2=0, text="", **__):
+    def _image(
+        self, *_, x1=0, y1=0, x2=0, y2=0, text="", keep_aspect_ratio=False, **__
+    ):
         if text:
-            self.pdf.image(text, x1, y1, w=x2 - x1, h=y2 - y1, link="")
+            self.pdf.image(
+                text,
+                x1,
+                y1,
+                w=x2 - x1,
+                h=y2 - y1,
+                link="",
+                keep_aspect_ratio=keep_aspect_ratio,
+            )
 
     def _barcode(
         self,
