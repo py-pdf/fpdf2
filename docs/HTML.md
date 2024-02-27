@@ -71,6 +71,45 @@ pdf.output("html.pdf")
 ```
 
 
+## Styling HTML tags globally
+
+The style of several HTML tags (`<a>`, `<blockquote>`, `<code>`, `<pre>`, `<li>`, `<h1>`, `<h2>`, `<h3>`...) can be set globally, for the whole HTML document, by passing `tag_styles` to `FPDF.write_html()`:
+
+```python
+from fpdf import FPDF, FontFace
+
+pdf = FPDF()
+pdf.add_page()
+pdf.write_html("""
+  <h1>Big title</h1>
+  <section>
+    <h2>Section title</h2>
+    <p>Hello world!</p>
+  </section>
+""", tag_styles={
+    "h1": FontFace(color=(148, 139, 139), size_pt=32),
+    "h2": FontFace(color=(148, 139, 139), size_pt=24),
+})
+pdf.output("html_styled.pdf")
+```
+
+Similarly, the indentation of several HTML tags (`<blockquote>`, `<dd>`, `<li>`) can be set globally, for the whole HTML document, by passing `tag_indents` to `FPDF.write_html()`:
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.write_html("""
+  <dl>
+      <dt>Term</dt>
+      <dd>Definition</dd>
+  </dl>
+""", tag_indents={"dd": 5})
+pdf.output("html_dd_indented.pdf")
+```
+
+
 ## Supported HTML features
 
 * `<h1>` to `<h8>`: headings (and `align` attribute)

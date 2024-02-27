@@ -20,11 +20,13 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 * support for overriding paragraph direction on bidirectional text
 * new optional `ul_bullet_color` parameter for `FPDF.write_html()`
-### Fixed
-
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now accepts a `tag_styles` parameter to control the font, color & size of HTML elements: `<a>`, `<blockquote>`, `<li>`...
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now accepts a `tag_indents` parameter to control, for example, the indent of `<blockquote>` elements
 ### Changed
 * improved the performance of `FPDF.start_section()` - _cf._ [issue #1092](https://github.com/py-pdf/fpdf2/issues/1092)
-
+### Deprecated
+* The `dd_tag_indent` & `li_tag_indent` parameters of `FPDF.write_html()` are replaced by the new `tag_indents` generic parameter.
+* The `heading_sizes` & `pre_code_font` parameters of `FPDF.write_html()` are replaced by the new `tag_styles` generic parameter.
 
 ## [2.7.8] - 2024-02-09
 ### Added

@@ -2,8 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, HTMLMixin, TitleStyle
+from fpdf import FPDF, FontFace, HTMLMixin, TitleStyle
 from fpdf.drawing import DeviceRGB
+from fpdf.html import color_as_decimal
 from fpdf.errors import FPDFException
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
@@ -318,15 +319,16 @@ def test_html_headings_line_height(tmp_path):  # issue-223
 def test_html_custom_heading_sizes(tmp_path):  # issue-223
     pdf = FPDF()
     pdf.add_page()
-    pdf.write_html(
-        """<h1>This is a H1</h1>
-           <h2>This is a H2</h2>
-           <h3>This is a H3</h3>
-           <h4>This is a H4</h4>
-           <h5>This is a H5</h5>
-           <h6>This is a H6</h6>""",
-        heading_sizes=dict(h1=6, h2=12, h3=18, h4=24, h5=30, h6=36),
-    )
+    with pytest.warns(DeprecationWarning):
+        pdf.write_html(
+            """<h1>This is a H1</h1>
+            <h2>This is a H2</h2>
+            <h3>This is a H3</h3>
+            <h4>This is a H4</h4>
+            <h5>This is a H5</h5>
+            <h6>This is a H6</h6>""",
+            heading_sizes=dict(h1=6, h2=12, h3=18, h4=24, h5=30, h6=36),
+        )
     assert_pdf_equal(pdf, HERE / "html_custom_heading_sizes.pdf", tmp_path)
 
 
@@ -482,7 +484,8 @@ def test_html_custom_pre_code_font(tmp_path):  # issue 770
     pdf = FPDF()
     pdf.add_font(fname=HERE / "../fonts/DejaVuSansMono.ttf")
     pdf.add_page()
-    pdf.write_html("<code> Cześć! </code>", pre_code_font="DejaVuSansMono")
+    with pytest.warns(DeprecationWarning):
+        pdf.write_html("<code> Cześć! </code>", pre_code_font="DejaVuSansMono")
     assert_pdf_equal(pdf, HERE / "html_custom_pre_code_font.pdf", tmp_path)
 
 
@@ -566,38 +569,67 @@ def test_html_and_section_title_styles():  # issue 1080
 def test_html_link_color(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    text = '<a href="www.example.com">foo</a>'
-    pdf.write_html(text, element_colors={"link": (255, 0, 0)})
+    html = '<a href="www.example.com">foo</a>'
+    pdf.write_html(html, tag_styles={"a": FontFace(color=color_as_decimal("red"))})
     assert_pdf_equal(pdf, HERE / "html_link_color.pdf", tmp_path)
 
 
 def test_html_unordered_li_color(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    text = "<ul><li>foo</li></ul>"
-    pdf.write_html(text, element_colors={"li": (0, 255, 0)})
+    html = "<ul><li>foo</li></ul>"
+    pdf.write_html(html, tag_styles={"li": FontFace(color=color_as_decimal("lime"))})
     assert_pdf_equal(pdf, HERE / "html_unordered_li_color.pdf", tmp_path)
 
 
 def test_html_ordered_li_color(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    text = "<ol><li>foo</li></ol>"
-    pdf.write_html(text, element_colors={"li": (0, 255, 0)})
+    html = "<ol><li>foo</li></ol>"
+    pdf.write_html(html, tag_styles={"li": FontFace(color=DeviceRGB(r=0, g=1, b=0))})
     assert_pdf_equal(pdf, HERE / "html_ordered_li_color.pdf", tmp_path)
 
 
 def test_html_blockquote_color(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    text = "Text before<blockquote>foo</blockquote>Text afterwards"
-    pdf.write_html(text, element_colors={"blockquote": (125, 125, 0)})
-    assert_pdf_equal(pdf, HERE / "html_blockquote.pdf", tmp_path)
+    html = "Text before<blockquote>foo</blockquote>Text afterwards"
+    pdf.write_html(html, tag_styles={"blockquote": FontFace(color=(125, 125, 0))})
+    assert_pdf_equal(pdf, HERE / "html_blockquote_color.pdf", tmp_path)
 
 
 def test_html_headings_color(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    text = "<h1>foo</h1><h2>bar</h2>"
-    pdf.write_html(text, element_colors={"headings": (148, 139, 139)})
+    html = "<h1>foo</h1><h2>bar</h2>"
+    pdf.write_html(
+        html,
+        tag_styles={
+            "h1": FontFace(color=(148, 139, 139), size_pt=24),
+            "h2": FontFace(color=(148, 139, 139), size_pt=18),
+        },
+    )
     assert_pdf_equal(pdf, HERE / "html_headings_color.pdf", tmp_path)
+
+
+def test_html_unsupported_tag_color():
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(NotImplementedError):
+        pdf.write_html("<p>foo</p>", tag_styles={"p": FontFace()})
+
+
+def test_html_blockquote_indent(tmp_path):  # issue-1074
+    pdf = FPDF()
+    pdf.add_page()
+    html = "Text before<blockquote>foo</blockquote>Text afterwards"
+    pdf.write_html(html, tag_indents={"blockquote": 5})
+    assert_pdf_equal(pdf, HERE / "html_blockquote_indent.pdf", tmp_path)
+
+
+def test_html_li_tag_indent(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.warns(DeprecationWarning):
+        pdf.write_html("<ul><li>item</li></ul>", li_tag_indent=10)
+    assert_pdf_equal(pdf, HERE / "html_li_tag_indent.pdf", tmp_path)
