@@ -459,20 +459,18 @@ class HTML2FPDF(HTMLParser):
         if tag == "br":
             self._write_paragraph("\n")
         if tag == "p":
+            align = None
             if "align" in attrs:
                 align = attrs.get("align")[0].upper()
                 if not align in ["L", "R", "J", "C"]:
                     align = None
-            else:
-                align = None
+            line_height = None
             if "line-height" in attrs:
                 try:
                     # YYY parse and convert non-float line_height values
                     line_height = float(attrs.get("line-height"))
                 except ValueError:
-                    line_height = None
-            else:
-                line_height = None
+                    pass
             self._new_paragraph(align=align, line_height=line_height)
         if tag in self.heading_sizes:
             prev_font_height = self.font_size / self.pdf.k

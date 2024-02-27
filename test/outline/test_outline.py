@@ -13,78 +13,14 @@ HERE = Path(__file__).resolve().parent
 def test_simple_outline(tmp_path):
     pdf = FPDF()
     pdf.set_font("Helvetica")
-    pdf.set_section_title_styles(
-        # Level 0 titles:
-        TitleStyle(
-            font_family="Times",
-            font_style="B",
-            font_size_pt=24,
-            color=128,
-            underline=True,
-            t_margin=10,
-            l_margin=10,
-            b_margin=0,
-        ),
-        # Level 1 subtitles:
-        TitleStyle(
-            font_family="Times",
-            font_style="B",
-            font_size_pt=20,
-            color=128,
-            underline=True,
-            t_margin=10,
-            l_margin=20,
-            b_margin=5,
-        ),
-    )
-
     pdf.add_page()
     pdf.set_y(50)
     pdf.set_font(size=40)
     p(pdf, "Doc Title", align="C")
     pdf.set_font(size=12)
     pdf.insert_toc_placeholder(render_toc)
-    pdf.start_section("Title 1")
-    pdf.start_section("Subtitle 1.1", level=1)
-    p(
-        pdf,
-        (
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit,"
-            " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-        ),
-    )
-    pdf.add_page()
-    pdf.start_section("Subtitle 1.2", level=1)
-    p(
-        pdf,
-        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-    )
-    pdf.add_page()
-    pdf.start_section("Title 2")
-    pdf.start_section("Subtitle 2.1", level=1)
-    p(
-        pdf,
-        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-    )
-    pdf.add_page()
-    pdf.start_section("Subtitle 2.2", level=1)
-    p(
-        pdf,
-        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-    )
+    insert_test_content(pdf)
     assert_pdf_equal(pdf, HERE / "simple_outline.pdf", tmp_path)
-
-
-def p(pdf, text, **kwargs):
-    "Inserts a paragraph"
-    pdf.multi_cell(
-        w=pdf.epw,
-        h=pdf.font_size,
-        text=text,
-        new_x="LMARGIN",
-        new_y="NEXT",
-        **kwargs,
-    )
 
 
 def render_toc(pdf, outline):
@@ -205,7 +141,7 @@ def test_toc_with_russian_heading(tmp_path):  # issue-320
     pdf.add_page()
     pdf.start_section("Русский, English, 1 2 3...")
     pdf.write(8, "Русский текст в параграфе.")
-    assert_pdf_equal(pdf, HERE / "russian_heading.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "toc_with_russian_heading.pdf", tmp_path)
 
 
 def test_toc_with_thai_headings(tmp_path):  # issue-458
@@ -218,7 +154,7 @@ def test_toc_with_thai_headings(tmp_path):  # issue-458
     ]:
         pdf.add_page()
         pdf.start_section(txt)
-    assert_pdf_equal(pdf, HERE / "thai_headings.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "toc_with_thai_headings.pdf", tmp_path)
 
 
 def test_toc_without_font_style(tmp_path):  # issue-676
@@ -257,3 +193,92 @@ def test_toc_with_table(tmp_path):  # issue-1079
         pdf.cell(text=str(i))
         pdf.ln()
     assert_pdf_equal(pdf, HERE / "toc_with_table.pdf", tmp_path)
+
+
+def test_toc_with_right_aligned_page_numbers(tmp_path):
+    def render_toc_with_right_aligned_page_numbers(pdf, outline):
+        pdf.set_font("Helvetica", size=16)
+        for section in outline:
+            link = pdf.add_link(page=section.page_number)
+            pdf.cell(
+                text=f'{" " * section.level * 2} {section.name}',
+                link=link,
+                new_x="LEFT",
+            )
+            pdf.cell(text=f"{section.page_number}", link=link, w=pdf.epw, align="R")
+            pdf.ln()
+
+    pdf = FPDF()
+    pdf.set_font("Helvetica", size=12)
+    pdf.add_page()
+    pdf.insert_toc_placeholder(render_toc_with_right_aligned_page_numbers)
+    insert_test_content(pdf)
+    assert_pdf_equal(pdf, HERE / "toc_with_right_aligned_page_numbers.pdf", tmp_path)
+
+
+def p(pdf, text, **kwargs):
+    "Inserts a paragraph"
+    pdf.multi_cell(
+        w=pdf.epw,
+        h=pdf.font_size,
+        text=text,
+        new_x="LMARGIN",
+        new_y="NEXT",
+        **kwargs,
+    )
+
+
+def insert_test_content(pdf):
+    pdf.set_section_title_styles(
+        # Level 0 titles:
+        TitleStyle(
+            font_family="Times",
+            font_style="B",
+            font_size_pt=24,
+            color=128,
+            underline=True,
+            t_margin=10,
+            l_margin=10,
+            b_margin=0,
+        ),
+        # Level 1 subtitles:
+        TitleStyle(
+            font_family="Times",
+            font_style="B",
+            font_size_pt=20,
+            color=128,
+            underline=True,
+            t_margin=10,
+            l_margin=20,
+            b_margin=5,
+        ),
+    )
+
+    pdf.start_section("Title 1")
+    pdf.start_section("Subtitle 1.1", level=1)
+    p(
+        pdf,
+        (
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit,"
+            " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        ),
+    )
+    pdf.add_page()
+    pdf.start_section("Subtitle 1.2", level=1)
+    p(
+        pdf,
+        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    )
+    pdf.add_page()
+    pdf.start_section("Title 2")
+    pdf.start_section("Subtitle 2.1", level=1)
+    p(
+        pdf,
+        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    )
+    pdf.add_page()
+    pdf.start_section("Subtitle 2.2", level=1)
+    p(
+        pdf,
+        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    )
