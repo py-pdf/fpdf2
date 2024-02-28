@@ -40,8 +40,16 @@ pdf.write_html("""
   </section>
   <section>
     <h2>Other section title</h2>
-    <ul><li>unordered</li><li>list</li><li>items</li></ul>
-    <ol><li>ordered</li><li>list</li><li>items</li></ol>
+    <ul type="circle">
+      <li>unordered</li>
+      <li>list</li>
+      <li>items</li>
+    </ul>
+    <ol start="3" type="i">
+      <li>ordered</li>
+      <li>list</li>
+      <li>items</li>
+    </ol>
     <br>
     <br>
     <pre>i am preformatted text.</pre>

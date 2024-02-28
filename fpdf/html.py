@@ -20,6 +20,7 @@ from .util import int2roman
 
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
+DEGREE_WIN1252 = "\xb0"
 HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
 DEFAULT_TAG_STYLES = {
     "a": FontFace(color=(0, 0, 255)),
@@ -640,7 +641,10 @@ class HTML2FPDF(HTMLParser):
                 self._write_paragraph("\u00a0" * self.tag_indents["blockquote"])
         if tag == "ul":
             self.indent += 1
-            self.bullet.append(self.ul_bullet_char)
+            bullet_char = (
+                ul_prefix(attrs["type"]) if "type" in attrs else self.ul_bullet_char
+            )
+            self.bullet.append(bullet_char)
             self._new_paragraph()
         if tag == "ol":
             self.indent += 1
@@ -971,6 +975,16 @@ class HTML2FPDF(HTMLParser):
     # Subclasses of _markupbase.ParserBase must implement this:
     def error(self, message):
         raise RuntimeError(message)
+
+
+def ul_prefix(ul_type):
+    if ul_type == "circle":
+        return DEGREE_WIN1252
+    if ul_type == "disc":
+        return BULLET_WIN1252
+    if len(ul_type) == 1:
+        return ul_type
+    raise NotImplementedError(f"Unsupported type: {ul_type}")
 
 
 def ol_prefix(ol_type, index):

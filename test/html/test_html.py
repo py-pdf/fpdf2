@@ -232,6 +232,34 @@ def test_html_ol_start_and_type(tmp_path):
     assert_pdf_equal(pdf, HERE / "html_ol_start_and_type.pdf", tmp_path)
 
 
+def test_html_ul_type(tmp_path):
+    pdf = FPDF()
+    pdf.set_font_size(30)
+    pdf.add_page()
+    pdf.write_html(
+        text="""
+        <ul type="circle">
+          <li>a list item</li>
+        </ul>
+        <ul type="disc">
+          <li>another list item</li>
+        </ul>
+    """
+    )
+    pdf.ln()
+    pdf.add_font(fname=HERE / "../fonts/DejaVuSans.ttf")
+    pdf.set_font("DejaVuSans")
+    pdf.write_html(
+        """
+        <ul type="■">
+          <li>a list item</li>
+          <li>another list item</li>
+        </ul>
+    """
+    )
+    assert_pdf_equal(pdf, HERE / "html_ul_type.pdf", tmp_path)
+
+
 def test_html_li_prefix_color(tmp_path):
     html = """<ul>
         <li>item1</li>
