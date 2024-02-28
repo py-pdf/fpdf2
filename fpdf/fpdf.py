@@ -163,6 +163,12 @@ class TitleStyle(FontFace):
         self.l_margin = l_margin
         self.b_margin = b_margin
 
+    def __repr__(self):
+        return (
+            super().__repr__()[:-1]
+            + f", t_margin={self.t_margin}, l_margin={self.l_margin}, b_margin={self.b_margin})"
+        )
+
 
 class ToCPlaceholder(NamedTuple):
     render_function: Callable
@@ -1918,7 +1924,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             )
             style = ""
 
-        if size == 0:
+        if not size:
             size = self.font_size_pt
 
         # Test if font is already selected
@@ -4863,23 +4869,33 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         dest = DestinationXYZ(self.page, top=self.h_pt - self.y * self.k)
         outline_struct_elem = None
         if self.section_title_styles:
+            title_style = self.section_title_styles[level]
             # We first check if adding this multi-cell will trigger a page break:
-            with self.offset_rendering() as pdf:
-                # pylint: disable=protected-access
-                with pdf._use_title_style(pdf.section_title_styles[level]):
-                    pdf.multi_cell(
-                        w=pdf.epw,
-                        h=pdf.font_size,
-                        text=name,
-                        new_x=XPos.LMARGIN,
-                        new_y=YPos.NEXT,
-                    )
-            if pdf.page_break_triggered:
+            if title_style.size_pt is not None:
+                prev_font_size_pt = self.font_size_pt
+                self.font_size_pt = title_style.size_pt
+            page_break_triggered = self.multi_cell(
+                w=self.epw,
+                h=self.font_size,
+                text=name,
+                new_x=XPos.LMARGIN,
+                new_y=YPos.NEXT,
+                dry_run=True,  # => does not produce any output
+                output=MethodReturnValue.PAGE_BREAK,
+                padding=Padding(
+                    top=title_style.t_margin or 0,
+                    left=title_style.l_margin or 0,
+                    bottom=title_style.b_margin or 0,
+                ),
+            )
+            if title_style.size_pt is not None:
+                self.font_size_pt = prev_font_size_pt
+            if page_break_triggered:
                 # If so, we trigger a page break manually beforehand:
                 self.add_page()
             with self._marked_sequence(title=name) as struct_elem:
                 outline_struct_elem = struct_elem
-                with self._use_title_style(self.section_title_styles[level]):
+                with self._use_title_style(title_style):
                     self.multi_cell(
                         w=self.epw,
                         h=self.font_size,

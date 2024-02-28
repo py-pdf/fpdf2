@@ -22,6 +22,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Fixed
 
 ### Changed
+* improved the performance of `FPDF.start_section()` - _cf._ [issue #1092](https://github.com/py-pdf/fpdf2/issues/1092)
 
 
 ## [2.7.8] - 2024-02-09
