@@ -273,6 +273,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/nocalla"><img src="https://avatars.githubusercontent.com/u/16230431?v=4?s=100" width="100px;" alt="Niall O'Callaghan"/><br /><sub><b>Niall O'Callaghan</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Anocalla" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/jsid72"><img src="https://avatars.githubusercontent.com/u/51690199?v=4?s=100" width="100px;" alt="jsid72"/><br /><sub><b>jsid72</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Ajsid72" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://www.linkedin.com/in/alan-collins/"><img src="https://avatars.githubusercontent.com/u/38288262?v=4?s=100" width="100px;" alt="Alan Collins"/><br /><sub><b>Alan Collins</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Alan-Collins" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/hyperstown"><img src="https://avatars.githubusercontent.com/u/64496017?v=4?s=100" width="100px;" alt="hyperstown"/><br /><sub><b>hyperstown</b></sub></a><br /><a href="#content-hyperstown" title="Content">🖋</a></td>
     </tr>
   </tbody>
 </table>
