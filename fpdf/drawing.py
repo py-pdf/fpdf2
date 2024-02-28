@@ -217,6 +217,11 @@ class DeviceRGB(
         """The color components as a tuple in order `(r, g, b)` with alpha omitted."""
         return self[:-1]
 
+    @property
+    def colors255(self):
+        "The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255."
+        return tuple(255 * v for v in self.colors)
+
     def serialize(self) -> str:
         return " ".join(number_to_str(val) for val in self.colors) + f" {self.OPERATOR}"
 
@@ -259,6 +264,11 @@ class DeviceGray(
     def colors(self):
         """The color components as a tuple in order (g,) with alpha omitted."""
         return self[:-1]
+
+    @property
+    def colors255(self):
+        "The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255."
+        return tuple(255 * v for v in self.colors)
 
     def serialize(self) -> str:
         return " ".join(number_to_str(val) for val in self.colors) + f" {self.OPERATOR}"

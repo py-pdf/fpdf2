@@ -9,9 +9,10 @@ in non-backward-compatible ways.
 from html.parser import HTMLParser
 import logging, re, warnings
 
+from .deprecation import get_stack_level
+from .drawing import color_from_hex_string, convert_to_device_color
 from .enums import TextEmphasis, XPos, YPos
 from .errors import FPDFException
-from .deprecation import get_stack_level
 from .fonts import FontFace
 from .table import Table
 
@@ -215,17 +216,7 @@ def color_as_decimal(color="#000000"):
 
     # Checks if color is a name and gets the hex value
     hexcolor = COLOR_DICT.get(color.lower(), color)
-
-    if len(hexcolor) == 4:
-        r = int(hexcolor[1] * 2, 16)
-        g = int(hexcolor[2] * 2, 16)
-        b = int(hexcolor[3] * 2, 16)
-        return r, g, b
-
-    r = int(hexcolor[1:3], 16)
-    g = int(hexcolor[3:5], 16)
-    b = int(hexcolor[5:7], 16)
-    return r, g, b
+    return color_from_hex_string(hexcolor).colors255
 
 
 class HTML2FPDF(HTMLParser):
@@ -241,6 +232,7 @@ class HTML2FPDF(HTMLParser):
         dd_tag_indent=10,
         table_line_separators=False,
         ul_bullet_char=BULLET_WIN1252,
+        ul_bullet_color=(190, 0, 0),
         heading_sizes=None,
         pre_code_font="courier",
         warn_on_tags_not_matching=True,
@@ -255,6 +247,7 @@ class HTML2FPDF(HTMLParser):
             dd_tag_indent (int): numeric indentation of <dd> elements
             table_line_separators (bool): enable horizontal line separators in <table>
             ul_bullet_char (str): bullet character for <ul> elements
+            ul_bullet_color (tuple | str | drawing.Device* instance): color of the <ul> bullets
             heading_sizes (dict): font size per heading level names ("h1", "h2"...)
             pre_code_font (str): font to use for <pre> & <code> blocks
             warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags
@@ -265,6 +258,11 @@ class HTML2FPDF(HTMLParser):
         self.li_tag_indent = li_tag_indent
         self.dd_tag_indent = dd_tag_indent
         self.ul_bullet_char = ul_bullet_char
+        self.ul_bullet_color = (
+            color_as_decimal(ul_bullet_color)
+            if isinstance(ul_bullet_color, str)
+            else convert_to_device_color(ul_bullet_color).colors255
+        )
         self.heading_sizes = dict(**DEFAULT_HEADING_SIZES)
         if heading_sizes:
             self.heading_sizes.update(heading_sizes)
@@ -519,7 +517,7 @@ class HTML2FPDF(HTMLParser):
             self._new_paragraph()
         if tag == "li":
             self._ln(2)
-            self.set_text_color(190, 0, 0)
+            self.set_text_color(*self.ul_bullet_color)
             if self.bullet:
                 bullet = self.bullet[self.indent - 1]
             else:

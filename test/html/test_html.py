@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF, HTMLMixin, TitleStyle
+from fpdf.drawing import DeviceRGB
 from fpdf.errors import FPDFException
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
@@ -213,6 +214,25 @@ def test_html_customize_ul(tmp_path):
         pdf.write_html(html, li_tag_indent=indent, ul_bullet_char=bullet)
         pdf.ln()
     assert_pdf_equal(pdf, HERE / "html_customize_ul.pdf", tmp_path)
+
+
+def test_html_ul_bullet_color(tmp_path):
+    html = """<ul>
+        <li>item1</li>
+        <li>item2</li>
+        <li>item3</li>
+    </ul>"""
+
+    pdf = FPDF()
+    pdf.set_font_size(30)
+    pdf.add_page()
+    pdf.write_html(html, ul_bullet_color=0)  # black
+    pdf.ln()
+    pdf.write_html(html, ul_bullet_color="green")
+    pdf.ln()
+    pdf.write_html(html, ul_bullet_color=DeviceRGB(r=0.5, g=1, b=0))
+    pdf.ln()
+    assert_pdf_equal(pdf, HERE / "html_ul_bullet_color.pdf", tmp_path)
 
 
 def test_html_align_paragraph(tmp_path):

@@ -399,6 +399,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             dd_tag_indent (int): numeric indentation of <dd> elements
             table_line_separators (bool): enable horizontal line separators in <table>
             ul_bullet_char (str): bullet character for <ul> elements
+            ul_bullet_color (tuple | str | drawing.Device* instance): color of the <ul> bullets
             heading_sizes (dict): font size per heading level names ("h1", "h2"...)
             pre_code_font (str): font to use for <pre> & <code> blocks
             warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags
