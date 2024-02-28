@@ -173,9 +173,20 @@ def test_toc_with_font_style_override_bold(tmp_path):  # issue-1072
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", "B")
-    pdf.set_section_title_styles(TitleStyle("Helvetica", "", 20, (0, 0, 0)))
+    pdf.set_section_title_styles(
+        TitleStyle("Helvetica", font_size_pt=20, color=(0, 0, 0))
+    )
     pdf.start_section("foo")
-    assert_pdf_equal(pdf, HERE / "toc_with_font_style_override_bold.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "toc_with_font_style_override_bold1.pdf", tmp_path)
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B")
+    pdf.set_section_title_styles(
+        TitleStyle("Helvetica", font_style="", font_size_pt=20, color=(0, 0, 0))
+    )
+    pdf.start_section("foo")
+    assert_pdf_equal(pdf, HERE / "toc_with_font_style_override_bold2.pdf", tmp_path)
 
 
 def test_toc_with_table(tmp_path):  # issue-1079

@@ -51,7 +51,9 @@ class FontFace:
         "fill_color",
     )
     family: Optional[str]
-    emphasis: Optional[TextEmphasis]  # can be a combination: B | U
+    emphasis: Optional[TextEmphasis]  # None means "no override"
+    #                                   Whereas "" means "no emphasis"
+    #                                   This can be a combination: B | U
     size_pt: Optional[int]
     # Colors are single number grey scales or (red, green, blue) tuples:
     color: Optional[Union[DeviceGray, DeviceRGB]]
@@ -61,7 +63,7 @@ class FontFace:
         self, family=None, emphasis=None, size_pt=None, color=None, fill_color=None
     ):
         self.family = family
-        self.emphasis = TextEmphasis.coerce(emphasis) if emphasis else None
+        self.emphasis = None if emphasis is None else TextEmphasis.coerce(emphasis)
         self.size_pt = size_pt
         self.color = None if color is None else convert_to_device_color(color)
         self.fill_color = (

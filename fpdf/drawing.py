@@ -276,7 +276,7 @@ class DeviceGray(
         return tuple(255 * v for v in self.colors)
 
     def serialize(self) -> str:
-        return f"{0 if self.g == 0 else self.g} {self.OPERATOR}"
+        return f"{number_to_str(self.g)} {self.OPERATOR}"
 
 
 __pdoc__["DeviceGray.OPERATOR"] = False

@@ -144,7 +144,8 @@ LAYOUT_ALIASES = {
 class TitleStyle(FontFace):
     def __init__(
         self,
-        font_family: Optional[str] = None,
+        font_family: Optional[str] = None,  # None means "no override"
+        #                                     Whereas "" means "no emphasis"
         font_style: Optional[str] = None,
         font_size_pt: Optional[int] = None,
         color: Union[int, tuple] = None,  # grey scale or (red, green, blue),
@@ -155,7 +156,7 @@ class TitleStyle(FontFace):
     ):
         super().__init__(
             font_family,
-            (font_style or "") + ("U" if underline else ""),
+            ((font_style or "") + "U") if underline else font_style,
             font_size_pt,
             color,
         )

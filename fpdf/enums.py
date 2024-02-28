@@ -227,6 +227,9 @@ class TextEmphasis(CoerciveIntFlag):
         style = B | I
     """
 
+    NONE = 0
+    "No emphasis"
+
     B = 1
     "Bold"
 
@@ -246,7 +249,7 @@ class TextEmphasis(CoerciveIntFlag):
     def coerce(cls, value):
         if isinstance(value, str):
             if value == "":
-                return 0
+                return cls.NONE
             if value.upper() == "BOLD":
                 return cls.B
             if value.upper() == "ITALICS":

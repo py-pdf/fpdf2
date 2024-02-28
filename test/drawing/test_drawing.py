@@ -148,8 +148,8 @@ class TestColors:
         gray = fpdf.drawing.DeviceGray(g=0.5)
         gray_a = fpdf.drawing.DeviceGray(g=0.5, a=0.75)
 
-        assert gray.colors == (0.5,)
-        assert gray_a.colors == (0.5,)
+        assert gray.colors == (0.5, 0.5, 0.5)
+        assert gray_a.colors == (0.5, 0.5, 0.5)
 
         with pytest.raises(ValueError):
             fpdf.drawing.DeviceGray(g=2)
