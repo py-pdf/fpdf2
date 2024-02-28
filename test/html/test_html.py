@@ -574,22 +574,6 @@ def test_html_link_color(tmp_path):
     assert_pdf_equal(pdf, HERE / "html_link_color.pdf", tmp_path)
 
 
-def test_html_unordered_li_color(tmp_path):
-    pdf = FPDF()
-    pdf.add_page()
-    html = "<ul><li>foo</li></ul>"
-    pdf.write_html(html, tag_styles={"li": FontFace(color=color_as_decimal("lime"))})
-    assert_pdf_equal(pdf, HERE / "html_unordered_li_color.pdf", tmp_path)
-
-
-def test_html_ordered_li_color(tmp_path):
-    pdf = FPDF()
-    pdf.add_page()
-    html = "<ol><li>foo</li></ol>"
-    pdf.write_html(html, tag_styles={"li": FontFace(color=DeviceRGB(r=0, g=1, b=0))})
-    assert_pdf_equal(pdf, HERE / "html_ordered_li_color.pdf", tmp_path)
-
-
 def test_html_blockquote_color(tmp_path):
     pdf = FPDF()
     pdf.add_page()

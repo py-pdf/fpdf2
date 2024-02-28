@@ -29,7 +29,6 @@ DEFAULT_TAG_STYLES = {
     "h4": FontFace(color=(150, 0, 0), size_pt=12),
     "h5": FontFace(color=(150, 0, 0), size_pt=10),
     "h6": FontFace(color=(150, 0, 0), size_pt=8),
-    "li": FontFace(color=(190, 0, 0)),
     "pre": FontFace(family="Courier"),
 }
 DEFAULT_TAG_INDENTS = {

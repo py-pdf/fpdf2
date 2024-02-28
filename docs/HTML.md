@@ -73,7 +73,7 @@ pdf.output("html.pdf")
 
 ## Styling HTML tags globally
 
-The style of several HTML tags (`<a>`, `<blockquote>`, `<code>`, `<pre>`, `<li>`, `<h1>`, `<h2>`, `<h3>`...) can be set globally, for the whole HTML document, by passing `tag_styles` to `FPDF.write_html()`:
+The style of several HTML tags (`<a>`, `<blockquote>`, `<code>`, `<pre>`, `<h1>`, `<h2>`, `<h3>`...) can be set globally, for the whole HTML document, by passing `tag_styles` to `FPDF.write_html()`:
 
 ```python
 from fpdf import FPDF, FontFace
