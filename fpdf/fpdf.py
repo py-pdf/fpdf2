@@ -405,8 +405,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             li_tag_indent (int): [**DEPRECATED since v2.7.8**] numeric indentation of <li> elements - Set tag_indents instead
             dd_tag_indent (int): [**DEPRECATED since v2.7.8**] numeric indentation of <dd> elements - Set tag_indents instead
             table_line_separators (bool): enable horizontal line separators in <table>
-            ul_bullet_char (str): bullet character for <ul> elements
-            ul_bullet_color (tuple | str | drawing.Device* instance): color of the <ul> bullets
+            ul_bullet_char (str): bullet character preceding <li> items in <ul> lists.
+            li_prefix_color (tuple | str | drawing.Device* instance): color for bullets or numbers preceding <li> tags.
+                This applies to both <ul> & <ol> lists.
             heading_sizes (dict): [**DEPRECATED since v2.7.8**] font size per heading level names ("h1", "h2"...) - Set tag_styles instead
             pre_code_font (str): [**DEPRECATED since v2.7.8**] font to use for <pre> & <code> blocks - Set tag_styles instead
             warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags

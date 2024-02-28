@@ -111,6 +111,33 @@ def convert_unit(
     return to_convert / unit_conversion_factor
 
 
+ROMAN_NUMERAL_MAP = (
+    ("M", 1000),
+    ("CM", 900),
+    ("D", 500),
+    ("CD", 400),
+    ("C", 100),
+    ("XC", 90),
+    ("L", 50),
+    ("XL", 40),
+    ("X", 10),
+    ("IX", 9),
+    ("V", 5),
+    ("IV", 4),
+    ("I", 1),
+)
+
+
+def int2roman(n):
+    "Convert an integer to Roman numeral"
+    result = ""
+    for numeral, integer in ROMAN_NUMERAL_MAP:
+        while n >= integer:
+            result += numeral
+            n -= integer
+    return result
+
+
 ################################################################################
 ################### Utility functions to track memory usage ####################
 ################################################################################

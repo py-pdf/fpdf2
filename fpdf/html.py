@@ -7,6 +7,7 @@ in non-backward-compatible ways.
 """
 
 from html.parser import HTMLParser
+from string import ascii_lowercase, ascii_uppercase
 import logging, re, warnings
 
 from .deprecation import get_stack_level
@@ -15,6 +16,7 @@ from .enums import TextEmphasis, XPos, YPos
 from .errors import FPDFException
 from .fonts import FontFace
 from .table import Table
+from .util import int2roman
 
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
@@ -249,7 +251,7 @@ class HTML2FPDF(HTMLParser):
         dd_tag_indent=10,
         table_line_separators=False,
         ul_bullet_char=BULLET_WIN1252,
-        ul_bullet_color=(190, 0, 0),
+        li_prefix_color=(190, 0, 0),
         heading_sizes=None,
         pre_code_font=DEFAULT_TAG_STYLES["pre"].family,
         warn_on_tags_not_matching=True,
@@ -265,8 +267,9 @@ class HTML2FPDF(HTMLParser):
             li_tag_indent (int): [**DEPRECATED since v2.7.9**] numeric indentation of <li> elements - Set tag_indents instead
             dd_tag_indent (int): [**DEPRECATED since v2.7.9**] numeric indentation of <dd> elements - Set tag_indents instead
             table_line_separators (bool): enable horizontal line separators in <table>
-            ul_bullet_char (str): bullet character for <ul> elements
-            ul_bullet_color (tuple | str | drawing.Device* instance): color of the <ul> bullets
+            ul_bullet_char (str): bullet character preceding <li> items in <ul> lists.
+            li_prefix_color (tuple | str | drawing.Device* instance): color for bullets or numbers preceding <li> tags.
+                This applies to both <ul> & <ol> lists.
             heading_sizes (dict): [**DEPRECATED since v2.7.9**] font size per heading level names ("h1", "h2"...) - Set tag_styles instead
             pre_code_font (str): [**DEPRECATED since v2.7.9**] font to use for <pre> & <code> blocks - Set tag_styles instead
             warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags
@@ -277,10 +280,10 @@ class HTML2FPDF(HTMLParser):
         self.pdf = pdf
         self.image_map = image_map or (lambda src: src)
         self.ul_bullet_char = ul_bullet_char
-        self.ul_bullet_color = (
-            color_as_decimal(ul_bullet_color)
-            if isinstance(ul_bullet_color, str)
-            else convert_to_device_color(ul_bullet_color).colors255
+        self.li_prefix_color = (
+            color_as_decimal(li_prefix_color)
+            if isinstance(li_prefix_color, str)
+            else convert_to_device_color(li_prefix_color).colors255
         )
         self.warn_on_tags_not_matching = warn_on_tags_not_matching
 
@@ -308,6 +311,7 @@ class HTML2FPDF(HTMLParser):
         self.align = ""
         self.style_stack = []  # list of FontFace
         self.indent = 0
+        self.ol_type = []  # when inside a <ol> tag, can be "a", "A", "i", "I" or "1"
         self.bullet = []
         self.font_color = pdf.text_color.colors255
         self.heading_level = None
@@ -640,11 +644,13 @@ class HTML2FPDF(HTMLParser):
             self._new_paragraph()
         if tag == "ol":
             self.indent += 1
-            self.bullet.append(0)
+            start = int(attrs["start"]) if "start" in attrs else 1
+            self.bullet.append(start - 1)
+            self.ol_type.append(attrs.get("type", "1"))
             self._new_paragraph()
         if tag == "li":
             self._ln(2)
-            self.set_text_color(*self.ul_bullet_color)
+            self.set_text_color(*self.li_prefix_color)
             if self.bullet:
                 bullet = self.bullet[self.indent - 1]
             else:
@@ -653,7 +659,8 @@ class HTML2FPDF(HTMLParser):
             if not isinstance(bullet, str):
                 bullet += 1
                 self.bullet[self.indent - 1] = bullet
-                bullet = f"{bullet}. "
+                ol_type = self.ol_type[self.indent - 1]
+                bullet = f"{ol_prefix(ol_type, bullet)}. "
             indent = "\u00a0" * self.tag_indents["li"] * self.indent
             self._write_paragraph(f"{indent}{bullet} ")
             self.set_text_color(*self.font_color)
@@ -852,6 +859,8 @@ class HTML2FPDF(HTMLParser):
         if tag in ("ul", "ol"):
             self._end_paragraph()
             self.indent -= 1
+            if tag == "ol":
+                self.ol_type.pop()
             self.bullet.pop()
         if tag == "table":
             self.table.render()
@@ -962,6 +971,20 @@ class HTML2FPDF(HTMLParser):
     # Subclasses of _markupbase.ParserBase must implement this:
     def error(self, message):
         raise RuntimeError(message)
+
+
+def ol_prefix(ol_type, index):
+    if ol_type == "1":
+        return index
+    if ol_type == "a":
+        return ascii_lowercase[index - 1]
+    if ol_type == "A":
+        return ascii_uppercase[index - 1]
+    if ol_type == "I":
+        return int2roman(index)
+    if ol_type == "i":
+        return int2roman(index).lower()
+    raise NotImplementedError(f"Unsupported type: {ol_type}")
 
 
 class HTMLMixin:

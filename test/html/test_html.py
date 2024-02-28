@@ -191,9 +191,9 @@ def test_html_bold_italic_underline(tmp_path):
 
 def test_html_customize_ul(tmp_path):
     html = """<ul>
-            <li><b>term1</b>: definition1</li>
-            <li><b>term2</b>: definition2</li>
-        </ul>"""
+        <li><b>term1</b>: definition1</li>
+        <li><b>term2</b>: definition2</li>
+    </ul>"""
 
     # 1. Customizing through class attributes:
     class CustomPDF(FPDF):
@@ -203,21 +203,36 @@ def test_html_customize_ul(tmp_path):
     pdf = CustomPDF()
     pdf.set_font_size(30)
     pdf.add_page()
-    pdf.write_html(html)
-    pdf.ln()
-    # 2. Customizing through instance attributes:
-    pdf.li_tag_indent = 10
-    pdf.ul_bullet_char = "\x9b"
-    pdf.write_html(html)
-    pdf.ln()
-    # 3. Customizing through optional method arguments:
-    for indent, bullet in ((15, "\xac"), (20, "\xb7")):
-        pdf.write_html(html, li_tag_indent=indent, ul_bullet_char=bullet)
+    with pytest.warns(DeprecationWarning):  # li_tag_indent
+        pdf.write_html(html)
         pdf.ln()
+        # 2. Customizing through instance attributes:
+        pdf.li_tag_indent = 10
+        pdf.ul_bullet_char = "\x9b"
+        pdf.write_html(html)
+        pdf.ln()
+        # 3. Customizing through optional method arguments:
+        for indent, bullet in ((15, "\xac"), (20, "\xb7")):
+            pdf.write_html(html, li_tag_indent=indent, ul_bullet_char=bullet)
+            pdf.ln()
     assert_pdf_equal(pdf, HERE / "html_customize_ul.pdf", tmp_path)
 
 
-def test_html_ul_bullet_color(tmp_path):
+def test_html_ol_start_and_type(tmp_path):
+    pdf = FPDF()
+    pdf.set_font_size(30)
+    pdf.add_page()
+    pdf.write_html(
+        """<ol start="2" type="i">
+            <li>item</li>
+            <li>item</li>
+            <li>item</li>
+        </ol>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_ol_start_and_type.pdf", tmp_path)
+
+
+def test_html_li_prefix_color(tmp_path):
     html = """<ul>
         <li>item1</li>
         <li>item2</li>
@@ -227,13 +242,13 @@ def test_html_ul_bullet_color(tmp_path):
     pdf = FPDF()
     pdf.set_font_size(30)
     pdf.add_page()
-    pdf.write_html(html, ul_bullet_color=0)  # black
+    pdf.write_html(html, li_prefix_color=0)  # black
     pdf.ln()
-    pdf.write_html(html, ul_bullet_color="green")
+    pdf.write_html(html, li_prefix_color="green")
     pdf.ln()
-    pdf.write_html(html, ul_bullet_color=DeviceRGB(r=0.5, g=1, b=0))
+    pdf.write_html(html, li_prefix_color=DeviceRGB(r=0.5, g=1, b=0))
     pdf.ln()
-    assert_pdf_equal(pdf, HERE / "html_ul_bullet_color.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "html_li_prefix_color.pdf", tmp_path)
 
 
 def test_html_align_paragraph(tmp_path):
