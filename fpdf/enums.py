@@ -317,6 +317,12 @@ class TableCellFillMode(CoerciveEnum):
     COLUMNS = intern("COLUMNS")
     "Fill only table cells in odd columns"
 
+    EVEN_ROWS = intern("EVEN_ROWS")
+    "Fill only table cells in even rows"
+
+    EVEN_COLUMNS = intern("EVEN_COLUMNS")
+    "Fill only table cells in even columns"
+
     @classmethod
     def coerce(cls, value):
         "Any class that has a .should_fill_cell() method is considered a valid 'TableCellFillMode' (duck-typing)"
@@ -330,9 +336,13 @@ class TableCellFillMode(CoerciveEnum):
         if self is self.ALL:
             return True
         if self is self.ROWS:
-            return bool(i % 2)
+            return i % 2 == 1
         if self is self.COLUMNS:
-            return bool(j % 2)
+            return j % 2 == 1
+        if self is self.EVEN_ROWS:
+            return i % 2 == 0
+        if self is self.EVEN_COLUMNS:
+            return j % 2 == 0
         raise NotImplementedError
 
 

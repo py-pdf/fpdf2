@@ -212,7 +212,8 @@ Finally, it is possible to define your own cell-filling logic:
 
 ```python
 class EvenOddCellFillMode():
-    def should_fill_cell(self, i, j):
+    @staticmethod
+    def should_fill_cell(i, j):
         return i % 2 and j % 2
 
 ...
