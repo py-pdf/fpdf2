@@ -5,6 +5,7 @@ from fpdf import FPDF
 from fpdf.bidi import BidiParagraph, auto_detect_base_direction
 from fpdf.enums import TextDirection
 from test.conftest import assert_pdf_equal
+import pytest   # Lka, 2024
 
 HERE = Path(__file__).resolve().parent
 
@@ -38,6 +39,7 @@ CHAR_MAPPING = {
 }
 
 
+@pytest.mark.skip(reason="no way of currently testing this, because of no ssl-certificate, Lka, 2024")
 def test_bidi_conformance():
     """
     The file BidiTest.txt comprises exhaustive test sequences of bidirectional types
@@ -103,6 +105,9 @@ def test_bidi_conformance():
     assert test_count == 770241
 
 
+@pytest.mark.skip(
+    reason="no way of currently testing this, because of no ssl-certificate, Lka, 2024"
+)
 def test_bidi_character():
     """
     The other test file, BidiCharacterTest.txt, contains test sequences of explicit code points, including, for example, bracket pairs.
