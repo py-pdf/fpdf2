@@ -24,6 +24,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now accepts a `tag_styles` parameter to control the font, color & size of HTML elements: `<a>`, `<blockquote>`, `<li>`...
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now accepts a `tag_indents` parameter to control, for example, the indent of `<blockquote>` elements
 * allow to define custom `cell_fill_mode` logic for tables: [_Set cells background_ - documentation section](https://py-pdf.github.io/fpdf2/Tables.html#set-cells-background). Also added 2 new values: `TableCellFillMode.EVEN_ROWS` & `TableCellFillMode.EVEN_COLUMNS`: [documentation](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableCellFillMode)
+### Fixed
+* fixed type hint of member `level` in class `OutlineSection` from `str` to `int`.
 ### Changed
 * improved the performance of `FPDF.start_section()` - _cf._ [issue #1092](https://github.com/py-pdf/fpdf2/issues/1092)
 ### Deprecated
