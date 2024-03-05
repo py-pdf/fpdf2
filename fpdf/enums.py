@@ -903,3 +903,22 @@ class TextDirection(CoerciveEnum):
 
     BTT = intern("BTT")
     "bottom to top"
+
+class OutputIntentSubType(CoerciveEnum):
+    "Definition for Output intents"
+    PDFX = Name("GTS_PDFX")
+    "PDF/X-1a which is based upon CMYK processing"
+
+    PDFA = Name("GTS_PDFA1")
+    "PDF/A (ISO 19005) standard to produce RGB output"
+
+    ISOPDF = Name("ISO_PDFE1")
+    "ISO_PDFE1 PDF/E standards (ISO 24517, all parts)"
+
+class OutputConditionIdentifier(CoerciveEnum):
+    "Definition of allowed OutputConditionIdentifiers"
+    sRGB = Name("sRGB")
+    "IEC 61966-2-1:1999"
+
+    AdobeRGB = Name("Adobe RGB (1998)")
+    "Adobe RGB (1998) color image encoding"

@@ -39,7 +39,7 @@ CHAR_MAPPING = {
 }
 
 
-@pytest.mark.skip(reason="no way of currently testing this, because of no ssl-certificate, Lka, 2024")
+@pytest.mark.skip(reason="no way of currently testing this, because of expired ssl-certificate, Lka, 2024")
 def test_bidi_conformance():
     """
     The file BidiTest.txt comprises exhaustive test sequences of bidirectional types
@@ -106,7 +106,7 @@ def test_bidi_conformance():
 
 
 @pytest.mark.skip(
-    reason="no way of currently testing this, because of no ssl-certificate, Lka, 2024"
+    reason="no way of currently testing this, because of expired ssl-certificate, Lka, 2024"
 )
 def test_bidi_character():
     """

@@ -83,6 +83,8 @@ from .enums import (
     WrapMode,
     XPos,
     YPos,
+    OutputIntentSubType,
+    OutputConditionIdentifier,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
 from .fonts import CoreFont, CORE_FONTS, FontFace, TTFFont
@@ -293,6 +295,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.struct_builder = StructureTreeBuilder()
         self._toc_placeholder = None  # optional ToCPlaceholder instance
         self._outline = []  # list of OutlineSection
+        self._output_intents = None  # optional list of Output Intents
         self._sign_key = None
         self.section_title_styles = {}  # level -> TitleStyle
 
@@ -438,6 +441,39 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self._set_min_pdf_version("1.6")
         elif self._page_mode == PageMode.USE_OC:
             self._set_min_pdf_version("1.5")
+
+    @property
+    def output_intents(self):
+        return self._output_intents
+
+    # @output_intents.setter
+    def set_output_intents(
+        self,
+        subtype: OutputIntentSubType,
+        output_condition_id: OutputConditionIdentifier,
+    ):
+        """
+        Adds Desired Output Intent to the Output Intents Array:
+
+        Allowed Args:
+        (required) subtype: PDFA, PDFX or ISOPDF
+        (required) output_condition_id: sRGB, AdobeRGB
+        """
+        if self.output_intents is None:
+            self._output_intents = []
+            self._set_min_pdf_version("1.4")
+        subtypes_in_arr = [
+            _["subtype"].value for _ in self.output_intents
+        ]  # list(map(lambda item: item["subtype"].value, self.output_intents))
+        if subtype.value not in subtypes_in_arr:
+            self._output_intents.append(
+                {
+                    "subtype": OutputIntentSubType.coerce(subtype),
+                    "output_condition_identifier": (
+                        OutputConditionIdentifier.coerce(output_condition_id)
+                    ),
+                }
+            )
 
     @property
     def epw(self):

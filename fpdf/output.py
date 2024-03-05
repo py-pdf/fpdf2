@@ -139,6 +139,7 @@ class PDFCatalog(PDFObject):
         self.metadata = None
         self.names = None
         self.outlines = None
+        self.output_intents = None
         self.struct_tree_root = None
 
 
@@ -337,6 +338,35 @@ class PDFXrefAndTrailer(ContentWithoutID):
         return "\n".join(out)
 
 
+class OutputIntentDictionary(ContentWithoutID):
+
+    def __init__(self, subtype: str, output_condition_identifier: str):
+        # super().__init__()
+        self.type = Name("OutputIntent")
+        self.s = Name(subtype)
+        self.output_condition_identifier = (
+            PDFString(output_condition_identifier)
+            if output_condition_identifier
+            else None
+        )
+        # self.k = PDFObject(
+        #     "OutputConditionalIdentifier", PDFString("Custom", encrypt=True)
+        # )
+
+    # method override
+    def serialize(self, _security_handler=None, _obj_id=None):
+        out = []
+        out.append("<<")
+        out.append(f"/Type {self.type.serialize(_security_handler)}")
+        out.append(f"/S {self.s.serialize(_security_handler)}")
+        if self.output_condition_identifier:
+            out.append(
+                f"/OutputConditionIdentifier {self.output_condition_identifier.serialize(_security_handler)}"
+            )
+        out.append(">>")
+        return "\n".join(out)
+
+
 class OutputProducer:
     "Generates the final bytearray representing the PDF document, based on a FPDF instance."
 
@@ -388,6 +418,7 @@ class OutputProducer:
         xmp_metadata_obj = self._add_xmp_metadata()
         info_obj = self._add_info()
         encryption_obj = self._add_encryption()
+
         xref = PDFXrefAndTrailer(self)
         self.pdf_objs.append(xref)
 
@@ -895,6 +926,21 @@ class OutputProducer:
             page_mode=fpdf.page_mode,
             viewer_preferences=fpdf.viewer_preferences,
         )
+        if fpdf.output_intents is not None:
+            arr = []
+            for item in fpdf.output_intents:
+                arr.append(
+                    OutputIntentDictionary(
+                        item["subtype"].value,
+                        (
+                            item["output_condition_identifier"].value
+                            if item["output_condition_identifier"]
+                            else None
+                        ),
+                    )
+                )
+            catalog_obj.output_intents = PDFArray(arr)
+
         self._add_pdf_obj(catalog_obj)
         return catalog_obj
 
