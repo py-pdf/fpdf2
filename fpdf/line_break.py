@@ -361,7 +361,7 @@ class TextLine(NamedTuple):
         ordered_fragments = []
         for run in directional_runs:
             ordered_fragments += (
-                run[::1] if run[0].fragment_direction == TextDirection.RTL else run
+                run[::-1] if run[0].fragment_direction == TextDirection.RTL else run
             )
         return tuple(ordered_fragments)
 

@@ -208,6 +208,19 @@ The cell color is set following those settings, ordered by priority:
 4. The table setting `cell_fill_color`, if `cell_fill_mode` indicates to fill a cell
 5. The document `.fill_color` set before rendering the table
 
+Finally, it is possible to define your own cell-filling logic:
+
+```python
+class EvenOddCellFillMode():
+    @staticmethod
+    def should_fill_cell(i, j):
+        return i % 2 and j % 2
+
+...
+with pdf.table(cell_fill_color=lightblue, cell_fill_mode=EvenOddCellFillMode()) as table:
+    ...
+```
+
 
 ## Set borders layout
 

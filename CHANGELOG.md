@@ -19,10 +19,14 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.7.9] - Not released yet
 ### Added
 * support for overriding paragraph direction on bidirectional text
-* new optional `li_prefix_color` parameter for `FPDF.write_html()`
-* support for `start` & `type` attributes of `<ol>` tags, and `type` attribute of `<ul>` tags, when using `FPDF.write_html()`
+* new optional `li_prefix_color` parameter for [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html)
+* support for `start` & `type` attributes of `<ol>` tags, and `type` attribute of `<ul>` tags, when using [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html)
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now accepts a `tag_styles` parameter to control the font, color & size of HTML elements: `<a>`, `<blockquote>`, `<li>`...
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now accepts a `tag_indents` parameter to control, for example, the indent of `<blockquote>` elements
+* allow to define custom `cell_fill_mode` logic for tables: [_Set cells background_ - documentation section](https://py-pdf.github.io/fpdf2/Tables.html#set-cells-background). Also added 2 new values: `TableCellFillMode.EVEN_ROWS` & `TableCellFillMode.EVEN_COLUMNS`: [documentation](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableCellFillMode)
+### Fixed
+* ordering RTL fragments on bidirectional texts
+* fixed type hint of member `level` in class [`OutlineSection`](https://py-pdf.github.io/fpdf2/fpdf/outline.html#fpdf.outline.OutlineSection) from `str` to `int`.
 ### Changed
 * improved the performance of `FPDF.start_section()` - _cf._ [issue #1092](https://github.com/py-pdf/fpdf2/issues/1092)
 ### Deprecated
@@ -52,7 +56,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * outer table borders are now drawn continuously for nonzero `gutter_width`/`gutter_height`, with spacing applied inside the border similar to HTML tables - thanks to @mjasperse - cf. [#1071](https://github.com/py-pdf/fpdf2/issues/1071)
 * removed the requirement that all rows in a `Table` have the same number of columns - thanks to @mjasperse
 ### Deprecated
-- font aliases (`Arial` → `Helvetica`, `CourierNew` → `Courer`, `TimesNewRoman` → `Times`). They will be removed in a later release.
+- font aliases (`Arial` → `Helvetica`, `CourierNew` → `Courier`, `TimesNewRoman` → `Times`). They will be removed in a later release.
 
 ## [2.7.7] - 2023-12-10
 ### Added
