@@ -46,16 +46,16 @@ jobs:
         if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
         run: |
           # Using qpdf
-          find . -name '*.pdf' | xargs -n 1 qpdf --check --password=fpdf2
+          find . -name '*.pdf' | xargs -n 1 sh -c 'qpdf --check --password=fpdf2 $0 || exit 255'
           export PYTHONPATH=$PWD
-          # Using Datalogics PDF Checker:
-          scripts/install-pdfchecker.sh
-          scripts/pdfchecker.py --process-all-test-pdf-files
-          scripts/pdfchecker.py --print-aggregated-report
           # Using VeraPDF:
           scripts/install-verapdf.sh
           scripts/verapdf.py --process-all-test-pdf-files
           scripts/verapdf.py --print-aggregated-report
+          # Using Datalogics PDF Checker:
+          scripts/install-pdfchecker.sh
+          scripts/pdfchecker.py --process-all-test-pdf-files
+          scripts/pdfchecker.py --print-aggregated-report
       - name: Running tests ☑
         env:
           CHECK_EXEC_TIME: ${{ matrix.python-version == '3.9' && 'test-enabled' || '' }}

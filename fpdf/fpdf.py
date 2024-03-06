@@ -236,6 +236,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     MARKDOWN_LINK_REGEX = re.compile(r"^\[([^][]+)\]\(([^()]+)\)(.*)$", re.DOTALL)
     MARKDOWN_LINK_COLOR = None
     MARKDOWN_LINK_UNDERLINE = True
+    _GS_REGEX = re.compile(r"/(GS\d+) gs")
+    _IMG_REGEX = re.compile(r"/I(\d+) Do")
 
     HTML2FPDF_CLASS = HTML2FPDF
 
@@ -269,12 +271,22 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 stacklevel=get_stack_level(),
             )
         super().__init__()
+        self.single_resources_object = False
+        """
+        Setting this to True restore the old behaviour before 2.7.9.
+        Using a single /Resources object makes the resulting PDF document smaller,
+        but is less compatible with the PDF spec.
+        """
         self.page = 0  # current page number
         self.pages = {}  # array of PDFPage objects starting at index 1
         self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
+        # map page numbers to a set of font indices:
+        self.fonts_used_per_page_number = defaultdict(set)
         self.links = {}  # array of Destination objects starting at index 1
         self.embedded_files = []  # array of PDFEmbeddedFile
         self.image_cache = ImageCache()
+        # map page numbers to a set of image indices
+        self.images_used_per_page_number = defaultdict(set)
         self.in_footer = False  # flag set while rendering footer
         # indicates that we are inside an .unbreakable() code block:
         self._in_unbreakable = False
@@ -315,9 +327,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.font_stretching = 100  # current font stretching
         self.char_spacing = 0  # current character spacing
         self.underline = False  # underlining flag
-        self.current_font = (
-            None  # current font, None or an instance of CoreFont or TTFFont
-        )
+        self.current_font = None  # None or an instance of CoreFont or TTFFont
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
         self.text_color = self.DEFAULT_TEXT_COLOR
@@ -351,6 +361,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         self._current_draw_context = None
         self._drawing_graphics_state_registry = GraphicsStateDictRegistry()
+        # map page numbers to a set of GraphicsState names:
+        self.graphics_style_names_per_page_number = defaultdict(set)
 
         self._record_text_quad_points = False
 
@@ -1158,6 +1170,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         else:
             rendered = context.render(*render_args)
 
+        self.graphics_style_names_per_page_number[self.page].update(
+            match.group(1) for match in self._GS_REGEX.finditer(rendered)
+        )
+        # Registering raster images embedded in the vector graphics:
+        self.images_used_per_page_number[self.page].update(
+            int(match.group(1)) for match in self._IMG_REGEX.finditer(rendered)
+        )
+        # Once we handle text-rendering SVG tags (cf. PR #1029),
+        # we should also detect fonts used and add them to self.fonts_used_per_page_number
+
         self._out(rendered)
         # The drawing API makes use of features (notably transparency and blending modes) that were introduced in PDF 1.4:
         self._set_min_pdf_version("1.4")
@@ -1958,6 +1980,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.current_font = self.fonts[fontkey]
         if self.page > 0:
             self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
+            self.fonts_used_per_page_number[self.page].add(self.current_font.i)
 
     def set_font_size(self, size):
         """
@@ -1975,6 +1998,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     "Cannot set font size: a font must be selected first"
                 )
             self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
+            self.fonts_used_per_page_number[self.page].add(self.current_font.i)
 
     def set_char_spacing(self, spacing):
         """
@@ -2304,6 +2328,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
             default_appearance=f"({self.draw_color.serialize()} /F{self.current_font.i} {self.font_size_pt:.2f} Tf)",
         )
+        self.fonts_used_per_page_number[self.page].add(self.current_font.i)
         self.pages[self.page].annots.append(annotation)
         return annotation
 
@@ -2484,6 +2509,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if self.text_mode != TextMode.FILL:
             sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
         sl.append(f"{self.current_font.encode_text(text)} ET")
+        self.fonts_used_per_page_number[self.page].add(self.current_font.i)
         if (self.underline and text != "") or self._record_text_quad_points:
             w = self.get_string_width(text, normalized=True, markdown=False)
             if self.underline and text != "":
@@ -2720,6 +2746,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 raise ValueError(f"Unsupported setting: {key}")
         if gs:
             gs_name = self._drawing_graphics_state_registry.register_style(gs)
+            self.graphics_style_names_per_page_number[self.page].add(gs_name)
             self._out(f"q /{gs_name} gs")
         else:
             self._out("q")
@@ -3060,6 +3087,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         current_font_size_pt = frag.font_size_pt
                     current_font = frag.font
                     sl.append(f"/F{frag.font.i} {frag.font_size_pt:.2f} Tf")
+                    if self.page > 0:
+                        self.fonts_used_per_page_number[self.page].add(current_font.i)
                 lift = frag.lift
                 if lift != current_lift:
                     # Use text rise operator:
@@ -4072,6 +4101,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if link:
             self.link(x, y, w, h, link)
 
+        self.images_used_per_page_number[self.page].add(info["i"])
         return RasterImageInfo(**info, rendered_width=w, rendered_height=h)
 
     def _vector_image(
@@ -4192,6 +4222,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     round(height_in_pt * self.oversized_images_ratio),
                 )
                 info["usages"] -= 1  # no need to embed the high-resolution image
+                if info["usages"] == 0:
+                    for images_used in self.images_used_per_page_number.values():
+                        if info["i"] in images_used:
+                            images_used.remove(info["i"])
                 if lowres_info:  # Great, we've already done the job!
                     info = lowres_info
                     if info["w"] * info["h"] < dims[0] * dims[1]:

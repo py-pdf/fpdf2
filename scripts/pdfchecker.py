@@ -32,10 +32,10 @@ def analyze_pdf_file(pdf_filepath):
     # print(" ".join(command))
     output = check_output(command).decode()
     # print(output)
-    return pdf_filepath, parse_output(output)
+    return pdf_filepath, parse_output(command, output)
 
 
-def parse_output(output):
+def parse_output(command, output):
     """
     Parse PDF Checker indented output into a dict-tree.
     Tree leaves are empty dicts.
@@ -47,7 +47,7 @@ def parse_output(output):
             "failure": UNPROCESSABLE_PDF_ERROR_LINE,
             "version": version,
         }
-    assert CHECKER_SUMMARY_END_LINE in lines, "\n".join(lines)
+    assert CHECKER_SUMMARY_END_LINE in lines, f"{' '.join(command)} output:\n{output}"
     lines = lines[lines.index(CHECKER_SUMMARY_END_LINE) + 2 :]
     analysis = insert_indented(lines)
     return {
