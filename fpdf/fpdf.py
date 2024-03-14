@@ -451,13 +451,22 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self,
         subtype: OutputIntentSubType,
         output_condition_id: OutputConditionIdentifier,
+        output_condition: str = None,
+        registry_name: str = None,
+        dest_output_profile: str = None,
+        info: str = None,
     ):
         """
         Adds Desired Output Intent to the Output Intents Array:
 
         Allowed Args:
-        (required) subtype: PDFA, PDFX or ISOPDF
-        (required) output_condition_id: sRGB, AdobeRGB
+        subtype (required) : PDFA, PDFX or ISOPDF
+        output_condition_identifier (required): sRGB, AdobeRGB
+        output_condition (optional): String
+        registry_name (optional): String
+        info (optional): String
+        dest_output_profile (required if output_condition_identifier 
+            does not specify a standard production condition; optional otherwise): Path to ICC Profile
         """
         if self.output_intents is None:
             self._output_intents = []
@@ -472,6 +481,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     "output_condition_identifier": (
                         OutputConditionIdentifier.coerce(output_condition_id)
                     ),
+                    "output_condition": output_condition,
+                    "dest_output_profile": dest_output_profile,
+                    "info": info,
+                    "registry_name": registry_name,
                 }
             )
 

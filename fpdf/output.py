@@ -340,7 +340,15 @@ class PDFXrefAndTrailer(ContentWithoutID):
 
 class OutputIntentDictionary(ContentWithoutID):
 
-    def __init__(self, subtype: str, output_condition_identifier: str):
+    def __init__(
+        self,
+        subtype: str,
+        output_condition_identifier: str,
+        output_condition: str = None,
+        registry_name: str = None,
+        dest_output_profile: str = None,
+        info: str = None,
+    ):
         # super().__init__()
         self.type = Name("OutputIntent")
         self.s = Name(subtype)
@@ -349,9 +357,20 @@ class OutputIntentDictionary(ContentWithoutID):
             if output_condition_identifier
             else None
         )
-        # self.k = PDFObject(
-        #     "OutputConditionalIdentifier", PDFString("Custom", encrypt=True)
-        # )
+        self.output_condition = (
+            PDFString(output_condition) if output_condition else None
+        )
+        self.registry_name = PDFString(registry_name) if registry_name else None
+        if dest_output_profile:
+            # try:
+            with open(dest_output_profile, 'rb') as file:
+                file_contents = file.read()
+                self.dest_output_profile = PDFICCPObject(
+                        contents=file_contents, n=3, alternate=None
+                    )
+        # except IOError:
+        #    self.dest_output_profile = None
+        self.info = PDFString(info) if info else None
 
     # method override
     def serialize(self, _security_handler=None, _obj_id=None):
@@ -359,10 +378,18 @@ class OutputIntentDictionary(ContentWithoutID):
         out.append("<<")
         out.append(f"/Type {self.type.serialize(_security_handler)}")
         out.append(f"/S {self.s.serialize(_security_handler)}")
+        if self.output_condition:
+            out.append(f"/OutputCondition {self.output_condition.serialize(_security_handler)}")
         if self.output_condition_identifier:
             out.append(
                 f"/OutputConditionIdentifier {self.output_condition_identifier.serialize(_security_handler)}"
             )
+        if self.registry_name:
+            out.append(f"/RegistryName {self.registry_name.serialize(_security_handler)}")
+        if self.info:
+            out.append(f"/Info {self.info.serialize(_security_handler)}")
+        if self.dest_output_profile:
+            out.append(f"/DestOutputProfile {str(self.dest_output_profile.id)} 0 R")
         out.append(">>")
         return "\n".join(out)
 
@@ -808,6 +835,9 @@ class OutputProducer:
 
         return img_obj
 
+    def _add_icc_objs_from_output_intents(self):
+        self.fpdf.catalog
+
     def _add_gfxstates(self):
         gfxstate_objs_per_name = OrderedDict()
         for state_dict, name in self.fpdf._drawing_graphics_state_registry.items():
@@ -929,16 +959,21 @@ class OutputProducer:
         if fpdf.output_intents is not None:
             arr = []
             for item in fpdf.output_intents:
-                arr.append(
-                    OutputIntentDictionary(
-                        item["subtype"].value,
-                        (
-                            item["output_condition_identifier"].value
-                            if item["output_condition_identifier"]
-                            else None
-                        ),
-                    )
+                thedict = OutputIntentDictionary(
+                    item["subtype"].value,
+                    (
+                        item["output_condition_identifier"].value
+                        if item["output_condition_identifier"]
+                        else None
+                    ),
+                    item["output_condition"],
+                    item["registry_name"],
+                    item["dest_output_profile"],
+                    item["info"],
                 )
+                arr.append(thedict)
+                if thedict.dest_output_profile:
+                    self._add_pdf_obj(thedict.dest_output_profile)
             catalog_obj.output_intents = PDFArray(arr)
 
         self._add_pdf_obj(catalog_obj)

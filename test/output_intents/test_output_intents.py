@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from fpdf import FPDF, FPDFException, TextMode
+from fpdf import FPDF
 from fpdf.enums import OutputIntentSubType, OutputConditionIdentifier
 
-import pytest
+# import pytest
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
@@ -13,7 +13,6 @@ def test_output_intents_properties():
     Make sure the properties in PDF return the correct
     value as of the originating Output Intent.
     """
-    # pylint: disable=protected-access
     pdf = FPDF()
 
     assert pdf.output_intents is None
@@ -35,14 +34,26 @@ def test_output_intents_properties():
         {
             "subtype": OutputIntentSubType.PDFA,
             "output_condition_identifier": OutputConditionIdentifier.sRGB,
+            "dest_output_profile": None,
+            "info": None,
+            "output_condition": None,
+            "registry_name": None,
         },
         {
             "subtype": OutputIntentSubType.PDFX,
             "output_condition_identifier": OutputConditionIdentifier.AdobeRGB,
+            "dest_output_profile": None,
+            "info": None,
+            "output_condition": None,
+            "registry_name": None,
         },
         {
             "subtype": OutputIntentSubType.ISOPDF,
             "output_condition_identifier": OutputConditionIdentifier.AdobeRGB,
+            "dest_output_profile": None,
+            "info": None,
+            "output_condition": None,
+            "registry_name": None,
         },
     ]
 
@@ -52,9 +63,9 @@ def test_output_intents(tmp_path):
     Make sure the properties in PDF return the correct
     value as of the originating Output Intent.
     """
-    # pylint: disable=protected-access
     doc = FPDF()
-    doc.set_output_intents(OutputIntentSubType.PDFA, OutputConditionIdentifier.sRGB)
+    doc.set_output_intents(OutputIntentSubType.PDFA, OutputConditionIdentifier.sRGB, \
+                           'CGATS TR 001 (SWOP)', 'http://www.color.org', HERE / 'sRGB2014.icc', 'sRGB2014 (v2)')
     # doc.set_output_intents(OutputIntentSubType.PDFX)
     doc.set_lang("de")
     doc.add_page()
