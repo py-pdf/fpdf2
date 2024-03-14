@@ -16,7 +16,7 @@ from .structure_tree import StructElem
 
 class OutlineSection(NamedTuple):
     name: str
-    level: str
+    level: int
     page_number: int
     dest: Destination
     struct_elem: Optional[StructElem] = None
