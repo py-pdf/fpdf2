@@ -340,13 +340,19 @@ class PDFXrefAndTrailer(ContentWithoutID):
 
 class OutputIntentDictionary(ContentWithoutID):
 
+    class ICCDict():
+        def __init__(self, fn=None, N=None, alternate=None):
+            self.fn = fn
+            self.N = N
+            self.alternate = alternate
+
     def __init__(
         self,
         subtype: str,
         output_condition_identifier: str,
         output_condition: str = None,
         registry_name: str = None,
-        dest_output_profile: str = None,
+        dest_output_profile: ICCDict = None,
         info: str = None,
     ):
         # super().__init__()
@@ -362,14 +368,13 @@ class OutputIntentDictionary(ContentWithoutID):
         )
         self.registry_name = PDFString(registry_name) if registry_name else None
         if dest_output_profile:
-            # try:
-            with open(dest_output_profile, 'rb') as file:
+            with open(dest_output_profile["fn"], "rb") as file:
                 file_contents = file.read()
                 self.dest_output_profile = PDFICCPObject(
-                        contents=file_contents, n=3, alternate=None
-                    )
-        # except IOError:
-        #    self.dest_output_profile = None
+                    contents=file_contents,
+                    n=dest_output_profile["N"],
+                    alternate=dest_output_profile["alternate"],
+                )
         self.info = PDFString(info) if info else None
 
     # method override

@@ -446,6 +446,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def output_intents(self):
         return self._output_intents
 
+    @staticmethod
+    def dest_output_profile(fn: str =None, N: int = None, alternate: str = None):
+        """
+        returns dict for dest_output_profile:
+            fn=Path to ICC Profile,
+            N=[1|3|4], # depends on the numbers for colors 1=Gray, 3=RGB, 4=CMYK,
+            alternate=['DeviceGray'|'DeviceRGB'|'DeviceCMYK']
+        """
+        return dict(fn=fn, N=N, alternate=alternate)
+
     # @output_intents.setter
     def set_output_intents(
         self,
@@ -453,7 +463,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         output_condition_id: OutputConditionIdentifier,
         output_condition: str = None,
         registry_name: str = None,
-        dest_output_profile: str = None,
+        dest_output_profile: dict = None,
         info: str = None,
     ):
         """
@@ -465,8 +475,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         output_condition (optional): String
         registry_name (optional): String
         info (optional): String
-        dest_output_profile (required if output_condition_identifier 
-            does not specify a standard production condition; optional otherwise): Path to ICC Profile
+        dest_output_profile:
+          (required if output_condition_identifier 
+            does not specify a standard production condition; optional otherwise): None |
+            FPDF.dest_output_profile(
+                fn=Path to ICC Profile, 
+                N=[1|3|4], # depends on the numbers for colors 1=Gray, 3=RGB, 4=CMYK
+                alternate=['DeviceGray'|'DeviceRGB'|'DeviceCMYK'])
         """
         if self.output_intents is None:
             self._output_intents = []

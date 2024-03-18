@@ -60,12 +60,12 @@ def test_output_intents_properties():
 
 def test_output_intents(tmp_path):
     """
-    Make sure the properties in PDF return the correct
-    value as of the originating Output Intent.
+    Make sure the Output Intents is set in PDF.
     """
     doc = FPDF()
     doc.set_output_intents(OutputIntentSubType.PDFA, OutputConditionIdentifier.sRGB, \
-                           'CGATS TR 001 (SWOP)', 'http://www.color.org', HERE / 'sRGB2014.icc', 'sRGB2014 (v2)')
+                           'CGATS TR 001 (SWOP)', 'http://www.color.org', \
+                            FPDF.dest_output_profile(fn = HERE / 'sRGB2014.icc', N = 3, alternate = 'DeviceRGB'), 'sRGB2014 (v2)')
     # doc.set_output_intents(OutputIntentSubType.PDFX)
     doc.set_lang("de")
     doc.add_page()
