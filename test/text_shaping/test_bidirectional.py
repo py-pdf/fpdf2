@@ -1,5 +1,6 @@
 from pathlib import Path
 from urllib.request import urlopen
+import ssl
 
 from fpdf import FPDF
 from fpdf.bidi import BidiParagraph, auto_detect_base_direction
@@ -39,7 +40,6 @@ CHAR_MAPPING = {
 }
 
 
-@pytest.mark.skip(reason="no way of currently testing this, because of expired ssl-certificate, Lka, 2024")
 def test_bidi_conformance():
     """
     The file BidiTest.txt comprises exhaustive test sequences of bidirectional types
@@ -66,6 +66,9 @@ def test_bidi_conformance():
             for (indx, char) in enumerate(reordered_characters)
         )
 
+    ssl._create_default_https_context = (  # pylint: disable=protected-access
+        ssl._create_unverified_context  # pylint: disable=protected-access
+    )
     with urlopen(
         "https://www.unicode.org/Public/15.1.0/ucd/BidiTest.txt"
     ) as url_file:  # nosec B310
@@ -105,15 +108,15 @@ def test_bidi_conformance():
     assert test_count == 770241
 
 
-@pytest.mark.skip(
-    reason="no way of currently testing this, because of expired ssl-certificate, Lka, 2024"
-)
 def test_bidi_character():
     """
     The other test file, BidiCharacterTest.txt, contains test sequences of explicit code points, including, for example, bracket pairs.
     There are 91,707 tests on this file
     """
 
+    ssl._create_default_https_context = (  # pylint: disable=protected-access
+        ssl._create_unverified_context  # pylint: disable=protected-access
+    )
     with urlopen(
         "https://www.unicode.org/Public/15.1.0/ucd/BidiCharacterTest.txt"
     ) as url_file:  # nosec B310
