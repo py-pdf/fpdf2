@@ -84,7 +84,6 @@ from .enums import (
     XPos,
     YPos,
     OutputIntentSubType,
-    OutputConditionIdentifier,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
 from .fonts import CoreFont, CORE_FONTS, FontFace, TTFFont
@@ -460,7 +459,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def set_output_intents(
         self,
         subtype: OutputIntentSubType,
-        output_condition_id: OutputConditionIdentifier,
+        output_condition_identifier: str = None,
         output_condition: str = None,
         registry_name: str = None,
         dest_output_profile: dict = None,
@@ -471,15 +470,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         Allowed Args:
         subtype (required) : PDFA, PDFX or ISOPDF
-        output_condition_identifier (required): sRGB, AdobeRGB
-        output_condition (optional): String
-        registry_name (optional): String
-        info (optional): String
+        output_condition_identifier (required): see the Name in https://www.color.org/registry.xalter
+        output_condition (optional): see the Definition in https://www.color.org/registry.xalter
+        registry_name (optional): https://www.color.org
+        info (required/optional see dest_output_profile): String
         dest_output_profile:
-          (required if output_condition_identifier 
+          (required if output_condition_identifier
             does not specify a standard production condition; optional otherwise): None |
             FPDF.dest_output_profile(
-                fn=Path to ICC Profile, 
+                fn=Path to ICC Profile,
                 N=[1|3|4], # depends on the numbers for colors 1=Gray, 3=RGB, 4=CMYK
                 alternate=['DeviceGray'|'DeviceRGB'|'DeviceCMYK'])
         """
@@ -493,9 +492,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self._output_intents.append(
                 {
                     "subtype": OutputIntentSubType.coerce(subtype),
-                    "output_condition_identifier": (
-                        OutputConditionIdentifier.coerce(output_condition_id)
-                    ),
+                    "output_condition_identifier": output_condition_identifier,
                     "output_condition": output_condition,
                     "dest_output_profile": dest_output_profile,
                     "info": info,

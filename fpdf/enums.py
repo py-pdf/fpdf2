@@ -931,11 +931,3 @@ class OutputIntentSubType(CoerciveEnum):
 
     ISOPDF = Name("ISO_PDFE1")
     "ISO_PDFE1 PDF/E standards (ISO 24517, all parts)"
-
-class OutputConditionIdentifier(CoerciveEnum):
-    "Definition of allowed OutputConditionIdentifiers"
-    sRGB = Name("sRGB")
-    "IEC 61966-2-1:1999"
-
-    AdobeRGB = Name("Adobe RGB (1998)")
-    "Adobe RGB (1998) color image encoding"

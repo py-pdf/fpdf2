@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from fpdf import FPDF
-from fpdf.enums import OutputIntentSubType, OutputConditionIdentifier
+from fpdf.enums import OutputIntentSubType
 
 # import pytest
 from test.conftest import assert_pdf_equal
@@ -18,22 +18,22 @@ def test_output_intents_properties():
     assert pdf.output_intents is None
 
     pdf.set_output_intents(
-        OutputIntentSubType.PDFA, OutputConditionIdentifier.sRGB
+        OutputIntentSubType.PDFA, 'sRGB'
     )  # should create the array and add PDFA
     pdf.set_output_intents(
-        OutputIntentSubType.PDFX, OutputConditionIdentifier.AdobeRGB
+        OutputIntentSubType.PDFX, 'AdobeRGB'
     )  # should add PDFX
     pdf.set_output_intents(
-        OutputIntentSubType.PDFA, OutputConditionIdentifier.AdobeRGB
+        OutputIntentSubType.PDFA, 'AdobeRGB'
     )  # should be discarded
     pdf.set_output_intents(
-        OutputIntentSubType.ISOPDF, OutputConditionIdentifier.AdobeRGB
+        OutputIntentSubType.ISOPDF, 'AdobeRGB'
     )  # should add ISOPDF
 
     assert pdf.output_intents == [
         {
             "subtype": OutputIntentSubType.PDFA,
-            "output_condition_identifier": OutputConditionIdentifier.sRGB,
+            "output_condition_identifier": 'sRGB',
             "dest_output_profile": None,
             "info": None,
             "output_condition": None,
@@ -41,7 +41,7 @@ def test_output_intents_properties():
         },
         {
             "subtype": OutputIntentSubType.PDFX,
-            "output_condition_identifier": OutputConditionIdentifier.AdobeRGB,
+            "output_condition_identifier": 'AdobeRGB',
             "dest_output_profile": None,
             "info": None,
             "output_condition": None,
@@ -49,7 +49,7 @@ def test_output_intents_properties():
         },
         {
             "subtype": OutputIntentSubType.ISOPDF,
-            "output_condition_identifier": OutputConditionIdentifier.AdobeRGB,
+            "output_condition_identifier": 'AdobeRGB',
             "dest_output_profile": None,
             "info": None,
             "output_condition": None,
@@ -63,9 +63,14 @@ def test_output_intents(tmp_path):
     Make sure the Output Intents is set in PDF.
     """
     doc = FPDF()
-    doc.set_output_intents(OutputIntentSubType.PDFA, OutputConditionIdentifier.sRGB, \
-                           'CGATS TR 001 (SWOP)', 'http://www.color.org', \
-                            FPDF.dest_output_profile(fn = HERE / 'sRGB2014.icc', N = 3, alternate = 'DeviceRGB'), 'sRGB2014 (v2)')
+    doc.set_output_intents(
+        OutputIntentSubType.PDFA,
+        "sRGB",
+        'IEC 61966-2-1:1999',
+        "http://www.color.org",
+        FPDF.dest_output_profile(fn=HERE / "sRGB2014.icc", N=3, alternate="DeviceRGB"),
+        "sRGB2014 (v2)",
+    )
     # doc.set_output_intents(OutputIntentSubType.PDFX)
     doc.set_lang("de")
     doc.add_page()

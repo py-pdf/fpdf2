@@ -346,6 +346,16 @@ class OutputIntentDictionary(ContentWithoutID):
             self.N = N
             self.alternate = alternate
 
+    __slots__ = (  # RAM usage optimization
+        "type",
+        "subtype",
+        "output_condition_identifier",
+        "output_condition",
+        "registry_name",
+        "dest_output_profile",
+        "info",
+    )
+
     def __init__(
         self,
         subtype: str,
@@ -357,7 +367,7 @@ class OutputIntentDictionary(ContentWithoutID):
     ):
         # super().__init__()
         self.type = Name("OutputIntent")
-        self.s = Name(subtype)
+        self.subtype = Name(subtype)
         self.output_condition_identifier = (
             PDFString(output_condition_identifier)
             if output_condition_identifier
@@ -382,7 +392,7 @@ class OutputIntentDictionary(ContentWithoutID):
         out = []
         out.append("<<")
         out.append(f"/Type {self.type.serialize(_security_handler)}")
-        out.append(f"/S {self.s.serialize(_security_handler)}")
+        out.append(f"/S {self.subtype.serialize(_security_handler)}")
         if self.output_condition:
             out.append(f"/OutputCondition {self.output_condition.serialize(_security_handler)}")
         if self.output_condition_identifier:
@@ -966,11 +976,7 @@ class OutputProducer:
             for item in fpdf.output_intents:
                 thedict = OutputIntentDictionary(
                     item["subtype"].value,
-                    (
-                        item["output_condition_identifier"].value
-                        if item["output_condition_identifier"]
-                        else None
-                    ),
+                    item["output_condition_identifier"],
                     item["output_condition"],
                     item["registry_name"],
                     item["dest_output_profile"],
