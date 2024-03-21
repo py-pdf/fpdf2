@@ -6,7 +6,6 @@ from fpdf import FPDF
 from fpdf.bidi import BidiParagraph, auto_detect_base_direction
 from fpdf.enums import TextDirection
 from test.conftest import assert_pdf_equal
-import pytest   # Lka, 2024
 
 HERE = Path(__file__).resolve().parent
 
@@ -66,11 +65,10 @@ def test_bidi_conformance():
             for (indx, char) in enumerate(reordered_characters)
         )
 
-    ssl._create_default_https_context = (  # pylint: disable=protected-access
-        ssl._create_unverified_context  # pylint: disable=protected-access
-    )
+    #  to avoid urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired
+    context = ssl._create_unverified_context()  # pylint: disable=protected-access
     with urlopen(
-        "https://www.unicode.org/Public/15.1.0/ucd/BidiTest.txt"
+        "https://www.unicode.org/Public/15.1.0/ucd/BidiTest.txt", context=context
     ) as url_file:  # nosec B310
         data = url_file.read().decode("utf-8").split("\n")
 
@@ -114,11 +112,11 @@ def test_bidi_character():
     There are 91,707 tests on this file
     """
 
-    ssl._create_default_https_context = (  # pylint: disable=protected-access
-        ssl._create_unverified_context  # pylint: disable=protected-access
-    )
+    #  to avoid urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired
+    context = ssl._create_unverified_context()  # pylint: disable=protected-access
     with urlopen(
-        "https://www.unicode.org/Public/15.1.0/ucd/BidiCharacterTest.txt"
+        "https://www.unicode.org/Public/15.1.0/ucd/BidiCharacterTest.txt",
+        context=context,
     ) as url_file:  # nosec B310
         data = url_file.read().decode("utf-8").split("\n")
 
