@@ -660,3 +660,30 @@ def test_html_li_tag_indent(tmp_path):
     with pytest.warns(DeprecationWarning):
         pdf.write_html("<ul><li>item</li></ul>", li_tag_indent=10)
     assert_pdf_equal(pdf, HERE / "html_li_tag_indent.pdf", tmp_path)
+
+
+def test_html_ol_ul_line_height(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """
+    <p>Default line-height:</p>
+    <ul>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+    </ul>
+    <p>1.5 line-height:</p>
+    <ol line-height="1.5">
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+    </ol>
+    <p>Double line-height:</p>
+    <ul line-height="2">
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+    </ul>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_ol_ul_line_height.pdf", tmp_path)

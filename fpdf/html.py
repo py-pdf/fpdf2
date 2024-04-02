@@ -243,6 +243,7 @@ class HTML2FPDF(HTMLParser):
     "Render basic HTML to FPDF"
 
     HTML_UNCLOSED_TAGS = ("br", "dd", "dt", "hr", "img", "li", "td", "tr")
+    TABLE_LINE_HEIGHT = 1.3
 
     def __init__(
         self,
@@ -645,13 +646,27 @@ class HTML2FPDF(HTMLParser):
                 ul_prefix(attrs["type"]) if "type" in attrs else self.ul_bullet_char
             )
             self.bullet.append(bullet_char)
-            self._new_paragraph()
+            line_height = None
+            if "line-height" in attrs:
+                try:
+                    # YYY parse and convert non-float line_height values
+                    line_height = float(attrs.get("line-height"))
+                except ValueError:
+                    pass
+            self._new_paragraph(line_height=line_height)
         if tag == "ol":
             self.indent += 1
             start = int(attrs["start"]) if "start" in attrs else 1
             self.bullet.append(start - 1)
             self.ol_type.append(attrs.get("type", "1"))
-            self._new_paragraph()
+            line_height = None
+            if "line-height" in attrs:
+                try:
+                    # YYY parse and convert non-float line_height values
+                    line_height = float(attrs.get("line-height"))
+                except ValueError:
+                    pass
+            self._new_paragraph(line_height=line_height)
         if tag == "li":
             self._ln(2)
             self.set_text_color(*self.li_prefix_color)
@@ -715,7 +730,7 @@ class HTML2FPDF(HTMLParser):
                 self.pdf,
                 align=align,
                 borders_layout=borders_layout,
-                line_height=self.h * 1.30,
+                line_height=self.h * self.TABLE_LINE_HEIGHT,
                 width=width,
                 padding=padding,
                 gutter_width=spacing,
