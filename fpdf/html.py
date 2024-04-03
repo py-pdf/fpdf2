@@ -239,6 +239,24 @@ def color_as_decimal(color="#000000"):
     return color_from_hex_string(hexcolor).colors255
 
 
+def parse_style(elem_attrs):
+    """Parse `style="..."` making it's key-value pairs element's attributes"""
+    try:
+        style = elem_attrs["style"]
+    except KeyError:
+        pass
+    else:
+        for element in style.split(";"):
+            if not element:
+                continue
+
+            pair = element.split(":")
+            if len(pair) == 2 and pair[0] and pair[1]:
+                attr, value = pair
+
+                elem_attrs[attr.strip()] = value.strip()
+
+
 class HTML2FPDF(HTMLParser):
     "Render basic HTML to FPDF"
 
@@ -521,6 +539,7 @@ class HTML2FPDF(HTMLParser):
         self._pre_started = False
         attrs = dict(attrs)
         LOGGER.debug("STARTTAG %s %s", tag, attrs)
+        parse_style(attrs)
         self._tags_stack.append(tag)
         if tag == "dt":
             self._write_paragraph("\n")

@@ -684,6 +684,18 @@ def test_html_ol_ul_line_height(tmp_path):
         <li>item</li>
         <li>item</li>
         <li>item</li>
+    </ul>
+    <p>1.5 line-height as "style":</p>
+    <ol style="line-height: 1.5">
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+    </ol>
+    <p>Double line-height as "style":</p>
+    <ul style="line-height: 2">
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
     </ul>"""
     )
     assert_pdf_equal(pdf, HERE / "html_ol_ul_line_height.pdf", tmp_path)

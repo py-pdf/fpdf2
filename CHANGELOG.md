@@ -23,7 +23,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support for `start` & `type` attributes of `<ol>` tags, and `type` attribute of `<ul>` tags, when using [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html)
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now accepts a `tag_styles` parameter to control the font, color & size of HTML elements: `<a>`, `<blockquote>`, `<li>`...
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now accepts a `tag_indents` parameter to control, for example, the indent of `<blockquote>` elements
-* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now honors `line-height` attributes on `<ol>` & `<li>` elements
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now honors `line-height` attributes on `<ol>` & `<li>` elements, or the same CSS property in `style` attributes on those tags
 * allow to define custom `cell_fill_mode` logic for tables: [_Set cells background_ - documentation section](https://py-pdf.github.io/fpdf2/Tables.html#set-cells-background). Also added 2 new values: `TableCellFillMode.EVEN_ROWS` & `TableCellFillMode.EVEN_COLUMNS`: [documentation](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableCellFillMode)
 ### Fixed
 * ordering RTL fragments on bidirectional texts
