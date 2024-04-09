@@ -3401,9 +3401,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Returns: a boolean indicating if a page break would occur
         """
         return (
-            # ensure that there is already some content on the page:
-            self.y > self.t_margin
-            and self.y + height > self.page_break_trigger
+            self.y + height > self.page_break_trigger
             and not self.in_footer
             and self.accept_page_break
         )
