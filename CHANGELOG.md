@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.7.9] - Not released yet
 ### Added
+* fix bug causing a warning message in Acrobat
 * support for overriding paragraph direction on bidirectional text
 * new optional `li_prefix_color` parameter for [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html)
 * support for `start` & `type` attributes of `<ol>` tags, and `type` attribute of `<ul>` tags, when using [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html)

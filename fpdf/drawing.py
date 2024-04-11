@@ -1445,9 +1445,7 @@ class GraphicsStyle:
                 result[key] = value
 
         # There is additional logic in GraphicsContext to ensure that this will work
-        if (self.stroke_dash_pattern is not self.INHERIT) and (
-            self.stroke_dash_pattern is not None
-        ):
+        if self.stroke_dash_pattern and self.stroke_dash_pattern is not self.INHERIT:
             result[PDFStyleKeys.STROKE_DASH_PATTERN.value] = [
                 self.stroke_dash_pattern,
                 self.stroke_dash_phase,
