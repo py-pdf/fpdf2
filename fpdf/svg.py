@@ -13,6 +13,8 @@ from typing import NamedTuple
 from fontTools.svgLib.path import parse_path
 from fontTools.pens.basePen import BasePen
 
+from .enums import PathPaintRule
+
 try:
     from defusedxml.ElementTree import fromstring as parse_xml_str
 except ImportError:
