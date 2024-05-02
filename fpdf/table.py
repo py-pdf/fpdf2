@@ -47,6 +47,7 @@ class Table:
         padding=None,
         outer_border_width=None,
         num_heading_rows=1,
+        repeat_headings=True,
     ):
         """
         Args:
@@ -79,6 +80,7 @@ class Table:
             num_heading_rows (number): optional. Sets the number of heading rows, default value is 1. If this value is not 1,
                 first_row_as_headings needs to be True if num_heading_rows>1 and False if num_heading_rows=0. For backwards compatibility,
                 first_row_as_headings is used in case num_heading_rows is 1.
+            repeat_headings (bool): optional, indicates whether to print table headings on every page, default to True.
         """
         self._fpdf = fpdf
         self._align = align
@@ -98,6 +100,7 @@ class Table:
         self._width = fpdf.epw if width is None else width
         self._wrapmode = wrapmode
         self._num_heading_rows = num_heading_rows
+        self._repeat_headings = repeat_headings
         self._initial_style = None
         self.rows = []
 
@@ -217,7 +220,7 @@ class Table:
             page_break = self._fpdf._perform_page_break_if_need_be(
                 row_info[i].pagebreak_height
             )
-            if page_break and i >= self._num_heading_rows:
+            if page_break and self._repeat_headings and i >= self._num_heading_rows:
                 # repeat headings on top:
                 self._fpdf.y += self._outer_border_margin[1]
                 for row_idx in range(self._num_heading_rows):

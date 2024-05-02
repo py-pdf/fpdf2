@@ -618,7 +618,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             return
         #
         # Features must be a dictionary contaning opentype features and a boolean flag
-        # stating wether the feature should be enabled or disabled.
+        # stating whether the feature should be enabled or disabled.
         #
         # e.g. features={"liga": True, "kern": False}
         #
@@ -4998,6 +4998,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             num_heading_rows (number): optional. Sets the number of heading rows, default value is 1. If this value is not 1,
                 first_row_as_headings needs to be True if num_heading_rows>1 and False if num_heading_rows=0. For backwards compatibility,
                 first_row_as_headings is used in case num_heading_rows is 1.
+            repeat_headings (bool): optional, indicates whether to print table headings on every page, default to True.
         """
         table = Table(self, *args, **kwargs)
         yield table

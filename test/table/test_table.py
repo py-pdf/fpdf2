@@ -352,6 +352,20 @@ def test_table_with_single_top_line_layout_and_page_break(tmp_path):  # PR #912
     )
 
 
+def test_table_with_page_break_and_headings_repeated(tmp_path):  # issue 1151
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table(
+        MULTILINE_TABLE_DATA,
+        repeat_headings=False,
+    ):
+        pass
+    assert_pdf_equal(
+        pdf, HERE / "table_with_page_break_and_headings_repeated.pdf", tmp_path
+    )
+
+
 def test_table_align(tmp_path):
     pdf = FPDF()
     pdf.add_page()

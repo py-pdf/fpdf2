@@ -134,9 +134,20 @@ with pdf.table(line_height=2.5 * pdf.font_size) as table:
 
 ## Disable table headings
 
+By default, `fpdf2` considers that the first row of tables contains its headings.
+This can however be disabled:
+
 ```python
 ...
 with pdf.table(first_row_as_headings=False) as table:
+    ...
+```
+
+The **repetition** of table headings on every page can also be disabled:
+
+```python
+...
+with pdf.table(repeat_headings=False) as table:
     ...
 ```
 
