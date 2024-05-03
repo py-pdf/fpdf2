@@ -147,9 +147,11 @@ The **repetition** of table headings on every page can also be disabled:
 
 ```python
 ...
-with pdf.table(repeat_headings=False) as table:
+with pdf.table(repeat_headings=1) as table:
     ...
 ```
+
+`"ON_TOP_OF_EVERY_PAGE"` is an equivalent valid value for `repeat_headings`.
 
 ## Style table headings
 

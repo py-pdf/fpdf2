@@ -356,9 +356,22 @@ def test_table_with_page_break_and_headings_repeated(tmp_path):  # issue 1151
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
+    pdf.cell(text="repeat_headings=1:", new_y="NEXT")
     with pdf.table(
         MULTILINE_TABLE_DATA,
-        repeat_headings=False,
+        repeat_headings=1,
+    ):
+        pass
+    pdf.cell(text='repeat_headings="NONE":', new_y="NEXT")
+    with pdf.table(
+        MULTILINE_TABLE_DATA,
+        repeat_headings="NONE",
+    ):
+        pass
+    pdf.cell(text='repeat_headings="ON_TOP_OF_EVERY_PAGE":', new_y="NEXT")
+    with pdf.table(
+        MULTILINE_TABLE_DATA,
+        repeat_headings="ON_TOP_OF_EVERY_PAGE",
     ):
         pass
     assert_pdf_equal(
