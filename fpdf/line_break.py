@@ -558,6 +558,7 @@ class MultiLineBreak:
         max_width: Union[float, callable],
         margins: Sequence[Number],
         align: Align = Align.L,
+        indent: float = 0,
         print_sh: bool = False,
         wrapmode: WrapMode = WrapMode.WORD,
         line_height: float = 1.0,
@@ -592,6 +593,7 @@ class MultiLineBreak:
             self.get_width = lambda height: max_width
         self.margins = margins
         self.align = align
+        self.indent = indent
         self.print_sh = print_sh
         self.wrapmode = wrapmode
         self.line_height = line_height
@@ -617,6 +619,7 @@ class MultiLineBreak:
         # For line wrapping we need to use the reduced width.
         for margin in self.margins:
             max_width -= margin
+        max_width -= self.indent
 
         if self.skip_leading_spaces:
             # write_html() with TextColumns uses this, since it can't know in
@@ -645,6 +648,7 @@ class MultiLineBreak:
                 current_line.max_width = max_width
                 for margin in self.margins:
                     max_width -= margin
+                max_width -= self.indent
 
             if self.character_index >= len(current_fragment.characters):
                 self.character_index = 0

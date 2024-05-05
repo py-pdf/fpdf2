@@ -57,6 +57,8 @@ class Paragraph:  # pylint: disable=function-redefined
         line_height=None,
         top_margin: float = 0,
         bottom_margin: float = 0,
+        indent: float = 0,
+        bullet: str = "",
         skip_leading_spaces: bool = False,
         wrapmode: WrapMode = None,
     ):
@@ -75,6 +77,8 @@ class Paragraph:  # pylint: disable=function-redefined
             self.line_height = line_height
         self.top_margin = top_margin
         self.bottom_margin = bottom_margin
+        self.indent = indent
+        self.bullet = bullet
         self.skip_leading_spaces = skip_leading_spaces
         if wrapmode is None:
             self.wrapmode = self._region.wrapmode
@@ -122,6 +126,7 @@ class Paragraph:  # pylint: disable=function-redefined
             max_width=self._region.get_width,
             margins=(self.pdf.c_margin, self.pdf.c_margin),
             align=self.text_align or self._region.text_align or Align.L,
+            indent=self.indent,
             print_sh=print_sh,
             wrapmode=self.wrapmode,
             line_height=self.line_height,
@@ -324,6 +329,8 @@ class ParagraphCollectorMixin:
         skip_leading_spaces: bool = False,
         top_margin=0,
         bottom_margin=0,
+        indent=0,
+        bullet="",
         wrapmode: WrapMode = None,
     ):
         if self._active_paragraph == "EXPLICIT":
@@ -336,6 +343,8 @@ class ParagraphCollectorMixin:
             wrapmode=wrapmode,
             top_margin=top_margin,
             bottom_margin=bottom_margin,
+            indent=indent,
+            bullet=bullet,
         )
         self._paragraphs.append(p)
         self._active_paragraph = "EXPLICIT"
@@ -451,6 +460,9 @@ class TextRegion(ParagraphCollectorMixin):
                     border=0,
                     new_x=XPos.LEFT,
                     new_y=YPos.NEXT,
+                    indent=tl_wrapper.paragraph.indent,
+                    bullet=tl_wrapper.paragraph.bullet,
+                    first_line=tl_wrapper.first_line,
                     fill=False,
                 )
                 if tl_wrapper.last_line:

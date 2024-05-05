@@ -331,6 +331,7 @@ class HTML2FPDF(HTMLParser):
         self.align = ""
         self.style_stack = []  # list of FontFace
         self.indent = 0
+        self.line_height_stack = []
         self.ol_type = []  # when inside a <ol> tag, can be "a", "A", "i", "I" or "1"
         self.bullet = []
         self.font_color = pdf.text_color.colors255
@@ -417,7 +418,13 @@ class HTML2FPDF(HTMLParser):
             )
 
     def _new_paragraph(
-        self, align=None, line_height=1.0, top_margin=0, bottom_margin=0
+        self,
+        align=None,
+        line_height=1.0,
+        top_margin=0,
+        bottom_margin=0,
+        indent=0,
+        bullet="",
     ):
         self._end_paragraph()
         self.align = align or ""
@@ -429,6 +436,8 @@ class HTML2FPDF(HTMLParser):
             skip_leading_spaces=True,
             top_margin=top_margin,
             bottom_margin=bottom_margin,
+            indent=indent,
+            bullet=bullet,
         )
         self.follows_trailing_space = True
         self.follows_heading = False
@@ -665,27 +674,29 @@ class HTML2FPDF(HTMLParser):
                 ul_prefix(attrs["type"]) if "type" in attrs else self.ul_bullet_char
             )
             self.bullet.append(bullet_char)
-            line_height = None
             if "line-height" in attrs:
                 try:
                     # YYY parse and convert non-float line_height values
-                    line_height = float(attrs.get("line-height"))
+                    self.line_height_stack.append(float(attrs.get("line-height")))
                 except ValueError:
                     pass
-            self._new_paragraph(line_height=line_height)
+            else:
+                self.line_height_stack.append(None)
+            self._end_paragraph()
         if tag == "ol":
             self.indent += 1
             start = int(attrs["start"]) if "start" in attrs else 1
             self.bullet.append(start - 1)
             self.ol_type.append(attrs.get("type", "1"))
-            line_height = None
             if "line-height" in attrs:
                 try:
                     # YYY parse and convert non-float line_height values
-                    line_height = float(attrs.get("line-height"))
+                    self.line_height_stack.append(float(attrs.get("line-height")))
                 except ValueError:
                     pass
-            self._new_paragraph(line_height=line_height)
+            else:
+                self.line_height_stack.append(None)
+            self._end_paragraph()
         if tag == "li":
             self._ln(2)
             self.set_text_color(*self.li_prefix_color)
@@ -699,8 +710,11 @@ class HTML2FPDF(HTMLParser):
                 self.bullet[self.indent - 1] = bullet
                 ol_type = self.ol_type[self.indent - 1]
                 bullet = f"{ol_prefix(ol_type, bullet)}. "
-            indent = "\u00a0" * self.tag_indents["li"] * self.indent
-            self._write_paragraph(f"{indent}{bullet} ")
+            self._new_paragraph(
+                line_height=self.line_height_stack[-1],
+                indent=self.tag_indents["li"],
+                bullet=bullet,
+            )
             self.set_text_color(*self.font_color)
         if tag == "font":
             # save previous font state:
@@ -899,6 +913,7 @@ class HTML2FPDF(HTMLParser):
             self.indent -= 1
             if tag == "ol":
                 self.ol_type.pop()
+            self.line_height_stack.pop()
             self.bullet.pop()
         if tag == "table":
             self.table.render()

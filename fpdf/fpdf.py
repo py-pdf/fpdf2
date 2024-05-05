@@ -2888,6 +2888,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         border: Union[str, int] = 0,
         new_x: XPos = XPos.RIGHT,
         new_y: YPos = YPos.TOP,
+        indent: float = 0,
+        bullet: str = "",
+        first_line: bool = False,
         fill: bool = False,
         link: str = "",
         center: bool = False,
@@ -3015,6 +3018,29 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         current_char_spacing = self.char_spacing
         fill_color_changed = False
         last_used_color = self.fill_color
+        if first_line and bullet:
+            if text_line.align == Align.R:
+                dx = w - l_c_margin - styled_txt_width
+            elif text_line.align in [Align.C, Align.X]:
+                dx = (w - styled_txt_width) / 2
+            else:
+                dx = l_c_margin
+            bullet_normalized_string = self.normalize_text(bullet).replace("\r", "")
+            bullet_fragment = Fragment(
+                bullet_normalized_string, self._get_current_graphics_state(), self.k
+            )
+            bullet_width = bullet_fragment.get_width()
+            sub_indent = 1
+            bullet_text = bullet_fragment.render_pdf_text(
+                0,
+                current_ws,
+                0,
+                self.x - bullet_width - sub_indent + dx + s_width + indent,
+                self.y + (0.5 * h + 0.3 * max_font_size),
+                self.h,
+            )
+            if bullet_text:
+                sl.append(bullet_text)
         if fragments:
             if text_line.align == Align.R:
                 dx = w - l_c_margin - styled_txt_width
@@ -3076,7 +3102,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     frag_ws,
                     current_ws,
                     word_spacing,
-                    self.x + dx + s_width,
+                    self.x + dx + s_width + indent,
                     self.y + (0.5 * h + 0.3 * max_font_size),
                     self.h,
                 )
