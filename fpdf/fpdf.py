@@ -3005,7 +3005,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if self._record_text_quad_points:
             self._add_quad_points(self.x, self.y, w, h)
 
-        s_start = self.x
+        old_x = s_start = self.x
+        self.x += indent
         s_width, underlines = 0, []
         # We try to avoid modifying global settings for temporary changes.
         current_ws = frag_ws = 0.0
@@ -3035,11 +3036,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 0,
                 current_ws,
                 0,
-                self.x - bullet_width - sub_indent + dx + s_width + indent,
+                self.x - bullet_width - sub_indent + dx + s_width,
                 self.y + (0.5 * h + 0.3 * max_font_size),
                 self.h,
             )
             if bullet_text:
+                sl.append(
+                    f"BT {(self.x - bullet_width - sub_indent + dx) * k:.2f} "
+                    f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
+                )
                 sl.append(bullet_text)
         if fragments:
             if text_line.align == Align.R:
@@ -3102,7 +3107,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     frag_ws,
                     current_ws,
                     word_spacing,
-                    self.x + dx + s_width + indent,
+                    self.x + dx + s_width,
                     self.y + (0.5 * h + 0.3 * max_font_size),
                     self.h,
                 )
@@ -3180,6 +3185,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # XPos.LEFT -> self.x stays the same
         if new_x == XPos.RIGHT:
             self.x += w
+        elif new_x == XPos.LEFT:
+            self.x = old_x
         elif new_x == XPos.START:
             self.x = s_start
         elif new_x == XPos.END:
