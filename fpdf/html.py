@@ -712,7 +712,7 @@ class HTML2FPDF(HTMLParser):
                 bullet = f"{ol_prefix(ol_type, bullet)}. "
             self._new_paragraph(
                 line_height=self.line_height_stack[-1],
-                indent=self.tag_indents["li"],
+                indent=self.tag_indents["li"] * self.indent,
                 bullet=bullet,
             )
             self.set_text_color(*self.font_color)
