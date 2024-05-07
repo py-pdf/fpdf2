@@ -12,6 +12,7 @@ import re
 from bisect import bisect_left
 from collections import defaultdict
 from dataclasses import dataclass, replace
+from functools import lru_cache
 from typing import List, Optional, Tuple, Union
 
 from fontTools import ttLib
@@ -449,8 +450,6 @@ class SubsetMap:
             glyph = self.get_glyph(unicode=x)
             if glyph:
                 self._char_id_per_glyph[glyph] = int(x)
-        # This is a cache to speed things up:
-        self._char_id_per_unicode = {}
 
     def __repr__(self):
         return (
@@ -465,10 +464,8 @@ class SubsetMap:
         for glyph, char_id in self._char_id_per_glyph.items():
             yield glyph, char_id
 
+    @lru_cache(maxsize=128)
     def pick(self, unicode: int):
-        cache_hit = self._char_id_per_unicode.get(unicode)
-        if cache_hit:
-            return cache_hit
         glyph = self.get_glyph(unicode=unicode)
         if glyph is None and unicode not in self.font.missing_glyphs:
             self.font.missing_glyphs.append(unicode)
@@ -484,10 +481,9 @@ class SubsetMap:
             char_id = self._next
             self._char_id_per_glyph[glyph] = char_id
             self._next += 1
-            # Fill cache:
-            self._char_id_per_unicode[glyph.unicode] = char_id
         return char_id
 
+    @lru_cache(maxsize=128)
     def get_glyph(
         self, glyph=None, unicode=None, glyph_name=None, glyph_width=None
     ) -> Glyph:
