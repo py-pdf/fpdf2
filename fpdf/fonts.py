@@ -464,7 +464,7 @@ class SubsetMap:
         for glyph, char_id in self._char_id_per_glyph.items():
             yield glyph, char_id
     
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=128)
     def pick(self, unicode: int):
         glyph = self.get_glyph(unicode=unicode)
         if glyph is None and unicode not in self.font.missing_glyphs:
@@ -483,7 +483,7 @@ class SubsetMap:
             self._next += 1
         return char_id
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=128)
     def get_glyph(
         self, glyph=None, unicode=None, glyph_name=None, glyph_width=None
     ) -> Glyph:
