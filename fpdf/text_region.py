@@ -82,6 +82,13 @@ class Paragraph:  # pylint: disable=function-redefined
             self.wrapmode = WrapMode.coerce(wrapmode)
         self._text_fragments = []
 
+    def __str__(self):
+        return (
+            f"Paragraph(text_align={self.text_align}, line_height={self.line_height}, top_margin={self.top_margin},"
+            f" bottom_margin={self.bottom_margin}, skip_leading_spaces={self.skip_leading_spaces}, wrapmode={self.wrapmode},"
+            f" #text_fragments={len(self._text_fragments)})"
+        )
+
     def __enter__(self):
         return self
 

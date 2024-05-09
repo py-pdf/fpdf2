@@ -354,6 +354,16 @@ class TableSpan(CoerciveEnum):
     "Mark this cell as a continuation of the previous column"
 
 
+class TableHeadingsDisplay(CoerciveIntEnum):
+    "Defines how the table headings should be displayed"
+
+    NONE = 0
+    "Only render the table headings at the beginning of the table"
+
+    ON_TOP_OF_EVERY_PAGE = 1
+    "When a page break occurs, repeat the table headings at the top of every table fragment"
+
+
 class RenderStyle(CoerciveEnum):
     "Defines how to render shapes"
 

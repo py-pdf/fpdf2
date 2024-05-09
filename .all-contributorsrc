@@ -625,7 +625,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/8699267?v=4",
       "profile": "https://github.com/GerardoAllende",
       "contributions": [
-        "code"
+        "code",
+        "research"
       ]
     },
     {
@@ -1141,6 +1142,15 @@
       "profile": "https://github.com/hyperstown",
       "contributions": [
         "content"
+      ]
+    },
+    {
+      "login": "Clock-Speed",
+      "name": "Clock-Speed",
+      "avatar_url": "https://avatars.githubusercontent.com/u/55024400?v=4",
+      "profile": "https://github.com/Clock-Speed",
+      "contributions": [
+        "code"
       ]
     }
   ],
