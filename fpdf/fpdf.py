@@ -3030,7 +3030,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             s_start += dx
             if first_line and bullet:
                 word_spacing = 0
-                sub_indent = 1
+                sub_indent = Fragment(
+                    " ", graphics_state=bullet.graphics_state, k=bullet.k
+                ).get_width()
                 sl.append(
                     f"BT {(self.x - bullet.get_width() - sub_indent + dx) * k:.2f} "
                     f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
