@@ -437,7 +437,7 @@ class HTML2FPDF(HTMLParser):
             top_margin=top_margin,
             bottom_margin=bottom_margin,
             indent=indent,
-            bullet=bullet,
+            bullet_string=bullet,
         )
         self.follows_trailing_space = True
         self.follows_heading = False

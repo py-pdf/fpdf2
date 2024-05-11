@@ -58,7 +58,7 @@ class Paragraph:  # pylint: disable=function-redefined
         top_margin: float = 0,
         bottom_margin: float = 0,
         indent: float = 0,
-        bullet: str = "",
+        bullet_string: str = "",
         skip_leading_spaces: bool = False,
         wrapmode: WrapMode = None,
     ):
@@ -78,7 +78,7 @@ class Paragraph:  # pylint: disable=function-redefined
         self.top_margin = top_margin
         self.bottom_margin = bottom_margin
         self.indent = indent
-        self.bullet = bullet
+        self.bullet = self.add_bullet(bullet_string) if bullet_string else None
         self.skip_leading_spaces = skip_leading_spaces
         if wrapmode is None:
             self.wrapmode = self._region.wrapmode
@@ -109,6 +109,14 @@ class Paragraph:  # pylint: disable=function-redefined
             for frag in fragments:
                 frag.link = link
         self._text_fragments.extend(fragments)
+
+    def add_bullet(self, bullet_string: str):
+        if not self.pdf.font_family:
+            raise FPDFException("No font set, you need to call set_font() beforehand")
+        (bullet_fragment,) = self.pdf._preload_font_styles(
+            bullet_string, markdown=False
+        )
+        return bullet_fragment
 
     def ln(self, h=None):
         if not self.pdf.font_family:
@@ -330,7 +338,7 @@ class ParagraphCollectorMixin:
         top_margin=0,
         bottom_margin=0,
         indent=0,
-        bullet="",
+        bullet_string="",
         wrapmode: WrapMode = None,
     ):
         if self._active_paragraph == "EXPLICIT":
@@ -344,7 +352,7 @@ class ParagraphCollectorMixin:
             top_margin=top_margin,
             bottom_margin=bottom_margin,
             indent=indent,
-            bullet=bullet,
+            bullet_string=bullet_string,
         )
         self._paragraphs.append(p)
         self._active_paragraph = "EXPLICIT"
@@ -440,6 +448,7 @@ class TextRegion(ParagraphCollectorMixin):
                 if (
                     text_rendered
                     and tl_wrapper.first_line
+                    and not tl_wrapper.paragraph.bullet
                     and tl_wrapper.paragraph.top_margin
                     and self.pdf.y > self.pdf.t_margin
                 ):

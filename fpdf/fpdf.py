@@ -19,6 +19,8 @@ from os.path import splitext
 from pathlib import Path
 from typing import Callable, Iterator, NamedTuple, Optional, Union
 
+from . import TextMode
+
 try:
     from endesive import signer
     from cryptography.hazmat.primitives.serialization import pkcs12
@@ -79,7 +81,6 @@ from .enums import (
     TextDirection,
     TextEmphasis,
     TextMarkupType,
-    TextMode,
     WrapMode,
     XPos,
     YPos,
@@ -2889,7 +2890,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         new_x: XPos = XPos.RIGHT,
         new_y: YPos = YPos.TOP,
         indent: float = 0,
-        bullet: str = "",
+        bullet: Fragment = None,
         first_line: bool = False,
         fill: bool = False,
         link: str = "",
@@ -3019,34 +3020,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         current_char_spacing = self.char_spacing
         fill_color_changed = False
         last_used_color = self.fill_color
-        if first_line and bullet:
-            if text_line.align == Align.R:
-                dx = w - l_c_margin - styled_txt_width
-            elif text_line.align in [Align.C, Align.X]:
-                dx = (w - styled_txt_width) / 2
-            else:
-                dx = l_c_margin
-            bullet_normalized_string = self.normalize_text(bullet).replace("\r", "")
-            bullet_fragment = Fragment(
-                bullet_normalized_string, self._get_current_graphics_state(), self.k
-            )
-            bullet_width = bullet_fragment.get_width()
-            sub_indent = 1
-            bullet_text = bullet_fragment.render_pdf_text(
-                0,
-                current_ws,
-                0,
-                self.x - bullet_width - sub_indent + dx + s_width,
-                self.y + (0.5 * h + 0.3 * max_font_size),
-                self.h,
-            )
-            if bullet_text:
-                sl.append(
-                    f"BT {(self.x - bullet_width - sub_indent + dx) * k:.2f} "
-                    f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
-                )
-                sl.append(bullet_text)
-        if fragments:
+        if fragments or (first_line and bullet):
             if text_line.align == Align.R:
                 dx = w - l_c_margin - styled_txt_width
             elif text_line.align in [Align.C, Align.X]:
@@ -3054,56 +3028,53 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             else:
                 dx = l_c_margin
             s_start += dx
-            word_spacing = 0
-            if text_line.align == Align.J and text_line.number_of_spaces:
-                word_spacing = (
-                    w - l_c_margin - r_c_margin - styled_txt_width
-                ) / text_line.number_of_spaces
-            sl.append(
-                f"BT {(self.x + dx) * k:.2f} "
-                f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
-            )
-            for i, frag in enumerate(fragments):
-                if frag.graphics_state["text_color"] != last_used_color:
+            if first_line and bullet:
+                word_spacing = 0
+                sub_indent = 1
+                sl.append(
+                    f"BT {(self.x - bullet.get_width() - sub_indent + dx) * k:.2f} "
+                    f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
+                )
+                if bullet.graphics_state["text_color"] != last_used_color:
                     # allow to change color within the line of text.
-                    last_used_color = frag.graphics_state["text_color"]
+                    last_used_color = bullet.graphics_state["text_color"]
                     sl.append(last_used_color.serialize().lower())
                     fill_color_changed = True
-                if word_spacing and frag.font_stretching != 100:
+                if word_spacing and bullet.font_stretching != 100:
                     # Space character is already stretched, extra spacing is absolute.
-                    frag_ws = word_spacing * 100 / frag.font_stretching
+                    frag_ws = word_spacing * 100 / bullet.font_stretching
                 else:
                     frag_ws = word_spacing
-                if current_font_stretching != frag.font_stretching:
-                    current_font_stretching = frag.font_stretching
-                    sl.append(f"{frag.font_stretching:.2f} Tz")
-                if current_char_spacing != frag.char_spacing:
-                    current_char_spacing = frag.char_spacing
-                    sl.append(f"{frag.char_spacing:.2f} Tc")
+                if current_font_stretching != bullet.font_stretching:
+                    current_font_stretching = bullet.font_stretching
+                    sl.append(f"{bullet.font_stretching:.2f} Tz")
+                if current_char_spacing != bullet.char_spacing:
+                    current_char_spacing = bullet.char_spacing
+                    sl.append(f"{bullet.char_spacing:.2f} Tc")
                 if (
-                    current_font != frag.font
-                    or current_font_size_pt != frag.font_size_pt
-                    or current_char_vpos != frag.char_vpos
+                    current_font != bullet.font
+                    or current_font_size_pt != bullet.font_size_pt
+                    or current_char_vpos != bullet.char_vpos
                 ):
-                    if current_char_vpos != frag.char_vpos:
-                        current_char_vpos = frag.char_vpos
-                    if current_font_size_pt != frag.font_size_pt:
-                        current_font_size_pt = frag.font_size_pt
-                    current_font = frag.font
-                    sl.append(f"/F{frag.font.i} {frag.font_size_pt:.2f} Tf")
-                lift = frag.lift
+                    if current_char_vpos != bullet.char_vpos:
+                        current_char_vpos = bullet.char_vpos
+                    if current_font_size_pt != bullet.font_size_pt:
+                        current_font_size_pt = bullet.font_size_pt
+                    current_font = bullet.font
+                    sl.append(f"/F{bullet.font.i} {bullet.font_size_pt:.2f} Tf")
+                lift = bullet.lift
                 if lift != current_lift:
                     # Use text rise operator:
                     sl.append(f"{lift:.2f} Ts")
                     current_lift = lift
                 if (
-                    frag.text_mode != TextMode.FILL
-                    or frag.text_mode != current_text_mode
+                    bullet.text_mode != TextMode.FILL
+                    or bullet.text_mode != current_text_mode
                 ):
-                    current_text_mode = frag.text_mode
-                    sl.append(f"{frag.text_mode} Tr {frag.line_width:.2f} w")
+                    current_text_mode = bullet.text_mode
+                    sl.append(f"{bullet.text_mode} Tr {bullet.line_width:.2f} w")
 
-                r_text = frag.render_pdf_text(
+                r_text = bullet.render_pdf_text(
                     frag_ws,
                     current_ws,
                     word_spacing,
@@ -3113,30 +3084,90 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 )
                 if r_text:
                     sl.append(r_text)
+            if fragments:
+                word_spacing = 0
+                if text_line.align == Align.J and text_line.number_of_spaces:
+                    word_spacing = (
+                        w - l_c_margin - r_c_margin - styled_txt_width
+                    ) / text_line.number_of_spaces
+                sl.append(
+                    f"BT {(self.x + dx) * k:.2f} "
+                    f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
+                )
+                for i, frag in enumerate(fragments):
+                    if frag.graphics_state["text_color"] != last_used_color:
+                        # allow to change color within the line of text.
+                        last_used_color = frag.graphics_state["text_color"]
+                        sl.append(last_used_color.serialize().lower())
+                        fill_color_changed = True
+                    if word_spacing and frag.font_stretching != 100:
+                        # Space character is already stretched, extra spacing is absolute.
+                        frag_ws = word_spacing * 100 / frag.font_stretching
+                    else:
+                        frag_ws = word_spacing
+                    if current_font_stretching != frag.font_stretching:
+                        current_font_stretching = frag.font_stretching
+                        sl.append(f"{frag.font_stretching:.2f} Tz")
+                    if current_char_spacing != frag.char_spacing:
+                        current_char_spacing = frag.char_spacing
+                        sl.append(f"{frag.char_spacing:.2f} Tc")
+                    if (
+                        current_font != frag.font
+                        or current_font_size_pt != frag.font_size_pt
+                        or current_char_vpos != frag.char_vpos
+                    ):
+                        if current_char_vpos != frag.char_vpos:
+                            current_char_vpos = frag.char_vpos
+                        if current_font_size_pt != frag.font_size_pt:
+                            current_font_size_pt = frag.font_size_pt
+                        current_font = frag.font
+                        sl.append(f"/F{frag.font.i} {frag.font_size_pt:.2f} Tf")
+                    lift1 = frag.lift
+                    if lift1 != current_lift:
+                        # Use text rise operator:
+                        sl.append(f"{lift1 :.2f} Ts")
+                        current_lift = lift1
+                    if (
+                        frag.text_mode != TextMode.FILL
+                        or frag.text_mode != current_text_mode
+                    ):
+                        current_text_mode = frag.text_mode
+                        sl.append(f"{frag.text_mode} Tr {frag.line_width:.2f} w")
 
-                frag_width = frag.get_width(
-                    initial_cs=i != 0
-                ) + word_spacing * frag.characters.count(" ")
-                if frag.underline:
-                    underlines.append(
-                        (
-                            self.x + dx + s_width,
-                            frag_width,
-                            frag.font,
-                            frag.font_size,
+                    r_text = frag.render_pdf_text(
+                        frag_ws,
+                        current_ws,
+                        word_spacing,
+                        self.x + dx + s_width,
+                        self.y + (0.5 * h + 0.3 * max_font_size),
+                        self.h,
+                    )
+                    if r_text:
+                        sl.append(r_text)
+
+                    frag_width = frag.get_width(
+                        initial_cs=i != 0
+                    ) + word_spacing * frag.characters.count(" ")
+                    if frag.underline:
+                        underlines.append(
+                            (
+                                self.x + dx + s_width,
+                                frag_width,
+                                frag.font,
+                                frag.font_size,
+                            )
                         )
-                    )
-                if frag.link:
-                    self.link(
-                        x=self.x + dx + s_width,
-                        y=self.y + (0.5 * h) - (0.5 * frag.font_size),
-                        w=frag_width,
-                        h=frag.font_size,
-                        link=frag.link,
-                    )
-                if not frag.is_ttf_font:
-                    current_ws = frag_ws
-                s_width += frag_width
+                    if frag.link:
+                        self.link(
+                            x=self.x + dx + s_width,
+                            y=self.y + (0.5 * h) - (0.5 * frag.font_size),
+                            w=frag_width,
+                            h=frag.font_size,
+                            link=frag.link,
+                        )
+                    if not frag.is_ttf_font:
+                        current_ws = frag_ws
+                    s_width += frag_width
 
             sl.append("ET")
 
