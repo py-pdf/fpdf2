@@ -37,7 +37,7 @@ DEFAULT_TAG_STYLES = {
 DEFAULT_TAG_INDENTS = {
     "blockquote": 0,
     "dd": 10,
-    "li": 5,
+    "li": 7.831666666666665,
 }
 
 # Pattern to substitute whitespace sequences with a single space character each.
@@ -267,7 +267,7 @@ class HTML2FPDF(HTMLParser):
         self,
         pdf,
         image_map=None,
-        li_tag_indent=5,
+        li_tag_indent=7.831666666666665,
         dd_tag_indent=10,
         table_line_separators=False,
         ul_bullet_char=BULLET_WIN1252,
