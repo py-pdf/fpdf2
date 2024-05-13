@@ -64,6 +64,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * [ភាសខ្មែរ](Tutorial-km.md)
 * [日本語](Tutorial-ja.md)
 * [Dutch](Tutorial-nl.md)
+* [Polski](Tutorial-pl.md)
 
 ## Installation ##
 

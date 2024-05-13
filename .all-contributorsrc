@@ -1152,6 +1152,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "DarekRepos",
+      "name": "Darek",
+      "avatar_url": "https://avatars.githubusercontent.com/u/32545344?v=4",
+      "profile": "https://github.com/DarekRepos",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
