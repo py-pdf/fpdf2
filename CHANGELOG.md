@@ -31,6 +31,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * ordering RTL fragments on bidirectional texts
 * fixed type hint of member `level` in class [`OutlineSection`](https://py-pdf.github.io/fpdf2/fpdf/outline.html#fpdf.outline.OutlineSection) from `str` to `int`.
 * SVG clipping paths being incorrectly painted - _cf._ [issue #1147](https://github.com/py-pdf/fpdf2/issues/1147)]
+* new translation of the tutorial in [Polski](https://py-pdf.github.io/fpdf2/Tutorial-pl.html) - thanks to @DarekRepos
 ### Changed
 * improved the performance of `FPDF.start_section()` - _cf._ [issue #1092](https://github.com/py-pdf/fpdf2/issues/1092)
 ### Deprecated

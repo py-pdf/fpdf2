@@ -81,6 +81,7 @@ plugins:
         - 'Tutorial-zh'
         - 'Tutorial-ja'
         - 'Tutorial-nl'
+        - 'Tutorial-pl'
       #cover: false
       #back_cover: true
       #custom_template_path: TEMPLATES PATH
