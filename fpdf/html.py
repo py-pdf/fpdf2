@@ -554,7 +554,13 @@ class HTML2FPDF(HTMLParser):
             self._write_paragraph("\n")
             tag = "b"
         if tag == "dd":
-            self._write_paragraph("\n" + "\u00a0" * self.tag_indents["dd"])
+            # self._write_paragraph("\n" + "\u00a0" * self.tag_indents["dd"])
+            self._new_paragraph(
+                line_height=self.line_height_stack[-1]
+                if self.line_height_stack
+                else None,
+                indent=self.tag_indents["dd"] * (self.indent + 1),
+            )
         if tag == "strong":
             tag = "b"
         if tag == "em":
@@ -665,9 +671,11 @@ class HTML2FPDF(HTMLParser):
                 size=tag_style.size_pt or self.font_size,
             )
             self.indent += 1
-            self._new_paragraph(top_margin=3, bottom_margin=3)
-            if self.tag_indents["blockquote"]:
-                self._write_paragraph("\u00a0" * self.tag_indents["blockquote"])
+            self._new_paragraph(
+                top_margin=3,
+                bottom_margin=3,
+                indent=self.tag_indents["blockquote"] * self.indent,
+            )
         if tag == "ul":
             self.indent += 1
             bullet_char = (
