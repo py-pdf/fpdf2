@@ -58,6 +58,8 @@ class Paragraph:  # pylint: disable=function-redefined
         top_margin: float = 0,
         bottom_margin: float = 0,
         indent: float = 0,
+        bullet_rel_x_displacement: float = 2,
+        bullet_rel_y_displacement: float = 0,
         bullet_string: str = "",
         skip_leading_spaces: bool = False,
         wrapmode: WrapMode = None,
@@ -78,7 +80,10 @@ class Paragraph:  # pylint: disable=function-redefined
         self.top_margin = top_margin
         self.bottom_margin = bottom_margin
         self.indent = indent
-        self.bullet = self.add_bullet(bullet_string) if bullet_string else None
+        self.bullet_rel_x_displacement = bullet_rel_x_displacement
+        self.bullet_rel_y_displacement = bullet_rel_y_displacement
+        self.bullet_fragment = self.add_bullet(bullet_string) if bullet_string else None
+        self.bullet_text_line = None
         self.skip_leading_spaces = skip_leading_spaces
         if wrapmode is None:
             self.wrapmode = self._region.wrapmode
@@ -128,6 +133,22 @@ class Paragraph:  # pylint: disable=function-redefined
         self._text_fragments.append(fragment)
 
     def build_lines(self, print_sh) -> List[LineWrapper]:
+        if self.bullet_fragment:
+            bullet_line_break = MultiLineBreak(
+                [self.bullet_fragment],
+                max_width=self._region.get_width,
+                margins=(self.pdf.c_margin, self.pdf.c_margin),
+                align=self.text_align or self._region.text_align or Align.L,
+                indent=self.indent
+                - self.bullet_fragment.get_width()
+                - self.bullet_rel_x_displacement,
+                print_sh=print_sh,
+                wrapmode=self.wrapmode,
+                line_height=self.line_height,
+                skip_leading_spaces=self.skip_leading_spaces
+                or self._region.skip_leading_spaces,
+            )
+            self.bullet_text_line = bullet_line_break.get_line()
         text_lines = []
         multi_line_break = MultiLineBreak(
             self._text_fragments,
@@ -448,7 +469,6 @@ class TextRegion(ParagraphCollectorMixin):
                 if (
                     text_rendered
                     and tl_wrapper.first_line
-                    and not tl_wrapper.paragraph.bullet
                     and tl_wrapper.paragraph.top_margin
                     and self.pdf.y > self.pdf.t_margin
                 ):
@@ -462,6 +482,22 @@ class TextRegion(ParagraphCollectorMixin):
                 col_left, col_right = self.current_x_extents(self.pdf.y, 0)
                 if self.pdf.x < col_left or self.pdf.x >= col_right:
                     self.pdf.x = col_left
+                self.pdf.x += tl_wrapper.paragraph.indent
+                if tl_wrapper.paragraph.bullet_fragment:
+                    bullet_indent_shift = (
+                        tl_wrapper.paragraph.bullet_fragment.get_width()
+                        + tl_wrapper.paragraph.bullet_rel_x_displacement
+                    )
+                    self.pdf.x -= bullet_indent_shift
+                    self.pdf._render_styled_text_line(
+                        tl_wrapper.paragraph.bullet_text_line,
+                        h=tl_wrapper.paragraph.bullet_text_line.height,
+                        border=0,
+                        new_x=XPos.LEFT,
+                        new_y=YPos.TOP,
+                        fill=False,
+                    )
+                    self.pdf.x += bullet_indent_shift
                 # Don't check the return, we never render past the bottom here.
                 self.pdf._render_styled_text_line(
                     text_line,
@@ -469,11 +505,9 @@ class TextRegion(ParagraphCollectorMixin):
                     border=0,
                     new_x=XPos.LEFT,
                     new_y=YPos.NEXT,
-                    indent=tl_wrapper.paragraph.indent,
-                    bullet=tl_wrapper.paragraph.bullet,
-                    first_line=tl_wrapper.first_line,
                     fill=False,
                 )
+                self.pdf.x -= tl_wrapper.paragraph.indent
                 if tl_wrapper.last_line:
                     margin = tl_wrapper.paragraph.bottom_margin
                     if margin and text_rendered and (self.pdf.y + margin) < bottom:
