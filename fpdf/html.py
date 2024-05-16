@@ -717,7 +717,7 @@ class HTML2FPDF(HTMLParser):
                 bullet += 1
                 self.bullet[self.indent - 1] = bullet
                 ol_type = self.ol_type[self.indent - 1]
-                bullet = f"{ol_prefix(ol_type, bullet)}. "
+                bullet = f"{ol_prefix(ol_type, bullet)}."
             self._new_paragraph(
                 line_height=self.line_height_stack[-1]
                 if self.line_height_stack
