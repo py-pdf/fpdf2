@@ -1806,21 +1806,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             style,
         )
 
-    def bezier(self, point_list, style="", debug_stream=None):
+    def bezier(self, point_list, debug_stream=None):
         """
-        Outputs a Bézier curve defined by three or more points.
-
-        Currently hard coded for a cubic bezier curve so only
-        supports 3 points. TODO: Support >3 points.
+        Outputs a quadratic Bézier curve, defined by three coordinates.
 
         Args:
             point_list (list of tuples): List of Abscissa and Ordinate of
-                                        segments that should be drawn
-            style (fpdf.enums.RenderStyle, str): Optional style of rendering. Possible values are:
-
-            * `D` or None: draw border. This is the default value.
-            * `F`: fill
-            * `DF` or `FD`: draw and fill
+                                        segments that should be drawn. Should be
+                                        three tuples.
         """
         points = len(point_list)
         with self.drawing_context(debug_stream=debug_stream) as ctxt:
@@ -1830,16 +1823,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             p2 = point_list[1]
             x2, y2 = p2[0], p2[1]
 
-            if points == 3:
-                p3 = point_list[2]
-                x3, y3 = p3[0], p3[1]
+            p3 = point_list[2]
+            x3, y3 = p3[0], p3[1]
 
             path = PaintedPath(x1, y1)
 
-            if points == 2:
-                path.quadratic_curve_to(x1, y1, x2, y2)
-            elif points == 3:
-                path.curve_to(x1, y1, x2, y2, x3, y3)
+            path.curve_to(x1, y1, x2, y2, x3, y3)
 
             ctxt.add_item(path)
 
