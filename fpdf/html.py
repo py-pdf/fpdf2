@@ -277,7 +277,7 @@ class HTML2FPDF(HTMLParser):
         warn_on_tags_not_matching=True,
         tag_indents=None,
         tag_styles=None,
-        list_pseudo_margin=1,
+        list_pseudo_margin=0.1,
         **_,
     ):
         """
@@ -692,7 +692,7 @@ class HTML2FPDF(HTMLParser):
                     pass
             else:
                 self.line_height_stack.append(None)
-            if self.indent == 1:
+            if self.indent == 1 and self._paragraph:
                 self._new_paragraph(line_height=self.list_pseudo_margin)
                 self._write_paragraph("\n")
             self._end_paragraph()
@@ -709,7 +709,7 @@ class HTML2FPDF(HTMLParser):
                     pass
             else:
                 self.line_height_stack.append(None)
-            if self.indent == 1:
+            if self.indent == 1 and self._paragraph:
                 self._new_paragraph(line_height=self.list_pseudo_margin)
                 self._write_paragraph("\n")
             self._end_paragraph()
