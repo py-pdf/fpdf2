@@ -269,8 +269,10 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
             elif img.mode == "CMYK":
                 dpn, bpc, colspace = 4, 8, "DeviceCMYK"
                 jpeg_inverted = True
-            if img.mode == "L":
+            elif img.mode == "L":
                 dpn, bpc, colspace = 1, 8, "DeviceGray"
+            else:
+                raise ValueError(f"Unsupported image mode: {img.mode}")
             img_raw_data.seek(0)
             info.update(
                 {

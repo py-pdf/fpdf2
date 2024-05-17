@@ -248,6 +248,8 @@ class ImageParagraph:
                 "ImageParagraph.build_line() must be called before render()."
             )
         is_svg = isinstance(self.info, VectorImageInfo)
+
+        # pylint: disable=possibly-used-before-assignment
         if self.height:
             h = self.height
         else:

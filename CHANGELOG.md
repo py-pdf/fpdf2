@@ -16,7 +16,17 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.7.9] - Not released yet
+## [2.8.0] - Not released yet
+### Added
+
+### Fixed
+
+### Changed
+
+### Deprecated
+
+
+## [2.7.9] - 2024-05-17
 ### Added
 * new optional parameter `repeat_headings` for [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table) that indicates whether to print table headings on every page
 * support for overriding paragraph direction on bidirectional text
