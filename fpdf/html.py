@@ -37,7 +37,7 @@ DEFAULT_TAG_STYLES = {
 DEFAULT_TAG_INDENTS = {
     "blockquote": 0,
     "dd": 10,
-    "li": 7.831666666666665,
+    "li": 5,
 }
 
 # Pattern to substitute whitespace sequences with a single space character each.
@@ -267,7 +267,7 @@ class HTML2FPDF(HTMLParser):
         self,
         pdf,
         image_map=None,
-        li_tag_indent=7.831666666666665,
+        li_tag_indent=5,
         dd_tag_indent=10,
         table_line_separators=False,
         ul_bullet_char=BULLET_WIN1252,
@@ -277,6 +277,7 @@ class HTML2FPDF(HTMLParser):
         warn_on_tags_not_matching=True,
         tag_indents=None,
         tag_styles=None,
+        list_pseudo_margin=1,
         **_,
     ):
         """
@@ -334,6 +335,7 @@ class HTML2FPDF(HTMLParser):
         self.line_height_stack = []
         self.ol_type = []  # when inside a <ol> tag, can be "a", "A", "i", "I" or "1"
         self.bullet = []
+        self.list_pseudo_margin = list_pseudo_margin
         self.font_color = pdf.text_color.colors255
         self.heading_level = None
         self.heading_above = 0.2  # extra space above heading, relative to font size
@@ -690,6 +692,9 @@ class HTML2FPDF(HTMLParser):
                     pass
             else:
                 self.line_height_stack.append(None)
+            if self.indent == 1:
+                self._new_paragraph(line_height=self.list_pseudo_margin)
+                self._write_paragraph("\n")
             self._end_paragraph()
         if tag == "ol":
             self.indent += 1
@@ -704,6 +709,9 @@ class HTML2FPDF(HTMLParser):
                     pass
             else:
                 self.line_height_stack.append(None)
+            if self.indent == 1:
+                self._new_paragraph(line_height=self.list_pseudo_margin)
+                self._write_paragraph("\n")
             self._end_paragraph()
         if tag == "li":
             self._ln(2)

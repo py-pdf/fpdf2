@@ -491,6 +491,7 @@ class TextRegion(ParagraphCollectorMixin):
                 if (
                     text_rendered
                     and tl_wrapper.first_line
+                    and not cur_bullet
                     and cur_paragraph.top_margin
                     and self.pdf.y > self.pdf.t_margin
                 ):
