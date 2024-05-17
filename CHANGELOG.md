@@ -18,7 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.0] - Not released yet
 ### Added
-
+- Cubic Bézier curves with [`FPDF.bezier()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.bezier) method
 ### Fixed
 
 ### Changed
