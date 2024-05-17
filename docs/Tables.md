@@ -143,15 +143,18 @@ with pdf.table(first_row_as_headings=False) as table:
     ...
 ```
 
+_New in [:octicons-tag-24: 2.7.9](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
 The **repetition** of table headings on every page can also be disabled:
 
 ```python
 ...
-with pdf.table(repeat_headings=1) as table:
+with pdf.table(repeat_headings=0) as table:
     ...
 ```
 
-`"ON_TOP_OF_EVERY_PAGE"` is an equivalent valid value for `repeat_headings`.
+`"ON_TOP_OF_EVERY_PAGE"` is an equivalent valid value for `repeat_headings`
+, _cf._ [documentation on `TableHeadingsDisplay`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableHeadingsDisplay).
 
 ## Style table headings
 
