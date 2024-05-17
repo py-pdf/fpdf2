@@ -1815,7 +1815,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                                         segments that should be drawn. Should be
                                         three tuples.
         """
-        points = len(point_list)
         with self.drawing_context(debug_stream=debug_stream) as ctxt:
             p1 = point_list[0]
             x1, y1 = p1[0], p1[1]
@@ -1831,8 +1830,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             path.curve_to(x1, y1, x2, y2, x3, y3)
 
             ctxt.add_item(path)
-
-
 
     def add_font(self, family=None, style="", fname=None, uni="DEPRECATED"):
         """
