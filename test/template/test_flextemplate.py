@@ -546,7 +546,7 @@ def test_flextemplate_wrapmode(tmp_path):
             "text": "If multiline is True and the wrapmode argument is provided, it should not cause a problem even if using the default wrapmode of 'WORD'.",
             "background": 0xEEFFFF,
             "multiline": True,
-            "wrapmode" : "WORD",
+            "wrapmode": "WORD",
         },
         {
             "name": "multi",
@@ -558,7 +558,7 @@ def test_flextemplate_wrapmode(tmp_path):
             "text": "If multiline is True and the wrapmode argument is provided, it should result in wrapping based on characters instead of words, regardless of language (i.e. even though this is designed to support scripts like Chinese and Japanese, wrapping long sentences like this in English still demonstrates functionality.)",
             "background": 0xEEFFFF,
             "multiline": True,
-            "wrapmode" : "CHAR",
+            "wrapmode": "CHAR",
         },
     ]
     pdf = FPDF()
