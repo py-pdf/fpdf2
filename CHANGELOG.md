@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.0] - Not released yet
 ### Added
+* support for setting `wrapmode` in templates (default `"WORD"` can optionally be set to `"CHAR"` to support wrapping on characters for scripts like Chinese or Japanese) - _cf._ [#1159](https://github.com/py-pdf/fpdf2/issues/1159)
 
 ### Fixed
 
