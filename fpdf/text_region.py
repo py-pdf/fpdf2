@@ -53,11 +53,12 @@ class Bullet:
     def __init__(
         self,
         bullet_fragment,
+        text_line,
         bullet_rel_x_displacement: float = 2,
         bullet_rel_y_displacement: float = 0,
     ):
         self.fragment = bullet_fragment
-        self.text_line = None
+        self.text_line = text_line
         self.rel_x_displacement = bullet_rel_x_displacement
         self.rel_y_displacement = bullet_rel_y_displacement
         self.rendered_flag = False
@@ -94,20 +95,22 @@ class Paragraph:  # pylint: disable=function-redefined
         self.top_margin = top_margin
         self.bottom_margin = bottom_margin
         self.indent = indent
-        if bullet_string:
-            self.bullet = Bullet(
-                self.generate_bullet_frag(bullet_string),
-                bullet_rel_x_displacement,
-                bullet_rel_y_displacement,
-            )
-        else:
-            self.bullet = None
         self.skip_leading_spaces = skip_leading_spaces
         if wrapmode is None:
             self.wrapmode = self._region.wrapmode
         else:
             self.wrapmode = WrapMode.coerce(wrapmode)
         self._text_fragments = []
+        if bullet_string:
+            self.bullet = Bullet(
+                *self.generate_bullet_frag_and_tl(
+                    bullet_string, bullet_rel_x_displacement
+                ),
+                bullet_rel_x_displacement,
+                bullet_rel_y_displacement,
+            )
+        else:
+            self.bullet = None
 
     def __str__(self):
         return (
@@ -133,7 +136,9 @@ class Paragraph:  # pylint: disable=function-redefined
                 frag.link = link
         self._text_fragments.extend(fragments)
 
-    def generate_bullet_frag(self, bullet_string: str):
+    def generate_bullet_frag_and_tl(
+        self, bullet_string: str, rel_x_displacement: float
+    ):
         if not bullet_string:
             return None
         if not self.pdf.font_family:
@@ -141,7 +146,19 @@ class Paragraph:  # pylint: disable=function-redefined
         (bullet_fragment,) = self.pdf._preload_font_styles(
             bullet_string, markdown=False
         )
-        return bullet_fragment
+        bullet_line_break = MultiLineBreak(
+            [bullet_fragment],
+            max_width=self._region.get_width,
+            margins=(self.pdf.c_margin, self.pdf.c_margin),
+            align=self.text_align or self._region.text_align or Align.L,
+            indent=self.indent - bullet_fragment.get_width() - rel_x_displacement,
+            wrapmode=self.wrapmode,
+            line_height=self.line_height,
+            skip_leading_spaces=self.skip_leading_spaces
+            or self._region.skip_leading_spaces,
+        )
+        bullet_text_line = bullet_line_break.get_line()
+        return (bullet_fragment, bullet_text_line)
 
     def ln(self, h=None):
         if not self.pdf.font_family:
@@ -153,22 +170,6 @@ class Paragraph:  # pylint: disable=function-redefined
         self._text_fragments.append(fragment)
 
     def build_lines(self, print_sh) -> List[LineWrapper]:
-        if self.bullet:
-            bullet_line_break = MultiLineBreak(
-                [self.bullet.fragment],
-                max_width=self._region.get_width,
-                margins=(self.pdf.c_margin, self.pdf.c_margin),
-                align=self.text_align or self._region.text_align or Align.L,
-                indent=self.indent
-                - self.bullet.fragment.get_width()
-                - self.bullet.rel_x_displacement,
-                print_sh=print_sh,
-                wrapmode=self.wrapmode,
-                line_height=self.line_height,
-                skip_leading_spaces=self.skip_leading_spaces
-                or self._region.skip_leading_spaces,
-            )
-            self.bullet.text_line = bullet_line_break.get_line()
         text_lines = []
         multi_line_break = MultiLineBreak(
             self._text_fragments,

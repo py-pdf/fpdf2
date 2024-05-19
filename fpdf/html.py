@@ -556,7 +556,7 @@ class HTML2FPDF(HTMLParser):
             self._write_paragraph("\n")
             tag = "b"
         if tag == "dd":
-            # self._write_paragraph("\n" + "\u00a0" * self.tag_indents["dd"])
+            self.follows_heading = True
             self._new_paragraph(
                 line_height=self.line_height_stack[-1]
                 if self.line_height_stack

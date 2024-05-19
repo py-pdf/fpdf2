@@ -19,8 +19,6 @@ from os.path import splitext
 from pathlib import Path
 from typing import Callable, Iterator, NamedTuple, Optional, Union
 
-from . import TextMode
-
 try:
     from endesive import signer
     from cryptography.hazmat.primitives.serialization import pkcs12
@@ -81,6 +79,7 @@ from .enums import (
     TextDirection,
     TextEmphasis,
     TextMarkupType,
+    TextMode,
     WrapMode,
     XPos,
     YPos,
