@@ -699,3 +699,11 @@ def test_html_ol_ul_line_height(tmp_path):
     </ul>"""
     )
     assert_pdf_equal(pdf, HERE / "html_ol_ul_line_height.pdf", tmp_path)
+
+
+def test_html_long_list_entries(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    html = f"<ul><li>{'A ' * 200}</li></ul>"
+    pdf.write_html(html)
+    assert_pdf_equal(pdf, HERE / "html_long_list_entries.pdf", tmp_path)

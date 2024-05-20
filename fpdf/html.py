@@ -277,7 +277,7 @@ class HTML2FPDF(HTMLParser):
         warn_on_tags_not_matching=True,
         tag_indents=None,
         tag_styles=None,
-        list_pseudo_margin=0.1,
+        list_top_margin=0.1,
         **_,
     ):
         """
@@ -335,7 +335,7 @@ class HTML2FPDF(HTMLParser):
         self.line_height_stack = []
         self.ol_type = []  # when inside a <ol> tag, can be "a", "A", "i", "I" or "1"
         self.bullet = []
-        self.list_pseudo_margin = list_pseudo_margin
+        self.list_top_margin = list_top_margin
         self.font_color = pdf.text_color.colors255
         self.heading_level = None
         self.heading_above = 0.2  # extra space above heading, relative to font size
@@ -553,7 +553,11 @@ class HTML2FPDF(HTMLParser):
         parse_style(attrs)
         self._tags_stack.append(tag)
         if tag == "dt":
-            self._write_paragraph("\n")
+            self._new_paragraph(
+                line_height=self.line_height_stack[-1]
+                if self.line_height_stack
+                else None,
+            )
             tag = "b"
         if tag == "dd":
             self.follows_heading = True
@@ -692,9 +696,9 @@ class HTML2FPDF(HTMLParser):
                     pass
             else:
                 self.line_height_stack.append(None)
-            if self.indent == 1 and self._paragraph:
-                self._new_paragraph(line_height=self.list_pseudo_margin)
-                self._write_paragraph("\n")
+            if self.indent == 1:
+                self._new_paragraph(top_margin=self.list_top_margin, line_height=0)
+                self._write_paragraph("\u00a0")
             self._end_paragraph()
         if tag == "ol":
             self.indent += 1
@@ -709,9 +713,9 @@ class HTML2FPDF(HTMLParser):
                     pass
             else:
                 self.line_height_stack.append(None)
-            if self.indent == 1 and self._paragraph:
-                self._new_paragraph(line_height=self.list_pseudo_margin)
-                self._write_paragraph("\n")
+            if self.indent == 1:
+                self._new_paragraph(top_margin=self.list_top_margin, line_height=0)
+                self._write_paragraph("\u00a0")
             self._end_paragraph()
         if tag == "li":
             self._ln(2)

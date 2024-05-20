@@ -158,7 +158,7 @@ class Paragraph:  # pylint: disable=function-redefined
             or self._region.skip_leading_spaces,
         )
         bullet_text_line = bullet_line_break.get_line()
-        return (bullet_fragment, bullet_text_line)
+        return bullet_fragment, bullet_text_line
 
     def ln(self, h=None):
         if not self.pdf.font_family:
