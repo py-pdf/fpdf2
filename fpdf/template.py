@@ -292,6 +292,7 @@ class FlexTemplate:
             align=element.get("align", ""),
             dry_run=True,
             output="LINES",
+            wrapmode=element.get("wrapmode", "WORD"),
         )
 
     def _text(
