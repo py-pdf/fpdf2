@@ -296,6 +296,7 @@ class HTML2FPDF(HTMLParser):
             warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags
             tag_indents (dict): mapping of HTML tag names to numeric values representing their horizontal left identation
             tag_styles (dict): mapping of HTML tag names to colors
+            list_top_margin (float): size of margins before lists
         """
         super().__init__()
         self.pdf = pdf

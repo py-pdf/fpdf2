@@ -20,8 +20,11 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 
 ### Fixed
+* Fixed incoherent indentation of long list entries - _cf._ [issue #1073](https://github.com/py-pdf/fpdf2/issues/1073)
 
 ### Changed
+* `HTML2FPDF.handle_starttag()` now generates one `Paragraph` object for every `<li>` HTML element. Margins above lists are now handled with `<ul>` and `<ol>` tags.
+* `HTML2FPDF.tag_indents` can now be non-integer. Indentation of HTML elements is now independent of font size and bullet strings.
 
 ### Deprecated
 
@@ -40,7 +43,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * a bug when rendering vector images with dashed lines that caused a warning message in Adobe Acrobat Reader
 * ordering RTL fragments on bidirectional texts
 * fixed type hint of member `level` in class [`OutlineSection`](https://py-pdf.github.io/fpdf2/fpdf/outline.html#fpdf.outline.OutlineSection) from `str` to `int`.
-* SVG clipping paths being incorrectly painted - _cf._ [issue #1147](https://github.com/py-pdf/fpdf2/issues/1147)]
+* SVG clipping paths being incorrectly painted - _cf._ [issue #1147](https://github.com/py-pdf/fpdf2/issues/1147)
 * new translation of the tutorial in [Polski](https://py-pdf.github.io/fpdf2/Tutorial-pl.html) - thanks to @DarekRepos
 ### Changed
 * improved the performance of `FPDF.start_section()` - _cf._ [issue #1092](https://github.com/py-pdf/fpdf2/issues/1092)

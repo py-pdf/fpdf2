@@ -577,6 +577,7 @@ class MultiLineBreak:
             margins (sequence of floats): The extra clearance that may apply at the beginning
                 and/or end of a line (usually either FPDF.c_margin or 0.0 for each side).
             align (Align): The horizontal alignment of the current text block.
+            indent (float): How much the line is going to be indented.
             print_sh (bool): If True, a soft-hyphen will be rendered
                 normally, instead of triggering a line break. Default: False
             wrapmode (WrapMode): Selects word or character based wrapping.
