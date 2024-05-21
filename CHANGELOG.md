@@ -22,6 +22,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Fixed
 
 ### Changed
+* improved performance of font glyph selection by using functools cache.
 
 ### Deprecated
 
