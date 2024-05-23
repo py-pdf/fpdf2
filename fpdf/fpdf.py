@@ -1806,7 +1806,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             style,
         )
 
-    def bezier(self, point_list, debug_stream=None):
+    def bezier(self, point_list, debug_stream=None, closed=False):
         """
         Outputs a quadratic Bézier curve, defined by three coordinates.
 
@@ -1814,6 +1814,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             point_list (list of tuples): List of Abscissa and Ordinate of
                                         segments that should be drawn. Should be
                                         three tuples.
+            closed (bool): True to draw the curve as a closed path, False (default)
+                                        for it to be drawn as an open path.
         """
         with self.drawing_context(debug_stream=debug_stream) as ctxt:
             p1 = point_list[0]
@@ -1826,6 +1828,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             x3, y3 = p3[0], p3[1]
 
             path = PaintedPath(x1, y1)
+            path.style.auto_close = closed
 
             path.curve_to(x1, y1, x2, y2, x3, y3)
 
