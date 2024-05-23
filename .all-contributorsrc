@@ -1161,6 +1161,15 @@
       "contributions": [
         "translation"
       ]
+    },
+    {
+      "login": "carlhiggs",
+      "name": "Carl Higgs",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12984626?v=4",
+      "profile": "http://www.carlhiggs.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
