@@ -3992,6 +3992,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 while preserving its original aspect ratio. Defaults to False.
                 Only meaningful if both `w` & `h` are provided.
 
+        If `y` is provided, this method will not trigger any page break;
+        otherwise, auto page break detection will be performed.
+
         Returns: an instance of a subclass of `ImageInfo`.
         """
         if type:

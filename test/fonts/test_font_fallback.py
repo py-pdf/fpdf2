@@ -198,4 +198,7 @@ def test_glyph_not_on_any_font(caplog):
     pdf.set_fallback_fonts(["DejaVuSans"])
     pdf.cell(text="Test 𝕥𝕖𝕤𝕥 🆃🅴🆂🆃 😲")
     pdf.output(devnull)
-    assert "Roboto is missing the following glyphs: 🆃, 🅴, 🆂" in caplog.text
+    assert (
+        "Roboto is missing the following glyphs: 🆃 (\\U0001f183), 🅴 (\\U0001f174), 🆂 (\\U0001f182)"
+        in caplog.text
+    )

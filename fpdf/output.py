@@ -553,7 +553,10 @@ class OutputProducer:
                     LOGGER.warning(
                         "Font %s is missing the following glyphs: %s",
                         fontname,
-                        ", ".join(chr(x) for x in font.missing_glyphs),
+                        ", ".join(
+                            f"{chr(x)} ({chr(x).encode('unicode-escape').decode()})"
+                            for x in font.missing_glyphs
+                        ),
                     )
 
                 # 2. make a subset

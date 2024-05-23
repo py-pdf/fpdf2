@@ -151,4 +151,9 @@ def test_font_missing_glyphs(caplog):
     pdf.set_font("Roboto")
     pdf.cell(text="Test 𝕥𝕖𝕤𝕥 🆃🅴🆂🆃 😲")
     pdf.output(devnull)
-    assert "Roboto is missing the following glyphs: 𝕥, 𝕖, 𝕤, 🆃, 🅴, 🆂, 😲" in caplog.text
+    assert (
+        "Roboto is missing the following glyphs: "
+        "𝕥 (\\U0001d565), 𝕖 (\\U0001d556), 𝕤 (\\U0001d564),"
+        " 🆃 (\\U0001f183), 🅴 (\\U0001f174), 🆂 (\\U0001f182), 😲 (\\U0001f632)"
+        in caplog.text
+    )
