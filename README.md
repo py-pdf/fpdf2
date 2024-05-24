@@ -279,6 +279,7 @@ This library could only exist thanks to the dedication of many volunteers around
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/DarekRepos"><img src="https://avatars.githubusercontent.com/u/32545344?v=4?s=100" width="100px;" alt="Darek"/><br /><sub><b>Darek</b></sub></a><br /><a href="#translation-DarekRepos" title="Translation">🌍</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://www.carlhiggs.com"><img src="https://avatars.githubusercontent.com/u/12984626?v=4?s=100" width="100px;" alt="Carl Higgs"/><br /><sub><b>Carl Higgs</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=carlhiggs" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/awmc000"><img src="https://avatars.githubusercontent.com/u/98981929?v=4?s=100" width="100px;" alt="awmc000"/><br /><sub><b>awmc000</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=awmc000" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
