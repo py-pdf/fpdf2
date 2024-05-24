@@ -1813,19 +1813,26 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             point_list (list of tuples): List of Abscissa and Ordinate of
                                         segments that should be drawn. Should be
-                                        three tuples.
+                                        three or four tuples. The first and last
+                                        points are the start and end point. The
+                                        middle point(s) are the control point(s).
             debug_stream (TextIO): print a pretty tree of all items to be rendered
                 to the provided stream. To store the output in a string, use
                 `io.StringIO`.
             closed (bool): True to draw the curve as a closed path, False (default)
                                         for it to be drawn as an open path.
         """
-        # QuadraticBezierCurve and BezierCurve make use of `initial_point` when instantiated.
-        # If we want to define all 3 (quad.) or 4 (cubic) points, we can set `initial_point`
-        # to be the first point given in `point_list` by creating a separate dummy path at that pos.
-        with self.drawing_context(debug_stream=debug_stream) as ctxt:
-            points = len(point_list)
+        points = len(point_list)
+        if points != 3 and points != 4:
+            raise ValueError('point_list should contain 3 tuples for a quadratic curve' 
+                             'or 4 tuples for a cubic curve.')
 
+        """
+        QuadraticBezierCurve and BezierCurve make use of `initial_point` when instantiated.
+        If we want to define all 3 (quad.) or 4 (cubic) points, we can set `initial_point`
+        to be the first point given in `point_list` by creating a separate dummy path at that pos.
+        """
+        with self.drawing_context(debug_stream=debug_stream) as ctxt:
             p1 = point_list[0]
             x1, y1 = p1[0], p1[1]
 

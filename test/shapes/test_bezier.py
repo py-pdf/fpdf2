@@ -27,7 +27,7 @@ def test_three_quadratic_beziers(tmp_path):
     pdf.set_fill_color(r=0, g=255, b=0)
     pdf.bezier(point_list2)
     pdf.set_fill_color(r=0, g=0, b=255)
-    pdf.bezier(point_list3)
+    pdf.bezier(point_list3, closed=True)
 
     draw_points(pdf, point_list1, point_list2, point_list3)
 
@@ -47,7 +47,7 @@ def test_three_cubic_beziers(tmp_path):
     pdf.set_fill_color(r=0, g=255, b=0)
     pdf.bezier(point_list2)
     pdf.set_fill_color(r=0, g=0, b=255)
-    pdf.bezier(point_list3)
+    pdf.bezier(point_list3, closed=True)
 
     draw_points(pdf, point_list1, point_list2, point_list3)
 
