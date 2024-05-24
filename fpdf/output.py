@@ -550,13 +550,14 @@ class OutputProducer:
                 glyph_names = font.subset.get_all_glyph_names()
 
                 if len(font.missing_glyphs) > 0:
+                    msg = ", ".join(
+                        f"'{chr(x)}' ({chr(x).encode('unicode-escape').decode()})"
+                        for x in font.missing_glyphs[:10]
+                    )
+                    if len(font.missing_glyphs) > 10:
+                        msg += f", ... (and {len(font.missing_glyphs) - 10} others)"
                     LOGGER.warning(
-                        "Font %s is missing the following glyphs: %s",
-                        fontname,
-                        ", ".join(
-                            f"{chr(x)} ({chr(x).encode('unicode-escape').decode()})"
-                            for x in font.missing_glyphs
-                        ),
+                        "Font %s is missing the following glyphs: %s", fontname, msg
                     )
 
                 # 2. make a subset

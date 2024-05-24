@@ -153,7 +153,25 @@ def test_font_missing_glyphs(caplog):
     pdf.output(devnull)
     assert (
         "Roboto is missing the following glyphs: "
-        "𝕥 (\\U0001d565), 𝕖 (\\U0001d556), 𝕤 (\\U0001d564),"
-        " 🆃 (\\U0001f183), 🅴 (\\U0001f174), 🆂 (\\U0001f182), 😲 (\\U0001f632)"
+        "'𝕥' (\\U0001d565), '𝕖' (\\U0001d556), '𝕤' (\\U0001d564), "
+        "'🆃' (\\U0001f183), '🅴' (\\U0001f174), '🆂' (\\U0001f182), '😲' (\\U0001f632)"
         in caplog.text
+    )
+
+
+def test_font_with_more_than_10_missing_glyphs(caplog):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="Roboto", fname=HERE / "Roboto-Regular.ttf")
+    pdf.set_font("Roboto")
+    pdf.cell(
+        text="Ogham space mark: '\U00001680' - Ideographic space: '\U00003000' - 𝒯ℰ𝒮𝒯 ⓉⒺⓈⓉ 𝕥𝕖𝕤𝕥 🆃🅴🆂🆃 🇹🇪🇸🇹"
+    )
+    pdf.output(devnull)
+    assert (
+        "Roboto is missing the following glyphs: "
+        "' ' (\\u1680), '　' (\\u3000), "
+        "'𝒯' (\\U0001d4af), 'ℰ' (\\u2130), '𝒮' (\\U0001d4ae), "
+        "'Ⓣ' (\\u24c9), 'Ⓔ' (\\u24ba), 'Ⓢ' (\\u24c8), "
+        "'𝕥' (\\U0001d565), '𝕖' (\\U0001d556), ... (and 7 others)" in caplog.text
     )
