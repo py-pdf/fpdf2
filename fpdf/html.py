@@ -231,9 +231,12 @@ COLOR_DICT = {
 
 
 def color_as_decimal(color="#000000"):
+    """
+    Convert a web color name to a (R, G, B) color tuple.
+    cf. https://en.wikipedia.org/wiki/Web_colors#HTML_color_names
+    """
     if not color:
         return None
-
     # Checks if color is a name and gets the hex value
     hexcolor = COLOR_DICT.get(color.lower(), color)
     return color_from_hex_string(hexcolor).colors255
