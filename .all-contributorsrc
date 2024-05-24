@@ -59,7 +59,8 @@
         "doc",
         "infra",
         "maintenance",
-        "question"
+        "question",
+        "bug"
       ]
     },
     {
