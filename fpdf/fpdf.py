@@ -1808,18 +1808,29 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def bezier(self, point_list, debug_stream=None, closed=False):
         """
-        Outputs a quadratic Bézier curve, defined by three coordinates.
+        Outputs a quadratic or cubic Bézier curve, defined by three or four coordinates.
 
         Args:
             point_list (list of tuples): List of Abscissa and Ordinate of
                                         segments that should be drawn. Should be
                                         three tuples.
+            debug_stream (TextIO): print a pretty tree of all items to be rendered
+                to the provided stream. To store the output in a string, use
+                `io.StringIO`.
             closed (bool): True to draw the curve as a closed path, False (default)
                                         for it to be drawn as an open path.
         """
+        # QuadraticBezierCurve and BezierCurve make use of `initial_point` when instantiated.
+        # If we want to define all 3 (quad.) or 4 (cubic) points, we can set `initial_point`
+        # to be the first point given in `point_list` by creating a separate dummy path at that pos.
         with self.drawing_context(debug_stream=debug_stream) as ctxt:
+            points = len(point_list)
+
             p1 = point_list[0]
             x1, y1 = p1[0], p1[1]
+
+            dummy_path = PaintedPath(x1, y1)
+            ctxt.add_item(dummy_path)
 
             p2 = point_list[1]
             x2, y2 = p2[0], p2[1]
@@ -1827,10 +1838,17 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             p3 = point_list[2]
             x3, y3 = p3[0], p3[1]
 
+            if points == 4:
+                p4 = point_list[3]
+                x4, y4 = p4[0], p4[1]
+
             path = PaintedPath(x1, y1)
             path.style.auto_close = closed
 
-            path.curve_to(x1, y1, x2, y2, x3, y3)
+            if points == 4:
+                path.curve_to(x2, y2, x3, y3, x4, y4)
+            elif points == 3:
+                path.curve_to(x2, y2, x2, y2, x3, y3)
 
             ctxt.add_item(path)
 
