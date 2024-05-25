@@ -713,19 +713,19 @@ def test_html_long_ol_bullets(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     html_arabic_indian = f"""
-                <ol start="{10**100}">
-                  <li>Item 1</li>
-                  <li>Item 2</li>
-                  <li>Item 3</li>
-                </ol>
-            """
+            <ol start="{10**100}">
+              <li>Item 1</li>
+              <li>Item 2</li>
+              <li>Item 3</li>
+            </ol>
+        """
     html_roman = f"""
-                    <ol start="{10**5}" type="i">
-                      <li>Item 1</li>
-                      <li>Item 2</li>
-                      <li>Item 3</li>
-                    </ol>
-                """
+            <ol start="{10**5}" type="i">
+              <li>Item 1</li>
+              <li>Item 2</li>
+              <li>Item 3</li>
+            </ol>
+        """
     pdf.write_html(html_arabic_indian)
     pdf.write_html(html_roman, type="i")
     pdf.write_html(html_arabic_indian, tag_indents={"li": 50})
