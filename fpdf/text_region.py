@@ -149,9 +149,12 @@ class Paragraph:  # pylint: disable=function-redefined
         bullet_line_break = MultiLineBreak(
             [bullet_fragment],
             max_width=self._region.get_width,
-            margins=(self.pdf.c_margin, self.pdf.c_margin),
+            margins=(
+                self.pdf.c_margin
+                + (self.indent - bullet_fragment.get_width() - rel_x_displacement),
+                self.pdf.c_margin,
+            ),
             align=self.text_align or self._region.text_align or Align.L,
-            indent=self.indent - bullet_fragment.get_width() - rel_x_displacement,
             wrapmode=self.wrapmode,
             line_height=self.line_height,
             skip_leading_spaces=self.skip_leading_spaces
@@ -174,9 +177,8 @@ class Paragraph:  # pylint: disable=function-redefined
         multi_line_break = MultiLineBreak(
             self._text_fragments,
             max_width=self._region.get_width,
-            margins=(self.pdf.c_margin, self.pdf.c_margin),
+            margins=(self.pdf.c_margin + self.indent, self.pdf.c_margin),
             align=self.text_align or self._region.text_align or Align.L,
-            indent=self.indent,
             print_sh=print_sh,
             wrapmode=self.wrapmode,
             line_height=self.line_height,

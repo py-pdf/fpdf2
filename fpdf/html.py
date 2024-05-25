@@ -277,7 +277,7 @@ class HTML2FPDF(HTMLParser):
         warn_on_tags_not_matching=True,
         tag_indents=None,
         tag_styles=None,
-        list_top_margin=0.1,
+        list_vertical_margin=0.1,
         **_,
     ):
         """
@@ -296,7 +296,7 @@ class HTML2FPDF(HTMLParser):
             warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags
             tag_indents (dict): mapping of HTML tag names to numeric values representing their horizontal left identation
             tag_styles (dict): mapping of HTML tag names to colors
-            list_top_margin (float): size of margins before lists
+            list_vertical_margin (float): size of margins before lists
         """
         super().__init__()
         self.pdf = pdf
@@ -336,7 +336,7 @@ class HTML2FPDF(HTMLParser):
         self.line_height_stack = []
         self.ol_type = []  # when inside a <ol> tag, can be "a", "A", "i", "I" or "1"
         self.bullet = []
-        self.list_top_margin = list_top_margin
+        self.list_vertical_margin = list_vertical_margin
         self.font_color = pdf.text_color.colors255
         self.heading_level = None
         self.heading_above = 0.2  # extra space above heading, relative to font size
@@ -698,7 +698,7 @@ class HTML2FPDF(HTMLParser):
             else:
                 self.line_height_stack.append(None)
             if self.indent == 1:
-                self._new_paragraph(top_margin=self.list_top_margin, line_height=0)
+                self._new_paragraph(top_margin=self.list_vertical_margin, line_height=0)
                 self._write_paragraph("\u00a0")
             self._end_paragraph()
         if tag == "ol":
@@ -715,7 +715,7 @@ class HTML2FPDF(HTMLParser):
             else:
                 self.line_height_stack.append(None)
             if self.indent == 1:
-                self._new_paragraph(top_margin=self.list_top_margin, line_height=0)
+                self._new_paragraph(top_margin=self.list_vertical_margin, line_height=0)
                 self._write_paragraph("\u00a0")
             self._end_paragraph()
         if tag == "li":
