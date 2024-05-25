@@ -141,6 +141,7 @@ class Paragraph:  # pylint: disable=function-redefined
     ):
         if not bullet_string:
             return None
+        self.pdf.normalize_text(bullet_string)
         if not self.pdf.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         (bullet_fragment,) = self.pdf._preload_font_styles(
