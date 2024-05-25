@@ -52,16 +52,22 @@ class LineWrapper(NamedTuple):
 class Bullet:
     def __init__(
         self,
-        bullet_fragment,
+        bullet_fragments,
         text_line,
         bullet_rel_x_displacement: float = 2,
         bullet_rel_y_displacement: float = 0,
     ):
-        self.fragment = bullet_fragment
+        self.fragments = bullet_fragments
         self.text_line = text_line
         self.rel_x_displacement = bullet_rel_x_displacement
         self.rel_y_displacement = bullet_rel_y_displacement
         self.rendered_flag = False
+
+    def get_fragments_width(self):
+        fragments_width = 0
+        for frag in self.fragments:
+            fragments_width += frag.get_width()
+        return fragments_width
 
 
 class Paragraph:  # pylint: disable=function-redefined
@@ -103,7 +109,7 @@ class Paragraph:  # pylint: disable=function-redefined
         self._text_fragments = []
         if bullet_string:
             self.bullet = Bullet(
-                *self.generate_bullet_frag_and_tl(
+                *self.generate_bullet_frags_and_tl(
                     bullet_string, bullet_rel_x_displacement
                 ),
                 bullet_rel_x_displacement,
@@ -136,7 +142,7 @@ class Paragraph:  # pylint: disable=function-redefined
                 frag.link = link
         self._text_fragments.extend(fragments)
 
-    def generate_bullet_frag_and_tl(
+    def generate_bullet_frags_and_tl(
         self, bullet_string: str, rel_x_displacement: float
     ):
         if not bullet_string:
@@ -144,15 +150,16 @@ class Paragraph:  # pylint: disable=function-redefined
         bullet_string = self.pdf.normalize_text(bullet_string)
         if not self.pdf.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
-        (bullet_fragment,) = self.pdf._preload_font_styles(
-            bullet_string, markdown=False
-        )
+        bullet_fragments = self.pdf._preload_font_styles(bullet_string, markdown=False)
+        fragments_width = 0
+        for frag in bullet_fragments:
+            fragments_width += frag.get_width()
         bullet_line_break = MultiLineBreak(
-            [bullet_fragment],
+            bullet_fragments,
             max_width=self._region.get_width,
             margins=(
                 self.pdf.c_margin
-                + (self.indent - bullet_fragment.get_width() - rel_x_displacement),
+                + (self.indent - fragments_width - rel_x_displacement),
                 self.pdf.c_margin,
             ),
             align=self.text_align or self._region.text_align or Align.L,
@@ -162,7 +169,7 @@ class Paragraph:  # pylint: disable=function-redefined
             or self._region.skip_leading_spaces,
         )
         bullet_text_line = bullet_line_break.get_line()
-        return bullet_fragment, bullet_text_line
+        return bullet_fragments, bullet_text_line
 
     def ln(self, h=None):
         if not self.pdf.font_family:
@@ -514,7 +521,7 @@ class TextRegion(ParagraphCollectorMixin):
                 self.pdf.x += cur_paragraph.indent
                 if cur_bullet and not cur_bullet.rendered_flag:
                     bullet_indent_shift = (
-                        cur_bullet.fragment.get_width() + cur_bullet.rel_x_displacement
+                        cur_bullet.get_fragments_width() + cur_bullet.rel_x_displacement
                     )
                     self.pdf.x -= bullet_indent_shift
                     self.pdf.y += cur_bullet.rel_y_displacement
