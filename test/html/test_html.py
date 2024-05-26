@@ -731,3 +731,56 @@ def test_html_long_ol_bullets(tmp_path):
     pdf.write_html(html_arabic_indian, tag_indents={"li": 50})
     pdf.write_html(html_roman, tag_indents={"li": 100})
     assert_pdf_equal(pdf, HERE / "html_long_ol_bullets.pdf", tmp_path)
+
+
+def test_bulleted_paragraphs():
+    pdf = FPDF()
+    pdf.add_page()
+    text_columns = pdf.text_columns(skip_leading_spaces=True)
+    cases = [
+        {"indent": 1, "bullet_string": None},
+        {
+            "indent": 10,
+            "bullet_string": "",
+            "rel_x_displacement": 2,
+            "rel_y_displacement": 0,
+        },
+        {
+            "indent": 20,
+            "bullet_string": "a",
+            "rel_x_displacement": 0,
+            "rel_y_displacement": 2,
+        },
+        {
+            "indent": -20,
+            "bullet_string": "abcd",
+            "rel_x_displacement": 4,
+            "rel_y_displacement": 6,
+        },
+        {
+            "indent": 1000,
+            "bullet_string": "abcd\nfghi",
+            "rel_x_displacement": -3,
+            "rel_y_displacement": -8,
+        },
+    ]
+    pdf.set_font("helvetica", "B", 16)
+    for case in cases:
+        try:
+            text_columns.paragraph(
+                indent=case["indent"], bullet_string=case["bullet_string"]
+            )
+            text_columns.end_paragraph()
+        except FPDFException as error:
+            pytest.fail(
+                f"case: (indent: {case['indent']}, bullet_string: {case['bullet']})\n"
+                + str(error)
+            )
+    bad_bullet_string = "我"
+    with pytest.raises(FPDFException) as error:
+        text_columns.paragraph(indent=1, bullet_string=bad_bullet_string)
+    expected_msg = (
+        f'Character "{bad_bullet_string}" at index {0} in text is outside the range of characters '
+        f'supported by the font used: "{pdf.font_family+pdf.font_style}". Please consider using a Unicode font.'
+    )
+    assert str(error.value) == expected_msg
