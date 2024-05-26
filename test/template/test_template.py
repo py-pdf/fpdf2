@@ -435,6 +435,10 @@ def test_template_badinput():
         with warns(DeprecationWarning):
             tmpl = Template()
             tmpl.render(dest="whatever")
+    with raises(KeyError):
+        tmpl.parse_json(HERE / "mandmissing.json")
+    with raises(TypeError):
+        tmpl.parse_json(HERE / "badtype.json")
 
 
 def test_template_code39(tmp_path):  # issue-161

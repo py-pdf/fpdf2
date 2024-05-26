@@ -2,8 +2,9 @@
 	{
 		"name": "company_logo",
 		"type": "I",
-		"x1": 20,
+		"x1": "20",
 		"y1": 20,
+		"x2": 70,
 		"y2": 70,
 		"font": null,
 		"size": 0,

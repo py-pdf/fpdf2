@@ -148,7 +148,7 @@ class FlexTemplate:
             return False
         return None
 
-    def parse_json(self, infile, encoding='utf-8'):
+    def parse_json(self, infile, encoding="utf-8"):
         """
         Load the template definition from a JSON file.
         The data must be structured as an array of objects, with names and values exactly
