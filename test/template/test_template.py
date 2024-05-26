@@ -137,6 +137,22 @@ def test_template_nominal_hardcoded(tmp_path):
     assert_pdf_equal(tmpl, HERE / "template_nominal_hardcoded.pdf", tmp_path)
 
 
+def test_template_nominal_json(tmp_path):
+    """The contents of "nominal.json" must be exactly equivalent to the
+    literal dict in test_template_nominal_hardcoded() above, since
+    the same test file is used.
+    When changes are necessary, ideally edit the JSON, then generate the Python
+    list-of-dicts from that.
+    """
+    tmpl = Template(format="A4", title="Sample Invoice")
+    tmpl.add_page()
+    tmpl.parse_json(HERE / "nominal.json")
+    tmpl["company_name"] = "Sample Company"
+    assert tmpl["company_name"] == "Sample Company"  # testing Template.__getitem__
+    tmpl["company_logo"] = HERE.parent.parent / "docs/fpdf2-logo.png"
+    assert_pdf_equal(tmpl, HERE / "template_nominal_hardcoded.pdf", tmp_path)
+
+
 def test_template_nominal_csv(tmp_path):
     """Same data as in docs/Templates.md
     The numeric_text tests for a regression."""

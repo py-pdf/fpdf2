@@ -4,7 +4,7 @@ __author__ = "Mariano Reingart <reingart@gmail.com>"
 __copyright__ = "Copyright (C) 2010 Mariano Reingart"
 __license__ = "LGPL 3.0"
 
-import csv, locale, warnings
+import csv, json, locale, warnings
 
 from .deprecation import get_stack_level
 from .errors import FPDFException
@@ -147,6 +147,29 @@ class FlexTemplate:
         if i < 0:
             return False
         return None
+
+    def parse_json(self, infile, encoding='utf-8'):
+        """
+        Load the template definition from a JSON file.
+        The data must be structured as an array of objects, with names and values exactly
+        equivalent to what would get supplied to load_elements(),
+
+        Arguments:
+
+            infile (string): The filename of the CSV file.
+
+            encoding (string): The character encoding of the file. Default is UTF-8.
+        """
+        with open(infile, encoding=encoding) as f:
+            data = json.load(f)
+            for d in data:
+                fgval = d.get("foreground")
+                if fgval and isinstance(fgval, str) and fgval.lower().startswith("0x"):
+                    d["foreground"] = int(fgval, 16)
+                bgval = d.get("background")
+                if bgval and isinstance(bgval, str) and bgval.lower().startswith("0x"):
+                    d["background"] = int(bgval, 16)
+            self.load_elements(data)
 
     def parse_csv(self, infile, delimiter=",", decimal_sep=".", encoding=None):
         """
