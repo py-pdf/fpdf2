@@ -59,7 +59,8 @@
         "doc",
         "infra",
         "maintenance",
-        "question"
+        "question",
+        "bug"
       ]
     },
     {
@@ -1142,6 +1143,42 @@
       "profile": "https://github.com/hyperstown",
       "contributions": [
         "content"
+      ]
+    },
+    {
+      "login": "Clock-Speed",
+      "name": "Clock-Speed",
+      "avatar_url": "https://avatars.githubusercontent.com/u/55024400?v=4",
+      "profile": "https://github.com/Clock-Speed",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "DarekRepos",
+      "name": "Darek",
+      "avatar_url": "https://avatars.githubusercontent.com/u/32545344?v=4",
+      "profile": "https://github.com/DarekRepos",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "carlhiggs",
+      "name": "Carl Higgs",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12984626?v=4",
+      "profile": "http://www.carlhiggs.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "awmc000",
+      "name": "awmc000",
+      "avatar_url": "https://avatars.githubusercontent.com/u/98981929?v=4",
+      "profile": "https://github.com/awmc000",
+      "contributions": [
+        "code"
       ]
     }
   ],

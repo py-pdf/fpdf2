@@ -13,6 +13,8 @@ from typing import NamedTuple
 from fontTools.svgLib.path import parse_path
 from fontTools.pens.basePen import BasePen
 
+from .enums import PathPaintRule
+
 try:
     from defusedxml.ElementTree import fromstring as parse_xml_str
 except ImportError:
@@ -963,6 +965,7 @@ class SVGObject:
         elif shape.tag in xmlns_lookup("svg", "path"):
             clipping_path_shape = PaintedPath()
             apply_styles(clipping_path_shape, shape)
+            clipping_path_shape.paint_rule = PathPaintRule.DONT_PAINT
             svg_path = shape.attrib.get("d")
             if svg_path is not None:
                 svg_path_converter(clipping_path_shape, svg_path)

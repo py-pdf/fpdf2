@@ -133,13 +133,14 @@ def test_bidi_character():
         string = ""
         for char in test_data[0].split(" "):
             string += chr(int(char, 16))
-        assert test_data[1] in ("0", "1", "2")
         if test_data[1] == "0":
             base_direction = TextDirection.LTR
         elif test_data[1] == "1":
             base_direction = TextDirection.RTL
         elif test_data[1] == "2":
             base_direction = None  # auto
+        else:
+            raise ValueError(f"Invalid base direction {test_data[1]}")
 
         if not base_direction:
             # test the auto detect direction algorithm

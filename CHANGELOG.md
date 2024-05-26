@@ -16,9 +16,20 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.7.9] - Not released yet
+## [2.8.0] - Not released yet
 ### Added
-* fix bug causing a warning message in Acrobat
+
+### Fixed
+* [`fpdf.drawing.DeviceCMYK`](https://py-pdf.github.io/fpdf2/fpdf/drawing.html#fpdf.drawing.DeviceCMYK) objects can now be passed to [`FPDF.set_draw_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [`FPDF.set_fill_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) and [`FPDF.set_text_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color) without raising a `ValueError`: [documentation](https://py-pdf.github.io/fpdf2/Text.html#text-formatting).
+
+### Changed
+
+### Deprecated
+
+
+## [2.7.9] - 2024-05-17
+### Added
+* new optional parameter `repeat_headings` for [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table) that indicates whether to print table headings on every page
 * support for overriding paragraph direction on bidirectional text
 * new optional `li_prefix_color` parameter for [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html)
 * support for `start` & `type` attributes of `<ol>` tags, and `type` attribute of `<ul>` tags, when using [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html)
@@ -27,8 +38,11 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now honors `line-height` attributes on `<ol>` & `<li>` elements, or the same CSS property in `style` attributes on those tags
 * allow to define custom `cell_fill_mode` logic for tables: [_Set cells background_ - documentation section](https://py-pdf.github.io/fpdf2/Tables.html#set-cells-background). Also added 2 new values: `TableCellFillMode.EVEN_ROWS` & `TableCellFillMode.EVEN_COLUMNS`: [documentation](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableCellFillMode)
 ### Fixed
+* a bug when rendering vector images with dashed lines that caused a warning message in Adobe Acrobat Reader
 * ordering RTL fragments on bidirectional texts
 * fixed type hint of member `level` in class [`OutlineSection`](https://py-pdf.github.io/fpdf2/fpdf/outline.html#fpdf.outline.OutlineSection) from `str` to `int`.
+* SVG clipping paths being incorrectly painted - _cf._ [issue #1147](https://github.com/py-pdf/fpdf2/issues/1147)]
+* new translation of the tutorial in [Polski](https://py-pdf.github.io/fpdf2/Tutorial-pl.html) - thanks to @DarekRepos
 ### Changed
 * improved the performance of `FPDF.start_section()` - _cf._ [issue #1092](https://github.com/py-pdf/fpdf2/issues/1092)
 ### Deprecated

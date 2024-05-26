@@ -120,7 +120,7 @@ from .text_region import TextRegionMixin, TextColumns
 from .util import get_scale_factor, Padding
 
 # Public global variables:
-FPDF_VERSION = "2.7.8"
+FPDF_VERSION = "2.7.9"
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),
     "a4": (595.28, 841.89),
@@ -679,7 +679,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             return
         #
         # Features must be a dictionary contaning opentype features and a boolean flag
-        # stating wether the feature should be enabled or disabled.
+        # stating whether the feature should be enabled or disabled.
         #
         # e.g. features={"liga": True, "kern": False}
         #
@@ -4053,6 +4053,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 while preserving its original aspect ratio. Defaults to False.
                 Only meaningful if both `w` & `h` are provided.
 
+        If `y` is provided, this method will not trigger any page break;
+        otherwise, auto page break detection will be performed.
+
         Returns: an instance of a subclass of `ImageInfo`.
         """
         if type:
@@ -5059,6 +5062,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             num_heading_rows (number): optional. Sets the number of heading rows, default value is 1. If this value is not 1,
                 first_row_as_headings needs to be True if num_heading_rows>1 and False if num_heading_rows=0. For backwards compatibility,
                 first_row_as_headings is used in case num_heading_rows is 1.
+            repeat_headings (fpdf.enums.TableHeadingsDisplay): optional, indicates whether to print table headings on every page, default to 1.
         """
         table = Table(self, *args, **kwargs)
         yield table
