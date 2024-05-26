@@ -558,17 +558,17 @@ class HTML2FPDF(HTMLParser):
         self._tags_stack.append(tag)
         if tag == "dt":
             self._new_paragraph(
-                line_height=self.line_height_stack[-1]
-                if self.line_height_stack
-                else None,
+                line_height=(
+                    self.line_height_stack[-1] if self.line_height_stack else None
+                ),
             )
             tag = "b"
         if tag == "dd":
             self.follows_heading = True
             self._new_paragraph(
-                line_height=self.line_height_stack[-1]
-                if self.line_height_stack
-                else None,
+                line_height=(
+                    self.line_height_stack[-1] if self.line_height_stack else None
+                ),
                 indent=self.tag_indents["dd"] * (self.indent + 1),
             )
         if tag == "strong":
@@ -735,9 +735,9 @@ class HTML2FPDF(HTMLParser):
                 ol_type = self.ol_type[self.indent - 1]
                 bullet = f"{ol_prefix(ol_type, bullet)}."
             self._new_paragraph(
-                line_height=self.line_height_stack[-1]
-                if self.line_height_stack
-                else None,
+                line_height=(
+                    self.line_height_stack[-1] if self.line_height_stack else None
+                ),
                 indent=self.tag_indents["li"] * self.indent,
                 bullet=bullet,
             )
