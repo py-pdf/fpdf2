@@ -191,7 +191,7 @@ that can be specified when creating a `Template()` or a `FPDF()` instance.
     * _optional_
     * default: false
 * __foreground, background__: text and fill colors (int value, commonly given in hex as 0xRRGGBB)
-    * in JSON, a hex format "0xRRGGBB" value must be given as a string.
+    * in JSON, a decimal value or a HTML style "#RRGGBB" string (6 digits) can be given.
     * _optional_
     * default: foreground 0x000000 = black; background None/empty = transparent
     * Incompatible change: Up to 2.4.5, the default background for text and box elements was solid white, with no way to make them transparent.

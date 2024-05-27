@@ -439,6 +439,8 @@ def test_template_badinput():
         tmpl.parse_json(HERE / "mandmissing.json")
     with raises(TypeError):
         tmpl.parse_json(HERE / "badtype.json")
+    with raises(ValueError):
+        tmpl.parse_json(HERE / "badcolor.json")
 
 
 def test_template_code39(tmp_path):  # issue-161

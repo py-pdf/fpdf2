@@ -44,7 +44,7 @@
 		"italic": false,
 		"underline": false,
 		"foreground": 0,
-		"background": "0x88FF00",
+		"background": "#88FF00",
 		"text": "Lorem ipsum dolor sit amet, consectetur adipisici elit",
 		"priority": 2,
 		"multiline": true
