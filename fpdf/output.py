@@ -377,12 +377,7 @@ class OutputProducer:
         sig_annotation_obj = self._add_annotations_as_objects()
         for embedded_file in fpdf.embedded_files:
             self._add_pdf_obj(embedded_file, "embedded_files")
-        font_objs_per_index = self._add_fonts()
-        img_objs_per_index = self._add_images()
-        gfxstate_objs_per_name = self._add_gfxstates()
-        resources_dict_obj = self._add_resources_dict(
-            font_objs_per_index, img_objs_per_index, gfxstate_objs_per_name
-        )
+        self._insert_resources(page_objs)
         struct_tree_root_obj = self._add_structure_tree()
         outline_dict_obj, outline_items = self._add_document_outline()
         xmp_metadata_obj = self._add_xmp_metadata()
@@ -405,7 +400,6 @@ class OutputProducer:
         dests = []
         for page_obj in page_objs:
             page_obj.parent = pages_root_obj
-            page_obj.resources = resources_dict_obj
             for annot in page_obj.annots:
                 page_dests = []
                 if annot.dest:
@@ -788,6 +782,39 @@ class OutputProducer:
             self._add_pdf_obj(gfxstate_obj, "gfxstate")
             gfxstate_objs_per_name[name] = gfxstate_obj
         return gfxstate_objs_per_name
+
+    def _insert_resources(self, page_objs):
+        font_objs_per_index = self._add_fonts()
+        img_objs_per_index = self._add_images()
+        gfxstate_objs_per_name = self._add_gfxstates()
+        # Insert /Resources dicts:
+        if self.fpdf.single_resources_object:
+            resources_dict_obj = self._add_resources_dict(
+                font_objs_per_index, img_objs_per_index, gfxstate_objs_per_name
+            )
+            for page_obj in page_objs:
+                page_obj.resources = resources_dict_obj
+        else:
+            for page_number, page_obj in enumerate(page_objs, start=1):
+                page_font_objs_per_index = {
+                    font_id: font_objs_per_index[font_id]
+                    for font_id in self.fpdf.fonts_used_per_page_number[page_number]
+                }
+                page_img_objs_per_index = {
+                    img_id: img_objs_per_index[img_id]
+                    for img_id in self.fpdf.images_used_per_page_number[page_number]
+                }
+                page_gfxstate_objs_per_name = {
+                    gfx_name: gfx_state
+                    for (gfx_name, gfx_state) in gfxstate_objs_per_name.items()
+                    if gfx_name
+                    in self.fpdf.graphics_style_names_per_page_number[page_number]
+                }
+                page_obj.resources = self._add_resources_dict(
+                    page_font_objs_per_index,
+                    page_img_objs_per_index,
+                    page_gfxstate_objs_per_name,
+                )
 
     def _add_resources_dict(
         self, font_objs_per_index, img_objs_per_index, gfxstate_objs_per_name

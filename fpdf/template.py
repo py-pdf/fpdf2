@@ -84,6 +84,7 @@ class FlexTemplate:
             "priority": int,
             "multiline": (bool, type(None)),
             "rotate": (int, float),
+            "wrapmode": (str, type(None)),
         }
 
         self.elements = elements
@@ -190,6 +191,7 @@ class FlexTemplate:
             ("priority", int, False),
             ("multiline", self._parse_multiline, False),
             ("rotate", _varsep_float, False),
+            ("wrapmode", str, False),
         )
         self.elements = []
         if encoding is None:
@@ -290,6 +292,7 @@ class FlexTemplate:
             align=element.get("align", ""),
             dry_run=True,
             output="LINES",
+            wrapmode=element.get("wrapmode", "WORD"),
         )
 
     def _text(
@@ -310,6 +313,7 @@ class FlexTemplate:
         foreground=0,
         background=None,
         multiline=None,
+        wrapmode="WORD",
         **__,
     ):
         if not text:
@@ -343,7 +347,13 @@ class FlexTemplate:
             pdf.cell(w=width, h=height, text=text, border=0, align=align, fill=fill)
         elif multiline:  # automatic word - warp
             pdf.multi_cell(
-                w=width, h=height, text=text, border=0, align=align, fill=fill
+                w=width,
+                h=height,
+                text=text,
+                border=0,
+                align=align,
+                fill=fill,
+                wrapmode=wrapmode,
             )
         else:  # trim to fit exactly the space defined
             text = pdf.multi_cell(
@@ -351,6 +361,7 @@ class FlexTemplate:
                 h=height,
                 text=text,
                 align=align,
+                wrapmode=wrapmode,
                 dry_run=True,
                 output="LINES",
             )[0]

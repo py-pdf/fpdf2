@@ -31,7 +31,7 @@ def test_svg_image_fixed_dimensions(tmp_path):
 
 
 def test_svg_image_no_dimensions(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = fpdf.FPDF(format=(350, 350))
     pdf.add_page()
     # This image has a 300x300 viewbox but no width/height:
     pdf.image(SVG_SRCDIR / "SVG_logo_no_dimensions.svg")

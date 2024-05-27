@@ -1,11 +1,9 @@
 from pathlib import Path
 from pytest import raises, warns
-
 import qrcode
-
 from fpdf.template import Template, FPDFException
-
 from ..conftest import assert_pdf_equal
+from test.template.charwrap_test_elements import elements as charwrap_elements
 
 HERE = Path(__file__).resolve().parent
 
@@ -589,3 +587,10 @@ def test_template_split_multicell():
     tmpl = Template(format="A4", unit="pt", elements=elements)
     res = tmpl.split_multicell(text, "multline_text")
     assert res == expected
+
+
+def test_template_wrapmode(tmp_path):
+    # Test that wrap mode can optionally be used to set wrapping using characters instead of words.
+    tmpl = Template(elements=charwrap_elements)
+    tmpl.add_page()
+    assert_pdf_equal(tmpl, HERE / "template_wrapmode.pdf", tmp_path)

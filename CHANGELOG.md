@@ -18,17 +18,21 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.0] - Not released yet
 ### Added
-
+* support to optionally set `wrapmode` in templates (default `"WORD"` can optionally be set to `"CHAR"` to support wrapping on characters for scripts like Chinese or Japanese) - _cf._ [#1159](https://github.com/py-pdf/fpdf2/issues/1159)
 ### Fixed
 * [`fpdf.drawing.DeviceCMYK`](https://py-pdf.github.io/fpdf2/fpdf/drawing.html#fpdf.drawing.DeviceCMYK) objects can now be passed to [`FPDF.set_draw_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [`FPDF.set_fill_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) and [`FPDF.set_text_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color) without raising a `ValueError`: [documentation](https://py-pdf.github.io/fpdf2/Text.html#text-formatting).
+* individual `/Resources` directories are now properly created for each document page. This change ensures better compliance with the PDF specification but results in a slight increase in the size of PDF documents. You can still use the old behavior by setting `FPDF().single_resources_object = True`.
 * Fixed incoherent indentation of long list entries - _cf._ [issue #1073](https://github.com/py-pdf/fpdf2/issues/1073)
 
 ### Changed
+* [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html) now raises an error when a single row is too high to be rendered on a single page
 * `HTML2FPDF.handle_starttag()` now generates one `Paragraph` object for every `<li>` HTML element. Margins above lists are now handled with `<ul>` and `<ol>` tags.
 * `HTML2FPDF.tag_indents` can now be non-integer. Indentation of HTML elements is now independent of font size and bullet strings.
 
 ### Deprecated
 
+## [2.7.10] - 2024-05-18
+### Added
 
 ## [2.7.9] - 2024-05-17
 ### Added
