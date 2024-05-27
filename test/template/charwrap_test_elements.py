@@ -43,7 +43,7 @@ elements = [
         "y1": 100,
         "x2": 170,
         "y2": 105,
-        "text": "If multiline is True and the wrapmode argument is provided, it should result in "
+        "text": "If multiline is True and the wrapmode is 'CHAR', it should result in "
         + "wrapping based on characters instead of words, regardless of language (i.e. even though "
         + "this is designed to support scripts like Chinese and Japanese, wrapping long sentences "
         + "like this in English still demonstrates functionality.)",
