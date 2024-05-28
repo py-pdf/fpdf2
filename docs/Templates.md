@@ -4,7 +4,7 @@ Templates are predefined documents (like invoices, tax forms, etc.), or parts of
 
 These elements can act as placeholders, so the program can change the default text "filling in" the document.
 
-Besides being defined in code, the elements can also be defined in a CSV file or in a database, so the user can easily adapt the form to his printing needs.
+Besides being defined in code, the elements can also be defined in a CSV file, a JSON file, or in a database, so the user can easily adapt the form to his printing needs.
 
 A template is used like a dict, setting its items' values.
 
@@ -153,8 +153,11 @@ FlexTemplate["company_name"] = "Sample Company"
 
 # Details - Template definition #
 
-A template definition consists of a number of elements, which have the following properties (columns in a CSV, items in a dict, fields in a database).
-Dimensions (except font size, which always uses points) are given in user defined units (default: mm). Those are the units that can be specified when creating a `Template()` or a `FPDF()` instance.
+A template definition consists of a number of elements, which have the
+following properties (columns in a CSV, items in a dict, name/value pairs in a
+JSON object, fields in a database). Dimensions (except font size, which always
+uses points) are given in user defined units (default: mm). Those are the units
+that can be specified when creating a `Template()` or a `FPDF()` instance.
 
 * __name__: placeholder identification (unique text string)
     * _mandatory_
@@ -183,11 +186,12 @@ Dimensions (except font size, which always uses points) are given in user define
     * _optional_
     * default: 10 for text, 2 for 'BC', 1.5 for 'C39'
 * __bold, italic, underline__: text style properties
-    * in elements dict, enabled with True or equivalent value
-    * in csv, only int values, 0 as false, non-0 as true
+    * in dict/JSON, enabled with True/true or equivalent value
+    * in CSV, only int values, 0 as false, non-0 as true
     * _optional_
     * default: false
 * __foreground, background__: text and fill colors (int value, commonly given in hex as 0xRRGGBB)
+    * in JSON, a decimal value or a HTML style "#RRGGBB" string (6 digits) can be given.
     * _optional_
     * default: foreground 0x000000 = black; background None/empty = transparent
     * Incompatible change: Up to 2.4.5, the default background for text and box elements was solid white, with no way to make them transparent.
@@ -203,27 +207,31 @@ Dimensions (except font size, which always uses points) are given in user define
     * _optional_
     * default: 0
 * __multiline__: configure text wrapping
-    * in dicts, None for single line, True for multicells (multiple lines), False trims to exactly fit the space defined
-    * in csv, 0 for single line, >0 for multiple lines, <0 for exact fit
+    * in dicts/JSON, None/null for single line, True/true for multicells (multiple lines), False/false trims to exactly fit the space defined
+    * in CSV, 0 for single line, >0 for multiple lines, <0 for exact fit
     * _optional_
     * default: single line
 * __rotation__: rotate the element in degrees around the top left corner x1/y1 (float)
     * _optional_
     * default: 0.0 - no rotation
+* __wrapmode__: optionally set wrapmode to "CHAR" to support multiline line wrapping on characters instead of words
+    * _optional_
+    * default: 'WORD'
 
 Fields that are not relevant to a specific element type will be ignored there, but if not left empty, they must still adhere to the specified data type (in dicts, string fields may be None).
 
 
 # How to create a template #
 
-A template can be created in 3 ways:
+A template can be created in several ways:
 
-  * By defining everything manually in a hardcoded way as a Python dictionary
-  * By using a template definition in a CSV document and parsing the CSV with Template.parse\_dict()
+  * By defining everything directly as a Python dictionary
+  * By reading the template definition from a JSON document with `.parse_json()`
+  * By reading the template definition from a CSV document with `.parse_csv()`
   * By defining the template in a database (this applies to [Web2Py] (Web2Py.md) integration)
 
 
-# Example - Hardcoded #
+# Example - Python dict #
 
 ```python
 
@@ -233,7 +241,7 @@ from fpdf import Template
 elements = [
     { 'name': 'company_logo', 'type': 'I', 'x1': 20.0, 'y1': 17.0, 'x2': 78.0, 'y2': 30.0, 'font': None, 'size': 0.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': 'logo', 'priority': 2, 'multiline': False},
     { 'name': 'company_name', 'type': 'T', 'x1': 17.0, 'y1': 32.5, 'x2': 115.0, 'y2': 37.5, 'font': 'helvetica', 'size': 12.0, 'bold': 1, 'italic': 0, 'underline': 0,'align': 'C', 'text': '', 'priority': 2, 'multiline': False},
-    { 'name': 'multline_text', 'type': 'T', 'x1': 20, 'y1': 100, 'x2': 40, 'y2': 105, 'font': 'helvetica', 'size': 12, 'bold': 0, 'italic': 0, 'underline': 0, 'background': 0x88ff00, 'align': 'C', 'text': 'Lorem ipsum dolor sit amet, consectetur adipisici elit', 'priority': 2, 'multiline': True},
+    { 'name': 'multline_text', 'type': 'T', 'x1': 20, 'y1': 100, 'x2': 40, 'y2': 105, 'font': 'helvetica', 'size': 12, 'bold': 0, 'italic': 0, 'underline': 0, 'background': 0x88ff00, 'align': 'C', 'text': 'Lorem ipsum dolor sit amet, consectetur adipisici elit', 'priority': 2, 'multiline': True, 'wrapmode': 'WORD'},
     { 'name': 'box', 'type': 'B', 'x1': 15.0, 'y1': 15.0, 'x2': 185.0, 'y2': 260.0, 'font': 'helvetica', 'size': 0.0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 0, 'multiline': False},
     { 'name': 'box_x', 'type': 'B', 'x1': 95.0, 'y1': 15.0, 'x2': 105.0, 'y2': 25.0, 'font': 'helvetica', 'size': 0.0, 'bold': 1, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 2, 'multiline': False},
     { 'name': 'line1', 'type': 'L', 'x1': 100.0, 'y1': 25.0, 'x2': 100.0, 'y2': 57.0, 'font': 'helvetica', 'size': 0, 'bold': 0, 'italic': 0, 'underline': 0, 'align': 'C', 'text': None, 'priority': 3, 'multiline': False},
@@ -256,6 +264,39 @@ f.render("./template.pdf")
 
 See template.py or [Web2Py] (Web2Py.md) for a complete example.
 
+# Example - Elements defined in JSON file #
+
+The JSON file must consist of an array of objects.
+Each object with its name/value pairs define a template element:
+
+```json
+[
+	{
+		"name": "employee_name",
+		"type": "T",
+		"x1": 20,
+		"y1": 75,
+		"x2": 118,
+		"y2": 90,
+		"font": "helvetica",
+		"size": 12,
+		"bold": true,
+		"underline": true,
+		"text": ""
+	}
+]
+```
+
+Then you import and use that template as follows:
+
+```python
+def test_template():
+    f = Template(format="A4", title="Template Demo")
+    f.parse_json("myjsonfile.json")
+    f.add_page()
+    f["employee_name"] = "Joe Doe"
+    return f.render("./template.pdf")
+```
 
 # Example - Elements defined in CSV file #
 You define your elements in a CSV file "mycsvfile.csv"
@@ -272,8 +313,8 @@ rotated;T;21.0;80.0;100.0;84.0;times;10.5;0;0;0;0;;R;ROTATED;0;0;30.0
 ```
 
 Remember that each line represents an element and each field represents one of the properties of the element in the following order:
-('name','type','x1','y1','x2','y2','font','size','bold','italic','underline','foreground','background','align','text','priority', 'multiline', 'rotate')
-As noted above, most fields may be left empty, so a line is valid with only 6 items. The "empty_fields" line of the example demonstrates all that can be left away. In addition, for the barcode types "x2" may be empty.
+('name','type','x1','y1','x2','y2','font','size','bold','italic','underline','foreground','background','align','text','priority', 'multiline', 'rotate', 'wrapmode')
+As noted above, most fields may be left empty, so a line is valid with only 6 items. The "empty\_fields" line of the example demonstrates all that can be left away. In addition, for the barcode types "x2" may be empty.
 
 Then you can use the file like this:
 
@@ -285,5 +326,4 @@ def test_template():
     f.add_page()
     f["name0"] = "Joe Doe"
     return f.render("./template.pdf")
-
 ```
