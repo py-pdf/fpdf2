@@ -59,7 +59,8 @@
         "doc",
         "infra",
         "maintenance",
-        "question"
+        "question",
+        "bug"
       ]
     },
     {
@@ -1167,6 +1168,15 @@
       "name": "Carl Higgs",
       "avatar_url": "https://avatars.githubusercontent.com/u/12984626?v=4",
       "profile": "http://www.carlhiggs.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "awmc000",
+      "name": "awmc000",
+      "avatar_url": "https://avatars.githubusercontent.com/u/98981929?v=4",
+      "profile": "https://github.com/awmc000",
       "contributions": [
         "code"
       ]

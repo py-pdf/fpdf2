@@ -393,7 +393,7 @@ def gray8(g, a=None):
 
 
 def convert_to_device_color(r, g=-1, b=-1):
-    if isinstance(r, (DeviceGray, DeviceRGB)):
+    if isinstance(r, (DeviceCMYK, DeviceGray, DeviceRGB)):
         # Note: in this case, r is also a Sequence
         return r
     if isinstance(r, str) and r.startswith("#"):
