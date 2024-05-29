@@ -1886,7 +1886,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             rule = PathPaintRule.STROKE_FILL_NONZERO
             if style.is_draw and not style.is_fill:
                 rule = PathPaintRule.STROKE
-            elif style.is_fill and not style.is_draw():
+            elif style.is_fill and not style.is_draw:
                 rule = PathPaintRule.FILL_NONZERO
 
             path.style.paint_rule = rule
