@@ -1828,7 +1828,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             style,
         )
 
-    def bezier(self, point_list, debug_stream=None, closed=False):
+    def bezier(self, point_list, debug_stream=None, closed=False, style=None):
         """
         Outputs a quadratic or cubic Bézier curve, defined by three or four coordinates.
 
@@ -1843,11 +1843,20 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 `io.StringIO`.
             closed (bool): True to draw the curve as a closed path, False (default)
                                         for it to be drawn as an open path.
+            style (fpdf.enums.RenderStyle, str): Optional style of rendering. Allowed values are:
+            * `D` or None: draw border. This is the default value.
+            * `F`: fill
+            * `DF` or `FD`: draw and fill
         """
         points = len(point_list)
         if points != 3 and points != 4:
             raise ValueError('point_list should contain 3 tuples for a quadratic curve' 
                              'or 4 tuples for a cubic curve.')
+
+        if style is None:
+            style = RenderStyle.DF
+        else:
+            style = RenderStyle.coerce(style)
 
         """
         QuadraticBezierCurve and BezierCurve make use of `initial_point` when instantiated.
@@ -1872,6 +1881,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 x4, y4 = p4[0], p4[1]
 
             path = PaintedPath(x1, y1)
+
+            # Translate enum style (RenderStyle) into rule (PathPaintRule)
+            if style.is_draw and style.is_fill:
+                rule = PathPaintRule.STROKE_FILL_NONZERO
+            elif style.is_draw:
+                rule = PathPaintRule.STROKE
+            elif style.is_fill:
+                rule = PathPaintRule.FILL_NONZERO
+
+            path.style.paint_rule = rule
             path.style.auto_close = closed
 
             if points == 4:
