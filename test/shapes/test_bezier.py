@@ -12,6 +12,7 @@ def draw_points(pdf, point_lists):
         for p in pl:
             pdf.circle(x=p[0], y=p[1], r=1, style="FD")
 
+
 def test_quadratic_beziers(tmp_path):
     pdf = fpdf.FPDF(unit="mm")
     pdf.add_page()

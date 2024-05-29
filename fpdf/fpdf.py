@@ -1828,7 +1828,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             style,
         )
 
-    def bezier(self, point_list, debug_stream=None, closed=False, style=None):
+    def bezier(self, point_list, closed=False, style=None):
         """
         Outputs a quadratic or cubic Bézier curve, defined by three or four coordinates.
 
@@ -1863,7 +1863,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # QuadraticBezierCurve and BezierCurve make use of `initial_point` when instantiated.
         # If we want to define all 3 (quad.) or 4 (cubic) points, we can set `initial_point`
         # to be the first point given in `point_list` by creating a separate dummy path at that pos.
-        with self.drawing_context(debug_stream=debug_stream) as ctxt:
+        with self.drawing_context() as ctxt:
             p1 = point_list[0]
             x1, y1 = p1[0], p1[1]
 
