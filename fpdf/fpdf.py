@@ -1849,20 +1849,20 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             * `DF` or `FD`: draw and fill
         """
         points = len(point_list)
-        if points != 3 and points != 4:
-            raise ValueError('point_list should contain 3 tuples for a quadratic curve' 
-                             'or 4 tuples for a cubic curve.')
+        if points not in (3, 4):
+            raise ValueError(
+                "point_list should contain 3 tuples for a quadratic curve"
+                "or 4 tuples for a cubic curve."
+            )
 
         if style is None:
             style = RenderStyle.DF
         else:
             style = RenderStyle.coerce(style)
 
-        """
-        QuadraticBezierCurve and BezierCurve make use of `initial_point` when instantiated.
-        If we want to define all 3 (quad.) or 4 (cubic) points, we can set `initial_point`
-        to be the first point given in `point_list` by creating a separate dummy path at that pos.
-        """
+        # QuadraticBezierCurve and BezierCurve make use of `initial_point` when instantiated.
+        # If we want to define all 3 (quad.) or 4 (cubic) points, we can set `initial_point`
+        # to be the first point given in `point_list` by creating a separate dummy path at that pos.
         with self.drawing_context(debug_stream=debug_stream) as ctxt:
             p1 = point_list[0]
             x1, y1 = p1[0], p1[1]
@@ -1883,11 +1883,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             path = PaintedPath(x1, y1)
 
             # Translate enum style (RenderStyle) into rule (PathPaintRule)
-            if style.is_draw and style.is_fill:
-                rule = PathPaintRule.STROKE_FILL_NONZERO
-            elif style.is_draw:
+            rule = PathPaintRule.STROKE_FILL_NONZERO
+            if style.is_draw and not style.is_fill:
                 rule = PathPaintRule.STROKE
-            elif style.is_fill:
+            elif style.is_fill and not style.is_draw():
                 rule = PathPaintRule.FILL_NONZERO
 
             path.style.paint_rule = rule
