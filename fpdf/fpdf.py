@@ -1838,9 +1838,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                                         three or four tuples. The first and last
                                         points are the start and end point. The
                                         middle point(s) are the control point(s).
-            debug_stream (TextIO): print a pretty tree of all items to be rendered
-                to the provided stream. To store the output in a string, use
-                `io.StringIO`.
             closed (bool): True to draw the curve as a closed path, False (default)
                                         for it to be drawn as an open path.
             style (fpdf.enums.RenderStyle, str): Optional style of rendering. Allowed values are:
