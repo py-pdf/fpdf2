@@ -8,11 +8,11 @@ from test.conftest import assert_pdf_equal
 HERE = Path(__file__).resolve().parent
 
 
-def add_cell_page(pdf, cell_text):
+def add_cell_page(pdf, cell_text, h=None):
     """Add a page with with some text to the PDF"""
     pdf.set_font("Helvetica")
     pdf.add_page()
-    pdf.cell(w=10, h=10, text=str(cell_text))
+    pdf.cell(w=10, h=h or 10, text=str(cell_text))
 
 
 def test_unit_default(tmp_path):
@@ -33,7 +33,7 @@ def test_unit_str(tmp_path, unit):
 def test_unit_int(tmp_path):
     """Test creating a PDF with an int unit"""
     pdf = FPDF(unit=144)
-    add_cell_page(pdf, "int = 2 in")
+    add_cell_page(pdf, "int = 2 in", h=5)
     assert_pdf_equal(pdf, HERE / "unit_int.pdf", tmp_path)
 
 
