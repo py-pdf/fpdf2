@@ -72,6 +72,7 @@ from .enums import (
     EncryptionMethod,
     FileAttachmentAnnotationName,
     MethodReturnValue,
+    PageLabelStyle,
     PageLayout,
     PageMode,
     PathPaintRule,
@@ -107,6 +108,7 @@ from .output import (
     OutputProducer,
     PDFPage,
     ZOOM_CONFIGS,
+    PDFPageLabel,
     stream_content_for_raster_image,
 )
 from .recorder import FPDFRecorder
@@ -833,7 +835,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.str_alias_nb_pages = alias
 
     def add_page(
-        self, orientation="", format="", same=False, duration=0, transition=None
+        self,
+        orientation="",
+        format="",
+        same=False,
+        duration=0,
+        transition=None,
+        label_style=None,
+        label_prefix=None,
+        label_start=None,
     ):
         """
         Adds a new page to the document.
@@ -940,8 +950,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self._write_dash_pattern(
                 dash_pattern["dash"], dash_pattern["gap"], dash_pattern["phase"]
             )
-
         # END Page header
+
+        if label_style or label_prefix or label_start:
+            label_style = PageLabelStyle.coerce(label_style, case_sensitive=True)
+            self.pages[self.page].set_page_label(
+                PDFPageLabel(label_style, label_prefix, label_start)
+            )
 
     def _beginpage(
         self, orientation, format, same, duration, transition, new_page=True

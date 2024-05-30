@@ -14,7 +14,7 @@ from contextlib import contextmanager
 from io import BytesIO
 
 from .annotations import PDFAnnotation
-from .enums import SignatureFlag
+from .enums import PageLabelStyle, SignatureFlag
 from .errors import FPDFException
 from .image_datastructures import RasterImageInfo
 from .outline import build_outline_objs
@@ -243,6 +243,7 @@ class PDFPage(PDFObject):
         "_index",
         "_width_pt",
         "_height_pt",
+        "_page_label",
     )
 
     def __init__(
@@ -265,6 +266,7 @@ class PDFPage(PDFObject):
         self.parent = None  # must always be set before calling .serialize()
         self._index = index
         self._width_pt, self._height_pt = None, None
+        self._page_label = None
 
     def index(self):
         return self._index
@@ -276,6 +278,31 @@ class PDFPage(PDFObject):
     def set_dimensions(self, width_pt, height_pt):
         "Accepts a pair (width, height) in the unit specified to FPDF constructor"
         self._width_pt, self._height_pt = width_pt, height_pt
+
+    def set_page_label(self, label):
+        self._page_label = label
+
+
+class PDFPageLabel:
+    __slots__ = ["_style", "_prefix", "st"]
+
+    def __init__(
+        self, label_style: PageLabelStyle, label_prefix: str, label_start: int
+    ):
+        self._style = label_style
+        self._prefix = label_prefix
+        self.st = label_start
+
+    @property
+    def s(self):
+        return Name(self._style.value) if self._style else None
+
+    @property
+    def p(self):
+        return PDFString(self._prefix) if self._prefix else None
+
+    def serialize(self):
+        return build_obj_dict({key: getattr(self, key) for key in dir(self)})
 
 
 class PDFPagesRoot(PDFObject):
@@ -975,6 +1002,15 @@ class OutputProducer:
             ]
             catalog_obj.names = pdf_dict(
                 {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(file_spec_names)})}
+            )
+        page_labels = [
+            f"{seq} {pdf_dict(page[1]._page_label.serialize())}"
+            for (seq, page) in enumerate(fpdf.pages.items())
+            if page[1]._page_label
+        ]
+        if page_labels:
+            catalog_obj.page_labels = pdf_dict(
+                {"/Nums": PDFArray(page_labels).serialize()}
             )
 
     @contextmanager

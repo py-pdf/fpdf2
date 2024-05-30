@@ -19,7 +19,7 @@ class CoerciveEnum(Enum):
     "An enumeration that provides a helper to coerce strings into enumeration members."
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls, value, case_sensitive=False):
         """
         Attempt to coerce `value` into a member of this enumeration.
 
@@ -48,7 +48,7 @@ class CoerciveEnum(Enum):
             except ValueError:
                 pass
             try:
-                return cls[value.upper()]
+                return cls[value] if case_sensitive else cls[value.upper()]
             except KeyError:
                 pass
 
@@ -193,7 +193,7 @@ class Align(CoerciveEnum):
     "Justify text"
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls, value, case_sensitive=False):
         if value == "":
             return cls.L
         return super(cls, cls).coerce(value)
@@ -213,7 +213,7 @@ class VAlign(CoerciveEnum):
     "Place text at the bottom of the cell, but obey the cells padding"
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls, value, case_sensitive=False):
         if value == "":
             return cls.M
         return super(cls, cls).coerce(value)
@@ -332,7 +332,7 @@ class TableCellFillMode(CoerciveEnum):
     "Fill only table cells in even columns"
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls, value, case_sensitive=False):
         "Any class that has a .should_fill_cell() method is considered a valid 'TableCellFillMode' (duck-typing)"
         if callable(getattr(value, "should_fill_cell", None)):
             return value
@@ -404,7 +404,7 @@ class RenderStyle(CoerciveEnum):
         return self in (self.F, self.DF)
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls, value, case_sensitive=False):
         if not value:
             return cls.D
         if value == "FD":
@@ -938,3 +938,25 @@ class TextDirection(CoerciveEnum):
 
     BTT = intern("BTT")
     "bottom to top"
+
+
+class PageLabelStyle(CoerciveEnum):
+    "Style of the page label"
+
+    NUMBER = intern("D")
+    "decimal arabic numerals"
+
+    UPPER_ROMAN = intern("R")
+    "uppercase roman numerals"
+
+    LOWER_ROMAN = intern("r")
+    "lowercase roman numerals"
+
+    UPPER_LETTER = intern("A")
+    "uppercase letters A to Z, AA to ZZ, AAA to ZZZ and so on"
+
+    LOWER_LETTER = intern("a")
+    "uppercase letters a to z, aa to zz, aaa to zzz and so on"
+
+    NONE = None
+    "no label"
