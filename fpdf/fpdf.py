@@ -8,7 +8,15 @@
 # * Maintainer:  David Alexander (daveankin@gmail.com) et al since 2017 est. *
 # * Maintainer:  Lucas Cimon et al since 2021 est.                           *
 # ****************************************************************************
-import hashlib, io, logging, math, os, re, sys, types, warnings
+import hashlib
+import io
+import logging
+import math
+import os
+import re
+import sys
+import types
+import warnings
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -17,11 +25,11 @@ from math import isclose
 from numbers import Number
 from os.path import splitext
 from pathlib import Path
-from typing import Callable, Iterator, NamedTuple, Optional, Union
+from typing import Callable, Dict, Iterator, NamedTuple, Optional, Union
 
 try:
-    from endesive import signer
     from cryptography.hazmat.primitives.serialization import pkcs12
+    from endesive import signer
 except ImportError:
     pkcs12, signer = None, None
 
@@ -39,26 +47,26 @@ except ImportError:
 
 from .actions import URIAction
 from .annotations import (
+    DEFAULT_ANNOT_FLAGS,
     AnnotationDict,
     PDFAnnotation,
     PDFEmbeddedFile,
-    DEFAULT_ANNOT_FLAGS,
 )
 from .bidi import BidiParagraph, auto_detect_base_direction
 from .deprecation import (
-    support_deprecated_txt_arg,
-    get_stack_level,
     WarnOnDeprecatedModuleAttributes,
+    get_stack_level,
+    support_deprecated_txt_arg,
 )
 from .drawing import (
-    convert_to_device_color,
     DeviceRGB,
+    DrawingContext,
     GraphicsStateDictRegistry,
     GraphicsStyle,
-    DrawingContext,
     PaintedPath,
     Point,
     Transform,
+    convert_to_device_color,
 )
 from .encryption import StandardSecurityHandler
 from .enums import (
@@ -101,13 +109,13 @@ from .image_parsing import (
     load_image,
     preload_image,
 )
-from .linearization import LinearizedOutputProducer
 from .line_break import Fragment, MultiLineBreak, TextLine
+from .linearization import LinearizedOutputProducer
 from .outline import OutlineSection
 from .output import (
+    ZOOM_CONFIGS,
     OutputProducer,
     PDFPage,
-    ZOOM_CONFIGS,
     PDFPageLabel,
     stream_content_for_raster_image,
 )
@@ -252,7 +260,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         but is less compatible with the PDF spec.
         """
         self.page = 0  # current page number
-        self.pages = {}  # array of PDFPage objects starting at index 1
+        self.pages: Dict[int, PDFPage] = (
+            {}
+        )  # array of PDFPage objects starting at index 1
         self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
         # map page numbers to a set of font indices:
         self.fonts_used_per_page_number = defaultdict(set)
@@ -953,7 +963,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # END Page header
 
         if label_style or label_prefix or label_start:
-            label_style = PageLabelStyle.coerce(label_style, case_sensitive=True)
+            label_style = (
+                PageLabelStyle.coerce(label_style, case_sensitive=True)
+                if label_style
+                else None
+            )
             self.pages[self.page].set_page_label(
                 PDFPageLabel(label_style, label_prefix, label_start)
             )
@@ -1025,22 +1039,21 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         label_start = None
 
         for i in range(len(self.pages), 0, -1):
-            if self.pages[i]._page_label:
-                pl: PDFPageLabel = self.pages[i]._page_label
-                if not label_style and not label_prefix:
-                    if not label_style and pl._style:
-                        label_style = pl._style
-                    if not label_prefix and pl._prefix:
-                        label_prefix = pl._prefix
-                if not label_start and pl.st:
-                    label_start = pl.st + self.page - i
+            if self.pages[i].get_page_label():
+                pl = self.pages[i].get_page_label()
+                label_style = pl.get_style()
+                label_prefix = pl.get_prefix()
+                label_start = (
+                    pl.get_start() + self.page - i
+                    if pl.get_start()
+                    else 1 + self.page - i
+                )
+                break
 
         if not label_style and not label_prefix and not label_start:
             return self.page_no() if default_page_no else ""
 
         ret = label_prefix if label_prefix else ""
-        if not label_start:
-            label_start = 1
         if label_style:
             if label_style == PageLabelStyle.NUMBER:
                 ret += str(label_start)

@@ -6,10 +6,12 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-import gc, os, warnings
+import gc
+import os
+import warnings
 from numbers import Number
 from tracemalloc import get_traced_memory, is_tracing
-from typing import Iterable, Tuple, Union, NamedTuple
+from typing import Iterable, NamedTuple, Tuple, Union
 
 # default block size from src/libImaging/Storage.c:
 PIL_MEM_BLOCK_SIZE_IN_MIB = 16
