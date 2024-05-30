@@ -138,6 +138,13 @@ def int2roman(n):
     return result
 
 
+def int_to_letters(n: int) -> str:
+    "Convert an integer to a letter value (A to Z for the first 26, then AA to ZZ, and so on)"
+    if n > 25:
+        return int_to_letters(int((n / 26) - 1)) + int_to_letters(n % 26)
+    return chr(n + ord("A"))
+
+
 ################################################################################
 ################### Utility functions to track memory usage ####################
 ################################################################################

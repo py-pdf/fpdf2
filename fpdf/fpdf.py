@@ -1019,6 +1019,42 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """Get the current page number"""
         return self.page
 
+    def get_page_label(self, default_page_no=True):
+        label_style = None
+        label_prefix = None
+        label_start = None
+
+        for i in range(len(self.pages), 0, -1):
+            if self.pages[i]._page_label:
+                pl: PDFPageLabel = self.pages[i]._page_label
+                if not label_style and not label_prefix:
+                    if not label_style and pl._style:
+                        label_style = pl._style
+                    if not label_prefix and pl._prefix:
+                        label_prefix = pl._prefix
+                if not label_start and pl.st:
+                    label_start = pl.st + self.page - i
+
+        if not label_style and not label_prefix and not label_start:
+            return self.page_no() if default_page_no else ""
+
+        ret = label_prefix if label_prefix else ""
+        if not label_start:
+            label_start = 1
+        if label_style:
+            if label_style == PageLabelStyle.NUMBER:
+                ret += str(label_start)
+            elif label_style == PageLabelStyle.UPPER_ROMAN:
+                ret += int2roman(label_start)
+            elif label_style == PageLabelStyle.LOWER_ROMAN:
+                ret += int2roman(label_start).lower()
+            elif label_style == PageLabelStyle.UPPER_LETTER:
+                ret += int_to_letters(label_start)
+            elif label_style == PageLabelStyle.LOWER_LETTER:
+                ret += int_to_letters(label_start).lower()
+
+        return ret
+
     def set_draw_color(self, r, g=-1, b=-1):
         """
         Defines the color used for all stroking operations (lines, rectangles and cell borders).

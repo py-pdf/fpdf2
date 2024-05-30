@@ -1008,6 +1008,9 @@ class OutputProducer:
             for (seq, page) in enumerate(fpdf.pages.items())
             if page[1]._page_label
         ]
+        if page_labels and not fpdf.pages[1]._page_label:
+            # If page labels are used, an entry for sequence 0 is mandatory
+            page_labels.insert(0, "0 <<>>")
         if page_labels:
             catalog_obj.page_labels = pdf_dict(
                 {"/Nums": PDFArray(page_labels).serialize()}
