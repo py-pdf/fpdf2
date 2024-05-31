@@ -7,6 +7,7 @@ from .image_datastructures import VectorImageInfo
 from .image_parsing import preload_image
 from .line_break import MultiLineBreak, FORM_FEED
 
+
 # Since Python doesn't have "friend classes"...
 # pylint: disable=protected-access
 
@@ -79,31 +80,12 @@ class Paragraph:  # pylint: disable=function-redefined
         top_margin: float = 0,
         bottom_margin: float = 0,
         indent: float = 0,
-        bullet_rel_x_displacement: float = 2,
-        bullet_rel_y_displacement: float = 0,
+        bullet_rel_x_displacement=None,
+        bullet_rel_y_displacement=None,
         bullet_string: str = "",
         skip_leading_spaces: bool = False,
         wrapmode: WrapMode = None,
     ):
-        """
-        Args:
-            region (TextRegion): an instance of a `TextRegion`
-            text_align (Align, optional): the horizontal alignment of the paragraph.
-            line_height (float, optional): factor by which the line spacing will be different from the font height. (Default: by region)
-            top_margin (float, optional):  how much spacing is added above the paragraph.
-                No spacing will be added at the top of the paragraph if the current y position is at (or above) the
-                top margin of the page. (Default: 0.0)
-            bottom_margin (float, optional): those two values determine how much spacing is added below the paragraph.
-                No spacing will be added at the bottom if it would result in overstepping the bottom margin of the page. (Default: 0.0)
-            indent (float, optional): determines the indentation of the paragraph. (Default: 0.0)
-            bullet_rel_x_displacement (float, optional): determines the relative displacement of the bullet along the x-axis.
-                The distance is between the rightmost point of the bullet to the leftmost point of the paragraph's text. (Default: 2.0)
-            bullet_rel_y_displacement (float, optional): determines the relative displacement of the bullet along the y-axis.
-                The distance is between the topmost point of the bullet and the topmost point of the paragraph's text. (Default: 0.0)
-            bullet_string (str, optional): determines the fragments and text lines of the bullet. (Default: "")
-            skip_leading_spaces (float, optional): removes all space characters at the beginning of each line. (Default: False)
-            wrapmode (WrapMode): determines the way text wrapping is handled. (Default: None)
-        """
         self._region = region
         self.pdf = region.pdf
         if text_align:
@@ -126,6 +108,10 @@ class Paragraph:  # pylint: disable=function-redefined
         else:
             self.wrapmode = WrapMode.coerce(wrapmode)
         self._text_fragments = []
+        if bullet_rel_x_displacement is None:
+            bullet_rel_x_displacement = 6 / self.pdf.k
+        if bullet_rel_y_displacement is None:
+            bullet_rel_y_displacement = 0
         if bullet_string:
             self.bullet = Bullet(
                 *self.generate_bullet_frags_and_tl(
@@ -414,6 +400,20 @@ class ParagraphCollectorMixin:
         bullet_string="",
         wrapmode: WrapMode = None,
     ):
+        """
+        Args:
+            text_align (Align, optional): the horizontal alignment of the paragraph.
+            line_height (float, optional): factor by which the line spacing will be different from the font height. (Default: by region)
+            top_margin (float, optional):  how much spacing is added above the paragraph.
+                No spacing will be added at the top of the paragraph if the current y position is at (or above) the
+                top margin of the page. (Default: 0.0)
+            bottom_margin (float, optional): those two values determine how much spacing is added below the paragraph.
+                No spacing will be added at the bottom if it would result in overstepping the bottom margin of the page. (Default: 0.0)
+            indent (float, optional): determines the indentation of the paragraph. (Default: 0.0)
+            bullet_string (str, optional): determines the fragments and text lines of the bullet. (Default: "")
+            skip_leading_spaces (float, optional): removes all space characters at the beginning of each line. (Default: False)
+            wrapmode (WrapMode): determines the way text wrapping is handled. (Default: None)
+        """
         if self._active_paragraph == "EXPLICIT":
             raise FPDFException("Unable to nest paragraphs.")
         p = Paragraph(

@@ -197,8 +197,10 @@ def test_html_customize_ul(tmp_path):
 
     # 1. Customizing through class attributes:
     class CustomPDF(FPDF):
-        li_tag_indent = 5
-        ul_bullet_char = "\x86"
+        def __init__(self):
+            super().__init__()
+            self.li_tag_indent = 40
+            self.ul_bullet_char = "\x86"
 
     pdf = CustomPDF()
     pdf.set_font_size(30)
@@ -207,12 +209,12 @@ def test_html_customize_ul(tmp_path):
         pdf.write_html(html)
         pdf.ln()
         # 2. Customizing through instance attributes:
-        pdf.li_tag_indent = 10
+        pdf.li_tag_indent = 60
         pdf.ul_bullet_char = "\x9b"
         pdf.write_html(html)
         pdf.ln()
         # 3. Customizing through optional method arguments:
-        for indent, bullet in ((15, "\xac"), (20, "\xb7")):
+        for indent, bullet in ((80, "\xac"), (100, "\xb7")):
             pdf.write_html(html, li_tag_indent=indent, ul_bullet_char=bullet)
             pdf.ln()
     assert_pdf_equal(pdf, HERE / "html_customize_ul.pdf", tmp_path)
@@ -650,7 +652,16 @@ def test_html_blockquote_indent(tmp_path):  # issue-1074
     pdf = FPDF()
     pdf.add_page()
     html = "Text before<blockquote>foo</blockquote>Text afterwards"
-    pdf.write_html(html, tag_indents={"blockquote": 5})
+    pdf.write_html(html, tag_indents={"blockquote": 20})
+    html = (
+        "<blockquote>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod"
+        "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,"
+        "quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu"
+        "fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,"
+        "sunt in culpa qui officia deserunt mollit anim id est laborum.</blockquote>"
+    )
+    pdf.write_html(html, tag_indents={"blockquote": 40})
     assert_pdf_equal(pdf, HERE / "html_blockquote_indent.pdf", tmp_path)
 
 
@@ -658,7 +669,9 @@ def test_html_li_tag_indent(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     with pytest.warns(DeprecationWarning):
-        pdf.write_html("<ul><li>item</li></ul>", li_tag_indent=10)
+        pdf.write_html("<ul><li>item 1</li></ul>", li_tag_indent=40)
+        pdf.write_html("<ul><li>item 2</li></ul>", li_tag_indent=50)
+        pdf.write_html("<ul><li>item 3</li></ul>", li_tag_indent=60)
     assert_pdf_equal(pdf, HERE / "html_li_tag_indent.pdf", tmp_path)
 
 
@@ -731,6 +744,32 @@ def test_html_long_ol_bullets(tmp_path):
     pdf.write_html(html_arabic_indian, tag_indents={"li": 50})
     pdf.write_html(html_roman, tag_indents={"li": 100})
     assert_pdf_equal(pdf, HERE / "html_long_ol_bullets.pdf", tmp_path)
+
+
+def test_html_measurement_units(tmp_path):
+    for unit in ["pt", "mm", "cm", "in"]:
+        pdf = FPDF(unit=unit)
+        pdf.add_page()
+        html = f"""
+                <ul>
+                    <li>This file uses {unit} as the document unit</li>
+                </ul>
+                <ul>
+                    <li>Item 1</li>
+                    <li>Item 2</li>
+                    <li>Item 3</li>
+                </ul>
+                <ol>
+                    <li>Item 1</li>
+                    <li>Item 2</li>
+                    <li>Item 3</li>
+                </ol>
+                <blockquote>Blockquote text</blockquote>
+                <dt>description title</dt>
+                <dd>description details</dd>
+            """
+        pdf.write_html(html)
+        assert_pdf_equal(pdf, HERE / f"html_measurement_units_{unit}.pdf", tmp_path)
 
 
 def test_bulleted_paragraphs():

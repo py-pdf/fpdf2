@@ -36,8 +36,8 @@ DEFAULT_TAG_STYLES = {
 }
 DEFAULT_TAG_INDENTS = {
     "blockquote": 0,
-    "dd": 10,
-    "li": 5,
+    "dd": 30,
+    "li": 30,
 }
 
 # Pattern to substitute whitespace sequences with a single space character each.
@@ -270,8 +270,8 @@ class HTML2FPDF(HTMLParser):
         self,
         pdf,
         image_map=None,
-        li_tag_indent=5,
-        dd_tag_indent=10,
+        li_tag_indent=30,
+        dd_tag_indent=30,
         table_line_separators=False,
         ul_bullet_char=BULLET_WIN1252,
         li_prefix_color=(190, 0, 0),
@@ -280,7 +280,7 @@ class HTML2FPDF(HTMLParser):
         warn_on_tags_not_matching=True,
         tag_indents=None,
         tag_styles=None,
-        list_vertical_margin=0.1,
+        list_vertical_margin=None,
         **_,
     ):
         """
@@ -297,9 +297,11 @@ class HTML2FPDF(HTMLParser):
             heading_sizes (dict): [**DEPRECATED since v2.7.9**] font size per heading level names ("h1", "h2"...) - Set tag_styles instead
             pre_code_font (str): [**DEPRECATED since v2.7.9**] font to use for <pre> & <code> blocks - Set tag_styles instead
             warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags
-            tag_indents (dict): mapping of HTML tag names to numeric values representing their horizontal left identation
+            tag_indents (dict): mapping of HTML tag names to numeric values representing their horizontal left identation.
+                The indent values are in the chosen pdf document units.
             tag_styles (dict): mapping of HTML tag names to colors
-            list_vertical_margin (float): size of margins before lists
+            list_vertical_margin (float): size of margins that precede lists.
+                The margin value is in the chosen pdf document units.
         """
         super().__init__()
         self.pdf = pdf
@@ -339,7 +341,8 @@ class HTML2FPDF(HTMLParser):
         self.line_height_stack = []
         self.ol_type = []  # when inside a <ol> tag, can be "a", "A", "i", "I" or "1"
         self.bullet = []
-        self.list_vertical_margin = list_vertical_margin
+        if list_vertical_margin is None:
+            self.list_vertical_margin = 0.3 / self.pdf.k
         self.font_color = pdf.text_color.colors255
         self.heading_level = None
         self.heading_above = 0.2  # extra space above heading, relative to font size
@@ -356,7 +359,7 @@ class HTML2FPDF(HTMLParser):
         #                    "inserted" is a special attribute indicating that a cell has be inserted in self.table_row
 
         if not tag_indents:
-            tag_indents = {}
+            tag_indents = {k: v / self.pdf.k for k, v in DEFAULT_TAG_INDENTS.items()}
         if dd_tag_indent != DEFAULT_TAG_INDENTS["dd"]:
             warnings.warn(
                 (
@@ -682,8 +685,8 @@ class HTML2FPDF(HTMLParser):
             )
             self.indent += 1
             self._new_paragraph(
-                top_margin=3,
-                bottom_margin=3,
+                top_margin=9 / self.pdf.k,
+                bottom_margin=9 / self.pdf.k,
                 indent=self.tag_indents["blockquote"] * self.indent,
             )
         if tag == "ul":
@@ -722,7 +725,7 @@ class HTML2FPDF(HTMLParser):
                 self._write_paragraph("\u00a0")
             self._end_paragraph()
         if tag == "li":
-            self._ln(2)
+            self._ln(6 / self.pdf.k)
             self.set_text_color(*self.li_prefix_color)
             if self.bullet:
                 bullet = self.bullet[self.indent - 1]
