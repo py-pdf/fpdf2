@@ -18,7 +18,22 @@ from .util import escape_parens
 SOFT_HYPHEN = "\u00ad"
 HYPHEN = "\u002d"
 SPACE = " "
-ZWS = "\u200b"
+OTHER_SPACE_SYMBOLS = [
+    "\u200b",  # | ZERO WIDTH SPACE
+    "\u2000",  # | EN QUAD
+    "\u2001",  # | EM QUAD
+    "\u2002",  # | EN SPACE
+    "\u2003",  # | EM SPACE
+    "\u2004",  # | THREE-PER-EM SPACE
+    "\u2005",  # | FOUR-PER-EM SPACE
+    "\u2006",  # | SIX-PER-EM SPACE
+    "\u2008",  # | PUNCTUATION SPACE
+    "\u2009",  # | THIN SPACE
+    "\u200A",  # | HAIR SPACE
+    "\u205F",  # | MEDIUM MATHEMATICAL SPACE
+    "\u3000",  # | IDEOGRAPHIC SPACE
+    "\u0009",  # | TAB
+]
 NBSP = "\u00a0"
 NEWLINE = "\n"
 FORM_FEED = "\u000c"
@@ -450,7 +465,7 @@ class CurrentLine:
             self.fragments.append(Fragment("", graphics_state, k, url))
         active_fragment = self.fragments[-1]
 
-        if character in [SPACE, ZWS]:
+        if character in [SPACE] + OTHER_SPACE_SYMBOLS:
             self.space_break_hint = SpaceHint(
                 original_fragment_index,
                 original_character_index,
@@ -669,10 +684,9 @@ class MultiLineBreak:
                     trailing_form_feed=character == FORM_FEED,
                 )
             if current_line.width + character_width > max_width:
-                if character in [
-                    SPACE,
-                    ZWS,
-                ]:  # must come first, always drop a current space.
+                if (
+                    character in [SPACE] + OTHER_SPACE_SYMBOLS
+                ):  # must come first, always drop a current space.
                     self.character_index += 1
                     return current_line.manual_break(self.align)
                 if self.wrapmode == WrapMode.CHAR:
