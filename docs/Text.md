@@ -31,7 +31,7 @@ There are a few advanced typesetting features that fpdf doesn't currently suppor
 * Vertical writing - Some writing systems are meant to be written vertically. Doing so is not directly supported. In cases where this just means to stack characters on top of each other (eg. Chinese, Japanese, etc.), client software can implement this by placing each character individuall at the correct location. In cases where the characters are connected with each other (eg. Mongolian), this may be more difficult, if possible at all.
 
 ### Character or Word Based Line Wrapping
-By default, `multi_cell()` and `write()` will wrap lines based on words, using space characters and soft hyphens as separators.
+By default, `multi_cell()` and `write()` will wrap lines based on words, using space characters (' ' or U+200B) and soft hyphens as separators.
 Non-breaking spaces (\U00a0) do not trigger a word wrap, but are otherwise treated exactly as a normal space character.
 For languages like Chinese and Japanese, that don't usually separate their words, character based wrapping is more appropriate.
 In such a case, the argument `wrapmode="CHAR"` can be used (the default is "WORD"), and each line will get broken right before the
