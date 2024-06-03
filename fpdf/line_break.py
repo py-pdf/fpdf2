@@ -450,7 +450,7 @@ class CurrentLine:
             self.fragments.append(Fragment("", graphics_state, k, url))
         active_fragment = self.fragments[-1]
 
-        if character in [SPACE,ZWS]:
+        if character in [SPACE, ZWS]:
             self.space_break_hint = SpaceHint(
                 original_fragment_index,
                 original_character_index,
@@ -669,7 +669,10 @@ class MultiLineBreak:
                     trailing_form_feed=character == FORM_FEED,
                 )
             if current_line.width + character_width > max_width:
-                if character in [SPACE,ZWS]:  # must come first, always drop a current space.
+                if character in [
+                    SPACE,
+                    ZWS,
+                ]:  # must come first, always drop a current space.
                     self.character_index += 1
                     return current_line.manual_break(self.align)
                 if self.wrapmode == WrapMode.CHAR:
