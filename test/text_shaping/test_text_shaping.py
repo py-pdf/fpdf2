@@ -183,3 +183,13 @@ def test_text_shaping_and_offset_rendering(tmp_path):
             pdf.cell(col_width, line_height, f"Cell ({i})")
         pdf.cell(col_width, line_height, f"Cell ({i})")
     assert_pdf_equal(pdf, HERE / "text_shaping_and_offset_rendering.pdf", tmp_path)
+
+
+def test_multilingual_string(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="KhmerOS", fname=HERE / "KhmerOS.ttf")
+    pdf.set_font("KhmerOS", size=30)
+    pdf.set_text_shaping(True)
+    pdf.cell(text="Khmer: សួស្តី ពិភពលោក")
+    assert_pdf_equal(pdf, HERE / "multilingual_string.pdf", tmp_path)

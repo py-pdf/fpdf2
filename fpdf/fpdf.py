@@ -116,6 +116,7 @@ from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ, PDFArray, PDFDate
 from .table import Table, draw_box_borders
 from .text_region import TextRegionMixin, TextColumns
+from .unicode_script import UnicodeScript, get_unicode_script
 from .util import get_scale_factor, Padding
 
 # Public global variables:
@@ -3379,7 +3380,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def _parse_chars(self, text: str, markdown: bool) -> Iterator[Fragment]:
         "Split text into fragments"
-        if not markdown and (not self.is_ttf_font or not self._fallback_font_ids):
+        if not markdown and not self.is_ttf_font:
             yield Fragment(text, self._get_current_graphics_state(), self.k)
             return
         txt_frag, in_bold, in_italics, in_underline = (
@@ -3389,9 +3390,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             bool(self.underline),
         )
         current_fallback_font = None
+        current_text_script = None
 
         def frag():
-            nonlocal txt_frag, current_fallback_font
+            nonlocal txt_frag, current_fallback_font, current_text_script
             gstate = self._get_current_graphics_state()
             gstate["font_style"] = ("B" if in_bold else "") + (
                 "I" if in_italics else ""
@@ -3406,6 +3408,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 )
                 gstate["current_font"] = self.fonts[current_fallback_font]
                 current_fallback_font = None
+                current_text_script = None
             fragment = Fragment(
                 txt_frag,
                 gstate,
@@ -3426,6 +3429,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 self.MARKDOWN_UNDERLINE_MARKER,
             )
             half_marker = text[0]
+            text_script = get_unicode_script(text[0])
+            if text_script not in (
+                UnicodeScript.COMMON,
+                UnicodeScript.UNKNOWN,
+                current_text_script,
+            ):
+                if txt_frag and current_text_script:
+                    yield frag()
+                current_text_script = text_script
+
             # Check that previous & next characters are not identical to the marker:
             if markdown:
                 if (
@@ -5132,6 +5145,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
+        # Clear cache of cached functions to free up memory after output
+        get_unicode_script.cache_clear()
         # Finish document if necessary:
         if not self.buffer:
             if self.page == 0:
