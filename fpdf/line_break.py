@@ -18,7 +18,8 @@ from .util import escape_parens
 SOFT_HYPHEN = "\u00ad"
 HYPHEN = "\u002d"
 SPACE = " "
-OTHER_SPACE_SYMBOLS = [
+BREAKING_SPACE_SYMBOLS = [
+    " ",
     "\u200b",  # | ZERO WIDTH SPACE
     "\u2000",  # | EN QUAD
     "\u2001",  # | EM QUAD
@@ -465,7 +466,7 @@ class CurrentLine:
             self.fragments.append(Fragment("", graphics_state, k, url))
         active_fragment = self.fragments[-1]
 
-        if character in [SPACE] + OTHER_SPACE_SYMBOLS:
+        if character in BREAKING_SPACE_SYMBOLS:
             self.space_break_hint = SpaceHint(
                 original_fragment_index,
                 original_character_index,
@@ -685,7 +686,7 @@ class MultiLineBreak:
                 )
             if current_line.width + character_width > max_width:
                 if (
-                    character in [SPACE] + OTHER_SPACE_SYMBOLS
+                    character in BREAKING_SPACE_SYMBOLS
                 ):  # must come first, always drop a current space.
                     self.character_index += 1
                     return current_line.manual_break(self.align)

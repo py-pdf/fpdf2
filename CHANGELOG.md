@@ -31,6 +31,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * [`FPDF.local_context()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.local_context) used to leak styling during page breaks, when rendering `footer()` & `header()`
 * [`fpdf.drawing.DeviceCMYK`](https://py-pdf.github.io/fpdf2/fpdf/drawing.html#fpdf.drawing.DeviceCMYK) objects can now be passed to [`FPDF.set_draw_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [`FPDF.set_fill_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) and [`FPDF.set_text_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color) without raising a `ValueError`: [documentation](https://py-pdf.github.io/fpdf2/Text.html#text-formatting).
 <<<<<<< HEAD
+<<<<<<< HEAD
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): fixing rendering of `<hr>` tags, that do not trigger a page break anymore
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): fixed automatic page break when an image does not have enough vertical space to be rendered on a page
 * individual `/Resources` directories are now properly created for each document page. This change ensures better compliance with the PDF specification but results in a slight increase in the size of PDF documents. You can still use the old behavior by setting `FPDF().single_resources_object = True`
@@ -39,6 +40,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * default values for `top_margin` and `bottom_margin` in `HTML2FPDF._new_paragraph()` calls are now correctly converted into chosen document units.
 ### Removed
 * an obscure and undocumented [feature](https://github.com/py-pdf/fpdf2/issues/1198) of [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html), which used to magically pass local variables as arguments.
+* individual `/Resources` directories are now properly created for each document page. This change ensures better compliance with the PDF specification but results in a slight increase in the size of PDF documents. You can still use the old behavior by setting `FPDF().single_resources_object = True`.
+* Wrapping words on spaces now considers all common space symbols in addition to regular spaces (' '), addressing issues with word-wrapping for languages like Thai, as per [#1190](https://github.com/py-pdf/fpdf2/issues/1190) and [#1191](https://github.com/py-pdf/fpdf2/pull/1191).
+>>>>>>> 0a5de1c6 (updated line_break.py to list BREAKING_SPACE_SYMBOLS as a single list, and updated CHANGELOG.md to refer to 'all common space symbols' as per #1191)
 ### Changed
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html) now raises an error when a single row is too high to be rendered on a single page
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): `tag_indents` can now be non-integer. Indentation of HTML elements is now independent of font size and bullet strings.
