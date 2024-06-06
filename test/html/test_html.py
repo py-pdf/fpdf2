@@ -765,8 +765,8 @@ def test_html_measurement_units(tmp_path):
                     <li>Item 3</li>
                 </ol>
                 <blockquote>Blockquote text</blockquote>
-                <dt>description title</dt>
-                <dd>description details</dd>
+                <dt>Description title</dt>
+                <dd>Description details</dd>
             """
         pdf.write_html(html)
         assert_pdf_equal(pdf, HERE / f"html_measurement_units_{unit}.pdf", tmp_path)
