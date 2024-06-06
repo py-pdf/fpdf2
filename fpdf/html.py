@@ -370,7 +370,7 @@ class HTML2FPDF(HTMLParser):
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
-            tag_indents["dd"] = dd_tag_indent / self.pdf.k
+            tag_indents["dd"] = dd_tag_indent
         if li_tag_indent != DEFAULT_TAG_INDENTS["li"]:
             warnings.warn(
                 (
@@ -381,7 +381,7 @@ class HTML2FPDF(HTMLParser):
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
-            tag_indents["li"] = li_tag_indent / self.pdf.k
+            tag_indents["li"] = li_tag_indent
         for tag in tag_indents:
             if tag not in DEFAULT_TAG_INDENTS:
                 raise NotImplementedError(
