@@ -161,6 +161,19 @@ pdf.output("solid_arc.pdf")
 ```
 ![](solid_arc.png)
 
+## Bezier Curve ##
+Using [`bezier()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.bezier) to create a cubic Bezier curve:
+```python
+from fpdf import FPDF
+pdf = FPDF()
+pdf.add_page()
+pdf.set_fill_color(r=255, g=0, b=255)
+pdf.bezier([(20, 80), (40, 20), (60, 80)])
+pdf.output("bezier.pdf")
+```
+
+![](bezier.png)
+
 ## Regular Polygon ##
 
 Using [`regular_polygon()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.regular_polygon):

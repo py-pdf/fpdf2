@@ -4,7 +4,7 @@ __author__ = "Mariano Reingart <reingart@gmail.com>"
 __copyright__ = "Copyright (C) 2010 Mariano Reingart"
 __license__ = "LGPL 3.0"
 
-import csv, locale, warnings
+import os, csv, json, locale, warnings
 
 from .deprecation import get_stack_level
 from .errors import FPDFException
@@ -148,13 +148,52 @@ class FlexTemplate:
             return False
         return None
 
-    def parse_csv(self, infile, delimiter=",", decimal_sep=".", encoding=None):
+    def parse_json(self, infile: os.PathLike, encoding: str = "utf-8"):
+        """
+        Load the template definition from a JSON file.
+        The data must be structured as an array of objects, with names and values exactly
+        equivalent to what would get supplied to load_elements(),
+
+        Arguments:
+
+            infile (string or path-like object): The filepath of the JSON file.
+
+            encoding (string): The character encoding of the file. Default is UTF-8.
+        """
+        with open(infile, encoding=encoding) as f:
+            data = json.load(f)
+            for d in data:
+                fgval = d.get("foreground")
+                if fgval and isinstance(fgval, str):
+                    if fgval.lower().startswith("#"):
+                        d["foreground"] = int(fgval[1:], 16)
+                    else:
+                        raise ValueError(
+                            "If foreground is a string, it must have the form '#rrggbb'."
+                        )
+                bgval = d.get("background")
+                if bgval and isinstance(bgval, str):
+                    if bgval.lower().startswith("#"):
+                        d["background"] = int(bgval[1:], 16)
+                    else:
+                        raise ValueError(
+                            "If background is a string, it must have the form '#rrggbb'."
+                        )
+            self.load_elements(data)
+
+    def parse_csv(
+        self,
+        infile: os.PathLike,
+        delimiter: str = ",",
+        decimal_sep: str = ".",
+        encoding: str = None,
+    ):
         """
         Load the template definition from a CSV file.
 
         Arguments:
 
-            infile (string): The filename of the CSV file.
+            infile (string or path-like object): The filepath of the CSV file.
 
             delimiter (single character): The character that seperates the fields in the CSV file:
                 Usually a comma, semicolon, or tab.

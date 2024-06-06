@@ -116,6 +116,7 @@ from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ, PDFArray, PDFDate
 from .table import Table, draw_box_borders
 from .text_region import TextRegionMixin, TextColumns
+from .unicode_script import UnicodeScript, get_unicode_script
 from .util import get_scale_factor, Padding
 
 # Public global variables:
@@ -1828,6 +1829,74 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             style,
         )
 
+    def bezier(self, point_list, closed=False, style=None):
+        """
+        Outputs a quadratic or cubic Bézier curve, defined by three or four coordinates.
+
+        Args:
+            point_list (list of tuples): List of Abscissa and Ordinate of
+                                        segments that should be drawn. Should be
+                                        three or four tuples. The first and last
+                                        points are the start and end point. The
+                                        middle point(s) are the control point(s).
+            closed (bool): True to draw the curve as a closed path, False (default)
+                                        for it to be drawn as an open path.
+            style (fpdf.enums.RenderStyle, str): Optional style of rendering. Allowed values are:
+            * `D` or None: draw border. This is the default value.
+            * `F`: fill
+            * `DF` or `FD`: draw and fill
+        """
+        points = len(point_list)
+        if points not in (3, 4):
+            raise ValueError(
+                "point_list should contain 3 tuples for a quadratic curve"
+                "or 4 tuples for a cubic curve."
+            )
+
+        if style is None:
+            style = RenderStyle.DF
+        else:
+            style = RenderStyle.coerce(style)
+
+        # QuadraticBezierCurve and BezierCurve make use of `initial_point` when instantiated.
+        # If we want to define all 3 (quad.) or 4 (cubic) points, we can set `initial_point`
+        # to be the first point given in `point_list` by creating a separate dummy path at that pos.
+        with self.drawing_context() as ctxt:
+            p1 = point_list[0]
+            x1, y1 = p1[0], p1[1]
+
+            dummy_path = PaintedPath(x1, y1)
+            ctxt.add_item(dummy_path)
+
+            p2 = point_list[1]
+            x2, y2 = p2[0], p2[1]
+
+            p3 = point_list[2]
+            x3, y3 = p3[0], p3[1]
+
+            if points == 4:
+                p4 = point_list[3]
+                x4, y4 = p4[0], p4[1]
+
+            path = PaintedPath(x1, y1)
+
+            # Translate enum style (RenderStyle) into rule (PathPaintRule)
+            rule = PathPaintRule.STROKE_FILL_NONZERO
+            if style.is_draw and not style.is_fill:
+                rule = PathPaintRule.STROKE
+            elif style.is_fill and not style.is_draw:
+                rule = PathPaintRule.FILL_NONZERO
+
+            path.style.paint_rule = rule
+            path.style.auto_close = closed
+
+            if points == 4:
+                path.curve_to(x2, y2, x3, y3, x4, y4)
+            elif points == 3:
+                path.curve_to(x2, y2, x2, y2, x3, y3)
+
+            ctxt.add_item(path)
+
     def add_font(self, family=None, style="", fname=None, uni="DEPRECATED"):
         """
         Imports a TrueType or OpenType font and makes it available
@@ -3311,7 +3380,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def _parse_chars(self, text: str, markdown: bool) -> Iterator[Fragment]:
         "Split text into fragments"
-        if not markdown and (not self.is_ttf_font or not self._fallback_font_ids):
+        if not markdown and not self.is_ttf_font:
             yield Fragment(text, self._get_current_graphics_state(), self.k)
             return
         txt_frag, in_bold, in_italics, in_underline = (
@@ -3321,9 +3390,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             bool(self.underline),
         )
         current_fallback_font = None
+        current_text_script = None
 
         def frag():
-            nonlocal txt_frag, current_fallback_font
+            nonlocal txt_frag, current_fallback_font, current_text_script
             gstate = self._get_current_graphics_state()
             gstate["font_style"] = ("B" if in_bold else "") + (
                 "I" if in_italics else ""
@@ -3338,6 +3408,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 )
                 gstate["current_font"] = self.fonts[current_fallback_font]
                 current_fallback_font = None
+                current_text_script = None
             fragment = Fragment(
                 txt_frag,
                 gstate,
@@ -3358,6 +3429,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 self.MARKDOWN_UNDERLINE_MARKER,
             )
             half_marker = text[0]
+            text_script = get_unicode_script(text[0])
+            if text_script not in (
+                UnicodeScript.COMMON,
+                UnicodeScript.UNKNOWN,
+                current_text_script,
+            ):
+                if txt_frag and current_text_script:
+                    yield frag()
+                current_text_script = text_script
+
             # Check that previous & next characters are not identical to the marker:
             if markdown:
                 if (
@@ -5064,6 +5145,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
+        # Clear cache of cached functions to free up memory after output
+        get_unicode_script.cache_clear()
         # Finish document if necessary:
         if not self.buffer:
             if self.page == 0:
