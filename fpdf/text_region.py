@@ -55,13 +55,13 @@ class Bullet:
         self,
         bullet_fragments,
         text_line,
-        bullet_rel_x_displacement: float = 2,
-        bullet_rel_y_displacement: float = 0,
+        bullet_r_margin: float = 2,
+        bullet_t_margin: float = 0,
     ):
         self.fragments = bullet_fragments
         self.text_line = text_line
-        self.rel_x_displacement = bullet_rel_x_displacement
-        self.rel_y_displacement = bullet_rel_y_displacement
+        self.r_margin = bullet_r_margin
+        self.t_margin = bullet_t_margin
         self.rendered_flag = False
 
     def get_fragments_width(self):
@@ -80,8 +80,8 @@ class Paragraph:  # pylint: disable=function-redefined
         top_margin: float = 0,
         bottom_margin: float = 0,
         indent: float = 0,
-        bullet_rel_x_displacement=None,
-        bullet_rel_y_displacement=None,
+        bullet_r_margin=None,
+        bullet_t_margin=None,
         bullet_string: str = "",
         skip_leading_spaces: bool = False,
         wrapmode: WrapMode = None,
@@ -108,17 +108,15 @@ class Paragraph:  # pylint: disable=function-redefined
         else:
             self.wrapmode = WrapMode.coerce(wrapmode)
         self._text_fragments = []
-        if bullet_rel_x_displacement is None:
-            bullet_rel_x_displacement = 6 / self.pdf.k
-        if bullet_rel_y_displacement is None:
-            bullet_rel_y_displacement = 0
+        if bullet_r_margin is None:
+            bullet_r_margin = 6 / self.pdf.k
+        if bullet_t_margin is None:
+            bullet_t_margin = 0
         if bullet_string:
             self.bullet = Bullet(
-                *self.generate_bullet_frags_and_tl(
-                    bullet_string, bullet_rel_x_displacement
-                ),
-                bullet_rel_x_displacement,
-                bullet_rel_y_displacement,
+                *self.generate_bullet_frags_and_tl(bullet_string, bullet_r_margin),
+                bullet_r_margin,
+                bullet_t_margin,
             )
         else:
             self.bullet = None
@@ -540,10 +538,10 @@ class TextRegion(ParagraphCollectorMixin):
                 self.pdf.x += cur_paragraph.indent
                 if cur_bullet and not cur_bullet.rendered_flag:
                     bullet_indent_shift = (
-                        cur_bullet.get_fragments_width() + cur_bullet.rel_x_displacement
+                        cur_bullet.get_fragments_width() + cur_bullet.r_margin
                     )
                     self.pdf.x -= bullet_indent_shift
-                    self.pdf.y += cur_bullet.rel_y_displacement
+                    self.pdf.y += cur_bullet.t_margin
                     self.pdf._render_styled_text_line(
                         cur_bullet.text_line,
                         h=cur_bullet.text_line.height,
@@ -554,7 +552,7 @@ class TextRegion(ParagraphCollectorMixin):
                     )
                     cur_bullet.rendered_flag = True
                     self.pdf.x += bullet_indent_shift
-                    self.pdf.y -= cur_bullet.rel_y_displacement
+                    self.pdf.y -= cur_bullet.t_margin
                 # Don't check the return, we never render past the bottom here.
                 self.pdf._render_styled_text_line(
                     text_line,
