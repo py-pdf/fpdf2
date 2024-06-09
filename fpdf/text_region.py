@@ -6,6 +6,7 @@ from .enums import Align, XPos, YPos, WrapMode
 from .image_datastructures import VectorImageInfo
 from .image_parsing import preload_image
 from .line_break import MultiLineBreak, FORM_FEED
+from .util import get_scale_factor
 
 
 # Since Python doesn't have "friend classes"...
@@ -55,13 +56,11 @@ class Bullet:
         self,
         bullet_fragments,
         text_line,
-        bullet_r_margin: float = 2,
-        bullet_t_margin: float = 0,
+        bullet_r_margin,
     ):
         self.fragments = bullet_fragments
         self.text_line = text_line
         self.r_margin = bullet_r_margin
-        self.t_margin = bullet_t_margin
         self.rendered_flag = False
 
     def get_fragments_width(self):
@@ -81,7 +80,6 @@ class Paragraph:  # pylint: disable=function-redefined
         bottom_margin: float = 0,
         indent: float = 0,
         bullet_r_margin=None,
-        bullet_t_margin=None,
         bullet_string: str = "",
         skip_leading_spaces: bool = False,
         wrapmode: WrapMode = None,
@@ -109,14 +107,13 @@ class Paragraph:  # pylint: disable=function-redefined
             self.wrapmode = WrapMode.coerce(wrapmode)
         self._text_fragments = []
         if bullet_r_margin is None:
-            bullet_r_margin = 6 / self.pdf.k
-        if bullet_t_margin is None:
-            bullet_t_margin = 0
+            # Default value of 2 to be multiplied by the conversion factor
+            # for bullet_r_margin is given in mm
+            bullet_r_margin = 2 * get_scale_factor("mm") / self.pdf.k
         if bullet_string:
             self.bullet = Bullet(
                 *self.generate_bullet_frags_and_tl(bullet_string, bullet_r_margin),
                 bullet_r_margin,
-                bullet_t_margin,
             )
         else:
             self.bullet = None
@@ -541,7 +538,6 @@ class TextRegion(ParagraphCollectorMixin):
                         cur_bullet.get_fragments_width() + cur_bullet.r_margin
                     )
                     self.pdf.x -= bullet_indent_shift
-                    self.pdf.y += cur_bullet.t_margin
                     self.pdf._render_styled_text_line(
                         cur_bullet.text_line,
                         h=cur_bullet.text_line.height,
@@ -552,7 +548,6 @@ class TextRegion(ParagraphCollectorMixin):
                     )
                     cur_bullet.rendered_flag = True
                     self.pdf.x += bullet_indent_shift
-                    self.pdf.y -= cur_bullet.t_margin
                 # Don't check the return, we never render past the bottom here.
                 self.pdf._render_styled_text_line(
                     text_line,

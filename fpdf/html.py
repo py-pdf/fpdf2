@@ -16,7 +16,7 @@ from .enums import TextEmphasis, XPos, YPos
 from .errors import FPDFException
 from .fonts import FontFace
 from .table import Table
-from .util import int2roman
+from .util import int2roman, get_scale_factor
 
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
@@ -34,10 +34,10 @@ DEFAULT_TAG_STYLES = {
     "h6": FontFace(color=(150, 0, 0), size_pt=8),
     "pre": FontFace(family="Courier"),
 }
-DEFAULT_TAG_INDENTS = {
+DEFAULT_TAG_INDENTS_MM = {
     "blockquote": 0,
-    "dd": 30,
-    "li": 30,
+    "dd": 10,
+    "li": 5,
 }
 
 # Pattern to substitute whitespace sequences with a single space character each.
@@ -270,8 +270,8 @@ class HTML2FPDF(HTMLParser):
         self,
         pdf,
         image_map=None,
-        li_tag_indent=30,
-        dd_tag_indent=30,
+        li_tag_indent=None,
+        dd_tag_indent=None,
         table_line_separators=False,
         ul_bullet_char=BULLET_WIN1252,
         li_prefix_color=(190, 0, 0),
@@ -341,8 +341,13 @@ class HTML2FPDF(HTMLParser):
         self.line_height_stack = []
         self.ol_type = []  # when inside a <ol> tag, can be "a", "A", "i", "I" or "1"
         self.bullet = []
+        self.default_conversion_factor = (
+            get_scale_factor("mm") / self.pdf.k
+        )  # factor for converting default values from mm to document units
         if list_vertical_margin is None:
-            self.list_vertical_margin = 0.3 / self.pdf.k
+            # Default value of 2 to be multiplied by the conversion factor
+            # for list_vertical_margin is given in mm
+            self.list_vertical_margin = 2 * self.default_conversion_factor
         self.font_color = pdf.text_color.colors255
         self.heading_level = None
         self.heading_above = 0.2  # extra space above heading, relative to font size
@@ -359,8 +364,11 @@ class HTML2FPDF(HTMLParser):
         #                    "inserted" is a special attribute indicating that a cell has be inserted in self.table_row
 
         if not tag_indents:
-            tag_indents = {k: v / self.pdf.k for k, v in DEFAULT_TAG_INDENTS.items()}
-        if dd_tag_indent != DEFAULT_TAG_INDENTS["dd"]:
+            tag_indents = {
+                k: v * self.default_conversion_factor
+                for k, v in DEFAULT_TAG_INDENTS_MM.items()
+            }
+        if dd_tag_indent is not None:
             warnings.warn(
                 (
                     "The dd_tag_indent parameter is deprecated since v2.7.9 "
@@ -371,7 +379,7 @@ class HTML2FPDF(HTMLParser):
                 stacklevel=get_stack_level(),
             )
             tag_indents["dd"] = dd_tag_indent
-        if li_tag_indent != DEFAULT_TAG_INDENTS["li"]:
+        if li_tag_indent is not None:
             warnings.warn(
                 (
                     "The li_tag_indent parameter is deprecated since v2.7.9 "
@@ -383,11 +391,11 @@ class HTML2FPDF(HTMLParser):
             )
             tag_indents["li"] = li_tag_indent
         for tag in tag_indents:
-            if tag not in DEFAULT_TAG_INDENTS:
+            if tag not in DEFAULT_TAG_INDENTS_MM:
                 raise NotImplementedError(
                     f"Cannot set indent for HTML tag <{tag}> (contributions are welcome to add support for this)"
                 )
-        self.tag_indents = {**DEFAULT_TAG_INDENTS, **tag_indents}
+        self.tag_indents = {**DEFAULT_TAG_INDENTS_MM, **tag_indents}
 
         if not tag_styles:
             tag_styles = {}
@@ -685,8 +693,10 @@ class HTML2FPDF(HTMLParser):
             )
             self.indent += 1
             self._new_paragraph(
-                top_margin=9 / self.pdf.k,
-                bottom_margin=9 / self.pdf.k,
+                # Default values to be multiplied by the conversion factor
+                # for top_margin and bottom_margin here are given in mm
+                top_margin=3 * self.default_conversion_factor,
+                bottom_margin=3 * self.default_conversion_factor,
                 indent=self.tag_indents["blockquote"] * self.indent,
             )
         if tag == "ul":
@@ -725,7 +735,9 @@ class HTML2FPDF(HTMLParser):
                 self._write_paragraph("\u00a0")
             self._end_paragraph()
         if tag == "li":
-            self._ln(6 / self.pdf.k)
+            # Default value of 2 for h to be multiplied by the conversion factor
+            # in self._ln(h) here is given in mm
+            self._ln(2 * self.default_conversion_factor)
             self.set_text_color(*self.li_prefix_color)
             if self.bullet:
                 bullet = self.bullet[self.indent - 1]
