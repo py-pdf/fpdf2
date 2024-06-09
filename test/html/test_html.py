@@ -750,10 +750,7 @@ def test_html_measurement_units(tmp_path):
     for unit in ["pt", "mm", "cm", "in"]:
         pdf = FPDF(unit=unit)
         pdf.add_page()
-        html = f"""
-                <ul>
-                    <li>This file uses {unit} as the document unit</li>
-                </ul>
+        html = """
                 <ul>
                     <li>Item 1</li>
                     <li>Item 2</li>
@@ -769,7 +766,7 @@ def test_html_measurement_units(tmp_path):
                 <dd>Description details</dd>
             """
         pdf.write_html(html)
-        assert_pdf_equal(pdf, HERE / f"html_measurement_units_{unit}.pdf", tmp_path)
+        assert_pdf_equal(pdf, HERE / "html_measurement_units.pdf", tmp_path)
 
 
 def test_bulleted_paragraphs():
