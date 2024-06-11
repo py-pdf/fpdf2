@@ -820,3 +820,24 @@ def test_bulleted_paragraphs():
         f'supported by the font used: "{pdf.font_family+pdf.font_style}". Please consider using a Unicode font.'
     )
     assert str(error.value) == expected_msg
+
+
+def test_html_list_vertical_margin(tmp_path):
+    pdf = FPDF()
+    for margin_value in (None, 4, 8, 16):
+        pdf.add_page()
+        html = f"""
+            This page uses `list_vertical_margin` value of {margin_value}
+             <ul>
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ul>
+            <ol>
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ol>
+        """
+        pdf.write_html(html, list_vertical_margin=margin_value)
+    assert_pdf_equal(pdf, HERE / "html_list_vertical_margin.pdf", tmp_path)

@@ -347,7 +347,8 @@ class HTML2FPDF(HTMLParser):
         if list_vertical_margin is None:
             # Default value of 2 to be multiplied by the conversion factor
             # for list_vertical_margin is given in mm
-            self.list_vertical_margin = 2 * self.default_conversion_factor
+            list_vertical_margin = 2 * self.default_conversion_factor
+        self.list_vertical_margin = list_vertical_margin
         self.font_color = pdf.text_color.colors255
         self.heading_level = None
         self.heading_above = 0.2  # extra space above heading, relative to font size
