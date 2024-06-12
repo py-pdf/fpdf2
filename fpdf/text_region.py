@@ -142,9 +142,7 @@ class Paragraph:  # pylint: disable=function-redefined
                 frag.link = link
         self._text_fragments.extend(fragments)
 
-    def generate_bullet_frags_and_tl(
-        self, bullet_string: str, rel_x_displacement: float
-    ):
+    def generate_bullet_frags_and_tl(self, bullet_string: str, bullet_r_margin: float):
         if not bullet_string:
             return None
         bullet_string = self.pdf.normalize_text(bullet_string)
@@ -158,8 +156,7 @@ class Paragraph:  # pylint: disable=function-redefined
             bullet_fragments,
             max_width=self._region.get_width,
             margins=(
-                self.pdf.c_margin
-                + (self.indent - fragments_width - rel_x_displacement),
+                self.pdf.c_margin + (self.indent - fragments_width - bullet_r_margin),
                 self.pdf.c_margin,
             ),
             align=self.text_align or self._region.text_align or Align.L,
@@ -393,6 +390,7 @@ class ParagraphCollectorMixin:
         bottom_margin=0,
         indent=0,
         bullet_string="",
+        bullet_r_margin=None,
         wrapmode: WrapMode = None,
     ):
         """
@@ -406,6 +404,7 @@ class ParagraphCollectorMixin:
                 No spacing will be added at the bottom if it would result in overstepping the bottom margin of the page. (Default: 0.0)
             indent (float, optional): determines the indentation of the paragraph. (Default: 0.0)
             bullet_string (str, optional): determines the fragments and text lines of the bullet. (Default: "")
+            bullet_r_margin (float, optional): determines the spacing between the bullet and the bulleted line
             skip_leading_spaces (float, optional): removes all space characters at the beginning of each line. (Default: False)
             wrapmode (WrapMode): determines the way text wrapping is handled. (Default: None)
         """
@@ -421,6 +420,7 @@ class ParagraphCollectorMixin:
             bottom_margin=bottom_margin,
             indent=indent,
             bullet_string=bullet_string,
+            bullet_r_margin=bullet_r_margin,
         )
         self._paragraphs.append(p)
         self._active_paragraph = "EXPLICIT"

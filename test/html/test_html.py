@@ -778,33 +778,31 @@ def test_bulleted_paragraphs():
         {
             "indent": 10,
             "bullet_string": "",
-            "rel_x_displacement": 2,
-            "rel_y_displacement": 0,
+            "bullet_r_margin": 2,
         },
         {
             "indent": 20,
             "bullet_string": "a",
-            "rel_x_displacement": 0,
-            "rel_y_displacement": 2,
+            "bullet_r_margin": 0,
         },
         {
             "indent": -20,
             "bullet_string": "abcd",
-            "rel_x_displacement": 4,
-            "rel_y_displacement": 6,
+            "bullet_r_margin": 4,
         },
         {
             "indent": 1000,
             "bullet_string": "abcd\nfghi",
-            "rel_x_displacement": -3,
-            "rel_y_displacement": -8,
+            "bullet_r_margin": -3,
         },
     ]
     pdf.set_font("helvetica", "B", 16)
     for case in cases:
         try:
             text_columns.paragraph(
-                indent=case["indent"], bullet_string=case["bullet_string"]
+                indent=case.get("indent"),
+                bullet_string=case.get("bullet_string"),
+                bullet_r_margin=case.get("bullet_r_margin"),
             )
             text_columns.end_paragraph()
         except FPDFException as error:
