@@ -260,9 +260,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         but is less compatible with the PDF spec.
         """
         self.page = 0  # current page number
-        self.pages: Dict[int, PDFPage] = (
-            {}
-        )  # array of PDFPage objects starting at index 1
+        # array of PDFPage objects starting at index 1:
+        self.pages: Dict[int, PDFPage] = {}
         self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
         # map page numbers to a set of font indices:
         self.fonts_used_per_page_number = defaultdict(set)
