@@ -602,6 +602,7 @@ class TextColumnarMixin:
     """Enable a TextRegion to perform page breaks"""
 
     def __init__(self, pdf, *args, l_margin=None, r_margin=None, **kwargs):
+        print('args:', args, kwargs)
         super().__init__(*args, **kwargs)
         self.l_margin = pdf.l_margin if l_margin is None else l_margin
         left = self.l_margin
