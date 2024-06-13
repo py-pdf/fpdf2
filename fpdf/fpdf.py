@@ -1025,7 +1025,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def set_draw_color(self, r, g=-1, b=-1):
         """
         Defines the color used for all stroking operations (lines, rectangles and cell borders).
-        It can be expressed in RGB components or grey scale.
+        Accepts either a single greyscale value, 3 valeurs as RGB components, a single `#abc` or `#abcdef` hexadecimal color string,
+        or an instance of `fpdf.drawing.DeviceCMYK`, `fpdf.drawing.DeviceRGB` or `fpdf.drawing.DeviceGray`.
         The method can be called before the first page is created and the value is retained from page to page.
 
         Args:
@@ -1043,7 +1044,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def set_fill_color(self, r, g=-1, b=-1):
         """
         Defines the color used for all filling operations (filled rectangles and cell backgrounds).
-        It can be expressed in RGB components or grey scale.
+        Accepts either a single greyscale value, 3 valeurs as RGB components, a single `#abc` or `#abcdef` hexadecimal color string,
+        or an instance of `fpdf.drawing.DeviceCMYK`, `fpdf.drawing.DeviceRGB` or `fpdf.drawing.DeviceGray`.
         The method can be called before the first page is created and the value is retained from page to page.
 
         Args:
@@ -1061,7 +1063,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def set_text_color(self, r, g=-1, b=-1):
         """
         Defines the color used for text.
-        It can be expressed in RGB components or grey scale.
+        Accepts either a single greyscale value, 3 valeurs as RGB components, a single `#abc` or `#abcdef` hexadecimal color string,
+        or an instance of `fpdf.drawing.DeviceCMYK`, `fpdf.drawing.DeviceRGB` or `fpdf.drawing.DeviceGray`.
         The method can be called before the first page is created and the value is retained from page to page.
 
         Args:
@@ -4118,7 +4121,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         name, img, info = preload_image(self.image_cache, name, dims)
         if isinstance(info, VectorImageInfo):
             return self._vector_image(
-                img, info, x, y, w, h, link, title, alt_text, keep_aspect_ratio
+                name, img, info, x, y, w, h, link, title, alt_text, keep_aspect_ratio
             )
         return self._raster_image(
             name,
@@ -4156,9 +4159,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # Automatic width and height calculation if needed
         w, h = info.size_in_document_units(w, h, scale=self.k)
 
-        if self.oversized_images and info["usages"] == 1 and not dims:
-            info = self._downscale_image(name, img, info, w, h, scale=self.k)
-
         # Flowing mode
         if y is None:
             self._perform_page_break_if_need_be(h)
@@ -4168,7 +4168,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             x = self.x
 
         if not isinstance(x, Number):
-            x = info.x_by_align(x, w, self, keep_aspect_ratio)
+            x = self.x_by_align(x, w, h, info, keep_aspect_ratio)
+        if keep_aspect_ratio:
+            x, y, w, h = info.scale_inside_box(x, y, w, h)
+        if self.oversized_images and info["usages"] == 1 and not dims:
+            info = self._downscale_image(name, img, info, w, h, scale=self.k)
 
         stream_content = stream_content_for_raster_image(
             info, x, y, w, h, keep_aspect_ratio, scale=self.k, pdf_height_to_flip=self.h
@@ -4185,8 +4189,21 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.images_used_per_page_number[self.page].add(info["i"])
         return RasterImageInfo(**info, rendered_width=w, rendered_height=h)
 
+    def x_by_align(self, x, w, h, img_info, keep_aspect_ratio):
+        if keep_aspect_ratio:
+            _, _, w, h = img_info.scale_inside_box(0, 0, w, h)
+        x = Align.coerce(x)
+        if x == Align.C:
+            return (self.w - w) / 2
+        if x == Align.R:
+            return self.w - w - self.r_margin
+        if x == Align.L:
+            return self.l_margin
+        raise ValueError(f"Unsupported 'x' value passed to .image(): {x}")
+
     def _vector_image(
         self,
+        name,
         svg: SVGObject,
         info: VectorImageInfo,
         x=None,
@@ -4219,8 +4236,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             elif svg.viewbox:
                 _, _, w, h = svg.viewbox
             else:
+                svg_id = "<svg>" if isinstance(name, bytes) else name
                 raise ValueError(
-                    '<svg> has no "viewBox" nor "height" / "width": w= and h= must be provided to FPDF.image()'
+                    f'{svg_id} has no "viewBox" nor "height" / "width": w= and h= must be provided to FPDF.image()'
                 )
         elif w == 0 or h == 0:
             if svg.width and svg.height:
@@ -4244,10 +4262,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if x is None:
             x = self.x
 
-        if not isinstance(x, Number):
-            x = info.x_by_align(x, w, self, keep_aspect_ratio)
         if keep_aspect_ratio:
             x, y, w, h = info.scale_inside_box(x, y, w, h)
+        if not isinstance(x, Number):
+            x = self.x_by_align(x, w, h, info, keep_aspect_ratio)
 
         _, _, path = svg.transform_to_rect_viewport(
             scale=1, width=w, height=h, ignore_svg_top_attrs=True

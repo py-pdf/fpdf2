@@ -220,6 +220,7 @@ class ImageParagraph:
                 x += (col_width - w) / 2
         if is_svg:
             return self.region.pdf._vector_image(
+                name=self.name,
                 svg=self.img,
                 info=self.info,
                 x=x,
