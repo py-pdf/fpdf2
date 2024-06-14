@@ -9,6 +9,7 @@ in non-backward-compatible ways.
 
 from typing import NamedTuple, Any, List, Optional, Union, Sequence
 from numbers import Number
+from uuid import uuid4
 
 from .enums import Align, CharVPos, TextDirection, WrapMode
 from .errors import FPDFException
@@ -330,6 +331,25 @@ class Fragment:
         escaped_text = escape_parens(self.string)
         ret += f"({escaped_text}) Tj"
         return ret
+
+
+class TotalPagesAliasFragment(Fragment):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.uuid = uuid4()
+
+    def get_alias_string(self):
+        return f"::alias:{self.uuid}::"
+
+    def render_pdf_text(self, *args, **kwargs):
+        self._render_args = args
+        self._render_kwargs = kwargs  # = {"frag_ws": frag_ws, "current_ws": current_ws, "word_spacing": word_spacing, "adjust_x": adjust_x, "adjust_y": adjust_y, "h": h}
+        return self.get_alias_string()
+
+    def render_alias_substitution(self, replacement_text: str):
+        self.characters = list(replacement_text)
+        return super().render_pdf_text(*self._render_args, **self._render_kwargs)
 
 
 class TextLine(NamedTuple):

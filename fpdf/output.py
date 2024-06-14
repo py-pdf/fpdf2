@@ -13,9 +13,11 @@ from collections import defaultdict, OrderedDict
 from contextlib import contextmanager
 from io import BytesIO
 
+
 from .annotations import PDFAnnotation
 from .enums import SignatureFlag
 from .errors import FPDFException
+from .line_break import TotalPagesAliasFragment
 from .image_datastructures import RasterImageInfo
 from .outline import build_outline_objs
 from .sign import Signature, sign_content
@@ -243,6 +245,7 @@ class PDFPage(PDFObject):
         "_index",
         "_width_pt",
         "_height_pt",
+        "_aliases",
     )
 
     def __init__(
@@ -265,6 +268,7 @@ class PDFPage(PDFObject):
         self.parent = None  # must always be set before calling .serialize()
         self._index = index
         self._width_pt, self._height_pt = None, None
+        self._aliases: list[TotalPagesAliasFragment] = []
 
     def index(self):
         return self._index
@@ -276,6 +280,12 @@ class PDFPage(PDFObject):
     def set_dimensions(self, width_pt, height_pt):
         "Accepts a pair (width, height) in the unit specified to FPDF constructor"
         self._width_pt, self._height_pt = width_pt, height_pt
+
+    def get_aliases(self):
+        return self._aliases
+
+    def add_alias(self, alias):
+        self._aliases.append(alias)
 
 
 class PDFPagesRoot(PDFObject):
