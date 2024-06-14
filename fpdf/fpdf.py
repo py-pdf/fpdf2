@@ -3395,9 +3395,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                             self._get_current_graphics_state(),
                             self.k,
                         )
-                    yield Fragment(
-                        fragment_text, self._get_current_graphics_state(), self.k
-                    )
+                    if fragment_text:
+                        yield Fragment(
+                            fragment_text, self._get_current_graphics_state(), self.k
+                        )
                 return
 
             yield Fragment(text, self._get_current_graphics_state(), self.k)
