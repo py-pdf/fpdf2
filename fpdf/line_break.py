@@ -344,7 +344,7 @@ class TotalPagesAliasFragment(Fragment):
 
     def render_pdf_text(self, *args, **kwargs):
         self._render_args = args
-        self._render_kwargs = kwargs  # = {"frag_ws": frag_ws, "current_ws": current_ws, "word_spacing": word_spacing, "adjust_x": adjust_x, "adjust_y": adjust_y, "h": h}
+        self._render_kwargs = kwargs
         return self.get_alias_string()
 
     def render_alias_substitution(self, replacement_text: str):
