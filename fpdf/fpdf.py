@@ -1025,7 +1025,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def set_draw_color(self, r, g=-1, b=-1):
         """
         Defines the color used for all stroking operations (lines, rectangles and cell borders).
-        Accepts either a single greyscale value, 3 valeurs as RGB components, a single `#abc` or `#abcdef` hexadecimal color string,
+        Accepts either a single greyscale value, 3 values as RGB components, a single `#abc` or `#abcdef` hexadecimal color string,
         or an instance of `fpdf.drawing.DeviceCMYK`, `fpdf.drawing.DeviceRGB` or `fpdf.drawing.DeviceGray`.
         The method can be called before the first page is created and the value is retained from page to page.
 
@@ -1044,7 +1044,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def set_fill_color(self, r, g=-1, b=-1):
         """
         Defines the color used for all filling operations (filled rectangles and cell backgrounds).
-        Accepts either a single greyscale value, 3 valeurs as RGB components, a single `#abc` or `#abcdef` hexadecimal color string,
+        Accepts either a single greyscale value, 3 values as RGB components, a single `#abc` or `#abcdef` hexadecimal color string,
         or an instance of `fpdf.drawing.DeviceCMYK`, `fpdf.drawing.DeviceRGB` or `fpdf.drawing.DeviceGray`.
         The method can be called before the first page is created and the value is retained from page to page.
 
@@ -1063,7 +1063,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def set_text_color(self, r, g=-1, b=-1):
         """
         Defines the color used for text.
-        Accepts either a single greyscale value, 3 valeurs as RGB components, a single `#abc` or `#abcdef` hexadecimal color string,
+        Accepts either a single greyscale value, 3 values as RGB components, a single `#abc` or `#abcdef` hexadecimal color string,
         or an instance of `fpdf.drawing.DeviceCMYK`, `fpdf.drawing.DeviceRGB` or `fpdf.drawing.DeviceGray`.
         The method can be called before the first page is created and the value is retained from page to page.
 
