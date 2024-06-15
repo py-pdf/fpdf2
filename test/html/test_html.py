@@ -194,27 +194,12 @@ def test_html_customize_ul(tmp_path):
         <li><b>term1</b>: definition1</li>
         <li><b>term2</b>: definition2</li>
     </ul>"""
-
-    # 1. Customizing through class attributes:
-    class CustomPDF(FPDF):
-        def __init__(self):
-            super().__init__()
-            self.li_tag_indent = 40
-            self.ul_bullet_char = "\x86"
-
-    pdf = CustomPDF()
+    pdf = FPDF()
     pdf.set_font_size(30)
     pdf.add_page()
     with pytest.warns(DeprecationWarning):  # li_tag_indent
-        pdf.write_html(html)
-        pdf.ln()
-        # 2. Customizing through instance attributes:
-        pdf.li_tag_indent = 60
-        pdf.ul_bullet_char = "\x9b"
-        pdf.write_html(html)
-        pdf.ln()
-        # 3. Customizing through optional method arguments:
-        for indent, bullet in ((80, "\xac"), (100, "\xb7")):
+        # Customizing through optional method arguments:
+        for indent, bullet in ((5, "\x86"), (10, "\x9b"), (15, "\xac"), (20, "\xb7")):
             pdf.write_html(html, li_tag_indent=indent, ul_bullet_char=bullet)
             pdf.ln()
     assert_pdf_equal(pdf, HERE / "html_customize_ul.pdf", tmp_path)

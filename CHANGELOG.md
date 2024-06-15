@@ -32,6 +32,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * fixed incoherent indentation of long list entries - _cf._ [issue #1073](https://github.com/py-pdf/fpdf2/issues/1073)
 * default values for `top_margin` and `bottom_margin` in `HTML2FPDF._new_paragraph()` calls are now correctly converted into chosen document units.
 ### Changed
+* Removed an obscure and undocumented [feature](https://github.com/py-pdf/fpdf2/issues/1198) of [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html), which used to magically pass local variables as arguments.
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html) now raises an error when a single row is too high to be rendered on a single page
 * `HTML2FPDF.tag_indents` can now be non-integer. Indentation of HTML elements is now independent of font size and bullet strings.
 * No spacing controlled by `HTML2FPDF.list_vertical_margin` is created for nested HTML `<li>` elements in contrast with prior respect for `Paragraph.top_margin` when handling `Paragraph`s created when handling `<ul>` and `<ol>` start tags.

@@ -415,22 +415,25 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             text (str): HTML content to render
             image_map (function): an optional one-argument function that map <img> "src"
                 to new image URLs
-            li_tag_indent (int): [**DEPRECATED since v2.7.8**] numeric indentation of <li> elements - Set tag_indents instead
-            dd_tag_indent (int): [**DEPRECATED since v2.7.8**] numeric indentation of <dd> elements - Set tag_indents instead
+            li_tag_indent (int): [**DEPRECATED since v2.7.8**]
+                numeric indentation of <li> elements - Set tag_indents instead
+            dd_tag_indent (int): [**DEPRECATED since v2.7.8**]
+                numeric indentation of <dd> elements - Set tag_indents instead
             table_line_separators (bool): enable horizontal line separators in <table>
             ul_bullet_char (str): bullet character preceding <li> items in <ul> lists.
-            li_prefix_color (tuple | str | drawing.Device* instance): color for bullets or numbers preceding <li> tags.
+            li_prefix_color (tuple | str | drawing.Device* instance):
+                color for bullets or numbers preceding <li> tags.
                 This applies to both <ul> & <ol> lists.
-            heading_sizes (dict): [**DEPRECATED since v2.7.8**] font size per heading level names ("h1", "h2"...) - Set tag_styles instead
-            pre_code_font (str): [**DEPRECATED since v2.7.8**] font to use for <pre> & <code> blocks - Set tag_styles instead
+            heading_sizes (dict): [**DEPRECATED since v2.7.8**]
+                font size per heading level names ("h1", "h2"...) - Set tag_styles instead
+            pre_code_font (str): [**DEPRECATED since v2.7.8**]
+                font to use for <pre> & <code> blocks - Set tag_styles instead
             warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags
-            tag_indents (dict): mapping of HTML tag names to numeric values representing their horizontal left identation
+            tag_indents (dict):
+                mapping of HTML tag names to numeric values representing their horizontal left identation
             tag_styles (dict): mapping of HTML tag names to colors
         """
-        kwargs2 = vars(self)
-        # Method arguments must override class & instance attributes:
-        kwargs2.update(kwargs)
-        html2pdf = self.HTML2FPDF_CLASS(self, *args, **kwargs2)
+        html2pdf = self.HTML2FPDF_CLASS(self, *args, **kwargs)
         html2pdf.feed(text)
 
     def _set_min_pdf_version(self, version):
