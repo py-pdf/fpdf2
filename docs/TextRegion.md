@@ -87,7 +87,6 @@ For more typographical control, you can use the following arguments. Most of tho
 * indent (float, optional): determines the indentation of the paragraph. (Default: 0.0 mm)
 * bullet_r_margin (float, optional) - determines the relative displacement of the bullet along the x-axis. The distance is between the rightmost point of the bullet to the leftmost point of the paragraph's text. (Default: 2.0 mm)
 * bullet_string (str, optional): determines the fragments and text lines of the bullet. (Default: "")
-* bullet_r_margin (float, optional): determines the spacing between the bullet and the bulleted line
 * skip_leading_spaces (float, optional) - removes all space characters at the beginning of each line.
 * wrapmode (WrapMode, optional)
 
