@@ -100,7 +100,8 @@ class Table:
         self._gutter_height = gutter_height
         self._gutter_width = gutter_width
         self._headings_style = headings_style
-        self._line_height = 2 * fpdf.font_size if line_height is None else line_height
+        abs_line_height = 2 * fpdf.font_size if line_height is None else line_height
+        self.line_height = abs_line_height / fpdf.font_size
         self._markdown = markdown
         self.text_align = text_align
         self._width = fpdf.epw if width is None else width
@@ -494,6 +495,7 @@ class TableRow:
             text=text,
             text_align=align if  align else self._table.text_align,
             v_align=v_align if v_align else self._table.v_align,
+            line_height=line_height if line_height else self._table.line_height,
             style=style or self.style,
             img=img,
             img_fill_width=img_fill_width,

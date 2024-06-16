@@ -231,8 +231,10 @@ class ImageParagraph:
                     f"Align must be 'LEFT', 'CENTER', or 'RIGHT', not '{align.value}'."
                 )
         self.align = align
-        self.width = width
-        self.height = height
+        self._req_width = width
+        self.width = width or 0.0  # set in build_line().
+        self._req_height = height
+        self.height = height or 0.0  # set in build_line().
         self.fill_width = fill_width
         self.keep_aspect_ratio = keep_aspect_ratio
         self.top_margin = top_margin
@@ -241,13 +243,31 @@ class ImageParagraph:
         self.title = title
         self.alt_text = alt_text
         self.img = self.info = None
+        self.line = self  # mimick a text line wrapper
 
     def build_line(self):
-        # We do double duty as a "text line wrapper" here, since all the necessary
-        # information is already in the ImageParagraph object.
+        #print('img - region: ', self.region)
+        col_left, col_right = self.region.current_x_extents(self.region.pdf.y, 0)
+        col_width = col_right - col_left
         self.name, self.img, self.info = preload_image(
             self.region.pdf.image_cache, self.name
         )
+        if self._req_height:
+            self.height = self._req_height
+        else:
+            native_h = self.info["h"] / self.region.pdf.k
+        if self._req_width:
+            self.width = self._req_width
+        else:
+            native_w = self.info["w"] / self.region.pdf.k
+            if native_w > col_width or self.fill_width:
+                self.width = col_width
+            else:
+                self.width = native_w
+        if not self._req_height:
+            self.height = self.width * native_h / native_w
+        # We do double duty as a "text line wrapper" here, since all the necessary
+        # information is already in the ImageParagraph object.
         return self
 
     def render(self, col_left, col_width, max_height):
@@ -257,29 +277,16 @@ class ImageParagraph:
             )
         is_svg = isinstance(self.info, VectorImageInfo)
 
-        # pylint: disable=possibly-used-before-assignment
-        if self.height:
-            h = self.height
-        else:
-            native_h = self.info["h"] / self.region.pdf.k
-        if self.width:
-            w = self.width
-        else:
-            native_w = self.info["w"] / self.region.pdf.k
-            if native_w > col_width or self.fill_width:
-                w = col_width
-            else:
-                w = native_w
-        if not self.height:
-            h = w * native_h / native_w
-        if h > max_height:
+        # xpylint: disable=possibly-used-before-assignment
+
+        if self.height > max_height:
             return None
         x = col_left
         if self.align:
             if self.align == Align.R:
-                x += col_width - w
+                x += col_width - self.width
             elif self.align == Align.C:
-                x += (col_width - w) / 2
+                x += (col_width - self.width) / 2
         if is_svg:
             return self.region.pdf._vector_image(
                 name=self.name,
@@ -287,8 +294,8 @@ class ImageParagraph:
                 info=self.info,
                 x=x,
                 y=None,
-                w=w,
-                h=h,
+                w=self.width,
+                h=self.height,
                 link=self.link,
                 title=self.title,
                 alt_text=self.alt_text,
@@ -300,8 +307,8 @@ class ImageParagraph:
             info=self.info,
             x=x,
             y=None,
-            w=w,
-            h=h,
+            w=self.width,
+            h=self.height,
             link=self.link,
             title=self.title,
             alt_text=self.alt_text,
@@ -602,7 +609,7 @@ class TextColumnarMixin:
     """Enable a TextRegion to perform page breaks"""
 
     def __init__(self, pdf, *args, l_margin=None, r_margin=None, **kwargs):
-        print('args:', args, kwargs)
+        #print('args:', args, kwargs)
         super().__init__(*args, **kwargs)
         self.l_margin = pdf.l_margin if l_margin is None else l_margin
         left = self.l_margin
