@@ -162,6 +162,8 @@ pdf.output("solid_arc.pdf")
 ![](solid_arc.png)
 
 ## Bezier Curve ##
+_New in [:octicons-tag-24: 2.7.10](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
 Using [`bezier()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.bezier) to create a cubic Bezier curve:
 ```python
 from fpdf import FPDF

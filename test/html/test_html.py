@@ -53,18 +53,18 @@ def test_html_features(tmp_path):
     pdf.write_html("<h4>h4</h4>")
     pdf.write_html("<h5>h5</h5>")
     pdf.write_html("<h6>h6</h6>")
-    pdf.write_html("<p>Rendering &lt;hr&gt;:</p>")
+    pdf.write_html("<p>Rendering two &lt;hr&gt; tags:</p>")
+    pdf.write_html('<hr style="width: 50%">')
     pdf.write_html("<hr>")
     # Now inserting <br> tags until a page jump is triggered:
-    for _ in range(25):
+    for _ in range(24):
         pdf.write_html("<br>")
     pdf.write_html("<pre>i am preformatted text.</pre>")
     pdf.write_html("<blockquote>hello blockquote</blockquote>")
     pdf.write_html("<ul><li>li1</li><li>another</li><li>l item</li></ul>")
     pdf.write_html("<ol><li>li1</li><li>another</li><li>l item</li></ol>")
     pdf.write_html("<dl><dt>description title</dt><dd>description details</dd></dl>")
-    pdf.write_html('<table width="50"></table>')
-    pdf.write_html("<img></img>")
+    pdf.write_html("<br><br>")
     pdf.write_html(
         "<table>"
         "  <thead>"
@@ -91,7 +91,7 @@ def test_html_features(tmp_path):
         "  </tfoot>"
         "</table>"
     )
-    pdf.write_html('<table width="50"></table>')
+    pdf.write_html("<br>")
     pdf.write_html(
         '<table width="50%">'
         "  <thead>"
@@ -173,6 +173,10 @@ def test_html_features(tmp_path):
     pdf.add_page()
     img_path = HERE.parent / "image/png_images/c636287a4d7cb1a36362f7f236564cef.png"
     pdf.write_html(f"<img src=\"{img_path}\" height='300' width='300'>")
+    # With an (incorrect) trailing slash:
+    pdf.write_html(f"<img src=\"{img_path}\" height='300' width='300'/>")
+    # With an (incorrect) end tag:
+    pdf.write_html(f"<img src=\"{img_path}\" height='300' width='300'></img>")
 
     assert_pdf_equal(pdf, HERE / "html_features.pdf", tmp_path)
 
@@ -481,12 +485,24 @@ def test_html_img_not_overlapping(tmp_path):
     pdf.add_page()
     pdf.write_html(
         """<img src="test/image/png_images/affc57dfffa5ec448a0795738d456018.png"/>
-<p>text</p>
-"""
+           <p>text</p>"""
     )
     assert_pdf_equal(
         pdf,
         HERE / "html_img_not_overlapping.pdf",
+        tmp_path,
+    )
+
+
+def test_html_img_without_height_at_page_bottom_triggers_page_break(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.y = 200
+    img_path = HERE.parent / "image/png_images/c636287a4d7cb1a36362f7f236564cef.png"
+    pdf.write_html(f'<img width="500" src="{img_path}">')
+    assert_pdf_equal(
+        pdf,
+        HERE / "html_img_without_height_at_page_bottom_triggers_page_break.pdf",
         tmp_path,
     )
 
@@ -833,9 +849,9 @@ def test_html_page_break_before(tmp_path):
     pdf.add_page()
     pdf.write_html(
         """Content on first page.
-        <br style="page-break-before: always">
+        <br style="break-before: page">
         Content on second page, with some slight top margin.
-        <p style="page-break-before: always">
+        <p style="break-before: page">
         Content on third page.
         </p>"""
     )
@@ -847,9 +863,9 @@ def test_html_page_break_after(tmp_path):
     pdf.add_page()
     pdf.write_html(
         """Content on first page.
-        <br style="page-break-after: always">
+        <br style="break-after: page">
         Content on second page.
-        <p style="page-break-after: always">
+        <p style="break-after: page">
         Other content on second page.
         </p>
         Content on third page."""

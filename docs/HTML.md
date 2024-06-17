@@ -79,7 +79,7 @@ pdf.output("html.pdf")
 ```
 
 
-## Styling HTML tags globally
+### Styling HTML tags globally
 
 _New in [:octicons-tag-24: 2.7.9](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
@@ -143,14 +143,16 @@ pdf.output("html_dd_indented.pdf")
     * `<td>`: cells (with `align`, `bgcolor`, `width`, `rowspan`, `colspan` attributes)
 
 ### Page breaks
-Page breaks can be triggered manually using the [page-break-before](https://developer.mozilla.org/en-US/docs/Web/CSS/page-break-before) or [page-break-after](https://developer.mozilla.org/en-US/docs/Web/CSS/page-break-after) CSS properties.
+_New in [:octicons-tag-24: 2.7.10](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+Page breaks can be triggered explicitly using the [break-before](https://developer.mozilla.org/en-US/docs/Web/CSS/break-before) or [break-after](https://developer.mozilla.org/en-US/docs/Web/CSS/break-after) CSS properties.
 For exemple you can use:
 ```html
-<br style="page-break-after: always">
+<br style="break-after: page">
 ```
 or:
 ```html
-<p style="page-break-before: always">
+<p style="break-before: page">
 Top of a new page.
 </p>
 ```

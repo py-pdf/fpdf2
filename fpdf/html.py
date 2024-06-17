@@ -12,7 +12,7 @@ import logging, re, warnings
 
 from .deprecation import get_stack_level
 from .drawing import color_from_hex_string, convert_to_device_color
-from .enums import TextEmphasis, XPos, YPos
+from .enums import Align, TextEmphasis, XPos, YPos
 from .errors import FPDFException
 from .fonts import FontFace
 from .table import Table
@@ -338,9 +338,8 @@ class HTML2FPDF(HTMLParser):
         self.line_height_stack = []
         self.ol_type = []  # when inside a <ol> tag, can be "a", "A", "i", "I" or "1"
         self.bullet = []
-        self.default_conversion_factor = (
-            get_scale_factor("mm") / self.pdf.k
-        )  # factor for converting default values from mm to document units
+        # factor for converting default values from mm to document units:
+        self.default_conversion_factor = get_scale_factor("mm") / self.pdf.k
         if list_vertical_margin is None:
             # Default value of 2 to be multiplied by the conversion factor
             # for list_vertical_margin is given in mm
@@ -564,7 +563,7 @@ class HTML2FPDF(HTMLParser):
         LOGGER.debug("STARTTAG %s %s", tag, attrs)
         parse_style(attrs)
         self._tags_stack.append(tag)
-        if attrs.get("page-break-before") == "always":
+        if attrs.get("break-before") == "page":
             self._end_paragraph()
             # pylint: disable=protected-access
             self.pdf._perform_page_break()
@@ -650,10 +649,21 @@ class HTML2FPDF(HTMLParser):
                 size=tag_style.size_pt or self.font_size,
             )
         if tag == "hr":
+            self._end_paragraph()
+            width = attrs.get("width")
+            if width:
+                if width[-1] == "%":
+                    width = self.pdf.epw * int(width[:-1]) / 100
+                else:
+                    width = int(width) / self.pdf.k
+            else:
+                width = self.pdf.epw
+            # Centering:
+            x_start = self.pdf.l_margin + (self.pdf.epw - width) / 2
             self.pdf.line(
-                x1=self.pdf.l_margin,
+                x1=x_start,
                 y1=self.pdf.y,
-                x2=self.pdf.l_margin + self.pdf.epw,
+                x2=x_start + width,
                 y2=self.pdf.y,
             )
             self._write_paragraph("\n")
@@ -873,23 +883,20 @@ class HTML2FPDF(HTMLParser):
                 self.table_row.cell(img=attrs["src"], img_fill_width=True)
                 self.td_th["inserted"] = True
                 return
-            if self.pdf.y + height > self.pdf.page_break_trigger:
-                self.pdf.add_page(same=True)
-            x, y = self.pdf.get_x(), self.pdf.get_y()
+            x = self.pdf.get_x()
             if self.align and self.align[0].upper() == "C":
-                x = self.pdf.w / 2 - width / 2
+                x = Align.C
             LOGGER.debug(
                 'image "%s" x=%d y=%d width=%d height=%d',
                 attrs["src"],
                 x,
-                y,
+                self.pdf.get_y(),
                 width,
                 height,
             )
-            info = self.pdf.image(
-                self.image_map(attrs["src"]), x, y, width, height, link=self.href
+            self.pdf.image(
+                self.image_map(attrs["src"]), x=x, w=width, h=height, link=self.href
             )
-            self.pdf.set_y(y + info.rendered_height)
         if tag == "center":
             self._new_paragraph(align="C")
         if tag == "toc":
@@ -901,7 +908,7 @@ class HTML2FPDF(HTMLParser):
             self.pdf.char_vpos = "SUP"
         if tag == "sub":
             self.pdf.char_vpos = "SUB"
-        if attrs.get("page-break-after") == "always":
+        if attrs.get("break-after") == "page":
             if tag in ("br", "hr", "img"):
                 self._end_paragraph()
                 # pylint: disable=protected-access
