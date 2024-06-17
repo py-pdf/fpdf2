@@ -2746,18 +2746,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @check_page
     @contextmanager
-    def local_context(
-        self,
-        font_family=None,
-        font_style=None,
-        font_size=None,
-        line_width=None,
-        draw_color=None,
-        fill_color=None,
-        text_color=None,
-        dash_pattern=None,
-        **kwargs,
-    ):
+    def local_context(self, **kwargs):
         """
         Creates a local graphics state, which won't affect the surrounding code.
         This method must be used as a context manager using `with`:
@@ -2770,7 +2759,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             allow_transparency
             auto_close
             blend_mode
+            char_vpos
+            char_spacing
             dash_pattern
+            denom_lift
+            denom_scale
             draw_color
             fill_color
             fill_opacity
@@ -2780,15 +2773,21 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             font_stretching
             intersection_rule
             line_width
+            nom_lift
+            nom_scale
             paint_rule
             stroke_cap_style
             stroke_join_style
             stroke_miter_limit
             stroke_opacity
+            sub_lift
+            sub_scale
+            sup_lift
+            sup_scale
             text_color
             text_mode
+            text_shaping
             underline
-            char_vpos
 
         Args:
             **kwargs: key-values settings to set at the beggining of this context.
@@ -2798,6 +2797,32 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "cannot create a local context inside an unbreakable() code block"
             )
         self._push_local_stack()
+        self._init_local_context(**kwargs)  # write "q" in the output stream
+        yield
+        self._out("Q")
+        self._pop_local_stack()
+
+    def _init_local_context(
+        self,
+        font_family=None,
+        font_style=None,
+        font_size=None,
+        line_width=None,
+        draw_color=None,
+        fill_color=None,
+        text_color=None,
+        dash_pattern=None,
+        **kwargs,
+    ):
+        """
+        This method starts a "q" context in the output stream,
+        and inserts operators in it to initialize all the PDF settings specified.
+        """
+        if "font_size_pt" in kwargs:
+            if font_size is not None:
+                raise ValueError("font_size & font_size_pt cannot be both provided")
+            font_size = kwargs["font_size_pt"] / self.k
+            del kwargs["font_size_pt"]
         gs = None
         for key, value in kwargs.items():
             if key in (
@@ -2815,7 +2840,23 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 setattr(gs, key, value)
                 if key == "blend_mode":
                     self._set_min_pdf_version("1.4")
-            elif key in ("font_stretching", "text_mode", "underline", "char_vpos"):
+            elif key in (
+                "char_vpos",
+                "char_spacing",
+                "current_font",
+                "denom_lift",
+                "denom_scale",
+                "font_stretching",
+                "nom_lift",
+                "nom_scale",
+                "sub_lift",
+                "sub_scale",
+                "sup_lift",
+                "sup_scale",
+                "text_mode",
+                "text_shaping",
+                "underline",
+            ):
                 setattr(self, key, value)
             else:
                 raise ValueError(f"Unsupported setting: {key}")
@@ -2842,9 +2883,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.set_text_color(text_color)
         if dash_pattern is not None:
             self.set_dash_pattern(**dash_pattern)
-        yield
-        self._out("Q")
-        self._pop_local_stack()
 
     @property
     def accept_page_break(self):
@@ -3537,7 +3575,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def _perform_page_break(self):
         x = self.x
+        gs_stack = []
+        while self._is_current_graphics_state_nested():
+            self._out("Q")
+            gs_stack.append(self._pop_local_stack())
         self.add_page(same=True)
+        for prev_gs in reversed(gs_stack):
+            self._push_local_stack(prev_gs)
+            self._init_local_context(**prev_gs)
         self.x = x  # restore x but not y after drawing header
 
     def _has_next_page(self):
@@ -3813,9 +3858,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             page_break_required = self.will_page_break(h + padding.bottom)
             if page_break_required:
                 page_break_triggered = True
-                x = self.x
-                self.add_page(same=True)
-                self.x = x
+                self._perform_page_break()
                 self.y += padding.top
 
             if box_required and (text_line_index == 0 or page_break_required):
@@ -5070,6 +5113,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
             with pdf.use_font_face(FontFace(emphasis="BOLD", color=255, size_pt=42)):
                 put_some_text()
+
+        Known limitation: in case of a page jump in this local context,
+        the temporary style may "leak" in the header() & footer().
         """
         if not font_face:
             yield

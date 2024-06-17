@@ -370,8 +370,5 @@ def test_invalid_local_context_init():
     pdf = FPDF()
     pdf.add_page()
     with pytest.raises(ValueError):
-        with pdf.local_context(font_size_pt=24):
-            pass
-    with pytest.raises(ValueError):
         with pdf.local_context(stroke_width=2):
             pass

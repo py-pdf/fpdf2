@@ -325,6 +325,27 @@ def test_cell_deprecated_txt_arg():
         pdf.cell(txt="Lorem ipsum Ut nostrud irure")
 
 
+def test_header_footer_and_local_context_font_size(tmp_path):  # issue 1204
+    class PDF(FPDF):
+        def header(self):
+            self.cell(text=f"Header {self.page_no()}")
+            self.ln()
+
+        def footer(self):
+            self.set_y(-15)
+            self.cell(text=f"Footer {self.page_no()}")
+
+    pdf = PDF()
+    pdf.set_font(family="helvetica", size=12)
+    pdf.add_page()
+    with pdf.local_context(font_size=36):  # LABEL C
+        pdf.multi_cell(w=0, text="\n".join(f"Line {i + 1}" for i in range(21)))
+    assert pdf.font_size_pt == 12
+    assert_pdf_equal(
+        pdf, HERE / "header_footer_and_local_context_font_size.pdf", tmp_path
+    )
+
+
 @ensure_exec_time_below(seconds=24)
 @ensure_rss_memory_below(mib=1)
 def test_cell_speed_with_long_text():  # issue #907
