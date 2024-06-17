@@ -53,10 +53,11 @@ def test_html_features(tmp_path):
     pdf.write_html("<h4>h4</h4>")
     pdf.write_html("<h5>h5</h5>")
     pdf.write_html("<h6>h6</h6>")
-    pdf.write_html("<br />")
-    pdf.write_html("<hr />")
-    pdf.write_html("<br />")
-    pdf.write_html("<br />")
+    pdf.write_html("<p>Rendering &lt;hr&gt;:</p>")
+    pdf.write_html("<hr>")
+    # Now inserting <br> tags until a page jump is triggered:
+    for _ in range(25):
+        pdf.write_html("<br>")
     pdf.write_html("<pre>i am preformatted text.</pre>")
     pdf.write_html("<blockquote>hello blockquote</blockquote>")
     pdf.write_html("<ul><li>li1</li><li>another</li><li>l item</li></ul>")
@@ -427,10 +428,11 @@ def test_html_whitespace_handling(tmp_path):  # Issue 547
 <p>
 <b>Testing   </b> paragraph blocks
         that <i>span</i> <b>multiple lines</b>.
-    Testing tabs       and    spaces<br>
-    and break tags.<br>
+    Testing tabs       and    spaces
+    <br>and break tags.
 </p>
-<code>Testing code blocks with tabs      and    spaces.</code><br>
+<code>Testing code blocks with tabs      and    spaces.</code>
+<br>
 <pre>
 Testing pre blocks
 that span multiple lines
@@ -444,8 +446,8 @@ and have tabs    and    spaces.
 </code></pre>
 
 <p>Testing unicode nbsp \u00a0\u00a0\u00a0\u00a0,
-and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.<br>
-    \u00a0&nbsp;&nbsp;Testing leading nbsp
+and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.
+<br>\u00a0&nbsp;&nbsp;Testing leading nbsp
 </p>
 </body>
 """

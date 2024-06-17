@@ -434,7 +434,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             tag_styles (dict): mapping of HTML tag names to colors
         """
         html2pdf = self.HTML2FPDF_CLASS(self, *args, **kwargs)
-        html2pdf.feed(text)
+        with self.local_context():
+            html2pdf.feed(text)
 
     def _set_min_pdf_version(self, version):
         self.pdf_version = max(self.pdf_version, version)
@@ -2797,12 +2798,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "cannot create a local context inside an unbreakable() code block"
             )
         self._push_local_stack()
-        self._init_local_context(**kwargs)  # write "q" in the output stream
+        self._start_local_context(**kwargs)
         yield
-        self._out("Q")
+        self._end_local_context()
         self._pop_local_stack()
 
-    def _init_local_context(
+    def _start_local_context(
         self,
         font_family=None,
         font_style=None,
@@ -2815,7 +2816,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         **kwargs,
     ):
         """
-        This method starts a "q" context in the output stream,
+        This method starts a "q/Q" context in the page content stream,
         and inserts operators in it to initialize all the PDF settings specified.
         """
         if "font_size_pt" in kwargs:
@@ -2883,6 +2884,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.set_text_color(text_color)
         if dash_pattern is not None:
             self.set_dash_pattern(**dash_pattern)
+
+    def _end_local_context(self):
+        """
+        This method ends a "q/Q" context in the page content stream.
+        """
+        self._out("Q")
 
     @property
     def accept_page_break(self):
@@ -3575,14 +3582,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def _perform_page_break(self):
         x = self.x
+        # If we are in a .local_context(), we need to temporarily leave it,
+        # by popping out every GraphicsState:
         gs_stack = []
         while self._is_current_graphics_state_nested():
-            self._out("Q")
+            # This code assumes that every Graphics State in the stack
+            # has been pushed in it while adding a "q" in the PDF stream
+            # (which is what FPDF.local_context() does):
+            self._end_local_context()
             gs_stack.append(self._pop_local_stack())
         self.add_page(same=True)
         for prev_gs in reversed(gs_stack):
             self._push_local_stack(prev_gs)
-            self._init_local_context(**prev_gs)
+            self._start_local_context(**prev_gs)
         self.x = x  # restore x but not y after drawing header
 
     def _has_next_page(self):
@@ -4994,7 +5006,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             render_toc_function, self.page, self.y, pages
         )
         for _ in range(pages):
-            self.add_page()
+            self._perform_page_break()
 
     def set_section_title_styles(
         self,

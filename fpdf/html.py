@@ -325,13 +325,10 @@ class HTML2FPDF(HTMLParser):
         self.emphasis = dict(b=False, i=False, u=False)
         self.font_size = pdf.font_size_pt
         self.set_font(pdf.font_family or "times", size=self.font_size, set_default=True)
-        self._prev_font = (pdf.font_family, self.font_size, self.emphasis)
-        self.pdf._push_local_stack()  # xpylint: disable=protected-access
 
         self._pre_formatted = False  # preserve whitespace while True.
-        self._pre_started = (
-            False  # nothing written yet to <pre>, remove one initial nl.
-        )
+        # nothing written yet to <pre>, remove one initial nl:
+        self._pre_started = False
         self.follows_trailing_space = False  # The last write has ended with a space.
         self.follows_heading = False  # We don't want extra space below a heading.
         self.href = ""
@@ -464,11 +461,7 @@ class HTML2FPDF(HTMLParser):
         self.align = ""
         if self._paragraph:
             self._column.end_paragraph()
-            our_context = (
-                self.pdf._pop_local_stack()  # pylint: disable=protected-access
-            )
             self._column.render()
-            self.pdf._push_local_stack(our_context)  # pylint: disable=protected-access
             self._paragraph = None
             self.follows_trailing_space = True
 
@@ -530,15 +523,12 @@ class HTML2FPDF(HTMLParser):
         elif self._pre_formatted:  # pre blocks
             # If we want to mimick the exact HTML semantics about newlines at the
             # beginning and end of the block, then this needs some more thought.
-            s_nl = data.startswith("\n") and self._pre_started
+            if data.startswith("\n") and self._pre_started:
+                if data.endswith("\n"):
+                    data = data[1:-1]
+                else:
+                    data = data[1:]
             self._pre_started = False
-            e_nl = data.endswith("\n")
-            if s_nl and e_nl:
-                data = data[1:-1]
-            elif s_nl:
-                data = data[1:]
-            # elif e_nl:
-            #    data = data[:-1]
             self._write_data(data)
         else:
             data = _WS_SUB_PAT.sub(" ", data)
@@ -650,7 +640,13 @@ class HTML2FPDF(HTMLParser):
                 size=tag_style.size_pt or self.font_size,
             )
         if tag == "hr":
-            self.pdf.add_page(same=True)
+            self.pdf.line(
+                x1=self.pdf.l_margin,
+                y1=self.pdf.y,
+                x2=self.pdf.l_margin + self.pdf.epw,
+                y2=self.pdf.y,
+            )
+            self._write_paragraph("\n")
         if tag == "code":
             self.style_stack.append(
                 FontFace(
@@ -667,6 +663,7 @@ class HTML2FPDF(HTMLParser):
                 size=tag_style.size_pt or self.font_size,
             )
         if tag == "pre":
+            self._end_paragraph()
             self.style_stack.append(
                 FontFace(
                     family=self.font_family,
@@ -682,8 +679,8 @@ class HTML2FPDF(HTMLParser):
                 size=tag_style.size_pt or self.font_size,
             )
             self._pre_formatted = True
-            self._new_paragraph()
             self._pre_started = True
+            self._new_paragraph()
         if tag == "blockquote":
             tag_style = self.tag_styles[tag]
             if tag_style.color:
@@ -928,12 +925,12 @@ class HTML2FPDF(HTMLParser):
             self.set_font(font_face.family, font_face.size_pt)
             self.set_text_color(*font_face.color.colors255)
         if tag == "pre":
-            self._end_paragraph()
             font_face = self.style_stack.pop()
             self.set_font(font_face.family, font_face.size_pt)
             self.set_text_color(*font_face.color.colors255)
             self._pre_formatted = False
             self._pre_started = False
+            self._end_paragraph()
         if tag == "blockquote":
             self._end_paragraph()
             self.set_text_color(*self.font_color)
@@ -991,10 +988,6 @@ class HTML2FPDF(HTMLParser):
         while self._tags_stack and self._tags_stack[-1] in self.HTML_UNCLOSED_TAGS:
             self._tags_stack.pop()
         self._end_paragraph()  # render the final chunk of text and clean up our local context.
-        self.pdf._pop_local_stack()  # pylint: disable=protected-access
-        if self._prev_font[0]:  # restore previously defined font settings
-            self.emphasis = self._prev_font[2]
-            self.set_font(self._prev_font[0], size=self._prev_font[1], set_default=True)
         if self._tags_stack and self.warn_on_tags_not_matching:
             LOGGER.warning("Missing HTML end tag for <%s>", self._tags_stack[-1])
 

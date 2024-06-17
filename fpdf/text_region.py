@@ -718,7 +718,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
         _first_page_top = max(self.pdf.t_margin, self.pdf.y)
         self._render_page_lines(text_lines, _first_page_top, page_bottom)
         while text_lines:
-            self.pdf.add_page(same=True)
+            self.pdf._perform_page_break()
             self._cur_column = 0
             self._render_page_lines(text_lines, self.pdf.y, page_bottom)
 
