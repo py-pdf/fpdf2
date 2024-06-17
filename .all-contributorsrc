@@ -1189,6 +1189,16 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "lcgeneralprojects",
+      "name": "lcgeneralprojects",
+      "avatar_url": "https://avatars.githubusercontent.com/u/102996639?v=4",
+      "profile": "https://github.com/lcgeneralprojects",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
