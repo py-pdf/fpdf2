@@ -325,7 +325,7 @@ class HTML2FPDF(HTMLParser):
         self.emphasis = dict(b=False, i=False, u=False)
         self.font_size = pdf.font_size_pt
         self.set_font(pdf.font_family or "times", size=self.font_size, set_default=True)
-
+        self._page_break_after_paragraph = False
         self._pre_formatted = False  # preserve whitespace while True.
         # nothing written yet to <pre>, remove one initial nl:
         self._pre_started = False
@@ -464,6 +464,10 @@ class HTML2FPDF(HTMLParser):
             self._column.render()
             self._paragraph = None
             self.follows_trailing_space = True
+            if self._page_break_after_paragraph:
+                # pylint: disable=protected-access
+                self.pdf._perform_page_break()
+                self._page_break_after_paragraph = False
 
     def _write_paragraph(self, text, link=None):
         if not self._paragraph:
@@ -537,6 +541,8 @@ class HTML2FPDF(HTMLParser):
             else:
                 self._write_data(data)
             self.follows_trailing_space = data[-1] == " "
+        if self._page_break_after_paragraph:
+            self._end_paragraph()
 
     def _write_data(self, data):
         if self.href:
@@ -558,6 +564,10 @@ class HTML2FPDF(HTMLParser):
         LOGGER.debug("STARTTAG %s %s", tag, attrs)
         parse_style(attrs)
         self._tags_stack.append(tag)
+        if attrs.get("page-break-before") == "always":
+            self._end_paragraph()
+            # pylint: disable=protected-access
+            self.pdf._perform_page_break()
         if tag == "dt":
             self._new_paragraph(
                 line_height=(
@@ -891,6 +901,13 @@ class HTML2FPDF(HTMLParser):
             self.pdf.char_vpos = "SUP"
         if tag == "sub":
             self.pdf.char_vpos = "SUB"
+        if attrs.get("page-break-after") == "always":
+            if tag in ("br", "hr", "img"):
+                self._end_paragraph()
+                # pylint: disable=protected-access
+                self.pdf._perform_page_break()
+            else:
+                self._page_break_after_paragraph = True
 
     def handle_endtag(self, tag):
         LOGGER.debug("ENDTAG %s", tag)

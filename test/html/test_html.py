@@ -826,3 +826,32 @@ def test_html_list_vertical_margin(tmp_path):
         """
         pdf.write_html(html, list_vertical_margin=margin_value)
     assert_pdf_equal(pdf, HERE / "html_list_vertical_margin.pdf", tmp_path)
+
+
+def test_html_page_break_before(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """Content on first page.
+        <br style="page-break-before: always">
+        Content on second page, with some slight top margin.
+        <p style="page-break-before: always">
+        Content on third page.
+        </p>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_page_break_before.pdf", tmp_path)
+
+
+def test_html_page_break_after(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """Content on first page.
+        <br style="page-break-after: always">
+        Content on second page.
+        <p style="page-break-after: always">
+        Other content on second page.
+        </p>
+        Content on third page."""
+    )
+    assert_pdf_equal(pdf, HERE / "html_page_break_after.pdf", tmp_path)

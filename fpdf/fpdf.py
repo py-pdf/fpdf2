@@ -2770,6 +2770,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             fill_opacity
             font_family
             font_size
+            font_size_pt
             font_style
             font_stretching
             intersection_rule
@@ -2807,7 +2808,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self,
         font_family=None,
         font_style=None,
-        font_size=None,
+        font_size_pt=None,
         line_width=None,
         draw_color=None,
         fill_color=None,
@@ -2819,11 +2820,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         This method starts a "q/Q" context in the page content stream,
         and inserts operators in it to initialize all the PDF settings specified.
         """
-        if "font_size_pt" in kwargs:
-            if font_size is not None:
+        if "font_size" in kwargs:
+            # At some point we may want to deprecate font_size here in favour of font_size_pt,
+            # and raise a warning if font_size is provided:
+            # * font_size_pt is more consistent with the size parameter of .set_font(), provided in points.
+            # * font_size can be misused, as users may not be aware of the difference between the 2 properties,
+            #   and may erroneously provide a value in points as font_size.
+            if font_size_pt is not None:
                 raise ValueError("font_size & font_size_pt cannot be both provided")
-            font_size = kwargs["font_size_pt"] / self.k
-            del kwargs["font_size_pt"]
+            font_size_pt = kwargs["font_size"] * self.k
+            del kwargs["font_size"]
         gs = None
         for key, value in kwargs.items():
             if key in (
@@ -2868,11 +2874,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         else:
             self._out("q")
         # All the following calls to .set*() methods invoke .out() and write to the stream buffer:
-        if font_family is not None or font_style is not None or font_size is not None:
+        if (
+            font_family is not None
+            or font_style is not None
+            or font_size_pt is not None
+        ):
             self.set_font(
                 font_family or self.font_family,
                 font_style or self.font_style,
-                font_size or self.font_size_pt,
+                font_size_pt or self.font_size_pt,
             )
         if line_width is not None:
             self.set_line_width(line_width)
@@ -3586,15 +3596,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # by popping out every GraphicsState:
         gs_stack = []
         while self._is_current_graphics_state_nested():
+            gs_stack.append(self._get_current_graphics_state())
+            self._pop_local_stack()
             # This code assumes that every Graphics State in the stack
             # has been pushed in it while adding a "q" in the PDF stream
             # (which is what FPDF.local_context() does):
             self._end_local_context()
-            gs_stack.append(self._pop_local_stack())
+        # Using a temporary GS to render header & footer:
+        self._push_local_stack()
         self.add_page(same=True)
         for prev_gs in reversed(gs_stack):
-            self._push_local_stack(prev_gs)
             self._start_local_context(**prev_gs)
+            self._push_local_stack()
+        self._pop_local_stack()
         self.x = x  # restore x but not y after drawing header
 
     def _has_next_page(self):

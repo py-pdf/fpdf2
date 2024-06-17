@@ -30,14 +30,14 @@ def scantree_dirs(path):
             yield from scantree_dirs(entry.path)
 
 
-target_dir = sys.argv[1] if len(sys.argv) > 1 else "test"
-print(f"Processing all PDF reference files in {target_dir}")
+target_dir = sys.argv[1] if len(sys.argv) > 1 else "test/"
+print(f"Processing all PDF reference files in directory {target_dir}")
 
 stdout = check_output("git diff --name-status master", shell=True)
 changed_pdf_files = [
     line[1:].strip()
     for line in stdout.decode("utf-8").splitlines()
-    if line.startswith(f"M\t{target_dir}")
+    if line.startswith(f"M\t{target_dir}") and line.endswith(".pdf")
 ]
 
 TMP_DIR.mkdir(exist_ok=True)
