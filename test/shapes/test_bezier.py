@@ -24,11 +24,11 @@ def test_quadratic_beziers(tmp_path):
     pl5 = [[20, 230], (40, 280), (60, 250)]
 
     pdf.set_fill_color(r=255, g=0, b=0)
-    pdf.bezier(pl1)
+    pdf.bezier(pl1, style="DF")
     pdf.set_fill_color(r=0, g=255, b=0)
-    pdf.bezier(pl2)
+    pdf.bezier(pl2, style="DF")
     pdf.set_fill_color(r=0, g=0, b=255)
-    pdf.bezier(pl3, closed=True)
+    pdf.bezier(pl3, style="DF", closed=True)
     pdf.bezier(pl4, style="F")
     pdf.bezier(pl5, style="D")
 
@@ -48,11 +48,11 @@ def test_cubic_beziers(tmp_path):
     pl5 = [[20, 80], (40, 90), (60, 80)]
 
     pdf.set_fill_color(r=255, g=0, b=0)
-    pdf.bezier(pl1)
+    pdf.bezier(pl1, style="DF")
     pdf.set_fill_color(r=0, g=255, b=0)
-    pdf.bezier(pl2)
+    pdf.bezier(pl2, style="DF")
     pdf.set_fill_color(r=0, g=0, b=255)
-    pdf.bezier(pl3, closed=True)
+    pdf.bezier(pl3, style="DF", closed=True)
     pdf.bezier(pl4, style="F")
     pdf.bezier(pl5, style="D")
 
@@ -70,12 +70,12 @@ def test_bezier_line_settings(tmp_path):
 
     pdf.set_fill_color(r=255, g=0, b=0)
     pdf.set_dash_pattern(dash=2, gap=3)
-    pdf.bezier(pl1)
+    pdf.bezier(pl1, style="DF")
 
     pdf.set_fill_color(r=0, g=255, b=0)
     pdf.set_dash_pattern(dash=4, gap=6)
     pdf.set_line_width(2)
-    pdf.bezier(pl2)
+    pdf.bezier(pl2, style="DF")
 
     # Reset for drawing points
     pdf.set_line_width(0.2)
@@ -84,3 +84,52 @@ def test_bezier_line_settings(tmp_path):
     draw_points(pdf, [pl1, pl2])
 
     assert_pdf_equal(pdf, HERE / "bezier_curve_line_settings.pdf", tmp_path)
+
+
+def test_bezier_chaining(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+
+    pdf.x, pdf.y = 20, pdf.h / 4 - 30
+    pdf.cell(text="Chaining quadratic curves:")
+    for i in range(4):
+        shift = 20 if i % 2 else -20
+        x1, y1 = (3 * i + 1) * pdf.w / 14, pdf.h / 4
+        x2, y2 = (3 * i + 2) * pdf.w / 14, pdf.h / 4 + shift
+        x3, y3 = (3 * i + 3) * pdf.w / 14, pdf.h / 4 + shift
+        x4, y4 = (3 * i + 4) * pdf.w / 14, pdf.h / 4
+        pdf.set_draw_color(
+            {
+                0: "#000",
+                1: "#f00",
+                2: "#0f0",
+                3: "#00f",
+            }[i % 4]
+        )
+        pdf.circle(x=x1 - 0.5, y=y1 - 0.5, r=1)
+        pdf.circle(x=x2 - 0.5, y=y2 - 0.5, r=1)
+        pdf.circle(x=x3 - 0.5, y=y3 - 0.5, r=1)
+        pdf.circle(x=x4 - 0.5, y=y4 - 0.5, r=1)
+        pdf.bezier(((x1, y1), (x2, y2), (x3, y3), (x4, y4)))
+
+    pdf.x, pdf.y = 20, pdf.h / 2 - 30
+    pdf.cell(text="Chaining cubic curves:")
+    for i in range(4):
+        shift = 20 if i % 2 else -20
+        x1, y1 = (2 * i + 1) * pdf.w / 10, pdf.h / 2
+        x2, y2 = (2 * i + 2) * pdf.w / 10, pdf.h / 2 + shift
+        x3, y3 = (2 * i + 3) * pdf.w / 10, pdf.h / 2
+        pdf.set_draw_color(
+            {
+                0: "#f00",
+                1: "#0f0",
+                2: "#00f",
+            }[i % 3]
+        )
+        pdf.circle(x=x1 - 0.5, y=y1 - 0.5, r=1)
+        pdf.circle(x=x2 - 0.5, y=y2 - 0.5, r=1)
+        pdf.circle(x=x3 - 0.5, y=y3 - 0.5, r=1)
+        pdf.bezier(((x1, y1), (x2, y2), (x3, y3)))
+
+    assert_pdf_equal(pdf, HERE / "bezier_chaining.pdf", tmp_path)

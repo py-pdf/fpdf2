@@ -170,11 +170,17 @@ from fpdf import FPDF
 pdf = FPDF()
 pdf.add_page()
 pdf.set_fill_color(r=255, g=0, b=255)
-pdf.bezier([(20, 80), (40, 20), (60, 80)])
+pdf.bezier([(20, 80), (40, 20), (60, 80)], style="DF")
 pdf.output("bezier.pdf")
 ```
 
 ![](bezier.png)
+
+One of the nice properties of bezier curves is that they can be chained:
+
+![](bezier-chaining.png)
+
+Source code: [test_bezier_chaining() in test_bezier.py](https://github.com/py-pdf/fpdf2/blob/master/test/shapes/test_bezier.py)
 
 ## Regular Polygon ##
 

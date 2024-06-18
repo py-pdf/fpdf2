@@ -1857,13 +1857,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if points not in (3, 4):
             raise ValueError(
                 "point_list should contain 3 tuples for a quadratic curve"
-                "or 4 tuples for a cubic curve."
+                " or 4 tuples for a cubic curve."
             )
-
-        if style is None:
-            style = RenderStyle.DF
-        else:
-            style = RenderStyle.coerce(style)
+        style = RenderStyle.coerce(style)
 
         # QuadraticBezierCurve and BezierCurve make use of `initial_point` when instantiated.
         # If we want to define all 3 (quad.) or 4 (cubic) points, we can set `initial_point`
