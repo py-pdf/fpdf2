@@ -164,7 +164,7 @@ pdf.output("solid_arc.pdf")
 ## Bezier Curve ##
 _New in [:octicons-tag-24: 2.7.10](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
-Using [`bezier()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.bezier) to create a cubic Bezier curve:
+Using [`bezier()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.bezier) to create a cubic Bézier curve:
 ```python
 from fpdf import FPDF
 pdf = FPDF()
@@ -176,9 +176,12 @@ pdf.output("bezier.pdf")
 
 ![](bezier.png)
 
-One of the nice properties of bezier curves is that they can be chained:
+One of the nice properties of Bézier curves is that they can be chained:
 
 ![](bezier-chaining.png)
+
+Note that, for smooth joining cubic Bézier curves, neighbor control points around the joining point must mirror each other
+(_cf._ [Wikipedia](https://en.wikipedia.org/wiki/Composite_B%C3%A9zier_curve#Smooth_joining)).
 
 Source code: [test_bezier_chaining() in test_bezier.py](https://github.com/py-pdf/fpdf2/blob/master/test/shapes/test_bezier.py)
 

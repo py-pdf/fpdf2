@@ -92,7 +92,7 @@ def test_bezier_chaining(tmp_path):
     pdf.set_font("Helvetica", size=12)
 
     pdf.x, pdf.y = 20, pdf.h / 4 - 30
-    pdf.cell(text="Chaining quadratic curves:")
+    pdf.cell(text="Chaining cubic curves:")
     for i in range(4):
         shift = 20 if i % 2 else -20
         x1, y1 = (3 * i + 1) * pdf.w / 14, pdf.h / 4
@@ -114,7 +114,7 @@ def test_bezier_chaining(tmp_path):
         pdf.bezier(((x1, y1), (x2, y2), (x3, y3), (x4, y4)))
 
     pdf.x, pdf.y = 20, pdf.h / 2 - 30
-    pdf.cell(text="Chaining cubic curves:")
+    pdf.cell(text="Chaining quadratic curves:")
     for i in range(4):
         shift = 20 if i % 2 else -20
         x1, y1 = (2 * i + 1) * pdf.w / 10, pdf.h / 2
