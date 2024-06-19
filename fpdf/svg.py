@@ -303,17 +303,17 @@ svg_attr_map = {
 @force_nodocument
 def apply_styles(stylable, svg_element):
     """Apply the known styles from `svg_element` to the pdf path/group `stylable`."""
-    html.parse_style(svg_element.attrib)
+    style = html.parse_css_style(svg_element.attrib.get("style", ""))
 
     stylable.style.auto_close = False
 
     for attr_name, converter in svg_attr_map.items():
-        value = svg_element.attrib.get(attr_name)
+        value = style.get(attr_name, svg_element.attrib.get(attr_name))
         if value:
             setattr(stylable.style, *converter(value))
 
     # handle this separately for now
-    opacity = svg_element.attrib.get("opacity")
+    opacity = style.get("opacity", svg_element.attrib.get("opacity"))
     if opacity:
         opacity = float(opacity)
         stylable.style.fill_opacity = opacity

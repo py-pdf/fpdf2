@@ -242,22 +242,17 @@ def color_as_decimal(color="#000000"):
     return color_from_hex_string(hexcolor).colors255
 
 
-def parse_style(elem_attrs):
-    """Parse `style="..."` making it's key-value pairs element's attributes"""
-    try:
-        style = elem_attrs["style"]
-    except KeyError:
-        pass
-    else:
-        for element in style.split(";"):
-            if not element:
-                continue
-
-            pair = element.split(":")
-            if len(pair) == 2 and pair[0] and pair[1]:
-                attr, value = pair
-
-                elem_attrs[attr.strip()] = value.strip()
+def parse_css_style(style_attr):
+    """Parse `style="..."` HTML attributes, and return a dict of key-value"""
+    style = {}
+    for element in style_attr.split(";"):
+        if not element:
+            continue
+        pair = element.split(":")
+        if len(pair) == 2 and pair[0] and pair[1]:
+            attr, value = pair
+            style[attr.strip()] = value.strip()
+    return style
 
 
 class HTML2FPDF(HTMLParser):
@@ -281,7 +276,8 @@ class HTML2FPDF(HTMLParser):
         tag_indents=None,
         tag_styles=None,
         list_vertical_margin=None,
-        **_,
+        heading_above=0.2,
+        heading_below=0.4,
     ):
         """
         Args:
@@ -302,6 +298,8 @@ class HTML2FPDF(HTMLParser):
             tag_styles (dict): mapping of HTML tag names to colors
             list_vertical_margin (float): size of margins that precede lists.
                 The margin value is in the chosen pdf document units.
+            heading_above (float): extra space above heading, relative to font size
+            heading_below (float): extra space below heading, relative to font size
         """
         super().__init__()
         self.pdf = pdf
@@ -347,8 +345,8 @@ class HTML2FPDF(HTMLParser):
         self.list_vertical_margin = list_vertical_margin
         self.font_color = pdf.text_color.colors255
         self.heading_level = None
-        self.heading_above = 0.2  # extra space above heading, relative to font size
-        self.heading_below = 0.4  # extra space below heading, relative to font size
+        self.heading_above = heading_above
+        self.heading_below = heading_below
         self._tags_stack = []
         self._column = self.pdf.text_columns(skip_leading_spaces=True)
         self._paragraph = self._column.paragraph()
@@ -511,13 +509,17 @@ class HTML2FPDF(HTMLParser):
                 emphasis |= TextEmphasis.I
             if self.td_th.get("U"):
                 emphasis |= TextEmphasis.U
-            style = None
+            font_style = None
             if bgcolor or emphasis:
-                style = FontFace(
+                font_style = FontFace(
                     emphasis=emphasis, fill_color=bgcolor, color=self.pdf.text_color
                 )
             self.table_row.cell(
-                text=data, align=align, style=style, colspan=colspan, rowspan=rowspan
+                text=data,
+                align=align,
+                style=font_style,
+                colspan=colspan,
+                rowspan=rowspan,
             )
             self.td_th["inserted"] = True
         elif self.table is not None:
@@ -561,9 +563,9 @@ class HTML2FPDF(HTMLParser):
         self._pre_started = False
         attrs = dict(attrs)
         LOGGER.debug("STARTTAG %s %s", tag, attrs)
-        parse_style(attrs)
+        css_style = parse_css_style(attrs.get("style", ""))
         self._tags_stack.append(tag)
-        if attrs.get("break-before") == "page":
+        if css_style.get("break-before") == "page":
             self._end_paragraph()
             # pylint: disable=protected-access
             self.pdf._perform_page_break()
@@ -606,13 +608,16 @@ class HTML2FPDF(HTMLParser):
                 align = attrs.get("align")[0].upper()
                 if not align in ["L", "R", "J", "C"]:
                     align = None
-            line_height = None
-            if "line-height" in attrs:
+            line_height = css_style.get("line-height", attrs.get("line-height"))
+            # "line-height" attributes are not valid in HTML,
+            # but we support it for backward compatibility,
+            # because fpdf2 honors it since 2.6.1 and PR #629
+            if line_height:
                 try:
                     # YYY parse and convert non-float line_height values
-                    line_height = float(attrs.get("line-height"))
+                    line_height = float(line_height)
                 except ValueError:
-                    pass
+                    line_height = None
             self._new_paragraph(align=align, line_height=line_height)
         if tag in HEADING_TAGS:
             prev_font_height = self.font_size / self.pdf.k
@@ -638,7 +643,11 @@ class HTML2FPDF(HTMLParser):
                 bottom_margin=self.heading_below * hsize,
             )
             color = None
-            if "color" in attrs:
+            if "color" in css_style:
+                color = color_as_decimal(css_style["color"])
+            elif "color" in attrs:
+                # "color" attributes are not valid in HTML,
+                # but we support it for backward compatibility:
                 color = color_as_decimal(attrs["color"])
             elif tag_style.color:
                 color = tag_style.color.colors255
@@ -650,7 +659,7 @@ class HTML2FPDF(HTMLParser):
             )
         if tag == "hr":
             self._end_paragraph()
-            width = attrs.get("width")
+            width = css_style.get("width", attrs.get("width"))
             if width:
                 if width[-1] == "%":
                     width = self.pdf.epw * int(width[:-1]) / 100
@@ -723,10 +732,14 @@ class HTML2FPDF(HTMLParser):
                 ul_prefix(attrs["type"]) if "type" in attrs else self.ul_bullet_char
             )
             self.bullet.append(bullet_char)
-            if "line-height" in attrs:
+            line_height = css_style.get("line-height", attrs.get("line-height"))
+            # "line-height" attributes are not valid in HTML,
+            # but we support it for backward compatibility,
+            # because fpdf2 honors it since 2.6.1 and PR #629
+            if line_height:
                 try:
                     # YYY parse and convert non-float line_height values
-                    self.line_height_stack.append(float(attrs.get("line-height")))
+                    self.line_height_stack.append(float(line_height))
                 except ValueError:
                     pass
             else:
@@ -740,10 +753,14 @@ class HTML2FPDF(HTMLParser):
             start = int(attrs["start"]) if "start" in attrs else 1
             self.bullet.append(start - 1)
             self.ol_type.append(attrs.get("type", "1"))
-            if "line-height" in attrs:
+            line_height = css_style.get("line-height", attrs.get("line-height"))
+            # "line-height" attributes are not valid in HTML,
+            # but we support it for backward compatibility,
+            # because fpdf2 honors it since 2.6.1 and PR #629
+            if line_height:
                 try:
                     # YYY parse and convert non-float line_height values
-                    self.line_height_stack.append(float(attrs.get("line-height")))
+                    self.line_height_stack.append(float(line_height))
                 except ValueError:
                     pass
             else:
@@ -792,12 +809,14 @@ class HTML2FPDF(HTMLParser):
                 # This may result in a FPDFException "font not found".
                 self.set_font(face)
                 self.font_family = face
-            if "size" in attrs:
+            if "font-size" in css_style:
+                self.font_size = int(css_style.get("font-size"))
+            elif "size" in attrs:
                 self.font_size = int(attrs.get("size"))
             self.set_font()
             self.set_text_color(*self.font_color)
         if tag == "table":
-            width = attrs.get("width")
+            width = css_style.get("width", attrs.get("width"))
             if width:
                 if width[-1] == "%":
                     width = self.pdf.epw * int(width[:-1]) / 100
@@ -908,7 +927,7 @@ class HTML2FPDF(HTMLParser):
             self.pdf.char_vpos = "SUP"
         if tag == "sub":
             self.pdf.char_vpos = "SUB"
-        if attrs.get("break-after") == "page":
+        if css_style.get("break-after") == "page":
             if tag in ("br", "hr", "img"):
                 self._end_paragraph()
                 # pylint: disable=protected-access

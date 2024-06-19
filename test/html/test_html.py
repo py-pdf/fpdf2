@@ -735,6 +735,7 @@ def test_html_long_ol_bullets(tmp_path):
               <li>Item 3</li>
             </ol>
         """
+    pdf.write_html(html_arabic_indian)
     html_roman = f"""
             <ol start="{10**5}" type="i">
               <li>Item 1</li>
@@ -742,8 +743,7 @@ def test_html_long_ol_bullets(tmp_path):
               <li>Item 3</li>
             </ol>
         """
-    pdf.write_html(html_arabic_indian)
-    pdf.write_html(html_roman, type="i")
+    pdf.write_html(html_roman)
     pdf.write_html(html_arabic_indian, tag_indents={"li": 50})
     pdf.write_html(html_roman, tag_indents={"li": 100})
     assert_pdf_equal(pdf, HERE / "html_long_ol_bullets.pdf", tmp_path)
@@ -871,3 +871,21 @@ def test_html_page_break_after(tmp_path):
         Content on third page."""
     )
     assert_pdf_equal(pdf, HERE / "html_page_break_after.pdf", tmp_path)
+
+
+def test_html_heading_above_below(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """
+        <h1>Top heading</h1>
+        <p>Lorem ipsum</p>
+        <h2>First heading</h2>
+        <p>Lorem ipsum</p>
+        <h2>Second heading</h2>
+        <p>Lorem ipsum</p>
+        """,
+        heading_above=1,
+        heading_below=0.5,
+    )
+    assert_pdf_equal(pdf, HERE / "html_heading_above_below.pdf", tmp_path)

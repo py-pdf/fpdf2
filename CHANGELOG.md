@@ -24,9 +24,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support for quadratic and cubic Bézier curves with [`FPDF.bezier()`](https://py-pdf.github.io/fpdf2/fpdf/Shapes.html#fpdf.fpdf.FPDF.bezier) - thanks to @awmc000
 * feature to identify the Unicode script of the input text and break it into fragments when different scripts are used, improving [text shaping](https://py-pdf.github.io/fpdf2/TextShaping.html) results
 * [`FPDF.image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): now handles `keep_aspect_ratio` in combination with an enum value provided to `x`
-* file names are mentioned in errors when `fpdf2` fails to parse a SVG image
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): now supports CSS page breaks properties : [documentation](https://py-pdf.github.io/fpdf2/HTML.html#page-breaks)
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): spacing before lists can now be adjusted via the `HTML2FPDF.list_vertical_margin` attribute - thanks to @lcgeneralprojects
+* file names are mentioned in errors when `fpdf2` fails to parse a SVG image
 ### Fixed
 * [`FPDF.local_context()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.local_context) used to leak styling during page breaks, when rendering `footer()` & `header()`
 * [`fpdf.drawing.DeviceCMYK`](https://py-pdf.github.io/fpdf2/fpdf/drawing.html#fpdf.drawing.DeviceCMYK) objects can now be passed to [`FPDF.set_draw_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [`FPDF.set_fill_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) and [`FPDF.set_text_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color) without raising a `ValueError`: [documentation](https://py-pdf.github.io/fpdf2/Text.html#text-formatting).
@@ -38,7 +38,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * default values for `top_margin` and `bottom_margin` in `HTML2FPDF._new_paragraph()` calls are now correctly converted into chosen document units.
 * In [text_columns()](https://py-pdf.github.io/fpdf2/extColumns.html), paragraph top/bottom margins didn't correctly trigger column breaks; [issue #1214](https://github.com/py-pdf/fpdf2/issues/1214)
 ### Removed
-* an obscure and undocumented [feature](https://github.com/py-pdf/fpdf2/issues/1198) of [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html), which used to magically pass local variables as arguments.
+* an obscure and undocumented [feature](https://github.com/py-pdf/fpdf2/issues/1198) of [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html), which used to magically pass instance attributes as arguments.
 ### Changed
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html) now raises an error when a single row is too high to be rendered on a single page
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): `tag_indents` can now be non-integer. Indentation of HTML elements is now independent of font size and bullet strings.
