@@ -35,6 +35,7 @@ BREAKING_SPACE_SYMBOLS = [
     "\u3000",  # | IDEOGRAPHIC SPACE
     "\u0009",  # | TAB
 ]
+BREAKING_SPACE_SYMBOLS_STR = "".join(BREAKING_SPACE_SYMBOLS)
 NBSP = "\u00a0"
 NEWLINE = "\n"
 FORM_FEED = "\u000c"
@@ -466,7 +467,7 @@ class CurrentLine:
             self.fragments.append(Fragment("", graphics_state, k, url))
         active_fragment = self.fragments[-1]
 
-        if character in BREAKING_SPACE_SYMBOLS:
+        if character in BREAKING_SPACE_SYMBOLS_STR:
             self.space_break_hint = SpaceHint(
                 original_fragment_index,
                 original_character_index,
@@ -686,7 +687,7 @@ class MultiLineBreak:
                 )
             if current_line.width + character_width > max_width:
                 if (
-                    character in BREAKING_SPACE_SYMBOLS
+                    character in BREAKING_SPACE_SYMBOLS_STR
                 ):  # must come first, always drop a current space.
                     self.character_index += 1
                     return current_line.manual_break(self.align)
