@@ -19,6 +19,38 @@ from .util import Padding
 
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
 
+"""
+We use a multi-stage strategy for building the layout of the table.
+
+Input
+  * Collect all cells and their data from the user and add them to a sparse matrix.
+    - When a cell has colspan > 1, add TableSpan.COL placeholders to occupy all the columns used.
+    - When a cell has rowspan > 1, add a TableRowStub for each occupied row (if not already present),
+      and add a TableSpan.ROW to each cell slot to occupy.
+    - When a cell has both colspan and rowspan, use COL placeholders in the first row, and only ROW
+      placeholders in the following rows.
+    - While filling the sparse matrix, remember the maximum amount of columns used.
+    - For each row, remember if it is receives row spans from above or has all new cells.
+
+Horizontal layout
+  * Determine column widths, taking gutters into account.
+    a) average subdivision of the available space (default)
+    b) user supplied absolute widths or percentages
+      - if there are more columns than specified, average them over the remaining space
+        or use the average of the specified percentages for them.
+
+Vertical layout
+  * Line wrap the cell contents to the determined width minus margins.
+  * Determine the resulting height of each cell, and the bottom of each row.
+  * Try to page break at the lowest possible row without trailing rowspans.
+  * If not possible, split a cell with rowspan, or a cell that doesn't fit on the page.
+    - Determine vertical position of content split.
+    - Possibly resize images that would overlap the split.
+    - Insert ellipsis or similar to show continuation on each side of the split.
+      (takes extra space!)
+
+"""
+
 
 class Table:
     """
@@ -54,35 +86,44 @@ class Table:
         """
         Args:
             fpdf (fpdf.FPDF): FPDF current instance
-            rows: optional. Sequence of rows (iterable) of str to initiate the table cells with text content
-            align (str, fpdf.enums.Align): optional, default to CENTER. Sets the table horizontal position relative to the page,
-                when it's not using the full page width
-            borders_layout (str, fpdf.enums.TableBordersLayout): optional, default to ALL. Control what cell borders are drawn
+            rows: (iterable of iterable of str; optional) Initiate the table cells with text content.
+            align (str, fpdf.enums.Align; optional):. Sets the table horizontal position relative to the page,
+                when it's not using the full page width (Default: "CENTER")
+            borders_layout (str, fpdf.enums.TableBordersLayout; optional): Controls which cell borders are drawn.
+                (Default: "ALL")
             cell_fill_color (float, tuple, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): optional.
                 Defines the cells background color
-            cell_fill_mode (str, fpdf.enums.TableCellFillMode): optional. Defines which cells are filled with color in the background
-            col_widths (float, tuple): optional. Sets column width. Can be a single number or a sequence of numbers
-            first_row_as_headings (bool): optional, default to True. If False, the first row of the table
-                is not styled differently from the others
-            gutter_height (float): optional vertical space between rows
-            gutter_width (float): optional horizontal space between columns
-            headings_style (fpdf.fonts.FontFace): optional, default to bold.
-                Defines the visual style of the top headings row: size, color, emphasis...
-            line_height (number): optional. Defines how much vertical space a line of text will occupy
-            markdown (bool): optional, default to False. Enable markdown interpretation of cells textual content
-            text_align (str, fpdf.enums.Align, tuple): optional, default to JUSTIFY. Control text alignment inside cells.
-            v_align (str, fpdf.enums.AlignV): optional, default to CENTER. Control vertical alignment of cells content
-            width (number): optional. Sets the table width
-            wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
-                "CHAR" for character based line wrapping.
-            padding (number, tuple, Padding): optional. Sets the cell padding. Can be a single number or a sequence of numbers, default:0
-                If padding for left and right ends up being non-zero then c_margin is ignored.
-            outer_border_width (number): optional. Sets the width of the outer borders of the table.
-                Only relevant when borders_layout is ALL or NO_HORIZONTAL_LINES. Otherwise, the border widths are controlled by FPDF.set_line_width()
-            num_heading_rows (number): optional. Sets the number of heading rows, default value is 1. If this value is not 1,
-                first_row_as_headings needs to be True if num_heading_rows>1 and False if num_heading_rows=0. For backwards compatibility,
-                first_row_as_headings is used in case num_heading_rows is 1.
-            repeat_headings (fpdf.enums.TableHeadingsDisplay): optional, indicates whether to print table headings on every page, default to 1.
+            cell_fill_mode (str, fpdf.enums.TableCellFillMode; optional): Defines which cells get a background
+                color fill. (Default: "NONE")
+            col_widths (float, sequence; optional): Set column widths. A single number (all columns equal)
+                or a sequence of numbers, one for each column. (Default: None - fill space with equal widths)
+            first_row_as_headings (bool; optional): If False, the first row is not styled differently from the
+                others. If num_heading_rows is not 1, this argument is ignored. (Default: True)
+            gutter_height (float; optional): Vertical spacing between rows. (Default: 0)
+            gutter_width (float; optional): Horizontal spacing between columns. (Default: 0)
+            headings_style (fpdf.fonts.FontFace; optional):
+                Defines the visual style of the top headings row: font size, color, emphasis, etc. (Default: bold)
+            line_height (number; optional): Defines how much vertical space a line of text will occupy
+            markdown (bool; optional): Enable markdown interpretation of text added during creation of cells.
+                (Default: False)
+            text_align (str, fpdf.enums.Align, tuple; optional):
+                Control text alignment within cells. (Default: "JUSTIFY")
+            v_align (str, fpdf.enums.AlignV; optional): Controls the vertical alignment of the cell content, if
+                the available space is taller. (Default: "CENTER")
+            width (number; optional): Sets the table width. (Default: FPDF.epw)
+            wrapmode (fpdf.enums.WrapMode; optional): "WORD" for word based line wrapping,
+                "CHAR" for character based line wrapping. (Default: "WORD")
+            padding (number, tuple, Padding; optional): Sets the cell padding. Can be a single number
+                or a sequence of numbers. If padding for left or right ends up being non-zero then the
+                respective padding value replaces c_margin. (Default: 0)
+            outer_border_width (number; optional): Sets the width of the outer borders of the table.
+                Only relevant when borders_layout is ALL or NO_HORIZONTAL_LINES. Otherwise, the border widths
+                are controlled by FPDF.set_line_width(). (Default: None)
+            num_heading_rows (number; optional): Sets the number of heading rows.
+                For backwards compatibility, in case num_heading_rows is 1, first_row_as_headings is used,
+                otherwise it is ignored. (Default: 1)
+            repeat_headings (fpdf.enums.TableHeadingsDisplay; optional): indicates whether to print table
+                headings on every page. (Default: 1)
         """
         self._fpdf = fpdf
         self.align = Align.coerce(align)
@@ -109,7 +150,14 @@ class Table:
         self._num_heading_rows = num_heading_rows
         self._repeat_headings = TableHeadingsDisplay.coerce(repeat_headings)
         self._initial_style = None
-        self.rows = []
+        # We store the cells in a sparse matrix, at least in the horizontal direction.
+        # Together with TableRowStub, this gives us a way to add rowspan placeholders in the
+        #  right place right away, without having to shuffle things around before rendering.
+        # It also makes it possible to have varying numbers of rows and columns, overlap row-
+        #  and colspans (as HTML does), or theoretically even to leave out some cells in the
+        #  middle of a table, although currently without an API to actually do so.
+        self.rows = {}
+        self._current_row = -1
 
         if padding is None:
             self.padding = Padding.new(0)
@@ -154,15 +202,16 @@ class Table:
 
     def row(self, cells=(), style=None):
         "Adds a row to the table. Returns a `Row` object."
+        self._current_row += 1
         if self._initial_style is None:
             self._initial_style = self._fpdf.font_face()
-        cur_row_no = len(self.rows)
-        if cur_row_no < self._num_heading_rows:
+        if self._current_row < self._num_heading_rows:
             style = self._headings_style
         else:
             style = self._fpdf.font_face()
-        row = TableRow(self, self._fpdf, cur_row_no, style=style)
-        self.rows.append(row)
+        row_stub = self.rows.get(self._current_row)  # we may have a TableRowStub
+        row = TableRow(self, self._fpdf, self._current_row, row_stub, style=style)
+        self.rows[self._current_row] = row
         for cell in cells:
             if isinstance(cell, dict):
                 row.cell(**cell)
@@ -194,13 +243,6 @@ class Table:
         cols_count = self.rows[0].cols_count
         if cols_count < 1:
             return False
-        for i, row in enumerate(self.rows[1:], start=2):
-            if row.cols_count != cols_count:
-                raise FPDFException(
-                    f"Inconsistent column count detected on row {i}:"
-                    f" it has {row.cols_count} columns,"
-                    f" whereas the top row has {cols_count}."
-                )
         if (self._num_heading_rows > 0) and not self._headings_style:
             raise ValueError(
                 "headings_style must be provided to FPDF.table() if num_heading_rows>1 or first_row_as_headings=True"
@@ -237,11 +279,14 @@ class Table:
         self._determine_col_extents()
 
         # Render the actual cells.
-        for i, row in enumerate(self.rows):
+        for i, row in self.rows.items():
             col_n = 0
             row_height = 0
-            for j, cell in enumerate(row.cells):
+            for j, cell in row.cells.items():
+                if isinstance(cell, TableSpan):
+                    continue
                 if j >= len(self.col_extents):
+                    print(self.col_extents)
                     raise ValueError(
                         f"Invalid .col_widths specified: missing width for table() column {j + 1} on row {i + 1}"
                     )
@@ -250,21 +295,26 @@ class Table:
                     style = self._headings_style
                 else:
                     style = cell.style or row.style
-                left = self.col_extents[col_n].left
-                right = self.col_extents[col_n + cell.colspan - 1].right
+                left = self.col_extents[j].left
+                right = self.col_extents[j + cell.colspan - 1].right
                 cell.set_cell_extents(Extents(left, right))
                 cell_height = cell.collect_cell_lines()
                 if cell_height > row_height:
                     row_height = cell_height
-                col_n += cell.colspan
 
             # YYY - handle page breaks
 
             top = self._fpdf.y
             bottom = self._fpdf.y + row_height
 
-            for j, cell in enumerate(row.cells):
+            for j, cell in row.cells.items():
+                if isinstance(cell, TableSpan):
+                    continue
 
+                if cell.rowspan > 1:
+                    cell_bottom = self._table.get_row_height(self.row_no + cell.row_span -1)
+                else:
+                    cell_bottom = bottom
                 fill = False
                 if style and style.fill_color:
                     fill = True
@@ -300,8 +350,8 @@ class Table:
             return 0
 
         is_rightmost_column = j + cell.colspan == len(self.rows[i].cells)
-        rows_count = len(self.rows)
-        is_bottom_row = i + cell.rowspan == rows_count
+        num_rows = len(self.rows)
+        is_bottom_row = i + cell.rowspan == num_rows
         border = list("LRTB")
         if self._borders_layout == TableBordersLayout.INTERNAL:
             if i == 0:
@@ -313,7 +363,7 @@ class Table:
             if is_rightmost_column:
                 border.remove("R")
         if self._borders_layout == TableBordersLayout.MINIMAL:
-            if i == 0 or i > self._num_heading_rows or rows_count == 1:
+            if i == 0 or i > self._num_heading_rows or num_rows == 1:
                 border.remove("T")
             if i > self._num_heading_rows - 1:
                 border.remove("B")
@@ -327,7 +377,7 @@ class Table:
             if not is_bottom_row:
                 border.remove("B")
         if self._borders_layout == TableBordersLayout.HORIZONTAL_LINES:
-            if rows_count == 1:
+            if num_rows == 1:
                 return 0
             border = list("TB")
             if i == 0 and "T" in border:
@@ -335,9 +385,10 @@ class Table:
             elif is_bottom_row:
                 border.remove("B")
         if self._borders_layout == TableBordersLayout.SINGLE_TOP_LINE:
-            if rows_count == 1:
+            if num_rows == 1:
                 return 0
             return "B" if i < self._num_heading_rows else 0
+        print(i, num_rows, j, len(self.rows[i].cells), cell.rowspan, is_bottom_row, cell.colspan, is_rightmost_column, border)
         return "".join(border)
 
 
@@ -358,73 +409,58 @@ class Table:
             self.col_extents.append(Extents(left=x, right=x + w))
             x += w + self._gutter_width
 
+    def add_rowspan_stub(self, row_no: int, col_no: int):
+        """ For internal use.
+            Insert a rowspan placeholder.
+        """
+        row = self.rows.get(row_no)
+        if not row:
+            row = self.rows[row_no] = TableRowStub()
+        row.set_rowspan(col_no)
+
+
+class TableRowStub:
+    """ We use this as a simple substitute for a real TableRow to store colspan placeholders.
+        When the actual TableRow is created, any already existing cells are passed in.
+    """
+    def __init__(self):
+        self.cells = {}
+
+    def set_rowspan(self, col: int):
+        self.cells[col] = TableSpan.ROW
+
 
 class TableRow:
-    "Object that `Table.row()` yields, used to build a row in a table"
+    """ Object that `Table.row()` yields, used to build a row in a table.
+    """
 
-    def __init__(self, table: Table, fpdf, row_no, style=None):
+    def __init__(self, table: Table, fpdf, row_no, row_stub, style=None):
         self._table = table
         self._fpdf = fpdf
         self.row_no = row_no
         self.style = style
-        self.cells = []
+        if row_stub:
+            self.cells = row_stub.cells
+        else:
+            self.cells = {}
+        self._next_cellpos = 0
 
     @property
     def cols_count(self):
-        return sum(getattr(cell, "colspan", cell is not None) for cell in self.cells)
+        return sum(getattr(cell, "colspan") for cell in self.cells.values() if not isinstance(cell, TableSpan))
 
     @property
     def column_indices(self):
-        columns_count = len(self.cells)
-        colidx = 0
-        indices = [colidx]
-        for jj in range(columns_count - 1):
-            colidx += self.cells[jj].colspan
-            indices.append(colidx)
+        indices = []
+        for i, cell in self.cells.items():
+            if isinstance(cell, TableCell):
+                indices.append(i)
         return indices
 
     @property
     def max_rowspan(self):
-        spans = {cell.rowspan for cell in self.cells if cell is not None}
+        spans = {cell.rowspan for cell in self.cells.values() if isinstance(cell, TableCell)}
         return max(spans) if len(spans) else 1
-
-    def convert_spans(self, active_rowspans):
-        # convert colspans
-        prev_col = 0
-        cells = []
-        for i, cell in enumerate(self.cells):
-            if cell is None:
-                continue
-            if cell == TableSpan.COL:
-                prev_cell = cells[prev_col]
-                if not isinstance(prev_cell, Cell):
-                    raise FPDFException(
-                        "Invalid location for TableSpan.COL placeholder entry"
-                    )
-                cells[prev_col] = replace(prev_cell, colspan=prev_cell.colspan + 1)
-                cells.append(None)  # processed
-            else:
-                cells.append(cell)
-                prev_col = i
-                if isinstance(cell, Cell) and cell.colspan > 1:  # expand any colspans
-                    cells.extend([None] * (cell.colspan - 1))
-        # now we can correctly interpret active_rowspans
-        remaining_rowspans = {}
-        for k, v in active_rowspans.items():
-            cells.insert(k, None)
-            if v > 1:
-                remaining_rowspans[k] = v - 1
-        # accumulate any rowspans
-        reverse_rowspans = []
-        for i, cell in enumerate(cells):
-            if isinstance(cell, Cell) and cell.rowspan > 1:
-                for k in range(i, i + cell.colspan):
-                    remaining_rowspans[k] = cell.rowspan - 1
-            elif cell == TableSpan.ROW:
-                reverse_rowspans.append(i)
-                cells[i] = None  # processed
-        self.cells = cells
-        return remaining_rowspans, reverse_rowspans
 
     def cell(
         self,
@@ -473,10 +509,25 @@ class TableRow:
                 beginning will be skipped if True. (Default: False)
         """
 
-        if isinstance(text, TableSpan):
-            # Special placeholder object, converted to colspan/rowspan during processing
-            self.cells.append(text)
-            return text
+        # Find the next empty slot.
+        while self.cells.get(self._next_cellpos):
+            self._next_cellpos += 1
+
+        # Fill in colspan placeholders (there may already be rowspan placeholders there).
+        for col_offset in range(1, colspan):
+            colpos = self._next_cellpos + col_offset
+            if self.cells.get(colpos):
+                self.cells[colpos] = TableSpan.BOTH
+            else:
+                self.cells[colpos] = TableSpan.COL
+
+        # Fill in rowspan placeholders (nothing else can be there yet).
+        for row_offset in range(1, rowspan):
+            rowpos = self.row_no + row_offset
+            self._table.add_rowspan_stub(rowpos, self._next_cellpos)
+            for col_offset in range(1, colspan):
+                colpos = self._next_cellpos + col_offset
+                self._table.add_rowspan_stub(rowpos, colpos)
 
         if not style:
             # pylint: disable=protected-access
@@ -490,7 +541,7 @@ class TableRow:
         cell = TableCell(
             self,
             self._table,
-            len(self.cells),
+            self._next_cellpos,
             self._fpdf,
             text=text,
             text_align=align if  align else self._table.text_align,
@@ -507,7 +558,7 @@ class TableRow:
             wrapmode=wrapmode,
             skip_leading_spaces=skip_leading_spaces,
         )
-        self.cells.append(cell)
+        self.cells[self._next_cellpos] = cell
         return cell
 
 class TableCell(TextColumns):
@@ -543,7 +594,7 @@ class TableCell(TextColumns):
         self.style = style
         self.colspan = colspan
         self.rowspan = rowspan
-        self.borders = self._table.get_cell_borders(row.row_no, cell_no, self)
+        self.borders = ""  # can only be determined before rendering
         if padding:
             self.padding = padding
         else:
@@ -573,6 +624,7 @@ class TableCell(TextColumns):
         self._text_lines = self.collect_lines()
         self.text_height = sum(l.line.height for l in self._text_lines)
         tb_border_w = 0
+        self.borders = self._table.get_cell_borders(self._row.row_no, self.cell_no, self)
         for c in "TB":
             if self.borders and (self.borders == 1 or c in self.borders):
                 tb_border_w += self.pdf.line_width

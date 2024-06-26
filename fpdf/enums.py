@@ -353,6 +353,9 @@ class TableSpan(CoerciveEnum):
     COL = intern("COL")
     "Mark this cell as a continuation of the previous column"
 
+    BOTH = intern("BOTH")
+    "Mark this cell as an overlap of a row- and columnspan."
+
 
 class TableHeadingsDisplay(CoerciveIntEnum):
     "Defines how the table headings should be displayed"
