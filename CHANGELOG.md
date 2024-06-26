@@ -41,7 +41,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Changed
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html) now raises an error when a single row is too high to be rendered on a single page
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): `tag_indents` can now be non-integer. Indentation of HTML elements is now independent of font size and bullet strings.
-* improved performance of font glyph selection by using functools cache.
+* improved performance of font glyph selection by using functools cache
 
 ## [2.7.9] - 2024-05-17
 ### Added
