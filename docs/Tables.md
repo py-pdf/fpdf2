@@ -224,6 +224,8 @@ The cell color is set following those settings, ordered by priority:
 4. The table setting `cell_fill_color`, if `cell_fill_mode` indicates to fill a cell
 5. The document `.fill_color` set before rendering the table
 
+_New in [:octicons-tag-24: 2.7.9](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
 Finally, it is possible to define your own cell-filling logic:
 
 ```python

@@ -364,7 +364,10 @@ def rgb8(r, g, b, a=None):
     Raises:
         ValueError: if any components are not in their valid interval.
     """
-    if a is not None:
+    if a is None:
+        if r == g == b:
+            return DeviceGray(r / 255.0)
+    else:
         a /= 255.0
 
     return DeviceRGB(r / 255.0, g / 255.0, b / 255.0, a)
@@ -393,7 +396,7 @@ def gray8(g, a=None):
 
 
 def convert_to_device_color(r, g=-1, b=-1):
-    if isinstance(r, (DeviceGray, DeviceRGB)):
+    if isinstance(r, (DeviceCMYK, DeviceGray, DeviceRGB)):
         # Note: in this case, r is also a Sequence
         return r
     if isinstance(r, str) and r.startswith("#"):

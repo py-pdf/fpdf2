@@ -53,17 +53,18 @@ def test_html_features(tmp_path):
     pdf.write_html("<h4>h4</h4>")
     pdf.write_html("<h5>h5</h5>")
     pdf.write_html("<h6>h6</h6>")
-    pdf.write_html("<br />")
-    pdf.write_html("<hr />")
-    pdf.write_html("<br />")
-    pdf.write_html("<br />")
+    pdf.write_html("<p>Rendering two &lt;hr&gt; tags:</p>")
+    pdf.write_html('<hr style="width: 50%">')
+    pdf.write_html("<hr>")
+    # Now inserting <br> tags until a page jump is triggered:
+    for _ in range(24):
+        pdf.write_html("<br>")
     pdf.write_html("<pre>i am preformatted text.</pre>")
     pdf.write_html("<blockquote>hello blockquote</blockquote>")
     pdf.write_html("<ul><li>li1</li><li>another</li><li>l item</li></ul>")
     pdf.write_html("<ol><li>li1</li><li>another</li><li>l item</li></ol>")
     pdf.write_html("<dl><dt>description title</dt><dd>description details</dd></dl>")
-    pdf.write_html('<table width="50"></table>')
-    pdf.write_html("<img></img>")
+    pdf.write_html("<br><br>")
     pdf.write_html(
         "<table>"
         "  <thead>"
@@ -90,7 +91,7 @@ def test_html_features(tmp_path):
         "  </tfoot>"
         "</table>"
     )
-    pdf.write_html('<table width="50"></table>')
+    pdf.write_html("<br>")
     pdf.write_html(
         '<table width="50%">'
         "  <thead>"
@@ -172,6 +173,10 @@ def test_html_features(tmp_path):
     pdf.add_page()
     img_path = HERE.parent / "image/png_images/c636287a4d7cb1a36362f7f236564cef.png"
     pdf.write_html(f"<img src=\"{img_path}\" height='300' width='300'>")
+    # With an (incorrect) trailing slash:
+    pdf.write_html(f"<img src=\"{img_path}\" height='300' width='300'/>")
+    # With an (incorrect) end tag:
+    pdf.write_html(f"<img src=\"{img_path}\" height='300' width='300'></img>")
 
     assert_pdf_equal(pdf, HERE / "html_features.pdf", tmp_path)
 
@@ -194,25 +199,12 @@ def test_html_customize_ul(tmp_path):
         <li><b>term1</b>: definition1</li>
         <li><b>term2</b>: definition2</li>
     </ul>"""
-
-    # 1. Customizing through class attributes:
-    class CustomPDF(FPDF):
-        li_tag_indent = 5
-        ul_bullet_char = "\x86"
-
-    pdf = CustomPDF()
+    pdf = FPDF()
     pdf.set_font_size(30)
     pdf.add_page()
     with pytest.warns(DeprecationWarning):  # li_tag_indent
-        pdf.write_html(html)
-        pdf.ln()
-        # 2. Customizing through instance attributes:
-        pdf.li_tag_indent = 10
-        pdf.ul_bullet_char = "\x9b"
-        pdf.write_html(html)
-        pdf.ln()
-        # 3. Customizing through optional method arguments:
-        for indent, bullet in ((15, "\xac"), (20, "\xb7")):
+        # Customizing through optional method arguments:
+        for indent, bullet in ((5, "\x86"), (10, "\x9b"), (15, "\xac"), (20, "\xb7")):
             pdf.write_html(html, li_tag_indent=indent, ul_bullet_char=bullet)
             pdf.ln()
     assert_pdf_equal(pdf, HERE / "html_customize_ul.pdf", tmp_path)
@@ -440,10 +432,11 @@ def test_html_whitespace_handling(tmp_path):  # Issue 547
 <p>
 <b>Testing   </b> paragraph blocks
         that <i>span</i> <b>multiple lines</b>.
-    Testing tabs       and    spaces<br>
-    and break tags.<br>
+    Testing tabs       and    spaces
+    <br>and break tags.
 </p>
-<code>Testing code blocks with tabs      and    spaces.</code><br>
+<code>Testing code blocks with tabs      and    spaces.</code>
+<br>
 <pre>
 Testing pre blocks
 that span multiple lines
@@ -457,8 +450,8 @@ and have tabs    and    spaces.
 </code></pre>
 
 <p>Testing unicode nbsp \u00a0\u00a0\u00a0\u00a0,
-and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.<br>
-    \u00a0&nbsp;&nbsp;Testing leading nbsp
+and html nbsp &nbsp;&nbsp;&nbsp;&nbsp;.
+<br>\u00a0&nbsp;&nbsp;Testing leading nbsp
 </p>
 </body>
 """
@@ -492,12 +485,24 @@ def test_html_img_not_overlapping(tmp_path):
     pdf.add_page()
     pdf.write_html(
         """<img src="test/image/png_images/affc57dfffa5ec448a0795738d456018.png"/>
-<p>text</p>
-"""
+           <p>text</p>"""
     )
     assert_pdf_equal(
         pdf,
         HERE / "html_img_not_overlapping.pdf",
+        tmp_path,
+    )
+
+
+def test_html_img_without_height_at_page_bottom_triggers_page_break(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.y = 200
+    img_path = HERE.parent / "image/png_images/c636287a4d7cb1a36362f7f236564cef.png"
+    pdf.write_html(f'<img width="500" src="{img_path}">')
+    assert_pdf_equal(
+        pdf,
+        HERE / "html_img_without_height_at_page_bottom_triggers_page_break.pdf",
         tmp_path,
     )
 
@@ -650,7 +655,16 @@ def test_html_blockquote_indent(tmp_path):  # issue-1074
     pdf = FPDF()
     pdf.add_page()
     html = "Text before<blockquote>foo</blockquote>Text afterwards"
-    pdf.write_html(html, tag_indents={"blockquote": 5})
+    pdf.write_html(html, tag_indents={"blockquote": 20})
+    html = (
+        "<blockquote>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod"
+        "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,"
+        "quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu"
+        "fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,"
+        "sunt in culpa qui officia deserunt mollit anim id est laborum.</blockquote>"
+    )
+    pdf.write_html(html, tag_indents={"blockquote": 40})
     assert_pdf_equal(pdf, HERE / "html_blockquote_indent.pdf", tmp_path)
 
 
@@ -658,7 +672,9 @@ def test_html_li_tag_indent(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     with pytest.warns(DeprecationWarning):
-        pdf.write_html("<ul><li>item</li></ul>", li_tag_indent=10)
+        pdf.write_html("<ul><li>item 1</li></ul>", li_tag_indent=40)
+        pdf.write_html("<ul><li>item 2</li></ul>", li_tag_indent=50)
+        pdf.write_html("<ul><li>item 3</li></ul>", li_tag_indent=60)
     assert_pdf_equal(pdf, HERE / "html_li_tag_indent.pdf", tmp_path)
 
 
@@ -699,3 +715,159 @@ def test_html_ol_ul_line_height(tmp_path):
     </ul>"""
     )
     assert_pdf_equal(pdf, HERE / "html_ol_ul_line_height.pdf", tmp_path)
+
+
+def test_html_long_list_entries(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    html = f"<ul><li>{'A ' * 200}</li></ul>"
+    pdf.write_html(html)
+    assert_pdf_equal(pdf, HERE / "html_long_list_entries.pdf", tmp_path)
+
+
+def test_html_long_ol_bullets(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    html_arabic_indian = f"""
+            <ol start="{10**100}">
+              <li>Item 1</li>
+              <li>Item 2</li>
+              <li>Item 3</li>
+            </ol>
+        """
+    html_roman = f"""
+            <ol start="{10**5}" type="i">
+              <li>Item 1</li>
+              <li>Item 2</li>
+              <li>Item 3</li>
+            </ol>
+        """
+    pdf.write_html(html_arabic_indian)
+    pdf.write_html(html_roman, type="i")
+    pdf.write_html(html_arabic_indian, tag_indents={"li": 50})
+    pdf.write_html(html_roman, tag_indents={"li": 100})
+    assert_pdf_equal(pdf, HERE / "html_long_ol_bullets.pdf", tmp_path)
+
+
+def test_html_measurement_units(tmp_path):
+    for unit in ["pt", "mm", "cm", "in"]:
+        pdf = FPDF(unit=unit)
+        pdf.add_page()
+        html = """
+                <ul>
+                    <li>Item 1</li>
+                    <li>Item 2</li>
+                    <li>Item 3</li>
+                </ul>
+                <ol>
+                    <li>Item 1</li>
+                    <li>Item 2</li>
+                    <li>Item 3</li>
+                </ol>
+                <blockquote>Blockquote text</blockquote>
+                <dt>Description title</dt>
+                <dd>Description details</dd>
+            """
+        pdf.write_html(html)
+        assert_pdf_equal(pdf, HERE / "html_measurement_units.pdf", tmp_path)
+
+
+def test_bulleted_paragraphs():
+    pdf = FPDF()
+    pdf.add_page()
+    text_columns = pdf.text_columns(skip_leading_spaces=True)
+    cases = [
+        {"indent": 1, "bullet_string": None},
+        {
+            "indent": 10,
+            "bullet_string": "",
+            "bullet_r_margin": 2,
+        },
+        {
+            "indent": 20,
+            "bullet_string": "a",
+            "bullet_r_margin": 0,
+        },
+        {
+            "indent": -20,
+            "bullet_string": "abcd",
+            "bullet_r_margin": 4,
+        },
+        {
+            "indent": 1000,
+            "bullet_string": "abcd\nfghi",
+            "bullet_r_margin": -3,
+        },
+    ]
+    pdf.set_font("helvetica", "B", 16)
+    for case in cases:
+        try:
+            text_columns.paragraph(
+                indent=case.get("indent"),
+                bullet_string=case.get("bullet_string"),
+                bullet_r_margin=case.get("bullet_r_margin"),
+            )
+            text_columns.end_paragraph()
+        except FPDFException as error:
+            pytest.fail(
+                f"case: (indent: {case['indent']}, bullet_string: {case['bullet']})\n"
+                + str(error)
+            )
+    bad_bullet_string = "我"
+    with pytest.raises(FPDFException) as error:
+        text_columns.paragraph(indent=1, bullet_string=bad_bullet_string)
+    expected_msg = (
+        f'Character "{bad_bullet_string}" at index {0} in text is outside the range of characters '
+        f'supported by the font used: "{pdf.font_family+pdf.font_style}". Please consider using a Unicode font.'
+    )
+    assert str(error.value) == expected_msg
+
+
+def test_html_list_vertical_margin(tmp_path):
+    pdf = FPDF()
+    for margin_value in (None, 4, 8, 16):
+        pdf.add_page()
+        html = f"""
+            This page uses `list_vertical_margin` value of {margin_value}
+             <ul>
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ul>
+            <ol>
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ol>
+        """
+        pdf.write_html(html, list_vertical_margin=margin_value)
+    assert_pdf_equal(pdf, HERE / "html_list_vertical_margin.pdf", tmp_path)
+
+
+def test_html_page_break_before(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """Content on first page.
+        <br style="break-before: page">
+        Content on second page, with some slight top margin.
+        <p style="break-before: page">
+        Content on third page.
+        </p>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_page_break_before.pdf", tmp_path)
+
+
+def test_html_page_break_after(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """Content on first page.
+        <br style="break-after: page">
+        Content on second page.
+        <p style="break-after: page">
+        Other content on second page.
+        </p>
+        Content on third page."""
+    )
+    assert_pdf_equal(pdf, HERE / "html_page_break_after.pdf", tmp_path)

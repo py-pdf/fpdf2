@@ -1,11 +1,9 @@
 from pathlib import Path
 from pytest import raises, warns
-
 import qrcode
-
 from fpdf.template import Template, FPDFException
-
 from ..conftest import assert_pdf_equal
+from test.template.charwrap_test_elements import elements as charwrap_elements
 
 HERE = Path(__file__).resolve().parent
 
@@ -133,6 +131,22 @@ def test_template_nominal_hardcoded(tmp_path):
     ]
     tmpl = Template(format="A4", elements=elements, title="Sample Invoice")
     tmpl.add_page()
+    tmpl["company_name"] = "Sample Company"
+    assert tmpl["company_name"] == "Sample Company"  # testing Template.__getitem__
+    tmpl["company_logo"] = HERE.parent.parent / "docs/fpdf2-logo.png"
+    assert_pdf_equal(tmpl, HERE / "template_nominal_hardcoded.pdf", tmp_path)
+
+
+def test_template_nominal_json(tmp_path):
+    """The contents of "nominal.json" must be exactly equivalent to the
+    literal dict in test_template_nominal_hardcoded() above, since
+    the same test file is used.
+    When changes are necessary, ideally edit the JSON, then generate the Python
+    list-of-dicts from that.
+    """
+    tmpl = Template(format="A4", title="Sample Invoice")
+    tmpl.add_page()
+    tmpl.parse_json(HERE / "nominal.json")
     tmpl["company_name"] = "Sample Company"
     assert tmpl["company_name"] == "Sample Company"  # testing Template.__getitem__
     tmpl["company_logo"] = HERE.parent.parent / "docs/fpdf2-logo.png"
@@ -421,6 +435,12 @@ def test_template_badinput():
         with warns(DeprecationWarning):
             tmpl = Template()
             tmpl.render(dest="whatever")
+    with raises(KeyError):
+        tmpl.parse_json(HERE / "mandmissing.json")
+    with raises(TypeError):
+        tmpl.parse_json(HERE / "badtype.json")
+    with raises(ValueError):
+        tmpl.parse_json(HERE / "badcolor.json")
 
 
 def test_template_code39(tmp_path):  # issue-161
@@ -589,3 +609,10 @@ def test_template_split_multicell():
     tmpl = Template(format="A4", unit="pt", elements=elements)
     res = tmpl.split_multicell(text, "multline_text")
     assert res == expected
+
+
+def test_template_wrapmode(tmp_path):
+    # Test that wrap mode can optionally be used to set wrapping using characters instead of words.
+    tmpl = Template(elements=charwrap_elements)
+    tmpl.add_page()
+    assert_pdf_equal(tmpl, HERE / "template_wrapmode.pdf", tmp_path)

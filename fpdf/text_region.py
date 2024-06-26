@@ -6,6 +6,8 @@ from .enums import Align, XPos, YPos, WrapMode
 from .image_datastructures import VectorImageInfo
 from .image_parsing import preload_image
 from .line_break import MultiLineBreak, FORM_FEED
+from .util import get_scale_factor
+
 
 # Since Python doesn't have "friend classes"...
 # pylint: disable=protected-access
@@ -49,6 +51,25 @@ class LineWrapper(NamedTuple):
     last_line: bool = False
 
 
+class Bullet:
+    def __init__(
+        self,
+        bullet_fragments,
+        text_line,
+        bullet_r_margin,
+    ):
+        self.fragments = bullet_fragments
+        self.text_line = text_line
+        self.r_margin = bullet_r_margin
+        self.rendered_flag = False
+
+    def get_fragments_width(self):
+        fragments_width = 0
+        for frag in self.fragments:
+            fragments_width += frag.get_width()
+        return fragments_width
+
+
 class Paragraph:  # pylint: disable=function-redefined
     def __init__(
         self,
@@ -57,6 +78,9 @@ class Paragraph:  # pylint: disable=function-redefined
         line_height=None,
         top_margin: float = 0,
         bottom_margin: float = 0,
+        indent: float = 0,
+        bullet_r_margin=None,
+        bullet_string: str = "",
         skip_leading_spaces: bool = False,
         wrapmode: WrapMode = None,
     ):
@@ -75,12 +99,24 @@ class Paragraph:  # pylint: disable=function-redefined
             self.line_height = line_height
         self.top_margin = top_margin
         self.bottom_margin = bottom_margin
+        self.indent = indent
         self.skip_leading_spaces = skip_leading_spaces
         if wrapmode is None:
             self.wrapmode = self._region.wrapmode
         else:
             self.wrapmode = WrapMode.coerce(wrapmode)
         self._text_fragments = []
+        if bullet_r_margin is None:
+            # Default value of 2 to be multiplied by the conversion factor
+            # for bullet_r_margin is given in mm
+            bullet_r_margin = 2 * get_scale_factor("mm") / self.pdf.k
+        if bullet_string:
+            self.bullet = Bullet(
+                *self.generate_bullet_frags_and_tl(bullet_string, bullet_r_margin),
+                bullet_r_margin,
+            )
+        else:
+            self.bullet = None
 
     def __str__(self):
         return (
@@ -106,6 +142,32 @@ class Paragraph:  # pylint: disable=function-redefined
                 frag.link = link
         self._text_fragments.extend(fragments)
 
+    def generate_bullet_frags_and_tl(self, bullet_string: str, bullet_r_margin: float):
+        if not bullet_string:
+            return None
+        bullet_string = self.pdf.normalize_text(bullet_string)
+        if not self.pdf.font_family:
+            raise FPDFException("No font set, you need to call set_font() beforehand")
+        bullet_fragments = self.pdf._preload_font_styles(bullet_string, markdown=False)
+        fragments_width = 0
+        for frag in bullet_fragments:
+            fragments_width += frag.get_width()
+        bullet_line_break = MultiLineBreak(
+            bullet_fragments,
+            max_width=self._region.get_width,
+            margins=(
+                self.pdf.c_margin + (self.indent - fragments_width - bullet_r_margin),
+                self.pdf.c_margin,
+            ),
+            align=self.text_align or self._region.text_align or Align.L,
+            wrapmode=self.wrapmode,
+            line_height=self.line_height,
+            skip_leading_spaces=self.skip_leading_spaces
+            or self._region.skip_leading_spaces,
+        )
+        bullet_text_line = bullet_line_break.get_line()
+        return bullet_fragments, bullet_text_line
+
     def ln(self, h=None):
         if not self.pdf.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
@@ -120,7 +182,7 @@ class Paragraph:  # pylint: disable=function-redefined
         multi_line_break = MultiLineBreak(
             self._text_fragments,
             max_width=self._region.get_width,
-            margins=(self.pdf.c_margin, self.pdf.c_margin),
+            margins=(self.pdf.c_margin + self.indent, self.pdf.c_margin),
             align=self.text_align or self._region.text_align or Align.L,
             print_sh=print_sh,
             wrapmode=self.wrapmode,
@@ -220,6 +282,7 @@ class ImageParagraph:
                 x += (col_width - w) / 2
         if is_svg:
             return self.region.pdf._vector_image(
+                name=self.name,
                 svg=self.img,
                 info=self.info,
                 x=x,
@@ -326,8 +389,26 @@ class ParagraphCollectorMixin:
         skip_leading_spaces: bool = False,
         top_margin=0,
         bottom_margin=0,
+        indent=0,
+        bullet_string="",
+        bullet_r_margin=None,
         wrapmode: WrapMode = None,
     ):
+        """
+        Args:
+            text_align (Align, optional): the horizontal alignment of the paragraph.
+            line_height (float, optional): factor by which the line spacing will be different from the font height. (Default: by region)
+            top_margin (float, optional):  how much spacing is added above the paragraph.
+                No spacing will be added at the top of the paragraph if the current y position is at (or above) the
+                top margin of the page. (Default: 0.0)
+            bottom_margin (float, optional): those two values determine how much spacing is added below the paragraph.
+                No spacing will be added at the bottom if it would result in overstepping the bottom margin of the page. (Default: 0.0)
+            indent (float, optional): determines the indentation of the paragraph. (Default: 0.0)
+            bullet_string (str, optional): determines the fragments and text lines of the bullet. (Default: "")
+            bullet_r_margin (float, optional): determines the spacing between the bullet and the bulleted line
+            skip_leading_spaces (float, optional): removes all space characters at the beginning of each line. (Default: False)
+            wrapmode (WrapMode): determines the way text wrapping is handled. (Default: None)
+        """
         if self._active_paragraph == "EXPLICIT":
             raise FPDFException("Unable to nest paragraphs.")
         p = Paragraph(
@@ -338,6 +419,9 @@ class ParagraphCollectorMixin:
             wrapmode=wrapmode,
             top_margin=top_margin,
             bottom_margin=bottom_margin,
+            indent=indent,
+            bullet_string=bullet_string,
+            bullet_r_margin=bullet_r_margin,
         )
         self._paragraphs.append(p)
         self._active_paragraph = "EXPLICIT"
@@ -426,6 +510,8 @@ class TextRegion(ParagraphCollectorMixin):
             else:
                 text_line = tl_wrapper.line
                 text_rendered = False
+                cur_paragraph = tl_wrapper.paragraph
+                cur_bullet = cur_paragraph.bullet
                 for frag in text_line.fragments:
                     if frag.characters:
                         text_rendered = True
@@ -433,10 +519,11 @@ class TextRegion(ParagraphCollectorMixin):
                 if (
                     text_rendered
                     and tl_wrapper.first_line
-                    and tl_wrapper.paragraph.top_margin
+                    and not cur_bullet
+                    and cur_paragraph.top_margin
                     and self.pdf.y > self.pdf.t_margin
                 ):
-                    self.pdf.y += tl_wrapper.paragraph.top_margin
+                    self.pdf.y += cur_paragraph.top_margin
                 else:
                     if self.pdf.y + text_line.height > bottom:
                         last_line_height = prev_line_height
@@ -446,6 +533,22 @@ class TextRegion(ParagraphCollectorMixin):
                 col_left, col_right = self.current_x_extents(self.pdf.y, 0)
                 if self.pdf.x < col_left or self.pdf.x >= col_right:
                     self.pdf.x = col_left
+                self.pdf.x += cur_paragraph.indent
+                if cur_bullet and not cur_bullet.rendered_flag:
+                    bullet_indent_shift = (
+                        cur_bullet.get_fragments_width() + cur_bullet.r_margin
+                    )
+                    self.pdf.x -= bullet_indent_shift
+                    self.pdf._render_styled_text_line(
+                        cur_bullet.text_line,
+                        h=cur_bullet.text_line.height,
+                        border=0,
+                        new_x=XPos.LEFT,
+                        new_y=YPos.TOP,
+                        fill=False,
+                    )
+                    cur_bullet.rendered_flag = True
+                    self.pdf.x += bullet_indent_shift
                 # Don't check the return, we never render past the bottom here.
                 self.pdf._render_styled_text_line(
                     text_line,
@@ -455,10 +558,11 @@ class TextRegion(ParagraphCollectorMixin):
                     new_y=YPos.NEXT,
                     fill=False,
                 )
+                self.pdf.x -= cur_paragraph.indent
                 if tl_wrapper.last_line:
-                    margin = tl_wrapper.paragraph.bottom_margin
+                    margin = cur_paragraph.bottom_margin
                     if margin and text_rendered and (self.pdf.y + margin) < bottom:
-                        self.pdf.y += tl_wrapper.paragraph.bottom_margin
+                        self.pdf.y += cur_paragraph.bottom_margin
                 rendered_lines += 1
                 if text_line.trailing_form_feed:  # column break
                     break
@@ -614,7 +718,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
         _first_page_top = max(self.pdf.t_margin, self.pdf.y)
         self._render_page_lines(text_lines, _first_page_top, page_bottom)
         while text_lines:
-            self.pdf.add_page(same=True)
+            self.pdf._perform_page_break()
             self._cur_column = 0
             self._render_page_lines(text_lines, self.pdf.y, page_bottom)
 

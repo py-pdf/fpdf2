@@ -271,9 +271,7 @@ class TTFFont:
         text_width = 0
         for pos in glyph_positions:
             text_width += (
-                round(self.scale * (pos.x_advance + pos.x_offset) + 0.001)
-                * font_size_pt
-                * 0.001
+                round(self.scale * pos.x_advance + 0.001) * font_size_pt * 0.001
             )
         return (len(glyph_positions), text_width)
 

@@ -1,0 +1,17 @@
+[
+	{
+		"name": "company_logo",
+		"type": "I",
+		"x1": 20,
+		"y1": 20,
+		"y2": 70,
+		"font": null,
+		"size": 0,
+		"bold": false,
+		"italic": false,
+		"underline": false,
+		"foreground": 0,
+		"text": "logo",
+		"priority": 2
+	}
+]

@@ -59,7 +59,8 @@
         "doc",
         "infra",
         "maintenance",
-        "question"
+        "question",
+        "bug"
       ]
     },
     {
@@ -1168,6 +1169,34 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/12984626?v=4",
       "profile": "http://www.carlhiggs.com",
       "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "awmc000",
+      "name": "awmc000",
+      "avatar_url": "https://avatars.githubusercontent.com/u/98981929?v=4",
+      "profile": "https://github.com/awmc000",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "smitelli",
+      "name": "Scott Smitelli",
+      "avatar_url": "https://avatars.githubusercontent.com/u/935080?v=4",
+      "profile": "https://www.scottsmitelli.com",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "lcgeneralprojects",
+      "name": "lcgeneralprojects",
+      "avatar_url": "https://avatars.githubusercontent.com/u/102996639?v=4",
+      "profile": "https://github.com/lcgeneralprojects",
+      "contributions": [
+        "bug",
         "code"
       ]
     }

@@ -46,7 +46,11 @@ For all text insertion methods, the relevant font related properties (eg. font/s
 * [`.set_draw_color()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color) - for cell borders
 * [`.set_fill_color()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) - for the background
 
-In addition, some of the methods can optionally use [markdown](TextStyling.md#markdowntrue) or [HTML](HTML.md) markup in the supplied text in order to change the font style (bold/italic/underline) of parts of the output.
+All three `set_*_colors()` methods accept either a single greyscale value, 3 values as RGB components, a single `#abc` or `#abcdef` hexadecimal color string, or an instance of [`fpdf.drawing.DeviceCMYK`](https://py-pdf.github.io/fpdf2/fpdf/drawing.html#fpdf.drawing.DeviceCMYK), [`fpdf.drawing.DeviceRGB`](https://py-pdf.github.io/fpdf2/fpdf/drawing.html#fpdf.drawing.DeviceRGB) or [`fpdf.drawing.DeviceGray`](https://py-pdf.github.io/fpdf2/fpdf/drawing.html#fpdf.drawing.DeviceGray).
+You can even use [named web colors](https://en.wikipedia.org/wiki/Web_colors#HTML_color_names) by using [`html.color_as_decimal()`](fpdf/html.html#fpdf.html.color_as_decimal).
+
+More text styling options can be found on the page [Text styling](TextStyling.md),
+including [Markdown syntax](TextStyling.md#markdowntrue) and [HTML markup](HTML.md).
 
 ## Change in current position
 `.cell()` and `.multi_cell()` let you specify where the current position (`.x`/`.y`) should go after the call.
