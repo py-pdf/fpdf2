@@ -3437,7 +3437,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def _parse_chars(self, text: str, markdown: bool) -> Iterator[Fragment]:
         "Split text into fragments"
-        if not markdown and not self.is_ttf_font:
+        if not markdown and not self.text_shaping and not self._fallback_font_ids:
             yield Fragment(text, self._get_current_graphics_state(), self.k)
             return
         txt_frag, in_bold, in_italics, in_underline = (
