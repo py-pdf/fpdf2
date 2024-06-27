@@ -524,10 +524,9 @@ class TextRegion(ParagraphCollectorMixin):
                     and self.pdf.y > self.pdf.t_margin
                 ):
                     self.pdf.y += cur_paragraph.top_margin
-                else:
-                    if self.pdf.y + text_line.height > bottom:
-                        last_line_height = prev_line_height
-                        break
+                if self.pdf.y + text_line.height > bottom:
+                    last_line_height = prev_line_height
+                    break
                 prev_line_height = last_line_height
                 last_line_height = text_line.height
                 col_left, col_right = self.current_x_extents(self.pdf.y, 0)
