@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, TitleStyle, errors
+from fpdf import FPDF, TextStyle, errors
 
 from test.conftest import assert_pdf_equal
 
@@ -77,7 +77,7 @@ def test_2_pages_outline(tmp_path):
     pdf.set_font("Helvetica")
     pdf.set_section_title_styles(
         # Level 0 titles:
-        TitleStyle(
+        TextStyle(
             font_family="Times",
             font_style="B",
             font_size_pt=24,
@@ -161,7 +161,7 @@ def test_toc_without_font_style(tmp_path):  # issue-676
     pdf = FPDF()
     pdf.set_font("helvetica")
     pdf.set_section_title_styles(
-        level0=TitleStyle(font_size_pt=28, l_margin=10), level1=TitleStyle()
+        level0=TextStyle(font_size_pt=28, l_margin=10), level1=TextStyle()
     )
     pdf.add_page()
     pdf.start_section("Title")
@@ -174,7 +174,7 @@ def test_toc_with_font_style_override_bold(tmp_path):  # issue-1072
     pdf.add_page()
     pdf.set_font("Helvetica", "B")
     pdf.set_section_title_styles(
-        TitleStyle("Helvetica", font_size_pt=20, color=(0, 0, 0))
+        TextStyle("Helvetica", font_size_pt=20, color=(0, 0, 0))
     )
     pdf.start_section("foo")
     assert_pdf_equal(pdf, HERE / "toc_with_font_style_override_bold1.pdf", tmp_path)
@@ -183,7 +183,7 @@ def test_toc_with_font_style_override_bold(tmp_path):  # issue-1072
     pdf.add_page()
     pdf.set_font("Helvetica", "B")
     pdf.set_section_title_styles(
-        TitleStyle("Helvetica", font_style="", font_size_pt=20, color=(0, 0, 0))
+        TextStyle("Helvetica", font_style="", font_size_pt=20, color=(0, 0, 0))
     )
     pdf.start_section("foo")
     assert_pdf_equal(pdf, HERE / "toc_with_font_style_override_bold2.pdf", tmp_path)
@@ -242,7 +242,7 @@ def p(pdf, text, **kwargs):
 def insert_test_content(pdf):
     pdf.set_section_title_styles(
         # Level 0 titles:
-        TitleStyle(
+        TextStyle(
             font_family="Times",
             font_style="B",
             font_size_pt=24,
@@ -253,7 +253,7 @@ def insert_test_content(pdf):
             b_margin=0,
         ),
         # Level 1 subtitles:
-        TitleStyle(
+        TextStyle(
             font_family="Times",
             font_style="B",
             font_size_pt=20,

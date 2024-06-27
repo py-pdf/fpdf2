@@ -142,7 +142,7 @@ LAYOUT_ALIASES = {
 }
 
 
-class TitleStyle(FontFace):
+class TextStyle(FontFace):
     def __init__(
         self,
         font_family: Optional[str] = None,  # None means "no override"
@@ -170,6 +170,19 @@ class TitleStyle(FontFace):
             super().__repr__()[:-1]
             + f", t_margin={self.t_margin}, l_margin={self.l_margin}, b_margin={self.b_margin})"
         )
+
+
+class TitleStyle(TextStyle):
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            (
+                "fpdf.TitleStyle is deprecated since 2.7.10."
+                " It has been replaced by fpdf.TextStyle."
+            ),
+            DeprecationWarning,
+            stacklevel=get_stack_level(),
+        )
+        super().__init__(*args, **kwargs)
 
 
 class ToCPlaceholder(NamedTuple):
@@ -307,7 +320,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._toc_placeholder = None  # optional ToCPlaceholder instance
         self._outline = []  # list of OutlineSection
         self._sign_key = None
-        self.section_title_styles = {}  # level -> TitleStyle
+        self.section_title_styles = {}  # level -> TextStyle
 
         self.core_fonts_encoding = "latin-1"
         "Font encoding, Latin-1 by default"
@@ -5033,18 +5046,18 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         After calling this method, calls to `FPDF.start_section` will render section names visually.
 
         Args:
-            level0 (TitleStyle): style for the top level section titles
-            level1 (TitleStyle): optional style for the level 1 section titles
-            level2 (TitleStyle): optional style for the level 2 section titles
-            level3 (TitleStyle): optional style for the level 3 section titles
-            level4 (TitleStyle): optional style for the level 4 section titles
-            level5 (TitleStyle): optional style for the level 5 section titles
-            level6 (TitleStyle): optional style for the level 6 section titles
+            level0 (TextStyle): style for the top level section titles
+            level1 (TextStyle): optional style for the level 1 section titles
+            level2 (TextStyle): optional style for the level 2 section titles
+            level3 (TextStyle): optional style for the level 3 section titles
+            level4 (TextStyle): optional style for the level 4 section titles
+            level5 (TextStyle): optional style for the level 5 section titles
+            level6 (TextStyle): optional style for the level 6 section titles
         """
         for level in (level0, level1, level2, level3, level4, level5, level6):
-            if level and not isinstance(level, TitleStyle):
+            if level and not isinstance(level, TextStyle):
                 raise TypeError(
-                    f"Arguments must all be TitleStyle instances, got: {type(level)}"
+                    f"Arguments must all be TextStyle instances, got: {type(level)}"
                 )
         self.section_title_styles = {
             0: level0,
@@ -5115,7 +5128,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
 
     @contextmanager
-    def _use_title_style(self, title_style: TitleStyle):
+    def _use_title_style(self, title_style: TextStyle):
         if title_style:
             if title_style.t_margin:
                 self.ln(title_style.t_margin)
@@ -5281,6 +5294,7 @@ __all__ = [
     "RasterImageInfo",
     "VectorImageInfo",
     "TextMode",
+    "TextStyle",
     "TitleStyle",
     "PAGE_FORMATS",
 ]

@@ -9,7 +9,7 @@ Gives direct access to some classes defined in submodules:
 * `fpdf.enums.YPos`
 * `fpdf.errors.FPDFException`
 * `fpdf.fonts.FontFace`
-* `fpdf.fpdf.TitleStyle`
+* `fpdf.fpdf.TextStyle`
 * `fpdf.prefs.ViewerPreferences`
 * `fpdf.template.Template`
 * `fpdf.template.FlexTemplate`
@@ -21,6 +21,7 @@ from .enums import Align, TextMode, XPos, YPos
 from .errors import FPDFException
 from .fpdf import (
     FPDF,
+    TextStyle,
     TitleStyle,
     FPDF_FONT_DIR as _FPDF_FONT_DIR,
     FPDF_VERSION as _FPDF_VERSION,
@@ -74,6 +75,7 @@ __all__ = [
     "Template",
     "FlexTemplate",
     "TitleStyle",
+    "TextStyle",
     "ViewerPreferences",
     # Deprecated classes:
     "HTMLMixin",

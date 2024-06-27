@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, FontFace, HTMLMixin, TitleStyle
+from fpdf import FPDF, FontFace, HTMLMixin, TextStyle
 from fpdf.drawing import DeviceRGB
 from fpdf.html import color_as_decimal
 from fpdf.errors import FPDFException
@@ -602,7 +602,7 @@ def test_html_and_section_title_styles():  # issue 1080
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", size=10)
-    pdf.set_section_title_styles(TitleStyle("Helvetica", "B", 20, (0, 0, 0)))
+    pdf.set_section_title_styles(TextStyle("Helvetica", "B", 20, (0, 0, 0)))
     with pytest.raises(NotImplementedError):
         pdf.write_html(
             """
