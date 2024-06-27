@@ -245,6 +245,14 @@ class TextEmphasis(CoerciveIntFlag):
             name for name, value in self.__class__.__members__.items() if value & self
         )
 
+    def add(self, value: "TextEmphasis"):
+        return self | value
+
+    def remove(self, value: "TextEmphasis"):
+        return TextEmphasis.coerce(
+            "".join(s for s in self.style if s not in value.style)
+        )
+
     @classmethod
     def coerce(cls, value):
         if isinstance(value, str):

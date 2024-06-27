@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, FontFace, HTMLMixin, TextStyle
+from fpdf import FPDF, FontFace, HTMLMixin, TextStyle, TitleStyle
 from fpdf.drawing import DeviceRGB
 from fpdf.html import color_as_decimal
 from fpdf.errors import FPDFException
@@ -202,12 +202,41 @@ def test_html_customize_ul(tmp_path):
     pdf = FPDF()
     pdf.set_font_size(30)
     pdf.add_page()
+    # Customizing through optional method arguments:
+    for indent, bullet in ((5, "\x86"), (10, "\x9b"), (15, "\xac"), (20, "\xb7")):
+        pdf.write_html(
+            html,
+            tag_styles={"li": TextStyle(l_margin=indent, t_margin=2)},
+            ul_bullet_char=bullet,
+        )
+        pdf.ln()
+    assert_pdf_equal(pdf, HERE / "html_customize_ul.pdf", tmp_path)
+
+
+def test_html_customize_ul_deprecated(tmp_path):
+    html = """<ul>
+        <li><b>term1</b>: definition1</li>
+        <li><b>term2</b>: definition2</li>
+    </ul>"""
+    pdf = FPDF()
+    pdf.set_font_size(30)
+    pdf.add_page()
     with pytest.warns(DeprecationWarning):  # li_tag_indent
         # Customizing through optional method arguments:
         for indent, bullet in ((5, "\x86"), (10, "\x9b"), (15, "\xac"), (20, "\xb7")):
             pdf.write_html(html, li_tag_indent=indent, ul_bullet_char=bullet)
             pdf.ln()
     assert_pdf_equal(pdf, HERE / "html_customize_ul.pdf", tmp_path)
+
+
+def test_html_deprecated_li_tag_indent_deprecated(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.warns(DeprecationWarning):
+        pdf.write_html("<ul><li>item 1</li></ul>", li_tag_indent=40)
+        pdf.write_html("<ul><li>item 2</li></ul>", li_tag_indent=50)
+        pdf.write_html("<ul><li>item 3</li></ul>", li_tag_indent=60)
+    assert_pdf_equal(pdf, HERE / "html_li_tag_indent.pdf", tmp_path)
 
 
 def test_html_ol_start_and_type(tmp_path):
@@ -235,8 +264,7 @@ def test_html_ul_type(tmp_path):
         </ul>
         <ul type="disc">
           <li>another list item</li>
-        </ul>
-    """
+        </ul>"""
     )
     pdf.ln()
     pdf.add_font(fname=HERE / "../fonts/DejaVuSans.ttf")
@@ -246,8 +274,7 @@ def test_html_ul_type(tmp_path):
         <ul type="■">
           <li>a list item</li>
           <li>another list item</li>
-        </ul>
-    """
+        </ul>"""
     )
     assert_pdf_equal(pdf, HERE / "html_ul_type.pdf", tmp_path)
 
@@ -289,8 +316,7 @@ def test_html_align_paragraph(tmp_path):
         <p align="center">{LOREM_IPSUM[600:800]}"</p>
         <!-- ignore invalid align -->
         align=invalid, ignore and default left:
-        <p align="invalid">{LOREM_IPSUM[800:1000]}"</p>
-        """
+        <p align="invalid">{LOREM_IPSUM[800:1000]}"</p>"""
     )
     assert_pdf_equal(pdf, HERE / "html_align_paragraph.pdf", tmp_path)
 
@@ -340,18 +366,52 @@ def test_html_headings_line_height(tmp_path):  # issue-223
     long_title = "The Quick Brown Fox Jumped Over The Lazy Dog "
     pdf.write_html(
         f"""
-    <h1>H1   {long_title*2}</h1>
-    <h2>H2   {long_title*2}</h2>
-    <h3>H3   {long_title*2}</h3>
-    <h4>H4   {long_title*3}</h4>
-    <h5>H5   {long_title*3}</h5>
-    <h6>H6   {long_title*4}</h6>
-    <p>P   {long_title*5}</p>"""
+        <h1>H1   {long_title*2}</h1>
+        <h2>H2   {long_title*2}</h2>
+        <h3>H3   {long_title*2}</h3>
+        <h4>H4   {long_title*3}</h4>
+        <h5>H5   {long_title*3}</h5>
+        <h6>H6   {long_title*4}</h6>
+        <p>P   {long_title*5}</p>"""
     )
     assert_pdf_equal(pdf, HERE / "html_headings_line_height.pdf", tmp_path)
 
 
 def test_html_custom_heading_sizes(tmp_path):  # issue-223
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<h1>This is a H1</h1>
+        <h2>This is a H2</h2>
+        <h3>This is a H3</h3>
+        <h4>This is a H4</h4>
+        <h5>This is a H5</h5>
+        <h6>This is a H6</h6>""",
+        tag_styles={
+            "h1": TextStyle(
+                color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=6
+            ),
+            "h2": TextStyle(
+                color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=12
+            ),
+            "h3": TextStyle(
+                color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=18
+            ),
+            "h4": TextStyle(
+                color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=24
+            ),
+            "h5": TextStyle(
+                color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=30
+            ),
+            "h6": TextStyle(
+                color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=36
+            ),
+        },
+    )
+    assert_pdf_equal(pdf, HERE / "html_custom_heading_sizes.pdf", tmp_path)
+
+
+def test_html_custom_heading_sizes_deprecated(tmp_path):  # issue-223
     pdf = FPDF()
     pdf.add_page()
     with pytest.warns(DeprecationWarning):
@@ -382,13 +442,12 @@ def test_html_description(tmp_path):
     pdf.add_page()
     pdf.write_html(
         """
-           <dt>description title</dt>
-           <dd>description details</dd>
-            <dl>
-                <dt>description title</dt>
-                <dd>description details</dd>
-            </dl>
-        """
+        <dt>description title</dt>
+        <dd>description details</dd>
+        <dl>
+            <dt>description title</dt>
+            <dd>description details</dd>
+        </dl>"""
     )
     assert_pdf_equal(pdf, HERE / "html_description.pdf", tmp_path)
 
@@ -412,8 +471,7 @@ def test_html_HTMLMixin_deprecation_warning(tmp_path):
             <dl>
                 <dt>description title</dt>
                 <dd>description details</dd>
-            </dl>
-        """
+            </dl>"""
         )
         assert_pdf_equal(pdf, HERE / "html_description.pdf", tmp_path)
 
@@ -532,6 +590,17 @@ def test_html_custom_pre_code_font(tmp_path):  # issue 770
     pdf = FPDF()
     pdf.add_font(fname=HERE / "../fonts/DejaVuSansMono.ttf")
     pdf.add_page()
+    pdf.write_html(
+        "<code> Cześć! </code>",
+        tag_styles={"code": TextStyle(font_family="DejaVuSansMono")},
+    )
+    assert_pdf_equal(pdf, HERE / "html_custom_pre_code_font.pdf", tmp_path)
+
+
+def test_html_custom_pre_code_font_deprecated(tmp_path):  # issue 770
+    pdf = FPDF()
+    pdf.add_font(fname=HERE / "../fonts/DejaVuSansMono.ttf")
+    pdf.add_page()
     with pytest.warns(DeprecationWarning):
         pdf.write_html("<code> Cześć! </code>", pre_code_font="DejaVuSansMono")
     assert_pdf_equal(pdf, HERE / "html_custom_pre_code_font.pdf", tmp_path)
@@ -551,11 +620,11 @@ def test_html_heading_color_attribute(tmp_path):  # discussion 880
     pdf.add_page()
     pdf.write_html(
         """
-      <h1>Title</h1>
-      Content
-      <h2 color="#00ff00">Subtitle in green</h2>
-      Content
-    """
+        <h1>Title</h1>
+        Content
+        <h2 color="#00ff00">Subtitle in green</h2>
+        Content
+        """
     )
     assert_pdf_equal(pdf, HERE / "html_heading_color_attribute.pdf", tmp_path)
 
@@ -571,7 +640,7 @@ def test_html_format_within_p(tmp_path):  # discussion 880
 in the PDF. <u>This</u> is a <font color="red">sample text</font> that will be justified
 in the PDF. <b>This</b> is a sample text that will be justified in the PDF.
 <i>This</i> is a sample text that will be justified in the PDF.</p>
-    """
+        """
     )
     assert_pdf_equal(pdf, HERE / "html_format_within_p.pdf", tmp_path)
 
@@ -581,7 +650,7 @@ def test_html_bad_font():
     pdf.add_page()
     pdf.set_font("times", size=18)
     with pytest.raises(FPDFException):
-        pdf.write_html("""<font face="no_such_font"><p>hello helvetica</p></font>""")
+        pdf.write_html('<font face="no_such_font"><p>hello helvetica</p></font>')
 
 
 def test_html_ln_outside_p(tmp_path):
@@ -591,9 +660,7 @@ def test_html_ln_outside_p(tmp_path):
     pdf.add_page()
     pdf.set_font("times", size=18)
     pdf.write_html(
-        """
-            <p>someting in paragraph</p><li>causing _ln() outside paragraph</li>
-    """
+        "<p>someting in paragraph</p><li>causing _ln() outside paragraph</li>"
     )
     assert_pdf_equal(pdf, HERE / "html_ln_outside_p.pdf", tmp_path)
 
@@ -606,11 +673,28 @@ def test_html_and_section_title_styles():  # issue 1080
     with pytest.raises(NotImplementedError):
         pdf.write_html(
             """
-        <h1>Heading One</h1>
-        <p>Just enough text to show how bad the situation really is</p>
-        <h2>Heading Two</h2>
-        <p>This will not overflow</p>
-        """
+            <h1>Heading One</h1>
+            <p>Just enough text to show how bad the situation really is</p>
+            <h2>Heading Two</h2>
+            <p>This will not overflow</p>
+            """
+        )
+
+
+def test_html_and_section_title_styles_with_deprecated_TitleStyle():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=10)
+    with pytest.warns(DeprecationWarning):
+        pdf.set_section_title_styles(TitleStyle("Helvetica", "B", 20, (0, 0, 0)))
+    with pytest.raises(NotImplementedError):
+        pdf.write_html(
+            """
+            <h1>Heading One</h1>
+            <p>Just enough text to show how bad the situation really is</p>
+            <h2>Heading Two</h2>
+            <p>This will not overflow</p>
+            """
         )
 
 
@@ -618,7 +702,7 @@ def test_html_link_color(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     html = '<a href="www.example.com">foo</a>'
-    pdf.write_html(html, tag_styles={"a": FontFace(color=color_as_decimal("red"))})
+    pdf.write_html(html, tag_styles={"a": TextStyle(color=color_as_decimal("red"))})
     assert_pdf_equal(pdf, HERE / "html_link_color.pdf", tmp_path)
 
 
@@ -626,11 +710,58 @@ def test_html_blockquote_color(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     html = "Text before<blockquote>foo</blockquote>Text afterwards"
-    pdf.write_html(html, tag_styles={"blockquote": FontFace(color=(125, 125, 0))})
+    blockquote_style = TextStyle(
+        color=(125, 125, 0), font_style="ITALICS", t_margin=3, b_margin=3, l_margin=10
+    )
+    pdf.write_html(html, tag_styles={"blockquote": blockquote_style})
     assert_pdf_equal(pdf, HERE / "html_blockquote_color.pdf", tmp_path)
 
 
 def test_html_headings_color(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    html = "<h1>foo</h1><h2>bar</h2>"
+    pdf.write_html(
+        html,
+        tag_styles={
+            "h1": TextStyle(
+                color=(148, 139, 139), font_size_pt=24, t_margin=0.2, b_margin=0.4
+            ),
+            "h2": TextStyle(
+                color=(148, 139, 139), font_size_pt=18, t_margin=0.2, b_margin=0.4
+            ),
+        },
+    )
+    assert_pdf_equal(pdf, HERE / "html_headings_color.pdf", tmp_path)
+
+
+def test_html_unsupported_tag_color():
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.raises(NotImplementedError):
+        pdf.write_html("<p>foo</p>", tag_styles={"p": TextStyle()})
+
+
+def test_html_link_color_using_FontFace(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    html = '<a href="www.example.com">foo</a>'
+    pdf.write_html(html, tag_styles={"a": FontFace(color=color_as_decimal("red"))})
+    assert_pdf_equal(pdf, HERE / "html_link_color.pdf", tmp_path)
+
+
+def test_html_blockquote_color_using_FontFace(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    html = "Text before<blockquote>foo</blockquote>Text afterwards"
+    pdf.write_html(
+        html,
+        tag_styles={"blockquote": FontFace(color=(125, 125, 0), emphasis="ITALICS")},
+    )
+    assert_pdf_equal(pdf, HERE / "html_blockquote_color_using_FontFace.pdf", tmp_path)
+
+
+def test_html_headings_color_using_FontFace(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     html = "<h1>foo</h1><h2>bar</h2>"
@@ -644,7 +775,7 @@ def test_html_headings_color(tmp_path):
     assert_pdf_equal(pdf, HERE / "html_headings_color.pdf", tmp_path)
 
 
-def test_html_unsupported_tag_color():
+def test_html_unsupported_tag_color_using_FontFace():
     pdf = FPDF()
     pdf.add_page()
     with pytest.raises(NotImplementedError):
@@ -655,7 +786,14 @@ def test_html_blockquote_indent(tmp_path):  # issue-1074
     pdf = FPDF()
     pdf.add_page()
     html = "Text before<blockquote>foo</blockquote>Text afterwards"
-    pdf.write_html(html, tag_indents={"blockquote": 20})
+    pdf.write_html(
+        html,
+        tag_styles={
+            "blockquote": TextStyle(
+                color=(100, 0, 45), t_margin=3, b_margin=3, l_margin=20
+            )
+        },
+    )
     html = (
         "<blockquote>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod"
         "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,"
@@ -664,55 +802,70 @@ def test_html_blockquote_indent(tmp_path):  # issue-1074
         "fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,"
         "sunt in culpa qui officia deserunt mollit anim id est laborum.</blockquote>"
     )
-    pdf.write_html(html, tag_indents={"blockquote": 40})
+    pdf.write_html(
+        html,
+        tag_styles={
+            "blockquote": TextStyle(
+                color=(100, 0, 45), t_margin=3, b_margin=3, l_margin=40
+            )
+        },
+    )
     assert_pdf_equal(pdf, HERE / "html_blockquote_indent.pdf", tmp_path)
 
 
-def test_html_li_tag_indent(tmp_path):
+def test_html_blockquote_indent_using_deprecated_tag_indents(tmp_path):  # issue-1074
     pdf = FPDF()
     pdf.add_page()
+    html = "Text before<blockquote>foo</blockquote>Text afterwards"
     with pytest.warns(DeprecationWarning):
-        pdf.write_html("<ul><li>item 1</li></ul>", li_tag_indent=40)
-        pdf.write_html("<ul><li>item 2</li></ul>", li_tag_indent=50)
-        pdf.write_html("<ul><li>item 3</li></ul>", li_tag_indent=60)
-    assert_pdf_equal(pdf, HERE / "html_li_tag_indent.pdf", tmp_path)
+        pdf.write_html(html, tag_indents={"blockquote": 20})
+    html = (
+        "<blockquote>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod"
+        "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,"
+        "quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu"
+        "fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,"
+        "sunt in culpa qui officia deserunt mollit anim id est laborum.</blockquote>"
+    )
+    with pytest.warns(DeprecationWarning):
+        pdf.write_html(html, tag_indents={"blockquote": 40})
+    assert_pdf_equal(pdf, HERE / "html_blockquote_indent.pdf", tmp_path)
 
 
 def test_html_ol_ul_line_height(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.write_html(
-        """
-    <p>Default line-height:</p>
-    <ul>
-        <li>item</li>
-        <li>item</li>
-        <li>item</li>
-    </ul>
-    <p>1.5 line-height:</p>
-    <ol line-height="1.5">
-        <li>item</li>
-        <li>item</li>
-        <li>item</li>
-    </ol>
-    <p>Double line-height:</p>
-    <ul line-height="2">
-        <li>item</li>
-        <li>item</li>
-        <li>item</li>
-    </ul>
-    <p>1.5 line-height as "style":</p>
-    <ol style="line-height: 1.5">
-        <li>item</li>
-        <li>item</li>
-        <li>item</li>
-    </ol>
-    <p>Double line-height as "style":</p>
-    <ul style="line-height: 2">
-        <li>item</li>
-        <li>item</li>
-        <li>item</li>
-    </ul>"""
+        """<p>Default line-height:</p>
+        <ul>
+            <li>item</li>
+            <li>item</li>
+            <li>item</li>
+        </ul>
+        <p>1.5 line-height:</p>
+        <ol line-height="1.5">
+            <li>item</li>
+            <li>item</li>
+            <li>item</li>
+        </ol>
+        <p>Double line-height:</p>
+        <ul line-height="2">
+            <li>item</li>
+            <li>item</li>
+            <li>item</li>
+        </ul>
+        <p>1.5 line-height as "style":</p>
+        <ol style="line-height: 1.5">
+            <li>item</li>
+            <li>item</li>
+            <li>item</li>
+        </ol>
+        <p>Double line-height as "style":</p>
+        <ul style="line-height: 2">
+            <li>item</li>
+            <li>item</li>
+            <li>item</li>
+        </ul>"""
     )
     assert_pdf_equal(pdf, HERE / "html_ol_ul_line_height.pdf", tmp_path)
 
@@ -729,23 +882,46 @@ def test_html_long_ol_bullets(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     html_arabic_indian = f"""
-            <ol start="{10**100}">
-              <li>Item 1</li>
-              <li>Item 2</li>
-              <li>Item 3</li>
-            </ol>
-        """
+        <ol start="{10**100}">
+            <li>Item 1</li>
+            <li>Item 2</li>
+            <li>Item 3</li>
+        </ol>"""
     pdf.write_html(html_arabic_indian)
     html_roman = f"""
-            <ol start="{10**5}" type="i">
-              <li>Item 1</li>
-              <li>Item 2</li>
-              <li>Item 3</li>
-            </ol>
-        """
+        <ol start="{10**5}" type="i">
+            <li>Item 1</li>
+            <li>Item 2</li>
+            <li>Item 3</li>
+        </ol>"""
     pdf.write_html(html_roman)
-    pdf.write_html(html_arabic_indian, tag_indents={"li": 50})
-    pdf.write_html(html_roman, tag_indents={"li": 100})
+    pdf.write_html(
+        html_arabic_indian, tag_styles={"li": TextStyle(l_margin=50, t_margin=2)}
+    )
+    pdf.write_html(html_roman, tag_styles={"li": TextStyle(l_margin=100, t_margin=2)})
+    assert_pdf_equal(pdf, HERE / "html_long_ol_bullets.pdf", tmp_path)
+
+
+def test_html_long_ol_bullets_deprecated(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    html_arabic_indian = f"""
+        <ol start="{10**100}">
+            <li>Item 1</li>
+            <li>Item 2</li>
+            <li>Item 3</li>
+        </ol>"""
+    pdf.write_html(html_arabic_indian)
+    html_roman = f"""
+        <ol start="{10**5}" type="i">
+            <li>Item 1</li>
+            <li>Item 2</li>
+            <li>Item 3</li>
+        </ol>"""
+    pdf.write_html(html_roman)
+    with pytest.warns(DeprecationWarning):
+        pdf.write_html(html_arabic_indian, tag_indents={"li": 50})
+        pdf.write_html(html_roman, tag_indents={"li": 100})
     assert_pdf_equal(pdf, HERE / "html_long_ol_bullets.pdf", tmp_path)
 
 
@@ -754,20 +930,19 @@ def test_html_measurement_units(tmp_path):
         pdf = FPDF(unit=unit)
         pdf.add_page()
         html = """
-                <ul>
-                    <li>Item 1</li>
-                    <li>Item 2</li>
-                    <li>Item 3</li>
-                </ul>
-                <ol>
-                    <li>Item 1</li>
-                    <li>Item 2</li>
-                    <li>Item 3</li>
-                </ol>
-                <blockquote>Blockquote text</blockquote>
-                <dt>Description title</dt>
-                <dd>Description details</dd>
-            """
+            <ul>
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ul>
+            <ol>
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ol>
+            <blockquote>Blockquote text</blockquote>
+            <dt>Description title</dt>
+            <dd>Description details</dd>"""
         pdf.write_html(html)
         assert_pdf_equal(pdf, HERE / "html_measurement_units.pdf", tmp_path)
 
@@ -828,8 +1003,8 @@ def test_html_list_vertical_margin(tmp_path):
     for margin_value in (None, 4, 8, 16):
         pdf.add_page()
         html = f"""
-            This page uses `list_vertical_margin` value of {margin_value}
-             <ul>
+            This page uses `t_margin={margin_value}` for &lt;ul&gt; tags:
+            <ul>
                 <li>Item 1</li>
                 <li>Item 2</li>
                 <li>Item 3</li>
@@ -838,9 +1013,14 @@ def test_html_list_vertical_margin(tmp_path):
                 <li>Item 1</li>
                 <li>Item 2</li>
                 <li>Item 3</li>
-            </ol>
-        """
-        pdf.write_html(html, list_vertical_margin=margin_value)
+            </ol>"""
+        pdf.write_html(
+            html,
+            tag_styles={
+                "ol": TextStyle(t_margin=margin_value),
+                "ul": TextStyle(t_margin=margin_value),
+            },
+        )
     assert_pdf_equal(pdf, HERE / "html_list_vertical_margin.pdf", tmp_path)
 
 
@@ -883,9 +1063,10 @@ def test_html_heading_above_below(tmp_path):
         <h2>First heading</h2>
         <p>Lorem ipsum</p>
         <h2>Second heading</h2>
-        <p>Lorem ipsum</p>
-        """,
-        heading_above=1,
-        heading_below=0.5,
+        <p>Lorem ipsum</p>""",
+        tag_styles={
+            "h1": TextStyle(color="#960000", t_margin=1, b_margin=0.5, font_size_pt=24),
+            "h2": TextStyle(color="#960000", t_margin=1, b_margin=0.5, font_size_pt=18),
+        },
     )
     assert_pdf_equal(pdf, HERE / "html_heading_above_below.pdf", tmp_path)

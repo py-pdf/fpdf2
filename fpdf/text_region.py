@@ -193,7 +193,7 @@ class Paragraph:  # pylint: disable=function-redefined
         self._text_fragments = []
         text_line = multi_line_break.get_line()
         first_line = True
-        while (text_line) is not None:
+        while text_line is not None:
             text_lines.append(LineWrapper(text_line, self, first_line=first_line))
             first_line = False
             text_line = multi_line_break.get_line()
@@ -568,11 +568,6 @@ class TextRegion(ParagraphCollectorMixin):
         if rendered_lines:
             del text_lines[:rendered_lines]
         return last_line_height
-
-    def _render_lines(self, text_lines, top, bottom):
-        """Default page rendering a set of lines in one column"""
-        if text_lines:
-            self._render_column_lines(text_lines, top, bottom)
 
     def collect_lines(self):
         text_lines = []

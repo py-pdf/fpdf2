@@ -9,6 +9,6 @@ def test_TitleStyle_deprecation():
         TitleStyle()
 
     with pytest.warns(DeprecationWarning):
-        from fpdf.fpdf import TitleStyle
+        from fpdf.fonts import TitleStyle
 
         TitleStyle()

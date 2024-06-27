@@ -7,8 +7,8 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-from typing import NamedTuple, Any, List, Optional, Union, Sequence
 from numbers import Number
+from typing import NamedTuple, Any, List, Optional, Union, Sequence
 
 from .enums import Align, CharVPos, TextDirection, WrapMode
 from .errors import FPDFException

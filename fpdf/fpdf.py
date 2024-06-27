@@ -85,7 +85,7 @@ from .enums import (
     YPos,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
-from .fonts import CoreFont, CORE_FONTS, FontFace, TTFFont
+from .fonts import CoreFont, CORE_FONTS, FontFace, TextStyle, TitleStyle, TTFFont
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
 from .image_datastructures import (
@@ -140,49 +140,6 @@ LAYOUT_ALIASES = {
     "continuous": PageLayout.ONE_COLUMN,
     "two": PageLayout.TWO_COLUMN_LEFT,
 }
-
-
-class TextStyle(FontFace):
-    def __init__(
-        self,
-        font_family: Optional[str] = None,  # None means "no override"
-        #                                     Whereas "" means "no emphasis"
-        font_style: Optional[str] = None,
-        font_size_pt: Optional[int] = None,
-        color: Union[int, tuple] = None,  # grey scale or (red, green, blue),
-        underline: bool = False,
-        t_margin: Optional[int] = None,
-        l_margin: Optional[int] = None,
-        b_margin: Optional[int] = None,
-    ):
-        super().__init__(
-            font_family,
-            ((font_style or "") + "U") if underline else font_style,
-            font_size_pt,
-            color,
-        )
-        self.t_margin = t_margin
-        self.l_margin = l_margin
-        self.b_margin = b_margin
-
-    def __repr__(self):
-        return (
-            super().__repr__()[:-1]
-            + f", t_margin={self.t_margin}, l_margin={self.l_margin}, b_margin={self.b_margin})"
-        )
-
-
-class TitleStyle(TextStyle):
-    def __init__(self, *args, **kwargs):
-        warnings.warn(
-            (
-                "fpdf.TitleStyle is deprecated since 2.7.10."
-                " It has been replaced by fpdf.TextStyle."
-            ),
-            DeprecationWarning,
-            stacklevel=get_stack_level(),
-        )
-        super().__init__(*args, **kwargs)
 
 
 class ToCPlaceholder(NamedTuple):
@@ -426,25 +383,24 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         Args:
             text (str): HTML content to render
-            image_map (function): an optional one-argument function that map <img> "src"
-                to new image URLs
-            li_tag_indent (int): [**DEPRECATED since v2.7.8**]
-                numeric indentation of <li> elements - Set tag_indents instead
-            dd_tag_indent (int): [**DEPRECATED since v2.7.8**]
-                numeric indentation of <dd> elements - Set tag_indents instead
-            table_line_separators (bool): enable horizontal line separators in <table>
-            ul_bullet_char (str): bullet character preceding <li> items in <ul> lists.
-            li_prefix_color (tuple | str | drawing.Device* instance):
-                color for bullets or numbers preceding <li> tags.
-                This applies to both <ul> & <ol> lists.
-            heading_sizes (dict): [**DEPRECATED since v2.7.8**]
-                font size per heading level names ("h1", "h2"...) - Set tag_styles instead
-            pre_code_font (str): [**DEPRECATED since v2.7.8**]
-                font to use for <pre> & <code> blocks - Set tag_styles instead
-            warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags
-            tag_indents (dict):
-                mapping of HTML tag names to numeric values representing their horizontal left identation
-            tag_styles (dict): mapping of HTML tag names to colors
+            image_map (function): an optional one-argument function that map `<img>` "src" to new image URLs
+            li_tag_indent (int): [**DEPRECATED since v2.7.9**]
+                numeric indentation of `<li>` elements - Set `tag_styles` instead
+            dd_tag_indent (int): [**DEPRECATED since v2.7.9**]
+                numeric indentation of `<dd>` elements - Set `tag_styles` instead
+            table_line_separators (bool): enable horizontal line separators in `<table>`. Defaults to `False`.
+            ul_bullet_char (str): bullet character preceding `<li>` items in `<ul>` lists.
+                Can also be configured using the HTML `type` attribute of `<ul>` tags.
+            li_prefix_color (tuple, str, fpdf.drawing.DeviceCMYK, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): color for bullets
+                or numbers preceding `<li>` tags. This applies to both `<ul>` & `<ol>` lists.
+            heading_sizes (dict): [**DEPRECATED since v2.7.9**]
+                font size per heading level names ("h1", "h2"...) - Set `tag_styles` instead
+            pre_code_font (str): [**DEPRECATED since v2.7.9**]
+                font to use for `<pre>` & `<code>` blocks - Set `tag_styles` instead
+            warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags. Defaults to `True`.
+            tag_indents (dict): [**DEPRECATED since v2.7.10**]
+                mapping of HTML tag names to numeric values representing their horizontal left identation. - Set `tag_styles` instead
+            tag_styles (dict[str, fpdf.fonts.TextStyle]): mapping of HTML tag names to `fpdf.TextStyle` or `fpdf.FontFace` instances
         """
         html2pdf = self.HTML2FPDF_CLASS(self, *args, **kwargs)
         with self.local_context():
@@ -5190,7 +5146,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 relative to the page, when it's not using the full page width.
             borders_layout (str, fpdf.enums.TableBordersLayout): optional, default to ALL. Control what cell
                 borders are drawn.
-            cell_fill_color (int, tuple, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): optional.
+            cell_fill_color (int, tuple, fpdf.drawing.DeviceCMYK, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): optional.
                 Defines the cells background color.
             cell_fill_mode (str, fpdf.enums.TableCellFillMode): optional. Defines which cells are filled
                 with color in the background.
@@ -5294,7 +5250,6 @@ __all__ = [
     "RasterImageInfo",
     "VectorImageInfo",
     "TextMode",
-    "TextStyle",
     "TitleStyle",
     "PAGE_FORMATS",
 ]

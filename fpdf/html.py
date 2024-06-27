@@ -14,30 +14,29 @@ from .deprecation import get_stack_level
 from .drawing import color_from_hex_string, convert_to_device_color
 from .enums import Align, TextEmphasis, XPos, YPos
 from .errors import FPDFException
-from .fonts import FontFace
+from .fonts import FontFace, TextStyle
 from .table import Table
-from .util import int2roman, get_scale_factor
+from .util import get_scale_factor, int2roman
 
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
 DEGREE_WIN1252 = "\xb0"
 HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
 DEFAULT_TAG_STYLES = {
-    "a": FontFace(color=(0, 0, 255)),
-    "blockquote": FontFace(color=(100, 0, 45)),
-    "code": FontFace(family="Courier"),
-    "h1": FontFace(color=(150, 0, 0), size_pt=24),
-    "h2": FontFace(color=(150, 0, 0), size_pt=18),
-    "h3": FontFace(color=(150, 0, 0), size_pt=14),
-    "h4": FontFace(color=(150, 0, 0), size_pt=12),
-    "h5": FontFace(color=(150, 0, 0), size_pt=10),
-    "h6": FontFace(color=(150, 0, 0), size_pt=8),
-    "pre": FontFace(family="Courier"),
-}
-DEFAULT_TAG_INDENTS_MM = {
-    "blockquote": 0,
-    "dd": 10,
-    "li": 5,
+    "a": TextStyle(color="#00f"),
+    "blockquote": TextStyle(color="#64002d", t_margin=3, b_margin=3),
+    "code": TextStyle(font_family="Courier"),
+    "dd": TextStyle(l_margin=10),
+    "h1": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=24),
+    "h2": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=18),
+    "h3": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=14),
+    "h4": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=12),
+    "h5": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=10),
+    "h6": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=8),
+    "li": TextStyle(l_margin=5, t_margin=2),
+    "pre": TextStyle(font_family="Courier"),
+    "ol": TextStyle(t_margin=2),
+    "ul": TextStyle(t_margin=2),
 }
 
 # Pattern to substitute whitespace sequences with a single space character each.
@@ -271,35 +270,32 @@ class HTML2FPDF(HTMLParser):
         ul_bullet_char=BULLET_WIN1252,
         li_prefix_color=(190, 0, 0),
         heading_sizes=None,
-        pre_code_font=DEFAULT_TAG_STYLES["pre"].family,
+        pre_code_font=None,
         warn_on_tags_not_matching=True,
         tag_indents=None,
         tag_styles=None,
-        list_vertical_margin=None,
-        heading_above=0.2,
-        heading_below=0.4,
     ):
         """
         Args:
             pdf (FPDF): an instance of `fpdf.FPDF`
-            image_map (function): an optional one-argument function that map <img> "src"
-                to new image URLs
-            li_tag_indent (int): [**DEPRECATED since v2.7.9**] numeric indentation of <li> elements - Set tag_indents instead
-            dd_tag_indent (int): [**DEPRECATED since v2.7.9**] numeric indentation of <dd> elements - Set tag_indents instead
-            table_line_separators (bool): enable horizontal line separators in <table>
-            ul_bullet_char (str): bullet character preceding <li> items in <ul> lists.
-            li_prefix_color (tuple | str | drawing.Device* instance): color for bullets or numbers preceding <li> tags.
-                This applies to both <ul> & <ol> lists.
-            heading_sizes (dict): [**DEPRECATED since v2.7.9**] font size per heading level names ("h1", "h2"...) - Set tag_styles instead
-            pre_code_font (str): [**DEPRECATED since v2.7.9**] font to use for <pre> & <code> blocks - Set tag_styles instead
-            warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags
-            tag_indents (dict): mapping of HTML tag names to numeric values representing their horizontal left identation.
-                The indent values are in the chosen pdf document units.
-            tag_styles (dict): mapping of HTML tag names to colors
-            list_vertical_margin (float): size of margins that precede lists.
-                The margin value is in the chosen pdf document units.
-            heading_above (float): extra space above heading, relative to font size
-            heading_below (float): extra space below heading, relative to font size
+            image_map (function): an optional one-argument function that map `<img>` "src" to new image URLs
+            li_tag_indent (int): [**DEPRECATED since v2.7.9**]
+                numeric indentation of `<li>` elements - Set `tag_styles` instead
+            dd_tag_indent (int): [**DEPRECATED since v2.7.9**]
+                numeric indentation of `<dd>` elements - Set `tag_styles` instead
+            table_line_separators (bool): enable horizontal line separators in `<table>`. Defaults to `False`.
+            ul_bullet_char (str): bullet character preceding `<li>` items in `<ul>` lists.
+                Can also be configured using the HTML `type` attribute of `<ul>` tags.
+            li_prefix_color (tuple, str, fpdf.drawing.DeviceCMYK, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): color for bullets
+                or numbers preceding `<li>` tags. This applies to both `<ul>` & `<ol>` lists.
+            heading_sizes (dict): [**DEPRECATED since v2.7.9**]
+                font size per heading level names ("h1", "h2"...) - Set `tag_styles` instead
+            pre_code_font (str): [**DEPRECATED since v2.7.9**]
+                font to use for `<pre>` & `<code>` blocks - Set `tag_styles` instead
+            warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags. Defaults to `True`.
+            tag_indents (dict): [**DEPRECATED since v2.7.10**]
+                mapping of HTML tag names to numeric values representing their horizontal left identation. - Set `tag_styles` instead
+            tag_styles (dict[str, fpdf.fonts.TextStyle]): mapping of HTML tag names to `fpdf.TextStyle` or `fpdf.FontFace` instances
         """
         super().__init__()
         self.pdf = pdf
@@ -320,7 +316,7 @@ class HTML2FPDF(HTMLParser):
         # If a font was defined previously, we reinstate that seperately after we're finished here.
         # In this case the TOC will be rendered with that font and not ours. But adding a TOC tag only
         # makes sense if the whole document gets converted from HTML, so this should be acceptable.
-        self.emphasis = dict(b=False, i=False, u=False)
+        self.emphasis = TextEmphasis.NONE
         self.font_size = pdf.font_size_pt
         self.set_font(pdf.font_family or "times", size=self.font_size, set_default=True)
         self._page_break_after_paragraph = False
@@ -336,17 +332,8 @@ class HTML2FPDF(HTMLParser):
         self.line_height_stack = []
         self.ol_type = []  # when inside a <ol> tag, can be "a", "A", "i", "I" or "1"
         self.bullet = []
-        # factor for converting default values from mm to document units:
-        self.default_conversion_factor = get_scale_factor("mm") / self.pdf.k
-        if list_vertical_margin is None:
-            # Default value of 2 to be multiplied by the conversion factor
-            # for list_vertical_margin is given in mm
-            list_vertical_margin = 2 * self.default_conversion_factor
-        self.list_vertical_margin = list_vertical_margin
         self.font_color = pdf.text_color.colors255
         self.heading_level = None
-        self.heading_above = heading_above
-        self.heading_below = heading_below
         self._tags_stack = []
         self._column = self.pdf.text_columns(skip_leading_spaces=True)
         self._paragraph = self._column.paragraph()
@@ -358,48 +345,28 @@ class HTML2FPDF(HTMLParser):
         self.td_th = None  # becomes a dict of attributes when processing <td>/<th> tags
         #                    "inserted" is a special attribute indicating that a cell has be inserted in self.table_row
 
-        if not tag_indents:
-            tag_indents = {
-                k: v * self.default_conversion_factor
-                for k, v in DEFAULT_TAG_INDENTS_MM.items()
-            }
-        if dd_tag_indent is not None:
-            warnings.warn(
-                (
-                    "The dd_tag_indent parameter is deprecated since v2.7.9 "
-                    "and will be removed in a future release. "
-                    "Set the `tag_indents` parameter instead."
-                ),
-                DeprecationWarning,
-                stacklevel=get_stack_level(),
-            )
-            tag_indents["dd"] = dd_tag_indent
-        if li_tag_indent is not None:
-            warnings.warn(
-                (
-                    "The li_tag_indent parameter is deprecated since v2.7.9 "
-                    "and will be removed in a future release. "
-                    "Set the `tag_indents` parameter instead."
-                ),
-                DeprecationWarning,
-                stacklevel=get_stack_level(),
-            )
-            tag_indents["li"] = li_tag_indent
-        for tag in tag_indents:
-            if tag not in DEFAULT_TAG_INDENTS_MM:
-                raise NotImplementedError(
-                    f"Cannot set indent for HTML tag <{tag}> (contributions are welcome to add support for this)"
-                )
-        self.tag_indents = {**DEFAULT_TAG_INDENTS_MM, **tag_indents}
-
-        if not tag_styles:
-            tag_styles = {}
-        for tag in tag_styles:
+        self.tag_styles = _scale_units(pdf, DEFAULT_TAG_STYLES)
+        for tag, tag_style in (tag_styles or {}).items():
             if tag not in DEFAULT_TAG_STYLES:
                 raise NotImplementedError(
                     f"Cannot set style for HTML tag <{tag}> (contributions are welcome to add support for this)"
                 )
-        self.tag_styles = {**DEFAULT_TAG_STYLES, **tag_styles}
+            if isinstance(tag_style, FontFace) and not isinstance(tag_style, TextStyle):
+                # pylint: disable=redefined-loop-name
+                tag_style = TextStyle(
+                    font_family=tag_style.family,
+                    font_style=(
+                        "" if not tag_style.emphasis else tag_style.emphasis.style
+                    ),
+                    font_size_pt=tag_style.size_pt,
+                    color=tag_style.color,
+                    fill_color=tag_style.fill_color,
+                    # Using default tag margins:
+                    t_margin=self.tag_styles[tag].t_margin,
+                    l_margin=self.tag_styles[tag].l_margin,
+                    b_margin=self.tag_styles[tag].b_margin,
+                )
+            self.tag_styles[tag] = tag_style
         if heading_sizes is not None:
             warnings.warn(
                 (
@@ -411,8 +378,8 @@ class HTML2FPDF(HTMLParser):
                 stacklevel=get_stack_level(),
             )
             for tag, size in heading_sizes.items():
-                self.tag_styles[tag] = self.tag_styles[tag].replace(size_pt=size)
-        if pre_code_font != DEFAULT_TAG_STYLES["pre"].family:
+                self.tag_styles[tag] = self.tag_styles[tag].replace(font_size_pt=size)
+        if pre_code_font is not None:
             warnings.warn(
                 (
                     "The pre_code_font parameter is deprecated since v2.7.9 "
@@ -423,11 +390,53 @@ class HTML2FPDF(HTMLParser):
                 stacklevel=get_stack_level(),
             )
             self.tag_styles["code"] = self.tag_styles["code"].replace(
-                family=pre_code_font
+                font_family=pre_code_font
             )
             self.tag_styles["pre"] = self.tag_styles["pre"].replace(
-                family=pre_code_font
+                font_family=pre_code_font
             )
+        if dd_tag_indent is not None:
+            warnings.warn(
+                (
+                    "The dd_tag_indent parameter is deprecated since v2.7.9 "
+                    "and will be removed in a future release. "
+                    "Set the `tag_styles` parameter instead."
+                ),
+                DeprecationWarning,
+                stacklevel=get_stack_level(),
+            )
+            self.tag_styles["dd"] = self.tag_styles["pre"].replace(
+                l_margin=dd_tag_indent
+            )
+        if li_tag_indent is not None:
+            warnings.warn(
+                (
+                    "The li_tag_indent parameter is deprecated since v2.7.9 "
+                    "and will be removed in a future release. "
+                    "Set the `tag_styles` parameter instead."
+                ),
+                DeprecationWarning,
+                stacklevel=get_stack_level(),
+            )
+            self.tag_styles["li"] = self.tag_styles["li"].replace(
+                l_margin=li_tag_indent
+            )
+        if tag_indents:
+            warnings.warn(
+                (
+                    "The tag_indents parameter is deprecated since v2.7.10 "
+                    "and will be removed in a future release. "
+                    "Set the `tag_styles` parameter instead."
+                ),
+                DeprecationWarning,
+                stacklevel=get_stack_level(),
+            )
+            for tag, indent in tag_indents.items():
+                if tag not in self.tag_styles:
+                    raise NotImplementedError(
+                        f"Cannot set style for HTML tag <{tag}> (contributions are welcome to add support for this)"
+                    )
+                self.tag_styles[tag] = self.tag_styles[tag].replace(l_margin=indent)
 
     def _new_paragraph(
         self,
@@ -582,7 +591,7 @@ class HTML2FPDF(HTMLParser):
                 line_height=(
                     self.line_height_stack[-1] if self.line_height_stack else None
                 ),
-                indent=self.tag_indents["dd"] * (self.indent + 1),
+                indent=self.tag_styles["dd"].l_margin * (self.indent + 1),
             )
         if tag == "strong":
             tag = "b"
@@ -624,6 +633,7 @@ class HTML2FPDF(HTMLParser):
             self.style_stack.append(
                 FontFace(
                     family=self.font_family,
+                    emphasis=self.emphasis,
                     size_pt=self.font_size,
                     color=self.font_color,
                 )
@@ -639,8 +649,8 @@ class HTML2FPDF(HTMLParser):
                 align = None
             self._new_paragraph(
                 align=align,
-                top_margin=prev_font_height + self.heading_above * hsize,
-                bottom_margin=self.heading_below * hsize,
+                top_margin=prev_font_height + tag_style.t_margin * hsize,
+                bottom_margin=tag_style.b_margin * hsize,
             )
             color = None
             if "color" in css_style:
@@ -680,6 +690,7 @@ class HTML2FPDF(HTMLParser):
             self.style_stack.append(
                 FontFace(
                     family=self.font_family,
+                    emphasis=self.emphasis,
                     size_pt=self.font_size,
                     color=self.font_color,
                 )
@@ -696,6 +707,7 @@ class HTML2FPDF(HTMLParser):
             self.style_stack.append(
                 FontFace(
                     family=self.font_family,
+                    emphasis=self.emphasis,
                     size_pt=self.font_size,
                     color=self.font_color,
                 )
@@ -711,9 +723,19 @@ class HTML2FPDF(HTMLParser):
             self._pre_started = True
             self._new_paragraph()
         if tag == "blockquote":
+            self.style_stack.append(
+                FontFace(
+                    family=self.font_family,
+                    emphasis=self.emphasis,
+                    size_pt=self.font_size,
+                    color=self.font_color,
+                )
+            )
             tag_style = self.tag_styles[tag]
             if tag_style.color:
                 self.set_text_color(*tag_style.color.colors255)
+            if tag_style.emphasis:
+                self.emphasis = tag_style.emphasis
             self.set_font(
                 family=tag_style.family or self.font_family,
                 size=tag_style.size_pt or self.font_size,
@@ -722,9 +744,9 @@ class HTML2FPDF(HTMLParser):
             self._new_paragraph(
                 # Default values to be multiplied by the conversion factor
                 # for top_margin and bottom_margin here are given in mm
-                top_margin=3 * self.default_conversion_factor,
-                bottom_margin=3 * self.default_conversion_factor,
-                indent=self.tag_indents["blockquote"] * self.indent,
+                top_margin=self.tag_styles["blockquote"].t_margin,
+                bottom_margin=self.tag_styles["blockquote"].b_margin,
+                indent=self.tag_styles["blockquote"].l_margin * self.indent,
             )
         if tag == "ul":
             self.indent += 1
@@ -745,7 +767,9 @@ class HTML2FPDF(HTMLParser):
             else:
                 self.line_height_stack.append(None)
             if self.indent == 1:
-                self._new_paragraph(top_margin=self.list_vertical_margin, line_height=0)
+                self._new_paragraph(
+                    top_margin=self.tag_styles["ul"].t_margin, line_height=0
+                )
                 self._write_paragraph("\u00a0")
             self._end_paragraph()
         if tag == "ol":
@@ -766,13 +790,15 @@ class HTML2FPDF(HTMLParser):
             else:
                 self.line_height_stack.append(None)
             if self.indent == 1:
-                self._new_paragraph(top_margin=self.list_vertical_margin, line_height=0)
+                self._new_paragraph(
+                    top_margin=self.tag_styles["ol"].t_margin, line_height=0
+                )
                 self._write_paragraph("\u00a0")
             self._end_paragraph()
         if tag == "li":
             # Default value of 2 for h to be multiplied by the conversion factor
             # in self._ln(h) here is given in mm
-            self._ln(2 * self.default_conversion_factor)
+            self._ln(self.tag_styles["li"].t_margin)
             self.set_text_color(*self.li_prefix_color)
             if self.bullet:
                 bullet = self.bullet[self.indent - 1]
@@ -788,7 +814,7 @@ class HTML2FPDF(HTMLParser):
                 line_height=(
                     self.line_height_stack[-1] if self.line_height_stack else None
                 ),
-                indent=self.tag_indents["li"] * self.indent,
+                indent=self.tag_styles["li"].l_margin * self.indent,
                 bullet=bullet,
             )
             self.set_text_color(*self.font_color)
@@ -797,6 +823,7 @@ class HTML2FPDF(HTMLParser):
             self.style_stack.append(
                 FontFace(
                     family=self.font_family,
+                    emphasis=self.emphasis,
                     size_pt=self.font_size,
                     color=self.font_color,
                 )
@@ -959,24 +986,30 @@ class HTML2FPDF(HTMLParser):
         if tag in HEADING_TAGS:
             self.heading_level = None
             font_face = self.style_stack.pop()
+            self.emphasis = font_face.emphasis
             self.set_font(font_face.family, font_face.size_pt)
             self.set_text_color(*font_face.color.colors255)
             self._end_paragraph()
             self.follows_heading = True  # We don't want extra space below a heading.
         if tag == "code":
             font_face = self.style_stack.pop()
+            self.emphasis = font_face.emphasis
             self.set_font(font_face.family, font_face.size_pt)
             self.set_text_color(*font_face.color.colors255)
         if tag == "pre":
             font_face = self.style_stack.pop()
+            self.emphasis = font_face.emphasis
             self.set_font(font_face.family, font_face.size_pt)
             self.set_text_color(*font_face.color.colors255)
             self._pre_formatted = False
             self._pre_started = False
             self._end_paragraph()
         if tag == "blockquote":
+            font_face = self.style_stack.pop()
+            self.emphasis = font_face.emphasis
+            self.set_font(font_face.family, font_face.size_pt)
+            self.set_text_color(*font_face.color.colors255)
             self._end_paragraph()
-            self.set_text_color(*self.font_color)
             self.indent -= 1
         if tag in ("strong", "dt"):
             tag = "b"
@@ -1016,6 +1049,7 @@ class HTML2FPDF(HTMLParser):
         if tag == "font":
             # recover last font state
             font_face = self.style_stack.pop()
+            self.emphasis = font_face.emphasis
             self.font_color = font_face.color.colors255
             self.set_font(font_face.family, font_face.size_pt)
             self.set_text_color(*font_face.color.colors255)
@@ -1040,7 +1074,7 @@ class HTML2FPDF(HTMLParser):
         if size:
             self.font_size = size
             self.h = size / self.pdf.k
-        style = "".join(s for s in ("b", "i", "u") if self.emphasis.get(s)).upper()
+        style = self.emphasis.style
         LOGGER.debug(f"set_font: %s style=%s h={self.h:.2f}", self.font_family, style)
         prev_page = self.pdf.page
         if not set_default:  # make sure there's at least one font defined in the PDF.
@@ -1051,11 +1085,14 @@ class HTML2FPDF(HTMLParser):
             self.pdf.set_font_size(self.font_size)
         self.pdf.page = prev_page
 
-    def set_style(self, tag=None, enable=False):
-        # Modify style and select corresponding font
-        if tag:
-            self.emphasis[tag.lower()] = enable
-        style = "".join(s for s in ("b", "i", "u") if self.emphasis.get(s))
+    def set_style(self, tag, enable):
+        "Modify style and select corresponding font"
+        emphasis = TextEmphasis.coerce(tag.upper())
+        if enable:
+            self.emphasis = self.emphasis.add(emphasis)
+        else:
+            self.emphasis = self.emphasis.remove(emphasis)
+        style = self.emphasis.style
         LOGGER.debug("SET_FONT_STYLE %s", style)
         prev_page = self.pdf.page
         self.pdf.page = 0
@@ -1102,6 +1139,18 @@ class HTML2FPDF(HTMLParser):
     # Subclasses of _markupbase.ParserBase must implement this:
     def error(self, message):
         raise RuntimeError(message)
+
+
+def _scale_units(pdf, in_tag_styles):
+    conversion_factor = get_scale_factor("mm") / pdf.k
+    out_tag_styles = {}
+    for tag_name, tag_style in in_tag_styles.items():
+        out_tag_styles[tag_name] = tag_style.replace(
+            t_margin=tag_style.t_margin * conversion_factor,
+            l_margin=tag_style.l_margin * conversion_factor,
+            b_margin=tag_style.b_margin * conversion_factor,
+        )
+    return out_tag_styles
 
 
 def ul_prefix(ul_type):

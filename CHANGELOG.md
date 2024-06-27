@@ -25,7 +25,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * feature to identify the Unicode script of the input text and break it into fragments when different scripts are used, improving [text shaping](https://py-pdf.github.io/fpdf2/TextShaping.html) results
 * [`FPDF.image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): now handles `keep_aspect_ratio` in combination with an enum value provided to `x`
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): now supports CSS page breaks properties : [documentation](https://py-pdf.github.io/fpdf2/HTML.html#page-breaks)
-* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): spacing before lists can now be adjusted via the `HTML2FPDF.list_vertical_margin` attribute - thanks to @lcgeneralprojects
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): spacing before lists can now be adjusted via the `tag_styles` attribute - thanks to @lcgeneralprojects
 * file names are mentioned in errors when `fpdf2` fails to parse a SVG image
 ### Fixed
 * [`FPDF.local_context()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.local_context) used to leak styling during page breaks, when rendering `footer()` & `header()`
@@ -41,9 +41,10 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * an obscure and undocumented [feature](https://github.com/py-pdf/fpdf2/issues/1198) of [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html), which used to magically pass instance attributes as arguments.
 ### Deprecated
 * `fpdf.TitleStyle` has been renamed into `fpdf.TextStyle`
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): `tag_indents` introduced in the last version - Now the indentation can be provided through the `tag_styles` parameter, using the `.l_margin` of `TextStyle` instances
 ### Changed
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html) now raises an error when a single row is too high to be rendered on a single page
-* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): `tag_indents` can now be non-integer. Indentation of HTML elements is now independent of font size and bullet strings.
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): indentation of HTML elements can now be non-integer (float), and is now independent of font size and bullet strings.
 * improved performance of font glyph selection by using functools cache
 
 ## [2.7.9] - 2024-05-17
