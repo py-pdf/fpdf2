@@ -32,7 +32,7 @@ pdf.write_html("""
     <p><b>Hello</b> world. <u>I am</u> <i>tired</i>.</p>
     <p><a href="https://github.com/py-pdf/fpdf2">py-pdf/fpdf2 GitHub repo</a></p>
     <p align="right">right aligned text</p>
-    <p>i am a paragraph <br />in two parts.</p>
+    <p>i am a paragraph <br>in two parts.</p>
     <font color="#00ff00"><p>hello in green</p></font>
     <font size="7"><p>hello small</p></font>
     <font face="helvetica"><p>hello helvetica</p></font>
@@ -79,7 +79,7 @@ pdf.output("html.pdf")
 ```
 
 
-## Styling HTML tags globally
+### Styling HTML tags globally
 
 _New in [:octicons-tag-24: 2.7.9](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
@@ -124,6 +124,7 @@ pdf.output("html_dd_indented.pdf")
 
 * `<h1>` to `<h8>`: headings (and `align` attribute)
 * `<p>`: paragraphs (and `align`, `line-height` attributes)
+* `<br>` & `<hr>` tags
 * `<b>`, `<i>`, `<u>`: bold, italic, underline
 * `<font>`: (and `face`, `size`, `color` attributes)
 * `<center>` for aligning
@@ -141,6 +142,20 @@ pdf.output("html_dd_indented.pdf")
     + `<th>`: heading cells (with `align`, `bgcolor`, `width` attributes)
     * `<td>`: cells (with `align`, `bgcolor`, `width`, `rowspan`, `colspan` attributes)
 
+### Page breaks
+_New in [:octicons-tag-24: 2.7.10](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+Page breaks can be triggered explicitly using the [break-before](https://developer.mozilla.org/en-US/docs/Web/CSS/break-before) or [break-after](https://developer.mozilla.org/en-US/docs/Web/CSS/break-after) CSS properties.
+For exemple you can use:
+```html
+<br style="break-after: page">
+```
+or:
+```html
+<p style="break-before: page">
+Top of a new page.
+</p>
+```
 
 ## Known limitations
 

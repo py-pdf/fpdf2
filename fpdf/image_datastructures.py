@@ -1,8 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Dict
 
-from .enums import Align
-
 
 class ImageInfo(dict):
     """Information about an image used in the PDF document (base class).
@@ -29,7 +27,9 @@ class ImageInfo(dict):
         return self["rendered_height"]
 
     def __str__(self):
-        d = {k: ("..." if k in ("data", "smask") else v) for k, v in self.items()}
+        d = {
+            k: ("..." if k in ("data", "iccp", "smask") else v) for k, v in self.items()
+        }
         return f"self.__class__.__name__({d})"
 
     def scale_inside_box(self, x, y, w, h):
@@ -47,21 +47,6 @@ class ImageInfo(dict):
             new_w = w
             y += (h - new_h) / 2
         return x, y, new_w, new_h
-
-    @staticmethod
-    def x_by_align(x, w, pdf, keep_aspect_ratio):
-        if keep_aspect_ratio:
-            raise ValueError(
-                "FPDF.image(): 'keep_aspect_ratio' cannot be used with an enum value provided to `x`"
-            )
-        x = Align.coerce(x)
-        if x == Align.C:
-            return (pdf.w - w) / 2
-        if x == Align.R:
-            return pdf.w - w - pdf.r_margin
-        if x == Align.L:
-            return pdf.l_margin
-        raise ValueError(f"Unsupported 'x' value passed to .image(): {x}")
 
 
 class RasterImageInfo(ImageInfo):

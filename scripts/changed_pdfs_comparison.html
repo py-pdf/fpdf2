@@ -7,11 +7,15 @@
     </style>
 </head>
 <body>
+    <b>LEFT:</b> Version from <code>master</code> branch
+    -
+    <b>RIGHT:</b> Version from current branch
+    <br><br>
     {% for changed_pdf_file in changed_pdf_files %}
     <span class="filename">{{ changed_pdf_file }}</span>
     <div class="side-by-side">
-        <embed src="{{ changed_pdf_file }}" width="500px" height="707px" />
         <embed src="master-checkouts/{{ changed_pdf_file }}" width="500px" height="707px" />
+        <embed src="{{ changed_pdf_file }}" width="500px" height="707px" />
     </div>
     {% endfor %}
 </body>

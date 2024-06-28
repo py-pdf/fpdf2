@@ -322,7 +322,7 @@ def test_local_context_init(tmp_path):
     pdf.add_page()
     pdf.set_font("Helvetica", "", 12)
     with pdf.local_context(
-        font_family="Courier", font_style="B", font_size=24, text_color=(255, 128, 0)
+        font_family="Courier", font_style="B", font_size_pt=24, text_color=(255, 128, 0)
     ):
         pdf.cell(text="Local context")
     pdf.ln()
@@ -370,8 +370,26 @@ def test_invalid_local_context_init():
     pdf = FPDF()
     pdf.add_page()
     with pytest.raises(ValueError):
-        with pdf.local_context(font_size_pt=24):
-            pass
-    with pytest.raises(ValueError):
         with pdf.local_context(stroke_width=2):
             pass
+
+
+def test_local_context_font_size_and_header_footer(tmp_path):  # issue 1204
+    class PDF(FPDF):
+        def header(self):
+            self.cell(text=f"Header {self.page_no()}")
+            self.ln()
+
+        def footer(self):
+            self.set_y(-15)
+            self.cell(text=f"Footer {self.page_no()}")
+
+    pdf = PDF()
+    pdf.set_font(family="helvetica", size=12)
+    pdf.add_page()
+    with pdf.local_context(font_size_pt=36):  # LABEL C
+        pdf.multi_cell(w=0, text="\n".join(f"Line {i + 1}" for i in range(21)))
+    assert pdf.font_size_pt == 12
+    assert_pdf_equal(
+        pdf, HERE / "local_context_font_size_and_header_footer.pdf", tmp_path
+    )

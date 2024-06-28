@@ -195,6 +195,7 @@ def test_bidi_paragraph_direction(tmp_path):
     pdf.add_page()
     pdf.add_font(family="SBL_Hbrw", fname=HERE / "SBL_Hbrw.ttf")
     pdf.set_font("SBL_Hbrw", "", 18)
+    pdf.set_text_shaping(True)
 
     text1 = "אנגלית (באנגלית: English)"  # first char is RTL
     text2 = "The test is: אנגלית (באנגלית: English)"  # first char is LTR

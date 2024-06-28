@@ -251,7 +251,7 @@ class CustomHTML2FPDF(HTML2FPDF):
             )
 
 
-def test_custom_HTML2FPDF(tmp_path):  # issue 240 & 670
+def test_html_toc_with_custom_rendering(tmp_path):  # issue 240 & 670
     class PDF(FPDF):
         HTML2FPDF_CLASS = CustomHTML2FPDF
 
@@ -271,4 +271,4 @@ def test_custom_HTML2FPDF(tmp_path):  # issue 240 & 670
         <h6>Level 6</h6>
         <p>paragraph</p>"""
         )
-    assert_pdf_equal(pdf, HERE / "custom_HTML2FPDF.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "html_toc_with_custom_rendering.pdf", tmp_path)

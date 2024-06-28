@@ -3,9 +3,9 @@
 # Generate a HTML page that makes it easy to visually compare all PDF files
 # that are modified in the current branch, compared to the master branch.
 
-# USAGE: ./compare-changed-pdfs.py
+# USAGE: ./compare-changed-pdfs.py [test_subdir_path]
 
-import webbrowser
+import sys, webbrowser
 from functools import partial
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from os import makedirs, scandir
@@ -30,15 +30,18 @@ def scantree_dirs(path):
             yield from scantree_dirs(entry.path)
 
 
+target_dir = sys.argv[1] if len(sys.argv) > 1 else "test/"
+print(f"Processing all PDF reference files in directory {target_dir}")
+
 stdout = check_output("git diff --name-status master", shell=True)
 changed_pdf_files = [
     line[1:].strip()
     for line in stdout.decode("utf-8").splitlines()
-    if line.startswith("M\ttest/")
+    if line.startswith(f"M\t{target_dir}") and line.endswith(".pdf")
 ]
 
 TMP_DIR.mkdir(exist_ok=True)
-for dir in scantree_dirs(REPO_DIR / "test"):
+for dir in scantree_dirs(REPO_DIR / target_dir):
     (TMP_DIR / dir).mkdir(exist_ok=True)
 for changed_pdf_file in changed_pdf_files:
     command = f"git show master:{changed_pdf_file} > {TMP_DIR}/{changed_pdf_file}"

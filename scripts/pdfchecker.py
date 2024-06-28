@@ -7,6 +7,9 @@
 # * parallelize the execution of this analysis on all PDF files
 # * allow to ignore some errors considered harmless, listed in pdfchecker-ignore.json
 
+# Note: among the 3 checkers we use for fpdf2, PDF Checker is the only one that report errors
+#       for unbalanced q/Q contexts in content streams, even if it does not provide a clear message.
+
 # USAGE: ./pdfchecker.py [$pdf_filepath|--process-all-test-pdf-files|--print-aggregated-report]
 
 import sys

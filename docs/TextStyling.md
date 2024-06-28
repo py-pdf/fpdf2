@@ -1,8 +1,8 @@
 # Text styling #
 
-## set_font() ##
+## .set_font() ##
 
-Setting emphasis on text can be controlled by using `set_font(style=...)`:
+Setting emphasis on text can be controlled by using `.set_font(style=...)`:
 
 * `style="B"` indicates **bold**
 * `style="I"` indicates _italics_
@@ -65,6 +65,10 @@ pdf.set_char_spacing(10)
 pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
 ```
 ![](char_spacing.png)
+
+For a more complete support of **Markdown** syntax,
+check out this guide to combine `fpdf2` with the `mistletoe` library:
+[Combine with mistletoe to use Markdown](CombineWithMistletoeoToUseMarkdown.md).
 
 
 ## Subscript, Superscript, and Fractional Numbers
@@ -175,7 +179,7 @@ More examples from [`test_text_mode.py`](https://github.com/py-pdf/fpdf2/blob/ma
 
 An optional `markdown=True` parameter can be passed to the [`cell()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell)
 & [`multi_cell()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) methods
-in order to enable basic Markdown-like styling: `**bold**, __italics__, --underlined--`
+in order to enable basic Markdown-like styling: `**bold**, __italics__, --underlined--`.
 
 Bold & italics require using dedicated fonts for each style.
 
@@ -199,9 +203,9 @@ Several unit tests in `test/text/` demonstrate that:
 * [test_multi_cell_markdown_with_ttf_fonts](https://github.com/py-pdf/fpdf2/blob/2.6.1/test/text/test_multi_cell_markdown.py#L27)
 
 
-## write_html ##
+## .write_html() ##
 
-[`write_html`](HTML.md) allows to set emphasis on text through the `<b>`, `<i>` and `<u>` tags:
+[`.write_html()`](HTML.md) allows to set emphasis on text through the `<b>`, `<i>` and `<u>` tags:
 
 ```python
 pdf.write_html("""<B>bold</B>

@@ -307,30 +307,23 @@ def test_tcols_bad_uses():
     assert str(error.value) == expected_msg
 
 
-@pytest.mark.skip(reason="unfinished")
-def test_tcols_text_shaping(tmp_path):
+def test_tcols_break_top_margin(tmp_path):  # regression test for #1214
+    """Ensure that the top/bottom margins of a paragraph trigger
+    a column break.
+    """
     pdf = FPDF()
     pdf.add_page()
-    pdf.t_margin = 50
-    pdf.set_text_shaping(True)
-    pdf.set_font("Helvetica", "", 6)
-    tsfontpath = HERE.parent / "text_shaping"
-    pdf.add_font(
-        family="KFGQPC", fname=tsfontpath / "KFGQPC Uthmanic Script HAFS Regular.otf"
-    )
-    pdf.add_font(family="Mangal", fname=tsfontpath / "Mangal 400.ttf")
-    cols = pdf.text_columns(text_align="L", ncols=3, gutter=20)
-    with cols:
-        #        pdf.set_font("Times", "", 12)
-        #        cols.write(text=LOREM_IPSUM[:101])
-        pdf.set_font("KFGQPC", size=12)
-        cols.write(text=" مثال على اللغة العربية. محاذاة لليمين.")
-        pdf.set_font("Mangal", size=12)
-        cols.write(text="इण्टरनेट पर हिन्दी के साधन")
-    #        pdf.set_font("Helvetica", "", 12)
-    #        pdf.set_font("Times", "", 14)
-    #        cols.write(text=LOREM_IPSUM)
-    #        pdf.set_font("Courier", "", 16)
-    #        cols.write(text=LOREM_IPSUM)
+    pdf.set_font("Helvetica", "", 14)
+    pdf.set_top_margin(50)
+    pdf.set_auto_page_break(True, 50)
+    pdf.rect(pdf.l_margin, pdf.t_margin, pdf.epw, pdf.eph)
 
-    assert_pdf_equal(pdf, HERE / "tcols_text_shaping.pdf", tmp_path)
+    with pdf.text_columns(text_align="J", ncols=2) as cols:
+        for _ in range(3):
+            with cols.paragraph(
+                text_align="J",
+                bottom_margin=pdf.font_size * 5,
+                top_margin=pdf.font_size * 5,
+            ) as par:
+                par.write(text=LOREM_IPSUM)
+    assert_pdf_equal(pdf, HERE / "tcols_break_top_margin.pdf", tmp_path)
