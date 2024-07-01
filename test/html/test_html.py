@@ -188,7 +188,7 @@ def test_html_bold_italic_underline(tmp_path):
         """<B>bold</B>
            <I>italic</I>
            <U>underlined</U>
-           <B><I><U>all at once!</U></I></B>"""
+           <b><i><u>all at once!</u></i></b>"""
     )
     assert_pdf_equal(pdf, HERE / "html_bold_italic_underline.pdf", tmp_path)
 

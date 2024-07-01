@@ -592,28 +592,19 @@ class HTML2FPDF(HTMLParser):
                         " You can open up an issue on github.com/py-pdf/fpdf2 if this is something you would like to see implemented."
                     )
                 self.pdf.start_section(data, self.heading_level - 1, strict=False)
-            LOGGER.debug(f"write: '%s' h={self.h:.2f}", data)
             self._write_paragraph(data)
 
     def handle_starttag(self, tag, attrs):
         self._pre_started = False
         attrs = dict(attrs)
-        LOGGER.debug("STARTTAG %s %s", tag, attrs)
         css_style = parse_css_style(attrs.get("style", ""))
         self._tags_stack.append(tag)
         if css_style.get("break-before") == "page":
             self._end_paragraph()
             # pylint: disable=protected-access
             self.pdf._perform_page_break()
-        if tag == "strong":
-            tag = "b"
-        if tag == "em":
-            tag = "i"
-        if tag in ("b", "i", "u"):
-            if self.td_th is not None:
-                self.td_th[tag] = True
-            else:
-                self.set_style(tag, True)
+        if tag in ("b", "i", "u") and self.td_th is not None:
+            self.td_th[tag] = True
         if tag == "a":
             self.href = attrs["href"]
             try:
@@ -702,12 +693,24 @@ class HTML2FPDF(HTMLParser):
             if color:
                 self.set_text_color(*color)
             if tag_style.emphasis:
-                self.emphasis = tag_style.emphasis
+                self.emphasis |= tag_style.emphasis
             self.set_font(
                 family=tag_style.family or self.font_family,
                 size=tag_style.size_pt or self.font_size,
             )
-        if tag in ("blockquote", "center", "code", "dd", "dt", "pre"):
+        if tag in (
+            "b",
+            "blockquote",
+            "center",
+            "code",
+            "em",
+            "i",
+            "dd",
+            "dt",
+            "pre",
+            "strong",
+            "u",
+        ):
             is_block = tag in ("blockquote", "center", "dd", "dt", "pre")
             if is_block:
                 self._end_paragraph()
@@ -723,7 +726,7 @@ class HTML2FPDF(HTMLParser):
             if tag_style.color:
                 self.set_text_color(*tag_style.color.colors255)
             if tag_style.emphasis:
-                self.emphasis = tag_style.emphasis
+                self.emphasis |= tag_style.emphasis
             self.set_font(
                 family=tag_style.family or self.font_family,
                 size=tag_style.size_pt or self.font_size,
@@ -739,7 +742,7 @@ class HTML2FPDF(HTMLParser):
                     ),
                     top_margin=tag_style.t_margin,
                     bottom_margin=tag_style.b_margin,
-                    indent=tag_style.l_margin * (self.indent + 1),
+                    indent=tag_style.l_margin,
                 )
         if tag == "ul":
             self.indent += 1
@@ -933,14 +936,6 @@ class HTML2FPDF(HTMLParser):
             x = self.pdf.get_x()
             if self.align and self.align[0].upper() == "C":
                 x = Align.C
-            LOGGER.debug(
-                'image "%s" x=%d y=%d width=%d height=%d',
-                attrs["src"],
-                x,
-                self.pdf.get_y(),
-                width,
-                height,
-            )
             self.pdf.image(
                 self.image_map(attrs["src"]), x=x, w=width, h=height, link=self.href
             )
@@ -962,7 +957,6 @@ class HTML2FPDF(HTMLParser):
                 self._page_break_after_paragraph = True
 
     def handle_endtag(self, tag):
-        LOGGER.debug("ENDTAG %s", tag)
         while (
             self._tags_stack
             and tag != self._tags_stack[-1]
@@ -982,13 +976,6 @@ class HTML2FPDF(HTMLParser):
                 tag,
                 self._tags_stack[-1],
             )
-        if tag in ("strong", "dt"):
-            tag = "b"
-        if tag == "em":
-            tag = "i"
-        if tag in ("b", "i", "u"):
-            if not self.td_th is not None:
-                self.set_style(tag, False)
         if tag == "a":
             self.href = ""
         if tag == "p":
@@ -1001,7 +988,19 @@ class HTML2FPDF(HTMLParser):
             self.set_font(font_face.family, font_face.size_pt)
             self.set_text_color(*font_face.color.colors255)
             self._end_paragraph()
-        if tag in ("blockquote", "center", "code", "dd", "dt", "pre"):
+        if tag in (
+            "b",
+            "blockquote",
+            "center",
+            "code",
+            "em",
+            "i",
+            "dd",
+            "dt",
+            "pre",
+            "strong",
+            "u",
+        ):
             is_block = tag in ("blockquote", "center", "dd", "dt", "pre")
             font_face = self.style_stack.pop()
             self.emphasis = font_face.emphasis
@@ -1061,13 +1060,14 @@ class HTML2FPDF(HTMLParser):
         if size:
             self.font_size = size
             self.h = size / self.pdf.k
-        style = self.emphasis.style
-        LOGGER.debug(f"set_font: %s style=%s h={self.h:.2f}", self.font_family, style)
         prev_page = self.pdf.page
         if not set_default:  # make sure there's at least one font defined in the PDF.
             self.pdf.page = 0
-        if (self.font_family, style) != (self.pdf.font_family, self.pdf.font_style):
-            self.pdf.set_font(self.font_family, style, self.font_size)
+        if (self.font_family, self.emphasis) != (
+            self.pdf.font_family,
+            self.pdf.emphasis,
+        ):
+            self.pdf.set_font(self.font_family, self.emphasis.style, self.font_size)
         if self.font_size != self.pdf.font_size:
             self.pdf.set_font_size(self.font_size)
         self.pdf.page = prev_page
@@ -1080,7 +1080,6 @@ class HTML2FPDF(HTMLParser):
         else:
             self.emphasis = self.emphasis.remove(emphasis)
         style = self.emphasis.style
-        LOGGER.debug("SET_FONT_STYLE %s", style)
         prev_page = self.pdf.page
         self.pdf.page = 0
         self.pdf.set_font(style=style)
@@ -1104,7 +1103,7 @@ class HTML2FPDF(HTMLParser):
         if tag_style.color:
             self.set_text_color(*tag_style.color.colors255)
         if tag_style.emphasis:
-            self.emphasis = tag_style.emphasis
+            self.emphasis |= tag_style.emphasis
         self.set_font(
             family=tag_style.family or self.font_family,
             size=tag_style.size_pt or self.font_size,
