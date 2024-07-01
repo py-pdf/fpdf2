@@ -739,7 +739,7 @@ def test_html_unsupported_tag_color():
     pdf = FPDF()
     pdf.add_page()
     with pytest.raises(NotImplementedError):
-        pdf.write_html("<p>foo</p>", tag_styles={"p": TextStyle()})
+        pdf.write_html("<p>foo</p><hr><p>bar</p>", tag_styles={"hr": TextStyle()})
 
 
 def test_html_link_color_using_FontFace(tmp_path):
@@ -779,7 +779,7 @@ def test_html_unsupported_tag_color_using_FontFace():
     pdf = FPDF()
     pdf.add_page()
     with pytest.raises(NotImplementedError):
-        pdf.write_html("<p>foo</p>", tag_styles={"p": FontFace()})
+        pdf.write_html("<p>foo</p><hr><p>bar</p>", tag_styles={"hr": FontFace()})
 
 
 def test_html_blockquote_indent(tmp_path):  # issue-1074

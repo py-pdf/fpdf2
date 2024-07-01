@@ -23,10 +23,14 @@ BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
 DEGREE_WIN1252 = "\xb0"
 HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
 DEFAULT_TAG_STYLES = {
-    "a": TextStyle(color="#00f"),
+    # inline tags:
+    "a": FontFace(color="#00f"),
+    "code": FontFace(family="Courier"),
+    # block tags:
     "blockquote": TextStyle(color="#64002d", t_margin=3, b_margin=3),
-    "code": TextStyle(font_family="Courier"),
+    "center": TextStyle(),
     "dd": TextStyle(l_margin=10),
+    "dt": TextStyle(),
     "h1": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=24),
     "h2": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=18),
     "h3": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=14),
@@ -34,6 +38,7 @@ DEFAULT_TAG_STYLES = {
     "h5": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=10),
     "h6": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=8),
     "li": TextStyle(l_margin=5, t_margin=2),
+    "p": TextStyle(t_margin=4 + 7 / 30),
     "pre": TextStyle(font_family="Courier"),
     "ol": TextStyle(t_margin=2),
     "ul": TextStyle(t_margin=2),
@@ -324,7 +329,6 @@ class HTML2FPDF(HTMLParser):
         # nothing written yet to <pre>, remove one initial nl:
         self._pre_started = False
         self.follows_trailing_space = False  # The last write has ended with a space.
-        self.follows_heading = False  # We don't want extra space below a heading.
         self.href = ""
         self.align = ""
         self.style_stack = []  # list of FontFace
@@ -351,7 +355,11 @@ class HTML2FPDF(HTMLParser):
                 raise NotImplementedError(
                     f"Cannot set style for HTML tag <{tag}> (contributions are welcome to add support for this)"
                 )
-            if isinstance(tag_style, FontFace) and not isinstance(tag_style, TextStyle):
+            default_tag_style = self.tag_styles[tag]
+            is_base_fontFace = isinstance(tag_style, FontFace) and not isinstance(
+                tag_style, TextStyle
+            )
+            if is_base_fontFace and isinstance(default_tag_style, TextStyle):
                 # pylint: disable=redefined-loop-name
                 tag_style = TextStyle(
                     font_family=tag_style.family,
@@ -362,9 +370,9 @@ class HTML2FPDF(HTMLParser):
                     color=tag_style.color,
                     fill_color=tag_style.fill_color,
                     # Using default tag margins:
-                    t_margin=self.tag_styles[tag].t_margin,
-                    l_margin=self.tag_styles[tag].l_margin,
-                    b_margin=self.tag_styles[tag].b_margin,
+                    t_margin=default_tag_style.t_margin,
+                    l_margin=default_tag_style.l_margin,
+                    b_margin=default_tag_style.b_margin,
                 )
             self.tag_styles[tag] = tag_style
         if heading_sizes is not None:
@@ -390,7 +398,7 @@ class HTML2FPDF(HTMLParser):
                 stacklevel=get_stack_level(),
             )
             self.tag_styles["code"] = self.tag_styles["code"].replace(
-                font_family=pre_code_font
+                family=pre_code_font
             )
             self.tag_styles["pre"] = self.tag_styles["pre"].replace(
                 font_family=pre_code_font
@@ -405,7 +413,7 @@ class HTML2FPDF(HTMLParser):
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
-            self.tag_styles["dd"] = self.tag_styles["pre"].replace(
+            self.tag_styles["dd"] = self.tag_styles["dd"].replace(
                 l_margin=dd_tag_indent
             )
         if li_tag_indent is not None:
@@ -449,8 +457,6 @@ class HTML2FPDF(HTMLParser):
     ):
         self._end_paragraph()
         self.align = align or ""
-        if not top_margin and not self.follows_heading:
-            top_margin = self.font_size / self.pdf.k
         self._paragraph = self._column.paragraph(
             text_align=align,
             line_height=line_height,
@@ -461,7 +467,6 @@ class HTML2FPDF(HTMLParser):
             bullet_string=bullet,
         )
         self.follows_trailing_space = True
-        self.follows_heading = False
 
     def _end_paragraph(self):
         self.align = ""
@@ -477,7 +482,7 @@ class HTML2FPDF(HTMLParser):
 
     def _write_paragraph(self, text, link=None):
         if not self._paragraph:
-            self._new_paragraph()
+            self._new_paragraph(top_margin=self.font_size / self.pdf.k)
         self._paragraph.write(text, link=link)
 
     def _ln(self, h=None):
@@ -579,19 +584,26 @@ class HTML2FPDF(HTMLParser):
             # pylint: disable=protected-access
             self.pdf._perform_page_break()
         if tag == "dt":
+            tag_style = self.tag_styles[tag]
             self._new_paragraph(
                 line_height=(
                     self.line_height_stack[-1] if self.line_height_stack else None
                 ),
+                # TODO: use top_margin=tag_style.t_margin
+                top_margin=self.font_size / self.pdf.k,
+                bottom_margin=tag_style.b_margin,
+                indent=tag_style.l_margin,
             )
             tag = "b"
         if tag == "dd":
-            self.follows_heading = True
+            tag_style = self.tag_styles[tag]
             self._new_paragraph(
                 line_height=(
                     self.line_height_stack[-1] if self.line_height_stack else None
                 ),
-                indent=self.tag_styles["dd"].l_margin * (self.indent + 1),
+                top_margin=tag_style.t_margin,
+                bottom_margin=tag_style.b_margin,
+                indent=tag_style.l_margin * (self.indent + 1),
             )
         if tag == "strong":
             tag = "b"
@@ -627,7 +639,14 @@ class HTML2FPDF(HTMLParser):
                     line_height = float(line_height)
                 except ValueError:
                     line_height = None
-            self._new_paragraph(align=align, line_height=line_height)
+            tag_style = self.tag_styles[tag]
+            self._new_paragraph(
+                align=align,
+                line_height=line_height,
+                top_margin=tag_style.t_margin,
+                bottom_margin=tag_style.b_margin,
+                indent=tag_style.l_margin,
+            )
         if tag in HEADING_TAGS:
             prev_font_height = self.font_size / self.pdf.k
             self.style_stack.append(
@@ -649,8 +668,10 @@ class HTML2FPDF(HTMLParser):
                 align = None
             self._new_paragraph(
                 align=align,
+                # TODO: rm prev_font_height & hsize
                 top_margin=prev_font_height + tag_style.t_margin * hsize,
                 bottom_margin=tag_style.b_margin * hsize,
+                indent=tag_style.l_margin,
             )
             color = None
             if "color" in css_style:
@@ -721,7 +742,12 @@ class HTML2FPDF(HTMLParser):
             )
             self._pre_formatted = True
             self._pre_started = True
-            self._new_paragraph()
+            self._new_paragraph(
+                # TODO: top_margin=tag_style.t_margin,
+                top_margin=self.font_size / self.pdf.k,
+                bottom_margin=tag_style.b_margin,
+                indent=tag_style.l_margin,
+            )
         if tag == "blockquote":
             self.style_stack.append(
                 FontFace(
@@ -744,9 +770,9 @@ class HTML2FPDF(HTMLParser):
             self._new_paragraph(
                 # Default values to be multiplied by the conversion factor
                 # for top_margin and bottom_margin here are given in mm
-                top_margin=self.tag_styles["blockquote"].t_margin,
-                bottom_margin=self.tag_styles["blockquote"].b_margin,
-                indent=self.tag_styles["blockquote"].l_margin * self.indent,
+                top_margin=tag_style.t_margin,
+                bottom_margin=tag_style.b_margin,
+                indent=tag_style.l_margin * self.indent,
             )
         if tag == "ul":
             self.indent += 1
@@ -767,8 +793,12 @@ class HTML2FPDF(HTMLParser):
             else:
                 self.line_height_stack.append(None)
             if self.indent == 1:
+                tag_style = self.tag_styles[tag]
                 self._new_paragraph(
-                    top_margin=self.tag_styles["ul"].t_margin, line_height=0
+                    line_height=0,
+                    top_margin=tag_style.t_margin,
+                    bottom_margin=tag_style.b_margin,
+                    indent=tag_style.l_margin,
                 )
                 self._write_paragraph("\u00a0")
             self._end_paragraph()
@@ -790,15 +820,16 @@ class HTML2FPDF(HTMLParser):
             else:
                 self.line_height_stack.append(None)
             if self.indent == 1:
+                tag_style = self.tag_styles[tag]
                 self._new_paragraph(
-                    top_margin=self.tag_styles["ol"].t_margin, line_height=0
+                    line_height=0,
+                    top_margin=tag_style.t_margin,
+                    bottom_margin=tag_style.b_margin,
+                    indent=tag_style.l_margin,
                 )
                 self._write_paragraph("\u00a0")
             self._end_paragraph()
         if tag == "li":
-            # Default value of 2 for h to be multiplied by the conversion factor
-            # in self._ln(h) here is given in mm
-            self._ln(self.tag_styles["li"].t_margin)
             self.set_text_color(*self.li_prefix_color)
             if self.bullet:
                 bullet = self.bullet[self.indent - 1]
@@ -810,11 +841,16 @@ class HTML2FPDF(HTMLParser):
                 self.bullet[self.indent - 1] = bullet
                 ol_type = self.ol_type[self.indent - 1]
                 bullet = f"{ol_prefix(ol_type, bullet)}."
+            tag_style = self.tag_styles[tag]
+            self._ln(tag_style.t_margin)
             self._new_paragraph(
                 line_height=(
                     self.line_height_stack[-1] if self.line_height_stack else None
                 ),
-                indent=self.tag_styles["li"].l_margin * self.indent,
+                indent=tag_style.l_margin * self.indent,
+                # TODO: merge this top_margin with _ln() call above
+                top_margin=self.font_size / self.pdf.k,
+                bottom_margin=tag_style.b_margin,
                 bullet=bullet,
             )
             self.set_text_color(*self.font_color)
@@ -944,7 +980,14 @@ class HTML2FPDF(HTMLParser):
                 self.image_map(attrs["src"]), x=x, w=width, h=height, link=self.href
             )
         if tag == "center":
-            self._new_paragraph(align="C")
+            tag_style = self.tag_styles[tag]
+            self._new_paragraph(
+                align="C",
+                # TODO: use tag_style.t_margin
+                top_margin=self.font_size / self.pdf.k,
+                bottom_margin=tag_style.b_margin,
+                indent=tag_style.l_margin,
+            )
         if tag == "toc":
             self._end_paragraph()
             self.pdf.insert_toc_placeholder(
@@ -990,7 +1033,6 @@ class HTML2FPDF(HTMLParser):
             self.set_font(font_face.family, font_face.size_pt)
             self.set_text_color(*font_face.color.colors255)
             self._end_paragraph()
-            self.follows_heading = True  # We don't want extra space below a heading.
         if tag == "code":
             font_face = self.style_stack.pop()
             self.emphasis = font_face.emphasis
@@ -1145,11 +1187,14 @@ def _scale_units(pdf, in_tag_styles):
     conversion_factor = get_scale_factor("mm") / pdf.k
     out_tag_styles = {}
     for tag_name, tag_style in in_tag_styles.items():
-        out_tag_styles[tag_name] = tag_style.replace(
-            t_margin=tag_style.t_margin * conversion_factor,
-            l_margin=tag_style.l_margin * conversion_factor,
-            b_margin=tag_style.b_margin * conversion_factor,
-        )
+        if isinstance(tag_style, TextStyle):
+            out_tag_styles[tag_name] = tag_style.replace(
+                t_margin=tag_style.t_margin * conversion_factor,
+                l_margin=tag_style.l_margin * conversion_factor,
+                b_margin=tag_style.b_margin * conversion_factor,
+            )
+        else:
+            out_tag_styles[tag_name] = tag_style
     return out_tag_styles
 
 
