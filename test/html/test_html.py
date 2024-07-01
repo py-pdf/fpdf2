@@ -4,7 +4,6 @@ import pytest
 
 from fpdf import FPDF, FontFace, HTMLMixin, TextStyle, TitleStyle
 from fpdf.drawing import DeviceRGB
-from fpdf.html import color_as_decimal
 from fpdf.errors import FPDFException
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
@@ -698,12 +697,13 @@ def test_html_and_section_title_styles_with_deprecated_TitleStyle():
         )
 
 
-def test_html_link_color(tmp_path):
+def test_html_link_style(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    html = '<a href="www.example.com">foo</a>'
-    pdf.write_html(html, tag_styles={"a": TextStyle(color=color_as_decimal("red"))})
-    assert_pdf_equal(pdf, HERE / "html_link_color.pdf", tmp_path)
+    html = '<a href="http://www.example.com">Link to www.example.com</a>'
+    style = FontFace(color="#f00", family="Courier", size_pt=8, emphasis="BIU")
+    pdf.write_html(html, tag_styles={"a": style})
+    assert_pdf_equal(pdf, HERE / "html_link_style.pdf", tmp_path)
 
 
 def test_html_blockquote_color(tmp_path):
@@ -748,12 +748,15 @@ def test_html_unsupported_tag_color():
         pdf.write_html("<p>foo</p><hr><p>bar</p>", tag_styles={"hr": TextStyle()})
 
 
-def test_html_link_color_using_FontFace(tmp_path):
+def test_html_link_style_using_TextStyle(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    html = '<a href="www.example.com">foo</a>'
-    pdf.write_html(html, tag_styles={"a": FontFace(color=color_as_decimal("red"))})
-    assert_pdf_equal(pdf, HERE / "html_link_color.pdf", tmp_path)
+    html = '<a href="http://www.example.com">Link to www.example.com</a>'
+    style = TextStyle(
+        color="#f00", font_family="Courier", font_size_pt=8, font_style="BIU"
+    )
+    pdf.write_html(html, tag_styles={"a": style})
+    assert_pdf_equal(pdf, HERE / "html_link_style.pdf", tmp_path)
 
 
 def test_html_blockquote_color_using_FontFace(tmp_path):

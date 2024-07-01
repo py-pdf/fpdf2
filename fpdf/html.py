@@ -24,7 +24,7 @@ DEGREE_WIN1252 = "\xb0"
 HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
 DEFAULT_TAG_STYLES = {
     # inline tags:
-    "a": FontFace(color="#00f"),
+    "a": FontFace(color="#00f", emphasis="UNDERLINE"),
     "code": FontFace(family="Courier"),
     # block tags:
     "blockquote": TextStyle(color="#64002d", t_margin=3, b_margin=3),
@@ -1157,18 +1157,27 @@ class HTML2FPDF(HTMLParser):
         self.pdf.page = prev_page
 
     def put_link(self, text):
-        # Put a hyperlink
+        "Put a hyperlink"
+        prev_style = FontFace(
+            family=self.font_family,
+            emphasis=self.emphasis,
+            size_pt=self.font_size,
+            color=self.font_color,
+        )
         tag_style = self.tag_styles["a"]
         if tag_style.color:
             self.set_text_color(*tag_style.color.colors255)
+        if tag_style.emphasis:
+            self.emphasis = tag_style.emphasis
         self.set_font(
             family=tag_style.family or self.font_family,
             size=tag_style.size_pt or self.font_size,
         )
-        self.set_style("u", True)
         self._write_paragraph(text, link=self.href)
-        self.set_style("u", False)
-        self.set_text_color(*self.font_color)
+        # Restore previous style:
+        self.emphasis = prev_style.emphasis
+        self.set_font(prev_style.family, prev_style.size_pt)
+        self.set_text_color(*prev_style.color.colors255)
 
     # pylint: disable=no-self-use
     def render_toc(self, pdf, outline):
