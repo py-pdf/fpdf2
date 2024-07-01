@@ -28,18 +28,30 @@ DEFAULT_TAG_STYLES = {
     "code": FontFace(family="Courier"),
     # block tags:
     "blockquote": TextStyle(color="#64002d", t_margin=3, b_margin=3),
-    "center": TextStyle(),
+    "center": TextStyle(t_margin=4 + 7 / 30),
     "dd": TextStyle(l_margin=10),
-    "dt": TextStyle(),
-    "h1": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=24),
-    "h2": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=18),
-    "h3": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=14),
-    "h4": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=12),
-    "h5": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=10),
-    "h6": TextStyle(color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=8),
+    "dt": TextStyle(t_margin=4 + 7 / 30),
+    "h1": TextStyle(
+        color="#960000", b_margin=0.4, font_size_pt=24, t_margin=5 + 834 / 900
+    ),
+    "h2": TextStyle(
+        color="#960000", b_margin=0.4, font_size_pt=18, t_margin=5 + 453 / 900
+    ),
+    "h3": TextStyle(
+        color="#960000", b_margin=0.4, font_size_pt=14, t_margin=5 + 199 / 900
+    ),
+    "h4": TextStyle(
+        color="#960000", b_margin=0.4, font_size_pt=12, t_margin=5 + 72 / 900
+    ),
+    "h5": TextStyle(
+        color="#960000", b_margin=0.4, font_size_pt=10, t_margin=5 - 55 / 900
+    ),
+    "h6": TextStyle(
+        color="#960000", b_margin=0.4, font_size_pt=8, t_margin=5 - 182 / 900
+    ),
     "li": TextStyle(l_margin=5, t_margin=2),
     "p": TextStyle(t_margin=4 + 7 / 30),
-    "pre": TextStyle(font_family="Courier"),
+    "pre": TextStyle(t_margin=4 + 7 / 30, font_family="Courier"),
     "ol": TextStyle(t_margin=2),
     "ul": TextStyle(t_margin=2),
 }
@@ -455,6 +467,10 @@ class HTML2FPDF(HTMLParser):
         indent=0,
         bullet="",
     ):
+        if bullet and top_margin:
+            raise NotImplementedError(
+                f"{top_margin=} will be ignored because {bullet=} is provided, due to TextRegion._render_column_lines()"
+            )
         self._end_paragraph()
         self.align = align or ""
         self._paragraph = self._column.paragraph(
@@ -589,8 +605,7 @@ class HTML2FPDF(HTMLParser):
                 line_height=(
                     self.line_height_stack[-1] if self.line_height_stack else None
                 ),
-                # TODO: use top_margin=tag_style.t_margin
-                top_margin=self.font_size / self.pdf.k,
+                top_margin=tag_style.t_margin,
                 bottom_margin=tag_style.b_margin,
                 indent=tag_style.l_margin,
             )
@@ -648,7 +663,6 @@ class HTML2FPDF(HTMLParser):
                 indent=tag_style.l_margin,
             )
         if tag in HEADING_TAGS:
-            prev_font_height = self.font_size / self.pdf.k
             self.style_stack.append(
                 FontFace(
                     family=self.font_family,
@@ -668,8 +682,7 @@ class HTML2FPDF(HTMLParser):
                 align = None
             self._new_paragraph(
                 align=align,
-                # TODO: rm prev_font_height & hsize
-                top_margin=prev_font_height + tag_style.t_margin * hsize,
+                top_margin=tag_style.t_margin,
                 bottom_margin=tag_style.b_margin * hsize,
                 indent=tag_style.l_margin,
             )
@@ -743,8 +756,7 @@ class HTML2FPDF(HTMLParser):
             self._pre_formatted = True
             self._pre_started = True
             self._new_paragraph(
-                # TODO: top_margin=tag_style.t_margin,
-                top_margin=self.font_size / self.pdf.k,
+                top_margin=tag_style.t_margin,
                 bottom_margin=tag_style.b_margin,
                 indent=tag_style.l_margin,
             )
@@ -848,8 +860,6 @@ class HTML2FPDF(HTMLParser):
                     self.line_height_stack[-1] if self.line_height_stack else None
                 ),
                 indent=tag_style.l_margin * self.indent,
-                # TODO: merge this top_margin with _ln() call above
-                top_margin=self.font_size / self.pdf.k,
                 bottom_margin=tag_style.b_margin,
                 bullet=bullet,
             )
@@ -983,8 +993,7 @@ class HTML2FPDF(HTMLParser):
             tag_style = self.tag_styles[tag]
             self._new_paragraph(
                 align="C",
-                # TODO: use tag_style.t_margin
-                top_margin=self.font_size / self.pdf.k,
+                top_margin=tag_style.t_margin,
                 bottom_margin=tag_style.b_margin,
                 indent=tag_style.l_margin,
             )
