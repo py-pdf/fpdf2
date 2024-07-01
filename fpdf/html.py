@@ -25,12 +25,18 @@ HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
 DEFAULT_TAG_STYLES = {
     # inline tags:
     "a": FontFace(color="#00f", emphasis="UNDERLINE"),
+    "b": FontFace(emphasis="BOLD"),
     "code": FontFace(family="Courier"),
+    "em": FontFace(emphasis="ITALICS"),
+    "font": FontFace(),
+    "i": FontFace(emphasis="ITALICS"),
+    "strong": FontFace(emphasis="BOLD"),
+    "u": FontFace(emphasis="UNDERLINE"),
     # block tags:
     "blockquote": TextStyle(color="#64002d", t_margin=3, b_margin=3),
     "center": TextStyle(t_margin=4 + 7 / 30),
     "dd": TextStyle(l_margin=10),
-    "dt": TextStyle(t_margin=4 + 7 / 30),
+    "dt": TextStyle(font_style="B", t_margin=4 + 7 / 30),
     "h1": TextStyle(
         color="#960000", b_margin=0.4, font_size_pt=24, t_margin=5 + 834 / 900
     ),
@@ -599,27 +605,6 @@ class HTML2FPDF(HTMLParser):
             self._end_paragraph()
             # pylint: disable=protected-access
             self.pdf._perform_page_break()
-        if tag == "dt":
-            tag_style = self.tag_styles[tag]
-            self._new_paragraph(
-                line_height=(
-                    self.line_height_stack[-1] if self.line_height_stack else None
-                ),
-                top_margin=tag_style.t_margin,
-                bottom_margin=tag_style.b_margin,
-                indent=tag_style.l_margin,
-            )
-            tag = "b"
-        if tag == "dd":
-            tag_style = self.tag_styles[tag]
-            self._new_paragraph(
-                line_height=(
-                    self.line_height_stack[-1] if self.line_height_stack else None
-                ),
-                top_margin=tag_style.t_margin,
-                bottom_margin=tag_style.b_margin,
-                indent=tag_style.l_margin * (self.indent + 1),
-            )
         if tag == "strong":
             tag = "b"
         if tag == "em":
@@ -637,6 +622,25 @@ class HTML2FPDF(HTMLParser):
             except ValueError:
                 pass
         if tag == "br":
+            self._write_paragraph("\n")
+        if tag == "hr":
+            self._end_paragraph()
+            width = css_style.get("width", attrs.get("width"))
+            if width:
+                if width[-1] == "%":
+                    width = self.pdf.epw * int(width[:-1]) / 100
+                else:
+                    width = int(width) / self.pdf.k
+            else:
+                width = self.pdf.epw
+            # Centering:
+            x_start = self.pdf.l_margin + (self.pdf.epw - width) / 2
+            self.pdf.line(
+                x1=x_start,
+                y1=self.pdf.y,
+                x2=x_start + width,
+                y2=self.pdf.y,
+            )
             self._write_paragraph("\n")
         if tag == "p":
             align = None
@@ -703,26 +707,10 @@ class HTML2FPDF(HTMLParser):
                 family=tag_style.family or self.font_family,
                 size=tag_style.size_pt or self.font_size,
             )
-        if tag == "hr":
-            self._end_paragraph()
-            width = css_style.get("width", attrs.get("width"))
-            if width:
-                if width[-1] == "%":
-                    width = self.pdf.epw * int(width[:-1]) / 100
-                else:
-                    width = int(width) / self.pdf.k
-            else:
-                width = self.pdf.epw
-            # Centering:
-            x_start = self.pdf.l_margin + (self.pdf.epw - width) / 2
-            self.pdf.line(
-                x1=x_start,
-                y1=self.pdf.y,
-                x2=x_start + width,
-                y2=self.pdf.y,
-            )
-            self._write_paragraph("\n")
-        if tag == "code":
+        if tag in ("blockquote", "center", "code", "dd", "dt", "pre"):
+            is_block = tag in ("blockquote", "center", "dd", "dt", "pre")
+            if is_block:
+                self._end_paragraph()
             self.style_stack.append(
                 FontFace(
                     family=self.font_family,
@@ -740,55 +728,19 @@ class HTML2FPDF(HTMLParser):
                 family=tag_style.family or self.font_family,
                 size=tag_style.size_pt or self.font_size,
             )
-        if tag == "pre":
-            self._end_paragraph()
-            self.style_stack.append(
-                FontFace(
-                    family=self.font_family,
-                    emphasis=self.emphasis,
-                    size_pt=self.font_size,
-                    color=self.font_color,
+            if tag == "pre":
+                self._pre_formatted = True
+                self._pre_started = True
+            if is_block:
+                self._new_paragraph(
+                    align="C" if tag == "center" else None,
+                    line_height=(
+                        self.line_height_stack[-1] if self.line_height_stack else None
+                    ),
+                    top_margin=tag_style.t_margin,
+                    bottom_margin=tag_style.b_margin,
+                    indent=tag_style.l_margin * (self.indent + 1),
                 )
-            )
-            tag_style = self.tag_styles[tag]
-            if tag_style.color:
-                self.set_text_color(*tag_style.color.colors255)
-            if tag_style.emphasis:
-                self.emphasis = tag_style.emphasis
-            self.set_font(
-                family=tag_style.family or self.font_family,
-                size=tag_style.size_pt or self.font_size,
-            )
-            self._pre_formatted = True
-            self._pre_started = True
-            self._new_paragraph(
-                top_margin=tag_style.t_margin,
-                bottom_margin=tag_style.b_margin,
-                indent=tag_style.l_margin,
-            )
-        if tag == "blockquote":
-            self.style_stack.append(
-                FontFace(
-                    family=self.font_family,
-                    emphasis=self.emphasis,
-                    size_pt=self.font_size,
-                    color=self.font_color,
-                )
-            )
-            tag_style = self.tag_styles[tag]
-            if tag_style.color:
-                self.set_text_color(*tag_style.color.colors255)
-            if tag_style.emphasis:
-                self.emphasis = tag_style.emphasis
-            self.set_font(
-                family=tag_style.family or self.font_family,
-                size=tag_style.size_pt or self.font_size,
-            )
-            self._new_paragraph(
-                top_margin=tag_style.t_margin,
-                bottom_margin=tag_style.b_margin,
-                indent=tag_style.l_margin,
-            )
         if tag == "ul":
             self.indent += 1
             bullet_char = (
@@ -992,14 +944,6 @@ class HTML2FPDF(HTMLParser):
             self.pdf.image(
                 self.image_map(attrs["src"]), x=x, w=width, h=height, link=self.href
             )
-        if tag == "center":
-            tag_style = self.tag_styles[tag]
-            self._new_paragraph(
-                align="C",
-                top_margin=tag_style.t_margin,
-                bottom_margin=tag_style.b_margin,
-                indent=tag_style.l_margin,
-            )
         if tag == "toc":
             self._end_paragraph()
             self.pdf.insert_toc_placeholder(
@@ -1038,32 +982,6 @@ class HTML2FPDF(HTMLParser):
                 tag,
                 self._tags_stack[-1],
             )
-        if tag in HEADING_TAGS:
-            self.heading_level = None
-            font_face = self.style_stack.pop()
-            self.emphasis = font_face.emphasis
-            self.set_font(font_face.family, font_face.size_pt)
-            self.set_text_color(*font_face.color.colors255)
-            self._end_paragraph()
-        if tag == "code":
-            font_face = self.style_stack.pop()
-            self.emphasis = font_face.emphasis
-            self.set_font(font_face.family, font_face.size_pt)
-            self.set_text_color(*font_face.color.colors255)
-        if tag == "pre":
-            font_face = self.style_stack.pop()
-            self.emphasis = font_face.emphasis
-            self.set_font(font_face.family, font_face.size_pt)
-            self.set_text_color(*font_face.color.colors255)
-            self._pre_formatted = False
-            self._pre_started = False
-            self._end_paragraph()
-        if tag == "blockquote":
-            font_face = self.style_stack.pop()
-            self.emphasis = font_face.emphasis
-            self.set_font(font_face.family, font_face.size_pt)
-            self.set_text_color(*font_face.color.colors255)
-            self._end_paragraph()
         if tag in ("strong", "dt"):
             tag = "b"
         if tag == "em":
@@ -1076,6 +994,24 @@ class HTML2FPDF(HTMLParser):
         if tag == "p":
             self._end_paragraph()
             self.align = ""
+        if tag in HEADING_TAGS:
+            self.heading_level = None
+            font_face = self.style_stack.pop()
+            self.emphasis = font_face.emphasis
+            self.set_font(font_face.family, font_face.size_pt)
+            self.set_text_color(*font_face.color.colors255)
+            self._end_paragraph()
+        if tag in ("blockquote", "center", "code", "dd", "dt", "pre"):
+            is_block = tag in ("blockquote", "center", "dd", "dt", "pre")
+            font_face = self.style_stack.pop()
+            self.emphasis = font_face.emphasis
+            self.set_font(font_face.family, font_face.size_pt)
+            self.set_text_color(*font_face.color.colors255)
+            if tag == "pre":
+                self._pre_formatted = False
+                self._pre_started = False
+            if is_block:
+                self._end_paragraph()
         if tag in ("ul", "ol"):
             self._end_paragraph()
             self.indent -= 1
@@ -1106,8 +1042,6 @@ class HTML2FPDF(HTMLParser):
             self.font_color = font_face.color.colors255
             self.set_font(font_face.family, font_face.size_pt)
             self.set_text_color(*font_face.color.colors255)
-        if tag == "center":
-            self._end_paragraph()
         if tag == "sup":
             self.pdf.char_vpos = "LINE"
         if tag == "sub":
