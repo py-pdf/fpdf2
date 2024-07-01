@@ -78,7 +78,6 @@ pdf.write_html("""
 pdf.output("html.pdf")
 ```
 
-
 ### Styling HTML tags globally
 
 _New in [:octicons-tag-24: 2.7.9](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
@@ -135,7 +134,7 @@ However, **Pull Request are welcome** to implement missing features!
 
 ## Supported HTML features
 
-* `<h1>` to `<h8>`: headings (and `align` attribute)
+* `<h1>` to `<h6>`: headings (and `align` attribute)
 * `<p>`: paragraphs (and `align`, `line-height` attributes)
 * `<br>` & `<hr>` tags
 * `<b>`, `<i>`, `<u>`: bold, italic, underline

@@ -293,11 +293,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # Graphics state variables defined as properties by GraphicsStateMixin.
         # We set their default values here.
         self.font_family = ""  # current font family
-        self.font_style = ""  # current font style
+        # current font style (BOLD/ITALICS - does not handle UNDERLINE):
+        self.font_style = ""
+        self.underline = False  # underlining flag
         self.font_size_pt = 12  # current font size in points
         self.font_stretching = 100  # current font stretching
         self.char_spacing = 0  # current character spacing
-        self.underline = False  # underlining flag
         self.current_font = None  # None or an instance of CoreFont or TTFFont
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
@@ -410,11 +411,18 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.pdf_version = max(self.pdf_version, version)
 
     @property
-    def is_ttf_font(self):
+    def emphasis(self) -> TextEmphasis:
+        "The current text emphasis: bold, italics and/or underlined."
+        return TextEmphasis.coerce(
+            f"{self.font_style}U" if self.underline else self.font_style
+        )
+
+    @property
+    def is_ttf_font(self) -> bool:
         return self.current_font and self.current_font.type == "TTF"
 
     @property
-    def page_mode(self):
+    def page_mode(self) -> PageMode:
         return self._page_mode
 
     @page_mode.setter

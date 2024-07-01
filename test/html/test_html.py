@@ -4,7 +4,6 @@ import pytest
 
 from fpdf import FPDF, FontFace, HTMLMixin, TextStyle, TitleStyle
 from fpdf.drawing import DeviceRGB
-from fpdf.html import color_as_decimal
 from fpdf.errors import FPDFException
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
@@ -189,7 +188,7 @@ def test_html_bold_italic_underline(tmp_path):
         """<B>bold</B>
            <I>italic</I>
            <U>underlined</U>
-           <B><I><U>all at once!</U></I></B>"""
+           <b><i><u>all at once!</u></i></b>"""
     )
     assert_pdf_equal(pdf, HERE / "html_bold_italic_underline.pdf", tmp_path)
 
@@ -206,7 +205,7 @@ def test_html_customize_ul(tmp_path):
     for indent, bullet in ((5, "\x86"), (10, "\x9b"), (15, "\xac"), (20, "\xb7")):
         pdf.write_html(
             html,
-            tag_styles={"li": TextStyle(l_margin=indent, t_margin=2)},
+            tag_styles={"li": TextStyle(l_margin=indent, b_margin=2)},
             ul_bullet_char=bullet,
         )
         pdf.ln()
@@ -226,10 +225,10 @@ def test_html_customize_ul_deprecated(tmp_path):
         for indent, bullet in ((5, "\x86"), (10, "\x9b"), (15, "\xac"), (20, "\xb7")):
             pdf.write_html(html, li_tag_indent=indent, ul_bullet_char=bullet)
             pdf.ln()
-    assert_pdf_equal(pdf, HERE / "html_customize_ul.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "html_customize_ul_deprecated.pdf", tmp_path)
 
 
-def test_html_deprecated_li_tag_indent_deprecated(tmp_path):
+def test_html_li_tag_indent_deprecated(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     with pytest.warns(DeprecationWarning):
@@ -389,22 +388,22 @@ def test_html_custom_heading_sizes(tmp_path):  # issue-223
         <h6>This is a H6</h6>""",
         tag_styles={
             "h1": TextStyle(
-                color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=6
+                color="#960000", t_margin=5 + 834 / 900, b_margin=0.4, font_size_pt=6
             ),
             "h2": TextStyle(
-                color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=12
+                color="#960000", t_margin=5 + 453 / 900, b_margin=0.4, font_size_pt=12
             ),
             "h3": TextStyle(
-                color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=18
+                color="#960000", t_margin=5 + 199 / 900, b_margin=0.4, font_size_pt=18
             ),
             "h4": TextStyle(
-                color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=24
+                color="#960000", t_margin=5 + 72 / 900, b_margin=0.4, font_size_pt=24
             ),
             "h5": TextStyle(
-                color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=30
+                color="#960000", t_margin=5 - 55 / 900, b_margin=0.4, font_size_pt=30
             ),
             "h6": TextStyle(
-                color="#960000", t_margin=0.2, b_margin=0.4, font_size_pt=36
+                color="#960000", t_margin=5 - 182 / 900, b_margin=0.4, font_size_pt=36
             ),
         },
     )
@@ -698,12 +697,13 @@ def test_html_and_section_title_styles_with_deprecated_TitleStyle():
         )
 
 
-def test_html_link_color(tmp_path):
+def test_html_link_style(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    html = '<a href="www.example.com">foo</a>'
-    pdf.write_html(html, tag_styles={"a": TextStyle(color=color_as_decimal("red"))})
-    assert_pdf_equal(pdf, HERE / "html_link_color.pdf", tmp_path)
+    html = '<a href="http://www.example.com">Link to www.example.com</a>'
+    style = FontFace(color="#f00", family="Courier", size_pt=8, emphasis="BIU")
+    pdf.write_html(html, tag_styles={"a": style})
+    assert_pdf_equal(pdf, HERE / "html_link_style.pdf", tmp_path)
 
 
 def test_html_blockquote_color(tmp_path):
@@ -725,10 +725,16 @@ def test_html_headings_color(tmp_path):
         html,
         tag_styles={
             "h1": TextStyle(
-                color=(148, 139, 139), font_size_pt=24, t_margin=0.2, b_margin=0.4
+                color=(148, 139, 139),
+                font_size_pt=24,
+                t_margin=5 + 834 / 900,
+                b_margin=0.4,
             ),
             "h2": TextStyle(
-                color=(148, 139, 139), font_size_pt=18, t_margin=0.2, b_margin=0.4
+                color=(148, 139, 139),
+                font_size_pt=18,
+                t_margin=5 + 453 / 900,
+                b_margin=0.4,
             ),
         },
     )
@@ -739,15 +745,18 @@ def test_html_unsupported_tag_color():
     pdf = FPDF()
     pdf.add_page()
     with pytest.raises(NotImplementedError):
-        pdf.write_html("<p>foo</p>", tag_styles={"p": TextStyle()})
+        pdf.write_html("<p>foo</p><hr><p>bar</p>", tag_styles={"hr": TextStyle()})
 
 
-def test_html_link_color_using_FontFace(tmp_path):
+def test_html_link_style_using_TextStyle(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    html = '<a href="www.example.com">foo</a>'
-    pdf.write_html(html, tag_styles={"a": FontFace(color=color_as_decimal("red"))})
-    assert_pdf_equal(pdf, HERE / "html_link_color.pdf", tmp_path)
+    html = '<a href="http://www.example.com">Link to www.example.com</a>'
+    style = TextStyle(
+        color="#f00", font_family="Courier", font_size_pt=8, font_style="BIU"
+    )
+    pdf.write_html(html, tag_styles={"a": style})
+    assert_pdf_equal(pdf, HERE / "html_link_style.pdf", tmp_path)
 
 
 def test_html_blockquote_color_using_FontFace(tmp_path):
@@ -779,7 +788,7 @@ def test_html_unsupported_tag_color_using_FontFace():
     pdf = FPDF()
     pdf.add_page()
     with pytest.raises(NotImplementedError):
-        pdf.write_html("<p>foo</p>", tag_styles={"p": FontFace()})
+        pdf.write_html("<p>foo</p><hr><p>bar</p>", tag_styles={"hr": FontFace()})
 
 
 def test_html_blockquote_indent(tmp_path):  # issue-1074
@@ -1065,8 +1074,12 @@ def test_html_heading_above_below(tmp_path):
         <h2>Second heading</h2>
         <p>Lorem ipsum</p>""",
         tag_styles={
-            "h1": TextStyle(color="#960000", t_margin=1, b_margin=0.5, font_size_pt=24),
-            "h2": TextStyle(color="#960000", t_margin=1, b_margin=0.5, font_size_pt=18),
+            "h1": TextStyle(
+                color="#960000", t_margin=10, b_margin=0.5, font_size_pt=24
+            ),
+            "h2": TextStyle(
+                color="#960000", t_margin=10, b_margin=0.5, font_size_pt=18
+            ),
         },
     )
     assert_pdf_equal(pdf, HERE / "html_heading_above_below.pdf", tmp_path)
