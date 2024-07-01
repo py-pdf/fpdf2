@@ -697,6 +697,8 @@ class HTML2FPDF(HTMLParser):
                 color = tag_style.color.colors255
             if color:
                 self.set_text_color(*color)
+            if tag_style.emphasis:
+                self.emphasis = tag_style.emphasis
             self.set_font(
                 family=tag_style.family or self.font_family,
                 size=tag_style.size_pt or self.font_size,
@@ -732,6 +734,8 @@ class HTML2FPDF(HTMLParser):
             tag_style = self.tag_styles[tag]
             if tag_style.color:
                 self.set_text_color(*tag_style.color.colors255)
+            if tag_style.emphasis:
+                self.emphasis = tag_style.emphasis
             self.set_font(
                 family=tag_style.family or self.font_family,
                 size=tag_style.size_pt or self.font_size,
@@ -749,6 +753,8 @@ class HTML2FPDF(HTMLParser):
             tag_style = self.tag_styles[tag]
             if tag_style.color:
                 self.set_text_color(*tag_style.color.colors255)
+            if tag_style.emphasis:
+                self.emphasis = tag_style.emphasis
             self.set_font(
                 family=tag_style.family or self.font_family,
                 size=tag_style.size_pt or self.font_size,
@@ -778,13 +784,10 @@ class HTML2FPDF(HTMLParser):
                 family=tag_style.family or self.font_family,
                 size=tag_style.size_pt or self.font_size,
             )
-            self.indent += 1
             self._new_paragraph(
-                # Default values to be multiplied by the conversion factor
-                # for top_margin and bottom_margin here are given in mm
                 top_margin=tag_style.t_margin,
                 bottom_margin=tag_style.b_margin,
-                indent=tag_style.l_margin * self.indent,
+                indent=tag_style.l_margin,
             )
         if tag == "ul":
             self.indent += 1
@@ -1061,7 +1064,6 @@ class HTML2FPDF(HTMLParser):
             self.set_font(font_face.family, font_face.size_pt)
             self.set_text_color(*font_face.color.colors255)
             self._end_paragraph()
-            self.indent -= 1
         if tag in ("strong", "dt"):
             tag = "b"
         if tag == "em":
