@@ -131,6 +131,28 @@ pdf.output("html_dd_indented.pdf")
 and that some [`FontFace`](https://py-pdf.github.io/fpdf2/fpdf/fonts.html#fpdf.fonts.FontFace) or [`TextStyle`](https://py-pdf.github.io/fpdf2/fpdf/fonts.html#fpdf.fonts.TextStyle) properties may not be honored.
 However, **Pull Request are welcome** to implement missing features!
 
+### Default font
+
+_New in [:octicons-tag-24: 2.7.10](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+The default font used by [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) is **Times**.
+
+You can change this default font by passing `font_family` to this method:
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.write_html("""
+  <h1>Big title</h1>
+  <section>
+    <h2>Section title</h2>
+    <p>Hello world!</p>
+  </section>
+""", font_family="Helvetica")
+pdf.output("html_helvetica.pdf")
+```
+
 
 ## Supported HTML features
 

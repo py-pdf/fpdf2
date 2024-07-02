@@ -23,7 +23,7 @@ BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
 DEGREE_WIN1252 = "\xb0"
 HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
 DEFAULT_TAG_STYLES = {
-    # inline tags:
+    # Inline tags are FontFace instances :
     "a": FontFace(color="#00f", emphasis="UNDERLINE"),
     "b": FontFace(emphasis="BOLD"),
     "code": FontFace(family="Courier"),
@@ -32,7 +32,7 @@ DEFAULT_TAG_STYLES = {
     "i": FontFace(emphasis="ITALICS"),
     "strong": FontFace(emphasis="BOLD"),
     "u": FontFace(emphasis="UNDERLINE"),
-    # block tags:
+    # Block tags are TextStyle instances :
     "blockquote": TextStyle(color="#64002d", t_margin=3, b_margin=3),
     "center": TextStyle(t_margin=4 + 7 / 30),
     "dd": TextStyle(l_margin=10),
@@ -61,9 +61,20 @@ DEFAULT_TAG_STYLES = {
     "ol": TextStyle(t_margin=2),
     "ul": TextStyle(t_margin=2),
 }
-INLINE_TAGS = HEADING_TAGS + ("a", "b", "code", "em", "font", "i", "strong", "u")
-BLOCK_TAGS = ("blockquote", "center", "dd", "dt", "li", "p", "pre", "ol", "ul")
-assert (set(BLOCK_TAGS) | set(INLINE_TAGS)) == set(DEFAULT_TAG_STYLES.keys())
+INLINE_TAGS = ("a", "b", "code", "em", "font", "i", "strong", "u")
+BLOCK_TAGS = HEADING_TAGS + (
+    "blockquote",
+    "center",
+    "dd",
+    "dt",
+    "li",
+    "p",
+    "pre",
+    "ol",
+    "ul",
+)
+# This defensive programming check ensures that we do not forget any tag in the 2 *_TAGS constants above:
+assert (set(BLOCK_TAGS) ^ set(INLINE_TAGS)) == set(DEFAULT_TAG_STYLES.keys())
 
 # Pattern to substitute whitespace sequences with a single space character each.
 # The following are all Unicode characters with White_Space classification plus the newline.
@@ -300,6 +311,7 @@ class HTML2FPDF(HTMLParser):
         warn_on_tags_not_matching=True,
         tag_indents=None,
         tag_styles=None,
+        font_family="times",
     ):
         """
         Args:
@@ -322,6 +334,7 @@ class HTML2FPDF(HTMLParser):
             tag_indents (dict): [**DEPRECATED since v2.7.10**]
                 mapping of HTML tag names to numeric values representing their horizontal left identation. - Set `tag_styles` instead
             tag_styles (dict[str, fpdf.fonts.TextStyle]): mapping of HTML tag names to `fpdf.TextStyle` or `fpdf.FontFace` instances
+            font_family (str): optional font family. Default to Times.
         """
         super().__init__()
         self.pdf = pdf
@@ -342,7 +355,7 @@ class HTML2FPDF(HTMLParser):
         # If a font was defined previously, we reinstate that seperately after we're finished here.
         # In this case the TOC will be rendered with that font and not ours. But adding a TOC tag only
         # makes sense if the whole document gets converted from HTML, so this should be acceptable.
-        self.font_family = pdf.font_family or "times"
+        self.font_family = pdf.font_family or font_family
         self.font_size_pt = pdf.font_size_pt
         self.set_font(
             family=self.font_family, emphasis=TextEmphasis.NONE, set_default=True
@@ -379,11 +392,12 @@ class HTML2FPDF(HTMLParser):
                 raise NotImplementedError(
                     f"Cannot set style for HTML tag <{tag}> (contributions are welcome to add support for this)"
                 )
-            default_tag_style = self.tag_styles[tag]
-            is_base_fontFace = isinstance(tag_style, FontFace) and not isinstance(
-                tag_style, TextStyle
-            )
-            if is_base_fontFace and isinstance(default_tag_style, TextStyle):
+            if not isinstance(tag_style, FontFace):
+                raise ValueError(
+                    f"tag_styles values must be instances of FontFace or TextStyle - received: {tag_style}"
+                )
+            # We convert FontFace values provided for block tags into TextStyle values:
+            if tag in BLOCK_TAGS and not isinstance(tag_style, TextStyle):
                 # pylint: disable=redefined-loop-name
                 tag_style = TextStyle(
                     font_family=tag_style.family,
@@ -394,9 +408,9 @@ class HTML2FPDF(HTMLParser):
                     color=tag_style.color,
                     fill_color=tag_style.fill_color,
                     # Using default tag margins:
-                    t_margin=default_tag_style.t_margin,
-                    l_margin=default_tag_style.l_margin,
-                    b_margin=default_tag_style.b_margin,
+                    t_margin=self.tag_styles[tag].t_margin,
+                    l_margin=self.tag_styles[tag].l_margin,
+                    b_margin=self.tag_styles[tag].b_margin,
                 )
             self.tag_styles[tag] = tag_style
         if heading_sizes is not None:

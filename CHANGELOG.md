@@ -25,6 +25,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * feature to identify the Unicode script of the input text and break it into fragments when different scripts are used, improving [text shaping](https://py-pdf.github.io/fpdf2/TextShaping.html) results
 * [`FPDF.image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): now handles `keep_aspect_ratio` in combination with an enum value provided to `x`
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): now supports CSS page breaks properties : [documentation](https://py-pdf.github.io/fpdf2/HTML.html#page-breaks)
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): new optional `font_family` parameter to set the default font family
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): spacing before lists can now be adjusted via the `tag_styles` attribute - thanks to @lcgeneralprojects
 * file names are mentioned in errors when `fpdf2` fails to parse a SVG image
 ### Fixed

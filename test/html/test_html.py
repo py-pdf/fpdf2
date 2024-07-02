@@ -1083,3 +1083,31 @@ def test_html_heading_above_below(tmp_path):
         },
     )
     assert_pdf_equal(pdf, HERE / "html_heading_above_below.pdf", tmp_path)
+
+
+def test_html_dd_tag_indent_deprecated(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        "<dl><dt>description title</dt><dd>description details</dd></dl>",
+        tag_styles={"dd": TextStyle(l_margin=5)},
+    )
+    assert_pdf_equal(pdf, HERE / "html_dd_tag_indent_deprecated.pdf", tmp_path)
+    pdf = FPDF()
+    pdf.add_page()
+    with pytest.warns(DeprecationWarning):
+        pdf.write_html(
+            "<dl><dt>description title</dt><dd>description details</dd></dl>",
+            dd_tag_indent=5,
+        )
+    assert_pdf_equal(pdf, HERE / "html_dd_tag_indent_deprecated.pdf", tmp_path)
+
+
+def test_html_font_family(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        "<p><b>hello</b> world. i am <i>sleepy</i>.</p>",
+        font_family="Helvetica",
+    )
+    assert_pdf_equal(pdf, HERE / "html_font_family.pdf", tmp_path)
