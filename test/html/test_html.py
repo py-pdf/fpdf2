@@ -664,6 +664,29 @@ def test_html_ln_outside_p(tmp_path):
     assert_pdf_equal(pdf, HERE / "html_ln_outside_p.pdf", tmp_path)
 
 
+def test_html_sections(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    pdf.write_html(
+        """
+        <section>
+           <h2>Subtitle 1</h2>
+            <section>
+              <h3>Subtitle 1.1</h3>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+              sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </section>
+            <section>
+              <h3>Subtitle 1.2</h3>
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            </section>
+        </section>
+        """
+    )
+    assert_pdf_equal(pdf, HERE / "html_sections.pdf", tmp_path)
+
+
 def test_html_and_section_title_styles():  # issue 1080
     pdf = FPDF()
     pdf.add_page()

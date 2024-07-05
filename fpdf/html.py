@@ -22,6 +22,10 @@ LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
 DEGREE_WIN1252 = "\xb0"
 HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
+# Some of the margin values below are fractions, in order to be fully backward-compatible,
+# and due to the _scale_units() conversion performed in HTML2FPDF constructor below.
+# Those constants are formatted as Mixed Fractions, a mathematical representation
+# making clear what the closest integer value is.
 DEFAULT_TAG_STYLES = {
     # Inline tags are FontFace instances :
     "a": FontFace(color="#00f", emphasis="UNDERLINE"),
@@ -56,7 +60,7 @@ DEFAULT_TAG_STYLES = {
         color="#960000", b_margin=0.4, font_size_pt=8, t_margin=5 - 182 / 900
     ),
     "li": TextStyle(l_margin=5, t_margin=2),
-    "p": TextStyle(t_margin=4 + 7 / 30),
+    "p": TextStyle(),
     "pre": TextStyle(t_margin=4 + 7 / 30, font_family="Courier"),
     "ol": TextStyle(t_margin=2),
     "ul": TextStyle(t_margin=2),
@@ -367,6 +371,7 @@ class HTML2FPDF(HTMLParser):
         # nothing written yet to <pre>, remove one initial nl:
         self._pre_started = False
         self.follows_trailing_space = False  # The last write has ended with a space.
+        self.follows_heading = False  # We don't want extra space below a heading.
         self.href = ""
         self.align = ""
         self.indent = 0
@@ -493,12 +498,12 @@ class HTML2FPDF(HTMLParser):
         indent=0,
         bullet="",
     ):
-        if bullet and top_margin:
-            raise NotImplementedError(
-                f"{top_margin=} will be ignored because {bullet=} is provided, due to TextRegion._render_column_lines()"
-            )
+        # Note that currently top_margin is ignored if bullet is also provided,
+        # due to the behaviour of TextRegion._render_column_lines()
         self._end_paragraph()
         self.align = align or ""
+        if not top_margin and not self.follows_heading:
+            top_margin = self.font_size_pt / self.pdf.k
         self._paragraph = self._column.paragraph(
             text_align=align,
             line_height=line_height,
@@ -509,6 +514,7 @@ class HTML2FPDF(HTMLParser):
             bullet_string=bullet,
         )
         self.follows_trailing_space = True
+        self.follows_heading = False
 
     def _end_paragraph(self):
         self.align = ""
@@ -523,8 +529,10 @@ class HTML2FPDF(HTMLParser):
                 self._page_break_after_paragraph = False
 
     def _write_paragraph(self, text, link=None):
+        if not text:
+            return
         if not self._paragraph:
-            self._new_paragraph(top_margin=self.font_size_pt / self.pdf.k)
+            self._new_paragraph()
         self._paragraph.write(text, link=link)
 
     def _ln(self, h=None):
@@ -752,6 +760,10 @@ class HTML2FPDF(HTMLParser):
                 self._pre_formatted = True
                 self._pre_started = True
             if tag in BLOCK_TAGS:
+                if tag == "dd":
+                    # Not compliant with the HTML spec, but backward-compatible
+                    # cf. https://github.com/py-pdf/fpdf2/pull/1217#discussion_r1666643777
+                    self.follows_heading = True
                 self._new_paragraph(
                     align="C" if tag == "center" else None,
                     line_height=(
@@ -1006,6 +1018,7 @@ class HTML2FPDF(HTMLParser):
             )
             self.set_text_color(*font_face.color.colors255)
             self._end_paragraph()
+            self.follows_heading = True  # We don't want extra space below a heading.
         if tag in (
             "b",
             "blockquote",
