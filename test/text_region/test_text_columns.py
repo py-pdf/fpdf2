@@ -327,3 +327,72 @@ def test_tcols_break_top_margin(tmp_path):  # regression test for #1214
             ) as par:
                 par.write(text=LOREM_IPSUM)
     assert_pdf_equal(pdf, HERE / "tcols_break_top_margin.pdf", tmp_path)
+
+
+def test_tcols_bullets_indent(tmp_path):
+    """Ensure that the top/bottom margins work with indented/bulleted
+    paragraphs.
+    Ensure that indented paragraphs have a reduced total width.
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "", 14)
+    pdf.set_top_margin(50)
+    pdf.set_auto_page_break(True, 50)
+    pdf.rect(pdf.l_margin, pdf.t_margin, pdf.epw, pdf.eph)
+    with pdf.text_columns(text_align="L", ncols=2) as cols:
+        cols.write("Paragraphs with Top Margin\n\n")
+        for _ in range(4):
+            with cols.paragraph(
+                text_align="J",
+                top_margin=pdf.font_size * 4,
+            ) as par:
+                par.write(text=LOREM_IPSUM[:100])
+        for _ in range(5):
+            with cols.paragraph(
+                text_align="J",
+                top_margin=pdf.font_size * 4,
+                indent=10,
+                bullet_string="\x95",
+            ) as par:
+                par.write(text=LOREM_IPSUM[:100])
+    pdf.add_page()
+    pdf.rect(pdf.l_margin, pdf.t_margin, pdf.epw, pdf.eph)
+    with pdf.text_columns(text_align="L", ncols=2) as cols:
+        cols.write("Paragraphs with Bottom Margin\n\n")
+        for _ in range(4):
+            with cols.paragraph(
+                text_align="J",
+                bottom_margin=pdf.font_size * 4,
+            ) as par:
+                par.write(text=LOREM_IPSUM[:100])
+        for _ in range(5):
+            with cols.paragraph(
+                text_align="J",
+                bottom_margin=pdf.font_size * 4,
+                indent=10,
+                bullet_string="\x95",
+            ) as par:
+                par.write(text=LOREM_IPSUM[:100])
+    pdf.add_page()
+    pdf.rect(pdf.l_margin, pdf.t_margin, pdf.epw, pdf.eph)
+    with pdf.text_columns(text_align="L", ncols=2) as cols:
+        cols.write("Paragraphs with Top and Bottom Margin\n\n")
+        for _ in range(4):
+            with cols.paragraph(
+                text_align="J",
+                top_margin=pdf.font_size * 1.5,
+                bottom_margin=pdf.font_size * 2.5,
+            ) as par:
+                par.write(text=LOREM_IPSUM[:100])
+        for _ in range(5):
+            with cols.paragraph(
+                text_align="J",
+                top_margin=pdf.font_size * 1.5,
+                bottom_margin=pdf.font_size * 2.5,
+                indent=10,
+                bullet_string="\x95",
+            ) as par:
+                par.write(text=LOREM_IPSUM[:100])
+    assert_pdf_equal(pdf, HERE / "tcols_bullets_indent.pdf", tmp_path)
+

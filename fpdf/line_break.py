@@ -50,7 +50,7 @@ class Fragment:
         self,
         characters: Union[list, str],
         graphics_state: dict,
-        k: float,
+        k: Number,
         link: Optional[Union[int, str]] = None,
     ):
         if isinstance(characters, str):
@@ -352,11 +352,11 @@ class Fragment:
 
 class TextLine(NamedTuple):
     fragments: tuple
-    text_width: float
+    text_width: Number
     number_of_spaces: int
     align: Align
-    height: float
-    max_width: float
+    height: Number
+    max_width: Number
     trailing_nl: bool = False
     trailing_form_feed: bool = False
 
@@ -389,7 +389,7 @@ class SpaceHint(NamedTuple):
     original_character_index: int
     current_line_fragment_index: int
     current_line_character_index: int
-    line_width: float
+    line_width: Number
     number_of_spaces: int
 
 
@@ -398,16 +398,16 @@ class HyphenHint(NamedTuple):
     original_character_index: int
     current_line_fragment_index: int
     current_line_character_index: int
-    line_width: float
+    line_width: Number
     number_of_spaces: int
     curchar: str
-    curchar_width: float
+    curchar_width: Number
     graphics_state: dict
-    k: float
+    k: Number
 
 
 class CurrentLine:
-    def __init__(self, max_width: float, print_sh: bool = False):
+    def __init__(self, max_width: Number, print_sh: bool = False):
         """
         Per-line text fragment management for use by MultiLineBreak.
             Args:
@@ -444,12 +444,12 @@ class CurrentLine:
     def add_character(
         self,
         character: str,
-        character_width: float,
+        character_width: Number,
         graphics_state: dict,
-        k: float,
+        k: Number,
         original_fragment_index: int,
         original_character_index: int,
-        height: float,
+        height: Number,
         url: str = None,
     ):
         assert character != NEWLINE
@@ -573,12 +573,13 @@ class MultiLineBreak:
     def __init__(
         self,
         fragments: Sequence[Fragment],
-        max_width: Union[float, callable],
+        max_width: Union[Number, callable],
         margins: Sequence[Number],
+        indent: Number = 0.0,
         align: Align = Align.L,
         print_sh: bool = False,
         wrapmode: WrapMode = WrapMode.WORD,
-        line_height: float = 1.0,
+        line_height: Number = 1.0,
         skip_leading_spaces: bool = False,
     ):
         """Accept text as Fragments, to be split into individual lines depending
@@ -593,6 +594,7 @@ class MultiLineBreak:
                 lateral boundaries of the enclosing TextRegion() are not vertical.
             margins (sequence of floats): The extra clearance that may apply at the beginning
                 and/or end of a line (usually either FPDF.c_margin or 0.0 for each side).
+            indent (float): How much left edge is moved to the right, shortening the line.
             align (Align): The horizontal alignment of the current text block.
             print_sh (bool): If True, a soft-hyphen will be rendered
                 normally, instead of triggering a line break. Default: False
@@ -608,6 +610,7 @@ class MultiLineBreak:
             self.get_width = max_width
         else:
             self.get_width = lambda height: max_width
+        self.indent = indent
         self.margins = margins
         self.align = align
         self.print_sh = print_sh
@@ -629,7 +632,7 @@ class MultiLineBreak:
 
         current_font_height = 0
 
-        max_width = self.get_width(current_font_height)
+        max_width = self.get_width(current_font_height) - self.indent
         # The full max width will be passed on via TextLine to FPDF._render_styled_text_line().
         current_line = CurrentLine(max_width=max_width, print_sh=self.print_sh)
         # For line wrapping we need to use the reduced width.
@@ -659,7 +662,7 @@ class MultiLineBreak:
 
             if current_fragment.font_size > current_font_height:
                 current_font_height = current_fragment.font_size  # document units
-                max_width = self.get_width(current_font_height)
+                max_width = self.get_width(current_font_height) - self.indent
                 current_line.max_width = max_width
                 for margin in self.margins:
                     max_width -= margin
