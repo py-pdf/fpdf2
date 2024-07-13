@@ -16,6 +16,7 @@ def test_multi_cell_markdown(tmp_path):
     text = (  # Some text where styling occur over line breaks:
         "Lorem ipsum dolor amet, **consectetur adipiscing** elit,"
         " sed do eiusmod __tempor incididunt__ ut labore et dolore --magna aliqua--."
+        "\\**Vestibulum\\\\** \\__in\\\\__ hendrerit \\--metus\\\\--"
     )
     pdf.multi_cell(
         w=pdf.epw, text=text, markdown=True

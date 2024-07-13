@@ -26,6 +26,18 @@ def test_markdown_parse_simple_ok():
     assert frags == expected
 
 
+def test_markdown_parse_escape_character():
+    frags = tuple(FPDF()._parse_chars("\\**bold escaped\\\\**", True))
+    expected = (Fragment("**bold escaped\\**", GSTATE, k=PDF.k),)
+    assert frags == expected
+    frags = tuple(FPDF()._parse_chars("\\__italics escaped\\\\__", True))
+    expected = (Fragment("__italics escaped\\__", GSTATE, k=PDF.k),)
+    assert frags == expected
+    frags = tuple(FPDF()._parse_chars("\\--underline escaped\\\\--", True))
+    expected = (Fragment("--underline escaped\\--", GSTATE, k=PDF.k),)
+    assert frags == expected
+
+
 def test_markdown_parse_overlapping():
     frags = tuple(FPDF()._parse_chars("**bold __italics__**", True))
     expected = (

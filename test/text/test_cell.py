@@ -168,8 +168,9 @@ def test_cell_centering_and_align_x(tmp_path):
 def test_cell_markdown(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Times", size=60)
+    pdf.set_font("Times", size=20)
     pdf.cell(text="**Lorem** __Ipsum__ --dolor--", markdown=True)
+    pdf.cell(text="\\**Lorem\\\\** \\__Ipsum\\\\__ \\--dolor\\\\--", markdown=True)
     assert_pdf_equal(pdf, HERE / "cell_markdown.pdf", tmp_path)
 
 

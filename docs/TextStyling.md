@@ -179,7 +179,7 @@ More examples from [`test_text_mode.py`](https://github.com/py-pdf/fpdf2/blob/ma
 
 An optional `markdown=True` parameter can be passed to the [`cell()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell)
 & [`multi_cell()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) methods
-in order to enable basic Markdown-like styling: `**bold**, __italics__, --underlined--`.
+in order to enable basic Markdown-like styling: `**bold**, __italics__, --underlined--`. If your text contains Markdown-like styling you don't want to apply. You can escape it using `\`.
 
 Bold & italics require using dedicated fonts for each style.
 

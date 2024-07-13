@@ -204,6 +204,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     MARKDOWN_BOLD_MARKER = "**"
     MARKDOWN_ITALICS_MARKER = "__"
     MARKDOWN_UNDERLINE_MARKER = "--"
+    MARKDOWN_ESCAPE_CHARACTER = "\\"
     MARKDOWN_LINK_REGEX = re.compile(r"^\[([^][]+)\]\(([^()]+)\)(.*)$", re.DOTALL)
     MARKDOWN_LINK_COLOR = None
     MARKDOWN_LINK_UNDERLINE = True
@@ -2936,7 +2937,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 (identifier returned by `FPDF.add_link`) or external URL.
             center (bool): center the cell horizontally on the page.
             markdown (bool): enable minimal markdown-like markup to render part
-                of text as bold / italics / underlined. Default to False.
+                of text as bold / italics / underlined. Supports `\\` as escape character. Default to False.
             txt (str): [**DEPRECATED since v2.7.6**] String to print. Default value: empty string.
 
         Returns: a boolean indicating if page break was triggered
@@ -3480,16 +3481,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     and (not txt_frag or txt_frag[-1] != half_marker)
                     and (len(text) < 3 or text[2] != half_marker)
                 ):
-                    if txt_frag:
-                        yield frag()
-                    if text[:2] == self.MARKDOWN_BOLD_MARKER:
-                        in_bold = not in_bold
-                    if text[:2] == self.MARKDOWN_ITALICS_MARKER:
-                        in_italics = not in_italics
-                    if text[:2] == self.MARKDOWN_UNDERLINE_MARKER:
-                        in_underline = not in_underline
-                    text = text[2:]
-                    continue
+                    if txt_frag and txt_frag[-1] == self.MARKDOWN_ESCAPE_CHARACTER:
+                        txt_frag = txt_frag[:-1]
+                    else:
+                        if txt_frag:
+                            yield frag()
+                        if text[:2] == self.MARKDOWN_BOLD_MARKER:
+                            in_bold = not in_bold
+                        if text[:2] == self.MARKDOWN_ITALICS_MARKER:
+                            in_italics = not in_italics
+                        if text[:2] == self.MARKDOWN_UNDERLINE_MARKER:
+                            in_underline = not in_underline
+                        text = text[2:]
+                        continue
                 is_link = self.MARKDOWN_LINK_REGEX.match(text)
                 if is_link:
                     link_text, link_dest, text = is_link.groups()
@@ -3673,7 +3677,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             ln (int): **DEPRECATED since 2.5.1**: Use `new_x` and `new_y` instead.
             max_line_height (float): optional maximum height of each sub-cell generated
             markdown (bool): enable minimal markdown-like markup to render part
-                of text as bold / italics / underlined. Default to False.
+                of text as bold / italics / underlined. Supports `\\` as escape character. Default to False.
             print_sh (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
                 character, instead of a line breaking opportunity. Default value: False
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
