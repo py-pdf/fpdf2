@@ -31,6 +31,9 @@ hex_colors = (
     pytest.param(
         "#0D06F00D", fpdf.drawing.rgb8(r=0x0D, g=0x06, b=0xF0, a=0x0D), id="RGBA hex 8"
     ),
+    pytest.param(
+        "#0d06f00d", fpdf.drawing.rgb8(r=0x0D, g=0x06, b=0xF0, a=0x0D), id="RGBA hex 9, case insensitive"
+    ),
     pytest.param("#asd", ValueError, id="bad characters"),
     pytest.param("asd", ValueError, id="bad characters missing hash"),
     pytest.param("#12345", ValueError, id="wrong length"),
