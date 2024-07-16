@@ -453,6 +453,7 @@ def color_from_hex_string(hexstr):
         raise ValueError(f"{hexstr} does not start with #")
 
     hlen = len(hexstr)
+    hexstr = hexstr.upper()
 
     if hlen == 4:
         return rgb8(*[int(char * 2, base=16) for char in hexstr[1:]], a=None)
