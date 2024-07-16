@@ -38,6 +38,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): fixed incoherent indentation of long `<ul>` list entries - _cf._ [issue #1073](https://github.com/py-pdf/fpdf2/issues/1073) - thanks to @lcgeneralprojects
 * default values for `top_margin` and `bottom_margin` in `HTML2FPDF._new_paragraph()` calls are now correctly converted into chosen document units.
 * In [text_columns()](https://py-pdf.github.io/fpdf2/extColumns.html), paragraph top/bottom margins didn't correctly trigger column breaks; [issue #1214](https://github.com/py-pdf/fpdf2/issues/1214)
+* [`fpdf.drawing.color_from_hex_string`](https://py-pdf.github.io/fpdf2/fpdf/drawing.html#fpdf.drawing.color_from_hex_string) did not accept lowercase hex values.
 ### Removed
 * an obscure and undocumented [feature](https://github.com/py-pdf/fpdf2/issues/1198) of [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html), which used to magically pass instance attributes as arguments.
 ### Deprecated
