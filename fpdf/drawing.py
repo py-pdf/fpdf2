@@ -437,9 +437,10 @@ def color_from_hex_string(hexstr):
     Parse an RGB color from a css-style 8-bit hexadecimal color string.
 
     Args:
-        hexstr (str): of the form `#RGB`, `#RGBA`, `#RRGGBB`, or `#RRGGBBAA`. Must
-            include the leading octothorp. Forms omitting the alpha field are
-            interpreted as not specifying the opacity, so it will not be explicitly set.
+        hexstr (str): of the form `#RGB`, `#RGBA`, `#RRGGBB`, or `#RRGGBBAA` (case
+            insensitive). Must include the leading octothorp. Forms omitting the alpha
+            field are interpreted as not specifying the opacity, so it will not be
+            explicitly set.
 
             An alpha value of `00` is fully transparent and `FF` is fully opaque.
 
