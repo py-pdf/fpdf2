@@ -181,7 +181,7 @@ An optional `markdown=True` parameter can be passed to the [`cell()`](fpdf/fpdf.
 & [`multi_cell()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) methods
 in order to enable basic Markdown-like styling: `**bold**, __italics__, --underlined--`.
 
-If your text contains Markdown-like styling that you don't want to apply, you can escape it with `\`. The escape character works similarly to how it does in Python (see the example below).
+If your text contains Markdown-like styling that you don't want to apply, you can escape it using `\`. The escape character works the same way it generally does in Python (see the example below).
 
 Bold & italics require using dedicated fonts for each style.
 
