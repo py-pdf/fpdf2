@@ -3456,6 +3456,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             font_glyphs = self.current_font.cmap
         else:
             font_glyphs = []
+        num_escape_chars = 0
 
         while text:
             is_marker = text[:2] in (
@@ -3481,9 +3482,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     and (not txt_frag or txt_frag[-1] != half_marker)
                     and (len(text) < 3 or text[2] != half_marker)
                 ):
-                    if txt_frag and txt_frag[-1] == self.MARKDOWN_ESCAPE_CHARACTER:
-                        txt_frag = txt_frag[:-1]
-                    else:
+                    txt_frag = (
+                        txt_frag[: -((num_escape_chars + 1) // 2)]
+                        if num_escape_chars > 0
+                        else txt_frag
+                    )
+                    if num_escape_chars % 2 == 0:
                         if txt_frag:
                             yield frag()
                         if text[:2] == self.MARKDOWN_BOLD_MARKER:
@@ -3494,6 +3498,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                             in_underline = not in_underline
                         text = text[2:]
                         continue
+                num_escape_chars = (
+                    num_escape_chars + 1
+                    if text[0] == self.MARKDOWN_ESCAPE_CHARACTER
+                    else 0
+                )
                 is_link = self.MARKDOWN_LINK_REGEX.match(text)
                 if is_link:
                     link_text, link_dest, text = is_link.groups()

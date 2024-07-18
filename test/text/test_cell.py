@@ -168,10 +168,17 @@ def test_cell_centering_and_align_x(tmp_path):
 def test_cell_markdown(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Times", size=20)
+    pdf.set_font("Times", size=60)
     pdf.cell(text="**Lorem** __Ipsum__ --dolor--", markdown=True)
-    pdf.cell(text="\\**Lorem\\\\** \\__Ipsum\\\\__ \\--dolor\\\\--", markdown=True)
     assert_pdf_equal(pdf, HERE / "cell_markdown.pdf", tmp_path)
+
+
+def test_cell_markdown_escaped(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=40)
+    pdf.cell(text="**Lo\\rem** \\__Ipsum\\__ \\\\--dolor\\\\--", markdown=True)
+    assert_pdf_equal(pdf, HERE / "cell_markdown_escaped.pdf", tmp_path)
 
 
 def test_cell_markdown_bold_italic(tmp_path):
@@ -183,6 +190,14 @@ def test_cell_markdown_bold_italic(tmp_path):
     assert_pdf_equal(pdf, HERE / "cell_markdown_bold_italic.pdf", tmp_path)
 
 
+def test_cell_markdown_bold_italic_escaped(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=40)
+    pdf.cell(text="**__Lorem \\--Ipsum\\--__**", markdown=True)
+    assert_pdf_equal(pdf, HERE / "cell_markdown_bold_italic_escaped.pdf", tmp_path)
+
+
 def test_cell_markdown_with_ttf_fonts(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -192,6 +207,17 @@ def test_cell_markdown_with_ttf_fonts(tmp_path):
     pdf.set_font("Roboto", size=60)
     pdf.cell(text="**Lorem** __Ipsum__ --dolor--", markdown=True)
     assert_pdf_equal(pdf, HERE / "cell_markdown_with_ttf_fonts.pdf", tmp_path)
+
+
+def test_cell_markdown_with_ttf_fonts_escaped(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Roboto", "", FONTS_DIR / "Roboto-Regular.ttf")
+    pdf.add_font("Roboto", "B", FONTS_DIR / "Roboto-Bold.ttf")
+    pdf.add_font("Roboto", "I", FONTS_DIR / "Roboto-Italic.ttf")
+    pdf.set_font("Roboto", size=40)
+    pdf.cell(text="**Lo\\rem** \\__Ipsum\\__ \\\\--dolor\\\\--", markdown=True)
+    assert_pdf_equal(pdf, HERE / "cell_markdown_with_ttf_fonts_escaped.pdf", tmp_path)
 
 
 def test_cell_markdown_missing_ttf_font():
