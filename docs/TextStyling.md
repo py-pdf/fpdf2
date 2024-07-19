@@ -181,7 +181,7 @@ An optional `markdown=True` parameter can be passed to the [`cell()`](fpdf/fpdf.
 & [`multi_cell()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) methods
 in order to enable basic Markdown-like styling: `**bold**, __italics__, --underlined--`.
 
-If your text contains Markdown-like styling that you don't want to apply, you can escape it using `\`. The escape character works the same way it generally does in Python (see the example below).
+If the printable text contains a character sequence that would be incorrectly interpreted as a formatting marker, it can be escaped using `\`. The escape character works the same way it generally does in Python (see the example below).
 
 Bold & italics require using dedicated fonts for each style.
 
@@ -192,8 +192,8 @@ from fpdf import FPDF
 
 pdf = FPDF()
 pdf.add_page()
-pdf.set_font("Times", size=30)
-pdf.cell(text="**Lorem** __Ipsum__ --dolor--", markdown=True)
+pdf.set_font("Times", size=50)
+pdf.cell(text="**Lorem** __Ipsum__ --dolor--", markdown=True, new_x='LEFT', new_y='NEXT')
 pdf.cell(text="\\**Lorem\\** \\\\__Ipsum\\\\__ --dolor--", markdown=True)
 pdf.output("markdown-styled.pdf")
 ```
