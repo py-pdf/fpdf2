@@ -1073,7 +1073,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # normalized is parameter for internal use
         s = s if normalized else self.normalize_text(s)
         w = 0
-        for frag in self._parse_chars(s, markdown):
+        for frag in self._preload_bidirectional_text(s, markdown):
             w += frag.get_width()
         return w
 
