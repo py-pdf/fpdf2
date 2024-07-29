@@ -26,7 +26,7 @@ pdf = FPDF(orientation="P", unit="mm", format="A4")
 Diğer sayfa formatları (`Letter` ve `Legal` gibi) ve ölçü birimleri (`pt`, `cm`, `in`) de 
 kullanılabilir.
 
-Şu an için bir sayfa yok, bu yüzden bir tane eklememiz gerekiyor 
+Şu an için bir sayfamız yok, bu yüzden bir tane eklememiz gerekiyor 
 [add_page](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page). Başlangıç noktası sol üst köşededir ve
 geçerli konum varsayılan olarak sınırlardan 1 cm uzağa yerleştirilir; kenar boşlukları
 [set_margins](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins) ile değiştirilebilir.
@@ -39,124 +39,121 @@ Helvetica bold 16'yı seçiyoruz:
 pdf.set_font('helvetica', 'B', 16)
 ```
 
-We could have specified italics with `I`, underlined with `U` or a regular font
-with an empty string (or any combination). Note that the font size is given in
-points, not millimeters (or another user unit); it is the only exception.
-The other built-in fonts are `Times`, `Courier`, `Symbol` and `ZapfDingbats`.
+Yazı tipi stilleriyle oynayabiliriz. Örneğin, italikleri `I` ile, altı çizgili `U` ile 
+veya düz bir yazı tipiyle boş bir dizeyle (veya herhangi bir kombinasyonla) belirtebiliriz. 
+Yazı tipi boyutu puan cinsinden belirtilir, milimetre (veya başka bir kullanıcı birimi) 
+değil; bu tek istisnadır. Diğer yerleşik yazı tipleri `Times`, `Courier`, `Symbol` ve `ZapfDingbats`'tir.
 
-We can now print a cell with [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell). A cell is a rectangular
-area, possibly framed, which contains some text. It is rendered at the current
-position. We specify its dimensions, its text (centered or aligned), if borders
-should be drawn, and where the current position moves after it (to the right,
-below or to the beginning of the next line). To add a frame, we would do this:
-
-```python
-pdf.cell(40, 10, 'Hello World!', 1)
-```
-
-To add a new cell next to it with centered text and go to the next line, we
-would do:
+Artık bir hücreyi [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) ile yazdırabiliriz. Hücre,
+muhtemelen çerçeveli, metin içeren bir dikdörtgen alanıdır. Hücre geçerli konumda
+oluşturulur. Boyutlarını, metnini (merkezlenmiş veya hizalanmış), çerçevelerinin çizilip
+çizilmeyeceğini ve sonrasında nereye gidileceğini (sağa, aşağıya veya bir sonraki satırın başına) belirtiriz. 
+Bir çerçeve eklemek için şunu yapabiliriz:
 
 ```python
-pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
+pdf.cell(40, 10, 'Merhaba Dünya!', 1)
 ```
 
-**Remark**: the line break can also be done with [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). This
-method allows to specify in addition the height of the break.
+Yanına merkezlenmiş metin eklemek ve bir sonraki satıra gitmek için, şunu yapabiliriz:
 
-Finally, the document is closed and saved under the provided file path using
-[output](fpdf/fpdf.html#fpdf.fpdf.FPDF.output). Without any parameter provided, `output()`
-returns the PDF `bytearray` buffer.
+```python
+pdf.cell(60, 10, 'FPDF tarafından oluşturuldu.', new_x="LMARGIN", new_y="NEXT", align='C')
+```
 
-## Tuto 2 - Header, footer, page break and image
+**Not**: Satır sonu ayrıca [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln) ile de yapılabilir. Bu
+metot ayrıca, satır aralığını belirtmeye de olanak tanır.
 
-Here is a two page example with header, footer and logo:
+Son olarak, belge kapatılır ve verilen dosya yoluna kaydedilir.
+[output](fpdf/fpdf.html#fpdf.fpdf.FPDF.output). Herhangi bir parametre sağlanmadığında, `output()`
+PDF `bytearray` buffer değerini döndürür.
+
+## Öğretici 2 - Başlık, altbilgi, sayfa sonu ve resim
+
+Şimdi bir başlık, altbilgi ve logo içeren iki sayfalık bir örnek yapalım:
 
 ```python
 {% include "../tutorial/tuto2.py" %}
 ```
 
-[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
+[Sonuç PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
 
-This example makes use of the [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) and 
-[footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) methods to process page headers and footers. They
-are called automatically. They already exist in the FPDF class but do nothing,
-therefore we have to extend the class and override them.
+Bu örnek, sayfa başlıklarını ve altbilgilerini işlemek için [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) ve
+[footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) metodlarını kullanır. Bunlar otomatik olarak çağrılır.
+Bu özellikler FPDF sınıfında zaten mevcuttur ancak varsayılan olduklarından boşturlar, bu yüzden sınıfı 
+genişletmeli ve içeriklerini doldurarak onları özelleştirmeliyiz.
 
-The logo is printed with the [image](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method by specifying
-its upper-left corner and its width. The height is calculated automatically to
-respect the image proportions.
+Logo, [image](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) metoduyla üst sol köşesini ve genişliğini belirterek yazdırılır.
+Yükseklik otomatik olarak hesaplanır ve resmin oranlarını korumak için kullanılır.
 
-To print the page number, a null value is passed as the cell width. It means
-that the cell should extend up to the right margin of the page; it is handy to
-center text. The current page number is returned by
-the [page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) method; as for
-the total number of pages, it is obtained by means of the special value `{nb}`
-which will be substituted on document closure (this special value can be changed by 
-[alias_nb_pages()](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages)).
-Note the use of the [set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) method which allows to set
-position at an absolute location in the page, starting from the top or the
-bottom.
+Sayfa numarasını yazdırmak için, hücre genişliği olarak null bir değer geçilir. 
+Bu, metnin sağ kenarına kadar uzanması gerektiği anlamına gelir; metni ortalamak için kullanışlıdır. 
+Geçerli sayfa numarası [page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) metodu ile alınır; 
+toplam sayfa sayısı ise belge kapatıldığında `{nb}` ile değiştirilecek özel bir değerle alınır 
+(bu özel değer [alias_nb_pages()](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages) ile değiştirilebilir). 
+Not olarak, [set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) metodu, sayfanın üstünden veya altından 
+başlayarak mutlak bir konum belirlemeye izin verir.
 
-Another interesting feature is used here: the automatic page breaking. As soon
-as a cell would cross a limit in the page (at 2 centimeters from the bottom by
-default), a break is performed and the font restored. Although the header and
-footer select their own font (`helvetica`), the body continues with `Times`.
-This mechanism of automatic restoration also applies to colors and line width.
-The limit which triggers page breaks can be set with 
-[set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
+Burada kullanılan başka ilginç bir özellik de otomatik sayfa sınırlandırmalarıdır. Bir hücre sayfanın bir sınırını
+geçeceği anda (varsayılan olarak alttan 2 cm uzakta) bir kesme gerçekleştirilir ve yazı tipi geri yüklenir.
+Başlık ve altbilgi kendi yazı tipini (`helvetica`) seçerken, gövde `Times` ile devam eder.
+Bu otomatik geri yükleme mekanizması, renkler ve çizgi kalınlığı için de geçerlidir.
+Sayfa kesimlerini tetikleyen sınır,
+[set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break) ile ayarlanabilir.
 
-## Tuto 3 - Line breaks and colors
+## Öğretici 3 - Satır sonları ve renkler
 
-Let's continue with an example which prints justified paragraphs. It also
-illustrates the use of colors.
+Şimdi, paragrafları hizalayarak yazdıran bir örneğe devam edelim. Ayrıca renklerin nasıl kullanılacağını gösterir.
 
 ```python
 {% include "../tutorial/tuto3.py" %}
 ```
 
-[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto3.pdf)
+[Sonuç PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto3.pdf)
 
-[Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
+[Jules Verne metni](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-The [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) method allows determining
-the length of a string in the current font, which is used here to calculate the
-position and the width of the frame surrounding the title. Then colors are set
-(via [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color),
-[set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) and 
-[set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) and the thickness of the line is set
-to 1 mm (against 0.2 by default) with
-[set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Finally, we output the cell (the
-last parameter to true indicates that the background must be filled).
+[get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) metodu, 
+kullanılan yazı tipindeki bir dizenin uzunluğunu belirlemeye olanak tanır. Bu, başlığı çevreleyen kısmın
+konumunu ve genişliğini hesaplamak için kullanılır. Ardından renkler ayarlanır
+([set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color),
+[set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) ve
+[set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) ve çizgi kalınlığı
+varsayılan 0.2 mm'ye karşı 1 mm'ye ayarlanır
+[set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Son olarak, hücre çıktısı yapılır
+(arka planın doldurulması gerektiğini belirten son parametre true'dur).
 
-The method used to print the paragraphs is [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). Text is justified by default.
-Each time a line reaches the right extremity of the cell or a carriage return character (`\n`) is met,
-a line break is issued and a new cell automatically created under the current one.
-An automatic break is performed at the location of the nearest space or soft-hyphen (`\u00ad`) character before the right limit.
-A soft-hyphen will be replaced by a normal hyphen when triggering a line break, and ignored otherwise.
+Paragrafları yazdırmak için kullanılan yöntem [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) metotudur.
+Metin varsayılan olarak hizalanır. Her bir satır sağ sınırı hücrenin sağ kenarına ulaştığında veya 
+bir satır sonu karakteri (`\n`) karşılaşıldığında, bir satır sonu verilir ve yeni bir hücre 
+otomatik olarak mevcut hücrenin altına oluşturulur. Otomatik bir kesme, en yakın boşluğa veya 
+yumuşak kısa çizgi karakterine (`\u00ad`) sağ sınıra ulaşıldığında gerçekleştirilir. 
+Bir satır sonu tetiklendiğinde, bir yumuşak kısa çizgi normal bir kısa çizgiyle değiştirilir 
+ve aksi takdirde yoksayılır.
 
-Two document properties are defined: the title 
-([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) and the author 
-([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Properties can be viewed by two means.
-First is to open the document directly with Acrobat Reader, go to the File menu
-and choose the Document Properties option. The second, also available from the
-plug-in, is to right-click and select Document Properties.
+İki belge özelliği tanımlanmıştır: başlık 
+([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) ve yazar 
+([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Özellikler iki şekilde görülebilir.
+İlk olarak, belgeyi doğrudan Acrobat Reader ile açarak, Dosya menüsüne gidin ve Belge Özellikleri seçeneğini seçin.
+İkincisi, eklentiden de mevcut olan, belge özelliklerini sağ tıklayarak seçmek.
 
-## Tuto 4 - Multi Columns
+## Öğretici 4 - Çoklu Sütunlar
 
+ Bu örnek, metni birden fazla sütuna yayarak, metni birden fazla sütuna yayarak nasıl yapılacağını gösterir.
  This example is a variant of the previous one, showing how to lay the text across multiple columns.
 
 ```python
 {% include "../tutorial/tuto4.py" %}
 ```
 
-[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto4.pdf)
+[Sonuç PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto4.pdf)
 
-[Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
+[Jules Verne metni](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-The key difference from the previous tutorial is the use of the 
-[`text_columns`](fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column) method. 
-It collects all the text, possibly in increments, and distributes it across the requested number of columns, automatically inserting page breaks as necessary. Note that while the `TextColumns` instance is active as a context manager, text styles and other font properties can be changed. Those changes will be contained to the context. Once it is closed the previous settings will be reinstated.
+Önceki öğreticiyle ana fark, 
+[`text_columns`](fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column) metodunun kullanılmasıdır.
+Metni toplar ve istenen sütun sayısına dağıtır, gerekirse otomatik olarak sayfa kesmeleri ekler.
+`TextColumns` örneği bir bağlam yöneticisi olarak etkin olduğunda, metin stilleri ve diğer yazı tipi özellikleri değiştirilebilir.
+Bu değişiklikler bağlamla sınırlı olacaktır. Kapatıldığında önceki ayarlar yeniden yüklenecektir.
 
 ## Tuto 5 - Creating Tables
 
