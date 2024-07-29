@@ -155,76 +155,68 @@ Metni toplar ve istenen sütun sayısına dağıtır, gerekirse otomatik olarak 
 `TextColumns` örneği bir bağlam yöneticisi olarak etkin olduğunda, metin stilleri ve diğer yazı tipi özellikleri değiştirilebilir.
 Bu değişiklikler bağlamla sınırlı olacaktır. Kapatıldığında önceki ayarlar yeniden yüklenecektir.
 
-## Tuto 5 - Creating Tables
+## Öğretici 5 - Tablolar Oluşturma
 
-This tutorial will explain how to create two different tables,
- to demonstrate what can be achieved with some simple adjustments.
+Bu öğretici, iki farklı tablo oluşturmayı açıklar, basit ayarlamalarla nelerin elde edilebileceğini göstermek için.
 
 ```python
 {% include "../tutorial/tuto5.py" %}
 ```
 
-[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf) -
-[Countries CSV data](https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt)
+[Sonuç PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto5.pdf) -
+[Ülkelerin CSV verisi](https://github.com/py-pdf/fpdf2/raw/master/tutorial/countries.txt)
 
-The first example is achieved in the most basic way possible, feeding data to [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html). The result is rudimentary but very quick to obtain.
+İlk örnek mümkün olan en basit yöntem ile elde edilebilir, verileri [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html) metoduna vererek.
+Sonuç basit olsa da çok hızlı bir şekilde elde edilir.
 
-The second table brings some improvements: colors, limited table width, reduced line height,
- centered titles, columns with custom widths, figures right aligned...
- Moreover, horizontal lines have been removed.
- This was done by picking a `borders_layout` among the available values:
+İkinci tablo bazı iyileştirmeler getirir: renkler, sınırlı tablo genişliği, azaltılmış satır yüksekliği,
+ başlıkların ortalanması, özel genişliklere sahip sütunlar, rakamların sağa hizalanması...
+ Ayrıca yatay çizgiler kaldırılmıştır.
+ Bu, mevcut değerler arasından bir `borders_layout` seçilerek yapılmıştır:
  [`TableBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
 
-## Tuto 6 - Creating links and mixing text styles
+## Öğretici 6 - Bağlantılar Oluşturma ve Metin Stillerini Harmanlayarak Kullanma
 
-This tutorial will explain several ways to insert links inside a pdf document,
- as well as adding links to external sources.
+Bu öğretici, bir pdf belgesi içine bağlantılar eklemenin birkaç yolunu açıklar,
+ ayrıca dış kaynaklara bağlantı eklemeyi gösterir.
 
- It will also show several ways we can use different text styles,
- (bold, italic, underline) within the same text.
+ Ayrıca, aynı metin içinde farklı metin stillerini (kalın, italik, altı çizili) nasıl kullanabileceğimizi gösterecektir.
 
 ```python
 {% include "../tutorial/tuto6.py" %}
 ```
 
-[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
+[Sonuç PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
 [fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
 
-The new method shown here to print text is
+Bu öğreticide, metin yazdırmak için gösterilen yeni yöntem
  [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
-. It is very similar to
+. Burada gösterilen yeni yöntem, metni yazdırmak için kullanılan
  [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
- , the key differences being:
+ metoduna oldukça benzer, temel farklar şunlardır:
 
-- The end of line is at the right margin and the next line begins at the left
-  margin.
-- The current position moves to the end of the text.
+- Satır sonu sağ kenarda ve bir sonraki satır sol kenarda başlar.
+- işaretçi konum metnin sonuna taşınır.
 
-The method therefore allows us to write a chunk of text, alter the font style,
- and continue from the exact place we left off.
-On the other hand, its main drawback is that we cannot justify the text like
- we do with the
+Bu yöntem, bir metin parçası yazmamıza, yazı tipi stilini değiştirmemize ve kaldığımız yerden devam etmemize olanak tanır.
+Öte yandan, metni
  [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell)
- method.
+ metoduyla olduğu gibi düzgün hizalayamayız.
 
-In the first page of the example, we used
+İlk sayfada, bu amaçla
  [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)
- for this purpose. The beginning of the sentence is written in regular style
- text, then using the
+ kullanıldı. Cümlenin başlangıcı düz yazı tipinde yazıldı, ardından
  [set_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font)
- method, we switched to underline and finished the sentence.
+ metoduyla altı çizili haline getirildi ve cümle tamamlandı.
 
-To add an internal link pointing to the second page, we used the
+İkinci sayfaya yönlendiren bir iç bağlantı eklemek için, ikinci sayfayı ekledik ve
  [add_link()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_link)
- method, which creates a clickable area which we named "link" that directs to
- another page within the document.
+ metoduyla ikinci sayfaya yönlendiren bir bağlantı linki oluşturduk.
 
-To create the external link using an image, we used
- [image()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
-. The method has the
- option to pass a link as one of its arguments. The link can be both internal
- or external.
+Dış bağlantı oluşturmak için bir resim kullanarak dış bağlantı oluşturduk
+    [image()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)
+. Metodun bir bağlantıyı bir argüman olarak geçme seçeneği vardır. Bağlantı hem iç hem de dış bağlantı olabilir.
 
-As an alternative, another option to change the font style and add links is to
- use the `write_html()` method. It is an html parser, which allows adding text,
- changing font style and adding links using html.
+Alternatif olarak, yazı tipi stilini değiştirmek ve bağlantılar eklemek için başka bir seçenek de
+ `write_html()` yöntemini kullanın. Metin eklemeyi sağlayan bir html ayrıştırıcıdır,
+ yazı tipi stilini değiştirme ve html kullanarak bağlantı ekleme özelliklerine sahiptir.
