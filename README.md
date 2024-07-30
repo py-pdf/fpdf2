@@ -285,6 +285,9 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Makaze"><img src="https://avatars.githubusercontent.com/u/2280429?v=4?s=100" width="100px;" alt="Christopher Lane"/><br /><sub><b>Christopher Lane</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Makaze" title="Documentation">📖</a> <a href="https://github.com/py-pdf/fpdf2/commits?author=Makaze" title="Tests">⚠️</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/david-fed"><img src="https://avatars.githubusercontent.com/u/47917339?v=4?s=100" width="100px;" alt="David"/><br /><sub><b>David</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=david-fed" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://sezerbozkir.com/"><img src="https://avatars.githubusercontent.com/u/6623948?v=4?s=100" width="100px;" alt="Sezer Bozkır"/><br /><sub><b>Sezer Bozkır</b></sub></a><br /><a href="#translation-Natgho" title="Translation">🌍</a></td>
+    </tr>
   </tbody>
 </table>
 

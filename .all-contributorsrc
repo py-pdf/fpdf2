@@ -1218,6 +1218,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "Natgho",
+      "name": "Sezer Bozkır",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6623948?v=4",
+      "profile": "https://sezerbozkir.com/",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
