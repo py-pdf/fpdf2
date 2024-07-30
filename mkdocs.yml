@@ -82,6 +82,7 @@ plugins:
         - 'Tutorial-ja'
         - 'Tutorial-nl'
         - 'Tutorial-pl'
+        - 'Tutorial-tr'
       #cover: false
       #back_cover: true
       #custom_template_path: TEMPLATES PATH
@@ -125,6 +126,7 @@ nav:
   - '简体中文教程':                   'Tutorial-zh.md'
   - '日本語チュートリアル':           'Tutorial-ja.md'
   - 'Handleiding in Dutch':    'Tutorial-nl.md'
+  - 'Türkçe Kılavuz':             'Tutorial-tr.md'
 - 'Page Layout':
   - 'Page Format and Orientation':    'PageFormatAndOrientation.md'
   - 'Margins':                        'Margins.md'
