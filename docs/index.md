@@ -66,7 +66,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * [Dutch](Tutorial-nl.md)
 * [Polski](Tutorial-pl.md)
 * [Türkçe](Tutorial-tr.md)
-* [Indonesia](Tutorial-id.md)
+* [Indonesian](Tutorial-id.md)
 
 ## Installation ##
 
