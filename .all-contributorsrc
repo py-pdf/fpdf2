@@ -1236,6 +1236,15 @@
       "contributions": [
         "translation"
       ]
+    },
+    {
+      "login": "socrateslee",
+      "name": "Li",
+      "avatar_url": "https://avatars.githubusercontent.com/u/90537?v=4",
+      "profile": "https://valarmorghulis.io",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
