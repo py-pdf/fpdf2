@@ -327,3 +327,23 @@ def test_tcols_break_top_margin(tmp_path):  # regression test for #1214
             ) as par:
                 par.write(text=LOREM_IPSUM)
     assert_pdf_equal(pdf, HERE / "tcols_break_top_margin.pdf", tmp_path)
+
+
+def test_paragraph_emphasis(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=32)
+    column = pdf.text_columns()
+    # Paragraph 1:
+    par = column.paragraph()
+    par.write(text="Un.")
+    column.end_paragraph()
+    # Paragraph 2:
+    pdf.set_font(style="B")
+    par = column.paragraph()
+    par.write(text="Deux.")
+    pdf.set_font(style="I")
+    par.write(text="Trois.")
+    column.end_paragraph()
+    column.render()
+    assert_pdf_equal(pdf, HERE / "paragraph_emphasis.pdf", tmp_path)

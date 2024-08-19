@@ -1161,3 +1161,30 @@ def test_html_footer_with_call_to_write_html_ok(tmp_path):  # issue-1222
     pdf.add_page()
     pdf.write_html("<p>Main content</p>")
     assert_pdf_equal(pdf, HERE / "html_footer_with_call_to_write_html_ok.pdf", tmp_path)
+
+
+def test_html_font_tag(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<font size="36">Large text in Times 1<p>Large text in Times 2</p></font>',
+    )
+    pdf.write_html("<br><hr><br>")
+    pdf.write_html(
+        """Text in Times 1
+        <font face="helvetica">
+            Text in Helvetica 1
+            <font size="36">
+                Large text in Helvetica 2
+                <font face="times">
+                Large text in Times 2
+                <p>Large text in Times 3</p>
+                </font>
+            Large text in Helvetica 3
+            <p>Large text in Helvetica 4</p>
+            </font>
+            Text in Helvetica 5
+        </font>
+        Text in Times 4""",
+    )
+    assert_pdf_equal(pdf, HERE / "html_font_tag.pdf", tmp_path)
