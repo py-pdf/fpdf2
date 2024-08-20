@@ -1134,3 +1134,30 @@ def test_html_font_family(tmp_path):
         font_family="Helvetica",
     )
     assert_pdf_equal(pdf, HERE / "html_font_family.pdf", tmp_path)
+
+
+def test_html_footer_with_call_to_write_html_ko(tmp_path):  # issue-1222
+    "This used to cause a RecursionError"
+
+    class MyPDF(FPDF):
+        def footer(self):
+            self.set_y(-15)
+            self.write_html("<p>Footer</p>")
+
+    pdf = MyPDF()
+    pdf.add_page()
+    pdf.write_html("<p>Main content</p>")
+    assert_pdf_equal(pdf, HERE / "html_footer_with_call_to_write_html_ko.pdf", tmp_path)
+
+
+def test_html_footer_with_call_to_write_html_ok(tmp_path):  # issue-1222
+
+    class MyPDF(FPDF):
+        def footer(self):
+            self.set_y(-30)
+            self.write_html("<p>Footer</p>")
+
+    pdf = MyPDF()
+    pdf.add_page()
+    pdf.write_html("<p>Main content</p>")
+    assert_pdf_equal(pdf, HERE / "html_footer_with_call_to_write_html_ok.pdf", tmp_path)

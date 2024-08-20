@@ -3577,6 +3577,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         return False
 
     def _perform_page_break(self):
+        # Defensive check, this should have tested by a previous call to .will_page_break():
+        if not self.accept_page_break or self.in_footer:
+            return
         x = self.x
         # If we are in a .local_context(), we need to temporarily leave it,
         # by popping out every GraphicsState:
