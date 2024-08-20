@@ -10,7 +10,7 @@ HERE = Path(__file__).resolve().parent
 def draw_points(pdf, point_lists):
     for pl in point_lists:
         for p in pl:
-            pdf.circle(x=p[0], y=p[1], r=1, style="FD")
+            pdf.circle(x=p[0] + 0.5, y=p[1] + 0.5, radius=0.5, style="FD")
 
 
 def test_quadratic_beziers(tmp_path):
@@ -107,10 +107,10 @@ def test_bezier_chaining(tmp_path):
                 3: "#00f",
             }[i % 4]
         )
-        pdf.circle(x=x1 - 0.5, y=y1 - 0.5, r=1)
-        pdf.circle(x=x2 - 0.5, y=y2 - 0.5, r=1)
-        pdf.circle(x=x3 - 0.5, y=y3 - 0.5, r=1)
-        pdf.circle(x=x4 - 0.5, y=y4 - 0.5, r=1)
+        pdf.circle(x=x1, y=y1, radius=0.5)
+        pdf.circle(x=x2, y=y2, radius=0.5)
+        pdf.circle(x=x3, y=y3, radius=0.5)
+        pdf.circle(x=x4, y=y4, radius=0.5)
         pdf.bezier(((x1, y1), (x2, y2), (x3, y3), (x4, y4)))
 
     pdf.x, pdf.y = 20, pdf.h / 2 - 30
@@ -127,9 +127,9 @@ def test_bezier_chaining(tmp_path):
                 2: "#00f",
             }[i % 3]
         )
-        pdf.circle(x=x1 - 0.5, y=y1 - 0.5, r=1)
-        pdf.circle(x=x2 - 0.5, y=y2 - 0.5, r=1)
-        pdf.circle(x=x3 - 0.5, y=y3 - 0.5, r=1)
+        pdf.circle(x=x1, y=y1, radius=0.5)
+        pdf.circle(x=x2, y=y2, radius=0.5)
+        pdf.circle(x=x3, y=y3, radius=0.5)
         pdf.bezier(((x1, y1), (x2, y2), (x3, y3)))
 
     assert_pdf_equal(pdf, HERE / "bezier_chaining.pdf", tmp_path)

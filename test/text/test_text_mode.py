@@ -40,25 +40,25 @@ def test_clip_text_modes(tmp_path):
     pdf.line_width = 1
     with pdf.local_context(text_mode=TextMode.FILL_CLIP, text_color=(0, 255, 255)):
         pdf.cell(text="FILL_CLIP text mode")
-        for r in range(0, 200, 2):
-            pdf.circle(x=110 - r / 2, y=22 - r / 2, r=r)
+        for r in range(0, 100, 1):
+            pdf.circle(x=110, y=22, radius=r)
     pdf.ln()
     with pdf.local_context(text_mode=TextMode.STROKE_CLIP):
         pdf.cell(text="STROKE_CLIP text mode")
-        for r in range(0, 200, 2):
-            pdf.circle(x=110 - r / 2, y=50 - r / 2, r=r)
+        for r in range(0, 100, 1):
+            pdf.circle(x=110, y=50, radius=r)
     pdf.ln()
     with pdf.local_context(
         text_mode=TextMode.FILL_STROKE_CLIP, text_color=(0, 255, 255)
     ):
         pdf.cell(text="FILL_STROKE_CLIP text mode")
-        for r in range(0, 200, 2):
-            pdf.circle(x=110 - r / 2, y=78 - r / 2, r=r)
+        for r in range(0, 100, 1):
+            pdf.circle(x=110, y=78, radius=r)
     pdf.ln()
     with pdf.local_context(text_mode=TextMode.CLIP):
         pdf.cell(text="CLIP text mode")
-        for r in range(0, 200, 2):
-            pdf.circle(x=110 - r / 2, y=106 - r / 2, r=r)
+        for r in range(0, 100, 1):
+            pdf.circle(x=110, y=106, radius=r)
     pdf.ln()
     assert_pdf_equal(pdf, HERE / "clip_text_modes.pdf", tmp_path)
 

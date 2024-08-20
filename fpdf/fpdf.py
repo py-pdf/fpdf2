@@ -1538,22 +1538,24 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
 
     @check_page
-    def circle(self, x, y, r, style=None):
+    def circle(self, x, y, radius, style=None):
         """
         Outputs a circle.
         It can be drawn (border only), filled (with no border) or both.
 
+        WARNING: This method changed parameters in [release 2.8.0](https://github.com/py-pdf/fpdf2/releases/tag/2.8.0)
+
         Args:
             x (float): Abscissa of upper-left bounding box.
             y (float): Ordinate of upper-left bounding box.
-            r (float): Radius of the circle.
+            radius (float): Radius of the circle.
             style (str): Style of rendering. Possible values are:
 
             * `D` or None: draw border. This is the default value.
             * `F`: fill
             * `DF` or `FD`: draw and fill
         """
-        self.ellipse(x, y, r, r, style)
+        self.ellipse(x - radius, y - radius, 2 * radius, 2 * radius, style)
 
     @check_page
     def regular_polygon(self, x, y, numSides, polyWidth, rotateDegrees=0, style=None):

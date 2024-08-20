@@ -16,7 +16,7 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.7.10] - Not released yet
+## [2.8.0] - Not released yet
 ### Added
 * support for escape character for markers in markdown text [issue #1215](https://github.com/py-pdf/fpdf2/issues/1215)
 * Wrapping words on spaces now considers all common space symbols in addition to regular spaces (' '), addressing issues with word-wrapping for languages like Thai, as per [#1190](https://github.com/py-pdf/fpdf2/issues/1190) and [#1191](https://github.com/py-pdf/fpdf2/pull/1191).
@@ -49,6 +49,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `fpdf.TitleStyle` has been renamed into `fpdf.TextStyle`
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): `tag_indents` introduced in the last version - Now the indentation can be provided through the `tag_styles` parameter, using the `.l_margin` of `TextStyle` instances
 ### Changed
+* [`FPDF.circle()`](https://py-pdf.github.io/fpdf2/fpdf.html#fpdf.fpdf.FPDF.circle) : the previous `r` parameter, that in fact defined the diamter, has been replaced by a new `radius` paremeter. The `x` & `y` parameters now define the circle **center**, instead of its top-left corner as it used to be - [issue #1245](https://github.com/py-pdf/fpdf2/issues/1245)
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html) now raises an error when a single row is too high to be rendered on a single page
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): indentation of HTML elements can now be non-integer (float), and is now independent of font size and bullet strings.
 * improved performance of font glyph selection by using functools cache

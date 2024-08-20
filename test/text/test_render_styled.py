@@ -100,7 +100,7 @@ def test_render_styled_newpos(tmp_path):
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
-            doc.circle(doc.x - 3, doc.y - 3, 6)
+            doc.circle(doc.x, doc.y, radius=3)
             doc.line(doc.x - 3, doc.y, doc.x + 3, doc.y)
             doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
 
@@ -142,7 +142,7 @@ def test_cell_newpos(tmp_path):
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
-            doc.circle(doc.x - 3, doc.y - 3, 6)
+            doc.circle(doc.x, doc.y, radius=3)
             doc.line(doc.x - 3, doc.y, doc.x + 3, doc.y)
             doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
 
@@ -185,7 +185,7 @@ def test_cell_newpos_stretched(tmp_path):
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
-            doc.circle(doc.x - 3, doc.y - 3, 6)
+            doc.circle(doc.x, doc.y, radius=3)
             doc.line(doc.x - 3, doc.y, doc.x + 3, doc.y)
             doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
 
@@ -228,7 +228,7 @@ def test_cell_newpos_charspaced(tmp_path):
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
-            doc.circle(doc.x - 3, doc.y - 3, 6)
+            doc.circle(doc.x, doc.y, radius=3)
             doc.line(doc.x - 3, doc.y, doc.x + 3, doc.y)
             doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
 
@@ -272,7 +272,7 @@ def test_cell_newpos_combined(tmp_path):
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
-            doc.circle(doc.x - 3, doc.y - 3, 6)
+            doc.circle(doc.x, doc.y, radius=3)
             doc.line(doc.x - 3, doc.y, doc.x + 3, doc.y)
             doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
 
@@ -313,7 +313,7 @@ def test_multi_cell_newpos(tmp_path):
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
-            doc.circle(doc.x - 3, doc.y - 3, 6)
+            doc.circle(doc.x, doc.y, radius=3)
             doc.line(doc.x - 3, doc.y, doc.x + 3, doc.y)
             doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
 
@@ -355,7 +355,7 @@ def test_multi_cell_newpos_stretched(tmp_path):
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
-            doc.circle(doc.x - 3, doc.y - 3, 6)
+            doc.circle(doc.x, doc.y, radius=3)
             doc.line(doc.x - 3, doc.y, doc.x + 3, doc.y)
             doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
 
@@ -396,7 +396,7 @@ def test_multi_cell_newpos_charspaced(tmp_path):
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
-            doc.circle(doc.x - 3, doc.y - 3, 6)
+            doc.circle(doc.x, doc.y, radius=3)
             doc.line(doc.x - 3, doc.y, doc.x + 3, doc.y)
             doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
 
@@ -438,7 +438,7 @@ def test_multi_cell_newpos_combined(tmp_path):
         )
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
-            doc.circle(doc.x - 3, doc.y - 3, 6)
+            doc.circle(doc.x, doc.y, radius=3)
             doc.line(doc.x - 3, doc.y, doc.x + 3, doc.y)
             doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
 
@@ -506,7 +506,7 @@ def test_cell_lnpos(tmp_path):
 
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
-            doc.circle(doc.x - 3, doc.y - 3, 6)
+            doc.circle(doc.x, doc.y, radius=3)
             doc.line(doc.x - 3, doc.y, doc.x + 3, doc.y)
             doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
 
@@ -549,7 +549,7 @@ def test_multi_cell_ln_newpos(tmp_path):
 
         # mark the new position in the file with crosshairs for verification
         with doc.rotation(i * -15, doc.x, doc.y):
-            doc.circle(doc.x - 3, doc.y - 3, 6)
+            doc.circle(doc.x, doc.y, radius=3)
             doc.line(doc.x - 3, doc.y, doc.x + 3, doc.y)
             doc.line(doc.x, doc.y - 3, doc.x, doc.y + 3)
 
