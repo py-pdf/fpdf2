@@ -101,6 +101,8 @@ or [open a discussion](https://github.com/py-pdf/fpdf2/discussions).
 
 ### They use fpdf2 ###
 <!-- cf. Watchman Pypi & DavHau/pypi-deps-db -->
+Online classes & open source projects:
+
 * **Harvard University** uses `fpdf2` in their [CS50 introductory class](https://cs50.harvard.edu/python/2022/psets/8/shirtificate/)
 * [Undying Dusk](https://lucas-c.itch.io/undying-dusk) : a **video game in PDF format**, with a gameplay based on exploration and logic puzzles, in the tradition of dungeon crawlers
 * [OpenDroneMap](https://github.com/OpenDroneMap/ODM) : a command line toolkit for processing aerial drone imagery
@@ -111,7 +113,6 @@ or [open a discussion](https://github.com/py-pdf/fpdf2/discussions).
   `fpdf2` also has a demo script to convert a GIF into a one-page-per-frame PDF: [gif2pdf.py](https://github.com/py-pdf/fpdf2/blob/master/tutorial/gif2pdf.py)
 * [csv2pdf](https://github.com/TECH-SAVVY-GUY/csv2pdf) : convert CSV files to PDF files easily
 * [Planet-Matriarchy-RPG-CharGen](https://github.com/ShawnDriscoll/Planet-Matriarchy-RPG-CharGen) : a PyQt based desktop application (= `.exe` under Windows) that provides a RPG character sheet generator
-* [Petleo GMBH](https://petleo.net) :  a software company that offers digital solutions for veterinarians, pet owners and pet service providers.
 
 ### Usage statistics
 
