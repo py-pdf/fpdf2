@@ -289,6 +289,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://sezerbozkir.com/"><img src="https://avatars.githubusercontent.com/u/6623948?v=4?s=100" width="100px;" alt="Sezer Bozkır"/><br /><sub><b>Sezer Bozkır</b></sub></a><br /><a href="#translation-Natgho" title="Translation">🌍</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/odhyp"><img src="https://avatars.githubusercontent.com/u/78688788?v=4?s=100" width="100px;" alt="Odhy Pradhana"/><br /><sub><b>Odhy Pradhana</b></sub></a><br /><a href="#translation-odhyp" title="Translation">🌍</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://valarmorghulis.io"><img src="https://avatars.githubusercontent.com/u/90537?v=4?s=100" width="100px;" alt="Li"/><br /><sub><b>Li</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Asocrateslee" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://mattsch.com"><img src="https://avatars.githubusercontent.com/u/9328433?v=4?s=100" width="100px;" alt="Matthias Schoettle"/><br /><sub><b>Matthias Schoettle</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=mschoettle" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
