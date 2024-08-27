@@ -156,8 +156,9 @@ class Paragraph:  # pylint: disable=function-redefined
             bullet_fragments,
             max_width=self._region.get_width,
             margins=(
-                self.pdf.c_margin + (self.indent - fragments_width - bullet_r_margin),
-                self.pdf.c_margin,
+                self._region.h_margins[0]
+                + (self.indent - fragments_width - bullet_r_margin),
+                self._region.h_margins[1],
             ),
             align=self.text_align or self._region.text_align or Align.L,
             wrapmode=self.wrapmode,
@@ -182,7 +183,8 @@ class Paragraph:  # pylint: disable=function-redefined
         multi_line_break = MultiLineBreak(
             self._text_fragments,
             max_width=self._region.get_width,
-            margins=(self.pdf.c_margin + self.indent, self.pdf.c_margin),
+            margins=self._region.h_margins,
+            indent=self.indent,
             align=self.text_align or self._region.text_align or Align.L,
             print_sh=print_sh,
             wrapmode=self.wrapmode,
@@ -222,7 +224,7 @@ class ImageParagraph:
         title=None,
         alt_text=None,
     ):
-        self.region = region
+        self._region = region
         self.name = name
         if align:
             align = Align.coerce(align)
@@ -246,7 +248,7 @@ class ImageParagraph:
         # We do double duty as a "text line wrapper" here, since all the necessary
         # information is already in the ImageParagraph object.
         self.name, self.img, self.info = preload_image(
-            self.region.pdf.image_cache, self.name
+            self._region.pdf.image_cache, self.name
         )
         return self
 
@@ -261,11 +263,11 @@ class ImageParagraph:
         if self.height:
             h = self.height
         else:
-            native_h = self.info["h"] / self.region.pdf.k
+            native_h = self.info["h"] / self._region.pdf.k
         if self.width:
             w = self.width
         else:
-            native_w = self.info["w"] / self.region.pdf.k
+            native_w = self.info["w"] / self._region.pdf.k
             if native_w > col_width or self.fill_width:
                 w = col_width
             else:
@@ -281,7 +283,7 @@ class ImageParagraph:
             elif self.align == Align.C:
                 x += (col_width - w) / 2
         if is_svg:
-            return self.region.pdf._vector_image(
+            return self._region.pdf._vector_image(
                 name=self.name,
                 svg=self.img,
                 info=self.info,
@@ -294,7 +296,7 @@ class ImageParagraph:
                 alt_text=self.alt_text,
                 keep_aspect_ratio=self.keep_aspect_ratio,
             )
-        return self.region.pdf._raster_image(
+        return self._region.pdf._raster_image(
             name=self.name,
             img=self.img,
             info=self.info,
@@ -519,7 +521,6 @@ class TextRegion(ParagraphCollectorMixin):
                 if (
                     text_rendered
                     and tl_wrapper.first_line
-                    and not cur_bullet
                     and cur_paragraph.top_margin
                     and self.pdf.y > self.pdf.t_margin
                 ):
@@ -631,6 +632,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
         self.balance = balance
         total_w = self.extents.right - self.extents.left
         col_width = (total_w - (ncols - 1) * gutter) / ncols
+        self.h_margins = (pdf.c_margin, pdf.c_margin)
         # We calculate the column extents once in advance, and store them for lookup.
         c_left = self.extents.left
         self._cols = [Extents(c_left, c_left + col_width)]
