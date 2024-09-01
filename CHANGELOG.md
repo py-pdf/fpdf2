@@ -41,6 +41,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * In [text_columns()](https://py-pdf.github.io/fpdf2/extColumns.html), paragraph top/bottom margins didn't correctly trigger column breaks; [issue #1214](https://github.com/py-pdf/fpdf2/issues/1214)
 * [`fpdf.drawing.color_from_hex_string`](https://py-pdf.github.io/fpdf2/fpdf/drawing.html#fpdf.drawing.color_from_hex_string) did not test or mention accepting lowercase hex values.
 * handling of bidirectional text on `FPDF.get_string_width()` [issue #1231]
+* pdf.font_style now behaves like pdf.set_font() `FPDF.font_style` [issue #1223]
 * new translation of the tutorial in [Indonesian](https://py-pdf.github.io/fpdf2/Tutorial-id.html) - thanks to @odhyp
 ### Removed
 * an obscure and undocumented [feature](https://github.com/py-pdf/fpdf2/issues/1198) of [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html), which used to magically pass instance attributes as arguments.
