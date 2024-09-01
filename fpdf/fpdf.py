@@ -2845,6 +2845,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "text_mode",
                 "text_shaping",
                 "underline",
+                "_font_style",
             ):
                 setattr(self, key, value)
             else:
