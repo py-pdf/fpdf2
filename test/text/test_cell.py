@@ -178,6 +178,8 @@ def test_cell_markdown_escaped(tmp_path):
     pdf.add_page()
     pdf.set_font("Times", size=40)
     pdf.cell(text="**Lo\\rem** \\__Ipsum\\__ \\\\--dolor\\\\--", markdown=True)
+    pdf.write(text="\n")
+    pdf.cell(text="\\****BOLD**\\**", markdown=True)
     assert_pdf_equal(pdf, HERE / "cell_markdown_escaped.pdf", tmp_path)
 
 

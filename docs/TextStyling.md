@@ -194,7 +194,7 @@ pdf = FPDF()
 pdf.add_page()
 pdf.set_font("Times", size=50)
 pdf.cell(text="**Lorem** __Ipsum__ --dolor--", markdown=True, new_x='LEFT', new_y='NEXT')
-pdf.cell(text="\\**Lorem\\** \\\\__Ipsum\\\\__ --dolor--", markdown=True)
+pdf.cell(text="\\**Lorem\\** __\\Ipsum\\ __ --dolor--", markdown=True)
 pdf.output("markdown-styled.pdf")
 ```
 
