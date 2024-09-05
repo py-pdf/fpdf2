@@ -1943,7 +1943,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             return
 
         self.fonts[fontkey] = TTFFont(self, font_file_path, fontkey, style)
-    
+
     @property
     def font_style(self):
         return self._font_style
