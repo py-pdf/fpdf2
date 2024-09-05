@@ -3465,7 +3465,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "--",
             ]:
                 text = text[1:]  ## remove the escape character
-                for i in range(2):
+                for _ in range(2):
                     txt_frag.append(text[0])
                     text = text[1:]
                     yield frag()
