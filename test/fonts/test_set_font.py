@@ -55,6 +55,7 @@ def test_set_builtin_font(tmp_path):
             pdf.text(0, 10 + 40 * i + 10 * j, "Hello World!")
     assert_pdf_equal(pdf, HERE / "fonts_set_builtin_font.pdf", tmp_path)
 
+
 def test_issue_1223(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -68,6 +69,7 @@ def test_issue_1223(tmp_path):
             pdf.font_style = "I"
             par.write(text="Trois.")
     assert_pdf_equal(pdf, HERE / "fonts_issue_1223.pdf", tmp_path)
+
 
 def test_issue_66(tmp_path):
     pdf = FPDF()
