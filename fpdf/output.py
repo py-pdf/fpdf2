@@ -696,6 +696,8 @@ class OutputProducer:
                 self._add_pdf_obj(font_file_cs_obj, "fonts")
                 font_descriptor_obj.font_file2 = font_file_cs_obj
 
+                font.subset.pick.cache_clear()
+                font.subset.get_glyph.cache_clear()
                 font.close()
 
         return font_objs_per_index

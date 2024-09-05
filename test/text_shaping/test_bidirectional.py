@@ -195,6 +195,7 @@ def test_bidi_paragraph_direction(tmp_path):
     pdf.add_page()
     pdf.add_font(family="SBL_Hbrw", fname=HERE / "SBL_Hbrw.ttf")
     pdf.set_font("SBL_Hbrw", "", 18)
+    pdf.set_text_shaping(True)
 
     text1 = "אנגלית (באנגלית: English)"  # first char is RTL
     text2 = "The test is: אנגלית (באנגלית: English)"  # first char is LTR
@@ -233,3 +234,36 @@ def test_bidi_paragraph_direction(tmp_path):
         HERE / "bidi_paragraph_direction.pdf",
         tmp_path,
     )
+
+
+def test_bidi_get_string_width(tmp_path):
+    # issue 1231
+    teststrings = [
+        "الملوك",
+        "الملوك",
+        "test",
+        "الملوك",
+        "الملوك",
+        "الملوك",
+        "test",
+        "الملوك",
+        "test",
+    ]
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.c_margin = 0
+    pdf.add_font("noto", style="", fname=HERE / "NotoNaskhArabic-Regular.ttf")
+    pdf.set_text_shaping(use_shaping_engine=True)
+
+    pdf.set_font("noto", size=24)
+    pdf.set_draw_color(160)
+    pdf.set_line_width(0.3)
+    for string in teststrings:
+        pdf.set_x(110 - pdf.get_string_width(string))
+        pdf.rect(
+            pdf.get_x(), pdf.get_y() + 2, pdf.get_string_width(string), 13, style="D"
+        )
+        pdf.cell(h=17, text=string)
+        pdf.ln()
+    pdf.ln()
+    assert_pdf_equal(pdf, HERE / "bidi_get_string_width.pdf", tmp_path)

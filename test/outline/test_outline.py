@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, TitleStyle, errors
+from fpdf import FPDF, TextStyle, TitleStyle, errors
 
 from test.conftest import assert_pdf_equal
 
@@ -77,7 +77,7 @@ def test_2_pages_outline(tmp_path):
     pdf.set_font("Helvetica")
     pdf.set_section_title_styles(
         # Level 0 titles:
-        TitleStyle(
+        TextStyle(
             font_family="Times",
             font_style="B",
             font_size_pt=24,
@@ -88,6 +88,42 @@ def test_2_pages_outline(tmp_path):
             b_margin=0,
         ),
     )
+
+    pdf.add_page()
+    pdf.set_y(50)
+    pdf.set_font(size=40)
+    p(pdf, "Doc Title", align="C")
+    pdf.set_font(size=12)
+    pdf.insert_toc_placeholder(render_toc, pages=2)
+    for i in range(40):
+        pdf.start_section(f"Title {i}")
+        p(
+            pdf,
+            (
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit,"
+                " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+            ),
+        )
+    assert_pdf_equal(pdf, HERE / "2_pages_outline.pdf", tmp_path)
+
+
+def test_2_pages_outline_with_deprecated_TitleStyle(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("Helvetica")
+    with pytest.warns(DeprecationWarning):
+        pdf.set_section_title_styles(
+            # Level 0 titles:
+            TitleStyle(
+                font_family="Times",
+                font_style="B",
+                font_size_pt=24,
+                color=128,
+                underline=True,
+                t_margin=10,
+                l_margin=10,
+                b_margin=0,
+            ),
+        )
 
     pdf.add_page()
     pdf.set_y(50)
@@ -161,7 +197,7 @@ def test_toc_without_font_style(tmp_path):  # issue-676
     pdf = FPDF()
     pdf.set_font("helvetica")
     pdf.set_section_title_styles(
-        level0=TitleStyle(font_size_pt=28, l_margin=10), level1=TitleStyle()
+        level0=TextStyle(font_size_pt=28, l_margin=10), level1=TextStyle()
     )
     pdf.add_page()
     pdf.start_section("Title")
@@ -174,7 +210,7 @@ def test_toc_with_font_style_override_bold(tmp_path):  # issue-1072
     pdf.add_page()
     pdf.set_font("Helvetica", "B")
     pdf.set_section_title_styles(
-        TitleStyle("Helvetica", font_size_pt=20, color=(0, 0, 0))
+        TextStyle("Helvetica", font_size_pt=20, color=(0, 0, 0))
     )
     pdf.start_section("foo")
     assert_pdf_equal(pdf, HERE / "toc_with_font_style_override_bold1.pdf", tmp_path)
@@ -183,8 +219,43 @@ def test_toc_with_font_style_override_bold(tmp_path):  # issue-1072
     pdf.add_page()
     pdf.set_font("Helvetica", "B")
     pdf.set_section_title_styles(
-        TitleStyle("Helvetica", font_style="", font_size_pt=20, color=(0, 0, 0))
+        TextStyle("Helvetica", font_style="", font_size_pt=20, color=(0, 0, 0))
     )
+    pdf.start_section("foo")
+    assert_pdf_equal(pdf, HERE / "toc_with_font_style_override_bold2.pdf", tmp_path)
+
+
+def test_toc_without_font_style_with_deprecated_TitleStyle(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("helvetica")
+    with pytest.warns(DeprecationWarning):
+        pdf.set_section_title_styles(
+            level0=TitleStyle(font_size_pt=28, l_margin=10), level1=TitleStyle()
+        )
+    pdf.add_page()
+    pdf.start_section("Title")
+    pdf.start_section("Subtitle", level=1)
+    assert_pdf_equal(pdf, HERE / "toc_without_font_style.pdf", tmp_path)
+
+
+def test_toc_with_font_style_override_bold_with_deprecated_TitleStyle(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B")
+    with pytest.warns(DeprecationWarning):
+        pdf.set_section_title_styles(
+            TitleStyle("Helvetica", font_size_pt=20, color=(0, 0, 0))
+        )
+    pdf.start_section("foo")
+    assert_pdf_equal(pdf, HERE / "toc_with_font_style_override_bold1.pdf", tmp_path)
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B")
+    with pytest.warns(DeprecationWarning):
+        pdf.set_section_title_styles(
+            TitleStyle("Helvetica", font_style="", font_size_pt=20, color=(0, 0, 0))
+        )
     pdf.start_section("foo")
     assert_pdf_equal(pdf, HERE / "toc_with_font_style_override_bold2.pdf", tmp_path)
 
@@ -242,7 +313,7 @@ def p(pdf, text, **kwargs):
 def insert_test_content(pdf):
     pdf.set_section_title_styles(
         # Level 0 titles:
-        TitleStyle(
+        TextStyle(
             font_family="Times",
             font_style="B",
             font_size_pt=24,
@@ -253,7 +324,7 @@ def insert_test_content(pdf):
             b_margin=0,
         ),
         # Level 1 subtitles:
-        TitleStyle(
+        TextStyle(
             font_family="Times",
             font_style="B",
             font_size_pt=20,
@@ -264,6 +335,63 @@ def insert_test_content(pdf):
             b_margin=5,
         ),
     )
+
+    pdf.start_section("Title 1")
+    pdf.start_section("Subtitle 1.1", level=1)
+    p(
+        pdf,
+        (
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit,"
+            " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        ),
+    )
+    pdf.add_page()
+    pdf.start_section("Subtitle 1.2", level=1)
+    p(
+        pdf,
+        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    )
+    pdf.add_page()
+    pdf.start_section("Title 2")
+    pdf.start_section("Subtitle 2.1", level=1)
+    p(
+        pdf,
+        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    )
+    pdf.add_page()
+    pdf.start_section("Subtitle 2.2", level=1)
+    p(
+        pdf,
+        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    )
+
+
+def insert_test_content_with_deprecated_TitleStyle(pdf):
+    with pytest.warns(DeprecationWarning):
+        pdf.set_section_title_styles(
+            # Level 0 titles:
+            TitleStyle(
+                font_family="Times",
+                font_style="B",
+                font_size_pt=24,
+                color=128,
+                underline=True,
+                t_margin=10,
+                l_margin=10,
+                b_margin=0,
+            ),
+            # Level 1 subtitles:
+            TitleStyle(
+                font_family="Times",
+                font_style="B",
+                font_size_pt=20,
+                color=128,
+                underline=True,
+                t_margin=10,
+                l_margin=20,
+                b_margin=5,
+            ),
+        )
 
     pdf.start_section("Title 1")
     pdf.start_section("Subtitle 1.1", level=1)

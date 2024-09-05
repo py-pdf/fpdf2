@@ -26,7 +26,7 @@ def test_add_font_pkl():
     )
 
 
-def test_deprecation_warning_for_FPDF_CACHE_DIR():
+def test_deprecation_warning_for_FPDF_CACHE_DIR_and_FPDF_CACHE_MODE():
     # pylint: disable=import-outside-toplevel,pointless-statement,reimported
     from fpdf import fpdf
 
