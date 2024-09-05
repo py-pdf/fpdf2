@@ -3458,9 +3458,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             font_glyphs = []
 
         while text:
-            tlt = text[:3] ## get triples to check for escape character
-            if self.MARKDOWN_ESCAPE_CHARACTER == tlt[0] and tlt[1:] in ["**", "__", "--"]:
-                text = text[1:] ## remove the escape character
+            tlt = text[:3]  ## get triples to check for escape character
+            if self.MARKDOWN_ESCAPE_CHARACTER == tlt[0] and tlt[1:] in [
+                "**",
+                "__",
+                "--",
+            ]:
+                text = text[1:]  ## remove the escape character
                 for i in range(2):
                     txt_frag.append(text[0])
                     text = text[1:]
