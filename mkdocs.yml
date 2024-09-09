@@ -38,6 +38,7 @@ theme:
 
 markdown_extensions:
   - admonition
+    # Related theme doc: https://squidfunk.github.io/mkdocs-material/reference/admonitions/
   - md_in_html
   - pymdownx.critic
   - pymdownx.emoji:
@@ -171,6 +172,7 @@ nav:
   - 'Combine with pypdf':             'CombineWithPypdf.md'
   - 'Combine with pdfrw':             'CombineWithPdfrw.md'
   - 'Matplotlib, Pandas, Plotly, Pygal': 'CombineWithChartingLibs.md'
+  - 'Combine with Rough.js':          'CombineWithRoughJS.md'
   - 'Templating with Jinja':          'TemplatingWithJinja.md'
   - 'Usage in web APIs':              'UsageInWebAPI.md'
   - 'Database storage':               'DatabaseStorage.md'
