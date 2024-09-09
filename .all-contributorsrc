@@ -1254,6 +1254,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "stevesimmons",
+      "name": "Steve Simmons",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2830459?v=4",
+      "profile": "https://github.com/stevesimmons",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
