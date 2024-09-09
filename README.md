@@ -290,6 +290,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/odhyp"><img src="https://avatars.githubusercontent.com/u/78688788?v=4?s=100" width="100px;" alt="Odhy Pradhana"/><br /><sub><b>Odhy Pradhana</b></sub></a><br /><a href="#translation-odhyp" title="Translation">🌍</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://valarmorghulis.io"><img src="https://avatars.githubusercontent.com/u/90537?v=4?s=100" width="100px;" alt="Li"/><br /><sub><b>Li</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Asocrateslee" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://mattsch.com"><img src="https://avatars.githubusercontent.com/u/9328433?v=4?s=100" width="100px;" alt="Matthias Schoettle"/><br /><sub><b>Matthias Schoettle</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=mschoettle" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/stevesimmons"><img src="https://avatars.githubusercontent.com/u/2830459?v=4?s=100" width="100px;" alt="Steve Simmons"/><br /><sub><b>Steve Simmons</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Astevesimmons" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
