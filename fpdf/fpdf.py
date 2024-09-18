@@ -1888,7 +1888,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             family (str): optional name of the font family. Used as a reference for `FPDF.set_font()`.
                 If not provided, use the base name of the `fname` font path, without extension.
-            style (str): font style. "B" for bold, "I" for italic.
+            style (str): font style. "" for regular, include 'B' for bold, and/or 'I' for italic.
             fname (str): font file name. You can specify a relative or full path.
                 If the file is not found, it will be searched in `FPDF_FONT_DIR`.
             uni (bool): [**DEPRECATED since 2.5.1**] unused
