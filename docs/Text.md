@@ -4,13 +4,13 @@ There are several ways in fpdf to add text to a PDF document, each of which come
 
 ## Simple Text Methods
 
-| method | lines | markdown support | HTML support | accepts new current position | details                                                                                                                                                         |
-| -- | :--: | :--: | :--: | :--: |-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`.text()`](#text)  | one | no | no | fixed | Inserts a single-line text string with a precise location on the base line of the font.                                                                         |
-| [`.cell()`](#cell)  | one | yes | no | yes | Inserts a single-line text string within the boundaries of a given box, optionally with background and border.                                                  |
-| [`.multi_cell()`](#multi_cell) | several | yes | no | yes | Inserts a multi-line text string within the boundaries of a given box, optionally with background, border and padding.                                          |
-| [`.write()`](#write) | several | no | no | auto | Inserts a multi-line text string within the boundaries of the page margins, starting at the current x/y location (typically the end of the last inserted text). |
-| [`.write_html()`](#write_html) | several | no | yes | auto | An extension to `.write()`, with additional parsing of basic HTML tags.                                                                                         
+| method | lines | markdown support | HTML support | text shaping | accepts new current position | details                                                                                                                                                         |
+| -- | :--: | :--: | :--: | :--: | :--: |-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`.text()`](#text)  | one | no | no | no | fixed | Inserts a single-line text string with a precise location on the base line of the font.                                                                         |
+| [`.cell()`](#cell)  | one | yes | no | yes | yes | Inserts a single-line text string within the boundaries of a given box, optionally with background and border.                                                  |
+| [`.multi_cell()`](#multi_cell) | several | yes | no | yes | yes | Inserts a multi-line text string within the boundaries of a given box, optionally with background, border and padding.                                          |
+| [`.write()`](#write) | several | no | no | yes | auto | Inserts a multi-line text string within the boundaries of the page margins, starting at the current x/y location (typically the end of the last inserted text). |
+| [`.write_html()`](#write_html) | several | no | yes | yes | auto | An extension to `.write()`, with additional parsing of basic HTML tags.
 
 ## Flowable Text Regions
 

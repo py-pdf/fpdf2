@@ -353,7 +353,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         permissions=AccessPermission.all(),
         encrypt_metadata=False,
     ):
-        """ "
+        """
         Activate encryption of the document content.
 
         Args:
@@ -2551,6 +2551,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             y (float): ordinate of the origin
             text (str): string to print
             txt (str): [**DEPRECATED since v2.7.6**] string to print
+
+        Notes
+        -----
+
+        `text()` lacks many of the features available in `FPDF.write()`,
+        `FPDF.cell()` and `FPDF.multi_cell()` like markdown and text shaping.
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
