@@ -1272,6 +1272,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "bmiklautz",
+      "name": "Bernhard Miklautz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/195793?v=4",
+      "profile": "https://github.com/bmiklautz",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
