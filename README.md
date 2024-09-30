@@ -292,6 +292,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://mattsch.com"><img src="https://avatars.githubusercontent.com/u/9328433?v=4?s=100" width="100px;" alt="Matthias Schoettle"/><br /><sub><b>Matthias Schoettle</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=mschoettle" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/stevesimmons"><img src="https://avatars.githubusercontent.com/u/2830459?v=4?s=100" width="100px;" alt="Steve Simmons"/><br /><sub><b>Steve Simmons</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Astevesimmons" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/jhenriquelc"><img src="https://avatars.githubusercontent.com/u/67766856?v=4?s=100" width="100px;" alt="João Henrique"/><br /><sub><b>João Henrique</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=jhenriquelc" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/bmiklautz"><img src="https://avatars.githubusercontent.com/u/195793?v=4?s=100" width="100px;" alt="Bernhard Miklautz"/><br /><sub><b>Bernhard Miklautz</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=bmiklautz" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
