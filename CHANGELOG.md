@@ -34,7 +34,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): spacing before lists can now be adjusted via the `tag_styles` attribute - thanks to @lcgeneralprojects
 * file names are mentioned in errors when `fpdf2` fails to parse a SVG image
 ### Fixed
-* [`FPDF.local_context()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.local_context) used to leak styling during page breaks, when rendering `footer()` & `header()`
+* [`FPDF.local_context()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.local_context) used to leak styling during page breaks, when rendering `footer()` & `header()` - MR: [#1207](https://github.com/py-pdf/fpdf2/pulls/1207)
 * [`fpdf.drawing.DeviceCMYK`](https://py-pdf.github.io/fpdf2/fpdf/drawing.html#fpdf.drawing.DeviceCMYK) objects can now be passed to [`FPDF.set_draw_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [`FPDF.set_fill_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) and [`FPDF.set_text_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color) without raising a `ValueError`: [documentation](https://py-pdf.github.io/fpdf2/Text.html#text-formatting).
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): fixing rendering of `<hr>` tags, that do not trigger a page break anymore
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): fixed automatic page break when an image does not have enough vertical space to be rendered on a page
@@ -53,7 +53,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `fpdf.TitleStyle` has been renamed into `fpdf.TextStyle`
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): `tag_indents` introduced in the last version - Now the indentation can be provided through the `tag_styles` parameter, using the `.l_margin` of `TextStyle` instances
 ### Changed
-* [`FPDF.circle()`](https://py-pdf.github.io/fpdf2/fpdf.html#fpdf.fpdf.FPDF.circle) : the previous `r` parameter, that in fact defined the diamter, has been replaced by a new `radius` paremeter. The `x` & `y` parameters now define the circle **center**, instead of its top-left corner as it used to be - [issue #1245](https://github.com/py-pdf/fpdf2/issues/1245)
+* [`FPDF.local_context()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.local_context) used to treat `font_size` as a value in points. Now this is the role of `font_size_pt`, whereas `font_size` allows to set the font size into chosen document units (specified with `FPDF(unit=)`) - MR: [#1207](https://github.com/py-pdf/fpdf2/pulls/1207)
+* [`FPDF.circle()`](https://py-pdf.github.io/fpdf2/fpdf.html#fpdf.fpdf.FPDF.circle) : the previous `r` parameter, that in fact defined the diameter, has been replaced by a new `radius` paremeter. The `x` & `y` parameters now define the circle **center**, instead of its top-left corner as it used to be - [issue #1245](https://github.com/py-pdf/fpdf2/issues/1245)
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html) now raises an error when a single row is too high to be rendered on a single page
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): indentation of HTML elements can now be non-integer (float), and is now independent of font size and bullet strings.
 * improved performance of font glyph selection by using functools cache
