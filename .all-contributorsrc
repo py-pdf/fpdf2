@@ -1281,6 +1281,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "beldaz",
+      "name": "Bryn Jeffries",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1341993?v=4",
+      "profile": "https://github.com/beldaz",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
