@@ -364,7 +364,10 @@ def rgb8(r, g, b, a=None):
     Raises:
         ValueError: if any components are not in their valid interval.
     """
-    if a is not None:
+    if a is None:
+        if r == g == b:
+            return DeviceGray(r / 255.0)
+    else:
         a /= 255.0
 
     return DeviceRGB(r / 255.0, g / 255.0, b / 255.0, a)
@@ -434,9 +437,10 @@ def color_from_hex_string(hexstr):
     Parse an RGB color from a css-style 8-bit hexadecimal color string.
 
     Args:
-        hexstr (str): of the form `#RGB`, `#RGBA`, `#RRGGBB`, or `#RRGGBBAA`. Must
-            include the leading octothorp. Forms omitting the alpha field are
-            interpreted as not specifying the opacity, so it will not be explicitly set.
+        hexstr (str): of the form `#RGB`, `#RGBA`, `#RRGGBB`, or `#RRGGBBAA` (case
+            insensitive). Must include the leading octothorp. Forms omitting the alpha
+            field are interpreted as not specifying the opacity, so it will not be
+            explicitly set.
 
             An alpha value of `00` is fully transparent and `FF` is fully opaque.
 

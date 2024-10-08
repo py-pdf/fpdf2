@@ -4,6 +4,7 @@ black
 camelot-py
 endesive
 ghostscript  # required by camelot-py[base]: https://github.com/camelot-dev/camelot/blob/master/setup.py#L27
+numpy<2  # required by opencv-python, required for now to avoid an ImportError: numpy.core.multiarray failed to import, followed by an AttributeError: _ARRAY_API not found when importing cv2
 opencv-python  # required by camelot-py[base]: https://github.com/camelot-dev/camelot/blob/master/setup.py#L27
 pre-commit
 pylint

@@ -43,11 +43,11 @@ cols = pdf.text_columns()
 with cols:
     cols.write(text=LOREM_IPSUM[:400])
     with cols.paragraph(
-            text_align="J",
-            top_margin=pdf.font_size,
-            bottom_margin=pdf.font_size
-            ) as par:
-        par.write(text=LOREM_IPSUM[:400])
+        text_align="J",
+        top_margin=pdf.font_size,
+        bottom_margin=pdf.font_size
+    ) as paragraph:
+        paragraph.write(text=LOREM_IPSUM[:400])
     cols.write(text=LOREM_IPSUM[:400])
 ```
 ![Single Text Column](tcols-single.png)

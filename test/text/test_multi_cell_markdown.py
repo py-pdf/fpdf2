@@ -25,6 +25,22 @@ def test_multi_cell_markdown(tmp_path):
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown.pdf", tmp_path)
 
 
+def test_multi_cell_markdown_escaped(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", "", 32)
+    text = (  # Some text where styling occur over line breaks:
+        "Lorem ipsum \\ dolor amet, \\**consectetur adipiscing\\** elit,"
+        " sed do eiusmod \\\\__tempor incididunt\\\\__ ut labore et dolore --magna aliqua--."
+    )
+    pdf.multi_cell(
+        w=pdf.epw, text=text, markdown=True
+    )  # This is tricky to get working well
+    pdf.ln()
+    pdf.multi_cell(w=pdf.epw, text=text, markdown=True, align="L")
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_escaped.pdf", tmp_path)
+
+
 def test_multi_cell_markdown_with_ttf_fonts(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
@@ -42,6 +58,27 @@ def test_multi_cell_markdown_with_ttf_fonts(tmp_path):
     pdf.ln()
     pdf.multi_cell(w=pdf.epw, text=text, markdown=True, align="L")
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown_with_ttf_fonts.pdf", tmp_path)
+
+
+def test_multi_cell_markdown_with_ttf_fonts_escaped(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.add_font("Roboto", "", FONTS_DIR / "Roboto-Regular.ttf")
+    pdf.add_font("Roboto", "B", FONTS_DIR / "Roboto-Bold.ttf")
+    pdf.add_font("Roboto", "I", FONTS_DIR / "Roboto-Italic.ttf")
+    pdf.set_font("Roboto", size=32)
+    text = (  # Some text where styling occur over line breaks:
+        "Lorem ipsum \\ dolor, \\**consectetur adipiscing\\** elit,"
+        " eiusmod \\\\__tempor incididunt\\\\__ ut labore et dolore --magna aliqua--."
+    )
+    pdf.multi_cell(
+        w=pdf.epw, text=text, markdown=True
+    )  # This is tricky to get working well
+    pdf.ln()
+    pdf.multi_cell(w=pdf.epw, text=text, markdown=True, align="L")
+    assert_pdf_equal(
+        pdf, HERE / "multi_cell_markdown_with_ttf_fonts_escaped.pdf", tmp_path
+    )
 
 
 def test_multi_cell_markdown_missing_ttf_font():

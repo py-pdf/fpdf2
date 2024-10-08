@@ -38,6 +38,7 @@ theme:
 
 markdown_extensions:
   - admonition
+    # Related theme doc: https://squidfunk.github.io/mkdocs-material/reference/admonitions/
   - md_in_html
   - pymdownx.critic
   - pymdownx.emoji:
@@ -82,6 +83,8 @@ plugins:
         - 'Tutorial-ja'
         - 'Tutorial-nl'
         - 'Tutorial-pl'
+        - 'Tutorial-tr'
+        - 'Tutorial-id'
       #cover: false
       #back_cover: true
       #custom_template_path: TEMPLATES PATH
@@ -125,6 +128,8 @@ nav:
   - '简体中文教程':                   'Tutorial-zh.md'
   - '日本語チュートリアル':           'Tutorial-ja.md'
   - 'Handleiding in Dutch':    'Tutorial-nl.md'
+  - 'Türkçe Kılavuz':             'Tutorial-tr.md'
+  - 'Panduan dalam Bahasa Indonesia': 'Tutorial-id.md'
 - 'Page Layout':
   - 'Page Format and Orientation':    'PageFormatAndOrientation.md'
   - 'Margins':                        'Margins.md'
@@ -167,6 +172,7 @@ nav:
   - 'Combine with pypdf':             'CombineWithPypdf.md'
   - 'Combine with pdfrw':             'CombineWithPdfrw.md'
   - 'Matplotlib, Pandas, Plotly, Pygal': 'CombineWithChartingLibs.md'
+  - 'Combine with Rough.js':          'CombineWithRoughJS.md'
   - 'Templating with Jinja':          'TemplatingWithJinja.md'
   - 'Usage in web APIs':              'UsageInWebAPI.md'
   - 'Database storage':               'DatabaseStorage.md'

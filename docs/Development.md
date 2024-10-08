@@ -141,6 +141,14 @@ assert_pdf_equal(
 )
 ```
 
+### Visually comparing all PDF reference files modified on a branch
+This script will build an serve a single HTML page containing
+all PDF references file modified on your current `git` branch,
+and render them side by side with the PDF file from the `master` branch,
+so that you can quickly scroll and check for visible differences:
+
+    scripts/compare-changed-pdfs.py
+
 ## Testing performances
 
 ### Code speed & profiling

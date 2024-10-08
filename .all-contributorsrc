@@ -1180,6 +1180,116 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "smitelli",
+      "name": "Scott Smitelli",
+      "avatar_url": "https://avatars.githubusercontent.com/u/935080?v=4",
+      "profile": "https://www.scottsmitelli.com",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "lcgeneralprojects",
+      "name": "lcgeneralprojects",
+      "avatar_url": "https://avatars.githubusercontent.com/u/102996639?v=4",
+      "profile": "https://github.com/lcgeneralprojects",
+      "contributions": [
+        "bug",
+        "code"
+      ]
+    },
+    {
+      "login": "Makaze",
+      "name": "Christopher Lane",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2280429?v=4",
+      "profile": "https://github.com/Makaze",
+      "contributions": [
+        "doc",
+        "test"
+      ]
+    },
+    {
+      "login": "david-fed",
+      "name": "David",
+      "avatar_url": "https://avatars.githubusercontent.com/u/47917339?v=4",
+      "profile": "https://github.com/david-fed",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Natgho",
+      "name": "Sezer Bozkır",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6623948?v=4",
+      "profile": "https://sezerbozkir.com/",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "odhyp",
+      "name": "Odhy Pradhana",
+      "avatar_url": "https://avatars.githubusercontent.com/u/78688788?v=4",
+      "profile": "https://github.com/odhyp",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "socrateslee",
+      "name": "Li",
+      "avatar_url": "https://avatars.githubusercontent.com/u/90537?v=4",
+      "profile": "https://valarmorghulis.io",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "mschoettle",
+      "name": "Matthias Schoettle",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9328433?v=4",
+      "profile": "https://mattsch.com",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "stevesimmons",
+      "name": "Steve Simmons",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2830459?v=4",
+      "profile": "https://github.com/stevesimmons",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "jhenriquelc",
+      "name": "João Henrique",
+      "avatar_url": "https://avatars.githubusercontent.com/u/67766856?v=4",
+      "profile": "https://github.com/jhenriquelc",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "bmiklautz",
+      "name": "Bernhard Miklautz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/195793?v=4",
+      "profile": "https://github.com/bmiklautz",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "beldaz",
+      "name": "Bryn Jeffries",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1341993?v=4",
+      "profile": "https://github.com/beldaz",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,

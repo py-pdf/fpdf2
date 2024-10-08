@@ -802,3 +802,30 @@ def test_table_cell_fill_mode(tmp_path):
             pass
         pdf.ln()
     assert_pdf_equal(pdf, HERE / "table_cell_fill_mode.pdf", tmp_path)
+
+
+def test_table_with_very_long_text():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica")
+    with pytest.raises(ValueError) as error:
+        with pdf.table() as table:
+            row = table.row()
+            row.cell(LOREM_IPSUM)
+            # Adding columns to have the content of the 1st cell to overflow:
+            row.cell("")
+            row.cell("")
+    assert (
+        str(error.value)
+        == "The row with index 0 is too high and cannot be rendered on a single page"
+    )
+    with pytest.raises(ValueError) as error:
+        with pdf.table() as table:
+            row = table.row()
+            row.cell("")
+            row.cell("")
+            row.cell(LOREM_IPSUM)
+    assert (
+        str(error.value)
+        == "The row with index 0 is too high and cannot be rendered on a single page"
+    )

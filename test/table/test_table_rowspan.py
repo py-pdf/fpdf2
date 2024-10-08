@@ -168,9 +168,6 @@ External|East|4-1|4-2|4-3|4-4|4-5|<
     ]
 
     pdf.add_page()
-    y0 = pdf.h - pdf.b_margin
-    with pdf.local_context(**line_opts):
-        pdf.line(0, y0, pdf.w, y0)
 
     # simple table
     # with pdf.table(TABLE_DATA, **table_opts):
@@ -181,7 +178,9 @@ External|East|4-1|4-2|4-3|4-4|4-5|<
     # -- verify break occurs before the offending rowspan
     # -- verify header reproduction
     pdf.set_y(pdf.h - 85)
+    y0 = pdf.h - pdf.b_margin
     with pdf.local_context(**line_opts):
+        pdf.line(0, y0, pdf.w, y0)
         pdf.line(0, pdf.y, pdf.w, pdf.y)
     with pdf.table(TABLE_DATA, **table_opts):
         pass
