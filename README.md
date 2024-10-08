@@ -294,6 +294,9 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/jhenriquelc"><img src="https://avatars.githubusercontent.com/u/67766856?v=4?s=100" width="100px;" alt="João Henrique"/><br /><sub><b>João Henrique</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=jhenriquelc" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/bmiklautz"><img src="https://avatars.githubusercontent.com/u/195793?v=4?s=100" width="100px;" alt="Bernhard Miklautz"/><br /><sub><b>Bernhard Miklautz</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=bmiklautz" title="Documentation">📖</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/beldaz"><img src="https://avatars.githubusercontent.com/u/1341993?v=4?s=100" width="100px;" alt="Bryn Jeffries"/><br /><sub><b>Bryn Jeffries</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Abeldaz" title="Bug reports">🐛</a></td>
+    </tr>
   </tbody>
 </table>
 
