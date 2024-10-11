@@ -297,6 +297,7 @@ This library could only exist thanks to the dedication of many volunteers around
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/beldaz"><img src="https://avatars.githubusercontent.com/u/1341993?v=4?s=100" width="100px;" alt="Bryn Jeffries"/><br /><sub><b>Bryn Jeffries</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Abeldaz" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Benoite142"><img src="https://avatars.githubusercontent.com/u/151671747?v=4?s=100" width="100px;" alt="Benoit Charbonneau"/><br /><sub><b>Benoit Charbonneau</b></sub></a><br /><a href="#ideas-Benoite142" title="Ideas, Planning, & Feedback">🤔</a></td>
     </tr>
   </tbody>
 </table>
