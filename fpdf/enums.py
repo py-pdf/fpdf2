@@ -310,6 +310,35 @@ class TableBordersLayout(CoerciveEnum):
     "Draw only the top horizontal border, below the headings"
 
 
+# pylint: disable=super-with-arguments
+class CellBordersLayout(CoerciveIntFlag):
+    NONE = 0
+    LEFT = 1
+    RIGHT = 2
+    TOP = 4
+    BOTTOM = 8
+    ALL = LEFT | RIGHT | TOP | BOTTOM
+    INHERIT = 16
+
+    @classmethod
+    def coerce(cls, value):
+        if isinstance(value, int) and value > 16:
+            raise ValueError("INHERIT cannot be combined with other values")
+        return super(cls, cls).coerce(value)
+
+    def __and__(self, value):
+        value = super(CellBordersLayout, self).__and__(value)
+        if value > 16:
+            raise ValueError("INHERIT cannot be combined with other values")
+        return value
+
+    def __or__(self, value):
+        value = super(CellBordersLayout, self).__or__(value)
+        if value > 16:
+            raise ValueError("INHERIT cannot be combined with other values")
+        return value
+
+
 class TableCellFillMode(CoerciveEnum):
     "Defines which table cells to fill"
 
