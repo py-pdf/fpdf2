@@ -50,6 +50,15 @@ def test_insert_jpg_flatedecode(tmp_path):
         assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_flatedecode.pdf", tmp_path)
 
 
+def test_insert_jpg_lzwdecode(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.set_image_filter("LZWDecode")
+    pdf.add_page()
+    pdf.image(HERE / "insert_images_insert_jpg.jpg", x=15, y=15, h=140)
+    assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_lzwdecode.pdf", tmp_path)
+
+
 def test_insert_jpg_cmyk(tmp_path):
     pdf = fpdf.FPDF()
     pdf.compress = False
