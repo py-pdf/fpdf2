@@ -557,9 +557,9 @@ def _to_lzwdata(img, remove_slice=None, select_slice=None):
         data = data_with_padding
 
     # Start compression
-    result_codes = [
-        LZW_CLEAR_TABLE_MARKER
-    ]  # The encoder shall begin by issuing a clear-table code
+
+    # The encoder shall begin by issuing a clear-table code:
+    result_codes = [LZW_CLEAR_TABLE_MARKER]
     table, next_code, bits_per_code, max_code_value = clear_table()
 
     current_sequence = b""
