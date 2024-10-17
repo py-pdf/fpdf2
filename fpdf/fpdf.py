@@ -576,8 +576,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             raise FPDFException(f"Incorrect zoom display mode: {zoom}")
         self.page_layout = LAYOUT_ALIASES.get(layout, layout)
 
-    # Disabling this check - importing outside toplevel to check module is present
-    # pylint: disable=import-outside-toplevel, unused-import
     def set_text_shaping(
         self,
         use_shaping_engine: bool = True,
@@ -601,16 +599,18 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             script: a valid OpenType script tag like "arab" or "latn"
             language: a valid OpenType language tag like "eng" or "fra"
         """
-        if use_shaping_engine:
-            try:
-                import uharfbuzz
-            except ImportError as exc:
-                raise FPDFException(
-                    "The uharfbuzz package could not be imported, but is required for text shaping. Try: pip install uharfbuzz"
-                ) from exc
-        else:
+        if not use_shaping_engine:
             self.text_shaping = None
             return
+
+        try:
+            # pylint: disable=import-outside-toplevel, unused-import
+            import uharfbuzz
+        except ImportError as exc:
+            raise FPDFException(
+                "The uharfbuzz package could not be imported, but is required for text shaping. Try: pip install uharfbuzz"
+            ) from exc
+
         #
         # Features must be a dictionary contaning opentype features and a boolean flag
         # stating whether the feature should be enabled or disabled.
@@ -4149,8 +4149,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 bytes, an io.BytesIO, or a instance of `PIL.Image.Image`
             x (float, fpdf.enums.Align): optional horizontal position where to put the image on the page.
                 If not specified or equal to None, the current abscissa is used.
-                `Align.C` can also be passed to center the image horizontally;
-                and `Align.R` to place it along the right page margin
+                `fpdf.enums.Align.C` can also be passed to center the image horizontally;
+                and `fpdf.enums.Align.R` to place it along the right page margin
             y (float): optional vertical position where to put the image on the page.
                 If not specified or equal to None, the current ordinate is used.
                 After the call, the current ordinate is moved to the bottom of the image

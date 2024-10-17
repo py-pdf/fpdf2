@@ -8,8 +8,7 @@ HERE = Path(__file__).resolve().parent
 FONTS_DIR = HERE.parent / "fonts"
 
 
-def test_indi_text(tmp_path):
-    # issue #365
+def test_indi_text(tmp_path):  # issue #365
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font(family="Mangal", fname=HERE / "Mangal 400.ttf")
@@ -55,8 +54,7 @@ def test_text_replacement(tmp_path):
     assert_pdf_equal(pdf, HERE / "text_replacement.pdf", tmp_path)
 
 
-def test_kerning(tmp_path):
-    # issue #812
+def test_kerning(tmp_path):  # issue #812
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font(family="Dumbledor3Thin", fname=HERE / "Dumbledor3Thin.ttf")
@@ -70,8 +68,7 @@ def test_kerning(tmp_path):
     assert_pdf_equal(pdf, HERE / "kerning.pdf", tmp_path)
 
 
-def test_hebrew_diacritics(tmp_path):
-    # issue #549
+def test_hebrew_diacritics(tmp_path):  # issue #549
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font(family="SBL_Hbrw", fname=HERE / "SBL_Hbrw.ttf")
@@ -99,8 +96,7 @@ def test_ligatures(tmp_path):
     assert_pdf_equal(pdf, HERE / "ligatures.pdf", tmp_path)
 
 
-def test_arabic_right_to_left(tmp_path):
-    # issue #549
+def test_arabic_right_to_left(tmp_path):  # issue #549
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font(
@@ -171,8 +167,7 @@ def test_text_with_parentheses(tmp_path):
     assert_pdf_equal(pdf, HERE / "text_with_parentheses.pdf", tmp_path)
 
 
-def test_text_shaping_and_offset_rendering(tmp_path):
-    # issue #1075
+def test_text_shaping_and_offset_rendering(tmp_path):  # issue #1075
     pdf = FPDF()
     pdf.add_font("Garuda", fname=FONTS_DIR / "Garuda.ttf")
     pdf.set_font("Garuda", size=16)
@@ -365,3 +360,22 @@ def test_unicode_script_codes():
     for index, char in enumerate(char_list):
         assert get_unicode_script(char) == UnicodeScript(index)
     get_unicode_script.cache_clear()
+
+
+def test_disabling_text_shaping(tmp_path):  # issue #1287
+    pdf = FPDF()
+    pdf.add_font(fname=FONTS_DIR / "Garuda.ttf")
+    pdf.set_font("Garuda", size=24)
+    pdf.add_page()
+    assert not pdf.text_shaping
+    pdf.write(text="Pages {nb}")
+    pdf.ln()
+    pdf.set_text_shaping(True)
+    assert pdf.text_shaping
+    pdf.write(text="Pages {nb}")
+    pdf.ln()
+    pdf.set_text_shaping(False)
+    assert not pdf.text_shaping
+    print(f"{pdf.text_shaping=}")
+    pdf.write(text="Pages {nb}")
+    assert_pdf_equal(pdf, HERE / "disabling_text_shaping.pdf", tmp_path)
