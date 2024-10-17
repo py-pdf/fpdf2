@@ -66,6 +66,11 @@ TIFFBitRevTable = [
 ]
 # fmt: on
 
+LZW_CLEAR_TABLE_MARKER = 256  # Special code to indicate table reset
+LZW_EOD_MARKER = 257  # End-of-data marker
+LZW_INITIAL_BITS_PER_CODE = 9  # Initial code bit width
+LZW_MAX_BITS_PER_CODE = 12  # Maximum code bit width
+
 
 def preload_image(image_cache: ImageCache, name, dims=None):
     """
@@ -533,11 +538,6 @@ def transcode_monochrome(img):
 
 
 def _to_lzwdata(img, remove_slice=None, select_slice=None):
-    CLEAR_TABLE_MARKER = 256  # Special code to indicate table reset
-    EOD_MARKER = 257  # End-of-data marker
-    INITIAL_BITS_PER_CODE = 9  # Initial code bit width
-    MAX_BITS_PER_CODE = 12  # Maximum code bit width
-
     data = bytearray(img.tobytes())
 
     if remove_slice:
@@ -547,7 +547,6 @@ def _to_lzwdata(img, remove_slice=None, select_slice=None):
 
     if img.mode == "1":
         row_size = ceil(img.size[0] / 8)
-        data_with_padding = data
     else:
         channels_count = len(data) // (img.size[0] * img.size[1])
         row_size = img.size[0] * channels_count
@@ -555,62 +554,11 @@ def _to_lzwdata(img, remove_slice=None, select_slice=None):
         for i in range(0, len(data), row_size):
             data_with_padding.extend(b"\0")
             data_with_padding.extend(data[i : i + row_size])
-
-    data = data_with_padding
-
-    def clear_table():
-        """
-        Reset the encoding table and coding state to initial conditions.
-
-        """
-
-        table = {bytes([i]): i for i in range(256)}
-        next_code = EOD_MARKER + 1
-        bits_per_code = INITIAL_BITS_PER_CODE
-        max_code_value = (1 << bits_per_code) - 1
-        return table, next_code, bits_per_code, max_code_value
-
-    def pack_codes_into_bytes(codes):
-        """
-        Convert the list of result codes into a continuous byte stream, with codes packed as per the code bit-width.
-        The bit-width starts at 9 bits and expands as needed.
-
-        """
-
-        (
-            _,
-            next_code,
-            bits_per_code,
-            max_code_value,
-        ) = clear_table()
-        buffer = 0
-        bits_in_buffer = 0
-        output = bytearray()
-
-        for code in codes:
-            buffer = (buffer << bits_per_code) | code
-            bits_in_buffer += bits_per_code
-
-            while bits_in_buffer >= 8:
-                bits_in_buffer -= 8
-                output.append((buffer >> bits_in_buffer) & 0xFF)
-
-            if code == CLEAR_TABLE_MARKER:
-                _, next_code, bits_per_code, max_code_value = clear_table()
-            elif code != EOD_MARKER:
-                next_code += 1
-                if next_code > max_code_value and bits_per_code < MAX_BITS_PER_CODE:
-                    bits_per_code += 1
-                    max_code_value = (1 << bits_per_code) - 1
-
-        if bits_in_buffer > 0:
-            output.append((buffer << (8 - bits_in_buffer)) & 0xFF)
-
-        return bytes(output)
+        data = data_with_padding
 
     # Start compression
     result_codes = [
-        CLEAR_TABLE_MARKER
+        LZW_CLEAR_TABLE_MARKER
     ]  # The encoder shall begin by issuing a clear-table code
     table, next_code, bits_per_code, max_code_value = clear_table()
 
@@ -626,15 +574,15 @@ def _to_lzwdata(img, remove_slice=None, select_slice=None):
             result_codes.append(table[current_sequence])
 
             # Add the new sequence to the table if there's room
-            if next_code <= (1 << MAX_BITS_PER_CODE) - 1:
+            if next_code <= (1 << LZW_MAX_BITS_PER_CODE) - 1:
                 table[next_sequence] = next_code
                 next_code += 1
-                if next_code > max_code_value and bits_per_code < MAX_BITS_PER_CODE:
+                if next_code > max_code_value and bits_per_code < LZW_MAX_BITS_PER_CODE:
                     bits_per_code += 1
                     max_code_value = (1 << bits_per_code) - 1
             else:
                 # If the table is full, emit a clear-table command
-                result_codes.append(CLEAR_TABLE_MARKER)
+                result_codes.append(LZW_CLEAR_TABLE_MARKER)
                 table, next_code, bits_per_code, max_code_value = clear_table()
 
             # Start new sequence
@@ -644,9 +592,61 @@ def _to_lzwdata(img, remove_slice=None, select_slice=None):
     if current_sequence:
         result_codes.append(table[current_sequence])
 
-    result_codes.append(EOD_MARKER)
+    result_codes.append(LZW_EOD_MARKER)
 
     return pack_codes_into_bytes(result_codes)
+
+
+def pack_codes_into_bytes(codes):
+    """
+    Convert the list of result codes into a continuous byte stream, with codes packed as per the code bit-width.
+    The bit-width starts at 9 bits and expands as needed.
+
+    """
+
+    (
+        _,
+        next_code,
+        bits_per_code,
+        max_code_value,
+    ) = clear_table()
+    buffer = 0
+    bits_in_buffer = 0
+    output = bytearray()
+
+    for code in codes:
+        buffer = (buffer << bits_per_code) | code
+        bits_in_buffer += bits_per_code
+
+        while bits_in_buffer >= 8:
+            bits_in_buffer -= 8
+            output.append((buffer >> bits_in_buffer) & 0xFF)
+
+        if code == LZW_CLEAR_TABLE_MARKER:
+            _, next_code, bits_per_code, max_code_value = clear_table()
+        elif code != LZW_EOD_MARKER:
+            next_code += 1
+            if next_code > max_code_value and bits_per_code < LZW_MAX_BITS_PER_CODE:
+                bits_per_code += 1
+                max_code_value = (1 << bits_per_code) - 1
+
+    if bits_in_buffer > 0:
+        output.append((buffer << (8 - bits_in_buffer)) & 0xFF)
+
+    return bytes(output)
+
+
+def clear_table():
+    """
+    Reset the encoding table and coding state to initial conditions.
+
+    """
+
+    table = {bytes([i]): i for i in range(256)}
+    next_code = LZW_EOD_MARKER + 1
+    bits_per_code = LZW_INITIAL_BITS_PER_CODE
+    max_code_value = (1 << bits_per_code) - 1
+    return table, next_code, bits_per_code, max_code_value
 
 
 def _to_data(img, image_filter, **kwargs):
