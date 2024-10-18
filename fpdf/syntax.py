@@ -315,7 +315,7 @@ class PDFDate:
         if self.with_tz:
             assert self.date.tzinfo
             if self.date.tzinfo == timezone.utc:
-                out_str = f"D:{self.date:%Y%m%d%H%M%SZ%H'%M'}"
+                out_str = f"D:{self.date:%Y%m%d%H%M%SZ}"
             else:
                 out_str = f"D:{self.date:%Y%m%d%H%M%S%z}"
                 out_str = out_str[:-2] + "'" + out_str[-2:] + "'"

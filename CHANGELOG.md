@@ -25,6 +25,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support for `align=` in [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html#setting-table-column-widths). Due to this correction, tables are now properly horizontally aligned on the page by default. This was always specified in the documentation, but was not in effect until now. You can revert to have left-aligned tables by passing `align="LEFT"` to `FPDF.table()`.
 * `FPDF.set_text_shaping(False)` was broken since version 2.7.8 and is now working properly - [issue #1287](https://github.com/py-pdf/fpdf2/issues/1287)
 * fixed bug where cells with `rowspan`, `colspan` > 1 and null text were not displayed properly - [issue #1293](https://github.com/py-pdf/fpdf2/issues/1293)
+* `CreationDate` metadata used a wrong timezone offset for UTC - [issue #1261](https://github.com/py-pdf/fpdf2/issues/1261)
 ### Changed
 * improved logic for handling text substitution of the total number of pages, ensuring compatibility with text shaping - [issue #1090](https://github.com/py-pdf/fpdf2/issues/1090)
 * all [`AnnotationDict`](https://py-pdf.github.io/fpdf2/fpdf/annotations.html) properties can now be passed to `FPDF.text_annotation()`, `FPDF.free_text_annotation()`,  `FPDF.add_action()`, `FPDF.add_text_markup_annotation()` & `FPDF.ink_annotation()`. This includes `title`, `color`, `border_width`...
