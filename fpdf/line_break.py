@@ -240,7 +240,7 @@ class Fragment:
         return (
             self.graphics_state == other.graphics_state
             and self.k == other.k
-            and type(self) == type(other)
+            and isinstance(other, self.__class__)
         )
 
     def get_character_width(self, character: str, print_sh=False, initial_cs=True):
