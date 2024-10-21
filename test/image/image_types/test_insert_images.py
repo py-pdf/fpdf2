@@ -56,7 +56,12 @@ def test_insert_jpg_lzwdecode(tmp_path):
     pdf.set_image_filter("LZWDecode")
     pdf.add_page()
     pdf.image(HERE / "insert_images_insert_jpg.jpg", x=15, y=15, h=140)
-    assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_lzwdecode.pdf", tmp_path)
+    if sys.platform in ("cygwin", "win32"):
+        assert_pdf_equal(
+            pdf, HERE / "image_types_insert_jpg_lzwdecode_windows.pdf", tmp_path
+        )
+    else:
+        assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_lzwdecode.pdf", tmp_path)
 
 
 def test_insert_jpg_cmyk(tmp_path):
