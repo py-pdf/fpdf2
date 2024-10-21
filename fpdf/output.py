@@ -17,7 +17,7 @@ from io import BytesIO
 from .annotations import PDFAnnotation
 from .enums import SignatureFlag
 from .errors import FPDFException
-from .line_break import TotalPagesAliasFragment
+from .line_break import TotalPagesSubstitutionFragment
 from .image_datastructures import RasterImageInfo
 from .outline import build_outline_objs
 from .sign import Signature, sign_content
@@ -245,7 +245,7 @@ class PDFPage(PDFObject):
         "_index",
         "_width_pt",
         "_height_pt",
-        "_aliases",
+        "_text_substitution_fragments",
     )
 
     def __init__(
@@ -268,7 +268,7 @@ class PDFPage(PDFObject):
         self.parent = None  # must always be set before calling .serialize()
         self._index = index
         self._width_pt, self._height_pt = None, None
-        self._aliases: list[TotalPagesAliasFragment] = []
+        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
 
     def index(self):
         return self._index
@@ -281,11 +281,11 @@ class PDFPage(PDFObject):
         "Accepts a pair (width, height) in the unit specified to FPDF constructor"
         self._width_pt, self._height_pt = width_pt, height_pt
 
-    def get_aliases(self):
-        return self._aliases
+    def get_text_substitutions(self):
+        return self._text_substitution_fragments
 
-    def add_alias(self, alias):
-        self._aliases.append(alias)
+    def add_text_substitution(self, alias):
+        self._text_substitution_fragments.append(alias)
 
 
 class PDFPagesRoot(PDFObject):

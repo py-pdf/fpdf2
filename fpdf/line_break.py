@@ -235,6 +235,14 @@ class Fragment:
                 w += char_spacing * (char_len - 1)
         return w / self.k
 
+    def has_same_style(self, other: "Fragment"):
+        """Returns if 2 fragments are equivalent other than the characters/string"""
+        return (
+            self.graphics_state == other.graphics_state
+            and self.k == other.k
+            and type(self) == type(other)
+        )
+
     def get_character_width(self, character: str, print_sh=False, initial_cs=True):
         """
         Return the width of a single character out of the stored text.
@@ -351,7 +359,7 @@ class Fragment:
         return ret
 
 
-class TotalPagesAliasFragment(Fragment):
+class TotalPagesSubstitutionFragment(Fragment):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -465,8 +473,7 @@ class CurrentLine:
         self,
         character: str,
         character_width: float,
-        graphics_state: dict,
-        k: float,
+        original_fragment: Fragment,
         original_fragment_index: int,
         original_character_index: int,
         height: float,
@@ -475,16 +482,21 @@ class CurrentLine:
         assert character != NEWLINE
         self.height = height
         if not self.fragments:
-            self.fragments.append(Fragment("", graphics_state, k, url))
+            self.fragments.append(
+                original_fragment.__class__(
+                    "", original_fragment.graphics_state, original_fragment.k, url
+                )
+            )
 
         # characters are expected to be grouped into fragments by font and
         # character attributes. If the last existing fragment doesn't match
         # the properties of the pending character -> add a new fragment.
-        elif (
-            graphics_state != self.fragments[-1].graphics_state
-            or k != self.fragments[-1].k
-        ):
-            self.fragments.append(Fragment("", graphics_state, k, url))
+        elif not original_fragment.has_same_style(self.fragments[-1]):
+            self.fragments.append(
+                original_fragment.__class__(
+                    "", original_fragment.graphics_state, original_fragment.k, url
+                )
+            )
         active_fragment = self.fragments[-1]
 
         if character in BREAKING_SPACE_SYMBOLS_STR:
@@ -511,8 +523,8 @@ class CurrentLine:
                 self.number_of_spaces,
                 HYPHEN,
                 character_width,
-                graphics_state,
-                k,
+                original_fragment.graphics_state,
+                original_fragment.k,
             )
 
         if character != SOFT_HYPHEN or self.print_sh:
@@ -570,8 +582,7 @@ class CurrentLine:
             self.add_character(
                 self.hyphen_break_hint.curchar,
                 self.hyphen_break_hint.curchar_width,
-                self.hyphen_break_hint.graphics_state,
-                self.hyphen_break_hint.k,
+                self.hyphen_break_hint,
                 self.hyphen_break_hint.original_fragment_index,
                 self.hyphen_break_hint.original_character_index,
                 self.height,
@@ -736,8 +747,7 @@ class MultiLineBreak:
             current_line.add_character(
                 character,
                 character_width,
-                current_fragment.graphics_state,
-                current_fragment.k,
+                current_fragment,
                 self.fragment_index,
                 self.character_index,
                 current_font_height * self.line_height,

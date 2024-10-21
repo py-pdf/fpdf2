@@ -101,7 +101,12 @@ from .image_parsing import (
     preload_image,
 )
 from .linearization import LinearizedOutputProducer
-from .line_break import Fragment, MultiLineBreak, TextLine, TotalPagesAliasFragment
+from .line_break import (
+    Fragment,
+    MultiLineBreak,
+    TextLine,
+    TotalPagesSubstitutionFragment,
+)
 from .outline import OutlineSection
 from .output import (
     OutputProducer,
@@ -250,9 +255,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         but is less compatible with the PDF spec.
         """
         self.page = 0  # current page number
-        self.pages: Dict[int, PDFPage] = (
-            {}
-        )  # array of PDFPage objects starting at index 1
+        # array of PDFPage objects starting at index 1:
+        self.pages: Dict[int, PDFPage] = {}
         self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
         # map page numbers to a set of font indices:
         self.fonts_used_per_page_number = defaultdict(set)
@@ -3177,8 +3181,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
             )
             for i, frag in enumerate(fragments):
-                if isinstance(frag, TotalPagesAliasFragment):
-                    self.pages[self.page].add_alias(frag)
+                if isinstance(frag, TotalPagesSubstitutionFragment):
+                    self.pages[self.page].add_text_substitution(frag)
                 if frag.graphics_state["text_color"] != last_used_color:
                     # allow to change color within the line of text.
                     last_used_color = frag.graphics_state["text_color"]
@@ -3436,7 +3440,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     text.split(self.str_alias_nb_pages)
                 ):
                     if seq > 0:
-                        yield TotalPagesAliasFragment(
+                        yield TotalPagesSubstitutionFragment(
                             self.str_alias_nb_pages,
                             self._get_current_graphics_state(),
                             self.k,
@@ -3515,7 +3519,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         "I" if in_italics else ""
                     )
                     gstate["underline"] = in_underline
-                    yield TotalPagesAliasFragment(
+                    yield TotalPagesSubstitutionFragment(
                         self.str_alias_nb_pages,
                         gstate,
                         self.k,
@@ -5268,14 +5272,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             # Generating .buffer based on .pages:
             if self._toc_placeholder:
                 self._insert_table_of_contents()
-            for page in self.pages.values():
-                for alias in page.get_aliases():
-                    page.contents = page.contents.replace(
-                        alias.get_alias_string().encode("latin-1"),
-                        alias.render_alias_substitution(str(self.pages_count)).encode(
-                            "latin-1"
-                        ),
-                    )
+            if self.str_alias_nb_pages:
+                for page in self.pages.values():
+                    for alias in page.get_text_substitutions():
+                        page.contents = page.contents.replace(
+                            alias.get_alias_string().encode("latin-1"),
+                            alias.render_alias_substitution(
+                                str(self.pages_count)
+                            ).encode("latin-1"),
+                        )
             if linearize:
                 output_producer_class = LinearizedOutputProducer
             output_producer = output_producer_class(self)
