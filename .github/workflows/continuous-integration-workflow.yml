@@ -39,6 +39,12 @@ jobs:
           pylint fpdf test tutorial/tuto*.py
           bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
           semgrep scan --config auto --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
+      - name: Scan current project
+        if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
+        uses: anchore/scan-action@v3
+        with:
+          path: "."
+          fail-build: true
       - name: Ensure code has been autoformatted with black 🖌️
         if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
         run: black --check .

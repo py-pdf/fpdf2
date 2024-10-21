@@ -118,9 +118,10 @@ Online classes & open source projects:
 
 - [PyPI download stats](https://pypistats.org/packages/fpdf2) - Downloads per release on [Pepy](https://pepy.tech/project/fpdf2)
   - [pip trends: fpdf2 VS other PDF rendering libs](https://piptrends.com/compare/fpdf2-vs-fpdf-vs-pypdf-vs-borb-vs-reportlab)
-- packages using `fpdf2` can be listed using [GitHub Dependency graph: Dependents](https://github.com/py-pdf/fpdf2/network/dependents),
-[Wheelodex](https://www.wheelodex.org/projects/fpdf2/rdepends/) or [Watchman Pypi](http://www.watchman-pypi.com).
-Some are also listed on [its libraries.io page](https://libraries.io/pypi/fpdf2).
+- packages using `fpdf2` can be listed using:
+    * [Wheelodex](https://www.wheelodex.org/projects/fpdf2/rdepends/)
+    * [deps.dev](https://deps.dev/pypi/fpdf2/2.8.1/dependents)
+    * [packages.ecosyste.ms](https://packages.ecosyste.ms/registries/pypi.org/packages/fpdf2/dependent_packages)
 
 [![Star history](https://api.star-history.com/svg?repos=py-pdf/fpdf2)](https://star-history.com/#py-pdf/fpdf2)
 

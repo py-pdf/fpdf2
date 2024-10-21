@@ -43,10 +43,12 @@ pdf.add_page()
 pdf.set_line_width(2)
 pdf.set_draw_color(240)
 pdf.set_fill_color(r=230, g=30, b=180)
-pdf.circle(x=50, y=50, r=50, style="FD")
+pdf.circle(x=50, y=50, radius=50, style="FD")
 pdf.output("circle.pdf")
 ```
 ![](circle.png)
+
+!!! warning "This method changed parameters in [release 2.8.0](https://github.com/py-pdf/fpdf2/releases/tag/2.8.0)"
 
 ## Ellipse ##
 
@@ -162,7 +164,7 @@ pdf.output("solid_arc.pdf")
 ![](solid_arc.png)
 
 ## Bezier Curve ##
-_New in [:octicons-tag-24: 2.7.10](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.8.0](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 Using [`bezier()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.bezier) to create a cubic Bézier curve:
 ```python

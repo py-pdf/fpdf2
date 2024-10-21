@@ -2,7 +2,7 @@
 max-line-length=150
 
 # Disable superflous / noisy rules:
-disable = attribute-defined-outside-init, consider-using-max-builtin, consider-using-min-builtin, invalid-name, method-hidden, missing-docstring, multiple-imports, too-few-public-methods, too-many-arguments, too-many-instance-attributes, too-many-nested-blocks, too-many-branches, too-many-lines, too-many-locals, too-many-public-methods, too-many-statements, use-dict-literal, wrong-import-order
+disable = attribute-defined-outside-init, consider-using-max-builtin, consider-using-min-builtin, invalid-name, method-hidden, missing-docstring, multiple-imports, too-few-public-methods, too-many-arguments, too-many-instance-attributes, too-many-nested-blocks, too-many-branches, too-many-lines, too-many-locals, too-many-positional-arguments, too-many-public-methods, too-many-statements, use-dict-literal, wrong-import-order
 
 # Enable some rules that are not activated by default:
 enable = bad-inline-option, deprecated-pragma, file-ignored, use-symbolic-message-instead, useless-suppression

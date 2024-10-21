@@ -120,7 +120,7 @@ from .unicode_script import UnicodeScript, get_unicode_script
 from .util import get_scale_factor, Padding
 
 # Public global variables:
-FPDF_VERSION = "2.7.9"
+FPDF_VERSION = "2.8.1"
 PAGE_FORMATS = {
     "a3": (841.89, 1190.55),
     "a4": (595.28, 841.89),
@@ -355,7 +355,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         permissions=AccessPermission.all(),
         encrypt_metadata=False,
     ):
-        """ "
+        """
         Activate encryption of the document content.
 
         Args:
@@ -402,7 +402,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             pre_code_font (str): [**DEPRECATED since v2.7.9**]
                 font to use for `<pre>` & `<code>` blocks - Set `tag_styles` instead
             warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags. Defaults to `True`.
-            tag_indents (dict): [**DEPRECATED since v2.7.10**]
+            tag_indents (dict): [**DEPRECATED since v2.8.0**]
                 mapping of HTML tag names to numeric values representing their horizontal left identation. - Set `tag_styles` instead
             tag_styles (dict[str, fpdf.fonts.TextStyle]): mapping of HTML tag names to `fpdf.TextStyle` or `fpdf.FontFace` instances
         """
@@ -578,8 +578,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             raise FPDFException(f"Incorrect zoom display mode: {zoom}")
         self.page_layout = LAYOUT_ALIASES.get(layout, layout)
 
-    # Disabling this check - importing outside toplevel to check module is present
-    # pylint: disable=import-outside-toplevel, unused-import
     def set_text_shaping(
         self,
         use_shaping_engine: bool = True,
@@ -603,16 +601,18 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             script: a valid OpenType script tag like "arab" or "latn"
             language: a valid OpenType language tag like "eng" or "fra"
         """
-        if use_shaping_engine:
-            try:
-                import uharfbuzz
-            except ImportError as exc:
-                raise FPDFException(
-                    "The uharfbuzz package could not be imported, but is required for text shaping. Try: pip install uharfbuzz"
-                ) from exc
-        else:
+        if not use_shaping_engine:
             self.text_shaping = None
             return
+
+        try:
+            # pylint: disable=import-outside-toplevel, unused-import
+            import uharfbuzz
+        except ImportError as exc:
+            raise FPDFException(
+                "The uharfbuzz package could not be imported, but is required for text shaping. Try: pip install uharfbuzz"
+            ) from exc
+
         #
         # Features must be a dictionary contaning opentype features and a boolean flag
         # stating whether the feature should be enabled or disabled.
@@ -1540,22 +1540,24 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
 
     @check_page
-    def circle(self, x, y, r, style=None):
+    def circle(self, x, y, radius, style=None):
         """
         Outputs a circle.
         It can be drawn (border only), filled (with no border) or both.
 
+        WARNING: This method changed parameters in [release 2.8.0](https://github.com/py-pdf/fpdf2/releases/tag/2.8.0)
+
         Args:
             x (float): Abscissa of upper-left bounding box.
             y (float): Ordinate of upper-left bounding box.
-            r (float): Radius of the circle.
+            radius (float): Radius of the circle.
             style (str): Style of rendering. Possible values are:
 
             * `D` or None: draw border. This is the default value.
             * `F`: fill
             * `DF` or `FD`: draw and fill
         """
-        self.ellipse(x, y, r, r, style)
+        self.ellipse(x - radius, y - radius, 2 * radius, 2 * radius, style)
 
     @check_page
     def regular_polygon(self, x, y, numSides, polyWidth, rotateDegrees=0, style=None):
@@ -1890,7 +1892,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             family (str): optional name of the font family. Used as a reference for `FPDF.set_font()`.
                 If not provided, use the base name of the `fname` font path, without extension.
-            style (str): font style. "B" for bold, "I" for italic.
+            style (str): font style. "" for regular, include 'B' for bold, and/or 'I' for italic.
             fname (str): font file name. You can specify a relative or full path.
                 If the file is not found, it will be searched in `FPDF_FONT_DIR`.
             uni (bool): [**DEPRECATED since 2.5.1**] unused
@@ -2553,6 +2555,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             y (float): ordinate of the origin
             text (str): string to print
             txt (str): [**DEPRECATED since v2.7.6**] string to print
+
+        Notes
+        -----
+
+        `text()` lacks many of the features available in `FPDF.write()`,
+        `FPDF.cell()` and `FPDF.multi_cell()` like markdown and text shaping.
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
@@ -2733,39 +2741,42 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 draw_some_stuff()
 
         The affected settings are those controlled by GraphicsStateMixin and drawing.GraphicsStyle:
-            allow_transparency
-            auto_close
-            blend_mode
-            char_vpos
-            char_spacing
-            dash_pattern
-            denom_lift
-            denom_scale
-            draw_color
-            fill_color
-            fill_opacity
-            font_family
-            font_size
-            font_size_pt
-            font_style
-            font_stretching
-            intersection_rule
-            line_width
-            nom_lift
-            nom_scale
-            paint_rule
-            stroke_cap_style
-            stroke_join_style
-            stroke_miter_limit
-            stroke_opacity
-            sub_lift
-            sub_scale
-            sup_lift
-            sup_scale
-            text_color
-            text_mode
-            text_shaping
-            underline
+
+        * allow_transparency
+        * auto_close
+        * blend_mode
+        * char_vpos
+        * char_spacing
+        * dash_pattern
+        * denom_lift
+        * denom_scale
+        * draw_color
+        * fill_color
+        * fill_opacity
+        * font_family
+        * font_size
+        * font_size_pt
+        * font_style
+        * font_stretching
+        * intersection_rule
+        * line_width
+        * nom_lift
+        * nom_scale
+        * paint_rule
+        * stroke_cap_style
+        * stroke_join_style
+        * stroke_miter_limit
+        * stroke_opacity
+        * sub_lift
+        * sub_scale
+        * sup_lift
+        * sup_scale
+        * text_color
+        * text_mode
+        * text_shaping
+        * underline
+
+        Font size can be specified in document units with `font_size` or in points with `font_size_pt`.
 
         Args:
             **kwargs: key-values settings to set at the beggining of this context.
@@ -4175,8 +4186,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 bytes, an io.BytesIO, or a instance of `PIL.Image.Image`
             x (float, fpdf.enums.Align): optional horizontal position where to put the image on the page.
                 If not specified or equal to None, the current abscissa is used.
-                `Align.C` can also be passed to center the image horizontally;
-                and `Align.R` to place it along the right page margin
+                `fpdf.enums.Align.C` can also be passed to center the image horizontally;
+                and `fpdf.enums.Align.R` to place it along the right page margin
             y (float): optional vertical position where to put the image on the page.
                 If not specified or equal to None, the current ordinate is used.
                 After the call, the current ordinate is moved to the bottom of the image

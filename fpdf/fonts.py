@@ -173,7 +173,7 @@ class TitleStyle(TextStyle):
     def __init__(self, *args, **kwargs):
         warnings.warn(
             (
-                "fpdf.TitleStyle is deprecated since 2.7.10."
+                "fpdf.TitleStyle is deprecated since 2.8.0."
                 " It has been replaced by fpdf.TextStyle."
             ),
             DeprecationWarning,

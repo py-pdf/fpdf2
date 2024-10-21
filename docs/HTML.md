@@ -133,7 +133,7 @@ However, **Pull Request are welcome** to implement missing features!
 
 ### Default font
 
-_New in [:octicons-tag-24: 2.7.10](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.8.0](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 The default font used by [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) is **Times**.
 
@@ -178,7 +178,7 @@ pdf.output("html_helvetica.pdf")
 
 ### Page breaks
 
-_New in [:octicons-tag-24: 2.7.10](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.8.0](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 Page breaks can be triggered explicitly using the [break-before](https://developer.mozilla.org/en-US/docs/Web/CSS/break-before) or [break-after](https://developer.mozilla.org/en-US/docs/Web/CSS/break-after) CSS properties.
 For exemple you can use:
