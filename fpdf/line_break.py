@@ -484,17 +484,25 @@ class CurrentLine:
         if not self.fragments:
             self.fragments.append(
                 original_fragment.__class__(
-                    "", original_fragment.graphics_state, original_fragment.k, url
+                    characters="",
+                    graphics_state=original_fragment.graphics_state,
+                    k=original_fragment.k,
+                    link=url,
                 )
             )
 
         # characters are expected to be grouped into fragments by font and
         # character attributes. If the last existing fragment doesn't match
         # the properties of the pending character -> add a new fragment.
-        elif not original_fragment.has_same_style(self.fragments[-1]):
+        elif isinstance(
+            original_fragment, Fragment
+        ) and not original_fragment.has_same_style(self.fragments[-1]):
             self.fragments.append(
                 original_fragment.__class__(
-                    "", original_fragment.graphics_state, original_fragment.k, url
+                    characters="",
+                    graphics_state=original_fragment.graphics_state,
+                    k=original_fragment.k,
+                    link=url,
                 )
             )
         active_fragment = self.fragments[-1]
