@@ -550,12 +550,12 @@ def _to_lzwdata(img, remove_slice=None, select_slice=None):
     else:
         channels_count = len(data) // (img.size[0] * img.size[1])
         row_size = img.size[0] * channels_count
-        data_with_padding = bytearray()
-        for i in range(0, len(data), row_size):
-            data_with_padding.extend(b"\0")
-            data_with_padding.extend(data[i : i + row_size])
-        data = data_with_padding
 
+    data_with_padding = bytearray()
+    for i in range(0, len(data), row_size):
+        data_with_padding.extend(b"\0")
+        data_with_padding.extend(data[i : i + row_size])
+    data = data_with_padding
     # Start compression
 
     # The encoder shall begin by issuing a clear-table code:
