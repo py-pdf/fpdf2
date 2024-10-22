@@ -341,8 +341,7 @@ class GraphicsStateMixin:
 
     @text_shaping.setter
     def text_shaping(self, v):
-        if v:
-            self.__statestack[-1]["text_shaping"] = v
+        self.__statestack[-1]["text_shaping"] = v
 
     def font_face(self):
         """

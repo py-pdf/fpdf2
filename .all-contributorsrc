@@ -1299,6 +1299,15 @@
       "contributions": [
         "ideas"
       ]
+    },
+    {
+      "login": "philj56",
+      "name": "Philip Jones",
+      "avatar_url": "https://avatars.githubusercontent.com/u/13610623?v=4",
+      "profile": "https://github.com/philj56",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
