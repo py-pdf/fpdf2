@@ -284,8 +284,8 @@ class PDFPage(PDFObject):
     def get_text_substitutions(self):
         return self._text_substitution_fragments
 
-    def add_text_substitution(self, alias):
-        self._text_substitution_fragments.append(alias)
+    def add_text_substitution(self, fragment):
+        self._text_substitution_fragments.append(fragment)
 
 
 class PDFPagesRoot(PDFObject):

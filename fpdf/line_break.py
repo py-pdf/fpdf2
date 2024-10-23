@@ -360,20 +360,45 @@ class Fragment:
 
 
 class TotalPagesSubstitutionFragment(Fragment):
+    """ 
+    A special type of text fragment that represents a placeholder for the total number of pages 
+    in a PDF document.
+
+    A placeholder will be generated during the initial content rendering phase of a PDF document. 
+    This placeholder is later replaced by the total number of pages in the document when the final
+    output is being produced.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.uuid = uuid4()
 
-    def get_alias_string(self):
-        return f"::alias:{self.uuid}::"
+    def get_placeholder_string(self):
+        """
+        This method returns a placeholder string containing a universally unique identifier (UUID4), 
+        ensuring that the placeholder is distinct and does not conflict with other placeholders 
+        within the document.
+        """
+        return f"::placeholder:{self.uuid}::"
 
     def render_pdf_text(self, *args, **kwargs):
+        """
+        This method is invoked during the page content rendering phase, which is common to all 
+        `Fragment` instances. It stores the provided arguments and keyword arguments to preserve 
+        the necessary information and graphic state for the final substitution rendering. 
+
+        The method then returns the unique placeholder string.
+        """
         self._render_args = args
         self._render_kwargs = kwargs
-        return self.get_alias_string()
+        return self.get_placeholder_string()
 
-    def render_alias_substitution(self, replacement_text: str):
+    def render_text_substitution(self, replacement_text: str):
+        """
+        This method is invoked at the output phase. It calls `render_pdf_text()` from the superclass
+        to render the fragment with the preserved rendering state (stored in `_render_args` and `_render_kwargs`)
+        and insert the final text in place of the placeholder.
+        """
         self.characters = list(replacement_text)
         return super().render_pdf_text(*self._render_args, **self._render_kwargs)
 

@@ -5274,10 +5274,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 self._insert_table_of_contents()
             if self.str_alias_nb_pages:
                 for page in self.pages.values():
-                    for alias in page.get_text_substitutions():
+                    for substitution_item in page.get_text_substitutions():
                         page.contents = page.contents.replace(
-                            alias.get_alias_string().encode("latin-1"),
-                            alias.render_alias_substitution(
+                            substitution_item.get_placeholder_string().encode("latin-1"),
+                            substitution_item.render_text_substitution(
                                 str(self.pages_count)
                             ).encode("latin-1"),
                         )
