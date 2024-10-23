@@ -360,11 +360,11 @@ class Fragment:
 
 
 class TotalPagesSubstitutionFragment(Fragment):
-    """ 
-    A special type of text fragment that represents a placeholder for the total number of pages 
+    """
+    A special type of text fragment that represents a placeholder for the total number of pages
     in a PDF document.
 
-    A placeholder will be generated during the initial content rendering phase of a PDF document. 
+    A placeholder will be generated during the initial content rendering phase of a PDF document.
     This placeholder is later replaced by the total number of pages in the document when the final
     output is being produced.
     """
@@ -375,17 +375,17 @@ class TotalPagesSubstitutionFragment(Fragment):
 
     def get_placeholder_string(self):
         """
-        This method returns a placeholder string containing a universally unique identifier (UUID4), 
-        ensuring that the placeholder is distinct and does not conflict with other placeholders 
+        This method returns a placeholder string containing a universally unique identifier (UUID4),
+        ensuring that the placeholder is distinct and does not conflict with other placeholders
         within the document.
         """
         return f"::placeholder:{self.uuid}::"
 
     def render_pdf_text(self, *args, **kwargs):
         """
-        This method is invoked during the page content rendering phase, which is common to all 
-        `Fragment` instances. It stores the provided arguments and keyword arguments to preserve 
-        the necessary information and graphic state for the final substitution rendering. 
+        This method is invoked during the page content rendering phase, which is common to all
+        `Fragment` instances. It stores the provided arguments and keyword arguments to preserve
+        the necessary information and graphic state for the final substitution rendering.
 
         The method then returns the unique placeholder string.
         """

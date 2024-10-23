@@ -5276,7 +5276,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 for page in self.pages.values():
                     for substitution_item in page.get_text_substitutions():
                         page.contents = page.contents.replace(
-                            substitution_item.get_placeholder_string().encode("latin-1"),
+                            substitution_item.get_placeholder_string().encode(
+                                "latin-1"
+                            ),
                             substitution_item.render_text_substitution(
                                 str(self.pages_count)
                             ).encode("latin-1"),
