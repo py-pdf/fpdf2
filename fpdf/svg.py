@@ -11,7 +11,6 @@ from numbers import Number
 from typing import NamedTuple
 
 from fontTools.svgLib.path import parse_path
-from fontTools.pens.basePen import BasePen
 
 from .enums import PathPaintRule
 
@@ -31,6 +30,7 @@ from .drawing import (
     GraphicsContext,
     GraphicsStyle,
     PaintedPath,
+    PathPen,
     ClippingPath,
     Transform,
 )
@@ -551,61 +551,6 @@ def convert_transforms(tfstr):
     return transform
 
 
-class PathPen(BasePen):
-    def __init__(self, pdf_path, *args, **kwargs):
-        self.pdf_path = pdf_path
-        self.last_was_line_to = False
-        self.first_is_move = None
-        super().__init__(*args, **kwargs)
-
-    def _moveTo(self, pt):
-        self.pdf_path.move_to(*pt)
-        self.last_was_line_to = False
-        if self.first_is_move is None:
-            self.first_is_move = True
-
-    def _lineTo(self, pt):
-        self.pdf_path.line_to(*pt)
-        self.last_was_line_to = True
-        if self.first_is_move is None:
-            self.first_is_move = False
-
-    def _curveToOne(self, pt1, pt2, pt3):
-        self.pdf_path.curve_to(
-            x1=pt1[0], y1=pt1[1], x2=pt2[0], y2=pt2[1], x3=pt3[0], y3=pt3[1]
-        )
-        self.last_was_line_to = False
-        if self.first_is_move is None:
-            self.first_is_move = False
-
-    def _qCurveToOne(self, pt1, pt2):
-        self.pdf_path.quadratic_curve_to(x1=pt1[0], y1=pt1[1], x2=pt2[0], y2=pt2[1])
-        self.last_was_line_to = False
-        if self.first_is_move is None:
-            self.first_is_move = False
-
-    def arcTo(self, rx, ry, rotation, arc, sweep, end):
-        self.pdf_path.arc_to(
-            rx=rx,
-            ry=ry,
-            rotation=rotation,
-            large_arc=arc,
-            positive_sweep=sweep,
-            x=end[0],
-            y=end[1],
-        )
-        self.last_was_line_to = False
-        if self.first_is_move is None:
-            self.first_is_move = False
-
-    def _closePath(self):
-        # The fonttools parser inserts an unnecessary explicit line back to the start
-        # point of the path before actually closing it. Let's get rid of that again.
-        if self.last_was_line_to:
-            self.pdf_path.remove_last_path_element()
-        self.pdf_path.close()
-
-
 @force_nodocument
 def svg_path_converter(pdf_path, svg_path):
     pen = PathPen(pdf_path)
@@ -688,7 +633,7 @@ class SVGObject:
         if viewbox is None:
             self.viewbox = None
         else:
-            viewbox.strip()
+            viewbox = viewbox.strip()
             vx, vy, vw, vh = [float(num) for num in NUMBER_SPLIT.split(viewbox)]
             if (vw < 0) or (vh < 0):
                 raise ValueError(f"invalid negative width/height in viewbox {viewbox}")
