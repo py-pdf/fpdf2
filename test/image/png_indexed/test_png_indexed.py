@@ -24,6 +24,9 @@ def test_png_indexed_no_transparency(tmp_path):
     pdf.set_image_filter("DCTDecode")
     pdf.image(HERE / "flower1.png", x=150, y=10, w=50, h=50)
 
+    pdf.set_image_filter("LZWDecode")
+    pdf.image(HERE / "flower1.png", x=10, y=150, w=50, h=50)
+
     # PA images
     img = Image.open(HERE / "flower1.png").convert("PA")
     assert img.mode == "PA", "img.mode is not PA"
@@ -36,6 +39,9 @@ def test_png_indexed_no_transparency(tmp_path):
 
     pdf.set_image_filter("JPXDecode")
     pdf.image(img, x=150, y=80, w=50, h=50)
+
+    pdf.set_image_filter("LZWDecode")
+    pdf.image(img, x=10, y=220, w=50, h=50)
 
     assert_pdf_equal(pdf, HERE / "image_png_indexed_no_transparency.pdf", tmp_path)
 
@@ -99,5 +105,16 @@ def test_png_indexed_transparency(tmp_path):
 
     pdf.set_image_filter("JPXDecode")
     pdf.image(img, x=150, y=210, w=50, h=90)
+
+    pdf.add_page()
+
+    pdf.set_image_filter("LZWDecode")
+    pdf.image(HERE / "flower2.png", x=10, y=10, w=50, h=90)
+
+    pdf.set_image_filter("LZWDecode")
+    pdf.image(HERE / "flower3.png", x=10, y=110, w=50, h=90)
+
+    pdf.set_image_filter("LZWDecode")
+    pdf.image(img, x=10, y=210, w=50, h=90)
 
     assert_pdf_equal(pdf, HERE / "image_png_indexed_transparency.pdf", tmp_path)
