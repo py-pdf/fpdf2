@@ -1088,7 +1088,11 @@ class HTML2FPDF(HTMLParser):
                     self.td_th.get("bgcolor", self.tr.get("bgcolor", None))
                 )
                 style = FontFace(fill_color=bgcolor) if bgcolor else None
-                self.table_row.cell(text="", style=style)
+                colspan = int(self.td_th.get("colspan", "1"))
+                rowspan = int(self.td_th.get("rowspan", "1"))
+                self.table_row.cell(
+                    text="", style=style, colspan=colspan, rowspan=rowspan
+                )
             self.td_th = None
         if tag == "font":
             if self.style_stack:
