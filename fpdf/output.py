@@ -18,6 +18,7 @@ from fontTools import subset as ftsubset
 from .annotations import PDFAnnotation
 from .enums import PageLabelStyle, SignatureFlag
 from .errors import FPDFException
+from .line_break import TotalPagesSubstitutionFragment
 from .image_datastructures import RasterImageInfo
 from .outline import build_outline_objs
 from .sign import Signature, sign_content
@@ -279,6 +280,7 @@ class PDFPage(PDFObject):
         "_width_pt",
         "_height_pt",
         "_page_label",
+        "_text_substitution_fragments",
     )
 
     def __init__(
@@ -302,6 +304,7 @@ class PDFPage(PDFObject):
         self._index = index
         self._width_pt, self._height_pt = None, None
         self._page_label: PDFPageLabel = None
+        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
 
     def index(self):
         return self._index
@@ -319,6 +322,12 @@ class PDFPage(PDFObject):
 
     def get_page_label(self) -> PDFPageLabel:
         return self._page_label
+
+    def get_text_substitutions(self):
+        return self._text_substitution_fragments
+
+    def add_text_substitution(self, fragment):
+        self._text_substitution_fragments.append(fragment)
 
 
 class PDFPagesRoot(PDFObject):

@@ -364,18 +364,22 @@ def test_unicode_script_codes():
 
 def test_disabling_text_shaping(tmp_path):  # issue #1287
     pdf = FPDF()
-    pdf.add_font(fname=FONTS_DIR / "Garuda.ttf")
-    pdf.set_font("Garuda", size=24)
+    pdf.add_font(family="ViaodaLibre", fname=HERE / "ViaodaLibre-Regular.ttf")
+    pdf.set_font("ViaodaLibre", size=24)
     pdf.add_page()
     assert not pdf.text_shaping
-    pdf.write(text="Pages {nb}")
+    pdf.cell(text="final soft stuff", new_x="LEFT", new_y="NEXT")
     pdf.ln()
     pdf.set_text_shaping(True)
     assert pdf.text_shaping
-    pdf.write(text="Pages {nb}")
+    pdf.cell(text="final soft stuff", new_x="LEFT", new_y="NEXT")
     pdf.ln()
     pdf.set_text_shaping(False)
     assert not pdf.text_shaping
-    print(f"{pdf.text_shaping=}")
-    pdf.write(text="Pages {nb}")
+    pdf.cell(text="final soft stuff", new_x="LEFT", new_y="NEXT")
+    pdf.ln()
+    pdf.set_text_shaping(True)
+    assert pdf.text_shaping
+    pdf.cell(text="final soft stuff", new_x="LEFT", new_y="NEXT")
+    pdf.ln()
     assert_pdf_equal(pdf, HERE / "disabling_text_shaping.pdf", tmp_path)

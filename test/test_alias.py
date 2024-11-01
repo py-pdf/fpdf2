@@ -110,3 +110,23 @@ def test_page_label(tmp_path):
     pdf.cell(text="Appendix 5")
 
     assert_pdf_equal(pdf, HERE / "page_label.pdf", tmp_path)
+
+def test_alias_with_shaping(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_font("Quicksand", style="", fname=HERE / "fonts" / "Quicksand-Regular.otf")
+    pdf.add_page()
+    pdf.set_font("Quicksand", "", 24)
+    pdf.set_text_shaping(True)
+    pdf.write(text="Pages {nb}")
+    pdf.ln()
+    pdf.cell(text="{nb}", new_x="left", new_y="next")
+    pdf.write_html("<h1>{nb}</h1>")
+    pdf.multi_cell(w=pdf.epw, text="Number of pages: {nb}\nAgain:{nb}")
+    pdf.add_page()
+    pdf.set_text_shaping(False)
+    pdf.write(text="Pages {nb}")
+    pdf.ln()
+    pdf.cell(text="{nb}", new_x="left", new_y="next")
+    pdf.write_html("<h1>{nb}</h1>")
+    pdf.multi_cell(w=pdf.epw, text="Number of pages: {nb}\nAgain:{nb}")
+    assert_pdf_equal(pdf, HERE / "alias_with_text_shaping.pdf", tmp_path)

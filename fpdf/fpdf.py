@@ -109,8 +109,13 @@ from .image_parsing import (
     load_image,
     preload_image,
 )
-from .line_break import Fragment, MultiLineBreak, TextLine
 from .linearization import LinearizedOutputProducer
+from .line_break import (
+    Fragment,
+    MultiLineBreak,
+    TextLine,
+    TotalPagesSubstitutionFragment,
+)
 from .outline import OutlineSection
 from .output import (
     ZOOM_CONFIGS,
@@ -3238,6 +3243,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
             )
             for i, frag in enumerate(fragments):
+                if isinstance(frag, TotalPagesSubstitutionFragment):
+                    self.pages[self.page].add_text_substitution(frag)
                 if frag.graphics_state["text_color"] != last_used_color:
                     # allow to change color within the line of text.
                     last_used_color = frag.graphics_state["text_color"]
@@ -3490,6 +3497,22 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def _parse_chars(self, text: str, markdown: bool) -> Iterator[Fragment]:
         "Split text into fragments"
         if not markdown and not self.text_shaping and not self._fallback_font_ids:
+            if self.str_alias_nb_pages:
+                for seq, fragment_text in enumerate(
+                    text.split(self.str_alias_nb_pages)
+                ):
+                    if seq > 0:
+                        yield TotalPagesSubstitutionFragment(
+                            self.str_alias_nb_pages,
+                            self._get_current_graphics_state(),
+                            self.k,
+                        )
+                    if fragment_text:
+                        yield Fragment(
+                            fragment_text, self._get_current_graphics_state(), self.k
+                        )
+                return
+
             yield Fragment(text, self._get_current_graphics_state(), self.k)
             return
         txt_frag, in_bold, in_italics, in_underline = (
@@ -3548,6 +3571,23 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 if txt_frag and current_text_script:
                     yield frag()
                 current_text_script = text_script
+
+            if self.str_alias_nb_pages:
+                if text[: len(self.str_alias_nb_pages)] == self.str_alias_nb_pages:
+                    if txt_frag:
+                        yield frag()
+                    gstate = self._get_current_graphics_state()
+                    gstate["font_style"] = ("B" if in_bold else "") + (
+                        "I" if in_italics else ""
+                    )
+                    gstate["underline"] = in_underline
+                    yield TotalPagesSubstitutionFragment(
+                        self.str_alias_nb_pages,
+                        gstate,
+                        self.k,
+                    )
+                    text = text[len(self.str_alias_nb_pages) :]
+                    continue
 
             # Check that previous & next characters are not identical to the marker:
             if markdown:
@@ -4738,26 +4778,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
         self.pages[self.page].annots.append(annotation)
 
-    def _substitute_page_number(self):
-        substituted = False
-        # Replace number of pages in fonts using subsets (unicode)
-        alias = self.str_alias_nb_pages.encode("utf-16-be")
-        encoded_nb = str(self.pages_count).encode("utf-16-be")
-        for page in self.pages.values():
-            substituted |= alias in page.contents
-            page.contents = page.contents.replace(alias, encoded_nb)
-        # Now repeat for no pages in non-subset fonts
-        alias = self.str_alias_nb_pages.encode("latin-1")
-        encoded_nb = str(self.pages_count).encode("latin-1")
-        for page in self.pages.values():
-            substituted |= alias in page.contents
-            page.contents = page.contents.replace(alias, encoded_nb)
-        if substituted:
-            LOGGER.debug(
-                "Substitution of '%s' was performed in the document",
-                self.str_alias_nb_pages,
-            )
-
     def _insert_table_of_contents(self):
         # Doc has been closed but we want to write to self.pages[self.page] instead of self.buffer:
         tocp = self._toc_placeholder
@@ -5315,7 +5335,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if self._toc_placeholder:
                 self._insert_table_of_contents()
             if self.str_alias_nb_pages:
-                self._substitute_page_number()
+                for page in self.pages.values():
+                    for substitution_item in page.get_text_substitutions():
+                        page.contents = page.contents.replace(
+                            substitution_item.get_placeholder_string().encode(
+                                "latin-1"
+                            ),
+                            substitution_item.render_text_substitution(
+                                str(self.pages_count)
+                            ).encode("latin-1"),
+                        )
             if linearize:
                 output_producer_class = LinearizedOutputProducer
             output_producer = output_producer_class(self)

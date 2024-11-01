@@ -1317,6 +1317,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "whoisltd",
+      "name": "Dat Le",
+      "avatar_url": "https://avatars.githubusercontent.com/u/41822445?v=4",
+      "profile": "https://linktr.ee/whoisltd",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
