@@ -2,7 +2,7 @@
 
 **Presentation mode** can usually be enabled with the `CTRL + L` shortcut.
 
-As of june 2021, the features described below are onored by Adobe Acrobat reader,
+As of june 2021, the features described below are honored by Adobe Acrobat reader,
 but ignored by Sumatra PDF reader.
 
 ## Page display duration
