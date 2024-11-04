@@ -111,6 +111,7 @@ def test_page_label(tmp_path):
 
     assert_pdf_equal(pdf, HERE / "page_label.pdf", tmp_path)
 
+
 def test_alias_with_shaping(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_font("Quicksand", style="", fname=HERE / "fonts" / "Quicksand-Regular.otf")

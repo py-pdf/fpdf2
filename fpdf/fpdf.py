@@ -131,8 +131,9 @@ from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ, PDFArray, PDFDate
 from .table import Table, draw_box_borders
 from .text_region import TextRegionMixin, TextColumns
+from .transitions import Transition
 from .unicode_script import UnicodeScript, get_unicode_script
-from .util import get_scale_factor, Padding
+from .util import get_scale_factor, int2roman, int_to_letters, Padding
 
 # Public global variables:
 FPDF_VERSION = "2.8.1"
@@ -292,7 +293,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.oversized_images_ratio = 2  # number of pixels per UserSpace point
         self.struct_builder = StructureTreeBuilder()
         self._toc_placeholder = None  # optional ToCPlaceholder instance
-        self._outline = []  # list of OutlineSection
+        self._outline: list[OutlineSection] = []  # list of OutlineSection
+        self._toc_rendering = (
+            False  # flag set true while rendering the table of contents
+        )
+        self._toc_allow_page_insertion = (
+            False  # allow page insertion when writing the table of contents
+        )
+        self._toc_inserted_pages = 0  # number of pages inserted
         self._sign_key = None
         self.section_title_styles = {}  # level -> TextStyle
 
@@ -850,14 +858,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def add_page(
         self,
-        orientation="",
-        format="",
-        same=False,
-        duration=0,
-        transition=None,
-        label_style=None,
-        label_prefix=None,
-        label_start=None,
+        orientation: str = "",
+        format: str = "",
+        same: bool = False,
+        duration: float = 0,
+        transition: Transition = None,
+        label_style: Union[str, PageLabelStyle] = None,
+        label_prefix: str = None,
+        label_start: int = None,
     ):
         """
         Adds a new page to the document.
@@ -881,6 +889,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 from another page to the given page during a presentation.
                 Can be configured globally through the `.page_transition` FPDF property.
                 As of june 2021, onored by Adobe Acrobat reader, but ignored by Sumatra PDF reader.
+            label_style (str or PageLabelStyle): Defines the numbering style for the numeric portion of each
+                page label. Possible values are:
+                - "D": Decimal Arabic numerals.
+                - "R": Uppercase Roman numerals.
+                - "r": Lowercase Roman numerals.
+                - "A": Uppercase letters (A to Z for the first 26 pages, followed by AA to ZZ, etc.).
+                - "a": Lowercase letters (a to z for the first 26 pages, followed by aa to zz, etc.).
+            label_prefix (str): Prefix string applied to the page label, preceding the numeric portion.
+            label_start (int): Starting number for the first page of a page label range.
         """
         if self.buffer:
             raise FPDFException(
@@ -980,6 +997,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self, orientation, format, same, duration, transition, new_page=True
     ):
         self.page += 1
+        if self._toc_rendering and self._toc_allow_page_insertion:
+            self._toc_inserted_pages += 1
+            self.page = len(self.pages) + 1
+            new_page = True
         if new_page:
             page = PDFPage(
                 contents=bytearray(),
@@ -1037,7 +1058,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """Get the current page number"""
         return self.page
 
-    def get_page_label(self, default_page_no=True):
+    def get_page_label(self):
         label_style = None
         label_prefix = None
         label_start = None
@@ -1055,7 +1076,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 break
 
         if not label_style and not label_prefix and not label_start:
-            return self.page_no() if default_page_no else ""
+            return self.page_no()
 
         ret = label_prefix if label_prefix else ""
         if label_style:
@@ -4786,9 +4807,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # Disabling footer & header, as they have already been called:
         self.footer = lambda *args, **kwargs: None
         self.header = lambda *args, **kwargs: None
+        self._toc_rendering = (
+            True  # flag it is rendering ToC for page breaking function
+        )
         tocp.render_function(self, self._outline)
+        self._toc_rendering = False  # set ToC rendering flag off
         expected_final_page = tocp.start_page + tocp.pages - 1
-        if self.page != expected_final_page:
+        if self.page != expected_final_page and not self._toc_allow_page_insertion:
             too = "many" if self.page > expected_final_page else "few"
             error_msg = f"The rendering function passed to FPDF.insert_toc_placeholder triggered too {too} page breaks: "
             error_msg += f"ToC ended on page {self.page} while it was expected to span exactly {tocp.pages} pages"
@@ -5077,7 +5102,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         recorder.rewind()
 
     @check_page
-    def insert_toc_placeholder(self, render_toc_function, pages=1):
+    def insert_toc_placeholder(
+        self,
+        render_toc_function: Callable,
+        pages: int = 1,
+        allow_extra_pages: bool = False,
+    ):
         """
         Configure Table Of Contents rendering at the end of the document generation,
         and reserve some vertical space right now in order to insert it.
@@ -5089,6 +5119,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             pages (int): the number of pages that the Table of Contents will span,
                 including the current one that will. As many page breaks as the value of this argument
                 will occur immediately after calling this method.
+            allow_extra_pages (bool): If set to `True`, allows for an unlimited number of
+                extra pages in the ToC, which may cause discrepancies with pre-rendered
+                page numbers. For consistent numbering, using page labels to create a
+                separate numbering style for the ToC is recommended.
         """
         if not callable(render_toc_function):
             raise TypeError(
@@ -5102,6 +5136,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._toc_placeholder = ToCPlaceholder(
             render_toc_function, self.page, self.y, pages
         )
+        self._toc_allow_page_insertion = allow_extra_pages
         for _ in range(pages):
             self._perform_page_break()
 

@@ -439,7 +439,7 @@ class OutputProducer:
         self.pdf_objs.append(xref)
 
         # 2. Plumbing - Inject all PDF object references required:
-        pages_root_obj.kids = PDFArray(page_objs)
+        pages_root_obj.kids = PDFArray(self._reorder_page_objects(page_objs))
         self._finalize_catalog(
             catalog_obj,
             pages_root_obj=pages_root_obj,
@@ -559,7 +559,18 @@ class OutputProducer:
             )
             self._add_pdf_obj(cs_obj, "pages")
             page_obj.contents = cs_obj
+
         return page_objs
+
+    def _reorder_page_objects(self, page_objs: list):
+        "Reorder page objects to move any Table of Contents pages generated at the end of the document to follow the ToC placeholder."
+        if not self.fpdf._toc_inserted_pages:
+            return page_objs
+        reordered = page_objs.copy()
+        for _ in range(self.fpdf._toc_inserted_pages):
+            last_page = reordered.pop()
+            reordered.insert(self.fpdf._toc_placeholder.start_page, last_page)
+        return reordered
 
     def _add_annotations_as_objects(self):
         sig_annotation_obj = None

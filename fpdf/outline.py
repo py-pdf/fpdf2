@@ -8,10 +8,15 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Optional, TYPE_CHECKING
 
+from .enums import Align, XPos, YPos
+from .fonts import FontFace
 from .syntax import Destination, PDFObject, PDFString
 from .structure_tree import StructElem
+
+if TYPE_CHECKING:
+    from .fpdf import FPDF
 
 
 class OutlineSection(NamedTuple):
@@ -102,3 +107,80 @@ def build_outline_objs(sections):
             if level <= section.level
         }
     return [outline] + outline_items
+
+
+class TableOfContents:
+
+    def __init__(self):
+        self.title = "Table of Contents"
+        self.title_style = FontFace(emphasis="B", size_pt=16)
+        self.level_indent = 5
+        self.line_spacing = 1.5
+
+    def render_toc_title(self, pdf: "FPDF"):
+        with pdf.use_font_face(self.title_style):
+            pdf.set_x(pdf.l_margin)
+            pdf.multi_cell(
+                w=pdf.epw,
+                text=self.title,
+                new_x=XPos.LMARGIN,
+                new_y=YPos.NEXT,
+                h=pdf.font_size * self.line_spacing,
+            )
+            pdf.ln()
+
+    def render_toc_item(self, pdf: "FPDF", item: OutlineSection):
+        link = pdf.add_link(page=item.page_number)
+
+        # render the text on the left
+        indent = (item.level * self.level_indent) + pdf.l_margin
+        pdf.set_x(indent)
+        pdf.multi_cell(
+            w=pdf.w - indent - pdf.r_margin,
+            text=item.name,
+            new_x=XPos.END,
+            new_y=YPos.LAST,
+            link=link,
+            align=Align.J,
+            h=pdf.font_size * self.line_spacing,
+        )
+
+        # fill in-between with dots
+        current_x = pdf.get_x()
+        page_label_length = pdf.get_string_width(str(item.page_number))
+        in_between_space = pdf.w - current_x - page_label_length - pdf.r_margin
+        in_between = ""
+        if in_between_space > 0:
+            while pdf.get_string_width(in_between + "  ") < in_between_space:
+                in_between += "."
+
+            if len(in_between) > 1:
+                pdf.multi_cell(
+                    w=pdf.w - current_x - pdf.r_margin,
+                    text=in_between[:-1],
+                    new_x=XPos.END,
+                    new_y=YPos.LAST,
+                    link=link,
+                    align=Align.L,
+                    h=pdf.font_size * self.line_spacing,
+                )
+
+        # render the page number on the right
+        pdf.set_x(current_x)
+        pdf.multi_cell(
+            w=pdf.w - current_x - pdf.r_margin,
+            text=str(item.page_number),
+            new_x=XPos.END,
+            new_y=YPos.LAST,
+            link=link,
+            align=Align.R,
+            h=pdf.font_size * self.line_spacing,
+        )
+
+        pdf.ln()
+
+    def render_toc(self, pdf: "FPDF", outline: list[OutlineSection]):
+        "This method can be overriden by subclasses to customize the Table of Contents style."
+        self.render_toc_title(pdf)
+        for section in outline:
+            self.render_toc_item(pdf, section)
