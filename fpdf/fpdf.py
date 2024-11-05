@@ -284,6 +284,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._toc_placeholder = None  # optional ToCPlaceholder instance
         self._outline = []  # list of OutlineSection
         self._sign_key = None
+        self.title = None
         self.section_title_styles = {}  # level -> TextStyle
 
         self.core_fonts_encoding = "latin-1"
@@ -689,6 +690,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def set_title(self, title):
         """
         Defines the title of the document.
+
+        Most PDF readers will display it when viewing the document.
+        There is also a related `fpdf.prefs.ViewerPreference` entry:
+
+            pdf.viewer_preferences = ViewerPreference(display_doc_title=True)
 
         Args:
             title (str): the title
@@ -5101,11 +5107,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         dest = DestinationXYZ(self.page, top=self.h_pt - self.y * self.k)
         outline_struct_elem = None
         if self.section_title_styles:
-            title_style = self.section_title_styles[level]
+            text_style = self.section_title_styles[level]
             # We first check if adding this multi-cell will trigger a page break:
-            if title_style.size_pt is not None:
+            if text_style.size_pt is not None:
                 prev_font_size_pt = self.font_size_pt
-                self.font_size_pt = title_style.size_pt
+                self.font_size_pt = text_style.size_pt
             page_break_triggered = self.multi_cell(
                 w=self.epw,
                 h=self.font_size,
@@ -5115,19 +5121,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 dry_run=True,  # => does not produce any output
                 output=MethodReturnValue.PAGE_BREAK,
                 padding=Padding(
-                    top=title_style.t_margin or 0,
-                    left=title_style.l_margin or 0,
-                    bottom=title_style.b_margin or 0,
+                    top=text_style.t_margin or 0,
+                    left=text_style.l_margin or 0,
+                    bottom=text_style.b_margin or 0,
                 ),
             )
-            if title_style.size_pt is not None:
+            if text_style.size_pt is not None:
                 self.font_size_pt = prev_font_size_pt
             if page_break_triggered:
                 # If so, we trigger a page break manually beforehand:
                 self.add_page()
             with self._marked_sequence(title=name) as struct_elem:
                 outline_struct_elem = struct_elem
-                with self._use_title_style(title_style):
+                with self._use_text_style(text_style):
                     self.multi_cell(
                         w=self.epw,
                         h=self.font_size,
@@ -5140,16 +5146,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
 
     @contextmanager
-    def _use_title_style(self, title_style: TextStyle):
-        if title_style:
-            if title_style.t_margin:
-                self.ln(title_style.t_margin)
-            if title_style.l_margin:
-                self.set_x(title_style.l_margin)
-        with self.use_font_face(title_style):
+    def _use_text_style(self, text_style: TextStyle):
+        if text_style:
+            if text_style.t_margin:
+                self.ln(text_style.t_margin)
+            if text_style.l_margin:
+                self.set_x(text_style.l_margin)
+        with self.use_font_face(text_style):
             yield
-        if title_style and title_style.b_margin:
-            self.ln(title_style.b_margin)
+        if text_style and text_style.b_margin:
+            self.ln(text_style.b_margin)
 
     @contextmanager
     def use_font_face(self, font_face: FontFace):

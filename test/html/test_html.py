@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import pytest
@@ -1151,7 +1152,6 @@ def test_html_footer_with_call_to_write_html_ko(tmp_path):  # issue-1222
 
 
 def test_html_footer_with_call_to_write_html_ok(tmp_path):  # issue-1222
-
     class MyPDF(FPDF):
         def footer(self):
             self.set_y(-30)
@@ -1188,3 +1188,51 @@ def test_html_font_tag(tmp_path):
         Text in Times 4""",
     )
     assert_pdf_equal(pdf, HERE / "html_font_tag.pdf", tmp_path)
+
+
+def test_html_title(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<head>
+            <title>Document title</title>
+        </head>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_title.pdf", tmp_path)
+
+
+def test_html_title_with_render_title_tag(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<head>
+            <title>Document title</title>
+        </head>""",
+        render_title_tag=True,
+    )
+    assert_pdf_equal(pdf, HERE / "html_title_with_render_title_tag.pdf", tmp_path)
+
+
+def test_html_title_in_body(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<body>
+            <title>Document title</title>
+        </body>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_title_in_body.pdf", tmp_path)
+
+
+def test_html_title_duplicated(caplog, tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    with caplog.at_level(logging.WARN):
+        pdf.write_html(
+            """<head>
+                <title>Hello</title>
+                <title>World</title>
+            </head>"""
+        )
+    assert 'Ignoring repeated <title> "World"' in caplog.text
+    assert_pdf_equal(pdf, HERE / "html_title_duplicated.pdf", tmp_path)

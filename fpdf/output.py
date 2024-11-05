@@ -911,7 +911,7 @@ class OutputProducer:
                     f"Could not format date: {fpdf.creation_date}"
                 ) from error
         info_obj = PDFInfo(
-            title=getattr(fpdf, "title", None),
+            title=fpdf.title,
             subject=getattr(fpdf, "subject", None),
             author=getattr(fpdf, "author", None),
             keywords=getattr(fpdf, "keywords", None),
