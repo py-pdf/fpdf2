@@ -34,6 +34,7 @@ from .syntax import (
 from .syntax import create_dictionary_string as pdf_dict
 from .syntax import create_list_string as pdf_list
 from .syntax import iobj_ref as pdf_ref
+from .util import int2roman, int_to_letters
 
 try:
     from endesive import signer
@@ -250,6 +251,21 @@ class PDFPageLabel:
     def p(self) -> PDFString:
         return PDFString(self._prefix) if self._prefix else None
 
+    def __repr__(self):
+        ret = self._prefix if self._prefix else ""
+        if self._style:
+            if self._style == PageLabelStyle.NUMBER:
+                ret += str(self.st)
+            elif self._style == PageLabelStyle.UPPER_ROMAN:
+                ret += int2roman(self.st)
+            elif self._style == PageLabelStyle.LOWER_ROMAN:
+                ret += int2roman(self.st).lower()
+            elif self._style == PageLabelStyle.UPPER_LETTER:
+                ret += int_to_letters(self.st)
+            elif self._style == PageLabelStyle.LOWER_LETTER:
+                ret += int_to_letters(self.st).lower()
+        return None if ret == "" else ret
+
     def serialize(self) -> dict:
         return build_obj_dict({key: getattr(self, key) for key in dir(self)})
 
@@ -317,11 +333,36 @@ class PDFPage(PDFObject):
         "Accepts a pair (width, height) in the unit specified to FPDF constructor"
         self._width_pt, self._height_pt = width_pt, height_pt
 
-    def set_page_label(self, label):
-        self._page_label = label
+    def set_page_label(
+        self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
+    ):
+        if (
+            previous_page_label
+            and page_label
+            and page_label.get_style() == previous_page_label.get_style()
+            and page_label.get_prefix() == previous_page_label.get_prefix()
+            and not page_label.st
+        ):
+            page_label.st = previous_page_label.get_start() + 1
+
+        if page_label:
+            if not page_label.get_start():
+                page_label.st = 1
+
+        if previous_page_label and not page_label:
+            page_label = PDFPageLabel(
+                previous_page_label.get_style(),
+                previous_page_label.get_prefix(),
+                previous_page_label.get_start() + 1,
+            )
+
+        self._page_label = page_label
 
     def get_page_label(self) -> PDFPageLabel:
         return self._page_label
+
+    def get_label(self) -> str:
+        return str(self.index()) if not self._page_label else str(self._page_label)
 
     def get_text_substitutions(self):
         return self._text_substitution_fragments
@@ -569,7 +610,7 @@ class OutputProducer:
         reordered = page_objs.copy()
         for _ in range(self.fpdf._toc_inserted_pages):
             last_page = reordered.pop()
-            reordered.insert(self.fpdf._toc_placeholder.start_page, last_page)
+            reordered.insert(self.fpdf.toc_placeholder.start_page, last_page)
         return reordered
 
     def _add_annotations_as_objects(self):
@@ -1039,9 +1080,13 @@ class OutputProducer:
             catalog_obj.names = pdf_dict(
                 {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(file_spec_names)})}
             )
+        ordered_pages = list(fpdf.pages.items())
+        for _ in range(self.fpdf._toc_inserted_pages):
+            last_page = ordered_pages.pop()
+            ordered_pages.insert(self.fpdf.toc_placeholder.start_page, last_page)
         page_labels = [
             f"{seq} {pdf_dict(page[1].get_page_label().serialize())}"
-            for (seq, page) in enumerate(fpdf.pages.items())
+            for (seq, page) in enumerate(ordered_pages)
             if page[1].get_page_label()
         ]
         if page_labels and not fpdf.pages[1].get_page_label():

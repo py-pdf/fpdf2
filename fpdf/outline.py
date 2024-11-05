@@ -8,7 +8,7 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-from typing import NamedTuple, Optional, TYPE_CHECKING
+from typing import List, NamedTuple, Optional, TYPE_CHECKING
 
 from .enums import Align, XPos, YPos
 from .fonts import FontFace
@@ -114,8 +114,9 @@ class TableOfContents:
     def __init__(self):
         self.title = "Table of Contents"
         self.title_style = FontFace(emphasis="B", size_pt=16)
-        self.level_indent = 5
+        self.level_indent = 7.5
         self.line_spacing = 1.5
+        self.ignore_pages_before_toc = True
 
     def render_toc_title(self, pdf: "FPDF"):
         with pdf.use_font_face(self.title_style):
@@ -131,6 +132,7 @@ class TableOfContents:
 
     def render_toc_item(self, pdf: "FPDF", item: OutlineSection):
         link = pdf.add_link(page=item.page_number)
+        page_label = pdf.pages[item.page_number].get_label()
 
         # render the text on the left
         indent = (item.level * self.level_indent) + pdf.l_margin
@@ -147,7 +149,7 @@ class TableOfContents:
 
         # fill in-between with dots
         current_x = pdf.get_x()
-        page_label_length = pdf.get_string_width(str(item.page_number))
+        page_label_length = pdf.get_string_width(page_label)
         in_between_space = pdf.w - current_x - page_label_length - pdf.r_margin
         in_between = ""
         if in_between_space > 0:
@@ -169,18 +171,22 @@ class TableOfContents:
         pdf.set_x(current_x)
         pdf.multi_cell(
             w=pdf.w - current_x - pdf.r_margin,
-            text=str(item.page_number),
+            text=page_label,
             new_x=XPos.END,
             new_y=YPos.LAST,
             link=link,
             align=Align.R,
             h=pdf.font_size * self.line_spacing,
         )
-
         pdf.ln()
 
-    def render_toc(self, pdf: "FPDF", outline: list[OutlineSection]):
+    def render_toc(self, pdf: "FPDF", outline: List[OutlineSection]):
         "This method can be overriden by subclasses to customize the Table of Contents style."
         self.render_toc_title(pdf)
         for section in outline:
+            if (
+                self.ignore_pages_before_toc
+                and section.page_number <= pdf.toc_placeholder.start_page
+            ):
+                continue
             self.render_toc_item(pdf, section)

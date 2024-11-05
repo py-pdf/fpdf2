@@ -133,7 +133,7 @@ from .table import Table, draw_box_borders
 from .text_region import TextRegionMixin, TextColumns
 from .transitions import Transition
 from .unicode_script import UnicodeScript, get_unicode_script
-from .util import get_scale_factor, int2roman, int_to_letters, Padding
+from .util import get_scale_factor, Padding
 
 # Public global variables:
 FPDF_VERSION = "2.8.1"
@@ -292,14 +292,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.oversized_images = None
         self.oversized_images_ratio = 2  # number of pixels per UserSpace point
         self.struct_builder = StructureTreeBuilder()
-        self._toc_placeholder = None  # optional ToCPlaceholder instance
+        self.toc_placeholder = None  # optional ToCPlaceholder instance
         self._outline: list[OutlineSection] = []  # list of OutlineSection
-        self._toc_rendering = (
-            False  # flag set true while rendering the table of contents
-        )
-        self._toc_allow_page_insertion = (
-            False  # allow page insertion when writing the table of contents
-        )
+        # flag set true while rendering the table of contents
+        self.in_toc_rendering = False
+        # allow page insertion when writing the table of contents
+        self._toc_allow_page_insertion = False
         self._toc_inserted_pages = 0  # number of pages inserted
         self._sign_key = None
         self.section_title_styles = {}  # level -> TextStyle
@@ -914,11 +912,28 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         char_spacing = self.char_spacing
         dash_pattern = self.dash_pattern
 
-        if self.page > 0:
+        in_toc_extra_page = (
+            self.in_toc_rendering
+            and self._toc_allow_page_insertion
+            and self.page > self.toc_placeholder.start_page
+        )
+        if self.page > 0 and (not self.in_toc_rendering or in_toc_extra_page):
             # Page footer
             self.in_footer = True
             self.footer()
             self.in_footer = False
+
+        current_page_label = (
+            None if self.page == 0 else self.pages[self.page].get_page_label()
+        )
+        new_page_label = None
+        if label_style or label_prefix or label_start:
+            label_style = (
+                PageLabelStyle.coerce(label_style, case_sensitive=True)
+                if label_style
+                else None
+            )
+            new_page_label = PDFPageLabel(label_style, label_prefix, label_start)
 
         # Start new page
         self._beginpage(
@@ -929,6 +944,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             transition or self.page_transition,
             new_page=not self._has_next_page(),
         )
+
+        self.pages[self.page].set_page_label(current_page_label, new_page_label)
 
         if self.page_background:
             if isinstance(self.page_background, tuple):
@@ -956,7 +973,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.text_color = tc
 
         # BEGIN Page header
-        self.header()
+        if (not self.in_toc_rendering) or self._toc_allow_page_insertion:
+            self.header()
 
         if self.line_width != lw:  # Restore line width
             self.line_width = lw
@@ -983,21 +1001,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             )
         # END Page header
 
-        if label_style or label_prefix or label_start:
-            label_style = (
-                PageLabelStyle.coerce(label_style, case_sensitive=True)
-                if label_style
-                else None
-            )
-            self.pages[self.page].set_page_label(
-                PDFPageLabel(label_style, label_prefix, label_start)
-            )
-
     def _beginpage(
         self, orientation, format, same, duration, transition, new_page=True
     ):
         self.page += 1
-        if self._toc_rendering and self._toc_allow_page_insertion:
+        if self.in_toc_rendering and self._toc_allow_page_insertion:
             self._toc_inserted_pages += 1
             self.page = len(self.pages) + 1
             new_page = True
@@ -1059,39 +1067,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         return self.page
 
     def get_page_label(self):
-        label_style = None
-        label_prefix = None
-        label_start = None
-
-        for i in range(len(self.pages), 0, -1):
-            if self.pages[i].get_page_label():
-                pl = self.pages[i].get_page_label()
-                label_style = pl.get_style()
-                label_prefix = pl.get_prefix()
-                label_start = (
-                    pl.get_start() + self.page - i
-                    if pl.get_start()
-                    else 1 + self.page - i
-                )
-                break
-
-        if not label_style and not label_prefix and not label_start:
-            return self.page_no()
-
-        ret = label_prefix if label_prefix else ""
-        if label_style:
-            if label_style == PageLabelStyle.NUMBER:
-                ret += str(label_start)
-            elif label_style == PageLabelStyle.UPPER_ROMAN:
-                ret += int2roman(label_start)
-            elif label_style == PageLabelStyle.LOWER_ROMAN:
-                ret += int2roman(label_start).lower()
-            elif label_style == PageLabelStyle.UPPER_LETTER:
-                ret += int_to_letters(label_start)
-            elif label_style == PageLabelStyle.LOWER_LETTER:
-                ret += int_to_letters(label_start).lower()
-
-        return ret
+        return self.pages[self.page].get_label()
 
     def set_draw_color(self, r, g=-1, b=-1):
         """
@@ -4801,26 +4777,25 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def _insert_table_of_contents(self):
         # Doc has been closed but we want to write to self.pages[self.page] instead of self.buffer:
-        tocp = self._toc_placeholder
+        tocp = self.toc_placeholder
         prev_page, prev_y = self.page, self.y
         self.page, self.y = tocp.start_page, tocp.y
-        # Disabling footer & header, as they have already been called:
-        self.footer = lambda *args, **kwargs: None
-        self.header = lambda *args, **kwargs: None
-        self._toc_rendering = (
-            True  # flag it is rendering ToC for page breaking function
-        )
+        # flag rendering ToC for page breaking function
+        self.in_toc_rendering = True
         tocp.render_function(self, self._outline)
-        self._toc_rendering = False  # set ToC rendering flag off
+        self.in_toc_rendering = False  # set ToC rendering flag off
         expected_final_page = tocp.start_page + tocp.pages - 1
         if self.page != expected_final_page and not self._toc_allow_page_insertion:
             too = "many" if self.page > expected_final_page else "few"
             error_msg = f"The rendering function passed to FPDF.insert_toc_placeholder triggered too {too} page breaks: "
             error_msg += f"ToC ended on page {self.page} while it was expected to span exactly {tocp.pages} pages"
             raise FPDFException(error_msg)
+        if self._toc_inserted_pages:
+            # Generating final page footer afer more pages were inserted:
+            self.in_footer = True
+            self.footer()
+            self.in_footer = False
         self.page, self.y = prev_page, prev_y
-        del self.footer
-        del self.header
 
     def file_id(self):  # pylint: disable=no-self-use
         """
@@ -5128,12 +5103,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             raise TypeError(
                 f"The first argument must be a callable, got: {type(render_toc_function)}"
             )
-        if self._toc_placeholder:
+        if self.toc_placeholder:
             raise FPDFException(
                 "A placeholder for the table of contents has already been defined"
-                f" on page {self._toc_placeholder.start_page}"
+                f" on page {self.toc_placeholder.start_page}"
             )
-        self._toc_placeholder = ToCPlaceholder(
+        self.toc_placeholder = ToCPlaceholder(
             render_toc_function, self.page, self.y, pages
         )
         self._toc_allow_page_insertion = allow_extra_pages
@@ -5367,7 +5342,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.footer()
             self.in_footer = False
             # Generating .buffer based on .pages:
-            if self._toc_placeholder:
+            if self.toc_placeholder:
                 self._insert_table_of_contents()
             if self.str_alias_nb_pages:
                 for page in self.pages.values():
