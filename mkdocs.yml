@@ -162,6 +162,7 @@ nav:
   - 'Annotations':                    'Annotations.md'
   - 'Presentation Mode':              'Presentations.md'
   - 'Document outline & table of contents': 'DocumentOutlineAndTableOfContents.md'
+  - 'Page Labels':                    'PageLabels.md'
   - 'Encryption':                     'Encryption.md'
   - 'Signing':                        'Signing.md'
   - 'File attachments':               'FileAttachments.md'
