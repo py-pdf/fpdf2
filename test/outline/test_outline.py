@@ -660,3 +660,69 @@ def test_toc_extra_pages_with_labels(tmp_path):
                 pdf.ln()
 
         assert_pdf_equal(pdf, HERE / f"toc_with_extra_page_{test_number}.pdf", tmp_path)
+
+
+def test_page_label():
+    pdf = FPDF()
+
+    # Test with no label style, prefix, or starting number (default behavior)
+    pdf.add_page(label_style=None, label_prefix=None, label_start=None)
+    assert pdf.get_page_label() == "1"
+    pdf.add_page()
+    assert pdf.get_page_label() == "2"
+
+    # Test decimal numerals with no prefix and starting from 1
+    pdf.add_page(label_style="D", label_prefix=None, label_start=1)
+    assert pdf.get_page_label() == "1"
+    pdf.add_page()
+    assert pdf.get_page_label() == "2"
+
+    # Test decimal numerals with a prefix and starting from 67
+    pdf.add_page(label_style="D", label_prefix="A-", label_start=67)
+    assert pdf.get_page_label() == "A-67"
+    pdf.add_page()
+    assert pdf.get_page_label() == "A-68"
+
+    # Test lowercase Roman numerals starting from 1
+    pdf.add_page(label_style="r", label_prefix=None, label_start=1)
+    assert pdf.get_page_label() == "i"
+    pdf.add_page()
+    assert pdf.get_page_label() == "ii"
+
+    # Test uppercase Roman numerals starting from 10 with prefix
+    pdf.add_page(label_style="R", label_prefix="Preface-", label_start=10)
+    assert pdf.get_page_label() == "Preface-X"
+    pdf.add_page()
+    assert pdf.get_page_label() == "Preface-XI"
+
+    # Test uppercase letters starting from 1
+    pdf.add_page(label_style="A", label_prefix=None, label_start=1)
+    assert pdf.get_page_label() == "A"
+    pdf.add_page()
+    assert pdf.get_page_label() == "B"
+    pdf.add_page()
+    assert pdf.get_page_label() == "C"
+
+    # Test uppercase letters with a prefix and starting beyond Z
+    pdf.add_page(label_style="A", label_prefix="Appendix-", label_start=26)
+    assert pdf.get_page_label() == "Appendix-Z"
+    pdf.add_page()
+    assert pdf.get_page_label() == "Appendix-AA"
+    pdf.add_page()
+    assert pdf.get_page_label() == "Appendix-AB"
+
+    # Test lowercase letters starting from 1
+    pdf.add_page(label_style="a", label_prefix=None, label_start=1)
+    assert pdf.get_page_label() == "a"
+    pdf.add_page()
+    assert pdf.get_page_label() == "b"
+    pdf.add_page()
+    assert pdf.get_page_label() == "c"
+
+    # Test lowercase letters with prefix and starting beyond z
+    pdf.add_page(label_style="a", label_prefix="Sec-", label_start=26)
+    assert pdf.get_page_label() == "Sec-z"
+    pdf.add_page()
+    assert pdf.get_page_label() == "Sec-aa"
+    pdf.add_page()
+    assert pdf.get_page_label() == "Sec-ab"

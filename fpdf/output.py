@@ -261,9 +261,9 @@ class PDFPageLabel:
             elif self._style == PageLabelStyle.LOWER_ROMAN:
                 ret += int2roman(self.st).lower()
             elif self._style == PageLabelStyle.UPPER_LETTER:
-                ret += int_to_letters(self.st)
+                ret += int_to_letters(self.st - 1)
             elif self._style == PageLabelStyle.LOWER_LETTER:
-                ret += int_to_letters(self.st).lower()
+                ret += int_to_letters(self.st - 1).lower()
         return None if ret == "" else ret
 
     def serialize(self) -> dict:
