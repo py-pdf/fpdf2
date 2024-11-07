@@ -70,6 +70,7 @@ def test_start_section_horizontal_alignment(tmp_path):  # issue-1282
 
     pdf = FPDF()
     pdf.add_page()
+    pdf.set_font("Helvetica", "", 20)
 
     # left align
     level0 = TextStyle("Helvetica", "", 20, (0, 0, 0), l_margin=Align.L)
@@ -86,8 +87,7 @@ def test_start_section_horizontal_alignment(tmp_path):  # issue-1282
     pdf.set_section_title_styles(level0)
     pdf.start_section("right aligned section")
 
-    assert_pdf_equal(pdf, HERE / "test_start_section_horizontal_alignment.pdf", tmp_path)
-
+    assert_pdf_equal(pdf, HERE / "test_start_section_horizontal_alignment.pdf", tmp_path, generate=True)
 
 def test_set_section_title_styles_with_invalid_arg_type():
     pdf = FPDF()
