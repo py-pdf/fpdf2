@@ -24,6 +24,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * Python 3.13 is now officially supported
 * support for [page labels](https://py-pdf.github.io/fpdf2/PageLabels.html) and created a [reference table of contents](https://py-pdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html) implementation
 * documentation on how to: [render spreadsheets as PDF tables](https://py-pdf.github.io/fpdf2/RenderingSpreadsheetsAsPDFTables.html)
+* support for passing `Align` values (along with string values like `'C'`, `'L'`, `'R'`) in `l_margin` of `TextStyle` to horizontally align text [issue #1282](https://github.com/py-pdf/fpdf2/issues/1282)
+
 ### Fixed
 * support for `align=` in [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html#setting-table-column-widths). Due to this correction, tables are now properly horizontally aligned on the page by default. This was always specified in the documentation, but was not in effect until now. You can revert to have left-aligned tables by passing `align="LEFT"` to `FPDF.table()`.
 * `FPDF.set_text_shaping(False)` was broken since version 2.7.8 and is now working properly - [issue #1287](https://github.com/py-pdf/fpdf2/issues/1287)
