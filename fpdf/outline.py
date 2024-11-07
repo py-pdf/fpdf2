@@ -114,8 +114,8 @@ class TableOfContents:
     A reference implementation of a Table of Contents (ToC) for use with `fpdf2`.
 
     This class provides a customizable Table of Contents that can be used directly or subclassed
-    for additional functionality. To use this class, create an instance of `TableOfContents`, 
-    configure it as needed, and pass its `render_toc` method as the `render_toc_function` argument 
+    for additional functionality. To use this class, create an instance of `TableOfContents`,
+    configure it as needed, and pass its `render_toc` method as the `render_toc_function` argument
     to `FPDF.insert_toc_placeholder()`.
     """
 
