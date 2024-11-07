@@ -1,5 +1,7 @@
 # Page Labels
 
+_New in [:octicons-tag-24: 2.8.2](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
 ## Overview
 
 In a PDF document, each page is identified by an integer page index, representing the page's position within the document. Optionally, a document can also define **page labels** to visually display page identifiers. 

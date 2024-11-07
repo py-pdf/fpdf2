@@ -53,6 +53,8 @@ Use the [`insert_toc_placeholder`](fpdf/fpdf.html#fpdf.fpdf.FPDF.insert_toc_plac
 
 ### Reference Implementation
 
+_New in [:octicons-tag-24: 2.8.2](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
 The `fpdf.outline.TableOfContents` class provides a reference implementation of the ToC, which can be used as-is or subclassed.
 
 ```python
