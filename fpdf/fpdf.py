@@ -854,6 +854,25 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         self.str_alias_nb_pages = alias
 
+    def set_page_label(
+        self,
+        label_style: Union[str, PageLabelStyle] = None,
+        label_prefix: str = None,
+        label_start: int = None,
+    ):
+        current_page_label = (
+            None if self.page == 1 else self.pages[self.page - 1].get_page_label()
+        )
+        new_page_label = None
+        if label_style or label_prefix or label_start:
+            label_style = (
+                PageLabelStyle.coerce(label_style, case_sensitive=True)
+                if label_style
+                else None
+            )
+            new_page_label = PDFPageLabel(label_style, label_prefix, label_start)
+        self.pages[self.page].set_page_label(current_page_label, new_page_label)
+
     def add_page(
         self,
         orientation: str = "",
@@ -5199,7 +5218,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 self.add_page()
             with self._marked_sequence(title=name) as struct_elem:
                 outline_struct_elem = struct_elem
-                with self._use_title_style(title_style):
+                with self.use_title_style(title_style):
                     self.multi_cell(
                         w=self.epw,
                         h=self.font_size,
@@ -5212,7 +5231,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
 
     @contextmanager
-    def _use_title_style(self, title_style: TextStyle):
+    def use_title_style(self, title_style: TextStyle):
         if title_style:
             if title_style.t_margin:
                 self.ln(title_style.t_margin)

@@ -3,8 +3,9 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF, TextStyle, TitleStyle, errors
+from fpdf.outline import TableOfContents
 
-from test.conftest import assert_pdf_equal
+from test.conftest import LOREM_IPSUM, assert_pdf_equal
 
 
 HERE = Path(__file__).resolve().parent
@@ -421,3 +422,241 @@ def insert_test_content_with_deprecated_TitleStyle(pdf):
         pdf,
         "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
     )
+
+
+def test_toc_extra_pages_with_labels(tmp_path):
+    file_content = [
+        {
+            "name": "Chapter 1: The Origins of Procrastination",
+            "level": 0,
+            "paragraphs": 1,
+        },
+        {
+            "name": "1.1 A Brief History of Putting Things Off",
+            "level": 1,
+            "paragraphs": 3,
+        },
+        {
+            "name": "1.1.1 Ancient Procrastinators: Pharaohs and Philosophers",
+            "level": 2,
+            "paragraphs": 3,
+        },
+        {
+            "name": "1.1.2 Renaissance Slacking: Michelangelo's 4-Year Ceiling Break",
+            "level": 2,
+            "paragraphs": 2,
+        },
+        {
+            "name": "1.2 Famous Procrastinators Through Time",
+            "level": 1,
+            "paragraphs": 2,
+        },
+        {"name": "1.2.1 The Tale of Last-Minute Da Vinci", "level": 2, "paragraphs": 3},
+        {
+            "name": "1.2.2 Procrastination in the Age of the Internet",
+            "level": 2,
+            "paragraphs": 4,
+        },
+        {
+            "name": "Chapter 2: The Science Behind Delaying Everything",
+            "level": 0,
+            "paragraphs": 1,
+        },
+        {"name": "2.1 Why We Procrastinate", "level": 1, "paragraphs": 2},
+        {
+            "name": "2.1.1 The Pleasure Principle vs. Deadline Panic",
+            "level": 2,
+            "paragraphs": 2,
+        },
+        {
+            "name": "2.1.2 Brain Chemistry: Dopamine's Role in Putting Off Tasks",
+            "level": 2,
+            "paragraphs": 3,
+        },
+        {"name": "2.2 The Types of Procrastinators", "level": 1, "paragraphs": 2},
+        {"name": "2.2.1 The Creative Avoider", "level": 2, "paragraphs": 4},
+        {"name": "2.2.2 The Perfectionist Delayer", "level": 2, "paragraphs": 2},
+        {"name": "2.2.3 The Professional Postponer", "level": 2, "paragraphs": 3},
+        {
+            "name": "Chapter 3: Procrastination Techniques and Mastery",
+            "level": 0,
+            "paragraphs": 1,
+        },
+        {
+            "name": "3.1 Strategies for Effective Procrastination",
+            "level": 1,
+            "paragraphs": 2,
+        },
+        {
+            "name": '3.1.1 The 10-Minute "Break" That Lasts an Hour',
+            "level": 2,
+            "paragraphs": 1,
+        },
+        {
+            "name": "3.1.2 Productive Procrastination: Cleaning When You Should be Working",
+            "level": 2,
+            "paragraphs": 2,
+        },
+        {"name": "3.2 Advanced Delaying Techniques", "level": 1, "paragraphs": 1},
+        {
+            "name": '3.2.1 The "I\'ll Start After Lunch" Maneuver',
+            "level": 2,
+            "paragraphs": 2,
+        },
+        {"name": "3.2.2 The Art of Endless List-Making", "level": 2, "paragraphs": 3},
+        {"name": "3.2.3 The Social Media Rabbit Hole", "level": 2, "paragraphs": 5},
+        {
+            "name": "Chapter 4: Consequences of Procrastination (That We'll Worry About Later)",
+            "level": 0,
+            "paragraphs": 1,
+        },
+        {
+            "name": "4.1 What Happens When You Put Things Off",
+            "level": 1,
+            "paragraphs": 2,
+        },
+        {"name": "4.1.1 Stress Levels and Sudden Panics", "level": 2, "paragraphs": 3},
+        {
+            "name": "4.1.2 Creative Excuses for Deadline Extensions",
+            "level": 2,
+            "paragraphs": 4,
+        },
+        {
+            "name": "4.2 Real-World Examples of Procrastination Fails",
+            "level": 1,
+            "paragraphs": 3,
+        },
+        {"name": "4.2.1 The Last-Minute Report Disaster", "level": 2, "paragraphs": 4},
+        {"name": "4.2.2 The All-Nighter Presentation", "level": 2, "paragraphs": 3},
+        {
+            "name": "Chapter 5: Embracing Procrastination as a Lifestyle",
+            "level": 0,
+            "paragraphs": 1,
+        },
+        {"name": "5.1 Procrastination as a Philosophy", "level": 1, "paragraphs": 2},
+        {"name": "5.1.1 The Zen of Doing It Tomorrow", "level": 2, "paragraphs": 2},
+        {"name": "5.1.2 Practicing Mindful Delay", "level": 2, "paragraphs": 3},
+        {
+            "name": (
+                "5.1.3 An Incredibly Long and Detailed Guide to Procrastination Tools and Techniques "
+                "that Every Expert Procrastinator Should Know, Including but Not Limited to Avoidance Strategies, "
+                "Deadline Extensions, and Perfecting the Art of Doing Absolutely Nothing While Looking Busy"
+            ),
+            "level": 2,
+            "paragraphs": 5,
+        },
+        {"name": "5.2 The Future of Procrastination", "level": 1, "paragraphs": 2},
+        {"name": "5.2.1 Delaying with AI Assistance", "level": 2, "paragraphs": 3},
+        {
+            "name": "5.2.2 The Rise of Procrastination Apps and Tools",
+            "level": 2,
+            "paragraphs": 2,
+        },
+    ]
+
+    def footer():
+        if pdf.page == 1:
+            return
+        pdf.set_y(pdf.h - 10)
+        pdf.cell(text=pdf.get_page_label(), center=True)
+
+    for test_number in range(3):
+
+        pdf = FPDF()
+        pdf.footer = footer
+
+        pdf.add_page()
+        pdf.set_font("helvetica", "", 60)
+        pdf.cell(w=pdf.epw, text="TITLE", align="C")
+
+        pdf.set_font("helvetica", "", 12)
+
+        pdf.set_section_title_styles(
+            level0=TextStyle(
+                font_family="helvetica",
+                font_style="B",
+                font_size_pt=16,
+                color="#00316e",
+                b_margin=10,
+            ),
+            level1=TextStyle(
+                font_family="helvetica",
+                font_style="B",
+                font_size_pt=14,
+                t_margin=2.5,
+                b_margin=5,
+            ),
+            level2=TextStyle(
+                font_family="helvetica",
+                font_style="I",
+                font_size_pt=14,
+                t_margin=2.5,
+                b_margin=5,
+            ),
+        )
+
+        if test_number == 0:
+            # Test with a standard table of contents
+            pdf.add_page(label_style="r")
+            pdf.start_section("Table of Contents 1", level=0)
+            toc = TableOfContents()
+            pdf.insert_toc_placeholder(toc.render_toc, allow_extra_pages=True)
+
+        if test_number == 1:
+            # Test with a ToC that has a different style using a ttf font
+            pdf.add_page(label_style="R")
+            pdf.start_section("Table of Contents 2", level=0)
+            pdf.multi_cell(
+                w=pdf.epw,
+                text="This is a second table of contents where a custom font is used for the ToC only.",
+                new_x="lmargin",
+                new_y="next",
+            )
+            pdf.ln()
+            pdf.multi_cell(
+                w=pdf.epw,
+                text="Also adding extra lines to test the ToC starting renderening from the position the function is invoked.",
+                new_x="lmargin",
+                new_y="next",
+            )
+            pdf.ln()
+            pdf.ln()
+            pdf.add_font(
+                family="Quicksand",
+                style="",
+                fname=HERE.parent / "fonts" / "Quicksand-Regular.otf",
+            )
+            toc = TableOfContents()
+            toc.text_style = TextStyle(
+                font_family="Quicksand", font_style="", font_size_pt=14
+            )
+            pdf.insert_toc_placeholder(toc.render_toc, allow_extra_pages=True)
+
+        if test_number == 2:
+            # Test using the section styles on the ToC
+            pdf.add_page(label_style="a")
+            pdf.start_section("Table of Contents 3", level=0)
+            pdf.multi_cell(
+                w=pdf.epw,
+                text="This is a third table of contents using the same style as the sections.",
+                new_x="lmargin",
+                new_y="next",
+            )
+            pdf.ln()
+            pdf.ln()
+            toc = TableOfContents()
+            toc.use_section_title_styles = True
+            pdf.insert_toc_placeholder(toc.render_toc, allow_extra_pages=True)
+
+        pdf.set_page_label(label_style="D")
+        for index, content in enumerate(file_content):
+            if content["level"] == 0 and index > 0:
+                pdf.add_page()
+            pdf.start_section(content["name"], level=content["level"])
+            for _ in range(content["paragraphs"]):
+                pdf.multi_cell(
+                    w=pdf.epw, text=LOREM_IPSUM, new_x="lmargin", new_y="next"
+                )
+                pdf.ln()
+
+        assert_pdf_equal(pdf, HERE / f"toc_with_extra_page_{test_number}.pdf", tmp_path)
