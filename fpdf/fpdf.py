@@ -5234,12 +5234,20 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             with self._marked_sequence(title=name) as struct_elem:
                 outline_struct_elem = struct_elem
                 with self.use_text_style(text_style):
+
+                    # check if l_margin value is of type Align or string
+                    align = Align.L
+                    if isinstance(text_style.l_margin, Align) or isinstance(text_style.l_margin, str):
+                        align = text_style.l_margin
+
                     self.multi_cell(
                         w=self.epw,
                         h=self.font_size,
                         text=name,
+                        align=align,
                         new_x=XPos.LMARGIN,
                         new_y=YPos.NEXT,
+                        center=True if title_style.l_margin == Align.C else False,
                     )
         self._outline.append(
             OutlineSection(name, level, self.page, dest, outline_struct_elem)
@@ -5251,7 +5259,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if text_style.t_margin:
                 self.ln(text_style.t_margin)
             if text_style.l_margin:
-                self.set_x(text_style.l_margin)
+                if isinstance(text_style.l_margin, int):
+                    self.set_x(text_style.l_margin)
         with self.use_font_face(text_style):
             yield
         if text_style and text_style.b_margin:

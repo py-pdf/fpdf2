@@ -33,7 +33,7 @@ except ImportError:
 
 from .deprecation import get_stack_level
 from .drawing import convert_to_device_color, DeviceGray, DeviceRGB
-from .enums import FontDescriptorFlags, TextEmphasis
+from .enums import FontDescriptorFlags, TextEmphasis, Align
 from .syntax import Name, PDFObject
 from .util import escape_parens
 
@@ -125,7 +125,7 @@ class TextStyle(FontFace):
         fill_color: Union[int, tuple] = None,  # grey scale or (red, green, blue),
         underline: bool = False,
         t_margin: Optional[int] = None,
-        l_margin: Optional[int] = None,
+        l_margin: Optional[int] | Optional[Align] | Optional[str] = None,
         b_margin: Optional[int] = None,
     ):
         super().__init__(
@@ -136,7 +136,15 @@ class TextStyle(FontFace):
             fill_color,
         )
         self.t_margin = t_margin or 0
-        self.l_margin = l_margin or 0
+
+        # added support for 'Align' and 'str' type values for l_margin
+        if isinstance(l_margin, int) or isinstance(l_margin, Align):
+            self.l_margin = l_margin
+        elif isinstance(l_margin, str):
+            self.l_margin = Align.coerce(l_margin)
+        else:
+            self.l_margin = 0
+
         self.b_margin = b_margin or 0
 
     def __repr__(self):

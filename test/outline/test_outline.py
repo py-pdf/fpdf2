@@ -66,6 +66,28 @@ def test_incoherent_start_section_hierarchy():
     with pytest.raises(ValueError):
         pdf.start_section("Subtitle", level=2)
 
+def test_start_section_horizontal_alignment(tmp_path):  # issue-1282
+
+    pdf = FPDF()
+    pdf.add_page()
+
+    # left align
+    level0 = TextStyle("Helvetica", "", 20, (0, 0, 0), l_margin=Align.L)
+    pdf.set_section_title_styles(level0)
+    pdf.start_section("left aligned section")
+    
+    # center align
+    level0 = TextStyle("Helvetica", "", 20, (0, 0, 0), l_margin=Align.C)
+    pdf.set_section_title_styles(level0)
+    pdf.start_section("center aligned section")
+
+    # right align
+    level0 = TextStyle("Helvetica", "", 20, (0, 0, 0), l_margin=Align.R)
+    pdf.set_section_title_styles(level0)
+    pdf.start_section("right aligned section")
+
+    assert_pdf_equal(pdf, HERE / "test_start_section_horizontal_alignment.pdf", tmp_path)
+
 
 def test_set_section_title_styles_with_invalid_arg_type():
     pdf = FPDF()
