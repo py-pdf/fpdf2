@@ -125,7 +125,7 @@ class TextStyle(FontFace):
         fill_color: Union[int, tuple] = None,  # grey scale or (red, green, blue),
         underline: bool = False,
         t_margin: Optional[int] = None,
-        l_margin: Optional[int] | Optional[Align] | Optional[str] = None,
+        l_margin: Union[Optional[int], Optional[Align], Optional[str]] = None,
         b_margin: Optional[int] = None,
     ):
         super().__init__(
