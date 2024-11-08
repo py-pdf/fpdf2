@@ -76,7 +76,7 @@ def test_start_section_horizontal_alignment(tmp_path):  # issue-1282
     level0 = TextStyle("Helvetica", "", 20, (0, 0, 0), l_margin=Align.L)
     pdf.set_section_title_styles(level0)
     pdf.start_section("left aligned section")
-    
+
     # center align
     level0 = TextStyle("Helvetica", "", 20, (0, 0, 0), l_margin=Align.C)
     pdf.set_section_title_styles(level0)

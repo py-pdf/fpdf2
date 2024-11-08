@@ -5214,7 +5214,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 self.font_size_pt = text_style.size_pt
             # check if l_margin value is of type Align or string
             align = Align.L
-            if isinstance(text_style.l_margin, Align) or isinstance(text_style.l_margin, str):
+            if isinstance(text_style.l_margin, (Align, str)):
                 align = text_style.l_margin
             page_break_triggered = self.multi_cell(
                 w=self.epw,
@@ -5247,7 +5247,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         align=align,
                         new_x=XPos.LMARGIN,
                         new_y=YPos.NEXT,
-                        center=True if text_style.l_margin == Align.C else False,
+                        center=text_style.l_margin == Align.C,
                     )
         self._outline.append(
             OutlineSection(name, level, self.page, dest, outline_struct_elem)

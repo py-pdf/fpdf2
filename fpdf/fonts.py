@@ -138,7 +138,7 @@ class TextStyle(FontFace):
         self.t_margin = t_margin or 0
 
         # added support for 'Align' and 'str' type values for l_margin
-        if isinstance(l_margin, int) or isinstance(l_margin, Align):
+        if isinstance(l_margin, (Align, int)):
             self.l_margin = l_margin
         elif isinstance(l_margin, str):
             self.l_margin = Align.coerce(l_margin)
