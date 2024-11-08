@@ -87,7 +87,7 @@ def test_start_section_horizontal_alignment(tmp_path):  # issue-1282
     pdf.set_section_title_styles(level0)
     pdf.start_section("right aligned section")
 
-    assert_pdf_equal(pdf, HERE / "test_start_section_horizontal_alignment.pdf", tmp_path, generate=True)
+    assert_pdf_equal(pdf, HERE / "test_start_section_horizontal_alignment.pdf", tmp_path)
 
 def test_set_section_title_styles_with_invalid_arg_type():
     pdf = FPDF()
