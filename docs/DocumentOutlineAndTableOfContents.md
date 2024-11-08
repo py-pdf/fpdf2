@@ -22,7 +22,7 @@ For example, there is how a document outline looks like in [Sumatra PDF Reader](
 Since `fpdf2.3.3`, you can use the [`start_section`](fpdf/fpdf.html#fpdf.fpdf.FPDF.start_section) method to add entries in the internal "outline" table, which is used to render both the outline and ToC.
 
 Note that by default, calling `start_section` only records the current position in the PDF and renders nothing.
-However, you can configure **global title styles** by calling [`set_section_title_styles`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_section_title_styles), after which call to `start_section` will render titles visually using the styles defined.
+However, you can configure **global title styles** by calling [`set_section_title_styles`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_section_title_styles), after which calls to `start_section` will render titles visually using the styles defined.
 
 To provide a document outline to the PDF you generate, you just have to call the `start_section` method for every hierarchical section you want to define.
 
@@ -49,7 +49,9 @@ Use the [`insert_toc_placeholder`](fpdf/fpdf.html#fpdf.fpdf.FPDF.insert_toc_plac
 **Parameters:**
 - **render_toc_function**: Function called to render the ToC, receiving two parameters: `pdf`, an FPDF instance, and `outline`, a list of `fpdf.outline.OutlineSection`.
 - **pages**: The number of pages that the ToC will span, including the current one. A page break occurs for each page specified.
-- **allow_extra_pages**: If `True`, allows unlimited extra pages for the ToC. Note that enabling this may cause discrepancies with pre-rendered page numbers. Using page labels to create a separate numbering style for the ToC is recommended.
+- **allow_extra_pages**: If `True`, allows unlimited additional pages to be added to the ToC as needed. These extra ToC pages are initially created at the end of the document and then reordered when the final PDF is produced.
+
+**Note**: Enabling `allow_extra_pages` may affect page numbering for headers or footers. Since extra ToC pages are added after the document content, they might cause page numbers to appear out of sequence. To maintain consistent numbering, use (Page Labels)[PageLabels.md] to assign a specific numbering style to the ToC pages. When using Page Labels, any extra ToC pages will follow the numbering style of the first ToC page.
 
 ### Reference Implementation
 

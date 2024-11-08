@@ -11,6 +11,10 @@ In a PDF document, each page is identified by an integer page index, representin
 - The twelfth page (index `11`) would have label `xii`
 - The thirteenth page (index `12`) would start with label `1`
 
+The most popular PDF readers, such as Sumatra PDF and Adobe Acrobat Reader, will accurately display page labels as configured in the PDF. However, not all PDF readers support this feature, and some may not honor or display page labels correctly. In particular, browser-based PDF viewers, like those in Chrome and Edge, currently do not display page labels and will only show default page numbering.
+
+![Page Labels in Sumatra and Acrobat](page-labels.png)
+
 ---
 
 ## Page Label Components
