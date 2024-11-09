@@ -310,6 +310,74 @@ class TableBordersLayout(CoerciveEnum):
     "Draw only the top horizontal border, below the headings"
 
 
+class CellBordersLayout(CoerciveIntFlag):
+    """Defines how to render cell borders in table
+
+    The integer value of `border` determines which borders are applied. Below are some common examples:
+
+    - border=1 (LEFT): Only the left border is enabled.
+    - border=3 (LEFT | RIGHT): Both the left and right borders are enabled.
+    - border=5 (LEFT | TOP): The left and top borders are enabled.
+    - border=12 (TOP | BOTTOM): The top and bottom borders are enabled.
+    - border=15 (ALL): All borders (left, right, top, bottom) are enabled.
+    - border=16 (INHERIT): Inherit the border settings from the parent element.
+
+    Using `border=3` will combine LEFT and RIGHT borders, as it represents the
+    bitwise OR of `LEFT (1)` and `RIGHT (2)`.
+    """
+
+    NONE = 0
+    "Draw no border on any side of cell"
+
+    LEFT = 1
+    "Draw border on the left side of the cell"
+
+    RIGHT = 2
+    "Draw border on the right side of the cell"
+
+    TOP = 4
+    "Draw border on the top side of the cell"
+
+    BOTTOM = 8
+    "Draw border on the bottom side of the cell"
+
+    ALL = LEFT | RIGHT | TOP | BOTTOM
+    "Draw border on all side of the cell"
+
+    INHERIT = 16
+    "Inherits the border layout from the table borders layout"
+
+    @classmethod
+    def coerce(cls, value):
+        if isinstance(value, int) and value > 16:
+            raise ValueError("INHERIT cannot be combined with other values")
+        return super().coerce(value)
+
+    def __and__(self, value):
+        value = super().__and__(value)
+        if value > 16:
+            raise ValueError("INHERIT cannot be combined with other values")
+        return value
+
+    def __or__(self, value):
+        value = super().__or__(value)
+        if value > 16:
+            raise ValueError("INHERIT cannot be combined with other values")
+        return value
+
+    def __str__(self):
+        border_str = []
+        if self & CellBordersLayout.LEFT:
+            border_str.append("L")
+        if self & CellBordersLayout.RIGHT:
+            border_str.append("R")
+        if self & CellBordersLayout.TOP:
+            border_str.append("T")
+        if self & CellBordersLayout.BOTTOM:
+            border_str.append("B")
+        return "".join(border_str) if border_str else "NONE"
+
+
 class TableCellFillMode(CoerciveEnum):
     "Defines which table cells to fill"
 

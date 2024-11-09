@@ -11,6 +11,7 @@ from .enums import (
     WrapMode,
     VAlign,
     TableSpan,
+    CellBordersLayout,
 )
 from .errors import FPDFException
 from .fonts import CORE_FONTS, FontFace
@@ -251,6 +252,7 @@ class Table:
         self._fpdf.l_margin = prev_l_margin
         self._fpdf.x = self._fpdf.l_margin
 
+    # pylint: disable=too-many-return-statements
     def get_cell_border(self, i, j, cell):
         """
         Defines which cell borders should be drawn.
@@ -258,6 +260,10 @@ class Table:
         to be passed to `fpdf.FPDF.multi_cell()`.
         Can be overriden to customize this logic
         """
+
+        if cell.border != CellBordersLayout.INHERIT:
+            return str(cell.border)
+
         if self._borders_layout == TableBordersLayout.ALL:
             return 1
         if self._borders_layout == TableBordersLayout.NONE:
@@ -770,6 +776,7 @@ class Row:
         rowspan=1,
         padding=None,
         link=None,
+        border=CellBordersLayout.INHERIT,
     ):
         """
         Adds a cell to the row.
@@ -788,6 +795,7 @@ class Row:
             rowspan (int): optional number of rows this cell should span.
             padding (tuple): optional padding (left, top, right, bottom) for the cell.
             link (str, int): optional link, either an URL or an integer returned by `FPDF.add_link`, defining an internal link to a page
+            border (fpdf.enums.CellBordersLayout): optional cell borders, defaults to `CellBordersLayout.INHERIT`
 
         """
         if text and img:
@@ -819,6 +827,7 @@ class Row:
             rowspan,
             padding,
             link,
+            CellBordersLayout.coerce(border),
         )
         self.cells.append(cell)
         return cell
@@ -838,6 +847,7 @@ class Cell:
         "rowspan",
         "padding",
         "link",
+        "border",
     )
     text: str
     align: Optional[Union[str, Align]]
@@ -849,6 +859,7 @@ class Cell:
     rowspan: int
     padding: Optional[Union[int, tuple, type(None)]]
     link: Optional[Union[str, int]]
+    border: Optional[CellBordersLayout]
 
     def write(self, text, align=None):
         raise NotImplementedError("Not implemented yet")

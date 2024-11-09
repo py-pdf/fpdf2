@@ -829,3 +829,213 @@ def test_table_with_very_long_text():
         str(error.value)
         == "The row with index 0 is too high and cannot be rendered on a single page"
     )
+
+
+def test_table_cell_border_none(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border="None")
+    assert_pdf_equal(pdf, HERE / "test_table_cell_border_none.pdf", tmp_path)
+
+
+def test_table_cell_different_borders(tmp_path):
+    pdf = FPDF()
+    pdf.set_font("Times", size=20)
+    pdf.add_page()
+    pdf.cell(
+        0,
+        10,
+        "border = left",
+    )
+    pdf.ln(20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border="left")
+    pdf.add_page()
+    pdf.cell(0, 10, "border = right")
+    pdf.ln(20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border="right")
+    pdf.add_page()
+    pdf.cell(0, 10, "border = top")
+    pdf.ln(20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border="top")
+    pdf.add_page()
+    pdf.cell(0, 10, "border = bottom")
+    pdf.ln(20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border="bottom")
+    pdf.add_page()
+    pdf.cell(0, 10, "border = [left, right]")
+    pdf.ln(20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border=3)
+    pdf.add_page()
+    pdf.cell(0, 10, "border =[left, top]")
+    pdf.ln(20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border=5)
+    pdf.add_page()
+    pdf.cell(0, 10, "border =[left, bottom]")
+    pdf.ln(20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border=9)
+    pdf.add_page()
+    pdf.cell(0, 10, "border =[right, top]")
+    pdf.ln(20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border=6)
+    pdf.add_page()
+    pdf.cell(0, 10, "border =[right, bottom]")
+    pdf.ln(20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border=10)
+    pdf.add_page()
+    pdf.cell(0, 10, "border =[top, bottom]")
+    pdf.ln(20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border=12)
+    pdf.add_page()
+    pdf.cell(0, 10, "border =[left, right, top]")
+    pdf.ln(20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border=7)
+    pdf.add_page()
+    pdf.cell(0, 10, "border =[left, right, bottom]")
+    pdf.ln(20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border=11)
+    pdf.add_page()
+    pdf.cell(0, 10, "border =[left, right, top, bottom]")
+    pdf.ln(20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border=15)
+    assert_pdf_equal(pdf, HERE / "test_table_cell_different_borders.pdf", tmp_path)
+
+
+def test_table_cell_border_all(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=20)
+    with pdf.table(gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+
+            for datum in data_row:
+                print(datum, end=" ")
+                row.cell(datum, border="all")
+    assert_pdf_equal(pdf, HERE / "test_table_cell_border_all.pdf", tmp_path)
+
+
+def test_table_cell_border_inherit(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=20)
+    pdf.cell(0, 10, "border = 'inherit' and borders_layout = 'none'")
+    pdf.ln(20)
+    with pdf.table(borders_layout="none", gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border="inherit")
+    pdf.add_page()
+    pdf.cell(0, 10, "border = 'inherit' and borders_layout = 'all'")
+    pdf.ln(20)
+    with pdf.table(borders_layout="all", gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+
+            for datum in data_row:
+                print(datum, end=" ")
+                row.cell(datum, border="inherit")
+    pdf.add_page()
+    pdf.cell(0, 10, "border = 'inherit' and borders_layout = 'horizontal_lines'")
+    pdf.ln(20)
+    with pdf.table(
+        borders_layout="horizontal_lines", gutter_height=3, gutter_width=3
+    ) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border="inherit")
+    pdf.add_page()
+    pdf.cell(0, 10, "border = 'inherit' and borders_layout = 'internal' ")
+    pdf.ln(20)
+    with pdf.table(borders_layout="internal", gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border="inherit")
+    pdf.add_page()
+    pdf.cell(0, 10, "border = 'inherit' and borders_layout = 'minimal'")
+    pdf.ln(20)
+    with pdf.table(borders_layout="minimal", gutter_height=3, gutter_width=3) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border="inherit")
+    pdf.add_page()
+    pdf.cell(0, 10, "border = 'inherit' and borders_layout = 'no_horizontal_lines'")
+    pdf.ln(20)
+    with pdf.table(
+        borders_layout="no_horizontal_lines", gutter_height=3, gutter_width=3
+    ) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border="inherit")
+    pdf.add_page()
+    pdf.cell(0, 10, "border = 'inherit' and borders_layout = 'single_top_line'")
+    pdf.ln(20)
+    with pdf.table(
+        borders_layout="single_top_line", gutter_height=3, gutter_width=3
+    ) as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum, border="inherit")
+    assert_pdf_equal(pdf, HERE / "test_table_cell_border_inherit.pdf", tmp_path)
