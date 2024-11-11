@@ -136,7 +136,7 @@ class TableOfContents:
         page_label = pdf.pages[item.page_number].get_label()
 
         # render the text on the left
-        with pdf.use_title_style(self.get_text_style(pdf, item)):
+        with pdf.use_text_style(self.get_text_style(pdf, item)):
             indent = (item.level * self.level_indent) + pdf.l_margin
             pdf.set_x(indent)
             pdf.multi_cell(
