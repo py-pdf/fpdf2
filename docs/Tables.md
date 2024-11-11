@@ -295,7 +295,13 @@ with pdf.table() as table:
         row = table.row()
         for j, datum in enumerate(data_row):
             if j == 2 and i > 0:
-                row.cell(img=datum)
+                img_cell = row.cell()
+				img_cell.image(
+					name=datum,
+					height=pdf.font_size * 2,
+					keep_aspect_ratio=True,
+					align="CENTER",
+				)
             else:
                 row.cell(datum)
 pdf.output('table_with_images.pdf')
@@ -305,9 +311,12 @@ Result:
 
 ![](table_with_images.jpg)
 
-By default, images height & width are constrained by the row height (based on text content)
-and the column width. To render bigger images, you can set the `line_height` to increase the row height, or
-pass `img_fill_width=True` to `.cell()`:
+**Incompatible Change in release 2.7.7:**
+Up to release 2.7.6, each table cell could only contain either a chunk of text or a single image. and images with `img_fill_width=False` were automatically scaled to match the height of the text cells in the same row.
+
+With release 2.7.7, there is now complete freedom to combine text and images in a cell in any sequence. Because of that, this automatic image scaling doesn't make sense anymore and has been removed. To scale images, you now can use the `TableCell.image()` method and supply an explicit height (and/or width).
+
+To scale any images to the full cell width, you can still use `img_fill_width=True` argument to `.cell()` or the `fill_width=True` argument to `TableCell.image()`.
 
 ```python
                     row.cell(img=datum, img_fill_width=True)

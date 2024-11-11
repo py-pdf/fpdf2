@@ -146,7 +146,6 @@ def test_table_with_multiline_cells(tmp_path):
             row = table.row()
             for datum in data_row:
                 row.cell(datum)
-    assert pdf.pages_count == 2
     assert_pdf_equal(pdf, HERE / "table_with_multiline_cells.pdf", tmp_path)
 
 
@@ -159,8 +158,6 @@ def test_table_with_multiline_cells_and_fixed_row_height(tmp_path):
             row = table.row()
             for datum in data_row:
                 row.cell(datum)
-    assert pdf.pages_count == 2
-
     assert_pdf_equal(
         pdf, HERE / "table_with_multiline_cells_and_fixed_row_height.pdf", tmp_path
     )
@@ -211,7 +208,6 @@ def test_table_with_multiline_cells_and_without_headings(tmp_path):
             row = table.row()
             for datum in data_row:
                 row.cell(datum)
-    assert pdf.pages_count == 4
     assert_pdf_equal(
         pdf,
         HERE / "table_with_multiline_cells_and_without_headings.pdf",
@@ -243,7 +239,6 @@ def test_table_with_multiline_cells_and_split_over_3_pages(tmp_path):
             row = table.row()
             for datum in data_row:
                 row.cell(datum)
-    assert pdf.pages_count == 4
     assert_pdf_equal(
         pdf, HERE / "table_with_multiline_cells_and_split_over_3_pages.pdf", tmp_path
     )
