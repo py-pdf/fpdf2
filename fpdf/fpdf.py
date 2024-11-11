@@ -17,7 +17,7 @@ from math import isclose
 from numbers import Number
 from os.path import splitext
 from pathlib import Path
-from typing import Callable, Iterator, NamedTuple, Optional, Union
+from typing import Callable, Dict, Iterator, NamedTuple, Optional, Union
 
 try:
     from endesive import signer
@@ -101,7 +101,12 @@ from .image_parsing import (
     preload_image,
 )
 from .linearization import LinearizedOutputProducer
-from .line_break import Fragment, MultiLineBreak, TextLine
+from .line_break import (
+    Fragment,
+    MultiLineBreak,
+    TextLine,
+    TotalPagesSubstitutionFragment,
+)
 from .outline import OutlineSection
 from .output import (
     OutputProducer,
@@ -250,7 +255,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         but is less compatible with the PDF spec.
         """
         self.page = 0  # current page number
-        self.pages = {}  # array of PDFPage objects starting at index 1
+        # array of PDFPage objects starting at index 1:
+        self.pages: Dict[int, PDFPage] = {}
         self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
         # map page numbers to a set of font indices:
         self.fonts_used_per_page_number = defaultdict(set)
@@ -278,6 +284,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._toc_placeholder = None  # optional ToCPlaceholder instance
         self._outline = []  # list of OutlineSection
         self._sign_key = None
+        self.title = None
         self.section_title_styles = {}  # level -> TextStyle
 
         self.core_fonts_encoding = "latin-1"
@@ -683,6 +690,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def set_title(self, title):
         """
         Defines the title of the document.
+
+        Most PDF readers will display it when viewing the document.
+        There is also a related `fpdf.prefs.ViewerPreference` entry:
+
+            pdf.viewer_preferences = ViewerPreference(display_doc_title=True)
 
         Args:
             title (str): the title
@@ -3175,6 +3187,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
             )
             for i, frag in enumerate(fragments):
+                if isinstance(frag, TotalPagesSubstitutionFragment):
+                    self.pages[self.page].add_text_substitution(frag)
                 if frag.graphics_state["text_color"] != last_used_color:
                     # allow to change color within the line of text.
                     last_used_color = frag.graphics_state["text_color"]
@@ -3427,6 +3441,22 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def _parse_chars(self, text: str, markdown: bool) -> Iterator[Fragment]:
         "Split text into fragments"
         if not markdown and not self.text_shaping and not self._fallback_font_ids:
+            if self.str_alias_nb_pages:
+                for seq, fragment_text in enumerate(
+                    text.split(self.str_alias_nb_pages)
+                ):
+                    if seq > 0:
+                        yield TotalPagesSubstitutionFragment(
+                            self.str_alias_nb_pages,
+                            self._get_current_graphics_state(),
+                            self.k,
+                        )
+                    if fragment_text:
+                        yield Fragment(
+                            fragment_text, self._get_current_graphics_state(), self.k
+                        )
+                return
+
             yield Fragment(text, self._get_current_graphics_state(), self.k)
             return
         txt_frag, in_bold, in_italics, in_underline = (
@@ -3485,6 +3515,23 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 if txt_frag and current_text_script:
                     yield frag()
                 current_text_script = text_script
+
+            if self.str_alias_nb_pages:
+                if text[: len(self.str_alias_nb_pages)] == self.str_alias_nb_pages:
+                    if txt_frag:
+                        yield frag()
+                    gstate = self._get_current_graphics_state()
+                    gstate["font_style"] = ("B" if in_bold else "") + (
+                        "I" if in_italics else ""
+                    )
+                    gstate["underline"] = in_underline
+                    yield TotalPagesSubstitutionFragment(
+                        self.str_alias_nb_pages,
+                        gstate,
+                        self.k,
+                    )
+                    text = text[len(self.str_alias_nb_pages) :]
+                    continue
 
             # Check that previous & next characters are not identical to the marker:
             if markdown:
@@ -4675,26 +4722,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
         self.pages[self.page].annots.append(annotation)
 
-    def _substitute_page_number(self):
-        substituted = False
-        # Replace number of pages in fonts using subsets (unicode)
-        alias = self.str_alias_nb_pages.encode("utf-16-be")
-        encoded_nb = str(self.pages_count).encode("utf-16-be")
-        for page in self.pages.values():
-            substituted |= alias in page.contents
-            page.contents = page.contents.replace(alias, encoded_nb)
-        # Now repeat for no pages in non-subset fonts
-        alias = self.str_alias_nb_pages.encode("latin-1")
-        encoded_nb = str(self.pages_count).encode("latin-1")
-        for page in self.pages.values():
-            substituted |= alias in page.contents
-            page.contents = page.contents.replace(alias, encoded_nb)
-        if substituted:
-            LOGGER.debug(
-                "Substitution of '%s' was performed in the document",
-                self.str_alias_nb_pages,
-            )
-
     def _insert_table_of_contents(self):
         # Doc has been closed but we want to write to self.pages[self.page] instead of self.buffer:
         tocp = self._toc_placeholder
@@ -5080,15 +5107,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         dest = DestinationXYZ(self.page, top=self.h_pt - self.y * self.k)
         outline_struct_elem = None
         if self.section_title_styles:
-            title_style = self.section_title_styles[level]
+            text_style = self.section_title_styles[level]
             # We first check if adding this multi-cell will trigger a page break:
-            if title_style.size_pt is not None:
+            if text_style.size_pt is not None:
                 prev_font_size_pt = self.font_size_pt
-                self.font_size_pt = title_style.size_pt
+                self.font_size_pt = text_style.size_pt
             # check if l_margin value is of type Align or string
             align = Align.L
-            if isinstance(title_style.l_margin, (Align, str)):
-                align = title_style.l_margin
+            if isinstance(text_style.l_margin, (Align, str)):
+                align = text_style.l_margin
             page_break_triggered = self.multi_cell(
                 w=self.epw,
                 h=self.font_size,
@@ -5099,24 +5126,23 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 output=MethodReturnValue.PAGE_BREAK,
                 align=align,
                 padding=Padding(
-                    top=title_style.t_margin or 0,
+                    top=text_style.t_margin or 0,
                     left=(
-                        title_style.l_margin
-                        if isinstance(title_style.l_margin, int)
+                        text_style.l_margin
+                        if isinstance(text_style.l_margin, int)
                         else 0
                     ),
-                    bottom=title_style.b_margin or 0,
+                    bottom=text_style.b_margin or 0,
                 ),
             )
-            if title_style.size_pt is not None:
+            if text_style.size_pt is not None:
                 self.font_size_pt = prev_font_size_pt
             if page_break_triggered:
                 # If so, we trigger a page break manually beforehand:
                 self.add_page()
             with self._marked_sequence(title=name) as struct_elem:
                 outline_struct_elem = struct_elem
-                with self._use_title_style(title_style):
-
+                with self._use_title_style(text_style):
                     self.multi_cell(
                         w=self.epw,
                         h=self.font_size,
@@ -5140,8 +5166,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     self.set_x(title_style.l_margin)
         with self.use_font_face(title_style):
             yield
-        if title_style and title_style.b_margin:
-            self.ln(title_style.b_margin)
+        if text_style and text_style.b_margin:
+            self.ln(text_style.b_margin)
 
     @contextmanager
     def use_font_face(self, font_face: FontFace):
@@ -5265,7 +5291,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if self._toc_placeholder:
                 self._insert_table_of_contents()
             if self.str_alias_nb_pages:
-                self._substitute_page_number()
+                for page in self.pages.values():
+                    for substitution_item in page.get_text_substitutions():
+                        page.contents = page.contents.replace(
+                            substitution_item.get_placeholder_string().encode(
+                                "latin-1"
+                            ),
+                            substitution_item.render_text_substitution(
+                                str(self.pages_count)
+                            ).encode("latin-1"),
+                        )
             if linearize:
                 output_producer_class = LinearizedOutputProducer
             output_producer = output_producer_class(self)

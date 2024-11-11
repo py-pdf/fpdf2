@@ -13,9 +13,11 @@ from collections import defaultdict, OrderedDict
 from contextlib import contextmanager
 from io import BytesIO
 
+
 from .annotations import PDFAnnotation
 from .enums import SignatureFlag
 from .errors import FPDFException
+from .line_break import TotalPagesSubstitutionFragment
 from .image_datastructures import RasterImageInfo
 from .outline import build_outline_objs
 from .sign import Signature, sign_content
@@ -243,6 +245,7 @@ class PDFPage(PDFObject):
         "_index",
         "_width_pt",
         "_height_pt",
+        "_text_substitution_fragments",
     )
 
     def __init__(
@@ -265,6 +268,7 @@ class PDFPage(PDFObject):
         self.parent = None  # must always be set before calling .serialize()
         self._index = index
         self._width_pt, self._height_pt = None, None
+        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
 
     def index(self):
         return self._index
@@ -276,6 +280,12 @@ class PDFPage(PDFObject):
     def set_dimensions(self, width_pt, height_pt):
         "Accepts a pair (width, height) in the unit specified to FPDF constructor"
         self._width_pt, self._height_pt = width_pt, height_pt
+
+    def get_text_substitutions(self):
+        return self._text_substitution_fragments
+
+    def add_text_substitution(self, fragment):
+        self._text_substitution_fragments.append(fragment)
 
 
 class PDFPagesRoot(PDFObject):
@@ -901,7 +911,7 @@ class OutputProducer:
                     f"Could not format date: {fpdf.creation_date}"
                 ) from error
         info_obj = PDFInfo(
-            title=getattr(fpdf, "title", None),
+            title=fpdf.title,
             subject=getattr(fpdf, "subject", None),
             author=getattr(fpdf, "author", None),
             keywords=getattr(fpdf, "keywords", None),
