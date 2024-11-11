@@ -21,7 +21,7 @@ from .util import get_scale_factor, int2roman
 LOGGER = logging.getLogger(__name__)
 BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
 DEGREE_WIN1252 = "\xb0"
-HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
+HEADING_TAGS = ("title", "h1", "h2", "h3", "h4", "h5", "h6")
 # Some of the margin values below are fractions, in order to be fully backward-compatible,
 # and due to the _scale_units() conversion performed in HTML2FPDF constructor below.
 # Those constants are formatted as Mixed Fractions, a mathematical representation
@@ -41,6 +41,12 @@ DEFAULT_TAG_STYLES = {
     "center": TextStyle(t_margin=4 + 7 / 30),
     "dd": TextStyle(l_margin=10),
     "dt": TextStyle(font_style="B", t_margin=4 + 7 / 30),
+    "title": TextStyle(  # Only rendered if render_title_tag=True
+        b_margin=0.4,
+        font_size_pt=30,
+        t_margin=6,
+        # center=True, - Enable this once #1282 is implemented
+    ),
     "h1": TextStyle(
         color="#960000", b_margin=0.4, font_size_pt=24, t_margin=5 + 834 / 900
     ),
@@ -316,6 +322,7 @@ class HTML2FPDF(HTMLParser):
         tag_indents=None,
         tag_styles=None,
         font_family="times",
+        render_title_tag=False,
     ):
         """
         Args:
@@ -339,6 +346,7 @@ class HTML2FPDF(HTMLParser):
                 mapping of HTML tag names to numeric values representing their horizontal left identation. - Set `tag_styles` instead
             tag_styles (dict[str, fpdf.fonts.TextStyle]): mapping of HTML tag names to `fpdf.TextStyle` or `fpdf.FontFace` instances
             font_family (str): optional font family. Default to Times.
+            render_title_tag (bool): Render the document <title> at the beginning of the PDF. Default to False.
         """
         super().__init__()
         self.pdf = pdf
@@ -384,6 +392,9 @@ class HTML2FPDF(HTMLParser):
         self._tags_stack = []
         self._column = self.pdf.text_columns(skip_leading_spaces=True)
         self._paragraph = self._column.paragraph()
+        # <title>-related properties:
+        self.render_title_tag = render_title_tag
+        self._in_title = False
         # <table>-related properties:
         self.table_line_separators = table_line_separators
         self.table = None  # becomes a Table instance when processing <table> tags
@@ -563,6 +574,13 @@ class HTML2FPDF(HTMLParser):
         self.follows_trailing_space = True
 
     def handle_data(self, data):
+        if self._in_title:
+            if self.pdf.title:
+                LOGGER.warning('Ignoring repeated <title> "%s"', data)
+            else:
+                self.pdf.set_title(data)
+            if not self.render_title_tag:
+                return
         if self.td_th is not None:
             data = data.strip()
             if not data:
@@ -722,7 +740,7 @@ class HTML2FPDF(HTMLParser):
                     color=self.font_color,
                 )
             )
-            self.heading_level = int(tag[1:])
+            self.heading_level = 0 if tag == "title" else int(tag[1:])
             tag_style = self.tag_styles[tag]
             hsize = (tag_style.size_pt or self.font_size_pt) / self.pdf.k
             if attrs:
@@ -994,6 +1012,8 @@ class HTML2FPDF(HTMLParser):
             self.pdf.char_vpos = "SUP"
         if tag == "sub":
             self.pdf.char_vpos = "SUB"
+        if tag == "title":
+            self._in_title = True
         if css_style.get("break-after") == "page":
             if tag in ("br", "hr", "img"):
                 self._end_paragraph()
@@ -1105,6 +1125,8 @@ class HTML2FPDF(HTMLParser):
             self.pdf.char_vpos = "LINE"
         if tag == "sub":
             self.pdf.char_vpos = "LINE"
+        if tag == "title":
+            self._in_title = False
 
     def feed(self, data):
         super().feed(data)
