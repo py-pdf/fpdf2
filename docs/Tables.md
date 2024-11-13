@@ -38,6 +38,7 @@ Result:
 * control over borders: color, width & where they are drawn
 * handle splitting a table over page breaks, with headings repeated
 * control over cell background color
+* control over cell borders
 * control table width & position
 * control over text alignment in cells, globally or per row
 * allow to embed images in cells
@@ -143,15 +144,18 @@ with pdf.table(first_row_as_headings=False) as table:
     ...
 ```
 
+_New in [:octicons-tag-24: 2.7.9](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
 The **repetition** of table headings on every page can also be disabled:
 
 ```python
 ...
-with pdf.table(repeat_headings=1) as table:
+with pdf.table(repeat_headings=0) as table:
     ...
 ```
 
-`"ON_TOP_OF_EVERY_PAGE"` is an equivalent valid value for `repeat_headings`.
+`"ON_TOP_OF_EVERY_PAGE"` is an equivalent valid value for `repeat_headings`
+, _cf._ [documentation on `TableHeadingsDisplay`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableHeadingsDisplay).
 
 ## Style table headings
 
@@ -221,6 +225,8 @@ The cell color is set following those settings, ordered by priority:
 4. The table setting `cell_fill_color`, if `cell_fill_mode` indicates to fill a cell
 5. The document `.fill_color` set before rendering the table
 
+_New in [:octicons-tag-24: 2.7.9](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
 Finally, it is possible to define your own cell-filling logic:
 
 ```python
@@ -271,6 +277,68 @@ Result:
 
 All the possible layout values are described
 there: [`TableBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
+
+## Set cell borders
+
+_New in [:octicons-tag-24: 2.8.2](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Times", size=16)
+with pdf.table() as table:
+    for data_row in TABLE_DATA:
+        row = table.row()
+        for datum in data_row:
+            row.cell(datum, border="LEFT")
+pdf.output('table.pdf')
+```
+
+Result:
+
+![](table_with_cell_border_left.jpg)
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Times", size=16)
+with pdf.table() as table:
+    for data_row in TABLE_DATA:
+        row = table.row()
+        for datum in data_row:
+            row.cell(datum, border="TOP")
+pdf.output('table.pdf')
+```
+
+Result:
+
+![](table_with_cell_border_top.jpg)
+
+```python
+from fpdf import FPDF
+from fpdf.enums import CellBordersLayout
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Times", size=16)
+with pdf.table() as table:
+    for data_row in TABLE_DATA:
+        row = table.row()
+        for datum in data_row:
+            row.cell(datum, border=CellBordersLayout.TOP | CellBordersLayout.LEFT)
+pdf.output('table.pdf')
+```
+
+Result:
+
+![](table_with_cell_border_left_top.jpg)
+
+All the possible borders values are described there: [`CellBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.CellBordersLayout).
+
 
 ## Insert images
 

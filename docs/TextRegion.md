@@ -82,8 +82,11 @@ For more typographical control, you can use the following arguments. Most of tho
 
 * text_align (Align, optional) - The horizontal alignment of the paragraph.
 * line_height (float, optional) - factor by which the line spacing will be different from the font height. (default: by region) 
-* top_margin (float, optional) -  how much spacing is added above the paragraph. No spacing will be added at the top of the paragraph if the current y position is at (or above) the top margin of the page. (Default: 0.0)
-* bottom_margin (float, optional) - Those two values determine how much spacing is added below the paragraph. No spacing will be added at the bottom if it would result in overstepping the bottom margin of the page. (Default: 0.0)
+* top_margin (float, optional) -  how much spacing is added above the paragraph. No spacing will be added at the top of the paragraph if the current y position is at (or above) the top margin of the page. (Default: 0.0 mm)
+* bottom_margin (float, optional) - Those two values determine how much spacing is added below the paragraph. No spacing will be added at the bottom if it would result in overstepping the bottom margin of the page. (Default: 0.0 mm)
+* indent (float, optional): determines the indentation of the paragraph. (Default: 0.0 mm)
+* bullet_r_margin (float, optional) - determines the relative displacement of the bullet along the x-axis. The distance is between the rightmost point of the bullet to the leftmost point of the paragraph's text. (Default: 2.0 mm)
+* bullet_string (str, optional): determines the fragments and text lines of the bullet. (Default: "")
 * skip_leading_spaces (float, optional) - removes all space characters at the beginning of each line.
 * wrapmode (WrapMode, optional)
 

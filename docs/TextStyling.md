@@ -1,8 +1,8 @@
 # Text styling #
 
-## set_font() ##
+## .set_font() ##
 
-Setting emphasis on text can be controlled by using `set_font(style=...)`:
+Setting emphasis on text can be controlled by using `.set_font(style=...)`:
 
 * `style="B"` indicates **bold**
 * `style="I"` indicates _italics_
@@ -65,6 +65,10 @@ pdf.set_char_spacing(10)
 pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
 ```
 ![](char_spacing.png)
+
+For a more complete support of **Markdown** syntax,
+check out this guide to combine `fpdf2` with the `mistletoe` library:
+[Combine with mistletoe to use Markdown](CombineWithMistletoeoToUseMarkdown.md).
 
 
 ## Subscript, Superscript, and Fractional Numbers
@@ -159,7 +163,7 @@ pdf.ln()
 with pdf.local_context(text_mode="CLIP"):
     pdf.cell(text="CLIP text mode")
     for r in range(0, 250, 2):  # drawing concentric circles
-        pdf.circle(x=130-r/2, y=70-r/2, r=r)
+        pdf.circle(x=130-r/2, y=70-r/2, radius=r)
 
 pdf.output("text-modes.pdf")
 ```
@@ -175,7 +179,9 @@ More examples from [`test_text_mode.py`](https://github.com/py-pdf/fpdf2/blob/ma
 
 An optional `markdown=True` parameter can be passed to the [`cell()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell)
 & [`multi_cell()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) methods
-in order to enable basic Markdown-like styling: `**bold**, __italics__, --underlined--`
+in order to enable basic Markdown-like styling: `**bold**, __italics__, --underlined--`.
+
+If the printable text contains a character sequence that would be incorrectly interpreted as a formatting marker, it can be escaped using `\`. The escape character works the same way it generally does in Python (see the example below).
 
 Bold & italics require using dedicated fonts for each style.
 
@@ -184,12 +190,15 @@ For the standard fonts (Courier, Helvetica & Times), those dedicated fonts are c
 ```python
 from fpdf import FPDF
 
-pdf = fpdf.FPDF()
+pdf = FPDF()
 pdf.add_page()
-pdf.set_font("Times", size=60)
-pdf.cell(text="**Lorem** __Ipsum__ --dolor--", markdown=True)
+pdf.set_font("Times", size=50)
+pdf.cell(text="**Lorem** __Ipsum__ --dolor--", markdown=True, new_x='LEFT', new_y='NEXT')
+pdf.cell(text="\\**Lorem\\** \\\\__Ipsum\\\\__ --dolor--", markdown=True)
 pdf.output("markdown-styled.pdf")
 ```
+
+![](markdown-style.png)
 
 Using other fonts means that their variants (bold, italics)
 must be registered using `add_font` with `style="B"` and `style="I"`.
@@ -199,9 +208,9 @@ Several unit tests in `test/text/` demonstrate that:
 * [test_multi_cell_markdown_with_ttf_fonts](https://github.com/py-pdf/fpdf2/blob/2.6.1/test/text/test_multi_cell_markdown.py#L27)
 
 
-## write_html ##
+## .write_html() ##
 
-[`write_html`](HTML.md) allows to set emphasis on text through the `<b>`, `<i>` and `<u>` tags:
+[`.write_html()`](HTML.md) allows to set emphasis on text through the `<b>`, `<i>` and `<u>` tags:
 
 ```python
 pdf.write_html("""<B>bold</B>

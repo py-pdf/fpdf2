@@ -7,7 +7,7 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-import re
+import re, warnings
 
 from bisect import bisect_left
 from collections import defaultdict
@@ -31,6 +31,7 @@ try:
 except ImportError:
     hb = None
 
+from .deprecation import get_stack_level
 from .drawing import convert_to_device_color, DeviceGray, DeviceRGB
 from .enums import FontDescriptorFlags, TextEmphasis
 from .syntax import Name, PDFObject
@@ -107,6 +108,81 @@ class FontFace:
                 default_style.fill_color, override_style.fill_color
             ),
         )
+
+
+class TextStyle(FontFace):
+    """
+    Subclass of `FontFace` that allows to specify vertical & horizontal spacing
+    """
+
+    def __init__(
+        self,
+        font_family: Optional[str] = None,  # None means "no override"
+        #                                     Whereas "" means "no emphasis"
+        font_style: Optional[str] = None,
+        font_size_pt: Optional[int] = None,
+        color: Union[int, tuple] = None,  # grey scale or (red, green, blue),
+        fill_color: Union[int, tuple] = None,  # grey scale or (red, green, blue),
+        underline: bool = False,
+        t_margin: Optional[int] = None,
+        l_margin: Optional[int] = None,
+        b_margin: Optional[int] = None,
+    ):
+        super().__init__(
+            font_family,
+            ((font_style or "") + "U") if underline else font_style,
+            font_size_pt,
+            color,
+            fill_color,
+        )
+        self.t_margin = t_margin or 0
+        self.l_margin = l_margin or 0
+        self.b_margin = b_margin or 0
+
+    def __repr__(self):
+        return (
+            super().__repr__()[:-1]
+            + f", t_margin={self.t_margin}, l_margin={self.l_margin}, b_margin={self.b_margin})"
+        )
+
+    def replace(
+        self,
+        /,
+        font_family=None,
+        emphasis=None,
+        font_size_pt=None,
+        color=None,
+        fill_color=None,
+        t_margin=None,
+        l_margin=None,
+        b_margin=None,
+    ):
+        return TextStyle(
+            font_family=font_family or self.family,
+            font_style=self.emphasis if emphasis is None else emphasis.style,
+            font_size_pt=font_size_pt or self.size_pt,
+            color=color or self.color,
+            fill_color=fill_color or self.fill_color,
+            t_margin=self.t_margin if t_margin is None else t_margin,
+            l_margin=self.l_margin if l_margin is None else l_margin,
+            b_margin=self.b_margin if b_margin is None else b_margin,
+        )
+
+
+class TitleStyle(TextStyle):
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            (
+                "fpdf.TitleStyle is deprecated since 2.8.0."
+                " It has been replaced by fpdf.TextStyle."
+            ),
+            DeprecationWarning,
+            stacklevel=get_stack_level(),
+        )
+        super().__init__(*args, **kwargs)
+
+
+__pdoc__ = {"TitleStyle": False}  # Replaced by TextStyle
 
 
 class CoreFont:
@@ -271,9 +347,7 @@ class TTFFont:
         text_width = 0
         for pos in glyph_positions:
             text_width += (
-                round(self.scale * (pos.x_advance + pos.x_offset) + 0.001)
-                * font_size_pt
-                * 0.001
+                round(self.scale * pos.x_advance + 0.001) * font_size_pt * 0.001
             )
         return (len(glyph_positions), text_width)
 
@@ -463,8 +537,9 @@ class SubsetMap:
     def items(self):
         for glyph, char_id in self._char_id_per_glyph.items():
             yield glyph, char_id
-    
-    @lru_cache(maxsize=128)
+
+    # pylint: disable=method-cache-max-size-none
+    @lru_cache(maxsize=None)
     def pick(self, unicode: int):
         glyph = self.get_glyph(unicode=unicode)
         if glyph is None and unicode not in self.font.missing_glyphs:
@@ -483,7 +558,8 @@ class SubsetMap:
             self._next += 1
         return char_id
 
-    @lru_cache(maxsize=128)
+    # pylint: disable=method-cache-max-size-none
+    @lru_cache(maxsize=None)
     def get_glyph(
         self, glyph=None, unicode=None, glyph_name=None, glyph_width=None
     ) -> Glyph:

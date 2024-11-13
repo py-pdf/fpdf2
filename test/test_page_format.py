@@ -4,6 +4,12 @@ from fpdf.errors import FPDFPageFormatException
 from fpdf.fpdf import get_page_format
 
 
+def test_page_format_ok():
+    assert get_page_format("a4") == (595.28, 841.89)
+    assert get_page_format("letter") == (612, 792)
+    assert get_page_format((297, 210), k=2) == (594, 420)
+
+
 def test_page_format_error():
     with pytest.raises(FPDFPageFormatException) as error:
         get_page_format("letter1")

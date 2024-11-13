@@ -19,7 +19,7 @@ def test_skew(tmp_path):
     pdf.set_draw_color(240)
     pdf.set_fill_color(r=230, g=30, b=180)
     with pdf.skew(ax=-45, ay=0, x=100, y=170):
-        pdf.circle(x=100, y=170, r=10, style="FD")
+        pdf.circle(x=105, y=175, radius=5, style="FD")
     pdf.image(img_filepath, x=150, y=150)
     assert_pdf_equal(pdf, HERE / "skew.pdf", tmp_path)
 

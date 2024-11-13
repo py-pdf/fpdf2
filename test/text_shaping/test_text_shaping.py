@@ -1,14 +1,14 @@
 from pathlib import Path
 
 from fpdf import FPDF
+from fpdf.unicode_script import get_unicode_script, UnicodeScript
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
 FONTS_DIR = HERE.parent / "fonts"
 
 
-def test_indi_text(tmp_path):
-    # issue #365
+def test_indi_text(tmp_path):  # issue #365
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font(family="Mangal", fname=HERE / "Mangal 400.ttf")
@@ -54,8 +54,7 @@ def test_text_replacement(tmp_path):
     assert_pdf_equal(pdf, HERE / "text_replacement.pdf", tmp_path)
 
 
-def test_kerning(tmp_path):
-    # issue #812
+def test_kerning(tmp_path):  # issue #812
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font(family="Dumbledor3Thin", fname=HERE / "Dumbledor3Thin.ttf")
@@ -69,8 +68,7 @@ def test_kerning(tmp_path):
     assert_pdf_equal(pdf, HERE / "kerning.pdf", tmp_path)
 
 
-def test_hebrew_diacritics(tmp_path):
-    # issue #549
+def test_hebrew_diacritics(tmp_path):  # issue #549
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font(family="SBL_Hbrw", fname=HERE / "SBL_Hbrw.ttf")
@@ -98,8 +96,7 @@ def test_ligatures(tmp_path):
     assert_pdf_equal(pdf, HERE / "ligatures.pdf", tmp_path)
 
 
-def test_arabic_right_to_left(tmp_path):
-    # issue #549
+def test_arabic_right_to_left(tmp_path):  # issue #549
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font(
@@ -170,8 +167,7 @@ def test_text_with_parentheses(tmp_path):
     assert_pdf_equal(pdf, HERE / "text_with_parentheses.pdf", tmp_path)
 
 
-def test_text_shaping_and_offset_rendering(tmp_path):
-    # issue #1075
+def test_text_shaping_and_offset_rendering(tmp_path):  # issue #1075
     pdf = FPDF()
     pdf.add_font("Garuda", fname=FONTS_DIR / "Garuda.ttf")
     pdf.set_font("Garuda", size=16)
@@ -183,3 +179,207 @@ def test_text_shaping_and_offset_rendering(tmp_path):
             pdf.cell(col_width, line_height, f"Cell ({i})")
         pdf.cell(col_width, line_height, f"Cell ({i})")
     assert_pdf_equal(pdf, HERE / "text_shaping_and_offset_rendering.pdf", tmp_path)
+
+
+def test_multilingual_string(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font(family="KhmerOS", fname=HERE / "KhmerOS.ttf")
+    pdf.set_font("KhmerOS", size=30)
+    pdf.set_text_shaping(True)
+    pdf.cell(text="Khmer: សួស្តី ពិភពលោក")
+    assert_pdf_equal(pdf, HERE / "multilingual_string.pdf", tmp_path)
+
+
+def test_unicode_script_codes():
+    char_list = (
+        "\x03",
+        "E",
+        "Ͳ",
+        "Ѧ",
+        "Ւ",
+        "ֲ",
+        "\u0601",
+        "܋",
+        "ޔ",
+        "ं",
+        "ঀ",
+        "ਁ",
+        "ઁ",
+        "ଁ",
+        "ஂ",
+        "ఀ",
+        "ಀ",
+        "ഁ",
+        "ඁ",
+        "พ",
+        "ຂ",
+        "ༀ",
+        "ဦ",
+        "Ⴔ",
+        "ᆙ",
+        "ለ",
+        "Ꭴ",
+        "᐀",
+        "\u1680",
+        "ᚲ",
+        "ឨ",
+        "᠀",
+        "を",
+        "ケ",
+        "˫",
+        "⺁",
+        "ꀑ",
+        "𐌒",
+        "𐌿",
+        "𐐱",
+        "̬",
+        "ᜃ",
+        "ᜬ",
+        "ᝈ",
+        "ᝡ",
+        "ᤌ",
+        "ᥢ",
+        "𐀁",
+        "𐎝",
+        "𐑷",
+        "𐒒",
+        "𐠂",
+        "⣫",
+        "ᨏ",
+        "ϯ",
+        "ᦐ",
+        "Ⰺ",
+        "ⵎ",
+        "ꠀ",
+        "𐎧",
+        "𐨀",
+        "ᬀ",
+        "𒉑",
+        "𐤀",
+        "ꡪ",
+        "߂",
+        "ᮁ",
+        "ᰙ",
+        "᱘",
+        "ꗵ",
+        "ꢁ",
+        "꤈",
+        "ꤲ",
+        "𐊌",
+        "𐊧",
+        "𐤯",
+        "ꨤ",
+        "ᩂ",
+        "ꪑ",
+        "𐬏",
+        "𓆊",
+        "ࠍ",
+        "ꓧ",
+        "ꛆ",
+        "ꦁ",
+        "ꫪ",
+        "𐡄",
+        "𐩶",
+        "𐭂",
+        "𐭦",
+        "𐰞",
+        "𑂁",
+        "ᯣ",
+        "𑀀",
+        "ࡍ",
+        "𑄂",
+        "𐦪",
+        "𐦈",
+        "𖼴",
+        "𑆁",
+        "𑃝",
+        "𑚛",
+        "𐕘",
+        "𖫝",
+        "𛱨",
+        "𐔑",
+        "𑌁",
+        "𖬫",
+        "𑈇",
+        "𐙤",
+        "𑅙",
+        "𐫀",
+        "𞠒",
+        "𑘑",
+        "𖩍",
+        "𐪁",
+        "𐢜",
+        "𐡰",
+        "𑫘",
+        "𐍒",
+        "𐮅",
+        "𑖤",
+        "𑋒",
+        "𑒆",
+        "𑣅",
+        "𑜄",
+        "𔕘",
+        "𐣥",
+        "𑊅",
+        "𐲑",
+        "𝣣",
+        "𞥂",
+        "𑰈",
+        "𑱰",
+        "𑐩",
+        "𐒵",
+        "𖿠",
+        "𑴄",
+        "𖿡",
+        "𑩐",
+        "𑨀",
+        "𑠇",
+        "𑵢",
+        "𑻧",
+        "𖹻",
+        "𐴞",
+        "𐼾",
+        "𐼅",
+        "𐿴",
+        "𑦤",
+        "𞄥",
+        "𞋄",
+        "𐾷",
+        "𑤁",
+        "𖿤",
+        "𐺟",
+        "𒿬",
+        "𐽷",
+        "𖪼",
+        "𞊞",
+        "𐕸",
+        "\U00011f00",
+        "\U0001e4d5",
+    )
+    for index, char in enumerate(char_list):
+        assert get_unicode_script(char) == UnicodeScript(index)
+    get_unicode_script.cache_clear()
+
+
+def test_disabling_text_shaping(tmp_path):  # issue #1287
+    pdf = FPDF()
+    pdf.add_font(family="ViaodaLibre", fname=HERE / "ViaodaLibre-Regular.ttf")
+    pdf.set_font("ViaodaLibre", size=24)
+    pdf.add_page()
+    assert not pdf.text_shaping
+    pdf.cell(text="final soft stuff", new_x="LEFT", new_y="NEXT")
+    pdf.ln()
+    pdf.set_text_shaping(True)
+    assert pdf.text_shaping
+    pdf.cell(text="final soft stuff", new_x="LEFT", new_y="NEXT")
+    pdf.ln()
+    pdf.set_text_shaping(False)
+    assert not pdf.text_shaping
+    pdf.cell(text="final soft stuff", new_x="LEFT", new_y="NEXT")
+    pdf.ln()
+    pdf.set_text_shaping(True)
+    assert pdf.text_shaping
+    pdf.cell(text="final soft stuff", new_x="LEFT", new_y="NEXT")
+    pdf.ln()
+    assert_pdf_equal(pdf, HERE / "disabling_text_shaping.pdf", tmp_path)

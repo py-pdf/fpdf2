@@ -49,6 +49,28 @@ def hello_world():
 ```
 
 
+## gunicorn ##
+[Gunicorn 'Green Unicorn'](https://gunicorn.org/) is a Python WSGI HTTP Server for UNIX.
+
+The following code can be placed in a `gunicorn_fpdf2.py` file and launched using `gunicorn -w 4 gunicorn_fpdf2:app`:
+
+```python
+from fpdf import FPDF
+
+def app(environ, start_response):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    pdf.cell(text="Hello world!")
+    data = bytes(pdf.output())
+    start_response("200 OK", [
+        ("Content-Type", "application/pdf"),
+        ("Content-Length", str(len(data)))
+    ])
+    return iter([data])
+```
+
+
 ## AWS lambda ##
 The following code demonstrates some minimal [AWS lambda handler function](https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html)
 that returns a PDF file as binary output:

@@ -6,14 +6,14 @@ from test.conftest import assert_pdf_equal, check_signature, EPOCH
 
 
 HERE = Path(__file__).resolve().parent
-TRUSTED_CERT_PEMS = (HERE / "demo2_ca.crt.pem",)
+TRUSTED_CERT_PEMS = (HERE / "signing.crt.pem",)
 
 
 def test_sign_pkcs12(tmp_path):
     pdf = FPDF()
     pdf.set_creation_date(EPOCH)
     pdf.add_page()
-    pdf.sign_pkcs12(HERE / "demo2_user3.p12", password=b"1234")
+    pdf.sign_pkcs12(HERE / "signing-certificate.p12", password=b"fpdf2")
     assert_pdf_equal(pdf, HERE / "sign_pkcs12.pdf", tmp_path)
     check_signature(pdf, TRUSTED_CERT_PEMS)
 
@@ -27,7 +27,7 @@ def test_sign_pkcs12_with_link(tmp_path):
     pdf.text(x=80, y=50, text="Page 1/2")
     pdf.add_page()
     pdf.set_xy(80, 50)
-    pdf.sign_pkcs12(HERE / "demo2_user3.p12", password=b"1234")
+    pdf.sign_pkcs12(HERE / "signing-certificate.p12", password=b"fpdf2")
     pdf.cell(
         w=50,
         h=20,

@@ -7,6 +7,9 @@
 # * parallelize the execution of this analysis on all PDF files
 # * allow to ignore some errors considered harmless, listed in pdfchecker-ignore.json
 
+# Note: among the 3 checkers we use for fpdf2, PDF Checker is the only one that report errors
+#       for unbalanced q/Q contexts in content streams, even if it does not provide a clear message.
+
 # USAGE: ./pdfchecker.py [$pdf_filepath|--process-all-test-pdf-files|--print-aggregated-report]
 
 import sys
@@ -32,10 +35,10 @@ def analyze_pdf_file(pdf_filepath):
     # print(" ".join(command))
     output = check_output(command).decode()
     # print(output)
-    return pdf_filepath, parse_output(output)
+    return pdf_filepath, parse_output(command, output)
 
 
-def parse_output(output):
+def parse_output(command, output):
     """
     Parse PDF Checker indented output into a dict-tree.
     Tree leaves are empty dicts.
@@ -47,7 +50,7 @@ def parse_output(output):
             "failure": UNPROCESSABLE_PDF_ERROR_LINE,
             "version": version,
         }
-    assert CHECKER_SUMMARY_END_LINE in lines, "\n".join(lines)
+    assert CHECKER_SUMMARY_END_LINE in lines, f"{' '.join(command)} output:\n{output}"
     lines = lines[lines.index(CHECKER_SUMMARY_END_LINE) + 2 :]
     analysis = insert_indented(lines)
     return {

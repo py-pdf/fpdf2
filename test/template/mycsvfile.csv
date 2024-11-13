@@ -8,3 +8,4 @@ empty_fields;T;21.0;100.0;100.0;104.0
 rotated;T;21.0;80.0;100.0;84.0;times;10.5;0;0;0;0;;R;ROTATED;0;0;30
 cropped;T;31.0;50.0;40.0;54.0;times;10.5;0;0;0;0;;L;cropped;0;-1
 barcode;BC;31.0;70.0;;80.0;;1;;;;;;;987654321;0;0
+character_wrapped;T;41.0;100.0;55.0;104.0;times;10.5;0;0;0;0;0xffffff;L;wrap on characters not words;0;1;0;CHAR

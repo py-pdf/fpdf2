@@ -373,3 +373,32 @@ def test_html_table_honoring_align(tmp_path):
         </table>"""
     )
     assert_pdf_equal(pdf, HERE / "html_table_honoring_align.pdf", tmp_path)
+
+
+def test_html_table_with_null_text_in_span_cell(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<table border="1">
+        <tr>
+            <td rowspan=2></td>
+            <td>cell 2</td>
+            <td>cell 3</td>
+        </tr>
+        <tr>
+            <td>cell 4</td>
+            <td>cell 5</td>
+        </tr>
+        <tr>
+            <td colspan=2></td>
+            <td>cell 7</td>
+        </tr>
+    </table>
+        """,
+        table_line_separators=True,
+    )
+    assert_pdf_equal(
+        pdf,
+        HERE / "html_table_with_null_text_in_span_cell.pdf",
+        tmp_path,
+    )

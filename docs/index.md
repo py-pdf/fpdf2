@@ -22,7 +22,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 ## Main features ##
 
 * Easy to use, with a user-friendly [API](https://py-pdf.github.io/fpdf2/fpdf/), and easy to extend
-* Python 3.7+ support
+* Python 3.8+ support
 * [Unicode](Unicode.md) (UTF-8) TrueType font subset embedding (Central European, Cyrillic, Greek, Baltic, Thai, Chinese, Japanese, Korean, Hindi and almost any other language in the world)
 * Internal / external [links](Links.md)
 * Embedding images, including transparency and alpha channel, using [Pillow (Python Imaging Library)](https://pillow.readthedocs.io/en/stable/)
@@ -41,7 +41,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * It has very few dependencies: [Pillow](https://pillow.readthedocs.io/en/stable/), [defusedxml](https://pypi.org/project/defusedxml/), & [fonttools](https://pypi.org/project/fonttools/)
 * Can render [mathematical equations & charts](https://py-pdf.github.io/fpdf2/Maths.html)
 * Many example scripts available throughout this documentation, including usage examples with [Django](https://www.djangoproject.com/), [Flask](https://flask.palletsprojects.com), [FastAPI](https://fastapi.tiangolo.com/), [streamlit](https://streamlit.io/), AWS lambdas... : [Usage in web APIs](UsageInWebAPI.md)
-* Unit tests with `qpdf`-based PDF diffing, and PDF samples validation using 3 different checkers:
+* more than 1300 unit tests with `qpdf`-based PDF diffing, and PDF samples validation using 3 different checkers:
 
 [![QPDF logo](qpdf-logo.svg)](https://github.com/qpdf/qpdf)
 [![PDF Checker logo](pdfchecker-logo.png)](https://www.datalogics.com/products/pdf-tools/pdf-checker/)
@@ -61,9 +61,12 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * [עברית](Tutorial-he.md)
 * [简体中文](Tutorial-zh.md)
 * [বাংলা](Tutorial-bn.md)
-* [ភាសខ្មែរ](Tutorial-km.md)
+* [ភាសាខ្មែរ](Tutorial-km.md)
 * [日本語](Tutorial-ja.md)
 * [Dutch](Tutorial-nl.md)
+* [Polski](Tutorial-pl.md)
+* [Türkçe](Tutorial-tr.md)
+* [Indonesian](Tutorial-id.md)
 
 ## Installation ##
 
@@ -98,6 +101,8 @@ or [open a discussion](https://github.com/py-pdf/fpdf2/discussions).
 
 ### They use fpdf2 ###
 <!-- cf. Watchman Pypi & DavHau/pypi-deps-db -->
+Online classes & open source projects:
+
 * **Harvard University** uses `fpdf2` in their [CS50 introductory class](https://cs50.harvard.edu/python/2022/psets/8/shirtificate/)
 * [Undying Dusk](https://lucas-c.itch.io/undying-dusk) : a **video game in PDF format**, with a gameplay based on exploration and logic puzzles, in the tradition of dungeon crawlers
 * [OpenDroneMap](https://github.com/OpenDroneMap/ODM) : a command line toolkit for processing aerial drone imagery
@@ -113,9 +118,10 @@ or [open a discussion](https://github.com/py-pdf/fpdf2/discussions).
 
 - [PyPI download stats](https://pypistats.org/packages/fpdf2) - Downloads per release on [Pepy](https://pepy.tech/project/fpdf2)
   - [pip trends: fpdf2 VS other PDF rendering libs](https://piptrends.com/compare/fpdf2-vs-fpdf-vs-pypdf-vs-borb-vs-reportlab)
-- packages using `fpdf2` can be listed using [GitHub Dependency graph: Dependents](https://github.com/py-pdf/fpdf2/network/dependents),
-[Wheelodex](https://www.wheelodex.org/projects/fpdf2/rdepends/) or [Watchman Pypi](http://www.watchman-pypi.com).
-Some are also listed on [its libraries.io page](https://libraries.io/pypi/fpdf2).
+- packages using `fpdf2` can be listed using:
+    * [Wheelodex](https://www.wheelodex.org/projects/fpdf2/rdepends/)
+    * [deps.dev](https://deps.dev/pypi/fpdf2/2.8.1/dependents)
+    * [packages.ecosyste.ms](https://packages.ecosyste.ms/registries/pypi.org/packages/fpdf2/dependent_packages)
 
 [![Star history](https://api.star-history.com/svg?repos=py-pdf/fpdf2)](https://star-history.com/#py-pdf/fpdf2)
 

@@ -11,6 +11,7 @@ from .enums import (
     WrapMode,
     VAlign,
     TableSpan,
+    CellBordersLayout,
 )
 from .errors import FPDFException
 from .fonts import CORE_FONTS, FontFace
@@ -189,7 +190,7 @@ class Table:
                     )
 
         # Defining table global horizontal position:
-        prev_l_margin = self._fpdf.l_margin
+        prev_x, prev_y, prev_l_margin = self._fpdf.x, self._fpdf.y, self._fpdf.l_margin
         if table_align == Align.C:
             self._fpdf.l_margin = (self._fpdf.w - self._width) / 2
             self._fpdf.x = self._fpdf.l_margin
@@ -220,10 +221,20 @@ class Table:
         )
         self._fpdf.y += self._outer_border_margin[1]
         for i, row in enumerate(self.rows):
+            pagebreak_height = row_info[i].pagebreak_height
             # pylint: disable=protected-access
-            page_break = self._fpdf._perform_page_break_if_need_be(
-                row_info[i].pagebreak_height
-            )
+            page_break = self._fpdf._perform_page_break_if_need_be(pagebreak_height)
+            if (
+                page_break
+                and self._fpdf.y + pagebreak_height > self._fpdf.page_break_trigger
+            ):
+                # Restoring original position on page:
+                self._fpdf.x = prev_x
+                self._fpdf.y = prev_y
+                self._fpdf.l_margin = prev_l_margin
+                raise ValueError(
+                    f"The row with index {i} is too high and cannot be rendered on a single page"
+                )
             if page_break and repeat_headings and i >= self._num_heading_rows:
                 # repeat headings on top:
                 self._fpdf.y += self._outer_border_margin[1]
@@ -241,6 +252,7 @@ class Table:
         self._fpdf.l_margin = prev_l_margin
         self._fpdf.x = self._fpdf.l_margin
 
+    # pylint: disable=too-many-return-statements
     def get_cell_border(self, i, j, cell):
         """
         Defines which cell borders should be drawn.
@@ -248,6 +260,10 @@ class Table:
         to be passed to `fpdf.FPDF.multi_cell()`.
         Can be overriden to customize this logic
         """
+
+        if cell.border != CellBordersLayout.INHERIT:
+            return str(cell.border)
+
         if self._borders_layout == TableBordersLayout.ALL:
             return 1
         if self._borders_layout == TableBordersLayout.NONE:
@@ -372,9 +388,8 @@ class Table:
 
         # place cursor (required for images after images)
 
-        if (
-            height_query_only
-        ):  # not rendering, cell_x_positions is not relevant (and probably not provided)
+        # not rendering, cell_x_positions is not relevant (and probably not provided):
+        if height_query_only:
             cell_x = 0
         else:
             cell_x = cell_x_positions[j]
@@ -483,7 +498,7 @@ class Table:
             dy = 0
 
             if cell_height is not None:
-                actual_text_height = cell_height_info.rendered_height[j]
+                actual_text_height = cell_height_info.rendered_heights[j]
 
                 if v_align == VAlign.M:
                     dy = (cell_height - actual_text_height) / 2
@@ -761,6 +776,7 @@ class Row:
         rowspan=1,
         padding=None,
         link=None,
+        border=CellBordersLayout.INHERIT,
     ):
         """
         Adds a cell to the row.
@@ -779,6 +795,7 @@ class Row:
             rowspan (int): optional number of rows this cell should span.
             padding (tuple): optional padding (left, top, right, bottom) for the cell.
             link (str, int): optional link, either an URL or an integer returned by `FPDF.add_link`, defining an internal link to a page
+            border (fpdf.enums.CellBordersLayout): optional cell borders, defaults to `CellBordersLayout.INHERIT`
 
         """
         if text and img:
@@ -810,6 +827,7 @@ class Row:
             rowspan,
             padding,
             link,
+            CellBordersLayout.coerce(border),
         )
         self.cells.append(cell)
         return cell
@@ -829,6 +847,7 @@ class Cell:
         "rowspan",
         "padding",
         "link",
+        "border",
     )
     text: str
     align: Optional[Union[str, Align]]
@@ -840,6 +859,7 @@ class Cell:
     rowspan: int
     padding: Optional[Union[int, tuple, type(None)]]
     link: Optional[Union[str, int]]
+    border: Optional[CellBordersLayout]
 
     def write(self, text, align=None):
         raise NotImplementedError("Not implemented yet")
@@ -848,8 +868,10 @@ class Cell:
 @dataclass(frozen=True)
 class RowLayoutInfo:
     height: float
+    # accumulated rowspans to take in account when considering page breaks:
     pagebreak_height: float
-    rendered_height: dict
+    # heights of every cell in the row:
+    rendered_heights: dict
     merged_heights: list
 
 

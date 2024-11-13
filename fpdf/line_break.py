@@ -7,8 +7,9 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-from typing import NamedTuple, Any, List, Optional, Union, Sequence
 from numbers import Number
+from typing import NamedTuple, Any, List, Optional, Union, Sequence
+from uuid import uuid4
 
 from .enums import Align, CharVPos, TextDirection, WrapMode
 from .errors import FPDFException
@@ -18,6 +19,24 @@ from .util import escape_parens
 SOFT_HYPHEN = "\u00ad"
 HYPHEN = "\u002d"
 SPACE = " "
+BREAKING_SPACE_SYMBOLS = [
+    " ",
+    "\u200b",  # | ZERO WIDTH SPACE
+    "\u2000",  # | EN QUAD
+    "\u2001",  # | EM QUAD
+    "\u2002",  # | EN SPACE
+    "\u2003",  # | EM SPACE
+    "\u2004",  # | THREE-PER-EM SPACE
+    "\u2005",  # | FOUR-PER-EM SPACE
+    "\u2006",  # | SIX-PER-EM SPACE
+    "\u2008",  # | PUNCTUATION SPACE
+    "\u2009",  # | THIN SPACE
+    "\u200A",  # | HAIR SPACE
+    "\u205F",  # | MEDIUM MATHEMATICAL SPACE
+    "\u3000",  # | IDEOGRAPHIC SPACE
+    "\u0009",  # | TAB
+]
+BREAKING_SPACE_SYMBOLS_STR = "".join(BREAKING_SPACE_SYMBOLS)
 NBSP = "\u00a0"
 NEWLINE = "\n"
 FORM_FEED = "\u000c"
@@ -216,6 +235,14 @@ class Fragment:
                 w += char_spacing * (char_len - 1)
         return w / self.k
 
+    def has_same_style(self, other: "Fragment"):
+        """Returns if 2 fragments are equivalent other than the characters/string"""
+        return (
+            self.graphics_state == other.graphics_state
+            and self.k == other.k
+            and isinstance(other, self.__class__)
+        )
+
     def get_character_width(self, character: str, print_sh=False, initial_cs=True):
         """
         Return the width of a single character out of the stored text.
@@ -332,6 +359,50 @@ class Fragment:
         return ret
 
 
+class TotalPagesSubstitutionFragment(Fragment):
+    """
+    A special type of text fragment that represents a placeholder for the total number of pages
+    in a PDF document.
+
+    A placeholder will be generated during the initial content rendering phase of a PDF document.
+    This placeholder is later replaced by the total number of pages in the document when the final
+    output is being produced.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.uuid = uuid4()
+
+    def get_placeholder_string(self):
+        """
+        This method returns a placeholder string containing a universally unique identifier (UUID4),
+        ensuring that the placeholder is distinct and does not conflict with other placeholders
+        within the document.
+        """
+        return f"::placeholder:{self.uuid}::"
+
+    def render_pdf_text(self, *args, **kwargs):
+        """
+        This method is invoked during the page content rendering phase, which is common to all
+        `Fragment` instances. It stores the provided arguments and keyword arguments to preserve
+        the necessary information and graphic state for the final substitution rendering.
+
+        The method then returns the unique placeholder string.
+        """
+        self._render_args = args
+        self._render_kwargs = kwargs
+        return self.get_placeholder_string()
+
+    def render_text_substitution(self, replacement_text: str):
+        """
+        This method is invoked at the output phase. It calls `render_pdf_text()` from the superclass
+        to render the fragment with the preserved rendering state (stored in `_render_args` and `_render_kwargs`)
+        and insert the final text in place of the placeholder.
+        """
+        self.characters = list(replacement_text)
+        return super().render_pdf_text(*self._render_args, **self._render_kwargs)
+
+
 class TextLine(NamedTuple):
     fragments: tuple
     text_width: float
@@ -427,8 +498,7 @@ class CurrentLine:
         self,
         character: str,
         character_width: float,
-        graphics_state: dict,
-        k: float,
+        original_fragment: Fragment,
         original_fragment_index: int,
         original_character_index: int,
         height: float,
@@ -437,19 +507,32 @@ class CurrentLine:
         assert character != NEWLINE
         self.height = height
         if not self.fragments:
-            self.fragments.append(Fragment("", graphics_state, k, url))
+            self.fragments.append(
+                original_fragment.__class__(
+                    characters="",
+                    graphics_state=original_fragment.graphics_state,
+                    k=original_fragment.k,
+                    link=url,
+                )
+            )
 
         # characters are expected to be grouped into fragments by font and
         # character attributes. If the last existing fragment doesn't match
         # the properties of the pending character -> add a new fragment.
-        elif (
-            graphics_state != self.fragments[-1].graphics_state
-            or k != self.fragments[-1].k
-        ):
-            self.fragments.append(Fragment("", graphics_state, k, url))
+        elif isinstance(
+            original_fragment, Fragment
+        ) and not original_fragment.has_same_style(self.fragments[-1]):
+            self.fragments.append(
+                original_fragment.__class__(
+                    characters="",
+                    graphics_state=original_fragment.graphics_state,
+                    k=original_fragment.k,
+                    link=url,
+                )
+            )
         active_fragment = self.fragments[-1]
 
-        if character == SPACE:
+        if character in BREAKING_SPACE_SYMBOLS_STR:
             self.space_break_hint = SpaceHint(
                 original_fragment_index,
                 original_character_index,
@@ -473,8 +556,8 @@ class CurrentLine:
                 self.number_of_spaces,
                 HYPHEN,
                 character_width,
-                graphics_state,
-                k,
+                original_fragment.graphics_state,
+                original_fragment.k,
             )
 
         if character != SOFT_HYPHEN or self.print_sh:
@@ -532,8 +615,7 @@ class CurrentLine:
             self.add_character(
                 self.hyphen_break_hint.curchar,
                 self.hyphen_break_hint.curchar_width,
-                self.hyphen_break_hint.graphics_state,
-                self.hyphen_break_hint.k,
+                self.hyphen_break_hint,
                 self.hyphen_break_hint.original_fragment_index,
                 self.hyphen_break_hint.original_character_index,
                 self.height,
@@ -668,7 +750,9 @@ class MultiLineBreak:
                     trailing_form_feed=character == FORM_FEED,
                 )
             if current_line.width + character_width > max_width:
-                if character == SPACE:  # must come first, always drop a current space.
+                if (
+                    character in BREAKING_SPACE_SYMBOLS_STR
+                ):  # must come first, always drop a current space.
                     self.character_index += 1
                     return current_line.manual_break(self.align)
                 if self.wrapmode == WrapMode.CHAR:
@@ -696,8 +780,7 @@ class MultiLineBreak:
             current_line.add_character(
                 character,
                 character_width,
-                current_fragment.graphics_state,
-                current_fragment.k,
+                current_fragment,
                 self.fragment_index,
                 self.character_index,
                 current_font_height * self.line_height,

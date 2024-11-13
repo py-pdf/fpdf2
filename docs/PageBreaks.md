@@ -21,6 +21,8 @@ Simply call `.add_page()`.
 The special string `{nb}` will be substituted by the total number of pages on document closure.
 This special value can changed by calling [alias_nb_pages()](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages).
 
+!!! warning "This is currently incompatible with [text shaping](./TextShaping.md).<br>_cf._ [GitHub issue #1090](https://github.com/py-pdf/fpdf2/issues/1090)"
+
 ## will_page_break ##
 
 `will_page_break(height)` lets you know if adding an element will trigger a page break,

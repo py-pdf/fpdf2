@@ -13,9 +13,11 @@ from collections import defaultdict, OrderedDict
 from contextlib import contextmanager
 from io import BytesIO
 
+
 from .annotations import PDFAnnotation
 from .enums import SignatureFlag
 from .errors import FPDFException
+from .line_break import TotalPagesSubstitutionFragment
 from .image_datastructures import RasterImageInfo
 from .outline import build_outline_objs
 from .sign import Signature, sign_content
@@ -243,6 +245,7 @@ class PDFPage(PDFObject):
         "_index",
         "_width_pt",
         "_height_pt",
+        "_text_substitution_fragments",
     )
 
     def __init__(
@@ -265,6 +268,7 @@ class PDFPage(PDFObject):
         self.parent = None  # must always be set before calling .serialize()
         self._index = index
         self._width_pt, self._height_pt = None, None
+        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
 
     def index(self):
         return self._index
@@ -276,6 +280,12 @@ class PDFPage(PDFObject):
     def set_dimensions(self, width_pt, height_pt):
         "Accepts a pair (width, height) in the unit specified to FPDF constructor"
         self._width_pt, self._height_pt = width_pt, height_pt
+
+    def get_text_substitutions(self):
+        return self._text_substitution_fragments
+
+    def add_text_substitution(self, fragment):
+        self._text_substitution_fragments.append(fragment)
 
 
 class PDFPagesRoot(PDFObject):
@@ -377,12 +387,7 @@ class OutputProducer:
         sig_annotation_obj = self._add_annotations_as_objects()
         for embedded_file in fpdf.embedded_files:
             self._add_pdf_obj(embedded_file, "embedded_files")
-        font_objs_per_index = self._add_fonts()
-        img_objs_per_index = self._add_images()
-        gfxstate_objs_per_name = self._add_gfxstates()
-        resources_dict_obj = self._add_resources_dict(
-            font_objs_per_index, img_objs_per_index, gfxstate_objs_per_name
-        )
+        self._insert_resources(page_objs)
         struct_tree_root_obj = self._add_structure_tree()
         outline_dict_obj, outline_items = self._add_document_outline()
         xmp_metadata_obj = self._add_xmp_metadata()
@@ -405,7 +410,6 @@ class OutputProducer:
         dests = []
         for page_obj in page_objs:
             page_obj.parent = pages_root_obj
-            page_obj.resources = resources_dict_obj
             for annot in page_obj.annots:
                 page_dests = []
                 if annot.dest:
@@ -550,10 +554,14 @@ class OutputProducer:
                 glyph_names = font.subset.get_all_glyph_names()
 
                 if len(font.missing_glyphs) > 0:
+                    msg = ", ".join(
+                        f"'{chr(x)}' ({chr(x).encode('unicode-escape').decode()})"
+                        for x in font.missing_glyphs[:10]
+                    )
+                    if len(font.missing_glyphs) > 10:
+                        msg += f", ... (and {len(font.missing_glyphs) - 10} others)"
                     LOGGER.warning(
-                        "Font %s is missing the following glyphs: %s",
-                        fontname,
-                        ", ".join(chr(x) for x in font.missing_glyphs),
+                        "Font %s is missing the following glyphs: %s", fontname, msg
                     )
 
                 # 2. make a subset
@@ -688,6 +696,8 @@ class OutputProducer:
                 self._add_pdf_obj(font_file_cs_obj, "fonts")
                 font_descriptor_obj.font_file2 = font_file_cs_obj
 
+                font.subset.pick.cache_clear()
+                font.subset.get_glyph.cache_clear()
                 font.close()
 
         return font_objs_per_index
@@ -785,6 +795,39 @@ class OutputProducer:
             gfxstate_objs_per_name[name] = gfxstate_obj
         return gfxstate_objs_per_name
 
+    def _insert_resources(self, page_objs):
+        font_objs_per_index = self._add_fonts()
+        img_objs_per_index = self._add_images()
+        gfxstate_objs_per_name = self._add_gfxstates()
+        # Insert /Resources dicts:
+        if self.fpdf.single_resources_object:
+            resources_dict_obj = self._add_resources_dict(
+                font_objs_per_index, img_objs_per_index, gfxstate_objs_per_name
+            )
+            for page_obj in page_objs:
+                page_obj.resources = resources_dict_obj
+        else:
+            for page_number, page_obj in enumerate(page_objs, start=1):
+                page_font_objs_per_index = {
+                    font_id: font_objs_per_index[font_id]
+                    for font_id in self.fpdf.fonts_used_per_page_number[page_number]
+                }
+                page_img_objs_per_index = {
+                    img_id: img_objs_per_index[img_id]
+                    for img_id in self.fpdf.images_used_per_page_number[page_number]
+                }
+                page_gfxstate_objs_per_name = {
+                    gfx_name: gfx_state
+                    for (gfx_name, gfx_state) in gfxstate_objs_per_name.items()
+                    if gfx_name
+                    in self.fpdf.graphics_style_names_per_page_number[page_number]
+                }
+                page_obj.resources = self._add_resources_dict(
+                    page_font_objs_per_index,
+                    page_img_objs_per_index,
+                    page_gfxstate_objs_per_name,
+                )
+
     def _add_resources_dict(
         self, font_objs_per_index, img_objs_per_index, gfxstate_objs_per_name
     ):
@@ -868,7 +911,7 @@ class OutputProducer:
                     f"Could not format date: {fpdf.creation_date}"
                 ) from error
         info_obj = PDFInfo(
-            title=getattr(fpdf, "title", None),
+            title=fpdf.title,
             subject=getattr(fpdf, "subject", None),
             author=getattr(fpdf, "author", None),
             keywords=getattr(fpdf, "keywords", None),

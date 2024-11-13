@@ -2,6 +2,8 @@
 
 _New in [:octicons-tag-24: 2.7.5](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
+!!! warning "This is currently incompatible with [the special `{nb}` string](./PageBreaks.md) that inserts the number of pages.<br>_cf._ [GitHub issue #1090](https://github.com/py-pdf/fpdf2/issues/1090)"
+
 ## What is text shaping? ##
 Text shaping is a fundamental process in typography and computer typesetting that influences the aesthetics and readability of text in various languages and scripts. It involves the transformation of Unicode text into glyphs, which are then positioned for display or print. 
 
@@ -30,8 +32,6 @@ Glyph substitution is a mechanism that replaces one glyph or a set of glyphs wit
 Another common use of glyph substitution is to replace a sequence of characters by a symbol that better represent the meaning of those characters on a specialized context (mathematical, programming, etc.).
 
 ![](text-shaping-substitution.png)
-
-
 
 
 ## Usage ##
@@ -87,20 +87,21 @@ Direction can be `ltr` (left to right) or `rtl` (right to left). The `ttb` (top 
 
 [Valid OpenType language codes](https://learn.microsoft.com/en-us/typography/opentype/spec/languagetags)
 
-# Bidirectional Text #
+
+## Bidirectional Text #
 
 _New in [:octicons-tag-24: 2.7.8](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 Bidirectional text refers to text containing both left-to-right (LTR) and right-to-left (RTL) language scripts. Languages such as Arabic, Hebrew, and Persian are written from right to left, whereas languages like English, Spanish, and French are written from left to right. The Unicode Bidirectional Algorithm is a set of rules defined by the Unicode Consortium to properly display mixed-directional text. This algorithm ensures that characters are shown in their correct order, preserving the logical sequence of the text.
 
-## Unicode Bidirectional Algorithm ##
+### Unicode Bidirectional Algorithm ##
 The Unicode Bidirectional Algorithm, often abbreviated as the *Bidi* Algorithm, is essential for displaying text containing both RTL and LTR scripts. It determines the directionality of characters and arranges them in a visually correct order. This algorithm takes into account the inherent directionality of characters (such as those in Arabic or Hebrew being inherently RTL) and the surrounding context to decide how text should be displayed.
 
-## Paragraph direction ##
+### Paragraph direction ##
 
 ![](bidi_paragraph.svg)
 
-## Bidirectional text in fpdf2 ##
+### Bidirectional text in fpdf2 ##
 fpdf2 will automatically apply the unicode bidirectional algorithm if text shaping is enabled.
 
 If no `direction` parameter is provided - or `direction` is `None` - paragraph direction will be set according to the first directional character present on the text.

@@ -11,12 +11,75 @@ and [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 `DeprecationWarning` messages are not displayed by Python by default.
 
 Hence, every time you use a newer version of `fpdf2`, we strongly encourage you to execute your scripts
-with the `-Wd` option (_cf._ [documentation](https://docs.python.org/3/using/cmdline.html#cmdoption-W)) 
+with the `-Wd` option (_cf._ [documentation](https://docs.python.org/3/using/cmdline.html#cmdoption-W))
 in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.7.9] - Not released yet
+## [2.8.2] - Not released yet
+### Added
+* new optional parameter `border` for table cells [issue #1192](https://github.com/py-pdf/fpdf2/issues/1192) users can define specific borders (left, right, top, bottom) for individual cells
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): now parses `<title>` tags to set the [document title](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title). By default, it is added as PDF metadata, but not rendered in the document body. However, this can be enabled by passing `render_title_tag=True` to `FPDF.write_html()`.
+* support for LZWDecode compression [issue #1271](https://github.com/py-pdf/fpdf2/issues/1271)
+### Fixed
+* `FPDF.set_text_shaping(False)` was broken since version 2.7.8 and is now working properly - [issue #1287](https://github.com/py-pdf/fpdf2/issues/1287)
+* fixed bug where cells with `rowspan`, `colspan` > 1 and null text were not displayed properly - [issue #1293](https://github.com/py-pdf/fpdf2/issues/1293)
+### Changed
+* improved logic for handling text substitution of the total number of pages, ensuring compatibility with text shaping - [issue #1090](https://github.com/py-pdf/fpdf2/issues/1090)
+### Removed
+* reminder : since release `2.8.1`, `fpdf2` does not support Python 3.7, that reached [end-of-life](https://devguide.python.org/versions/#supported-versions) in 2023
+
+## [2.8.1] - 2024-10-04
+### Added
+* support for quadratic and cubic Bézier curves with [`FPDF.bezier()`](https://py-pdf.github.io/fpdf2/fpdf/Shapes.html#fpdf.fpdf.FPDF.bezier) - thanks to @awmc000
+* support for escape character for markers in markdown text [issue #1215](https://github.com/py-pdf/fpdf2/issues/1215)
+* Wrapping words on spaces now considers all common space symbols in addition to regular spaces (' '), addressing issues with word-wrapping for languages like Thai, as per [#1190](https://github.com/py-pdf/fpdf2/issues/1190) and [#1191](https://github.com/py-pdf/fpdf2/pull/1191).
+* [`Templates`](https://py-pdf.github.io/fpdf2/fpdf/Templates.html) can now be also defined in JSON files.
+* support to optionally set `wrapmode` in templates (default `"WORD"` can optionally be set to `"CHAR"` to support wrapping on characters for scripts like Chinese or Japanese) - _cf._ [#1159](https://github.com/py-pdf/fpdf2/issues/1159) - thanks to @carlhiggs
+* documentation on how to use `fpdf2` with [Rough.js](https://roughjs.com/): [link to docs](https://py-pdf.github.io/fpdf2/CombineWithRoughJS.html)
+* documentation on how to use `fpdf2` with [gunicorn](https://gunicorn.org/): [link to docs](https://py-pdf.github.io/fpdf2/UsageInWebAPI.html#gunicorn)
+* new translation of the tutorial in Türkçe, thanks to @natgho: [Türkçe](https://py-pdf.github.io/fpdf2/Tutorial-tr.html)
+* feature to identify the Unicode script of the input text and break it into fragments when different scripts are used, improving [text shaping](https://py-pdf.github.io/fpdf2/TextShaping.html) results
+* [`FPDF.image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image): now handles `keep_aspect_ratio` in combination with an enum value provided to `x`
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): now supports CSS page breaks properties : [documentation](https://py-pdf.github.io/fpdf2/HTML.html#page-breaks)
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): new optional `font_family` parameter to set the default font family
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): spacing before lists can now be adjusted via the `tag_styles` attribute - thanks to @lcgeneralprojects
+* file names are mentioned in errors when `fpdf2` fails to parse a SVG image
+### Fixed
+* [`FPDF.local_context()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.local_context) used to leak styling during page breaks, when rendering `footer()` & `header()` - MR: [#1207](https://github.com/py-pdf/fpdf2/pulls/1207)
+* [`fpdf.drawing.DeviceCMYK`](https://py-pdf.github.io/fpdf2/fpdf/drawing.html#fpdf.drawing.DeviceCMYK) objects can now be passed to [`FPDF.set_draw_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [`FPDF.set_fill_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) and [`FPDF.set_text_color()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color) without raising a `ValueError`: [documentation](https://py-pdf.github.io/fpdf2/Text.html#text-formatting).
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): fixing rendering of `<hr>` tags, that do not trigger a page break anymore
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): fixed automatic page break when an image does not have enough vertical space to be rendered on a page
+* individual `/Resources` directories are now properly created for each document page. This change ensures better compliance with the PDF specification but results in a slight increase in the size of PDF documents. You can still use the old behavior by setting `FPDF().single_resources_object = True`
+* line size calculation for fragments when [text shaping](https://py-pdf.github.io/fpdf2/TextShaping.html) is used
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): fixed incoherent indentation of long `<ul>` list entries - _cf._ [issue #1073](https://github.com/py-pdf/fpdf2/issues/1073) - thanks to @lcgeneralprojects
+* default values for `top_margin` and `bottom_margin` in `HTML2FPDF._new_paragraph()` calls are now correctly converted into chosen document units.
+* In [text_columns()](https://py-pdf.github.io/fpdf2/extColumns.html), paragraph top/bottom margins didn't correctly trigger column breaks; [issue #1214](https://github.com/py-pdf/fpdf2/issues/1214)
+* [`fpdf.drawing.color_from_hex_string`](https://py-pdf.github.io/fpdf2/fpdf/drawing.html#fpdf.drawing.color_from_hex_string) did not test or mention accepting lowercase hex values.
+* handling of bidirectional text on `FPDF.get_string_width()` [issue #1231]
+* new translation of the tutorial in [Indonesian](https://py-pdf.github.io/fpdf2/Tutorial-id.html) - thanks to @odhyp
+* `RecursionError` in some cases when calling [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) inside [`FPDF.footer()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) - [issue #1222](https://github.com/py-pdf/fpdf2/issues/1222)
+### Removed
+* support for Python 3.7, that reached [end-of-life](https://devguide.python.org/versions/#supported-versions) in 2023
+* an obscure and undocumented [feature](https://github.com/py-pdf/fpdf2/issues/1198) of [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html), which used to magically pass instance attributes as arguments.
+### Deprecated
+* `fpdf.TitleStyle` has been renamed into [`fpdf.TextStyle`](https://py-pdf.github.io/fpdf2/fpdf/fonts.html#fpdf.fonts.TextStyle)
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): `tag_indents` introduced in the last version - Now the indentation can be provided through the `tag_styles` parameter, using the `.l_margin` of `TextStyle` instances
+### Changed
+* [`FPDF.local_context()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.local_context) used to treat `font_size` as a value in points. Now this is the role of `font_size_pt`, whereas `font_size` allows to set the font size into chosen document units (specified with `FPDF(unit=)`) - MR: [#1207](https://github.com/py-pdf/fpdf2/pulls/1207)
+* [`FPDF.circle()`](https://py-pdf.github.io/fpdf2/fpdf.html#fpdf.fpdf.FPDF.circle) : the previous `r` parameter, that in fact defined the diameter, has been replaced by a new `radius` paremeter. The `x` & `y` parameters now define the circle **center**, instead of its top-left corner as it used to be - [issue #1245](https://github.com/py-pdf/fpdf2/issues/1245)
+* [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html) now raises an error when a single row is too high to be rendered on a single page
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): indentation of HTML elements can now be non-integer (float), and is now independent of font size and bullet strings.
+* improved performance of font glyph selection by using functools cache
+* Clarified usage of the `style` attribute in [`FPDF.add_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font)
+
+## [2.8.0] - 2024-10-04
+This version was only uploaded a few minutes on [Pypi](https://pypi.org/),
+and then deleted manually by a maintainer, erroneously fearing a regression.
+
+Version 2.8.1 is exactly similar.
+
+## [2.7.9] - 2024-05-17
 ### Added
 * new optional parameter `repeat_headings` for [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table) that indicates whether to print table headings on every page
 * support for overriding paragraph direction on bidirectional text
@@ -30,9 +93,10 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * a bug when rendering vector images with dashed lines that caused a warning message in Adobe Acrobat Reader
 * ordering RTL fragments on bidirectional texts
 * fixed type hint of member `level` in class [`OutlineSection`](https://py-pdf.github.io/fpdf2/fpdf/outline.html#fpdf.outline.OutlineSection) from `str` to `int`.
-* SVG clipping paths being incorrectly painted - _cf._ [issue #1147](https://github.com/py-pdf/fpdf2/issues/1147)]
+* SVG clipping paths being incorrectly painted - _cf._ [issue #1147](https://github.com/py-pdf/fpdf2/issues/1147)
+* new translation of the tutorial in [Polski](https://py-pdf.github.io/fpdf2/Tutorial-pl.html) - thanks to @DarekRepos
 ### Changed
-* improved the performance of `FPDF.start_section()` - _cf._ [issue #1092](https://github.com/py-pdf/fpdf2/issues/1092)
+* improved the performance of `FPDF.start_section()` - thanks to @dmail00 - _cf._ [issue #1092](https://github.com/py-pdf/fpdf2/issues/1092)
 ### Deprecated
 * The `dd_tag_indent` & `li_tag_indent` parameters of `FPDF.write_html()` are replaced by the new `tag_indents` generic parameter.
 * The `heading_sizes` & `pre_code_font` parameters of `FPDF.write_html()` are replaced by the new `tag_styles` generic parameter.
@@ -40,9 +104,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.7.8] - 2024-02-09
 ### Added
 * support for `<path>` elements in SVG `<clipPath>` elements
-* support for `bidirectional` text shaping - thanks to @andersonhc
-* documentation on how to combine `fpdf2` with [mistletoe](https://pypi.org/project/kaleido/) in order to [generate PDF documents from Markdown (link)](https://py-pdf.github.io/fpdf2/CombineWithMistletoeoToUseMarkdown.html)
-* tutorial in Dutch: [Handleiding](https://py-pdf.github.io/fpdf2/Tutorial-nl.md) - thanks to @Polderrider
+* support for `bidirectional` [text shaping](https://py-pdf.github.io/fpdf2/TextShaping.html) - thanks to @andersonhc
+* documentation on how to combine `fpdf2` with [mistletoe](https://pypi.org/project/mistletoe/) in order to [generate PDF documents from Markdown (link)](https://py-pdf.github.io/fpdf2/CombineWithMistletoeoToUseMarkdown.html)
 * support for `Table` cells that span multiple rows via the `rowspan` attribute, which can be combined with `colspan` - thanks to @mjasperse
 * `TableSpan.COL` and `TableSpan.ROW` enums that can be used as placeholder table entries to identify span extents - thanks to @mjasperse
 ### Fixed
@@ -98,10 +161,10 @@ This release also marks the arrival of two new maintainers: Georg Mischler ([@gm
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): Now supports outer border width for rendering the outer border of the table with a different line-width - thanks to @RubendeBruin
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): Now supports multiple heading rows : [documentation](https://py-pdf.github.io/fpdf2/Tables.html#table-with-multiple-heading-rows) - thanks to @SandraFer
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) now supports heading colors defined as attributes (_e.g._ `<h2 color="#00ff00">...`) - thanks to @Lucas-C
-* documentation on how to use `livereload` to enable a "watch" mode with PDF generation: [Combine with livereload](https://py-pdf.github.io/fpdf2/CombineWithLivereload.html) - thanks to @Lucas-C
+* documentation on how to use `livereload` to enable a "watch" mode while performing PDF generation: [Combine with livereload](https://py-pdf.github.io/fpdf2/CombineWithLivereload.html) - thanks to @Lucas-C
 ### Changed
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): the formatting output has changed in some aspects. Vertical spacing around headings and paragraphs may be slightly different, and elements at the top of the page don't have any extra spacing above anymore.
-* [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): If the height of a row is governed by an image, then the default vertical alignment of the other cells is "center". This was "top". 
+* [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): If the height of a row is governed by an image, then the default vertical alignment of the other cells is "center". This was "top".
 * variable-width non-breaking space (NBSP) support [issue #834](https://github.com/PyFPDF/fpdf2/issues/834)
 This change was made for consistency between row-height governed by text or images. The old behaviour can be enforced using the new vertical alignment parameter.
 ### Fixed
@@ -242,7 +305,7 @@ This change was made for consistency between row-height governed by text or imag
 - fixed [`insert_toc_placeholder()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.insert_toc_placeholder) usage with [`footer()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) and `{{nb}}`; [#548](https://github.com/py-pdf/fpdf2/issues/548)
 - the SVG parser now accepts `stroke-width` attribute values with an explicit unit, thanks to @gmischler; [#526](https://github.com/py-pdf/fpdf2/issues/526)
 - the SVG parser now accepts absolute units for `width` and `height` attributes, thanks to @darioackermann; [#555](https://github.com/py-pdf/fpdf2/issues/555)
-- `write_html()` method now correctly handles whitespace when parsing HTML. `<pre></pre>` blocks still maintain spaces, tabs and line breaks. 
+- `write_html()` method now correctly handles whitespace when parsing HTML. `<pre></pre>` blocks still maintain spaces, tabs and line breaks.
 ### Changed
 - the first parameter of `FPDF.add_font()` is now **optional**: if it is not provided, the base name of the `fname` font path is used to define the font family. Hence `pdf.add_font(fname="fonts/NotoSansArabic.ttf")` will define a font named `NotoSansArabic`.
 - the output of [`embed_file()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.embed_file) is now a `PDFEmbeddedFile`, not a string, but the internal file name can be retrieved through its `.basename` property
@@ -420,7 +483,7 @@ Thanks to @torque for contributing this massive new feature:
 - While images transparency is still handled by default through the use of `SMask`,
   this can be disabled by setting `pdf.allow_images_transparency = False`
   in order to allow compliance with [PDF/A-1](https://en.wikipedia.org/wiki/PDF/A#Description)
-- [`FPDF.arc`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.arc): new method added. 
+- [`FPDF.arc`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.arc): new method added.
   It enables to draw arcs in a PDF document.
 - [`FPDF.solid_arc`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.solid_arc): new method added.
   It enables to draw solid arcs in a PDF document. A solid arc combines an arc and a triangle to form a pie slice.
@@ -612,7 +675,7 @@ prevented strings passed first to the text-rendering methods to be displayed.
 ### Removed
 * non-necessary dependency on `numpy`
 * support for Python 2
- 
+
 ## [2.0.6] - 2020-10-26
 ### Added
 * Python 3.9 is now supported
