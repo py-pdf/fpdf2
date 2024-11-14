@@ -1,4 +1,4 @@
-from .enums import PageMode
+from .enums import TextDirection, Duplex, PageBoundaries, PageMode
 from .syntax import build_obj_dict, create_dictionary_string
 
 
@@ -14,6 +14,14 @@ class ViewerPreferences:
         center_window=False,
         display_doc_title=False,
         non_full_screen_page_mode=PageMode.USE_NONE,
+        num_copies=None,
+        print_page_range=None,
+        direction=None,
+        duplex=None,
+        view_area=None,
+        view_clip=None,
+        print_area=None,
+        print_clip=None,
     ):
         self.hide_toolbar = hide_toolbar
         "A flag specifying whether to hide the conforming reader’s tool bars when the document is active"
@@ -34,14 +42,56 @@ class ViewerPreferences:
         taken from the Title entry of the document information dictionary.
         If false, the title bar should instead display the name of the PDF file containing the document.
         """
-        self.non_full_screen_page_mode = PageMode.coerce(non_full_screen_page_mode)
+        self.non_full_screen_page_mode = non_full_screen_page_mode
         if self.non_full_screen_page_mode in (
             PageMode.FULL_SCREEN,
             PageMode.USE_ATTACHMENTS,
         ):
             raise ValueError(
-                f"{self.non_full_screen_page_mode} is not a support value for NonFullScreenPageMode"
+                f"{self.non_full_screen_page_mode} is not a supported value for NonFullScreenPageMode"
             )
+        self.num_copies = num_copies
+        """
+        The number of copies that shall be printed when the print dialog is opened for this file.
+        Values outside this range shall be ignored. Default value: as defined by the conforming reader, but typically 1
+        """
+        self.print_page_range = print_page_range
+        """
+        The page numbers used to initialize the print dialog box when the file is printed.
+        The array shall contain an even number of integers to be interpreted in pairs,
+        with each pair specifying the first and last pages in a sub-range of pages to be printed.
+        The first page of the PDF file shall be denoted by 1.
+        """
+        self.direction = direction
+        """
+        The predominant reading order for text.
+        _cf. `fpdf.enums.TextDirection`
+        """
+        self.duplex = duplex
+        """
+        The paper handling option that shall be used when printing the file from the print dialog.
+        _cf. `fpdf.enums.Duplex`
+        """
+        self.view_area = view_area
+        """
+        The name of the page boundary representing the area of a page that shall be displayed when viewing the document on the screen.
+        Default value: CropBox.
+        """
+        self.view_clip = view_clip
+        """
+        The name of the page boundary to which the contents of a page shall be clipped when viewing the document on the screen.
+        Default value: CropBox.
+        """
+        self.print_area = print_area
+        """
+        The name of the page boundary representing the area of a page that shall be rendered when printing the document.
+        Default value: CropBox.
+        """
+        self.print_clip = print_clip
+        """
+        The name of the page boundary to which the contents of a page shall be clipped when printing the document.
+        Default value: CropBox.
+        """
 
     @property
     def non_full_screen_page_mode(self):
@@ -50,7 +100,77 @@ class ViewerPreferences:
 
     @non_full_screen_page_mode.setter
     def non_full_screen_page_mode(self, page_mode):
-        self._non_full_screen_page_mode = PageMode.coerce(page_mode)
+        self._non_full_screen_page_mode = (
+            None if page_mode is None else PageMode.coerce(page_mode)
+        )
+
+    @property
+    def direction(self):
+        "(`fpdf.enums.TextDirection`) The predominant reading order for text"
+        return self._direction
+
+    @direction.setter
+    def direction(self, direction):
+        self._direction = None if direction is None else TextDirection.coerce(direction)
+
+    @property
+    def duplex(self):
+        "(`fpdf.enums.Duplexe`) The paper handling option that shall be used when printing the file from the print dialog"
+        return self._duplex
+
+    @duplex.setter
+    def duplex(self, duplex):
+        self._duplex = None if duplex is None else Duplex.coerce(duplex)
+
+    @property
+    def view_area(self):
+        """
+        (`fpdf.enums.PageBoundaries`) The name of the page boundary representing the area of a page that shall be displayed
+        when viewing the document on the screen
+        """
+        return self._view_area
+
+    @view_area.setter
+    def view_area(self, view_area):
+        self._view_area = (
+            None if view_area is None else PageBoundaries.coerce(view_area)
+        )
+
+    @property
+    def view_clip(self):
+        """
+        (`fpdf.enums.PageBoundaries`) The name of the page boundary to which the contents of a page shall be clipped
+        when viewing the document on the screen.
+        """
+        return self._view_clip
+
+    @view_clip.setter
+    def view_clip(self, view_clip):
+        self._view_clip = (
+            None if view_clip is None else PageBoundaries.coerce(view_clip)
+        )
+
+    @property
+    def print_area(self):
+        "(`fpdf.enums.PageBoundaries`) The name of the page boundary representing the area of a page that shall be rendered when printing the document"
+        return self._print_area
+
+    @print_area.setter
+    def print_area(self, print_area):
+        self._print_area = (
+            None if print_area is None else PageBoundaries.coerce(print_area)
+        )
+
+    @property
+    def print_clip(self):
+        "(`fpdf.enums.PageBoundaries`) The name of the page boundary to which the contents of a page shall be clipped when printing the document"
+        return self._print_clip
+
+    @print_clip.setter
+    def print_clip(self, print_clip):
+        self._print_clip = (
+            None if print_clip is None else PageBoundaries.coerce(print_clip)
+        )
 
     def serialize(self, _security_handler=None, _obj_id=None):
         obj_dict = build_obj_dict(

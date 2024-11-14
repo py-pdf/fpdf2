@@ -995,6 +995,7 @@ class EncryptionMethod(Enum):
 
 class TextDirection(CoerciveEnum):
     "Text rendering direction for text shaping"
+
     LTR = intern("LTR")
     "left to right"
 
@@ -1006,3 +1007,24 @@ class TextDirection(CoerciveEnum):
 
     BTT = intern("BTT")
     "bottom to top"
+
+
+class Duplex(CoerciveEnum):
+    "The paper handling option that shall be used when printing the file from the print dialog."
+
+    Simplex = Name("Simplex")
+    "Print single-sided"
+
+    DuplexFlipShortEdge = Name("DuplexFlipShortEdge")
+    "Duplex and flip on the short edge of the sheet"
+
+    DuplexFlipLongEdge = Name("DuplexFlipLongEdge")
+    "Duplex and flip on the long edge of the sheet"
+
+
+class PageBoundaries(CoerciveEnum):
+    ArtBox = Name("ArtBox")
+    BleedBox = Name("BleedBox")
+    CropBox = Name("CropBox")
+    MediaBox = Name("MediaBox")
+    TrimBox = Name("TrimBox")
