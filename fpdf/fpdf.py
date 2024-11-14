@@ -5150,21 +5150,21 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         align=align,
                         new_x=XPos.LMARGIN,
                         new_y=YPos.NEXT,
-                        center=title_style.l_margin == Align.C,
+                        center=text_style.l_margin == Align.C,
                     )
         self._outline.append(
             OutlineSection(name, level, self.page, dest, outline_struct_elem)
         )
 
     @contextmanager
-    def _use_title_style(self, title_style: TextStyle):
-        if title_style:
-            if title_style.t_margin:
-                self.ln(title_style.t_margin)
-            if title_style.l_margin:
-                if isinstance(title_style.l_margin, int):
-                    self.set_x(title_style.l_margin)
-        with self.use_font_face(title_style):
+    def _use_title_style(self, text_style: TextStyle):
+        if text_style:
+            if text_style.t_margin:
+                self.ln(text_style.t_margin)
+            if text_style.l_margin:
+                if isinstance(text_style.l_margin, int):
+                    self.set_x(text_style.l_margin)
+        with self.use_font_face(text_style):
             yield
         if text_style and text_style.b_margin:
             self.ln(text_style.b_margin)
