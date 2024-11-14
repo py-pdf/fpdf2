@@ -301,6 +301,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/philj56"><img src="https://avatars.githubusercontent.com/u/13610623?v=4?s=100" width="100px;" alt="Philip Jones"/><br /><sub><b>Philip Jones</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Aphilj56" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/opposss"><img src="https://avatars.githubusercontent.com/u/120234749?v=4?s=100" width="100px;" alt="opposss"/><br /><sub><b>opposss</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=opposss" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://linktr.ee/whoisltd"><img src="https://avatars.githubusercontent.com/u/41822445?v=4?s=100" width="100px;" alt="Dat Le"/><br /><sub><b>Dat Le</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Awhoisltd" title="Bug reports">🐛</a> <a href="https://github.com/py-pdf/fpdf2/commits?author=whoisltd" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Kaustbh"><img src="https://avatars.githubusercontent.com/u/97254178?v=4?s=100" width="100px;" alt="Kaustubh "/><br /><sub><b>Kaustubh </b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Kaustbh" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>

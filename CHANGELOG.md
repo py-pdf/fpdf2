@@ -18,10 +18,11 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.2] - Not released yet
 ### Added
+* new optional parameter `border` for table cells [issue #1192](https://github.com/py-pdf/fpdf2/issues/1192) users can define specific borders (left, right, top, bottom) for individual cells
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): now parses `<title>` tags to set the [document title](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title). By default, it is added as PDF metadata, but not rendered in the document body. However, this can be enabled by passing `render_title_tag=True` to `FPDF.write_html()`.
 * support for LZWDecode compression [issue #1271](https://github.com/py-pdf/fpdf2/issues/1271)
 * support for passing `Align` values (along with string values like `'C'`, `'L'`, `'R'`) in `l_margin` of `TextStyle` to horizontally align text [issue #1282](https://github.com/py-pdf/fpdf2/issues/1282)
-
+* [text_annotation()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_annotation) has a new optional `title` parameter
 ### Fixed
 * `FPDF.set_text_shaping(False)` was broken since version 2.7.8 and is now working properly - [issue #1287](https://github.com/py-pdf/fpdf2/issues/1287)
 * fixed bug where cells with `rowspan`, `colspan` > 1 and null text were not displayed properly - [issue #1293](https://github.com/py-pdf/fpdf2/issues/1293)

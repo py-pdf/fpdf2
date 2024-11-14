@@ -2320,7 +2320,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @check_page
     def text_annotation(
-        self, x, y, text, w=1, h=1, name=None, flags=DEFAULT_ANNOT_FLAGS
+        self, x, y, text, w=1, h=1, name=None, flags=DEFAULT_ANNOT_FLAGS, title=""
     ):
         """
         Puts a text annotation on a rectangular area of the page.
@@ -2333,6 +2333,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             h (float): optional height of the link rectangle
             name (fpdf.enums.AnnotationName, str): optional icon that shall be used in displaying the annotation
             flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
+            title (str): the text label that shall be displayed in the title bar of the annotation’s
+                pop-up window when open and active. This entry shall identify the user who added the annotation.
         """
         annotation = AnnotationDict(
             "Text",
@@ -2343,6 +2345,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             contents=text,
             name=AnnotationName.coerce(name) if name else None,
             flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
+            title=title,
         )
         self.pages[self.page].annots.append(annotation)
         return annotation

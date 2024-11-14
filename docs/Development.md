@@ -237,7 +237,7 @@ There is a useful one-page example Python module with docstrings illustrating ho
 
 To preview the Markdown documentation, launch a local rendering server with:
 
-    mkdocs serve
+    mkdocs serve --open
 
 To preview the API documentation, launch a local rendering server with:
 
