@@ -220,7 +220,7 @@ def test_encryption_aes256(tmp_path):
     pdf.ink_annotation(
         [(40, 50), (70, 25), (100, 50), (70, 75), (40, 50)],
         title="Lucas",
-        contents="Some encrypted annotation",
+        text="Some encrypted annotation",
     )
     pdf.set_encryption(
         owner_password="fpdf2",
