@@ -28,6 +28,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * fixed bug where cells with `rowspan`, `colspan` > 1 and null text were not displayed properly - [issue #1293](https://github.com/py-pdf/fpdf2/issues/1293)
 ### Changed
 * improved logic for handling text substitution of the total number of pages, ensuring compatibility with text shaping - [issue #1090](https://github.com/py-pdf/fpdf2/issues/1090)
+* all [`AnnotationDict`](https://py-pdf.github.io/fpdf2/fpdf/annotations.html) properties can now be passed to `FPDF.text_annotation()`, `FPDF.free_text_annotation()`,  `FPDF.add_action()`, `FPDF.add_text_markup_annotation()` & `FPDF.ink_annotation()`. This includes `title`, `color`, `border_width`...
 ### Removed
 * reminder : since release `2.8.1`, `fpdf2` does not support Python 3.7, that reached [end-of-life](https://devguide.python.org/versions/#supported-versions) in 2023
 

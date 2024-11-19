@@ -1012,19 +1012,19 @@ class TextDirection(CoerciveEnum):
 class Duplex(CoerciveEnum):
     "The paper handling option that shall be used when printing the file from the print dialog."
 
-    Simplex = Name("Simplex")
+    SIMPLEX = Name("Simplex")
     "Print single-sided"
 
-    DuplexFlipShortEdge = Name("DuplexFlipShortEdge")
+    DUPLEX_FLIP_SHORT_EDGE = Name("DuplexFlipShortEdge")
     "Duplex and flip on the short edge of the sheet"
 
-    DuplexFlipLongEdge = Name("DuplexFlipLongEdge")
+    DUPLEX_FLIP_LONG_EDGE = Name("DuplexFlipLongEdge")
     "Duplex and flip on the long edge of the sheet"
 
 
 class PageBoundaries(CoerciveEnum):
-    ArtBox = Name("ArtBox")
-    BleedBox = Name("BleedBox")
-    CropBox = Name("CropBox")
-    MediaBox = Name("MediaBox")
-    TrimBox = Name("TrimBox")
+    ART_BOX = Name("ArtBox")
+    BLEED_BOX = Name("BleedBox")
+    CROP_BOX = Name("CropBox")
+    MEDIA_BOX = Name("MediaBox")
+    TRIM_BOX = Name("TrimBox")
