@@ -51,6 +51,12 @@ class Type3Font:
         self.resources = []
         self.glyphs: List[Type3FontGlyph] = []
 
+    def add_resource(self, image_info):
+        # don't add duplicate
+        if any(r["i"] == image_info["i"] for r in self.resources):
+            return
+        self.resources.append(image_info)
+
     @classmethod
     def get_notdef_glyph(cls, glyph_id) -> Type3FontGlyph:
         notdef = Type3FontGlyph()
@@ -105,7 +111,7 @@ class Type3Font:
         # print(glyph.glyph)
         # print(info)
         glyph.glyph_width = x_max
-        self.resources.append(info)
+        self.add_resource(info)
 
     def glyph_exists(self, glyph_name: str) -> bool:
         raise NotImplementedError("Method must be implemented on child class")
