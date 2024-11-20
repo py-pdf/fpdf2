@@ -5289,6 +5289,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                                 str(self.pages_count)
                             ).encode("latin-1"),
                         )
+            for _, font in self.fonts.items():
+                if font.type == "TTF" and font.color_font:
+                    font.color_font.load_glyphs()
             if linearize:
                 output_producer_class = LinearizedOutputProducer
             output_producer = output_producer_class(self)

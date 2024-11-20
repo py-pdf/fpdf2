@@ -17,6 +17,7 @@ from io import BytesIO
 from .annotations import PDFAnnotation
 from .enums import SignatureFlag
 from .errors import FPDFException
+from .font_type_3 import Type3Font
 from .line_break import TotalPagesSubstitutionFragment
 from .image_datastructures import RasterImageInfo
 from .outline import build_outline_objs
@@ -87,6 +88,74 @@ class CIDSystemInfo(PDFObject):
         self.registry = PDFString("Adobe", encrypt=True)
         self.ordering = PDFString("UCS", encrypt=True)
         self.supplement = 0
+
+
+class PDFType3Font(PDFObject):
+    def __init__(self, font3: "Type3Font"):
+        super().__init__()
+        self._font3 = font3
+        self.type = Name("Font")
+        self.name = Name(f"MPDFAA+{font3.base_font.name}")
+        self.subtype = Name("Type3")
+        self.font_b_box = (
+            f"[{self._font3.base_font.ttfont['head'].xMin * self._font3.scale:.0f}"
+            f" {self._font3.base_font.ttfont['head'].yMin * self._font3.scale:.0f}"
+            f" {self._font3.base_font.ttfont['head'].xMax * self._font3.scale:.0f}"
+            f" {self._font3.base_font.ttfont['head'].yMax * self._font3.scale:.0f}]"
+        )
+        self.font_matrix = f"[{1/1000} 0 0 {1/1000} 0 0]"
+        self.first_char = min(g.unicode for g in font3.glyphs)
+        self.last_char = max(g.unicode for g in font3.glyphs)
+        self.resources = None
+
+    @property
+    def char_procs(self):
+        return pdf_dict(
+            {f"/{g.glyph_name}": f"{g.obj_id} 0 R" for g in self._font3.glyphs}
+        )
+
+    @property
+    def encoding(self):
+        return pdf_dict(
+            {
+                Name("/Type"): Name("/Encoding"),
+                Name("/Differences"): self.differences_table(),
+            }
+        )
+
+    @property
+    def widths(self):
+        sorted_glyphs = sorted(self._font3.glyphs, key=lambda glyph: glyph.unicode)
+        # Find the range of unicode values
+        min_unicode = sorted_glyphs[0].unicode
+        max_unicode = sorted_glyphs[-1].unicode
+
+        # Initialize widths array with zeros
+        widths = [0] * (max_unicode + 1 - min_unicode)
+
+        # Populate the widths array
+        for glyph in sorted_glyphs:
+            widths[glyph.unicode - min_unicode] = round(
+                glyph.glyph_width * self._font3.scale + 0.001
+            )
+        return pdf_list([str(glyph_width) for glyph_width in widths])
+
+    def generate_resources(self, img_objs_per_index):
+        objects = " ".join(
+            f'/I{img["i"]} {img_objs_per_index[img["i"]].id} 0 R'
+            for img in self._font3.resources
+        )
+        self.resources = f"<</XObject <<{objects}>>>>"
+
+    def differences_table(self):
+        sorted_glyphs = sorted(self._font3.glyphs, key=lambda glyph: glyph.unicode)
+        return (
+            "["
+            + "\n".join(
+                f"{glyph.unicode} /{glyph.glyph_name}" for glyph in sorted_glyphs
+            )
+            + "]"
+        )
 
 
 class PDFInfo(PDFObject):
@@ -532,9 +601,22 @@ class OutputProducer:
                         sig_annotation_obj = annot_obj
         return sig_annotation_obj
 
-    def _add_fonts(self):
+    def _add_fonts(self, image_objects_per_index):
         font_objs_per_index = {}
         for font in sorted(self.fpdf.fonts.values(), key=lambda font: font.i):
+
+            # type 3 font
+            if font.type == "TTF" and font.color_font:
+                for glyph in font.color_font.glyphs:
+                    glyph.obj_id = self._add_pdf_obj(
+                        PDFContentStream(contents=glyph.glyph, compress=False), "fonts"
+                    )
+                t3_font_obj = PDFType3Font(font.color_font)
+                t3_font_obj.generate_resources(image_objects_per_index)
+                self._add_pdf_obj(t3_font_obj, "fonts")
+                font_objs_per_index[font.i] = t3_font_obj
+                continue
+
             # Standard font
             if font.type == "core":
                 encoding = (
@@ -760,7 +842,7 @@ class OutputProducer:
             decode=decode,
             decode_parms=decode_parms,
         )
-        self._add_pdf_obj(img_obj, "images")
+        info["obj_id"] = self._add_pdf_obj(img_obj, "images")
 
         # Soft mask
         if self.fpdf.allow_images_transparency and "smask" in info:
@@ -796,9 +878,9 @@ class OutputProducer:
         return gfxstate_objs_per_name
 
     def _insert_resources(self, page_objs):
-        font_objs_per_index = self._add_fonts()
         img_objs_per_index = self._add_images()
         gfxstate_objs_per_name = self._add_gfxstates()
+        font_objs_per_index = self._add_fonts(img_objs_per_index)
         # Insert /Resources dicts:
         if self.fpdf.single_resources_object:
             resources_dict_obj = self._add_resources_dict(
