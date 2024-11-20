@@ -30,7 +30,7 @@ class Type3FontGlyph:
     glyph_name: str
     glyph_width: int
     glyph: str
-    _glyph_bounds: tuple[int, int, int, int]
+    _glyph_bounds: Tuple[int, int, int, int]
 
     def __init__(self):
         pass
@@ -140,7 +140,7 @@ class SVGColorFont(Type3Font):
         # graphic type 'pdf' or 'mask' are not supported
         return x_min, y_min, x_max, y_max, x_max, glyph_svg_data
 
-    def get_glyph_bounds(self, glyph_name: str) -> tuple[int, int, int, int]:
+    def get_glyph_bounds(self, glyph_name: str) -> Tuple[int, int, int, int]:
         glyph_id = self.base_font.ttfont.getGlyphID(glyph_name)
         x, y, w, h = self.base_font.hbfont.get_glyph_extents(glyph_id)
         # convert from HB's x/y_bearing + extents to xMin, yMin, xMax, yMax
@@ -226,7 +226,7 @@ class SBIXColorFont(Type3Font):
         # graphic type 'pdf' or 'mask' are not supported
         return x_min, y_min, x_max, y_max, x_max, glyph.imageData
 
-    def get_glyph_bounds(self, glyph_name: str) -> tuple[int, int, int, int]:
+    def get_glyph_bounds(self, glyph_name: str) -> Tuple[int, int, int, int]:
         glyph_id = self.base_font.ttfont.getGlyphID(glyph_name)
         x, y, w, h = self.base_font.hbfont.get_glyph_extents(glyph_id)
         # convert from HB's x/y_bearing + extents to xMin, yMin, xMax, yMax
