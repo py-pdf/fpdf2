@@ -1336,6 +1336,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "DerekRobin",
+      "name": "Derek Robinson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/39247349?v=4",
+      "profile": "https://github.com/DerekRobin",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
