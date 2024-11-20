@@ -2533,7 +2533,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 pop-up window when open and active. This entry shall identify the user who added the annotation.
             color (tuple): a tuple of numbers in the range 0.0 to 1.0, representing a colour used for
                 the title bar of the annotation’s pop-up window. Defaults to yellow.
-            border_width (int): thickness of the path stroke.
+            border_width (float): thickness of the path stroke.
         """
         ink_list = sum(((x * self.k, (self.h - y) * self.k) for (x, y) in coords), ())
         x_min = min(ink_list[0::2])

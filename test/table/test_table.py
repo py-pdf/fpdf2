@@ -101,6 +101,44 @@ def test_table_with_fixed_col_width(tmp_path):
     assert_pdf_equal(pdf, HERE / "table_with_fixed_col_width.pdf", tmp_path)
 
 
+def test_table_with_fixed_col_width_and_align(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    with pdf.table(col_widths=pdf.epw / 5, align="L") as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum)
+    with pdf.table(col_widths=pdf.epw / 5, align="C") as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum)
+    with pdf.table(col_widths=pdf.epw / 5, align="R") as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum)
+    pdf.add_page()
+    with pdf.table(col_widths=40, align="L") as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum)
+    with pdf.table(col_widths=40, align="C") as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum)
+    with pdf.table(col_widths=40, align="R") as table:
+        for data_row in TABLE_DATA:
+            row = table.row()
+            for datum in data_row:
+                row.cell(datum)
+    assert_pdf_equal(pdf, HERE / "table_with_fixed_col_width_and_align.pdf", tmp_path)
+
+
 def test_table_with_varying_col_widths(tmp_path):
     pdf = FPDF()
     pdf.add_page()

@@ -22,6 +22,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): now parses `<title>` tags to set the [document title](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title). By default, it is added as PDF metadata, but not rendered in the document body. However, this can be enabled by passing `render_title_tag=True` to `FPDF.write_html()`.
 * support for LZWDecode compression [issue #1271](https://github.com/py-pdf/fpdf2/issues/1271)
 ### Fixed
+* support for `align=` in [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html#setting-table-column-widths)
 * `FPDF.set_text_shaping(False)` was broken since version 2.7.8 and is now working properly - [issue #1287](https://github.com/py-pdf/fpdf2/issues/1287)
 * fixed bug where cells with `rowspan`, `colspan` > 1 and null text were not displayed properly - [issue #1293](https://github.com/py-pdf/fpdf2/issues/1293)
 ### Changed

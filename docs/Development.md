@@ -36,7 +36,7 @@ We use [black](https://github.com/psf/black) as a code prettifier.
 This _"uncomprimising Python code formatter"_ must be installed
 in your development environment in order to auto-format source code before any commit:
 ```
-pip install black
+pip install --upgrade . -r test/linters-requirements.txt
 black .  # inside fpdf2 root directory
 ```
 
@@ -60,7 +60,7 @@ and you will just have to run `git commit -a` again.
 
 To install pre-commit hooks on your computer, run:
 ```
-pip install pre-commit
+pip install --upgrade . -r test/linters-requirements.txt
 pre-commit install
 ```
 
