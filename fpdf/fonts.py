@@ -322,6 +322,7 @@ class TTFFont:
         self.subset = SubsetMap(self, [ord(char) for char in sbarr])
         self.color_font = get_color_font_object(fpdf, self)
 
+    # pylint: disable=no-member
     @property
     def hbfont(self):
         if not self._hbfont:
