@@ -33,7 +33,7 @@ Prima di poter stampare del testo, è obbligatorio selezionare un font con
 Scegliamo Helvetica bold 16:
 
 ```python
-pdf.set_font('helvetica', 'B', 16)
+pdf.set_font('Helvetica', style='B', size=16)
 ```
 
 Avremmo potuto scegliere il corsivo con `I`, sottolineato con `U` o un font regolare lasciando la stringa vuota (o ogni combinazione). Notare che la dimensione dei caratteri è specificata in punti, non millimetri (o altre unità di misura); questa è l'unica eccezione.

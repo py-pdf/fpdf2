@@ -65,9 +65,9 @@ pdf.set_font("Helvetica", size=16)
 
 with pdf.text_columns(text_align="J", ncols=3, gutter=5) as cols:
     cols.write(text=LOREM_IPSUM[:600])
-    pdf.set_font("Times", "", 18)
+    pdf.set_font("Times", size=18)
     cols.write(text=LOREM_IPSUM[:500])
-    pdf.set_font("Courier", "", 20)
+    pdf.set_font("Courier", size=20)
     cols.write(text=LOREM_IPSUM[:500])
 ```
 ![Three Text Columns](tcols-three.png)
@@ -87,7 +87,7 @@ pdf.set_font("Times", size=12)
 cols = pdf.text_columns(text_align="J", ncols=3, gutter=5, balance=True)
 # fill columns with balanced text
 with cols:
-    pdf.set_font("Times", "", 14)
+    pdf.set_font("Times", size=14)
     cols.write(text=LOREM_IPSUM[:300])
 # add an image below
 img_info = pdf.image(".../fpdf2/docs/regular_polygon.png",

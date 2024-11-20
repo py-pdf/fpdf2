@@ -36,7 +36,7 @@ Sebelum kita dapat mencetak teks, penting untuk memilih font dengan
 Kita pilih font Helvetica dengan ketebalan 16:
 
 ```python
-pdf.set_font('helvetica', 'B', 16)
+pdf.set_font('Helvetica', style='B', size=16)
 ```
 
 Kita dapat menentukan font _italic_ dengan `I`, bergaris bawah dengan `U`, atau jenis font reguler 

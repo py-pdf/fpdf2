@@ -35,7 +35,7 @@ def test_alias_with_shaping(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_font("Quicksand", style="", fname=HERE / "fonts" / "Quicksand-Regular.otf")
     pdf.add_page()
-    pdf.set_font("Quicksand", "", 24)
+    pdf.set_font("Quicksand", size=24)
     pdf.set_text_shaping(True)
     pdf.write(text="Pages {nb}")
     pdf.ln()

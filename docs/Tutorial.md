@@ -36,7 +36,7 @@ Before we can print text, it is mandatory to select a font with
 We choose Helvetica bold 16:
 
 ```python
-pdf.set_font('helvetica', 'B', 16)
+pdf.set_font('Helvetica', style='B', size=16)
 ```
 
 We could have specified italics with `I`, underlined with `U` or a regular font

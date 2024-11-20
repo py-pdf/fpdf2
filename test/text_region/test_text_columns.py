@@ -13,37 +13,37 @@ SVG_DIR = HERE.parent / "svg/svg_sources"
 def test_tcols_align(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 12)
+    pdf.set_font("Helvetica", size=12)
     col = pdf.text_columns()
     with col:
         col.write(text=LOREM_IPSUM[:100])
-        pdf.set_font("Times", "", 12)
+        pdf.set_font("Times", size=12)
         col.write(text=LOREM_IPSUM[100:200])
-        pdf.set_font("Courier", "", 12)
+        pdf.set_font("Courier", size=12)
         col.write(text=LOREM_IPSUM[200:300])
-    pdf.set_font("Helvetica", "I", 12)
+    pdf.set_font("Helvetica", style="I", size=12)
     with col:
         with col.paragraph(text_align="J", top_margin=pdf.font_size * 2) as par:
             par.write(text=LOREM_IPSUM[:100])
-            pdf.set_font("Times", "I", 12)
+            pdf.set_font("Times", style="I", size=12)
             par.write(text=LOREM_IPSUM[100:200])
-            pdf.set_font("Courier", "I", 12)
+            pdf.set_font("Courier", style="I", size=12)
             par.write(text=LOREM_IPSUM[200:300])
-    pdf.set_font("Helvetica", "B", 12)
+    pdf.set_font("Helvetica", style="B", size=12)
     with col:
         with col.paragraph(text_align="R", top_margin=pdf.font_size * 2) as par:
             par.write(text=LOREM_IPSUM[:100])
-            pdf.set_font("Times", "B", 12)
+            pdf.set_font("Times", style="B", size=12)
             par.write(text=LOREM_IPSUM[100:200])
-            pdf.set_font("Courier", "B", 12)
+            pdf.set_font("Courier", style="B", size=12)
             par.write(text=LOREM_IPSUM[200:300])
-    pdf.set_font("Helvetica", "BI", 12)
+    pdf.set_font("Helvetica", style="BI", size=12)
     with col:
         with col.paragraph(text_align="C", top_margin=pdf.font_size * 2) as par:
             par.write(text=LOREM_IPSUM[:100])
-            pdf.set_font("Times", "BI", 12)
+            pdf.set_font("Times", style="BI", size=12)
             par.write(text=LOREM_IPSUM[100:200])
-            pdf.set_font("Courier", "BI", 12)
+            pdf.set_font("Courier", style="BI", size=12)
             par.write(text=LOREM_IPSUM[200:300])
     assert_pdf_equal(pdf, HERE / "tcols_align.pdf", tmp_path)
 
@@ -53,7 +53,7 @@ def test_tcols_3cols(tmp_path):
     pdf.add_page()
     pdf.t_margin = 50
     pdf.set_auto_page_break(True, 100)
-    pdf.set_font("Helvetica", "", 6)
+    pdf.set_font("Helvetica", size=6)
     cols = pdf.text_columns(
         text=LOREM_IPSUM,
         text_align="J",
@@ -63,15 +63,15 @@ def test_tcols_3cols(tmp_path):
         gutter=5,
     )
     with cols:
-        pdf.set_font("Times", "", 8)
+        pdf.set_font("Times", size=8)
         cols.write(text=LOREM_IPSUM)
-        pdf.set_font("Courier", "", 10)
+        pdf.set_font("Courier", size=10)
         cols.write(text=LOREM_IPSUM)
-        pdf.set_font("Helvetica", "", 12)
+        pdf.set_font("Helvetica", size=12)
         cols.write(text=LOREM_IPSUM)
-        pdf.set_font("Times", "", 14)
+        pdf.set_font("Times", size=14)
         cols.write(text=LOREM_IPSUM)
-        pdf.set_font("Courier", "", 16)
+        pdf.set_font("Courier", size=16)
         cols.write(text=LOREM_IPSUM)
     assert_pdf_equal(pdf, HERE / "tcols_3cols.pdf", tmp_path)
 
@@ -80,20 +80,20 @@ def test_tcols_balance(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(True, 100)
-    pdf.set_font("Helvetica", "", 6)
+    pdf.set_font("Helvetica", size=6)
     cols_2 = pdf.text_columns(text_align="J", ncols=2, gutter=10, balance=True)
     cols_3 = pdf.text_columns(text_align="J", ncols=3, gutter=5, balance=True)
     with cols_2:
-        pdf.set_font("Times", "", 8)
+        pdf.set_font("Times", size=8)
         cols_2.write(text=LOREM_IPSUM[:300])
     with cols_3:
-        pdf.set_font("Courier", "", 10)
+        pdf.set_font("Courier", size=10)
         cols_3.write(text=LOREM_IPSUM[300:600])
     with cols_2:
-        pdf.set_font("Helvetica", "", 12)
+        pdf.set_font("Helvetica", size=12)
         cols_2.write(text=LOREM_IPSUM[600:900])
     with cols_3:
-        pdf.set_font("Times", "", 14)
+        pdf.set_font("Times", size=14)
         cols_3.write(text=LOREM_IPSUM[:300])
     assert_pdf_equal(pdf, HERE / "tcols_balance.pdf", tmp_path)
 
@@ -101,7 +101,7 @@ def test_tcols_balance(tmp_path):
 def test_tcols_charwrap(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("courier", "", 16)
+    pdf.set_font("courier", size=16)
     col = pdf.text_columns(l_margin=50, r_margin=50)
     # wrapmode on paragraph
     with col.paragraph(wrapmode="CHAR", bottom_margin=pdf.font_size) as par:
@@ -121,7 +121,7 @@ def test_tcols_charwrap(tmp_path):
 def test_tcols_images(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 12)
+    pdf.set_font("Helvetica", size=12)
     cols = pdf.text_columns(ncols=3, text_align="J")
     left, right = cols.current_x_extents(pdf.y, 0)
     pdf.line(left, pdf.t_margin, left, pdf.h - pdf.b_margin)
@@ -246,7 +246,7 @@ def test_tcols_no_font():
 def test_tcols_bad_uses():
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("courier", "", 16)
+    pdf.set_font("courier", size=16)
     col = pdf.text_columns()
     # recursive text region context
     with col:
@@ -313,7 +313,7 @@ def test_tcols_break_top_margin(tmp_path):  # regression test for #1214
     """
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 14)
+    pdf.set_font("Helvetica", size=14)
     pdf.set_top_margin(50)
     pdf.set_auto_page_break(True, 50)
     pdf.rect(pdf.l_margin, pdf.t_margin, pdf.epw, pdf.eph)

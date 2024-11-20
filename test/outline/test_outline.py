@@ -147,14 +147,14 @@ def test_toc_with_nb_and_footer(tmp_path):  # issue-548
     class TestPDF(FPDF):
         def render_toc(self, outline):
             self.x = self.l_margin
-            self.set_font(style="", size=12)
+            self.set_font(size=12)
             for section in outline:
                 self.ln()
                 self.cell(text=section.name)
 
         def footer(self):
             self.set_y(-15)
-            self.set_font("helvetica", "I", 8)
+            self.set_font("helvetica", style="I", size=8)
             self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", align="C")
 
     pdf = TestPDF()
@@ -208,7 +208,7 @@ def test_toc_without_font_style(tmp_path):  # issue-676
 def test_toc_with_font_style_override_bold(tmp_path):  # issue-1072
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "B")
+    pdf.set_font("Helvetica", style="B")
     pdf.set_section_title_styles(
         TextStyle("Helvetica", font_size_pt=20, color=(0, 0, 0))
     )
@@ -217,7 +217,7 @@ def test_toc_with_font_style_override_bold(tmp_path):  # issue-1072
 
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "B")
+    pdf.set_font("Helvetica", style="B")
     pdf.set_section_title_styles(
         TextStyle("Helvetica", font_style="", font_size_pt=20, color=(0, 0, 0))
     )
@@ -241,7 +241,7 @@ def test_toc_without_font_style_with_deprecated_TitleStyle(tmp_path):
 def test_toc_with_font_style_override_bold_with_deprecated_TitleStyle(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "B")
+    pdf.set_font("Helvetica", style="B")
     with pytest.warns(DeprecationWarning):
         pdf.set_section_title_styles(
             TitleStyle("Helvetica", font_size_pt=20, color=(0, 0, 0))
@@ -251,7 +251,7 @@ def test_toc_with_font_style_override_bold_with_deprecated_TitleStyle(tmp_path):
 
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "B")
+    pdf.set_font("Helvetica", style="B")
     with pytest.warns(DeprecationWarning):
         pdf.set_section_title_styles(
             TitleStyle("Helvetica", font_style="", font_size_pt=20, color=(0, 0, 0))
@@ -267,7 +267,7 @@ def test_toc_with_table(tmp_path):  # issue-1079
             pass
 
     pdf = FPDF()
-    pdf.set_font(family="helvetica", style="", size=30)
+    pdf.set_font(family="helvetica", size=30)
     pdf.add_page()
     pdf.insert_toc_placeholder(render_toc_function=render_toc_with_table, pages=4)
     for i in range(60):

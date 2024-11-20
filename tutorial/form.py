@@ -57,7 +57,7 @@ class Form:
     def render(self, outfile):
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font("helvetica", "B", 16)
+        pdf.set_font("helvetica", style="B", size=16)
 
         for field in self.fields.values():
             self.handlers[field["type"].upper()](pdf, **field)

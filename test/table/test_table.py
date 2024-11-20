@@ -551,7 +551,7 @@ def test_table_page_break_with_table_in_header(tmp_path):  # issue 943
                 r.cell("headertext")
 
     pdf = PDF()
-    pdf.set_font("helvetica", "B", 8)
+    pdf.set_font("helvetica", style="B", size=8)
     pdf.add_page()
     with pdf.table() as table:
         for _ in range(1, 15):

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# USAGE: ./set_metadata.py src_file.pdf
 import sys
 from datetime import datetime
 
