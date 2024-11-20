@@ -93,11 +93,8 @@ def test_table_with_fixed_col_width(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(col_widths=pdf.epw / 5) as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, col_widths=pdf.epw / 5):
+        pass
     assert_pdf_equal(pdf, HERE / "table_with_fixed_col_width.pdf", tmp_path)
 
 
@@ -105,37 +102,40 @@ def test_table_with_fixed_col_width_and_align(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(col_widths=pdf.epw / 5, align="L") as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
-    with pdf.table(col_widths=pdf.epw / 5, align="C") as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
-    with pdf.table(col_widths=pdf.epw / 5, align="R") as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, col_widths=pdf.epw / 5, align="L"):
+        pass
+    with pdf.table(TABLE_DATA, col_widths=pdf.epw / 5, align="C"):
+        pass
+    with pdf.table(TABLE_DATA, col_widths=pdf.epw / 5, align="R"):
+        pass
     pdf.add_page()
-    with pdf.table(col_widths=40, align="L") as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
-    with pdf.table(col_widths=40, align="C") as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
-    with pdf.table(col_widths=40, align="R") as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, width=150, col_widths=(1, 1, 1, 1), align="L"):
+        pass
+    with pdf.table(TABLE_DATA, width=150, col_widths=(1, 1, 1, 1), align="C"):
+        pass
+    with pdf.table(TABLE_DATA, width=150, col_widths=(1, 1, 1, 1), align="R"):
+        pass
+    pdf.add_page()
+    with pdf.table(TABLE_DATA, col_widths=(1, 1, 1, 1), align="L"):
+        pass
+    with pdf.table(TABLE_DATA, col_widths=(1, 1, 1, 1), align="C"):
+        pass
+    with pdf.table(TABLE_DATA, col_widths=(1, 1, 1, 1), align="R"):
+        pass
+    pdf.add_page()
+    with pdf.table(TABLE_DATA, width=150, col_widths=(1, 1, 1, 1), align="L"):
+        pass
+    with pdf.table(TABLE_DATA, width=150, col_widths=(1, 1, 1, 1), align="C"):
+        pass
+    with pdf.table(TABLE_DATA, width=150, col_widths=(1, 1, 1, 1), align="R"):
+        pass
+    pdf.add_page()
+    with pdf.table(TABLE_DATA, width=150, col_widths=37.5, align="L"):
+        pass
+    with pdf.table(TABLE_DATA, width=150, col_widths=37.5, align="C"):
+        pass
+    with pdf.table(TABLE_DATA, width=150, col_widths=37.5, align="R"):
+        pass
     assert_pdf_equal(pdf, HERE / "table_with_fixed_col_width_and_align.pdf", tmp_path)
 
 
@@ -143,11 +143,8 @@ def test_table_with_varying_col_widths(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(col_widths=(30, 30, 10, 30)) as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, col_widths=(30, 30, 10, 30)):
+        pass
     assert_pdf_equal(pdf, HERE / "table_with_varying_col_widths.pdf", tmp_path)
 
 
@@ -156,22 +153,16 @@ def test_table_with_invalid_col_widths():
     pdf.add_page()
     pdf.set_font("Times", size=16)
     with pytest.raises(ValueError):
-        with pdf.table(col_widths=(20, 30, 50)) as table:
-            for data_row in TABLE_DATA:
-                row = table.row()
-                for datum in data_row:
-                    row.cell(datum)
+        with pdf.table(TABLE_DATA, col_widths=(20, 30, 50)):
+            pass
 
 
 def test_table_with_fixed_row_height(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(line_height=2.5 * pdf.font_size) as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, line_height=2.5 * pdf.font_size):
+        pass
     assert_pdf_equal(pdf, HERE / "table_with_fixed_row_height.pdf", tmp_path)
 
 
@@ -208,11 +199,8 @@ def test_table_with_fixed_width(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(width=150) as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, width=150):
+        pass
     assert_pdf_equal(pdf, HERE / "table_with_fixed_width.pdf", tmp_path)
 
 
@@ -221,22 +209,16 @@ def test_table_with_invalid_width():
     pdf.add_page()
     pdf.set_font("Times", size=16)
     with pytest.raises(ValueError):
-        with pdf.table(width=200) as table:
-            for data_row in TABLE_DATA:
-                row = table.row()
-                for datum in data_row:
-                    row.cell(datum)
+        with pdf.table(TABLE_DATA, width=200):
+            pass
 
 
 def test_table_without_headings(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(first_row_as_headings=False) as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, first_row_as_headings=False):
+        pass
     assert_pdf_equal(pdf, HERE / "table_without_headings.pdf", tmp_path)
 
 
@@ -264,11 +246,8 @@ def test_table_with_headings_styled(tmp_path):
     blue = DeviceRGB(r=0, g=0, b=1)
     grey = 128
     headings_style = FontFace(emphasis="ITALICS", color=blue, fill_color=grey)
-    with pdf.table(headings_style=headings_style) as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, headings_style=headings_style):
+        pass
     assert_pdf_equal(pdf, HERE / "table_with_headings_styled.pdf", tmp_path)
 
 
@@ -292,18 +271,12 @@ def test_table_with_cell_fill(tmp_path):
     pdf.add_page()
     pdf.set_font("Times", size=16)
     greyscale = 200
-    with pdf.table(cell_fill_color=greyscale, cell_fill_mode="ROWS") as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, cell_fill_color=greyscale, cell_fill_mode="ROWS"):
+        pass
     pdf.ln()
     lightblue = (173, 216, 230)
-    with pdf.table(cell_fill_color=lightblue, cell_fill_mode="COLUMNS") as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, cell_fill_color=lightblue, cell_fill_mode="COLUMNS"):
+        pass
     assert_pdf_equal(pdf, HERE / "table_with_cell_fill.pdf", tmp_path)
 
 
@@ -319,12 +292,9 @@ def test_table_with_cell_fill_custom_class(tmp_path):
     pdf.set_font("Times", size=16)
     lightblue = (173, 216, 230)
     with pdf.table(
-        cell_fill_color=lightblue, cell_fill_mode=EvenOddCellFillMode()
-    ) as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+        TABLE_DATA, cell_fill_color=lightblue, cell_fill_mode=EvenOddCellFillMode()
+    ):
+        pass
     assert_pdf_equal(pdf, HERE / "table_with_cell_fill_custom_class.pdf", tmp_path)
 
 
@@ -332,11 +302,8 @@ def test_table_with_internal_layout(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(borders_layout="INTERNAL") as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, borders_layout="INTERNAL"):
+        pass
     assert_pdf_equal(pdf, HERE / "table_with_internal_layout.pdf", tmp_path)
 
 
@@ -346,11 +313,8 @@ def test_table_with_minimal_layout(tmp_path):
     pdf.set_font("Times", size=16)
     pdf.set_draw_color(100)  # dark grey
     pdf.set_line_width(1)
-    with pdf.table(borders_layout="MINIMAL") as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, borders_layout="MINIMAL"):
+        pass
     assert_pdf_equal(pdf, HERE / "table_with_minimal_layout.pdf", tmp_path)
 
 
@@ -360,11 +324,8 @@ def test_table_with_single_top_line_layout(tmp_path):
     pdf.set_font("Times", size=16)
     pdf.set_draw_color(50)  # very dark grey
     pdf.set_line_width(0.5)
-    with pdf.table(borders_layout="SINGLE_TOP_LINE") as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, borders_layout="SINGLE_TOP_LINE"):
+        pass
     assert_pdf_equal(pdf, HERE / "table_with_single_top_line_layout.pdf", tmp_path)
 
 
@@ -421,17 +382,11 @@ def test_table_align(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=16)
-    with pdf.table(text_align="CENTER") as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, text_align="CENTER"):
+        pass
     pdf.ln()
-    with pdf.table(text_align=("CENTER", "CENTER", "RIGHT", "LEFT")) as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, text_align=("CENTER", "CENTER", "RIGHT", "LEFT")):
+        pass
     assert_pdf_equal(pdf, HERE / "table_align.pdf", tmp_path)
 
 
@@ -459,11 +414,8 @@ def test_table_with_ttf_font(caplog, tmp_path):  # issue 749
     pdf.add_page()
     pdf.add_font(fname=HERE / "../fonts/cmss12.ttf")
     pdf.set_font("cmss12", size=16)
-    with pdf.table(first_row_as_headings=False) as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, first_row_as_headings=False):
+        pass
     assert_pdf_equal(pdf, HERE / "table_with_ttf_font.pdf", tmp_path)
 
 
@@ -474,11 +426,8 @@ def test_table_with_ttf_font_and_headings(caplog, tmp_path):
     pdf.add_font("Roboto", fname=HERE / "../fonts/Roboto-Regular.ttf")
     pdf.add_font("Roboto", style="BI", fname=HERE / "../fonts/Roboto-BoldItalic.TTF")
     pdf.set_font("Roboto", size=16)
-    with pdf.table(headings_style=FontFace(emphasis="IB")) as table:
-        for data_row in TABLE_DATA:
-            row = table.row()
-            for datum in data_row:
-                row.cell(datum)
+    with pdf.table(TABLE_DATA, headings_style=FontFace(emphasis="IB")):
+        pass
     assert_pdf_equal(pdf, HERE / "table_with_ttf_font_and_headings.pdf", tmp_path)
 
 
@@ -488,11 +437,8 @@ def test_table_with_ttf_font_and_headings_but_missing_bold_font():
     pdf.add_font("Quicksand", fname=HERE / "../fonts/Quicksand-Regular.otf")
     pdf.set_font("Quicksand", size=16)
     with pytest.raises(FPDFException) as error:
-        with pdf.table() as table:
-            for data_row in TABLE_DATA:
-                row = table.row()
-                for datum in data_row:
-                    row.cell(datum)
+        with pdf.table(TABLE_DATA):
+            pass
     assert (
         str(error.value)
         == "Using font 'quicksand' with emphasis 'B' in table headings require the corresponding font style to be added using add_font()"
@@ -530,8 +476,23 @@ def test_table_with_gutter(tmp_path):
         TABLE_DATA, borders_layout="SINGLE_TOP_LINE", gutter_height=3, gutter_width=3
     ):
         pass
-
     assert_pdf_equal(pdf, HERE / "table_with_gutter.pdf", tmp_path)
+
+
+def test_table_with_gutter_and_width(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    pdf.cell(text="Without gutter:", new_y="NEXT")
+    pdf.ln()
+    with pdf.table(TABLE_DATA, width=150):
+        pass
+    pdf.ln()
+    pdf.cell(text="With gutter:", new_y="NEXT")
+    pdf.ln()
+    with pdf.table(TABLE_DATA, width=150, gutter_height=3, gutter_width=3):
+        pass
+    assert_pdf_equal(pdf, HERE / "table_with_gutter_and_width.pdf", tmp_path)
 
 
 def test_table_with_colspan_and_gutter(tmp_path):  # issue 808
@@ -1002,7 +963,6 @@ def test_table_cell_border_all(tmp_path):
     with pdf.table(gutter_height=3, gutter_width=3) as table:
         for data_row in TABLE_DATA:
             row = table.row()
-
             for datum in data_row:
                 print(datum, end=" ")
                 row.cell(datum, border="all")
@@ -1026,7 +986,6 @@ def test_table_cell_border_inherit(tmp_path):
     with pdf.table(borders_layout="all", gutter_height=3, gutter_width=3) as table:
         for data_row in TABLE_DATA:
             row = table.row()
-
             for datum in data_row:
                 print(datum, end=" ")
                 row.cell(datum, border="inherit")

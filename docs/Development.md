@@ -36,13 +36,18 @@ We use [black](https://github.com/psf/black) as a code prettifier.
 This _"uncomprimising Python code formatter"_ must be installed
 in your development environment in order to auto-format source code before any commit:
 ```
-pip install --upgrade . -r test/linters-requirements.txt
+pip install black
 black .  # inside fpdf2 root directory
 ```
 
 ## Linting
 We use [pylint](https://github.com/PyCQA/pylint/) as a static code analyzer
 to detect potential issues in the code.
+You can install & execute it by running those commands:
+```
+pip install pylint
+pylint fpdf/ test/
+```
 
 In case of special "false positive" cases,
 checks can be disabled locally with `#pylint disable=XXX` code comments,
@@ -60,7 +65,7 @@ and you will just have to run `git commit -a` again.
 
 To install pre-commit hooks on your computer, run:
 ```
-pip install --upgrade . -r test/linters-requirements.txt
+pip install pre-commit
 pre-commit install
 ```
 

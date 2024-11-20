@@ -165,13 +165,15 @@ class Table:
         # Starting with some sanity checks:
         self._cols_count = max(row.cols_count for row in self.rows) if self.rows else 0
         if self._width is None:
-            if self._col_widths:
-                if isinstance(self._col_widths, Number):
-                    self._width = self._cols_count * self._col_widths
-                else:
-                    self._width = sum(self._col_widths)
+            if self._col_widths and isinstance(self._col_widths, Number):
+                self._width = self._cols_count * self._col_widths
             else:
                 self._width = self._fpdf.epw
+        elif self._col_widths and isinstance(self._col_widths, Number):
+            if self._cols_count * self._col_widths != self._width:
+                raise ValueError(
+                    f"Invalid value provided width={self._width} should be a multiple of col_widths={self._col_widths}"
+                )
         if self._width > self._fpdf.epw:
             raise ValueError(
                 f"Invalid value provided width={self._width}: effective page width is {self._fpdf.epw}"
@@ -209,7 +211,7 @@ class Table:
             self._fpdf.l_margin = self._fpdf.x
 
         # Pre-Compute the relative x-positions of the individual columns:
-        xx = self._outer_border_margin[0]
+        xx = self._fpdf.l_margin + self._outer_border_margin[0]
         cell_x_positions = [xx]
         if self.rows:
             for i in range(self._cols_count):
@@ -398,8 +400,7 @@ class Table:
             cell_x = 0
         else:
             cell_x = cell_x_positions[j]
-
-        self._fpdf.set_x(self._fpdf.l_margin + cell_x)
+        self._fpdf.set_x(cell_x)
 
         # render cell border and background
 
