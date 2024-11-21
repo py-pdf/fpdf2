@@ -5115,6 +5115,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if text_style.size_pt is not None:
                 prev_font_size_pt = self.font_size_pt
                 self.font_size_pt = text_style.size_pt
+            # check if l_margin value is of type Align or string
+            align = Align.L
+            if isinstance(text_style.l_margin, (Align, str)):
+                align = text_style.l_margin
             page_break_triggered = self.multi_cell(
                 w=self.epw,
                 h=self.font_size,
@@ -5123,9 +5127,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 new_y=YPos.NEXT,
                 dry_run=True,  # => does not produce any output
                 output=MethodReturnValue.PAGE_BREAK,
+                align=align,
                 padding=Padding(
                     top=text_style.t_margin or 0,
-                    left=text_style.l_margin or 0,
+                    left=(
+                        text_style.l_margin
+                        if isinstance(text_style.l_margin, int)
+                        else 0
+                    ),
                     bottom=text_style.b_margin or 0,
                 ),
             )
@@ -5136,25 +5145,28 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 self.add_page()
             with self._marked_sequence(title=name) as struct_elem:
                 outline_struct_elem = struct_elem
-                with self._use_text_style(text_style):
+                with self._use_title_style(text_style):
                     self.multi_cell(
                         w=self.epw,
                         h=self.font_size,
                         text=name,
+                        align=align,
                         new_x=XPos.LMARGIN,
                         new_y=YPos.NEXT,
+                        center=text_style.l_margin == Align.C,
                     )
         self._outline.append(
             OutlineSection(name, level, self.page, dest, outline_struct_elem)
         )
 
     @contextmanager
-    def _use_text_style(self, text_style: TextStyle):
+    def _use_title_style(self, text_style: TextStyle):
         if text_style:
             if text_style.t_margin:
                 self.ln(text_style.t_margin)
             if text_style.l_margin:
-                self.set_x(text_style.l_margin)
+                if isinstance(text_style.l_margin, int):
+                    self.set_x(text_style.l_margin)
         with self.use_font_face(text_style):
             yield
         if text_style and text_style.b_margin:
