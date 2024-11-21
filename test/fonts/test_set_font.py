@@ -56,6 +56,21 @@ def test_set_builtin_font(tmp_path):
     assert_pdf_equal(pdf, HERE / "fonts_set_builtin_font.pdf", tmp_path)
 
 
+def test_issue_1223(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=32)
+    with pdf.text_columns() as cols:
+        with cols.paragraph() as par:
+            par.write(text="Un.")
+        pdf.font_style = "B"
+        with cols.paragraph() as par:
+            par.write(text="Deux.")
+            pdf.font_style = "I"
+            par.write(text="Trois.")
+    assert_pdf_equal(pdf, HERE / "fonts_issue_1223.pdf", tmp_path)
+
+
 def test_issue_66(tmp_path):
     pdf = FPDF()
     pdf.add_page()

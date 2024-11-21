@@ -302,7 +302,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # We set their default values here.
         self.font_family = ""  # current font family
         # current font style (BOLD/ITALICS - does not handle UNDERLINE):
-        self.font_style = ""
+        self._font_style = ""
         self.underline = False  # underlining flag
         self.font_size_pt = 12  # current font size in points
         self.font_stretching = 100  # current font stretching
@@ -1958,6 +1958,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         self.fonts[fontkey] = TTFFont(self, font_file_path, fontkey, style)
 
+    @property
+    def font_style(self):
+        return self._font_style
+
+    @font_style.setter
+    def font_style(self, v):
+        self.set_font(style=v)
+
     def set_font(self, family=None, style="", size=0):
         """
         Sets the font used to print character strings.
@@ -2039,7 +2047,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         # Select it
         self.font_family = family
-        self.font_style = style
+        self._font_style = style
         self.font_size_pt = size
         self.current_font = self.fonts[fontkey]
         if self.page > 0:
@@ -2863,6 +2871,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "text_mode",
                 "text_shaping",
                 "underline",
+                "_font_style",
             ):
                 setattr(self, key, value)
             else:

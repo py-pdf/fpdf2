@@ -37,6 +37,7 @@ class GraphicsStateMixin:
                 text_color=self.DEFAULT_TEXT_COLOR,
                 underline=False,
                 font_style="",
+                _font_style="",
                 font_stretching=100,
                 char_spacing=0,
                 font_family="",
@@ -112,11 +113,11 @@ class GraphicsStateMixin:
         self.__statestack[-1]["underline"] = v
 
     @property
-    def font_style(self):
+    def _font_style(self):
         return self.__statestack[-1]["font_style"]
 
-    @font_style.setter
-    def font_style(self, v):
+    @_font_style.setter
+    def _font_style(self, v):
         self.__statestack[-1]["font_style"] = v
 
     @property
