@@ -2253,7 +2253,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         link.zoom = zoom
 
     @check_page
-    def link(self, x, y, w, h, link, alt_text=None, border_width=0):
+    def link(self, x, y, w, h, link, alt_text=None, **kwargs):
         """
         Puts a link annotation on a rectangular area of the page.
         Text or image links are generally put via `FPDF.cell`,
@@ -2291,7 +2291,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             height=h * self.k,
             action=action,
             dest=dest,
-            border_width=border_width,
+            **kwargs,
         )
         self.pages[self.page].annots.append(link_annot)
         if alt_text is not None:
@@ -2391,15 +2391,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             h * self.k,
             file_spec=embedded_file.file_spec(),
             name=FileAttachmentAnnotationName.coerce(name) if name else None,
-            flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
+            flags=flags,
         )
         self.pages[self.page].annots.append(annotation)
         return annotation
 
     @check_page
-    def text_annotation(
-        self, x, y, text, w=1, h=1, name=None, flags=DEFAULT_ANNOT_FLAGS
-    ):
+    def text_annotation(self, x, y, text, w=1, h=1, name=None, **kwargs):
         """
         Puts a text annotation on a rectangular area of the page.
 
@@ -2411,6 +2409,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             h (float): optional height of the link rectangle
             name (fpdf.enums.AnnotationName, str): optional icon that shall be used in displaying the annotation
             flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
+            title (str): the text label that shall be displayed in the title bar of the annotation’s
+                pop-up window when open and active. This entry shall identify the user who added the annotation.
         """
         annotation = AnnotationDict(
             "Text",
@@ -2420,7 +2420,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             h * self.k,
             contents=text,
             name=AnnotationName.coerce(name) if name else None,
-            flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
+            **kwargs,
         )
         self.pages[self.page].annots.append(annotation)
         return annotation
@@ -2433,7 +2433,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         y=None,
         w=None,
         h=None,
-        flags=DEFAULT_ANNOT_FLAGS,
+        **kwargs,
     ):
         """
         Puts a free text annotation on a rectangular area of the page.
@@ -2448,6 +2448,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             h (float): optional height of the link rectangle. Default value: None, meaning an height equal
                 to the current font size
             flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
+            color (tuple): a tuple of numbers in the range 0.0 to 1.0, representing a colour used for the annotation background
+            border_width (float): width of the annotation border
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
@@ -2467,15 +2469,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             w * self.k,
             h * self.k,
             contents=text,
-            flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
             default_appearance=f"({self.draw_color.serialize()} /F{self.current_font.i} {self.font_size_pt:.2f} Tf)",
+            **kwargs,
         )
         self.fonts_used_per_page_number[self.page].add(self.current_font.i)
         self.pages[self.page].annots.append(annotation)
         return annotation
 
     @check_page
-    def add_action(self, action, x, y, w, h):
+    def add_action(self, action, x, y, w, h, **kwargs):
         """
         Puts an Action annotation on a rectangular area of the page.
 
@@ -2493,13 +2495,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             w * self.k,
             h * self.k,
             action=action,
+            **kwargs,
         )
         self.pages[self.page].annots.append(annotation)
         return annotation
 
     @contextmanager
     def highlight(
-        self, text, title="", type="Highlight", color=(1, 1, 0), modification_time=None
+        self, text, type="Highlight", color=(1, 1, 0), modification_time=None, **kwargs
     ):
         """
         Context manager that adds a single highlight annotation based on the text lines inserted
@@ -2523,10 +2526,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 type,
                 text,
                 quad_points=quad_points,
-                title=title,
-                color=color,
                 modification_time=modification_time,
                 page=page,
+                color=color,
+                **kwargs,
             )
         self._text_quad_points = defaultdict(list)
         self._record_text_quad_points = False
@@ -2547,10 +2550,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         type,
         text,
         quad_points,
-        title="",
         color=(1, 1, 0),
         modification_time=None,
         page=None,
+        **kwargs,
     ):
         """
         Adds a text markup annotation on some quadrilateral areas of the page.
@@ -2586,29 +2589,29 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             y=y_max,
             width=x_max - x_min,
             height=y_max - y_min,
-            color=color,
             modification_time=modification_time,
-            title=title,
             quad_points=quad_points,
+            color=color,
+            **kwargs,
         )
         self.pages[page].annots.append(annotation)
         return annotation
 
     @check_page
     def ink_annotation(
-        self, coords, contents="", title="", color=(1, 1, 0), border_width=1
+        self, coords, text="", color=(1, 1, 0), border_width=1, **kwargs
     ):
         """
         Adds add an ink annotation on the page.
 
         Args:
             coords (tuple): an iterable of coordinates (pairs of numbers) defining a path
-            contents (str): textual description
+            text (str): textual description
             title (str): the text label that shall be displayed in the title bar of the annotation’s
                 pop-up window when open and active. This entry shall identify the user who added the annotation.
             color (tuple): a tuple of numbers in the range 0.0 to 1.0, representing a colour used for
                 the title bar of the annotation’s pop-up window. Defaults to yellow.
-            border_width (int): thickness of the path stroke.
+            border_width (float): thickness of the path stroke.
         """
         ink_list = sum(((x * self.k, (self.h - y) * self.k) for (x, y) in coords), ())
         x_min = min(ink_list[0::2])
@@ -2622,10 +2625,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             width=x_max - x_min,
             height=y_max - y_min,
             ink_list=ink_list,
-            color=color,
+            contents=text,
             border_width=border_width,
-            contents=contents,
-            title=title,
+            color=color,
+            **kwargs,
         )
         self.pages[self.page].annots.append(annotation)
         return annotation

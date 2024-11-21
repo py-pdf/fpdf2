@@ -1007,7 +1007,7 @@ def test_bulleted_paragraphs():
             "bullet_r_margin": -3,
         },
     ]
-    pdf.set_font("helvetica", "B", 16)
+    pdf.set_font("helvetica", style="B", size=16)
     for case in cases:
         try:
             text_columns.paragraph(

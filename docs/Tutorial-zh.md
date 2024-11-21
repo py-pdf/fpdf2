@@ -39,7 +39,7 @@ pdf = FPDF(orientation="P", unit="mm", format="A4")
 选择字体 Helvetica，粗体，16号：
 
 ```python
-pdf.set_font('helvetica', 'B', 16)
+pdf.set_font('Helvetica', style='B', size=16)
 ```
 
 使用 `I` 指定斜体，`U` 加下划线或空字符串指定常规字体。

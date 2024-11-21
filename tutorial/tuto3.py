@@ -4,7 +4,7 @@ from fpdf import FPDF
 class PDF(FPDF):
     def header(self):
         # Setting font: helvetica bold 15
-        self.set_font("helvetica", "B", 15)
+        self.set_font("helvetica", style="B", size=15)
         # Calculating width of title and setting cursor position:
         width = self.get_string_width(self.title) + 6
         self.set_x((210 - width) / 2)
@@ -32,7 +32,7 @@ class PDF(FPDF):
         # Setting position at 1.5 cm from bottom:
         self.set_y(-15)
         # Setting font: helvetica italic 8
-        self.set_font("helvetica", "I", 8)
+        self.set_font("helvetica", style="I", size=8)
         # Setting text color to gray:
         self.set_text_color(128)
         # Printing page number
@@ -40,7 +40,7 @@ class PDF(FPDF):
 
     def chapter_title(self, num, label):
         # Setting font: helvetica 12
-        self.set_font("helvetica", "", 12)
+        self.set_font("helvetica", size=12)
         # Setting background color
         self.set_fill_color(200, 220, 255)
         # Printing chapter name:

@@ -38,7 +38,7 @@ from pdfrw import PdfReader
 
 pdf = FPDF()
 pdf.add_page()
-pdf.set_font('times', 'B', 19)
+pdf.set_font('times', style='B', size=19)
 pdf.text(50, 10, 'Hello World!')
 
 reader = PdfReader(io.BytesIO(pdf.output()))

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# USAGE: ./add_new_page_with_pypdf.py src_file.pdf dest_file.pdf
 import io, sys
 
 from fpdf import FPDF
@@ -12,7 +13,7 @@ ON_PAGE_INDEX = 2  # Index at which the page will be inserted (starts at zero)
 def build_page():
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("times", "B", 19)
+    pdf.set_font("times", style="B", size=19)
     pdf.text(50, 10, "Hello World!")
     return io.BytesIO(pdf.output())
 

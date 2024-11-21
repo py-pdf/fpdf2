@@ -17,19 +17,20 @@ Gives direct access to some classes defined in submodules:
 
 import warnings, sys
 
+from .deprecation import WarnOnDeprecatedModuleAttributes
 from .enums import Align, TextMode, XPos, YPos
 from .errors import FPDFException
+from .fonts import FontFace, TextStyle
 from .fpdf import (
     FPDF,
     TitleStyle,
     FPDF_FONT_DIR as _FPDF_FONT_DIR,
     FPDF_VERSION as _FPDF_VERSION,
 )
-from .fonts import FontFace, TextStyle
 from .html import HTMLMixin, HTML2FPDF
 from .prefs import ViewerPreferences
 from .template import Template, FlexTemplate
-from .deprecation import WarnOnDeprecatedModuleAttributes
+from .util import get_scale_factor
 
 try:
     # This module only exists in PyFPDF, it has been removed in fpdf2 since v2.5.7:
@@ -82,6 +83,8 @@ __all__ = [
     # FPDF constants:
     "FPDF_VERSION",
     "FPDF_FONT_DIR",
+    # Utility functions:
+    "get_scale_factor",
 ]
 
 __pdoc__ = {name: name.startswith("FPDF_") for name in __all__}

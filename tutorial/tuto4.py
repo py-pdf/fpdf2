@@ -3,7 +3,7 @@ from fpdf import FPDF
 
 class PDF(FPDF):
     def header(self):
-        self.set_font("helvetica", "B", 15)
+        self.set_font("helvetica", style="B", size=15)
         width = self.get_string_width(self.title) + 6
         self.set_x((210 - width) / 2)
         self.set_draw_color(0, 80, 180)
@@ -24,12 +24,12 @@ class PDF(FPDF):
 
     def footer(self):
         self.set_y(-15)
-        self.set_font("helvetica", "I", 8)
+        self.set_font("helvetica", style="I", size=8)
         self.set_text_color(128)
         self.cell(0, 10, f"Page {self.page_no()}", align="C")
 
     def chapter_title(self, num, label):
-        self.set_font("helvetica", "", 12)
+        self.set_font("helvetica", size=12)
         self.set_fill_color(200, 220, 255)
         self.cell(
             0,

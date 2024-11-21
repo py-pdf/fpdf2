@@ -36,7 +36,7 @@ def test_break_or_add_page(tmp_path):
     pdf = fpdf.FPDF()
     pdf.set_auto_page_break(auto=True, margin=0)
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 16)
+    pdf.set_font("Helvetica", size=16)
     for i in range(1, 51):
         pdf.set_x(10)
         pdf.multi_cell(50, 10, f"Text {i} - Page {pdf.page}", 1, "C")
@@ -60,7 +60,7 @@ def test_break_or_add_page_with_different_draw_and_fill_color(tmp_path):
     pdf.draw_color = DeviceGray(0.5)
     pdf.set_stretching(101)
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 16)
+    pdf.set_font("Helvetica", size=16)
     for i in range(1, 51):
         pdf.set_x(10)
         pdf.multi_cell(50, 10, f"Text {i} - Page {pdf.page}", 1, "C")
@@ -79,7 +79,7 @@ def test_new_page_graphics_state(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=False)
-    pdf.set_font("Courier", "iu", 16)
+    pdf.set_font("Courier", style="IU", size=16)
     pdf.set_draw_color(255, 100, 0)
     pdf.set_fill_color(100, 255, 0)
     pdf.set_text_color(0, 0, 255)

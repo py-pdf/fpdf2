@@ -36,7 +36,7 @@ pdf = FPDF(orientation="P", unit="mm", format="A4")
 हम Helvetica bold 16 चुनते हैं:
 
 ```python
-pdf.set_font('helvetica', 'B', 16)
+pdf.set_font('Helvetica', style='B', size=16)
 ```
 
 हम `I` के साथ इटैलिक (Italic) निर्दिष्ट कर सकते हैं, `U` के साथ रेखांकित (Underlined) निर्दिष्ट कर सकते हैं या एक नियमित फ़ॉन्ट
