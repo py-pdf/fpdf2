@@ -1,5 +1,7 @@
 import logging
 
+from .image_datastructures import RasterImageInfo, VectorImageInfo
+
 from fontTools.ttLib.tables.BitmapGlyphMetrics import BigGlyphMetrics, SmallGlyphMetrics
 
 from typing import List, Tuple, TYPE_CHECKING
@@ -48,14 +50,9 @@ class Type3Font:
         self.base_font = base_font
         self.upem = self.base_font.ttfont["head"].unitsPerEm
         self.scale = 1000 / self.upem
-        self.resources = []
+        self.images_used = set()
+        self.graphics_style_used = set()
         self.glyphs: List[Type3FontGlyph] = []
-
-    def add_resource(self, image_info):
-        # don't add duplicate
-        if any(r["i"] == image_info["i"] for r in self.resources):
-            return
-        self.resources.append(image_info)
 
     @classmethod
     def get_notdef_glyph(cls, glyph_id) -> Type3FontGlyph:
@@ -96,22 +93,34 @@ class Type3Font:
         self.glyphs.append(g)
 
     def load_glyph_image(self, glyph: Type3FontGlyph):
-        _, y_min, x_max, y_max, _, glyph_bitmap = self.read_glyph_data(glyph.glyph_name)
+        x_min, y_min, x_max, y_max, _, glyph_bitmap = self.read_glyph_data(
+            glyph.glyph_name
+        )
         bio = BytesIO(glyph_bitmap)
         bio.seek(0)
-        # print(f"scale: {self.scale}")
-        _, _, info = self.fpdf.preload_image(bio, None)
-        # print(info)
-        glyph.glyph = (
-            f"{x_max * self.scale} 0 d0\n"
-            "q\n"
-            f"{x_max * self.scale} 0 0 {(-y_min + y_max) * self.scale} 0 {y_min * self.scale} cm\n"
-            f"/I{info['i']} Do\nQ"
-        )
-        # print(glyph.glyph)
-        # print(info)
-        glyph.glyph_width = x_max
-        self.add_resource(info)
+        _, img, info = self.fpdf.preload_image(bio, None)
+        if isinstance(info, VectorImageInfo):
+            _, _, path = img.transform_to_page_viewport(
+                pdf=self.fpdf, align_viewbox=True
+            )
+            output_stream = self.fpdf.draw_vector_glyph(path, self)
+            glyph.glyph = (
+                f"{x_max * self.scale} 0 d0\n"
+                "q\n"
+                f"1 0 0 1 {x_min * self.scale} {y_min * self.scale} cm\n"
+                f"{output_stream}\n"
+                "Q"
+            )
+            glyph.glyph_width = x_max
+        elif isinstance(info, RasterImageInfo):
+            glyph.glyph = (
+                f"{x_max * self.scale} 0 d0\n"
+                "q\n"
+                f"{x_max * self.scale} 0 0 {(-y_min + y_max) * self.scale} {x_min * self.scale} {y_min * self.scale} cm\n"
+                f"/I{info['i']} Do\nQ"
+            )
+            glyph.glyph_width = x_max
+            self.images_used.add(info["i"])
 
     def glyph_exists(self, glyph_name: str) -> bool:
         raise NotImplementedError("Method must be implemented on child class")
@@ -260,7 +269,7 @@ def get_color_font_object(fpdf: "FPDF", base_font: "TTFFont") -> Type3Font:
         return None
     if "SVG " in base_font.ttfont:
         LOGGER.warning("Font %s is a SVG color font", base_font.name)
-        return None  # SVGColorFont(fpdf, base_font)
+        return SVGColorFont(fpdf, base_font)
     if "sbix" in base_font.ttfont:
         LOGGER.warning("Font %s is a SBIX color font", base_font.name)
         return SBIXColorFont(fpdf, base_font)

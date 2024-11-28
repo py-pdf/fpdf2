@@ -140,12 +140,22 @@ class PDFType3Font(PDFObject):
             )
         return pdf_list([str(glyph_width) for glyph_width in widths])
 
-    def generate_resources(self, img_objs_per_index):
+    def generate_resources(self, img_objs_per_index, gfxstate_objs_per_name):
+        resources = "<<"
         objects = " ".join(
-            f'/I{img["i"]} {img_objs_per_index[img["i"]].id} 0 R'
-            for img in self._font3.resources
+            f"/I{img} {img_objs_per_index[img].id} 0 R"
+            for img in self._font3.images_used
         )
-        self.resources = f"<</XObject <<{objects}>>>>"
+        resources += f"/XObject <<{objects}>>" if len(objects) > 0 else ""
+
+        ext_g_state = " ".join(
+            f"/{name} {gfxstate_obj.id} 0 R"
+            for name, gfxstate_obj in gfxstate_objs_per_name.items()
+            if name in self._font3.graphics_style_used
+        )
+        resources += f"/ExtGState <<{ext_g_state}>>" if len(ext_g_state) > 0 else ""
+        resources += ">>"
+        self.resources = resources
 
     def differences_table(self):
         sorted_glyphs = sorted(self._font3.glyphs, key=lambda glyph: glyph.unicode)
@@ -601,7 +611,7 @@ class OutputProducer:
                         sig_annotation_obj = annot_obj
         return sig_annotation_obj
 
-    def _add_fonts(self, image_objects_per_index):
+    def _add_fonts(self, image_objects_per_index, gfxstate_objs_per_name):
         font_objs_per_index = {}
         for font in sorted(self.fpdf.fonts.values(), key=lambda font: font.i):
 
@@ -612,7 +622,9 @@ class OutputProducer:
                         PDFContentStream(contents=glyph.glyph, compress=False), "fonts"
                     )
                 t3_font_obj = PDFType3Font(font.color_font)
-                t3_font_obj.generate_resources(image_objects_per_index)
+                t3_font_obj.generate_resources(
+                    image_objects_per_index, gfxstate_objs_per_name
+                )
                 self._add_pdf_obj(t3_font_obj, "fonts")
                 font_objs_per_index[font.i] = t3_font_obj
                 continue
@@ -880,7 +892,9 @@ class OutputProducer:
     def _insert_resources(self, page_objs):
         img_objs_per_index = self._add_images()
         gfxstate_objs_per_name = self._add_gfxstates()
-        font_objs_per_index = self._add_fonts(img_objs_per_index)
+        font_objs_per_index = self._add_fonts(
+            img_objs_per_index, gfxstate_objs_per_name
+        )
         # Insert /Resources dicts:
         if self.fpdf.single_resources_object:
             resources_dict_obj = self._add_resources_dict(
