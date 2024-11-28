@@ -61,7 +61,10 @@ class Table:
             cell_fill_color (float, tuple, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): optional.
                 Defines the cells background color
             cell_fill_mode (str, fpdf.enums.TableCellFillMode): optional. Defines which cells are filled with color in the background
-            col_widths (float, tuple): optional. Sets column width. Can be a single number or a sequence of numbers
+            col_widths (float, tuple): optional. Sets column width. Can be a single number or a sequence of numbers.
+                 When `col_widths` is a single number, it is interpreted as a fixed column width in document units.
+                 When `col_widths` is provided as an array, the values are considered to be fractions of the full effective page width,
+                 meaning that `col_widths=(1, 1, 2)` is strictly equivalent to `col_widths=(25, 25, 50)`.
             first_row_as_headings (bool): optional, default to True. If False, the first row of the table
                 is not styled differently from the others
             gutter_height (float): optional vertical space between rows
