@@ -1050,3 +1050,15 @@ class PageBoundaries(CoerciveEnum):
     CROP_BOX = Name("CropBox")
     MEDIA_BOX = Name("MediaBox")
     TRIM_BOX = Name("TrimBox")
+
+
+class PageOrientation(CoerciveEnum):
+    PORTRAIT = intern("P")
+    LANDSCAPE = intern("L")
+
+    # pylint: disable=arguments-differ
+    @classmethod
+    def coerce(cls, value):
+        if isinstance(value, str):
+            value = value.upper()
+        return super(cls, cls).coerce(value)

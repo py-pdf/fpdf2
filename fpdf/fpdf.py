@@ -83,6 +83,7 @@ from .enums import (
     PageLabelStyle,
     PageLayout,
     PageMode,
+    PageOrientation,
     PathPaintRule,
     RenderStyle,
     TextDirection,
@@ -162,6 +163,7 @@ class ToCPlaceholder(NamedTuple):
     render_function: Callable
     start_page: int
     y: int
+    page_orientation: str
     pages: int = 1
 
 
@@ -556,24 +558,23 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         "Return a pair (width, height) in the unit specified to FPDF constructor"
         return (
             (self.dw_pt, self.dh_pt)
-            if self.def_orientation == "P"
+            if self.def_orientation == PageOrientation.PORTRAIT
             else (self.dh_pt, self.dw_pt)
         )
 
     def _set_orientation(self, orientation, page_width_pt, page_height_pt):
-        orientation = orientation.lower()
-        if orientation in ("p", "portrait"):
-            self.cur_orientation = "P"
+        self.cur_orientation = PageOrientation.coerce(orientation)
+        if self.cur_orientation is PageOrientation.PORTRAIT:
             self.w_pt = page_width_pt
             self.h_pt = page_height_pt
-        elif orientation in ("l", "landscape"):
-            self.cur_orientation = "L"
+        else:
             self.w_pt = page_height_pt
             self.h_pt = page_width_pt
-        else:
-            raise FPDFException(f"Incorrect orientation: {orientation}")
         self.w = self.w_pt / self.k
         self.h = self.h_pt / self.k
+        if hasattr(self, "auto_page_break"):  # not set when called from constructor
+            # When self.h is modified, the .page_break_trigger must be re-computed:
+            self.set_auto_page_break(self.auto_page_break, self.b_margin)
 
     def set_display_mode(self, zoom, layout="continuous"):
         """
@@ -1064,7 +1065,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self._set_orientation(
                 orientation or self.def_orientation, page_width_pt, page_height_pt
             )
-            self.page_break_trigger = self.h - self.b_margin
         page.set_dimensions(self.w_pt, self.h_pt)
 
     def header(self):
@@ -4810,6 +4810,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.page, self.y = tocp.start_page, tocp.y
         # flag rendering ToC for page breaking function
         self.in_toc_rendering = True
+        self._set_orientation(tocp.page_orientation, self.dw_pt, self.dh_pt)
         tocp.render_function(self, self._outline)
         self.in_toc_rendering = False  # set ToC rendering flag off
         expected_final_page = tocp.start_page + tocp.pages - 1
@@ -5137,7 +5138,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f" on page {self.toc_placeholder.start_page}"
             )
         self.toc_placeholder = ToCPlaceholder(
-            render_toc_function, self.page, self.y, pages
+            render_toc_function, self.page, self.y, self.cur_orientation, pages
         )
         self._toc_allow_page_insertion = allow_extra_pages
         for _ in range(pages):
