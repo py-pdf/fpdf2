@@ -1160,7 +1160,7 @@ class HTML2FPDF(HTMLParser):
         # Restore previous style:
         self.font_family = prev_style.family or self.font_family
         self.font_size_pt = prev_style.size_pt or self.font_size_pt
-        self.font_emphasis |= prev_style.emphasis
+        self.font_emphasis = prev_style.emphasis
         self.font_color = prev_style.color
 
     # pylint: disable=no-self-use
