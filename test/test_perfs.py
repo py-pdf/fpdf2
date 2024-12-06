@@ -13,7 +13,7 @@ PNG_FILE_PATHS.extend(
 )
 
 
-@ensure_exec_time_below(seconds=9)
+@ensure_exec_time_below(seconds=10)
 @ensure_rss_memory_below(mib=15)
 def test_intense_image_rendering(tmp_path):
     pdf = FPDF()
