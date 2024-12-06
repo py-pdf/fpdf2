@@ -7,7 +7,7 @@
 set -o pipefail -o errexit -o nounset -o xtrace
 
 rm -rf verapdf-*
-wget --quiet https://software.verapdf.org/rel/1.22/verapdf-greenfield-1.22.3-installer.zip
+wget --quiet https://software.verapdf.org/dev/1.27/verapdf-greenfield-1.27.96-installer.zip
 unzip verapdf*installer.zip
 (
     # Press 1 to continue, 2 to quit, 3 to redisplay:
