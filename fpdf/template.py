@@ -718,7 +718,7 @@ class Template(FlexTemplate):
                 DeprecationWarning,
                 stacklevel=get_stack_level(),
             )
-        self.pdf.set_font("helvetica", "B", 16)
+        self.pdf.set_font("helvetica", style="B", size=16)
         self.pdf.set_auto_page_break(False, margin=0)
         super().render()
         if outfile:

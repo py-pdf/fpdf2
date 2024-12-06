@@ -45,6 +45,11 @@ Result:
 * merge cells across columns and rows
 
 ## Setting table & column widths
+The `col_widths` optional parameter can be provided to configure this.
+
+If a **single number** is provided as `col_widths`, it is interpreted as a **fixed column width in document units**.
+
+If an **array of numbers** is provided as `col_widths`, the values are considered to be **fractions of the full effective page width**, meaning that `col_widths=(1, 1, 2)` is strictly equivalent to `col_widths=(25, 25, 50)`.
 
 ```python
 ...

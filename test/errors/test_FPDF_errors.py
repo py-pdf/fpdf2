@@ -51,11 +51,10 @@ def test_orientation_portrait_landscape():
 
 
 def test_incorrect_orientation():
-    with pytest.raises(FPDFException) as e:
+    with pytest.raises(ValueError) as error:
         fpdf.FPDF(orientation="hello")
 
-    msg = "Incorrect orientation: hello"
-    assert str(e.value) == msg
+    assert str(error.value) == "HELLO is not a valid PageOrientation"
 
 
 def test_units():

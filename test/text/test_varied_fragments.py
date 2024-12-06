@@ -67,12 +67,12 @@ def test_varfrags_fonts(tmp_path):
         pdf.h - pdf.b_margin,
     )
     pdf.add_font("Roboto", "B", HERE / "../fonts/Roboto-Bold.ttf")
-    pdf.set_font("helvetica", "", 14)
+    pdf.set_font("helvetica", size=14)
     f1 = Fragment(TEXT_1, pdf._get_current_graphics_state(), pdf.k)
-    pdf.set_font("courier", "I", 16)
+    pdf.set_font("courier", style="I", size=16)
     f2 = Fragment(TEXT_2, pdf._get_current_graphics_state(), pdf.k)
     f3 = Fragment(TEXT_3, f1.graphics_state, pdf.k)
-    pdf.set_font("roboto", "B", 20)
+    pdf.set_font("roboto", style="B", size=20)
     f4 = Fragment(TEXT_4, pdf._get_current_graphics_state(), pdf.k)
     f5 = Fragment(TEXT_5, f1.graphics_state, pdf.k)
     frags = [f1, f2, f3, f4, f5]
@@ -99,9 +99,9 @@ def test_varfrags_size_bold(tmp_path):
         pdf.l_margin + pdf.epw,
         pdf.h - pdf.b_margin,
     )
-    pdf.set_font("helvetica", "", 14)
+    pdf.set_font("helvetica", size=14)
     f1 = Fragment(TEXT_1, pdf._get_current_graphics_state(), pdf.k)
-    pdf.set_font("helvetica", "B", 30)
+    pdf.set_font("helvetica", style="B", size=30)
     f2 = Fragment(TEXT_2, pdf._get_current_graphics_state(), pdf.k)
     f3 = Fragment(TEXT_3, f1.graphics_state, pdf.k)
     f4 = Fragment(TEXT_4, f2.graphics_state, pdf.k)
@@ -130,7 +130,7 @@ def test_varfrags_stretch_spacing(tmp_path):
         pdf.l_margin + pdf.epw,
         pdf.h - pdf.b_margin,
     )
-    pdf.set_font("helvetica", "", 14)
+    pdf.set_font("helvetica", size=14)
     f1 = Fragment(TEXT_1, pdf._get_current_graphics_state(), pdf.k)
     pdf.set_stretching(140)
     f2 = Fragment(TEXT_2, pdf._get_current_graphics_state(), pdf.k)
@@ -164,7 +164,7 @@ def test_varfrags_text_mode(tmp_path):
     )
     pdf.set_draw_color(255, 100, 0)
     pdf.line_width = 1
-    pdf.set_font("helvetica", "B", 20)
+    pdf.set_font("helvetica", style="B", size=20)
     f1 = Fragment(TEXT_1, pdf._get_current_graphics_state(), pdf.k)
     pdf.text_mode = "STROKE"
     f2 = Fragment(TEXT_2, pdf._get_current_graphics_state(), pdf.k)
@@ -198,7 +198,7 @@ def test_varfrags_char_vpos(tmp_path):
         pdf.l_margin + pdf.epw,
         pdf.h - pdf.b_margin,
     )
-    pdf.set_font("helvetica", "", 14)
+    pdf.set_font("helvetica", size=14)
     f1 = Fragment(TEXT_1, pdf._get_current_graphics_state(), pdf.k)
     pdf.char_vpos = "SUB"
     f2 = Fragment(TEXT_2, pdf._get_current_graphics_state(), pdf.k)

@@ -8,10 +8,15 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-from typing import NamedTuple, Optional
+from typing import List, NamedTuple, Optional, TYPE_CHECKING
 
+from .enums import Align, XPos, YPos
+from .fonts import TextStyle
 from .syntax import Destination, PDFObject, PDFString
 from .structure_tree import StructElem
+
+if TYPE_CHECKING:
+    from .fpdf import FPDF
 
 
 class OutlineSection(NamedTuple):
@@ -102,3 +107,91 @@ def build_outline_objs(sections):
             if level <= section.level
         }
     return [outline] + outline_items
+
+
+class TableOfContents:
+    """
+    A reference implementation of a Table of Contents (ToC) for use with `fpdf2`.
+
+    This class provides a customizable Table of Contents that can be used directly or subclassed
+    for additional functionality. To use this class, create an instance of `TableOfContents`,
+    configure it as needed, and pass its `render_toc` method as the `render_toc_function` argument
+    to `FPDF.insert_toc_placeholder()`.
+    """
+
+    def __init__(self):
+        self.text_style = TextStyle()
+        self.use_section_title_styles = False
+        self.level_indent = 7.5
+        self.line_spacing = 1.5
+        self.ignore_pages_before_toc = True
+
+    def get_text_style(self, pdf: "FPDF", item: OutlineSection):
+        if self.use_section_title_styles and pdf.section_title_styles[item.level]:
+            return pdf.section_title_styles[item.level]
+        return self.text_style
+
+    def render_toc_item(self, pdf: "FPDF", item: OutlineSection):
+        link = pdf.add_link(page=item.page_number)
+        page_label = pdf.pages[item.page_number].get_label()
+
+        # render the text on the left
+        with pdf.use_text_style(self.get_text_style(pdf, item)):
+            indent = (item.level * self.level_indent) + pdf.l_margin
+            pdf.set_x(indent)
+            pdf.multi_cell(
+                w=pdf.w - indent - pdf.r_margin,
+                text=item.name,
+                new_x=XPos.END,
+                new_y=YPos.LAST,
+                link=link,
+                align=Align.J,
+                h=pdf.font_size * self.line_spacing,
+            )
+
+            # fill in-between with dots
+            current_x = pdf.get_x()
+            page_label_length = pdf.get_string_width(page_label)
+            in_between_space = pdf.w - current_x - page_label_length - pdf.r_margin
+            if in_between_space < 0:
+                # no space to render the page number - go to next line
+                pdf.ln()
+                current_x = pdf.get_x()
+                in_between_space = pdf.w - current_x - page_label_length - pdf.r_margin
+            in_between = ""
+            if in_between_space > 0:
+                while pdf.get_string_width(in_between + "  ") < in_between_space:
+                    in_between += "."
+
+                if len(in_between) > 1:
+                    pdf.multi_cell(
+                        w=pdf.w - current_x - pdf.r_margin,
+                        text=in_between[:-1],
+                        new_x=XPos.END,
+                        new_y=YPos.LAST,
+                        link=link,
+                        align=Align.L,
+                        h=pdf.font_size * self.line_spacing,
+                    )
+
+            # render the page number on the right
+            pdf.set_x(current_x)
+            pdf.multi_cell(
+                w=pdf.w - current_x - pdf.r_margin,
+                text=page_label,
+                new_x=XPos.LMARGIN,
+                new_y=YPos.NEXT,
+                link=link,
+                align=Align.R,
+                h=pdf.font_size * self.line_spacing,
+            )
+
+    def render_toc(self, pdf: "FPDF", outline: List[OutlineSection]):
+        "This method can be overriden by subclasses to customize the Table of Contents style."
+        for section in outline:
+            if (
+                self.ignore_pages_before_toc
+                and section.page_number <= pdf.toc_placeholder.start_page
+            ):
+                continue
+            self.render_toc_item(pdf, section)

@@ -8,7 +8,15 @@
 # * Maintainer:  David Alexander (daveankin@gmail.com) et al since 2017 est. *
 # * Maintainer:  Lucas Cimon et al since 2021 est.                           *
 # ****************************************************************************
-import hashlib, io, logging, math, os, re, sys, types, warnings
+import hashlib
+import io
+import logging
+import math
+import os
+import re
+import sys
+import types
+import warnings
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -20,8 +28,8 @@ from pathlib import Path
 from typing import Callable, Dict, Iterator, NamedTuple, Optional, Union
 
 try:
-    from endesive import signer
     from cryptography.hazmat.primitives.serialization import pkcs12
+    from endesive import signer
 except ImportError:
     pkcs12, signer = None, None
 
@@ -39,26 +47,26 @@ except ImportError:
 
 from .actions import URIAction
 from .annotations import (
+    DEFAULT_ANNOT_FLAGS,
     AnnotationDict,
     PDFAnnotation,
     PDFEmbeddedFile,
-    DEFAULT_ANNOT_FLAGS,
 )
 from .bidi import BidiParagraph, auto_detect_base_direction
 from .deprecation import (
-    support_deprecated_txt_arg,
-    get_stack_level,
     WarnOnDeprecatedModuleAttributes,
+    get_stack_level,
+    support_deprecated_txt_arg,
 )
 from .drawing import (
-    convert_to_device_color,
     DeviceRGB,
+    DrawingContext,
     GraphicsStateDictRegistry,
     GraphicsStyle,
-    DrawingContext,
     PaintedPath,
     Point,
     Transform,
+    convert_to_device_color,
 )
 from .encryption import StandardSecurityHandler
 from .enums import (
@@ -72,8 +80,10 @@ from .enums import (
     EncryptionMethod,
     FileAttachmentAnnotationName,
     MethodReturnValue,
+    PageLabelStyle,
     PageLayout,
     PageMode,
+    PageOrientation,
     PathPaintRule,
     RenderStyle,
     TextDirection,
@@ -109,9 +119,10 @@ from .line_break import (
 )
 from .outline import OutlineSection
 from .output import (
+    ZOOM_CONFIGS,
     OutputProducer,
     PDFPage,
-    ZOOM_CONFIGS,
+    PDFPageLabel,
     stream_content_for_raster_image,
 )
 from .recorder import FPDFRecorder
@@ -121,6 +132,7 @@ from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ, PDFArray, PDFDate
 from .table import Table, draw_box_borders
 from .text_region import TextRegionMixin, TextColumns
+from .transitions import Transition
 from .unicode_script import UnicodeScript, get_unicode_script
 from .util import get_scale_factor, Padding
 
@@ -151,6 +163,7 @@ class ToCPlaceholder(NamedTuple):
     render_function: Callable
     start_page: int
     y: int
+    page_orientation: str
     pages: int = 1
 
 
@@ -281,8 +294,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.oversized_images = None
         self.oversized_images_ratio = 2  # number of pixels per UserSpace point
         self.struct_builder = StructureTreeBuilder()
-        self._toc_placeholder = None  # optional ToCPlaceholder instance
-        self._outline = []  # list of OutlineSection
+        self.toc_placeholder = None  # optional ToCPlaceholder instance
+        self._outline: list[OutlineSection] = []  # list of OutlineSection
+        # flag set true while rendering the table of contents
+        self.in_toc_rendering = False
+        # allow page insertion when writing the table of contents
+        self._toc_allow_page_insertion = False
+        self._toc_inserted_pages = 0  # number of pages inserted
         self._sign_key = None
         self.title = None
         self.section_title_styles = {}  # level -> TextStyle
@@ -540,24 +558,23 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         "Return a pair (width, height) in the unit specified to FPDF constructor"
         return (
             (self.dw_pt, self.dh_pt)
-            if self.def_orientation == "P"
+            if self.def_orientation == PageOrientation.PORTRAIT
             else (self.dh_pt, self.dw_pt)
         )
 
     def _set_orientation(self, orientation, page_width_pt, page_height_pt):
-        orientation = orientation.lower()
-        if orientation in ("p", "portrait"):
-            self.cur_orientation = "P"
+        self.cur_orientation = PageOrientation.coerce(orientation)
+        if self.cur_orientation is PageOrientation.PORTRAIT:
             self.w_pt = page_width_pt
             self.h_pt = page_height_pt
-        elif orientation in ("l", "landscape"):
-            self.cur_orientation = "L"
+        else:
             self.w_pt = page_height_pt
             self.h_pt = page_width_pt
-        else:
-            raise FPDFException(f"Incorrect orientation: {orientation}")
         self.w = self.w_pt / self.k
         self.h = self.h_pt / self.k
+        if hasattr(self, "auto_page_break"):  # not set when called from constructor
+            # When self.h is modified, the .page_break_trigger must be re-computed:
+            self.set_auto_page_break(self.auto_page_break, self.b_margin)
 
     def set_display_mode(self, zoom, layout="continuous"):
         """
@@ -844,8 +861,35 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         self.str_alias_nb_pages = alias
 
+    def set_page_label(
+        self,
+        label_style: Union[str, PageLabelStyle] = None,
+        label_prefix: str = None,
+        label_start: int = None,
+    ):
+        current_page_label = (
+            None if self.page == 1 else self.pages[self.page - 1].get_page_label()
+        )
+        new_page_label = None
+        if label_style or label_prefix or label_start:
+            label_style = (
+                PageLabelStyle.coerce(label_style, case_sensitive=True)
+                if label_style
+                else None
+            )
+            new_page_label = PDFPageLabel(label_style, label_prefix, label_start)
+        self.pages[self.page].set_page_label(current_page_label, new_page_label)
+
     def add_page(
-        self, orientation="", format="", same=False, duration=0, transition=None
+        self,
+        orientation: str = "",
+        format: str = "",
+        same: bool = False,
+        duration: float = 0,
+        transition: Transition = None,
+        label_style: Union[str, PageLabelStyle] = None,
+        label_prefix: str = None,
+        label_start: int = None,
     ):
         """
         Adds a new page to the document.
@@ -869,6 +913,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 from another page to the given page during a presentation.
                 Can be configured globally through the `.page_transition` FPDF property.
                 As of june 2021, onored by Adobe Acrobat reader, but ignored by Sumatra PDF reader.
+            label_style (str or PageLabelStyle): Defines the numbering style for the numeric portion of each
+                page label. Possible values are:
+                - "D": Decimal Arabic numerals.
+                - "R": Uppercase Roman numerals.
+                - "r": Lowercase Roman numerals.
+                - "A": Uppercase letters (A to Z for the first 26 pages, followed by AA to ZZ, etc.).
+                - "a": Lowercase letters (a to z for the first 26 pages, followed by aa to zz, etc.).
+            label_prefix (str): Prefix string applied to the page label, preceding the numeric portion.
+            label_start (int): Starting number for the first page of a page label range.
         """
         if self.buffer:
             raise FPDFException(
@@ -885,11 +938,28 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         char_spacing = self.char_spacing
         dash_pattern = self.dash_pattern
 
-        if self.page > 0:
+        in_toc_extra_page = (
+            self.in_toc_rendering
+            and self._toc_allow_page_insertion
+            and self.page > self.toc_placeholder.start_page
+        )
+        if self.page > 0 and (not self.in_toc_rendering or in_toc_extra_page):
             # Page footer
             self.in_footer = True
             self.footer()
             self.in_footer = False
+
+        current_page_label = (
+            None if self.page == 0 else self.pages[self.page].get_page_label()
+        )
+        new_page_label = None
+        if label_style or label_prefix or label_start:
+            label_style = (
+                PageLabelStyle.coerce(label_style, case_sensitive=True)
+                if label_style
+                else None
+            )
+            new_page_label = PDFPageLabel(label_style, label_prefix, label_start)
 
         # Start new page
         self._beginpage(
@@ -900,6 +970,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             transition or self.page_transition,
             new_page=not self._has_next_page(),
         )
+
+        self.pages[self.page].set_page_label(current_page_label, new_page_label)
 
         if self.page_background:
             if isinstance(self.page_background, tuple):
@@ -927,7 +999,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.text_color = tc
 
         # BEGIN Page header
-        self.header()
+        if (not self.in_toc_rendering) or self._toc_allow_page_insertion:
+            self.header()
 
         if self.line_width != lw:  # Restore line width
             self.line_width = lw
@@ -952,13 +1025,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self._write_dash_pattern(
                 dash_pattern["dash"], dash_pattern["gap"], dash_pattern["phase"]
             )
-
         # END Page header
 
     def _beginpage(
         self, orientation, format, same, duration, transition, new_page=True
     ):
         self.page += 1
+        if self.in_toc_rendering and self._toc_allow_page_insertion:
+            self._toc_inserted_pages += 1
+            self.page = len(self.pages) + 1
+            new_page = True
         if new_page:
             page = PDFPage(
                 contents=bytearray(),
@@ -989,7 +1065,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self._set_orientation(
                 orientation or self.def_orientation, page_width_pt, page_height_pt
             )
-            self.page_break_trigger = self.h - self.b_margin
         page.set_dimensions(self.w_pt, self.h_pt)
 
     def header(self):
@@ -1015,6 +1090,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def page_no(self):
         """Get the current page number"""
         return self.page
+
+    def get_page_label(self):
+        return self.pages[self.page].get_label()
 
     def set_draw_color(self, r, g=-1, b=-1):
         """
@@ -2175,7 +2253,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         link.zoom = zoom
 
     @check_page
-    def link(self, x, y, w, h, link, alt_text=None, border_width=0):
+    def link(self, x, y, w, h, link, alt_text=None, **kwargs):
         """
         Puts a link annotation on a rectangular area of the page.
         Text or image links are generally put via `FPDF.cell`,
@@ -2213,7 +2291,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             height=h * self.k,
             action=action,
             dest=dest,
-            border_width=border_width,
+            **kwargs,
         )
         self.pages[self.page].annots.append(link_annot)
         if alt_text is not None:
@@ -2313,15 +2391,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             h * self.k,
             file_spec=embedded_file.file_spec(),
             name=FileAttachmentAnnotationName.coerce(name) if name else None,
-            flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
+            flags=flags,
         )
         self.pages[self.page].annots.append(annotation)
         return annotation
 
     @check_page
-    def text_annotation(
-        self, x, y, text, w=1, h=1, name=None, flags=DEFAULT_ANNOT_FLAGS
-    ):
+    def text_annotation(self, x, y, text, w=1, h=1, name=None, **kwargs):
         """
         Puts a text annotation on a rectangular area of the page.
 
@@ -2333,6 +2409,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             h (float): optional height of the link rectangle
             name (fpdf.enums.AnnotationName, str): optional icon that shall be used in displaying the annotation
             flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
+            title (str): the text label that shall be displayed in the title bar of the annotation’s
+                pop-up window when open and active. This entry shall identify the user who added the annotation.
         """
         annotation = AnnotationDict(
             "Text",
@@ -2342,7 +2420,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             h * self.k,
             contents=text,
             name=AnnotationName.coerce(name) if name else None,
-            flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
+            **kwargs,
         )
         self.pages[self.page].annots.append(annotation)
         return annotation
@@ -2355,7 +2433,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         y=None,
         w=None,
         h=None,
-        flags=DEFAULT_ANNOT_FLAGS,
+        **kwargs,
     ):
         """
         Puts a free text annotation on a rectangular area of the page.
@@ -2370,6 +2448,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             h (float): optional height of the link rectangle. Default value: None, meaning an height equal
                 to the current font size
             flags (Tuple[fpdf.enums.AnnotationFlag], Tuple[str]): optional list of flags defining annotation properties
+            color (tuple): a tuple of numbers in the range 0.0 to 1.0, representing a colour used for the annotation background
+            border_width (float): width of the annotation border
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
@@ -2389,15 +2469,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             w * self.k,
             h * self.k,
             contents=text,
-            flags=tuple(AnnotationFlag.coerce(flag) for flag in flags),
             default_appearance=f"({self.draw_color.serialize()} /F{self.current_font.i} {self.font_size_pt:.2f} Tf)",
+            **kwargs,
         )
         self.fonts_used_per_page_number[self.page].add(self.current_font.i)
         self.pages[self.page].annots.append(annotation)
         return annotation
 
     @check_page
-    def add_action(self, action, x, y, w, h):
+    def add_action(self, action, x, y, w, h, **kwargs):
         """
         Puts an Action annotation on a rectangular area of the page.
 
@@ -2415,13 +2495,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             w * self.k,
             h * self.k,
             action=action,
+            **kwargs,
         )
         self.pages[self.page].annots.append(annotation)
         return annotation
 
     @contextmanager
     def highlight(
-        self, text, title="", type="Highlight", color=(1, 1, 0), modification_time=None
+        self, text, type="Highlight", color=(1, 1, 0), modification_time=None, **kwargs
     ):
         """
         Context manager that adds a single highlight annotation based on the text lines inserted
@@ -2445,10 +2526,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 type,
                 text,
                 quad_points=quad_points,
-                title=title,
-                color=color,
                 modification_time=modification_time,
                 page=page,
+                color=color,
+                **kwargs,
             )
         self._text_quad_points = defaultdict(list)
         self._record_text_quad_points = False
@@ -2469,10 +2550,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         type,
         text,
         quad_points,
-        title="",
         color=(1, 1, 0),
         modification_time=None,
         page=None,
+        **kwargs,
     ):
         """
         Adds a text markup annotation on some quadrilateral areas of the page.
@@ -2508,29 +2589,29 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             y=y_max,
             width=x_max - x_min,
             height=y_max - y_min,
-            color=color,
             modification_time=modification_time,
-            title=title,
             quad_points=quad_points,
+            color=color,
+            **kwargs,
         )
         self.pages[page].annots.append(annotation)
         return annotation
 
     @check_page
     def ink_annotation(
-        self, coords, contents="", title="", color=(1, 1, 0), border_width=1
+        self, coords, text="", color=(1, 1, 0), border_width=1, **kwargs
     ):
         """
         Adds add an ink annotation on the page.
 
         Args:
             coords (tuple): an iterable of coordinates (pairs of numbers) defining a path
-            contents (str): textual description
+            text (str): textual description
             title (str): the text label that shall be displayed in the title bar of the annotation’s
                 pop-up window when open and active. This entry shall identify the user who added the annotation.
             color (tuple): a tuple of numbers in the range 0.0 to 1.0, representing a colour used for
                 the title bar of the annotation’s pop-up window. Defaults to yellow.
-            border_width (int): thickness of the path stroke.
+            border_width (float): thickness of the path stroke.
         """
         ink_list = sum(((x * self.k, (self.h - y) * self.k) for (x, y) in coords), ())
         x_min = min(ink_list[0::2])
@@ -2544,10 +2625,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             width=x_max - x_min,
             height=y_max - y_min,
             ink_list=ink_list,
-            color=color,
+            contents=text,
             border_width=border_width,
-            contents=contents,
-            title=title,
+            color=color,
+            **kwargs,
         )
         self.pages[self.page].annots.append(annotation)
         return annotation
@@ -4724,22 +4805,26 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def _insert_table_of_contents(self):
         # Doc has been closed but we want to write to self.pages[self.page] instead of self.buffer:
-        tocp = self._toc_placeholder
+        tocp = self.toc_placeholder
         prev_page, prev_y = self.page, self.y
         self.page, self.y = tocp.start_page, tocp.y
-        # Disabling footer & header, as they have already been called:
-        self.footer = lambda *args, **kwargs: None
-        self.header = lambda *args, **kwargs: None
+        # flag rendering ToC for page breaking function
+        self.in_toc_rendering = True
+        self._set_orientation(tocp.page_orientation, self.dw_pt, self.dh_pt)
         tocp.render_function(self, self._outline)
+        self.in_toc_rendering = False  # set ToC rendering flag off
         expected_final_page = tocp.start_page + tocp.pages - 1
-        if self.page != expected_final_page:
+        if self.page != expected_final_page and not self._toc_allow_page_insertion:
             too = "many" if self.page > expected_final_page else "few"
             error_msg = f"The rendering function passed to FPDF.insert_toc_placeholder triggered too {too} page breaks: "
             error_msg += f"ToC ended on page {self.page} while it was expected to span exactly {tocp.pages} pages"
             raise FPDFException(error_msg)
+        if self._toc_inserted_pages:
+            # Generating final page footer afer more pages were inserted:
+            self.in_footer = True
+            self.footer()
+            self.in_footer = False
         self.page, self.y = prev_page, prev_y
-        del self.footer
-        del self.header
 
     def file_id(self):  # pylint: disable=no-self-use
         """
@@ -5021,7 +5106,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         recorder.rewind()
 
     @check_page
-    def insert_toc_placeholder(self, render_toc_function, pages=1):
+    def insert_toc_placeholder(
+        self,
+        render_toc_function: Callable,
+        pages: int = 1,
+        allow_extra_pages: bool = False,
+    ):
         """
         Configure Table Of Contents rendering at the end of the document generation,
         and reserve some vertical space right now in order to insert it.
@@ -5033,19 +5123,24 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             pages (int): the number of pages that the Table of Contents will span,
                 including the current one that will. As many page breaks as the value of this argument
                 will occur immediately after calling this method.
+            allow_extra_pages (bool): If set to `True`, allows for an unlimited number of
+                extra pages in the ToC, which may cause discrepancies with pre-rendered
+                page numbers. For consistent numbering, using page labels to create a
+                separate numbering style for the ToC is recommended.
         """
         if not callable(render_toc_function):
             raise TypeError(
                 f"The first argument must be a callable, got: {type(render_toc_function)}"
             )
-        if self._toc_placeholder:
+        if self.toc_placeholder:
             raise FPDFException(
                 "A placeholder for the table of contents has already been defined"
-                f" on page {self._toc_placeholder.start_page}"
+                f" on page {self.toc_placeholder.start_page}"
             )
-        self._toc_placeholder = ToCPlaceholder(
-            render_toc_function, self.page, self.y, pages
+        self.toc_placeholder = ToCPlaceholder(
+            render_toc_function, self.page, self.y, self.cur_orientation, pages
         )
+        self._toc_allow_page_insertion = allow_extra_pages
         for _ in range(pages):
             self._perform_page_break()
 
@@ -5133,7 +5228,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 self.add_page()
             with self._marked_sequence(title=name) as struct_elem:
                 outline_struct_elem = struct_elem
-                with self._use_text_style(text_style):
+                with self.use_text_style(text_style):
                     self.multi_cell(
                         w=self.epw,
                         h=self.font_size,
@@ -5146,7 +5241,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
 
     @contextmanager
-    def _use_text_style(self, text_style: TextStyle):
+    def use_text_style(self, text_style: TextStyle):
         if text_style:
             if text_style.t_margin:
                 self.ln(text_style.t_margin)
@@ -5276,7 +5371,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.footer()
             self.in_footer = False
             # Generating .buffer based on .pages:
-            if self._toc_placeholder:
+            if self.toc_placeholder:
                 self._insert_table_of_contents()
             if self.str_alias_nb_pages:
                 for page in self.pages.values():

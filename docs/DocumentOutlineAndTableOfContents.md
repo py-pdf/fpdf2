@@ -1,39 +1,82 @@
-# Document outline & table of contents #
+# Document Outline & Table of Contents
 
-Quoting [Wikipedia](https://en.wikipedia.org/wiki/Table_of_contents), a **table of contents** is:
-> a list, usually found on a page before the start of a written work, of its chapter or section titles or brief descriptions with their commencing page numbers.
+## Overview
 
-Now quoting the 6th edition of the PDF format reference (v1.7 - 2006) :
+This document explains how to implement and customize the Document Outline (also known as Bookmarks) and Table of Contents (ToC) features in `fpdf2`.
+
+---
+
+## Document Outline (Bookmarks)
+
+Document outlines allow users to navigate quickly through sections in the PDF by creating a hierarchical structure of clickable links.
+
+Quoting the 6th edition of the PDF format reference (v1.7 - 2006) :
 > A PDF document may optionally display a **document outline** on the screen, allowing the user to navigate interactively
 > from one part of the document to another. The outline consists of a tree-structured hierarchy of outline items
 > (sometimes called bookmarks), which serve as a visual table of contents to display the document’s structure to the user.
 
 For example, there is how a document outline looks like in [Sumatra PDF Reader](https://www.sumatrapdfreader.org/free-pdf-reader.html):
 
-![](document-outline.png)
+![Document Outline Example](document-outline.png)
 
-Since `fpdf2.3.3`, both features are supported through the use of the [`start_section`](fpdf/fpdf.html#fpdf.fpdf.FPDF.start_section) method,
-that adds an entry in the internal "outline" table used to render both features.
+Since `fpdf2.3.3`, you can use the [`start_section`](fpdf/fpdf.html#fpdf.fpdf.FPDF.start_section) method to add entries in the internal "outline" table, which is used to render both the outline and ToC.
 
 Note that by default, calling `start_section` only records the current position in the PDF and renders nothing.
-However, you can configure **global title styles** by calling [`set_section_title_styles`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_section_title_styles),
-after which call to `start_section` will render titles visually using the styles defined.
+However, you can configure **global title styles** by calling [`set_section_title_styles`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_section_title_styles), after which calls to `start_section` will render titles visually using the styles defined.
 
-To provide a document outline to the PDF you generate, you just have to call the `start_section` method
-for every hierarchical section you want to define.
+To provide a document outline to the PDF you generate, you just have to call the `start_section` method for every hierarchical section you want to define.
 
-If you also want to insert a table of contents somewhere,
-call [`insert_toc_placeholder`](fpdf/fpdf.html#fpdf.fpdf.FPDF.insert_toc_placeholder)
-wherever you want to put it.
-Note that a page break will always be triggered after inserting the table of contents.
+### Nested outlines
 
-## With HTML ##
+Outlines can be nested by specifying different levels. Higher-level outlines (e.g., level 0) appear at the top, while sub-levels (e.g., level 1, level 2) are indented.
 
-When using [`FPDF.write_html`](HTML.md), a document outline is automatically built.
-You can insert a table of content with the special `<toc>` tag.
+```python
+pdf.start_section(name="Chapter 1: Introduction", level=0)
+pdf.start_section(name="Section 1.1: Background", level=1)
+```
 
-Custom styling of the table of contents can be achieved by overriding the `render_toc` method
-in a subclass of `FPDF`:
+---
+
+## Table of Contents
+
+Quoting [Wikipedia](https://en.wikipedia.org/wiki/Table_of_contents), a **table of contents** is:
+> a list, usually found on a page before the start of a written work, of its chapter or section titles or brief descriptions with their commencing page numbers.
+
+### Inserting a Table of Contents
+
+Use the [`insert_toc_placeholder`](fpdf/fpdf.html#fpdf.fpdf.FPDF.insert_toc_placeholder) method to define a placeholder for the ToC. A page break is triggered after inserting the ToC.
+
+**Parameters:**
+- **render_toc_function**: Function called to render the ToC, receiving two parameters: `pdf`, an FPDF instance, and `outline`, a list of `fpdf.outline.OutlineSection`.
+- **pages**: The number of pages that the ToC will span, including the current one. A page break occurs for each page specified.
+- **allow_extra_pages**: If `True`, allows unlimited additional pages to be added to the ToC as needed. These extra ToC pages are initially created at the end of the document and then reordered when the final PDF is produced.
+
+**Note**: Enabling `allow_extra_pages` may affect page numbering for headers or footers. Since extra ToC pages are added after the document content, they might cause page numbers to appear out of sequence. To maintain consistent numbering, use (Page Labels)[PageLabels.md] to assign a specific numbering style to the ToC pages. When using Page Labels, any extra ToC pages will follow the numbering style of the first ToC page.
+
+### Reference Implementation
+
+_New in [:octicons-tag-24: 2.8.2](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+The `fpdf.outline.TableOfContents` class provides a reference implementation of the ToC, which can be used as-is or subclassed.
+
+```python
+from fpdf import FPDF
+from fpdf.outline import TableOfContents
+
+pdf = FPDF()
+pdf.add_page()
+toc = TableOfContents()
+pdf.insert_toc_placeholder(toc.render_toc, allow_extra_pages=True)
+```
+
+---
+
+## Using Outlines and ToC with HTML
+
+When using [`FPDF.write_html`](HTML.md), a document outline is automatically generated, and a ToC can be added with the `<toc>` tag.
+
+To customize ToC styling, override the `render_toc` method in a subclass:
+
 ```python
 from fpdf import FPDF, HTML2FPDF
 
@@ -59,7 +102,9 @@ pdf.write_html("""<toc></toc>
 pdf.output("html_toc.pdf")
 ```
 
-## Code samples ##
+---
+
+## Additional Code Samples
 
 The regression tests are a good place to find code samples.
 

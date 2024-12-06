@@ -10,7 +10,7 @@ HERE = Path(__file__).resolve().parent
 def test_dash_pattern(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.set_font("helvetica", "", 10)
+    pdf.set_font("helvetica", size=10)
 
     def draw_stuff(x, y):
         pdf.line(x, y, x + 50, y + 50)

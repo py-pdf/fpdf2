@@ -43,6 +43,11 @@ black .  # inside fpdf2 root directory
 ## Linting
 We use [pylint](https://github.com/PyCQA/pylint/) as a static code analyzer
 to detect potential issues in the code.
+You can install & execute it by running those commands:
+```
+pip install pylint
+pylint fpdf/ test/
+```
 
 In case of special "false positive" cases,
 checks can be disabled locally with `#pylint disable=XXX` code comments,
@@ -237,7 +242,7 @@ There is a useful one-page example Python module with docstrings illustrating ho
 
 To preview the Markdown documentation, launch a local rendering server with:
 
-    mkdocs serve
+    mkdocs serve --open
 
 To preview the API documentation, launch a local rendering server with:
 

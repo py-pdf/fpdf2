@@ -5,7 +5,7 @@ can be controlled through `stroke_opacity` (for lines) & `fill_opacity` (for all
 
 ```python
 pdf = FPDF()
-pdf.set_font("Helvetica", "B", 24)
+pdf.set_font("Helvetica", style="B", size=24)
 pdf.set_line_width(1.5)
 pdf.add_page()
 

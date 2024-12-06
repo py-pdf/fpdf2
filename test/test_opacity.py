@@ -9,7 +9,7 @@ HERE = Path(__file__).resolve().parent
 def test_transparency(tmp_path):
     "Inspired by https://github.com/digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2/tree/main/alpha"
     pdf = FPDF()
-    pdf.set_font("Helvetica", "B", 24)
+    pdf.set_font("Helvetica", style="B", size=24)
     pdf.set_line_width(1.5)
     pdf.add_page()
 

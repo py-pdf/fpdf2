@@ -9,38 +9,42 @@ in non-backward-compatible ways.
 
 # pylint: disable=protected-access
 import logging
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict, defaultdict
 from contextlib import contextmanager
 from io import BytesIO
 
+from fontTools import subset as ftsubset
 
 from .annotations import PDFAnnotation
-from .enums import SignatureFlag
+from .enums import PageLabelStyle, SignatureFlag
 from .errors import FPDFException
 from .line_break import TotalPagesSubstitutionFragment
 from .image_datastructures import RasterImageInfo
 from .outline import build_outline_objs
 from .sign import Signature, sign_content
 from .syntax import (
-    build_obj_dict,
     Name,
     PDFArray,
     PDFContentStream,
     PDFDate,
     PDFObject,
     PDFString,
+    build_obj_dict,
 )
 from .syntax import create_dictionary_string as pdf_dict
 from .syntax import create_list_string as pdf_list
 from .syntax import iobj_ref as pdf_ref
-
-from fontTools import subset as ftsubset
+from .util import int2roman, int_to_letters
 
 try:
     from endesive import signer
 except ImportError:
     signer = None
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .fpdf import FPDF
 
 LOGGER = logging.getLogger(__name__)
 
@@ -229,6 +233,52 @@ class PDFICCPObject(PDFContentStream):
         self.alternate = Name(alternate)
 
 
+class PDFPageLabel:
+    __slots__ = ["_style", "_prefix", "st"]
+
+    def __init__(
+        self, label_style: PageLabelStyle, label_prefix: str, label_start: int
+    ):
+        self._style: PageLabelStyle = label_style
+        self._prefix: str = label_prefix
+        self.st: int = label_start
+
+    @property
+    def s(self) -> Name:
+        return Name(self._style.value) if self._style else None
+
+    @property
+    def p(self) -> PDFString:
+        return PDFString(self._prefix) if self._prefix else None
+
+    def __repr__(self):
+        ret = self._prefix if self._prefix else ""
+        if self._style:
+            if self._style == PageLabelStyle.NUMBER:
+                ret += str(self.st)
+            elif self._style == PageLabelStyle.UPPER_ROMAN:
+                ret += int2roman(self.st)
+            elif self._style == PageLabelStyle.LOWER_ROMAN:
+                ret += int2roman(self.st).lower()
+            elif self._style == PageLabelStyle.UPPER_LETTER:
+                ret += int_to_letters(self.st - 1)
+            elif self._style == PageLabelStyle.LOWER_LETTER:
+                ret += int_to_letters(self.st - 1).lower()
+        return None if ret == "" else ret
+
+    def serialize(self) -> dict:
+        return build_obj_dict({key: getattr(self, key) for key in dir(self)})
+
+    def get_style(self) -> PageLabelStyle:
+        return self._style
+
+    def get_prefix(self) -> str:
+        return self._prefix
+
+    def get_start(self) -> int:
+        return self.st
+
+
 class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
         "_id",
@@ -245,6 +295,7 @@ class PDFPage(PDFObject):
         "_index",
         "_width_pt",
         "_height_pt",
+        "_page_label",
         "_text_substitution_fragments",
     )
 
@@ -268,6 +319,7 @@ class PDFPage(PDFObject):
         self.parent = None  # must always be set before calling .serialize()
         self._index = index
         self._width_pt, self._height_pt = None, None
+        self._page_label: PDFPageLabel = None
         self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
 
     def index(self):
@@ -280,6 +332,37 @@ class PDFPage(PDFObject):
     def set_dimensions(self, width_pt, height_pt):
         "Accepts a pair (width, height) in the unit specified to FPDF constructor"
         self._width_pt, self._height_pt = width_pt, height_pt
+
+    def set_page_label(
+        self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
+    ):
+        if (
+            previous_page_label
+            and page_label
+            and page_label.get_style() == previous_page_label.get_style()
+            and page_label.get_prefix() == previous_page_label.get_prefix()
+            and not page_label.st
+        ):
+            page_label.st = previous_page_label.get_start() + 1
+
+        if page_label:
+            if not page_label.get_start():
+                page_label.st = 1
+
+        if previous_page_label and not page_label:
+            page_label = PDFPageLabel(
+                previous_page_label.get_style(),
+                previous_page_label.get_prefix(),
+                previous_page_label.get_start() + 1,
+            )
+
+        self._page_label = page_label
+
+    def get_page_label(self) -> PDFPageLabel:
+        return self._page_label
+
+    def get_label(self) -> str:
+        return str(self.index()) if not self._page_label else str(self._page_label)
 
     def get_text_substitutions(self):
         return self._text_substitution_fragments
@@ -350,7 +433,7 @@ class PDFXrefAndTrailer(ContentWithoutID):
 class OutputProducer:
     "Generates the final bytearray representing the PDF document, based on a FPDF instance."
 
-    def __init__(self, fpdf):
+    def __init__(self, fpdf: "FPDF"):
         self.fpdf = fpdf
         self.pdf_objs = []
         self.iccp_i_to_pdf_i = {}
@@ -397,7 +480,7 @@ class OutputProducer:
         self.pdf_objs.append(xref)
 
         # 2. Plumbing - Inject all PDF object references required:
-        pages_root_obj.kids = PDFArray(page_objs)
+        pages_root_obj.kids = PDFArray(self._reorder_page_objects(page_objs))
         self._finalize_catalog(
             catalog_obj,
             pages_root_obj=pages_root_obj,
@@ -517,7 +600,18 @@ class OutputProducer:
             )
             self._add_pdf_obj(cs_obj, "pages")
             page_obj.contents = cs_obj
+
         return page_objs
+
+    def _reorder_page_objects(self, page_objs: list):
+        "Reorder page objects to move any Table of Contents pages generated at the end of the document to follow the ToC placeholder."
+        if not self.fpdf._toc_inserted_pages:
+            return page_objs
+        reordered = page_objs.copy()
+        for _ in range(self.fpdf._toc_inserted_pages):
+            last_page = reordered.pop()
+            reordered.insert(self.fpdf.toc_placeholder.start_page, last_page)
+        return reordered
 
     def _add_annotations_as_objects(self):
         sig_annotation_obj = None
@@ -985,6 +1079,22 @@ class OutputProducer:
             ]
             catalog_obj.names = pdf_dict(
                 {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(file_spec_names)})}
+            )
+        ordered_pages = list(fpdf.pages.items())
+        for _ in range(self.fpdf._toc_inserted_pages):
+            last_page = ordered_pages.pop()
+            ordered_pages.insert(self.fpdf.toc_placeholder.start_page, last_page)
+        page_labels = [
+            f"{seq} {pdf_dict(page[1].get_page_label().serialize())}"
+            for (seq, page) in enumerate(ordered_pages)
+            if page[1].get_page_label()
+        ]
+        if page_labels and not fpdf.pages[1].get_page_label():
+            # If page labels are used, an entry for sequence 0 is mandatory
+            page_labels.insert(0, "0 <<>>")
+        if page_labels:
+            catalog_obj.page_labels = pdf_dict(
+                {"/Nums": PDFArray(page_labels).serialize()}
             )
 
     @contextmanager

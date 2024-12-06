@@ -61,7 +61,10 @@ class Table:
             cell_fill_color (float, tuple, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): optional.
                 Defines the cells background color
             cell_fill_mode (str, fpdf.enums.TableCellFillMode): optional. Defines which cells are filled with color in the background
-            col_widths (float, tuple): optional. Sets column width. Can be a single number or a sequence of numbers
+            col_widths (float, tuple): optional. Sets column width. Can be a single number or a sequence of numbers.
+                 When `col_widths` is a single number, it is interpreted as a fixed column width in document units.
+                 When `col_widths` is provided as an array, the values are considered to be fractions of the full effective page width,
+                 meaning that `col_widths=(1, 1, 2)` is strictly equivalent to `col_widths=(25, 25, 50)`.
             first_row_as_headings (bool): optional, default to True. If False, the first row of the table
                 is not styled differently from the others
             gutter_height (float): optional vertical space between rows
@@ -85,7 +88,7 @@ class Table:
             repeat_headings (fpdf.enums.TableHeadingsDisplay): optional, indicates whether to print table headings on every page, default to 1.
         """
         self._fpdf = fpdf
-        self._align = align
+        self._table_align = Align.coerce(align)
         self._v_align = VAlign.coerce(v_align)
         self._borders_layout = TableBordersLayout.coerce(borders_layout)
         self._outer_border_width = outer_border_width
@@ -99,7 +102,7 @@ class Table:
         self._line_height = 2 * fpdf.font_size if line_height is None else line_height
         self._markdown = markdown
         self._text_align = text_align
-        self._width = fpdf.epw if width is None else width
+        self._width = width
         self._wrapmode = wrapmode
         self._num_heading_rows = num_heading_rows
         self._repeat_headings = TableHeadingsDisplay.coerce(repeat_headings)
@@ -163,12 +166,22 @@ class Table:
     def render(self):
         "This is an internal method called by `fpdf.FPDF.table()` once the table is finished"
         # Starting with some sanity checks:
+        self._cols_count = max(row.cols_count for row in self.rows) if self.rows else 0
+        if self._width is None:
+            if self._col_widths and isinstance(self._col_widths, Number):
+                self._width = self._cols_count * self._col_widths
+            else:
+                self._width = self._fpdf.epw
+        elif self._col_widths and isinstance(self._col_widths, Number):
+            if self._cols_count * self._col_widths != self._width:
+                raise ValueError(
+                    f"Invalid value provided width={self._width} should be a multiple of col_widths={self._col_widths}"
+                )
         if self._width > self._fpdf.epw:
             raise ValueError(
                 f"Invalid value provided width={self._width}: effective page width is {self._fpdf.epw}"
             )
-        table_align = Align.coerce(self._align)
-        if table_align == Align.J:
+        if self._table_align == Align.J:
             raise ValueError(
                 "JUSTIFY is an invalid value for FPDF.table() 'align' parameter"
             )
@@ -191,26 +204,23 @@ class Table:
 
         # Defining table global horizontal position:
         prev_x, prev_y, prev_l_margin = self._fpdf.x, self._fpdf.y, self._fpdf.l_margin
-        if table_align == Align.C:
+        if self._table_align == Align.C:
             self._fpdf.l_margin = (self._fpdf.w - self._width) / 2
             self._fpdf.x = self._fpdf.l_margin
-        elif table_align == Align.R:
+        elif self._table_align == Align.R:
             self._fpdf.l_margin = self._fpdf.w - self._fpdf.r_margin - self._width
             self._fpdf.x = self._fpdf.l_margin
         elif self._fpdf.x != self._fpdf.l_margin:
             self._fpdf.l_margin = self._fpdf.x
 
         # Pre-Compute the relative x-positions of the individual columns:
-        xx = self._outer_border_margin[0]
+        xx = self._fpdf.l_margin + self._outer_border_margin[0]
         cell_x_positions = [xx]
         if self.rows:
-            self._cols_count = max(row.cols_count for row in self.rows)
             for i in range(self._cols_count):
                 xx += self._get_col_width(0, i)
                 xx += self._gutter_width
                 cell_x_positions.append(xx)
-        else:
-            self._cols_count = 0
 
         # Process any rowspans
         row_info = list(self._process_rowpans_entries())
@@ -220,7 +230,7 @@ class Table:
             self._repeat_headings is TableHeadingsDisplay.ON_TOP_OF_EVERY_PAGE
         )
         self._fpdf.y += self._outer_border_margin[1]
-        for i, row in enumerate(self.rows):
+        for i in range(len(self.rows)):
             pagebreak_height = row_info[i].pagebreak_height
             # pylint: disable=protected-access
             page_break = self._fpdf._perform_page_break_if_need_be(pagebreak_height)
@@ -393,8 +403,7 @@ class Table:
             cell_x = 0
         else:
             cell_x = cell_x_positions[j]
-
-        self._fpdf.set_x(self._fpdf.l_margin + cell_x)
+        self._fpdf.set_x(cell_x)
 
         # render cell border and background
 

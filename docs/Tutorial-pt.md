@@ -34,7 +34,7 @@ Antes de imprimirmos o texto, é obrigatório selecionar uma fonte com
 Nós escolhemos Helvetica bold 16:
 
 ```python
-pdf.set_font('helvetica', 'B', 16)
+pdf.set_font('Helvetica', style='B', size=16)
 ```
 Podemos formatar em itálico com `I`, sublinhar com` U` ou uma fonte normal
 com uma string vazia (ou qualquer combinação). Observe que o tamanho da fonte é fornecido em pontos, não milímetros (ou outra unidade do utilizador); esta é a única exceção.

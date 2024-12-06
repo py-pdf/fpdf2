@@ -30,7 +30,7 @@ class AnnotationMixin:
         y: int,
         width: int,
         height: int,
-        flags: Tuple[AnnotationFlag] = DEFAULT_ANNOT_FLAGS,
+        flags: Union[Tuple[AnnotationFlag], Tuple[str]] = DEFAULT_ANNOT_FLAGS,
         contents: str = None,
         dest: Destination = None,
         action: Action = None,
@@ -48,11 +48,11 @@ class AnnotationMixin:
     ):
         self.type = Name("Annot")
         self.subtype = Name(subtype)
-        self.rect = f"[{x:.2f} {y:.2f} {x + width:.2f} {y - height:.2f}]"
+        self.rect = f"[{x:.2f} {y - height:.2f} {x + width:.2f} {y:.2f}]"
         self.border = f"[0 0 {border_width}]"
         self.f_t = Name(field_type) if field_type else None
         self.v = value
-        self.f = sum(flags)
+        self.f = sum(tuple(AnnotationFlag.coerce(flag) for flag in flags))
         self.contents = PDFString(contents, encrypt=True) if contents else None
         self.a = action
         self.dest = dest

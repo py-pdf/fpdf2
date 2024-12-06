@@ -35,7 +35,7 @@ PDFを横向き(`L`)に設定したり、他のページサイズ(`Letter`, `Leg
 フォントを選択する必要があります。今回はHelvetica bold 16 を選択します。
 
 ```python
-pdf.set_font('helvetica', 'B', 16)
+pdf.set_font('Helvetica', style='B', size=16)
 ```
 
 `I`で斜体、`U`で下線、空文字列で通常のフォント（または任意の組み合わせ）を指定することができます。

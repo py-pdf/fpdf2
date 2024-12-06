@@ -31,7 +31,7 @@ pdf = FPDF(orientation="P", unit="mm", format="A4")
 לפני שנוכל להדפיס טקסט, חובה לבחור גופן בעזרת [set_font](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), אחרת המסמך לא יהיה תקין. אנחנו בוחרים בגופן helvetica מודגש בגודל 16:
 
 ```python
-pdf.set_font('helvetica', 'B', 16)
+pdf.set_font('Helvetica', style='B', size=16)
 ```
 
 יכולנו לבחור הטייה עם `I`, קו תחתון עם `U`, או גופן רגיל עם מחרוזת ריקה (או כל שילוב של הנ"ל). שימו לב שגודל הגופן הוא בנקודות ולא מילימטרים או כל יחידת מידה אחרת. זה יוצא הדופן היחיד. הגופנים המובנים האחרים הם `Times`, `Courier`, `Symbol`, `ZapfDingbats`.

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# USAGE: ./add_new_page_with_pdfrw.py src_file.pdf dest_file.pdf
 import sys
 
 from fpdf import FPDF

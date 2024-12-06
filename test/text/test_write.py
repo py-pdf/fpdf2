@@ -65,7 +65,7 @@ def test_write_font_stretching(tmp_path):  # issue #478
     pdf = FPDF()
     pdf.add_page()
     # built-in font
-    pdf.set_font("Helvetica", "", 8)
+    pdf.set_font("Helvetica", size=8)
     pdf.set_right_margin(pdf.w - right_boundary)
     pdf.write(text=LOREM_IPSUM[:100])
     pdf.ln()
@@ -77,7 +77,7 @@ def test_write_font_stretching(tmp_path):  # issue #478
     # unicode font
     pdf.set_stretching(100)
     pdf.add_font(fname=FONTS_DIR / "DroidSansFallback.ttf")
-    pdf.set_font("DroidSansFallback", "", 8)
+    pdf.set_font("DroidSansFallback", size=8)
     pdf.write(text=LOREM_IPSUM[:100])
     pdf.ln()
     pdf.ln()
@@ -92,7 +92,7 @@ def test_write_font_stretching(tmp_path):  # issue #478
 def test_write_superscript(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 20)
+    pdf.set_font("Helvetica", size=20)
 
     def write_this():
         pdf.write(text="2")
@@ -143,14 +143,14 @@ def test_write_char_wrap(tmp_path):  # issue #649
     pdf = FPDF()
     pdf.add_page()
     pdf.set_right_margin(pdf.w - right_boundary)
-    pdf.set_font("Helvetica", "", 10)
+    pdf.set_font("Helvetica", size=10)
     pdf.write(text=LOREM_IPSUM[:200])
     pdf.ln()
     pdf.ln()
     pdf.write(text=LOREM_IPSUM[:200], wrapmode="CHAR")
     pdf.ln()
     pdf.ln()
-    pdf.set_font("Courier", "", 10)
+    pdf.set_font("Courier", size=10)
     txt = "     " + "abcdefghijklmnopqrstuvwxyz" * 3
     pdf.write(text=txt)
     pdf.ln()

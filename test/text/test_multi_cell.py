@@ -326,17 +326,17 @@ def test_multi_cell_font_leakage(tmp_path):  # Issue #359
     pdf.add_page()
     pdf.add_font("Roboto", fname=FONTS_DIR / "Roboto-Regular.ttf")
     pdf.add_font("Roboto", style="B", fname=FONTS_DIR / "Roboto-Bold.ttf")
-    pdf.set_font("Roboto", "", 12)
+    pdf.set_font("Roboto", size=12)
 
     pdf.multi_cell(0, text="xyz **abcde**", markdown=True)
     pdf.ln()
-    pdf.set_font("Roboto", "", 12)
+    pdf.set_font("Roboto", size=12)
     pdf.multi_cell(0, text="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
     pdf.ln()
     pdf.ln()
     pdf.multi_cell(0, text="xyz **abcde** ", markdown=True)
     pdf.ln()
-    pdf.set_font("Roboto", "", 12)
+    pdf.set_font("Roboto", size=12)
     pdf.multi_cell(0, text="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
     assert_pdf_equal(pdf, HERE / "multi_cell_font_leakage.pdf", tmp_path)
 
@@ -344,7 +344,7 @@ def test_multi_cell_font_leakage(tmp_path):  # Issue #359
 def test_multi_cell_with_zero_horizontal_space():  # issue #389
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 10)
+    pdf.set_font("Helvetica", size=10)
     pdf.multi_cell(w=0, h=5, text="test")
     with pytest.raises(FPDFException):
         pdf.multi_cell(w=0, h=5, text="test")
@@ -353,7 +353,7 @@ def test_multi_cell_with_zero_horizontal_space():  # issue #389
 def test_multi_cell_with_limited_horizontal_space():  # issue #389
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 10)
+    pdf.set_font("Helvetica", size=10)
     pdf.multi_cell(w=pdf.epw - 2 * pdf.c_margin - 1, h=5, text="test")
     assert pdf.x == pdf.l_margin + pdf.epw - 2 * pdf.c_margin - 1
     with pytest.raises(FPDFException):
@@ -379,7 +379,7 @@ def test_multi_cell_font_stretching(tmp_path):  # issue #478
     pdf = FPDF()
     pdf.add_page()
     # built-in font
-    pdf.set_font("Helvetica", "", 8)
+    pdf.set_font("Helvetica", size=8)
     pdf.set_fill_color(255, 255, 0)
     pdf.multi_cell(w=50, text=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
     pdf.ln()
@@ -402,7 +402,7 @@ def test_multi_cell_char_spacing(tmp_path):  # issue #489
     pdf = FPDF()
     pdf.add_page()
     # built-in font
-    pdf.set_font("Helvetica", "", 8)
+    pdf.set_font("Helvetica", size=8)
     pdf.set_fill_color(255, 255, 0)
     pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
     pdf.ln()
@@ -424,7 +424,7 @@ def test_multi_cell_char_spacing(tmp_path):  # issue #489
 def test_multi_cell_char_wrap(tmp_path):  # issue #649
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 10)
+    pdf.set_font("Helvetica", size=10)
     pdf.set_fill_color(255, 255, 0)
     pdf.multi_cell(w=50, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
     pdf.ln()
@@ -432,7 +432,7 @@ def test_multi_cell_char_wrap(tmp_path):  # issue #649
         w=50, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True, wrapmode="CHAR"
     )
     pdf.ln()
-    pdf.set_font("Courier", "", 10)
+    pdf.set_font("Courier", size=10)
     txt = "     " + "abcdefghijklmnopqrstuvwxyz" * 3
     pdf.multi_cell(w=50, text=txt, new_x="LEFT", fill=True, align="L")
     pdf.ln()

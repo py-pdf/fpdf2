@@ -1,0 +1,5 @@
+bandit
+black
+pre-commit
+pylint
+semgrep

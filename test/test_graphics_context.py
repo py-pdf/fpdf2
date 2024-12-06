@@ -11,13 +11,13 @@ HERE = Path(__file__).resolve().parent
 def test_graphics_context(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("helvetica", "", 12)
+    pdf.set_font("helvetica", size=12)
     pdf.set_text_color(0x00, 0xFF, 0x00)
     pdf.set_fill_color(0xFF, 0x88, 0xFF)
     pdf.set_y(20)
     pdf.cell(text="outer 01", new_x="LMARGIN", new_y="NEXT", fill=True)
     with pdf.local_context():
-        pdf.set_font("courier", "BIU", 30)
+        pdf.set_font("courier", style="BIU", size=30)
         pdf.set_text_color(0xFF, 0x00, 0x00)
         pdf.set_fill_color(0xFF, 0xFF, 0x00)
         pdf.cell(text="inner 01", new_x="LMARGIN", new_y="NEXT", fill=True)
@@ -320,7 +320,7 @@ def test_vpos_properties():
 def test_local_context_init(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 12)
+    pdf.set_font("Helvetica", size=12)
     with pdf.local_context(
         font_family="Courier", font_style="B", font_size_pt=24, text_color=(255, 128, 0)
     ):
@@ -334,7 +334,7 @@ def test_local_context_shared_props(tmp_path):
     "Test local_context() with settings that are controlled by both GraphicsStateMixin and drawing.GraphicsStyle"
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 12)
+    pdf.set_font("Helvetica", size=12)
     with pdf.local_context(
         draw_color=(0, 128, 255),
         fill_color=(255, 128, 0),
@@ -350,7 +350,7 @@ def test_local_context_inherited_shared_props(tmp_path):
     "The only thing that should differ between the 2 squares is their opacity"
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 12)
+    pdf.set_font("Helvetica", size=12)
     pdf.set_draw_color(0, 128, 255)
     pdf.set_fill_color(255, 128, 0)
     pdf.set_line_width(2)
@@ -385,7 +385,7 @@ def test_local_context_font_size_and_header_footer(tmp_path):  # issue 1204
             self.cell(text=f"Footer {self.page_no()}")
 
     pdf = PDF()
-    pdf.set_font(family="helvetica", size=12)
+    pdf.set_font(family="Helvetica", size=12)
     pdf.add_page()
     with pdf.local_context(font_size_pt=36):  # LABEL C
         pdf.multi_cell(w=0, text="\n".join(f"Line {i + 1}" for i in range(21)))

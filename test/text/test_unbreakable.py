@@ -54,7 +54,7 @@ def test_multi_cell_table_unbreakable2(tmp_path):  # issue 120 - 2nd snippet
     pdf = FPDF()
     pdf.add_page()
     pdf.set_margins(20, 20)
-    pdf.set_font("Times", "B", size=7)
+    pdf.set_font("Times", style="B", size=7)
     line_height = pdf.font_size * 3
     col_width = pdf.epw / 8
     for header in table:
@@ -94,7 +94,7 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
 
     pdf = FPDF("P", "mm", "A4")
     pdf.set_auto_page_break(True, 20)
-    pdf.set_font("Helvetica", "", 10)
+    pdf.set_font("Helvetica", size=10)
     pdf.add_page()
 
     data = (
@@ -234,7 +234,7 @@ def test_multi_cell_table_unbreakable_with_split_only(tmp_path):  # issue 359
 
 def test_unbreakable_with_local_context():  # discussion 557
     pdf = FPDF()
-    pdf.set_font("Helvetica", "", 10)
+    pdf.set_font("Helvetica", size=10)
     pdf.add_page()
     pdf.set_y(270)  # Set position so that adding a cell triggers a page break
     with pytest.raises(FPDFException):
@@ -250,7 +250,7 @@ def test_unbreakable_with_local_context():  # discussion 557
 
 def test_unbreakable_with_get_y():  # discussion 557
     pdf = FPDF()
-    pdf.set_font("Helvetica", "", 10)
+    pdf.set_font("Helvetica", size=10)
     pdf.add_page()
     pdf.set_y(270)  # Set position so that adding a cell triggers a page break
     with pytest.raises(FPDFException):

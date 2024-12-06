@@ -36,7 +36,7 @@ Antes de que podamos imprimir texto, es obligatorio seleccionar una fuente con
 Elegimos helvetica en negrita 16: 
 
 ```python
-pdf.set_font('helvetica', 'B', 16)
+pdf.set_font('Helvetica', style='B', size=16)
 ```
 
 Podríamos haber especificado cursiva con `I`, subrayado con `U` o fuente regular 

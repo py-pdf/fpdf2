@@ -150,7 +150,7 @@ def test_ink_annotation(tmp_path):
     pdf.ink_annotation(
         [(40, 50), (70, 25), (100, 50), (70, 75), (40, 50)],
         title="Lucas",
-        contents="Hello world!",
+        text="Hello world!",
     )
     assert_pdf_equal(pdf, HERE / "ink_annotation.pdf", tmp_path)
 

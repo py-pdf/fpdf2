@@ -30,7 +30,7 @@ Avant de pouvoir afficher du texte, il faut obligatoirement choisir une police d
 Choisissons Helvetica bold 16 :
 
 ```python
-pdf.set_font('helvetica', 'B', 16)
+pdf.set_font('Helvetica', style='B', size=16)
 ```
 
 On aurait pu spécifier une police en italique avec `I`, soulignée avec `U` ou une police normale avec une chaine de caractères vide. Il est aussi possible de combiner les effets en combinant les caractères. Notez que la taille des caractères est à spécifier en points (pts), pas en millimètres (ou tout autre unité). C'est la seule exception.

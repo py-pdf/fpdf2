@@ -36,7 +36,7 @@ Voordat we tekst kunnen afdrukken, is het verplicht om een lettertype te selecte
 Wij kiezen voor Helvetica bold 16:
 
 ```python
-pdf.set_font('helvetica', 'B', 16)
+pdf.set_font('Helvetica', style='B', size=16)
 ```
 
 We hadden cursief kunnen specificeren met `I`, onderstreept met `U` of een gewoon lettertype

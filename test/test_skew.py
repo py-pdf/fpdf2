@@ -69,7 +69,7 @@ def test_multi_cell_skew_text(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     # built-in font
-    pdf.set_font("Helvetica", "", 8)
+    pdf.set_font("Helvetica", size=8)
     pdf.set_fill_color(255, 255, 0)
     with pdf.skew(20, 0):
         pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], fill=True)

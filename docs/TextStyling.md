@@ -35,7 +35,7 @@ The example shows the same text justified to the same width, with stretching val
 ```python
 pdf = FPDF()
 pdf.add_page()
-pdf.set_font("Helvetica", "", 8)
+pdf.set_font("Helvetica", size=8)
 pdf.set_fill_color(255, 255, 0)
 pdf.multi_cell(w=50, text=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
 pdf.ln()
@@ -57,7 +57,7 @@ The example shows the same text justified to the same width, with char_spacing v
 ```python
 pdf = FPDF()
 pdf.add_page()
-pdf.set_font("Helvetica", "", 8)
+pdf.set_font("Helvetica", size=8)
 pdf.set_fill_color(255, 255, 0)
 pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
 pdf.ln()
@@ -109,7 +109,7 @@ The example shows the most common use cases:
 ```python
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 20)
+    pdf.set_font("Helvetica", size=20)
     pdf.write(text="2")
     pdf.char_vpos = "SUP"
     pdf.write(text="56")

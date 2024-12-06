@@ -36,7 +36,7 @@ Metni yazdırmadan önce, aşağıdaki özelliklere sahip bir yazı tipi seçmek
 Helvetica bold 16'yı seçiyoruz:
 
 ```python
-pdf.set_font('helvetica', 'B', 16)
+pdf.set_font('Helvetica', style='B', size=16)
 ```
 
 Yazı tipi stilleriyle oynayabiliriz. Örneğin, italikleri `I` ile, altı çizgili `U` ile 

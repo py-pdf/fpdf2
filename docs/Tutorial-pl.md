@@ -32,7 +32,7 @@ Zanim będziemy mogli drukować tekst, konieczne jest wybranie czcionki za pomoc
 [set_font](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), w przeciwnym razie dokument będzie nieprawidłowy. Wybieramy czcionkę Helvetica pogrubioną o rozmiarze 16:
 
 ```python
-pdf.set_font('helvetica', 'B', 16)
+pdf.set_font('Helvetica', style='B', size=16)
 ```
 
 Można było określić kursywę za pomocą `I`, podkreślenie za pomocą `U` lub zwykłą czcionkę za pomocą pustego łańcucha (lub dowolnej kombinacji). Należy pamiętać, że rozmiar czcionki jest podany w punktach, a nie w milimetrach (lub innej jednostce użytkownika); jest to jedyny wyjątek. Inne wbudowane czcionki to `Times`, `Courier`, `Symbol` i `ZapfDingbats`.
