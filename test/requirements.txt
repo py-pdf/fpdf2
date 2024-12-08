@@ -8,4 +8,4 @@ pytest
 pytest-cov
 qrcode
 tabula-py
-uharfbuzz
+uharfbuzz==0.42.0
