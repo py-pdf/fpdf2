@@ -70,6 +70,14 @@ jobs:
           grep -IRF generate=True test/ && exit 1
           # Executing all tests:
           pytest -vv --trace-memory-usage
+      - name: Running tests with the minimal versions of fpdf2 direct dependencies ☑
+        if: matrix.python-version == '3.8' && matrix.platform == 'ubuntu-latest'
+        run: |
+          # We ensure that those minimal versions remain compatible:
+          sed -i '/install_requires/,/\n/s/>=/==/' setup.cfg
+          pip install .
+          # Targetting only a subset of tests because: A) it's faster and B) some tests are dependant on a specific version of fonttools or Pillow
+          pytest -vv test/barcodes test/drawing test/errors test/image/test_load_image.py test/metadata test/shapes test/signing test/text_region test/utils
       - name: Uploading coverage report to codecov.io ☑
         if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
         run: bash <(curl -s https://codecov.io/bash)
