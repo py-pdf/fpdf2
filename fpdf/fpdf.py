@@ -3491,7 +3491,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             font_glyphs = self.current_font.cmap
         else:
             font_glyphs = []
-        num_escape_chars = 0
+            num_escape_chars = 0
 
         while text:
             is_marker = text[:2] in (

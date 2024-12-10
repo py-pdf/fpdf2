@@ -935,6 +935,26 @@ class HTML2FPDF(HTMLParser):
                 raise FPDFException(f"Invalid HTML: <{tag}> used outside any <tr>")
             self.td_th = {k.lower(): v for k, v in attrs.items()}
             self.td_th["tag"] = tag
+            self.td_th["text_content"] = []
+            if self.table and len(self.table.rows) == 0:
+                width_attr = self.td_th.get("width")
+                if width_attr:
+                    if width_attr.endswith("%"):
+                        try:
+                            pct = float(width_attr[:-1])
+                        except ValueError:
+                            pct = None
+                    else:
+                        table_width = self.table.width or self.pdf.epw
+                        abs_width = float(width_attr)/self.pdf.k
+                        pct = (abs_width / table_width) * 100.0 if table_width else None
+                else:
+                    pct = None
+
+                if self.table._col_widths is None:
+                    self.table._col_widths = []
+                self.table._col_widths.append(pct)
+                
             if tag == "th":
                 if "align" not in self.td_th:
                     self.td_th["align"] = "CENTER"
@@ -1079,20 +1099,57 @@ class HTML2FPDF(HTMLParser):
             self.table = None
             self._ln(self.h)
         if tag == "tr":
-            self.tr = None
-            self.table_row = None
+            # Just completed processing a row
+            if self.table and len(self.table.rows) == 1:
+                # We've just finished parsing the first <tr> of the table
+                total_cols = len(self.table_row.cells)
+
+                if not self.table._col_widths:
+                    # No widths specified at all: distribute evenly
+                    self.table._col_widths = [100.0 / total_cols] * total_cols
+                else:
+                    # Some widths might be missing
+                    missing_cols = total_cols - len(self.table._col_widths)
+                    if missing_cols > 0:
+                        assigned_width = sum(w for w in self.table._col_widths if w is not None)
+                        leftover = 100 - (assigned_width if assigned_width else 0)
+                        # If leftover <= 0, assign a small fallback width to avoid negative/zero division
+                        if leftover <= 0:
+                            fallback_width = 100.0 / total_cols
+                            leftover = fallback_width * missing_cols
+                        else:
+                            fallback_width = leftover / missing_cols
+
+                        # Append fallback widths for missing columns
+                        for _ in range(missing_cols):
+                            self.table._col_widths.append(fallback_width)
+
+                    # Replace any None entries with a default share if they exist
+                    self.table._col_widths = [
+                        (w if w is not None else 100.0 / total_cols)
+                        for w in self.table._col_widths
+                    ]
+
+                    # Normalize widths so total = 100%
+                    total_assigned = sum(self.table._col_widths)
+                    if total_assigned != 100:
+                        ratio = 100 / total_assigned
+                        self.table._col_widths = [w * ratio for w in self.table._col_widths]
         if tag in ("td", "th"):
-            if "inserted" not in self.td_th:
-                # handle_data() was not called => we call it to produce an empty cell:
-                bgcolor = color_as_decimal(
-                    self.td_th.get("bgcolor", self.tr.get("bgcolor", None))
-                )
-                style = FontFace(fill_color=bgcolor) if bgcolor else None
-                colspan = int(self.td_th.get("colspan", "1"))
-                rowspan = int(self.td_th.get("rowspan", "1"))
-                self.table_row.cell(
-                    text="", style=style, colspan=colspan, rowspan=rowspan
-                )
+            # At the end of the cell, join all accumulated pieces of text:
+            text = " ".join(self.td_th["text_content"]) if self.td_th["text_content"] else "\u00a0"
+            bgcolor = color_as_decimal(
+                self.td_th.get("bgcolor", self.tr.get("bgcolor", None))
+            )
+            style = FontFace(fill_color=bgcolor) if bgcolor else None
+            colspan = int(self.td_th.get("colspan", "1"))
+            rowspan = int(self.td_th.get("rowspan", "1"))
+            self.table_row.cell(
+                text=text,
+                style=style,
+                colspan=colspan,
+                rowspan=rowspan,
+            )
             self.td_th = None
         if tag == "font":
             if self.style_stack:
