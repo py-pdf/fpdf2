@@ -112,3 +112,8 @@ For example, the [`test_simple_outline`](https://github.com/py-pdf/fpdf2/blob/ma
 
 Similarly, [`test_html_toc`](https://github.com/py-pdf/fpdf2/blob/master/test/outline/test_outline_html.py)
 generates [test_html_toc.pdf](https://github.com/py-pdf/fpdf2/blob/5453422bf560a909229c82e53eb516e44fea1817/test/outline/test_html_toc.pdf).
+
+---
+
+## Manually Adjusting `pdf.page`
+Setting `pdf.page` manually may result in unexpected behavior. `pdf.add_page()` takes special care to ensure the page's content stream matches fpdf's instance attributes. Manually setting the page does not.
