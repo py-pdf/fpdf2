@@ -173,9 +173,10 @@ nav:
   - 'Combine with pypdf':             'CombineWithPypdf.md'
   - 'Combine with pdfrw':             'CombineWithPdfrw.md'
   - 'Matplotlib, Pandas, Plotly, Pygal': 'CombineWithChartingLibs.md'
+  - 'Usage in web APIs':              'UsageInWebAPI.md'
+  - 'Rendering spreadsheets as PDF tables': 'RenderingSpreadsheetsAsPDFTables.md'
   - 'Combine with Rough.js':          'CombineWithRoughJS.md'
   - 'Templating with Jinja':          'TemplatingWithJinja.md'
-  - 'Usage in web APIs':              'UsageInWebAPI.md'
   - 'Database storage':               'DatabaseStorage.md'
 - 'Development':
   - 'Development guidelines':         'Development.md'

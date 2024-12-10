@@ -5,6 +5,7 @@
 *.gz binary
 *.pdf binary
 *.p12 binary
+*.ods binary
 *.otf binary
 *.ttf binary
 *.TTF binary
@@ -13,3 +14,4 @@
 *.gif binary
 *.png binary
 *.webp binary
+*.xlsx binary
