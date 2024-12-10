@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.1">
+<meta name="generator" content="pdoc3 0.11.3">
 <title>fpdf.outline API documentation</title>
 <meta name="description" content="Quoting section 8.2.2 &#34;Document Outline&#34; of the 2006 PDF spec 1.7:
 &gt; The document outline consists of a tree-structured hierarchy of outline items …">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
@@ -65,7 +65,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/outline.py#L57-L65" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/outline.py#L62-L70" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineDictionary(PDFObject):
     __slots__ = (&#34;_id&#34;, &#34;type&#34;, &#34;first&#34;, &#34;last&#34;, &#34;count&#34;)  # RAM usage optimization
@@ -112,7 +112,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 </dd>
 <dt id="fpdf.outline.OutlineItemDictionary"><code class="flex name class">
 <span>class <span class="ident">OutlineItemDictionary</span></span>
-<span>(</span><span>title: str, dest: <a title="fpdf.syntax.Destination" href="syntax.html#fpdf.syntax.Destination">Destination</a> = None, struct_elem: <a title="fpdf.structure_tree.StructElem" href="structure_tree.html#fpdf.structure_tree.StructElem">StructElem</a> = None)</span>
+<span>(</span><span>title: str,<br>dest: <a title="fpdf.syntax.Destination" href="syntax.html#fpdf.syntax.Destination">Destination</a> = None,<br>struct_elem: <a title="fpdf.structure_tree.StructElem" href="structure_tree.html#fpdf.structure_tree.StructElem">StructElem</a> = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Main features of this class:
@@ -121,7 +121,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/outline.py#L25-L54" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/outline.py#L30-L59" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineItemDictionary(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -209,14 +209,14 @@ and yield them one by one, starting with the outline dictionary</p></div>
 </dd>
 <dt id="fpdf.outline.OutlineSection"><code class="flex name class">
 <span>class <span class="ident">OutlineSection</span></span>
-<span>(</span><span>name: str, level: int, page_number: int, dest: <a title="fpdf.syntax.Destination" href="syntax.html#fpdf.syntax.Destination">Destination</a>, struct_elem: Optional[<a title="fpdf.structure_tree.StructElem" href="structure_tree.html#fpdf.structure_tree.StructElem">StructElem</a>] = None)</span>
+<span>(</span><span>name: str,<br>level: int,<br>page_number: int,<br>dest: <a title="fpdf.syntax.Destination" href="syntax.html#fpdf.syntax.Destination">Destination</a>,<br>struct_elem: <a title="fpdf.structure_tree.StructElem" href="structure_tree.html#fpdf.structure_tree.StructElem">StructElem</a> | None = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>OutlineSection(name, level, page_number, dest, struct_elem)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/outline.py#L17-L22" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/outline.py#L22-L27" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineSection(NamedTuple):
     name: str
@@ -247,9 +247,132 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <dd>
 <div class="desc"><p>Alias for field number 2</p></div>
 </dd>
-<dt id="fpdf.outline.OutlineSection.struct_elem"><code class="name">var <span class="ident">struct_elem</span> : Optional[<a title="fpdf.structure_tree.StructElem" href="structure_tree.html#fpdf.structure_tree.StructElem">StructElem</a>]</code></dt>
+<dt id="fpdf.outline.OutlineSection.struct_elem"><code class="name">var <span class="ident">struct_elem</span> : <a title="fpdf.structure_tree.StructElem" href="structure_tree.html#fpdf.structure_tree.StructElem">StructElem</a> | None</code></dt>
 <dd>
 <div class="desc"><p>Alias for field number 4</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="fpdf.outline.TableOfContents"><code class="flex name class">
+<span>class <span class="ident">TableOfContents</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>A reference implementation of a Table of Contents (ToC) for use with <code>fpdf2</code>.</p>
+<p>This class provides a customizable Table of Contents that can be used directly or subclassed
+for additional functionality. To use this class, create an instance of <code><a title="fpdf.outline.TableOfContents" href="#fpdf.outline.TableOfContents">TableOfContents</a></code>,
+configure it as needed, and pass its <code>render_toc</code> method as the <code>render_toc_function</code> argument
+to <code>FPDF.insert_toc_placeholder()</code>.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/outline.py#L112-L197" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">class TableOfContents:
+    &#34;&#34;&#34;
+    A reference implementation of a Table of Contents (ToC) for use with `fpdf2`.
+
+    This class provides a customizable Table of Contents that can be used directly or subclassed
+    for additional functionality. To use this class, create an instance of `TableOfContents`,
+    configure it as needed, and pass its `render_toc` method as the `render_toc_function` argument
+    to `FPDF.insert_toc_placeholder()`.
+    &#34;&#34;&#34;
+
+    def __init__(self):
+        self.text_style = TextStyle()
+        self.use_section_title_styles = False
+        self.level_indent = 7.5
+        self.line_spacing = 1.5
+        self.ignore_pages_before_toc = True
+
+    def get_text_style(self, pdf: &#34;FPDF&#34;, item: OutlineSection):
+        if self.use_section_title_styles and pdf.section_title_styles[item.level]:
+            return pdf.section_title_styles[item.level]
+        return self.text_style
+
+    def render_toc_item(self, pdf: &#34;FPDF&#34;, item: OutlineSection):
+        link = pdf.add_link(page=item.page_number)
+        page_label = pdf.pages[item.page_number].get_label()
+
+        # render the text on the left
+        with pdf.use_text_style(self.get_text_style(pdf, item)):
+            indent = (item.level * self.level_indent) + pdf.l_margin
+            pdf.set_x(indent)
+            pdf.multi_cell(
+                w=pdf.w - indent - pdf.r_margin,
+                text=item.name,
+                new_x=XPos.END,
+                new_y=YPos.LAST,
+                link=link,
+                align=Align.J,
+                h=pdf.font_size * self.line_spacing,
+            )
+
+            # fill in-between with dots
+            current_x = pdf.get_x()
+            page_label_length = pdf.get_string_width(page_label)
+            in_between_space = pdf.w - current_x - page_label_length - pdf.r_margin
+            if in_between_space &lt; 0:
+                # no space to render the page number - go to next line
+                pdf.ln()
+                current_x = pdf.get_x()
+                in_between_space = pdf.w - current_x - page_label_length - pdf.r_margin
+            in_between = &#34;&#34;
+            if in_between_space &gt; 0:
+                while pdf.get_string_width(in_between + &#34;  &#34;) &lt; in_between_space:
+                    in_between += &#34;.&#34;
+
+                if len(in_between) &gt; 1:
+                    pdf.multi_cell(
+                        w=pdf.w - current_x - pdf.r_margin,
+                        text=in_between[:-1],
+                        new_x=XPos.END,
+                        new_y=YPos.LAST,
+                        link=link,
+                        align=Align.L,
+                        h=pdf.font_size * self.line_spacing,
+                    )
+
+            # render the page number on the right
+            pdf.set_x(current_x)
+            pdf.multi_cell(
+                w=pdf.w - current_x - pdf.r_margin,
+                text=page_label,
+                new_x=XPos.LMARGIN,
+                new_y=YPos.NEXT,
+                link=link,
+                align=Align.R,
+                h=pdf.font_size * self.line_spacing,
+            )
+
+    def render_toc(self, pdf: &#34;FPDF&#34;, outline: List[OutlineSection]):
+        &#34;This method can be overriden by subclasses to customize the Table of Contents style.&#34;
+        for section in outline:
+            if (
+                self.ignore_pages_before_toc
+                and section.page_number &lt;= pdf.toc_placeholder.start_page
+            ):
+                continue
+            self.render_toc_item(pdf, section)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.outline.TableOfContents.get_text_style"><code class="name flex">
+<span>def <span class="ident">get_text_style</span></span>(<span>self,<br>pdf: FPDF,<br>item: <a title="fpdf.outline.OutlineSection" href="#fpdf.outline.OutlineSection">OutlineSection</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.outline.TableOfContents.render_toc"><code class="name flex">
+<span>def <span class="ident">render_toc</span></span>(<span>self,<br>pdf: FPDF,<br>outline: List[<a title="fpdf.outline.OutlineSection" href="#fpdf.outline.OutlineSection">OutlineSection</a>])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This method can be overriden by subclasses to customize the Table of Contents style.</p></div>
+</dd>
+<dt id="fpdf.outline.TableOfContents.render_toc_item"><code class="name flex">
+<span>def <span class="ident">render_toc_item</span></span>(<span>self,<br>pdf: FPDF,<br>item: <a title="fpdf.outline.OutlineSection" href="#fpdf.outline.OutlineSection">OutlineSection</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -306,13 +429,21 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <li><code><a title="fpdf.outline.OutlineSection.struct_elem" href="#fpdf.outline.OutlineSection.struct_elem">struct_elem</a></code></li>
 </ul>
 </li>
+<li>
+<h4><code><a title="fpdf.outline.TableOfContents" href="#fpdf.outline.TableOfContents">TableOfContents</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.outline.TableOfContents.get_text_style" href="#fpdf.outline.TableOfContents.get_text_style">get_text_style</a></code></li>
+<li><code><a title="fpdf.outline.TableOfContents.render_toc" href="#fpdf.outline.TableOfContents.render_toc">render_toc</a></code></li>
+<li><code><a title="fpdf.outline.TableOfContents.render_toc_item" href="#fpdf.outline.TableOfContents.render_toc_item">render_toc_item</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.3</a>.</p>
 </footer>
 </body>
 </html>

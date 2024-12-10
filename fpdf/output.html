@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.1">
+<meta name="generator" content="pdoc3 0.11.3">
 <title>fpdf.output API documentation</title>
 <meta name="description" content="This module contains the serialization logic that produces a PDF document from a FPDF instance.
 Most of the code in this module is used when …">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
@@ -40,7 +40,7 @@ in non-backward-compatible ways.</p>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="fpdf.output.stream_content_for_raster_image"><code class="name flex">
-<span>def <span class="ident">stream_content_for_raster_image</span></span>(<span>info: <a title="fpdf.image_datastructures.RasterImageInfo" href="image_datastructures.html#fpdf.image_datastructures.RasterImageInfo">RasterImageInfo</a>, x, y, w, h, keep_aspect_ratio=False, scale=1, pdf_height_to_flip=None)</span>
+<span>def <span class="ident">stream_content_for_raster_image</span></span>(<span>info: <a title="fpdf.image_datastructures.RasterImageInfo" href="image_datastructures.html#fpdf.image_datastructures.RasterImageInfo">RasterImageInfo</a>,<br>x,<br>y,<br>w,<br>h,<br>keep_aspect_ratio=False,<br>scale=1,<br>pdf_height_to_flip=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -59,7 +59,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L113-L124" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L117-L128" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class AcroForm:
     def __init__(self, fields, sig_flags):
@@ -94,7 +94,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L84-L89" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L88-L93" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class CIDSystemInfo(PDFObject):
     def __init__(self):
@@ -125,7 +125,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L54-L56" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L58-L60" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class ContentWithoutID:
     def serialize(self, _security_handler=None):
@@ -149,19 +149,19 @@ in non-backward-compatible ways.</p>
 </dd>
 <dt id="fpdf.output.OutputProducer"><code class="flex name class">
 <span>class <span class="ident">OutputProducer</span></span>
-<span>(</span><span>fpdf)</span>
+<span>(</span><span>fpdf: FPDF)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Generates the final bytearray representing the PDF document, based on a FPDF instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L350-L999" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L433-L1109" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class OutputProducer:
     &#34;Generates the final bytearray representing the PDF document, based on a FPDF instance.&#34;
 
-    def __init__(self, fpdf):
+    def __init__(self, fpdf: &#34;FPDF&#34;):
         self.fpdf = fpdf
         self.pdf_objs = []
         self.iccp_i_to_pdf_i = {}
@@ -208,7 +208,7 @@ in non-backward-compatible ways.</p>
         self.pdf_objs.append(xref)
 
         # 2. Plumbing - Inject all PDF object references required:
-        pages_root_obj.kids = PDFArray(page_objs)
+        pages_root_obj.kids = PDFArray(self._reorder_page_objects(page_objs))
         self._finalize_catalog(
             catalog_obj,
             pages_root_obj=pages_root_obj,
@@ -328,7 +328,18 @@ in non-backward-compatible ways.</p>
             )
             self._add_pdf_obj(cs_obj, &#34;pages&#34;)
             page_obj.contents = cs_obj
+
         return page_objs
+
+    def _reorder_page_objects(self, page_objs: list):
+        &#34;Reorder page objects to move any Table of Contents pages generated at the end of the document to follow the ToC placeholder.&#34;
+        if not self.fpdf._toc_inserted_pages:
+            return page_objs
+        reordered = page_objs.copy()
+        for _ in range(self.fpdf._toc_inserted_pages):
+            last_page = reordered.pop()
+            reordered.insert(self.fpdf.toc_placeholder.start_page, last_page)
+        return reordered
 
     def _add_annotations_as_objects(self):
         sig_annotation_obj = None
@@ -797,6 +808,22 @@ in non-backward-compatible ways.</p>
             catalog_obj.names = pdf_dict(
                 {&#34;/EmbeddedFiles&#34;: pdf_dict({&#34;/Names&#34;: pdf_list(file_spec_names)})}
             )
+        ordered_pages = list(fpdf.pages.items())
+        for _ in range(self.fpdf._toc_inserted_pages):
+            last_page = ordered_pages.pop()
+            ordered_pages.insert(self.fpdf.toc_placeholder.start_page, last_page)
+        page_labels = [
+            f&#34;{seq} {pdf_dict(page[1].get_page_label().serialize())}&#34;
+            for (seq, page) in enumerate(ordered_pages)
+            if page[1].get_page_label()
+        ]
+        if page_labels and not fpdf.pages[1].get_page_label():
+            # If page labels are used, an entry for sequence 0 is mandatory
+            page_labels.insert(0, &#34;0 &lt;&lt;&gt;&gt;&#34;)
+        if page_labels:
+            catalog_obj.page_labels = pdf_dict(
+                {&#34;/Nums&#34;: PDFArray(page_labels).serialize()}
+            )
 
     @contextmanager
     def _trace_size(self, label):
@@ -836,7 +863,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L127-L144" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L131-L148" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class PDFCatalog(PDFObject):
     def __init__(
@@ -882,7 +909,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L300-L307" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L383-L390" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class PDFExtGState(PDFObject):
     def __init__(self, dict_as_str):
@@ -918,7 +945,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L68-L81" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L72-L85" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class PDFFont(PDFObject):
     def __init__(self, subtype, base_font, encoding=None, d_w=None, w=None):
@@ -960,7 +987,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L156-L159" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L160-L163" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class PDFFontStream(PDFContentStream):
     def __init__(self, contents):
@@ -991,7 +1018,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L59-L65" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L63-L69" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class PDFHeader(ContentWithoutID):
     def __init__(self, pdf_version):
@@ -1026,7 +1053,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L211-L229" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L215-L233" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class PDFICCPObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -1084,7 +1111,7 @@ plus a few other properties on PDFPage instances</p></div>
 </dd>
 <dt id="fpdf.output.PDFInfo"><code class="flex name class">
 <span>class <span class="ident">PDFInfo</span></span>
-<span>(</span><span>title, subject, author, keywords, creator, producer, creation_date: <a title="fpdf.syntax.PDFDate" href="syntax.html#fpdf.syntax.PDFDate">PDFDate</a>)</span>
+<span>(</span><span>title,<br>subject,<br>author,<br>keywords,<br>creator,<br>producer,<br>creation_date: <a title="fpdf.syntax.PDFDate" href="syntax.html#fpdf.syntax.PDFDate">PDFDate</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Main features of this class:
@@ -1093,7 +1120,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L92-L110" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L96-L114" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class PDFInfo(PDFObject):
     def __init__(
@@ -1140,7 +1167,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L232-L288" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L282-L371" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -1158,6 +1185,7 @@ plus a few other properties on PDFPage instances</p></div>
         &#34;_index&#34;,
         &#34;_width_pt&#34;,
         &#34;_height_pt&#34;,
+        &#34;_page_label&#34;,
         &#34;_text_substitution_fragments&#34;,
     )
 
@@ -1181,6 +1209,7 @@ plus a few other properties on PDFPage instances</p></div>
         self.parent = None  # must always be set before calling .serialize()
         self._index = index
         self._width_pt, self._height_pt = None, None
+        self._page_label: PDFPageLabel = None
         self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
 
     def index(self):
@@ -1193,6 +1222,37 @@ plus a few other properties on PDFPage instances</p></div>
     def set_dimensions(self, width_pt, height_pt):
         &#34;Accepts a pair (width, height) in the unit specified to FPDF constructor&#34;
         self._width_pt, self._height_pt = width_pt, height_pt
+
+    def set_page_label(
+        self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
+    ):
+        if (
+            previous_page_label
+            and page_label
+            and page_label.get_style() == previous_page_label.get_style()
+            and page_label.get_prefix() == previous_page_label.get_prefix()
+            and not page_label.st
+        ):
+            page_label.st = previous_page_label.get_start() + 1
+
+        if page_label:
+            if not page_label.get_start():
+                page_label.st = 1
+
+        if previous_page_label and not page_label:
+            page_label = PDFPageLabel(
+                previous_page_label.get_style(),
+                previous_page_label.get_prefix(),
+                previous_page_label.get_start() + 1,
+            )
+
+        self._page_label = page_label
+
+    def get_page_label(self) -&gt; PDFPageLabel:
+        return self._page_label
+
+    def get_label(self) -&gt; str:
+        return str(self.index()) if not self._page_label else str(self._page_label)
 
     def get_text_substitutions(self):
         return self._text_substitution_fragments
@@ -1261,6 +1321,18 @@ plus a few other properties on PDFPage instances</p></div>
 <dd>
 <div class="desc"><p>Return a pair (width, height) in the unit specified to FPDF constructor</p></div>
 </dd>
+<dt id="fpdf.output.PDFPage.get_label"><code class="name flex">
+<span>def <span class="ident">get_label</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.output.PDFPage.get_page_label"><code class="name flex">
+<span>def <span class="ident">get_page_label</span></span>(<span>self) ‑> <a title="fpdf.output.PDFPageLabel" href="#fpdf.output.PDFPageLabel">PDFPageLabel</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="fpdf.output.PDFPage.get_text_substitutions"><code class="name flex">
 <span>def <span class="ident">get_text_substitutions</span></span>(<span>self)</span>
 </code></dt>
@@ -1279,6 +1351,12 @@ plus a few other properties on PDFPage instances</p></div>
 <dd>
 <div class="desc"><p>Accepts a pair (width, height) in the unit specified to FPDF constructor</p></div>
 </dd>
+<dt id="fpdf.output.PDFPage.set_page_label"><code class="name flex">
+<span>def <span class="ident">set_page_label</span></span>(<span>self,<br>previous_page_label: <a title="fpdf.output.PDFPageLabel" href="#fpdf.output.PDFPageLabel">PDFPageLabel</a>,<br>page_label: <a title="fpdf.output.PDFPageLabel" href="#fpdf.output.PDFPageLabel">PDFPageLabel</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
@@ -1289,6 +1367,121 @@ plus a few other properties on PDFPage instances</p></div>
 </ul>
 </li>
 </ul>
+</dd>
+<dt id="fpdf.output.PDFPageLabel"><code class="flex name class">
+<span>class <span class="ident">PDFPageLabel</span></span>
+<span>(</span><span>label_style: <a title="fpdf.enums.PageLabelStyle" href="enums.html#fpdf.enums.PageLabelStyle">PageLabelStyle</a>,<br>label_prefix: str,<br>label_start: int)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L236-L279" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">class PDFPageLabel:
+    __slots__ = [&#34;_style&#34;, &#34;_prefix&#34;, &#34;st&#34;]
+
+    def __init__(
+        self, label_style: PageLabelStyle, label_prefix: str, label_start: int
+    ):
+        self._style: PageLabelStyle = label_style
+        self._prefix: str = label_prefix
+        self.st: int = label_start
+
+    @property
+    def s(self) -&gt; Name:
+        return Name(self._style.value) if self._style else None
+
+    @property
+    def p(self) -&gt; PDFString:
+        return PDFString(self._prefix) if self._prefix else None
+
+    def __repr__(self):
+        ret = self._prefix if self._prefix else &#34;&#34;
+        if self._style:
+            if self._style == PageLabelStyle.NUMBER:
+                ret += str(self.st)
+            elif self._style == PageLabelStyle.UPPER_ROMAN:
+                ret += int2roman(self.st)
+            elif self._style == PageLabelStyle.LOWER_ROMAN:
+                ret += int2roman(self.st).lower()
+            elif self._style == PageLabelStyle.UPPER_LETTER:
+                ret += int_to_letters(self.st - 1)
+            elif self._style == PageLabelStyle.LOWER_LETTER:
+                ret += int_to_letters(self.st - 1).lower()
+        return None if ret == &#34;&#34; else ret
+
+    def serialize(self) -&gt; dict:
+        return build_obj_dict({key: getattr(self, key) for key in dir(self)})
+
+    def get_style(self) -&gt; PageLabelStyle:
+        return self._style
+
+    def get_prefix(self) -&gt; str:
+        return self._prefix
+
+    def get_start(self) -&gt; int:
+        return self.st</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="fpdf.output.PDFPageLabel.p"><code class="name">prop <span class="ident">p</span> : <a title="fpdf.syntax.PDFString" href="syntax.html#fpdf.syntax.PDFString">PDFString</a></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def p(self) -&gt; PDFString:
+    return PDFString(self._prefix) if self._prefix else None</code></pre>
+</details>
+</dd>
+<dt id="fpdf.output.PDFPageLabel.s"><code class="name">prop <span class="ident">s</span> : <a title="fpdf.syntax.Name" href="syntax.html#fpdf.syntax.Name">Name</a></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def s(self) -&gt; Name:
+    return Name(self._style.value) if self._style else None</code></pre>
+</details>
+</dd>
+<dt id="fpdf.output.PDFPageLabel.st"><code class="name">var <span class="ident">st</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.output.PDFPageLabel.get_prefix"><code class="name flex">
+<span>def <span class="ident">get_prefix</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.output.PDFPageLabel.get_start"><code class="name flex">
+<span>def <span class="ident">get_start</span></span>(<span>self) ‑> int</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.output.PDFPageLabel.get_style"><code class="name flex">
+<span>def <span class="ident">get_style</span></span>(<span>self) ‑> <a title="fpdf.enums.PageLabelStyle" href="enums.html#fpdf.enums.PageLabelStyle">PageLabelStyle</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.output.PDFPageLabel.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="fpdf.output.PDFPagesRoot"><code class="flex name class">
 <span>class <span class="ident">PDFPagesRoot</span></span>
@@ -1301,7 +1494,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L291-L297" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L374-L380" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPagesRoot(PDFObject):
     def __init__(self, count, media_box):
@@ -1336,7 +1529,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L147-L153" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L151-L157" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class PDFResources(PDFObject):
     def __init__(self, proc_set, font, x_object, ext_g_state):
@@ -1362,7 +1555,7 @@ plus a few other properties on PDFPage instances</p></div>
 </dd>
 <dt id="fpdf.output.PDFXObject"><code class="flex name class">
 <span>class <span class="ident">PDFXObject</span></span>
-<span>(</span><span>contents, subtype, width, height, color_space, bits_per_component, img_filter=None, decode=None, decode_parms=None)</span>
+<span>(</span><span>contents,<br>subtype,<br>width,<br>height,<br>color_space,<br>bits_per_component,<br>img_filter=None,<br>decode=None,<br>decode_parms=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Main features of this class:
@@ -1371,7 +1564,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L169-L208" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L173-L212" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -1487,7 +1680,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L162-L166" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L166-L170" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXmpMetadata(PDFContentStream):
     def __init__(self, contents):
@@ -1519,7 +1712,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/output.py#L310-L347" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/output.py#L393-L430" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXrefAndTrailer(ContentWithoutID):
     def __init__(self, output_builder):
@@ -1653,6 +1846,8 @@ plus a few other properties on PDFPage instances</p></div>
 <li><code><a title="fpdf.output.PDFPage.contents" href="#fpdf.output.PDFPage.contents">contents</a></code></li>
 <li><code><a title="fpdf.output.PDFPage.dimensions" href="#fpdf.output.PDFPage.dimensions">dimensions</a></code></li>
 <li><code><a title="fpdf.output.PDFPage.dur" href="#fpdf.output.PDFPage.dur">dur</a></code></li>
+<li><code><a title="fpdf.output.PDFPage.get_label" href="#fpdf.output.PDFPage.get_label">get_label</a></code></li>
+<li><code><a title="fpdf.output.PDFPage.get_page_label" href="#fpdf.output.PDFPage.get_page_label">get_page_label</a></code></li>
 <li><code><a title="fpdf.output.PDFPage.get_text_substitutions" href="#fpdf.output.PDFPage.get_text_substitutions">get_text_substitutions</a></code></li>
 <li><code><a title="fpdf.output.PDFPage.group" href="#fpdf.output.PDFPage.group">group</a></code></li>
 <li><code><a title="fpdf.output.PDFPage.index" href="#fpdf.output.PDFPage.index">index</a></code></li>
@@ -1660,9 +1855,22 @@ plus a few other properties on PDFPage instances</p></div>
 <li><code><a title="fpdf.output.PDFPage.parent" href="#fpdf.output.PDFPage.parent">parent</a></code></li>
 <li><code><a title="fpdf.output.PDFPage.resources" href="#fpdf.output.PDFPage.resources">resources</a></code></li>
 <li><code><a title="fpdf.output.PDFPage.set_dimensions" href="#fpdf.output.PDFPage.set_dimensions">set_dimensions</a></code></li>
+<li><code><a title="fpdf.output.PDFPage.set_page_label" href="#fpdf.output.PDFPage.set_page_label">set_page_label</a></code></li>
 <li><code><a title="fpdf.output.PDFPage.struct_parents" href="#fpdf.output.PDFPage.struct_parents">struct_parents</a></code></li>
 <li><code><a title="fpdf.output.PDFPage.trans" href="#fpdf.output.PDFPage.trans">trans</a></code></li>
 <li><code><a title="fpdf.output.PDFPage.type" href="#fpdf.output.PDFPage.type">type</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="fpdf.output.PDFPageLabel" href="#fpdf.output.PDFPageLabel">PDFPageLabel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="fpdf.output.PDFPageLabel.get_prefix" href="#fpdf.output.PDFPageLabel.get_prefix">get_prefix</a></code></li>
+<li><code><a title="fpdf.output.PDFPageLabel.get_start" href="#fpdf.output.PDFPageLabel.get_start">get_start</a></code></li>
+<li><code><a title="fpdf.output.PDFPageLabel.get_style" href="#fpdf.output.PDFPageLabel.get_style">get_style</a></code></li>
+<li><code><a title="fpdf.output.PDFPageLabel.p" href="#fpdf.output.PDFPageLabel.p">p</a></code></li>
+<li><code><a title="fpdf.output.PDFPageLabel.s" href="#fpdf.output.PDFPageLabel.s">s</a></code></li>
+<li><code><a title="fpdf.output.PDFPageLabel.serialize" href="#fpdf.output.PDFPageLabel.serialize">serialize</a></code></li>
+<li><code><a title="fpdf.output.PDFPageLabel.st" href="#fpdf.output.PDFPageLabel.st">st</a></code></li>
 </ul>
 </li>
 <li>
@@ -1702,7 +1910,7 @@ plus a few other properties on PDFPage instances</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.3</a>.</p>
 </footer>
 </body>
 </html>

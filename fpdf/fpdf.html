@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.1">
+<meta name="generator" content="pdoc3 0.11.3">
 <title>fpdf.fpdf API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
@@ -91,7 +91,7 @@ Default to "mm".</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/fpdf.py#L207-L5307" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/fpdf.py#L220-L5404" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class FPDF(GraphicsStateMixin, TextRegionMixin):
     &#34;PDF Generation class&#34;
@@ -144,6 +144,11 @@ Default to "mm".</dd>
         but is less compatible with the PDF spec.
         &#34;&#34;&#34;
         self.page = 0  # current page number
+        &#34;&#34;&#34;
+        Note: Setting the page manually may result in unexpected behavior.
+        `pdf.add_page()` takes special care to ensure the page&#39;s content stream
+        matches fpdf&#39;s instance attributes. Manually setting the page does not.
+        &#34;&#34;&#34;
         # array of PDFPage objects starting at index 1:
         self.pages: Dict[int, PDFPage] = {}
         self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
@@ -170,8 +175,13 @@ Default to "mm".</dd>
         self.oversized_images = None
         self.oversized_images_ratio = 2  # number of pixels per UserSpace point
         self.struct_builder = StructureTreeBuilder()
-        self._toc_placeholder = None  # optional ToCPlaceholder instance
-        self._outline = []  # list of OutlineSection
+        self.toc_placeholder = None  # optional ToCPlaceholder instance
+        self._outline: list[OutlineSection] = []  # list of OutlineSection
+        # flag set true while rendering the table of contents
+        self.in_toc_rendering = False
+        # allow page insertion when writing the table of contents
+        self._toc_allow_page_insertion = False
+        self._toc_inserted_pages = 0  # number of pages inserted
         self._sign_key = None
         self.title = None
         self.section_title_styles = {}  # level -&gt; TextStyle
@@ -429,24 +439,23 @@ Default to "mm".</dd>
         &#34;Return a pair (width, height) in the unit specified to FPDF constructor&#34;
         return (
             (self.dw_pt, self.dh_pt)
-            if self.def_orientation == &#34;P&#34;
+            if self.def_orientation == PageOrientation.PORTRAIT
             else (self.dh_pt, self.dw_pt)
         )
 
     def _set_orientation(self, orientation, page_width_pt, page_height_pt):
-        orientation = orientation.lower()
-        if orientation in (&#34;p&#34;, &#34;portrait&#34;):
-            self.cur_orientation = &#34;P&#34;
+        self.cur_orientation = PageOrientation.coerce(orientation)
+        if self.cur_orientation is PageOrientation.PORTRAIT:
             self.w_pt = page_width_pt
             self.h_pt = page_height_pt
-        elif orientation in (&#34;l&#34;, &#34;landscape&#34;):
-            self.cur_orientation = &#34;L&#34;
+        else:
             self.w_pt = page_height_pt
             self.h_pt = page_width_pt
-        else:
-            raise FPDFException(f&#34;Incorrect orientation: {orientation}&#34;)
         self.w = self.w_pt / self.k
         self.h = self.h_pt / self.k
+        if hasattr(self, &#34;auto_page_break&#34;):  # not set when called from constructor
+            # When self.h is modified, the .page_break_trigger must be re-computed:
+            self.set_auto_page_break(self.auto_page_break, self.b_margin)
 
     def set_display_mode(self, zoom, layout=&#34;continuous&#34;):
         &#34;&#34;&#34;
@@ -733,8 +742,35 @@ Default to "mm".</dd>
         &#34;&#34;&#34;
         self.str_alias_nb_pages = alias
 
+    def set_page_label(
+        self,
+        label_style: Union[str, PageLabelStyle] = None,
+        label_prefix: str = None,
+        label_start: int = None,
+    ):
+        current_page_label = (
+            None if self.page == 1 else self.pages[self.page - 1].get_page_label()
+        )
+        new_page_label = None
+        if label_style or label_prefix or label_start:
+            label_style = (
+                PageLabelStyle.coerce(label_style, case_sensitive=True)
+                if label_style
+                else None
+            )
+            new_page_label = PDFPageLabel(label_style, label_prefix, label_start)
+        self.pages[self.page].set_page_label(current_page_label, new_page_label)
+
     def add_page(
-        self, orientation=&#34;&#34;, format=&#34;&#34;, same=False, duration=0, transition=None
+        self,
+        orientation: str = &#34;&#34;,
+        format: str = &#34;&#34;,
+        same: bool = False,
+        duration: float = 0,
+        transition: Transition = None,
+        label_style: Union[str, PageLabelStyle] = None,
+        label_prefix: str = None,
+        label_start: int = None,
     ):
         &#34;&#34;&#34;
         Adds a new page to the document.
@@ -758,6 +794,15 @@ Default to "mm".</dd>
                 from another page to the given page during a presentation.
                 Can be configured globally through the `.page_transition` FPDF property.
                 As of june 2021, onored by Adobe Acrobat reader, but ignored by Sumatra PDF reader.
+            label_style (str or PageLabelStyle): Defines the numbering style for the numeric portion of each
+                page label. Possible values are:
+                - &#34;D&#34;: Decimal Arabic numerals.
+                - &#34;R&#34;: Uppercase Roman numerals.
+                - &#34;r&#34;: Lowercase Roman numerals.
+                - &#34;A&#34;: Uppercase letters (A to Z for the first 26 pages, followed by AA to ZZ, etc.).
+                - &#34;a&#34;: Lowercase letters (a to z for the first 26 pages, followed by aa to zz, etc.).
+            label_prefix (str): Prefix string applied to the page label, preceding the numeric portion.
+            label_start (int): Starting number for the first page of a page label range.
         &#34;&#34;&#34;
         if self.buffer:
             raise FPDFException(
@@ -774,11 +819,28 @@ Default to "mm".</dd>
         char_spacing = self.char_spacing
         dash_pattern = self.dash_pattern
 
-        if self.page &gt; 0:
+        in_toc_extra_page = (
+            self.in_toc_rendering
+            and self._toc_allow_page_insertion
+            and self.page &gt; self.toc_placeholder.start_page
+        )
+        if self.page &gt; 0 and (not self.in_toc_rendering or in_toc_extra_page):
             # Page footer
             self.in_footer = True
             self.footer()
             self.in_footer = False
+
+        current_page_label = (
+            None if self.page == 0 else self.pages[self.page].get_page_label()
+        )
+        new_page_label = None
+        if label_style or label_prefix or label_start:
+            label_style = (
+                PageLabelStyle.coerce(label_style, case_sensitive=True)
+                if label_style
+                else None
+            )
+            new_page_label = PDFPageLabel(label_style, label_prefix, label_start)
 
         # Start new page
         self._beginpage(
@@ -789,6 +851,8 @@ Default to "mm".</dd>
             transition or self.page_transition,
             new_page=not self._has_next_page(),
         )
+
+        self.pages[self.page].set_page_label(current_page_label, new_page_label)
 
         if self.page_background:
             if isinstance(self.page_background, tuple):
@@ -816,7 +880,8 @@ Default to "mm".</dd>
         self.text_color = tc
 
         # BEGIN Page header
-        self.header()
+        if (not self.in_toc_rendering) or self._toc_allow_page_insertion:
+            self.header()
 
         if self.line_width != lw:  # Restore line width
             self.line_width = lw
@@ -841,13 +906,16 @@ Default to "mm".</dd>
             self._write_dash_pattern(
                 dash_pattern[&#34;dash&#34;], dash_pattern[&#34;gap&#34;], dash_pattern[&#34;phase&#34;]
             )
-
         # END Page header
 
     def _beginpage(
         self, orientation, format, same, duration, transition, new_page=True
     ):
         self.page += 1
+        if self.in_toc_rendering and self._toc_allow_page_insertion:
+            self._toc_inserted_pages += 1
+            self.page = len(self.pages) + 1
+            new_page = True
         if new_page:
             page = PDFPage(
                 contents=bytearray(),
@@ -878,7 +946,6 @@ Default to "mm".</dd>
             self._set_orientation(
                 orientation or self.def_orientation, page_width_pt, page_height_pt
             )
-            self.page_break_trigger = self.h - self.b_margin
         page.set_dimensions(self.w_pt, self.h_pt)
 
     def header(self):
@@ -904,6 +971,9 @@ Default to "mm".</dd>
     def page_no(self):
         &#34;&#34;&#34;Get the current page number&#34;&#34;&#34;
         return self.page
+
+    def get_page_label(self):
+        return self.pages[self.page].get_label()
 
     def set_draw_color(self, r, g=-1, b=-1):
         &#34;&#34;&#34;
@@ -4616,22 +4686,26 @@ Default to "mm".</dd>
 
     def _insert_table_of_contents(self):
         # Doc has been closed but we want to write to self.pages[self.page] instead of self.buffer:
-        tocp = self._toc_placeholder
+        tocp = self.toc_placeholder
         prev_page, prev_y = self.page, self.y
         self.page, self.y = tocp.start_page, tocp.y
-        # Disabling footer &amp; header, as they have already been called:
-        self.footer = lambda *args, **kwargs: None
-        self.header = lambda *args, **kwargs: None
+        # flag rendering ToC for page breaking function
+        self.in_toc_rendering = True
+        self._set_orientation(tocp.page_orientation, self.dw_pt, self.dh_pt)
         tocp.render_function(self, self._outline)
+        self.in_toc_rendering = False  # set ToC rendering flag off
         expected_final_page = tocp.start_page + tocp.pages - 1
-        if self.page != expected_final_page:
+        if self.page != expected_final_page and not self._toc_allow_page_insertion:
             too = &#34;many&#34; if self.page &gt; expected_final_page else &#34;few&#34;
             error_msg = f&#34;The rendering function passed to FPDF.insert_toc_placeholder triggered too {too} page breaks: &#34;
             error_msg += f&#34;ToC ended on page {self.page} while it was expected to span exactly {tocp.pages} pages&#34;
             raise FPDFException(error_msg)
+        if self._toc_inserted_pages:
+            # Generating final page footer afer more pages were inserted:
+            self.in_footer = True
+            self.footer()
+            self.in_footer = False
         self.page, self.y = prev_page, prev_y
-        del self.footer
-        del self.header
 
     def file_id(self):  # pylint: disable=no-self-use
         &#34;&#34;&#34;
@@ -4913,7 +4987,12 @@ Default to "mm".</dd>
         recorder.rewind()
 
     @check_page
-    def insert_toc_placeholder(self, render_toc_function, pages=1):
+    def insert_toc_placeholder(
+        self,
+        render_toc_function: Callable,
+        pages: int = 1,
+        allow_extra_pages: bool = False,
+    ):
         &#34;&#34;&#34;
         Configure Table Of Contents rendering at the end of the document generation,
         and reserve some vertical space right now in order to insert it.
@@ -4925,19 +5004,24 @@ Default to "mm".</dd>
             pages (int): the number of pages that the Table of Contents will span,
                 including the current one that will. As many page breaks as the value of this argument
                 will occur immediately after calling this method.
+            allow_extra_pages (bool): If set to `True`, allows for an unlimited number of
+                extra pages in the ToC, which may cause discrepancies with pre-rendered
+                page numbers. For consistent numbering, using page labels to create a
+                separate numbering style for the ToC is recommended.
         &#34;&#34;&#34;
         if not callable(render_toc_function):
             raise TypeError(
                 f&#34;The first argument must be a callable, got: {type(render_toc_function)}&#34;
             )
-        if self._toc_placeholder:
+        if self.toc_placeholder:
             raise FPDFException(
                 &#34;A placeholder for the table of contents has already been defined&#34;
-                f&#34; on page {self._toc_placeholder.start_page}&#34;
+                f&#34; on page {self.toc_placeholder.start_page}&#34;
             )
-        self._toc_placeholder = ToCPlaceholder(
-            render_toc_function, self.page, self.y, pages
+        self.toc_placeholder = ToCPlaceholder(
+            render_toc_function, self.page, self.y, self.cur_orientation, pages
         )
+        self._toc_allow_page_insertion = allow_extra_pages
         for _ in range(pages):
             self._perform_page_break()
 
@@ -5025,7 +5109,7 @@ Default to "mm".</dd>
                 self.add_page()
             with self._marked_sequence(title=name) as struct_elem:
                 outline_struct_elem = struct_elem
-                with self._use_text_style(text_style):
+                with self.use_text_style(text_style):
                     self.multi_cell(
                         w=self.epw,
                         h=self.font_size,
@@ -5038,7 +5122,7 @@ Default to "mm".</dd>
         )
 
     @contextmanager
-    def _use_text_style(self, text_style: TextStyle):
+    def use_text_style(self, text_style: TextStyle):
         if text_style:
             if text_style.t_margin:
                 self.ln(text_style.t_margin)
@@ -5168,7 +5252,7 @@ Default to "mm".</dd>
             self.footer()
             self.in_footer = False
             # Generating .buffer based on .pages:
-            if self._toc_placeholder:
+            if self.toc_placeholder:
                 self._insert_table_of_contents()
             if self.str_alias_nb_pages:
                 for page in self.pages.values():
@@ -5275,7 +5359,7 @@ def default_page_dimensions(self):
     &#34;Return a pair (width, height) in the unit specified to FPDF constructor&#34;
     return (
         (self.dw_pt, self.dh_pt)
-        if self.def_orientation == &#34;P&#34;
+        if self.def_orientation == PageOrientation.PORTRAIT
         else (self.dh_pt, self.dw_pt)
     )</code></pre>
 </details>
@@ -5336,6 +5420,12 @@ def epw(self):
 def is_ttf_font(self) -&gt; bool:
     return self.current_font and self.current_font.type == &#34;TTF&#34;</code></pre>
 </details>
+</dd>
+<dt id="fpdf.fpdf.FPDF.page"><code class="name">var <span class="ident">page</span></code></dt>
+<dd>
+<div class="desc"><p>Note: Setting the page manually may result in unexpected behavior.
+<code>pdf.add_page()</code> takes special care to ensure the page's content stream
+matches fpdf's instance attributes. Manually setting the page does not.</p></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.page_layout"><code class="name">prop <span class="ident">page_layout</span></code></dt>
 <dd>
@@ -5450,7 +5540,7 @@ Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.</
 </dl></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.add_page"><code class="name flex">
-<span>def <span class="ident">add_page</span></span>(<span>self, orientation='', format='', same=False, duration=0, transition=None)</span>
+<span>def <span class="ident">add_page</span></span>(<span>self,<br>orientation: str = '',<br>format: str = '',<br>same: bool = False,<br>duration: float = 0,<br>transition: <a title="fpdf.transitions.Transition" href="transitions.html#fpdf.transitions.Transition">Transition</a> = None,<br>label_style: str | <a title="fpdf.enums.PageLabelStyle" href="enums.html#fpdf.enums.PageLabelStyle">PageLabelStyle</a> = None,<br>label_prefix: str = None,<br>label_start: int = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Adds a new page to the document.
@@ -5480,10 +5570,22 @@ As of june 2021, onored by Adobe Acrobat reader, but ignored by Sumatra PDF read
 from another page to the given page during a presentation.
 Can be configured globally through the <code>.page_transition</code> FPDF property.
 As of june 2021, onored by Adobe Acrobat reader, but ignored by Sumatra PDF reader.</dd>
+<dt><strong><code>label_style</code></strong> :&ensp;<code>str</code> or <code>PageLabelStyle</code></dt>
+<dd>Defines the numbering style for the numeric portion of each
+page label. Possible values are:
+- "D": Decimal Arabic numerals.
+- "R": Uppercase Roman numerals.
+- "r": Lowercase Roman numerals.
+- "A": Uppercase letters (A to Z for the first 26 pages, followed by AA to ZZ, etc.).
+- "a": Lowercase letters (a to z for the first 26 pages, followed by aa to zz, etc.).</dd>
+<dt><strong><code>label_prefix</code></strong> :&ensp;<code>str</code></dt>
+<dd>Prefix string applied to the page label, preceding the numeric portion.</dd>
+<dt><strong><code>label_start</code></strong> :&ensp;<code>int</code></dt>
+<dd>Starting number for the first page of a page label range.</dd>
 </dl></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.add_text_markup_annotation"><code class="name flex">
-<span>def <span class="ident">add_text_markup_annotation</span></span>(<span>self, type, text, quad_points, color=(1, 1, 0), modification_time=None, page=None, **kwargs)</span>
+<span>def <span class="ident">add_text_markup_annotation</span></span>(<span>self,<br>type,<br>text,<br>quad_points,<br>color=(1, 1, 0),<br>modification_time=None,<br>page=None,<br>**kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Adds a text markup annotation on some quadrilateral areas of the page.</p>
@@ -5532,7 +5634,7 @@ not the length of the "actual number of pages" string,
 which can causes slight positioning differences.</p></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.arc"><code class="name flex">
-<span>def <span class="ident">arc</span></span>(<span>self, x, y, a, start_angle, end_angle, b=None, inclination=0, clockwise=False, start_from_center=False, end_at_center=False, style=None)</span>
+<span>def <span class="ident">arc</span></span>(<span>self,<br>x,<br>y,<br>a,<br>start_angle,<br>end_angle,<br>b=None,<br>inclination=0,<br>clockwise=False,<br>start_from_center=False,<br>end_at_center=False,<br>style=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Outputs an arc.
@@ -5590,7 +5692,7 @@ for it to be drawn as an open path.</dd>
 </ul></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.cell"><code class="name flex">
-<span>def <span class="ident">cell</span></span>(<span>self, w=None, h=None, text='', border=0, ln='DEPRECATED', align=Align.L, fill=False, link='', center=False, markdown=False, new_x=XPos.RIGHT, new_y=YPos.TOP)</span>
+<span>def <span class="ident">cell</span></span>(<span>self,<br>w=None,<br>h=None,<br>text='',<br>border=0,<br>ln='DEPRECATED',<br>align=Align.L,<br>fill=False,<br>link='',<br>center=False,<br>markdown=False,<br>new_x=XPos.RIGHT,<br>new_y=YPos.TOP)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Prints a cell (rectangular area) with optional borders, background color and
@@ -5798,7 +5900,7 @@ useful to render only part of an image.</p>
 <p>Returns: a PDFEmbeddedFile instance, with a .basename string attribute representing the internal file name</p></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.file_attachment_annotation"><code class="name flex">
-<span>def <span class="ident">file_attachment_annotation</span></span>(<span>self, file_path, x, y, w=1, h=1, name=None, flags=(&lt;AnnotationFlag.PRINT: 4&gt;,), **kwargs)</span>
+<span>def <span class="ident">file_attachment_annotation</span></span>(<span>self,<br>file_path,<br>x,<br>y,<br>w=1,<br>h=1,<br>name=None,<br>flags=(&lt;AnnotationFlag.PRINT: 4&gt;,),<br>**kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Puts a file attachment annotation on a rectangular area of the page.</p>
@@ -5890,6 +5992,12 @@ to the current font size</dd>
 This method can be overriden to provide more control than the <code>select_mode</code> parameter
 of <code><a title="fpdf.fpdf.FPDF.set_fallback_fonts" href="#fpdf.fpdf.FPDF.set_fallback_fonts">FPDF.set_fallback_fonts()</a></code> provides.</p></div>
 </dd>
+<dt id="fpdf.fpdf.FPDF.get_page_label"><code class="name flex">
+<span>def <span class="ident">get_page_label</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="fpdf.fpdf.FPDF.get_string_width"><code class="name flex">
 <span>def <span class="ident">get_string_width</span></span>(<span>self, s, normalized=False, markdown=False)</span>
 </code></dt>
@@ -5953,7 +6061,7 @@ the title bar of the annotation’s pop-up window. Defaults to yellow.</dd>
 </dl></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.image"><code class="name flex">
-<span>def <span class="ident">image</span></span>(<span>self, name, x=None, y=None, w=0, h=0, type='', link='', title=None, alt_text=None, dims=None, keep_aspect_ratio=False)</span>
+<span>def <span class="ident">image</span></span>(<span>self,<br>name,<br>x=None,<br>y=None,<br>w=0,<br>h=0,<br>type='',<br>link='',<br>title=None,<br>alt_text=None,<br>dims=None,<br>keep_aspect_ratio=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Put an image on the page.</p>
@@ -6035,7 +6143,7 @@ the title bar of the annotation’s pop-up window. Defaults to yellow.</dd>
 </dl></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.insert_toc_placeholder"><code class="name flex">
-<span>def <span class="ident">insert_toc_placeholder</span></span>(<span>self, render_toc_function, pages=1)</span>
+<span>def <span class="ident">insert_toc_placeholder</span></span>(<span>self,<br>render_toc_function: Callable,<br>pages: int = 1,<br>allow_extra_pages: bool = False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Configure Table Of Contents rendering at the end of the document generation,
@@ -6050,6 +6158,11 @@ a list of <code><a title="fpdf.outline.OutlineSection" href="outline.html#fpdf.o
 <dd>the number of pages that the Table of Contents will span,
 including the current one that will. As many page breaks as the value of this argument
 will occur immediately after calling this method.</dd>
+<dt><strong><code>allow_extra_pages</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If set to <code>True</code>, allows for an unlimited number of
+extra pages in the ToC, which may cause discrepancies with pre-rendered
+page numbers. For consistent numbering, using page labels to create a
+separate numbering style for the ToC is recommended.</dd>
 </dl></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.interleaved2of5"><code class="name flex">
@@ -6190,7 +6303,7 @@ context (with the exception of clickable areas).</p>
 </dl></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.multi_cell"><code class="name flex">
-<span>def <span class="ident">multi_cell</span></span>(<span>self, w, h=None, text='', border=0, align=Align.J, fill=False, split_only=False, link='', ln='DEPRECATED', max_line_height=None, markdown=False, print_sh=False, new_x=XPos.RIGHT, new_y=YPos.NEXT, wrapmode: <a title="fpdf.enums.WrapMode" href="enums.html#fpdf.enums.WrapMode">WrapMode</a> = WrapMode.WORD, dry_run=False, output=1, center=False, padding=0)</span>
+<span>def <span class="ident">multi_cell</span></span>(<span>self,<br>w,<br>h=None,<br>text='',<br>border=0,<br>align=Align.J,<br>fill=False,<br>split_only=False,<br>link='',<br>ln='DEPRECATED',<br>max_line_height=None,<br>markdown=False,<br>print_sh=False,<br>new_x=XPos.RIGHT,<br>new_y=YPos.NEXT,<br>wrapmode: <a title="fpdf.enums.WrapMode" href="enums.html#fpdf.enums.WrapMode">WrapMode</a> = WrapMode.WORD,<br>dry_run=False,<br>output=1,<br>center=False,<br>padding=0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>This method allows printing text with line breaks. They can be automatic
@@ -6306,7 +6419,7 @@ This allows to test the results of some operations on the global layout
 before performing them "for real".</p></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.output"><code class="name flex">
-<span>def <span class="ident">output</span></span>(<span>self, name='', dest='', linearize=False, output_producer_class=fpdf.output.OutputProducer)</span>
+<span>def <span class="ident">output</span></span>(<span>self,<br>name='',<br>dest='',<br>linearize=False,<br>output_producer_class=fpdf.output.OutputProducer)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Output PDF to some destination.
@@ -6665,7 +6778,7 @@ Else, this indicates the grey level. The value must be between 0 and 255.</dd>
 </dl></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.set_encryption"><code class="name flex">
-<span>def <span class="ident">set_encryption</span></span>(<span>self, owner_password, user_password=None, encryption_method=EncryptionMethod.RC4, permissions=3900, encrypt_metadata=False)</span>
+<span>def <span class="ident">set_encryption</span></span>(<span>self,<br>owner_password,<br>user_password=None,<br>encryption_method=EncryptionMethod.RC4,<br>permissions=3900,<br>encrypt_metadata=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Activate encryption of the document content.</p>
@@ -6896,6 +7009,12 @@ an io.BytesIO containg an image as bytes, an instance of <code>PIL.Image.Image</
 or a RGB tuple representing a color to fill the background with or <code>None</code> to remove the background</dd>
 </dl></div>
 </dd>
+<dt id="fpdf.fpdf.FPDF.set_page_label"><code class="name flex">
+<span>def <span class="ident">set_page_label</span></span>(<span>self,<br>label_style: str | <a title="fpdf.enums.PageLabelStyle" href="enums.html#fpdf.enums.PageLabelStyle">PageLabelStyle</a> = None,<br>label_prefix: str = None,<br>label_start: int = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="fpdf.fpdf.FPDF.set_producer"><code class="name flex">
 <span>def <span class="ident">set_producer</span></span>(<span>self, producer)</span>
 </code></dt>
@@ -6914,7 +7033,7 @@ or a RGB tuple representing a color to fill the background with or <code>None</c
 </dl></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.set_section_title_styles"><code class="name flex">
-<span>def <span class="ident">set_section_title_styles</span></span>(<span>self, level0, level1=None, level2=None, level3=None, level4=None, level5=None, level6=None)</span>
+<span>def <span class="ident">set_section_title_styles</span></span>(<span>self,<br>level0,<br>level1=None,<br>level2=None,<br>level3=None,<br>level4=None,<br>level5=None,<br>level6=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Defines a style for section titles.
@@ -6980,7 +7099,7 @@ Else, this indicates the grey level. The value must be between 0 and 255.</dd>
 </dl></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.set_text_shaping"><code class="name flex">
-<span>def <span class="ident">set_text_shaping</span></span>(<span>self, use_shaping_engine: bool = True, features: dict = None, direction: Union[str, <a title="fpdf.enums.TextDirection" href="enums.html#fpdf.enums.TextDirection">TextDirection</a>] = None, script: str = None, language: str = None)</span>
+<span>def <span class="ident">set_text_shaping</span></span>(<span>self,<br>use_shaping_engine: bool = True,<br>features: dict = None,<br>direction: str | <a title="fpdf.enums.TextDirection" href="enums.html#fpdf.enums.TextDirection">TextDirection</a> = None,<br>script: str = None,<br>language: str = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Enable or disable text shaping engine when rendering text.
@@ -7074,7 +7193,7 @@ If the value provided is negative, it is relative to the bottom of the page.</p>
 </dl></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.sign"><code class="name flex">
-<span>def <span class="ident">sign</span></span>(<span>self, key, cert, extra_certs=(), hashalgo='sha256', contact_info=None, location=None, signing_time=None, reason=None, flags=(&lt;AnnotationFlag.PRINT: 4&gt;, &lt;AnnotationFlag.LOCKED: 128&gt;))</span>
+<span>def <span class="ident">sign</span></span>(<span>self,<br>key,<br>cert,<br>extra_certs=(),<br>hashalgo='sha256',<br>contact_info=None,<br>location=None,<br>signing_time=None,<br>reason=None,<br>flags=(&lt;AnnotationFlag.PRINT: 4&gt;, &lt;AnnotationFlag.LOCKED: 128&gt;))</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="args">Args</h2>
@@ -7101,7 +7220,7 @@ a recipient to contact the signer to verify the signature</dd>
 </dl></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.sign_pkcs12"><code class="name flex">
-<span>def <span class="ident">sign_pkcs12</span></span>(<span>self, pkcs_filepath, password=None, hashalgo='sha256', contact_info=None, location=None, signing_time=None, reason=None, flags=(&lt;AnnotationFlag.PRINT: 4&gt;, &lt;AnnotationFlag.LOCKED: 128&gt;))</span>
+<span>def <span class="ident">sign_pkcs12</span></span>(<span>self,<br>pkcs_filepath,<br>password=None,<br>hashalgo='sha256',<br>contact_info=None,<br>location=None,<br>signing_time=None,<br>reason=None,<br>flags=(&lt;AnnotationFlag.PRINT: 4&gt;, &lt;AnnotationFlag.LOCKED: 128&gt;))</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="args">Args</h2>
@@ -7339,7 +7458,7 @@ pop-up window when open and active. This entry shall identify the user who added
 </dl></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.text_columns"><code class="name flex">
-<span>def <span class="ident">text_columns</span></span>(<span>self, text: Optional[str] = None, img: Optional[str] = None, img_fill_width: bool = False, ncols: int = 1, gutter: float = 10, balance: bool = False, text_align: Union[<a title="fpdf.enums.Align" href="enums.html#fpdf.enums.Align">Align</a>, str] = 'LEFT', line_height: float = 1, l_margin: float = None, r_margin: float = None, print_sh: bool = False, wrapmode: <a title="fpdf.enums.WrapMode" href="enums.html#fpdf.enums.WrapMode">WrapMode</a> = WrapMode.WORD, skip_leading_spaces: bool = False)</span>
+<span>def <span class="ident">text_columns</span></span>(<span>self,<br>text: str | None = None,<br>img: str | None = None,<br>img_fill_width: bool = False,<br>ncols: int = 1,<br>gutter: float = 10,<br>balance: bool = False,<br>text_align: <a title="fpdf.enums.Align" href="enums.html#fpdf.enums.Align">Align</a> | str = 'LEFT',<br>line_height: float = 1,<br>l_margin: float = None,<br>r_margin: float = None,<br>print_sh: bool = False,<br>wrapmode: <a title="fpdf.enums.WrapMode" href="enums.html#fpdf.enums.WrapMode">WrapMode</a> = WrapMode.WORD,<br>skip_leading_spaces: bool = False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Establish a layout with multiple columns to fill with text.</p>
@@ -7386,7 +7505,7 @@ by performing page break beforehand if need be.</p>
 when generating large PDFs, doubling memory usage may be troublesome.</p></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.use_font_face"><code class="name flex">
-<span>def <span class="ident">use_font_face</span></span>(<span>self, font_face: <a title="fpdf.fonts.FontFace" href="fonts.html#fpdf.fonts.FontFace">FontFace</a>)</span>
+<span>def <span class="ident">use_font_face</span></span>(<span>self,<br>font_face: <a title="fpdf.fonts.FontFace" href="fonts.html#fpdf.fonts.FontFace">FontFace</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Sets the provided <code><a title="fpdf.fonts.FontFace" href="fonts.html#fpdf.fonts.FontFace">FontFace</a></code> in a local context,
@@ -7397,6 +7516,12 @@ This method must be used as a context manager using <code>with</code>:</p>
 </code></pre>
 <p>Known limitation: in case of a page jump in this local context,
 the temporary style may "leak" in the header() &amp; footer().</p></div>
+</dd>
+<dt id="fpdf.fpdf.FPDF.use_text_style"><code class="name flex">
+<span>def <span class="ident">use_text_style</span></span>(<span>self,<br>text_style: <a title="fpdf.fonts.TextStyle" href="fonts.html#fpdf.fonts.TextStyle">TextStyle</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.will_page_break"><code class="name flex">
 <span>def <span class="ident">will_page_break</span></span>(<span>self, height)</span>
@@ -7412,7 +7537,7 @@ based on its height and the current ordinate (<code>y</code> position).</p>
 <p>Returns: a boolean indicating if a page break would occur</p></div>
 </dd>
 <dt id="fpdf.fpdf.FPDF.write"><code class="name flex">
-<span>def <span class="ident">write</span></span>(<span>self, h: float = None, text: str = '', link: str = '', print_sh: bool = False, wrapmode: <a title="fpdf.enums.WrapMode" href="enums.html#fpdf.enums.WrapMode">WrapMode</a> = WrapMode.WORD)</span>
+<span>def <span class="ident">write</span></span>(<span>self,<br>h: float = None,<br>text: str = '',<br>link: str = '',<br>print_sh: bool = False,<br>wrapmode: <a title="fpdf.enums.WrapMode" href="enums.html#fpdf.enums.WrapMode">WrapMode</a> = WrapMode.WORD)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Prints text from the current position.
@@ -7515,7 +7640,7 @@ We subclass this to distinguish between raster and vector images.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/image_datastructures.py#L5-L49" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/image_datastructures.py#L5-L49" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class ImageInfo(dict):
     &#34;&#34;&#34;Information about an image used in the PDF document (base class).
@@ -7647,7 +7772,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/image_datastructures.py#L52-L63" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/image_datastructures.py#L52-L63" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class RasterImageInfo(ImageInfo):
     &#34;Information about a raster image used in the PDF document&#34;
@@ -7698,7 +7823,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/enums.py#L483-L492" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/enums.py#L483-L492" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class TextMode(CoerciveIntEnum):
     &#34;Values described in PDF spec section &#39;Text Rendering Mode&#39;&#34;
@@ -7772,7 +7897,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/fonts.py#L172-L182" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/fonts.py#L172-L182" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class TitleStyle(TextStyle):
     def __init__(self, *args, **kwargs):
@@ -7810,7 +7935,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/image_datastructures.py#L66-L68" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/image_datastructures.py#L66-L68" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class VectorImageInfo(ImageInfo):
     &#34;Information about a vector image used in the PDF document&#34;
@@ -7843,7 +7968,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/enums.py#L495-L520" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/enums.py#L495-L520" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class XPos(CoerciveEnum):
     &#34;Positional values in horizontal direction for use after printing text.&#34;
@@ -7930,7 +8055,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/5b7fce3a9bf3e2a0a0de3fcdc4c19553709917ce/fpdf/enums.py#L523-L539" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f445fa4d744331a909b21aa659c20c7892a32d1b/fpdf/enums.py#L523-L539" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class YPos(CoerciveEnum):
     &#34;Positional values in vertical direction for use after printing text&#34;
@@ -8051,6 +8176,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <li><code><a title="fpdf.fpdf.FPDF.footer" href="#fpdf.fpdf.FPDF.footer">footer</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.free_text_annotation" href="#fpdf.fpdf.FPDF.free_text_annotation">free_text_annotation</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.get_fallback_font" href="#fpdf.fpdf.FPDF.get_fallback_font">get_fallback_font</a></code></li>
+<li><code><a title="fpdf.fpdf.FPDF.get_page_label" href="#fpdf.fpdf.FPDF.get_page_label">get_page_label</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.get_string_width" href="#fpdf.fpdf.FPDF.get_string_width">get_string_width</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.get_x" href="#fpdf.fpdf.FPDF.get_x">get_x</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.get_y" href="#fpdf.fpdf.FPDF.get_y">get_y</a></code></li>
@@ -8071,6 +8197,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <li><code><a title="fpdf.fpdf.FPDF.normalize_text" href="#fpdf.fpdf.FPDF.normalize_text">normalize_text</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.offset_rendering" href="#fpdf.fpdf.FPDF.offset_rendering">offset_rendering</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.output" href="#fpdf.fpdf.FPDF.output">output</a></code></li>
+<li><code><a title="fpdf.fpdf.FPDF.page" href="#fpdf.fpdf.FPDF.page">page</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.page_layout" href="#fpdf.fpdf.FPDF.page_layout">page_layout</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.page_mode" href="#fpdf.fpdf.FPDF.page_mode">page_mode</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.page_no" href="#fpdf.fpdf.FPDF.page_no">page_no</a></code></li>
@@ -8108,6 +8235,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <li><code><a title="fpdf.fpdf.FPDF.set_margin" href="#fpdf.fpdf.FPDF.set_margin">set_margin</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.set_margins" href="#fpdf.fpdf.FPDF.set_margins">set_margins</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.set_page_background" href="#fpdf.fpdf.FPDF.set_page_background">set_page_background</a></code></li>
+<li><code><a title="fpdf.fpdf.FPDF.set_page_label" href="#fpdf.fpdf.FPDF.set_page_label">set_page_label</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.set_producer" href="#fpdf.fpdf.FPDF.set_producer">set_producer</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.set_right_margin" href="#fpdf.fpdf.FPDF.set_right_margin">set_right_margin</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.set_section_title_styles" href="#fpdf.fpdf.FPDF.set_section_title_styles">set_section_title_styles</a></code></li>
@@ -8134,6 +8262,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <li><code><a title="fpdf.fpdf.FPDF.text_columns" href="#fpdf.fpdf.FPDF.text_columns">text_columns</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.unbreakable" href="#fpdf.fpdf.FPDF.unbreakable">unbreakable</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.use_font_face" href="#fpdf.fpdf.FPDF.use_font_face">use_font_face</a></code></li>
+<li><code><a title="fpdf.fpdf.FPDF.use_text_style" href="#fpdf.fpdf.FPDF.use_text_style">use_text_style</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.will_page_break" href="#fpdf.fpdf.FPDF.will_page_break">will_page_break</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.write" href="#fpdf.fpdf.FPDF.write">write</a></code></li>
 <li><code><a title="fpdf.fpdf.FPDF.write_html" href="#fpdf.fpdf.FPDF.write_html">write_html</a></code></li>
@@ -8204,7 +8333,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.3</a>.</p>
 </footer>
 </body>
 </html>
