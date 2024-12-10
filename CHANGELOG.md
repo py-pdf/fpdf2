@@ -21,6 +21,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * new optional parameter `border` for table cells: users can define specific borders (left, right, top, bottom) for individual cells - [issue #1192](https://github.com/py-pdf/fpdf2/issues/1192)
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): now parses `<title>` tags to set the [document title](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title). By default, it is added as PDF metadata, but not rendered in the document body. However, this can be enabled by passing `render_title_tag=True` to `FPDF.write_html()`.
 * support for LZWDecode compression [issue #1271](https://github.com/py-pdf/fpdf2/issues/1271)
+* Python 3.13 is now officially supported
 * support for [page labels](https://py-pdf.github.io/fpdf2/PageLabels.html) and created a [reference table of contents](https://py-pdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html) implementation
 * documentation on how to: [render spreadsheets as PDF tables](https://py-pdf.github.io/fpdf2/RenderingSpreadsheetsAsPDFTables.html)
 ### Fixed

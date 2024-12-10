@@ -12,7 +12,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
         platform: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     steps:
@@ -34,7 +34,7 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install --upgrade . -r test/requirements.txt -r docs/requirements.txt -r contributors/requirements.txt
       - name: Statically checking code 🔎
-        if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
+        if: matrix.python-version == '3.13' && matrix.platform == 'ubuntu-latest'
         run: |
           pip install --upgrade . -r test/linters-requirements.txt
           black --check .
@@ -42,13 +42,13 @@ jobs:
           bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
           semgrep scan --config auto --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
       - name: Scan current project
-        if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
+        if: matrix.python-version == '3.13' && matrix.platform == 'ubuntu-latest'
         uses: anchore/scan-action@v3
         with:
           path: "."
           fail-build: true
       - name: Checking all PDF samples ☑
-        if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
+        if: matrix.python-version == '3.13' && matrix.platform == 'ubuntu-latest'
         run: |
           # Using qpdf
           find . -name '*.pdf' | xargs -n 1 sh -c 'qpdf --check --password=fpdf2 $0 || exit 255'
@@ -64,7 +64,7 @@ jobs:
       - name: Running tests ☑
         env:
           CHECK_EXEC_TIME: ${{ matrix.python-version == '3.9' && 'test-enabled' || '' }}
-          CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.12' && 'test-enabled' || '' }}
+          CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.13' && 'test-enabled' || '' }}
         run: |
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
@@ -79,12 +79,12 @@ jobs:
           # Targetting only a subset of tests because: A) it's faster and B) some tests are dependant on a specific version of fonttools or Pillow
           pytest -vv test/barcodes test/drawing test/errors test/image/test_load_image.py test/metadata test/shapes test/signing test/text_region test/utils
       - name: Uploading coverage report to codecov.io ☑
-        if: matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
+        if: matrix.python-version == '3.13' && matrix.platform == 'ubuntu-latest'
         run: bash <(curl -s https://codecov.io/bash)
       - name: Generating HTML documentation 🏗️
         # As build_contributors_html_page.py can hang due to GitHub rate-limiting,
         # we only execute this on master for now. And it should always be executed for one Python version only.
-        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.13' && matrix.platform == 'ubuntu-latest'
         env:
           # Needed by contributors/build_contributors_html_page.py:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -101,7 +101,7 @@ jobs:
       - name: Deploy documentation 🚀
         # GitHub Pages deployment should not be done for all Python versions,
         # otherwise commits will conflict on the gh-pages branch:
-        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.12' && matrix.platform == 'ubuntu-latest'
+        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.13' && matrix.platform == 'ubuntu-latest'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -118,10 +118,10 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
-      - name: Set up Python 3.12 🔧
+      - name: Set up Python 3.13 🔧
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: '3.13'
       - name: Building distributions for Pypi 🏗️
         id: build
         run: |
