@@ -1,11 +1,12 @@
 import logging
 
-from .image_datastructures import RasterImageInfo, VectorImageInfo
-
-from fontTools.ttLib.tables.BitmapGlyphMetrics import BigGlyphMetrics, SmallGlyphMetrics
-
 from typing import List, Tuple, TYPE_CHECKING
 from io import BytesIO
+from fontTools.ttLib.tables.BitmapGlyphMetrics import BigGlyphMetrics, SmallGlyphMetrics
+
+from .image_datastructures import RasterImageInfo, VectorImageInfo
+
+
 
 if TYPE_CHECKING:
     from .fpdf import FPDF
@@ -100,14 +101,19 @@ class Type3Font:
         bio.seek(0)
         _, img, info = self.fpdf.preload_image(bio, None)
         if isinstance(info, VectorImageInfo):
+            w = round(
+                self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] * self.scale
+                + 0.001
+            )
+            # _, _, path = img.transform_to_rect_viewport(self.fpdf.k, None, None, align_viewbox=False)
             _, _, path = img.transform_to_page_viewport(
-                pdf=self.fpdf, align_viewbox=True
+                pdf=self.fpdf, align_viewbox=False
             )
             output_stream = self.fpdf.draw_vector_glyph(path, self)
             glyph.glyph = (
-                f"{x_max * self.scale} 0 d0\n"
+                f"{w} 0 d0\n"
                 "q\n"
-                f"1 0 0 1 {x_min * self.scale} {y_min * self.scale} cm\n"
+                # f"1 0 0 1 {x_min * self.scale} {y_min * self.scale} cm\n"
                 f"{output_stream}\n"
                 "Q"
             )
@@ -144,7 +150,6 @@ class SVGColorFont(Type3Font):
         for svg_doc in self.base_font.ttfont["SVG "].docList:
             if svg_doc.startGlyphID <= glyph_id <= svg_doc.endGlyphID:
                 glyph_svg_data = svg_doc.data.encode("utf-8")
-        # print(glyph_svg_data)
 
         x_min, y_min, x_max, y_max = self.get_glyph_bounds(glyph_name)
         x_min = round(x_min)  # * self.upem / ppem)
@@ -152,7 +157,6 @@ class SVGColorFont(Type3Font):
         x_max = round(x_max)  # * self.upem / ppem)
         y_max = round(y_max)  # * self.upem / ppem)
 
-        # graphic type 'pdf' or 'mask' are not supported
         return x_min, y_min, x_max, y_max, x_max, glyph_svg_data
 
     def get_glyph_bounds(self, glyph_name: str) -> Tuple[int, int, int, int]:
