@@ -5229,7 +5229,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     top=text_style.t_margin or 0,
                     left=(
                         text_style.l_margin
-                        if isinstance(text_style.l_margin, int)
+                        if isinstance(text_style.l_margin, (int, float))
                         else 0
                     ),
                     bottom=text_style.b_margin or 0,
