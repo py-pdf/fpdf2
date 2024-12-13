@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF, TextStyle, TitleStyle, errors
+from fpdf.enums import Align
 from fpdf.outline import TableOfContents
 
 from test.conftest import LOREM_IPSUM, assert_pdf_equal
