@@ -16,16 +16,17 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
+## [2.8.3] - Not released yet
+
 ## [2.8.2] - 2024-12-16
 ### Added
-* new optional parameter `border` for table cells: users can define specific borders (left, right, top, bottom) for individual cells - [issue #1192](https://github.com/py-pdf/fpdf2/issues/1192)
+* new optional parameter `border` for table cells: users can define specific borders (left, right, top, bottom) for individual cells - thanks to @Kaustbh - [issue #1192](https://github.com/py-pdf/fpdf2/issues/1192)
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): now parses `<title>` tags to set the [document title](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title). By default, it is added as PDF metadata, but not rendered in the document body. However, this can be enabled by passing `render_title_tag=True` to `FPDF.write_html()`.
-* support for LZWDecode compression [issue #1271](https://github.com/py-pdf/fpdf2/issues/1271)
+* support for LZWDecode compression - thanks to @opposss - [issue #1271](https://github.com/py-pdf/fpdf2/issues/1271)
 * Python 3.13 is now officially supported
-* support for [page labels](https://py-pdf.github.io/fpdf2/PageLabels.html) and created a [reference table of contents](https://py-pdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html) implementation
+* support for [page labels](https://py-pdf.github.io/fpdf2/PageLabels.html) and created a [reference table of contents](https://py-pdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html) implementation - thanks to @andersonhc - [PR #1188](https://github.com/py-pdf/fpdf2/pull/1188)
 * documentation on how to: [render spreadsheets as PDF tables](https://py-pdf.github.io/fpdf2/RenderingSpreadsheetsAsPDFTables.html)
-* support for passing `Align` values (along with string values like `'C'`, `'L'`, `'R'`) in `l_margin` of `TextStyle` to horizontally align text [issue #1282](https://github.com/py-pdf/fpdf2/issues/1282)
-
+* support for passing `Align` values (along with string values like `'C'`, `'L'`, `'R'`) in `l_margin` of `TextStyle` to horizontally align text - [issue #1282](https://github.com/py-pdf/fpdf2/issues/1282)
 ### Fixed
 * support for `align=` in [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html#setting-table-column-widths). Due to this correction, tables are now properly horizontally aligned on the page by default. This was always specified in the documentation, but was not in effect until now. You can revert to have left-aligned tables by passing `align="LEFT"` to `FPDF.table()`.
 * `FPDF.set_text_shaping(False)` was broken since version 2.7.8 and is now working properly - [issue #1287](https://github.com/py-pdf/fpdf2/issues/1287)

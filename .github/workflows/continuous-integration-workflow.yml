@@ -107,7 +107,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: public/
   publish:
-    if: github.ref == 'refs/heads/master'
+    # if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -128,6 +128,8 @@ jobs:
           echo Versions already released on Pypi: $(curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]')
           pip install --upgrade setuptools twine wheel .
           echo Current code version: $(python setup.py -V)
+          python setup.py sdist bdist_wheel
+          twine check dist/*
           # Checking if current code version has already been released:
           if ! curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]' | grep "^$(python setup.py -V)\$"; then echo publish=yes >> "$GITHUB_OUTPUT"; python setup.py sdist bdist_wheel; twine check dist/*; fi
       - name: Publish package distributions to PyPI 🚀
@@ -137,8 +139,8 @@ jobs:
         with:
           print-hash: true
       - name: Generate & release sigstore signatures 🔑
-        if: steps.build.outputs.publish == 'yes'
-        uses: sigstore/gh-action-sigstore-python@v2.1.1
+        # if: steps.build.outputs.publish == 'yes'
+        uses: sigstore/gh-action-sigstore-python@v3.0.0
         # Doc: https://github.com/marketplace/actions/gh-action-sigstore-python
         with:
           inputs: ./dist/*.tar.gz ./dist/*.whl
