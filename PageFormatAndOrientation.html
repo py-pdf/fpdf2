@@ -23,7 +23,7 @@
 <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
 <span class=n>pdf</span><span class=o>.</span><span class=n>cell</span><span class=p>(</span><span class=n>text</span><span class=o>=</span><span class=s2>&quot;page 2&quot;</span><span class=p>)</span>
 <span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>(</span><span class=s2>&quot;two-column.pdf&quot;</span><span class=p>)</span>
-</code></pre></div> <h2 id=viewer-preferences>Viewer preferences<a class=headerlink href=#viewer-preferences title="Permanent link">&para;</a></h2> <div class=highlight><pre><span></span><code><span class=kn>from</span> <span class=nn>fpdf</span> <span class=kn>import</span> <span class=n>FPDF</span><span class=p>,</span> <span class=n>ViewerPreferences</span>
+</code></pre></div> <h2 id=viewer-preferences>Viewer preferences<a class=headerlink href=#viewer-preferences title="Permanent link">&para;</a></h2> <p>Those settings are detailed in the official PDF format specification, but may not be honored by PDF viewers. If a setting seems ignored, this is probably not a bug with <code>fpdf2</code>, but a choice or a missing feature from your PDF renderer software.</p> <div class=highlight><pre><span></span><code><span class=kn>from</span> <span class=nn>fpdf</span> <span class=kn>import</span> <span class=n>FPDF</span><span class=p>,</span> <span class=n>ViewerPreferences</span>
 
 <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
 <span class=n>pdf</span><span class=o>.</span><span class=n>viewer_preferences</span> <span class=o>=</span> <span class=n>ViewerPreferences</span><span class=p>(</span>
