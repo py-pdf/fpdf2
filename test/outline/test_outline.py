@@ -69,7 +69,6 @@ def test_incoherent_start_section_hierarchy():
 
 
 def test_start_section_horizontal_alignment(tmp_path):  # issue-1282
-
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", "", 20)
@@ -549,7 +548,6 @@ def test_toc_extra_pages_with_labels(tmp_path):
         pdf.cell(text=pdf.get_page_label(), center=True)
 
     for test_number in range(3):
-
         pdf = FPDF()
         pdf.footer = footer
 
@@ -611,13 +609,10 @@ def test_toc_extra_pages_with_labels(tmp_path):
             pdf.ln()
             pdf.add_font(
                 family="Quicksand",
-                style="",
                 fname=HERE.parent / "fonts" / "Quicksand-Regular.otf",
             )
             toc = TableOfContents()
-            toc.text_style = TextStyle(
-                font_family="Quicksand", font_style="", font_size_pt=14
-            )
+            toc.text_style = TextStyle(font_family="Quicksand", font_size_pt=14)
             pdf.insert_toc_placeholder(toc.render_toc, allow_extra_pages=True)
 
         if test_number == 2:
@@ -632,8 +627,7 @@ def test_toc_extra_pages_with_labels(tmp_path):
             )
             pdf.ln()
             pdf.ln()
-            toc = TableOfContents()
-            toc.use_section_title_styles = True
+            toc = TableOfContents(use_section_title_styles=True)
             pdf.insert_toc_placeholder(toc.render_toc, allow_extra_pages=True)
 
         pdf.set_page_label(label_style="D")

@@ -119,16 +119,27 @@ class TableOfContents:
     to `FPDF.insert_toc_placeholder()`.
     """
 
-    def __init__(self):
-        self.text_style = TextStyle()
-        self.use_section_title_styles = False
-        self.level_indent = 7.5
-        self.line_spacing = 1.5
-        self.ignore_pages_before_toc = True
+    def __init__(
+        self,
+        text_style: Optional[TextStyle] = None,
+        use_section_title_styles=False,
+        level_indent=7.5,
+        line_spacing=1.5,
+        ignore_pages_before_toc=True,
+    ):
+        self.text_style = text_style or TextStyle()
+        self.use_section_title_styles = use_section_title_styles
+        self.level_indent = level_indent
+        self.line_spacing = line_spacing
+        self.ignore_pages_before_toc = ignore_pages_before_toc
 
     def get_text_style(self, pdf: "FPDF", item: OutlineSection):
         if self.use_section_title_styles and pdf.section_title_styles[item.level]:
             return pdf.section_title_styles[item.level]
+        if isinstance(self.text_style.l_margin, (str, Align)):
+            raise ValueError(
+                f"Unsupported l_margin value provided as TextStyle: {self.text_style.l_margin}"
+            )
         return self.text_style
 
     def render_toc_item(self, pdf: "FPDF", item: OutlineSection):
@@ -137,10 +148,10 @@ class TableOfContents:
 
         # render the text on the left
         with pdf.use_text_style(self.get_text_style(pdf, item)):
-            indent = (item.level * self.level_indent) + pdf.l_margin
-            pdf.set_x(indent)
+            indent = item.level * self.level_indent
+            pdf.set_x(pdf.l_margin + indent)
             pdf.multi_cell(
-                w=pdf.w - indent - pdf.r_margin,
+                w=pdf.epw - indent,
                 text=item.name,
                 new_x=XPos.END,
                 new_y=YPos.LAST,

@@ -192,10 +192,13 @@ class Align(CoerciveEnum):
     J = intern("JUSTIFY")
     "Justify text"
 
+    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value, case_sensitive=False):
+    def coerce(cls, value):
         if value == "":
             return cls.L
+        if isinstance(value, str):
+            value = value.upper()
         return super(cls, cls).coerce(value)
 
 
@@ -212,8 +215,9 @@ class VAlign(CoerciveEnum):
     B = intern("BOTTOM")
     "Place text at the bottom of the cell, but obey the cells padding"
 
+    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value, case_sensitive=False):
+    def coerce(cls, value):
         if value == "":
             return cls.M
         return super(cls, cls).coerce(value)
@@ -399,8 +403,9 @@ class TableCellFillMode(CoerciveEnum):
     EVEN_COLUMNS = intern("EVEN_COLUMNS")
     "Fill only table cells in even columns"
 
+    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value, case_sensitive=False):
+    def coerce(cls, value):
         "Any class that has a .should_fill_cell() method is considered a valid 'TableCellFillMode' (duck-typing)"
         if callable(getattr(value, "should_fill_cell", None)):
             return value
@@ -471,8 +476,9 @@ class RenderStyle(CoerciveEnum):
     def is_fill(self):
         return self in (self.F, self.DF)
 
+    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value, case_sensitive=False):
+    def coerce(cls, value):
         if not value:
             return cls.D
         if value == "FD":
