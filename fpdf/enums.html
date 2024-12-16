@@ -54,7 +54,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L946-L984" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L952-L990" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AccessPermission(IntFlag):
     &#34;Permission flags will translate as an integer on the encryption dictionary&#34;
@@ -164,7 +164,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L177-L199" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L177-L202" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Align(CoerciveEnum):
     &#34;Defines how to render text in a cell&#34;
@@ -184,10 +184,13 @@ el.replaceWith(d);
     J = intern(&#34;JUSTIFY&#34;)
     &#34;Justify text&#34;
 
+    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value, case_sensitive=False):
+    def coerce(cls, value):
         if value == &#34;&#34;:
             return cls.L
+        if isinstance(value, str):
+            value = value.upper()
         return super(cls, cls).coerce(value)</code></pre>
 </details>
 <div class="desc"><p>Defines how to render text in a cell</p></div>
@@ -236,7 +239,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L542-L551" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L548-L557" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Angle(CoerciveIntEnum):
     &#34;Direction values used for mirror transformations specifying the angle of mirror line&#34;
@@ -310,7 +313,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L685-L714" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L691-L720" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationFlag(CoerciveIntEnum):
     INVISIBLE = 1
@@ -416,7 +419,7 @@ The annotation may be displayed or printed but should not respond to mouse click
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L717-L725" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L723-L731" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AnnotationName(CoerciveEnum):
     &#34;The name of an icon that shall be used in displaying the annotation&#34;
@@ -478,7 +481,7 @@ The annotation may be displayed or printed but should not respond to mouse click
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L610-L682" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L616-L688" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BlendMode(CoerciveEnum):
     &#34;An enumeration of the named standard named blend functions supported by PDF.&#34;
@@ -660,7 +663,7 @@ similar to shining a diffused spotlight on the backdrop."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L313-L378" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L317-L382" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CellBordersLayout(CoerciveIntFlag):
     &#34;&#34;&#34;Defines how to render cell borders in table
@@ -798,7 +801,7 @@ bitwise OR of <code>LEFT (1)</code> and <code>RIGHT (2)</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L159-L174" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L159-L174" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CharVPos(CoerciveEnum):
     &#34;Defines the vertical position of text relative to the line.&#34;
@@ -863,7 +866,7 @@ bitwise OR of <code>LEFT (1)</code> and <code>RIGHT (2)</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L821-L842" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L827-L848" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ClippingPathIntersectionRule(CoerciveEnum):
     &#34;An enumeration of the PDF drawing directives that define a path as a clipping path.&#34;
@@ -934,7 +937,7 @@ path; otherwise, it is inside."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L18-L57" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L18-L57" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CoerciveEnum(Enum):
     &#34;An enumeration that provides a helper to coerce strings into enumeration members.&#34;
@@ -1046,7 +1049,7 @@ string.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L60-L99" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L60-L99" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CoerciveIntEnum(IntEnum):
     &#34;&#34;&#34;
@@ -1145,7 +1148,7 @@ int or a string.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L102-L147" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L102-L147" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CoerciveIntFlag(IntFlag):
     &#34;&#34;&#34;
@@ -1248,7 +1251,7 @@ int or a string.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L909-L913" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L915-L919" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Corner(CoerciveEnum):
     TOP_RIGHT = &#34;TOP_RIGHT&#34;
@@ -1298,7 +1301,7 @@ int or a string.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L1034-L1044" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L1040-L1050" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Duplex(CoerciveEnum):
     &#34;The paper handling option that shall be used when printing the file from the print dialog.&#34;
@@ -1350,7 +1353,7 @@ int or a string.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L987-L993" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L993-L999" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class EncryptionMethod(Enum):
     &#34;Algorithm to be used to encrypt the document&#34;
@@ -1393,7 +1396,7 @@ int or a string.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L728-L733" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L734-L739" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FileAttachmentAnnotationName(CoerciveEnum):
     &#34;The name of an icon that shall be used in displaying the annotation&#34;
@@ -1440,7 +1443,7 @@ int or a string.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L916-L943" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L922-L949" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FontDescriptorFlags(Flag):
     &#34;&#34;&#34;An enumeration of the flags for the unsigned 32-bit integer entry in the font descriptor specifying various
@@ -1510,7 +1513,7 @@ This flag and the Nonsymbolic flag shall not both be set or both be clear."</p><
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L736-L764" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L742-L770" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class IntersectionRule(CoerciveEnum):
     &#34;&#34;&#34;
@@ -1591,7 +1594,7 @@ path; otherwise, it is inside."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L270-L285" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L274-L289" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class MethodReturnValue(CoerciveIntFlag):
     &#34;&#34;&#34;
@@ -1654,7 +1657,7 @@ PAGE_BREAK | LINES</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L895-L906" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L901-L912" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFStyleKeys(Enum):
     &#34;An enumeration of the graphics state parameter dictionary keys.&#34;
@@ -1722,7 +1725,7 @@ PAGE_BREAK | LINES</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L1047-L1052" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L1053-L1058" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PageBoundaries(CoerciveEnum):
     ART_BOX = Name(&#34;ArtBox&#34;)
@@ -1777,7 +1780,7 @@ PAGE_BREAK | LINES</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L1012-L1031" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L1018-L1037" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PageLabelStyle(CoerciveEnum):
     &#34;Style of the page label&#34;
@@ -1850,7 +1853,7 @@ PAGE_BREAK | LINES</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L554-L573" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L560-L579" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PageLayout(CoerciveEnum):
     &#34;Specify the page layout shall be used when the document is opened&#34;
@@ -1923,7 +1926,7 @@ PAGE_BREAK | LINES</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L576-L595" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L582-L601" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PageMode(CoerciveEnum):
     &#34;Specifying how to display the document on exiting full-screen mode&#34;
@@ -1996,7 +1999,7 @@ PAGE_BREAK | LINES</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L1055-L1064" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L1061-L1070" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PageOrientation(CoerciveEnum):
     PORTRAIT = intern(&#34;P&#34;)
@@ -2043,7 +2046,7 @@ PAGE_BREAK | LINES</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L767-L818" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L773-L824" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PathPaintRule(CoerciveEnum):
     &#34;&#34;&#34;
@@ -2164,7 +2167,7 @@ identical path objects, painting the first with <code>FILL_NONZERO</code> and th
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L443-L480" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L448-L486" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class RenderStyle(CoerciveEnum):
     &#34;Defines how to render shapes&#34;
@@ -2197,8 +2200,9 @@ identical path objects, painting the first with <code>FILL_NONZERO</code> and th
     def is_fill(self):
         return self in (self.F, self.DF)
 
+    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value, case_sensitive=False):
+    def coerce(cls, value):
         if not value:
             return cls.D
         if value == &#34;FD&#34;:
@@ -2236,7 +2240,7 @@ Filling color can be controlled with <code><a title="fpdf.fpdf.FPDF.set_fill_col
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L466-L468" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L471-L473" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def is_draw(self):
@@ -2249,7 +2253,7 @@ def is_draw(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L470-L472" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L475-L477" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def is_fill(self):
@@ -2262,7 +2266,7 @@ def is_fill(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L462-L464" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L467-L469" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def operator(self):
@@ -2288,7 +2292,7 @@ def operator(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L7-L15" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L7-L15" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SignatureFlag(IntEnum):
     SIGNATURES_EXIST = 1
@@ -2330,7 +2334,7 @@ as opposed to an incremental update.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L845-L866" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L851-L872" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StrokeCapStyle(CoerciveIntEnum):
     &#34;&#34;&#34;
@@ -2400,7 +2404,7 @@ the line width and is squared off."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L869-L892" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L875-L898" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StrokeJoinStyle(CoerciveIntEnum):
     &#34;&#34;&#34;
@@ -2475,7 +2479,7 @@ corner."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L288-L310" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L292-L314" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableBordersLayout(CoerciveEnum):
     &#34;Defines how to render table borders&#34;
@@ -2555,7 +2559,7 @@ corner."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L381-L422" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L385-L427" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableCellFillMode(CoerciveEnum):
     &#34;Defines which table cells to fill&#34;
@@ -2578,8 +2582,9 @@ corner."</p></div>
     EVEN_COLUMNS = intern(&#34;EVEN_COLUMNS&#34;)
     &#34;Fill only table cells in even columns&#34;
 
+    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value, case_sensitive=False):
+    def coerce(cls, value):
         &#34;Any class that has a .should_fill_cell() method is considered a valid &#39;TableCellFillMode&#39; (duck-typing)&#34;
         if callable(getattr(value, &#34;should_fill_cell&#34;, None)):
             return value
@@ -2636,7 +2641,7 @@ corner."</p></div>
 <h3>Static methods</h3>
 <dl>
 <dt id="fpdf.enums.TableCellFillMode.coerce"><code class="name flex">
-<span>def <span class="ident">coerce</span></span>(<span>value, case_sensitive=False)</span>
+<span>def <span class="ident">coerce</span></span>(<span>value)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Any class that has a .should_fill_cell() method is considered a valid 'TableCellFillMode' (duck-typing)</p></div>
@@ -2651,7 +2656,7 @@ corner."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L409-L422" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L414-L427" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def should_fill_cell(self, i, j):
     if self is self.NONE:
@@ -2680,7 +2685,7 @@ corner."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L433-L440" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L438-L445" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableHeadingsDisplay(CoerciveIntEnum):
     &#34;Defines how the table headings should be displayed&#34;
@@ -2728,7 +2733,7 @@ corner."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L425-L430" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L430-L435" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableSpan(CoerciveEnum):
     ROW = intern(&#34;ROW&#34;)
@@ -2771,7 +2776,7 @@ corner."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L996-L1009" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L1002-L1015" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextDirection(CoerciveEnum):
     &#34;Text rendering direction for text shaping&#34;
@@ -2830,7 +2835,7 @@ corner."</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L222-L267" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L226-L271" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextEmphasis(CoerciveIntFlag):
     &#34;&#34;&#34;
@@ -2917,7 +2922,7 @@ style = B | I</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L242-L246" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L246-L250" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def style(self):
@@ -2937,7 +2942,7 @@ def style(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L248-L249" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L252-L253" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add(self, value: &#34;TextEmphasis&#34;):
     return self | value</code></pre>
@@ -2951,7 +2956,7 @@ def style(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L251-L254" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L255-L258" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def remove(self, value: &#34;TextEmphasis&#34;):
     return TextEmphasis.coerce(
@@ -2978,7 +2983,7 @@ def style(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L598-L607" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L604-L613" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextMarkupType(CoerciveEnum):
     &#34;Subtype of a text markup annotation&#34;
@@ -3033,7 +3038,7 @@ def style(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L483-L492" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L489-L498" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextMode(CoerciveIntEnum):
     &#34;Values described in PDF spec section &#39;Text Rendering Mode&#39;&#34;
@@ -3107,7 +3112,7 @@ def style(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L202-L219" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L205-L223" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class VAlign(CoerciveEnum):
     &#34;&#34;&#34;Defines how to vertically render text in a cell.
@@ -3122,8 +3127,9 @@ def style(self):
     B = intern(&#34;BOTTOM&#34;)
     &#34;Place text at the bottom of the cell, but obey the cells padding&#34;
 
+    # pylint: disable=arguments-differ
     @classmethod
-    def coerce(cls, value, case_sensitive=False):
+    def coerce(cls, value):
         if value == &#34;&#34;:
             return cls.M
         return super(cls, cls).coerce(value)</code></pre>
@@ -3167,7 +3173,7 @@ Default value is MIDDLE</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L150-L156" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L150-L156" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class WrapMode(CoerciveEnum):
     &#34;Defines how to break and wrap lines in multi-line text.&#34;
@@ -3211,7 +3217,7 @@ Default value is MIDDLE</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L495-L520" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L501-L526" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class XPos(CoerciveEnum):
     &#34;Positional values in horizontal direction for use after printing text.&#34;
@@ -3298,7 +3304,7 @@ Default value is MIDDLE</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/enums.py#L523-L539" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b9cfbb6d8ca1eb034e826fd358194e899a1daf28/fpdf/enums.py#L529-L545" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class YPos(CoerciveEnum):
     &#34;Positional values in vertical direction for use after printing text&#34;
