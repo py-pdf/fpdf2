@@ -9,46 +9,18 @@ on:  # cf. https://github.community/t/how-to-trigger-an-action-on-push-or-pull-r
     - master
 
 jobs:
-  test:
-    strategy:
-      matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
-        platform: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.platform }}
+  check-reference-pdf-files:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }} 🔧
-        uses: actions/setup-python@v4
+        uses: actions/checkout@v4
+      - name: Set up Python 3.13 🔧
+        uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.13
       - name: Install system dependencies ⚙️
-        if: matrix.platform == 'ubuntu-latest'
-        run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install ghostscript libjpeg-dev
-      - name: Install qpdf ⚙️
-        if: matrix.platform == 'ubuntu-latest' && matrix.python-version != '3.9'
-        # We run the unit tests WITHOUT qpdf for a single parallel execution / Python version:
         run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install qpdf
-      - name: Install Python dependencies ⚙️
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          pip install --upgrade . -r test/requirements.txt -r docs/requirements.txt -r contributors/requirements.txt
-      - name: Statically checking code 🔎
-        if: matrix.python-version == '3.13' && matrix.platform == 'ubuntu-latest'
-        run: |
-          pip install --upgrade . -r test/linters-requirements.txt
-          black --check .
-          pylint fpdf test tutorial/tuto*.py
-          bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
-          semgrep scan --config auto --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
-      - name: Scan current project
-        if: matrix.python-version == '3.13' && matrix.platform == 'ubuntu-latest'
-        uses: anchore/scan-action@v3
-        with:
-          path: "."
-          fail-build: true
-      - name: Checking all PDF samples ☑
-        if: matrix.python-version == '3.13' && matrix.platform == 'ubuntu-latest'
+      - name: Check all PDF reference files used in tests ☑
         run: |
           # Using qpdf
           find . -name '*.pdf' | xargs -n 1 sh -c 'qpdf --check --password=fpdf2 $0 || exit 255'
@@ -61,7 +33,68 @@ jobs:
           scripts/install-pdfchecker.sh
           scripts/pdfchecker.py --process-all-test-pdf-files
           scripts/pdfchecker.py --print-aggregated-report
-      - name: Running tests ☑
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+      - name: Set up Python 3.13 🔧
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+      - name: Install Python dependencies ⚙️
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install --upgrade . -r test/linters-requirements.txt -r test/requirements.txt
+      - name: Run linters 🔎
+        run: |
+          black --check .
+          pylint fpdf test tutorial/tuto*.py
+          bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
+          semgrep scan --config auto --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
+      - name: Scan project with grype 🔎
+        uses: anchore/scan-action@v3
+        with:
+          path: "."
+          fail-build: true
+      - name: Scan project dependencies with guarddog 🐶
+        run: |
+          pip install guarddog
+          # Scanning direct dependencies:
+          guarddog pypi scan defusedxml
+          guarddog pypi scan Pillow
+          guarddog pypi scan fonttools
+          # Scanning dev dependencies:
+          guarddog pypi verify contributors/requirements.txt
+          guarddog pypi verify docs/requirements.txt
+          guarddog pypi verify test/linters-requirements.txt
+          guarddog pypi verify test/requirements.txt
+  test:
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
+        platform: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }} 🔧
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install system dependencies ⚙️
+        if: matrix.platform == 'ubuntu-latest'
+        # Ghostscript is needed for test/table/test_table_extraction.py
+        run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install ghostscript
+      - name: Install qpdf ⚙️
+        # We run the unit tests WITHOUT qpdf for a single parallel execution / Python version:
+        if: matrix.platform == 'ubuntu-latest' && matrix.python-version != '3.13'
+        run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install qpdf
+      - name: Install Python dependencies ⚙️
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install --upgrade . -r test/requirements.txt
+      - name: Run tests ☑
         env:
           CHECK_EXEC_TIME: ${{ matrix.python-version == '3.9' && 'test-enabled' || '' }}
           CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.13' && 'test-enabled' || '' }}
@@ -70,24 +103,41 @@ jobs:
           grep -IRF generate=True test/ && exit 1
           # Executing all tests:
           pytest -vv --trace-memory-usage
-      - name: Running tests with the minimal versions of fpdf2 direct dependencies ☑
-        if: matrix.python-version == '3.8' && matrix.platform == 'ubuntu-latest'
+      - name: Upload coverage report to codecov.io ☑
+        # We only upload coverage ONCE, for a single parallel execution / Python version:
+        if: matrix.platform == 'ubuntu-latest' && matrix.python-version == '3.13'
+        run: bash <(curl -s https://codecov.io/bash)
+      - name: Run tests with the minimal versions of fpdf2 direct dependencies ☑
+        if: matrix.platform == 'ubuntu-latest' && matrix.python-version == '3.8'
         run: |
-          # We ensure that those minimal versions remain compatible:
+          # Ensuring that those minimal versions remain compatible:
           sed -i '/install_requires/,/\n/s/>=/==/' setup.cfg
           pip install .
-          # Targetting only a subset of tests because: A) it's faster and B) some tests are dependant on a specific version of fonttools or Pillow
+          # Targeting only a subset of tests because: A) it's faster and B) some tests are dependant on a specific version of fonttools or Pillow
           pytest -vv test/barcodes test/drawing test/errors test/image/test_load_image.py test/metadata test/shapes test/signing test/text_region test/utils
-      - name: Uploading coverage report to codecov.io ☑
-        if: matrix.python-version == '3.13' && matrix.platform == 'ubuntu-latest'
-        run: bash <(curl -s https://codecov.io/bash)
-      - name: Generating HTML documentation 🏗️
-        # As build_contributors_html_page.py can hang due to GitHub rate-limiting,
-        # we only execute this on master for now. And it should always be executed for one Python version only.
-        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.13' && matrix.platform == 'ubuntu-latest'
-        env:
-          # Needed by contributors/build_contributors_html_page.py:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  doc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: block
+          allowed-endpoints:
+            github.com:443
+            *.githubusercontent.com:443
+            pypi.org:443
+            files.pythonhosted.org:443
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+      - name: Set up Python 3.13 🔧
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+      - name: Install Python dependencies ⚙️
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install --upgrade -r docs/requirements.txt -r contributors/requirements.txt
+      - name: Generate HTML documentation 🏗️
         run: |
           mkdir -p public/
           # Setting PDF manual version:
@@ -96,12 +146,17 @@ jobs:
           mkdocs build
           pdoc --html -o public/ fpdf --config "git_link_template='https://github.com/py-pdf/fpdf2/blob/{commit}/{path}#L{start_line}-L{end_line}'"
           scripts/add_pdoc_to_search_index.py
+      - name: Build contributors map 🗺️
+        # As build_contributors_html_page.py can hang due to GitHub rate-limiting, we only execute this on master for now
+        if: github.ref == 'refs/heads/master'
+        env:
+          # Needed by contributors/build_contributors_html_page.py:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
           cd contributors/ && PYTHONUNBUFFERED=1 ./build_contributors_html_page.py py-pdf/fpdf2
           cp -t ../public/ contributors.html contributors-map-small.png
       - name: Deploy documentation 🚀
-        # GitHub Pages deployment should not be done for all Python versions,
-        # otherwise commits will conflict on the gh-pages branch:
-        if: github.ref == 'refs/heads/master' && matrix.python-version == '3.13' && matrix.platform == 'ubuntu-latest'
+        if: github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -116,13 +171,22 @@ jobs:
       # Trusted publishing configured there: https://pypi.org/manage/project/fpdf2/settings/publishing/
       id-token: write
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: block
+          allowed-endpoints:
+            github.com:443
+            *.githubusercontent.com:443
+            pypi.org:443
+            files.pythonhosted.org:443
       - name: Checkout 🛎️
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up Python 3.13 🔧
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Building distributions for Pypi 🏗️
+      - name: Build distributions for Pypi 🏗️
         id: build
         run: |
           echo Versions already released on Pypi: $(curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]')
@@ -136,11 +200,3 @@ jobs:
         # Doc: https://github.com/marketplace/actions/pypi-publish
         with:
           print-hash: true
-      - name: Generate & release sigstore signatures 🔑
-        if: steps.build.outputs.publish == 'yes'
-        uses: sigstore/gh-action-sigstore-python@v3.0.0
-        # Doc: https://github.com/marketplace/actions/gh-action-sigstore-python
-        with:
-          inputs: ./dist/*.tar.gz ./dist/*.whl
-          # For this setting to work, this pipeline should be triggered by a "release" event:
-          release-signing-artifacts: true

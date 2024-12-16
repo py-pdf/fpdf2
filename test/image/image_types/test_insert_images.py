@@ -50,6 +50,10 @@ def test_insert_jpg_flatedecode(tmp_path):
         assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_flatedecode.pdf", tmp_path)
 
 
+@pytest.mark.skipif(
+    sys.version_info.minor != 13,
+    reason="LZWDecode is currently VERY slow, so we want to only execute it ONCE among all Python versions in the test pipeline",
+)
 def test_insert_jpg_lzwdecode(tmp_path):
     pdf = fpdf.FPDF()
     pdf.compress = False

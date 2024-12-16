@@ -1,3 +1,4 @@
+lxml
 mkdocs
 mkdocs-include-markdown-plugin
 mkdocs-material
