@@ -3,19 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.3">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>fpdf.syntax API documentation</title>
 <meta name="description" content="Classes &amp; functions that represent core elements of the PDF syntax …">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -85,6 +96,41 @@ in non-backward-compatible ways.</p>
 <span>def <span class="ident">build_obj_dict</span></span>(<span>key_values)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L230-L258" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def build_obj_dict(key_values, _security_handler=None, _obj_id=None):
+    &#34;&#34;&#34;
+    Build the PDF Object associative map to serialize, based on a key-values dict.
+    The property names are converted from snake_case to CamelCase,
+    and prefixed with a slash character &#34;/&#34;.
+    &#34;&#34;&#34;
+    obj_dict = {}
+    for key, value in key_values.items():
+        if (
+            callable(value)
+            or key.startswith(&#34;_&#34;)
+            or key in (&#34;id&#34;, &#34;ref&#34;)
+            or value is None
+        ):
+            continue
+        # pylint: disable=redefined-loop-name
+        if hasattr(value, &#34;value&#34;):  # e.g. Enum subclass
+            value = value.value
+        if isinstance(value, PDFObject):  # indirect object reference
+            value = value.ref
+        elif hasattr(value, &#34;serialize&#34;):
+            # e.g. PDFArray, PDFString, Name, Destination, Action...
+            value = value.serialize(
+                _security_handler=_security_handler, _obj_id=_obj_id
+            )
+        elif isinstance(value, bool):
+            value = str(value).lower()
+        obj_dict[f&#34;/{camel_case(key)}&#34;] = value
+    return obj_dict</code></pre>
+</details>
 <div class="desc"><p>Build the PDF Object associative map to serialize, based on a key-values dict.
 The property names are converted from snake_case to CamelCase,
 and prefixed with a slash character "/".</p></div>
@@ -93,18 +139,67 @@ and prefixed with a slash character "/".</p></div>
 <span>def <span class="ident">camel_case</span></span>(<span>snake_case)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L261-L262" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def camel_case(snake_case):
+    return &#34;&#34;.join(x for x in snake_case.title() if x != &#34;_&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.syntax.clear_empty_fields"><code class="name flex">
 <span>def <span class="ident">clear_empty_fields</span></span>(<span>d)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L70-L71" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def clear_empty_fields(d):
+    return {k: v for k, v in d.items() if v}</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.syntax.create_dictionary_string"><code class="name flex">
 <span>def <span class="ident">create_dictionary_string</span></span>(<span>dict_,<br>open_dict=&#x27;&lt;&lt;&#x27;,<br>close_dict=&#x27;&gt;&gt;&#x27;,<br>field_join='\n',<br>key_value_join=' ',<br>has_empty_fields=False)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L74-L100" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def create_dictionary_string(
+    dict_,
+    open_dict=&#34;&lt;&lt;&#34;,
+    close_dict=&#34;&gt;&gt;&#34;,
+    field_join=&#34;\n&#34;,
+    key_value_join=&#34; &#34;,
+    has_empty_fields=False,
+):
+    &#34;&#34;&#34;format dictionary as PDF dictionary
+
+    @param dict_: dictionary of values to render
+    @param open_dict: string to open PDF dictionary
+    @param close_dict: string to close PDF dictionary
+    @param field_join: string to join fields with
+    @param key_value_join: string to join key to value with
+    @param has_empty_fields: whether or not to clear_empty_fields first.
+    &#34;&#34;&#34;
+    if has_empty_fields:
+        dict_ = clear_empty_fields(dict_)
+
+    return &#34;&#34;.join(
+        [
+            open_dict,
+            field_join.join(key_value_join.join((k, str(v))) for k, v in dict_.items()),
+            close_dict,
+        ]
+    )</code></pre>
+</details>
 <div class="desc"><p>format dictionary as PDF dictionary</p>
 <p>@param dict_: dictionary of values to render
 @param open_dict: string to open PDF dictionary
@@ -117,18 +212,48 @@ and prefixed with a slash character "/".</p></div>
 <span>def <span class="ident">create_list_string</span></span>(<span>list_)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L103-L105" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def create_list_string(list_):
+    &#34;&#34;&#34;format list of strings as PDF array&#34;&#34;&#34;
+    return f&#34;[{&#39; &#39;.join(list_)}]&#34;</code></pre>
+</details>
 <div class="desc"><p>format list of strings as PDF array</p></div>
 </dd>
 <dt id="fpdf.syntax.create_stream"><code class="name flex">
 <span>def <span class="ident">create_stream</span></span>(<span>stream, encryption_handler=None, obj_id=None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L113-L118" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def create_stream(stream, encryption_handler=None, obj_id=None):
+    if isinstance(stream, (bytearray, bytes)):
+        stream = str(stream, &#34;latin-1&#34;)
+    if encryption_handler:
+        encryption_handler.encrypt(stream, obj_id)
+    return &#34;\n&#34;.join([&#34;stream&#34;, stream, &#34;endstream&#34;])</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.syntax.iobj_ref"><code class="name flex">
 <span>def <span class="ident">iobj_ref</span></span>(<span>n)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L108-L110" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def iobj_ref(n):
+    &#34;&#34;&#34;format an indirect PDF Object reference from its id number&#34;&#34;&#34;
+    return f&#34;{n} 0 R&#34;</code></pre>
+</details>
 <div class="desc"><p>format an indirect PDF Object reference from its id number</p></div>
 </dd>
 </dl>
@@ -140,17 +265,17 @@ and prefixed with a slash character "/".</p></div>
 <span>class <span class="ident">Destination</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/syntax.py#L351-L353" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L351-L353" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Destination(ABC):
     def serialize(self, _security_handler=None, _obj_id=None):
         raise NotImplementedError</code></pre>
 </details>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>abc.ABC</li>
@@ -165,6 +290,14 @@ inheritance.</p></div>
 <span>def <span class="ident">serialize</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L352-L353" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+    raise NotImplementedError</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -174,12 +307,10 @@ inheritance.</p></div>
 <span>(</span><span>page, top, left=0, zoom='null')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/syntax.py#L356-L382" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L356-L382" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class DestinationXYZ(Destination):
     def __init__(self, page, top, left=0, zoom=&#34;null&#34;):
@@ -209,6 +340,8 @@ inheritance.</p></div>
         assert self.page_ref
         return f&#34;[{self.page_ref} /XYZ {left} {top} {self.zoom}]&#34;</code></pre>
 </details>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.Destination" href="#fpdf.syntax.Destination">Destination</a></li>
@@ -220,6 +353,17 @@ inheritance.</p></div>
 <span>def <span class="ident">serialize</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L378-L382" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+    left = round(self.left, 2) if isinstance(self.left, float) else self.left
+    top = round(self.top, 2) if isinstance(self.top, float) else self.top
+    assert self.page_ref
+    return f&#34;[{self.page_ref} /XYZ {left} {top} {self.zoom}]&#34;</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -229,11 +373,10 @@ inheritance.</p></div>
 <span>(</span><span>...)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>str subclass signifying a PDF name, which are emitted differently than normal strings.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/syntax.py#L125-L136" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L125-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Name(str):
     &#34;&#34;&#34;str subclass signifying a PDF name, which are emitted differently than normal strings.&#34;&#34;&#34;
@@ -248,6 +391,7 @@ inheritance.</p></div>
         ).decode()
         return f&#34;/{escaped}&#34;</code></pre>
 </details>
+<div class="desc"><p>str subclass signifying a PDF name, which are emitted differently than normal strings.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>builtins.str</li>
@@ -265,6 +409,17 @@ inheritance.</p></div>
 <span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L132-L136" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None) -&gt; str:
+    escaped = self.NAME_ESC.sub(
+        lambda m: b&#34;#%02X&#34; % m[0][0], self.encode()
+    ).decode()
+    return f&#34;/{escaped}&#34;</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -274,13 +429,10 @@ inheritance.</p></div>
 <span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Built-in mutable sequence.</p>
-<p>If no argument is given, the constructor creates a new empty list.
-The argument must be an iterable if specified.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/syntax.py#L330-L347" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L330-L347" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFArray(list):
     def serialize(self, _security_handler=None, _obj_id=None):
@@ -301,6 +453,9 @@ The argument must be an iterable if specified.</p></div>
             )
         return f&#34;[{serialized_elems}]&#34;</code></pre>
 </details>
+<div class="desc"><p>Built-in mutable sequence.</p>
+<p>If no argument is given, the constructor creates a new empty list.
+The argument must be an iterable if specified.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>builtins.list</li>
@@ -311,6 +466,29 @@ The argument must be an iterable if specified.</p></div>
 <span>def <span class="ident">serialize</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L331-L347" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+    if all(isinstance(elem, str) for elem in self):
+        serialized_elems = &#34; &#34;.join(self)
+    elif all(isinstance(elem, int) for elem in self):
+        serialized_elems = &#34; &#34;.join(str(elem) for elem in self)
+    else:
+        serialized_elems = &#34;\n&#34;.join(
+            (
+                elem.ref
+                if isinstance(elem, PDFObject)
+                else elem.serialize(
+                    _security_handler=_security_handler, _obj_id=_obj_id
+                )
+            )
+            for elem in self
+        )
+    return f&#34;[{serialized_elems}]&#34;</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -320,13 +498,10 @@ The argument must be an iterable if specified.</p></div>
 <span>(</span><span>contents, compress=False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Main features of this class:
-* delay ID assignement
-* implement serializing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/syntax.py#L201-L227" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L201-L227" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFContentStream(PDFObject):
     # Passed to zlib.compress() - In range 0-9 - Default is currently equivalent to 6:
@@ -356,6 +531,9 @@ The argument must be an iterable if specified.</p></div>
             self.length = len(self._contents)
         return super().serialize(obj_dict, _security_handler)</code></pre>
 </details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFObject" href="#fpdf.syntax.PDFObject">PDFObject</a></li>
@@ -384,19 +562,10 @@ The argument must be an iterable if specified.</p></div>
 <span>(</span><span>date: datetime.datetime, with_tz=False, encrypt=False)</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>date</code></strong> :&ensp;<code>datetime</code></dt>
-<dd>self-explanatory</dd>
-<dt><strong><code>with_tz</code></strong> :&ensp;<code>bool</code></dt>
-<dd>should the timezone be encoded in included in the date?</dd>
-<dt><strong><code>encrypt</code></strong> :&ensp;<code>bool</code></dt>
-<dd>if document encryption is enabled, should this string be encrypted?</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/syntax.py#L299-L327" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L299-L327" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFDate:
     def __init__(self, date: datetime, with_tz=False, encrypt=False):
@@ -428,12 +597,41 @@ The argument must be an iterable if specified.</p></div>
             return _security_handler.encrypt_string(out_str, _obj_id)
         return f&#34;({out_str})&#34;</code></pre>
 </details>
+<div class="desc"><h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>date</code></strong> :&ensp;<code>datetime</code></dt>
+<dd>self-explanatory</dd>
+<dt><strong><code>with_tz</code></strong> :&ensp;<code>bool</code></dt>
+<dd>should the timezone be encoded in included in the date?</dd>
+<dt><strong><code>encrypt</code></strong> :&ensp;<code>bool</code></dt>
+<dd>if document encryption is enabled, should this string be encrypted?</dd>
+</dl></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.syntax.PDFDate.serialize"><code class="name flex">
 <span>def <span class="ident">serialize</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L314-L327" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+    if self.with_tz:
+        assert self.date.tzinfo
+        if self.date.tzinfo == timezone.utc:
+            out_str = f&#34;D:{self.date:%Y%m%d%H%M%SZ}&#34;
+        else:
+            out_str = f&#34;D:{self.date:%Y%m%d%H%M%S%z}&#34;
+            out_str = out_str[:-2] + &#34;&#39;&#34; + out_str[-2:] + &#34;&#39;&#34;
+    else:
+        out_str = f&#34;D:{self.date:%Y%m%d%H%M%S}&#34;
+    if _security_handler and self.encrypt:
+        assert _obj_id
+        return _security_handler.encrypt_string(out_str, _obj_id)
+    return f&#34;({out_str})&#34;</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -442,13 +640,10 @@ The argument must be an iterable if specified.</p></div>
 <span>class <span class="ident">PDFObject</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Main features of this class:
-* delay ID assignement
-* implement serializing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/syntax.py#L139-L198" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L139-L198" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFObject:
     &#34;&#34;&#34;
@@ -511,6 +706,9 @@ The argument must be an iterable if specified.</p></div>
             _obj_id=self.id,
         )</code></pre>
 </details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="fpdf.annotations.PDFAnnotation" href="annotations.html#fpdf.annotations.PDFAnnotation">PDFAnnotation</a></li>
@@ -536,10 +734,10 @@ The argument must be an iterable if specified.</p></div>
 <dl>
 <dt id="fpdf.syntax.PDFObject.id"><code class="name">prop <span class="ident">id</span></code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L151-L157" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def id(self):
@@ -549,18 +747,20 @@ def id(self):
         )
     return self._id</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="fpdf.syntax.PDFObject.ref"><code class="name">prop <span class="ident">ref</span></code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L163-L165" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def ref(self):
     return iobj_ref(self.id)</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -569,12 +769,41 @@ def ref(self):
 <span>def <span class="ident">content_stream</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L183-L185" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def content_stream(self):
+    &#34;Subclasses can override this method to indicate the presence of a content stream&#34;
+    return b&#34;&#34;</code></pre>
+</details>
 <div class="desc"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
 </dd>
 <dt id="fpdf.syntax.PDFObject.serialize"><code class="name flex">
 <span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L167-L180" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self, obj_dict=None, _security_handler=None):
+    &#34;Serialize the PDF object as an obj&lt;&lt;/&gt;&gt;endobj text block&#34;
+    output = []
+    output.append(f&#34;{self.id} 0 obj&#34;)
+    output.append(&#34;&lt;&lt;&#34;)
+    if not obj_dict:
+        obj_dict = self._build_obj_dict(_security_handler)
+    output.append(create_dictionary_string(obj_dict, open_dict=&#34;&#34;, close_dict=&#34;&#34;))
+    output.append(&#34;&gt;&gt;&#34;)
+    content_stream = self.content_stream()
+    if content_stream:
+        output.append(create_stream(content_stream))
+    output.append(&#34;endobj&#34;)
+    return &#34;\n&#34;.join(output)</code></pre>
+</details>
 <div class="desc"><p>Serialize the PDF object as an obj&lt;&gt;endobj text block</p></div>
 </dd>
 </dl>
@@ -584,19 +813,10 @@ def ref(self):
 <span>(</span><span>content, encrypt=False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>str(object='') -&gt; str
-str(bytes_or_buffer[, encoding[, errors]]) -&gt; str</p>
-<p>Create a new string object from the given object. If encoding or
-errors is specified, then the object must expose a data buffer
-that will be decoded using the given encoding and error handler.
-Otherwise, returns the result of object.<strong>str</strong>() (if defined)
-or repr(object).
-encoding defaults to 'utf-8'.
-errors defaults to 'strict'.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/syntax.py#L265-L296" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L265-L296" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFString(str):
     USE_HEX_ENCODING = True
@@ -631,6 +851,15 @@ errors defaults to 'strict'.</p></div>
             return f&#34;&lt;{hex_str}&gt;&#34;
         return f&#39;({self.encode(&#34;UTF-16&#34;).decode(&#34;latin-1&#34;)})&#39;</code></pre>
 </details>
+<div class="desc"><p>str(object='') -&gt; str
+str(bytes_or_buffer[, encoding[, errors]]) -&gt; str</p>
+<p>Create a new string object from the given object. If encoding or
+errors is specified, then the object must expose a data buffer
+that will be decoded using the given encoding and error handler.
+Otherwise, returns the result of object.<strong>str</strong>() (if defined)
+or repr(object).
+encoding defaults to 'utf-8'.
+errors defaults to 'strict'.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>builtins.str</li>
@@ -649,6 +878,27 @@ but then there can be a risk of badly encoding some unicode strings - cf. issue 
 <span>def <span class="ident">serialize</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L282-L296" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+    if _security_handler and self.encrypt:
+        assert _obj_id
+        return _security_handler.encrypt_string(self, _obj_id)
+    try:
+        self.encode(&#34;ascii&#34;)
+        # =&gt; this string only contains ASCII characters, no need for special encoding:
+        return f&#34;({self})&#34;
+    except UnicodeEncodeError:
+        pass
+    if self.USE_HEX_ENCODING:
+        # Using the &#34;Hexadecimal String&#34; format defined in the PDF spec:
+        hex_str = hexlify(BOM_UTF16_BE + self.encode(&#34;utf-16-be&#34;)).decode(&#34;latin-1&#34;)
+        return f&#34;&lt;{hex_str}&gt;&#34;
+    return f&#39;({self.encode(&#34;UTF-16&#34;).decode(&#34;latin-1&#34;)})&#39;</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -658,15 +908,15 @@ but then there can be a risk of badly encoding some unicode strings - cf. issue 
 <span>(</span><span>...)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>str subclass signifying raw data to be directly emitted to PDF without transformation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/syntax.py#L121-L122" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/syntax.py#L121-L122" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Raw(str):
     &#34;&#34;&#34;str subclass signifying raw data to be directly emitted to PDF without transformation.&#34;&#34;&#34;</code></pre>
 </details>
+<div class="desc"><p>str subclass signifying raw data to be directly emitted to PDF without transformation.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>builtins.str</li>
@@ -757,7 +1007,7 @@ but then there can be a risk of badly encoding some unicode strings - cf. issue 
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.3</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>

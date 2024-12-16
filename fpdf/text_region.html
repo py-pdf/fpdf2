@@ -3,19 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.3">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>fpdf.text_region API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -40,11 +51,10 @@ hljs.highlightAll();
 <span>(</span><span>bullet_fragments, text_line, bullet_r_margin)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/text_region.py#L54-L70" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L54-L70" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Bullet:
     def __init__(
@@ -64,12 +74,24 @@ hljs.highlightAll();
             fragments_width += frag.get_width()
         return fragments_width</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.text_region.Bullet.get_fragments_width"><code class="name flex">
 <span>def <span class="ident">get_fragments_width</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L66-L70" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_fragments_width(self):
+    fragments_width = 0
+    for frag in self.fragments:
+        fragments_width += frag.get_width()
+    return fragments_width</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -79,16 +101,16 @@ hljs.highlightAll();
 <span>(</span><span>left: float, right: float)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Extents(left, right)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/text_region.py#L16-L18" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L16-L18" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Extents(NamedTuple):
     left: float
     right: float</code></pre>
 </details>
+<div class="desc"><p>Extents(left, right)</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>builtins.tuple</li>
@@ -97,10 +119,28 @@ hljs.highlightAll();
 <dl>
 <dt id="fpdf.text_region.Extents.left"><code class="name">var <span class="ident">left</span> : float</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L16-L18" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class Extents(NamedTuple):
+    left: float
+    right: float</code></pre>
+</details>
 <div class="desc"><p>Alias for field number 0</p></div>
 </dd>
 <dt id="fpdf.text_region.Extents.right"><code class="name">var <span class="ident">right</span> : float</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L16-L18" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class Extents(NamedTuple):
+    left: float
+    right: float</code></pre>
+</details>
 <div class="desc"><p>Alias for field number 1</p></div>
 </dd>
 </dl>
@@ -110,11 +150,10 @@ hljs.highlightAll();
 <span>(</span><span>region,<br>name,<br>align=None,<br>width: float = None,<br>height: float = None,<br>fill_width: bool = False,<br>keep_aspect_ratio=False,<br>top_margin=0,<br>bottom_margin=0,<br>link=None,<br>title=None,<br>alt_text=None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/text_region.py#L209-L310" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L209-L310" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ImageParagraph:
     def __init__(
@@ -219,18 +258,96 @@ hljs.highlightAll();
             keep_aspect_ratio=self.keep_aspect_ratio,
         )</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.text_region.ImageParagraph.build_line"><code class="name flex">
 <span>def <span class="ident">build_line</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L245-L251" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def build_line(self):
+    # We do double duty as a &#34;text line wrapper&#34; here, since all the necessary
+    # information is already in the ImageParagraph object.
+    self.name, self.img, self.info = preload_image(
+        self.region.pdf.image_cache, self.name
+    )
+    return self</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.text_region.ImageParagraph.render"><code class="name flex">
 <span>def <span class="ident">render</span></span>(<span>self, col_left, col_width, max_height)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L253-L310" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def render(self, col_left, col_width, max_height):
+    if not self.img:
+        raise RuntimeError(
+            &#34;ImageParagraph.build_line() must be called before render().&#34;
+        )
+    is_svg = isinstance(self.info, VectorImageInfo)
+
+    # pylint: disable=possibly-used-before-assignment
+    if self.height:
+        h = self.height
+    else:
+        native_h = self.info[&#34;h&#34;] / self.region.pdf.k
+    if self.width:
+        w = self.width
+    else:
+        native_w = self.info[&#34;w&#34;] / self.region.pdf.k
+        if native_w &gt; col_width or self.fill_width:
+            w = col_width
+        else:
+            w = native_w
+    if not self.height:
+        h = w * native_h / native_w
+    if h &gt; max_height:
+        return None
+    x = col_left
+    if self.align:
+        if self.align == Align.R:
+            x += col_width - w
+        elif self.align == Align.C:
+            x += (col_width - w) / 2
+    if is_svg:
+        return self.region.pdf._vector_image(
+            name=self.name,
+            svg=self.img,
+            info=self.info,
+            x=x,
+            y=None,
+            w=w,
+            h=h,
+            link=self.link,
+            title=self.title,
+            alt_text=self.alt_text,
+            keep_aspect_ratio=self.keep_aspect_ratio,
+        )
+    return self.region.pdf._raster_image(
+        name=self.name,
+        img=self.img,
+        info=self.info,
+        x=x,
+        y=None,
+        w=w,
+        h=h,
+        link=self.link,
+        title=self.title,
+        alt_text=self.alt_text,
+        dims=None,
+        keep_aspect_ratio=self.keep_aspect_ratio,
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -240,13 +357,10 @@ hljs.highlightAll();
 <span>(</span><span>line: Sequence,<br>paragraph: <a title="fpdf.text_region.Paragraph" href="#fpdf.text_region.Paragraph">Paragraph</a>,<br>first_line: bool = False,<br>last_line: bool = False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Connects each TextLine with the Paragraph it was written to.
-This allows to access paragraph specific attributes like
-top/bottom margins when rendering the line.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/text_region.py#L42-L51" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L42-L51" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class LineWrapper(NamedTuple):
     &#34;&#34;&#34;Connects each TextLine with the Paragraph it was written to.
@@ -259,6 +373,9 @@ top/bottom margins when rendering the line.</p></div>
     first_line: bool = False
     last_line: bool = False</code></pre>
 </details>
+<div class="desc"><p>Connects each TextLine with the Paragraph it was written to.
+This allows to access paragraph specific attributes like
+top/bottom margins when rendering the line.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>builtins.tuple</li>
@@ -267,18 +384,82 @@ top/bottom margins when rendering the line.</p></div>
 <dl>
 <dt id="fpdf.text_region.LineWrapper.first_line"><code class="name">var <span class="ident">first_line</span> : bool</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L42-L51" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class LineWrapper(NamedTuple):
+    &#34;&#34;&#34;Connects each TextLine with the Paragraph it was written to.
+    This allows to access paragraph specific attributes like
+    top/bottom margins when rendering the line.
+    &#34;&#34;&#34;
+
+    line: Sequence
+    paragraph: Paragraph
+    first_line: bool = False
+    last_line: bool = False</code></pre>
+</details>
 <div class="desc"><p>Alias for field number 2</p></div>
 </dd>
 <dt id="fpdf.text_region.LineWrapper.last_line"><code class="name">var <span class="ident">last_line</span> : bool</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L42-L51" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class LineWrapper(NamedTuple):
+    &#34;&#34;&#34;Connects each TextLine with the Paragraph it was written to.
+    This allows to access paragraph specific attributes like
+    top/bottom margins when rendering the line.
+    &#34;&#34;&#34;
+
+    line: Sequence
+    paragraph: Paragraph
+    first_line: bool = False
+    last_line: bool = False</code></pre>
+</details>
 <div class="desc"><p>Alias for field number 3</p></div>
 </dd>
 <dt id="fpdf.text_region.LineWrapper.line"><code class="name">var <span class="ident">line</span> : Sequence</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L42-L51" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class LineWrapper(NamedTuple):
+    &#34;&#34;&#34;Connects each TextLine with the Paragraph it was written to.
+    This allows to access paragraph specific attributes like
+    top/bottom margins when rendering the line.
+    &#34;&#34;&#34;
+
+    line: Sequence
+    paragraph: Paragraph
+    first_line: bool = False
+    last_line: bool = False</code></pre>
+</details>
 <div class="desc"><p>Alias for field number 0</p></div>
 </dd>
 <dt id="fpdf.text_region.LineWrapper.paragraph"><code class="name">var <span class="ident">paragraph</span> : <a title="fpdf.text_region.Paragraph" href="#fpdf.text_region.Paragraph">Paragraph</a></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L42-L51" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class LineWrapper(NamedTuple):
+    &#34;&#34;&#34;Connects each TextLine with the Paragraph it was written to.
+    This allows to access paragraph specific attributes like
+    top/bottom margins when rendering the line.
+    &#34;&#34;&#34;
+
+    line: Sequence
+    paragraph: Paragraph
+    first_line: bool = False
+    last_line: bool = False</code></pre>
+</details>
 <div class="desc"><p>Alias for field number 1</p></div>
 </dd>
 </dl>
@@ -288,11 +469,10 @@ top/bottom margins when rendering the line.</p></div>
 <span>(</span><span>region,<br>text_align=None,<br>line_height=None,<br>top_margin: float = 0,<br>bottom_margin: float = 0,<br>indent: float = 0,<br>bullet_r_margin=None,<br>bullet_string: str = '',<br>skip_leading_spaces: bool = False,<br>wrapmode: <a title="fpdf.enums.WrapMode" href="enums.html#fpdf.enums.WrapMode">WrapMode</a> = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/text_region.py#L73-L206" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L73-L206" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Paragraph:  # pylint: disable=function-redefined
     def __init__(
@@ -429,30 +609,125 @@ top/bottom margins when rendering the line.</p></div>
             text_lines[-1] = last
         return text_lines</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.text_region.Paragraph.build_lines"><code class="name flex">
 <span>def <span class="ident">build_lines</span></span>(<span>self, print_sh) ‑> List[<a title="fpdf.text_region.LineWrapper" href="#fpdf.text_region.LineWrapper">LineWrapper</a>]</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L180-L206" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def build_lines(self, print_sh) -&gt; List[LineWrapper]:
+    text_lines = []
+    multi_line_break = MultiLineBreak(
+        self._text_fragments,
+        max_width=self._region.get_width,
+        margins=(self.pdf.c_margin + self.indent, self.pdf.c_margin),
+        align=self.text_align or self._region.text_align or Align.L,
+        print_sh=print_sh,
+        wrapmode=self.wrapmode,
+        line_height=self.line_height,
+        skip_leading_spaces=self.skip_leading_spaces
+        or self._region.skip_leading_spaces,
+    )
+    self._text_fragments = []
+    text_line = multi_line_break.get_line()
+    first_line = True
+    while text_line is not None:
+        text_lines.append(LineWrapper(text_line, self, first_line=first_line))
+        first_line = False
+        text_line = multi_line_break.get_line()
+    if text_lines:
+        last = text_lines[-1]
+        last = LineWrapper(
+            last.line, self, first_line=last.first_line, last_line=True
+        )
+        text_lines[-1] = last
+    return text_lines</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.text_region.Paragraph.generate_bullet_frags_and_tl"><code class="name flex">
 <span>def <span class="ident">generate_bullet_frags_and_tl</span></span>(<span>self, bullet_string: str, bullet_r_margin: float)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L145-L169" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def generate_bullet_frags_and_tl(self, bullet_string: str, bullet_r_margin: float):
+    if not bullet_string:
+        return None
+    bullet_string = self.pdf.normalize_text(bullet_string)
+    if not self.pdf.font_family:
+        raise FPDFException(&#34;No font set, you need to call set_font() beforehand&#34;)
+    bullet_fragments = self.pdf._preload_font_styles(bullet_string, markdown=False)
+    fragments_width = 0
+    for frag in bullet_fragments:
+        fragments_width += frag.get_width()
+    bullet_line_break = MultiLineBreak(
+        bullet_fragments,
+        max_width=self._region.get_width,
+        margins=(
+            self.pdf.c_margin + (self.indent - fragments_width - bullet_r_margin),
+            self.pdf.c_margin,
+        ),
+        align=self.text_align or self._region.text_align or Align.L,
+        wrapmode=self.wrapmode,
+        line_height=self.line_height,
+        skip_leading_spaces=self.skip_leading_spaces
+        or self._region.skip_leading_spaces,
+    )
+    bullet_text_line = bullet_line_break.get_line()
+    return bullet_fragments, bullet_text_line</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.text_region.Paragraph.ln"><code class="name flex">
 <span>def <span class="ident">ln</span></span>(<span>self, h=None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L171-L178" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def ln(self, h=None):
+    if not self.pdf.font_family:
+        raise FPDFException(&#34;No font set, you need to call set_font() beforehand&#34;)
+    if h is None:
+        h = self.pdf.font_size * self.line_height
+    fragment = self.pdf._preload_font_styles(&#34;\n&#34;, markdown=False)[0]
+    fragment.graphics_state[&#34;font_size_pt&#34;] = h * fragment.k
+    self._text_fragments.append(fragment)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.text_region.Paragraph.write"><code class="name flex">
 <span>def <span class="ident">write</span></span>(<span>self, text: str, link=None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L134-L143" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def write(self, text: str, link=None):
+    if not self.pdf.font_family:
+        raise FPDFException(&#34;No font set, you need to call set_font() beforehand&#34;)
+    normalized_string = self.pdf.normalize_text(text).replace(&#34;\r&#34;, &#34;&#34;)
+    # YYY _preload_font_styles() should accept a &#34;link&#34; argument.
+    fragments = self.pdf._preload_font_styles(normalized_string, markdown=False)
+    if link:
+        for frag in fragments:
+            frag.link = link
+    self._text_fragments.extend(fragments)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -462,11 +737,10 @@ top/bottom margins when rendering the line.</p></div>
 <span>(</span><span>pdf,<br>*args,<br>text=None,<br>text_align='LEFT',<br>line_height: float = 1.0,<br>print_sh: bool = False,<br>skip_leading_spaces: bool = False,<br>wrapmode: <a title="fpdf.enums.WrapMode" href="enums.html#fpdf.enums.WrapMode">WrapMode</a> = None,<br>img=None,<br>img_fill_width=False,<br>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/text_region.py#L313-L468" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L313-L468" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ParagraphCollectorMixin:
     def __init__(
@@ -625,6 +899,7 @@ top/bottom margins when rendering the line.</p></div>
         )
         self._paragraphs.append(p)</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="fpdf.text_region.TextRegion" href="#fpdf.text_region.TextRegion">TextRegion</a></li>
@@ -635,24 +910,133 @@ top/bottom margins when rendering the line.</p></div>
 <span>def <span class="ident">end_paragraph</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L430-L434" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def end_paragraph(self):
+    if not self._active_paragraph:
+        raise FPDFException(&#34;No active paragraph to end.&#34;)
+    # self._paragraphs[-1].write(&#34;\n&#34;)
+    self._active_paragraph = None</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.text_region.ParagraphCollectorMixin.image"><code class="name flex">
 <span>def <span class="ident">image</span></span>(<span>self,<br>name,<br>align=None,<br>width: float = None,<br>height: float = None,<br>fill_width: bool = False,<br>keep_aspect_ratio=False,<br>top_margin=0,<br>bottom_margin=0,<br>link=None,<br>title=None,<br>alt_text=None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L436-L468" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def image(
+    self,
+    name,
+    align=None,
+    width: float = None,
+    height: float = None,
+    fill_width: bool = False,
+    keep_aspect_ratio=False,
+    top_margin=0,
+    bottom_margin=0,
+    link=None,
+    title=None,
+    alt_text=None,
+):
+    if self._active_paragraph == &#34;EXPLICIT&#34;:
+        raise FPDFException(&#34;Unable to nest paragraphs.&#34;)
+    if self._active_paragraph:
+        self.end_paragraph()
+    p = ImageParagraph(
+        self,
+        name,
+        align=align,
+        width=width,
+        height=height,
+        fill_width=fill_width,
+        keep_aspect_ratio=keep_aspect_ratio,
+        top_margin=top_margin,
+        bottom_margin=bottom_margin,
+        link=link,
+        title=title,
+        alt_text=alt_text,
+    )
+    self._paragraphs.append(p)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.text_region.ParagraphCollectorMixin.ln"><code class="name flex">
 <span>def <span class="ident">ln</span></span>(<span>self, h=None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L381-L383" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def ln(self, h=None):
+    self._check_paragraph()
+    self._paragraphs[-1].ln(h)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.text_region.ParagraphCollectorMixin.paragraph"><code class="name flex">
 <span>def <span class="ident">paragraph</span></span>(<span>self,<br>text_align=None,<br>line_height=None,<br>skip_leading_spaces: bool = False,<br>top_margin=0,<br>bottom_margin=0,<br>indent=0,<br>bullet_string='',<br>bullet_r_margin=None,<br>wrapmode: <a title="fpdf.enums.WrapMode" href="enums.html#fpdf.enums.WrapMode">WrapMode</a> = None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L385-L428" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def paragraph(
+    self,
+    text_align=None,
+    line_height=None,
+    skip_leading_spaces: bool = False,
+    top_margin=0,
+    bottom_margin=0,
+    indent=0,
+    bullet_string=&#34;&#34;,
+    bullet_r_margin=None,
+    wrapmode: WrapMode = None,
+):
+    &#34;&#34;&#34;
+    Args:
+        text_align (Align, optional): the horizontal alignment of the paragraph.
+        line_height (float, optional): factor by which the line spacing will be different from the font height. (Default: by region)
+        top_margin (float, optional):  how much spacing is added above the paragraph.
+            No spacing will be added at the top of the paragraph if the current y position is at (or above) the
+            top margin of the page. (Default: 0.0)
+        bottom_margin (float, optional): those two values determine how much spacing is added below the paragraph.
+            No spacing will be added at the bottom if it would result in overstepping the bottom margin of the page. (Default: 0.0)
+        indent (float, optional): determines the indentation of the paragraph. (Default: 0.0)
+        bullet_string (str, optional): determines the fragments and text lines of the bullet. (Default: &#34;&#34;)
+        bullet_r_margin (float, optional): determines the spacing between the bullet and the bulleted line
+        skip_leading_spaces (float, optional): removes all space characters at the beginning of each line. (Default: False)
+        wrapmode (WrapMode): determines the way text wrapping is handled. (Default: None)
+    &#34;&#34;&#34;
+    if self._active_paragraph == &#34;EXPLICIT&#34;:
+        raise FPDFException(&#34;Unable to nest paragraphs.&#34;)
+    p = Paragraph(
+        region=self,
+        text_align=text_align or self.text_align,
+        line_height=line_height,
+        skip_leading_spaces=skip_leading_spaces or self.skip_leading_spaces,
+        wrapmode=wrapmode,
+        top_margin=top_margin,
+        bottom_margin=bottom_margin,
+        indent=indent,
+        bullet_string=bullet_string,
+        bullet_r_margin=bullet_r_margin,
+    )
+    self._paragraphs.append(p)
+    self._active_paragraph = &#34;EXPLICIT&#34;
+    return p</code></pre>
+</details>
 <div class="desc"><h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>text_align</code></strong> :&ensp;<code>Align</code>, optional</dt>
@@ -682,6 +1066,15 @@ No spacing will be added at the bottom if it would result in overstepping the bo
 <span>def <span class="ident">write</span></span>(<span>self, text: str, link=None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L377-L379" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def write(self, text: str, link=None):  # pylint: disable=unused-argument
+    self._check_paragraph()
+    self._paragraphs[-1].write(text)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -691,11 +1084,10 @@ No spacing will be added at the bottom if it would result in overstepping the bo
 <span>(</span><span>pdf, *args, l_margin=None, r_margin=None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Enable a TextRegion to perform page breaks</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/text_region.py#L597-L616" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L597-L616" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextColumnarMixin:
     &#34;&#34;&#34;Enable a TextRegion to perform page breaks&#34;&#34;&#34;
@@ -718,6 +1110,7 @@ No spacing will be added at the bottom if it would result in overstepping the bo
             )
         self.extents = Extents(left, right)</code></pre>
 </details>
+<div class="desc"><p>Enable a TextRegion to perform page breaks</p></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="fpdf.text_region.TextColumns" href="#fpdf.text_region.TextColumns">TextColumns</a></li>
@@ -728,11 +1121,10 @@ No spacing will be added at the bottom if it would result in overstepping the bo
 <span>(</span><span>pdf, *args, ncols: int = 1, gutter: float = 10, balance: bool = False, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Abstract base class for all text region subclasses.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/text_region.py#L619-L726" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L619-L726" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextColumns(TextRegion, TextColumnarMixin):
     def __init__(
@@ -843,6 +1235,7 @@ No spacing will be added at the bottom if it would result in overstepping the bo
         left, right = self._cols[self._cur_column]
         return left, right</code></pre>
 </details>
+<div class="desc"><p>Abstract base class for all text region subclasses.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.text_region.TextRegion" href="#fpdf.text_region.TextRegion">TextRegion</a></li>
@@ -855,12 +1248,46 @@ No spacing will be added at the bottom if it would result in overstepping the bo
 <span>def <span class="ident">new_column</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L651-L655" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def new_column(self):
+    if self._paragraphs:
+        self._paragraphs[-1].write(FORM_FEED)
+    else:
+        self.write(FORM_FEED)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.text_region.TextColumns.render"><code class="name flex">
 <span>def <span class="ident">render</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L706-L722" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def render(self):
+    if not self._paragraphs:
+        return
+    text_lines = self.collect_lines()
+    if not text_lines:
+        return
+    page_bottom = self.pdf.h - self.pdf.b_margin
+    first_page_top = max(self.pdf.t_margin, self.pdf.y)
+    self._render_page_lines(text_lines, first_page_top, page_bottom)
+    # Note: text_lines is progressively emptied by ._render_column_lines()
+    while text_lines:
+        page_break = self.pdf._perform_page_break_if_need_be(self.pdf.h)
+        if not page_break:
+            # Can happen when rendering a footer in the wrong place - cf. issue #1222
+            break
+        self._cur_column = 0
+        self._render_page_lines(text_lines, self.pdf.y, page_bottom)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -879,11 +1306,10 @@ No spacing will be added at the bottom if it would result in overstepping the bo
 <span>(</span><span>pdf,<br>*args,<br>text=None,<br>text_align='LEFT',<br>line_height: float = 1.0,<br>print_sh: bool = False,<br>skip_leading_spaces: bool = False,<br>wrapmode: <a title="fpdf.enums.WrapMode" href="enums.html#fpdf.enums.WrapMode">WrapMode</a> = None,<br>img=None,<br>img_fill_width=False,<br>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Abstract base class for all text region subclasses.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/text_region.py#L471-L594" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L471-L594" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextRegion(ParagraphCollectorMixin):
     &#34;&#34;&#34;Abstract base class for all text region subclasses.&#34;&#34;&#34;
@@ -1010,6 +1436,7 @@ No spacing will be added at the bottom if it would result in overstepping the bo
         res = end - start
         return res</code></pre>
 </details>
+<div class="desc"><p>Abstract base class for all text region subclasses.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.text_region.ParagraphCollectorMixin" href="#fpdf.text_region.ParagraphCollectorMixin">ParagraphCollectorMixin</a></li>
@@ -1024,12 +1451,45 @@ No spacing will be added at the bottom if it would result in overstepping the bo
 <span>def <span class="ident">collect_lines</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L573-L584" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def collect_lines(self):
+    text_lines = []
+    for paragraph in self._paragraphs:
+        if isinstance(paragraph, ImageParagraph):
+            line = paragraph.build_line()
+            text_lines.append(line)
+        else:
+            cur_lines = paragraph.build_lines(self.print_sh)
+            if not cur_lines:
+                continue
+            text_lines.extend(cur_lines)
+    return text_lines</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.text_region.TextRegion.current_x_extents"><code class="name flex">
 <span>def <span class="ident">current_x_extents</span></span>(<span>self, y, height)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L474-L482" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def current_x_extents(self, y, height):
+    &#34;&#34;&#34;
+    Return the horizontal extents of the current line.
+    Columnar regions simply return the boundaries of the column.
+    Regions with non-vertical boundaries need to check how the largest
+    font-height in the current line actually fits in there.
+    For that reason we include the current y and the line height.
+    &#34;&#34;&#34;
+    raise NotImplementedError()</code></pre>
+</details>
 <div class="desc"><p>Return the horizontal extents of the current line.
 Columnar regions simply return the boundaries of the column.
 Regions with non-vertical boundaries need to check how the largest
@@ -1040,12 +1500,32 @@ For that reason we include the current y and the line height.</p></div>
 <span>def <span class="ident">get_width</span></span>(<span>self, height)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L589-L594" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_width(self, height):
+    start, end = self.current_x_extents(self.pdf.y, height)
+    if self.pdf.x &gt; start and self.pdf.x &lt; end:
+        start = self.pdf.x
+    res = end - start
+    return res</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.text_region.TextRegion.render"><code class="name flex">
 <span>def <span class="ident">render</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L586-L587" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def render(self):
+    raise NotImplementedError()</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -1063,11 +1543,10 @@ For that reason we include the current y and the line height.</p></div>
 <span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Mix-in to be added to FPDF() in order to support text regions.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/text_region.py#L21-L35" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L21-L35" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TextRegionMixin:
     &#34;&#34;&#34;Mix-in to be added to FPDF() in order to support text regions.&#34;&#34;&#34;
@@ -1085,6 +1564,7 @@ For that reason we include the current y and the line height.</p></div>
     def clear_text_region(self):
         self.__current_text_region = None</code></pre>
 </details>
+<div class="desc"><p>Mix-in to be added to FPDF() in order to support text regions.</p></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="fpdf.fpdf.FPDF" href="fpdf.html#fpdf.fpdf.FPDF">FPDF</a></li>
@@ -1095,18 +1575,42 @@ For that reason we include the current y and the line height.</p></div>
 <span>def <span class="ident">clear_text_region</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L34-L35" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def clear_text_region(self):
+    self.__current_text_region = None</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.text_region.TextRegionMixin.is_current_text_region"><code class="name flex">
 <span>def <span class="ident">is_current_text_region</span></span>(<span>self, region)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L31-L32" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def is_current_text_region(self, region):
+    return self.__current_text_region == region</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.text_region.TextRegionMixin.register_text_region"><code class="name flex">
 <span>def <span class="ident">register_text_region</span></span>(<span>self, region)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/text_region.py#L28-L29" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def register_text_region(self, region):
+    self.__current_text_region = region</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -1207,7 +1711,7 @@ For that reason we include the current y and the line height.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.3</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>

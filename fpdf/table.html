@@ -3,19 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.3">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>fpdf.table API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -37,6 +48,61 @@ hljs.highlightAll();
 <span>def <span class="ident">draw_box_borders</span></span>(<span>pdf, x1, y1, x2, y2, border, fill_color=None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L898-L946" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
+    &#34;&#34;&#34;Draws a box using the provided style - private helper used by table for drawing the cell and table borders.
+    Difference between this and rect() is that border can be defined as &#34;L,R,T,B&#34; to draw only some of the four borders;
+    compatible with get_border(i,k)
+
+    See Also: rect()&#34;&#34;&#34;
+
+    if fill_color:
+        prev_fill_color = pdf.fill_color
+        pdf.set_fill_color(fill_color)
+
+    sl = []
+
+    k = pdf.k
+
+    # y top to bottom instead of bottom to top
+    y1 = pdf.h - y1
+    y2 = pdf.h - y2
+
+    # scale
+    x1 *= k
+    x2 *= k
+    y2 *= k
+    y1 *= k
+
+    if isinstance(border, str) and set(border).issuperset(&#34;LTRB&#34;):
+        border = 1
+
+    if fill_color:
+        op = &#34;B&#34; if border == 1 else &#34;f&#34;
+        sl.append(f&#34;{x1:.2f} {y2:.2f} &#34; f&#34;{x2 - x1:.2f} {y1 - y2:.2f} re {op}&#34;)
+    elif border == 1:
+        sl.append(f&#34;{x1:.2f} {y2:.2f} &#34; f&#34;{x2 - x1:.2f} {y1 - y2:.2f} re S&#34;)
+
+    if isinstance(border, str):
+        if &#34;L&#34; in border:
+            sl.append(f&#34;{x1:.2f} {y2:.2f} m &#34; f&#34;{x1:.2f} {y1:.2f} l S&#34;)
+        if &#34;B&#34; in border:
+            sl.append(f&#34;{x1:.2f} {y2:.2f} m &#34; f&#34;{x2:.2f} {y2:.2f} l S&#34;)
+        if &#34;R&#34; in border:
+            sl.append(f&#34;{x2:.2f} {y2:.2f} m &#34; f&#34;{x2:.2f} {y1:.2f} l S&#34;)
+        if &#34;T&#34; in border:
+            sl.append(f&#34;{x1:.2f} {y1:.2f} m &#34; f&#34;{x2:.2f} {y1:.2f} l S&#34;)
+
+    s = &#34; &#34;.join(sl)
+    pdf._out(s)  # pylint: disable=protected-access
+
+    if fill_color:
+        pdf.set_fill_color(prev_fill_color)</code></pre>
+</details>
 <div class="desc"><p>Draws a box using the provided style - private helper used by table for drawing the cell and table borders.
 Difference between this and rect() is that border can be defined as "L,R,T,B" to draw only some of the four borders;
 compatible with get_border(i,k)</p>
@@ -52,11 +118,10 @@ compatible with get_border(i,k)</p>
 <span>(</span><span>text: str,<br>align: str | <a title="fpdf.enums.Align" href="enums.html#fpdf.enums.Align">Align</a> | None,<br>v_align: str | <a title="fpdf.enums.VAlign" href="enums.html#fpdf.enums.VAlign">VAlign</a> | None,<br>style: <a title="fpdf.fonts.FontFace" href="fonts.html#fpdf.fonts.FontFace">FontFace</a> | None,<br>img: str | None,<br>img_fill_width: bool,<br>colspan: int,<br>rowspan: int,<br>padding: int | tuple | None,<br>link: str | int | None,<br>border: <a title="fpdf.enums.CellBordersLayout" href="enums.html#fpdf.enums.CellBordersLayout">CellBordersLayout</a> | None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Internal representation of a table cell</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/table.py#L845-L874" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L845-L874" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class Cell:
@@ -89,50 +154,447 @@ class Cell:
     def write(self, text, align=None):
         raise NotImplementedError(&#34;Not implemented yet&#34;)</code></pre>
 </details>
+<div class="desc"><p>Internal representation of a table cell</p></div>
 <h3>Instance variables</h3>
 <dl>
 <dt id="fpdf.table.Cell.align"><code class="name">var <span class="ident">align</span> : str | <a title="fpdf.enums.Align" href="enums.html#fpdf.enums.Align">Align</a> | None</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L845-L874" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True)
+class Cell:
+    &#34;Internal representation of a table cell&#34;
+    __slots__ = (  # RAM usage optimization
+        &#34;text&#34;,
+        &#34;align&#34;,
+        &#34;v_align&#34;,
+        &#34;style&#34;,
+        &#34;img&#34;,
+        &#34;img_fill_width&#34;,
+        &#34;colspan&#34;,
+        &#34;rowspan&#34;,
+        &#34;padding&#34;,
+        &#34;link&#34;,
+        &#34;border&#34;,
+    )
+    text: str
+    align: Optional[Union[str, Align]]
+    v_align: Optional[Union[str, VAlign]]
+    style: Optional[FontFace]
+    img: Optional[str]
+    img_fill_width: bool
+    colspan: int
+    rowspan: int
+    padding: Optional[Union[int, tuple, type(None)]]
+    link: Optional[Union[str, int]]
+    border: Optional[CellBordersLayout]
+
+    def write(self, text, align=None):
+        raise NotImplementedError(&#34;Not implemented yet&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.table.Cell.border"><code class="name">var <span class="ident">border</span> : <a title="fpdf.enums.CellBordersLayout" href="enums.html#fpdf.enums.CellBordersLayout">CellBordersLayout</a> | None</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L845-L874" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True)
+class Cell:
+    &#34;Internal representation of a table cell&#34;
+    __slots__ = (  # RAM usage optimization
+        &#34;text&#34;,
+        &#34;align&#34;,
+        &#34;v_align&#34;,
+        &#34;style&#34;,
+        &#34;img&#34;,
+        &#34;img_fill_width&#34;,
+        &#34;colspan&#34;,
+        &#34;rowspan&#34;,
+        &#34;padding&#34;,
+        &#34;link&#34;,
+        &#34;border&#34;,
+    )
+    text: str
+    align: Optional[Union[str, Align]]
+    v_align: Optional[Union[str, VAlign]]
+    style: Optional[FontFace]
+    img: Optional[str]
+    img_fill_width: bool
+    colspan: int
+    rowspan: int
+    padding: Optional[Union[int, tuple, type(None)]]
+    link: Optional[Union[str, int]]
+    border: Optional[CellBordersLayout]
+
+    def write(self, text, align=None):
+        raise NotImplementedError(&#34;Not implemented yet&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.table.Cell.colspan"><code class="name">var <span class="ident">colspan</span> : int</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L845-L874" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True)
+class Cell:
+    &#34;Internal representation of a table cell&#34;
+    __slots__ = (  # RAM usage optimization
+        &#34;text&#34;,
+        &#34;align&#34;,
+        &#34;v_align&#34;,
+        &#34;style&#34;,
+        &#34;img&#34;,
+        &#34;img_fill_width&#34;,
+        &#34;colspan&#34;,
+        &#34;rowspan&#34;,
+        &#34;padding&#34;,
+        &#34;link&#34;,
+        &#34;border&#34;,
+    )
+    text: str
+    align: Optional[Union[str, Align]]
+    v_align: Optional[Union[str, VAlign]]
+    style: Optional[FontFace]
+    img: Optional[str]
+    img_fill_width: bool
+    colspan: int
+    rowspan: int
+    padding: Optional[Union[int, tuple, type(None)]]
+    link: Optional[Union[str, int]]
+    border: Optional[CellBordersLayout]
+
+    def write(self, text, align=None):
+        raise NotImplementedError(&#34;Not implemented yet&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.table.Cell.img"><code class="name">var <span class="ident">img</span> : str | None</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L845-L874" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True)
+class Cell:
+    &#34;Internal representation of a table cell&#34;
+    __slots__ = (  # RAM usage optimization
+        &#34;text&#34;,
+        &#34;align&#34;,
+        &#34;v_align&#34;,
+        &#34;style&#34;,
+        &#34;img&#34;,
+        &#34;img_fill_width&#34;,
+        &#34;colspan&#34;,
+        &#34;rowspan&#34;,
+        &#34;padding&#34;,
+        &#34;link&#34;,
+        &#34;border&#34;,
+    )
+    text: str
+    align: Optional[Union[str, Align]]
+    v_align: Optional[Union[str, VAlign]]
+    style: Optional[FontFace]
+    img: Optional[str]
+    img_fill_width: bool
+    colspan: int
+    rowspan: int
+    padding: Optional[Union[int, tuple, type(None)]]
+    link: Optional[Union[str, int]]
+    border: Optional[CellBordersLayout]
+
+    def write(self, text, align=None):
+        raise NotImplementedError(&#34;Not implemented yet&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.table.Cell.img_fill_width"><code class="name">var <span class="ident">img_fill_width</span> : bool</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L845-L874" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True)
+class Cell:
+    &#34;Internal representation of a table cell&#34;
+    __slots__ = (  # RAM usage optimization
+        &#34;text&#34;,
+        &#34;align&#34;,
+        &#34;v_align&#34;,
+        &#34;style&#34;,
+        &#34;img&#34;,
+        &#34;img_fill_width&#34;,
+        &#34;colspan&#34;,
+        &#34;rowspan&#34;,
+        &#34;padding&#34;,
+        &#34;link&#34;,
+        &#34;border&#34;,
+    )
+    text: str
+    align: Optional[Union[str, Align]]
+    v_align: Optional[Union[str, VAlign]]
+    style: Optional[FontFace]
+    img: Optional[str]
+    img_fill_width: bool
+    colspan: int
+    rowspan: int
+    padding: Optional[Union[int, tuple, type(None)]]
+    link: Optional[Union[str, int]]
+    border: Optional[CellBordersLayout]
+
+    def write(self, text, align=None):
+        raise NotImplementedError(&#34;Not implemented yet&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.table.Cell.link"><code class="name">var <span class="ident">link</span> : str | int | None</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L845-L874" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True)
+class Cell:
+    &#34;Internal representation of a table cell&#34;
+    __slots__ = (  # RAM usage optimization
+        &#34;text&#34;,
+        &#34;align&#34;,
+        &#34;v_align&#34;,
+        &#34;style&#34;,
+        &#34;img&#34;,
+        &#34;img_fill_width&#34;,
+        &#34;colspan&#34;,
+        &#34;rowspan&#34;,
+        &#34;padding&#34;,
+        &#34;link&#34;,
+        &#34;border&#34;,
+    )
+    text: str
+    align: Optional[Union[str, Align]]
+    v_align: Optional[Union[str, VAlign]]
+    style: Optional[FontFace]
+    img: Optional[str]
+    img_fill_width: bool
+    colspan: int
+    rowspan: int
+    padding: Optional[Union[int, tuple, type(None)]]
+    link: Optional[Union[str, int]]
+    border: Optional[CellBordersLayout]
+
+    def write(self, text, align=None):
+        raise NotImplementedError(&#34;Not implemented yet&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.table.Cell.padding"><code class="name">var <span class="ident">padding</span> : int | tuple | None</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L845-L874" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True)
+class Cell:
+    &#34;Internal representation of a table cell&#34;
+    __slots__ = (  # RAM usage optimization
+        &#34;text&#34;,
+        &#34;align&#34;,
+        &#34;v_align&#34;,
+        &#34;style&#34;,
+        &#34;img&#34;,
+        &#34;img_fill_width&#34;,
+        &#34;colspan&#34;,
+        &#34;rowspan&#34;,
+        &#34;padding&#34;,
+        &#34;link&#34;,
+        &#34;border&#34;,
+    )
+    text: str
+    align: Optional[Union[str, Align]]
+    v_align: Optional[Union[str, VAlign]]
+    style: Optional[FontFace]
+    img: Optional[str]
+    img_fill_width: bool
+    colspan: int
+    rowspan: int
+    padding: Optional[Union[int, tuple, type(None)]]
+    link: Optional[Union[str, int]]
+    border: Optional[CellBordersLayout]
+
+    def write(self, text, align=None):
+        raise NotImplementedError(&#34;Not implemented yet&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.table.Cell.rowspan"><code class="name">var <span class="ident">rowspan</span> : int</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L845-L874" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True)
+class Cell:
+    &#34;Internal representation of a table cell&#34;
+    __slots__ = (  # RAM usage optimization
+        &#34;text&#34;,
+        &#34;align&#34;,
+        &#34;v_align&#34;,
+        &#34;style&#34;,
+        &#34;img&#34;,
+        &#34;img_fill_width&#34;,
+        &#34;colspan&#34;,
+        &#34;rowspan&#34;,
+        &#34;padding&#34;,
+        &#34;link&#34;,
+        &#34;border&#34;,
+    )
+    text: str
+    align: Optional[Union[str, Align]]
+    v_align: Optional[Union[str, VAlign]]
+    style: Optional[FontFace]
+    img: Optional[str]
+    img_fill_width: bool
+    colspan: int
+    rowspan: int
+    padding: Optional[Union[int, tuple, type(None)]]
+    link: Optional[Union[str, int]]
+    border: Optional[CellBordersLayout]
+
+    def write(self, text, align=None):
+        raise NotImplementedError(&#34;Not implemented yet&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.table.Cell.style"><code class="name">var <span class="ident">style</span> : <a title="fpdf.fonts.FontFace" href="fonts.html#fpdf.fonts.FontFace">FontFace</a> | None</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L845-L874" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True)
+class Cell:
+    &#34;Internal representation of a table cell&#34;
+    __slots__ = (  # RAM usage optimization
+        &#34;text&#34;,
+        &#34;align&#34;,
+        &#34;v_align&#34;,
+        &#34;style&#34;,
+        &#34;img&#34;,
+        &#34;img_fill_width&#34;,
+        &#34;colspan&#34;,
+        &#34;rowspan&#34;,
+        &#34;padding&#34;,
+        &#34;link&#34;,
+        &#34;border&#34;,
+    )
+    text: str
+    align: Optional[Union[str, Align]]
+    v_align: Optional[Union[str, VAlign]]
+    style: Optional[FontFace]
+    img: Optional[str]
+    img_fill_width: bool
+    colspan: int
+    rowspan: int
+    padding: Optional[Union[int, tuple, type(None)]]
+    link: Optional[Union[str, int]]
+    border: Optional[CellBordersLayout]
+
+    def write(self, text, align=None):
+        raise NotImplementedError(&#34;Not implemented yet&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.table.Cell.text"><code class="name">var <span class="ident">text</span> : str</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L845-L874" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True)
+class Cell:
+    &#34;Internal representation of a table cell&#34;
+    __slots__ = (  # RAM usage optimization
+        &#34;text&#34;,
+        &#34;align&#34;,
+        &#34;v_align&#34;,
+        &#34;style&#34;,
+        &#34;img&#34;,
+        &#34;img_fill_width&#34;,
+        &#34;colspan&#34;,
+        &#34;rowspan&#34;,
+        &#34;padding&#34;,
+        &#34;link&#34;,
+        &#34;border&#34;,
+    )
+    text: str
+    align: Optional[Union[str, Align]]
+    v_align: Optional[Union[str, VAlign]]
+    style: Optional[FontFace]
+    img: Optional[str]
+    img_fill_width: bool
+    colspan: int
+    rowspan: int
+    padding: Optional[Union[int, tuple, type(None)]]
+    link: Optional[Union[str, int]]
+    border: Optional[CellBordersLayout]
+
+    def write(self, text, align=None):
+        raise NotImplementedError(&#34;Not implemented yet&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.table.Cell.v_align"><code class="name">var <span class="ident">v_align</span> : str | <a title="fpdf.enums.VAlign" href="enums.html#fpdf.enums.VAlign">VAlign</a> | None</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L845-L874" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass(frozen=True)
+class Cell:
+    &#34;Internal representation of a table cell&#34;
+    __slots__ = (  # RAM usage optimization
+        &#34;text&#34;,
+        &#34;align&#34;,
+        &#34;v_align&#34;,
+        &#34;style&#34;,
+        &#34;img&#34;,
+        &#34;img_fill_width&#34;,
+        &#34;colspan&#34;,
+        &#34;rowspan&#34;,
+        &#34;padding&#34;,
+        &#34;link&#34;,
+        &#34;border&#34;,
+    )
+    text: str
+    align: Optional[Union[str, Align]]
+    v_align: Optional[Union[str, VAlign]]
+    style: Optional[FontFace]
+    img: Optional[str]
+    img_fill_width: bool
+    colspan: int
+    rowspan: int
+    padding: Optional[Union[int, tuple, type(None)]]
+    link: Optional[Union[str, int]]
+    border: Optional[CellBordersLayout]
+
+    def write(self, text, align=None):
+        raise NotImplementedError(&#34;Not implemented yet&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -142,6 +604,14 @@ class Cell:
 <span>def <span class="ident">write</span></span>(<span>self, text, align=None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L873-L874" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def write(self, text, align=None):
+    raise NotImplementedError(&#34;Not implemented yet&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -151,11 +621,10 @@ class Cell:
 <span>(</span><span>table, style=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Object that <code><a title="fpdf.table.Table.row" href="#fpdf.table.Table.row">Table.row()</a></code> yields, used to build a row in a table</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/table.py#L721-L842" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L721-L842" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Row:
     &#34;Object that `Table.row()` yields, used to build a row in a table&#34;
@@ -280,32 +749,35 @@ class Cell:
         self.cells.append(cell)
         return cell</code></pre>
 </details>
+<div class="desc"><p>Object that <code><a title="fpdf.table.Table.row" href="#fpdf.table.Table.row">Table.row()</a></code> yields, used to build a row in a table</p></div>
 <h3>Instance variables</h3>
 <dl>
 <dt id="fpdf.table.Row.cols_count"><code class="name">prop <span class="ident">cols_count</span></code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L729-L731" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def cols_count(self):
     return sum(getattr(cell, &#34;colspan&#34;, cell is not None) for cell in self.cells)</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="fpdf.table.Row.max_rowspan"><code class="name">prop <span class="ident">max_rowspan</span></code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L733-L736" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def max_rowspan(self):
     spans = {cell.rowspan for cell in self.cells if cell is not None}
     return max(spans) if len(spans) else 1</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -314,6 +786,79 @@ def max_rowspan(self):
 <span>def <span class="ident">cell</span></span>(<span>self,<br>text='',<br>align=None,<br>v_align=None,<br>style=None,<br>img=None,<br>img_fill_width=False,<br>colspan=1,<br>rowspan=1,<br>padding=None,<br>link=None,<br>border=NONE)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L776-L842" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def cell(
+    self,
+    text=&#34;&#34;,
+    align=None,
+    v_align=None,
+    style=None,
+    img=None,
+    img_fill_width=False,
+    colspan=1,
+    rowspan=1,
+    padding=None,
+    link=None,
+    border=CellBordersLayout.INHERIT,
+):
+    &#34;&#34;&#34;
+    Adds a cell to the row.
+
+    Args:
+        text (str): string content, can contain several lines.
+            In that case, the row height will grow proportionally.
+        align (str, fpdf.enums.Align): optional text alignment.
+        v_align (str, fpdf.enums.AlignV): optional vertical text alignment.
+        style (fpdf.fonts.FontFace): optional text style.
+        img: optional. Either a string representing a file path to an image,
+            an URL to an image, an io.BytesIO, or a instance of `PIL.Image.Image`.
+        img_fill_width (bool): optional, defaults to False. Indicates to render the image
+            using the full width of the current table column.
+        colspan (int): optional number of columns this cell should span.
+        rowspan (int): optional number of rows this cell should span.
+        padding (tuple): optional padding (left, top, right, bottom) for the cell.
+        link (str, int): optional link, either an URL or an integer returned by `FPDF.add_link`, defining an internal link to a page
+        border (fpdf.enums.CellBordersLayout): optional cell borders, defaults to `CellBordersLayout.INHERIT`
+
+    &#34;&#34;&#34;
+    if text and img:
+        raise NotImplementedError(
+            &#34;fpdf2 currently does not support inserting text with an image in the same table cell.&#34;
+            &#34; Pull Requests are welcome to implement this 😊&#34;
+        )
+
+    if isinstance(text, TableSpan):
+        # Special placeholder object, converted to colspan/rowspan during processing
+        self.cells.append(text)
+        return text
+
+    if not style:
+        # pylint: disable=protected-access
+        # We capture the current font settings:
+        font_face = self._table._fpdf.font_face()
+        if font_face not in (self.style, self._table._initial_style):
+            style = font_face
+
+    cell = Cell(
+        text,
+        align,
+        v_align,
+        style,
+        img,
+        img_fill_width,
+        colspan,
+        rowspan,
+        padding,
+        link,
+        CellBordersLayout.coerce(border),
+    )
+    self.cells.append(cell)
+    return cell</code></pre>
+</details>
 <div class="desc"><p>Adds a cell to the row.</p>
 <h2 id="args">Args</h2>
 <dl>
@@ -348,6 +893,49 @@ using the full width of the current table column.</dd>
 <span>def <span class="ident">convert_spans</span></span>(<span>self, active_rowspans)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L738-L774" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def convert_spans(self, active_rowspans):
+    # convert colspans
+    prev_col = 0
+    cells = []
+    for i, cell in enumerate(self.cells):
+        if cell is None:
+            continue
+        if cell == TableSpan.COL:
+            prev_cell = cells[prev_col]
+            if not isinstance(prev_cell, Cell):
+                raise FPDFException(
+                    &#34;Invalid location for TableSpan.COL placeholder entry&#34;
+                )
+            cells[prev_col] = replace(prev_cell, colspan=prev_cell.colspan + 1)
+            cells.append(None)  # processed
+        else:
+            cells.append(cell)
+            prev_col = i
+            if isinstance(cell, Cell) and cell.colspan &gt; 1:  # expand any colspans
+                cells.extend([None] * (cell.colspan - 1))
+    # now we can correctly interpret active_rowspans
+    remaining_rowspans = {}
+    for k, v in active_rowspans.items():
+        cells.insert(k, None)
+        if v &gt; 1:
+            remaining_rowspans[k] = v - 1
+    # accumulate any rowspans
+    reverse_rowspans = []
+    for i, cell in enumerate(cells):
+        if isinstance(cell, Cell) and cell.rowspan &gt; 1:
+            for k in range(i, i + cell.colspan):
+                remaining_rowspans[k] = cell.rowspan - 1
+        elif cell == TableSpan.ROW:
+            reverse_rowspans.append(i)
+            cells[i] = None  # processed
+    self.cells = cells
+    return remaining_rowspans, reverse_rowspans</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -357,11 +945,10 @@ using the full width of the current table column.</dd>
 <span>(</span><span>height: float,<br>pagebreak_height: float,<br>rendered_heights: dict,<br>merged_heights: list)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>RowLayoutInfo(height: float, pagebreak_height: float, rendered_heights: dict, merged_heights: list)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/table.py#L877-L884" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L877-L884" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class RowLayoutInfo:
@@ -372,6 +959,7 @@ class RowLayoutInfo:
     rendered_heights: dict
     merged_heights: list</code></pre>
 </details>
+<div class="desc"><p>RowLayoutInfo(height: float, pagebreak_height: float, rendered_heights: dict, merged_heights: list)</p></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="fpdf.table.RowLayoutInfo.height"><code class="name">var <span class="ident">height</span> : float</code></dt>
@@ -397,11 +985,10 @@ class RowLayoutInfo:
 <span>(</span><span>column: int, start: int, length: int, contents_height: float)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>RowSpanLayoutInfo(column: int, start: int, length: int, contents_height: float)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/table.py#L887-L895" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L887-L895" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass(frozen=True)
 class RowSpanLayoutInfo:
@@ -413,6 +1000,7 @@ class RowSpanLayoutInfo:
     def row_range(self):
         return range(self.start, self.start + self.length)</code></pre>
 </details>
+<div class="desc"><p>RowSpanLayoutInfo(column: int, start: int, length: int, contents_height: float)</p></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="fpdf.table.RowSpanLayoutInfo.column"><code class="name">var <span class="ident">column</span> : int</code></dt>
@@ -438,6 +1026,14 @@ class RowSpanLayoutInfo:
 <span>def <span class="ident">row_range</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L894-L895" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def row_range(self):
+    return range(self.start, self.start + self.length)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -447,69 +1043,10 @@ class RowSpanLayoutInfo:
 <span>(</span><span>fpdf,<br>rows=(),<br>*,<br>align='CENTER',<br>v_align='MIDDLE',<br>borders_layout=TableBordersLayout.ALL,<br>cell_fill_color=None,<br>cell_fill_mode=TableCellFillMode.NONE,<br>col_widths=None,<br>first_row_as_headings=True,<br>gutter_height=0,<br>gutter_width=0,<br>headings_style=FontFace(family=None, emphasis=&lt;TextEmphasis.B: 1&gt;, size_pt=None, color=None, fill_color=None),<br>line_height=None,<br>markdown=False,<br>text_align='JUSTIFY',<br>width=None,<br>wrapmode=WrapMode.WORD,<br>padding=None,<br>outer_border_width=None,<br>num_heading_rows=1,<br>repeat_headings=1)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Object that <code>fpdf.FPDF.table()</code> yields, used to build a table in the document.
-Detailed usage documentation: <a href="https://py-pdf.github.io/fpdf2/Tables.html">https://py-pdf.github.io/fpdf2/Tables.html</a></p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>fpdf</code></strong> :&ensp;<code>fpdf.FPDF</code></dt>
-<dd>FPDF current instance</dd>
-<dt><strong><code>rows</code></strong></dt>
-<dd>optional. Sequence of rows (iterable) of str to initiate the table cells with text content</dd>
-<dt><strong><code>align</code></strong> :&ensp;<code>str, <a title="fpdf.enums.Align" href="enums.html#fpdf.enums.Align">Align</a></code></dt>
-<dd>optional, default to CENTER. Sets the table horizontal position relative to the page,
-when it's not using the full page width</dd>
-<dt><strong><code>borders_layout</code></strong> :&ensp;<code>str, <a title="fpdf.enums.TableBordersLayout" href="enums.html#fpdf.enums.TableBordersLayout">TableBordersLayout</a></code></dt>
-<dd>optional, default to ALL. Control what cell borders are drawn</dd>
-<dt><strong><code>cell_fill_color</code></strong> :&ensp;<code>float, tuple, <a title="fpdf.drawing.DeviceGray" href="drawing.html#fpdf.drawing.DeviceGray">DeviceGray</a>, <a title="fpdf.drawing.DeviceRGB" href="drawing.html#fpdf.drawing.DeviceRGB">DeviceRGB</a></code></dt>
-<dd>optional.
-Defines the cells background color</dd>
-<dt><strong><code>cell_fill_mode</code></strong> :&ensp;<code>str, <a title="fpdf.enums.TableCellFillMode" href="enums.html#fpdf.enums.TableCellFillMode">TableCellFillMode</a></code></dt>
-<dd>optional. Defines which cells are filled with color in the background</dd>
-<dt><strong><code>col_widths</code></strong> :&ensp;<code>float, tuple</code></dt>
-<dd>optional. Sets column width. Can be a single number or a sequence of numbers.
-When <code>col_widths</code> is a single number, it is interpreted as a fixed column width in document units.
-When <code>col_widths</code> is provided as an array, the values are considered to be fractions of the full effective page width,
-meaning that <code>col_widths=(1, 1, 2)</code> is strictly equivalent to <code>col_widths=(25, 25, 50)</code>.</dd>
-<dt><strong><code>first_row_as_headings</code></strong> :&ensp;<code>bool</code></dt>
-<dd>optional, default to True. If False, the first row of the table
-is not styled differently from the others</dd>
-<dt><strong><code>gutter_height</code></strong> :&ensp;<code>float</code></dt>
-<dd>optional vertical space between rows</dd>
-<dt><strong><code>gutter_width</code></strong> :&ensp;<code>float</code></dt>
-<dd>optional horizontal space between columns</dd>
-<dt><strong><code>headings_style</code></strong> :&ensp;<code><a title="fpdf.fonts.FontFace" href="fonts.html#fpdf.fonts.FontFace">FontFace</a></code></dt>
-<dd>optional, default to bold.
-Defines the visual style of the top headings row: size, color, emphasis&hellip;</dd>
-<dt><strong><code>line_height</code></strong> :&ensp;<code>number</code></dt>
-<dd>optional. Defines how much vertical space a line of text will occupy</dd>
-<dt><strong><code>markdown</code></strong> :&ensp;<code>bool</code></dt>
-<dd>optional, default to False. Enable markdown interpretation of cells textual content</dd>
-<dt><strong><code>text_align</code></strong> :&ensp;<code>str, <a title="fpdf.enums.Align" href="enums.html#fpdf.enums.Align">Align</a>, tuple</code></dt>
-<dd>optional, default to JUSTIFY. Control text alignment inside cells.</dd>
-<dt><strong><code>v_align</code></strong> :&ensp;<code>str, fpdf.enums.AlignV</code></dt>
-<dd>optional, default to CENTER. Control vertical alignment of cells content</dd>
-<dt><strong><code>width</code></strong> :&ensp;<code>number</code></dt>
-<dd>optional. Sets the table width</dd>
-<dt><strong><code>wrapmode</code></strong> :&ensp;<code><a title="fpdf.enums.WrapMode" href="enums.html#fpdf.enums.WrapMode">WrapMode</a></code></dt>
-<dd>"WORD" for word based line wrapping (default),
-"CHAR" for character based line wrapping.</dd>
-<dt><strong><code>padding</code></strong> :&ensp;<code>number, tuple, Padding</code></dt>
-<dd>optional. Sets the cell padding. Can be a single number or a sequence of numbers, default:0
-If padding for left and right ends up being non-zero then c_margin is ignored.</dd>
-<dt><strong><code>outer_border_width</code></strong> :&ensp;<code>number</code></dt>
-<dd>optional. Sets the width of the outer borders of the table.
-Only relevant when borders_layout is ALL or NO_HORIZONTAL_LINES. Otherwise, the border widths are controlled by FPDF.set_line_width()</dd>
-<dt><strong><code>num_heading_rows</code></strong> :&ensp;<code>number</code></dt>
-<dd>optional. Sets the number of heading rows, default value is 1. If this value is not 1,
-first_row_as_headings needs to be True if num_heading_rows&gt;1 and False if num_heading_rows=0. For backwards compatibility,
-first_row_as_headings is used in case num_heading_rows is 1.</dd>
-<dt><strong><code>repeat_headings</code></strong> :&ensp;<code><a title="fpdf.enums.TableHeadingsDisplay" href="enums.html#fpdf.enums.TableHeadingsDisplay">TableHeadingsDisplay</a></code></dt>
-<dd>optional, indicates whether to print table headings on every page, default to 1.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/table.py#L23-L718" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L23-L718" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Table:
     &#34;&#34;&#34;
@@ -1208,12 +1745,133 @@ first_row_as_headings is used in case num_heading_rows is 1.</dd>
                 merged_sizes[1], pagebreak_height, rendered_heights[i], merged_sizes
             )</code></pre>
 </details>
+<div class="desc"><p>Object that <code>fpdf.FPDF.table()</code> yields, used to build a table in the document.
+Detailed usage documentation: <a href="https://py-pdf.github.io/fpdf2/Tables.html">https://py-pdf.github.io/fpdf2/Tables.html</a></p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>fpdf</code></strong> :&ensp;<code>fpdf.FPDF</code></dt>
+<dd>FPDF current instance</dd>
+<dt><strong><code>rows</code></strong></dt>
+<dd>optional. Sequence of rows (iterable) of str to initiate the table cells with text content</dd>
+<dt><strong><code>align</code></strong> :&ensp;<code>str, <a title="fpdf.enums.Align" href="enums.html#fpdf.enums.Align">Align</a></code></dt>
+<dd>optional, default to CENTER. Sets the table horizontal position relative to the page,
+when it's not using the full page width</dd>
+<dt><strong><code>borders_layout</code></strong> :&ensp;<code>str, <a title="fpdf.enums.TableBordersLayout" href="enums.html#fpdf.enums.TableBordersLayout">TableBordersLayout</a></code></dt>
+<dd>optional, default to ALL. Control what cell borders are drawn</dd>
+<dt><strong><code>cell_fill_color</code></strong> :&ensp;<code>float, tuple, <a title="fpdf.drawing.DeviceGray" href="drawing.html#fpdf.drawing.DeviceGray">DeviceGray</a>, <a title="fpdf.drawing.DeviceRGB" href="drawing.html#fpdf.drawing.DeviceRGB">DeviceRGB</a></code></dt>
+<dd>optional.
+Defines the cells background color</dd>
+<dt><strong><code>cell_fill_mode</code></strong> :&ensp;<code>str, <a title="fpdf.enums.TableCellFillMode" href="enums.html#fpdf.enums.TableCellFillMode">TableCellFillMode</a></code></dt>
+<dd>optional. Defines which cells are filled with color in the background</dd>
+<dt><strong><code>col_widths</code></strong> :&ensp;<code>float, tuple</code></dt>
+<dd>optional. Sets column width. Can be a single number or a sequence of numbers.
+When <code>col_widths</code> is a single number, it is interpreted as a fixed column width in document units.
+When <code>col_widths</code> is provided as an array, the values are considered to be fractions of the full effective page width,
+meaning that <code>col_widths=(1, 1, 2)</code> is strictly equivalent to <code>col_widths=(25, 25, 50)</code>.</dd>
+<dt><strong><code>first_row_as_headings</code></strong> :&ensp;<code>bool</code></dt>
+<dd>optional, default to True. If False, the first row of the table
+is not styled differently from the others</dd>
+<dt><strong><code>gutter_height</code></strong> :&ensp;<code>float</code></dt>
+<dd>optional vertical space between rows</dd>
+<dt><strong><code>gutter_width</code></strong> :&ensp;<code>float</code></dt>
+<dd>optional horizontal space between columns</dd>
+<dt><strong><code>headings_style</code></strong> :&ensp;<code><a title="fpdf.fonts.FontFace" href="fonts.html#fpdf.fonts.FontFace">FontFace</a></code></dt>
+<dd>optional, default to bold.
+Defines the visual style of the top headings row: size, color, emphasis&hellip;</dd>
+<dt><strong><code>line_height</code></strong> :&ensp;<code>number</code></dt>
+<dd>optional. Defines how much vertical space a line of text will occupy</dd>
+<dt><strong><code>markdown</code></strong> :&ensp;<code>bool</code></dt>
+<dd>optional, default to False. Enable markdown interpretation of cells textual content</dd>
+<dt><strong><code>text_align</code></strong> :&ensp;<code>str, <a title="fpdf.enums.Align" href="enums.html#fpdf.enums.Align">Align</a>, tuple</code></dt>
+<dd>optional, default to JUSTIFY. Control text alignment inside cells.</dd>
+<dt><strong><code>v_align</code></strong> :&ensp;<code>str, fpdf.enums.AlignV</code></dt>
+<dd>optional, default to CENTER. Control vertical alignment of cells content</dd>
+<dt><strong><code>width</code></strong> :&ensp;<code>number</code></dt>
+<dd>optional. Sets the table width</dd>
+<dt><strong><code>wrapmode</code></strong> :&ensp;<code><a title="fpdf.enums.WrapMode" href="enums.html#fpdf.enums.WrapMode">WrapMode</a></code></dt>
+<dd>"WORD" for word based line wrapping (default),
+"CHAR" for character based line wrapping.</dd>
+<dt><strong><code>padding</code></strong> :&ensp;<code>number, tuple, Padding</code></dt>
+<dd>optional. Sets the cell padding. Can be a single number or a sequence of numbers, default:0
+If padding for left and right ends up being non-zero then c_margin is ignored.</dd>
+<dt><strong><code>outer_border_width</code></strong> :&ensp;<code>number</code></dt>
+<dd>optional. Sets the width of the outer borders of the table.
+Only relevant when borders_layout is ALL or NO_HORIZONTAL_LINES. Otherwise, the border widths are controlled by FPDF.set_line_width()</dd>
+<dt><strong><code>num_heading_rows</code></strong> :&ensp;<code>number</code></dt>
+<dd>optional. Sets the number of heading rows, default value is 1. If this value is not 1,
+first_row_as_headings needs to be True if num_heading_rows&gt;1 and False if num_heading_rows=0. For backwards compatibility,
+first_row_as_headings is used in case num_heading_rows is 1.</dd>
+<dt><strong><code>repeat_headings</code></strong> :&ensp;<code><a title="fpdf.enums.TableHeadingsDisplay" href="enums.html#fpdf.enums.TableHeadingsDisplay">TableHeadingsDisplay</a></code></dt>
+<dd>optional, indicates whether to print table headings on every page, default to 1.</dd>
+</dl></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.table.Table.get_cell_border"><code class="name flex">
 <span>def <span class="ident">get_cell_border</span></span>(<span>self, i, j, cell)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L266-L321" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_cell_border(self, i, j, cell):
+    &#34;&#34;&#34;
+    Defines which cell borders should be drawn.
+    Returns a string containing some or all of the letters L/R/T/B,
+    to be passed to `fpdf.FPDF.multi_cell()`.
+    Can be overriden to customize this logic
+    &#34;&#34;&#34;
+
+    if cell.border != CellBordersLayout.INHERIT:
+        return str(cell.border)
+
+    if self._borders_layout == TableBordersLayout.ALL:
+        return 1
+    if self._borders_layout == TableBordersLayout.NONE:
+        return 0
+
+    is_rightmost_column = j + cell.colspan == len(self.rows[i].cells)
+    rows_count = len(self.rows)
+    is_bottom_row = i + cell.rowspan == rows_count
+    border = list(&#34;LRTB&#34;)
+    if self._borders_layout == TableBordersLayout.INTERNAL:
+        if i == 0:
+            border.remove(&#34;T&#34;)
+        if is_bottom_row:
+            border.remove(&#34;B&#34;)
+        if j == 0:
+            border.remove(&#34;L&#34;)
+        if is_rightmost_column:
+            border.remove(&#34;R&#34;)
+    if self._borders_layout == TableBordersLayout.MINIMAL:
+        if i == 0 or i &gt; self._num_heading_rows or rows_count == 1:
+            border.remove(&#34;T&#34;)
+        if i &gt; self._num_heading_rows - 1:
+            border.remove(&#34;B&#34;)
+        if j == 0:
+            border.remove(&#34;L&#34;)
+        if is_rightmost_column:
+            border.remove(&#34;R&#34;)
+    if self._borders_layout == TableBordersLayout.NO_HORIZONTAL_LINES:
+        if i &gt; self._num_heading_rows:
+            border.remove(&#34;T&#34;)
+        if not is_bottom_row:
+            border.remove(&#34;B&#34;)
+    if self._borders_layout == TableBordersLayout.HORIZONTAL_LINES:
+        if rows_count == 1:
+            return 0
+        border = list(&#34;TB&#34;)
+        if i == 0 and &#34;T&#34; in border:
+            border.remove(&#34;T&#34;)
+        elif is_bottom_row:
+            border.remove(&#34;B&#34;)
+    if self._borders_layout == TableBordersLayout.SINGLE_TOP_LINE:
+        if rows_count == 1:
+            return 0
+        return &#34;B&#34; if i &lt; self._num_heading_rows else 0
+    return &#34;&#34;.join(border)</code></pre>
+</details>
 <div class="desc"><p>Defines which cell borders should be drawn.
 Returns a string containing some or all of the letters L/R/T/B,
 to be passed to <code>fpdf.FPDF.multi_cell()</code>.
@@ -1223,12 +1881,134 @@ Can be overriden to customize this logic</p></div>
 <span>def <span class="ident">render</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L166-L263" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def render(self):
+    &#34;This is an internal method called by `fpdf.FPDF.table()` once the table is finished&#34;
+    # Starting with some sanity checks:
+    self._cols_count = max(row.cols_count for row in self.rows) if self.rows else 0
+    if self._width is None:
+        if self._col_widths and isinstance(self._col_widths, Number):
+            self._width = self._cols_count * self._col_widths
+        else:
+            self._width = self._fpdf.epw
+    elif self._col_widths and isinstance(self._col_widths, Number):
+        if self._cols_count * self._col_widths != self._width:
+            raise ValueError(
+                f&#34;Invalid value provided width={self._width} should be a multiple of col_widths={self._col_widths}&#34;
+            )
+    if self._width &gt; self._fpdf.epw:
+        raise ValueError(
+            f&#34;Invalid value provided width={self._width}: effective page width is {self._fpdf.epw}&#34;
+        )
+    if self._table_align == Align.J:
+        raise ValueError(
+            &#34;JUSTIFY is an invalid value for FPDF.table() &#39;align&#39; parameter&#34;
+        )
+    if self._num_heading_rows &gt; 0:
+        if not self._headings_style:
+            raise ValueError(
+                &#34;headings_style must be provided to FPDF.table() if num_heading_rows&gt;1 or first_row_as_headings=True&#34;
+            )
+        emphasis = self._headings_style.emphasis
+        if emphasis is not None:
+            family = self._headings_style.family or self._fpdf.font_family
+            font_key = family.lower() + emphasis.style
+            if font_key not in CORE_FONTS and font_key not in self._fpdf.fonts:
+                # Raising a more explicit error than the one from set_font():
+                raise FPDFException(
+                    f&#34;Using font &#39;{family}&#39; with emphasis &#39;{emphasis.style}&#39;&#34;
+                    &#34; in table headings require the corresponding font style&#34;
+                    &#34; to be added using add_font()&#34;
+                )
+
+    # Defining table global horizontal position:
+    prev_x, prev_y, prev_l_margin = self._fpdf.x, self._fpdf.y, self._fpdf.l_margin
+    if self._table_align == Align.C:
+        self._fpdf.l_margin = (self._fpdf.w - self._width) / 2
+        self._fpdf.x = self._fpdf.l_margin
+    elif self._table_align == Align.R:
+        self._fpdf.l_margin = self._fpdf.w - self._fpdf.r_margin - self._width
+        self._fpdf.x = self._fpdf.l_margin
+    elif self._fpdf.x != self._fpdf.l_margin:
+        self._fpdf.l_margin = self._fpdf.x
+
+    # Pre-Compute the relative x-positions of the individual columns:
+    xx = self._fpdf.l_margin + self._outer_border_margin[0]
+    cell_x_positions = [xx]
+    if self.rows:
+        for i in range(self._cols_count):
+            xx += self._get_col_width(0, i)
+            xx += self._gutter_width
+            cell_x_positions.append(xx)
+
+    # Process any rowspans
+    row_info = list(self._process_rowpans_entries())
+
+    # actually render the cells
+    repeat_headings = (
+        self._repeat_headings is TableHeadingsDisplay.ON_TOP_OF_EVERY_PAGE
+    )
+    self._fpdf.y += self._outer_border_margin[1]
+    for i in range(len(self.rows)):
+        pagebreak_height = row_info[i].pagebreak_height
+        # pylint: disable=protected-access
+        page_break = self._fpdf._perform_page_break_if_need_be(pagebreak_height)
+        if (
+            page_break
+            and self._fpdf.y + pagebreak_height &gt; self._fpdf.page_break_trigger
+        ):
+            # Restoring original position on page:
+            self._fpdf.x = prev_x
+            self._fpdf.y = prev_y
+            self._fpdf.l_margin = prev_l_margin
+            raise ValueError(
+                f&#34;The row with index {i} is too high and cannot be rendered on a single page&#34;
+            )
+        if page_break and repeat_headings and i &gt;= self._num_heading_rows:
+            # repeat headings on top:
+            self._fpdf.y += self._outer_border_margin[1]
+            for row_idx in range(self._num_heading_rows):
+                self._render_table_row(
+                    row_idx,
+                    row_info[row_idx],
+                    cell_x_positions=cell_x_positions,
+                )
+        if i &gt; 0:
+            self._fpdf.y += self._gutter_height
+        self._render_table_row(i, row_info[i], cell_x_positions)
+
+    # Restoring altered FPDF settings:
+    self._fpdf.l_margin = prev_l_margin
+    self._fpdf.x = self._fpdf.l_margin</code></pre>
+</details>
 <div class="desc"><p>This is an internal method called by <code>fpdf.FPDF.table()</code> once the table is finished</p></div>
 </dd>
 <dt id="fpdf.table.Table.row"><code class="name flex">
 <span>def <span class="ident">row</span></span>(<span>self, cells=(), style=None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/table.py#L153-L164" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def row(self, cells=(), style=None):
+    &#34;Adds a row to the table. Returns a `Row` object.&#34;
+    if self._initial_style is None:
+        self._initial_style = self._fpdf.font_face()
+    row = Row(self, style=style)
+    self.rows.append(row)
+    for cell in cells:
+        if isinstance(cell, dict):
+            row.cell(**cell)
+        else:
+            row.cell(cell)
+    return row</code></pre>
+</details>
 <div class="desc"><p>Adds a row to the table. Returns a <code><a title="fpdf.table.Row" href="#fpdf.table.Row">Row</a></code> object.</p></div>
 </dd>
 </dl>
@@ -1312,7 +2092,7 @@ Can be overriden to customize this logic</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.3</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>

@@ -3,19 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.3">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>fpdf.bidi API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -37,6 +48,38 @@ hljs.highlightAll();
 <span>def <span class="ident">auto_detect_base_direction</span></span>(<span>string: str, stop_at_pdi: bool = False, debug: bool = False) ‑> <a title="fpdf.enums.TextDirection" href="enums.html#fpdf.enums.TextDirection">TextDirection</a></span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L421-L446" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def auto_detect_base_direction(
+    string: str, stop_at_pdi: bool = False, debug: bool = False
+) -&gt; TextDirection:
+    &#34;&#34;&#34;
+    This function applies rules P2 and P3 to detect the direction of a paragraph, retuning
+    the first strong direction and skipping over isolate sequences.
+    P1 must be applied before calling this function (breaking into paragraphs)
+    stop_at_pdi can be set to True to get the direction of a single isolate sequence
+    &#34;&#34;&#34;
+    # Auto-LTR (standard BIDI) uses the first L/R/AL character, and is LTR if none is found.
+    isolate = 0
+    for char in string:
+        bidi_class = unicodedata.bidirectional(char)
+        if debug and bidi_class.isupper():
+            bidi_class = &#34;R&#34;
+        if bidi_class == &#34;PDI&#34; and isolate == 0 and stop_at_pdi:
+            return TextDirection.LTR
+        if bidi_class in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
+            isolate += 1
+        if bidi_class == &#34;PDI&#34; and isolate &gt; 0:
+            isolate -= 1
+        if bidi_class in (&#34;R&#34;, &#34;AL&#34;) and isolate == 0:
+            return TextDirection.RTL
+        if bidi_class == &#34;L&#34; and isolate == 0:
+            return TextDirection.LTR
+    return TextDirection.LTR</code></pre>
+</details>
 <div class="desc"><p>This function applies rules P2 and P3 to detect the direction of a paragraph, retuning
 the first strong direction and skipping over isolate sequences.
 P1 must be applied before calling this function (breaking into paragraphs)
@@ -46,6 +89,77 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <span>def <span class="ident">calculate_isolate_runs</span></span>(<span>paragraph: List[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>]) ‑> List[<a title="fpdf.bidi.IsolatingRun" href="#fpdf.bidi.IsolatingRun">IsolatingRun</a>]</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L449-L513" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def calculate_isolate_runs(paragraph: List[BidiCharacter]) -&gt; List[IsolatingRun]:
+    # BD13 and X10
+    level_run = []
+    lr = []
+    lr_embedding_level = paragraph[0].embedding_level
+
+    for bidi_char in paragraph:
+        if bidi_char.embedding_level != lr_embedding_level:
+            level_run.append(
+                {&#34;level&#34;: lr_embedding_level, &#34;text&#34;: lr, &#34;complete&#34;: False}
+            )
+            lr = []
+            lr_embedding_level = bidi_char.embedding_level
+        lr.append(bidi_char)
+    level_run.append({&#34;level&#34;: lr_embedding_level, &#34;text&#34;: lr, &#34;complete&#34;: False})
+
+    def level_to_direction(level: int) -&gt; str:
+        if level % 2 == 0:
+            return &#34;L&#34;
+        return &#34;R&#34;
+
+    # compute sos, eos for each level run
+    for index, lr in enumerate(level_run):
+        if lr[&#34;complete&#34;]:
+            continue
+        if index == 0:
+            sos = level_to_direction(lr[&#34;level&#34;])
+        else:
+            sos = level_to_direction(max(lr[&#34;level&#34;], level_run[index - 1][&#34;level&#34;]))
+        if index == len(level_run) - 1:
+            eos = level_to_direction(lr[&#34;level&#34;])
+        else:
+            if lr[&#34;text&#34;][-1].original_bidi_class in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
+                # X10 - last char is an isolator without matching PDI - set EOS to embedding level
+                eos = level_to_direction(lr[&#34;level&#34;])
+            else:
+                eos = level_to_direction(
+                    max(lr[&#34;level&#34;], level_run[index + 1][&#34;level&#34;])
+                )
+        lr[&#34;sos&#34;] = sos
+        lr[&#34;eos&#34;] = eos
+
+    # combine levels runs to create isolate runs
+    isolate_runs = []
+    for index, lr in enumerate(level_run):
+        if lr[&#34;complete&#34;]:
+            continue
+        sos = lr[&#34;sos&#34;]
+        eos = lr[&#34;eos&#34;]
+        ir_chars = lr[&#34;text&#34;]
+        lr[&#34;complete&#34;] = True
+        if lr[&#34;text&#34;][-1].original_bidi_class in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
+            for nlr in level_run[index + 1 :]:
+                if (
+                    nlr[&#34;level&#34;] == lr[&#34;level&#34;]
+                    and nlr[&#34;text&#34;][0].original_bidi_class == &#34;PDI&#34;
+                ):
+                    lr[&#34;text&#34;] += nlr[&#34;text&#34;]
+                    nlr[&#34;complete&#34;] = True
+                    eos = nlr[&#34;eos&#34;]
+                    if nlr[&#34;text&#34;][-1].original_bidi_class not in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
+                        break
+        isolate_runs.append(IsolatingRun(characters=ir_chars, sos=sos, eos=eos))
+
+    return isolate_runs</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -58,11 +172,10 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <span>(</span><span>character_index: int, character: str, embedding_level: str, debug: bool)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/bidi.py#L150-L184" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiCharacter:
     __slots__ = [
@@ -100,30 +213,277 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
             + f&#34; embedding_level: {self.embedding_level} direction: {self.direction}&#34;
         )</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Instance variables</h3>
 <dl>
 <dt id="fpdf.bidi.BidiCharacter.bidi_class"><code class="name">var <span class="ident">bidi_class</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class BidiCharacter:
+    __slots__ = [
+        &#34;character_index&#34;,
+        &#34;character&#34;,
+        &#34;bidi_class&#34;,
+        &#34;original_bidi_class&#34;,
+        &#34;embedding_level&#34;,
+        &#34;direction&#34;,
+    ]
+
+    def __init__(
+        self, character_index: int, character: str, embedding_level: str, debug: bool
+    ):
+        self.character_index = character_index
+        self.character = character
+        if debug and character.isupper():
+            self.bidi_class = &#34;R&#34;
+        else:
+            self.bidi_class = unicodedata.bidirectional(character)
+        self.original_bidi_class = self.bidi_class
+        self.embedding_level = embedding_level
+        self.direction = None
+
+    def get_direction_from_level(self):
+        return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;
+
+    def set_class(self, cls):
+        self.bidi_class = cls
+
+    def __repr__(self):
+        return (
+            f&#34;character_index: {self.character_index} character: {self.character}&#34;
+            + f&#34; bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}&#34;
+            + f&#34; embedding_level: {self.embedding_level} direction: {self.direction}&#34;
+        )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiCharacter.character"><code class="name">var <span class="ident">character</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class BidiCharacter:
+    __slots__ = [
+        &#34;character_index&#34;,
+        &#34;character&#34;,
+        &#34;bidi_class&#34;,
+        &#34;original_bidi_class&#34;,
+        &#34;embedding_level&#34;,
+        &#34;direction&#34;,
+    ]
+
+    def __init__(
+        self, character_index: int, character: str, embedding_level: str, debug: bool
+    ):
+        self.character_index = character_index
+        self.character = character
+        if debug and character.isupper():
+            self.bidi_class = &#34;R&#34;
+        else:
+            self.bidi_class = unicodedata.bidirectional(character)
+        self.original_bidi_class = self.bidi_class
+        self.embedding_level = embedding_level
+        self.direction = None
+
+    def get_direction_from_level(self):
+        return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;
+
+    def set_class(self, cls):
+        self.bidi_class = cls
+
+    def __repr__(self):
+        return (
+            f&#34;character_index: {self.character_index} character: {self.character}&#34;
+            + f&#34; bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}&#34;
+            + f&#34; embedding_level: {self.embedding_level} direction: {self.direction}&#34;
+        )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiCharacter.character_index"><code class="name">var <span class="ident">character_index</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class BidiCharacter:
+    __slots__ = [
+        &#34;character_index&#34;,
+        &#34;character&#34;,
+        &#34;bidi_class&#34;,
+        &#34;original_bidi_class&#34;,
+        &#34;embedding_level&#34;,
+        &#34;direction&#34;,
+    ]
+
+    def __init__(
+        self, character_index: int, character: str, embedding_level: str, debug: bool
+    ):
+        self.character_index = character_index
+        self.character = character
+        if debug and character.isupper():
+            self.bidi_class = &#34;R&#34;
+        else:
+            self.bidi_class = unicodedata.bidirectional(character)
+        self.original_bidi_class = self.bidi_class
+        self.embedding_level = embedding_level
+        self.direction = None
+
+    def get_direction_from_level(self):
+        return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;
+
+    def set_class(self, cls):
+        self.bidi_class = cls
+
+    def __repr__(self):
+        return (
+            f&#34;character_index: {self.character_index} character: {self.character}&#34;
+            + f&#34; bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}&#34;
+            + f&#34; embedding_level: {self.embedding_level} direction: {self.direction}&#34;
+        )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiCharacter.direction"><code class="name">var <span class="ident">direction</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class BidiCharacter:
+    __slots__ = [
+        &#34;character_index&#34;,
+        &#34;character&#34;,
+        &#34;bidi_class&#34;,
+        &#34;original_bidi_class&#34;,
+        &#34;embedding_level&#34;,
+        &#34;direction&#34;,
+    ]
+
+    def __init__(
+        self, character_index: int, character: str, embedding_level: str, debug: bool
+    ):
+        self.character_index = character_index
+        self.character = character
+        if debug and character.isupper():
+            self.bidi_class = &#34;R&#34;
+        else:
+            self.bidi_class = unicodedata.bidirectional(character)
+        self.original_bidi_class = self.bidi_class
+        self.embedding_level = embedding_level
+        self.direction = None
+
+    def get_direction_from_level(self):
+        return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;
+
+    def set_class(self, cls):
+        self.bidi_class = cls
+
+    def __repr__(self):
+        return (
+            f&#34;character_index: {self.character_index} character: {self.character}&#34;
+            + f&#34; bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}&#34;
+            + f&#34; embedding_level: {self.embedding_level} direction: {self.direction}&#34;
+        )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiCharacter.embedding_level"><code class="name">var <span class="ident">embedding_level</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class BidiCharacter:
+    __slots__ = [
+        &#34;character_index&#34;,
+        &#34;character&#34;,
+        &#34;bidi_class&#34;,
+        &#34;original_bidi_class&#34;,
+        &#34;embedding_level&#34;,
+        &#34;direction&#34;,
+    ]
+
+    def __init__(
+        self, character_index: int, character: str, embedding_level: str, debug: bool
+    ):
+        self.character_index = character_index
+        self.character = character
+        if debug and character.isupper():
+            self.bidi_class = &#34;R&#34;
+        else:
+            self.bidi_class = unicodedata.bidirectional(character)
+        self.original_bidi_class = self.bidi_class
+        self.embedding_level = embedding_level
+        self.direction = None
+
+    def get_direction_from_level(self):
+        return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;
+
+    def set_class(self, cls):
+        self.bidi_class = cls
+
+    def __repr__(self):
+        return (
+            f&#34;character_index: {self.character_index} character: {self.character}&#34;
+            + f&#34; bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}&#34;
+            + f&#34; embedding_level: {self.embedding_level} direction: {self.direction}&#34;
+        )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiCharacter.original_bidi_class"><code class="name">var <span class="ident">original_bidi_class</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L150-L184" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class BidiCharacter:
+    __slots__ = [
+        &#34;character_index&#34;,
+        &#34;character&#34;,
+        &#34;bidi_class&#34;,
+        &#34;original_bidi_class&#34;,
+        &#34;embedding_level&#34;,
+        &#34;direction&#34;,
+    ]
+
+    def __init__(
+        self, character_index: int, character: str, embedding_level: str, debug: bool
+    ):
+        self.character_index = character_index
+        self.character = character
+        if debug and character.isupper():
+            self.bidi_class = &#34;R&#34;
+        else:
+            self.bidi_class = unicodedata.bidirectional(character)
+        self.original_bidi_class = self.bidi_class
+        self.embedding_level = embedding_level
+        self.direction = None
+
+    def get_direction_from_level(self):
+        return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;
+
+    def set_class(self, cls):
+        self.bidi_class = cls
+
+    def __repr__(self):
+        return (
+            f&#34;character_index: {self.character_index} character: {self.character}&#34;
+            + f&#34; bidi_class: {self.bidi_class} original_bidi_class: {self.original_bidi_class}&#34;
+            + f&#34; embedding_level: {self.embedding_level} direction: {self.direction}&#34;
+        )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -133,12 +493,28 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <span>def <span class="ident">get_direction_from_level</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L173-L174" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_direction_from_level(self):
+    return &#34;R&#34; if self.embedding_level % 2 else &#34;L&#34;</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiCharacter.set_class"><code class="name flex">
 <span>def <span class="ident">set_class</span></span>(<span>self, cls)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L176-L177" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def set_class(self, cls):
+    self.bidi_class = cls</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -148,11 +524,10 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <span>(</span><span>text: str,<br>base_direction: <a title="fpdf.enums.TextDirection" href="enums.html#fpdf.enums.TextDirection">TextDirection</a> = None,<br>debug: bool = False)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/bidi.py#L516-L787" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L516-L787" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class BidiParagraph:
     __slots__ = (
@@ -427,26 +802,1417 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
             reordered_paragraph = temp_results
         return tuple(reordered_paragraph)</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Instance variables</h3>
 <dl>
 <dt id="fpdf.bidi.BidiParagraph.base_direction"><code class="name">var <span class="ident">base_direction</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L516-L787" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class BidiParagraph:
+    __slots__ = (
+        &#34;text&#34;,
+        &#34;base_direction&#34;,
+        &#34;debug&#34;,
+        &#34;base_embedding_level&#34;,
+        &#34;characters&#34;,
+    )
+
+    def __init__(
+        self, text: str, base_direction: TextDirection = None, debug: bool = False
+    ):
+        self.text = text
+        self.base_direction = (
+            auto_detect_base_direction(self.text, debug)
+            if not base_direction
+            else base_direction
+        )
+        self.debug = debug
+        self.base_embedding_level = (
+            0 if self.base_direction == TextDirection.LTR else 1
+        )  # base level
+        self.characters: List[BidiCharacter] = []
+        self.get_bidi_characters()
+
+    def get_characters(self) -&gt; List[BidiCharacter]:
+        return self.characters
+
+    def get_characters_with_embedding_level(self) -&gt; List[BidiCharacter]:
+        # Calculate embedding level for each character after breaking isolating runs.
+        # Only used on conformance testing
+        self.reorder_resolved_levels()
+        return self.characters
+
+    def get_reordered_characters(self) -&gt; List[BidiCharacter]:
+        return self.reorder_resolved_levels()
+
+    def get_all(self):
+        return self.characters, self.reorder_resolved_levels()
+
+    def get_reordered_string(self):
+        &#34;Used for conformance validation&#34;
+        return &#34;&#34;.join(c.character for c in self.reorder_resolved_levels())
+
+    def get_bidi_fragments(self):
+        return self.split_bidi_fragments()
+
+    def get_bidi_characters(self) -&gt; List[BidiCharacter]:
+        # Explicit leves and directions. Rule X1
+
+        stack: List[DirectionalStatus] = deque()
+        current_status = DirectionalStatus(
+            embedding_level=self.base_embedding_level,
+            directional_override_status=&#34;N&#34;,
+            directional_isolate_status=False,
+        )
+        stack.append(replace(current_status))
+        overflow_isolate_count = 0
+        overflow_embedding_count = 0
+        valid_isolate_count = 0
+        results = []
+
+        # Explicit embeddings. Process each character individually applying rules X2 through X8
+        for index, char in enumerate(self.text):
+            bidi_char = BidiCharacter(
+                index, char, current_status.embedding_level, self.debug
+            )
+            new_bidi_class = None
+
+            if bidi_char.bidi_class == &#34;FSI&#34;:
+                bidi_char.bidi_class = (
+                    &#34;LRI&#34;
+                    if auto_detect_base_direction(
+                        self.text[index + 1 :], stop_at_pdi=True, debug=self.debug
+                    )
+                    == TextDirection.LTR
+                    else &#34;RLI&#34;
+                )
+
+            if bidi_char.bidi_class in (&#34;RLE&#34;, &#34;LRE&#34;, &#34;RLO&#34;, &#34;LRO&#34;, &#34;RLI&#34;, &#34;LRI&#34;):
+                # X2 - X5: calculate explicit embeddings and explicit overrides
+                if bidi_char.bidi_class[0] == &#34;R&#34;:
+                    new_embedding_level = (
+                        current_status.embedding_level + 1
+                    ) | 1  # least greater odd
+                else:
+                    new_embedding_level = (
+                        current_status.embedding_level + 2
+                    ) &amp; ~1  # least greater even
+                if (
+                    bidi_char.bidi_class[2] == &#34;I&#34;
+                    and current_status.directional_override_status != &#34;N&#34;
+                ):
+                    new_bidi_class = current_status.directional_override_status
+                if (
+                    new_embedding_level &lt;= MAX_DEPTH
+                    and overflow_isolate_count == 0
+                    and overflow_embedding_count == 0
+                ):
+                    current_status.embedding_level = new_embedding_level
+                    current_status.directional_override_status = (
+                        bidi_char.bidi_class[0]
+                        if bidi_char.bidi_class[2] == &#34;O&#34;
+                        else &#34;N&#34;
+                    )
+                    if bidi_char.bidi_class[2] == &#34;I&#34;:
+                        valid_isolate_count += 1
+                        current_status.directional_isolate_status = True
+                    else:
+                        current_status.directional_isolate_status = False
+                    stack.append(replace(current_status))
+                else:
+                    if bidi_char.bidi_class[2] == &#34;I&#34;:
+                        overflow_isolate_count += 1
+                    else:
+                        if overflow_isolate_count == 0:
+                            overflow_embedding_count += 1
+
+            if bidi_char.bidi_class not in (
+                &#34;B&#34;,
+                &#34;BN&#34;,
+                &#34;RLE&#34;,
+                &#34;LRE&#34;,
+                &#34;RLO&#34;,
+                &#34;LRO&#34;,
+                &#34;PDF&#34;,
+                &#34;FSI&#34;,
+                &#34;PDI&#34;,
+            ):  # X6
+                if current_status.directional_override_status != &#34;N&#34;:
+                    new_bidi_class = current_status.directional_override_status
+
+            if bidi_char.bidi_class == &#34;PDI&#34;:  # X6a
+                if overflow_isolate_count &gt; 0:
+                    overflow_isolate_count -= 1
+                elif valid_isolate_count &gt; 0:
+                    overflow_embedding_count = 0
+                    while True:
+                        if not stack[-1].directional_isolate_status:
+                            stack.pop()
+                            continue
+                        break
+                    stack.pop()
+                    current_status = replace(stack[-1])
+                    valid_isolate_count -= 1
+                assert isinstance(current_status, DirectionalStatus)
+                bidi_char.embedding_level = current_status.embedding_level
+                if current_status.directional_override_status != &#34;N&#34;:
+                    new_bidi_class = current_status.directional_override_status
+
+            if bidi_char.bidi_class == &#34;PDF&#34;:  # X7
+                if overflow_isolate_count == 0:
+                    if overflow_embedding_count &gt; 0:
+                        overflow_embedding_count -= 1
+                    else:
+                        if (
+                            not current_status.directional_isolate_status
+                            and len(stack) &gt; 1
+                        ):
+                            stack.pop()
+                            current_status = replace(stack[-1])
+
+            if new_bidi_class:
+                bidi_char.bidi_class = new_bidi_class
+            if bidi_char.bidi_class not in (
+                &#34;RLE&#34;,
+                &#34;LRE&#34;,
+                &#34;RLO&#34;,
+                &#34;LRO&#34;,
+                &#34;PDF&#34;,
+                &#34;BN&#34;,
+            ):  # X9
+                if bidi_char.bidi_class == &#34;B&#34;:
+                    bidi_char.embedding_level = self.base_embedding_level
+                elif bidi_char.original_bidi_class not in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
+                    bidi_char.embedding_level = current_status.embedding_level
+                results.append(bidi_char)
+
+        if not results:
+            self.characters = []
+            return
+        self.characters = results
+        calculate_isolate_runs(results)
+
+    def split_bidi_fragments(self):
+        bidi_fragments = []
+        if len(self.characters) == 0:
+            return ()
+        current_fragment = &#34;&#34;
+        current_direction = &#34;&#34;
+        for c in self.characters:
+            if c.get_direction_from_level() != current_direction:
+                if current_fragment:
+                    bidi_fragments.append(
+                        (
+                            current_fragment,
+                            (
+                                TextDirection.RTL
+                                if current_direction == &#34;R&#34;
+                                else TextDirection.LTR
+                            ),
+                        )
+                    )
+                current_fragment = &#34;&#34;
+                current_direction = c.get_direction_from_level()
+            current_fragment += c.character
+        if current_fragment:
+            bidi_fragments.append(
+                (
+                    current_fragment,
+                    (
+                        TextDirection.RTL
+                        if current_direction == &#34;R&#34;
+                        else TextDirection.LTR
+                    ),
+                )
+            )
+        return tuple(bidi_fragments)
+
+    def reorder_resolved_levels(self):
+        before_separator = True
+        end_of_line = True
+        max_level = 0
+        min_odd_level = 999
+        for bidi_char in reversed(self.characters):
+            # Rule L1. Reset the embedding level of segment separators, paragraph separators,
+            # and any adjacent whitespace.
+            if bidi_char.original_bidi_class in (&#34;S&#34;, &#34;B&#34;):
+                bidi_char.embedding_level = self.base_embedding_level
+                before_separator = True
+            elif bidi_char.original_bidi_class in (
+                &#34;BN&#34;,
+                &#34;WS&#34;,
+                &#34;FSI&#34;,
+                &#34;LRI&#34;,
+                &#34;RLI&#34;,
+                &#34;PDI&#34;,
+            ):
+                if before_separator or end_of_line:
+                    bidi_char.embedding_level = self.base_embedding_level
+            else:
+                before_separator = False
+                end_of_line = False
+
+            if bidi_char.embedding_level &gt; max_level:
+                max_level = bidi_char.embedding_level
+            if (
+                bidi_char.embedding_level % 2 != 0
+                and bidi_char.embedding_level &lt; min_odd_level
+            ):
+                min_odd_level = bidi_char.embedding_level
+
+        # Rule L2. From the highest level found in the text to the lowest odd level on each line,
+        # reverse any contiguous sequence of characters that are at that level or higher.
+        reordered_paragraph = self.characters.copy()
+        for level in range(max_level, min_odd_level - 1, -1):
+            temp_results = []
+            rev = []
+            for bidi_char in reordered_paragraph:
+                if bidi_char.embedding_level &gt;= level:
+                    rev.append(bidi_char)
+                else:
+                    if rev:
+                        rev.reverse()
+                        temp_results += rev
+                        rev = []
+                    temp_results.append(bidi_char)
+            if rev:
+                rev.reverse()
+                temp_results += rev
+            reordered_paragraph = temp_results
+        return tuple(reordered_paragraph)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.base_embedding_level"><code class="name">var <span class="ident">base_embedding_level</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L516-L787" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class BidiParagraph:
+    __slots__ = (
+        &#34;text&#34;,
+        &#34;base_direction&#34;,
+        &#34;debug&#34;,
+        &#34;base_embedding_level&#34;,
+        &#34;characters&#34;,
+    )
+
+    def __init__(
+        self, text: str, base_direction: TextDirection = None, debug: bool = False
+    ):
+        self.text = text
+        self.base_direction = (
+            auto_detect_base_direction(self.text, debug)
+            if not base_direction
+            else base_direction
+        )
+        self.debug = debug
+        self.base_embedding_level = (
+            0 if self.base_direction == TextDirection.LTR else 1
+        )  # base level
+        self.characters: List[BidiCharacter] = []
+        self.get_bidi_characters()
+
+    def get_characters(self) -&gt; List[BidiCharacter]:
+        return self.characters
+
+    def get_characters_with_embedding_level(self) -&gt; List[BidiCharacter]:
+        # Calculate embedding level for each character after breaking isolating runs.
+        # Only used on conformance testing
+        self.reorder_resolved_levels()
+        return self.characters
+
+    def get_reordered_characters(self) -&gt; List[BidiCharacter]:
+        return self.reorder_resolved_levels()
+
+    def get_all(self):
+        return self.characters, self.reorder_resolved_levels()
+
+    def get_reordered_string(self):
+        &#34;Used for conformance validation&#34;
+        return &#34;&#34;.join(c.character for c in self.reorder_resolved_levels())
+
+    def get_bidi_fragments(self):
+        return self.split_bidi_fragments()
+
+    def get_bidi_characters(self) -&gt; List[BidiCharacter]:
+        # Explicit leves and directions. Rule X1
+
+        stack: List[DirectionalStatus] = deque()
+        current_status = DirectionalStatus(
+            embedding_level=self.base_embedding_level,
+            directional_override_status=&#34;N&#34;,
+            directional_isolate_status=False,
+        )
+        stack.append(replace(current_status))
+        overflow_isolate_count = 0
+        overflow_embedding_count = 0
+        valid_isolate_count = 0
+        results = []
+
+        # Explicit embeddings. Process each character individually applying rules X2 through X8
+        for index, char in enumerate(self.text):
+            bidi_char = BidiCharacter(
+                index, char, current_status.embedding_level, self.debug
+            )
+            new_bidi_class = None
+
+            if bidi_char.bidi_class == &#34;FSI&#34;:
+                bidi_char.bidi_class = (
+                    &#34;LRI&#34;
+                    if auto_detect_base_direction(
+                        self.text[index + 1 :], stop_at_pdi=True, debug=self.debug
+                    )
+                    == TextDirection.LTR
+                    else &#34;RLI&#34;
+                )
+
+            if bidi_char.bidi_class in (&#34;RLE&#34;, &#34;LRE&#34;, &#34;RLO&#34;, &#34;LRO&#34;, &#34;RLI&#34;, &#34;LRI&#34;):
+                # X2 - X5: calculate explicit embeddings and explicit overrides
+                if bidi_char.bidi_class[0] == &#34;R&#34;:
+                    new_embedding_level = (
+                        current_status.embedding_level + 1
+                    ) | 1  # least greater odd
+                else:
+                    new_embedding_level = (
+                        current_status.embedding_level + 2
+                    ) &amp; ~1  # least greater even
+                if (
+                    bidi_char.bidi_class[2] == &#34;I&#34;
+                    and current_status.directional_override_status != &#34;N&#34;
+                ):
+                    new_bidi_class = current_status.directional_override_status
+                if (
+                    new_embedding_level &lt;= MAX_DEPTH
+                    and overflow_isolate_count == 0
+                    and overflow_embedding_count == 0
+                ):
+                    current_status.embedding_level = new_embedding_level
+                    current_status.directional_override_status = (
+                        bidi_char.bidi_class[0]
+                        if bidi_char.bidi_class[2] == &#34;O&#34;
+                        else &#34;N&#34;
+                    )
+                    if bidi_char.bidi_class[2] == &#34;I&#34;:
+                        valid_isolate_count += 1
+                        current_status.directional_isolate_status = True
+                    else:
+                        current_status.directional_isolate_status = False
+                    stack.append(replace(current_status))
+                else:
+                    if bidi_char.bidi_class[2] == &#34;I&#34;:
+                        overflow_isolate_count += 1
+                    else:
+                        if overflow_isolate_count == 0:
+                            overflow_embedding_count += 1
+
+            if bidi_char.bidi_class not in (
+                &#34;B&#34;,
+                &#34;BN&#34;,
+                &#34;RLE&#34;,
+                &#34;LRE&#34;,
+                &#34;RLO&#34;,
+                &#34;LRO&#34;,
+                &#34;PDF&#34;,
+                &#34;FSI&#34;,
+                &#34;PDI&#34;,
+            ):  # X6
+                if current_status.directional_override_status != &#34;N&#34;:
+                    new_bidi_class = current_status.directional_override_status
+
+            if bidi_char.bidi_class == &#34;PDI&#34;:  # X6a
+                if overflow_isolate_count &gt; 0:
+                    overflow_isolate_count -= 1
+                elif valid_isolate_count &gt; 0:
+                    overflow_embedding_count = 0
+                    while True:
+                        if not stack[-1].directional_isolate_status:
+                            stack.pop()
+                            continue
+                        break
+                    stack.pop()
+                    current_status = replace(stack[-1])
+                    valid_isolate_count -= 1
+                assert isinstance(current_status, DirectionalStatus)
+                bidi_char.embedding_level = current_status.embedding_level
+                if current_status.directional_override_status != &#34;N&#34;:
+                    new_bidi_class = current_status.directional_override_status
+
+            if bidi_char.bidi_class == &#34;PDF&#34;:  # X7
+                if overflow_isolate_count == 0:
+                    if overflow_embedding_count &gt; 0:
+                        overflow_embedding_count -= 1
+                    else:
+                        if (
+                            not current_status.directional_isolate_status
+                            and len(stack) &gt; 1
+                        ):
+                            stack.pop()
+                            current_status = replace(stack[-1])
+
+            if new_bidi_class:
+                bidi_char.bidi_class = new_bidi_class
+            if bidi_char.bidi_class not in (
+                &#34;RLE&#34;,
+                &#34;LRE&#34;,
+                &#34;RLO&#34;,
+                &#34;LRO&#34;,
+                &#34;PDF&#34;,
+                &#34;BN&#34;,
+            ):  # X9
+                if bidi_char.bidi_class == &#34;B&#34;:
+                    bidi_char.embedding_level = self.base_embedding_level
+                elif bidi_char.original_bidi_class not in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
+                    bidi_char.embedding_level = current_status.embedding_level
+                results.append(bidi_char)
+
+        if not results:
+            self.characters = []
+            return
+        self.characters = results
+        calculate_isolate_runs(results)
+
+    def split_bidi_fragments(self):
+        bidi_fragments = []
+        if len(self.characters) == 0:
+            return ()
+        current_fragment = &#34;&#34;
+        current_direction = &#34;&#34;
+        for c in self.characters:
+            if c.get_direction_from_level() != current_direction:
+                if current_fragment:
+                    bidi_fragments.append(
+                        (
+                            current_fragment,
+                            (
+                                TextDirection.RTL
+                                if current_direction == &#34;R&#34;
+                                else TextDirection.LTR
+                            ),
+                        )
+                    )
+                current_fragment = &#34;&#34;
+                current_direction = c.get_direction_from_level()
+            current_fragment += c.character
+        if current_fragment:
+            bidi_fragments.append(
+                (
+                    current_fragment,
+                    (
+                        TextDirection.RTL
+                        if current_direction == &#34;R&#34;
+                        else TextDirection.LTR
+                    ),
+                )
+            )
+        return tuple(bidi_fragments)
+
+    def reorder_resolved_levels(self):
+        before_separator = True
+        end_of_line = True
+        max_level = 0
+        min_odd_level = 999
+        for bidi_char in reversed(self.characters):
+            # Rule L1. Reset the embedding level of segment separators, paragraph separators,
+            # and any adjacent whitespace.
+            if bidi_char.original_bidi_class in (&#34;S&#34;, &#34;B&#34;):
+                bidi_char.embedding_level = self.base_embedding_level
+                before_separator = True
+            elif bidi_char.original_bidi_class in (
+                &#34;BN&#34;,
+                &#34;WS&#34;,
+                &#34;FSI&#34;,
+                &#34;LRI&#34;,
+                &#34;RLI&#34;,
+                &#34;PDI&#34;,
+            ):
+                if before_separator or end_of_line:
+                    bidi_char.embedding_level = self.base_embedding_level
+            else:
+                before_separator = False
+                end_of_line = False
+
+            if bidi_char.embedding_level &gt; max_level:
+                max_level = bidi_char.embedding_level
+            if (
+                bidi_char.embedding_level % 2 != 0
+                and bidi_char.embedding_level &lt; min_odd_level
+            ):
+                min_odd_level = bidi_char.embedding_level
+
+        # Rule L2. From the highest level found in the text to the lowest odd level on each line,
+        # reverse any contiguous sequence of characters that are at that level or higher.
+        reordered_paragraph = self.characters.copy()
+        for level in range(max_level, min_odd_level - 1, -1):
+            temp_results = []
+            rev = []
+            for bidi_char in reordered_paragraph:
+                if bidi_char.embedding_level &gt;= level:
+                    rev.append(bidi_char)
+                else:
+                    if rev:
+                        rev.reverse()
+                        temp_results += rev
+                        rev = []
+                    temp_results.append(bidi_char)
+            if rev:
+                rev.reverse()
+                temp_results += rev
+            reordered_paragraph = temp_results
+        return tuple(reordered_paragraph)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.characters"><code class="name">var <span class="ident">characters</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L516-L787" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class BidiParagraph:
+    __slots__ = (
+        &#34;text&#34;,
+        &#34;base_direction&#34;,
+        &#34;debug&#34;,
+        &#34;base_embedding_level&#34;,
+        &#34;characters&#34;,
+    )
+
+    def __init__(
+        self, text: str, base_direction: TextDirection = None, debug: bool = False
+    ):
+        self.text = text
+        self.base_direction = (
+            auto_detect_base_direction(self.text, debug)
+            if not base_direction
+            else base_direction
+        )
+        self.debug = debug
+        self.base_embedding_level = (
+            0 if self.base_direction == TextDirection.LTR else 1
+        )  # base level
+        self.characters: List[BidiCharacter] = []
+        self.get_bidi_characters()
+
+    def get_characters(self) -&gt; List[BidiCharacter]:
+        return self.characters
+
+    def get_characters_with_embedding_level(self) -&gt; List[BidiCharacter]:
+        # Calculate embedding level for each character after breaking isolating runs.
+        # Only used on conformance testing
+        self.reorder_resolved_levels()
+        return self.characters
+
+    def get_reordered_characters(self) -&gt; List[BidiCharacter]:
+        return self.reorder_resolved_levels()
+
+    def get_all(self):
+        return self.characters, self.reorder_resolved_levels()
+
+    def get_reordered_string(self):
+        &#34;Used for conformance validation&#34;
+        return &#34;&#34;.join(c.character for c in self.reorder_resolved_levels())
+
+    def get_bidi_fragments(self):
+        return self.split_bidi_fragments()
+
+    def get_bidi_characters(self) -&gt; List[BidiCharacter]:
+        # Explicit leves and directions. Rule X1
+
+        stack: List[DirectionalStatus] = deque()
+        current_status = DirectionalStatus(
+            embedding_level=self.base_embedding_level,
+            directional_override_status=&#34;N&#34;,
+            directional_isolate_status=False,
+        )
+        stack.append(replace(current_status))
+        overflow_isolate_count = 0
+        overflow_embedding_count = 0
+        valid_isolate_count = 0
+        results = []
+
+        # Explicit embeddings. Process each character individually applying rules X2 through X8
+        for index, char in enumerate(self.text):
+            bidi_char = BidiCharacter(
+                index, char, current_status.embedding_level, self.debug
+            )
+            new_bidi_class = None
+
+            if bidi_char.bidi_class == &#34;FSI&#34;:
+                bidi_char.bidi_class = (
+                    &#34;LRI&#34;
+                    if auto_detect_base_direction(
+                        self.text[index + 1 :], stop_at_pdi=True, debug=self.debug
+                    )
+                    == TextDirection.LTR
+                    else &#34;RLI&#34;
+                )
+
+            if bidi_char.bidi_class in (&#34;RLE&#34;, &#34;LRE&#34;, &#34;RLO&#34;, &#34;LRO&#34;, &#34;RLI&#34;, &#34;LRI&#34;):
+                # X2 - X5: calculate explicit embeddings and explicit overrides
+                if bidi_char.bidi_class[0] == &#34;R&#34;:
+                    new_embedding_level = (
+                        current_status.embedding_level + 1
+                    ) | 1  # least greater odd
+                else:
+                    new_embedding_level = (
+                        current_status.embedding_level + 2
+                    ) &amp; ~1  # least greater even
+                if (
+                    bidi_char.bidi_class[2] == &#34;I&#34;
+                    and current_status.directional_override_status != &#34;N&#34;
+                ):
+                    new_bidi_class = current_status.directional_override_status
+                if (
+                    new_embedding_level &lt;= MAX_DEPTH
+                    and overflow_isolate_count == 0
+                    and overflow_embedding_count == 0
+                ):
+                    current_status.embedding_level = new_embedding_level
+                    current_status.directional_override_status = (
+                        bidi_char.bidi_class[0]
+                        if bidi_char.bidi_class[2] == &#34;O&#34;
+                        else &#34;N&#34;
+                    )
+                    if bidi_char.bidi_class[2] == &#34;I&#34;:
+                        valid_isolate_count += 1
+                        current_status.directional_isolate_status = True
+                    else:
+                        current_status.directional_isolate_status = False
+                    stack.append(replace(current_status))
+                else:
+                    if bidi_char.bidi_class[2] == &#34;I&#34;:
+                        overflow_isolate_count += 1
+                    else:
+                        if overflow_isolate_count == 0:
+                            overflow_embedding_count += 1
+
+            if bidi_char.bidi_class not in (
+                &#34;B&#34;,
+                &#34;BN&#34;,
+                &#34;RLE&#34;,
+                &#34;LRE&#34;,
+                &#34;RLO&#34;,
+                &#34;LRO&#34;,
+                &#34;PDF&#34;,
+                &#34;FSI&#34;,
+                &#34;PDI&#34;,
+            ):  # X6
+                if current_status.directional_override_status != &#34;N&#34;:
+                    new_bidi_class = current_status.directional_override_status
+
+            if bidi_char.bidi_class == &#34;PDI&#34;:  # X6a
+                if overflow_isolate_count &gt; 0:
+                    overflow_isolate_count -= 1
+                elif valid_isolate_count &gt; 0:
+                    overflow_embedding_count = 0
+                    while True:
+                        if not stack[-1].directional_isolate_status:
+                            stack.pop()
+                            continue
+                        break
+                    stack.pop()
+                    current_status = replace(stack[-1])
+                    valid_isolate_count -= 1
+                assert isinstance(current_status, DirectionalStatus)
+                bidi_char.embedding_level = current_status.embedding_level
+                if current_status.directional_override_status != &#34;N&#34;:
+                    new_bidi_class = current_status.directional_override_status
+
+            if bidi_char.bidi_class == &#34;PDF&#34;:  # X7
+                if overflow_isolate_count == 0:
+                    if overflow_embedding_count &gt; 0:
+                        overflow_embedding_count -= 1
+                    else:
+                        if (
+                            not current_status.directional_isolate_status
+                            and len(stack) &gt; 1
+                        ):
+                            stack.pop()
+                            current_status = replace(stack[-1])
+
+            if new_bidi_class:
+                bidi_char.bidi_class = new_bidi_class
+            if bidi_char.bidi_class not in (
+                &#34;RLE&#34;,
+                &#34;LRE&#34;,
+                &#34;RLO&#34;,
+                &#34;LRO&#34;,
+                &#34;PDF&#34;,
+                &#34;BN&#34;,
+            ):  # X9
+                if bidi_char.bidi_class == &#34;B&#34;:
+                    bidi_char.embedding_level = self.base_embedding_level
+                elif bidi_char.original_bidi_class not in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
+                    bidi_char.embedding_level = current_status.embedding_level
+                results.append(bidi_char)
+
+        if not results:
+            self.characters = []
+            return
+        self.characters = results
+        calculate_isolate_runs(results)
+
+    def split_bidi_fragments(self):
+        bidi_fragments = []
+        if len(self.characters) == 0:
+            return ()
+        current_fragment = &#34;&#34;
+        current_direction = &#34;&#34;
+        for c in self.characters:
+            if c.get_direction_from_level() != current_direction:
+                if current_fragment:
+                    bidi_fragments.append(
+                        (
+                            current_fragment,
+                            (
+                                TextDirection.RTL
+                                if current_direction == &#34;R&#34;
+                                else TextDirection.LTR
+                            ),
+                        )
+                    )
+                current_fragment = &#34;&#34;
+                current_direction = c.get_direction_from_level()
+            current_fragment += c.character
+        if current_fragment:
+            bidi_fragments.append(
+                (
+                    current_fragment,
+                    (
+                        TextDirection.RTL
+                        if current_direction == &#34;R&#34;
+                        else TextDirection.LTR
+                    ),
+                )
+            )
+        return tuple(bidi_fragments)
+
+    def reorder_resolved_levels(self):
+        before_separator = True
+        end_of_line = True
+        max_level = 0
+        min_odd_level = 999
+        for bidi_char in reversed(self.characters):
+            # Rule L1. Reset the embedding level of segment separators, paragraph separators,
+            # and any adjacent whitespace.
+            if bidi_char.original_bidi_class in (&#34;S&#34;, &#34;B&#34;):
+                bidi_char.embedding_level = self.base_embedding_level
+                before_separator = True
+            elif bidi_char.original_bidi_class in (
+                &#34;BN&#34;,
+                &#34;WS&#34;,
+                &#34;FSI&#34;,
+                &#34;LRI&#34;,
+                &#34;RLI&#34;,
+                &#34;PDI&#34;,
+            ):
+                if before_separator or end_of_line:
+                    bidi_char.embedding_level = self.base_embedding_level
+            else:
+                before_separator = False
+                end_of_line = False
+
+            if bidi_char.embedding_level &gt; max_level:
+                max_level = bidi_char.embedding_level
+            if (
+                bidi_char.embedding_level % 2 != 0
+                and bidi_char.embedding_level &lt; min_odd_level
+            ):
+                min_odd_level = bidi_char.embedding_level
+
+        # Rule L2. From the highest level found in the text to the lowest odd level on each line,
+        # reverse any contiguous sequence of characters that are at that level or higher.
+        reordered_paragraph = self.characters.copy()
+        for level in range(max_level, min_odd_level - 1, -1):
+            temp_results = []
+            rev = []
+            for bidi_char in reordered_paragraph:
+                if bidi_char.embedding_level &gt;= level:
+                    rev.append(bidi_char)
+                else:
+                    if rev:
+                        rev.reverse()
+                        temp_results += rev
+                        rev = []
+                    temp_results.append(bidi_char)
+            if rev:
+                rev.reverse()
+                temp_results += rev
+            reordered_paragraph = temp_results
+        return tuple(reordered_paragraph)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.debug"><code class="name">var <span class="ident">debug</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L516-L787" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class BidiParagraph:
+    __slots__ = (
+        &#34;text&#34;,
+        &#34;base_direction&#34;,
+        &#34;debug&#34;,
+        &#34;base_embedding_level&#34;,
+        &#34;characters&#34;,
+    )
+
+    def __init__(
+        self, text: str, base_direction: TextDirection = None, debug: bool = False
+    ):
+        self.text = text
+        self.base_direction = (
+            auto_detect_base_direction(self.text, debug)
+            if not base_direction
+            else base_direction
+        )
+        self.debug = debug
+        self.base_embedding_level = (
+            0 if self.base_direction == TextDirection.LTR else 1
+        )  # base level
+        self.characters: List[BidiCharacter] = []
+        self.get_bidi_characters()
+
+    def get_characters(self) -&gt; List[BidiCharacter]:
+        return self.characters
+
+    def get_characters_with_embedding_level(self) -&gt; List[BidiCharacter]:
+        # Calculate embedding level for each character after breaking isolating runs.
+        # Only used on conformance testing
+        self.reorder_resolved_levels()
+        return self.characters
+
+    def get_reordered_characters(self) -&gt; List[BidiCharacter]:
+        return self.reorder_resolved_levels()
+
+    def get_all(self):
+        return self.characters, self.reorder_resolved_levels()
+
+    def get_reordered_string(self):
+        &#34;Used for conformance validation&#34;
+        return &#34;&#34;.join(c.character for c in self.reorder_resolved_levels())
+
+    def get_bidi_fragments(self):
+        return self.split_bidi_fragments()
+
+    def get_bidi_characters(self) -&gt; List[BidiCharacter]:
+        # Explicit leves and directions. Rule X1
+
+        stack: List[DirectionalStatus] = deque()
+        current_status = DirectionalStatus(
+            embedding_level=self.base_embedding_level,
+            directional_override_status=&#34;N&#34;,
+            directional_isolate_status=False,
+        )
+        stack.append(replace(current_status))
+        overflow_isolate_count = 0
+        overflow_embedding_count = 0
+        valid_isolate_count = 0
+        results = []
+
+        # Explicit embeddings. Process each character individually applying rules X2 through X8
+        for index, char in enumerate(self.text):
+            bidi_char = BidiCharacter(
+                index, char, current_status.embedding_level, self.debug
+            )
+            new_bidi_class = None
+
+            if bidi_char.bidi_class == &#34;FSI&#34;:
+                bidi_char.bidi_class = (
+                    &#34;LRI&#34;
+                    if auto_detect_base_direction(
+                        self.text[index + 1 :], stop_at_pdi=True, debug=self.debug
+                    )
+                    == TextDirection.LTR
+                    else &#34;RLI&#34;
+                )
+
+            if bidi_char.bidi_class in (&#34;RLE&#34;, &#34;LRE&#34;, &#34;RLO&#34;, &#34;LRO&#34;, &#34;RLI&#34;, &#34;LRI&#34;):
+                # X2 - X5: calculate explicit embeddings and explicit overrides
+                if bidi_char.bidi_class[0] == &#34;R&#34;:
+                    new_embedding_level = (
+                        current_status.embedding_level + 1
+                    ) | 1  # least greater odd
+                else:
+                    new_embedding_level = (
+                        current_status.embedding_level + 2
+                    ) &amp; ~1  # least greater even
+                if (
+                    bidi_char.bidi_class[2] == &#34;I&#34;
+                    and current_status.directional_override_status != &#34;N&#34;
+                ):
+                    new_bidi_class = current_status.directional_override_status
+                if (
+                    new_embedding_level &lt;= MAX_DEPTH
+                    and overflow_isolate_count == 0
+                    and overflow_embedding_count == 0
+                ):
+                    current_status.embedding_level = new_embedding_level
+                    current_status.directional_override_status = (
+                        bidi_char.bidi_class[0]
+                        if bidi_char.bidi_class[2] == &#34;O&#34;
+                        else &#34;N&#34;
+                    )
+                    if bidi_char.bidi_class[2] == &#34;I&#34;:
+                        valid_isolate_count += 1
+                        current_status.directional_isolate_status = True
+                    else:
+                        current_status.directional_isolate_status = False
+                    stack.append(replace(current_status))
+                else:
+                    if bidi_char.bidi_class[2] == &#34;I&#34;:
+                        overflow_isolate_count += 1
+                    else:
+                        if overflow_isolate_count == 0:
+                            overflow_embedding_count += 1
+
+            if bidi_char.bidi_class not in (
+                &#34;B&#34;,
+                &#34;BN&#34;,
+                &#34;RLE&#34;,
+                &#34;LRE&#34;,
+                &#34;RLO&#34;,
+                &#34;LRO&#34;,
+                &#34;PDF&#34;,
+                &#34;FSI&#34;,
+                &#34;PDI&#34;,
+            ):  # X6
+                if current_status.directional_override_status != &#34;N&#34;:
+                    new_bidi_class = current_status.directional_override_status
+
+            if bidi_char.bidi_class == &#34;PDI&#34;:  # X6a
+                if overflow_isolate_count &gt; 0:
+                    overflow_isolate_count -= 1
+                elif valid_isolate_count &gt; 0:
+                    overflow_embedding_count = 0
+                    while True:
+                        if not stack[-1].directional_isolate_status:
+                            stack.pop()
+                            continue
+                        break
+                    stack.pop()
+                    current_status = replace(stack[-1])
+                    valid_isolate_count -= 1
+                assert isinstance(current_status, DirectionalStatus)
+                bidi_char.embedding_level = current_status.embedding_level
+                if current_status.directional_override_status != &#34;N&#34;:
+                    new_bidi_class = current_status.directional_override_status
+
+            if bidi_char.bidi_class == &#34;PDF&#34;:  # X7
+                if overflow_isolate_count == 0:
+                    if overflow_embedding_count &gt; 0:
+                        overflow_embedding_count -= 1
+                    else:
+                        if (
+                            not current_status.directional_isolate_status
+                            and len(stack) &gt; 1
+                        ):
+                            stack.pop()
+                            current_status = replace(stack[-1])
+
+            if new_bidi_class:
+                bidi_char.bidi_class = new_bidi_class
+            if bidi_char.bidi_class not in (
+                &#34;RLE&#34;,
+                &#34;LRE&#34;,
+                &#34;RLO&#34;,
+                &#34;LRO&#34;,
+                &#34;PDF&#34;,
+                &#34;BN&#34;,
+            ):  # X9
+                if bidi_char.bidi_class == &#34;B&#34;:
+                    bidi_char.embedding_level = self.base_embedding_level
+                elif bidi_char.original_bidi_class not in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
+                    bidi_char.embedding_level = current_status.embedding_level
+                results.append(bidi_char)
+
+        if not results:
+            self.characters = []
+            return
+        self.characters = results
+        calculate_isolate_runs(results)
+
+    def split_bidi_fragments(self):
+        bidi_fragments = []
+        if len(self.characters) == 0:
+            return ()
+        current_fragment = &#34;&#34;
+        current_direction = &#34;&#34;
+        for c in self.characters:
+            if c.get_direction_from_level() != current_direction:
+                if current_fragment:
+                    bidi_fragments.append(
+                        (
+                            current_fragment,
+                            (
+                                TextDirection.RTL
+                                if current_direction == &#34;R&#34;
+                                else TextDirection.LTR
+                            ),
+                        )
+                    )
+                current_fragment = &#34;&#34;
+                current_direction = c.get_direction_from_level()
+            current_fragment += c.character
+        if current_fragment:
+            bidi_fragments.append(
+                (
+                    current_fragment,
+                    (
+                        TextDirection.RTL
+                        if current_direction == &#34;R&#34;
+                        else TextDirection.LTR
+                    ),
+                )
+            )
+        return tuple(bidi_fragments)
+
+    def reorder_resolved_levels(self):
+        before_separator = True
+        end_of_line = True
+        max_level = 0
+        min_odd_level = 999
+        for bidi_char in reversed(self.characters):
+            # Rule L1. Reset the embedding level of segment separators, paragraph separators,
+            # and any adjacent whitespace.
+            if bidi_char.original_bidi_class in (&#34;S&#34;, &#34;B&#34;):
+                bidi_char.embedding_level = self.base_embedding_level
+                before_separator = True
+            elif bidi_char.original_bidi_class in (
+                &#34;BN&#34;,
+                &#34;WS&#34;,
+                &#34;FSI&#34;,
+                &#34;LRI&#34;,
+                &#34;RLI&#34;,
+                &#34;PDI&#34;,
+            ):
+                if before_separator or end_of_line:
+                    bidi_char.embedding_level = self.base_embedding_level
+            else:
+                before_separator = False
+                end_of_line = False
+
+            if bidi_char.embedding_level &gt; max_level:
+                max_level = bidi_char.embedding_level
+            if (
+                bidi_char.embedding_level % 2 != 0
+                and bidi_char.embedding_level &lt; min_odd_level
+            ):
+                min_odd_level = bidi_char.embedding_level
+
+        # Rule L2. From the highest level found in the text to the lowest odd level on each line,
+        # reverse any contiguous sequence of characters that are at that level or higher.
+        reordered_paragraph = self.characters.copy()
+        for level in range(max_level, min_odd_level - 1, -1):
+            temp_results = []
+            rev = []
+            for bidi_char in reordered_paragraph:
+                if bidi_char.embedding_level &gt;= level:
+                    rev.append(bidi_char)
+                else:
+                    if rev:
+                        rev.reverse()
+                        temp_results += rev
+                        rev = []
+                    temp_results.append(bidi_char)
+            if rev:
+                rev.reverse()
+                temp_results += rev
+            reordered_paragraph = temp_results
+        return tuple(reordered_paragraph)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.text"><code class="name">var <span class="ident">text</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L516-L787" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class BidiParagraph:
+    __slots__ = (
+        &#34;text&#34;,
+        &#34;base_direction&#34;,
+        &#34;debug&#34;,
+        &#34;base_embedding_level&#34;,
+        &#34;characters&#34;,
+    )
+
+    def __init__(
+        self, text: str, base_direction: TextDirection = None, debug: bool = False
+    ):
+        self.text = text
+        self.base_direction = (
+            auto_detect_base_direction(self.text, debug)
+            if not base_direction
+            else base_direction
+        )
+        self.debug = debug
+        self.base_embedding_level = (
+            0 if self.base_direction == TextDirection.LTR else 1
+        )  # base level
+        self.characters: List[BidiCharacter] = []
+        self.get_bidi_characters()
+
+    def get_characters(self) -&gt; List[BidiCharacter]:
+        return self.characters
+
+    def get_characters_with_embedding_level(self) -&gt; List[BidiCharacter]:
+        # Calculate embedding level for each character after breaking isolating runs.
+        # Only used on conformance testing
+        self.reorder_resolved_levels()
+        return self.characters
+
+    def get_reordered_characters(self) -&gt; List[BidiCharacter]:
+        return self.reorder_resolved_levels()
+
+    def get_all(self):
+        return self.characters, self.reorder_resolved_levels()
+
+    def get_reordered_string(self):
+        &#34;Used for conformance validation&#34;
+        return &#34;&#34;.join(c.character for c in self.reorder_resolved_levels())
+
+    def get_bidi_fragments(self):
+        return self.split_bidi_fragments()
+
+    def get_bidi_characters(self) -&gt; List[BidiCharacter]:
+        # Explicit leves and directions. Rule X1
+
+        stack: List[DirectionalStatus] = deque()
+        current_status = DirectionalStatus(
+            embedding_level=self.base_embedding_level,
+            directional_override_status=&#34;N&#34;,
+            directional_isolate_status=False,
+        )
+        stack.append(replace(current_status))
+        overflow_isolate_count = 0
+        overflow_embedding_count = 0
+        valid_isolate_count = 0
+        results = []
+
+        # Explicit embeddings. Process each character individually applying rules X2 through X8
+        for index, char in enumerate(self.text):
+            bidi_char = BidiCharacter(
+                index, char, current_status.embedding_level, self.debug
+            )
+            new_bidi_class = None
+
+            if bidi_char.bidi_class == &#34;FSI&#34;:
+                bidi_char.bidi_class = (
+                    &#34;LRI&#34;
+                    if auto_detect_base_direction(
+                        self.text[index + 1 :], stop_at_pdi=True, debug=self.debug
+                    )
+                    == TextDirection.LTR
+                    else &#34;RLI&#34;
+                )
+
+            if bidi_char.bidi_class in (&#34;RLE&#34;, &#34;LRE&#34;, &#34;RLO&#34;, &#34;LRO&#34;, &#34;RLI&#34;, &#34;LRI&#34;):
+                # X2 - X5: calculate explicit embeddings and explicit overrides
+                if bidi_char.bidi_class[0] == &#34;R&#34;:
+                    new_embedding_level = (
+                        current_status.embedding_level + 1
+                    ) | 1  # least greater odd
+                else:
+                    new_embedding_level = (
+                        current_status.embedding_level + 2
+                    ) &amp; ~1  # least greater even
+                if (
+                    bidi_char.bidi_class[2] == &#34;I&#34;
+                    and current_status.directional_override_status != &#34;N&#34;
+                ):
+                    new_bidi_class = current_status.directional_override_status
+                if (
+                    new_embedding_level &lt;= MAX_DEPTH
+                    and overflow_isolate_count == 0
+                    and overflow_embedding_count == 0
+                ):
+                    current_status.embedding_level = new_embedding_level
+                    current_status.directional_override_status = (
+                        bidi_char.bidi_class[0]
+                        if bidi_char.bidi_class[2] == &#34;O&#34;
+                        else &#34;N&#34;
+                    )
+                    if bidi_char.bidi_class[2] == &#34;I&#34;:
+                        valid_isolate_count += 1
+                        current_status.directional_isolate_status = True
+                    else:
+                        current_status.directional_isolate_status = False
+                    stack.append(replace(current_status))
+                else:
+                    if bidi_char.bidi_class[2] == &#34;I&#34;:
+                        overflow_isolate_count += 1
+                    else:
+                        if overflow_isolate_count == 0:
+                            overflow_embedding_count += 1
+
+            if bidi_char.bidi_class not in (
+                &#34;B&#34;,
+                &#34;BN&#34;,
+                &#34;RLE&#34;,
+                &#34;LRE&#34;,
+                &#34;RLO&#34;,
+                &#34;LRO&#34;,
+                &#34;PDF&#34;,
+                &#34;FSI&#34;,
+                &#34;PDI&#34;,
+            ):  # X6
+                if current_status.directional_override_status != &#34;N&#34;:
+                    new_bidi_class = current_status.directional_override_status
+
+            if bidi_char.bidi_class == &#34;PDI&#34;:  # X6a
+                if overflow_isolate_count &gt; 0:
+                    overflow_isolate_count -= 1
+                elif valid_isolate_count &gt; 0:
+                    overflow_embedding_count = 0
+                    while True:
+                        if not stack[-1].directional_isolate_status:
+                            stack.pop()
+                            continue
+                        break
+                    stack.pop()
+                    current_status = replace(stack[-1])
+                    valid_isolate_count -= 1
+                assert isinstance(current_status, DirectionalStatus)
+                bidi_char.embedding_level = current_status.embedding_level
+                if current_status.directional_override_status != &#34;N&#34;:
+                    new_bidi_class = current_status.directional_override_status
+
+            if bidi_char.bidi_class == &#34;PDF&#34;:  # X7
+                if overflow_isolate_count == 0:
+                    if overflow_embedding_count &gt; 0:
+                        overflow_embedding_count -= 1
+                    else:
+                        if (
+                            not current_status.directional_isolate_status
+                            and len(stack) &gt; 1
+                        ):
+                            stack.pop()
+                            current_status = replace(stack[-1])
+
+            if new_bidi_class:
+                bidi_char.bidi_class = new_bidi_class
+            if bidi_char.bidi_class not in (
+                &#34;RLE&#34;,
+                &#34;LRE&#34;,
+                &#34;RLO&#34;,
+                &#34;LRO&#34;,
+                &#34;PDF&#34;,
+                &#34;BN&#34;,
+            ):  # X9
+                if bidi_char.bidi_class == &#34;B&#34;:
+                    bidi_char.embedding_level = self.base_embedding_level
+                elif bidi_char.original_bidi_class not in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
+                    bidi_char.embedding_level = current_status.embedding_level
+                results.append(bidi_char)
+
+        if not results:
+            self.characters = []
+            return
+        self.characters = results
+        calculate_isolate_runs(results)
+
+    def split_bidi_fragments(self):
+        bidi_fragments = []
+        if len(self.characters) == 0:
+            return ()
+        current_fragment = &#34;&#34;
+        current_direction = &#34;&#34;
+        for c in self.characters:
+            if c.get_direction_from_level() != current_direction:
+                if current_fragment:
+                    bidi_fragments.append(
+                        (
+                            current_fragment,
+                            (
+                                TextDirection.RTL
+                                if current_direction == &#34;R&#34;
+                                else TextDirection.LTR
+                            ),
+                        )
+                    )
+                current_fragment = &#34;&#34;
+                current_direction = c.get_direction_from_level()
+            current_fragment += c.character
+        if current_fragment:
+            bidi_fragments.append(
+                (
+                    current_fragment,
+                    (
+                        TextDirection.RTL
+                        if current_direction == &#34;R&#34;
+                        else TextDirection.LTR
+                    ),
+                )
+            )
+        return tuple(bidi_fragments)
+
+    def reorder_resolved_levels(self):
+        before_separator = True
+        end_of_line = True
+        max_level = 0
+        min_odd_level = 999
+        for bidi_char in reversed(self.characters):
+            # Rule L1. Reset the embedding level of segment separators, paragraph separators,
+            # and any adjacent whitespace.
+            if bidi_char.original_bidi_class in (&#34;S&#34;, &#34;B&#34;):
+                bidi_char.embedding_level = self.base_embedding_level
+                before_separator = True
+            elif bidi_char.original_bidi_class in (
+                &#34;BN&#34;,
+                &#34;WS&#34;,
+                &#34;FSI&#34;,
+                &#34;LRI&#34;,
+                &#34;RLI&#34;,
+                &#34;PDI&#34;,
+            ):
+                if before_separator or end_of_line:
+                    bidi_char.embedding_level = self.base_embedding_level
+            else:
+                before_separator = False
+                end_of_line = False
+
+            if bidi_char.embedding_level &gt; max_level:
+                max_level = bidi_char.embedding_level
+            if (
+                bidi_char.embedding_level % 2 != 0
+                and bidi_char.embedding_level &lt; min_odd_level
+            ):
+                min_odd_level = bidi_char.embedding_level
+
+        # Rule L2. From the highest level found in the text to the lowest odd level on each line,
+        # reverse any contiguous sequence of characters that are at that level or higher.
+        reordered_paragraph = self.characters.copy()
+        for level in range(max_level, min_odd_level - 1, -1):
+            temp_results = []
+            rev = []
+            for bidi_char in reordered_paragraph:
+                if bidi_char.embedding_level &gt;= level:
+                    rev.append(bidi_char)
+                else:
+                    if rev:
+                        rev.reverse()
+                        temp_results += rev
+                        rev = []
+                    temp_results.append(bidi_char)
+            if rev:
+                rev.reverse()
+                temp_results += rev
+            reordered_paragraph = temp_results
+        return tuple(reordered_paragraph)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -456,54 +2222,347 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <span>def <span class="ident">get_all</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L553-L554" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_all(self):
+    return self.characters, self.reorder_resolved_levels()</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.get_bidi_characters"><code class="name flex">
 <span>def <span class="ident">get_bidi_characters</span></span>(<span>self) ‑> List[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>]</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L563-L698" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_bidi_characters(self) -&gt; List[BidiCharacter]:
+    # Explicit leves and directions. Rule X1
+
+    stack: List[DirectionalStatus] = deque()
+    current_status = DirectionalStatus(
+        embedding_level=self.base_embedding_level,
+        directional_override_status=&#34;N&#34;,
+        directional_isolate_status=False,
+    )
+    stack.append(replace(current_status))
+    overflow_isolate_count = 0
+    overflow_embedding_count = 0
+    valid_isolate_count = 0
+    results = []
+
+    # Explicit embeddings. Process each character individually applying rules X2 through X8
+    for index, char in enumerate(self.text):
+        bidi_char = BidiCharacter(
+            index, char, current_status.embedding_level, self.debug
+        )
+        new_bidi_class = None
+
+        if bidi_char.bidi_class == &#34;FSI&#34;:
+            bidi_char.bidi_class = (
+                &#34;LRI&#34;
+                if auto_detect_base_direction(
+                    self.text[index + 1 :], stop_at_pdi=True, debug=self.debug
+                )
+                == TextDirection.LTR
+                else &#34;RLI&#34;
+            )
+
+        if bidi_char.bidi_class in (&#34;RLE&#34;, &#34;LRE&#34;, &#34;RLO&#34;, &#34;LRO&#34;, &#34;RLI&#34;, &#34;LRI&#34;):
+            # X2 - X5: calculate explicit embeddings and explicit overrides
+            if bidi_char.bidi_class[0] == &#34;R&#34;:
+                new_embedding_level = (
+                    current_status.embedding_level + 1
+                ) | 1  # least greater odd
+            else:
+                new_embedding_level = (
+                    current_status.embedding_level + 2
+                ) &amp; ~1  # least greater even
+            if (
+                bidi_char.bidi_class[2] == &#34;I&#34;
+                and current_status.directional_override_status != &#34;N&#34;
+            ):
+                new_bidi_class = current_status.directional_override_status
+            if (
+                new_embedding_level &lt;= MAX_DEPTH
+                and overflow_isolate_count == 0
+                and overflow_embedding_count == 0
+            ):
+                current_status.embedding_level = new_embedding_level
+                current_status.directional_override_status = (
+                    bidi_char.bidi_class[0]
+                    if bidi_char.bidi_class[2] == &#34;O&#34;
+                    else &#34;N&#34;
+                )
+                if bidi_char.bidi_class[2] == &#34;I&#34;:
+                    valid_isolate_count += 1
+                    current_status.directional_isolate_status = True
+                else:
+                    current_status.directional_isolate_status = False
+                stack.append(replace(current_status))
+            else:
+                if bidi_char.bidi_class[2] == &#34;I&#34;:
+                    overflow_isolate_count += 1
+                else:
+                    if overflow_isolate_count == 0:
+                        overflow_embedding_count += 1
+
+        if bidi_char.bidi_class not in (
+            &#34;B&#34;,
+            &#34;BN&#34;,
+            &#34;RLE&#34;,
+            &#34;LRE&#34;,
+            &#34;RLO&#34;,
+            &#34;LRO&#34;,
+            &#34;PDF&#34;,
+            &#34;FSI&#34;,
+            &#34;PDI&#34;,
+        ):  # X6
+            if current_status.directional_override_status != &#34;N&#34;:
+                new_bidi_class = current_status.directional_override_status
+
+        if bidi_char.bidi_class == &#34;PDI&#34;:  # X6a
+            if overflow_isolate_count &gt; 0:
+                overflow_isolate_count -= 1
+            elif valid_isolate_count &gt; 0:
+                overflow_embedding_count = 0
+                while True:
+                    if not stack[-1].directional_isolate_status:
+                        stack.pop()
+                        continue
+                    break
+                stack.pop()
+                current_status = replace(stack[-1])
+                valid_isolate_count -= 1
+            assert isinstance(current_status, DirectionalStatus)
+            bidi_char.embedding_level = current_status.embedding_level
+            if current_status.directional_override_status != &#34;N&#34;:
+                new_bidi_class = current_status.directional_override_status
+
+        if bidi_char.bidi_class == &#34;PDF&#34;:  # X7
+            if overflow_isolate_count == 0:
+                if overflow_embedding_count &gt; 0:
+                    overflow_embedding_count -= 1
+                else:
+                    if (
+                        not current_status.directional_isolate_status
+                        and len(stack) &gt; 1
+                    ):
+                        stack.pop()
+                        current_status = replace(stack[-1])
+
+        if new_bidi_class:
+            bidi_char.bidi_class = new_bidi_class
+        if bidi_char.bidi_class not in (
+            &#34;RLE&#34;,
+            &#34;LRE&#34;,
+            &#34;RLO&#34;,
+            &#34;LRO&#34;,
+            &#34;PDF&#34;,
+            &#34;BN&#34;,
+        ):  # X9
+            if bidi_char.bidi_class == &#34;B&#34;:
+                bidi_char.embedding_level = self.base_embedding_level
+            elif bidi_char.original_bidi_class not in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;):
+                bidi_char.embedding_level = current_status.embedding_level
+            results.append(bidi_char)
+
+    if not results:
+        self.characters = []
+        return
+    self.characters = results
+    calculate_isolate_runs(results)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.get_bidi_fragments"><code class="name flex">
 <span>def <span class="ident">get_bidi_fragments</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L560-L561" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_bidi_fragments(self):
+    return self.split_bidi_fragments()</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.get_characters"><code class="name flex">
 <span>def <span class="ident">get_characters</span></span>(<span>self) ‑> List[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>]</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L541-L542" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_characters(self) -&gt; List[BidiCharacter]:
+    return self.characters</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.get_characters_with_embedding_level"><code class="name flex">
 <span>def <span class="ident">get_characters_with_embedding_level</span></span>(<span>self) ‑> List[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>]</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L544-L548" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_characters_with_embedding_level(self) -&gt; List[BidiCharacter]:
+    # Calculate embedding level for each character after breaking isolating runs.
+    # Only used on conformance testing
+    self.reorder_resolved_levels()
+    return self.characters</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.get_reordered_characters"><code class="name flex">
 <span>def <span class="ident">get_reordered_characters</span></span>(<span>self) ‑> List[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>]</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L550-L551" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_reordered_characters(self) -&gt; List[BidiCharacter]:
+    return self.reorder_resolved_levels()</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.get_reordered_string"><code class="name flex">
 <span>def <span class="ident">get_reordered_string</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L556-L558" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_reordered_string(self):
+    &#34;Used for conformance validation&#34;
+    return &#34;&#34;.join(c.character for c in self.reorder_resolved_levels())</code></pre>
+</details>
 <div class="desc"><p>Used for conformance validation</p></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.reorder_resolved_levels"><code class="name flex">
 <span>def <span class="ident">reorder_resolved_levels</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L735-L787" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def reorder_resolved_levels(self):
+    before_separator = True
+    end_of_line = True
+    max_level = 0
+    min_odd_level = 999
+    for bidi_char in reversed(self.characters):
+        # Rule L1. Reset the embedding level of segment separators, paragraph separators,
+        # and any adjacent whitespace.
+        if bidi_char.original_bidi_class in (&#34;S&#34;, &#34;B&#34;):
+            bidi_char.embedding_level = self.base_embedding_level
+            before_separator = True
+        elif bidi_char.original_bidi_class in (
+            &#34;BN&#34;,
+            &#34;WS&#34;,
+            &#34;FSI&#34;,
+            &#34;LRI&#34;,
+            &#34;RLI&#34;,
+            &#34;PDI&#34;,
+        ):
+            if before_separator or end_of_line:
+                bidi_char.embedding_level = self.base_embedding_level
+        else:
+            before_separator = False
+            end_of_line = False
+
+        if bidi_char.embedding_level &gt; max_level:
+            max_level = bidi_char.embedding_level
+        if (
+            bidi_char.embedding_level % 2 != 0
+            and bidi_char.embedding_level &lt; min_odd_level
+        ):
+            min_odd_level = bidi_char.embedding_level
+
+    # Rule L2. From the highest level found in the text to the lowest odd level on each line,
+    # reverse any contiguous sequence of characters that are at that level or higher.
+    reordered_paragraph = self.characters.copy()
+    for level in range(max_level, min_odd_level - 1, -1):
+        temp_results = []
+        rev = []
+        for bidi_char in reordered_paragraph:
+            if bidi_char.embedding_level &gt;= level:
+                rev.append(bidi_char)
+            else:
+                if rev:
+                    rev.reverse()
+                    temp_results += rev
+                    rev = []
+                temp_results.append(bidi_char)
+        if rev:
+            rev.reverse()
+            temp_results += rev
+        reordered_paragraph = temp_results
+    return tuple(reordered_paragraph)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.BidiParagraph.split_bidi_fragments"><code class="name flex">
 <span>def <span class="ident">split_bidi_fragments</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L700-L733" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def split_bidi_fragments(self):
+    bidi_fragments = []
+    if len(self.characters) == 0:
+        return ()
+    current_fragment = &#34;&#34;
+    current_direction = &#34;&#34;
+    for c in self.characters:
+        if c.get_direction_from_level() != current_direction:
+            if current_fragment:
+                bidi_fragments.append(
+                    (
+                        current_fragment,
+                        (
+                            TextDirection.RTL
+                            if current_direction == &#34;R&#34;
+                            else TextDirection.LTR
+                        ),
+                    )
+                )
+            current_fragment = &#34;&#34;
+            current_direction = c.get_direction_from_level()
+        current_fragment += c.character
+    if current_fragment:
+        bidi_fragments.append(
+            (
+                current_fragment,
+                (
+                    TextDirection.RTL
+                    if current_direction == &#34;R&#34;
+                    else TextDirection.LTR
+                ),
+            )
+        )
+    return tuple(bidi_fragments)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -513,11 +2572,10 @@ stop_at_pdi can be set to True to get the direction of a single isolate sequence
 <span>(</span><span>embedding_level: int,<br>directional_override_status: str,<br>directional_isolate_status: bool)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>DirectionalStatus(embedding_level: int, directional_override_status: str, directional_isolate_status: bool)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/bidi.py#L187-L196" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L187-L196" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass
 class DirectionalStatus:
@@ -530,18 +2588,67 @@ class DirectionalStatus:
     directional_override_status: str  # &#34;N&#34; (Neutral), &#34;L&#34; (Left) or &#34;R&#34; (Right)
     directional_isolate_status: bool</code></pre>
 </details>
+<div class="desc"><p>DirectionalStatus(embedding_level: int, directional_override_status: str, directional_isolate_status: bool)</p></div>
 <h3>Instance variables</h3>
 <dl>
 <dt id="fpdf.bidi.DirectionalStatus.directional_isolate_status"><code class="name">var <span class="ident">directional_isolate_status</span> : bool</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L187-L196" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass
+class DirectionalStatus:
+    __slots__ = [
+        &#34;embedding_level&#34;,
+        &#34;directional_override_status&#34;,
+        &#34;directional_isolate_status&#34;,
+    ]
+    embedding_level: int  # between 0 and MAX_DEPTH
+    directional_override_status: str  # &#34;N&#34; (Neutral), &#34;L&#34; (Left) or &#34;R&#34; (Right)
+    directional_isolate_status: bool</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.DirectionalStatus.directional_override_status"><code class="name">var <span class="ident">directional_override_status</span> : str</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L187-L196" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass
+class DirectionalStatus:
+    __slots__ = [
+        &#34;embedding_level&#34;,
+        &#34;directional_override_status&#34;,
+        &#34;directional_isolate_status&#34;,
+    ]
+    embedding_level: int  # between 0 and MAX_DEPTH
+    directional_override_status: str  # &#34;N&#34; (Neutral), &#34;L&#34; (Left) or &#34;R&#34; (Right)
+    directional_isolate_status: bool</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.DirectionalStatus.embedding_level"><code class="name">var <span class="ident">embedding_level</span> : int</code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L187-L196" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@dataclass
+class DirectionalStatus:
+    __slots__ = [
+        &#34;embedding_level&#34;,
+        &#34;directional_override_status&#34;,
+        &#34;directional_isolate_status&#34;,
+    ]
+    embedding_level: int  # between 0 and MAX_DEPTH
+    directional_override_status: str  # &#34;N&#34; (Neutral), &#34;L&#34; (Left) or &#34;R&#34; (Right)
+    directional_isolate_status: bool</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -551,11 +2658,10 @@ class DirectionalStatus:
 <span>(</span><span>characters: List[<a title="fpdf.bidi.BidiCharacter" href="#fpdf.bidi.BidiCharacter">BidiCharacter</a>],<br>sos: str,<br>eos: str)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/bidi.py#L199-L418" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L199-L418" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class IsolatingRun:
     __slots__ = [&#34;characters&#34;, &#34;previous_direction&#34;, &#34;next_direction&#34;]
@@ -778,18 +2884,697 @@ class DirectionalStatus:
                 if bidi_char.bidi_class in (&#34;L&#34;, &#34;EN&#34;, &#34;AN&#34;):
                     bidi_char.embedding_level += 1</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Instance variables</h3>
 <dl>
 <dt id="fpdf.bidi.IsolatingRun.characters"><code class="name">var <span class="ident">characters</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L199-L418" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class IsolatingRun:
+    __slots__ = [&#34;characters&#34;, &#34;previous_direction&#34;, &#34;next_direction&#34;]
+
+    def __init__(self, characters: List[BidiCharacter], sos: str, eos: str):
+        self.characters = characters
+        self.previous_direction = sos
+        self.next_direction = eos
+        self.resolve_weak_types()
+        self.resolve_neutral_types()
+        self.resolve_implicit_levels()
+
+    def resolve_weak_types(self) -&gt; None:
+        # W1. Examine each nonspacing mark (NSM) in the isolating run sequence, and change the type of the NSM to Other Neutral
+        #     if the previous character is an isolate initiator or PDI, and to the type of the previous character otherwise.
+        #     If the NSM is at the start of the isolating run sequence, it will get the type of sos.
+        for i, bidi_char in enumerate(self.characters):
+            if bidi_char.bidi_class == &#34;NSM&#34;:
+                if i == 0:
+                    bidi_char.set_class(self.previous_direction)
+                else:
+                    bidi_char.set_class(
+                        &#34;ON&#34;
+                        if self.characters[i - 1].bidi_class
+                        in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;, &#34;PDI&#34;)
+                        else self.characters[i - 1].bidi_class
+                    )
+
+        # W2. Search backward from each instance of a European number until the first strong type (R, L, AL, or sos) is found.
+        #     If an AL is found, change the type of the European number to Arabic number.
+        # W3. Change all ALs to R.
+
+        last_strong_type = self.previous_direction
+        for bidi_char in self.characters:
+            if bidi_char.bidi_class in (&#34;R&#34;, &#34;L&#34;, &#34;AL&#34;):
+                last_strong_type = bidi_char.bidi_class
+            if bidi_char.bidi_class == &#34;AL&#34;:
+                bidi_char.set_class(&#34;R&#34;)
+            if bidi_char.bidi_class == &#34;EN&#34; and last_strong_type == &#34;AL&#34;:
+                bidi_char.set_class(&#34;AN&#34;)
+
+        # W4. A single European separator between two European numbers changes to a European number.
+        #     A single common separator between two numbers of the same type changes to that type.
+        for i, bidi_char in enumerate(self.characters):
+            if i in (0, len(self.characters) - 1):
+                continue
+            if (
+                bidi_char.bidi_class == &#34;ES&#34;
+                and self.characters[i - 1].bidi_class == &#34;EN&#34;
+                and self.characters[i + 1].bidi_class == &#34;EN&#34;
+            ):
+                bidi_char.set_class(&#34;EN&#34;)
+
+            if (
+                bidi_char.bidi_class == &#34;CS&#34;
+                and self.characters[i - 1].bidi_class in (&#34;AN&#34;, &#34;EN&#34;)
+                and self.characters[i + 1].bidi_class
+                == self.characters[i - 1].bidi_class
+            ):
+                bidi_char.set_class(self.characters[i - 1].bidi_class)
+
+        # W5. A sequence of European terminators adjacent to European numbers changes to all European numbers.
+        # W6. All remaining separators and terminators (after the application of W4 and W5) change to Other Neutral.
+        def prev_is_en(i: int) -&gt; bool:
+            if i == 0:
+                return False
+            if self.characters[i - 1].bidi_class == &#34;ET&#34;:
+                return prev_is_en(i - 1)
+            return self.characters[i - 1].bidi_class == &#34;EN&#34;
+
+        def next_is_en(i: int) -&gt; bool:
+            if i == len(self.characters) - 1:
+                return False
+            if self.characters[i + 1].bidi_class == &#34;ET&#34;:
+                return next_is_en(i + 1)
+            return self.characters[i + 1].bidi_class == &#34;EN&#34;
+
+        for i, bidi_char in enumerate(self.characters):
+            if bidi_char.bidi_class == &#34;ET&#34;:
+                if prev_is_en(i) or next_is_en(i):
+                    bidi_char.set_class(&#34;EN&#34;)
+
+            if bidi_char.bidi_class in (&#34;ET&#34;, &#34;ES&#34;, &#34;CS&#34;):
+                bidi_char.set_class(&#34;ON&#34;)
+        # W7. Search backward from each instance of a European number until the first strong type (R, L, or sos) is found.
+        #     If an L is found, then change the type of the European number to L.
+        last_strong_type = self.previous_direction
+        for bidi_char in self.characters:
+            if bidi_char.bidi_class in (&#34;R&#34;, &#34;L&#34;, &#34;AL&#34;):
+                last_strong_type = bidi_char.bidi_class
+            if bidi_char.bidi_class == &#34;EN&#34; and last_strong_type == &#34;L&#34;:
+                bidi_char.set_class(&#34;L&#34;)
+
+    def pair_brackets(self) -&gt; List[Tuple[int, int]]:
+        &#34;&#34;&#34;
+        Calculate all the bracket pairs on an isolate run, to be used on rule N0
+        How to calculate bracket pairs:
+        - Basic definitions 14, 15 and 16: http://www.unicode.org/reports/tr9/#BD14
+        - BIDI brackets for dummies: https://www.unicode.org/notes/tn39/
+        &#34;&#34;&#34;
+        open_brackets = []
+        open_bracket_count = 0
+        bracket_pairs = []
+        for index, char in enumerate(self.characters):
+            if char.character in BIDI_BRACKETS and char.bidi_class == &#34;ON&#34;:
+                if BIDI_BRACKETS[char.character][&#34;type&#34;] == &#34;o&#34;:
+                    if open_bracket_count &gt;= 63:
+                        return []
+                    open_brackets.append((char.character, index))
+                    open_bracket_count += 1
+                if BIDI_BRACKETS[char.character][&#34;type&#34;] == &#34;c&#34;:
+                    if open_bracket_count == 0:
+                        continue
+                    for current_open_bracket in range(open_bracket_count, 0, -1):
+                        open_char, open_index = open_brackets[current_open_bracket - 1]
+                        if (BIDI_BRACKETS[open_char][&#34;pair&#34;] == char.character) or (
+                            BIDI_BRACKETS[open_char][&#34;pair&#34;] in (&#34;〉&#34;, &#34;〉&#34;)
+                            and char.character in (&#34;〉&#34;, &#34;〉&#34;)
+                        ):
+                            bracket_pairs.append((open_index, index))
+                            open_brackets = open_brackets[: current_open_bracket - 1]
+                            open_bracket_count = current_open_bracket - 1
+                            break
+        return sorted(bracket_pairs, key=itemgetter(0))
+
+    def resolve_neutral_types(self) -&gt; None:
+        def previous_strong(index: int):
+            if index == 0:
+                return self.previous_direction
+            if self.characters[index - 1].bidi_class == &#34;L&#34;:
+                return &#34;L&#34;
+            if self.characters[index - 1].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;):
+                return &#34;R&#34;
+            return previous_strong(index - 1)
+
+        def next_strong(index: int):
+            if index &gt;= len(self.characters) - 1:
+                return self.next_direction
+            if self.characters[index + 1].bidi_class == &#34;L&#34;:
+                return &#34;L&#34;
+            if self.characters[index + 1].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;):
+                return &#34;R&#34;
+            return next_strong(index + 1)
+
+        # N0-N2: Resolving neutral types
+        # N0
+        brackets = self.pair_brackets()
+        if brackets:
+            embedding_direction = self.characters[0].get_direction_from_level()
+            for b in brackets:
+                strong_same_direction = False
+                strong_opposite_direction = False
+                resulting_direction = None
+                for index in range(b[0], b[1]):
+                    if (
+                        self.characters[index].bidi_class == &#34;L&#34;
+                        and embedding_direction == &#34;L&#34;
+                    ) or (
+                        self.characters[index].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;)
+                        and embedding_direction == &#34;R&#34;
+                    ):
+                        strong_same_direction = True
+                        break
+                    if (
+                        self.characters[index].bidi_class == &#34;L&#34;
+                        and embedding_direction == &#34;R&#34;
+                    ) or (
+                        self.characters[index].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;)
+                        and embedding_direction == &#34;L&#34;
+                    ):
+                        strong_opposite_direction = True
+                if strong_same_direction:
+                    resulting_direction = embedding_direction
+                elif strong_opposite_direction:
+                    opposite_direction = &#34;L&#34; if embedding_direction == &#34;R&#34; else &#34;R&#34;
+                    if previous_strong(b[0]) == opposite_direction:
+                        resulting_direction = opposite_direction
+                    else:
+                        resulting_direction = embedding_direction
+                if resulting_direction:
+                    self.characters[b[0]].bidi_class = resulting_direction
+                    self.characters[b[1]].bidi_class = resulting_direction
+                    if len(self.characters) &gt; b[1] + 1:
+                        next_char = self.characters[b[1] + 1]
+                        if (
+                            next_char.original_bidi_class == &#34;NSM&#34;
+                            and next_char.bidi_class == &#34;ON&#34;
+                        ):
+                            next_char.bidi_class = resulting_direction
+
+        for i, bidi_char in enumerate(self.characters):
+            # N1-N2
+            if bidi_char.bidi_class in (
+                &#34;B&#34;,
+                &#34;S&#34;,
+                &#34;WS&#34;,
+                &#34;ON&#34;,
+                &#34;FSI&#34;,
+                &#34;LRI&#34;,
+                &#34;RLI&#34;,
+                &#34;PDI&#34;,
+            ):
+                if previous_strong(i) == next_strong(i):
+                    bidi_char.bidi_class = previous_strong(i)
+                else:
+                    bidi_char.bidi_class = bidi_char.get_direction_from_level()
+
+    def resolve_implicit_levels(self) -&gt; None:
+        for bidi_char in self.characters:
+            # I1. For all characters with an even (left-to-right) embedding level,
+            #     those of type R go up one level and those of type AN or EN go up two levels.
+            if bidi_char.embedding_level % 2 == 0:
+                if bidi_char.bidi_class == &#34;R&#34;:
+                    bidi_char.embedding_level += 1
+                if bidi_char.bidi_class in (&#34;AN&#34;, &#34;EN&#34;):
+                    bidi_char.embedding_level += 2
+
+            # I2. For all characters with an odd (right-to-left) embedding level, those of type L, EN or AN go up one level.
+            else:
+                if bidi_char.bidi_class in (&#34;L&#34;, &#34;EN&#34;, &#34;AN&#34;):
+                    bidi_char.embedding_level += 1</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.IsolatingRun.next_direction"><code class="name">var <span class="ident">next_direction</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L199-L418" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class IsolatingRun:
+    __slots__ = [&#34;characters&#34;, &#34;previous_direction&#34;, &#34;next_direction&#34;]
+
+    def __init__(self, characters: List[BidiCharacter], sos: str, eos: str):
+        self.characters = characters
+        self.previous_direction = sos
+        self.next_direction = eos
+        self.resolve_weak_types()
+        self.resolve_neutral_types()
+        self.resolve_implicit_levels()
+
+    def resolve_weak_types(self) -&gt; None:
+        # W1. Examine each nonspacing mark (NSM) in the isolating run sequence, and change the type of the NSM to Other Neutral
+        #     if the previous character is an isolate initiator or PDI, and to the type of the previous character otherwise.
+        #     If the NSM is at the start of the isolating run sequence, it will get the type of sos.
+        for i, bidi_char in enumerate(self.characters):
+            if bidi_char.bidi_class == &#34;NSM&#34;:
+                if i == 0:
+                    bidi_char.set_class(self.previous_direction)
+                else:
+                    bidi_char.set_class(
+                        &#34;ON&#34;
+                        if self.characters[i - 1].bidi_class
+                        in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;, &#34;PDI&#34;)
+                        else self.characters[i - 1].bidi_class
+                    )
+
+        # W2. Search backward from each instance of a European number until the first strong type (R, L, AL, or sos) is found.
+        #     If an AL is found, change the type of the European number to Arabic number.
+        # W3. Change all ALs to R.
+
+        last_strong_type = self.previous_direction
+        for bidi_char in self.characters:
+            if bidi_char.bidi_class in (&#34;R&#34;, &#34;L&#34;, &#34;AL&#34;):
+                last_strong_type = bidi_char.bidi_class
+            if bidi_char.bidi_class == &#34;AL&#34;:
+                bidi_char.set_class(&#34;R&#34;)
+            if bidi_char.bidi_class == &#34;EN&#34; and last_strong_type == &#34;AL&#34;:
+                bidi_char.set_class(&#34;AN&#34;)
+
+        # W4. A single European separator between two European numbers changes to a European number.
+        #     A single common separator between two numbers of the same type changes to that type.
+        for i, bidi_char in enumerate(self.characters):
+            if i in (0, len(self.characters) - 1):
+                continue
+            if (
+                bidi_char.bidi_class == &#34;ES&#34;
+                and self.characters[i - 1].bidi_class == &#34;EN&#34;
+                and self.characters[i + 1].bidi_class == &#34;EN&#34;
+            ):
+                bidi_char.set_class(&#34;EN&#34;)
+
+            if (
+                bidi_char.bidi_class == &#34;CS&#34;
+                and self.characters[i - 1].bidi_class in (&#34;AN&#34;, &#34;EN&#34;)
+                and self.characters[i + 1].bidi_class
+                == self.characters[i - 1].bidi_class
+            ):
+                bidi_char.set_class(self.characters[i - 1].bidi_class)
+
+        # W5. A sequence of European terminators adjacent to European numbers changes to all European numbers.
+        # W6. All remaining separators and terminators (after the application of W4 and W5) change to Other Neutral.
+        def prev_is_en(i: int) -&gt; bool:
+            if i == 0:
+                return False
+            if self.characters[i - 1].bidi_class == &#34;ET&#34;:
+                return prev_is_en(i - 1)
+            return self.characters[i - 1].bidi_class == &#34;EN&#34;
+
+        def next_is_en(i: int) -&gt; bool:
+            if i == len(self.characters) - 1:
+                return False
+            if self.characters[i + 1].bidi_class == &#34;ET&#34;:
+                return next_is_en(i + 1)
+            return self.characters[i + 1].bidi_class == &#34;EN&#34;
+
+        for i, bidi_char in enumerate(self.characters):
+            if bidi_char.bidi_class == &#34;ET&#34;:
+                if prev_is_en(i) or next_is_en(i):
+                    bidi_char.set_class(&#34;EN&#34;)
+
+            if bidi_char.bidi_class in (&#34;ET&#34;, &#34;ES&#34;, &#34;CS&#34;):
+                bidi_char.set_class(&#34;ON&#34;)
+        # W7. Search backward from each instance of a European number until the first strong type (R, L, or sos) is found.
+        #     If an L is found, then change the type of the European number to L.
+        last_strong_type = self.previous_direction
+        for bidi_char in self.characters:
+            if bidi_char.bidi_class in (&#34;R&#34;, &#34;L&#34;, &#34;AL&#34;):
+                last_strong_type = bidi_char.bidi_class
+            if bidi_char.bidi_class == &#34;EN&#34; and last_strong_type == &#34;L&#34;:
+                bidi_char.set_class(&#34;L&#34;)
+
+    def pair_brackets(self) -&gt; List[Tuple[int, int]]:
+        &#34;&#34;&#34;
+        Calculate all the bracket pairs on an isolate run, to be used on rule N0
+        How to calculate bracket pairs:
+        - Basic definitions 14, 15 and 16: http://www.unicode.org/reports/tr9/#BD14
+        - BIDI brackets for dummies: https://www.unicode.org/notes/tn39/
+        &#34;&#34;&#34;
+        open_brackets = []
+        open_bracket_count = 0
+        bracket_pairs = []
+        for index, char in enumerate(self.characters):
+            if char.character in BIDI_BRACKETS and char.bidi_class == &#34;ON&#34;:
+                if BIDI_BRACKETS[char.character][&#34;type&#34;] == &#34;o&#34;:
+                    if open_bracket_count &gt;= 63:
+                        return []
+                    open_brackets.append((char.character, index))
+                    open_bracket_count += 1
+                if BIDI_BRACKETS[char.character][&#34;type&#34;] == &#34;c&#34;:
+                    if open_bracket_count == 0:
+                        continue
+                    for current_open_bracket in range(open_bracket_count, 0, -1):
+                        open_char, open_index = open_brackets[current_open_bracket - 1]
+                        if (BIDI_BRACKETS[open_char][&#34;pair&#34;] == char.character) or (
+                            BIDI_BRACKETS[open_char][&#34;pair&#34;] in (&#34;〉&#34;, &#34;〉&#34;)
+                            and char.character in (&#34;〉&#34;, &#34;〉&#34;)
+                        ):
+                            bracket_pairs.append((open_index, index))
+                            open_brackets = open_brackets[: current_open_bracket - 1]
+                            open_bracket_count = current_open_bracket - 1
+                            break
+        return sorted(bracket_pairs, key=itemgetter(0))
+
+    def resolve_neutral_types(self) -&gt; None:
+        def previous_strong(index: int):
+            if index == 0:
+                return self.previous_direction
+            if self.characters[index - 1].bidi_class == &#34;L&#34;:
+                return &#34;L&#34;
+            if self.characters[index - 1].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;):
+                return &#34;R&#34;
+            return previous_strong(index - 1)
+
+        def next_strong(index: int):
+            if index &gt;= len(self.characters) - 1:
+                return self.next_direction
+            if self.characters[index + 1].bidi_class == &#34;L&#34;:
+                return &#34;L&#34;
+            if self.characters[index + 1].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;):
+                return &#34;R&#34;
+            return next_strong(index + 1)
+
+        # N0-N2: Resolving neutral types
+        # N0
+        brackets = self.pair_brackets()
+        if brackets:
+            embedding_direction = self.characters[0].get_direction_from_level()
+            for b in brackets:
+                strong_same_direction = False
+                strong_opposite_direction = False
+                resulting_direction = None
+                for index in range(b[0], b[1]):
+                    if (
+                        self.characters[index].bidi_class == &#34;L&#34;
+                        and embedding_direction == &#34;L&#34;
+                    ) or (
+                        self.characters[index].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;)
+                        and embedding_direction == &#34;R&#34;
+                    ):
+                        strong_same_direction = True
+                        break
+                    if (
+                        self.characters[index].bidi_class == &#34;L&#34;
+                        and embedding_direction == &#34;R&#34;
+                    ) or (
+                        self.characters[index].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;)
+                        and embedding_direction == &#34;L&#34;
+                    ):
+                        strong_opposite_direction = True
+                if strong_same_direction:
+                    resulting_direction = embedding_direction
+                elif strong_opposite_direction:
+                    opposite_direction = &#34;L&#34; if embedding_direction == &#34;R&#34; else &#34;R&#34;
+                    if previous_strong(b[0]) == opposite_direction:
+                        resulting_direction = opposite_direction
+                    else:
+                        resulting_direction = embedding_direction
+                if resulting_direction:
+                    self.characters[b[0]].bidi_class = resulting_direction
+                    self.characters[b[1]].bidi_class = resulting_direction
+                    if len(self.characters) &gt; b[1] + 1:
+                        next_char = self.characters[b[1] + 1]
+                        if (
+                            next_char.original_bidi_class == &#34;NSM&#34;
+                            and next_char.bidi_class == &#34;ON&#34;
+                        ):
+                            next_char.bidi_class = resulting_direction
+
+        for i, bidi_char in enumerate(self.characters):
+            # N1-N2
+            if bidi_char.bidi_class in (
+                &#34;B&#34;,
+                &#34;S&#34;,
+                &#34;WS&#34;,
+                &#34;ON&#34;,
+                &#34;FSI&#34;,
+                &#34;LRI&#34;,
+                &#34;RLI&#34;,
+                &#34;PDI&#34;,
+            ):
+                if previous_strong(i) == next_strong(i):
+                    bidi_char.bidi_class = previous_strong(i)
+                else:
+                    bidi_char.bidi_class = bidi_char.get_direction_from_level()
+
+    def resolve_implicit_levels(self) -&gt; None:
+        for bidi_char in self.characters:
+            # I1. For all characters with an even (left-to-right) embedding level,
+            #     those of type R go up one level and those of type AN or EN go up two levels.
+            if bidi_char.embedding_level % 2 == 0:
+                if bidi_char.bidi_class == &#34;R&#34;:
+                    bidi_char.embedding_level += 1
+                if bidi_char.bidi_class in (&#34;AN&#34;, &#34;EN&#34;):
+                    bidi_char.embedding_level += 2
+
+            # I2. For all characters with an odd (right-to-left) embedding level, those of type L, EN or AN go up one level.
+            else:
+                if bidi_char.bidi_class in (&#34;L&#34;, &#34;EN&#34;, &#34;AN&#34;):
+                    bidi_char.embedding_level += 1</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.IsolatingRun.previous_direction"><code class="name">var <span class="ident">previous_direction</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L199-L418" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class IsolatingRun:
+    __slots__ = [&#34;characters&#34;, &#34;previous_direction&#34;, &#34;next_direction&#34;]
+
+    def __init__(self, characters: List[BidiCharacter], sos: str, eos: str):
+        self.characters = characters
+        self.previous_direction = sos
+        self.next_direction = eos
+        self.resolve_weak_types()
+        self.resolve_neutral_types()
+        self.resolve_implicit_levels()
+
+    def resolve_weak_types(self) -&gt; None:
+        # W1. Examine each nonspacing mark (NSM) in the isolating run sequence, and change the type of the NSM to Other Neutral
+        #     if the previous character is an isolate initiator or PDI, and to the type of the previous character otherwise.
+        #     If the NSM is at the start of the isolating run sequence, it will get the type of sos.
+        for i, bidi_char in enumerate(self.characters):
+            if bidi_char.bidi_class == &#34;NSM&#34;:
+                if i == 0:
+                    bidi_char.set_class(self.previous_direction)
+                else:
+                    bidi_char.set_class(
+                        &#34;ON&#34;
+                        if self.characters[i - 1].bidi_class
+                        in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;, &#34;PDI&#34;)
+                        else self.characters[i - 1].bidi_class
+                    )
+
+        # W2. Search backward from each instance of a European number until the first strong type (R, L, AL, or sos) is found.
+        #     If an AL is found, change the type of the European number to Arabic number.
+        # W3. Change all ALs to R.
+
+        last_strong_type = self.previous_direction
+        for bidi_char in self.characters:
+            if bidi_char.bidi_class in (&#34;R&#34;, &#34;L&#34;, &#34;AL&#34;):
+                last_strong_type = bidi_char.bidi_class
+            if bidi_char.bidi_class == &#34;AL&#34;:
+                bidi_char.set_class(&#34;R&#34;)
+            if bidi_char.bidi_class == &#34;EN&#34; and last_strong_type == &#34;AL&#34;:
+                bidi_char.set_class(&#34;AN&#34;)
+
+        # W4. A single European separator between two European numbers changes to a European number.
+        #     A single common separator between two numbers of the same type changes to that type.
+        for i, bidi_char in enumerate(self.characters):
+            if i in (0, len(self.characters) - 1):
+                continue
+            if (
+                bidi_char.bidi_class == &#34;ES&#34;
+                and self.characters[i - 1].bidi_class == &#34;EN&#34;
+                and self.characters[i + 1].bidi_class == &#34;EN&#34;
+            ):
+                bidi_char.set_class(&#34;EN&#34;)
+
+            if (
+                bidi_char.bidi_class == &#34;CS&#34;
+                and self.characters[i - 1].bidi_class in (&#34;AN&#34;, &#34;EN&#34;)
+                and self.characters[i + 1].bidi_class
+                == self.characters[i - 1].bidi_class
+            ):
+                bidi_char.set_class(self.characters[i - 1].bidi_class)
+
+        # W5. A sequence of European terminators adjacent to European numbers changes to all European numbers.
+        # W6. All remaining separators and terminators (after the application of W4 and W5) change to Other Neutral.
+        def prev_is_en(i: int) -&gt; bool:
+            if i == 0:
+                return False
+            if self.characters[i - 1].bidi_class == &#34;ET&#34;:
+                return prev_is_en(i - 1)
+            return self.characters[i - 1].bidi_class == &#34;EN&#34;
+
+        def next_is_en(i: int) -&gt; bool:
+            if i == len(self.characters) - 1:
+                return False
+            if self.characters[i + 1].bidi_class == &#34;ET&#34;:
+                return next_is_en(i + 1)
+            return self.characters[i + 1].bidi_class == &#34;EN&#34;
+
+        for i, bidi_char in enumerate(self.characters):
+            if bidi_char.bidi_class == &#34;ET&#34;:
+                if prev_is_en(i) or next_is_en(i):
+                    bidi_char.set_class(&#34;EN&#34;)
+
+            if bidi_char.bidi_class in (&#34;ET&#34;, &#34;ES&#34;, &#34;CS&#34;):
+                bidi_char.set_class(&#34;ON&#34;)
+        # W7. Search backward from each instance of a European number until the first strong type (R, L, or sos) is found.
+        #     If an L is found, then change the type of the European number to L.
+        last_strong_type = self.previous_direction
+        for bidi_char in self.characters:
+            if bidi_char.bidi_class in (&#34;R&#34;, &#34;L&#34;, &#34;AL&#34;):
+                last_strong_type = bidi_char.bidi_class
+            if bidi_char.bidi_class == &#34;EN&#34; and last_strong_type == &#34;L&#34;:
+                bidi_char.set_class(&#34;L&#34;)
+
+    def pair_brackets(self) -&gt; List[Tuple[int, int]]:
+        &#34;&#34;&#34;
+        Calculate all the bracket pairs on an isolate run, to be used on rule N0
+        How to calculate bracket pairs:
+        - Basic definitions 14, 15 and 16: http://www.unicode.org/reports/tr9/#BD14
+        - BIDI brackets for dummies: https://www.unicode.org/notes/tn39/
+        &#34;&#34;&#34;
+        open_brackets = []
+        open_bracket_count = 0
+        bracket_pairs = []
+        for index, char in enumerate(self.characters):
+            if char.character in BIDI_BRACKETS and char.bidi_class == &#34;ON&#34;:
+                if BIDI_BRACKETS[char.character][&#34;type&#34;] == &#34;o&#34;:
+                    if open_bracket_count &gt;= 63:
+                        return []
+                    open_brackets.append((char.character, index))
+                    open_bracket_count += 1
+                if BIDI_BRACKETS[char.character][&#34;type&#34;] == &#34;c&#34;:
+                    if open_bracket_count == 0:
+                        continue
+                    for current_open_bracket in range(open_bracket_count, 0, -1):
+                        open_char, open_index = open_brackets[current_open_bracket - 1]
+                        if (BIDI_BRACKETS[open_char][&#34;pair&#34;] == char.character) or (
+                            BIDI_BRACKETS[open_char][&#34;pair&#34;] in (&#34;〉&#34;, &#34;〉&#34;)
+                            and char.character in (&#34;〉&#34;, &#34;〉&#34;)
+                        ):
+                            bracket_pairs.append((open_index, index))
+                            open_brackets = open_brackets[: current_open_bracket - 1]
+                            open_bracket_count = current_open_bracket - 1
+                            break
+        return sorted(bracket_pairs, key=itemgetter(0))
+
+    def resolve_neutral_types(self) -&gt; None:
+        def previous_strong(index: int):
+            if index == 0:
+                return self.previous_direction
+            if self.characters[index - 1].bidi_class == &#34;L&#34;:
+                return &#34;L&#34;
+            if self.characters[index - 1].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;):
+                return &#34;R&#34;
+            return previous_strong(index - 1)
+
+        def next_strong(index: int):
+            if index &gt;= len(self.characters) - 1:
+                return self.next_direction
+            if self.characters[index + 1].bidi_class == &#34;L&#34;:
+                return &#34;L&#34;
+            if self.characters[index + 1].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;):
+                return &#34;R&#34;
+            return next_strong(index + 1)
+
+        # N0-N2: Resolving neutral types
+        # N0
+        brackets = self.pair_brackets()
+        if brackets:
+            embedding_direction = self.characters[0].get_direction_from_level()
+            for b in brackets:
+                strong_same_direction = False
+                strong_opposite_direction = False
+                resulting_direction = None
+                for index in range(b[0], b[1]):
+                    if (
+                        self.characters[index].bidi_class == &#34;L&#34;
+                        and embedding_direction == &#34;L&#34;
+                    ) or (
+                        self.characters[index].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;)
+                        and embedding_direction == &#34;R&#34;
+                    ):
+                        strong_same_direction = True
+                        break
+                    if (
+                        self.characters[index].bidi_class == &#34;L&#34;
+                        and embedding_direction == &#34;R&#34;
+                    ) or (
+                        self.characters[index].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;)
+                        and embedding_direction == &#34;L&#34;
+                    ):
+                        strong_opposite_direction = True
+                if strong_same_direction:
+                    resulting_direction = embedding_direction
+                elif strong_opposite_direction:
+                    opposite_direction = &#34;L&#34; if embedding_direction == &#34;R&#34; else &#34;R&#34;
+                    if previous_strong(b[0]) == opposite_direction:
+                        resulting_direction = opposite_direction
+                    else:
+                        resulting_direction = embedding_direction
+                if resulting_direction:
+                    self.characters[b[0]].bidi_class = resulting_direction
+                    self.characters[b[1]].bidi_class = resulting_direction
+                    if len(self.characters) &gt; b[1] + 1:
+                        next_char = self.characters[b[1] + 1]
+                        if (
+                            next_char.original_bidi_class == &#34;NSM&#34;
+                            and next_char.bidi_class == &#34;ON&#34;
+                        ):
+                            next_char.bidi_class = resulting_direction
+
+        for i, bidi_char in enumerate(self.characters):
+            # N1-N2
+            if bidi_char.bidi_class in (
+                &#34;B&#34;,
+                &#34;S&#34;,
+                &#34;WS&#34;,
+                &#34;ON&#34;,
+                &#34;FSI&#34;,
+                &#34;LRI&#34;,
+                &#34;RLI&#34;,
+                &#34;PDI&#34;,
+            ):
+                if previous_strong(i) == next_strong(i):
+                    bidi_char.bidi_class = previous_strong(i)
+                else:
+                    bidi_char.bidi_class = bidi_char.get_direction_from_level()
+
+    def resolve_implicit_levels(self) -&gt; None:
+        for bidi_char in self.characters:
+            # I1. For all characters with an even (left-to-right) embedding level,
+            #     those of type R go up one level and those of type AN or EN go up two levels.
+            if bidi_char.embedding_level % 2 == 0:
+                if bidi_char.bidi_class == &#34;R&#34;:
+                    bidi_char.embedding_level += 1
+                if bidi_char.bidi_class in (&#34;AN&#34;, &#34;EN&#34;):
+                    bidi_char.embedding_level += 2
+
+            # I2. For all characters with an odd (right-to-left) embedding level, those of type L, EN or AN go up one level.
+            else:
+                if bidi_char.bidi_class in (&#34;L&#34;, &#34;EN&#34;, &#34;AN&#34;):
+                    bidi_char.embedding_level += 1</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -799,6 +3584,43 @@ class DirectionalStatus:
 <span>def <span class="ident">pair_brackets</span></span>(<span>self) ‑> List[Tuple[int, int]]</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L291-L321" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def pair_brackets(self) -&gt; List[Tuple[int, int]]:
+    &#34;&#34;&#34;
+    Calculate all the bracket pairs on an isolate run, to be used on rule N0
+    How to calculate bracket pairs:
+    - Basic definitions 14, 15 and 16: http://www.unicode.org/reports/tr9/#BD14
+    - BIDI brackets for dummies: https://www.unicode.org/notes/tn39/
+    &#34;&#34;&#34;
+    open_brackets = []
+    open_bracket_count = 0
+    bracket_pairs = []
+    for index, char in enumerate(self.characters):
+        if char.character in BIDI_BRACKETS and char.bidi_class == &#34;ON&#34;:
+            if BIDI_BRACKETS[char.character][&#34;type&#34;] == &#34;o&#34;:
+                if open_bracket_count &gt;= 63:
+                    return []
+                open_brackets.append((char.character, index))
+                open_bracket_count += 1
+            if BIDI_BRACKETS[char.character][&#34;type&#34;] == &#34;c&#34;:
+                if open_bracket_count == 0:
+                    continue
+                for current_open_bracket in range(open_bracket_count, 0, -1):
+                    open_char, open_index = open_brackets[current_open_bracket - 1]
+                    if (BIDI_BRACKETS[open_char][&#34;pair&#34;] == char.character) or (
+                        BIDI_BRACKETS[open_char][&#34;pair&#34;] in (&#34;〉&#34;, &#34;〉&#34;)
+                        and char.character in (&#34;〉&#34;, &#34;〉&#34;)
+                    ):
+                        bracket_pairs.append((open_index, index))
+                        open_brackets = open_brackets[: current_open_bracket - 1]
+                        open_bracket_count = current_open_bracket - 1
+                        break
+    return sorted(bracket_pairs, key=itemgetter(0))</code></pre>
+</details>
 <div class="desc"><p>Calculate all the bracket pairs on an isolate run, to be used on rule N0
 How to calculate bracket pairs:
 - Basic definitions 14, 15 and 16: <a href="http://www.unicode.org/reports/tr9/#BD14">http://www.unicode.org/reports/tr9/#BD14</a>
@@ -808,18 +3630,211 @@ How to calculate bracket pairs:
 <span>def <span class="ident">resolve_implicit_levels</span></span>(<span>self) ‑> None</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L405-L418" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def resolve_implicit_levels(self) -&gt; None:
+    for bidi_char in self.characters:
+        # I1. For all characters with an even (left-to-right) embedding level,
+        #     those of type R go up one level and those of type AN or EN go up two levels.
+        if bidi_char.embedding_level % 2 == 0:
+            if bidi_char.bidi_class == &#34;R&#34;:
+                bidi_char.embedding_level += 1
+            if bidi_char.bidi_class in (&#34;AN&#34;, &#34;EN&#34;):
+                bidi_char.embedding_level += 2
+
+        # I2. For all characters with an odd (right-to-left) embedding level, those of type L, EN or AN go up one level.
+        else:
+            if bidi_char.bidi_class in (&#34;L&#34;, &#34;EN&#34;, &#34;AN&#34;):
+                bidi_char.embedding_level += 1</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.IsolatingRun.resolve_neutral_types"><code class="name flex">
 <span>def <span class="ident">resolve_neutral_types</span></span>(<span>self) ‑> None</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L323-L403" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def resolve_neutral_types(self) -&gt; None:
+    def previous_strong(index: int):
+        if index == 0:
+            return self.previous_direction
+        if self.characters[index - 1].bidi_class == &#34;L&#34;:
+            return &#34;L&#34;
+        if self.characters[index - 1].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;):
+            return &#34;R&#34;
+        return previous_strong(index - 1)
+
+    def next_strong(index: int):
+        if index &gt;= len(self.characters) - 1:
+            return self.next_direction
+        if self.characters[index + 1].bidi_class == &#34;L&#34;:
+            return &#34;L&#34;
+        if self.characters[index + 1].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;):
+            return &#34;R&#34;
+        return next_strong(index + 1)
+
+    # N0-N2: Resolving neutral types
+    # N0
+    brackets = self.pair_brackets()
+    if brackets:
+        embedding_direction = self.characters[0].get_direction_from_level()
+        for b in brackets:
+            strong_same_direction = False
+            strong_opposite_direction = False
+            resulting_direction = None
+            for index in range(b[0], b[1]):
+                if (
+                    self.characters[index].bidi_class == &#34;L&#34;
+                    and embedding_direction == &#34;L&#34;
+                ) or (
+                    self.characters[index].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;)
+                    and embedding_direction == &#34;R&#34;
+                ):
+                    strong_same_direction = True
+                    break
+                if (
+                    self.characters[index].bidi_class == &#34;L&#34;
+                    and embedding_direction == &#34;R&#34;
+                ) or (
+                    self.characters[index].bidi_class in (&#34;R&#34;, &#34;AN&#34;, &#34;EN&#34;)
+                    and embedding_direction == &#34;L&#34;
+                ):
+                    strong_opposite_direction = True
+            if strong_same_direction:
+                resulting_direction = embedding_direction
+            elif strong_opposite_direction:
+                opposite_direction = &#34;L&#34; if embedding_direction == &#34;R&#34; else &#34;R&#34;
+                if previous_strong(b[0]) == opposite_direction:
+                    resulting_direction = opposite_direction
+                else:
+                    resulting_direction = embedding_direction
+            if resulting_direction:
+                self.characters[b[0]].bidi_class = resulting_direction
+                self.characters[b[1]].bidi_class = resulting_direction
+                if len(self.characters) &gt; b[1] + 1:
+                    next_char = self.characters[b[1] + 1]
+                    if (
+                        next_char.original_bidi_class == &#34;NSM&#34;
+                        and next_char.bidi_class == &#34;ON&#34;
+                    ):
+                        next_char.bidi_class = resulting_direction
+
+    for i, bidi_char in enumerate(self.characters):
+        # N1-N2
+        if bidi_char.bidi_class in (
+            &#34;B&#34;,
+            &#34;S&#34;,
+            &#34;WS&#34;,
+            &#34;ON&#34;,
+            &#34;FSI&#34;,
+            &#34;LRI&#34;,
+            &#34;RLI&#34;,
+            &#34;PDI&#34;,
+        ):
+            if previous_strong(i) == next_strong(i):
+                bidi_char.bidi_class = previous_strong(i)
+            else:
+                bidi_char.bidi_class = bidi_char.get_direction_from_level()</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.bidi.IsolatingRun.resolve_weak_types"><code class="name flex">
 <span>def <span class="ident">resolve_weak_types</span></span>(<span>self) ‑> None</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/bidi.py#L210-L289" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def resolve_weak_types(self) -&gt; None:
+    # W1. Examine each nonspacing mark (NSM) in the isolating run sequence, and change the type of the NSM to Other Neutral
+    #     if the previous character is an isolate initiator or PDI, and to the type of the previous character otherwise.
+    #     If the NSM is at the start of the isolating run sequence, it will get the type of sos.
+    for i, bidi_char in enumerate(self.characters):
+        if bidi_char.bidi_class == &#34;NSM&#34;:
+            if i == 0:
+                bidi_char.set_class(self.previous_direction)
+            else:
+                bidi_char.set_class(
+                    &#34;ON&#34;
+                    if self.characters[i - 1].bidi_class
+                    in (&#34;LRI&#34;, &#34;RLI&#34;, &#34;FSI&#34;, &#34;PDI&#34;)
+                    else self.characters[i - 1].bidi_class
+                )
+
+    # W2. Search backward from each instance of a European number until the first strong type (R, L, AL, or sos) is found.
+    #     If an AL is found, change the type of the European number to Arabic number.
+    # W3. Change all ALs to R.
+
+    last_strong_type = self.previous_direction
+    for bidi_char in self.characters:
+        if bidi_char.bidi_class in (&#34;R&#34;, &#34;L&#34;, &#34;AL&#34;):
+            last_strong_type = bidi_char.bidi_class
+        if bidi_char.bidi_class == &#34;AL&#34;:
+            bidi_char.set_class(&#34;R&#34;)
+        if bidi_char.bidi_class == &#34;EN&#34; and last_strong_type == &#34;AL&#34;:
+            bidi_char.set_class(&#34;AN&#34;)
+
+    # W4. A single European separator between two European numbers changes to a European number.
+    #     A single common separator between two numbers of the same type changes to that type.
+    for i, bidi_char in enumerate(self.characters):
+        if i in (0, len(self.characters) - 1):
+            continue
+        if (
+            bidi_char.bidi_class == &#34;ES&#34;
+            and self.characters[i - 1].bidi_class == &#34;EN&#34;
+            and self.characters[i + 1].bidi_class == &#34;EN&#34;
+        ):
+            bidi_char.set_class(&#34;EN&#34;)
+
+        if (
+            bidi_char.bidi_class == &#34;CS&#34;
+            and self.characters[i - 1].bidi_class in (&#34;AN&#34;, &#34;EN&#34;)
+            and self.characters[i + 1].bidi_class
+            == self.characters[i - 1].bidi_class
+        ):
+            bidi_char.set_class(self.characters[i - 1].bidi_class)
+
+    # W5. A sequence of European terminators adjacent to European numbers changes to all European numbers.
+    # W6. All remaining separators and terminators (after the application of W4 and W5) change to Other Neutral.
+    def prev_is_en(i: int) -&gt; bool:
+        if i == 0:
+            return False
+        if self.characters[i - 1].bidi_class == &#34;ET&#34;:
+            return prev_is_en(i - 1)
+        return self.characters[i - 1].bidi_class == &#34;EN&#34;
+
+    def next_is_en(i: int) -&gt; bool:
+        if i == len(self.characters) - 1:
+            return False
+        if self.characters[i + 1].bidi_class == &#34;ET&#34;:
+            return next_is_en(i + 1)
+        return self.characters[i + 1].bidi_class == &#34;EN&#34;
+
+    for i, bidi_char in enumerate(self.characters):
+        if bidi_char.bidi_class == &#34;ET&#34;:
+            if prev_is_en(i) or next_is_en(i):
+                bidi_char.set_class(&#34;EN&#34;)
+
+        if bidi_char.bidi_class in (&#34;ET&#34;, &#34;ES&#34;, &#34;CS&#34;):
+            bidi_char.set_class(&#34;ON&#34;)
+    # W7. Search backward from each instance of a European number until the first strong type (R, L, or sos) is found.
+    #     If an L is found, then change the type of the European number to L.
+    last_strong_type = self.previous_direction
+    for bidi_char in self.characters:
+        if bidi_char.bidi_class in (&#34;R&#34;, &#34;L&#34;, &#34;AL&#34;):
+            last_strong_type = bidi_char.bidi_class
+        if bidi_char.bidi_class == &#34;EN&#34; and last_strong_type == &#34;L&#34;:
+            bidi_char.set_class(&#34;L&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -903,7 +3918,7 @@ How to calculate bracket pairs:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.3</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>

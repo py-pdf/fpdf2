@@ -3,19 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.3">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>fpdf.image_parsing API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -37,18 +48,291 @@ hljs.highlightAll();
 <span>def <span class="ident">ccitt_payload_location_from_pil</span></span>(<span>img)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/image_parsing.py#L463-L484" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def ccitt_payload_location_from_pil(img):
+    &#34;&#34;&#34;
+    returns the byte offset and length of the CCITT payload in the original TIFF data
+    &#34;&#34;&#34;
+    # assert(img.info[&#34;compression&#34;] == &#34;group4&#34;)
+
+    # Read the TIFF tags to find the offset(s) of the compressed data strips.
+    strip_offsets = img.tag_v2[TiffImagePlugin.STRIPOFFSETS]
+    strip_bytes = img.tag_v2[TiffImagePlugin.STRIPBYTECOUNTS]
+
+    # PIL always seems to create a single strip even for very large TIFFs when
+    # it saves images, so assume we only have to read a single strip.
+    # A test ~10 GPixel image was still encoded as a single strip. Just to be
+    # safe check throw an error if there is more than one offset.
+    if len(strip_offsets) != 1 or len(strip_bytes) != 1:
+        raise NotImplementedError(
+            &#34;Transcoding multiple strips not supported by the PDF format&#34;
+        )
+
+    (offset,), (length,) = strip_offsets, strip_bytes
+
+    return offset, length</code></pre>
+</details>
 <div class="desc"><p>returns the byte offset and length of the CCITT payload in the original TIFF data</p></div>
 </dd>
 <dt id="fpdf.image_parsing.clear_table"><code class="name flex">
 <span>def <span class="ident">clear_table</span></span>(<span>)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/image_parsing.py#L639-L649" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def clear_table():
+    &#34;&#34;&#34;
+    Reset the encoding table and coding state to initial conditions.
+
+    &#34;&#34;&#34;
+
+    table = {bytes([i]): i for i in range(256)}
+    next_code = LZW_EOD_MARKER + 1
+    bits_per_code = LZW_INITIAL_BITS_PER_CODE
+    max_code_value = (1 &lt;&lt; bits_per_code) - 1
+    return table, next_code, bits_per_code, max_code_value</code></pre>
+</details>
 <div class="desc"><p>Reset the encoding table and coding state to initial conditions.</p></div>
 </dd>
 <dt id="fpdf.image_parsing.get_img_info"><code class="name flex">
 <span>def <span class="ident">get_img_info</span></span>(<span>filename, img=None, image_filter='AUTO', dims=None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/image_parsing.py#L215-L436" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_img_info(filename, img=None, image_filter=&#34;AUTO&#34;, dims=None):
+    &#34;&#34;&#34;
+    Args:
+        filename: in a format that can be passed to load_image
+        img: optional `bytes`, `BytesIO` or `PIL.Image.Image` instance
+        image_filter (str): one of the SUPPORTED_IMAGE_FILTERS
+    &#34;&#34;&#34;
+    if Image is None:
+        raise EnvironmentError(&#34;Pillow not available - fpdf2 cannot insert images&#34;)
+
+    is_pil_img = True
+    keep_bytes_io_open = False
+    # Flag to check whether a cmyk image is jpeg or not, if set to True the decode array
+    # is inverted in output.py
+    jpeg_inverted = False
+    img_raw_data = None
+    if not img or isinstance(img, (Path, str)):
+        img_raw_data = load_image(filename)
+        img = Image.open(img_raw_data)
+        is_pil_img = False
+    elif not isinstance(img, Image.Image):
+        keep_bytes_io_open = isinstance(img, BytesIO)
+        img_raw_data = BytesIO(img) if isinstance(img, bytes) else img
+        img = Image.open(img_raw_data)
+        is_pil_img = False
+
+    img_altered = False
+    if dims:
+        img = img.resize(dims, resample=RESAMPLE)
+        img_altered = True
+
+    if image_filter == &#34;AUTO&#34;:
+        # Very simple logic for now:
+        if img.format == &#34;JPEG&#34;:
+            image_filter = &#34;DCTDecode&#34;
+        elif img.mode == &#34;1&#34; and hasattr(Image.core, &#34;libtiff_support_custom_tags&#34;):
+            # The 2nd condition prevents from running in a bug sometimes,
+            # cf. test_transcode_monochrome_and_libtiff_support_custom_tags()
+            image_filter = &#34;CCITTFaxDecode&#34;
+        else:
+            image_filter = &#34;FlateDecode&#34;
+
+    if img.mode in (&#34;P&#34;, &#34;PA&#34;) and image_filter != &#34;FlateDecode&#34;:
+        img = img.convert(&#34;RGBA&#34;)
+
+    if img.mode not in (&#34;1&#34;, &#34;L&#34;, &#34;LA&#34;, &#34;RGB&#34;, &#34;RGBA&#34;, &#34;P&#34;, &#34;PA&#34;, &#34;CMYK&#34;):
+        img = img.convert(&#34;RGBA&#34;)
+        img_altered = True
+
+    if img.mode in (&#34;P&#34;, &#34;RGBA&#34;) and image_filter == &#34;LZWDecode&#34;:
+        img = img.convert(&#34;RGB&#34;)
+    elif img.mode in (&#34;LA&#34;) and image_filter == &#34;LZWDecode&#34;:
+        img = img.convert(&#34;L&#34;)
+
+    w, h = img.size
+    info = RasterImageInfo()
+
+    iccp = None
+    if &#34;icc_profile&#34; in img.info:
+        if is_iccp_valid(img.info[&#34;icc_profile&#34;], filename):
+            iccp = img.info[&#34;icc_profile&#34;]
+
+    if img_raw_data is not None and not img_altered:
+        # if we can use the original image bytes directly we do (JPEG and group4 TIFF only):
+        if img.format == &#34;JPEG&#34; and image_filter == &#34;DCTDecode&#34;:
+            if img.mode in (&#34;RGB&#34;, &#34;RGBA&#34;):
+                dpn, bpc, colspace = 3, 8, &#34;DeviceRGB&#34;
+            elif img.mode == &#34;CMYK&#34;:
+                dpn, bpc, colspace = 4, 8, &#34;DeviceCMYK&#34;
+                jpeg_inverted = True
+            elif img.mode == &#34;L&#34;:
+                dpn, bpc, colspace = 1, 8, &#34;DeviceGray&#34;
+            else:
+                raise ValueError(f&#34;Unsupported image mode: {img.mode}&#34;)
+            img_raw_data.seek(0)
+            info.update(
+                {
+                    &#34;data&#34;: img_raw_data.read(),
+                    &#34;w&#34;: w,
+                    &#34;h&#34;: h,
+                    &#34;cs&#34;: colspace,
+                    &#34;iccp&#34;: iccp,
+                    &#34;dpn&#34;: dpn,
+                    &#34;bpc&#34;: bpc,
+                    &#34;f&#34;: image_filter,
+                    &#34;inverted&#34;: jpeg_inverted,
+                    &#34;dp&#34;: f&#34;/Predictor 15 /Colors {dpn} /Columns {w}&#34;,
+                }
+            )
+            return info
+        # We can directly copy the data out of a CCITT Group 4 encoded TIFF, if it
+        # only contains a single strip
+        if (
+            img.format == &#34;TIFF&#34;
+            and image_filter == &#34;CCITTFaxDecode&#34;
+            and img.info[&#34;compression&#34;] == &#34;group4&#34;
+            and len(img.tag_v2[TiffImagePlugin.STRIPOFFSETS]) == 1
+            and len(img.tag_v2[TiffImagePlugin.STRIPBYTECOUNTS]) == 1
+        ):
+            photo = img.tag_v2[TiffImagePlugin.PHOTOMETRIC_INTERPRETATION]
+            inverted = False
+            if photo == 0:
+                inverted = True
+            elif photo != 1:
+                raise ValueError(
+                    f&#34;unsupported photometric interpretation for g4 tiff: {photo}&#34;
+                )
+            offset, length = ccitt_payload_location_from_pil(img)
+            img_raw_data.seek(offset)
+            ccittrawdata = img_raw_data.read(length)
+            fillorder = img.tag_v2.get(TiffImagePlugin.FILLORDER)
+            if fillorder is None or fillorder == 1:
+                # no FillOrder or msb-to-lsb: nothing to do
+                pass
+            elif fillorder == 2:
+                # lsb-to-msb: reverse bits of each byte
+                ccittrawdata = bytearray(ccittrawdata)
+                for i, n in enumerate(ccittrawdata):
+                    ccittrawdata[i] = TIFFBitRevTable[n]
+                ccittrawdata = bytes(ccittrawdata)
+            else:
+                raise ValueError(f&#34;unsupported FillOrder: {fillorder}&#34;)
+            dpn, bpc, colspace = 1, 1, &#34;DeviceGray&#34;
+            info.update(
+                {
+                    &#34;data&#34;: ccittrawdata,
+                    &#34;w&#34;: w,
+                    &#34;h&#34;: h,
+                    &#34;iccp&#34;: None,
+                    &#34;dpn&#34;: dpn,
+                    &#34;cs&#34;: colspace,
+                    &#34;bpc&#34;: bpc,
+                    &#34;f&#34;: image_filter,
+                    &#34;inverted&#34;: jpeg_inverted,
+                    &#34;dp&#34;: f&#34;/BlackIs1 {str(not inverted).lower()} /Columns {w} /K -1 /Rows {h}&#34;,
+                }
+            )
+            return info
+
+    # garbage collection
+    img_raw_data = None
+
+    if img.mode == &#34;1&#34;:
+        dpn, bpc, colspace = 1, 1, &#34;DeviceGray&#34;
+        info[&#34;data&#34;] = _to_data(img, image_filter)
+    elif img.mode == &#34;L&#34;:
+        dpn, bpc, colspace = 1, 8, &#34;DeviceGray&#34;
+        info[&#34;data&#34;] = _to_data(img, image_filter)
+    elif img.mode == &#34;LA&#34;:
+        dpn, bpc, colspace = 1, 8, &#34;DeviceGray&#34;
+        alpha_channel = slice(1, None, 2)
+        info[&#34;data&#34;] = _to_data(img, image_filter, remove_slice=alpha_channel)
+        if _has_alpha(img, alpha_channel) and image_filter not in (
+            &#34;DCTDecode&#34;,
+            &#34;JPXDecode&#34;,
+        ):
+            info[&#34;smask&#34;] = _to_data(img, image_filter, select_slice=alpha_channel)
+    elif img.mode == &#34;P&#34;:
+        dpn, bpc, colspace = 1, 8, &#34;Indexed&#34;
+        info[&#34;data&#34;] = _to_data(img, image_filter)
+        info[&#34;pal&#34;] = img.palette.palette
+
+        # check if the P image has transparency
+        if img.info.get(&#34;transparency&#34;, None) is not None and image_filter not in (
+            &#34;DCTDecode&#34;,
+            &#34;JPXDecode&#34;,
+        ):
+            # convert to RGBA to get the alpha channel for creating the smask
+            info[&#34;smask&#34;] = _to_data(
+                img.convert(&#34;RGBA&#34;), image_filter, select_slice=slice(3, None, 4)
+            )
+    elif img.mode == &#34;PA&#34;:
+        dpn, bpc, colspace = 1, 8, &#34;Indexed&#34;
+        info[&#34;pal&#34;] = img.palette.palette
+        alpha_channel = slice(1, None, 2)
+        info[&#34;data&#34;] = _to_data(img, image_filter, remove_slice=alpha_channel)
+        if _has_alpha(img, alpha_channel) and image_filter not in (
+            &#34;DCTDecode&#34;,
+            &#34;JPXDecode&#34;,
+        ):
+            info[&#34;smask&#34;] = _to_data(img, image_filter, select_slice=alpha_channel)
+    elif img.mode == &#34;CMYK&#34;:
+        dpn, bpc, colspace = 4, 8, &#34;DeviceCMYK&#34;
+        info[&#34;data&#34;] = _to_data(img, image_filter)
+    elif img.mode == &#34;RGB&#34;:
+        dpn, bpc, colspace = 3, 8, &#34;DeviceRGB&#34;
+        info[&#34;data&#34;] = _to_data(img, image_filter)
+    else:  # RGBA image
+        dpn, bpc, colspace = 3, 8, &#34;DeviceRGB&#34;
+        alpha_channel = slice(3, None, 4)
+        info[&#34;data&#34;] = _to_data(img, image_filter, remove_slice=alpha_channel)
+        if _has_alpha(img, alpha_channel) and image_filter not in (
+            &#34;DCTDecode&#34;,
+            &#34;JPXDecode&#34;,
+        ):
+            info[&#34;smask&#34;] = _to_data(img, image_filter, select_slice=alpha_channel)
+
+    dp = f&#34;/Predictor 15 /Colors {dpn} /Columns {w}&#34;
+
+    if img.mode == &#34;1&#34;:
+        dp = f&#34;/BlackIs1 true /Columns {w} /K -1 /Rows {h}&#34;
+
+    if not is_pil_img:
+        if keep_bytes_io_open:
+            img.fp = None  # cf. issue #881
+        else:
+            img.close()
+
+    info.update(
+        {
+            &#34;w&#34;: w,
+            &#34;h&#34;: h,
+            &#34;cs&#34;: colspace,
+            &#34;iccp&#34;: iccp,
+            &#34;bpc&#34;: bpc,
+            &#34;dpn&#34;: dpn,
+            &#34;f&#34;: image_filter,
+            &#34;inverted&#34;: jpeg_inverted,
+            &#34;dp&#34;: dp,
+        }
+    )
+    return info</code></pre>
+</details>
 <div class="desc"><h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>filename</code></strong></dt>
@@ -63,18 +347,85 @@ hljs.highlightAll();
 <span>def <span class="ident">get_svg_info</span></span>(<span>filename, img, image_cache)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/image_parsing.py#L201-L212" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_svg_info(filename, img, image_cache):
+    svg = SVGObject(img.getvalue(), image_cache=image_cache)
+    if svg.viewbox:
+        _, _, w, h = svg.viewbox
+    else:
+        w = h = 0.0
+    if svg.width:
+        w = svg.width
+    if svg.height:
+        h = svg.height
+    info = VectorImageInfo(data=svg, w=w, h=h)
+    return filename, svg, info</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.image_parsing.is_iccp_valid"><code class="name flex">
 <span>def <span class="ident">is_iccp_valid</span></span>(<span>iccp, filename)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/image_parsing.py#L183-L198" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def is_iccp_valid(iccp, filename):
+    &#34;Checks the validity of an ICC profile&#34;
+    try:
+        profile = ImageCms.getOpenProfile(BytesIO(iccp))
+    except ImageCms.PyCMSError:
+        LOGGER.info(&#34;Invalid ICC Profile in file %s&#34;, filename)
+        return False
+    color_space = profile.profile.xcolor_space.strip()
+    if color_space not in (&#34;GRAY&#34;, &#34;RGB&#34;):
+        LOGGER.info(
+            &#34;Unsupported color space %s in ICC Profile of file %s - cf. issue #711&#34;,
+            color_space,
+            filename,
+        )
+        return False
+    return True</code></pre>
+</details>
 <div class="desc"><p>Checks the validity of an ICC profile</p></div>
 </dd>
 <dt id="fpdf.image_parsing.load_image"><code class="name flex">
 <span>def <span class="ident">load_image</span></span>(<span>filename)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/image_parsing.py#L150-L170" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def load_image(filename):
+    &#34;&#34;&#34;
+    This method is used to load external resources, such as images.
+    It is automatically called when resource added to document by `fpdf.FPDF.image()`.
+    It always return a BytesIO buffer.
+    &#34;&#34;&#34;
+    # if a bytesio instance is passed in, use it as is.
+    if isinstance(filename, BytesIO):
+        return filename
+    if isinstance(filename, Path):
+        filename = str(filename)
+    # by default loading from network is allowed for all images
+    if filename.startswith((&#34;http://&#34;, &#34;https://&#34;)):
+        # disabling bandit &amp; semgrep rules as permitted schemes are whitelisted:
+        # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
+        with urlopen(filename) as url_file:  # nosec B310
+            return BytesIO(url_file.read())
+    elif filename.startswith(&#34;data:&#34;):
+        return _decode_base64_image(filename)
+    with open(filename, &#34;rb&#34;) as local_file:
+        return BytesIO(local_file.read())</code></pre>
+</details>
 <div class="desc"><p>This method is used to load external resources, such as images.
 It is automatically called when resource added to document by <code>fpdf.FPDF.image()</code>.
 It always return a BytesIO buffer.</p></div>
@@ -83,6 +434,49 @@ It always return a BytesIO buffer.</p></div>
 <span>def <span class="ident">pack_codes_into_bytes</span></span>(<span>codes)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/image_parsing.py#L600-L636" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def pack_codes_into_bytes(codes):
+    &#34;&#34;&#34;
+    Convert the list of result codes into a continuous byte stream, with codes packed as per the code bit-width.
+    The bit-width starts at 9 bits and expands as needed.
+
+    &#34;&#34;&#34;
+
+    (
+        _,
+        next_code,
+        bits_per_code,
+        max_code_value,
+    ) = clear_table()
+    buffer = 0
+    bits_in_buffer = 0
+    output = bytearray()
+
+    for code in codes:
+        buffer = (buffer &lt;&lt; bits_per_code) | code
+        bits_in_buffer += bits_per_code
+
+        while bits_in_buffer &gt;= 8:
+            bits_in_buffer -= 8
+            output.append((buffer &gt;&gt; bits_in_buffer) &amp; 0xFF)
+
+        if code == LZW_CLEAR_TABLE_MARKER:
+            _, next_code, bits_per_code, max_code_value = clear_table()
+        elif code != LZW_EOD_MARKER:
+            next_code += 1
+            if next_code &gt; max_code_value and bits_per_code &lt; LZW_MAX_BITS_PER_CODE:
+                bits_per_code += 1
+                max_code_value = (1 &lt;&lt; bits_per_code) - 1
+
+    if bits_in_buffer &gt; 0:
+        output.append((buffer &lt;&lt; (8 - bits_in_buffer)) &amp; 0xFF)
+
+    return bytes(output)</code></pre>
+</details>
 <div class="desc"><p>Convert the list of result codes into a continuous byte stream, with codes packed as per the code bit-width.
 The bit-width starts at 9 bits and expands as needed.</p></div>
 </dd>
@@ -90,6 +484,81 @@ The bit-width starts at 9 bits and expands as needed.</p></div>
 <span>def <span class="ident">preload_image</span></span>(<span>image_cache: <a title="fpdf.image_datastructures.ImageCache" href="image_datastructures.html#fpdf.image_datastructures.ImageCache">ImageCache</a>,<br>name,<br>dims=None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/image_parsing.py#L75-L143" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def preload_image(image_cache: ImageCache, name, dims=None):
+    &#34;&#34;&#34;
+    Read an image and load it into memory.
+
+    For raster images: following this call, the image is inserted in `image_cache.images`,
+    and following calls to `FPDF.image()` will re-use the same cached values, without re-reading the image.
+
+    For vector images: the data is loaded and the metadata extracted.
+
+    Args:
+        image_cache: an `ImageCache` instance, usually the `.image_cache` attribute of a `FPDF` instance.
+        name: either a string representing a file path to an image, an URL to an image,
+            an io.BytesIO, or a instance of `PIL.Image.Image`.
+        dims (Tuple[float]): optional dimensions as a tuple (width, height) to resize the image
+            (raster only) before storing it in the PDF.
+
+    Returns: A tuple, consisting of 3 values: the name, the image data,
+        and an instance of a subclass of `ImageInfo`.
+    &#34;&#34;&#34;
+    # Identify and load SVG data:
+    if str(name).endswith(&#34;.svg&#34;):
+        try:
+            return get_svg_info(name, load_image(str(name)), image_cache=image_cache)
+        except Exception as error:
+            raise ValueError(f&#34;Could not parse file: {name}&#34;) from error
+    if isinstance(name, bytes) and _is_svg(name.strip()):
+        return get_svg_info(name, io.BytesIO(name), image_cache=image_cache)
+    if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
+        return get_svg_info(&#34;vector_image&#34;, name, image_cache=image_cache)
+
+    # Load raster data.
+    if isinstance(name, str):
+        img = None
+    elif isinstance(name, Image.Image):
+        bytes_ = name.tobytes()
+        img_hash = hashlib.new(&#34;md5&#34;, usedforsecurity=False)  # nosec B324
+        img_hash.update(bytes_)
+        name, img = img_hash.hexdigest(), name
+    elif isinstance(name, (bytes, io.BytesIO)):
+        bytes_ = name.getvalue() if isinstance(name, io.BytesIO) else name
+        bytes_ = bytes_.strip()
+        img_hash = hashlib.new(&#34;md5&#34;, usedforsecurity=False)  # nosec B324
+        img_hash.update(bytes_)
+        name, img = img_hash.hexdigest(), name
+    else:
+        name, img = str(name), name
+    info = image_cache.images.get(name)
+    if info:
+        info[&#34;usages&#34;] += 1
+    else:
+        info = get_img_info(name, img, image_cache.image_filter, dims)
+        info[&#34;i&#34;] = len(image_cache.images) + 1
+        info[&#34;usages&#34;] = 1
+        info[&#34;iccp_i&#34;] = None
+        iccp = info.get(&#34;iccp&#34;)
+        if iccp:
+            LOGGER.debug(
+                &#34;ICC profile found for image %s - It will be inserted in the PDF document&#34;,
+                name,
+            )
+            if iccp in image_cache.icc_profiles:
+                info[&#34;iccp_i&#34;] = image_cache.icc_profiles[iccp]
+            else:
+                iccp_i = len(image_cache.icc_profiles)
+                image_cache.icc_profiles[iccp] = iccp_i
+                info[&#34;iccp_i&#34;] = iccp_i
+            info[&#34;iccp&#34;] = None
+        image_cache.images[name] = info
+    return name, img, info</code></pre>
+</details>
 <div class="desc"><p>Read an image and load it into memory.</p>
 <p>For raster images: following this call, the image is inserted in <code>image_cache.images</code>,
 and following calls to <code>FPDF.image()</code> will re-use the same cached values, without re-reading the image.</p>
@@ -112,6 +581,63 @@ and an instance of a subclass of <code>ImageInfo</code>.</p></div>
 <span>def <span class="ident">transcode_monochrome</span></span>(<span>img)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/image_parsing.py#L487-L537" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def transcode_monochrome(img):
+    &#34;&#34;&#34;
+    Convert the open PIL.Image imgdata to compressed CCITT Group4 data.
+
+    &#34;&#34;&#34;
+    # Convert the image to Group 4 in memory. If libtiff is not installed and
+    # Pillow is not compiled against it, .save() will raise an exception.
+    newimgio = BytesIO()
+
+    # we create a whole new PIL image or otherwise it might happen with some
+    # input images, that libtiff fails an assert and the whole process is
+    # killed by a SIGABRT:
+    img2 = Image.frombytes(img.mode, img.size, img.tobytes())
+
+    # Since version 8.3.0 Pillow limits strips to 64 KB. Since PDF only
+    # supports single strip CCITT Group4 payloads, we have to coerce it back
+    # into putting everything into a single strip. Thanks to Andrew Murray for
+    # the hack.
+    #
+    # Since version 8.4.0 Pillow allows us to modify the strip size explicitly
+    tmp_strip_size = (img.size[0] + 7) // 8 * img.size[1]
+    if hasattr(TiffImagePlugin, &#34;STRIP_SIZE&#34;):
+        # we are using Pillow 8.4.0 or later
+        with temp_attr(TiffImagePlugin, &#34;STRIP_SIZE&#34;, tmp_strip_size):
+            img2.save(newimgio, format=&#34;TIFF&#34;, compression=&#34;group4&#34;)
+    else:
+        # only needed for Pillow 8.3.x but works for versions before that as
+        # well
+        pillow__getitem__ = TiffImagePlugin.ImageFileDirectory_v2.__getitem__
+
+        def __getitem__(self, tag):
+            overrides = {
+                TiffImagePlugin.ROWSPERSTRIP: img.size[1],
+                TiffImagePlugin.STRIPBYTECOUNTS: [tmp_strip_size],
+                TiffImagePlugin.STRIPOFFSETS: [0],
+            }
+            return overrides.get(tag, pillow__getitem__(self, tag))
+
+        with temp_attr(
+            TiffImagePlugin.ImageFileDirectory_v2, &#34;__getitem__&#34;, __getitem__
+        ):
+            img2.save(newimgio, format=&#34;TIFF&#34;, compression=&#34;group4&#34;)
+
+    # Open new image in memory
+    newimgio.seek(0)
+    newimg = Image.open(newimgio)
+
+    offset, length = ccitt_payload_location_from_pil(newimg)
+
+    newimgio.seek(offset)
+    return newimgio.read(length)</code></pre>
+</details>
 <div class="desc"><p>Convert the open PIL.Image imgdata to compressed CCITT Group4 data.</p></div>
 </dd>
 </dl>
@@ -124,17 +650,17 @@ and an instance of a subclass of <code>ImageInfo</code>.</p></div>
 <span>(</span><span>compression_level: int = -1)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>ImageSettings(compression_level: int = -1)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/image_parsing.py#L28-L31" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/image_parsing.py#L28-L31" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass
 class ImageSettings:
     # Passed to zlib.compress() - In range 0-9 - Default is currently equivalent to 6:
     compression_level: int = -1</code></pre>
 </details>
+<div class="desc"><p>ImageSettings(compression_level: int = -1)</p></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="fpdf.image_parsing.ImageSettings.compression_level"><code class="name">var <span class="ident">compression_level</span> : int</code></dt>
@@ -148,11 +674,10 @@ class ImageSettings:
 <span>(</span><span>obj, field, value)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>temporary change the attribute of an object using a context manager</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/image_parsing.py#L439-L460" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/image_parsing.py#L439-L460" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class temp_attr:
     &#34;&#34;&#34;
@@ -177,6 +702,7 @@ class ImageSettings:
         else:
             delattr(self.obj, self.field)</code></pre>
 </details>
+<div class="desc"><p>temporary change the attribute of an object using a context manager</p></div>
 </dd>
 </dl>
 </section>
@@ -221,7 +747,7 @@ class ImageSettings:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.3</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>

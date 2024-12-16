@@ -3,20 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.3">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>fpdf.output API documentation</title>
 <meta name="description" content="This module contains the serialization logic that produces a PDF document from a FPDF instance.
 Most of the code in this module is used when …">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -43,6 +54,35 @@ in non-backward-compatible ways.</p>
 <span>def <span class="ident">stream_content_for_raster_image</span></span>(<span>info: <a title="fpdf.image_datastructures.RasterImageInfo" href="image_datastructures.html#fpdf.image_datastructures.RasterImageInfo">RasterImageInfo</a>,<br>x,<br>y,<br>w,<br>h,<br>keep_aspect_ratio=False,<br>scale=1,<br>pdf_height_to_flip=None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L1112-L1134" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def stream_content_for_raster_image(
+    info: RasterImageInfo,
+    x,
+    y,
+    w,
+    h,
+    keep_aspect_ratio=False,
+    scale=1,
+    pdf_height_to_flip=None,
+):
+    if keep_aspect_ratio:
+        x, y, w, h = info.scale_inside_box(x, y, w, h)
+    if pdf_height_to_flip:
+        stream_h = h
+        stream_y = pdf_height_to_flip - h - y
+    else:
+        stream_h = -h
+        stream_y = y + h
+    return (
+        f&#34;q {w * scale:.2f} 0 0 {stream_h * scale:.2f}&#34;
+        f&#34; {x * scale:.2f} {stream_y * scale:.2f} cm&#34;
+        f&#34; /I{info[&#39;i&#39;]} Do Q&#34;
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -55,11 +95,10 @@ in non-backward-compatible ways.</p>
 <span>(</span><span>fields, sig_flags)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L117-L128" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L117-L128" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AcroForm:
     def __init__(self, fields, sig_flags):
@@ -74,12 +113,26 @@ in non-backward-compatible ways.</p>
         )
         return pdf_dict(obj_dict, field_join=&#34; &#34;)</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Methods</h3>
 <dl>
 <dt id="fpdf.output.AcroForm.serialize"><code class="name flex">
 <span>def <span class="ident">serialize</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L122-L128" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+    obj_dict = build_obj_dict(
+        {key: getattr(self, key) for key in dir(self)},
+        _security_handler=_security_handler,
+        _obj_id=_obj_id,
+    )
+    return pdf_dict(obj_dict, field_join=&#34; &#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -88,13 +141,10 @@ in non-backward-compatible ways.</p>
 <span>class <span class="ident">CIDSystemInfo</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Main features of this class:
-* delay ID assignement
-* implement serializing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L88-L93" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L88-L93" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CIDSystemInfo(PDFObject):
     def __init__(self):
@@ -103,6 +153,9 @@ in non-backward-compatible ways.</p>
         self.ordering = PDFString(&#34;UCS&#34;, encrypt=True)
         self.supplement = 0</code></pre>
 </details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></li>
@@ -121,16 +174,16 @@ in non-backward-compatible ways.</p>
 <span>class <span class="ident">ContentWithoutID</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L58-L60" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L58-L60" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ContentWithoutID:
     def serialize(self, _security_handler=None):
         pass</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="fpdf.linearization.PDFXrefAndTrailer" href="linearization.html#fpdf.linearization.PDFXrefAndTrailer">PDFXrefAndTrailer</a></li>
@@ -143,6 +196,14 @@ in non-backward-compatible ways.</p>
 <span>def <span class="ident">serialize</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L59-L60" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self, _security_handler=None):
+    pass</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -152,11 +213,10 @@ in non-backward-compatible ways.</p>
 <span>(</span><span>fpdf: FPDF)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Generates the final bytearray representing the PDF document, based on a FPDF instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L433-L1109" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L433-L1109" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutputProducer:
     &#34;Generates the final bytearray representing the PDF document, based on a FPDF instance.&#34;
@@ -836,6 +896,7 @@ in non-backward-compatible ways.</p>
         for label, section_size in self.sections_size_per_trace_label.items():
             LOGGER.debug(&#34;- %s: %s&#34;, label, _sizeof_fmt(section_size))</code></pre>
 </details>
+<div class="desc"><p>Generates the final bytearray representing the PDF document, based on a FPDF instance.</p></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="fpdf.linearization.LinearizedOutputProducer" href="linearization.html#fpdf.linearization.LinearizedOutputProducer">LinearizedOutputProducer</a></li>
@@ -846,6 +907,122 @@ in non-backward-compatible ways.</p>
 <span>def <span class="ident">bufferize</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L447-L556" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def bufferize(self):
+    &#34;&#34;&#34;
+    This method alters the target FPDF instance
+    by assigning IDs to all PDF objects,
+    plus a few other properties on PDFPage instances
+    &#34;&#34;&#34;
+    fpdf = self.fpdf
+
+    # 1. Setup - Insert all PDF objects
+    #    and assign unique consecutive numeric IDs to all of them
+
+    if fpdf._security_handler:
+        # get the file_id and generate passwords needed to encrypt streams and strings
+        file_id = fpdf.file_id()
+        if file_id == -1:
+            # no custom file id - use default file id so enryption passwords can be generated
+            file_id = fpdf._default_file_id(bytearray(0x00))
+        fpdf._security_handler.generate_passwords(file_id)
+
+    self.pdf_objs.append(PDFHeader(fpdf.pdf_version))
+    pages_root_obj = self._add_pages_root()
+    catalog_obj = self._add_catalog()
+    page_objs = self._add_pages()
+    sig_annotation_obj = self._add_annotations_as_objects()
+    for embedded_file in fpdf.embedded_files:
+        self._add_pdf_obj(embedded_file, &#34;embedded_files&#34;)
+    self._insert_resources(page_objs)
+    struct_tree_root_obj = self._add_structure_tree()
+    outline_dict_obj, outline_items = self._add_document_outline()
+    xmp_metadata_obj = self._add_xmp_metadata()
+    info_obj = self._add_info()
+    encryption_obj = self._add_encryption()
+    xref = PDFXrefAndTrailer(self)
+    self.pdf_objs.append(xref)
+
+    # 2. Plumbing - Inject all PDF object references required:
+    pages_root_obj.kids = PDFArray(self._reorder_page_objects(page_objs))
+    self._finalize_catalog(
+        catalog_obj,
+        pages_root_obj=pages_root_obj,
+        first_page_obj=page_objs[0],
+        sig_annotation_obj=sig_annotation_obj,
+        xmp_metadata_obj=xmp_metadata_obj,
+        struct_tree_root_obj=struct_tree_root_obj,
+        outline_dict_obj=outline_dict_obj,
+    )
+    dests = []
+    for page_obj in page_objs:
+        page_obj.parent = pages_root_obj
+        for annot in page_obj.annots:
+            page_dests = []
+            if annot.dest:
+                page_dests.append(annot.dest)
+            if annot.a and hasattr(annot.a, &#34;dest&#34;):
+                page_dests.append(annot.a.dest)
+            for dest in page_dests:
+                if dest.page_number &gt; len(page_objs):
+                    raise ValueError(
+                        f&#34;Invalid reference to non-existing page {dest.page_number} present on page {page_obj.index()}: &#34;
+                    )
+            dests.extend(page_dests)
+        if not page_obj.annots:
+            # Avoid serializing an empty PDFArray:
+            page_obj.annots = None
+    for outline_item in outline_items:
+        dests.append(outline_item.dest)
+    # Assigning the .page_ref property of all Destination objects:
+    for dest in dests:
+        dest.page_ref = pdf_ref(page_objs[dest.page_number - 1].id)
+    for struct_elem in fpdf.struct_builder.doc_struct_elem.k:
+        struct_elem.pg = page_objs[struct_elem.page_number() - 1]
+    xref.catalog_obj = catalog_obj
+    xref.info_obj = info_obj
+    xref.encryption_obj = encryption_obj
+
+    # 3. Serializing - Append all PDF objects to the buffer:
+    assert (
+        not self.buffer
+    ), f&#34;Nothing should have been appended to the .buffer at this stage: {self.buffer}&#34;
+    assert (
+        not self.offsets
+    ), f&#34;No offset should have been set at this stage: {len(self.offsets)}&#34;
+
+    for pdf_obj in self.pdf_objs:
+        if isinstance(pdf_obj, ContentWithoutID):
+            # top header, xref table &amp; trailer:
+            trace_label = None
+        else:
+            self.offsets[pdf_obj.id] = len(self.buffer)
+            trace_label = self.trace_labels_per_obj_id.get(pdf_obj.id)
+        if trace_label:
+            with self._trace_size(trace_label):
+                self._out(
+                    pdf_obj.serialize(_security_handler=fpdf._security_handler)
+                )
+        else:
+            self._out(pdf_obj.serialize(_security_handler=fpdf._security_handler))
+    self._log_final_sections_sizes()
+
+    if fpdf._sign_key:
+        self.buffer = sign_content(
+            signer,
+            self.buffer,
+            fpdf._sign_key,
+            fpdf._sign_cert,
+            fpdf._sign_extra_certs,
+            fpdf._sign_hashalgo,
+            fpdf._sign_time,
+        )
+    return self.buffer</code></pre>
+</details>
 <div class="desc"><p>This method alters the target FPDF instance
 by assigning IDs to all PDF objects,
 plus a few other properties on PDFPage instances</p></div>
@@ -857,13 +1034,10 @@ plus a few other properties on PDFPage instances</p></div>
 <span>(</span><span>lang=None, page_layout=None, page_mode=None, viewer_preferences=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Main features of this class:
-* delay ID assignement
-* implement serializing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L131-L148" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L131-L148" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFCatalog(PDFObject):
     def __init__(
@@ -884,6 +1058,9 @@ plus a few other properties on PDFPage instances</p></div>
         self.outlines = None
         self.struct_tree_root = None</code></pre>
 </details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></li>
@@ -903,13 +1080,10 @@ plus a few other properties on PDFPage instances</p></div>
 <span>(</span><span>dict_as_str)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Main features of this class:
-* delay ID assignement
-* implement serializing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L383-L390" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L383-L390" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFExtGState(PDFObject):
     def __init__(self, dict_as_str):
@@ -920,6 +1094,9 @@ plus a few other properties on PDFPage instances</p></div>
     def serialize(self, obj_dict=None, _security_handler=None):
         return f&#34;{self.id} 0 obj\n{self._dict_as_str}\nendobj&#34;</code></pre>
 </details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></li>
@@ -939,13 +1116,10 @@ plus a few other properties on PDFPage instances</p></div>
 <span>(</span><span>subtype, base_font, encoding=None, d_w=None, w=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Main features of this class:
-* delay ID assignement
-* implement serializing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L72-L85" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L72-L85" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFFont(PDFObject):
     def __init__(self, subtype, base_font, encoding=None, d_w=None, w=None):
@@ -962,6 +1136,9 @@ plus a few other properties on PDFPage instances</p></div>
         self.font_descriptor = None
         self.c_i_d_to_g_i_d_map = None</code></pre>
 </details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></li>
@@ -981,19 +1158,19 @@ plus a few other properties on PDFPage instances</p></div>
 <span>(</span><span>contents)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Main features of this class:
-* delay ID assignement
-* implement serializing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L160-L163" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L160-L163" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFFontStream(PDFContentStream):
     def __init__(self, contents):
         super().__init__(contents=contents, compress=True)
         self.length1 = len(contents)</code></pre>
 </details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFContentStream" href="syntax.html#fpdf.syntax.PDFContentStream">PDFContentStream</a></li>
@@ -1014,11 +1191,10 @@ plus a few other properties on PDFPage instances</p></div>
 <span>(</span><span>pdf_version)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L63-L69" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L63-L69" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFHeader(ContentWithoutID):
     def __init__(self, pdf_version):
@@ -1028,6 +1204,7 @@ plus a few other properties on PDFPage instances</p></div>
     def serialize(self, _security_handler=None):
         return f&#34;%PDF-{self.pdf_version}&#34;</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.output.ContentWithoutID" href="#fpdf.output.ContentWithoutID">ContentWithoutID</a></li>
@@ -1038,6 +1215,14 @@ plus a few other properties on PDFPage instances</p></div>
 <span>def <span class="ident">serialize</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L68-L69" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self, _security_handler=None):
+    return f&#34;%PDF-{self.pdf_version}&#34;</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -1047,13 +1232,10 @@ plus a few other properties on PDFPage instances</p></div>
 <span>(</span><span>contents, n, alternate)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Main features of this class:
-* delay ID assignement
-* implement serializing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L215-L233" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L215-L233" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFICCPObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -1075,6 +1257,9 @@ plus a few other properties on PDFPage instances</p></div>
         self.n = n
         self.alternate = Name(alternate)</code></pre>
 </details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFContentStream" href="syntax.html#fpdf.syntax.PDFContentStream">PDFContentStream</a></li>
@@ -1084,18 +1269,118 @@ plus a few other properties on PDFPage instances</p></div>
 <dl>
 <dt id="fpdf.output.PDFICCPObject.alternate"><code class="name">var <span class="ident">alternate</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L215-L233" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFICCPObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;n&#34;,
+        &#34;alternate&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        n,
+        alternate,
+    ):
+        super().__init__(contents=contents, compress=True)
+        self.n = n
+        self.alternate = Name(alternate)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFICCPObject.filter"><code class="name">var <span class="ident">filter</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L215-L233" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFICCPObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;n&#34;,
+        &#34;alternate&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        n,
+        alternate,
+    ):
+        super().__init__(contents=contents, compress=True)
+        self.n = n
+        self.alternate = Name(alternate)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFICCPObject.length"><code class="name">var <span class="ident">length</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L215-L233" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFICCPObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;n&#34;,
+        &#34;alternate&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        n,
+        alternate,
+    ):
+        super().__init__(contents=contents, compress=True)
+        self.n = n
+        self.alternate = Name(alternate)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFICCPObject.n"><code class="name">var <span class="ident">n</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L215-L233" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFICCPObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;n&#34;,
+        &#34;alternate&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        n,
+        alternate,
+    ):
+        super().__init__(contents=contents, compress=True)
+        self.n = n
+        self.alternate = Name(alternate)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -1114,13 +1399,10 @@ plus a few other properties on PDFPage instances</p></div>
 <span>(</span><span>title,<br>subject,<br>author,<br>keywords,<br>creator,<br>producer,<br>creation_date: <a title="fpdf.syntax.PDFDate" href="syntax.html#fpdf.syntax.PDFDate">PDFDate</a>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Main features of this class:
-* delay ID assignement
-* implement serializing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L96-L114" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L96-L114" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFInfo(PDFObject):
     def __init__(
@@ -1142,6 +1424,9 @@ plus a few other properties on PDFPage instances</p></div>
         self.producer = PDFString(producer, encrypt=True) if producer else None
         self.creation_date = creation_date</code></pre>
 </details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></li>
@@ -1161,13 +1446,10 @@ plus a few other properties on PDFPage instances</p></div>
 <span>(</span><span>duration, transition, contents, index)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Main features of this class:
-* delay ID assignement
-* implement serializing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L282-L371" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L282-L371" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -1260,6 +1542,9 @@ plus a few other properties on PDFPage instances</p></div>
     def add_text_substitution(self, fragment):
         self._text_substitution_fragments.append(fragment)</code></pre>
 </details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></li>
@@ -1268,42 +1553,1002 @@ plus a few other properties on PDFPage instances</p></div>
 <dl>
 <dt id="fpdf.output.PDFPage.annots"><code class="name">var <span class="ident">annots</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L282-L371" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFPage(PDFObject):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;type&#34;,
+        &#34;contents&#34;,
+        &#34;dur&#34;,
+        &#34;trans&#34;,
+        &#34;annots&#34;,
+        &#34;group&#34;,
+        &#34;media_box&#34;,
+        &#34;struct_parents&#34;,
+        &#34;resources&#34;,
+        &#34;parent&#34;,
+        &#34;_index&#34;,
+        &#34;_width_pt&#34;,
+        &#34;_height_pt&#34;,
+        &#34;_page_label&#34;,
+        &#34;_text_substitution_fragments&#34;,
+    )
+
+    def __init__(
+        self,
+        duration,
+        transition,
+        contents,
+        index,
+    ):
+        super().__init__()
+        self.type = Name(&#34;Page&#34;)
+        self.contents = contents
+        self.dur = duration if duration else None
+        self.trans = transition
+        self.annots = PDFArray()  # list of PDFAnnotation
+        self.group = None
+        self.media_box = None
+        self.struct_parents = None
+        self.resources = None  # must always be set before calling .serialize()
+        self.parent = None  # must always be set before calling .serialize()
+        self._index = index
+        self._width_pt, self._height_pt = None, None
+        self._page_label: PDFPageLabel = None
+        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
+
+    def index(self):
+        return self._index
+
+    def dimensions(self):
+        &#34;Return a pair (width, height) in the unit specified to FPDF constructor&#34;
+        return self._width_pt, self._height_pt
+
+    def set_dimensions(self, width_pt, height_pt):
+        &#34;Accepts a pair (width, height) in the unit specified to FPDF constructor&#34;
+        self._width_pt, self._height_pt = width_pt, height_pt
+
+    def set_page_label(
+        self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
+    ):
+        if (
+            previous_page_label
+            and page_label
+            and page_label.get_style() == previous_page_label.get_style()
+            and page_label.get_prefix() == previous_page_label.get_prefix()
+            and not page_label.st
+        ):
+            page_label.st = previous_page_label.get_start() + 1
+
+        if page_label:
+            if not page_label.get_start():
+                page_label.st = 1
+
+        if previous_page_label and not page_label:
+            page_label = PDFPageLabel(
+                previous_page_label.get_style(),
+                previous_page_label.get_prefix(),
+                previous_page_label.get_start() + 1,
+            )
+
+        self._page_label = page_label
+
+    def get_page_label(self) -&gt; PDFPageLabel:
+        return self._page_label
+
+    def get_label(self) -&gt; str:
+        return str(self.index()) if not self._page_label else str(self._page_label)
+
+    def get_text_substitutions(self):
+        return self._text_substitution_fragments
+
+    def add_text_substitution(self, fragment):
+        self._text_substitution_fragments.append(fragment)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPage.contents"><code class="name">var <span class="ident">contents</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L282-L371" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFPage(PDFObject):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;type&#34;,
+        &#34;contents&#34;,
+        &#34;dur&#34;,
+        &#34;trans&#34;,
+        &#34;annots&#34;,
+        &#34;group&#34;,
+        &#34;media_box&#34;,
+        &#34;struct_parents&#34;,
+        &#34;resources&#34;,
+        &#34;parent&#34;,
+        &#34;_index&#34;,
+        &#34;_width_pt&#34;,
+        &#34;_height_pt&#34;,
+        &#34;_page_label&#34;,
+        &#34;_text_substitution_fragments&#34;,
+    )
+
+    def __init__(
+        self,
+        duration,
+        transition,
+        contents,
+        index,
+    ):
+        super().__init__()
+        self.type = Name(&#34;Page&#34;)
+        self.contents = contents
+        self.dur = duration if duration else None
+        self.trans = transition
+        self.annots = PDFArray()  # list of PDFAnnotation
+        self.group = None
+        self.media_box = None
+        self.struct_parents = None
+        self.resources = None  # must always be set before calling .serialize()
+        self.parent = None  # must always be set before calling .serialize()
+        self._index = index
+        self._width_pt, self._height_pt = None, None
+        self._page_label: PDFPageLabel = None
+        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
+
+    def index(self):
+        return self._index
+
+    def dimensions(self):
+        &#34;Return a pair (width, height) in the unit specified to FPDF constructor&#34;
+        return self._width_pt, self._height_pt
+
+    def set_dimensions(self, width_pt, height_pt):
+        &#34;Accepts a pair (width, height) in the unit specified to FPDF constructor&#34;
+        self._width_pt, self._height_pt = width_pt, height_pt
+
+    def set_page_label(
+        self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
+    ):
+        if (
+            previous_page_label
+            and page_label
+            and page_label.get_style() == previous_page_label.get_style()
+            and page_label.get_prefix() == previous_page_label.get_prefix()
+            and not page_label.st
+        ):
+            page_label.st = previous_page_label.get_start() + 1
+
+        if page_label:
+            if not page_label.get_start():
+                page_label.st = 1
+
+        if previous_page_label and not page_label:
+            page_label = PDFPageLabel(
+                previous_page_label.get_style(),
+                previous_page_label.get_prefix(),
+                previous_page_label.get_start() + 1,
+            )
+
+        self._page_label = page_label
+
+    def get_page_label(self) -&gt; PDFPageLabel:
+        return self._page_label
+
+    def get_label(self) -&gt; str:
+        return str(self.index()) if not self._page_label else str(self._page_label)
+
+    def get_text_substitutions(self):
+        return self._text_substitution_fragments
+
+    def add_text_substitution(self, fragment):
+        self._text_substitution_fragments.append(fragment)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPage.dur"><code class="name">var <span class="ident">dur</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L282-L371" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFPage(PDFObject):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;type&#34;,
+        &#34;contents&#34;,
+        &#34;dur&#34;,
+        &#34;trans&#34;,
+        &#34;annots&#34;,
+        &#34;group&#34;,
+        &#34;media_box&#34;,
+        &#34;struct_parents&#34;,
+        &#34;resources&#34;,
+        &#34;parent&#34;,
+        &#34;_index&#34;,
+        &#34;_width_pt&#34;,
+        &#34;_height_pt&#34;,
+        &#34;_page_label&#34;,
+        &#34;_text_substitution_fragments&#34;,
+    )
+
+    def __init__(
+        self,
+        duration,
+        transition,
+        contents,
+        index,
+    ):
+        super().__init__()
+        self.type = Name(&#34;Page&#34;)
+        self.contents = contents
+        self.dur = duration if duration else None
+        self.trans = transition
+        self.annots = PDFArray()  # list of PDFAnnotation
+        self.group = None
+        self.media_box = None
+        self.struct_parents = None
+        self.resources = None  # must always be set before calling .serialize()
+        self.parent = None  # must always be set before calling .serialize()
+        self._index = index
+        self._width_pt, self._height_pt = None, None
+        self._page_label: PDFPageLabel = None
+        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
+
+    def index(self):
+        return self._index
+
+    def dimensions(self):
+        &#34;Return a pair (width, height) in the unit specified to FPDF constructor&#34;
+        return self._width_pt, self._height_pt
+
+    def set_dimensions(self, width_pt, height_pt):
+        &#34;Accepts a pair (width, height) in the unit specified to FPDF constructor&#34;
+        self._width_pt, self._height_pt = width_pt, height_pt
+
+    def set_page_label(
+        self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
+    ):
+        if (
+            previous_page_label
+            and page_label
+            and page_label.get_style() == previous_page_label.get_style()
+            and page_label.get_prefix() == previous_page_label.get_prefix()
+            and not page_label.st
+        ):
+            page_label.st = previous_page_label.get_start() + 1
+
+        if page_label:
+            if not page_label.get_start():
+                page_label.st = 1
+
+        if previous_page_label and not page_label:
+            page_label = PDFPageLabel(
+                previous_page_label.get_style(),
+                previous_page_label.get_prefix(),
+                previous_page_label.get_start() + 1,
+            )
+
+        self._page_label = page_label
+
+    def get_page_label(self) -&gt; PDFPageLabel:
+        return self._page_label
+
+    def get_label(self) -&gt; str:
+        return str(self.index()) if not self._page_label else str(self._page_label)
+
+    def get_text_substitutions(self):
+        return self._text_substitution_fragments
+
+    def add_text_substitution(self, fragment):
+        self._text_substitution_fragments.append(fragment)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPage.group"><code class="name">var <span class="ident">group</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L282-L371" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFPage(PDFObject):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;type&#34;,
+        &#34;contents&#34;,
+        &#34;dur&#34;,
+        &#34;trans&#34;,
+        &#34;annots&#34;,
+        &#34;group&#34;,
+        &#34;media_box&#34;,
+        &#34;struct_parents&#34;,
+        &#34;resources&#34;,
+        &#34;parent&#34;,
+        &#34;_index&#34;,
+        &#34;_width_pt&#34;,
+        &#34;_height_pt&#34;,
+        &#34;_page_label&#34;,
+        &#34;_text_substitution_fragments&#34;,
+    )
+
+    def __init__(
+        self,
+        duration,
+        transition,
+        contents,
+        index,
+    ):
+        super().__init__()
+        self.type = Name(&#34;Page&#34;)
+        self.contents = contents
+        self.dur = duration if duration else None
+        self.trans = transition
+        self.annots = PDFArray()  # list of PDFAnnotation
+        self.group = None
+        self.media_box = None
+        self.struct_parents = None
+        self.resources = None  # must always be set before calling .serialize()
+        self.parent = None  # must always be set before calling .serialize()
+        self._index = index
+        self._width_pt, self._height_pt = None, None
+        self._page_label: PDFPageLabel = None
+        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
+
+    def index(self):
+        return self._index
+
+    def dimensions(self):
+        &#34;Return a pair (width, height) in the unit specified to FPDF constructor&#34;
+        return self._width_pt, self._height_pt
+
+    def set_dimensions(self, width_pt, height_pt):
+        &#34;Accepts a pair (width, height) in the unit specified to FPDF constructor&#34;
+        self._width_pt, self._height_pt = width_pt, height_pt
+
+    def set_page_label(
+        self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
+    ):
+        if (
+            previous_page_label
+            and page_label
+            and page_label.get_style() == previous_page_label.get_style()
+            and page_label.get_prefix() == previous_page_label.get_prefix()
+            and not page_label.st
+        ):
+            page_label.st = previous_page_label.get_start() + 1
+
+        if page_label:
+            if not page_label.get_start():
+                page_label.st = 1
+
+        if previous_page_label and not page_label:
+            page_label = PDFPageLabel(
+                previous_page_label.get_style(),
+                previous_page_label.get_prefix(),
+                previous_page_label.get_start() + 1,
+            )
+
+        self._page_label = page_label
+
+    def get_page_label(self) -&gt; PDFPageLabel:
+        return self._page_label
+
+    def get_label(self) -&gt; str:
+        return str(self.index()) if not self._page_label else str(self._page_label)
+
+    def get_text_substitutions(self):
+        return self._text_substitution_fragments
+
+    def add_text_substitution(self, fragment):
+        self._text_substitution_fragments.append(fragment)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPage.media_box"><code class="name">var <span class="ident">media_box</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L282-L371" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFPage(PDFObject):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;type&#34;,
+        &#34;contents&#34;,
+        &#34;dur&#34;,
+        &#34;trans&#34;,
+        &#34;annots&#34;,
+        &#34;group&#34;,
+        &#34;media_box&#34;,
+        &#34;struct_parents&#34;,
+        &#34;resources&#34;,
+        &#34;parent&#34;,
+        &#34;_index&#34;,
+        &#34;_width_pt&#34;,
+        &#34;_height_pt&#34;,
+        &#34;_page_label&#34;,
+        &#34;_text_substitution_fragments&#34;,
+    )
+
+    def __init__(
+        self,
+        duration,
+        transition,
+        contents,
+        index,
+    ):
+        super().__init__()
+        self.type = Name(&#34;Page&#34;)
+        self.contents = contents
+        self.dur = duration if duration else None
+        self.trans = transition
+        self.annots = PDFArray()  # list of PDFAnnotation
+        self.group = None
+        self.media_box = None
+        self.struct_parents = None
+        self.resources = None  # must always be set before calling .serialize()
+        self.parent = None  # must always be set before calling .serialize()
+        self._index = index
+        self._width_pt, self._height_pt = None, None
+        self._page_label: PDFPageLabel = None
+        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
+
+    def index(self):
+        return self._index
+
+    def dimensions(self):
+        &#34;Return a pair (width, height) in the unit specified to FPDF constructor&#34;
+        return self._width_pt, self._height_pt
+
+    def set_dimensions(self, width_pt, height_pt):
+        &#34;Accepts a pair (width, height) in the unit specified to FPDF constructor&#34;
+        self._width_pt, self._height_pt = width_pt, height_pt
+
+    def set_page_label(
+        self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
+    ):
+        if (
+            previous_page_label
+            and page_label
+            and page_label.get_style() == previous_page_label.get_style()
+            and page_label.get_prefix() == previous_page_label.get_prefix()
+            and not page_label.st
+        ):
+            page_label.st = previous_page_label.get_start() + 1
+
+        if page_label:
+            if not page_label.get_start():
+                page_label.st = 1
+
+        if previous_page_label and not page_label:
+            page_label = PDFPageLabel(
+                previous_page_label.get_style(),
+                previous_page_label.get_prefix(),
+                previous_page_label.get_start() + 1,
+            )
+
+        self._page_label = page_label
+
+    def get_page_label(self) -&gt; PDFPageLabel:
+        return self._page_label
+
+    def get_label(self) -&gt; str:
+        return str(self.index()) if not self._page_label else str(self._page_label)
+
+    def get_text_substitutions(self):
+        return self._text_substitution_fragments
+
+    def add_text_substitution(self, fragment):
+        self._text_substitution_fragments.append(fragment)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPage.parent"><code class="name">var <span class="ident">parent</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L282-L371" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFPage(PDFObject):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;type&#34;,
+        &#34;contents&#34;,
+        &#34;dur&#34;,
+        &#34;trans&#34;,
+        &#34;annots&#34;,
+        &#34;group&#34;,
+        &#34;media_box&#34;,
+        &#34;struct_parents&#34;,
+        &#34;resources&#34;,
+        &#34;parent&#34;,
+        &#34;_index&#34;,
+        &#34;_width_pt&#34;,
+        &#34;_height_pt&#34;,
+        &#34;_page_label&#34;,
+        &#34;_text_substitution_fragments&#34;,
+    )
+
+    def __init__(
+        self,
+        duration,
+        transition,
+        contents,
+        index,
+    ):
+        super().__init__()
+        self.type = Name(&#34;Page&#34;)
+        self.contents = contents
+        self.dur = duration if duration else None
+        self.trans = transition
+        self.annots = PDFArray()  # list of PDFAnnotation
+        self.group = None
+        self.media_box = None
+        self.struct_parents = None
+        self.resources = None  # must always be set before calling .serialize()
+        self.parent = None  # must always be set before calling .serialize()
+        self._index = index
+        self._width_pt, self._height_pt = None, None
+        self._page_label: PDFPageLabel = None
+        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
+
+    def index(self):
+        return self._index
+
+    def dimensions(self):
+        &#34;Return a pair (width, height) in the unit specified to FPDF constructor&#34;
+        return self._width_pt, self._height_pt
+
+    def set_dimensions(self, width_pt, height_pt):
+        &#34;Accepts a pair (width, height) in the unit specified to FPDF constructor&#34;
+        self._width_pt, self._height_pt = width_pt, height_pt
+
+    def set_page_label(
+        self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
+    ):
+        if (
+            previous_page_label
+            and page_label
+            and page_label.get_style() == previous_page_label.get_style()
+            and page_label.get_prefix() == previous_page_label.get_prefix()
+            and not page_label.st
+        ):
+            page_label.st = previous_page_label.get_start() + 1
+
+        if page_label:
+            if not page_label.get_start():
+                page_label.st = 1
+
+        if previous_page_label and not page_label:
+            page_label = PDFPageLabel(
+                previous_page_label.get_style(),
+                previous_page_label.get_prefix(),
+                previous_page_label.get_start() + 1,
+            )
+
+        self._page_label = page_label
+
+    def get_page_label(self) -&gt; PDFPageLabel:
+        return self._page_label
+
+    def get_label(self) -&gt; str:
+        return str(self.index()) if not self._page_label else str(self._page_label)
+
+    def get_text_substitutions(self):
+        return self._text_substitution_fragments
+
+    def add_text_substitution(self, fragment):
+        self._text_substitution_fragments.append(fragment)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPage.resources"><code class="name">var <span class="ident">resources</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L282-L371" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFPage(PDFObject):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;type&#34;,
+        &#34;contents&#34;,
+        &#34;dur&#34;,
+        &#34;trans&#34;,
+        &#34;annots&#34;,
+        &#34;group&#34;,
+        &#34;media_box&#34;,
+        &#34;struct_parents&#34;,
+        &#34;resources&#34;,
+        &#34;parent&#34;,
+        &#34;_index&#34;,
+        &#34;_width_pt&#34;,
+        &#34;_height_pt&#34;,
+        &#34;_page_label&#34;,
+        &#34;_text_substitution_fragments&#34;,
+    )
+
+    def __init__(
+        self,
+        duration,
+        transition,
+        contents,
+        index,
+    ):
+        super().__init__()
+        self.type = Name(&#34;Page&#34;)
+        self.contents = contents
+        self.dur = duration if duration else None
+        self.trans = transition
+        self.annots = PDFArray()  # list of PDFAnnotation
+        self.group = None
+        self.media_box = None
+        self.struct_parents = None
+        self.resources = None  # must always be set before calling .serialize()
+        self.parent = None  # must always be set before calling .serialize()
+        self._index = index
+        self._width_pt, self._height_pt = None, None
+        self._page_label: PDFPageLabel = None
+        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
+
+    def index(self):
+        return self._index
+
+    def dimensions(self):
+        &#34;Return a pair (width, height) in the unit specified to FPDF constructor&#34;
+        return self._width_pt, self._height_pt
+
+    def set_dimensions(self, width_pt, height_pt):
+        &#34;Accepts a pair (width, height) in the unit specified to FPDF constructor&#34;
+        self._width_pt, self._height_pt = width_pt, height_pt
+
+    def set_page_label(
+        self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
+    ):
+        if (
+            previous_page_label
+            and page_label
+            and page_label.get_style() == previous_page_label.get_style()
+            and page_label.get_prefix() == previous_page_label.get_prefix()
+            and not page_label.st
+        ):
+            page_label.st = previous_page_label.get_start() + 1
+
+        if page_label:
+            if not page_label.get_start():
+                page_label.st = 1
+
+        if previous_page_label and not page_label:
+            page_label = PDFPageLabel(
+                previous_page_label.get_style(),
+                previous_page_label.get_prefix(),
+                previous_page_label.get_start() + 1,
+            )
+
+        self._page_label = page_label
+
+    def get_page_label(self) -&gt; PDFPageLabel:
+        return self._page_label
+
+    def get_label(self) -&gt; str:
+        return str(self.index()) if not self._page_label else str(self._page_label)
+
+    def get_text_substitutions(self):
+        return self._text_substitution_fragments
+
+    def add_text_substitution(self, fragment):
+        self._text_substitution_fragments.append(fragment)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPage.struct_parents"><code class="name">var <span class="ident">struct_parents</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L282-L371" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFPage(PDFObject):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;type&#34;,
+        &#34;contents&#34;,
+        &#34;dur&#34;,
+        &#34;trans&#34;,
+        &#34;annots&#34;,
+        &#34;group&#34;,
+        &#34;media_box&#34;,
+        &#34;struct_parents&#34;,
+        &#34;resources&#34;,
+        &#34;parent&#34;,
+        &#34;_index&#34;,
+        &#34;_width_pt&#34;,
+        &#34;_height_pt&#34;,
+        &#34;_page_label&#34;,
+        &#34;_text_substitution_fragments&#34;,
+    )
+
+    def __init__(
+        self,
+        duration,
+        transition,
+        contents,
+        index,
+    ):
+        super().__init__()
+        self.type = Name(&#34;Page&#34;)
+        self.contents = contents
+        self.dur = duration if duration else None
+        self.trans = transition
+        self.annots = PDFArray()  # list of PDFAnnotation
+        self.group = None
+        self.media_box = None
+        self.struct_parents = None
+        self.resources = None  # must always be set before calling .serialize()
+        self.parent = None  # must always be set before calling .serialize()
+        self._index = index
+        self._width_pt, self._height_pt = None, None
+        self._page_label: PDFPageLabel = None
+        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
+
+    def index(self):
+        return self._index
+
+    def dimensions(self):
+        &#34;Return a pair (width, height) in the unit specified to FPDF constructor&#34;
+        return self._width_pt, self._height_pt
+
+    def set_dimensions(self, width_pt, height_pt):
+        &#34;Accepts a pair (width, height) in the unit specified to FPDF constructor&#34;
+        self._width_pt, self._height_pt = width_pt, height_pt
+
+    def set_page_label(
+        self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
+    ):
+        if (
+            previous_page_label
+            and page_label
+            and page_label.get_style() == previous_page_label.get_style()
+            and page_label.get_prefix() == previous_page_label.get_prefix()
+            and not page_label.st
+        ):
+            page_label.st = previous_page_label.get_start() + 1
+
+        if page_label:
+            if not page_label.get_start():
+                page_label.st = 1
+
+        if previous_page_label and not page_label:
+            page_label = PDFPageLabel(
+                previous_page_label.get_style(),
+                previous_page_label.get_prefix(),
+                previous_page_label.get_start() + 1,
+            )
+
+        self._page_label = page_label
+
+    def get_page_label(self) -&gt; PDFPageLabel:
+        return self._page_label
+
+    def get_label(self) -&gt; str:
+        return str(self.index()) if not self._page_label else str(self._page_label)
+
+    def get_text_substitutions(self):
+        return self._text_substitution_fragments
+
+    def add_text_substitution(self, fragment):
+        self._text_substitution_fragments.append(fragment)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPage.trans"><code class="name">var <span class="ident">trans</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L282-L371" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFPage(PDFObject):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;type&#34;,
+        &#34;contents&#34;,
+        &#34;dur&#34;,
+        &#34;trans&#34;,
+        &#34;annots&#34;,
+        &#34;group&#34;,
+        &#34;media_box&#34;,
+        &#34;struct_parents&#34;,
+        &#34;resources&#34;,
+        &#34;parent&#34;,
+        &#34;_index&#34;,
+        &#34;_width_pt&#34;,
+        &#34;_height_pt&#34;,
+        &#34;_page_label&#34;,
+        &#34;_text_substitution_fragments&#34;,
+    )
+
+    def __init__(
+        self,
+        duration,
+        transition,
+        contents,
+        index,
+    ):
+        super().__init__()
+        self.type = Name(&#34;Page&#34;)
+        self.contents = contents
+        self.dur = duration if duration else None
+        self.trans = transition
+        self.annots = PDFArray()  # list of PDFAnnotation
+        self.group = None
+        self.media_box = None
+        self.struct_parents = None
+        self.resources = None  # must always be set before calling .serialize()
+        self.parent = None  # must always be set before calling .serialize()
+        self._index = index
+        self._width_pt, self._height_pt = None, None
+        self._page_label: PDFPageLabel = None
+        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
+
+    def index(self):
+        return self._index
+
+    def dimensions(self):
+        &#34;Return a pair (width, height) in the unit specified to FPDF constructor&#34;
+        return self._width_pt, self._height_pt
+
+    def set_dimensions(self, width_pt, height_pt):
+        &#34;Accepts a pair (width, height) in the unit specified to FPDF constructor&#34;
+        self._width_pt, self._height_pt = width_pt, height_pt
+
+    def set_page_label(
+        self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
+    ):
+        if (
+            previous_page_label
+            and page_label
+            and page_label.get_style() == previous_page_label.get_style()
+            and page_label.get_prefix() == previous_page_label.get_prefix()
+            and not page_label.st
+        ):
+            page_label.st = previous_page_label.get_start() + 1
+
+        if page_label:
+            if not page_label.get_start():
+                page_label.st = 1
+
+        if previous_page_label and not page_label:
+            page_label = PDFPageLabel(
+                previous_page_label.get_style(),
+                previous_page_label.get_prefix(),
+                previous_page_label.get_start() + 1,
+            )
+
+        self._page_label = page_label
+
+    def get_page_label(self) -&gt; PDFPageLabel:
+        return self._page_label
+
+    def get_label(self) -&gt; str:
+        return str(self.index()) if not self._page_label else str(self._page_label)
+
+    def get_text_substitutions(self):
+        return self._text_substitution_fragments
+
+    def add_text_substitution(self, fragment):
+        self._text_substitution_fragments.append(fragment)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPage.type"><code class="name">var <span class="ident">type</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L282-L371" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFPage(PDFObject):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;type&#34;,
+        &#34;contents&#34;,
+        &#34;dur&#34;,
+        &#34;trans&#34;,
+        &#34;annots&#34;,
+        &#34;group&#34;,
+        &#34;media_box&#34;,
+        &#34;struct_parents&#34;,
+        &#34;resources&#34;,
+        &#34;parent&#34;,
+        &#34;_index&#34;,
+        &#34;_width_pt&#34;,
+        &#34;_height_pt&#34;,
+        &#34;_page_label&#34;,
+        &#34;_text_substitution_fragments&#34;,
+    )
+
+    def __init__(
+        self,
+        duration,
+        transition,
+        contents,
+        index,
+    ):
+        super().__init__()
+        self.type = Name(&#34;Page&#34;)
+        self.contents = contents
+        self.dur = duration if duration else None
+        self.trans = transition
+        self.annots = PDFArray()  # list of PDFAnnotation
+        self.group = None
+        self.media_box = None
+        self.struct_parents = None
+        self.resources = None  # must always be set before calling .serialize()
+        self.parent = None  # must always be set before calling .serialize()
+        self._index = index
+        self._width_pt, self._height_pt = None, None
+        self._page_label: PDFPageLabel = None
+        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
+
+    def index(self):
+        return self._index
+
+    def dimensions(self):
+        &#34;Return a pair (width, height) in the unit specified to FPDF constructor&#34;
+        return self._width_pt, self._height_pt
+
+    def set_dimensions(self, width_pt, height_pt):
+        &#34;Accepts a pair (width, height) in the unit specified to FPDF constructor&#34;
+        self._width_pt, self._height_pt = width_pt, height_pt
+
+    def set_page_label(
+        self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
+    ):
+        if (
+            previous_page_label
+            and page_label
+            and page_label.get_style() == previous_page_label.get_style()
+            and page_label.get_prefix() == previous_page_label.get_prefix()
+            and not page_label.st
+        ):
+            page_label.st = previous_page_label.get_start() + 1
+
+        if page_label:
+            if not page_label.get_start():
+                page_label.st = 1
+
+        if previous_page_label and not page_label:
+            page_label = PDFPageLabel(
+                previous_page_label.get_style(),
+                previous_page_label.get_prefix(),
+                previous_page_label.get_start() + 1,
+            )
+
+        self._page_label = page_label
+
+    def get_page_label(self) -&gt; PDFPageLabel:
+        return self._page_label
+
+    def get_label(self) -&gt; str:
+        return str(self.index()) if not self._page_label else str(self._page_label)
+
+    def get_text_substitutions(self):
+        return self._text_substitution_fragments
+
+    def add_text_substitution(self, fragment):
+        self._text_substitution_fragments.append(fragment)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -1313,48 +2558,136 @@ plus a few other properties on PDFPage instances</p></div>
 <span>def <span class="ident">add_text_substitution</span></span>(<span>self, fragment)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L370-L371" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def add_text_substitution(self, fragment):
+    self._text_substitution_fragments.append(fragment)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPage.dimensions"><code class="name flex">
 <span>def <span class="ident">dimensions</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L328-L330" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def dimensions(self):
+    &#34;Return a pair (width, height) in the unit specified to FPDF constructor&#34;
+    return self._width_pt, self._height_pt</code></pre>
+</details>
 <div class="desc"><p>Return a pair (width, height) in the unit specified to FPDF constructor</p></div>
 </dd>
 <dt id="fpdf.output.PDFPage.get_label"><code class="name flex">
 <span>def <span class="ident">get_label</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L364-L365" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_label(self) -&gt; str:
+    return str(self.index()) if not self._page_label else str(self._page_label)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPage.get_page_label"><code class="name flex">
 <span>def <span class="ident">get_page_label</span></span>(<span>self) ‑> <a title="fpdf.output.PDFPageLabel" href="#fpdf.output.PDFPageLabel">PDFPageLabel</a></span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L361-L362" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_page_label(self) -&gt; PDFPageLabel:
+    return self._page_label</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPage.get_text_substitutions"><code class="name flex">
 <span>def <span class="ident">get_text_substitutions</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L367-L368" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_text_substitutions(self):
+    return self._text_substitution_fragments</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPage.index"><code class="name flex">
 <span>def <span class="ident">index</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L325-L326" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def index(self):
+    return self._index</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPage.set_dimensions"><code class="name flex">
 <span>def <span class="ident">set_dimensions</span></span>(<span>self, width_pt, height_pt)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L332-L334" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def set_dimensions(self, width_pt, height_pt):
+    &#34;Accepts a pair (width, height) in the unit specified to FPDF constructor&#34;
+    self._width_pt, self._height_pt = width_pt, height_pt</code></pre>
+</details>
 <div class="desc"><p>Accepts a pair (width, height) in the unit specified to FPDF constructor</p></div>
 </dd>
 <dt id="fpdf.output.PDFPage.set_page_label"><code class="name flex">
 <span>def <span class="ident">set_page_label</span></span>(<span>self,<br>previous_page_label: <a title="fpdf.output.PDFPageLabel" href="#fpdf.output.PDFPageLabel">PDFPageLabel</a>,<br>page_label: <a title="fpdf.output.PDFPageLabel" href="#fpdf.output.PDFPageLabel">PDFPageLabel</a>)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L336-L359" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def set_page_label(
+    self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
+):
+    if (
+        previous_page_label
+        and page_label
+        and page_label.get_style() == previous_page_label.get_style()
+        and page_label.get_prefix() == previous_page_label.get_prefix()
+        and not page_label.st
+    ):
+        page_label.st = previous_page_label.get_start() + 1
+
+    if page_label:
+        if not page_label.get_start():
+            page_label.st = 1
+
+    if previous_page_label and not page_label:
+        page_label = PDFPageLabel(
+            previous_page_label.get_style(),
+            previous_page_label.get_prefix(),
+            previous_page_label.get_start() + 1,
+        )
+
+    self._page_label = page_label</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -1373,11 +2706,10 @@ plus a few other properties on PDFPage instances</p></div>
 <span>(</span><span>label_style: <a title="fpdf.enums.PageLabelStyle" href="enums.html#fpdf.enums.PageLabelStyle">PageLabelStyle</a>,<br>label_prefix: str,<br>label_start: int)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L236-L279" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L236-L279" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPageLabel:
     __slots__ = [&#34;_style&#34;, &#34;_prefix&#34;, &#34;st&#34;]
@@ -1424,34 +2756,87 @@ plus a few other properties on PDFPage instances</p></div>
     def get_start(self) -&gt; int:
         return self.st</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Instance variables</h3>
 <dl>
 <dt id="fpdf.output.PDFPageLabel.p"><code class="name">prop <span class="ident">p</span> : <a title="fpdf.syntax.PDFString" href="syntax.html#fpdf.syntax.PDFString">PDFString</a></code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L250-L252" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def p(self) -&gt; PDFString:
     return PDFString(self._prefix) if self._prefix else None</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPageLabel.s"><code class="name">prop <span class="ident">s</span> : <a title="fpdf.syntax.Name" href="syntax.html#fpdf.syntax.Name">Name</a></code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L246-L248" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def s(self) -&gt; Name:
     return Name(self._style.value) if self._style else None</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPageLabel.st"><code class="name">var <span class="ident">st</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L236-L279" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFPageLabel:
+    __slots__ = [&#34;_style&#34;, &#34;_prefix&#34;, &#34;st&#34;]
+
+    def __init__(
+        self, label_style: PageLabelStyle, label_prefix: str, label_start: int
+    ):
+        self._style: PageLabelStyle = label_style
+        self._prefix: str = label_prefix
+        self.st: int = label_start
+
+    @property
+    def s(self) -&gt; Name:
+        return Name(self._style.value) if self._style else None
+
+    @property
+    def p(self) -&gt; PDFString:
+        return PDFString(self._prefix) if self._prefix else None
+
+    def __repr__(self):
+        ret = self._prefix if self._prefix else &#34;&#34;
+        if self._style:
+            if self._style == PageLabelStyle.NUMBER:
+                ret += str(self.st)
+            elif self._style == PageLabelStyle.UPPER_ROMAN:
+                ret += int2roman(self.st)
+            elif self._style == PageLabelStyle.LOWER_ROMAN:
+                ret += int2roman(self.st).lower()
+            elif self._style == PageLabelStyle.UPPER_LETTER:
+                ret += int_to_letters(self.st - 1)
+            elif self._style == PageLabelStyle.LOWER_LETTER:
+                ret += int_to_letters(self.st - 1).lower()
+        return None if ret == &#34;&#34; else ret
+
+    def serialize(self) -&gt; dict:
+        return build_obj_dict({key: getattr(self, key) for key in dir(self)})
+
+    def get_style(self) -&gt; PageLabelStyle:
+        return self._style
+
+    def get_prefix(self) -&gt; str:
+        return self._prefix
+
+    def get_start(self) -&gt; int:
+        return self.st</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -1461,24 +2846,56 @@ def s(self) -&gt; Name:
 <span>def <span class="ident">get_prefix</span></span>(<span>self) ‑> str</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L275-L276" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_prefix(self) -&gt; str:
+    return self._prefix</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPageLabel.get_start"><code class="name flex">
 <span>def <span class="ident">get_start</span></span>(<span>self) ‑> int</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L278-L279" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_start(self) -&gt; int:
+    return self.st</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPageLabel.get_style"><code class="name flex">
 <span>def <span class="ident">get_style</span></span>(<span>self) ‑> <a title="fpdf.enums.PageLabelStyle" href="enums.html#fpdf.enums.PageLabelStyle">PageLabelStyle</a></span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L272-L273" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_style(self) -&gt; PageLabelStyle:
+    return self._style</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFPageLabel.serialize"><code class="name flex">
 <span>def <span class="ident">serialize</span></span>(<span>self) ‑> dict</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L269-L270" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self) -&gt; dict:
+    return build_obj_dict({key: getattr(self, key) for key in dir(self)})</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -1488,13 +2905,10 @@ def s(self) -&gt; Name:
 <span>(</span><span>count, media_box)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Main features of this class:
-* delay ID assignement
-* implement serializing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L374-L380" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L374-L380" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPagesRoot(PDFObject):
     def __init__(self, count, media_box):
@@ -1504,6 +2918,9 @@ def s(self) -&gt; Name:
         self.media_box = media_box
         self.kids = None  # must always be set before calling .serialize()</code></pre>
 </details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></li>
@@ -1523,13 +2940,10 @@ def s(self) -&gt; Name:
 <span>(</span><span>proc_set, font, x_object, ext_g_state)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Main features of this class:
-* delay ID assignement
-* implement serializing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L151-L157" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L151-L157" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFResources(PDFObject):
     def __init__(self, proc_set, font, x_object, ext_g_state):
@@ -1539,6 +2953,9 @@ def s(self) -&gt; Name:
         self.x_object = x_object
         self.ext_g_state = ext_g_state</code></pre>
 </details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></li>
@@ -1558,13 +2975,10 @@ def s(self) -&gt; Name:
 <span>(</span><span>contents,<br>subtype,<br>width,<br>height,<br>color_space,<br>bits_per_component,<br>img_filter=None,<br>decode=None,<br>decode_parms=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Main features of this class:
-* delay ID assignement
-* implement serializing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L173-L212" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L173-L212" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -1607,6 +3021,9 @@ def s(self) -&gt; Name:
         self.decode_parms = decode_parms
         self.s_mask = None</code></pre>
 </details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFContentStream" href="syntax.html#fpdf.syntax.PDFContentStream">PDFContentStream</a></li>
@@ -1616,46 +3033,552 @@ def s(self) -&gt; Name:
 <dl>
 <dt id="fpdf.output.PDFXObject.bits_per_component"><code class="name">var <span class="ident">bits_per_component</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L173-L212" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFXObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;type&#34;,
+        &#34;subtype&#34;,
+        &#34;width&#34;,
+        &#34;height&#34;,
+        &#34;color_space&#34;,
+        &#34;bits_per_component&#34;,
+        &#34;decode&#34;,
+        &#34;decode_parms&#34;,
+        &#34;s_mask&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        subtype,
+        width,
+        height,
+        color_space,
+        bits_per_component,
+        img_filter=None,
+        decode=None,
+        decode_parms=None,
+    ):
+        super().__init__(contents=contents)
+        self.type = Name(&#34;XObject&#34;)
+        self.subtype = Name(subtype)
+        self.width = width
+        self.height = height
+        self.color_space = color_space
+        self.bits_per_component = bits_per_component
+        self.filter = Name(img_filter)
+        self.decode = decode
+        self.decode_parms = decode_parms
+        self.s_mask = None</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFXObject.color_space"><code class="name">var <span class="ident">color_space</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L173-L212" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFXObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;type&#34;,
+        &#34;subtype&#34;,
+        &#34;width&#34;,
+        &#34;height&#34;,
+        &#34;color_space&#34;,
+        &#34;bits_per_component&#34;,
+        &#34;decode&#34;,
+        &#34;decode_parms&#34;,
+        &#34;s_mask&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        subtype,
+        width,
+        height,
+        color_space,
+        bits_per_component,
+        img_filter=None,
+        decode=None,
+        decode_parms=None,
+    ):
+        super().__init__(contents=contents)
+        self.type = Name(&#34;XObject&#34;)
+        self.subtype = Name(subtype)
+        self.width = width
+        self.height = height
+        self.color_space = color_space
+        self.bits_per_component = bits_per_component
+        self.filter = Name(img_filter)
+        self.decode = decode
+        self.decode_parms = decode_parms
+        self.s_mask = None</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFXObject.decode"><code class="name">var <span class="ident">decode</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L173-L212" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFXObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;type&#34;,
+        &#34;subtype&#34;,
+        &#34;width&#34;,
+        &#34;height&#34;,
+        &#34;color_space&#34;,
+        &#34;bits_per_component&#34;,
+        &#34;decode&#34;,
+        &#34;decode_parms&#34;,
+        &#34;s_mask&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        subtype,
+        width,
+        height,
+        color_space,
+        bits_per_component,
+        img_filter=None,
+        decode=None,
+        decode_parms=None,
+    ):
+        super().__init__(contents=contents)
+        self.type = Name(&#34;XObject&#34;)
+        self.subtype = Name(subtype)
+        self.width = width
+        self.height = height
+        self.color_space = color_space
+        self.bits_per_component = bits_per_component
+        self.filter = Name(img_filter)
+        self.decode = decode
+        self.decode_parms = decode_parms
+        self.s_mask = None</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFXObject.decode_parms"><code class="name">var <span class="ident">decode_parms</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L173-L212" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFXObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;type&#34;,
+        &#34;subtype&#34;,
+        &#34;width&#34;,
+        &#34;height&#34;,
+        &#34;color_space&#34;,
+        &#34;bits_per_component&#34;,
+        &#34;decode&#34;,
+        &#34;decode_parms&#34;,
+        &#34;s_mask&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        subtype,
+        width,
+        height,
+        color_space,
+        bits_per_component,
+        img_filter=None,
+        decode=None,
+        decode_parms=None,
+    ):
+        super().__init__(contents=contents)
+        self.type = Name(&#34;XObject&#34;)
+        self.subtype = Name(subtype)
+        self.width = width
+        self.height = height
+        self.color_space = color_space
+        self.bits_per_component = bits_per_component
+        self.filter = Name(img_filter)
+        self.decode = decode
+        self.decode_parms = decode_parms
+        self.s_mask = None</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFXObject.filter"><code class="name">var <span class="ident">filter</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L173-L212" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFXObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;type&#34;,
+        &#34;subtype&#34;,
+        &#34;width&#34;,
+        &#34;height&#34;,
+        &#34;color_space&#34;,
+        &#34;bits_per_component&#34;,
+        &#34;decode&#34;,
+        &#34;decode_parms&#34;,
+        &#34;s_mask&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        subtype,
+        width,
+        height,
+        color_space,
+        bits_per_component,
+        img_filter=None,
+        decode=None,
+        decode_parms=None,
+    ):
+        super().__init__(contents=contents)
+        self.type = Name(&#34;XObject&#34;)
+        self.subtype = Name(subtype)
+        self.width = width
+        self.height = height
+        self.color_space = color_space
+        self.bits_per_component = bits_per_component
+        self.filter = Name(img_filter)
+        self.decode = decode
+        self.decode_parms = decode_parms
+        self.s_mask = None</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFXObject.height"><code class="name">var <span class="ident">height</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L173-L212" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFXObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;type&#34;,
+        &#34;subtype&#34;,
+        &#34;width&#34;,
+        &#34;height&#34;,
+        &#34;color_space&#34;,
+        &#34;bits_per_component&#34;,
+        &#34;decode&#34;,
+        &#34;decode_parms&#34;,
+        &#34;s_mask&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        subtype,
+        width,
+        height,
+        color_space,
+        bits_per_component,
+        img_filter=None,
+        decode=None,
+        decode_parms=None,
+    ):
+        super().__init__(contents=contents)
+        self.type = Name(&#34;XObject&#34;)
+        self.subtype = Name(subtype)
+        self.width = width
+        self.height = height
+        self.color_space = color_space
+        self.bits_per_component = bits_per_component
+        self.filter = Name(img_filter)
+        self.decode = decode
+        self.decode_parms = decode_parms
+        self.s_mask = None</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFXObject.length"><code class="name">var <span class="ident">length</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L173-L212" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFXObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;type&#34;,
+        &#34;subtype&#34;,
+        &#34;width&#34;,
+        &#34;height&#34;,
+        &#34;color_space&#34;,
+        &#34;bits_per_component&#34;,
+        &#34;decode&#34;,
+        &#34;decode_parms&#34;,
+        &#34;s_mask&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        subtype,
+        width,
+        height,
+        color_space,
+        bits_per_component,
+        img_filter=None,
+        decode=None,
+        decode_parms=None,
+    ):
+        super().__init__(contents=contents)
+        self.type = Name(&#34;XObject&#34;)
+        self.subtype = Name(subtype)
+        self.width = width
+        self.height = height
+        self.color_space = color_space
+        self.bits_per_component = bits_per_component
+        self.filter = Name(img_filter)
+        self.decode = decode
+        self.decode_parms = decode_parms
+        self.s_mask = None</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFXObject.s_mask"><code class="name">var <span class="ident">s_mask</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L173-L212" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFXObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;type&#34;,
+        &#34;subtype&#34;,
+        &#34;width&#34;,
+        &#34;height&#34;,
+        &#34;color_space&#34;,
+        &#34;bits_per_component&#34;,
+        &#34;decode&#34;,
+        &#34;decode_parms&#34;,
+        &#34;s_mask&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        subtype,
+        width,
+        height,
+        color_space,
+        bits_per_component,
+        img_filter=None,
+        decode=None,
+        decode_parms=None,
+    ):
+        super().__init__(contents=contents)
+        self.type = Name(&#34;XObject&#34;)
+        self.subtype = Name(subtype)
+        self.width = width
+        self.height = height
+        self.color_space = color_space
+        self.bits_per_component = bits_per_component
+        self.filter = Name(img_filter)
+        self.decode = decode
+        self.decode_parms = decode_parms
+        self.s_mask = None</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFXObject.subtype"><code class="name">var <span class="ident">subtype</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L173-L212" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFXObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;type&#34;,
+        &#34;subtype&#34;,
+        &#34;width&#34;,
+        &#34;height&#34;,
+        &#34;color_space&#34;,
+        &#34;bits_per_component&#34;,
+        &#34;decode&#34;,
+        &#34;decode_parms&#34;,
+        &#34;s_mask&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        subtype,
+        width,
+        height,
+        color_space,
+        bits_per_component,
+        img_filter=None,
+        decode=None,
+        decode_parms=None,
+    ):
+        super().__init__(contents=contents)
+        self.type = Name(&#34;XObject&#34;)
+        self.subtype = Name(subtype)
+        self.width = width
+        self.height = height
+        self.color_space = color_space
+        self.bits_per_component = bits_per_component
+        self.filter = Name(img_filter)
+        self.decode = decode
+        self.decode_parms = decode_parms
+        self.s_mask = None</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFXObject.type"><code class="name">var <span class="ident">type</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L173-L212" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFXObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;type&#34;,
+        &#34;subtype&#34;,
+        &#34;width&#34;,
+        &#34;height&#34;,
+        &#34;color_space&#34;,
+        &#34;bits_per_component&#34;,
+        &#34;decode&#34;,
+        &#34;decode_parms&#34;,
+        &#34;s_mask&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        subtype,
+        width,
+        height,
+        color_space,
+        bits_per_component,
+        img_filter=None,
+        decode=None,
+        decode_parms=None,
+    ):
+        super().__init__(contents=contents)
+        self.type = Name(&#34;XObject&#34;)
+        self.subtype = Name(subtype)
+        self.width = width
+        self.height = height
+        self.color_space = color_space
+        self.bits_per_component = bits_per_component
+        self.filter = Name(img_filter)
+        self.decode = decode
+        self.decode_parms = decode_parms
+        self.s_mask = None</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.output.PDFXObject.width"><code class="name">var <span class="ident">width</span></code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L173-L212" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class PDFXObject(PDFContentStream):
+    __slots__ = (  # RAM usage optimization
+        &#34;_id&#34;,
+        &#34;_contents&#34;,
+        &#34;filter&#34;,
+        &#34;length&#34;,
+        &#34;type&#34;,
+        &#34;subtype&#34;,
+        &#34;width&#34;,
+        &#34;height&#34;,
+        &#34;color_space&#34;,
+        &#34;bits_per_component&#34;,
+        &#34;decode&#34;,
+        &#34;decode_parms&#34;,
+        &#34;s_mask&#34;,
+    )
+
+    def __init__(
+        self,
+        contents,
+        subtype,
+        width,
+        height,
+        color_space,
+        bits_per_component,
+        img_filter=None,
+        decode=None,
+        decode_parms=None,
+    ):
+        super().__init__(contents=contents)
+        self.type = Name(&#34;XObject&#34;)
+        self.subtype = Name(subtype)
+        self.width = width
+        self.height = height
+        self.color_space = color_space
+        self.bits_per_component = bits_per_component
+        self.filter = Name(img_filter)
+        self.decode = decode
+        self.decode_parms = decode_parms
+        self.s_mask = None</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -1674,13 +3597,10 @@ def s(self) -&gt; Name:
 <span>(</span><span>contents)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Main features of this class:
-* delay ID assignement
-* implement serializing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L166-L170" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L166-L170" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXmpMetadata(PDFContentStream):
     def __init__(self, contents):
@@ -1688,6 +3608,9 @@ def s(self) -&gt; Name:
         self.type = Name(&#34;Metadata&#34;)
         self.subtype = Name(&#34;XML&#34;)</code></pre>
 </details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFContentStream" href="syntax.html#fpdf.syntax.PDFContentStream">PDFContentStream</a></li>
@@ -1708,11 +3631,10 @@ def s(self) -&gt; Name:
 <span>(</span><span>output_builder)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/output.py#L393-L430" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L393-L430" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXrefAndTrailer(ContentWithoutID):
     def __init__(self, output_builder):
@@ -1753,6 +3675,7 @@ def s(self) -&gt; Name:
         out.append(&#34;%%EOF&#34;)
         return &#34;\n&#34;.join(out)</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.output.ContentWithoutID" href="#fpdf.output.ContentWithoutID">ContentWithoutID</a></li>
@@ -1763,6 +3686,41 @@ def s(self) -&gt; Name:
 <span>def <span class="ident">serialize</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/output.py#L402-L430" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self, _security_handler=None):
+    builder = self.output_builder
+    startxref = str(len(builder.buffer))
+    out = []
+    out.append(&#34;xref&#34;)
+    out.append(f&#34;0 {self.count}&#34;)
+    out.append(&#34;0000000000 65535 f &#34;)
+    for obj_id in range(1, self.count):
+        out.append(f&#34;{builder.offsets[obj_id]:010} 00000 n &#34;)
+    out.append(&#34;trailer&#34;)
+    out.append(&#34;&lt;&lt;&#34;)
+    out.append(f&#34;/Size {self.count}&#34;)
+    out.append(f&#34;/Root {pdf_ref(self.catalog_obj.id)}&#34;)
+    out.append(f&#34;/Info {pdf_ref(self.info_obj.id)}&#34;)
+    fpdf = builder.fpdf
+    if self.encryption_obj:
+        out.append(f&#34;/Encrypt {pdf_ref(self.encryption_obj.id)}&#34;)
+        file_id = fpdf._security_handler.file_id
+    else:
+        file_id = fpdf.file_id()
+        if file_id == -1:
+            file_id = fpdf._default_file_id(builder.buffer)
+    if file_id:
+        out.append(f&#34;/ID [{file_id}]&#34;)
+    out.append(&#34;&gt;&gt;&#34;)
+    out.append(&#34;startxref&#34;)
+    out.append(startxref)
+    out.append(&#34;%%EOF&#34;)
+    return &#34;\n&#34;.join(out)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -1910,7 +3868,7 @@ def s(self) -&gt; Name:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.3</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>

@@ -3,19 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.3">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>fpdf.template API documentation</title>
 <meta name="description" content="PDF Template Helpers for fpdf.py">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -41,18 +52,10 @@ hljs.highlightAll();
 <span>(</span><span>pdf, elements=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A flexible templating class.</p>
-<p>Allows to apply one or several template definitions to any page of
-a document in any combination.</p>
-<p>Arguments: pdf (fpdf.FPDF() instance): All content will be added to this object.</p>
-<pre><code>elements (list of dicts): A template definition in a list of dicts.
-    If you omit this, then you need to call either load_elements()
-    or parse_csv() before doing anything else.
-</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/template.py#L25-L620" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/template.py#L25-L620" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FlexTemplate:
     &#34;&#34;&#34;
@@ -651,6 +654,14 @@ a document in any combination.</p>
                         self.handlers[handler_name](**ele)
         self.texts = {}  # reset modified entries for the next page</code></pre>
 </details>
+<div class="desc"><p>A flexible templating class.</p>
+<p>Allows to apply one or several template definitions to any page of
+a document in any combination.</p>
+<p>Arguments: pdf (fpdf.FPDF() instance): All content will be added to this object.</p>
+<pre><code>elements (list of dicts): A template definition in a list of dicts.
+    If you omit this, then you need to call either load_elements()
+    or parse_csv() before doing anything else.
+</code></pre></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="fpdf.template.Template" href="#fpdf.template.Template">Template</a></li>
@@ -661,6 +672,85 @@ a document in any combination.</p>
 <span>def <span class="ident">load_elements</span></span>(<span>self, elements)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/template.py#L59-L131" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def load_elements(self, elements):
+    &#34;&#34;&#34;
+    Load a template definition.
+
+    Arguments:
+
+        elements (list of dicts): A template definition in a list of dicts
+    &#34;&#34;&#34;
+    key_config = {
+        # key: type
+        &#34;name&#34;: (str, type(None)),
+        &#34;type&#34;: (str, type(None)),
+        &#34;x1&#34;: (int, float),
+        &#34;y1&#34;: (int, float),
+        &#34;x2&#34;: (int, float),
+        &#34;y2&#34;: (int, float),
+        &#34;font&#34;: (str, type(None)),
+        &#34;size&#34;: (int, float),
+        &#34;bold&#34;: object,  # &#34;bool or equivalent&#34;
+        &#34;italic&#34;: object,
+        &#34;underline&#34;: object,
+        &#34;foreground&#34;: int,
+        &#34;background&#34;: int,
+        &#34;align&#34;: (str, type(None)),
+        &#34;text&#34;: (str, type(None)),
+        &#34;priority&#34;: int,
+        &#34;multiline&#34;: (bool, type(None)),
+        &#34;rotate&#34;: (int, float),
+        &#34;wrapmode&#34;: (str, type(None)),
+    }
+
+    self.elements = elements
+    self.keys = []
+    for e in elements:
+        # priority is optional, but we need a default for sorting.
+        if not &#34;priority&#34; in e:
+            e[&#34;priority&#34;] = 0
+        for k in (&#34;name&#34;, &#34;type&#34;, &#34;x1&#34;, &#34;y1&#34;, &#34;y2&#34;):
+            if k not in e:
+                if e[&#34;type&#34;] == &#34;C39&#34;:
+                    # lots of legacy special casing.
+                    # We need to do that here, so that rotation and scaling
+                    # still work.
+                    if k == &#34;x1&#34; and &#34;x&#34; in e:
+                        e[&#34;x1&#34;] = e[&#34;x&#34;]
+                        continue
+                    if k == &#34;y1&#34; and &#34;y&#34; in e:
+                        e[&#34;y1&#34;] = e[&#34;y&#34;]
+                        continue
+                    if k == &#34;y2&#34; and &#34;h&#34; in e:
+                        e[&#34;y2&#34;] = e[&#34;y1&#34;] + e[&#34;h&#34;]
+                        continue
+                raise KeyError(f&#34;Mandatory key &#39;{k}&#39; missing in input data&#34;)
+        # x2 is optional for barcode types, but needed for offset rendering
+        if &#34;x2&#34; not in e:
+            if e[&#34;type&#34;] in [&#34;BC&#34;, &#34;C39&#34;]:
+                e[&#34;x2&#34;] = 0
+            else:
+                raise KeyError(&#34;Mandatory key &#39;x2&#39; missing in input data&#34;)
+        if not &#34;size&#34; in e and e[&#34;type&#34;] == &#34;C39&#34;:
+            if &#34;w&#34; in e:
+                e[&#34;size&#34;] = e[&#34;w&#34;]
+        for k, t in key_config.items():
+            if k in e and not isinstance(e[k], t):
+                ttype = (
+                    t.__name__
+                    if isinstance(t, type)
+                    else &#34; or &#34;.join([f&#34;&#39;{x.__name__}&#39;&#34; for x in t])
+                )
+                raise TypeError(
+                    f&#34;Value of element item &#39;{k}&#39; must be {ttype}, not &#39;{type(e[k]).__name__}&#39;.&#34;
+                )
+        self.keys.append(e[&#34;name&#34;].lower())</code></pre>
+</details>
 <div class="desc"><p>Load a template definition.</p>
 <h2 id="arguments">Arguments</h2>
 <p>elements (list of dicts): A template definition in a list of dicts</p></div>
@@ -669,6 +759,90 @@ a document in any combination.</p>
 <span>def <span class="ident">parse_csv</span></span>(<span>self,<br>infile: os.PathLike,<br>delimiter: str = ',',<br>decimal_sep: str = '.',<br>encoding: str = None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/template.py#L184-L261" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def parse_csv(
+    self,
+    infile: os.PathLike,
+    delimiter: str = &#34;,&#34;,
+    decimal_sep: str = &#34;.&#34;,
+    encoding: str = None,
+):
+    &#34;&#34;&#34;
+    Load the template definition from a CSV file.
+
+    Arguments:
+
+        infile (string or path-like object): The filepath of the CSV file.
+
+        delimiter (single character): The character that seperates the fields in the CSV file:
+            Usually a comma, semicolon, or tab.
+
+        decimal_sep (single character): The decimal separator used in the file.
+            Usually either a point or a comma.
+
+        encoding (string): The character encoding of the file.
+            Default is the system default encoding.
+    &#34;&#34;&#34;
+
+    def _varsep_float(s, default=&#34;0&#34;):
+        &#34;&#34;&#34;Convert to float with given decimal seperator&#34;&#34;&#34;
+        # glad to have nonlocal scoping...
+        return float((s.strip() or default).replace(decimal_sep, &#34;.&#34;))
+
+    key_config = (
+        # key, converter, mandatory
+        (&#34;name&#34;, str, True),
+        (&#34;type&#34;, str, True),
+        (&#34;x1&#34;, _varsep_float, True),
+        (&#34;y1&#34;, _varsep_float, True),
+        (&#34;x2&#34;, _varsep_float, True),
+        (&#34;y2&#34;, _varsep_float, True),
+        (&#34;font&#34;, str, False),
+        (&#34;size&#34;, _varsep_float, False),
+        (&#34;bold&#34;, int, False),
+        (&#34;italic&#34;, int, False),
+        (&#34;underline&#34;, int, False),
+        (&#34;foreground&#34;, self._parse_colorcode, False),
+        (&#34;background&#34;, self._parse_colorcode, False),
+        (&#34;align&#34;, str, False),
+        (&#34;text&#34;, str, False),
+        (&#34;priority&#34;, int, False),
+        (&#34;multiline&#34;, self._parse_multiline, False),
+        (&#34;rotate&#34;, _varsep_float, False),
+        (&#34;wrapmode&#34;, str, False),
+    )
+    self.elements = []
+    if encoding is None:
+        encoding = locale.getpreferredencoding()
+    with open(infile, encoding=encoding) as f:
+        for row in csv.reader(f, delimiter=delimiter):
+            # fill in blanks for any missing items
+            row.extend([&#34;&#34;] * (len(key_config) - len(row)))
+            kargs = {}
+            for val, cfg in zip(row, key_config):
+                vs = val.strip()
+                if not vs:
+                    if cfg[2]:  # mandatory
+                        if cfg[0] == &#34;x2&#34; and row[1] in [&#34;BC&#34;, &#34;C39&#34;]:
+                            # two types don&#39;t need x2, but offset rendering does
+                            pass
+                        else:
+                            raise FPDFException(
+                                f&#34;Mandatory value &#39;{cfg[0]}&#39; missing in csv data&#34;
+                            )
+                    elif cfg[0] == &#34;priority&#34;:
+                        # formally optional, but we need some value for sorting
+                        kargs[&#34;priority&#34;] = 0
+                    # otherwise, let the type handlers use their own defaults
+                else:
+                    kargs[cfg[0]] = cfg[1](vs)
+            self.elements.append(kargs)
+    self.keys = [val[&#34;name&#34;].lower() for val in self.elements]</code></pre>
+</details>
 <div class="desc"><p>Load the template definition from a CSV file.</p>
 <h2 id="arguments">Arguments</h2>
 <p>infile (string or path-like object): The filepath of the CSV file.</p>
@@ -683,6 +857,44 @@ Default is the system default encoding.</p></div>
 <span>def <span class="ident">parse_json</span></span>(<span>self, infile: os.PathLike, encoding: str = 'utf-8')</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/template.py#L151-L182" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def parse_json(self, infile: os.PathLike, encoding: str = &#34;utf-8&#34;):
+    &#34;&#34;&#34;
+    Load the template definition from a JSON file.
+    The data must be structured as an array of objects, with names and values exactly
+    equivalent to what would get supplied to load_elements(),
+
+    Arguments:
+
+        infile (string or path-like object): The filepath of the JSON file.
+
+        encoding (string): The character encoding of the file. Default is UTF-8.
+    &#34;&#34;&#34;
+    with open(infile, encoding=encoding) as f:
+        data = json.load(f)
+        for d in data:
+            fgval = d.get(&#34;foreground&#34;)
+            if fgval and isinstance(fgval, str):
+                if fgval.lower().startswith(&#34;#&#34;):
+                    d[&#34;foreground&#34;] = int(fgval[1:], 16)
+                else:
+                    raise ValueError(
+                        &#34;If foreground is a string, it must have the form &#39;#rrggbb&#39;.&#34;
+                    )
+            bgval = d.get(&#34;background&#34;)
+            if bgval and isinstance(bgval, str):
+                if bgval.lower().startswith(&#34;#&#34;):
+                    d[&#34;background&#34;] = int(bgval[1:], 16)
+                else:
+                    raise ValueError(
+                        &#34;If background is a string, it must have the form &#39;#rrggbb&#39;.&#34;
+                    )
+        self.load_elements(data)</code></pre>
+</details>
 <div class="desc"><p>Load the template definition from a JSON file.
 The data must be structured as an array of objects, with names and values exactly
 equivalent to what would get supplied to load_elements(),</p>
@@ -694,6 +906,56 @@ equivalent to what would get supplied to load_elements(),</p>
 <span>def <span class="ident">render</span></span>(<span>self, offsetx=0.0, offsety=0.0, rotate=0.0, scale=1.0)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/template.py#L577-L620" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def render(self, offsetx=0.0, offsety=0.0, rotate=0.0, scale=1.0):
+    &#34;&#34;&#34;
+    Add the contents of the template to the PDF document.
+
+    Arguments:
+
+        offsetx, offsety (float): Place the template to move its origin to the given coordinates.
+
+        rotate (float): Rotate the inserted template around its (offset) origin.
+
+        scale (float): Scale the inserted template by this factor.
+    &#34;&#34;&#34;
+    sorted_elements = sorted(self.elements, key=lambda x: x[&#34;priority&#34;])
+    with self.pdf.local_context():
+        for element in sorted_elements:
+            ele = element.copy()  # don&#39;t want to modify the callers original
+            ele[&#34;text&#34;] = self.texts.get(ele[&#34;name&#34;].lower(), ele.get(&#34;text&#34;, &#34;&#34;))
+            if scale != 1.0:
+                ele[&#34;x1&#34;] = ele[&#34;x1&#34;] * scale
+                ele[&#34;y1&#34;] = ele[&#34;y1&#34;] * scale
+                ele[&#34;x2&#34;] = ele[&#34;x1&#34;] + ((ele[&#34;x2&#34;] - element[&#34;x1&#34;]) * scale)
+                ele[&#34;y2&#34;] = ele[&#34;y1&#34;] + ((ele[&#34;y2&#34;] - element[&#34;y1&#34;]) * scale)
+            if offsetx:
+                ele[&#34;x1&#34;] = ele[&#34;x1&#34;] + offsetx
+                ele[&#34;x2&#34;] = ele[&#34;x2&#34;] + offsetx
+            if offsety:
+                ele[&#34;y1&#34;] = ele[&#34;y1&#34;] + offsety
+                ele[&#34;y2&#34;] = ele[&#34;y2&#34;] + offsety
+            ele[&#34;scale&#34;] = scale
+            handler_name = ele[&#34;type&#34;].upper()
+            if rotate:  # don&#39;t rotate by 0.0 degrees
+                with self.pdf.rotation(rotate, offsetx, offsety):
+                    if &#34;rotate&#34; in ele and ele[&#34;rotate&#34;]:
+                        with self.pdf.rotation(ele[&#34;rotate&#34;], ele[&#34;x1&#34;], ele[&#34;y1&#34;]):
+                            self.handlers[handler_name](**ele)
+                    else:
+                        self.handlers[handler_name](**ele)
+            else:
+                if &#34;rotate&#34; in ele and ele[&#34;rotate&#34;]:
+                    with self.pdf.rotation(ele[&#34;rotate&#34;], ele[&#34;x1&#34;], ele[&#34;y1&#34;]):
+                        self.handlers[handler_name](**ele)
+                else:
+                    self.handlers[handler_name](**ele)
+    self.texts = {}  # reset modified entries for the next page</code></pre>
+</details>
 <div class="desc"><p>Add the contents of the template to the PDF document.</p>
 <h2 id="arguments">Arguments</h2>
 <p>offsetx, offsety (float): Place the template to move its origin to the given coordinates.</p>
@@ -704,12 +966,72 @@ equivalent to what would get supplied to load_elements(),</p>
 <span>def <span class="ident">set</span></span>(<span>self, name, value)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/template.py#L263-L270" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def __setitem__(self, name, value):
+    assert isinstance(
+        name, str
+    ), f&#34;name must be of type &#39;str&#39;, not &#39;{type(name).__name__}&#39;.&#34;
+    # value has too many valid types to reasonably check here
+    if name.lower() not in self.keys:
+        raise FPDFException(f&#34;Element not loaded, cannot set item: {name}&#34;)
+    self.texts[name.lower()] = value</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="fpdf.template.FlexTemplate.split_multicell"><code class="name flex">
 <span>def <span class="ident">split_multicell</span></span>(<span>self, text, element_name)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/template.py#L296-L335" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def split_multicell(self, text, element_name):
+    &#34;&#34;&#34;
+    Split a string between words, for the parts to fit into a given element
+    width. Additional splits will be made replacing any &#39;\\n&#39; characters.
+
+    Arguments:
+
+        text (string): The input text string.
+
+        element_name (string): The name of the template element to fit the text inside.
+
+    Returns:
+        A list of substrings, each of which will fit into the element width
+        when rendered in the element font style and size.
+    &#34;&#34;&#34;
+    element = next(
+        element
+        for element in self.elements
+        if element[&#34;name&#34;].lower() == element_name.lower()
+    )
+    if not self.splitting_pdf:
+        self.splitting_pdf = FPDF()
+        self.splitting_pdf.add_page()
+    style = &#34;&#34;
+    if element.get(&#34;bold&#34;):
+        style += &#34;B&#34;
+    if element.get(&#34;italic&#34;):
+        style += &#34;I&#34;
+    if element.get(&#34;underline&#34;):
+        style += &#34;U&#34;
+    self.splitting_pdf.set_font(element[&#34;font&#34;], style, element[&#34;size&#34;])
+    return self.splitting_pdf.multi_cell(
+        w=element[&#34;x2&#34;] - element[&#34;x1&#34;],
+        h=element[&#34;y2&#34;] - element[&#34;y1&#34;],
+        text=str(text),
+        align=element.get(&#34;align&#34;, &#34;&#34;),
+        dry_run=True,
+        output=&#34;LINES&#34;,
+        wrapmode=element.get(&#34;wrapmode&#34;, &#34;WORD&#34;),
+    )</code></pre>
+</details>
 <div class="desc"><p>Split a string between words, for the parts to fit into a given element
 width. Additional splits will be made replacing any '\n' characters.</p>
 <h2 id="arguments">Arguments</h2>
@@ -726,26 +1048,10 @@ when rendered in the element font style and size.</p></div>
 <span>(</span><span>infile=None,<br>elements=None,<br>format='A4',<br>orientation='portrait',<br>unit='mm',<br>title='',<br>author='',<br>subject='',<br>creator='',<br>keywords='')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A simple templating class.</p>
-<p>Allows to apply a single template definition to all pages of a document.</p>
-<h2 id="arguments">Arguments</h2>
-<p>infile (str): [<strong>DEPRECATED since 2.2.0</strong>] unused, will be removed in a later version</p>
-<p>elements (list of dicts): A template definition in a list of dicts.
-If you omit this, then you need to call either load_elements()
-or parse_csv() before doing anything else.</p>
-<p>format (str): The page format of the document (eg. "A4" or "letter").</p>
-<p>orientation (str): The orientation of the document.
-Possible values are "portrait"/"P" or "landscape"/"L"</p>
-<p>unit (str): The units used in the template definition.
-One of "mm", "cm", "in", "pt", or a number for points per unit.</p>
-<p>title (str): The title of the document.</p>
-<p>author (str): The author of the document.</p>
-<p>subject (str): The subject matter of the document.</p>
-<p>creator (str): The creator of the document.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/1f28448827cf1c11035924b94c8f7077ca8fde94/fpdf/template.py#L623-L725" class="git-link">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/template.py#L623-L725" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Template(FlexTemplate):
     &#34;&#34;&#34;
@@ -851,6 +1157,22 @@ One of "mm", "cm", "in", "pt", or a number for points per unit.</p>
         if outfile:
             self.pdf.output(outfile)</code></pre>
 </details>
+<div class="desc"><p>A simple templating class.</p>
+<p>Allows to apply a single template definition to all pages of a document.</p>
+<h2 id="arguments">Arguments</h2>
+<p>infile (str): [<strong>DEPRECATED since 2.2.0</strong>] unused, will be removed in a later version</p>
+<p>elements (list of dicts): A template definition in a list of dicts.
+If you omit this, then you need to call either load_elements()
+or parse_csv() before doing anything else.</p>
+<p>format (str): The page format of the document (eg. "A4" or "letter").</p>
+<p>orientation (str): The orientation of the document.
+Possible values are "portrait"/"P" or "landscape"/"L"</p>
+<p>unit (str): The units used in the template definition.
+One of "mm", "cm", "in", "pt", or a number for points per unit.</p>
+<p>title (str): The title of the document.</p>
+<p>author (str): The author of the document.</p>
+<p>subject (str): The subject matter of the document.</p>
+<p>creator (str): The creator of the document.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.template.FlexTemplate" href="#fpdf.template.FlexTemplate">FlexTemplate</a></li>
@@ -861,12 +1183,51 @@ One of "mm", "cm", "in", "pt", or a number for points per unit.</p>
 <span>def <span class="ident">add_page</span></span>(<span>self)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/template.py#L697-L701" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def add_page(self):
+    &#34;&#34;&#34;Finish the current page, and proceed to the next one.&#34;&#34;&#34;
+    if self.pdf.page:
+        self.render()
+    self.pdf.add_page()</code></pre>
+</details>
 <div class="desc"><p>Finish the current page, and proceed to the next one.</p></div>
 </dd>
 <dt id="fpdf.template.Template.render"><code class="name flex">
 <span>def <span class="ident">render</span></span>(<span>self, outfile=None, dest=None)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/4e1ffcb8d94c9f291697f1b49ee1e9489274c205/fpdf/template.py#L704-L725" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def render(self, outfile=None, dest=None):
+    &#34;&#34;&#34;
+    Finish the document and process all pending data.
+
+    Arguments:
+
+        outfile (str): If given, the PDF file will be written to this file name.
+            Alternatively, the `.pdf.output()` method can be manually called.
+
+        dest (str): [**DEPRECATED since 2.2.0**] unused, will be removed in a later version.
+    &#34;&#34;&#34;
+    if dest:
+        warnings.warn(
+            &#39;&#34;dest&#34; is deprecated since v2.2.0, unused and will soon be removed&#39;,
+            DeprecationWarning,
+            stacklevel=get_stack_level(),
+        )
+    self.pdf.set_font(&#34;helvetica&#34;, style=&#34;B&#34;, size=16)
+    self.pdf.set_auto_page_break(False, margin=0)
+    super().render()
+    if outfile:
+        self.pdf.output(outfile)</code></pre>
+</details>
 <div class="desc"><p>Finish the document and process all pending data.</p>
 <h2 id="arguments">Arguments</h2>
 <p>outfile (str): If given, the PDF file will be written to this file name.
@@ -925,7 +1286,7 @@ Alternatively, the <code>.pdf.output()</code> method can be manually called.</p>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.3</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>
