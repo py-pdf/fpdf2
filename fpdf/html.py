@@ -45,7 +45,7 @@ DEFAULT_TAG_STYLES = {
         b_margin=0.4,
         font_size_pt=30,
         t_margin=6,
-        # center=True, - Enable this once #1282 is implemented
+        l_margin="Center",
     ),
     "h1": TextStyle(
         color="#960000", b_margin=0.4, font_size_pt=24, t_margin=5 + 834 / 900
@@ -514,10 +514,15 @@ class HTML2FPDF(HTMLParser):
         # due to the behaviour of TextRegion._render_column_lines()
         self._end_paragraph()
         self.align = align or ""
+        if isinstance(indent, Align):
+            # Explicit alignement takes priority over alignement provided as TextStyle.l_margin:
+            if not self.align:
+                self.align = indent
+            indent = 0
         if not top_margin and not self.follows_heading:
             top_margin = self.font_size_pt / self.pdf.k
         self._paragraph = self._column.paragraph(
-            text_align=align,
+            text_align=self.align,
             line_height=line_height,
             skip_leading_spaces=True,
             top_margin=top_margin,
@@ -1187,7 +1192,11 @@ def _scale_units(pdf, in_tag_styles):
         if isinstance(tag_style, TextStyle):
             out_tag_styles[tag_name] = tag_style.replace(
                 t_margin=tag_style.t_margin * conversion_factor,
-                l_margin=tag_style.l_margin * conversion_factor,
+                l_margin=(
+                    tag_style.l_margin * conversion_factor
+                    if isinstance(tag_style.l_margin, (int, float))
+                    else tag_style.l_margin
+                ),
                 b_margin=tag_style.b_margin * conversion_factor,
             )
         else:
