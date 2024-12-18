@@ -83,6 +83,19 @@ pip install git+https://github.com/py-pdf/fpdf2.git@master
 
 **Developement**: check the [dedicated documentation page](Development.md).
 
+### Verifying provenance
+`sigstore` can be used to check the provenance of a `fpdf2-2.X.Y.tar.gz` package.
+
+Example to check that [`fpdf2-2.8.2.tar.gz` package on Pypi](https://pypi.org/project/fpdf2/#fpdf2-2.8.2.tar.gz) can be linked to the `git` commit [b9cfbb6d8ca1eb034e826fd358194e899a1daf28](https://github.com/py-pdf/fpdf2/commit/b9cfbb6d8ca1eb034e826fd358194e899a1daf28) on the [py-pdf/fpdf2](https://github.com/py-pdf/fpdf2) GitHub repository:
+
+```shell
+pip install sigstore
+
+wget https://files.pythonhosted.org/packages/b0/54/0e86f986e81abad9e6b348f5176048a2aa046920d46292c42a581064d93e/fpdf2-2.8.2.tar.gz
+
+sigstore verify github fpdf2-2.8.2.tar.gz --repository=py-pdf/fpdf2 --sha b9cfbb6d8ca1eb034e826fd358194e899a1daf28
+```
+
 ### Displaying deprecation warnings
 `DeprecationWarning`s are not displayed by Python by default.
 
