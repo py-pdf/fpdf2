@@ -366,6 +366,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._drawing_graphics_state_registry = GraphicsStateDictRegistry()
         # map page numbers to a set of GraphicsState names:
         self.graphics_style_names_per_page_number = defaultdict(set)
+        self.shadings_per_page_number = defaultdict(set)
+        self.patterns_per_page_number = defaultdict(set)
+        self._shading_registry = {}
+        self._pattern_registry = {}
 
         self._record_text_quad_points = False
 
@@ -1264,6 +1268,25 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._out(rendered)
         # The drawing API makes use of features (notably transparency and blending modes) that were introduced in PDF 1.4:
         self._set_min_pdf_version("1.4")
+
+    @contextmanager
+    @check_page
+    def use_pattern(self, shading):
+        """
+        Create a context for using a shading pattern on the current page.
+        """
+        if shading not in self._shading_registry:
+            self._shading_registry[shading] = f"Sh{len(self._shading_registry) + 1}"
+        pattern = shading.get_pattern()
+        if pattern not in self._pattern_registry:
+            self._pattern_registry[pattern] = "P" + str(len(self._pattern_registry) + 1)
+        self._out(f"/Pattern cs /{self._pattern_registry[pattern]} scn")
+        self.shadings_per_page_number[self.page].add(self._shading_registry[shading])
+        self.patterns_per_page_number[self.page].add(self._pattern_registry[pattern])
+        try:
+            yield
+        finally:
+            self._out(self.draw_color.serialize().lower())
 
     def _current_graphic_style(self):
         gs = GraphicsStyle()

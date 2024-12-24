@@ -149,12 +149,14 @@ class PDFCatalog(PDFObject):
 
 
 class PDFResources(PDFObject):
-    def __init__(self, proc_set, font, x_object, ext_g_state):
+    def __init__(self, proc_set, font, x_object, ext_g_state, shading, pattern):
         super().__init__()
         self.proc_set = proc_set
         self.font = font
         self.x_object = x_object
         self.ext_g_state = ext_g_state
+        self.shading = shading
+        self.pattern = pattern
 
 
 class PDFFontStream(PDFContentStream):
@@ -889,14 +891,37 @@ class OutputProducer:
             gfxstate_objs_per_name[name] = gfxstate_obj
         return gfxstate_objs_per_name
 
+    def _add_shadings(self):
+        shading_objs_per_name = OrderedDict()
+        for shading, name in self.fpdf._shading_registry.items():
+            for function in shading.functions:
+                self._add_pdf_obj(function, "function")
+            shading_obj = shading.get_shading_object()
+            self._add_pdf_obj(shading_obj, "shading")
+            shading_objs_per_name[name] = shading_obj
+        return shading_objs_per_name
+
+    def _add_patterns(self):
+        pattern_objs_per_name = OrderedDict()
+        for pattern, name in self.fpdf._pattern_registry.items():
+            self._add_pdf_obj(pattern, "pattern")
+            pattern_objs_per_name[name] = pattern
+        return pattern_objs_per_name
+
     def _insert_resources(self, page_objs):
         font_objs_per_index = self._add_fonts()
         img_objs_per_index = self._add_images()
         gfxstate_objs_per_name = self._add_gfxstates()
+        shading_objs_per_name = self._add_shadings()
+        pattern_objs_per_name = self._add_patterns()
         # Insert /Resources dicts:
         if self.fpdf.single_resources_object:
             resources_dict_obj = self._add_resources_dict(
-                font_objs_per_index, img_objs_per_index, gfxstate_objs_per_name
+                font_objs_per_index,
+                img_objs_per_index,
+                gfxstate_objs_per_name,
+                shading_objs_per_name,
+                pattern_objs_per_name,
             )
             for page_obj in page_objs:
                 page_obj.resources = resources_dict_obj
@@ -916,14 +941,29 @@ class OutputProducer:
                     if gfx_name
                     in self.fpdf.graphics_style_names_per_page_number[page_number]
                 }
+                page_shading_objs_per_name = {
+                    shading_name: shading_objs_per_name[shading_name]
+                    for shading_name in self.fpdf.shadings_per_page_number[page_number]
+                }
+                page_pattern_objs_per_name = {
+                    pattern_name: pattern_objs_per_name[pattern_name]
+                    for pattern_name in self.fpdf.patterns_per_page_number[page_number]
+                }
                 page_obj.resources = self._add_resources_dict(
                     page_font_objs_per_index,
                     page_img_objs_per_index,
                     page_gfxstate_objs_per_name,
+                    page_shading_objs_per_name,
+                    page_pattern_objs_per_name,
                 )
 
     def _add_resources_dict(
-        self, font_objs_per_index, img_objs_per_index, gfxstate_objs_per_name
+        self,
+        font_objs_per_index,
+        img_objs_per_index,
+        gfxstate_objs_per_name,
+        shading_objs_per_name,
+        pattern_objs_per_name,
     ):
         # From section 10.1, "Procedure Sets", of PDF 1.7 spec:
         # > Beginning with PDF 1.4, this feature is considered obsolete.
@@ -931,7 +971,7 @@ class OutputProducer:
         # > PDF producer applications should continue to specify procedure sets
         # > (preferably, all of those listed in Table 10.1).
         proc_set = "[/PDF /Text /ImageB /ImageC /ImageI]"
-        font, x_object, ext_g_state = None, None, None
+        font, x_object, ext_g_state, shading, pattern = None, None, None, None, None
 
         if font_objs_per_index:
             font = pdf_dict(
@@ -956,9 +996,29 @@ class OutputProducer:
                     for name, gfxstate_obj in gfxstate_objs_per_name.items()
                 }
             )
+        if shading_objs_per_name:
+            shading = pdf_dict(
+                {
+                    f"/{name}": pdf_ref(shading_obj.id)
+                    for name, shading_obj in shading_objs_per_name.items()
+                }
+            )
+
+        if pattern_objs_per_name:
+            pattern = pdf_dict(
+                {
+                    f"/{name}": pdf_ref(pattern_obj.id)
+                    for name, pattern_obj in pattern_objs_per_name.items()
+                }
+            )
 
         resources_obj = PDFResources(
-            proc_set=proc_set, font=font, x_object=x_object, ext_g_state=ext_g_state
+            proc_set=proc_set,
+            font=font,
+            x_object=x_object,
+            ext_g_state=ext_g_state,
+            shading=shading,
+            pattern=pattern,
         )
         self._add_pdf_obj(resources_obj)
         return resources_obj
