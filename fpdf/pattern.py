@@ -3,17 +3,25 @@ Handles the creation of patterns and gradients
 """
 
 from abc import ABC
-from typing import List, Union
+from typing import List, Optional, Union
 
-from .drawing import convert_to_device_color
+from .drawing import DeviceCMYK, DeviceGray, DeviceRGB, convert_to_device_color
 from .syntax import Name, PDFArray, PDFObject
 
 
 class Pattern(PDFObject):
+    """
+    Represents a PDF Pattern object. 
+    
+    Currently, this class supports only "shading patterns" (pattern_type 2), 
+    using either a linear or radial gradient. Tiling patterns (pattern_type 1) 
+    are not yet implemented.
+    """
 
     def __init__(self, shading: Union["LinearGradient", "RadialGradient"]):
         super().__init__()
         self.type = Name("Pattern")
+        # 1 for a tiling pattern or type 2 for a shading pattern:
         self.pattern_type = 2
         self._shading = shading
 
@@ -26,7 +34,7 @@ class Type2Function(PDFObject):
     """Transition between 2 colors"""
 
     def __init__(self, color_1, color_2):
-        super().__init__()
+        # 0: Sampled function; 2: Exponential interpolation function; 3: Stitching function; 4: PostScript calculator function
         self.function_type = 2
         self.domain = "[0 1]"
         self.c0 = f'[{" ".join(str(c) for c in color_1.colors)}]'
@@ -39,12 +47,12 @@ class Type3Function(PDFObject):
     and define the bounds between each color transition"""
 
     def __init__(self, functions, bounds):
-        super().__init__()
+        # 0: Sampled function; 2: Exponential interpolation function; 3: Stitching function; 4: PostScript calculator function
         self.function_type = 3
         self.domain = "[0 1]"
         self._functions = functions
         self.bounds = f"[{' '.join(str(bound) for bound in bounds)}]"
-        self.encode = f"[{' '.join("0 1" for _ in functions)}]"
+        self.encode = f"[{' '.join('0 1' for _ in functions)}]"
         self.n = 1
 
     @property
@@ -56,12 +64,12 @@ class Shading(PDFObject):
     def __init__(
         self,
         shading_type: int,  # 2 for axial shading, 3 for radial shading
-        background,
-        color_space,
-        coords,
-        function,
-        extend_before,
-        extend_after,
+        background: Optional[Union[DeviceRGB, DeviceGray, DeviceCMYK]],
+        color_space: str,
+        coords: List[int],
+        function: Union[Type2Function, Type3Function],
+        extend_before: bool,
+        extend_after: bool,
     ):
         super().__init__()
         self.shading_type = shading_type
@@ -104,13 +112,13 @@ class Gradient(ABC):
             )
         self.extend_before = extend_before
         self.extend_after = extend_after
-        self.functions = self.generate_functions()
+        self.functions = self._generate_functions()
         self.pattern = Pattern(self)
         self._shading_object = None
         self.coords = None
         self.shading_type = 0
 
-    def generate_functions(self):
+    def _generate_functions(self):
         if len(self.colors) < 2:
             raise ValueError("A gradient must have at least two colors")
         if len(self.colors) == 2:
