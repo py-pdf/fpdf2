@@ -11,10 +11,10 @@ from .syntax import Name, PDFArray, PDFObject
 
 class Pattern(PDFObject):
     """
-    Represents a PDF Pattern object. 
-    
-    Currently, this class supports only "shading patterns" (pattern_type 2), 
-    using either a linear or radial gradient. Tiling patterns (pattern_type 1) 
+    Represents a PDF Pattern object.
+
+    Currently, this class supports only "shading patterns" (pattern_type 2),
+    using either a linear or radial gradient. Tiling patterns (pattern_type 1)
     are not yet implemented.
     """
 
