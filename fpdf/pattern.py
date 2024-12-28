@@ -41,8 +41,8 @@ class Type2Function(PDFObject):
         # 0: Sampled function; 2: Exponential interpolation function; 3: Stitching function; 4: PostScript calculator function
         self.function_type = 2
         self.domain = "[0 1]"
-        self.c0 = f'[{" ".join(str(c) for c in color_1.colors)}]'
-        self.c1 = f'[{" ".join(str(c) for c in color_2.colors)}]'
+        self.c0 = f'[{" ".join(f"{c:.2f}" for c in color_1.colors)}]'
+        self.c1 = f'[{" ".join(f"{c:.2f}" for c in color_2.colors)}]'
         self.n = 1
 
 
@@ -56,7 +56,7 @@ class Type3Function(PDFObject):
         self.function_type = 3
         self.domain = "[0 1]"
         self._functions = functions
-        self.bounds = f"[{' '.join(str(bound) for bound in bounds)}]"
+        self.bounds = f"[{' '.join(f'{bound:.2f}' for bound in bounds)}]"
         self.encode = f"[{' '.join('0 1' for _ in functions)}]"
         self.n = 1
 
@@ -79,7 +79,7 @@ class Shading(PDFObject):
         super().__init__()
         self.shading_type = shading_type
         self.background = (
-            f'[{" ".join(str(c) for c in background.colors)}]' if background else None
+            f'[{" ".join(f"{c:.2f}" for c in background.colors)}]' if background else None
         )
         self.color_space = Name(color_space)
         self.coords = coords
@@ -185,7 +185,7 @@ class LinearGradient(Gradient):
     ):
         super().__init__(colors, background, extend_before, extend_after)
         coords = [from_x, fpdf.h - from_y, to_x, fpdf.h - to_y]
-        self.coords = [fpdf.k * c for c in coords]
+        self.coords = [f"{fpdf.k * c:.2f}" for c in coords]
         self.shading_type = 2
 
 
@@ -213,5 +213,5 @@ class RadialGradient(Gradient):
             fpdf.h - end_circle_y,
             end_circle_radius,
         ]
-        self.coords = [fpdf.k * c for c in coords]
+        self.coords = [f"{fpdf.k * c:.2f}" for c in coords]
         self.shading_type = 3

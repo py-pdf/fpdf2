@@ -1000,7 +1000,7 @@ class OutputProducer:
             shading = pdf_dict(
                 {
                     f"/{name}": pdf_ref(shading_obj.id)
-                    for name, shading_obj in shading_objs_per_name.items()
+                    for name, shading_obj in sorted(shading_objs_per_name.items())
                 }
             )
 
@@ -1008,7 +1008,7 @@ class OutputProducer:
             pattern = pdf_dict(
                 {
                     f"/{name}": pdf_ref(pattern_obj.id)
-                    for name, pattern_obj in pattern_objs_per_name.items()
+                    for name, pattern_obj in sorted(pattern_objs_per_name.items())
                 }
             )
 

@@ -4875,6 +4875,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # > When a file is first written, both identifiers shall be set to the same value.
         id_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
         id_hash.update(buffer)
+        print(str(buffer))
         if self.creation_date:
             id_hash.update(self.creation_date.strftime("%Y%m%d%H%M%S").encode("utf8"))
         hash_hex = id_hash.hexdigest().upper()
