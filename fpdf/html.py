@@ -1142,7 +1142,7 @@ class HTML2FPDF(HTMLParser):
             LOGGER.warning("Missing HTML end tag for <%s>", self._tags_stack[-1])
 
     def put_link(self, text):
-        "Put a hyperlink"
+        "Insert a hyperlink"
         prev_style = FontFace(
             family=self.font_family,
             emphasis=self.font_emphasis,

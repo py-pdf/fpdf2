@@ -3243,7 +3243,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self._add_quad_points(self.x, self.y, w, h)
 
         s_start = self.x
-        s_width, underlines = 0, []
+        s_width = 0
         # We try to avoid modifying global settings for temporary changes.
         current_ws = frag_ws = 0.0
         current_lift = 0.0
@@ -3331,12 +3331,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     initial_cs=i != 0
                 ) + word_spacing * frag.characters.count(" ")
                 if frag.underline:
-                    underlines.append(
-                        (
+                    sl.append(
+                        self._do_underline(
                             self.x + dx + s_width,
+                            self.y + (0.5 * h) + (0.3 * frag.font_size),
                             frag_width,
                             frag.font,
-                            frag.font_size,
                         )
                     )
                 if frag.link:
@@ -3353,15 +3353,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
             sl.append("ET")
 
-            for start_x, ul_w, ul_font, ul_font_size in underlines:
-                sl.append(
-                    self._do_underline(
-                        start_x,
-                        self.y + (0.5 * h) + (0.3 * ul_font_size),
-                        ul_w,
-                        ul_font,
-                    )
-                )
             if link:
                 self.link(
                     self.x + dx,
@@ -4014,13 +4005,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         page_break_triggered = False
 
         for text_line_index, text_line in enumerate(text_lines):
-            page_break_required = self.will_page_break(h + padding.bottom)
-            if page_break_required:
+            if self._perform_page_break_if_need_be(h + padding.bottom):
                 page_break_triggered = True
-                self._perform_page_break()
                 self.y += padding.top
 
-            if box_required and (text_line_index == 0 or page_break_required):
+            if box_required and (text_line_index == 0 or page_break_triggered):
                 # estimate how many cells can fit on this page
                 top_gap = self.y + padding.top
                 bottom_gap = padding.bottom + self.b_margin
