@@ -451,20 +451,12 @@ class ResourceCatalog:
 
     @classmethod
     def _get_prefix(cls, resource_type: PDFResourceType):
-        match resource_type:
-            case PDFResourceType.EXT_G_STATE:
-                return "GS"
-            # COLOR_SPACE = intern("ColorSpece")
-            case PDFResourceType.PATTERN:
-                return "P"
-            case PDFResourceType.SHADDING:
-                return "Sh"
-            case PDFResourceType.X_OBJECT:
-                return "I"
-            case PDFResourceType.FONT:
-                return "F"
-            case _:
-                raise ValueError(f"No prefix for resource type {resource_type}")
+        if resource_type == PDFResourceType.PATTERN:
+            return "P"
+        elif resource_type == PDFResourceType.SHADDING:
+            return "Sh"
+        else:
+            raise ValueError(f"No prefix for resource type {resource_type}")
 
 
 class OutputProducer:
