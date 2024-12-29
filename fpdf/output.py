@@ -453,10 +453,9 @@ class ResourceCatalog:
     def _get_prefix(cls, resource_type: PDFResourceType):
         if resource_type == PDFResourceType.PATTERN:
             return "P"
-        elif resource_type == PDFResourceType.SHADDING:
+        if resource_type == PDFResourceType.SHADDING:
             return "Sh"
-        else:
-            raise ValueError(f"No prefix for resource type {resource_type}")
+        raise ValueError(f"No prefix for resource type {resource_type}")
 
 
 class OutputProducer:
