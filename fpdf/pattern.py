@@ -79,7 +79,9 @@ class Shading(PDFObject):
         super().__init__()
         self.shading_type = shading_type
         self.background = (
-            f'[{" ".join(f"{c:.2f}" for c in background.colors)}]' if background else None
+            f'[{" ".join(f"{c:.2f}" for c in background.colors)}]'
+            if background
+            else None
         )
         self.color_space = Name(color_space)
         self.coords = coords

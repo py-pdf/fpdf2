@@ -1068,3 +1068,14 @@ class PageOrientation(CoerciveEnum):
         if isinstance(value, str):
             value = value.upper()
         return super(cls, cls).coerce(value)
+
+
+class PDFResourceType(Enum):
+    EXT_G_STATE = intern("ExtGState")
+    COLOR_SPACE = intern("ColorSpece")
+    PATTERN = intern("Pattern")
+    SHADDING = intern("Shading")
+    X_OBJECT = intern("XObject")
+    FONT = intern("Font")
+    PROC_SET = intern("ProcSet")
+    PROPERTIES = intern("Properties")

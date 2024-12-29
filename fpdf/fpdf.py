@@ -85,6 +85,7 @@ from .enums import (
     PageMode,
     PageOrientation,
     PathPaintRule,
+    PDFResourceType,
     RenderStyle,
     TextDirection,
     TextEmphasis,
@@ -123,6 +124,7 @@ from .output import (
     OutputProducer,
     PDFPage,
     PDFPageLabel,
+    ResourceCatalog,
     stream_content_for_raster_image,
 )
 from .recorder import FPDFRecorder
@@ -366,12 +368,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._drawing_graphics_state_registry = GraphicsStateDictRegistry()
         # map page numbers to a set of GraphicsState names:
         self.graphics_style_names_per_page_number = defaultdict(set)
-        self.shadings_per_page_number = defaultdict(set)
-        self.patterns_per_page_number = defaultdict(set)
-        self._shading_registry = {}
-        self._pattern_registry = {}
-
         self._record_text_quad_points = False
+        self._resource_catalog = ResourceCatalog()
 
         # page number -> array of 8 × n numbers:
         self._text_quad_points = defaultdict(list)
@@ -1275,14 +1273,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         Create a context for using a shading pattern on the current page.
         """
-        if shading not in self._shading_registry:
-            self._shading_registry[shading] = f"Sh{len(self._shading_registry) + 1}"
+        self._resource_catalog.add(PDFResourceType.SHADDING, shading, self.page)
         pattern = shading.get_pattern()
-        if pattern not in self._pattern_registry:
-            self._pattern_registry[pattern] = "P" + str(len(self._pattern_registry) + 1)
-        self._out(f"/Pattern cs /{self._pattern_registry[pattern]} scn")
-        self.shadings_per_page_number[self.page].add(self._shading_registry[shading])
-        self.patterns_per_page_number[self.page].add(self._pattern_registry[pattern])
+        pattern_name = self._resource_catalog.add(
+            PDFResourceType.PATTERN, pattern, self.page
+        )
+        self._out(f"/Pattern cs /{pattern_name} scn")
         try:
             yield
         finally:
@@ -4875,7 +4871,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # > When a file is first written, both identifiers shall be set to the same value.
         id_hash = hashlib.new("md5", usedforsecurity=False)  # nosec B324
         id_hash.update(buffer)
-        print(str(buffer))
         if self.creation_date:
             id_hash.update(self.creation_date.strftime("%Y%m%d%H%M%S").encode("utf8"))
         hash_hex = id_hash.hexdigest().upper()
