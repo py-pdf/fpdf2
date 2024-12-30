@@ -440,14 +440,31 @@ class ResourceCatalog:
         self.resources_per_page = defaultdict(set)
 
     def add(self, resource_type: PDFResourceType, resource, page_number: int):
-        registry = self.resources[resource_type]
-        if resource not in registry:
-            registry[resource] = f"{self._get_prefix(resource_type)}{len(registry) + 1}"
-        self.resources_per_page[(page_number, resource_type)].add(registry[resource])
-        return registry[resource]
+        if resource_type in (PDFResourceType.PATTERN, PDFResourceType.SHADDING):
+            registry = self.resources[resource_type]
+            if resource not in registry:
+                registry[resource] = (
+                    f"{self._get_prefix(resource_type)}{len(registry) + 1}"
+                )
+            self.resources_per_page[(page_number, resource_type)].add(
+                registry[resource]
+            )
+            return registry[resource]
+        self.resources_per_page[(page_number, resource_type)].add(resource)
+        return None
 
     def get_items(self, resource_type: PDFResourceType):
         return self.resources[resource_type].items()
+
+    def get_resources_per_page(self, page_number: int, resource_type: PDFResourceType):
+        return self.resources_per_page[(page_number, resource_type)]
+
+    def get_used_resources(self, resource_type: PDFResourceType):
+        unique = set()
+        for (_, rtype), resource in self.resources_per_page.items():
+            if rtype == resource_type:
+                unique.update(resource)
+        return unique
 
     @classmethod
     def _get_prefix(cls, resource_type: PDFResourceType):
@@ -959,29 +976,35 @@ class OutputProducer:
             for page_number, page_obj in enumerate(page_objs, start=1):
                 page_font_objs_per_index = {
                     font_id: font_objs_per_index[font_id]
-                    for font_id in self.fpdf.fonts_used_per_page_number[page_number]
+                    for font_id in self.fpdf._resource_catalog.get_resources_per_page(
+                        page_number, PDFResourceType.FONT
+                    )
                 }
                 page_img_objs_per_index = {
                     img_id: img_objs_per_index[img_id]
-                    for img_id in self.fpdf.images_used_per_page_number[page_number]
+                    for img_id in self.fpdf._resource_catalog.get_resources_per_page(
+                        page_number, PDFResourceType.X_OBJECT
+                    )
                 }
                 page_gfxstate_objs_per_name = {
                     gfx_name: gfx_state
                     for (gfx_name, gfx_state) in gfxstate_objs_per_name.items()
                     if gfx_name
-                    in self.fpdf.graphics_style_names_per_page_number[page_number]
+                    in self.fpdf._resource_catalog.get_resources_per_page(
+                        page_number, PDFResourceType.EXT_G_STATE
+                    )
                 }
                 page_shading_objs_per_name = {
                     shading_name: shading_objs_per_name[shading_name]
-                    for shading_name in self.fpdf._resource_catalog.resources_per_page[
-                        (page_number, PDFResourceType.SHADDING)
-                    ]
+                    for shading_name in self.fpdf._resource_catalog.get_resources_per_page(
+                        page_number, PDFResourceType.SHADDING
+                    )
                 }
                 page_pattern_objs_per_name = {
                     pattern_name: pattern_objs_per_name[pattern_name]
-                    for pattern_name in self.fpdf._resource_catalog.resources_per_page[
-                        (page_number, PDFResourceType.PATTERN)
-                    ]
+                    for pattern_name in self.fpdf._resource_catalog.get_resources_per_page(
+                        page_number, PDFResourceType.PATTERN
+                    )
                 }
                 page_obj.resources = self._add_resources_dict(
                     page_font_objs_per_index,
