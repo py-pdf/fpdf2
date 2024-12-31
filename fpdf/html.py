@@ -1142,7 +1142,7 @@ class HTML2FPDF(HTMLParser):
             LOGGER.warning("Missing HTML end tag for <%s>", self._tags_stack[-1])
 
     def put_link(self, text):
-        "Put a hyperlink"
+        "Insert a hyperlink"
         prev_style = FontFace(
             family=self.font_family,
             emphasis=self.font_emphasis,
@@ -1160,7 +1160,7 @@ class HTML2FPDF(HTMLParser):
         # Restore previous style:
         self.font_family = prev_style.family or self.font_family
         self.font_size_pt = prev_style.size_pt or self.font_size_pt
-        self.font_emphasis |= prev_style.emphasis
+        self.font_emphasis = prev_style.emphasis
         self.font_color = prev_style.color
 
     # pylint: disable=no-self-use

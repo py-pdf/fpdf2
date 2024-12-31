@@ -71,20 +71,20 @@ def test_incoherent_start_section_hierarchy():
 def test_start_section_horizontal_alignment(tmp_path):  # issue-1282
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 20)
+    pdf.set_font("Helvetica", size=20)
 
     # left align
-    level0 = TextStyle("Helvetica", "", 20, (0, 0, 0), l_margin=Align.L)
+    level0 = TextStyle(font_size_pt=20, l_margin=Align.L)
     pdf.set_section_title_styles(level0)
     pdf.start_section("left aligned section")
 
     # center align
-    level0 = TextStyle("Helvetica", "", 20, (0, 0, 0), l_margin=Align.C)
+    level0 = TextStyle(font_size_pt=20, l_margin=Align.C)
     pdf.set_section_title_styles(level0)
     pdf.start_section("center aligned section")
 
     # right align
-    level0 = TextStyle("Helvetica", "", 20, (0, 0, 0), l_margin=Align.R)
+    level0 = TextStyle(font_size_pt=20, l_margin=Align.R)
     pdf.set_section_title_styles(level0)
     pdf.start_section("right aligned section")
 
@@ -236,18 +236,14 @@ def test_toc_with_font_style_override_bold(tmp_path):  # issue-1072
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", style="B")
-    pdf.set_section_title_styles(
-        TextStyle("Helvetica", font_size_pt=20, color=(0, 0, 0))
-    )
+    pdf.set_section_title_styles(TextStyle("Helvetica", font_size_pt=20))
     pdf.start_section("foo")
     assert_pdf_equal(pdf, HERE / "toc_with_font_style_override_bold1.pdf", tmp_path)
 
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", style="B")
-    pdf.set_section_title_styles(
-        TextStyle("Helvetica", font_style="", font_size_pt=20, color=(0, 0, 0))
-    )
+    pdf.set_section_title_styles(TextStyle("Helvetica", font_size_pt=20, font_style=""))
     pdf.start_section("foo")
     assert_pdf_equal(pdf, HERE / "toc_with_font_style_override_bold2.pdf", tmp_path)
 

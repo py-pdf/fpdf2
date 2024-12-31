@@ -721,6 +721,20 @@ def test_html_and_section_title_styles_with_deprecated_TitleStyle():
         )
 
 
+def test_html_link_underline(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<a href="https://py-pdf.github.io/fpdf2/">inside link</a> - outside link'
+    )
+    pdf.write_html(
+        '<a href="https://www.flickr.com/photos/ryzom/14726336322/in/album-72157645935788203/">Tryker</a>'
+        " - Ryzom"
+        ' - <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>'
+    )
+    assert_pdf_equal(pdf, HERE / "html_link_underline.pdf", tmp_path)
+
+
 def test_html_link_style(tmp_path):
     pdf = FPDF()
     pdf.add_page()
