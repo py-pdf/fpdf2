@@ -152,6 +152,7 @@ nav:
   - 'Shapes':                         'Shapes.md'
   - 'Transformations':                'Transformations.md'
   - 'Transparency':                   'Transparency.md'
+  - 'Patterns':                       'Patterns.md'
   - 'Barcodes':                       'Barcodes.md'
   - 'Drawing':                        'Drawing.md'
   - 'SVG':                            'SVG.md'

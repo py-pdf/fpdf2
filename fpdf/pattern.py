@@ -90,7 +90,7 @@ class Shading(PDFObject):
 
 
 class Gradient(ABC):
-    def __init__(self, colors, background, extend_before, extend_after):
+    def __init__(self, colors, background, extend_before, extend_after, bounds):
         self.color_space, self.colors = self._convert_colors(colors)
         self.background = None
         if background:
@@ -105,12 +105,15 @@ class Gradient(ABC):
             )
         self.extend_before = extend_before
         self.extend_after = extend_after
+        self.bounds = bounds if bounds else [(i + 1) / (len(self.colors) - 1) for i in range(len(self.colors) - 2)]
+        if len(self.bounds) != len(self.colors) - 2:
+            raise ValueError("Bounds array length must be two less than the number of colors")
         self.functions = self._generate_functions()
         self.pattern = Pattern(self)
         self._shading_object = None
         self.coords = None
         self.shading_type = 0
-
+        
     @classmethod
     def _convert_colors(cls, colors) -> Tuple[str, List]:
         color_list = []
@@ -150,7 +153,7 @@ class Gradient(ABC):
         functions.append(
             Type3Function(
                 functions[:],
-                [(i + 1) / (number_of_colors - 1) for i in range(number_of_colors - 2)],
+                self.bounds
             )
         )
         return functions
@@ -184,8 +187,9 @@ class LinearGradient(Gradient):
         background=None,
         extend_before: bool = False,
         extend_after: bool = False,
+        bounds: List[int] = None,
     ):
-        super().__init__(colors, background, extend_before, extend_after)
+        super().__init__(colors, background, extend_before, extend_after, bounds)
         coords = [from_x, fpdf.h - from_y, to_x, fpdf.h - to_y]
         self.coords = [f"{fpdf.k * c:.2f}" for c in coords]
         self.shading_type = 2
@@ -205,8 +209,9 @@ class RadialGradient(Gradient):
         background=None,
         extend_before: bool = False,
         extend_after: bool = False,
+        bounds: List[int] = None,
     ):
-        super().__init__(colors, background, extend_before, extend_after)
+        super().__init__(colors, background, extend_before, extend_after, bounds)
         coords = [
             start_circle_x,
             fpdf.h - start_circle_y,
