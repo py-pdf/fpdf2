@@ -121,16 +121,26 @@ def test_custom_bounds(tmp_path):
     with pdf.use_pattern(
         RadialGradient(
             pdf,
-            pdf.w/2,
-            pdf.h/2,
+            pdf.w / 2,
+            pdf.h / 2,
             20,
-            pdf.w/2,
-            pdf.h/2,
-            pdf.h/2-20,
-            ["#FFFFFF", "#9400D3", "#4B0082", "#0000FF", "#00FF00", "#FFFF00", "#FF7F00", "#FF0000", "#FFFFFF"],
+            pdf.w / 2,
+            pdf.h / 2,
+            pdf.h / 2 - 20,
+            [
+                "#FFFFFF",
+                "#9400D3",
+                "#4B0082",
+                "#0000FF",
+                "#00FF00",
+                "#FFFF00",
+                "#FF7F00",
+                "#FF0000",
+                "#FFFFFF",
+            ],
             bounds=[0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65],
         )
     ):
-        pdf.rect(x=0, y=0, w=pdf.w, h=pdf.h/2, style="FD")
-    
+        pdf.rect(x=0, y=0, w=pdf.w, h=pdf.h / 2, style="FD")
+
     assert_pdf_equal(pdf, HERE / "radial_custom_bounds.pdf", tmp_path)

@@ -105,15 +105,21 @@ class Gradient(ABC):
             )
         self.extend_before = extend_before
         self.extend_after = extend_after
-        self.bounds = bounds if bounds else [(i + 1) / (len(self.colors) - 1) for i in range(len(self.colors) - 2)]
+        self.bounds = (
+            bounds
+            if bounds
+            else [(i + 1) / (len(self.colors) - 1) for i in range(len(self.colors) - 2)]
+        )
         if len(self.bounds) != len(self.colors) - 2:
-            raise ValueError("Bounds array length must be two less than the number of colors")
+            raise ValueError(
+                "Bounds array length must be two less than the number of colors"
+            )
         self.functions = self._generate_functions()
         self.pattern = Pattern(self)
         self._shading_object = None
         self.coords = None
         self.shading_type = 0
-        
+
     @classmethod
     def _convert_colors(cls, colors) -> Tuple[str, List]:
         color_list = []
@@ -150,12 +156,7 @@ class Gradient(ABC):
         functions = []
         for i in range(number_of_colors - 1):
             functions.append(Type2Function(self.colors[i], self.colors[i + 1]))
-        functions.append(
-            Type3Function(
-                functions[:],
-                self.bounds
-            )
-        )
+        functions.append(Type3Function(functions[:], self.bounds))
         return functions
 
     def get_shading_object(self):
