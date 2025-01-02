@@ -57,7 +57,7 @@ pdf.output("linear_gradient_example.pdf")
 **Key Parameters**:
 
 - **from_x, from_y, to_x, to_y**: The coordinates defining the line along which colors will blend.  
-- **colors**: A list of colors (hex strings or (R,G,B) tuples). *fpdf2* will smoothly interpolate between these colors.  
+- **colors**: A list of colors (hex strings or (R,G,B) tuples). The pattern will interpolate between these colors.  
 
 
 ### 2.3 Radial Gradients
@@ -102,7 +102,7 @@ pdf.output("radial_gradient_example.pdf")
 
 ### 4.1 Multiple Colors
 
-Both linear and radial gradients support **multiple colors**. If you pass, for example, `colors=["#C33764", "#1D2671", "#FFA500"]`, *fpdf2* will interpolate color transitions smoothly through each color in that order.
+Both linear and radial gradients support **multiple colors**. If you pass, for example, `colors=["#C33764", "#1D2671", "#FFA500"]`, the resulting pattern will interpolate color transitions through each color in that order.
 
 ### 4.2 Extending & Background for Linear Gradients
 
