@@ -331,7 +331,7 @@ class PDFArray(list):
     def serialize(self, _security_handler=None, _obj_id=None):
         if all(isinstance(elem, str) for elem in self):
             serialized_elems = " ".join(self)
-        elif all(isinstance(elem, int) for elem in self):
+        elif all(isinstance(elem, (int, float)) for elem in self):
             serialized_elems = " ".join(str(elem) for elem in self)
         else:
             serialized_elems = "\n".join(

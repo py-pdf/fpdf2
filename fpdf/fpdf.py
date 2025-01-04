@@ -85,6 +85,7 @@ from .enums import (
     PageMode,
     PageOrientation,
     PathPaintRule,
+    PDFResourceType,
     RenderStyle,
     TextDirection,
     TextEmphasis,
@@ -123,6 +124,7 @@ from .output import (
     OutputProducer,
     PDFPage,
     PDFPageLabel,
+    ResourceCatalog,
     stream_content_for_raster_image,
 )
 from .recorder import FPDFRecorder
@@ -277,12 +279,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.pages: Dict[int, PDFPage] = {}
         self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
         # map page numbers to a set of font indices:
-        self.fonts_used_per_page_number = defaultdict(set)
         self.links = {}  # array of Destination objects starting at index 1
         self.embedded_files = []  # array of PDFEmbeddedFile
         self.image_cache = ImageCache()
-        # map page numbers to a set of image indices
-        self.images_used_per_page_number = defaultdict(set)
         self.in_footer = False  # flag set while rendering footer
         # indicates that we are inside an .unbreakable() code block:
         self._in_unbreakable = False
@@ -365,9 +364,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._current_draw_context = None
         self._drawing_graphics_state_registry = GraphicsStateDictRegistry()
         # map page numbers to a set of GraphicsState names:
-        self.graphics_style_names_per_page_number = defaultdict(set)
-
         self._record_text_quad_points = False
+        self._resource_catalog = ResourceCatalog()
 
         # page number -> array of 8 × n numbers:
         self._text_quad_points = defaultdict(list)
@@ -1251,19 +1249,38 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         else:
             rendered = context.render(*render_args)
 
-        self.graphics_style_names_per_page_number[self.page].update(
-            match.group(1) for match in self._GS_REGEX.finditer(rendered)
-        )
+        for match in self._GS_REGEX.finditer(rendered):
+            self._resource_catalog.add(
+                PDFResourceType.EXT_G_STATE, match.group(1), self.page
+            )
         # Registering raster images embedded in the vector graphics:
-        self.images_used_per_page_number[self.page].update(
-            int(match.group(1)) for match in self._IMG_REGEX.finditer(rendered)
-        )
+        for match in self._IMG_REGEX.finditer(rendered):
+            self._resource_catalog.add(
+                PDFResourceType.X_OBJECT, int(match.group(1)), self.page
+            )
         # Once we handle text-rendering SVG tags (cf. PR #1029),
-        # we should also detect fonts used and add them to self.fonts_used_per_page_number
+        # we should also detect fonts used and add them to the resource catalog
 
         self._out(rendered)
         # The drawing API makes use of features (notably transparency and blending modes) that were introduced in PDF 1.4:
         self._set_min_pdf_version("1.4")
+
+    @contextmanager
+    @check_page
+    def use_pattern(self, shading):
+        """
+        Create a context for using a shading pattern on the current page.
+        """
+        self._resource_catalog.add(PDFResourceType.SHADDING, shading, self.page)
+        pattern = shading.get_pattern()
+        pattern_name = self._resource_catalog.add(
+            PDFResourceType.PATTERN, pattern, self.page
+        )
+        self._out(f"/Pattern cs /{pattern_name} scn")
+        try:
+            yield
+        finally:
+            self._out(self.draw_color.serialize().lower())
 
     def _current_graphic_style(self):
         gs = GraphicsStyle()
@@ -2127,7 +2144,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.current_font = self.fonts[fontkey]
         if self.page > 0:
             self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
-            self.fonts_used_per_page_number[self.page].add(self.current_font.i)
+            self._resource_catalog.add(
+                PDFResourceType.FONT, self.current_font.i, self.page
+            )
 
     def set_font_size(self, size):
         """
@@ -2145,7 +2164,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     "Cannot set font size: a font must be selected first"
                 )
             self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
-            self.fonts_used_per_page_number[self.page].add(self.current_font.i)
+            self._resource_catalog.add(
+                PDFResourceType.FONT, self.current_font.i, self.page
+            )
 
     def set_char_spacing(self, spacing):
         """
@@ -2477,7 +2498,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             default_appearance=f"({self.draw_color.serialize()} /F{self.current_font.i} {self.font_size_pt:.2f} Tf)",
             **kwargs,
         )
-        self.fonts_used_per_page_number[self.page].add(self.current_font.i)
+        self._resource_catalog.add(PDFResourceType.FONT, self.current_font.i, self.page)
         self.pages[self.page].annots.append(annotation)
         return annotation
 
@@ -2665,7 +2686,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if self.text_mode != TextMode.FILL:
             sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
         sl.append(f"{self.current_font.encode_text(text)} ET")
-        self.fonts_used_per_page_number[self.page].add(self.current_font.i)
+        self._resource_catalog.add(PDFResourceType.FONT, self.current_font.i, self.page)
         if (self.underline and text != "") or self._record_text_quad_points:
             w = self.get_string_width(text, normalized=True, markdown=False)
             if self.underline and text != "":
@@ -2952,7 +2973,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 raise ValueError(f"Unsupported setting: {key}")
         if gs:
             gs_name = self._drawing_graphics_state_registry.register_style(gs)
-            self.graphics_style_names_per_page_number[self.page].add(gs_name)
+            self._resource_catalog.add(PDFResourceType.EXT_G_STATE, gs_name, self.page)
             self._out(f"q /{gs_name} gs")
         else:
             self._out("q")
@@ -3303,7 +3324,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     current_font = frag.font
                     sl.append(f"/F{frag.font.i} {frag.font_size_pt:.2f} Tf")
                     if self.page > 0:
-                        self.fonts_used_per_page_number[self.page].add(current_font.i)
+                        self._resource_catalog.add(
+                            PDFResourceType.FONT, current_font.i, self.page
+                        )
                 lift = frag.lift
                 if lift != current_lift:
                     # Use text rise operator:
@@ -4380,7 +4403,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if link:
             self.link(x, y, w, h, link)
 
-        self.images_used_per_page_number[self.page].add(info["i"])
+        self._resource_catalog.add(PDFResourceType.X_OBJECT, info["i"], self.page)
         return RasterImageInfo(**info, rendered_width=w, rendered_height=h)
 
     def x_by_align(self, x, w, h, img_info, keep_aspect_ratio):
@@ -4516,9 +4539,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 )
                 info["usages"] -= 1  # no need to embed the high-resolution image
                 if info["usages"] == 0:
-                    for images_used in self.images_used_per_page_number.values():
-                        if info["i"] in images_used:
-                            images_used.remove(info["i"])
+                    for (
+                        _,
+                        rtype,
+                    ), resource in self._resource_catalog.resources_per_page.items():
+                        if rtype == PDFResourceType.X_OBJECT and info["i"] in resource:
+                            resource.remove(info["i"])
                 if lowres_info:  # Great, we've already done the job!
                     info = lowres_info
                     if info["w"] * info["h"] < dims[0] * dims[1]:
