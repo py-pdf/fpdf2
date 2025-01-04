@@ -2219,12 +2219,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             x (float): optional abscissa of target position.
                 The default value is 0 (top of page).
             page (int): optional number of target page.
-                -1 indicates the current page, which is the default value.
+                -1 indicates the current page (or the first page if there are no pages yet),
+                which is the default value.
             zoom (float): optional new zoom level after following the link.
                 Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
         """
+        if page < 0:
+            page = self.page if self.page != 0 else 1
         link = DestinationXYZ(
-            self.page if page == -1 else page,
+            page,
             top=self.h_pt - y * self.k,
             left=x * self.k,
             zoom=zoom,
