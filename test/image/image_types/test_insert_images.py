@@ -26,7 +26,7 @@ def test_insert_jpg(tmp_path):
     reason="Required system libraries to generate JPEG2000 images are a PITA to install under Windows",
 )
 @pytest.mark.skipif(
-    sys.version_info <= (3, 8),
+    sys.version_info < (3, 9),
     reason="JPEG2000 changes were done on pillow 11.1.0 which is not available for python 3.8",
 )
 def test_insert_jpg_jpxdecode(tmp_path):
