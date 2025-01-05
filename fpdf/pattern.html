@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.5">
+<title>fpdf.pattern API documentation</title>
+<meta name="description" content="Handles the creation of patterns and gradients">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>fpdf.pattern</code></h1>
+</header>
+<section id="section-intro">
+<p>Handles the creation of patterns and gradients</p>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="fpdf.pattern.Gradient"><code class="flex name class">
+<span>class <span class="ident">Gradient</span></span>
+<span>(</span><span>colors, background, extend_before, extend_after, bounds)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/e54b066a35430657f5a84409f0bfc283afad9bf5/fpdf/pattern.py#L92-L176" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class Gradient(ABC):
+    def __init__(self, colors, background, extend_before, extend_after, bounds):
+        self.color_space, self.colors = self._convert_colors(colors)
+        self.background = None
+        if background:
+            self.background = (
+                convert_to_device_color(background)
+                if isinstance(background, (str, DeviceGray, DeviceRGB, DeviceCMYK))
+                else convert_to_device_color(*background)
+            )
+        if self.background and self.background.__class__.__name__ != self.color_space:
+            raise ValueError(
+                &#34;The background color must be of the same color space as the gradient&#34;
+            )
+        self.extend_before = extend_before
+        self.extend_after = extend_after
+        self.bounds = (
+            bounds
+            if bounds
+            else [(i + 1) / (len(self.colors) - 1) for i in range(len(self.colors) - 2)]
+        )
+        if len(self.bounds) != len(self.colors) - 2:
+            raise ValueError(
+                &#34;Bounds array length must be two less than the number of colors&#34;
+            )
+        self.functions = self._generate_functions()
+        self.pattern = Pattern(self)
+        self._shading_object = None
+        self.coords = None
+        self.shading_type = 0
+
+    @classmethod
+    def _convert_colors(cls, colors) -&gt; Tuple[str, List]:
+        color_list = []
+        if len(colors) &lt; 2:
+            raise ValueError(&#34;A gradient must have at least two colors&#34;)
+        color_spaces = set()
+        for color in colors:
+            current_color = (
+                convert_to_device_color(color)
+                if isinstance(color, (str, DeviceGray, DeviceRGB, DeviceCMYK))
+                else convert_to_device_color(*color)
+            )
+            color_list.append(current_color)
+            color_spaces.add(type(current_color).__name__)
+        if len(color_spaces) == 1:
+            return color_spaces.pop(), color_list
+        if &#34;DeviceCMYK&#34; in color_spaces:
+            raise ValueError(&#34;Can&#39;t mix CMYK with other color spaces.&#34;)
+        # mix of DeviceGray and DeviceRGB
+        converted = []
+        for color in color_list:
+            if isinstance(color, DeviceGray):
+                converted.append(DeviceRGB(color.g, color.g, color.g))
+            else:
+                converted.append(color)
+        return &#34;DeviceRGB&#34;, converted
+
+    def _generate_functions(self):
+        if len(self.colors) &lt; 2:
+            raise ValueError(&#34;A gradient must have at least two colors&#34;)
+        if len(self.colors) == 2:
+            return [Type2Function(self.colors[0], self.colors[1])]
+        number_of_colors = len(self.colors)
+        functions = []
+        for i in range(number_of_colors - 1):
+            functions.append(Type2Function(self.colors[i], self.colors[i + 1]))
+        functions.append(Type3Function(functions[:], self.bounds))
+        return functions
+
+    def get_shading_object(self):
+        if not self._shading_object:
+            self._shading_object = Shading(
+                shading_type=self.shading_type,
+                background=self.background,
+                color_space=self.color_space,
+                coords=PDFArray(self.coords),
+                function=self.functions[-1],
+                extend_before=self.extend_before,
+                extend_after=self.extend_after,
+            )
+        return self._shading_object
+
+    def get_pattern(self):
+        return self.pattern</code></pre>
+</details>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="fpdf.pattern.LinearGradient" href="#fpdf.pattern.LinearGradient">LinearGradient</a></li>
+<li><a title="fpdf.pattern.RadialGradient" href="#fpdf.pattern.RadialGradient">RadialGradient</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.pattern.Gradient.get_pattern"><code class="name flex">
+<span>def <span class="ident">get_pattern</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/e54b066a35430657f5a84409f0bfc283afad9bf5/fpdf/pattern.py#L175-L176" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_pattern(self):
+    return self.pattern</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.pattern.Gradient.get_shading_object"><code class="name flex">
+<span>def <span class="ident">get_shading_object</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/e54b066a35430657f5a84409f0bfc283afad9bf5/fpdf/pattern.py#L162-L173" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def get_shading_object(self):
+    if not self._shading_object:
+        self._shading_object = Shading(
+            shading_type=self.shading_type,
+            background=self.background,
+            color_space=self.color_space,
+            coords=PDFArray(self.coords),
+            function=self.functions[-1],
+            extend_before=self.extend_before,
+            extend_after=self.extend_after,
+        )
+    return self._shading_object</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="fpdf.pattern.LinearGradient"><code class="flex name class">
+<span>class <span class="ident">LinearGradient</span></span>
+<span>(</span><span>fpdf: FPDF,<br>from_x: int,<br>from_y: int,<br>to_x: int,<br>to_y: int,<br>colors: List,<br>background=None,<br>extend_before: bool = False,<br>extend_after: bool = False,<br>bounds: List[int] = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/e54b066a35430657f5a84409f0bfc283afad9bf5/fpdf/pattern.py#L179-L229" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class LinearGradient(Gradient):
+    def __init__(
+        self,
+        fpdf: &#34;FPDF&#34;,
+        from_x: int,
+        from_y: int,
+        to_x: int,
+        to_y: int,
+        colors: List,
+        background=None,
+        extend_before: bool = False,
+        extend_after: bool = False,
+        bounds: List[int] = None,
+    ):
+        &#34;&#34;&#34;
+        A shading pattern that creates a linear (axial) gradient in a PDF.
+
+        The gradient is defined by two points: (from_x, from_y) and (to_x, to_y),
+        along which the specified colors are interpolated. Optionally, you can set
+        a background color, extend the gradient beyond its start or end, and
+        specify custom color stop positions via `bounds`.
+
+        Args:
+            fpdf (FPDF): The FPDF instance used for PDF generation.
+            from_x (int or float): The x-coordinate of the starting point of the gradient,
+                in user space units.
+            from_y (int or float): The y-coordinate of the starting point of the gradient,
+                in user space units.
+            to_x (int or float): The x-coordinate of the ending point of the gradient,
+                in user space units.
+            to_y (int or float): The y-coordinate of the ending point of the gradient,
+                in user space units.
+            colors (List[str or Tuple[int, int, int]]): A list of colors along which the gradient
+                will be interpolated. Colors may be given as hex strings (e.g., &#34;#FF0000&#34;) or
+                (R, G, B) tuples.
+            background (str or Tuple[int, int, int], optional): A background color to use
+                if the gradient does not fully cover the region it is applied to.
+                Defaults to None (no background).
+            extend_before (bool, optional): Whether to extend the first color beyond the
+                starting point (from_x, from_y). Defaults to False.
+            extend_after (bool, optional): Whether to extend the last color beyond the
+                ending point (to_x, to_y). Defaults to False.
+            bounds (List[float], optional): An optional list of floats in the range (0, 1)
+                that represent gradient stops for color transitions. The number of bounds
+                should be two less than the number of colors (for multi-color gradients).
+                Defaults to None, which evenly distributes color stops.
+        &#34;&#34;&#34;
+        super().__init__(colors, background, extend_before, extend_after, bounds)
+        coords = [from_x, fpdf.h - from_y, to_x, fpdf.h - to_y]
+        self.coords = [f&#34;{fpdf.k * c:.2f}&#34; for c in coords]
+        self.shading_type = 2</code></pre>
+</details>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>A shading pattern that creates a linear (axial) gradient in a PDF.</p>
+<p>The gradient is defined by two points: (from_x, from_y) and (to_x, to_y),
+along which the specified colors are interpolated. Optionally, you can set
+a background color, extend the gradient beyond its start or end, and
+specify custom color stop positions via <code>bounds</code>.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>fpdf</code></strong> :&ensp;<code>FPDF</code></dt>
+<dd>The FPDF instance used for PDF generation.</dd>
+<dt><strong><code>from_x</code></strong> :&ensp;<code>int</code> or <code>float</code></dt>
+<dd>The x-coordinate of the starting point of the gradient,
+in user space units.</dd>
+<dt><strong><code>from_y</code></strong> :&ensp;<code>int</code> or <code>float</code></dt>
+<dd>The y-coordinate of the starting point of the gradient,
+in user space units.</dd>
+<dt><strong><code>to_x</code></strong> :&ensp;<code>int</code> or <code>float</code></dt>
+<dd>The x-coordinate of the ending point of the gradient,
+in user space units.</dd>
+<dt><strong><code>to_y</code></strong> :&ensp;<code>int</code> or <code>float</code></dt>
+<dd>The y-coordinate of the ending point of the gradient,
+in user space units.</dd>
+<dt><strong><code>colors</code></strong> :&ensp;<code>List[str</code> or <code>Tuple[int, int, int]]</code></dt>
+<dd>A list of colors along which the gradient
+will be interpolated. Colors may be given as hex strings (e.g., "#FF0000") or
+(R, G, B) tuples.</dd>
+<dt><strong><code>background</code></strong> :&ensp;<code>str</code> or <code>Tuple[int, int, int]</code>, optional</dt>
+<dd>A background color to use
+if the gradient does not fully cover the region it is applied to.
+Defaults to None (no background).</dd>
+<dt><strong><code>extend_before</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Whether to extend the first color beyond the
+starting point (from_x, from_y). Defaults to False.</dd>
+<dt><strong><code>extend_after</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Whether to extend the last color beyond the
+ending point (to_x, to_y). Defaults to False.</dd>
+<dt><strong><code>bounds</code></strong> :&ensp;<code>List[float]</code>, optional</dt>
+<dd>An optional list of floats in the range (0, 1)
+that represent gradient stops for color transitions. The number of bounds
+should be two less than the number of colors (for multi-color gradients).
+Defaults to None, which evenly distributes color stops.</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="fpdf.pattern.Gradient" href="#fpdf.pattern.Gradient">Gradient</a></li>
+<li>abc.ABC</li>
+</ul>
+</dd>
+<dt id="fpdf.pattern.Pattern"><code class="flex name class">
+<span>class <span class="ident">Pattern</span></span>
+<span>(</span><span>shading: ForwardRef('<a title="fpdf.pattern.LinearGradient" href="#fpdf.pattern.LinearGradient">LinearGradient</a>') | ForwardRef('<a title="fpdf.pattern.RadialGradient" href="#fpdf.pattern.RadialGradient">RadialGradient</a>'))</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/e54b066a35430657f5a84409f0bfc283afad9bf5/fpdf/pattern.py#L15-L33" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class Pattern(PDFObject):
+    &#34;&#34;&#34;
+    Represents a PDF Pattern object.
+
+    Currently, this class supports only &#34;shading patterns&#34; (pattern_type 2),
+    using either a linear or radial gradient. Tiling patterns (pattern_type 1)
+    are not yet implemented.
+    &#34;&#34;&#34;
+
+    def __init__(self, shading: Union[&#34;LinearGradient&#34;, &#34;RadialGradient&#34;]):
+        super().__init__()
+        self.type = Name(&#34;Pattern&#34;)
+        # 1 for a tiling pattern or type 2 for a shading pattern:
+        self.pattern_type = 2
+        self._shading = shading
+
+    @property
+    def shading(self):
+        return f&#34;{self._shading.get_shading_object().id} 0 R&#34;</code></pre>
+</details>
+<div class="desc"><p>Represents a PDF Pattern object.</p>
+<p>Currently, this class supports only "shading patterns" (pattern_type 2),
+using either a linear or radial gradient. Tiling patterns (pattern_type 1)
+are not yet implemented.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="fpdf.pattern.Pattern.shading"><code class="name">prop <span class="ident">shading</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/e54b066a35430657f5a84409f0bfc283afad9bf5/fpdf/pattern.py#L31-L33" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@property
+def shading(self):
+    return f&#34;{self._shading.get_shading_object().id} 0 R&#34;</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></b></code>:
+<ul class="hlist">
+<li><code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code></li>
+<li><code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="fpdf.pattern.RadialGradient"><code class="flex name class">
+<span>class <span class="ident">RadialGradient</span></span>
+<span>(</span><span>fpdf: FPDF,<br>start_circle_x: int,<br>start_circle_y: int,<br>start_circle_radius: int,<br>end_circle_x: int,<br>end_circle_y: int,<br>end_circle_radius: int,<br>colors: List,<br>background=None,<br>extend_before: bool = False,<br>extend_after: bool = False,<br>bounds: List[int] = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/e54b066a35430657f5a84409f0bfc283afad9bf5/fpdf/pattern.py#L232-L293" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class RadialGradient(Gradient):
+    def __init__(
+        self,
+        fpdf: &#34;FPDF&#34;,
+        start_circle_x: int,
+        start_circle_y: int,
+        start_circle_radius: int,
+        end_circle_x: int,
+        end_circle_y: int,
+        end_circle_radius: int,
+        colors: List,
+        background=None,
+        extend_before: bool = False,
+        extend_after: bool = False,
+        bounds: List[int] = None,
+    ):
+        &#34;&#34;&#34;
+        A shading pattern that creates a radial (or circular/elliptical) gradient in a PDF.
+
+        The gradient is defined by two circles (start and end). Colors are blended from the
+        start circle to the end circle, forming a radial gradient. You can optionally set a
+        background color, extend the gradient beyond its circles, and provide custom color
+        stop positions via `bounds`.
+
+        Args:
+            fpdf (FPDF): The FPDF instance used for PDF generation.
+            start_circle_x (int or float): The x-coordinate of the inner circle&#39;s center,
+                in user space units.
+            start_circle_y (int or float): The y-coordinate of the inner circle&#39;s center,
+                in user space units.
+            start_circle_radius (int or float): The radius of the inner circle, in user space units.
+            end_circle_x (int or float): The x-coordinate of the outer circle&#39;s center,
+                in user space units.
+            end_circle_y (int or float): The y-coordinate of the outer circle&#39;s center,
+                in user space units.
+            end_circle_radius (int or float): The radius of the outer circle, in user space units.
+            colors (List[str or Tuple[int, int, int]]): A list of colors along which the gradient
+                will be interpolated. Colors may be given as hex strings (e.g., &#34;#FF0000&#34;) or
+                (R, G, B) tuples.
+            background (str or Tuple[int, int, int], optional): A background color to display
+                if the gradient does not fully cover the region it&#39;s applied to. Defaults to None
+                (no background).
+            extend_before (bool, optional): Whether to extend the gradient beyond the start circle.
+                Defaults to False.
+            extend_after (bool, optional): Whether to extend the gradient beyond the end circle.
+                Defaults to False.
+            bounds (List[float], optional): An optional list of floats in the range (0, 1) that
+                represent gradient stops for color transitions. The number of bounds should be one
+                less than the number of colors (for multi-color gradients). Defaults to None,
+                which evenly distributes color stops.
+        &#34;&#34;&#34;
+        super().__init__(colors, background, extend_before, extend_after, bounds)
+        coords = [
+            start_circle_x,
+            fpdf.h - start_circle_y,
+            start_circle_radius,
+            end_circle_x,
+            fpdf.h - end_circle_y,
+            end_circle_radius,
+        ]
+        self.coords = [f&#34;{fpdf.k * c:.2f}&#34; for c in coords]
+        self.shading_type = 3</code></pre>
+</details>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<p>A shading pattern that creates a radial (or circular/elliptical) gradient in a PDF.</p>
+<p>The gradient is defined by two circles (start and end). Colors are blended from the
+start circle to the end circle, forming a radial gradient. You can optionally set a
+background color, extend the gradient beyond its circles, and provide custom color
+stop positions via <code>bounds</code>.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>fpdf</code></strong> :&ensp;<code>FPDF</code></dt>
+<dd>The FPDF instance used for PDF generation.</dd>
+<dt><strong><code>start_circle_x</code></strong> :&ensp;<code>int</code> or <code>float</code></dt>
+<dd>The x-coordinate of the inner circle's center,
+in user space units.</dd>
+<dt><strong><code>start_circle_y</code></strong> :&ensp;<code>int</code> or <code>float</code></dt>
+<dd>The y-coordinate of the inner circle's center,
+in user space units.</dd>
+<dt><strong><code>start_circle_radius</code></strong> :&ensp;<code>int</code> or <code>float</code></dt>
+<dd>The radius of the inner circle, in user space units.</dd>
+<dt><strong><code>end_circle_x</code></strong> :&ensp;<code>int</code> or <code>float</code></dt>
+<dd>The x-coordinate of the outer circle's center,
+in user space units.</dd>
+<dt><strong><code>end_circle_y</code></strong> :&ensp;<code>int</code> or <code>float</code></dt>
+<dd>The y-coordinate of the outer circle's center,
+in user space units.</dd>
+<dt><strong><code>end_circle_radius</code></strong> :&ensp;<code>int</code> or <code>float</code></dt>
+<dd>The radius of the outer circle, in user space units.</dd>
+<dt><strong><code>colors</code></strong> :&ensp;<code>List[str</code> or <code>Tuple[int, int, int]]</code></dt>
+<dd>A list of colors along which the gradient
+will be interpolated. Colors may be given as hex strings (e.g., "#FF0000") or
+(R, G, B) tuples.</dd>
+<dt><strong><code>background</code></strong> :&ensp;<code>str</code> or <code>Tuple[int, int, int]</code>, optional</dt>
+<dd>A background color to display
+if the gradient does not fully cover the region it's applied to. Defaults to None
+(no background).</dd>
+<dt><strong><code>extend_before</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Whether to extend the gradient beyond the start circle.
+Defaults to False.</dd>
+<dt><strong><code>extend_after</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Whether to extend the gradient beyond the end circle.
+Defaults to False.</dd>
+<dt><strong><code>bounds</code></strong> :&ensp;<code>List[float]</code>, optional</dt>
+<dd>An optional list of floats in the range (0, 1) that
+represent gradient stops for color transitions. The number of bounds should be one
+less than the number of colors (for multi-color gradients). Defaults to None,
+which evenly distributes color stops.</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="fpdf.pattern.Gradient" href="#fpdf.pattern.Gradient">Gradient</a></li>
+<li>abc.ABC</li>
+</ul>
+</dd>
+<dt id="fpdf.pattern.Shading"><code class="flex name class">
+<span>class <span class="ident">Shading</span></span>
+<span>(</span><span>shading_type: int,<br>background: <a title="fpdf.drawing.DeviceRGB" href="drawing.html#fpdf.drawing.DeviceRGB">DeviceRGB</a> | <a title="fpdf.drawing.DeviceGray" href="drawing.html#fpdf.drawing.DeviceGray">DeviceGray</a> | <a title="fpdf.drawing.DeviceCMYK" href="drawing.html#fpdf.drawing.DeviceCMYK">DeviceCMYK</a> | None,<br>color_space: str,<br>coords: List[int],<br>function: <a title="fpdf.pattern.Type2Function" href="#fpdf.pattern.Type2Function">Type2Function</a> | <a title="fpdf.pattern.Type3Function" href="#fpdf.pattern.Type3Function">Type3Function</a>,<br>extend_before: bool,<br>extend_after: bool)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/e54b066a35430657f5a84409f0bfc283afad9bf5/fpdf/pattern.py#L68-L89" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class Shading(PDFObject):
+    def __init__(
+        self,
+        shading_type: int,  # 2 for axial shading, 3 for radial shading
+        background: Optional[Union[DeviceRGB, DeviceGray, DeviceCMYK]],
+        color_space: str,
+        coords: List[int],
+        function: Union[Type2Function, Type3Function],
+        extend_before: bool,
+        extend_after: bool,
+    ):
+        super().__init__()
+        self.shading_type = shading_type
+        self.background = (
+            f&#39;[{&#34; &#34;.join(f&#34;{c:.2f}&#34; for c in background.colors)}]&#39;
+            if background
+            else None
+        )
+        self.color_space = Name(color_space)
+        self.coords = coords
+        self.function = f&#34;{function.id} 0 R&#34;
+        self.extend = f&#39;[{&#34;true&#34; if extend_before else &#34;false&#34;} {&#34;true&#34; if extend_after else &#34;false&#34;}]&#39;</code></pre>
+</details>
+<div class="desc"><p>Main features of this class:
+* delay ID assignement
+* implement serializing</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></b></code>:
+<ul class="hlist">
+<li><code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code></li>
+<li><code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="fpdf.pattern.Type2Function"><code class="flex name class">
+<span>class <span class="ident">Type2Function</span></span>
+<span>(</span><span>color_1, color_2)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/e54b066a35430657f5a84409f0bfc283afad9bf5/fpdf/pattern.py#L36-L46" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class Type2Function(PDFObject):
+    &#34;&#34;&#34;Transition between 2 colors&#34;&#34;&#34;
+
+    def __init__(self, color_1, color_2):
+        super().__init__()
+        # 0: Sampled function; 2: Exponential interpolation function; 3: Stitching function; 4: PostScript calculator function
+        self.function_type = 2
+        self.domain = &#34;[0 1]&#34;
+        self.c0 = f&#39;[{&#34; &#34;.join(f&#34;{c:.2f}&#34; for c in color_1.colors)}]&#39;
+        self.c1 = f&#39;[{&#34; &#34;.join(f&#34;{c:.2f}&#34; for c in color_2.colors)}]&#39;
+        self.n = 1</code></pre>
+</details>
+<div class="desc"><p>Transition between 2 colors</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></b></code>:
+<ul class="hlist">
+<li><code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code></li>
+<li><code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="fpdf.pattern.Type3Function"><code class="flex name class">
+<span>class <span class="ident">Type3Function</span></span>
+<span>(</span><span>functions, bounds)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/e54b066a35430657f5a84409f0bfc283afad9bf5/fpdf/pattern.py#L49-L65" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class Type3Function(PDFObject):
+    &#34;&#34;&#34;When multiple colors are used, a type 3 function is necessary to stitch type 2 functions together
+    and define the bounds between each color transition&#34;&#34;&#34;
+
+    def __init__(self, functions, bounds):
+        super().__init__()
+        # 0: Sampled function; 2: Exponential interpolation function; 3: Stitching function; 4: PostScript calculator function
+        self.function_type = 3
+        self.domain = &#34;[0 1]&#34;
+        self._functions = functions
+        self.bounds = f&#34;[{&#39; &#39;.join(f&#39;{bound:.2f}&#39; for bound in bounds)}]&#34;
+        self.encode = f&#34;[{&#39; &#39;.join(&#39;0 1&#39; for _ in functions)}]&#34;
+        self.n = 1
+
+    @property
+    def functions(self):
+        return f&#34;[{&#39; &#39;.join(f&#39;{f.id} 0 R&#39; for f in self._functions)}]&#34;</code></pre>
+</details>
+<div class="desc"><p>When multiple colors are used, a type 3 function is necessary to stitch type 2 functions together
+and define the bounds between each color transition</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="fpdf.pattern.Type3Function.functions"><code class="name">prop <span class="ident">functions</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/e54b066a35430657f5a84409f0bfc283afad9bf5/fpdf/pattern.py#L63-L65" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@property
+def functions(self):
+    return f&#34;[{&#39; &#39;.join(f&#39;{f.id} 0 R&#39; for f in self._functions)}]&#34;</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></b></code>:
+<ul class="hlist">
+<li><code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code></li>
+<li><code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="fpdf" href="index.html">fpdf</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="fpdf.pattern.Gradient" href="#fpdf.pattern.Gradient">Gradient</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.pattern.Gradient.get_pattern" href="#fpdf.pattern.Gradient.get_pattern">get_pattern</a></code></li>
+<li><code><a title="fpdf.pattern.Gradient.get_shading_object" href="#fpdf.pattern.Gradient.get_shading_object">get_shading_object</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="fpdf.pattern.LinearGradient" href="#fpdf.pattern.LinearGradient">LinearGradient</a></code></h4>
+</li>
+<li>
+<h4><code><a title="fpdf.pattern.Pattern" href="#fpdf.pattern.Pattern">Pattern</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.pattern.Pattern.shading" href="#fpdf.pattern.Pattern.shading">shading</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="fpdf.pattern.RadialGradient" href="#fpdf.pattern.RadialGradient">RadialGradient</a></code></h4>
+</li>
+<li>
+<h4><code><a title="fpdf.pattern.Shading" href="#fpdf.pattern.Shading">Shading</a></code></h4>
+</li>
+<li>
+<h4><code><a title="fpdf.pattern.Type2Function" href="#fpdf.pattern.Type2Function">Type2Function</a></code></h4>
+</li>
+<li>
+<h4><code><a title="fpdf.pattern.Type3Function" href="#fpdf.pattern.Type3Function">Type3Function</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.pattern.Type3Function.functions" href="#fpdf.pattern.Type3Function.functions">functions</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
+</footer>
+</body>
+</html>
