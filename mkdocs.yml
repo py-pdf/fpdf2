@@ -183,7 +183,6 @@ nav:
   - 'Logging':                        'Logging.md'
 - 'API':                            'https://py-pdf.github.io/fpdf2/fpdf/'
 - 'History':                        'History.md'
-- 'FAQ':                            'FAQ.md'
 
 extra:
   social:

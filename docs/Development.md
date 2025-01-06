@@ -6,22 +6,22 @@ This page has summary information about developing the fpdf2 library.
 
 ## Repository structure
 
-  * `.github/` - GitHub Actions configuration
-  * `docs/` - documentation folder
-  * `fpdf/` - library sources
-  * `scripts/` - utilities to validate PDF files & publish the package on Pypi
-  * `test/` - non-regression tests
-  * `tutorial/` - tutorials (see also [Tutorial](Tutorial.md))
-  * `README.md` - Github and PyPI ReadMe
-  * `CHANGELOG.md` - details of each release content
-  * `LICENSE` - code license information
-  * `CODEOWNERS` - define individuals or teams responsible for code in this repository
-  * `CONTRIBUTORS.md` - the people who helped build this library ❤️
-  * `setup.cfg`, `setup.py`, `MANIFEST.in` - packaging configuration to publish [a package on Pypi](https://pypi.org/project/fpdf2/)
-  * `mkdocs.yml` - configuration for [MkDocs](https://www.mkdocs.org/)
-  * `tox.ini` - configuration for [Tox](https://tox.readthedocs.io/en/latest/)
-  * `.banditrc.yml` - configuration for [bandit](https://pypi.org/project/bandit/)
-  * `.pylintrc` - configuration for [Pylint](http://pylint.pycqa.org/en/latest/)
+* `.github/` - GitHub Actions configuration
+* `docs/` - documentation folder
+* `fpdf/` - library sources
+* `scripts/` - utilities to validate PDF files & publish the package on Pypi
+* `test/` - non-regression tests
+* `tutorial/` - tutorials (see also [Tutorial](Tutorial.md))
+* `README.md` - Github and PyPI ReadMe
+* `CHANGELOG.md` - details of each release content
+* `LICENSE` - code license information
+* `CODEOWNERS` - define individuals or teams responsible for code in this repository
+* `CONTRIBUTORS.md` - the people who helped build this library ❤️
+* `setup.cfg`, `setup.py`, `MANIFEST.in` - packaging configuration to publish [a package on Pypi](https://pypi.org/project/fpdf2/)
+* `mkdocs.yml` - configuration for [MkDocs](https://www.mkdocs.org/)
+* `tox.ini` - configuration for [Tox](https://tox.readthedocs.io/en/latest/)
+* `.banditrc.yml` - configuration for [bandit](https://pypi.org/project/bandit/)
+* `.pylintrc` - configuration for [Pylint](http://pylint.pycqa.org/en/latest/)
 
 ## Installing fpdf2 from a local git repository
 ```
@@ -130,7 +130,7 @@ check the output in case of a failed test.
 In order to generate a "reference" PDF file, simply call `assert_pdf_equal`
 once with `generate=True`.
 
-```
+```python
 import fpdf
 
 svg = fpdf.svg.SVGObject.from_file("path/to/file.svg")
