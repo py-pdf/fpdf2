@@ -3,18 +3,18 @@
 <span class=c1>#    fpdf2</span>
 <span class=c1>#    livereload</span>
 <span class=c1>#    xreload</span>
-<span class=kn>import</span> <span class=nn>asyncio</span><span class=o>,</span> <span class=nn>logging</span><span class=o>,</span> <span class=nn>sys</span>
-<span class=kn>from</span> <span class=nn>traceback</span> <span class=kn>import</span> <span class=n>print_exc</span>
+<span class=kn>import</span><span class=w> </span><span class=nn>asyncio</span><span class=o>,</span><span class=w> </span><span class=nn>logging</span><span class=o>,</span><span class=w> </span><span class=nn>sys</span>
+<span class=kn>from</span><span class=w> </span><span class=nn>traceback</span><span class=w> </span><span class=kn>import</span> <span class=n>print_exc</span>
 
-<span class=kn>from</span> <span class=nn>fpdf</span> <span class=kn>import</span> <span class=n>FPDF</span>
-<span class=kn>from</span> <span class=nn>livereload.watcher</span> <span class=kn>import</span> <span class=n>get_watcher_class</span>
-<span class=kn>from</span> <span class=nn>xreload</span> <span class=kn>import</span> <span class=n>xreload</span>
+<span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
+<span class=kn>from</span><span class=w> </span><span class=nn>livereload.watcher</span><span class=w> </span><span class=kn>import</span> <span class=n>get_watcher_class</span>
+<span class=kn>from</span><span class=w> </span><span class=nn>xreload</span><span class=w> </span><span class=kn>import</span> <span class=n>xreload</span>
 
 
 <span class=n>OUT_FILEPATH</span> <span class=o>=</span> <span class=s2>&quot;fpdf2-demo.pdf&quot;</span>
 
 
-<span class=k>def</span> <span class=nf>build_pdf</span><span class=p>():</span>
+<span class=k>def</span><span class=w> </span><span class=nf>build_pdf</span><span class=p>():</span>
     <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
     <span class=n>pdf</span><span class=o>.</span><span class=n>set_font</span><span class=p>(</span><span class=s2>&quot;Helvetica&quot;</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=mi>16</span><span class=p>)</span>
     <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
@@ -31,7 +31,7 @@
     <span class=nb>print</span><span class=p>(</span><span class=sa>f</span><span class=s2>&quot;</span><span class=si>{</span><span class=n>OUT_FILEPATH</span><span class=si>}</span><span class=s2> has been rebuilt&quot;</span><span class=p>)</span>
 
 
-<span class=k>async</span> <span class=k>def</span> <span class=nf>start_watch_and_rebuild</span><span class=p>():</span>
+<span class=k>async</span> <span class=k>def</span><span class=w> </span><span class=nf>start_watch_and_rebuild</span><span class=p>():</span>
     <span class=n>logging</span><span class=o>.</span><span class=n>basicConfig</span><span class=p>(</span>
         <span class=nb>format</span><span class=o>=</span><span class=s2>&quot;</span><span class=si>%(asctime)s</span><span class=s2> </span><span class=si>%(name)s</span><span class=s2> [</span><span class=si>%(levelname)s</span><span class=s2>] </span><span class=si>%(message)s</span><span class=s2>&quot;</span><span class=p>,</span>
         <span class=n>datefmt</span><span class=o>=</span><span class=s2>&quot;%H:%M:%S&quot;</span><span class=p>,</span>
@@ -44,7 +44,7 @@
     <span class=k>await</span> <span class=n>watch_periodically</span><span class=p>(</span><span class=n>watcher</span><span class=p>)</span>
 
 
-<span class=k>async</span> <span class=k>def</span> <span class=nf>watch_periodically</span><span class=p>(</span><span class=n>watcher</span><span class=p>,</span> <span class=n>delay_secs</span><span class=o>=</span><span class=mf>0.8</span><span class=p>):</span>
+<span class=k>async</span> <span class=k>def</span><span class=w> </span><span class=nf>watch_periodically</span><span class=p>(</span><span class=n>watcher</span><span class=p>,</span> <span class=n>delay_secs</span><span class=o>=</span><span class=mf>0.8</span><span class=p>):</span>
     <span class=k>try</span><span class=p>:</span>
         <span class=n>watcher</span><span class=o>.</span><span class=n>examine</span><span class=p>()</span>
     <span class=k>except</span> <span class=ne>Exception</span><span class=p>:</span>

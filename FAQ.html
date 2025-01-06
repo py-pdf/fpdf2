@@ -5,9 +5,9 @@ $ scc fpdf
 ───────────────────────────────────────────────────────────────────────────────
 Language                 Files     Lines   Blanks  Comments     Code Complexity
 Python                      21     16879      480       571    15828        462
-</code></pre></div></p> <p>It includes <a href=fpdf/fpdf.html#fpdf.fpdf.FPDF.cell><code>cell()</code></a> and <a href=fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell><code>multi_cell()</code></a> primitives to draw fluid document like invoices, listings and reports, and includes basic support for HTML rendering.</p> <blockquote> <p>Compared to other solutions, this library should be easier to use and adapt for most common documents (no need to use a page layout engine, style sheets, templates, or stories...), with full control over the generated PDF document (including advanced features and extensions).</p> </blockquote> <p>Check also the list of features on the <a href=index.html>home page</a>.</p> <h2 id=what-does-the-code-look-like>What does the code look like?<a class=headerlink href=#what-does-the-code-look-like title="Permanent link">&para;</a></h2> <p>Following is an example similar to the Reportlab one in the book of web2py. Note the simplified import and usage: (<a href="http://www.web2py.com/book/default/chapter/09?search=pdf#ReportLab-and-PDF">http://www.web2py.com/book/default/chapter/09?search=pdf#ReportLab-and-PDF</a>)</p> <div class=highlight><pre><span></span><code><span class=kn>from</span> <span class=nn>fpdf</span> <span class=kn>import</span> <span class=n>FPDF</span>
+</code></pre></div></p> <p>It includes <a href=fpdf/fpdf.html#fpdf.fpdf.FPDF.cell><code>cell()</code></a> and <a href=fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell><code>multi_cell()</code></a> primitives to draw fluid document like invoices, listings and reports, and includes basic support for HTML rendering.</p> <blockquote> <p>Compared to other solutions, this library should be easier to use and adapt for most common documents (no need to use a page layout engine, style sheets, templates, or stories...), with full control over the generated PDF document (including advanced features and extensions).</p> </blockquote> <p>Check also the list of features on the <a href=index.html>home page</a>.</p> <h2 id=what-does-the-code-look-like>What does the code look like?<a class=headerlink href=#what-does-the-code-look-like title="Permanent link">&para;</a></h2> <p>Following is an example similar to the Reportlab one in the book of web2py. Note the simplified import and usage: (<a href="http://www.web2py.com/book/default/chapter/09?search=pdf#ReportLab-and-PDF">http://www.web2py.com/book/default/chapter/09?search=pdf#ReportLab-and-PDF</a>)</p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
 
-<span class=k>def</span> <span class=nf>get_me_a_pdf</span><span class=p>():</span>
+<span class=k>def</span><span class=w> </span><span class=nf>get_me_a_pdf</span><span class=p>():</span>
     <span class=n>title</span> <span class=o>=</span> <span class=s2>&quot;This The Doc Title&quot;</span>
     <span class=n>heading</span> <span class=o>=</span> <span class=s2>&quot;First Paragraph&quot;</span>
     <span class=n>text</span> <span class=o>=</span> <span class=s1>&#39;bla &#39;</span> <span class=o>*</span> <span class=mi>10000</span>
@@ -24,17 +24,17 @@ Python                      21     16879      480       571    15828        462
     <span class=n>pdf</span><span class=o>.</span><span class=n>multi_cell</span><span class=p>(</span><span class=n>w</span><span class=o>=</span><span class=mi>0</span><span class=p>,</span> <span class=n>h</span><span class=o>=</span><span class=mi>5</span><span class=p>,</span> <span class=n>text</span><span class=o>=</span><span class=n>text</span><span class=p>)</span>
     <span class=n>response</span><span class=o>.</span><span class=n>headers</span><span class=p>[</span><span class=s1>&#39;Content-Type&#39;</span><span class=p>]</span> <span class=o>=</span> <span class=s1>&#39;application/pdf&#39;</span>
     <span class=k>return</span> <span class=n>pdf</span><span class=o>.</span><span class=n>output</span><span class=p>()</span>
-</code></pre></div> <p>With Reportlab: <div class=highlight><pre><span></span><code><span class=kn>from</span> <span class=nn>reportlab.platypus</span> <span class=kn>import</span> <span class=o>*</span>
-<span class=kn>from</span> <span class=nn>reportlab.lib.styles</span> <span class=kn>import</span> <span class=n>getSampleStyleSheet</span>
-<span class=kn>from</span> <span class=nn>reportlab.rl_config</span> <span class=kn>import</span> <span class=n>defaultPageSize</span>
-<span class=kn>from</span> <span class=nn>reportlab.lib.units</span> <span class=kn>import</span> <span class=n>inch</span><span class=p>,</span> <span class=n>mm</span>
-<span class=kn>from</span> <span class=nn>reportlab.lib.enums</span> <span class=kn>import</span> <span class=n>TA_LEFT</span><span class=p>,</span> <span class=n>TA_RIGHT</span><span class=p>,</span> <span class=n>TA_CENTER</span><span class=p>,</span> <span class=n>TA_JUSTIFY</span>
-<span class=kn>from</span> <span class=nn>reportlab.lib</span> <span class=kn>import</span> <span class=n>colors</span>
-<span class=kn>from</span> <span class=nn>uuid</span> <span class=kn>import</span> <span class=n>uuid4</span>
-<span class=kn>from</span> <span class=nn>cgi</span> <span class=kn>import</span> <span class=n>escape</span>
-<span class=kn>import</span> <span class=nn>os</span>
+</code></pre></div> <p>With Reportlab: <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>reportlab.platypus</span><span class=w> </span><span class=kn>import</span> <span class=o>*</span>
+<span class=kn>from</span><span class=w> </span><span class=nn>reportlab.lib.styles</span><span class=w> </span><span class=kn>import</span> <span class=n>getSampleStyleSheet</span>
+<span class=kn>from</span><span class=w> </span><span class=nn>reportlab.rl_config</span><span class=w> </span><span class=kn>import</span> <span class=n>defaultPageSize</span>
+<span class=kn>from</span><span class=w> </span><span class=nn>reportlab.lib.units</span><span class=w> </span><span class=kn>import</span> <span class=n>inch</span><span class=p>,</span> <span class=n>mm</span>
+<span class=kn>from</span><span class=w> </span><span class=nn>reportlab.lib.enums</span><span class=w> </span><span class=kn>import</span> <span class=n>TA_LEFT</span><span class=p>,</span> <span class=n>TA_RIGHT</span><span class=p>,</span> <span class=n>TA_CENTER</span><span class=p>,</span> <span class=n>TA_JUSTIFY</span>
+<span class=kn>from</span><span class=w> </span><span class=nn>reportlab.lib</span><span class=w> </span><span class=kn>import</span> <span class=n>colors</span>
+<span class=kn>from</span><span class=w> </span><span class=nn>uuid</span><span class=w> </span><span class=kn>import</span> <span class=n>uuid4</span>
+<span class=kn>from</span><span class=w> </span><span class=nn>cgi</span><span class=w> </span><span class=kn>import</span> <span class=n>escape</span>
+<span class=kn>import</span><span class=w> </span><span class=nn>os</span>
 
-<span class=k>def</span> <span class=nf>get_me_a_pdf</span><span class=p>():</span>
+<span class=k>def</span><span class=w> </span><span class=nf>get_me_a_pdf</span><span class=p>():</span>
     <span class=n>title</span> <span class=o>=</span> <span class=s2>&quot;This The Doc Title&quot;</span>
     <span class=n>heading</span> <span class=o>=</span> <span class=s2>&quot;First Paragraph&quot;</span>
     <span class=n>text</span> <span class=o>=</span> <span class=s1>&#39;bla &#39;</span> <span class=o>*</span> <span class=mi>10000</span>
