@@ -308,6 +308,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="http://kevincastro.dev"><img src="https://avatars.githubusercontent.com/u/20219677?v=4?s=100" width="100px;" alt="Kevin Castro"/><br /><sub><b>Kevin Castro</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Akevinthenet" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/jasonfevangsafe"><img src="https://avatars.githubusercontent.com/u/146378854?v=4?s=100" width="100px;" alt="jasonfevangsafe"/><br /><sub><b>jasonfevangsafe</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=jasonfevangsafe" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/visheshdvivedi"><img src="https://avatars.githubusercontent.com/u/174860894?v=4?s=100" width="100px;" alt="visheshdvivedi"/><br /><sub><b>visheshdvivedi</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=visheshdvivedi" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://trmm.net/"><img src="https://avatars.githubusercontent.com/u/3068843?v=4?s=100" width="100px;" alt="Trammell Hudson"/><br /><sub><b>Trammell Hudson</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=osresearch" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
