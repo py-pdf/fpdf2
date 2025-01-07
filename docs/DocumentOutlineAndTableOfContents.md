@@ -1,13 +1,11 @@
 # Document Outline & Table of Contents
 
 ## Overview
-
 This document explains how to implement and customize the Document Outline (also known as Bookmarks) and Table of Contents (ToC) features in `fpdf2`.
 
 ---
 
 ## Document Outline (Bookmarks)
-
 Document outlines allow users to navigate quickly through sections in the PDF by creating a hierarchical structure of clickable links.
 
 Quoting the 6th edition of the PDF format reference (v1.7 - 2006) :
@@ -27,7 +25,6 @@ However, you can configure **global title styles** by calling [`set_section_titl
 To provide a document outline to the PDF you generate, you just have to call the `start_section` method for every hierarchical section you want to define.
 
 ### Nested outlines
-
 Outlines can be nested by specifying different levels. Higher-level outlines (e.g., level 0) appear at the top, while sub-levels (e.g., level 1, level 2) are indented.
 
 ```python
@@ -38,15 +35,14 @@ pdf.start_section(name="Section 1.1: Background", level=1)
 ---
 
 ## Table of Contents
-
 Quoting [Wikipedia](https://en.wikipedia.org/wiki/Table_of_contents), a **table of contents** is:
 > a list, usually found on a page before the start of a written work, of its chapter or section titles or brief descriptions with their commencing page numbers.
 
 ### Inserting a Table of Contents
-
 Use the [`insert_toc_placeholder`](fpdf/fpdf.html#fpdf.fpdf.FPDF.insert_toc_placeholder) method to define a placeholder for the ToC. A page break is triggered after inserting the ToC.
 
-**Parameters:**
+Parameters:
+
 - **render_toc_function**: Function called to render the ToC, receiving two parameters: `pdf`, an FPDF instance, and `outline`, a list of `fpdf.outline.OutlineSection`.
 - **pages**: The number of pages that the ToC will span, including the current one. A page break occurs for each page specified.
 - **allow_extra_pages**: If `True`, allows unlimited additional pages to be added to the ToC as needed. These extra ToC pages are initially created at the end of the document and then reordered when the final PDF is produced.
@@ -54,7 +50,6 @@ Use the [`insert_toc_placeholder`](fpdf/fpdf.html#fpdf.fpdf.FPDF.insert_toc_plac
 **Note**: Enabling `allow_extra_pages` may affect page numbering for headers or footers. Since extra ToC pages are added after the document content, they might cause page numbers to appear out of sequence. To maintain consistent numbering, use (Page Labels)[PageLabels.md] to assign a specific numbering style to the ToC pages. When using Page Labels, any extra ToC pages will follow the numbering style of the first ToC page.
 
 ### Reference Implementation
-
 _New in [:octicons-tag-24: 2.8.2](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 The `fpdf.outline.TableOfContents` class provides a reference implementation of the ToC, which can be used as-is or subclassed.
@@ -72,7 +67,6 @@ pdf.insert_toc_placeholder(toc.render_toc, allow_extra_pages=True)
 ---
 
 ## Using Outlines and ToC with HTML
-
 When using [`FPDF.write_html`](HTML.md), a document outline is automatically generated, and a ToC can be added with the `<toc>` tag.
 
 To customize ToC styling, override the `render_toc` method in a subclass:
@@ -105,7 +99,6 @@ pdf.output("html_toc.pdf")
 ---
 
 ## Additional Code Samples
-
 The regression tests are a good place to find code samples.
 
 For example, the [`test_simple_outline`](https://github.com/py-pdf/fpdf2/blob/master/test/outline/test_outline.py) test function generates the PDF document [simple_outline.pdf](https://github.com/py-pdf/fpdf2/blob/master/test/outline/simple_outline.pdf).
@@ -116,4 +109,6 @@ generates [test_html_toc.pdf](https://github.com/py-pdf/fpdf2/blob/5453422bf560a
 ---
 
 ## Manually Adjusting `pdf.page`
-Setting `pdf.page` manually may result in unexpected behavior. `pdf.add_page()` takes special care to ensure the page's content stream matches fpdf's instance attributes. Manually setting the page does not.
+⚠️ Setting `pdf.page` manually may result in unexpected behavior.
+`pdf.add_page()` takes special care to ensure the page's content stream matches fpdf's instance attributes.
+Manually setting the page does not.

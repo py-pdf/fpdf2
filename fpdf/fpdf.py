@@ -323,9 +323,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # Graphics state variables defined as properties by GraphicsStateMixin.
         # We set their default values here.
         self.font_family = ""  # current font family
-        # current font style (BOLD/ITALICS - does not handle UNDERLINE):
+        # current font style (BOLD/ITALICS - does not handle UNDERLINE nor STRIKETHROUGH):
         self.font_style = ""
-        self.underline = False  # underlining flag
+        self.underline = False
+        self.strikethrough = False
         self.font_size_pt = 12  # current font size in points
         self.font_stretching = 100  # current font stretching
         self.char_spacing = 0  # current character spacing
@@ -441,10 +442,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @property
     def emphasis(self) -> TextEmphasis:
-        "The current text emphasis: bold, italics and/or underlined."
-        return TextEmphasis.coerce(
-            f"{self.font_style}U" if self.underline else self.font_style
-        )
+        "The current text emphasis: bold, italics, underline and/or strikethrough."
+        font_style = self.font_style
+        if self.strikethrough:
+            font_style += "S"
+        if self.underline:
+            font_style += "U"
+        return TextEmphasis.coerce(font_style)
 
     @property
     def is_ttf_font(self) -> bool:
@@ -857,7 +861,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         -----
 
         When using this feature with the `FPDF.cell` / `FPDF.multi_cell` methods,
-        or the `.underline` attribute of `FPDF` class,
+        or the `.underline` / `.strikethrough` attributes of `FPDF` class,
         the width of the text rendered will take into account the alias length,
         not the length of the "actual number of pages" string,
         which can causes slight positioning differences.
@@ -931,7 +935,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "A page cannot be added on a closed document, after calling output()"
             )
         family = self.font_family
-        style = f"{self.font_style}U" if self.underline else self.font_style
+        emphasis = self.emphasis
         size = self.font_size_pt
         lw = self.line_width
         dc = self.draw_color
@@ -990,7 +994,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         # Set font
         if family:
-            self.set_font(family, style, size)
+            self.set_font(family, emphasis, size)
 
         # Set colors
         self.draw_color = dc
@@ -1010,7 +1014,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self._out(f"{lw * self.k:.2f} w")
 
         if family:
-            self.set_font(family, style, size)  # Restore font
+            self.set_font(family, emphasis, size)  # Restore font
 
         if self.draw_color != dc:  # Restore colors
             self.draw_color = dc
@@ -2058,7 +2062,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         self.fonts[fontkey] = TTFFont(self, font_file_path, fontkey, style)
 
-    def set_font(self, family=None, style="", size=0):
+    def set_font(self, family=None, style: Union[str, TextEmphasis] = "", size=0):
         """
         Sets the font used to print character strings.
         It is mandatory to call this method at least once before printing text.
@@ -2079,8 +2083,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 Courier (fixed-width), Helvetica (sans serif), Times (serif),
                 Symbol (symbolic) or ZapfDingbats (symbolic)
                 If an empty string is provided, the current family is retained.
-            style (str): empty string (by default) or a combination
-                of one or several letters among B (bold), I (italic) and U (underline).
+            style (str, fpdf.enums.TextEmphasis): empty string (by default) or a combination
+                of one or several letters among B (bold), I (italic), S (strikethrough) and U (underline).
                 Bold and italic styles do not apply to Symbol and ZapfDingbats fonts.
             size (float): in points. The default value is the current size.
         """
@@ -2088,16 +2092,23 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             family = self.font_family
 
         family = family.lower()
+        if isinstance(style, TextEmphasis):
+            style = style.style
         style = "".join(sorted(style.upper()))
-        if any(letter not in "BIU" for letter in style):
+        if any(letter not in "BISU" for letter in style):
             raise ValueError(
-                f"Unknown style provided (only B/I/U letters are allowed): {style}"
+                f"Unknown style provided (only B/I/S/U letters are allowed): {style}"
             )
         if "U" in style:
             self.underline = True
             style = style.replace("U", "")
         else:
             self.underline = False
+        if "S" in style:
+            self.strikethrough = True
+            style = style.replace("S", "")
+        else:
+            self.strikethrough = False
 
         if family in self.font_aliases and family + style not in self.fonts:
             warnings.warn(
@@ -2687,10 +2698,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
         sl.append(f"{self.current_font.encode_text(text)} ET")
         self._resource_catalog.add(PDFResourceType.FONT, self.current_font.i, self.page)
-        if (self.underline and text != "") or self._record_text_quad_points:
+        if (
+            text != "" and (self.underline or self.strikethrough)
+        ) or self._record_text_quad_points:
             w = self.get_string_width(text, normalized=True, markdown=False)
-            if self.underline and text != "":
-                sl.append(self._do_underline(x, y, w))
+            if text != "":
+                if self.underline:
+                    sl.append(self._do_underline(x, y, w))
+                if self.strikethrough:
+                    sl.append(self._do_strikethrough(x, y, w))
             if self._record_text_quad_points:
                 h = self.font_size
                 y -= 0.8 * h  # same coefficient as in _render_styled_text_line()
@@ -2880,6 +2896,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         * nom_lift
         * nom_scale
         * paint_rule
+        * strikethrough
         * stroke_cap_style
         * stroke_join_style
         * stroke_miter_limit
@@ -2960,6 +2977,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "font_stretching",
                 "nom_lift",
                 "nom_scale",
+                "strikethrough",
                 "sub_lift",
                 "sub_scale",
                 "sup_lift",
@@ -3067,7 +3085,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 (identifier returned by `FPDF.add_link`) or external URL.
             center (bool): center the cell horizontally on the page.
             markdown (bool): enable minimal markdown-like markup to render part
-                of text as bold / italics / underlined. Supports `\\` as escape character. Default to False.
+                of text as bold / italics / strikethrough / underlined.
+                Supports `\\` as escape character. Default to False.
             txt (str): [**DEPRECATED since v2.7.6**] String to print. Default value: empty string.
 
         Returns: a boolean indicating if page break was triggered
@@ -3362,6 +3381,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                             frag.font,
                         )
                     )
+                if frag.strikethrough:
+                    sl.append(
+                        self._do_strikethrough(
+                            self.x + dx + s_width,
+                            self.y + (0.5 * h) + (0.3 * frag.font_size),
+                            frag_width,
+                            frag.font,
+                        )
+                    )
                 if frag.link:
                     self.link(
                         x=self.x + dx + s_width,
@@ -3489,6 +3517,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         prev_font_style = self.font_style
         if self.underline:
             prev_font_style += "U"
+        if self.strikethrough:
+            prev_font_style += "S"
         styled_txt_frags = tuple(self._parse_chars(text, markdown))
         if markdown:
             page = self.page
@@ -3847,7 +3877,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             ln (int): **DEPRECATED since 2.5.1**: Use `new_x` and `new_y` instead.
             max_line_height (float): optional maximum height of each sub-cell generated
             markdown (bool): enable minimal markdown-like markup to render part
-                of text as bold / italics / underlined. Supports `\\` as escape character. Default to False.
+                of text as bold / italics / strikethrough / underlined.
+                Supports `\\` as escape character. Default to False.
             print_sh (bool): Treat a soft-hyphen (\\u00ad) as a normal printable
                 character, instead of a line breaking opportunity. Default value: False
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
@@ -4872,16 +4903,32 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         hash_hex = id_hash.hexdigest().upper()
         return f"<{hash_hex}><{hash_hex}>"
 
-    def _do_underline(self, x, y, w, current_font=None):
-        "Draw an horizontal line starting from (x, y) with a length equal to 'w'"
-        if current_font is None:
-            current_font = self.current_font
-        up = current_font.up
-        ut = current_font.ut
+    def _do_underline(self, x, y, w, font=None):
+        """
+        Draw an horizontal line under some text,
+        starting from (x, y) with a length equal to 'w'
+        """
+        if font is None:
+            font = self.current_font
         return (
             f"{x * self.k:.2f} "
-            f"{(self.h - y + up / 1000 * self.font_size) * self.k:.2f} "
-            f"{w * self.k:.2f} {-ut / 1000 * self.font_size_pt:.2f} re f"
+            f"{(self.h - y + font.up / 1000 * self.font_size) * self.k:.2f} "
+            f"{w * self.k:.2f} "
+            f"{-font.ut / 1000 * self.font_size_pt:.2f} re f"
+        )
+
+    def _do_strikethrough(self, x, y, w, font=None):
+        """
+        Draw an horizontal line through some text,
+        starting from (x, y) with a length equal to 'w'
+        """
+        if font is None:
+            font = self.current_font
+        return (
+            f"{x * self.k:.2f} "
+            f"{(self.h - y + font.sp / 1000 * self.font_size) * self.k:.2f} "
+            f"{w * self.k:.2f} "
+            f"{-font.ss / 1000 * self.font_size_pt:.2f} re f"
         )
 
     def _out(self, s):

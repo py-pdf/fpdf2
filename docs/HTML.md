@@ -159,7 +159,7 @@ pdf.output("html_helvetica.pdf")
 * `<h1>` to `<h6>`: headings (and `align` attribute)
 * `<p>`: paragraphs (and `align`, `line-height` attributes)
 * `<br>` & `<hr>` tags
-* `<b>`, `<i>`, `<u>`: bold, italic, underline
+* `<b>`, `<i>`, `<s>`, `<u>`: bold, italic, strikethrough, underline
 * `<font>`: (and `face`, `size`, `color` attributes)
 * `<center>` for aligning
 * `<a>`: links (and `href` attribute) to a file, URL, or page number.

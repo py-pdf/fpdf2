@@ -36,6 +36,7 @@ class GraphicsStateMixin:
                 fill_color=self.DEFAULT_FILL_COLOR,
                 text_color=self.DEFAULT_TEXT_COLOR,
                 underline=False,
+                strikethrough=False,
                 font_style="",
                 font_stretching=100,
                 char_spacing=0,
@@ -110,6 +111,14 @@ class GraphicsStateMixin:
     @underline.setter
     def underline(self, v):
         self.__statestack[-1]["underline"] = v
+
+    @property
+    def strikethrough(self):
+        return self.__statestack[-1]["strikethrough"]
+
+    @strikethrough.setter
+    def strikethrough(self, v):
+        self.__statestack[-1]["strikethrough"] = v
 
     @property
     def font_style(self):

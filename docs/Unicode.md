@@ -63,7 +63,12 @@ pdf.add_font("dejavu-sans-narrow", style="", fname="DejaVuSansCondensed.ttf")
 pdf.add_font("dejavu-sans-narrow", style="i", fname="DejaVuSansCondensed-Oblique.ttf")
 ```
 
-To actually use the loaded font, or to use one of the standard built-in fonts, you'll have to set the current font before calling any text generating method. `.set_font()` uses the same combinations of family name and style as arguments, plus the font size in typographic points. In addition to the previously mentioned styles, the letter "u" may be included for creating underlined text. If the family or size are omitted, the already set values will be retained. If the style is omitted, it defaults to regular.
+To actually use the loaded font, or to use one of the standard built-in fonts, you'll have to set the current font before calling any text generating method.
+`.set_font()` uses the same combinations of family name and style as arguments, plus the font size in typographic points.
+In addition to the previously mentioned styles, the letter `u` may be included for creating underlined text,
+and `s` for creating strikethrough text.
+If the family or size are omitted, the already set values will be retained.
+If the style is omitted, it defaults to regular.
 
 ```python
 # Set and use first family in regular style.

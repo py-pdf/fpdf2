@@ -124,6 +124,10 @@ class Fragment:
         return self.graphics_state["underline"]
 
     @property
+    def strikethrough(self):
+        return self.graphics_state["strikethrough"]
+
+    @property
     def draw_color(self):
         return self.graphics_state["draw_color"]
 

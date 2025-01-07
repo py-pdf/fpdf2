@@ -37,7 +37,7 @@ def test_set_unknown_style():
     with pytest.raises(ValueError) as e:
         pdf.set_font("Times", style="bold")
     assert (
-        str(e.value) == "Unknown style provided (only B/I/U letters are allowed): BDLO"
+        str(e.value) == "Unknown style provided (only B/I/S/U letters are allowed): BDLO"
     )
 
 

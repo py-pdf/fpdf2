@@ -7,6 +7,7 @@ _New in [:octicons-tag-24: 2.8.2](https://github.com/py-pdf/fpdf2/blob/master/CH
 In a PDF document, each page is identified by an integer page index, representing the page's position within the document. Optionally, a document can also define **page labels** to visually display page identifiers. 
 
 **Page labels** can be customized. For example, a document might begin with front matter numbered in roman numerals and transition to arabic numerals for the main content. In this case:
+
 - The first page (index `0`) would have a label `i`
 - The twelfth page (index `11`) would have label `xii`
 - The thirteenth page (index `12`) would start with label `1`

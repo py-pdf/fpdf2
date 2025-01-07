@@ -6,8 +6,10 @@ Setting emphasis on text can be controlled by using `.set_font(style=...)`:
 
 * `style="B"` indicates **bold**
 * `style="I"` indicates _italics_
+* `style="S"` indicates <s>strikethrough</s>
 * `style="U"` indicates <u>underline</u>
-* `style="BI"` indicates _**bold italics**_
+
+Letters can be combined, for example: `style="BI"` indicates _**bold italics**_
 
 ```python
 from fpdf import FPDF

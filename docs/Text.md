@@ -77,8 +77,7 @@ character string. The upper-left corner of the cell corresponds to the current
 position. The text can be aligned or centered. After the call, the current
 position moves to the selected `new_x`/`new_y` position. It is possible to put a link on the text.
 If `markdown=True`, then minimal [markdown](TextStyling.md#markdowntrue)
-styling is enabled, to render parts of the text in bold, italics, and/or
-underlined.
+styling is enabled, to render parts of the text in bold, italics, strikethrough and/or underlined.
 
 If automatic page breaking is enabled and the cell goes beyond the limit, a
 page break is performed before outputting.

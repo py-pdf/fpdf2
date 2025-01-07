@@ -243,6 +243,9 @@ class TextEmphasis(CoerciveIntFlag):
     U = 4
     "Underline"
 
+    S = 8
+    "Strikethrough"
+
     @property
     def style(self):
         return "".join(
@@ -268,6 +271,8 @@ class TextEmphasis(CoerciveIntFlag):
                 return cls.I
             if value.upper() == "UNDERLINE":
                 return cls.U
+            if value.upper() == "STRIKETHROUGH":
+                return cls.S
         return super(cls, cls).coerce(value)
 
 

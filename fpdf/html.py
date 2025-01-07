@@ -34,6 +34,7 @@ DEFAULT_TAG_STYLES = {
     "em": FontFace(emphasis="ITALICS"),
     "font": FontFace(),
     "i": FontFace(emphasis="ITALICS"),
+    "s": FontFace(emphasis="STRIKETHROUGH"),
     "strong": FontFace(emphasis="BOLD"),
     "u": FontFace(emphasis="UNDERLINE"),
     # Block tags are TextStyle instances :
@@ -71,7 +72,7 @@ DEFAULT_TAG_STYLES = {
     "ol": TextStyle(t_margin=2),
     "ul": TextStyle(t_margin=2),
 }
-INLINE_TAGS = ("a", "b", "code", "em", "font", "i", "strong", "u")
+INLINE_TAGS = ("a", "b", "code", "em", "font", "i", "s", "strong", "u")
 BLOCK_TAGS = HEADING_TAGS + (
     "blockquote",
     "center",
@@ -782,6 +783,7 @@ class HTML2FPDF(HTMLParser):
             "dd",
             "dt",
             "pre",
+            "s",
             "strong",
             "u",
         ):
@@ -1078,6 +1080,7 @@ class HTML2FPDF(HTMLParser):
             "dd",
             "dt",
             "pre",
+            "s",
             "strong",
             "u",
         ):

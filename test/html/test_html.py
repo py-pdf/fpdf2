@@ -194,6 +194,16 @@ def test_html_bold_italic_underline(tmp_path):
     assert_pdf_equal(pdf, HERE / "html_bold_italic_underline.pdf", tmp_path)
 
 
+def test_html_strikethrough(tmp_path):
+    pdf = FPDF()
+    pdf.add_font(fname=HERE / "../fonts/DejaVuSans.ttf")
+    pdf.set_font_size(30)
+    pdf.add_page()
+    pdf.write_html("<s>strikethrough</s>")
+    pdf.write_html('<font face="DejaVuSans"><s>strikethrough</s></font>')
+    assert_pdf_equal(pdf, HERE / "html_strikethrough.pdf", tmp_path)
+
+
 def test_html_customize_ul(tmp_path):
     html = """<ul>
         <li><b>term1</b>: definition1</li>

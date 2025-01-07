@@ -194,14 +194,27 @@ __pdoc__ = {"TitleStyle": False}  # Replaced by TextStyle
 
 class CoreFont:
     # RAM usage optimization:
-    __slots__ = ("i", "type", "name", "up", "ut", "cw", "fontkey", "emphasis")
+    __slots__ = (
+        "i",
+        "type",
+        "name",
+        "sp",
+        "ss",
+        "up",
+        "ut",
+        "cw",
+        "fontkey",
+        "emphasis",
+    )
 
     def __init__(self, fpdf, fontkey, style):
         self.i = len(fpdf.fonts) + 1
         self.type = "core"
         self.name = CORE_FONTS[fontkey]
-        self.up = -100
-        self.ut = 50
+        self.sp = 250  # strikethrough horizontal position
+        self.ss = 50  # strikethrough size (height)
+        self.up = -100  # underline horizontal position
+        self.ut = 50  # underline height
         self.cw = CORE_FONTS_CHARWIDTHS[fontkey]
         self.fontkey = fontkey
         self.emphasis = TextEmphasis.coerce(style)
@@ -226,6 +239,8 @@ class TTFFont:
         "desc",
         "glyph_ids",
         "hbfont",
+        "sp",
+        "ss",
         "up",
         "ut",
         "cw",
@@ -254,18 +269,21 @@ class TTFFont:
         self.scale = 1000 / self.ttfont["head"].unitsPerEm
         default_width = round(self.scale * self.ttfont["hmtx"].metrics[".notdef"][0])
 
+        os2_table = self.ttfont["OS/2"]
+        post_table = self.ttfont["post"]
+
         try:
-            cap_height = self.ttfont["OS/2"].sCapHeight
+            cap_height = os2_table.sCapHeight
         except AttributeError:
             cap_height = self.ttfont["hhea"].ascent
 
         # entry for the PDF font descriptor specifying various characteristics of the font
         flags = FontDescriptorFlags.SYMBOLIC
-        if self.ttfont["post"].isFixedPitch:
+        if post_table.isFixedPitch:
             flags |= FontDescriptorFlags.FIXED_PITCH
-        if self.ttfont["post"].italicAngle != 0:
+        if post_table.italicAngle != 0:
             flags |= FontDescriptorFlags.ITALIC
-        if self.ttfont["OS/2"].usWeightClass >= 600:
+        if os2_table.usWeightClass >= 600:
             flags |= FontDescriptorFlags.FORCE_BOLD
 
         self.desc = PDFFontDescriptor(
@@ -277,8 +295,8 @@ class TTFFont:
                 f"[{self.ttfont['head'].xMin * self.scale:.0f} {self.ttfont['head'].yMin * self.scale:.0f}"
                 f" {self.ttfont['head'].xMax * self.scale:.0f} {self.ttfont['head'].yMax * self.scale:.0f}]"
             ),
-            italic_angle=int(self.ttfont["post"].italicAngle),
-            stem_v=round(50 + int(pow((self.ttfont["OS/2"].usWeightClass / 65), 2))),
+            italic_angle=int(post_table.italicAngle),
+            stem_v=round(50 + int(pow((os2_table.usWeightClass / 65), 2))),
             missing_width=default_width,
         )
 
@@ -320,8 +338,10 @@ class TTFFont:
             sbarr += fpdf.str_alias_nb_pages
 
         self.name = re.sub("[ ()]", "", self.ttfont["name"].getBestFullName())
-        self.up = round(self.ttfont["post"].underlinePosition * self.scale)
-        self.ut = round(self.ttfont["post"].underlineThickness * self.scale)
+        self.up = round(post_table.underlinePosition * self.scale)
+        self.ut = round(post_table.underlineThickness * self.scale)
+        self.sp = round(os2_table.yStrikeoutPosition * self.scale)
+        self.ss = round(os2_table.yStrikeoutSize * self.scale)
         self.emphasis = TextEmphasis.coerce(style)
         self.subset = SubsetMap(self, [ord(char) for char in sbarr])
 

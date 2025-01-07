@@ -109,6 +109,7 @@ Online classes & open source projects:
 * [OpenSfM](https://github.com/mapillary/OpenSfM) : a Structure from Motion library, serving as a processing pipeline for reconstructing camera poses and 3D scenes from multiple images
 * [RPA Framework](https://github.com/robocorp/rpaframework) : libraries and tools for Robotic Process Automation (RPA), designed to be used with both [Robot Framework](https://robotframework.org) : [rpa-pdf](https://pypi.org/project/rpa-pdf/) package
 * [Concordia](https://github.com/LibraryOfCongress/concordia) : a platform developed by the US Library of Congress for crowdsourcing transcription and tagging of text in digitized images
+* [FreeCAD-Beginner-Assistant](https://github.com/alekssadowski95/FreeCAD-Beginner-Assistant) : FreeCAD plugin providing feedback on best practices for beginning FreeCAD users
 * [wudududu/extract-video-ppt](https://github.com/wudududu/extract-video-ppt) : create a one-page-per-frame PDF from a video or PPT file.
   `fpdf2` also has a demo script to convert a GIF into a one-page-per-frame PDF: [gif2pdf.py](https://github.com/py-pdf/fpdf2/blob/master/tutorial/gif2pdf.py)
 * [Planet-Matriarchy-RPG-CharGen](https://github.com/ShawnDriscoll/Planet-Matriarchy-RPG-CharGen) : a PyQt based desktop application (= `.exe` under Windows) that provides a RPG character sheet generator
@@ -137,7 +138,6 @@ Online classes & open source projects:
 ## Misc ##
 
 * Release notes for every versions of `fpdf2`: [CHANGELOG.md](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)
-* Project history: [History](History.md)
 * This library could only exist thanks to the dedication of many volunteers around the world:
   [list & map of contributors](https://github.com/py-pdf/fpdf2/blob/master/README.md#contributors-)
 * You can download an offline PDF version of this manual: [fpdf2-manual.pdf](fpdf2-manual.pdf)
