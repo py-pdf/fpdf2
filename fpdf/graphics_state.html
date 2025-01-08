@@ -58,7 +58,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L16-L361" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L16-L370" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class GraphicsStateMixin:
     &#34;&#34;&#34;Mixin class for managing a stack of graphics state variables.
@@ -83,6 +83,7 @@ in non-backward-compatible ways.</p>
                 fill_color=self.DEFAULT_FILL_COLOR,
                 text_color=self.DEFAULT_TEXT_COLOR,
                 underline=False,
+                strikethrough=False,
                 font_style=&#34;&#34;,
                 font_stretching=100,
                 char_spacing=0,
@@ -157,6 +158,14 @@ in non-backward-compatible ways.</p>
     @underline.setter
     def underline(self, v):
         self.__statestack[-1][&#34;underline&#34;] = v
+
+    @property
+    def strikethrough(self):
+        return self.__statestack[-1][&#34;strikethrough&#34;]
+
+    @strikethrough.setter
+    def strikethrough(self, v):
+        self.__statestack[-1][&#34;strikethrough&#34;] = v
 
     @property
     def font_style(self):
@@ -440,7 +449,7 @@ directly by user code.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L130-L132" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L139-L141" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def char_spacing(self):
@@ -453,7 +462,7 @@ def char_spacing(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L194-L200" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L203-L209" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def char_vpos(self):
@@ -471,7 +480,7 @@ def char_vpos(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L162-L164" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L171-L173" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def current_font(self):
@@ -484,7 +493,7 @@ def current_font(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L170-L172" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L179-L181" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def dash_pattern(self):
@@ -497,7 +506,7 @@ def dash_pattern(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L322-L328" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L331-L337" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def denom_lift(self):
@@ -515,7 +524,7 @@ def denom_lift(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L258-L264" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L267-L273" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def denom_scale(self):
@@ -533,7 +542,7 @@ def denom_scale(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L82-L84" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L83-L85" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def draw_color(self):
@@ -546,7 +555,7 @@ def draw_color(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L90-L92" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L91-L93" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def fill_color(self):
@@ -559,7 +568,7 @@ def fill_color(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L138-L140" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L147-L149" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_family(self):
@@ -572,7 +581,7 @@ def font_family(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L154-L156" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L163-L165" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_size(self):
@@ -585,7 +594,7 @@ def font_size(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L146-L148" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L155-L157" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_size_pt(self):
@@ -598,7 +607,7 @@ def font_size_pt(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L122-L124" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L131-L133" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_stretching(self):
@@ -611,7 +620,7 @@ def font_stretching(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L114-L116" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L123-L125" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def font_style(self):
@@ -624,7 +633,7 @@ def font_style(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L178-L180" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L187-L189" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def line_width(self):
@@ -637,7 +646,7 @@ def line_width(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L306-L312" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L315-L321" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def nom_lift(self):
@@ -655,7 +664,7 @@ def nom_lift(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L242-L248" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L251-L257" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def nom_scale(self):
@@ -668,12 +677,25 @@ def nom_scale(self):
 <div class="desc"><p>Return scale factor for nominator text.
 (<a href="../TextStyling.html#subscript-superscript-and-fractional-numbers">docs</a>)</p></div>
 </dd>
+<dt id="fpdf.graphics_state.GraphicsStateMixin.strikethrough"><code class="name">prop <span class="ident">strikethrough</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L115-L117" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@property
+def strikethrough(self):
+    return self.__statestack[-1][&#34;strikethrough&#34;]</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
 <dt id="fpdf.graphics_state.GraphicsStateMixin.sub_lift"><code class="name">prop <span class="ident">sub_lift</span></code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L274-L280" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L283-L289" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def sub_lift(self):
@@ -691,7 +713,7 @@ def sub_lift(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L210-L216" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L219-L225" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def sub_scale(self):
@@ -709,7 +731,7 @@ def sub_scale(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L290-L296" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L299-L305" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def sup_lift(self):
@@ -727,7 +749,7 @@ def sup_lift(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L226-L232" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L235-L241" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def sup_scale(self):
@@ -745,7 +767,7 @@ def sup_scale(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L98-L100" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L99-L101" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def text_color(self):
@@ -758,7 +780,7 @@ def text_color(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L186-L188" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L195-L197" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def text_mode(self):
@@ -771,7 +793,7 @@ def text_mode(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L338-L340" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L347-L349" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def text_shaping(self):
@@ -784,7 +806,7 @@ def text_shaping(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L106-L108" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L107-L109" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def underline(self):
@@ -802,7 +824,7 @@ def underline(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/94dbb86f3dfd230727a6cc858a13b123bbbc90f4/fpdf/graphics_state.py#L346-L361" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1ba8fcd9d8fb486d9f8aa517de4ed3ddf8f2890d/fpdf/graphics_state.py#L355-L370" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def font_face(self):
     &#34;&#34;&#34;
@@ -864,6 +886,7 @@ representing a subset of properties of this GraphicsState.</p></div>
 <li><code><a title="fpdf.graphics_state.GraphicsStateMixin.line_width" href="#fpdf.graphics_state.GraphicsStateMixin.line_width">line_width</a></code></li>
 <li><code><a title="fpdf.graphics_state.GraphicsStateMixin.nom_lift" href="#fpdf.graphics_state.GraphicsStateMixin.nom_lift">nom_lift</a></code></li>
 <li><code><a title="fpdf.graphics_state.GraphicsStateMixin.nom_scale" href="#fpdf.graphics_state.GraphicsStateMixin.nom_scale">nom_scale</a></code></li>
+<li><code><a title="fpdf.graphics_state.GraphicsStateMixin.strikethrough" href="#fpdf.graphics_state.GraphicsStateMixin.strikethrough">strikethrough</a></code></li>
 <li><code><a title="fpdf.graphics_state.GraphicsStateMixin.sub_lift" href="#fpdf.graphics_state.GraphicsStateMixin.sub_lift">sub_lift</a></code></li>
 <li><code><a title="fpdf.graphics_state.GraphicsStateMixin.sub_scale" href="#fpdf.graphics_state.GraphicsStateMixin.sub_scale">sub_scale</a></code></li>
 <li><code><a title="fpdf.graphics_state.GraphicsStateMixin.sup_lift" href="#fpdf.graphics_state.GraphicsStateMixin.sup_lift">sup_lift</a></code></li>
