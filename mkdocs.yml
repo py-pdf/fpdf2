@@ -190,5 +190,3 @@ extra:
       link: https://github.com/py-pdf/fpdf2
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/fpdf2/
-
-dev_addr: 127.0.0.1:8080
