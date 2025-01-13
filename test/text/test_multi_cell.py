@@ -3,6 +3,8 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF, FPDFException
+from fpdf.enums import MethodReturnValue, YPos
+
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
@@ -18,6 +20,15 @@ TABLE_DATA = (
     ("Mary", "Ramos", "45", "Orlando"),
     ("Carlson", "Banks", "19", "Los Angeles"),
     ("Lucas", "Cimon", "31", "Angers"),
+)
+
+LONG_TEXT = (
+    "\nProfessor: (Eric Idle) It's an entirely new strain of sheep, a killer sheep that can not only hold a rifle but is also a first-class shot.\n"
+    "Assistant: But where are they coming from, professor?\n"
+    "Professor: That I don't know. I just don't know. I really just don't know. I'm afraid I really just don't know. I'm afraid even I really just"
+    " don't know. I have to tell you I'm afraid even I really just don't know. I'm afraid I have to tell you... (she hands him a glass of water"
+    " which she had been busy getting as soon as he started into this speech) ... thank you ... (resuming normal breezy voice) ... I don't know."
+    " Our only clue is this portion of wolf's clothing which the killer sheep ..."
 )
 
 
@@ -514,3 +525,87 @@ def test_multi_cell_align_with_padding(tmp_path):
     create_boxes("START", "NEXT", "LEFT")
     create_boxes("END", "NEXT", "RIGHT")
     assert_pdf_equal(pdf, HERE / "multi_cell_align_with_padding.pdf", tmp_path)
+
+
+def test_multi_cell_with_padding(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    pdf.multi_cell(0, 5, LONG_TEXT, border=1, padding=(10, 20, 30, 40))
+
+    assert_pdf_equal(pdf, HERE / "multi_cell_with_padding.pdf", tmp_path)
+
+
+def test_multi_cell_with_padding_check_input():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+
+    with pytest.raises(ValueError):
+        pdf.multi_cell(0, 5, LONG_TEXT, border=1, padding=(5, 5, 5, 5, 5, 5))
+
+
+def test_multi_cell_return_value(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+
+    pdf.x = 5
+
+    out = pdf.multi_cell(
+        0,
+        5,
+        "Monty Python\nKiller Sheep",
+        border=1,
+        padding=0,
+        output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
+    )
+    height_without_padding = out[1]
+
+    pdf.x = 5
+    # pdf.y += 50
+
+    # try again
+    out = pdf.multi_cell(
+        0,
+        5,
+        "Monty Python\nKiller Sheep",
+        border=1,
+        padding=0,
+        output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
+    )
+
+    height_without_padding2 = out[1]
+
+    pdf.x = 5
+    # pdf.y += 50
+
+    # try again
+    out = pdf.multi_cell(
+        0,
+        5,
+        "Monty Python\nKiller Sheep",
+        border=1,
+        padding=10,
+        output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
+    )
+
+    height_with_padding = out[1]
+
+    assert height_without_padding == height_without_padding2
+    assert height_without_padding + 20 == height_with_padding
+
+    pdf.x = 5
+    pdf.y += 10
+
+    out = pdf.multi_cell(
+        0,
+        5,
+        "Monty Python\nKiller Sheep",
+        border=1,
+        padding=10,
+        output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
+        new_y=YPos.NEXT,
+    )
+
+    assert_pdf_equal(pdf, HERE / "multi_cell_return_value.pdf", tmp_path)

@@ -25,3 +25,6 @@ allows to add a signature based on arbitrary key & certificates, not necessarily
 [examples/pdf-verify.py](https://github.com/m32/endesive/blob/master/examples/pdf-verify.py)
 or the [`check_signature()`](https://github.com/py-pdf/fpdf2/blob/master/test/conftest.py#L111) function
 used in `fpdf2` unit tests can be good starting points for you, if you want to perform PDF signature control.
+
+If you want to sign **existing** PDF documents,
+you should consider using PyHanko: <https://pyhanko.readthedocs.io>.

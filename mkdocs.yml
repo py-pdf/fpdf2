@@ -181,6 +181,7 @@ nav:
 - 'Development':
   - 'Development guidelines':         'Development.md'
   - 'Logging':                        'Logging.md'
+  - 'fpdf2 internals':                'Internals.md'
 - 'API':                            'https://py-pdf.github.io/fpdf2/fpdf/'
 - 'History':                        'History.md'
 

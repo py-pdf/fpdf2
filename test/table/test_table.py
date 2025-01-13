@@ -1036,3 +1036,13 @@ def test_table_cell_border_inherit(tmp_path):
             for datum in data_row:
                 row.cell(datum, border="inherit")
     assert_pdf_equal(pdf, HERE / "test_table_cell_border_inherit.pdf", tmp_path)
+
+
+def test_table_min_row_height(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=20)
+    with pdf.table(min_row_height=30) as table:
+        row = table.row(("A", "B"))
+        row = table.row(("C", "D"), min_height=50)
+    assert_pdf_equal(pdf, HERE / "table_min_row_height.pdf", tmp_path)

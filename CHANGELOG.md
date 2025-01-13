@@ -19,8 +19,11 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.8.3] - Not released yet
 ### Added
 * support for [shading patterns (gradients)](https://py-pdf.github.io/fpdf2/Patterns.html) 
-* support for strikethrough text
-* Improved SVG image speed by 50% to 70% - thanks to @petri-lipponen-movesense - [PR #1350](https://github.com/py-pdf/fpdf2/pull/1350)
+* improved SVG image speed by 50% to 70% - thanks to @petri-lipponen-movesense - [PR #1350](https://github.com/py-pdf/fpdf2/pull/1350)
+* support for <s>strikethrough text</s>
+* support for [setting a minimal row height in tables](https://py-pdf.github.io/fpdf2/Tables.html#setting-row-height)
+* support for [`v_align` at the row level in tables](https://py-pdf.github.io/fpdf2/Tables.html#setting-vertical-alignment-of-text-in-cells)
+* documentation on [`fpdf2` internals](https://py-pdf.github.io/fpdf2/Internals.html)
 ### Fixed
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): Fixed rendering of content following `<a>` tags; now correctly resets emphasis style post `</a>` tag: hyperlink styling contained within the tag authority. - [Issue #1311](https://github.com/py-pdf/fpdf2/issues/1311)
 
