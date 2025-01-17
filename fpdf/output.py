@@ -393,6 +393,8 @@ class PDFExtGState(PDFObject):
 
 
 class PDFXrefAndTrailer(ContentWithoutID):
+    "Cross-reference table & file trailer"
+
     def __init__(self, output_builder):
         self.output_builder = output_builder
         self.count = output_builder.obj_id + 1

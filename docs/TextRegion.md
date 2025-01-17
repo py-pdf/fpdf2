@@ -1,9 +1,7 @@
 _New in [:octicons-tag-24: 2.7.6](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
 # Text Flow Regions #
-
-**Notice:** As of fpdf2 release 2.7.6, this is an experimental feature. Both the API and the functionality may change before it is finalized, without prior notice.
-
-Text regions are a hierarchy of classes that enable to flow text within a given outline. In the simplest case, it is just the running text column of a page. But it can also be a sequence of outlines, such as several parallel columns or the cells of a table. Other outlines may be combined by addition or subtraction to create more complex shapes. 
+Text regions are a hierarchy of classes that enable to flow text within a given outline. In the simplest case, it is just the running text column of a page. But it can also be a sequence of outlines, such as several parallel columns or the cells of a table. Other outlines may be combined by addition or subtraction to create more complex shapes.
 
 There are two general categories of regions. One defines boundaries for running text that will just continue in the same manner one the next page. Those include columns and tables. The second category are distinct shapes. Examples would be a circle, a rectangle, a polygon of individual shape or even an image. They may be used individually, in combination, or to modify the outline of a multipage column. Shape regions will typically not cause a page break when they are full. In the future, a possibility to chain them may be implemented, so that a new shape will continue with the text that didn't fit into the previous one.
 
@@ -14,7 +12,6 @@ Other types like Table cells, shaped regions and combinations are still in the d
 
 
 ## General Operation ##
-
 Using the different region types and combination always follows the same pattern. The main difference to the normal `FPDF.write()` method is that all added text will first be buffered, and only gets rendered on the page when the context of the region is closed. This is necessary so that text can be aligned within the given boundaries even if its font, style, or size are arbitrarily varied along the way.
 
 * Create the region instance with an `FPDF` method, , for example [text_columns()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.text_columns).
@@ -34,7 +31,6 @@ The graphic shows the relationship of page, text areas and paragraphs (with vary
 
 
 ### Text Start Position ###
-
 When rendering, the vertical start position of the text will be at the lowest one out of:
 * the current y position
 * the top of the region (if it has a defined top)
@@ -45,56 +41,51 @@ In both horizontal and vertical positioning, regions with multiple columns may f
 
 
 ### Interaction Between Regions ###
-
 Several region instances can exist at the same time. But only one of them can act as context manager at any given time. It is not currently possible to activate them recursively. But it is possible to use them intermittingly. This will probably most often make sense between a columnar region and a table or a graphic. You may have some running text ending at a given height, then insert a table/graphic, and finally continue the running text at the new height below the table within the existing column(s).
 
 
 ### Common Parameters ###
-
 All types of text regions have the following constructor parameters in common:
 
-* text (str, optional) - text content to add to the region. This is a convenience parameter for cases when all text is available in one piece, and no partition into paragraphs (possibly with different parameters) is required. (Default: None)
-* text_align (Align/str, optional) - the horizontal alignment of the text in the region. (Default: Align.L)
-* line_height (float, optional) - This is a factor by which the line spacing will be different from the font height. It works similar to the attribute of the same name in HTML/CSS. (default: 1.0)
-* print_sh (bool, optional) - Treat a soft-hyphen (\\u00ad) as a printable character, instead of a line breaking opportunity. (Default: False)
-* skip_leading_spaces (default: False) - This flag is primarily used by `write_html()`, but may also have other uses. It removes all space characters at the beginning of each line.
-* wrapmode (default "WORD") - 
-* image (str or PIL.Image.Image or io.BytesIO, optional) - An image to add to the region. This is a convenience parameter for cases when no further text or images need to be added to the paragraph. If both "text" and "image" arguments are present, the text will be inserted first. (Default: None)
-* image_fill_width (bool, optional) - Indicates whether to increase the size of the image to fill the width of the column. Larger images will always be reduced to column width. (Default: False)
+* `text` (str, optional) - text content to add to the region. This is a convenience parameter for cases when all text is available in one piece, and no partition into paragraphs (possibly with different parameters) is required. (Default: None)
+* `text_align` (Align/str, optional) - the horizontal alignment of the text in the region. (Default: Align.L)
+* `line_height` (float, optional) - This is a factor by which the line spacing will be different from the font height. It works similar to the attribute of the same name in HTML/CSS. (default: 1.0)
+* `print_sh` (bool, optional) - Treat a soft-hyphen (\\u00ad) as a printable character, instead of a line breaking opportunity. (Default: False)
+* `skip_leading_spaces` (default: False) - This flag is primarily used by `write_html()`, but may also have other uses. It removes all space characters at the beginning of each line.
+* `wrapmode` (default `WORD`) -
+* `image` (str or PIL.Image.Image or io.BytesIO, optional) - An image to add to the region. This is a convenience parameter for cases when no further text or images need to be added to the paragraph. If both `text` and `image` arguments are present, the text will be inserted first. (Default: None)
+* `image_fill_width` (bool, optional) - Indicates whether to increase the size of the image to fill the width of the column. Larger images will always be reduced to column width. (Default: False)
 
 All of those values can be overriden for each individual paragraph.
 
 
 ### Common Methods ###
-
 * `.paragraph()` [see characteristic parameters below] - establish a new paragraph in the text. The text added to this paragraph will start on a new line.
 * `.write(text: str, link: = None)` - write text to the region. This is only permitted when no explicit paragraph is currently active.
 * `.image()` [see characteristic parameters below] - insert a vector or raster image in the region, flowing with the text like a paragraph.
-* `.ln(h: float = None)` - Start a new line moving either by the current font height or by the parameter "h". Only permitted when no explicit paragraph is currently active.
-* `.render()` - if the region is not used as a context manager with "with", this method must be called to actually process the added text.
+* `.ln(h: float = None)` - Start a new line moving either by the current font height or by the parameter `h`. Only permitted when no explicit paragraph is currently active.
+* `.render()` - if the region is not used as a context manager with `with`, this method must be called to actually process the added text.
 
 
 ## Paragraphs ##
-
 The primary purpose of paragraphs is to enable variations in horizontal text alignment, while the horizontal extents of the text are managed by the text region. To set the alignment, you can use the `align` argument when creating the paragraph. Valid values are defined in the [`Align enum`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.Align).
 
 For more typographical control, you can use the following arguments. Most of those override the settings of the current region when set, and default to the value set there.
 
-* text_align (Align, optional) - The horizontal alignment of the paragraph.
-* line_height (float, optional) - factor by which the line spacing will be different from the font height. (default: by region) 
-* top_margin (float, optional) -  how much spacing is added above the paragraph. No spacing will be added at the top of the paragraph if the current y position is at (or above) the top margin of the page. (Default: 0.0 mm)
-* bottom_margin (float, optional) - Those two values determine how much spacing is added below the paragraph. No spacing will be added at the bottom if it would result in overstepping the bottom margin of the page. (Default: 0.0 mm)
-* indent (float, optional): determines the indentation of the paragraph. (Default: 0.0 mm)
-* bullet_r_margin (float, optional) - determines the relative displacement of the bullet along the x-axis. The distance is between the rightmost point of the bullet to the leftmost point of the paragraph's text. (Default: 2.0 mm)
-* bullet_string (str, optional): determines the fragments and text lines of the bullet. (Default: "")
-* skip_leading_spaces (float, optional) - removes all space characters at the beginning of each line.
-* wrapmode (WrapMode, optional)
+* `text_align` (Align, optional) - The horizontal alignment of the paragraph.
+* `line_height` (float, optional) - factor by which the line spacing will be different from the font height. (default: by region)
+* `top_margin` (float, optional) -  how much spacing is added above the paragraph. No spacing will be added at the top of the paragraph if the current y position is at (or above) the top margin of the page. (Default: 0.0 mm)
+* `bottom_margin` (float, optional) - Those two values determine how much spacing is added below the paragraph. No spacing will be added at the bottom if it would result in overstepping the bottom margin of the page. (Default: 0.0 mm)
+* `indent` (float, optional): determines the indentation of the paragraph. (Default: 0.0 mm)
+* `bullet_r_margin` (float, optional) - determines the relative displacement of the bullet along the x-axis. The distance is between the rightmost point of the bullet to the leftmost point of the paragraph's text. (Default: 2.0 mm)
+* `bullet_string` (str, optional): determines the fragments and text lines of the bullet. (Default: `""`)
+* `skip_leading_spaces` (float, optional) - removes all space characters at the beginning of each line.
+* `wrapmode` (WrapMode, optional)
 
 Other than text regions, paragraphs should always be used as context managers and never be reused. Violating those rules may result in the entered text turning up on the page out of sequence.
 
 
 ### Possible Future Extensions ###
-
 Those features are currently not supported, but Pull Requests are welcome to implement them:
 
 * per-paragraph indentation
@@ -102,11 +93,13 @@ Those features are currently not supported, but Pull Requests are welcome to imp
 
 
 ## Images ##
-
 _New in [:octicons-tag-24: 2.7.7](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 Most arguments for inserting images into text regions are the same as for the `FPDF.image()` method, and have the same or equivalent meaning.
-Since the image will be placed automatically, the "x" and "y" parameters are not available. The positioning can be controlled with "align", where the default is "LEFT", with the alternatives "RIGHT" and "CENTER".
-If neither width nor height are specified, the image will be inserted with the size resulting from the PDF default resolution of 72 dpi. If the "fill_width" parameter is set to True, it increases the size to fill the full column width if necessary. If the image is wider than the column width, it will always be reduced in size proportionally.
-The "top_margin" and "bottom_margin" parameters have the same effect as with text paragraphs.
+
+Since the image will be placed automatically, the `x` and `y` parameters are not available. The positioning can be controlled with `align`, where the default is `LEFT`, with the alternatives `RIGHT` and `CENTER`.
+
+If neither width nor height are specified, the image will be inserted with the size resulting from the PDF default resolution of 72 dpi. If the `fill_width` parameter is set to True, it increases the size to fill the full column width if necessary. If the image is wider than the column width, it will always be reduced in size proportionally.
+
+The `top_margin` and `bottom_margin` parameters have the same effect as with text paragraphs.
 

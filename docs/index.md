@@ -84,7 +84,7 @@ pip install git+https://github.com/py-pdf/fpdf2.git@master
 **Developement**: check the [dedicated documentation page](Development.md).
 
 ### Verifying provenance
-[`pypi-attestations`](https://pypi.org/project/pypi-attestations/) can be used to check the provenance of a `fpdf2-2.X.Y.tar.gz` or `fpdf2-2.X.Y-py2.py3-none-any.whl` package.
+[`pypi-attestations`](https://pypi.org/project/pypi-attestations/) can be used to check the provenance of a `fpdf2-2.X.Y.tar.gz` or `fpdf2-2.X.Y-py2.py3-none-any.whl` package (_cf._ [PyPI now supports digital attestations](https://blog.pypi.org/posts/2024-11-14-pypi-now-supports-digital-attestations/)).
 
 Example to check that the [`fpdf2-2.8.2.tar.gz` package on Pypi](https://pypi.org/project/fpdf2/#fpdf2-2.8.2.tar.gz) has been published from the [py-pdf/fpdf2](https://github.com/py-pdf/fpdf2) GitHub repository:
 

@@ -23,6 +23,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support for <s>strikethrough text</s>
 * support for [setting a minimal row height in tables](https://py-pdf.github.io/fpdf2/Tables.html#setting-row-height)
 * support for [`v_align` at the row level in tables](https://py-pdf.github.io/fpdf2/Tables.html#setting-vertical-alignment-of-text-in-cells)
+* documentation on [verifying provenance of `fpdf2` releases](https://py-pdf.github.io/fpdf2/#verifying-provenance)
 * documentation on [`fpdf2` internals](https://py-pdf.github.io/fpdf2/Internals.html)
 ### Fixed
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): Fixed rendering of content following `<a>` tags; now correctly resets emphasis style post `</a>` tag: hyperlink styling contained within the tag authority. - [Issue #1311](https://github.com/py-pdf/fpdf2/issues/1311)

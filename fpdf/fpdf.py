@@ -273,7 +273,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         Note: Setting the page manually may result in unexpected behavior.
         `pdf.add_page()` takes special care to ensure the page's content stream
-        matches fpdf's instance attributes. Manually setting the page does not.
+        matches FPDF's instance attributes. Manually setting the page does not.
         """
         # array of PDFPage objects starting at index 1:
         self.pages: Dict[int, PDFPage] = {}
