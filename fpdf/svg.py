@@ -917,15 +917,15 @@ class SVGObject:
             if child.tag in xmlns_lookup("svg", "defs"):
                 self.handle_defs(child)
             elif child.tag in xmlns_lookup("svg", "g"):
-                pdf_group.add_item(self.build_group(child))
+                pdf_group.add_item(self.build_group(child), False)
             elif child.tag in xmlns_lookup("svg", "path"):
-                pdf_group.add_item(self.build_path(child))
+                pdf_group.add_item(self.build_path(child), False)
             elif child.tag in shape_tags:
-                pdf_group.add_item(self.build_shape(child))
+                pdf_group.add_item(self.build_shape(child), False)
             elif child.tag in xmlns_lookup("svg", "use"):
-                pdf_group.add_item(self.build_xref(child))
+                pdf_group.add_item(self.build_xref(child), False)
             elif child.tag in xmlns_lookup("svg", "image"):
-                pdf_group.add_item(self.build_image(child))
+                pdf_group.add_item(self.build_image(child), False)
             else:
                 LOGGER.warning(
                     "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
