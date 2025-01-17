@@ -1382,6 +1382,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "petri-lipponen-movesense",
+      "name": "petri-lipponen-movesense",
+      "avatar_url": "https://avatars.githubusercontent.com/u/95341815?v=4",
+      "profile": "https://github.com/petri-lipponen-movesense",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
