@@ -5,9 +5,13 @@
 
   <rect fill="none" stroke="blue" stroke-width="1" x="1" y="1" width="998" height="998" />
 
+  <text>Text without any attributes</text>
+
   <text x="20" y="35">My</text>
-  <text x="40" y="35">cat</text>
+  <text x="45" y="35">cat</text>
   <text x="55" y="55">is</text>
-  <text x="65" y="55">Grumpy!</text>
+  <text x="70" y="55">Grumpy!</text>
+
+  <text x="925" y="925">Bottom right</text>
 
 </svg>

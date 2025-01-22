@@ -364,7 +364,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         self._current_draw_context = None
         self._drawing_graphics_state_registry = GraphicsStateDictRegistry()
-        # map page numbers to a set of GraphicsState names:
         self._record_text_quad_points = False
         self._resource_catalog = ResourceCatalog()
 
@@ -2146,7 +2145,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     f"Use built-in fonts or FPDF.add_font() beforehand"
                 )
             # If it's one of the core fonts, add it to self.fonts
-            self.fonts[fontkey] = CoreFont(self, fontkey, style)
+            self.fonts[fontkey] = CoreFont(len(self.fonts) + 1, fontkey, style)
 
         # Select it
         self.font_family = family

@@ -919,17 +919,17 @@ class SVGObject:
             if child.tag in xmlns_lookup("svg", "defs"):
                 self.handle_defs(child)
             elif child.tag in xmlns_lookup("svg", "g"):
-                pdf_group.add_item(self.build_group(child), False)
+                pdf_group.add_item(self.build_group(child), clone=False)
             elif child.tag in xmlns_lookup("svg", "path"):
-                pdf_group.add_item(self.build_path(child), False)
+                pdf_group.add_item(self.build_path(child), clone=False)
             elif child.tag in shape_tags:
-                pdf_group.add_item(self.build_shape(child), False)
+                pdf_group.add_item(self.build_shape(child), clone=False)
             elif child.tag in xmlns_lookup("svg", "use"):
-                pdf_group.add_item(self.build_xref(child), False)
+                pdf_group.add_item(self.build_xref(child), clone=False)
             elif child.tag in xmlns_lookup("svg", "image"):
-                pdf_group.add_item(self.build_image(child), False)
+                pdf_group.add_item(self.build_image(child), clone=False)
             elif child.tag in xmlns_lookup("svg", "text"):
-                pdf_group.add_item(self.build_text(child), False)
+                pdf_group.add_item(self.build_text(child), clone=False)
             else:
                 LOGGER.warning(
                     "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
@@ -1014,14 +1014,14 @@ class SVGObject:
             raise NotImplementedError(
                 '"transform" defined on <text> is currently not supported (but contributions are welcome!)'
             )
-        font_family = text.attrib.get("font-family")
-        font_size = text.attrib.get("font-size")
-        # TODO: reuse code from line_break & text_region modules.
-        # We could either:
-        # 1. handle text regions in this module (svg), with a dedicated SVGText class.
-        # 2. handle text regions in the drawing module, maybe by defining a PaintedPath.text() method.
-        #    This may be the best approach, as we would benefit from the global transformation performed in SVGObject.transform_to_rect_viewport()
-        svg_text = None
+        svg_text = SVGText(
+            text=text.text,
+            x=float(text.attrib.get("x", "0")),
+            y=float(text.attrib.get("y", "0")),
+            font_family=text.attrib.get("font-family"),
+            font_size=text.attrib.get("font-size"),
+            svg_obj=self,
+        )
         self.update_xref(text.attrib.get("id"), svg_text)
         return svg_text
 
@@ -1059,6 +1059,40 @@ class SVGObject:
         )
         self.update_xref(image.attrib.get("id"), svg_image)
         return svg_image
+
+
+class SVGText(NamedTuple):
+    text: str
+    x: Number
+    y: Number
+    font_family: str
+    font_size: Number
+    svg_obj: SVGObject
+
+    def __deepcopy__(self, _memo):
+        # Defining this method is required to avoid the .svg_obj reference to be cloned:
+        return SVGText(
+            text=self.text,
+            x=self.x,
+            y=self.y,
+            font_family=self.font_family,
+            font_size=self.font_size,
+            svg_obj=self.svg_obj,
+        )
+
+    @force_nodocument
+    def render(self, _gsd_registry, _style, last_item, initial_point):
+        # TODO:
+        # * handle font_family & font_size
+        # * invoke current_font.encode_text(self.text)
+        # * set default font if not font set?
+        # We need to perform a mirror transform AND invert the Y-axis coordinates,
+        # so that the text is not horizontally mirrored,
+        # due to the transformation made by DrawingContext._setup_render_prereqs():
+        stream_content = (
+            f"q 1 0 0 -1 0 0 cm BT {self.x:.2f} {-self.y:.2f} Td ({self.text}) Tj ET Q"
+        )
+        return stream_content, last_item, initial_point
 
 
 class SVGImage(NamedTuple):
