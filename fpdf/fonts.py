@@ -267,6 +267,24 @@ class TTFFont:
         )
 
         self.scale = 1000 / self.ttfont["head"].unitsPerEm
+
+        # check if the font is a TrueType and missing a .notdef glyph
+        # if it is missing, provide a fallback glyph
+        if 'glyf' in self.ttfont and ".notdef" not in self.ttfont["glyf"]:
+            # draw a diagonal cross .notdef glyph
+            pen = TTGlyphPen(None)
+            pen.moveTo((0, 0))
+            pen.lineTo((600, 0))
+            pen.lineTo((600, 600))
+            pen.lineTo((0, 600))
+            pen.moveTo((0, 0))
+            pen.lineTo((600, 600))
+            pen.moveTo((600, 0))
+            pen.lineTo((0, 600))
+
+            self.ttfont["glyf"][".notdef"] = pen.glyph()
+            self.ttfont["hmtx"][".notdef"] = (600, 0)
+
         default_width = round(self.scale * self.ttfont["hmtx"].metrics[".notdef"][0])
 
         os2_table = self.ttfont["OS/2"]
