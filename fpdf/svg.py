@@ -13,8 +13,6 @@ from typing import NamedTuple
 from fontTools.svgLib.path import parse_path
 from fontTools.pens.basePen import BasePen
 
-from .enums import PathPaintRule
-
 try:
     from defusedxml.ElementTree import fromstring as parse_xml_str
 except ImportError:
@@ -34,8 +32,10 @@ from .drawing import (
     ClippingPath,
     Transform,
 )
+from .enums import PathPaintRule
 from .image_datastructures import ImageCache, VectorImageInfo
 from .output import stream_content_for_raster_image
+from .text_renderer import TextRendererMixin
 
 LOGGER = logging.getLogger(__name__)
 
@@ -636,7 +636,13 @@ class SVGObject:
         with open(filename, "r", encoding=encoding) as svgfile:
             return cls(svgfile.read(), *args, **kwargs)
 
-    def __init__(self, svg_text, image_cache: ImageCache = None):
+    def __init__(
+        self,
+        svg_text,
+        font_mgr: TextRendererMixin = None,
+        image_cache: ImageCache = None,
+    ):
+        self.font_mgr = font_mgr  # Needed to render text
         self.image_cache = image_cache  # Needed to render images
         self.cross_references = {}
 
@@ -826,6 +832,7 @@ class SVGObject:
             debug_stream (io.TextIO): the stream to which rendering debug info will be
                 written.
         """
+        self.font_mgr = pdf  # Needed to render text
         self.image_cache = pdf.image_cache  # Needed to render images
         _, _, path = self.transform_to_page_viewport(pdf)
 
@@ -852,8 +859,10 @@ class SVGObject:
                 self.build_path(child)
             elif child.tag in xmlns_lookup("svg", "image"):
                 self.build_image(child)
-            elif child.tag in xmlns_lookup("svg", "text"):
-                self.build_text(child)
+            # pylint: disable=fixme
+            # TODO: enable this
+            # elif child.tag in xmlns_lookup("svg", "text"):
+            #     self.build_text(child)
             elif child.tag in shape_tags:
                 self.build_shape(child)
             elif child.tag in xmlns_lookup("svg", "clipPath"):
@@ -928,8 +937,10 @@ class SVGObject:
                 pdf_group.add_item(self.build_xref(child), clone=False)
             elif child.tag in xmlns_lookup("svg", "image"):
                 pdf_group.add_item(self.build_image(child), clone=False)
-            elif child.tag in xmlns_lookup("svg", "text"):
-                pdf_group.add_item(self.build_text(child), clone=False)
+            # pylint: disable=fixme
+            # TODO: enable this
+            # elif child.tag in xmlns_lookup("svg", "text"):
+            #     pdf_group.add_item(self.build_text(child), clone=False)
             else:
                 LOGGER.warning(
                     "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
@@ -1082,10 +1093,17 @@ class SVGText(NamedTuple):
 
     @force_nodocument
     def render(self, _gsd_registry, _style, last_item, initial_point):
+        font_mgr = self.svg_obj and self.svg_obj.font_mgr
+        if not font_mgr:
+            raise AssertionError(
+                "fpdf2 bug - Cannot render a raster image without a SVGObject.font_mgr"
+            )
+        # pylint: disable=fixme
         # TODO:
         # * handle font_family & font_size
         # * invoke current_font.encode_text(self.text)
-        # * set default font if not font set?
+        # * set default font to Times/16 if not font set
+        # * support textLength -> .font_stretching
         # We need to perform a mirror transform AND invert the Y-axis coordinates,
         # so that the text is not horizontally mirrored,
         # due to the transformation made by DrawingContext._setup_render_prereqs():
@@ -1126,7 +1144,7 @@ class SVGImage(NamedTuple):
         # pylint: disable=cyclic-import,import-outside-toplevel
         from .image_parsing import preload_image
 
-        _, _, info = preload_image(image_cache, self.href)
+        _, _, info = preload_image(self.href, image_cache)
         if isinstance(info, VectorImageInfo):
             LOGGER.warning(
                 "Inserting .svg vector graphics in <image> tags is currently not supported (contributions are welcome to add support for it)"

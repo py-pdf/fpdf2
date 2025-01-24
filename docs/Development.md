@@ -240,7 +240,7 @@ To preview the Markdown documentation, launch a local rendering server with:
 
 To preview the API documentation, launch a local rendering server with:
 
-    pdoc --html -o public/ fpdf --http :
+    pdoc --html -o public/ fpdf --template-dir docs/pdoc --http :
 
 ## PDF spec & new features
 The **PDF 1.7 spec** is available on Adobe website:

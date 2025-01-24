@@ -149,7 +149,7 @@ jobs:
           sed -i "s/author:.*/author: v$(python setup.py -V 2>/dev/null)/" mkdocs.yml
           cp tutorial/notebook.ipynb docs/
           mkdocs build
-          pdoc --html -o public/ fpdf --config "git_link_template='https://github.com/py-pdf/fpdf2/blob/{commit}/{path}#L{start_line}-L{end_line}'"
+          pdoc --html -o public/ fpdf --template-dir docs/pdoc
           scripts/add_pdoc_to_search_index.py
       - name: Build contributors map 🗺️
         # As build_contributors_html_page.py can hang due to GitHub rate-limiting, we only execute this on master for now

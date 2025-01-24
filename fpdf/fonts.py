@@ -33,7 +33,7 @@ except ImportError:
 
 from .deprecation import get_stack_level
 from .drawing import convert_to_device_color, DeviceGray, DeviceRGB
-from .enums import FontDescriptorFlags, TextEmphasis, Align
+from .enums import Align, FontDescriptorFlags, TextEmphasis
 from .syntax import Name, PDFObject
 from .util import escape_parens
 
