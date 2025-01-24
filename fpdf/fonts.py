@@ -8,6 +8,7 @@ in non-backward-compatible ways.
 """
 
 import re, warnings
+import logging
 
 from bisect import bisect_left
 from collections import defaultdict
@@ -16,6 +17,7 @@ from functools import lru_cache
 from typing import List, Optional, Tuple, Union
 
 from fontTools import ttLib
+from fontTools.pens.ttGlyphPen import TTGlyphPen
 
 try:
     import uharfbuzz as hb
@@ -36,6 +38,8 @@ from .drawing import convert_to_device_color, DeviceGray, DeviceRGB
 from .enums import FontDescriptorFlags, TextEmphasis, Align
 from .syntax import Name, PDFObject
 from .util import escape_parens
+
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -270,17 +274,27 @@ class TTFFont:
 
         # check if the font is a TrueType and missing a .notdef glyph
         # if it is missing, provide a fallback glyph
-        if 'glyf' in self.ttfont and ".notdef" not in self.ttfont["glyf"]:
+        if "glyf" in self.ttfont and ".notdef" not in self.ttfont["glyf"]:
+            LOGGER.warning(
+                (
+                    "TrueType Font '%s' is missing the '.notdef' glyph. "
+                    "Fallback glyph will be provided."
+                ),
+                self.fontkey,
+            )
             # draw a diagonal cross .notdef glyph
-            pen = TTGlyphPen(None)
+            pen = TTGlyphPen(self.ttfont["glyf"])
             pen.moveTo((0, 0))
             pen.lineTo((600, 0))
             pen.lineTo((600, 600))
             pen.lineTo((0, 600))
+            pen.closePath()
             pen.moveTo((0, 0))
             pen.lineTo((600, 600))
+            pen.closePath()
             pen.moveTo((600, 0))
             pen.lineTo((0, 600))
+            pen.closePath()
 
             self.ttfont["glyf"][".notdef"] = pen.glyph()
             self.ttfont["hmtx"][".notdef"] = (600, 0)
