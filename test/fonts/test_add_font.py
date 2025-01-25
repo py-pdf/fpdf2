@@ -144,6 +144,18 @@ def test_add_font_uppercase():
     assert pdf.fonts is not None and len(pdf.fonts) != 0  # fonts add successful
 
 
+def test_add_font_missing_notdef_glyph(caplog):
+    pdf = FPDF()
+    pdf.add_font(
+        family="Times New Roman", style="B", fname=HERE / "TimesNewRoman-Bold.ttf"
+    )
+    assert pdf.fonts is not None and len(pdf.fonts) != 0  # fonts add successful
+    assert (
+        "TrueType Font 'times new romanB' is missing the '.notdef' glyph. "
+        "Fallback glyph will be provided."
+    ) in caplog.text
+
+
 def test_font_missing_glyphs(caplog):
     pdf = FPDF()
     pdf.add_page()
