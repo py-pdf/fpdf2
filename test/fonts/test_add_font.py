@@ -2,6 +2,7 @@ from os import devnull
 from pathlib import Path
 
 import pytest
+from fontTools.ttLib import TTFont
 
 from fpdf import FPDF
 from test.conftest import assert_pdf_equal
@@ -146,12 +147,21 @@ def test_add_font_uppercase():
 
 def test_add_font_missing_notdef_glyph(caplog):
     pdf = FPDF()
-    pdf.add_font(
-        family="Times New Roman", style="B", fname=HERE / "TimesNewRoman-Bold.ttf"
-    )
+
+    # use Roboto to create a test font missing .notdef glyph
+    pdf.add_font(fname=HERE / "Roboto-Regular.ttf")
+    font = TTFont(HERE / "Roboto-Regular.ttf")
+    glyphnames = font.getGlyphOrder()
+    glyphnames[0] = "dummy"
+    font = TTFont(HERE / "Roboto-Regular.ttf")
+    font.setGlyphOrder(glyphnames)
+    font["post"]
+    font.save(HERE / "Roboto-Regular-without-notdef.ttf")
+
+    pdf.add_font(family="Roboto", fname=HERE / "Roboto-Regular-without-notdef.ttf")
     assert pdf.fonts is not None and len(pdf.fonts) != 0  # fonts add successful
     assert (
-        "TrueType Font 'times new romanB' is missing the '.notdef' glyph. "
+        "TrueType Font 'roboto' is missing the '.notdef' glyph. "
         "Fallback glyph will be provided."
     ) in caplog.text
 
