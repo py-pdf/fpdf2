@@ -283,21 +283,27 @@ class TTFFont:
                 self.fontkey,
             )
             # draw a diagonal cross .notdef glyph
+            (xMin, xMax, yMin, yMax) = (
+                self.ttfont["head"].xMin,
+                self.ttfont["head"].xMax,
+                self.ttfont["head"].yMin,
+                self.ttfont["head"].yMax,
+            )
             pen = TTGlyphPen(self.ttfont["glyf"])
-            pen.moveTo((0, 0))
-            pen.lineTo((600, 0))
-            pen.lineTo((600, 600))
-            pen.lineTo((0, 600))
+            pen.moveTo((xMin, yMin))
+            pen.lineTo((xMax, yMin))
+            pen.lineTo((xMax, yMax))
+            pen.lineTo((xMin, yMax))
             pen.closePath()
-            pen.moveTo((0, 0))
-            pen.lineTo((600, 600))
+            pen.moveTo((xMin, yMin))
+            pen.lineTo((xMax, yMax))
             pen.closePath()
-            pen.moveTo((600, 0))
-            pen.lineTo((0, 600))
+            pen.moveTo((xMax, yMin))
+            pen.lineTo((xMin, yMax))
             pen.closePath()
 
             self.ttfont["glyf"][".notdef"] = pen.glyph()
-            self.ttfont["hmtx"][".notdef"] = (600, 0)
+            self.ttfont["hmtx"][".notdef"] = (xMax - xMin, yMax - yMin)
 
         default_width = round(self.scale * self.ttfont["hmtx"].metrics[".notdef"][0])
 
