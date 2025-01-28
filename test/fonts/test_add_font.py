@@ -155,6 +155,8 @@ def test_add_font_missing_notdef_glyph(caplog):
     glyphnames[0] = "dummy"
     font = TTFont(HERE / "Roboto-Regular.ttf")
     font.setGlyphOrder(glyphnames)
+    # Accessing the 'post' table triggers its lazy loading in fontTools.
+    # This ensures that changes to the table are applied and saved.
     post = font["post"]
     font.save(HERE / "Roboto-Regular-without-notdef.ttf")
 
