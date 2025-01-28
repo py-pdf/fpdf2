@@ -155,7 +155,7 @@ def test_add_font_missing_notdef_glyph(caplog):
     glyphnames[0] = "dummy"
     font = TTFont(HERE / "Roboto-Regular.ttf")
     font.setGlyphOrder(glyphnames)
-    font["post"]
+    post = font["post"]
     font.save(HERE / "Roboto-Regular-without-notdef.ttf")
 
     pdf.add_font(family="Roboto", fname=HERE / "Roboto-Regular-without-notdef.ttf")
