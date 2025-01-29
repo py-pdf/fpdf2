@@ -31,8 +31,8 @@ BREAKING_SPACE_SYMBOLS = [
     "\u2006",  # | SIX-PER-EM SPACE
     "\u2008",  # | PUNCTUATION SPACE
     "\u2009",  # | THIN SPACE
-    "\u200A",  # | HAIR SPACE
-    "\u205F",  # | MEDIUM MATHEMATICAL SPACE
+    "\u200a",  # | HAIR SPACE
+    "\u205f",  # | MEDIUM MATHEMATICAL SPACE
     "\u3000",  # | IDEOGRAPHIC SPACE
     "\u0009",  # | TAB
 ]

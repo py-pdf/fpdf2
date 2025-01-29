@@ -1,4 +1,4 @@
-""" Test that _render_styled_text_line() correctly handles sequences of
+"""Test that _render_styled_text_line() correctly handles sequences of
 Fragments with varying font/size/style and other characteristics.
 """
 

@@ -855,6 +855,7 @@ class Row:
 @dataclass(frozen=True)
 class Cell:
     "Internal representation of a table cell"
+
     __slots__ = (  # RAM usage optimization
         "text",
         "align",
