@@ -2,7 +2,6 @@ from os import devnull
 from pathlib import Path
 
 import pytest
-from fontTools.ttLib import TTFont
 
 from fpdf import FPDF
 from test.conftest import assert_pdf_equal
