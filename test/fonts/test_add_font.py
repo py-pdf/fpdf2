@@ -147,19 +147,6 @@ def test_add_font_uppercase():
 
 def test_add_font_missing_notdef_glyph(caplog):
     pdf = FPDF()
-
-    # use Roboto to create a test font missing .notdef glyph
-    pdf.add_font(fname=HERE / "Roboto-Regular.ttf")
-    font = TTFont(HERE / "Roboto-Regular.ttf")
-    glyphnames = font.getGlyphOrder()
-    glyphnames[0] = "dummy"
-    font = TTFont(HERE / "Roboto-Regular.ttf")
-    font.setGlyphOrder(glyphnames)
-    # Accessing the 'post' table triggers its lazy loading in fontTools.
-    # This ensures that changes to the table are applied and saved.
-    post = font["post"]
-    font.save(HERE / "Roboto-Regular-without-notdef.ttf")
-
     pdf.add_font(family="Roboto", fname=HERE / "Roboto-Regular-without-notdef.ttf")
     assert pdf.fonts is not None and len(pdf.fonts) != 0  # fonts add successful
     assert (
