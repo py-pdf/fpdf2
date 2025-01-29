@@ -84,6 +84,7 @@ class PDFAnnotation(AnnotationMixin, PDFObject):
 
 class AnnotationDict(AnnotationMixin):
     "A PDF annotation that get serialized as an inline <<dictionnary>>"
+
     __slots__ = (  # RAM usage optimization
         "type",
         "subtype",

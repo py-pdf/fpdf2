@@ -221,6 +221,7 @@ def check_page(fn):
 
 class FPDF(GraphicsStateMixin, TextRegionMixin):
     "PDF Generation class"
+
     MARKDOWN_BOLD_MARKER = "**"
     MARKDOWN_ITALICS_MARKER = "__"
     MARKDOWN_UNDERLINE_MARKER = "--"

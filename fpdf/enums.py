@@ -149,6 +149,7 @@ class CoerciveIntFlag(IntFlag):
 
 class WrapMode(CoerciveEnum):
     "Defines how to break and wrap lines in multi-line text."
+
     WORD = intern("WORD")
     "Wrap by word"
 
@@ -158,6 +159,7 @@ class WrapMode(CoerciveEnum):
 
 class CharVPos(CoerciveEnum):
     "Defines the vertical position of text relative to the line."
+
     SUP = intern("SUP")
     "Superscript"
 
@@ -493,6 +495,7 @@ class RenderStyle(CoerciveEnum):
 
 class TextMode(CoerciveIntEnum):
     "Values described in PDF spec section 'Text Rendering Mode'"
+
     FILL = 0
     STROKE = 1
     FILL_STROKE = 2
@@ -552,6 +555,7 @@ class YPos(CoerciveEnum):
 
 class Angle(CoerciveIntEnum):
     "Direction values used for mirror transformations specifying the angle of mirror line"
+
     NORTH = 90
     EAST = 0
     SOUTH = 270
