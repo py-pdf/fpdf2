@@ -151,14 +151,20 @@ def test_inserting_link_to_non_exising_page():
         pdf.output()
 
 
-def test_inserting_link_with_no_page_number():
+def test_inserting_link_with_no_page_number(tmp_path):
     pdf = FPDF()
-    link = pdf.add_link()
-    pdf.add_page()
-    pdf.set_font("helvetica", size=12)
-    with pytest.raises(ValueError):
-        pdf.cell(text="Page 1", link=link)
+    pdf.set_font("helvetica")
 
+    link_to_section1 = pdf.add_link()
+
+    pdf.add_page()  # page 1
+    pdf.cell(text="Section 1", link=link_to_section1)
+
+    pdf.add_page()  # page 2
+    pdf.set_link(link_to_section1, page=pdf.page)
+    pdf.cell(text="Section 1: Bla bla bla")
+
+    assert_pdf_equal(pdf, HERE / "later_call_to_set_link.pdf", tmp_path)
 
 def test_later_call_to_set_link(tmp_path):  # v2.6.1 bug spotted in discussion 729
     pdf = FPDF()
