@@ -368,20 +368,13 @@ class TTFFont:
 
         self.missing_glyphs = []
 
-        # include numbers in the subset! (if alias present)
-        # ensure that alias is mapped 1-by-1 additionally (must be replaceable)
-        sbarr = "\x00 \r\n"
-        if fpdf.str_alias_nb_pages:
-            sbarr += "0123456789"
-            sbarr += fpdf.str_alias_nb_pages
-
         self.name = re.sub("[ ()]", "", self.ttfont["name"].getBestFullName())
         self.up = round(post_table.underlinePosition * self.scale)
         self.ut = round(post_table.underlineThickness * self.scale)
         self.sp = round(os2_table.yStrikeoutPosition * self.scale)
         self.ss = round(os2_table.yStrikeoutSize * self.scale)
         self.emphasis = TextEmphasis.coerce(style)
-        self.subset = SubsetMap(self, [ord(char) for char in sbarr])
+        self.subset = SubsetMap(self)
 
     def __repr__(self):
         return f"TTFFont(i={self.i}, fontkey={self.fontkey})"
@@ -574,14 +567,13 @@ class SubsetMap:
     the lowest possible representation.
     """
 
-    def __init__(self, font: TTFFont, identities: List[int]):
+    def __init__(self, font: TTFFont):
         super().__init__()
         self.font = font
         self._next = 0
 
-        # sort list to ease deletion once _next
-        # becomes higher than first reservation
-        self._reserved = sorted(identities)
+        # 0x00 ".notdef" and 0x20 "space" are reserved
+        self._reserved = [0x00, 0x20]
 
         # Maps Glyph instances to character IDs (integers):
         self._char_id_per_glyph = {}

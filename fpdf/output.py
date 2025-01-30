@@ -720,6 +720,16 @@ class OutputProducer:
                     "hdmx",  # Horizontal Device Metrics table, stores integer advance widths scaled to particular pixel sizes
                     #          for OpenType™ fonts with TrueType outlines
                     "meta",  # metadata table
+                    "sbix",  # Apple's SBIX table, used for color bitmap glyphs
+                    "CBDT",  # Color Bitmap Data Table
+                    "CBLC",  # Color Bitmap Location Table
+                    "EBDT",  # Embedded Bitmap Data Table
+                    "EBLC",  # Embedded Bitmap Location Table
+                    "EBSC",  # Embedded Bitmap Scaling Table
+                    "SVG ",  # SVG table
+                    "CPAL",  # Color Palette table
+                    "COLR",  # Color table
+                    "fvar",  # Font Variations table
                 ]
                 subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)
