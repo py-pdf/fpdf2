@@ -14,7 +14,7 @@ from bisect import bisect_left
 from collections import defaultdict
 from dataclasses import dataclass, replace
 from functools import lru_cache
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
 from fontTools import ttLib
 from fontTools.pens.ttGlyphPen import TTGlyphPen
