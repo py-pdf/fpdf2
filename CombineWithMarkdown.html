@@ -106,8 +106,11 @@
 </code></pre></div> <p>Result: <img alt src=markdown2pdf_unicode.png></p> <h2 id=markdown-it-py>markdown-it-py<a class=headerlink href=#markdown-it-py title="Permanent link">&para;</a></h2> <p>The <a href=https://markdown-it-py.readthedocs.io>markdown-it-py</a> library also follows the <a href=https://spec.commonmark.org>CommonMark specification</a>: <div class=highlight><pre><span></span><code>pip install markdown-it-py
 </code></pre></div></p> <div class=highlight><pre><span></span><code><span class=kn>from</span><span class=w> </span><span class=nn>markdown_it</span><span class=w> </span><span class=kn>import</span> <span class=n>MarkdownIt</span>
 
-<span class=n>md</span> <span class=o>=</span> <span class=n>MarkdownIt</span><span class=p>(</span><span class=s2>&quot;commonmark&quot;</span><span class=p>,</span> <span class=p>{</span><span class=s2>&quot;breaks&quot;</span><span class=p>:</span><span class=kc>True</span><span class=p>,</span><span class=s2>&quot;html&quot;</span><span class=p>:</span><span class=kc>True</span><span class=p>})</span>\
-    <span class=o>.</span><span class=n>enable</span><span class=p>(</span><span class=s2>&quot;strikethrough&quot;</span><span class=p>)</span><span class=o>.</span><span class=n>enable</span><span class=p>(</span><span class=s2>&quot;table&quot;</span><span class=p>)</span>
+<span class=n>md</span> <span class=o>=</span> <span class=p>(</span>
+    <span class=n>MarkdownIt</span><span class=p>(</span><span class=s2>&quot;commonmark&quot;</span><span class=p>,</span> <span class=p>{</span><span class=s2>&quot;breaks&quot;</span><span class=p>:</span> <span class=kc>True</span><span class=p>,</span> <span class=s2>&quot;html&quot;</span><span class=p>:</span> <span class=kc>True</span><span class=p>})</span>
+    <span class=o>.</span><span class=n>enable</span><span class=p>(</span><span class=s2>&quot;strikethrough&quot;</span><span class=p>)</span>
+    <span class=o>.</span><span class=n>enable</span><span class=p>(</span><span class=s2>&quot;table&quot;</span><span class=p>)</span>
+<span class=p>)</span>
 <span class=n>html</span> <span class=o>=</span> <span class=n>md</span><span class=o>.</span><span class=n>render</span><span class=p>(</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;</span>
 <span class=sd># Top title (ATX)</span>
@@ -296,7 +299,8 @@
 
 <span class=sd>![Alternate description](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)</span>
 <span class=sd>&quot;&quot;&quot;</span><span class=p>,</span>
-<span class=n>extensions</span><span class=o>=</span><span class=p>[</span><span class=s2>&quot;def_list&quot;</span><span class=p>,</span> <span class=s2>&quot;sane_lists&quot;</span><span class=p>,</span> <span class=s2>&quot;tables&quot;</span><span class=p>])</span>
+    <span class=n>extensions</span><span class=o>=</span><span class=p>[</span><span class=s2>&quot;def_list&quot;</span><span class=p>,</span> <span class=s2>&quot;sane_lists&quot;</span><span class=p>,</span> <span class=s2>&quot;tables&quot;</span><span class=p>],</span>
+<span class=p>)</span>
 
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span>
 
