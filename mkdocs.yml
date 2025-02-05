@@ -173,7 +173,7 @@ nav:
   - 'File attachments':               'FileAttachments.md'
 - 'Mixing other libs':
   - 'Combine with pypdf':             'CombineWithPypdf.md'
-  - 'Combine with mistletoe':         'CombineWithMistletoeoToUseMarkdown.md'
+  - 'Combine with Markdown':          'CombineWithMarkdown.md'
   - 'Combine with livereload':        'CombineWithLivereload.md'
   - 'Combine with borb':              'CombineWithBorb.md'
   - 'Combine with pdfrw':             'CombineWithPdfrw.md'
