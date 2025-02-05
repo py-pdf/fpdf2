@@ -246,7 +246,7 @@ class ImageParagraph:
         # We do double duty as a "text line wrapper" here, since all the necessary
         # information is already in the ImageParagraph object.
         self.name, self.img, self.info = preload_image(
-            self.region.pdf.image_cache, self.name
+            self.name, image_cache=self.region.pdf.image_cache, font_mgr=self.region.pdf
         )
         return self
 

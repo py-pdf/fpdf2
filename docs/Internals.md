@@ -94,4 +94,5 @@ drawing.py & svg.py packages
 
 ## Text shaping ?
 
++ add a diagram of the main links between modules/classes
 -->
