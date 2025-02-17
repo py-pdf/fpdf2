@@ -717,9 +717,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Defines the title of the document.
 
         Most PDF readers will display it when viewing the document.
-        There is also a related `fpdf.prefs.ViewerPreference` entry:
+        There is also a related `fpdf.prefs.ViewerPreferences` entry:
 
-            pdf.viewer_preferences = ViewerPreference(display_doc_title=True)
+            pdf.viewer_preferences = ViewerPreferences(display_doc_title=True)
 
         Args:
             title (str): the title
@@ -5408,7 +5408,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             line_height (number): optional. Defines how much vertical space a line of text will occupy.
             markdown (bool): optional, default to False. Enable markdown interpretation of cells textual content.
             text_align (str, fpdf.enums.Align): optional, default to JUSTIFY. Control text alignment inside cells.
-            v_align (str, fpdf.enums.AlignV): optional, default to CENTER. Control vertical alignment of cells content.
+            v_align (str, fpdf.enums.VAlign): optional, default to CENTER. Control vertical alignment of cells content.
             width (number): optional. Sets the table width.
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
                 "CHAR" for character based line wrapping.

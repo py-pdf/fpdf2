@@ -77,6 +77,10 @@ class FontFace:
         )
 
     replace = replace
+    """
+    Create a new FontFace instance, with new values for some attributes.
+    Same as `dataclasses.replace()`
+    """
 
     @staticmethod
     def _override(current_value, override_value):
@@ -156,6 +160,7 @@ class TextStyle(FontFace):
             + f", t_margin={self.t_margin}, l_margin={self.l_margin}, b_margin={self.b_margin})"
         )
 
+    # override parent method
     def replace(
         self,
         /,
@@ -168,6 +173,10 @@ class TextStyle(FontFace):
         l_margin=None,
         b_margin=None,
     ):
+        """
+        Create a new TextStyle instance, with new values for some attributes.
+        Same as `dataclasses.replace()`
+        """
         return TextStyle(
             font_family=font_family or self.family,
             font_style=self.emphasis if emphasis is None else emphasis.style,

@@ -9,7 +9,6 @@ from pypdf import PdfReader, PdfWriter
 
 IN_FILEPATH = sys.argv[1]
 OUT_FILEPATH = sys.argv[2]
-ON_PAGE_INDEX = 0  # Index of the target page (starts at zero)
 
 
 @contextmanager

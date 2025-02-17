@@ -15,7 +15,7 @@ Iniziamo con un esempio comune:
 [Risultato PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto1.pdf)
 
 Dopo aver incluso la libreria, creiamo un oggetto `FPDF`. Così facendo il costruttore 
-[FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF) viene utilizzato con i suoi valori di default: 
+[FPDF](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF) viene utilizzato con i suoi valori di default: 
 le pagine sono in A4 verticale e l'unità di misura è millimetri.
 Avremmo potuto specificarle esplicitamente facendo:
 
@@ -26,10 +26,10 @@ pdf = FPDF(orientation="P", unit="mm", format="A4")
 (come `Letter` e `Legal`) e unità di misura (`pt`, `cm`, `in`).
 
 Non esiste una pagina al momento, quindi dobbiamo aggiungerne una con
-[add_page](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page). L'origine è in alto a sinistra e la posizione corrente è a 1cm dai bordi; i margini possono essere cambiati con [set_margins](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins).
+[add_page](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page). L'origine è in alto a sinistra e la posizione corrente è a 1cm dai bordi; i margini possono essere cambiati con [set_margins](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins).
 
 Prima di poter stampare del testo, è obbligatorio selezionare un font con 
-[set_font](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), altrimenti il documento risulterebbe non valido.
+[set_font](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), altrimenti il documento risulterebbe non valido.
 Scegliamo Helvetica bold 16:
 
 ```python
@@ -39,7 +39,7 @@ pdf.set_font('Helvetica', style='B', size=16)
 Avremmo potuto scegliere il corsivo con `I`, sottolineato con `U` o un font regolare lasciando la stringa vuota (o ogni combinazione). Notare che la dimensione dei caratteri è specificata in punti, non millimetri (o altre unità di misura); questa è l'unica eccezione.
 Gli altri font disponibili sono `Times`, `Courier`, `Symbol` and `ZapfDingbats`.
 
-Adesso possiamo disegnare una cella con [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell). Una cella è un'area rettangolare, in caso con bordo, che contiene del testo. È disegnata nella attuale posizione. Specifichiamo le sue dimensioni, il suo testo (centrato o allineato), se i bordi devono essere mostrati, e dove verrà spostata la posizione quando avremo finito (a destra, sotto, o all'inizio della riga successiva). Faremmo così:
+Adesso possiamo disegnare una cella con [cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell). Una cella è un'area rettangolare, in caso con bordo, che contiene del testo. È disegnata nella attuale posizione. Specifichiamo le sue dimensioni, il suo testo (centrato o allineato), se i bordi devono essere mostrati, e dove verrà spostata la posizione quando avremo finito (a destra, sotto, o all'inizio della riga successiva). Faremmo così:
 
 ```python
 pdf.cell(40, 10, 'Hello World!', 1)
@@ -51,10 +51,10 @@ Per aggiungere una nuova cella di fianco alla precedente con testo centrato e po
 pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 ```
 
-**NB**: si può andare a capo anche con [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). Questo metodo permette di specificare l'altezza dello spazio.
+**NB**: si può andare a capo anche con [ln](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). Questo metodo permette di specificare l'altezza dello spazio.
 
 In fine, il documento è chiuso e salvato nella destinazione fornita attraverso 
-[output](fpdf/fpdf.html#fpdf.fpdf.FPDF.output). Senza alcun parametro, `output()`
+[output](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.output). Senza alcun parametro, `output()`
 ritorna il PDF in un buffer `bytearray`.
 
 ## Tuto 2 - Intestazione, piè di pagina, interruzione di pagina ed immagini ##
@@ -67,19 +67,19 @@ Ecco un esempio composto da due pagine con intestazione, piè di pagina e logo:
 
 [Risultato PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
 
-Questo esempio sfrutta i metodi [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) e 
-[footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) per processare intestazioni e piè di pagina. Vengono chiamati automaticamente. Esistono nella classe FPDF ma non eseguono operazioni,
+Questo esempio sfrutta i metodi [header](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.header) e 
+[footer](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) per processare intestazioni e piè di pagina. Vengono chiamati automaticamente. Esistono nella classe FPDF ma non eseguono operazioni,
 quindi è necessario estendere la classe e sovrascriverli.
 
-Il logo è stampato con il metodo [image](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) specificando la posizione del suo angolo in alto a sinistra e la sua larghezza. L'altezza è calcolata automaticamente per rispettare le proporzioni dell'immagine.
+Il logo è stampato con il metodo [image](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) specificando la posizione del suo angolo in alto a sinistra e la sua larghezza. L'altezza è calcolata automaticamente per rispettare le proporzioni dell'immagine.
 
-Per stampare il numero della pagina, un valore nullo può essere passato come larghezza della cella. Significa che la cella "crescerà" fino al margine destro della pagina; è utile per centrare il testo. Il numero di pagina è ritornato da [page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no); mentre per il numero totale di pagine, si ottiene attraverso il valore speciale `{nb}`
+Per stampare il numero della pagina, un valore nullo può essere passato come larghezza della cella. Significa che la cella "crescerà" fino al margine destro della pagina; è utile per centrare il testo. Il numero di pagina è ritornato da [page_no](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no); mentre per il numero totale di pagine, si ottiene attraverso il valore speciale `{nb}`
 che verrà sostituito quando le pagine saranno generate.
-Importante menzionare il metodo [set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) che permette di selezionare una posizione assoluta all'interno della pagina, incominciando dall'alto o dal basso.
+Importante menzionare il metodo [set_y](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) che permette di selezionare una posizione assoluta all'interno della pagina, incominciando dall'alto o dal basso.
 
 Un'altra feature interessante: l'interruzione di pagina automatica. Non appena una cella dovesse superare il limite nella pagina (a 2 centimetri dal fondo di default), ci sarebbe un'interruzione e un reset del font. Nonostante l'intestazione e il piè di pagina scelgano il proprio font (`helvetica`), il contenuto continua in `Times`.
 Questo meccanismo di reset automatico si applica anche ai colori e allo spessore della linea.
-Il limite può essere scelto con [set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
+Il limite può essere scelto con [set_auto_page_break](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
 
 
 ## Tuto 3 - Interruzioni di riga e colori ##
@@ -94,18 +94,18 @@ Continuiamo con un esempio che stampa paragrafi giustificati. Mostreremo anche l
 
 [Testo Jules Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-Il metodo [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) permette di determinare la lunghezza di una stringa nel font selezionato, e viene utilizzato per calcolare la posizione e la larghezza della cornice intorno al titolo. Successivamente selezioniamo i colori 
-(utilizzando [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color),
-[set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) e 
-[set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) e aumentiamo la larghezza della linea a 1mm (invece dei 0.2 di default) con
-[set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). In fine, stampiamo la cella (l'ultimo parametro a true indica che lo sfondo dovrà essere riempito).
+Il metodo [get_string_width](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) permette di determinare la lunghezza di una stringa nel font selezionato, e viene utilizzato per calcolare la posizione e la larghezza della cornice intorno al titolo. Successivamente selezioniamo i colori 
+(utilizzando [set_draw_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color),
+[set_fill_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) e 
+[set_text_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) e aumentiamo la larghezza della linea a 1mm (invece dei 0.2 di default) con
+[set_line_width](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). In fine, stampiamo la cella (l'ultimo parametro a true indica che lo sfondo dovrà essere riempito).
 
-Il metodo utilizzato per stampare i paragrafi è [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell).
+Il metodo utilizzato per stampare i paragrafi è [multi_cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell).
 Ogni volta che una linea raggiunge l'estremità destra della cella o c'è un carattere carriage return, avremo un'interruzione di linea e una nuova cella verrà automaticamente creata. Il testo è giustificato di default.
 
 Due proprietà del documento vengono definite: il titolo 
-([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) e l'autore  
-([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Le proprietà possono essere controllate in due modi.
+([set_title](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) e l'autore  
+([set_author](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Le proprietà possono essere controllate in due modi.
 Il primo è aprire direttamente il documento con Acrobat Reader, cliccare sul menù File
 e scegliere l'opzione Proprietà del documento. la seconda, è di cliccare con il tasto destro e scegliere Proprietà del documento.
 

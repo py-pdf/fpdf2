@@ -205,4 +205,4 @@ You can also check the currently open GitHub issues with the tag `html`:
 
 ## Using Markdown
 
-Check [Combine with mistletoe to use Markdown](CombineWithMistletoeoToUseMarkdown.md)
+Check the dedicated page: [Combine with Markdown](CombineWithMarkdown.md)

@@ -4,7 +4,7 @@ The following code snippets show examples of rendering various shapes.
 
 ## Lines ##
 
-Using [`line()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.line) to draw a thin plain orange line:
+Using [`line()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.line) to draw a thin plain orange line:
 ```python
 from fpdf import FPDF
 
@@ -34,7 +34,7 @@ pdf.output("blue_dashed_line.pdf")
 
 ## Circle ##
 
-Using [`circle()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.circle) to draw a disc filled in pink with a grey outline:
+Using [`circle()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.circle) to draw a disc filled in pink with a grey outline:
 ```python
 from fpdf import FPDF
 
@@ -52,7 +52,7 @@ pdf.output("circle.pdf")
 
 ## Ellipse ##
 
-Using [`ellipse()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.ellipse), filled in grey with a pink outline:
+Using [`ellipse()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ellipse), filled in grey with a pink outline:
 ```python
 from fpdf import FPDF
 
@@ -68,7 +68,7 @@ pdf.output("ellipse.pdf")
 
 ## Rectangle ##
 
-Using [`rect()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.rect) to draw nested squares:
+Using [`rect()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.rect) to draw nested squares:
 ```python
 from fpdf import FPDF
 
@@ -81,7 +81,7 @@ pdf.output("squares.pdf")
 ```
 ![](squares.png)
 
-Using [`rect()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.rect) to draw rectangles with round corners:
+Using [`rect()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.rect) to draw rectangles with round corners:
 ```python
 from fpdf import FPDF
 
@@ -102,7 +102,7 @@ pdf.output("round_corners_rectangles.pdf")
 
 ## Polygon ##
 
-Using [`polygon()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.polygon):
+Using [`polygon()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.polygon):
 
 ```python
 from fpdf import FPDF
@@ -119,7 +119,7 @@ pdf.output("polygon.pdf")
 
 ## Arc ##
 
-Using [`arc()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.arc):
+Using [`arc()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.arc):
 
 ```python
 from fpdf import FPDF
@@ -142,7 +142,7 @@ pdf.output("arc.pdf")
 
 ## Solid arc ##
 
-Using [`solid_arc()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.solid_arc):
+Using [`solid_arc()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.solid_arc):
 
 ```python
 from fpdf import FPDF
@@ -166,7 +166,7 @@ pdf.output("solid_arc.pdf")
 ## Bezier Curve ##
 _New in [:octicons-tag-24: 2.8.0](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
-Using [`bezier()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.bezier) to create a cubic Bézier curve:
+Using [`bezier()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.bezier) to create a cubic Bézier curve:
 ```python
 from fpdf import FPDF
 pdf = FPDF()
@@ -189,7 +189,7 @@ Source code: [test_bezier_chaining() in test_bezier.py](https://github.com/py-pd
 
 ## Regular Polygon ##
 
-Using [`regular_polygon()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.regular_polygon):
+Using [`regular_polygon()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.regular_polygon):
 
 ```python
 from fpdf import FPDF
@@ -215,7 +215,7 @@ pdf.output("regular_polygon.pdf")
 
 ## Regular Star ##
 
-Using [`star()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.star):
+Using [`star()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.star):
 
 ```python
 from fpdf import FPDF
@@ -242,10 +242,10 @@ pdf.output("star.pdf")
 
 ## Path styling ##
 
-* [`line_width`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width)
+* [`line_width`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width)
   specifies the thickness of the line used to stroke a path
 
-* [`stroke_join_style`](fpdf/enums.html#fpdf.enums.StrokeJoinStyle)
+* [`stroke_join_style`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.StrokeJoinStyle)
   defines how the corner joining two path components should be rendered:
 
 ```python
@@ -263,7 +263,7 @@ pdf.output("regular_polygon_rounded.pdf")
 
 ![](regular_polygon_rounded.png)
 
-* [`stroke_cap_style`](fpdf/enums.html#fpdf.enums.StrokeCapStyle)
+* [`stroke_cap_style`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.StrokeCapStyle)
   defines how the end of a stroke should be rendered.
   This affects the ends of the segments of dashed strokes, as well.
 
@@ -280,6 +280,6 @@ with pdf.local_context(stroke_cap_style=StrokeCapStyle.ROUND):
 pdf.output("line_with_round_ends.pdf")
 ```
 
-There are even more specific path styling settings supported: [`dash_pattern`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_dash_pattern), `stroke_opacity`, `stroke_miter_limit`...
+There are even more specific path styling settings supported: [`dash_pattern`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_dash_pattern), `stroke_opacity`, `stroke_miter_limit`...
 
-All of those settings can be set in a [`local_context()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.local_context).
+All of those settings can be set in a [`local_context()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.local_context).

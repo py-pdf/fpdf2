@@ -15,7 +15,7 @@ Methods full documentation: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2
 [生成されるPDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto1.pdf)
 
 ライブラリをインポートした後、`FPDF` オブジェクトを作成します。
-上の例では、[FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF) コンストラクタはデフォルト値を利用します(A4サイズ縦向きのページとミリメーター単位)。
+上の例では、[FPDF](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF) コンストラクタはデフォルト値を利用します(A4サイズ縦向きのページとミリメーター単位)。
 次のようにして、明示的に指定することも可能です。
 
 ```python
@@ -27,11 +27,11 @@ PDFを横向き(`L`)に設定したり、他のページサイズ(`Letter`, `Leg
 
 （訳注） 縦向き（portrait）、横向き（landscape）の頭文字で向きを指定します。
 
-この時点ではPDFファイルにページが存在しないため、[add_page](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page)でページを追加します。
+この時点ではPDFファイルにページが存在しないため、[add_page](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page)でページを追加します。
 原点は左上隅で、現在の位置はデフォルトでページ端から1cmの場所になります。
-余白は[set_margins](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins) で変更可能です。
+余白は[set_margins](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins) で変更可能です。
 
-テキストを表示する前に、[set_font](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) で
+テキストを表示する前に、[set_font](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) で
 フォントを選択する必要があります。今回はHelvetica bold 16 を選択します。
 
 ```python
@@ -41,7 +41,7 @@ pdf.set_font('Helvetica', style='B', size=16)
 `I`で斜体、`U`で下線、空文字列で通常のフォント（または任意の組み合わせ）を指定することができます。
 フォントサイズはミリメートル（または他のユーザー単位）ではなくポイントで指定することに注意してください。他の内蔵フォントは`Times`、`Courier`、`Symbol`、`ZapfDingbats`です。
 
-これでセルを [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) で表示できるようになりました。
+これでセルを [cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) で表示できるようになりました。
 セルとは、テキストを含む長方形の領域で、現在の位置に描画されます。
 寸法、テキスト（配置）、ボーダーの有無、そして現在の位置が次に移動する先（右、下、次の行頭）を指定します。
 ボーダー付きで描画するには次のようにします。
@@ -56,9 +56,9 @@ pdf.cell(40, 10, 'Hello World!', 1)
 pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 ```
 
-**備考**: 改行は [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln) でも可能です。`ln` メソッドは、改行時の高さを指定することができます。
+**備考**: 改行は [ln](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ln) でも可能です。`ln` メソッドは、改行時の高さを指定することができます。
 
-最後に、[output](fpdf/fpdf.html#fpdf.fpdf.FPDF.output) で、指定した場所にPDFを保存します。引数なしの `output()`は PDFの `bytearray`を返します。
+最後に、[output](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.output) で、指定した場所にPDFを保存します。引数なしの `output()`は PDFの `bytearray`を返します。
 
 ## Tuto 2 - ヘッダー、フッターと改ページ、画像 ##
 
@@ -70,26 +70,26 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [生成されるPDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
 
-この例では、[header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) と
-[footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer)メソッドを使用して、ページのヘッダーとフッターを処理しています。
+この例では、[header](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.header) と
+[footer](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer)メソッドを使用して、ページのヘッダーとフッターを処理しています。
 これらのメソッドは自動的に呼び出されます。
 FPDFクラスはこれらのメソッドを持っていますが、何もしません。
 そのため、クラスを継承してメソッドをオーバーライドする必要があります。
 
-ロゴは、左上隅の位置と幅を指定して、[image](fpdf/fpdf.html#fpdf.fpdf.FPDF.image)メソッドによって表示されます。
+ロゴは、左上隅の位置と幅を指定して、[image](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image)メソッドによって表示されます。
 高さは画像の縦横比から自動的に計算されます。
 
 ページ番号を表示するには、セルの幅にnull valueを渡します。
 これによって、セルがページの右の余白まで広がります。これはテキストを中央寄せする場合に便利です。
-現在のページ番号は [page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) メソッドで取得できます。
-総ページ数はドキュメント終了時に置換される特殊な値 `{nb}` によって取得できます（この特殊な値は[alias_nb_pages()](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages) によって変更できます）。
-[set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) メソッドを使うことで、ページの上部もしくは下部からの絶対位置を指定できます。
+現在のページ番号は [page_no](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) メソッドで取得できます。
+総ページ数はドキュメント終了時に置換される特殊な値 `{nb}` によって取得できます（この特殊な値は[alias_nb_pages()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages) によって変更できます）。
+[set_y](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) メソッドを使うことで、ページの上部もしくは下部からの絶対位置を指定できます。
 
 ここで使用されているもう一つの興味深い機能は、自動改ページ機能です。
 セルがページの限界（デフォルトでは下から2cm）を超えると改行され、フォントが元に戻ります。
 ヘッダーとフッターは独自のフォント（`helvetica`）を使用しますが、本文は`Times` を使用し続けます。
 この自動復帰の仕組みは、色と行幅にも適用されます。
-この改ページのトリガーとなるページの限界は [set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break) で設定できます。
+この改ページのトリガーとなるページの限界は [set_auto_page_break](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break) で設定できます。
 
 
 ## Tuto 3 - 改行と色 ##
@@ -104,19 +104,19 @@ FPDFクラスはこれらのメソッドを持っていますが、何もしま�
 
 [PDF中の本文（Jules Verne text）](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-[get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) メソッドは現在のフォントでの文字列の幅を求めることができ、ここではタイトルを囲む枠の位置と幅を計算するために使われています。
-次に、色を指定し（[set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color)、 [set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color)、 
-[set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color) を利用）、 
+[get_string_width](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) メソッドは現在のフォントでの文字列の幅を求めることができ、ここではタイトルを囲む枠の位置と幅を計算するために使われています。
+次に、色を指定し（[set_draw_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color)、 [set_fill_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color)、 
+[set_text_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color) を利用）、 
 線の太さをset_line_widthで1mmに設定します（デフォルトでは0.2）。
 最後に、セルを出力します（最後のパラメータをtrueにして、背景の塗りつぶしを有効にします。）。
 
-段落を表示するためには [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) メソッドを利用します。
+段落を表示するためには [multi_cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) メソッドを利用します。
 テキストはデフォルトで両端揃えされます。
 行がセルの右端に届くか、改行文字（`\n`）のたびに改行され、現在のセルの下に新しいセルが自動的に作成されます。
 自動改行は、右端に最も近いスペースかソフトハイフン（`\u00ad`）の位置で行われます。
 ソフトハイフンは改行をトリガーする場合は通常のハイフンに置き換えられ、そうでない場合は無視されます。
 
-この文書には、タイトル（[set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)）と著者（[set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)）の2つの文書プロパティがセットされています。
+この文書には、タイトル（[set_title](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)）と著者（[set_author](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)）の2つの文書プロパティがセットされています。
 プロパティは2つの方法で見ることができます。
 1つ目は、Acrobat Readerで直接文書を開き、「ファイル」メニューから「プロパティ」オプションを選択する方法です。
 もう1つは、プラグインからも利用できますが、右クリックして「ドキュメントのプロパティ」を選択する方法です。

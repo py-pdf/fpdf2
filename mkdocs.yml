@@ -62,6 +62,7 @@ plugins:
   - redirects:
       redirect_maps:
         'CombineWithChartingLibs.md': 'Maths.md'
+        'CombineWithMistletoeoToUseMarkdown.md': 'CombineWithMarkdown.md'
   #- git-committers:
   #    repository: py-pdf/fpdf2
   #    branch: master
@@ -72,23 +73,23 @@ plugins:
       author: ' '
       copyright: ' '
       exclude_pages:
+        - 'Tutorial-bn'
         - 'Tutorial-de'
         - 'Tutorial-es'
         - 'Tutorial-fr'
         - 'Tutorial-gr'
-        - 'Tutorial-it'
-        - 'Tutorial-km'
-        - 'Tutorial-pt'
-        - 'Tutorial-ru'
-        - 'Tutorial-hi'
-        - 'Tutorial-bn'
         - 'Tutorial-he'
-        - 'Tutorial-zh'
+        - 'Tutorial-hi'
+        - 'Tutorial-id'
+        - 'Tutorial-it'
         - 'Tutorial-ja'
+        - 'Tutorial-km'
         - 'Tutorial-nl'
         - 'Tutorial-pl'
+        - 'Tutorial-pt'
+        - 'Tutorial-ru'
         - 'Tutorial-tr'
-        - 'Tutorial-id'
+        - 'Tutorial-zh'
       #cover: false
       #back_cover: true
       #custom_template_path: TEMPLATES PATH
@@ -114,40 +115,41 @@ hooks:
   - docs/overrides/.hooks/log_manager.py
 
 nav:
-- 'Project Home':                   'index.md'
+- 'Project Home':                     'index.md'
 - 'Tutorial':
   - 'Jupyter notebook':               'notebook.ipynb'
   - 'Tutorial in English':            'Tutorial.md'
+  - 'বাংলা':                           'Tutorial-bn.md'
   - 'Tutorial auf Deutsch':           'Tutorial-de.md'
   - 'Tutorial en español':            'Tutorial-es.md'
   - 'Tutorial en français':           'Tutorial-fr.md'
   - 'Φροντιστήριο στα ελληνικά':      'Tutorial-gr.md'
+  - 'מדריך בעברית':                   'Tutorial-he.md'
+  - 'हिंदी में ट्यूटोरियल':                 'Tutorial-hi.md'
+  - 'Panduan dalam Bahasa Indonesia': 'Tutorial-id.md'
   - 'Tutorial in italiano':           'Tutorial-it.md'
-  - 'ភាសខ្មែរ':                             'Tutorial-km.md'
+  - '日本語チュートリアル':                 'Tutorial-ja.md'
+  - 'ភាសខ្មែរ':                         'Tutorial-km.md'
+  - 'Handleiding in Dutch':           'Tutorial-nl.md'
+  - 'Poradnik w języku polskim':      'Tutorial-pl.md'
   - 'Tutorial em português':          'Tutorial-pt.md'
   - 'Учебник на русском языке':       'Tutorial-ru.md'
-  - 'हिंदी में ट्यूटोरियल':                       'Tutorial-hi.md'
-  - 'বাংলা':                              'Tutorial-bn.md'
-  - 'מדריך בעברית':                     'Tutorial-he.md'
-  - '简体中文教程':                   'Tutorial-zh.md'
-  - '日本語チュートリアル':           'Tutorial-ja.md'
-  - 'Handleiding in Dutch':    'Tutorial-nl.md'
-  - 'Türkçe Kılavuz':             'Tutorial-tr.md'
-  - 'Panduan dalam Bahasa Indonesia': 'Tutorial-id.md'
+  - 'Türkçe Kılavuz':                 'Tutorial-tr.md'
+  - '简体中文教程':                     'Tutorial-zh.md'
 - 'Page Layout':
   - 'Page Format and Orientation':    'PageFormatAndOrientation.md'
   - 'Margins':                        'Margins.md'
   - 'Templates':                      'Templates.md'
   - 'Text Flow Regions':
-      - 'Basics':                   'TextRegion.md'
-      - 'Text Columns':                   'TextColumns.md'
+      - 'Basics':                     'TextRegion.md'
+      - 'Text Columns':               'TextColumns.md'
   - 'Tables':                         'Tables.md'
 - 'Text Content':
   - 'Adding Text':                    'Text.md'
   - 'Line breaks':                    'LineBreaks.md'
   - 'Page breaks':                    'PageBreaks.md'
   - 'Text styling':                   'TextStyling.md'
-  - 'Fonts and Unicode':                        'Unicode.md'
+  - 'Fonts and Unicode':              'Unicode.md'
   - 'Text Shaping':                   'TextShaping.md'
   - 'Emojis, Symbols & Dingbats':     'EmojisSymbolsDingbats.md'
   - 'HTML':                           'HTML.md'
@@ -186,8 +188,9 @@ nav:
   - 'Development guidelines':         'Development.md'
   - 'Logging':                        'Logging.md'
   - 'fpdf2 internals':                'Internals.md'
-- 'API':                            'https://py-pdf.github.io/fpdf2/fpdf/'
-- 'History':                        'History.md'
+- 'API':                              'https://py-pdf.github.io/fpdf2/fpdf/'
+- 'Changelog':                        'https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md'
+- 'History':                          'History.md'
 
 extra:
   social:

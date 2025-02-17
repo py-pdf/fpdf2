@@ -10,7 +10,7 @@ for more information about what to look out for.
 
 ## Basic usage ##
 
-SVG files can be directly inserted inside a PDF file using the [image()](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method:
+SVG files can be directly inserted inside a PDF file using the [image()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method:
 
 ```python
 from fpdf import FPDF

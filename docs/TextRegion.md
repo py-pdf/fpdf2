@@ -7,7 +7,7 @@ There are two general categories of regions. One defines boundaries for running 
 
 The currently implemented text regions are:
 
-* [Text Columns](TextColumns.html)
+* [Text Columns](TextColumns.md)
 
 Other types like Table cells, shaped regions and combinations are still in the design phase, see [Quo vadis, .write()?](https://github.com/py-pdf/fpdf2/discussions/339).
 

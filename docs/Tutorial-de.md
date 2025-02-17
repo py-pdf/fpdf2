@@ -15,7 +15,7 @@ Beginnen wir mit dem Klassiker:
 [Erzeugtes PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto1.pdf)
 
 Nachdem wir die Bibliothek eingebunden haben, erstellen zuerst wir ein `FPDF` Objekt. Der 
-[`FPDF`](fpdf/fpdf.html#fpdf.fpdf.FPDF) Konstruktor wird hier mit den Standardwerten verwendet: Das Seitenformat wird auf A4-Hochformat gesetzt und als Maßeinheit  Millimeter festgelegt.
+[`FPDF`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF) Konstruktor wird hier mit den Standardwerten verwendet: Das Seitenformat wird auf A4-Hochformat gesetzt und als Maßeinheit  Millimeter festgelegt.
 
 Diese Werte hätten wir auch explizit angegeben können:
 
@@ -25,10 +25,10 @@ pdf = FPDF(orientation="P", unit="mm", format="A4")
 Es ist auch möglich, eine PDF-Datei im Querformat zu erstellen (`L`), sowie andere Seitenformate
 (`Letter` und `Legal`) und Maßeinheiten (`pt`, `cm`, `in`) zu verwenden.
 
-Bisher haben wir dem Dokument noch keine Seite hinzugefügt. Um eine Seite hinzuzufügen, verwenden wir [`add_page`](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page).
-Der Ursprung der Koordinaten liegt in der oberen linken Ecke und die aktuelle Schreibposition ist standardmäßig jeweils 1 cm von den Rändern entfernt. Diese Randabstände können mit [`set_margins`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins) angespasst werden.
+Bisher haben wir dem Dokument noch keine Seite hinzugefügt. Um eine Seite hinzuzufügen, verwenden wir [`add_page`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page).
+Der Ursprung der Koordinaten liegt in der oberen linken Ecke und die aktuelle Schreibposition ist standardmäßig jeweils 1 cm von den Rändern entfernt. Diese Randabstände können mit [`set_margins`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins) angespasst werden.
 
-Bevor wir Text hinzufügen können, müssen wir zuerst mit [`set_font`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) eine Schriftart festlegen, um ein gültiges Dokument zu erzeugen.
+Bevor wir Text hinzufügen können, müssen wir zuerst mit [`set_font`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) eine Schriftart festlegen, um ein gültiges Dokument zu erzeugen.
 Wir wählen Helvetica, fett in Schriftgröße 16 pt:
 
 ```python
@@ -38,7 +38,7 @@ pdf.set_font('Helvetica', style='B', size=16)
 Anstelle von `B` hätten wir mit `I` kursiv , `U` unterstichen oder durch die Übergabe einer leeren Zeichenkette einen "normale" Textstil wählen können. Beliebige Kombinationen der drei Werte sind zulässig. Beachte, dass die Schriftgröße in Punkt und nicht in Millimetern (oder einer anderen durch den Benutzer bei der Erstellung mit `unit=` festgelegten Maßeinheit) angegeben wird. 
 Dies ist die einzige Ausnahme vom Grundsatz, dass immer die durch den Benutzer gewählte Maßeinheit bei der Festlegung von Positions- oder Größenangaben genutzt wird. Neben `Helvetica` stehen `Times`, `Courier`, `Symbol` und `ZapfDingbats` als Standardschriftarten zur Verfügung.
 
-Wir können jetzt eine erste Textzelle mit [`cell`](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) einfügen. Eine Zelle ist ein rechteckiger
+Wir können jetzt eine erste Textzelle mit [`cell`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) einfügen. Eine Zelle ist ein rechteckiger
 Bereich - optional umrahmt - der Text enthalten kann. Sie wird an der jeweils aktuellen Schreibposition gerendert. Wir können die Abmessungen der Zelle, den Text und dessen Formatierung (zentriert oder ausgerichtet), einen ggf. gewünschten Rahmen und die Festlegung der neuen Schreibposition nach dem Schreiben der Zelle (rechts, unten oder am Anfang der nächsten Zeile) bestimmen. 
 
 Um einen Rahmen hinzuzufügen, würden wir die Methode folgendermaßen einbinden:
@@ -53,10 +53,10 @@ Um eine neue Zelle mit zentriertem Text hinzuzufügen und anschließend in die n
 pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 ```
 
-**Anmerkung**: Der Zeilenumbruch kann auch mit [`ln`](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln) erfolgen. Diese
+**Anmerkung**: Der Zeilenumbruch kann auch mit [`ln`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ln) erfolgen. Diese
 Methode erlaubt es, zusätzlich die Höhe des Umbruchs anzugeben.
 
-Schließlich wird das Dokument mit [`output`](fpdf/fpdf.html#fpdf.fpdf.FPDF.output) geschlossen und unter dem angegebenen Dateipfad gespeichert. 
+Schließlich wird das Dokument mit [`output`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.output) geschlossen und unter dem angegebenen Dateipfad gespeichert. 
 Ohne Angabe eines Parameters liefert `output()` den PDF `bytearray`-Puffer zurück.
 
 ## Lektion 2 - Kopfzeile, Fußzeile, Seitenumbruch und Bild ##
@@ -69,20 +69,20 @@ Hier ein zweiseitiges Beispiel mit Kopfzeile, Fußzeile und Logo:
 
 [Erzeugtes PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
 
-Dieses Beispiel verwendet die Methoden [`header`](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) und 
-[`footer`](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer), um Kopf- und Fußzeilen zu verarbeiten. Sie
+Dieses Beispiel verwendet die Methoden [`header`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.header) und 
+[`footer`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer), um Kopf- und Fußzeilen zu verarbeiten. Sie
 werden jeweils automatisch aufgerufen. Die Methode 'header' direkt nach dem Hinzugügen einer neuen Seite, die Methode 'footer' wenn die Bearbeitung einer Seite durch das Hinzufügen einer weiteren Seite oder das Abspeichern des Dokuments abgeschlossen wird. 
 Die Methoden existieren bereits in der Klasse FPDF, sind aber leer. Um sie zu nutzen, müssen wir die Klasse erweitern und sie überschreiben.
 
-Das Logo wird mit der Methode [`image`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) eingebunden, und auf der Seite durch die Angabe der Position der linken oberen Ecke und die gewünschte Bildbreite platziert. Die Höhe wird automatisch berechnet, um die Proportionen des Bildes zu erhalten.
+Das Logo wird mit der Methode [`image`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) eingebunden, und auf der Seite durch die Angabe der Position der linken oberen Ecke und die gewünschte Bildbreite platziert. Die Höhe wird automatisch berechnet, um die Proportionen des Bildes zu erhalten.
 
 Um die Seitenzahl einzufügenn, übergeben wir zuerst der Zelle einen Nullwert als Breite der Zelle. Das bedeutet,
 dass die Zelle bis zum rechten Rand der Seite reichen soll. Das ist besonders praktisch, um
 Text zu zentrieren. Die aktuelle Seitenzahl wird durch
-die Methode [`page_no`](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) ermittelt und in die Zelle geschrieben.
+die Methode [`page_no`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) ermittelt und in die Zelle geschrieben.
 Die Gesamtseitenzahl wird mit Hilfe des speziellen Platzhalterwertes `{nb}` ermittelt,
 der beim Schließen des Dokuments ersetzt wird aufgerufen.
-Beachte die Verwendung der Methode [`set_y`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y), mit der du die
+Beachte die Verwendung der Methode [`set_y`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y), mit der du die
 vertikale Schreibposition an einer absoluten Stelle der Seite - von oben oder von
 unten aus - setzen kannst. 
 
@@ -91,7 +91,7 @@ eine Zelle eine festgelegte Grenze in der Seite überschreitet (standardmäßig 
 Seitenumbruch durchgeführt und die Einstellungen der gewahlten Schrift auf der nächsten Seite automatisch beibehalten. Obwohl die Kopf- und
 Fußzeilen ihre eigene Schriftart (`Helvetica`) wählen, wird im Textkörper `Times` verwendet.
 Dieser Mechanismus der automatischen Übernahme der Einstellungen nach Seitenumbruch gilt auch für Farben und Zeilenbreite.
-Der Grenzwert, der den Seitenumbruch auslöst, kann mit [`set_auto_page_break`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break) festgelegt werden .
+Der Grenzwert, der den Seitenumbruch auslöst, kann mit [`set_auto_page_break`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break) festgelegt werden .
 
 ## Lektion 3 - Zeilenumbrüche und Farben ##
 
@@ -105,20 +105,20 @@ Fahren wir mit einem Beispiel fort, das Absätze im Blocksatz ausgibt. Es demons
 
 [Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-Die Methode [`get_string_width`](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) ermöglicht die Bestimmung
+Die Methode [`get_string_width`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) ermöglicht die Bestimmung
 die Breite des übergebenen Textes in der aktuellen Schriftart. Das Beispiel nutzt sie zur Berechnung der
-Position und der Breite des Rahmens, der den Titel umgibt. Anschließend werden die Farben mit [`set_draw_color`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [`set_fill_color`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) und 
-und [`set_text_color`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color) gesetzt und die Linienstärke mit [`set_line_width`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width) auf 1 mm (Abweichend vom Standardwert von 0,2) festgelegt. Schließlich geben wir die Zelle aus 
+Position und der Breite des Rahmens, der den Titel umgibt. Anschließend werden die Farben mit [`set_draw_color`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [`set_fill_color`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) und 
+und [`set_text_color`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color) gesetzt und die Linienstärke mit [`set_line_width`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width) auf 1 mm (Abweichend vom Standardwert von 0,2) festgelegt. Schließlich geben wir die Zelle aus 
 (Der letzte Parameter True zeigt an, dass der Hintergrund gefüllt werden muss).
 
-Zur Erstellung von Absätzen wir die Methode [`multi_cell`](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) genutzt.
+Zur Erstellung von Absätzen wir die Methode [`multi_cell`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) genutzt.
 Jedes Mal, wenn eine Zeile den rechten Rand der Zelle erreicht oder ein Zeilenumbruchzeichen `\\n` im Text erkannt wird,
 wird ein Zeilenumbruch durchgeführt und automatisch eine neue Zelle unterhalb der aktuellen Zelle erstellt. 
 Der Text wird standardmäßig im Blocksatz ausgerichtet.
 
 Es werden zwei Dokumenteigenschaften definiert: Titel 
-([`set_title`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) und Autor 
-([`set_author`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Dokumenteneigenschaften können auf zwei Arten eingesehen werden.
+([`set_title`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) und Autor 
+([`set_author`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Dokumenteneigenschaften können auf zwei Arten eingesehen werden.
 Man kann das Dokument mit dem Acrobat Reader öffnen und im Menü **Datei** die Option **Dokumenteigenschaften** auswählen. 
 Alternativ kann man auch mit der rechten Maustaste auf das Dokument klicken und die Option Dokumenteigenschaften wählen.
 
@@ -135,7 +135,7 @@ Alternativ kann man auch mit der rechten Maustaste auf das Dokument klicken und 
 [Jules Verne Text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 Der Hauptunterschied zur vorherigen Lektion ist die Verwendung der Methode 
-[`text_columns`](fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns). Diese sammelt zunächst allen text, auch in mehreren Teilen, und verteilt ihn anschließend auf die angegebene Anzahl an Spalten. Eventuell notwendige Seitenumbrüche werden dabei automatisch vorgenommen. Beachtenswert dabei ist, dass während die `TextColumns` instanz als Kontextmanager offen ist, Schriftstile und ander Eigenschaften frei verändert werden können. Nach schließen des Kontextes werden die Einstellungen wieder auf den vorherigen Stand zurückgesetzt.
+[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_columns). Diese sammelt zunächst allen text, auch in mehreren Teilen, und verteilt ihn anschließend auf die angegebene Anzahl an Spalten. Eventuell notwendige Seitenumbrüche werden dabei automatisch vorgenommen. Beachtenswert dabei ist, dass während die `TextColumns` instanz als Kontextmanager offen ist, Schriftstile und ander Eigenschaften frei verändert werden können. Nach schließen des Kontextes werden die Einstellungen wieder auf den vorherigen Stand zurückgesetzt.
 
 
 ## Lektion 5 - Tabellen erstellen ##

@@ -1,6 +1,6 @@
 # Fonts and Unicode #
 
-Besides the limited set of latin fonts built into the PDF format, `fpdf2` offers full support for using and embedding Unicode (TrueType "ttf" and OpenType "otf") fonts. To keep the output file size small, it only embeds the subset of each font that is actually used in the document. This part of the code has been completely rewritten since the fork from PyFPDF. It uses the [fonttools](https://fonttools.readthedocs.io/en/latest/) library for parsing the font data, and [harfbuzz](https://harfbuzz.github.io/) (via [uharfbuzz](https://github.com/harfbuzz/uharfbuzz)) for [text shaping](TextShaping.html).
+Besides the limited set of latin fonts built into the PDF format, `fpdf2` offers full support for using and embedding Unicode (TrueType "ttf" and OpenType "otf") fonts. To keep the output file size small, it only embeds the subset of each font that is actually used in the document. This part of the code has been completely rewritten since the fork from PyFPDF. It uses the [fonttools](https://fonttools.readthedocs.io/en/latest/) library for parsing the font data, and [harfbuzz](https://harfbuzz.github.io/) (via [uharfbuzz](https://github.com/harfbuzz/uharfbuzz)) for [text shaping](TextShaping.md).
 
 To make use of that functionality, you have to install at least one Unicode font, either in the system font folder or in some other location accessible to your program.
 For professional work, many designers prefer commercial fonts, suitable to their specific needs. There are also many sources of free TTF fonts that can be downloaded online and used free of cost (some of them may have restrictions on commercial redistribution, such as server installations or including them in a software project).
@@ -16,7 +16,7 @@ For professional work, many designers prefer commercial fonts, suitable to their
   * [GNU FreeFont](http://www.gnu.org/software/freefont/) family: FreeSans,
 FreeSerif, FreeMono
 
-To use a Unicode font in your program, use the [`add_font()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font), and then the  [`set_font()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) method calls.
+To use a Unicode font in your program, use the [`add_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font), and then the  [`set_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) method calls.
 
 
 ### Built-in Fonts vs. Unicode Fonts ###
@@ -94,12 +94,12 @@ Many non-latin writing systems have complex ways to combine characters, ligature
 * Thai - stacked diacritics
 * Devanagari (and other indic scripts) - multi-character ligatures, reordering
 
-To make sure those scripts to be rendered correctly, [text shaping](TextShaping.html) must be enabled with `.set_text_shaping(True)`. 
+To make sure those scripts to be rendered correctly, [text shaping](TextShaping.md) must be enabled with `.set_text_shaping(True)`.
 
 
 ### Right-to-Left scripts ###
 
-When [text shaping](TextShaping.html) is enabled, `fpdf2` will apply the [Unicode Bidirectional Algorithm](https://www.unicode.org/reports/tr9/) to render correctly any text, including bidirectional (mix of right-to-left and left-to-right scripts).
+When [text shaping](TextShaping.md) is enabled, `fpdf2` will apply the [Unicode Bidirectional Algorithm](https://www.unicode.org/reports/tr9/) to render correctly any text, including bidirectional (mix of right-to-left and left-to-right scripts).
 
 ## Example ##
 
@@ -190,7 +190,7 @@ For your convenience, the author of the original PyFPDF has collected 96 TTF fil
 
 _New in [:octicons-tag-24: 2.7.0](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
-The method [`set_fallback_fonts()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_fonts) allows you to specify a list of fonts to be used if any character is not available on the font currently set. When a character doesn’t exist on the current font, `fpdf2` will look if it’s available on the fallback fonts, on the same order the list was provided.
+The method [`set_fallback_fonts()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_fonts) allows you to specify a list of fonts to be used if any character is not available on the font currently set. When a character doesn’t exist on the current font, `fpdf2` will look if it’s available on the fallback fonts, on the same order the list was provided.
 
 Common scenarios are use of special characters like emojis within your text, greek characters in formulas or citations mixing different languages.
 
@@ -211,8 +211,8 @@ pdf.output("text_with_emoji.pdf")
 
 When a glyph cannot be rendered uing the current font,
 `fpdf2` will look for a fallback font matching the current character emphasis (bold/italics).
-By default, if it does not find such matching font, the character will not be rendered using any fallback font. This behaviour can be relaxed by passing `exact_match=False` to [`set_fallback_fonts()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_fonts).
+By default, if it does not find such matching font, the character will not be rendered using any fallback font. This behaviour can be relaxed by passing `exact_match=False` to [`set_fallback_fonts()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_fonts).
 
 Moreover, for more control over font fallback election logic,
-the [`get_fallback_font()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_fallback_font) can be overriden.
+the [`get_fallback_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.get_fallback_font) can be overriden.
 An example of this can be found in [test/fonts/test_font_fallback.py](https://github.com/py-pdf/fpdf2/blob/master/test/fonts/test_font_fallback.py).

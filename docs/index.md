@@ -1,7 +1,7 @@
 # fpdf2 #
 
 `fpdf2` is a library for simple & fast PDF document generation in Python.
-It is a fork and the successor of `PyFPDF` (_cf._ [history](https://py-pdf.github.io/fpdf2/History.html)).
+It is a fork and the successor of `PyFPDF` (_cf._ [history](History.md)).
 
 **Latest Released Version:** [![Pypi latest version](https://img.shields.io/pypi/v/fpdf2.svg)](https://pypi.python.org/pypi/fpdf2)
 
@@ -39,7 +39,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * [Presentation mode](Presentations.md) with control over page display duration & transitions
 * Optional basic Markdown-like styling: `**bold**, __italics__`
 * It has very few dependencies: [Pillow](https://pillow.readthedocs.io/en/stable/), [defusedxml](https://pypi.org/project/defusedxml/), & [fonttools](https://pypi.org/project/fonttools/)
-* Can render [mathematical equations & charts](https://py-pdf.github.io/fpdf2/Maths.html)
+* Can render [mathematical equations & charts](./Maths.md)
 * Many example scripts available throughout this documentation, including usage examples with [Django](https://www.djangoproject.com/), [Flask](https://flask.palletsprojects.com), [FastAPI](https://fastapi.tiangolo.com/), [streamlit](https://streamlit.io/), AWS lambdas... : [Usage in web APIs](UsageInWebAPI.md)
 * more than 1300 unit tests with `qpdf`-based PDF diffing, and PDF samples validation using 3 different checkers:
 
@@ -155,4 +155,4 @@ Online classes & open source projects:
 * Release notes for every versions of `fpdf2`: [CHANGELOG.md](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)
 * This library could only exist thanks to the dedication of many volunteers around the world:
   [list & map of contributors](https://github.com/py-pdf/fpdf2/blob/master/README.md#contributors-)
-* You can download an offline PDF version of this manual: [fpdf2-manual.pdf](fpdf2-manual.pdf)
+* You can download an offline PDF version of this manual: [fpdf2-manual.pdf](https://py-pdf.github.io/fpdf2/fpdf2-manual.pdf)

@@ -225,8 +225,8 @@ written in [Markdown](https://daringfireball.net/projects/markdown/).
 Building instructions are contained in the configuration file `mkdocs.yml`
 and also in `.github/workflows/continuous-integration-workflow.yml`.
 
-Additional documentation is generated from inline comments, and is available
-in the project [home page](https://py-pdf.github.io/fpdf2/fpdf/).
+Additional documentation is generated from inline comments,
+and is available on the [API page](https://py-pdf.github.io/fpdf2/fpdf/).
 
 After being committed to the master branch, code documentation is automatically uploaded to
 [GitHub Pages](https://py-pdf.github.io/fpdf2/).
@@ -240,7 +240,7 @@ To preview the Markdown documentation, launch a local rendering server with:
 
 To preview the API documentation, launch a local rendering server with:
 
-    pdoc --html -o public/ fpdf --http :
+    pdoc --html -o public/ fpdf --template-dir docs/pdoc --http :
 
 ## PDF spec & new features
 The **PDF 1.7 spec** is available on Adobe website:

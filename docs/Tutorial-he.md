@@ -17,7 +17,7 @@
 [תוצר](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto1.pdf)
 
 אחרי שכללנו את קובץ הספריה, יצרנו אובייקט `FPDF`.
-הבנאי של [FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF)  משתמש כאן בערכים דיפולטיביים:
+הבנאי של [FPDF](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)  משתמש כאן בערכים דיפולטיביים:
 דפים בפורמט A4 לאורך והמידות במילימטרים. ניתן לציין זאת במפורש באמצעות:
 
 ```python
@@ -25,10 +25,10 @@ pdf = FPDF(orientation="P", unit="mm", format="A4")
 ```
 ניתן להגדיר את הPDF לרוחב (`L`) או להשתמש בתבניות שונות (כמו `Letter` או `Legal`) ומידות שונות (כמו `pt`, `cm`, `in`).
 
-כרגע אין עמודים, נצטרך להוסיף אחד בעזרת [add_page](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page).
-המקור הוא בפינה השמאלית עליונה והפוזיציה הנוכחית בברירת המחדל היא סנטימטר אחד מהגבולות; ניתן לשנות את השוליים על ידי [set_margins](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins).
+כרגע אין עמודים, נצטרך להוסיף אחד בעזרת [add_page](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page).
+המקור הוא בפינה השמאלית עליונה והפוזיציה הנוכחית בברירת המחדל היא סנטימטר אחד מהגבולות; ניתן לשנות את השוליים על ידי [set_margins](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins).
 
-לפני שנוכל להדפיס טקסט, חובה לבחור גופן בעזרת [set_font](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), אחרת המסמך לא יהיה תקין. אנחנו בוחרים בגופן helvetica מודגש בגודל 16:
+לפני שנוכל להדפיס טקסט, חובה לבחור גופן בעזרת [set_font](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), אחרת המסמך לא יהיה תקין. אנחנו בוחרים בגופן helvetica מודגש בגודל 16:
 
 ```python
 pdf.set_font('Helvetica', style='B', size=16)
@@ -36,7 +36,7 @@ pdf.set_font('Helvetica', style='B', size=16)
 
 יכולנו לבחור הטייה עם `I`, קו תחתון עם `U`, או גופן רגיל עם מחרוזת ריקה (או כל שילוב של הנ"ל). שימו לב שגודל הגופן הוא בנקודות ולא מילימטרים או כל יחידת מידה אחרת. זה יוצא הדופן היחיד. הגופנים המובנים האחרים הם `Times`, `Courier`, `Symbol`, `ZapfDingbats`.
 
-כעת נוכל להדפיס תא עם [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell). תא הוא איזור מלבני, אולי ממוסגר, שמכיל טקסט. נוצר בפוזיציה הנוכחית. אנחנו מציינים את המידות שלו, טקסט (ממורכז או מיושר), האם לצייר גבולות, ולאן תזוז הפוזיציה הנוכחית לאחר התא (מימין, למטה או בתחילת השורה הבאה). כדי להוסיף מסגרת, נריץ:
+כעת נוכל להדפיס תא עם [cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell). תא הוא איזור מלבני, אולי ממוסגר, שמכיל טקסט. נוצר בפוזיציה הנוכחית. אנחנו מציינים את המידות שלו, טקסט (ממורכז או מיושר), האם לצייר גבולות, ולאן תזוז הפוזיציה הנוכחית לאחר התא (מימין, למטה או בתחילת השורה הבאה). כדי להוסיף מסגרת, נריץ:
 
 
 ```python
@@ -49,9 +49,9 @@ pdf.cell(40, 10, 'Hello World!', 1)
 pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 ```
 
-**הערה**: אפשר ליצור שורה רווח גם בעזרת [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). השיטה הזו מאפשרת גם לציין את גובה הרווח.
+**הערה**: אפשר ליצור שורה רווח גם בעזרת [ln](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). השיטה הזו מאפשרת גם לציין את גובה הרווח.
 
-לבסוף, הקובץ נסגר ונשמר תחת הכתובת שסופקה באמצעות [output](fpdf/fpdf.html#fpdf.fpdf.FPDF.output).
+לבסוף, הקובץ נסגר ונשמר תחת הכתובת שסופקה באמצעות [output](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.output).
 ללא פרמטרים נוספים, `()output` מחזיר את הבאפר `bytearray` של הPDF.
 
 ## 2 - כותרת עליונה, כותרת תחתונה, מעבר עמוד ותמונות ##
@@ -64,14 +64,14 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [תוצר](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
 
-הדוגמא משתמשת במתודות [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) ו[footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) על מנת לעבד כותרות עמוד. הן נקראות אוטומטית. הן כבר קיימות במחלקה FPDF ולא עושות כלום, לכן נצטרך להרחיב את המחלקה ולדרוס אותן.
+הדוגמא משתמשת במתודות [header](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.header) ו[footer](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) על מנת לעבד כותרות עמוד. הן נקראות אוטומטית. הן כבר קיימות במחלקה FPDF ולא עושות כלום, לכן נצטרך להרחיב את המחלקה ולדרוס אותן.
 
-הלוגו מודפס עם מתודת ה[image](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) ע"י ציון הנקודה השמאלית-עליונה ואת הרוחב. הגובה מחושב אוטומטית לפי מידות התמונה.
+הלוגו מודפס עם מתודת ה[image](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) ע"י ציון הנקודה השמאלית-עליונה ואת הרוחב. הגובה מחושב אוטומטית לפי מידות התמונה.
 
-על מנת להדפיס את מספר העמוד, ניתן להעביר ערך null כרוחב התא. כך התא יתרחב עד השול הימני של העמוד; זה שימושי כאשר צריך למרכז את הטקסט. מספר העמוד הנוכחי חוזר ממתודת ה[page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no); לגבי מספר העמודים הכולל, ניתן להשיג נתון זה מהערך המיוחד `{nb}` שיוחלף בסגירת המסמך (ניתן לשנות ערך זה ע"י שימוש ב[()alias_nb_pages](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages)).
-שימו לב למתודה [set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) שמאפשרת להגדיר פוזיציה אבסולוטית בדף, מראש או תחתית העמוד.
+על מנת להדפיס את מספר העמוד, ניתן להעביר ערך null כרוחב התא. כך התא יתרחב עד השול הימני של העמוד; זה שימושי כאשר צריך למרכז את הטקסט. מספר העמוד הנוכחי חוזר ממתודת ה[page_no](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no); לגבי מספר העמודים הכולל, ניתן להשיג נתון זה מהערך המיוחד `{nb}` שיוחלף בסגירת המסמך (ניתן לשנות ערך זה ע"י שימוש ב[()alias_nb_pages](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages)).
+שימו לב למתודה [set_y](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) שמאפשרת להגדיר פוזיציה אבסולוטית בדף, מראש או תחתית העמוד.
 
-נעשה גם שימוש  בפיצ'ר נוסף כאן: מעבר עמוד אוטומטי. ברגע שתא יחרוג מגבולות הדף (בברירת מחדל 2 סנטימטר מהסוף), מתתבצע מעבר עמוד והגופן חוזר להיות מה שהוגדר עבור גוף העמוד. למרות שהכותרת העליונה והתחתונה משתמשות בגופן (`helvetica`), גוף העמוד ממשיך עם `Times`. המנגנון הזה תקף גם לגבי צבע ורוחב שורה. הגבול שמפעיל את מעבר העמוד האוטומטי ניתן לשינוי באמצעות [set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
+נעשה גם שימוש  בפיצ'ר נוסף כאן: מעבר עמוד אוטומטי. ברגע שתא יחרוג מגבולות הדף (בברירת מחדל 2 סנטימטר מהסוף), מתתבצע מעבר עמוד והגופן חוזר להיות מה שהוגדר עבור גוף העמוד. למרות שהכותרת העליונה והתחתונה משתמשות בגופן (`helvetica`), גוף העמוד ממשיך עם `Times`. המנגנון הזה תקף גם לגבי צבע ורוחב שורה. הגבול שמפעיל את מעבר העמוד האוטומטי ניתן לשינוי באמצעות [set_auto_page_break](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
 
 
 ## 3 - שורות רווח וצבעים ##
@@ -86,13 +86,13 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-מתודת ה[get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) מאפשרת לקבוע אורך מחרוזת בגופן הנוכחי, שבדוגמא זו משמש כדי לחשב את הפוזיציה והרוחב של המסגרת המקיפה את הכותרת. לאחר מכן מוגדרים צבעים
-(באמצעות [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) ו [set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) ועובי השורה מוגדר למילימטר (בניגוד ל0.2 מילימטר כברירת מחדל) באמצעות [set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). לבסוף אנחנו מדפיסים את התא (הפרמטר האחרון true מעיד שהרקע צריך להיות מלא).
+מתודת ה[get_string_width](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) מאפשרת לקבוע אורך מחרוזת בגופן הנוכחי, שבדוגמא זו משמש כדי לחשב את הפוזיציה והרוחב של המסגרת המקיפה את הכותרת. לאחר מכן מוגדרים צבעים
+(באמצעות [set_draw_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color), [set_fill_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) ו [set_text_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) ועובי השורה מוגדר למילימטר (בניגוד ל0.2 מילימטר כברירת מחדל) באמצעות [set_line_width](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). לבסוף אנחנו מדפיסים את התא (הפרמטר האחרון true מעיד שהרקע צריך להיות מלא).
 
 
-המתודה בה משתמשים להדפסת הפסקא היא [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). טקסט נחתך אוטומטית בסוף השורה כברירת מחדל. בכל פעם ששורה מגיעה לקצה הימני של התא או שנמצא התו (`n\`), נוצרת שורה חדשה בתא חדש מתחת לנוכחי. הפסקת שורה אוטומטית נוצרת במיקום של הרווח הקרוב או תו בלתי-נראה (`u00ad\`) לפני סוף השורה. התו יוחלף במקף אם הופעלה הפסקת שורה.
+המתודה בה משתמשים להדפסת הפסקא היא [multi_cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). טקסט נחתך אוטומטית בסוף השורה כברירת מחדל. בכל פעם ששורה מגיעה לקצה הימני של התא או שנמצא התו (`n\`), נוצרת שורה חדשה בתא חדש מתחת לנוכחי. הפסקת שורה אוטומטית נוצרת במיקום של הרווח הקרוב או תו בלתי-נראה (`u00ad\`) לפני סוף השורה. התו יוחלף במקף אם הופעלה הפסקת שורה.
 
-שתי תכונות מסמך הוגדרו: שם המסמך ([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) ויוצר ([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). ניתן לצפות בתכונות בשני אופנים: אופציה ראשונה היא לפתוח את המסמך בAdobe Reader ישירות, ואז ב'תפריט' לבחור 'תכונות מסמך'. אופציה שניה, זמינה גם באמצעות תוסף, זה לחצן ימני ואז לבחור תכונות מסמך.
+שתי תכונות מסמך הוגדרו: שם המסמך ([set_title](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) ויוצר ([set_author](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). ניתן לצפות בתכונות בשני אופנים: אופציה ראשונה היא לפתוח את המסמך בAdobe Reader ישירות, ואז ב'תפריט' לבחור 'תכונות מסמך'. אופציה שניה, זמינה גם באמצעות תוסף, זה לחצן ימני ואז לבחור תכונות מסמך.
 
 ## 4 - עמודות מרובות ##
 
@@ -107,7 +107,7 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 [Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 ההבדל העיקרי מהדוגמא הקודמת הוא השימוש במתודת ה
-[`text_columns`](fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column). 
+[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column). 
 היא אוספת את כל הטקסט, ומפזרת אותו על מספר העמודות המבוקש (לפעמים מגדילה אותו), ואוטומטית מעבירה עמוד כשצריך. שימו לב שבזמן שמופע של `TextColumns` פועל כמנהל הקשר (context manager), עיצוב של טקסט ואלמנטים נוספים עשויים להשתנות. שינויים אלה מוכלים בהקשר.
 ברגע שהמופע נסגר, ההגדרות הקודמות יוחלו שוב.
 

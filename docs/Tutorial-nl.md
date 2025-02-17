@@ -15,7 +15,7 @@ Eerste, het klassieke voorbeeld:
 [Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto1.pdf)
 
 Nadat u het bibliotheekbestand hebt toegevoegd, maakt u een `FPDF`-object. De
-[FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF) constructor wordt hier gebruikt met de standaardwaarden:
+[FPDF](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF) constructor wordt hier gebruikt met de standaardwaarden:
 pagina's zijn in A4 staand en de maateenheid is millimeter. 
 Het had expliciet vermeld kunnen worden met:
 
@@ -27,12 +27,12 @@ Het is mogelijk om de PDF in landscape-modus (`L`) te zetten of om andere pagina
 (zoals `Letter` en `Legal`) en maateenheden (`pt`, `cm`, `in`).
 
 Er is momenteel geen pagina, dus we moeten er een toevoegen 
-[add_page](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page). De oorsprong bevindt zich in de linkerbovenhoek en de
+[add_page](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page). De oorsprong bevindt zich in de linkerbovenhoek en de
 de huidige positie wordt standaard op 1 cm van de randen geplaatst; de marges kunnen worden gewijzigd 
-met [set_margins](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins).
+met [set_margins](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins).
 
 Voordat we tekst kunnen afdrukken, is het verplicht om een lettertype te selecteren 
-[set_font](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), anders zou het document ongeldig zijn.
+[set_font](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), anders zou het document ongeldig zijn.
 Wij kiezen voor Helvetica bold 16:
 
 ```python
@@ -44,7 +44,7 @@ met een lege string (of een combinatie daarvan). Houd er rekening mee dat de let
 punten, geen millimeters (of een andere gebruikerseenheid); het is de enige uitzondering.
 De andere ingebouwde lettertypen zijn `Times`, `Courier`, `Symbol` en `ZapfDingbats`.
 
-We kunnen nu een cel afdrukken met [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell).Een cel is een rechthoekig gebied,
+We kunnen nu een cel afdrukken met [cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell).Een cel is een rechthoekig gebied,
 eventueel omkaderd, dat wat tekst bevat. Het wordt weergegeven op de huidige positie. 
 
 We specificeren de afmetingen, de tekst (gecentreerd of uitgelijnd), of er randen moeten worden getekend 
@@ -62,11 +62,11 @@ zou doen:
 pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 ```
 
-**Let op!**: het regeleinde kan ook met [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). Dit
+**Let op!**: het regeleinde kan ook met [ln](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). Dit
 methode maakt het mogelijk om bovendien de hoogte van de pauze te specificeren.
 
 Ten slotte wordt het document gesloten en opgeslagen onder het opgegeven bestandspad met behulp van
-[output](fpdf/fpdf.html#fpdf.fpdf.FPDF.output). Zonder dat er een parameter is opgegeven, wordt `output()`
+[output](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.output). Zonder dat er een parameter is opgegeven, wordt `output()`
 retourneert de PDF `bytearray`-buffer.
 
 ## Tuto 2 - Koptekst, voettekst, pagina-einde en afbeelding ##
@@ -79,23 +79,23 @@ Hier is een voorbeeld van twee pagina's met koptekst, voettekst en logo:
 
 [Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
 
-Dit voorbeeld maakt gebruik van de [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) en 
-[footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer)  methoden om paginakop- en voetteksten te verwerken. Zij
+Dit voorbeeld maakt gebruik van de [header](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.header) en 
+[footer](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer)  methoden om paginakop- en voetteksten te verwerken. Zij
 worden automatisch gebeld. Ze bestaan al in de FPDF-klasse, maar doen niets,
 daarom moeten we de klasse uitbreiden en overschrijven.
 
-Het logo wordt afgedrukt met de methode [image](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) door op te geven
+Het logo wordt afgedrukt met de methode [image](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) door op te geven
 de linkerbovenhoek en de breedte ervan. De hoogte wordt automatisch berekend respecteer de beeldverhoudingen.
 
 Om het paginanummer af te drukken, wordt een nulwaarde doorgegeven als celbreedte. Het betekent
 dat de cel zich moet uitstrekken tot aan de rechtermarge van de pagina; het is handig om
 middelste tekst. Het huidige paginanummer wordt geretourneerd door
-de [page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) methode; wat betreft
+de [page_no](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) methode; wat betreft
 het totale aantal pagina's wordt verkregen door middel van de speciale waarde `{nb}`
 die wordt vervangen bij het sluiten van het document (deze speciale waarde kan worden gewijzigd door
-[alias_nb_pages()](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages)).
+[alias_nb_pages()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages)).
 
-Let op het gebruik van de [set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) methode waarmee
+Let op het gebruik van de [set_y](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) methode waarmee
 positie op een absolute locatie op de pagina, beginnend vanaf de bovenkant of de
 onderkant.
 
@@ -105,7 +105,7 @@ standaard), wordt er een pauze uitgevoerd en wordt het lettertype hersteld. Hoew
 voettekst hun eigen lettertype selecteren (`helvetica`), de hoofdtekst gaat verder met `Times`.
 Dit mechanisme van automatisch herstel is ook van toepassing op kleuren en lijndikte.
 Met de limiet waarmee pagina-einden worden geactiveerd, kan worden ingesteld
-[set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
+[set_auto_page_break](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
 
 
 ## Tuto 3 - Line breaks and colors ##
@@ -121,25 +121,25 @@ illustreert het gebruik van kleuren.
 
 [Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-Met de methode [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) kunt u bepalen
+Met de methode [get_string_width](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) kunt u bepalen
 de lengte van een string in het huidige lettertype, die hier wordt gebruikt om de
 positie en de breedte van het kader rond de titel. Vervolgens worden de kleuren ingesteld
-(via [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color),
-[set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) en
-[set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) en de dikte van de lijn is ingesteld
+(via [set_draw_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color),
+[set_fill_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) en
+[set_text_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) en de dikte van de lijn is ingesteld
 tot 1 mm (standaard tegen 0,2) met
-[set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Ten slotte voeren we de cel uit (de
+[set_line_width](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Ten slotte voeren we de cel uit (de
 laatste parameter op true geeft aan dat de achtergrond moet worden gevuld).
 
-De methode die wordt gebruikt om de alinea's af te drukken is [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). 
+De methode die wordt gebruikt om de alinea's af te drukken is [multi_cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). 
 Tekst wordt standaard uitgevuld. Elke keer dat een regel het rechteruiteinde van de cel bereikt of een regelterugloopteken (`\n`) wordt tegengekomen,
 er wordt een regeleinde weergegeven en er wordt automatisch een nieuwe cel aangemaakt onder de huidige.
 Er wordt automatisch een pauze uitgevoerd op de locatie van de dichtstbijzijnde spatie of het zachte koppelteken (`\u00ad`) vóór de rechterlimiet.
 Een zacht afbreekstreepje wordt vervangen door een normaal afbreekstreepje bij het activeren van een regeleinde, en wordt anders genegeerd.
 
 Er worden twee documenteigenschappen gedefinieerd: de titel
-([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) en de auteur
-([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Eigenschappen kunnen op twee manieren worden bekeken.
+([set_title](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) en de auteur
+([set_author](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Eigenschappen kunnen op twee manieren worden bekeken.
 Ten eerste opent u het document rechtstreeks met Acrobat Reader, ga naar het menu Bestand
 en kies de optie Documenteigenschappen. De tweede, ook verkrijgbaar bij de
 plug-in, is door met de rechtermuisknop te klikken en Documenteigenschappen te selecteren.
@@ -158,7 +158,7 @@ Dit voorbeeld is een variant van het vorige en laat zien hoe u de tekst over mee
 [Jules Verne text](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 Het belangrijkste verschil met de vorige tutorial is het gebruik van de 
-[`text_columns`](fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column) methode. 
+[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column) methode. 
 Het verzamelt alle tekst, mogelijk in stappen, en verdeelt deze over het gevraagde aantal kolommen, waarbij 
 indien nodig automatisch pagina-einden worden ingevoegd. Houd er rekening mee dat, hoewel de instantie `TextColumns`
 actief is als contextmanager, tekststijlen en andere lettertype-eigenschappen kunnen worden gewijzigd. 
