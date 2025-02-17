@@ -44,7 +44,7 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * more than 1300 unit tests with `qpdf`-based PDF diffing, and PDF samples validation using 3 different checkers:
 
 [![QPDF logo](qpdf-logo.svg)](https://github.com/qpdf/qpdf)
-[![PDF Checker logo](pdfchecker-logo.png)](https://www.datalogics.com/products/pdf-tools/pdf-checker/)
+[![PDF Checker logo](pdfchecker-logo.png)](https://www.datalogics.com/repair-pdf-files)
 [![VeraPDF logo](vera-logo.jpg)](https://verapdf.org)
 
 ## Tutorials ##

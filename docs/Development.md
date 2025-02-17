@@ -220,23 +220,27 @@ It will create a new `git` tag.
 7. (optional) add a comment mentioning that the feature/fix has been released in all the GitHub issues mentioned in the `CHANGELOG.md`
 
 ## Documentation
-The standalone documentation is in the `docs` subfolder,
-written in [Markdown](https://daringfireball.net/projects/markdown/).
-Building instructions are contained in the configuration file `mkdocs.yml`
-and also in `.github/workflows/continuous-integration-workflow.yml`.
+The standalone documentation is in the `docs/` subfolder, written in Markdown.
 
-Additional documentation is generated from inline comments,
-and is available on the [API page](https://py-pdf.github.io/fpdf2/fpdf/).
-
-After being committed to the master branch, code documentation is automatically uploaded to
+After being committed to the master branch, documentation is automatically uploaded to
 [GitHub Pages](https://py-pdf.github.io/fpdf2/).
 
-There is a useful one-page example Python module with docstrings illustrating how to document code:
-[pdoc3 example_pkg](https://github.com/pdoc3/pdoc/blob/master/pdoc/test/example_pkg/__init__.py).
+Building instructions are contained in [`.github/workflows/continuous-integration-workflow.yml`](https://github.com/py-pdf/fpdf2/blob/master/.github/workflows/continuous-integration-workflow.yml).
+
+### Main documentation using mkdoc
+Configuration file: [`mkdocs.yml`](https://github.com/py-pdf/fpdf2/blob/master/mkdocs.yml)
 
 To preview the Markdown documentation, launch a local rendering server with:
 
     mkdocs serve --open
+
+### API documentation using pdoc3
+Configuration file: [`docs/pdoc/config.mako`](https://github.com/py-pdf/fpdf2/blob/master/docs/pdoc/config.mako)
+
+It is generated from inline comments, and is available on the [API page](https://py-pdf.github.io/fpdf2/fpdf/).
+
+There is a useful one-page example Python module with docstrings illustrating how to document code:
+[pdoc3 example_pkg](https://github.com/pdoc3/pdoc/blob/master/pdoc/test/example_pkg/__init__.py).
 
 To preview the API documentation, launch a local rendering server with:
 

@@ -48,7 +48,7 @@ pdf.output("circle.pdf")
 ```
 ![](circle.png)
 
-!!! warning "This method changed parameters in [release 2.8.0](https://github.com/py-pdf/fpdf2/releases/tag/2.8.0)"
+!!! warning "This method changed parameters in [release 2.8.1](https://github.com/py-pdf/fpdf2/releases/tag/2.8.0)"
 
 ## Ellipse ##
 
