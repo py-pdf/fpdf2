@@ -67,7 +67,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L22-L48" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L22-L48" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class NumberTree(PDFObject):
     &#34;&#34;&#34;A number tree is similar to a name tree, except that its keys are integers
@@ -117,7 +117,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L22-L48" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L22-L48" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class NumberTree(PDFObject):
     &#34;&#34;&#34;A number tree is similar to a name tree, except that its keys are integers
@@ -150,15 +150,42 @@ and names) be specified as direct objects</p></div>
 <div class="desc"></div>
 </dd>
 </dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></b></code>:
-<ul class="hlist">
-<li><code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code></li>
-<li><code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code></li>
-</ul>
-</li>
-</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.structure_tree.NumberTree.content_stream"><code class="name flex">
+<span>def <span class="ident">content_stream</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></code>.<code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code>
+</p>
+<div class="desc inherited"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
+</dd>
+<dt id="fpdf.structure_tree.NumberTree.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></code>.<code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code>
+</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L42-L48" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self, obj_dict=None, _security_handler=None):
+    newline = &#34;\n&#34;
+    serialized_nums = &#34;\n&#34;.join(
+        f&#34;{struct_parent_id} [{newline.join(struct_elem.ref for struct_elem in struct_elems)}]&#34;
+        for struct_parent_id, struct_elems in self.nums.items()
+    )
+    return super().serialize({&#34;/Nums&#34;: f&#34;[{serialized_nums}]&#34;})</code></pre>
+</details>
+<div class="desc inherited"><p>Serialize the PDF object as an obj&lt;&gt;endobj text block</p></div>
+</dd>
+</dl>
 </dd>
 <dt id="fpdf.structure_tree.StructElem"><code class="flex name class">
 <span>class <span class="ident">StructElem</span></span>
@@ -168,7 +195,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StructElem(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -220,7 +247,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StructElem(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -267,7 +294,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StructElem(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -314,7 +341,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StructElem(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -361,7 +388,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StructElem(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -408,7 +435,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StructElem(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -455,7 +482,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StructElem(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -502,7 +529,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L63-L99" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StructElem(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -547,6 +574,16 @@ and names) be specified as direct objects</p></div>
 </dl>
 <h3>Methods</h3>
 <dl>
+<dt id="fpdf.structure_tree.StructElem.content_stream"><code class="name flex">
+<span>def <span class="ident">content_stream</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></code>.<code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code>
+</p>
+<div class="desc inherited"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
+</dd>
 <dt id="fpdf.structure_tree.StructElem.page_number"><code class="name flex">
 <span>def <span class="ident">page_number</span></span>(<span>self)</span>
 </code></dt>
@@ -554,23 +591,24 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L98-L99" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L98-L99" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def page_number(self):
     return self._page_number</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
+<dt id="fpdf.structure_tree.StructElem.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></code>.<code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code>
+</p>
+<div class="desc inherited"><p>Serialize the PDF object as an obj&lt;&gt;endobj text block</p></div>
+</dd>
 </dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></b></code>:
-<ul class="hlist">
-<li><code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code></li>
-<li><code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code></li>
-</ul>
-</li>
-</ul>
 </dd>
 <dt id="fpdf.structure_tree.StructTreeRoot"><code class="flex name class">
 <span>class <span class="ident">StructTreeRoot</span></span>
@@ -579,7 +617,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L51-L60" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L51-L60" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StructTreeRoot(PDFObject):
     __slots__ = (&#34;_id&#34;, &#34;type&#34;, &#34;parent_tree&#34;, &#34;k&#34;)  # RAM usage optimization
@@ -604,7 +642,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L51-L60" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L51-L60" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StructTreeRoot(PDFObject):
     __slots__ = (&#34;_id&#34;, &#34;type&#34;, &#34;parent_tree&#34;, &#34;k&#34;)  # RAM usage optimization
@@ -624,7 +662,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L51-L60" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L51-L60" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StructTreeRoot(PDFObject):
     __slots__ = (&#34;_id&#34;, &#34;type&#34;, &#34;parent_tree&#34;, &#34;k&#34;)  # RAM usage optimization
@@ -644,7 +682,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L51-L60" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L51-L60" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StructTreeRoot(PDFObject):
     __slots__ = (&#34;_id&#34;, &#34;type&#34;, &#34;parent_tree&#34;, &#34;k&#34;)  # RAM usage optimization
@@ -660,15 +698,29 @@ and names) be specified as direct objects</p></div>
 <div class="desc"></div>
 </dd>
 </dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></b></code>:
-<ul class="hlist">
-<li><code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code></li>
-<li><code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code></li>
-</ul>
-</li>
-</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.structure_tree.StructTreeRoot.content_stream"><code class="name flex">
+<span>def <span class="ident">content_stream</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></code>.<code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code>
+</p>
+<div class="desc inherited"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
+</dd>
+<dt id="fpdf.structure_tree.StructTreeRoot.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></code>.<code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code>
+</p>
+<div class="desc inherited"><p>Serialize the PDF object as an obj&lt;&gt;endobj text block</p></div>
+</dd>
+</dl>
 </dd>
 <dt id="fpdf.structure_tree.StructureTreeBuilder"><code class="flex name class">
 <span>class <span class="ident">StructureTreeBuilder</span></span>
@@ -677,7 +729,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L102-L151" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L102-L151" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StructureTreeBuilder:
     def __init__(self):
@@ -740,7 +792,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L111-L133" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L111-L133" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add_marked_content(
     self,
@@ -775,7 +827,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L143-L144" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L143-L144" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def empty(self):
     return not self.doc_struct_elem.k</code></pre>
@@ -789,7 +841,7 @@ and names) be specified as direct objects</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/structure_tree.py#L135-L141" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/structure_tree.py#L135-L141" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def next_mcid_for_page(self, page_number):
     return sum(
@@ -821,18 +873,22 @@ and names) be specified as direct objects</p></div>
 <li>
 <h4><code><a title="fpdf.structure_tree.NumberTree" href="#fpdf.structure_tree.NumberTree">NumberTree</a></code></h4>
 <ul class="">
+<li><code><a title="fpdf.structure_tree.NumberTree.content_stream" href="syntax.html#fpdf.structure_tree.NumberTree.content_stream">content_stream</a></code></li>
 <li><code><a title="fpdf.structure_tree.NumberTree.nums" href="#fpdf.structure_tree.NumberTree.nums">nums</a></code></li>
+<li><code><a title="fpdf.structure_tree.NumberTree.serialize" href="#fpdf.structure_tree.NumberTree.serialize">serialize</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="fpdf.structure_tree.StructElem" href="#fpdf.structure_tree.StructElem">StructElem</a></code></h4>
 <ul class="two-column">
 <li><code><a title="fpdf.structure_tree.StructElem.alt" href="#fpdf.structure_tree.StructElem.alt">alt</a></code></li>
+<li><code><a title="fpdf.structure_tree.StructElem.content_stream" href="syntax.html#fpdf.structure_tree.StructElem.content_stream">content_stream</a></code></li>
 <li><code><a title="fpdf.structure_tree.StructElem.k" href="#fpdf.structure_tree.StructElem.k">k</a></code></li>
 <li><code><a title="fpdf.structure_tree.StructElem.p" href="#fpdf.structure_tree.StructElem.p">p</a></code></li>
 <li><code><a title="fpdf.structure_tree.StructElem.page_number" href="#fpdf.structure_tree.StructElem.page_number">page_number</a></code></li>
 <li><code><a title="fpdf.structure_tree.StructElem.pg" href="#fpdf.structure_tree.StructElem.pg">pg</a></code></li>
 <li><code><a title="fpdf.structure_tree.StructElem.s" href="#fpdf.structure_tree.StructElem.s">s</a></code></li>
+<li><code><a title="fpdf.structure_tree.StructElem.serialize" href="syntax.html#fpdf.structure_tree.StructElem.serialize">serialize</a></code></li>
 <li><code><a title="fpdf.structure_tree.StructElem.t" href="#fpdf.structure_tree.StructElem.t">t</a></code></li>
 <li><code><a title="fpdf.structure_tree.StructElem.type" href="#fpdf.structure_tree.StructElem.type">type</a></code></li>
 </ul>
@@ -840,8 +896,10 @@ and names) be specified as direct objects</p></div>
 <li>
 <h4><code><a title="fpdf.structure_tree.StructTreeRoot" href="#fpdf.structure_tree.StructTreeRoot">StructTreeRoot</a></code></h4>
 <ul class="">
+<li><code><a title="fpdf.structure_tree.StructTreeRoot.content_stream" href="syntax.html#fpdf.structure_tree.StructTreeRoot.content_stream">content_stream</a></code></li>
 <li><code><a title="fpdf.structure_tree.StructTreeRoot.k" href="#fpdf.structure_tree.StructTreeRoot.k">k</a></code></li>
 <li><code><a title="fpdf.structure_tree.StructTreeRoot.parent_tree" href="#fpdf.structure_tree.StructTreeRoot.parent_tree">parent_tree</a></code></li>
+<li><code><a title="fpdf.structure_tree.StructTreeRoot.serialize" href="syntax.html#fpdf.structure_tree.StructTreeRoot.serialize">serialize</a></code></li>
 <li><code><a title="fpdf.structure_tree.StructTreeRoot.type" href="#fpdf.structure_tree.StructTreeRoot.type">type</a></code></li>
 </ul>
 </li>

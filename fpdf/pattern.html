@@ -55,7 +55,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/pattern.py#L92-L176" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/pattern.py#L92-L176" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Gradient(ABC):
     def __init__(self, colors, background, extend_before, extend_after, bounds):
@@ -163,7 +163,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/pattern.py#L175-L176" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/pattern.py#L175-L176" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_pattern(self):
     return self.pattern</code></pre>
@@ -177,7 +177,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/pattern.py#L162-L173" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/pattern.py#L162-L173" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_shading_object(self):
     if not self._shading_object:
@@ -204,7 +204,7 @@ inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/pattern.py#L179-L229" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/pattern.py#L179-L229" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class LinearGradient(Gradient):
     def __init__(
@@ -315,7 +315,7 @@ Defaults to None, which evenly distributes color stops.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/pattern.py#L15-L33" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/pattern.py#L15-L33" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Pattern(PDFObject):
     &#34;&#34;&#34;
@@ -352,7 +352,7 @@ are not yet implemented.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/pattern.py#L31-L33" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/pattern.py#L31-L33" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def shading(self):
@@ -361,15 +361,29 @@ def shading(self):
 <div class="desc"></div>
 </dd>
 </dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></b></code>:
-<ul class="hlist">
-<li><code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code></li>
-<li><code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code></li>
-</ul>
-</li>
-</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.pattern.Pattern.content_stream"><code class="name flex">
+<span>def <span class="ident">content_stream</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></code>.<code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code>
+</p>
+<div class="desc inherited"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
+</dd>
+<dt id="fpdf.pattern.Pattern.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></code>.<code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code>
+</p>
+<div class="desc inherited"><p>Serialize the PDF object as an obj&lt;&gt;endobj text block</p></div>
+</dd>
+</dl>
 </dd>
 <dt id="fpdf.pattern.RadialGradient"><code class="flex name class">
 <span>class <span class="ident">RadialGradient</span></span>
@@ -379,7 +393,7 @@ def shading(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/pattern.py#L232-L293" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/pattern.py#L232-L293" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class RadialGradient(Gradient):
     def __init__(
@@ -505,7 +519,7 @@ which evenly distributes color stops.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/pattern.py#L68-L89" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/pattern.py#L68-L89" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Shading(PDFObject):
     def __init__(
@@ -535,15 +549,29 @@ which evenly distributes color stops.</dd>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></li>
 </ul>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></b></code>:
-<ul class="hlist">
-<li><code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code></li>
-<li><code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code></li>
-</ul>
-</li>
-</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.pattern.Shading.content_stream"><code class="name flex">
+<span>def <span class="ident">content_stream</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></code>.<code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code>
+</p>
+<div class="desc inherited"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
+</dd>
+<dt id="fpdf.pattern.Shading.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></code>.<code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code>
+</p>
+<div class="desc inherited"><p>Serialize the PDF object as an obj&lt;&gt;endobj text block</p></div>
+</dd>
+</dl>
 </dd>
 <dt id="fpdf.pattern.Type2Function"><code class="flex name class">
 <span>class <span class="ident">Type2Function</span></span>
@@ -553,7 +581,7 @@ which evenly distributes color stops.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/pattern.py#L36-L46" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/pattern.py#L36-L46" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type2Function(PDFObject):
     &#34;&#34;&#34;Transition between 2 colors&#34;&#34;&#34;
@@ -572,15 +600,29 @@ which evenly distributes color stops.</dd>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></li>
 </ul>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></b></code>:
-<ul class="hlist">
-<li><code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code></li>
-<li><code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code></li>
-</ul>
-</li>
-</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.pattern.Type2Function.content_stream"><code class="name flex">
+<span>def <span class="ident">content_stream</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></code>.<code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code>
+</p>
+<div class="desc inherited"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
+</dd>
+<dt id="fpdf.pattern.Type2Function.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></code>.<code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code>
+</p>
+<div class="desc inherited"><p>Serialize the PDF object as an obj&lt;&gt;endobj text block</p></div>
+</dd>
+</dl>
 </dd>
 <dt id="fpdf.pattern.Type3Function"><code class="flex name class">
 <span>class <span class="ident">Type3Function</span></span>
@@ -590,7 +632,7 @@ which evenly distributes color stops.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/pattern.py#L49-L65" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/pattern.py#L49-L65" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3Function(PDFObject):
     &#34;&#34;&#34;When multiple colors are used, a type 3 function is necessary to stitch type 2 functions together
@@ -623,7 +665,7 @@ and define the bounds between each color transition</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/d3da742f209fbb7285df518b12c73c510a23a6bb/fpdf/pattern.py#L63-L65" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/77850453137cc3e40adbe341d458a0dc212fb6c7/fpdf/pattern.py#L63-L65" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def functions(self):
@@ -632,15 +674,29 @@ def functions(self):
 <div class="desc"></div>
 </dd>
 </dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></b></code>:
-<ul class="hlist">
-<li><code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code></li>
-<li><code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code></li>
-</ul>
-</li>
-</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.pattern.Type3Function.content_stream"><code class="name flex">
+<span>def <span class="ident">content_stream</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></code>.<code><a title="fpdf.syntax.PDFObject.content_stream" href="syntax.html#fpdf.syntax.PDFObject.content_stream">content_stream</a></code>
+</p>
+<div class="desc inherited"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
+</dd>
+<dt id="fpdf.pattern.Type3Function.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="fpdf.syntax.PDFObject" href="syntax.html#fpdf.syntax.PDFObject">PDFObject</a></code>.<code><a title="fpdf.syntax.PDFObject.serialize" href="syntax.html#fpdf.syntax.PDFObject.serialize">serialize</a></code>
+</p>
+<div class="desc inherited"><p>Serialize the PDF object as an obj&lt;&gt;endobj text block</p></div>
+</dd>
+</dl>
 </dd>
 </dl>
 </section>
@@ -670,6 +726,8 @@ def functions(self):
 <li>
 <h4><code><a title="fpdf.pattern.Pattern" href="#fpdf.pattern.Pattern">Pattern</a></code></h4>
 <ul class="">
+<li><code><a title="fpdf.pattern.Pattern.content_stream" href="syntax.html#fpdf.pattern.Pattern.content_stream">content_stream</a></code></li>
+<li><code><a title="fpdf.pattern.Pattern.serialize" href="syntax.html#fpdf.pattern.Pattern.serialize">serialize</a></code></li>
 <li><code><a title="fpdf.pattern.Pattern.shading" href="#fpdf.pattern.Pattern.shading">shading</a></code></li>
 </ul>
 </li>
@@ -678,14 +736,24 @@ def functions(self):
 </li>
 <li>
 <h4><code><a title="fpdf.pattern.Shading" href="#fpdf.pattern.Shading">Shading</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.pattern.Shading.content_stream" href="syntax.html#fpdf.pattern.Shading.content_stream">content_stream</a></code></li>
+<li><code><a title="fpdf.pattern.Shading.serialize" href="syntax.html#fpdf.pattern.Shading.serialize">serialize</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="fpdf.pattern.Type2Function" href="#fpdf.pattern.Type2Function">Type2Function</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.pattern.Type2Function.content_stream" href="syntax.html#fpdf.pattern.Type2Function.content_stream">content_stream</a></code></li>
+<li><code><a title="fpdf.pattern.Type2Function.serialize" href="syntax.html#fpdf.pattern.Type2Function.serialize">serialize</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="fpdf.pattern.Type3Function" href="#fpdf.pattern.Type3Function">Type3Function</a></code></h4>
 <ul class="">
+<li><code><a title="fpdf.pattern.Type3Function.content_stream" href="syntax.html#fpdf.pattern.Type3Function.content_stream">content_stream</a></code></li>
 <li><code><a title="fpdf.pattern.Type3Function.functions" href="#fpdf.pattern.Type3Function.functions">functions</a></code></li>
+<li><code><a title="fpdf.pattern.Type3Function.serialize" href="syntax.html#fpdf.pattern.Type3Function.serialize">serialize</a></code></li>
 </ul>
 </li>
 </ul>
