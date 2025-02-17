@@ -224,6 +224,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     MARKDOWN_BOLD_MARKER = "**"
     MARKDOWN_ITALICS_MARKER = "__"
+    MARKDOWN_STRIKETHROUGH_MARKER = "~~"
     MARKDOWN_UNDERLINE_MARKER = "--"
     MARKDOWN_ESCAPE_CHARACTER = "\\"
     MARKDOWN_LINK_REGEX = re.compile(r"^\[([^][]+)\]\(([^()]+)\)(.*)$", re.DOTALL)
@@ -3590,10 +3591,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
             yield Fragment(text, self._get_current_graphics_state(), self.k)
             return
-        txt_frag, in_bold, in_italics, in_underline = (
+        txt_frag, in_bold, in_italics, in_strikethrough, in_underline = (
             [],
             "B" in self.font_style,
             "I" in self.font_style,
+            bool(self.strikethrough),
             bool(self.underline),
         )
         current_fallback_font = None
@@ -3605,6 +3607,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             gstate["font_style"] = ("B" if in_bold else "") + (
                 "I" if in_italics else ""
             )
+            gstate["strikethrough"] = in_strikethrough
             gstate["underline"] = in_underline
             if current_fallback_font:
                 gstate["font_family"] = "".join(
@@ -3634,6 +3637,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             is_marker = text[:2] in (
                 self.MARKDOWN_BOLD_MARKER,
                 self.MARKDOWN_ITALICS_MARKER,
+                self.MARKDOWN_STRIKETHROUGH_MARKER,
                 self.MARKDOWN_UNDERLINE_MARKER,
             )
             half_marker = text[0]
@@ -3655,6 +3659,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     gstate["font_style"] = ("B" if in_bold else "") + (
                         "I" if in_italics else ""
                     )
+                    gstate["strikethrough"] = in_strikethrough
                     gstate["underline"] = in_underline
                     yield TotalPagesSubstitutionFragment(
                         self.str_alias_nb_pages,
@@ -3683,6 +3688,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                             in_bold = not in_bold
                         if text[:2] == self.MARKDOWN_ITALICS_MARKER:
                             in_italics = not in_italics
+                        if text[:2] == self.MARKDOWN_STRIKETHROUGH_MARKER:
+                            in_strikethrough = not in_strikethrough
                         if text[:2] == self.MARKDOWN_UNDERLINE_MARKER:
                             in_underline = not in_underline
                         text = text[2:]

@@ -1,7 +1,7 @@
 # Combine with Markdown
 Several `fpdf2` methods allow Markdown syntax elements:
 
-* [`FPDF.cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) has an optional `markdown=True` parameter that makes it possible to use `**bold**`, `__italics__` or `--underlined--` Markdown markers
+* [`FPDF.cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) has an optional `markdown=True` parameter that makes it possible to use `**bold**`, `__italics__`, `~~strikethrough~~` or `--underlined--` Markdown markers
 * [`FPDF.multi_cell()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) & [`FPDF.table()`](Tables.md) methods have a similar feature
 
 But `fpdf2` also allows for basic conversion **from HTML to PDF** (_cf._ [HTML](HTML.md)).
