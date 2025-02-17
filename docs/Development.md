@@ -230,7 +230,7 @@ Building instructions are contained in [`.github/workflows/continuous-integratio
 ### Main documentation using mkdoc
 Configuration file: [`mkdocs.yml`](https://github.com/py-pdf/fpdf2/blob/master/mkdocs.yml)
 
-To preview the Markdown documentation, launch a local rendering server with:
+To preview the documentation, launch a local rendering server with:
 
     mkdocs serve --open
 

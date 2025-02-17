@@ -132,6 +132,14 @@ jobs:
             *.githubusercontent.com:443
             pypi.org:443
             files.pythonhosted.org:443
+            api.star-history.com:443
+            cdnjs.cloudflare.com:443
+            colab.research.google.com:443
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
+            img.shields.io:443
+            unpkg.com:443
+          # Starting from api.star-history.com, the endpoints whitelist reason is the mkdocs privacy plugin
       - name: Checkout 🛎️
         uses: actions/checkout@v4
       - name: Set up Python 3.13 🔧

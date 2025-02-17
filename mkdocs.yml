@@ -59,10 +59,14 @@ plugins:
   - mknotebooks
   - minify:
       minify_html: true
+      htmlmin_opts:
+        remove_comments: true
+  - privacy
   - redirects:
       redirect_maps:
         'CombineWithChartingLibs.md': 'Maths.md'
         'CombineWithMistletoeoToUseMarkdown.md': 'CombineWithMarkdown.md'
+  - git-revision-date-localized
   #- git-committers:
   #    repository: py-pdf/fpdf2
   #    branch: master
