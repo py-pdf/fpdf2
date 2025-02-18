@@ -26,6 +26,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * documentation on [verifying provenance of `fpdf2` releases](https://py-pdf.github.io/fpdf2/#verifying-provenance)
 * documentation on [`fpdf2` internals](https://py-pdf.github.io/fpdf2/Internals.html)
 * support for adding TrueType fonts that are missing the `.notdef` glyph - [issue #1161](https://github.com/py-pdf/fpdf2/issues/1161)
+* new optional `reset_page_indices` parameter for [`insert_toc_placeholder()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.insert_toc_placeholder)
 ### Fixed
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): Fixed rendering of content following `<a>` tags; now correctly resets emphasis style post `</a>` tag: hyperlink styling contained within the tag authority. - [Issue #1311](https://github.com/py-pdf/fpdf2/issues/1311)
 

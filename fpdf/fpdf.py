@@ -167,6 +167,7 @@ class ToCPlaceholder(NamedTuple):
     y: int
     page_orientation: str
     pages: int = 1
+    reset_page_indices: bool = True
 
 
 # Disabling this check due to the "format" parameter below:
@@ -889,7 +890,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     label_style = current_page_label.get_style()
                 if label_prefix is None:
                     label_prefix = current_page_label.get_prefix()
-                if label_start is None:
+                if label_start is None and not (
+                    self.toc_placeholder and self.toc_placeholder.reset_page_indices
+                ):
                     label_start = current_page_label.get_start()
             label_style = (
                 PageLabelStyle.coerce(label_style, case_sensitive=True)
@@ -5196,6 +5199,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         render_toc_function: Callable,
         pages: int = 1,
         allow_extra_pages: bool = False,
+        reset_page_indices: bool = True,
     ):
         """
         Configure Table Of Contents rendering at the end of the document generation,
@@ -5212,6 +5216,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 extra pages in the ToC, which may cause discrepancies with pre-rendered
                 page numbers. For consistent numbering, using page labels to create a
                 separate numbering style for the ToC is recommended.
+            reset_page_indices (bool): Whether to reset the pages indixes after the ToC. Default to True.
         """
         if not callable(render_toc_function):
             raise TypeError(
@@ -5223,7 +5228,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f" on page {self.toc_placeholder.start_page}"
             )
         self.toc_placeholder = ToCPlaceholder(
-            render_toc_function, self.page, self.y, self.cur_orientation, pages
+            render_toc_function,
+            self.page,
+            self.y,
+            self.cur_orientation,
+            pages,
+            reset_page_indices,
         )
         self._toc_allow_page_insertion = allow_extra_pages
         for _ in range(pages):

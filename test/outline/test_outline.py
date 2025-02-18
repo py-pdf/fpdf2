@@ -407,7 +407,11 @@ def test_insert_toc_placeholder_with_last_page_in_landscape(tmp_path):
     )
 
 
-def test_toc_extra_pages_with_labels(tmp_path):
+@pytest.mark.parametrize(
+    "test_number",
+    tuple(range(3)),
+)
+def test_toc_extra_pages_with_labels(tmp_path, test_number):
     file_content = [
         {
             "name": "Chapter 1: The Origins of Procrastination",
@@ -543,101 +547,98 @@ def test_toc_extra_pages_with_labels(tmp_path):
         pdf.set_y(pdf.h - 10)
         pdf.cell(text=pdf.get_page_label(), center=True)
 
-    for test_number in range(3):
-        pdf = FPDF()
-        pdf.footer = footer
+    pdf = FPDF()
+    pdf.footer = footer
 
-        pdf.add_page()
-        pdf.set_font("helvetica", "", 60)
-        pdf.cell(w=pdf.epw, text="TITLE", align="C")
+    pdf.add_page()
+    pdf.set_font("helvetica", "", 60)
+    pdf.cell(w=pdf.epw, text="TITLE", align="C")
 
-        pdf.set_font("helvetica", "", 12)
+    pdf.set_font("helvetica", "", 12)
 
-        pdf.set_section_title_styles(
-            level0=TextStyle(
-                font_family="helvetica",
-                font_style="B",
-                font_size_pt=16,
-                color="#00316e",
-                b_margin=10,
-            ),
-            level1=TextStyle(
-                font_family="helvetica",
-                font_style="B",
-                font_size_pt=14,
-                t_margin=2.5,
-                b_margin=5,
-            ),
-            level2=TextStyle(
-                font_family="helvetica",
-                font_style="I",
-                font_size_pt=14,
-                t_margin=2.5,
-                b_margin=5,
-            ),
+    pdf.set_section_title_styles(
+        level0=TextStyle(
+            font_family="helvetica",
+            font_style="B",
+            font_size_pt=16,
+            color="#00316e",
+            b_margin=10,
+        ),
+        level1=TextStyle(
+            font_family="helvetica",
+            font_style="B",
+            font_size_pt=14,
+            t_margin=2.5,
+            b_margin=5,
+        ),
+        level2=TextStyle(
+            font_family="helvetica",
+            font_style="I",
+            font_size_pt=14,
+            t_margin=2.5,
+            b_margin=5,
+        ),
+    )
+
+    if test_number == 0:
+        # Test with a standard table of contents
+        pdf.add_page(label_style="r")
+        pdf.start_section("Table of Contents 1", level=0)
+        toc = TableOfContents()
+        pdf.insert_toc_placeholder(toc.render_toc, allow_extra_pages=True)
+
+    if test_number == 1:
+        # Test with a ToC that has a different style using a ttf font
+        pdf.add_page(label_style="R")
+        pdf.start_section("Table of Contents 2", level=0)
+        pdf.multi_cell(
+            w=pdf.epw,
+            text="This is a second table of contents where a custom font is used for the ToC only.",
+            new_x="lmargin",
+            new_y="next",
         )
+        pdf.ln()
+        pdf.multi_cell(
+            w=pdf.epw,
+            text="Also adding extra lines to test the ToC starting renderening from the position the function is invoked.",
+            new_x="lmargin",
+            new_y="next",
+        )
+        pdf.ln()
+        pdf.ln()
+        pdf.add_font(
+            family="Quicksand",
+            fname=HERE.parent / "fonts" / "Quicksand-Regular.otf",
+        )
+        toc = TableOfContents()
+        toc.text_style = TextStyle(font_family="Quicksand", font_size_pt=14)
+        pdf.insert_toc_placeholder(toc.render_toc, allow_extra_pages=True)
 
-        if test_number == 0:
-            # Test with a standard table of contents
-            pdf.add_page(label_style="r")
-            pdf.start_section("Table of Contents 1", level=0)
-            toc = TableOfContents()
-            pdf.insert_toc_placeholder(toc.render_toc, allow_extra_pages=True)
+    if test_number == 2:
+        # Test using the section styles on the ToC
+        pdf.add_page(label_style="a")
+        pdf.start_section("Table of Contents 3", level=0)
+        pdf.multi_cell(
+            w=pdf.epw,
+            text="This is a third table of contents using the same style as the sections.",
+            new_x="lmargin",
+            new_y="next",
+        )
+        pdf.ln()
+        pdf.ln()
+        toc = TableOfContents(use_section_title_styles=True)
+        pdf.insert_toc_placeholder(toc.render_toc, allow_extra_pages=True)
 
-        if test_number == 1:
-            # Test with a ToC that has a different style using a ttf font
-            pdf.add_page(label_style="R")
-            pdf.start_section("Table of Contents 2", level=0)
-            pdf.multi_cell(
-                w=pdf.epw,
-                text="This is a second table of contents where a custom font is used for the ToC only.",
-                new_x="lmargin",
-                new_y="next",
-            )
+    pdf.set_page_label(label_style="D")
+    for index, content in enumerate(file_content):
+        if content["level"] == 0 and index > 0:
+            pdf.add_page()
+        pdf.start_section(content["name"], level=content["level"])
+        for _ in range(content["paragraphs"]):
+            pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM, new_x="lmargin", new_y="next")
             pdf.ln()
-            pdf.multi_cell(
-                w=pdf.epw,
-                text="Also adding extra lines to test the ToC starting renderening from the position the function is invoked.",
-                new_x="lmargin",
-                new_y="next",
-            )
-            pdf.ln()
-            pdf.ln()
-            pdf.add_font(
-                family="Quicksand",
-                fname=HERE.parent / "fonts" / "Quicksand-Regular.otf",
-            )
-            toc = TableOfContents()
-            toc.text_style = TextStyle(font_family="Quicksand", font_size_pt=14)
-            pdf.insert_toc_placeholder(toc.render_toc, allow_extra_pages=True)
 
-        if test_number == 2:
-            # Test using the section styles on the ToC
-            pdf.add_page(label_style="a")
-            pdf.start_section("Table of Contents 3", level=0)
-            pdf.multi_cell(
-                w=pdf.epw,
-                text="This is a third table of contents using the same style as the sections.",
-                new_x="lmargin",
-                new_y="next",
-            )
-            pdf.ln()
-            pdf.ln()
-            toc = TableOfContents(use_section_title_styles=True)
-            pdf.insert_toc_placeholder(toc.render_toc, allow_extra_pages=True)
-
-        pdf.set_page_label(label_style="D")
-        for index, content in enumerate(file_content):
-            if content["level"] == 0 and index > 0:
-                pdf.add_page()
-            pdf.start_section(content["name"], level=content["level"])
-            for _ in range(content["paragraphs"]):
-                pdf.multi_cell(
-                    w=pdf.epw, text=LOREM_IPSUM, new_x="lmargin", new_y="next"
-                )
-                pdf.ln()
-
-        assert_pdf_equal(pdf, HERE / f"toc_with_extra_page_{test_number}.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / f"toc_with_extra_page_{test_number}.pdf", tmp_path)
 
 
 def test_page_label():
@@ -706,11 +707,11 @@ def test_page_label():
     assert pdf.get_page_label() == "Sec-ab"
 
 
-def test_page_label_after_toc():  # cf. issue 1343
+def test_not_reset_page_indices():  # cf. issue 1343
     pdf = FPDF()
     pdf.add_page()
     pdf.set_page_label(label_style="R")
-    pdf.insert_toc_placeholder(TableOfContents().render_toc, allow_extra_pages=True)
+    pdf.insert_toc_placeholder(TableOfContents().render_toc, reset_page_indices=False)
     pdf.set_page_label(label_style="D")
     assert pdf.pages_count == 2
     page_label = pdf.pages[pdf.page].get_page_label()
