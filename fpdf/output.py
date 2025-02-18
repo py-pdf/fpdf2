@@ -254,6 +254,9 @@ class PDFPageLabel:
         return PDFString(self._prefix) if self._prefix else None
 
     def __repr__(self):
+        return f"PDFPageLabel({self._style}, {self._prefix}, {self.st})"
+
+    def __str__(self):
         ret = self._prefix if self._prefix else ""
         if self._style:
             if self._style == PageLabelStyle.NUMBER:
@@ -266,7 +269,7 @@ class PDFPageLabel:
                 ret += int_to_letters(self.st - 1)
             elif self._style == PageLabelStyle.LOWER_LETTER:
                 ret += int_to_letters(self.st - 1).lower()
-        return None if ret == "" else ret
+        return ret
 
     def serialize(self) -> dict:
         return build_obj_dict({key: getattr(self, key) for key in dir(self)})

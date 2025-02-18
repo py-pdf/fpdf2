@@ -870,17 +870,27 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         self.str_alias_nb_pages = alias
 
+    @check_page
     def set_page_label(
         self,
         label_style: Union[str, PageLabelStyle] = None,
         label_prefix: str = None,
         label_start: int = None,
     ):
-        current_page_label = (
-            None if self.page == 1 else self.pages[self.page - 1].get_page_label()
-        )
+        current_page_label = None
+        if self.page in self.pages:
+            current_page_label = self.pages[self.page].get_page_label()
+        elif self.page > 1:
+            current_page_label = self.pages[self.page - 1].get_page_label()
         new_page_label = None
         if label_style or label_prefix or label_start:
+            if current_page_label:
+                if label_style is None:
+                    label_style = current_page_label.get_style()
+                if label_prefix is None:
+                    label_prefix = current_page_label.get_prefix()
+                if label_start is None:
+                    label_start = current_page_label.get_start()
             label_style = (
                 PageLabelStyle.coerce(label_style, case_sensitive=True)
                 if label_style

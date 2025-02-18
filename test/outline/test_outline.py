@@ -704,3 +704,14 @@ def test_page_label():
     assert pdf.get_page_label() == "Sec-aa"
     pdf.add_page()
     assert pdf.get_page_label() == "Sec-ab"
+
+
+def test_page_label_after_toc():  # cf. issue 1343
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_page_label(label_style="R")
+    pdf.insert_toc_placeholder(TableOfContents().render_toc, allow_extra_pages=True)
+    pdf.set_page_label(label_style="D")
+    assert pdf.pages_count == 2
+    page_label = pdf.pages[pdf.page].get_page_label()
+    assert page_label.get_start() == 2

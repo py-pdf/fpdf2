@@ -133,6 +133,8 @@ ROMAN_NUMERAL_MAP = (
 def int2roman(n):
     "Convert an integer to Roman numeral"
     result = ""
+    if n is None:
+        return result
     for numeral, integer in ROMAN_NUMERAL_MAP:
         while n >= integer:
             result += numeral
