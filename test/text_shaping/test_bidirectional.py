@@ -1,6 +1,5 @@
 from pathlib import Path
 from urllib.request import urlopen
-import ssl
 
 from fpdf import FPDF
 from fpdf.bidi import BidiParagraph, auto_detect_base_direction
