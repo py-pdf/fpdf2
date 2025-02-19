@@ -24,6 +24,8 @@ This code produces this PDF file: [fonts_emoji_glyph.pdf](https://github.com/py-
 
 Another font supporting emojis is: [twemoji](https://github.com/13rac1/twemoji-color-font)
 
+!!! warning "`fpdf2` currently **does not support color emojis** (= CBDT/CBLC fonts), but we are actively working on adding support for them 🙂[ _cf._ issue #224](https://github.com/py-pdf/fpdf2/issues/224)"
+
 ## Symbols ##
 
 The **Symbol** font is one of the built-in fonts in the PDF format.

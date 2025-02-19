@@ -166,8 +166,14 @@ class LinearizedOutputProducer(OutputProducer):
         font_objs_per_index = self._add_fonts()
         img_objs_per_index = self._add_images()
         gfxstate_objs_per_name = self._add_gfxstates()
+        shading_objs_per_name = self._add_shadings()
+        pattern_objs_per_name = self._add_patterns()
         resources_dict_obj = self._add_resources_dict(
-            font_objs_per_index, img_objs_per_index, gfxstate_objs_per_name
+            font_objs_per_index,
+            img_objs_per_index,
+            gfxstate_objs_per_name,
+            shading_objs_per_name,
+            pattern_objs_per_name,
         )
         # Part 9: Objects not associated with pages, if any
         for embedded_file in fpdf.embedded_files:

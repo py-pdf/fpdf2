@@ -6,25 +6,20 @@
 
 set -o pipefail -o errexit -o nounset -o xtrace
 
+VERSION=1.27.96
+PUB_KEY_FINGERPRINT=13DD102B4DD69354D12DE5A83184863278B17FE7
+FILENAME=verapdf-greenfield-${VERSION}-installer.zip
+ZIP_URL=https://software.verapdf.org/dev/${VERSION%.*}/${FILENAME}
+
 rm -rf verapdf-*
-wget --quiet https://software.verapdf.org/rel/1.22/verapdf-greenfield-1.22.3-installer.zip
+wget --quiet ${ZIP_URL}
+wget --quiet ${ZIP_URL}.asc
+gpg --keyserver keyserver.ubuntu.com --recv ${PUB_KEY_FINGERPRINT}
+gpg --verify ${FILENAME}.asc
 unzip verapdf*installer.zip
-(
-    # Press 1 to continue, 2 to quit, 3 to redisplay:
-    echo 1
-    # Select the installation path:
-    echo $PWD/verapdf
-    # Enter O for OK, C to Cancel:
-    echo O
-    # Press 1 to continue, 2 to quit, 3 to redisplay:
-    echo 1
-    # Include optional pack 'veraPDF Corpus and Validation model' - Enter Y for Yes, N for No:
-    echo N
-    # Include optional pack 'veraPDF Documentation' - Enter Y for Yes, N for No:
-    echo N
-    # Include optional pack 'veraPDF Sample Plugins' - Enter Y for Yes, N for No:
-    echo N
-    # Press 1 to continue, 2 to quit, 3 to redisplay:
-    echo 1
-) | verapdf-*/verapdf-install
+# Path to verapdf.properties must be relative to verapdf-*/ :
+verapdf-*/verapdf-install -options ../scripts/verapdf.properties
+# verapdf.properties targets an installation in /tmp, because an absolute path is required :
+mv /tmp/verapdf .
+verapdf/verapdf --version
 rm -rf verapdf-*

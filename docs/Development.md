@@ -6,22 +6,22 @@ This page has summary information about developing the fpdf2 library.
 
 ## Repository structure
 
-  * `.github/` - GitHub Actions configuration
-  * `docs/` - documentation folder
-  * `fpdf/` - library sources
-  * `scripts/` - utilities to validate PDF files & publish the package on Pypi
-  * `test/` - non-regression tests
-  * `tutorial/` - tutorials (see also [Tutorial](Tutorial.md))
-  * `README.md` - Github and PyPI ReadMe
-  * `CHANGELOG.md` - details of each release content
-  * `LICENSE` - code license information
-  * `CODEOWNERS` - define individuals or teams responsible for code in this repository
-  * `CONTRIBUTORS.md` - the people who helped build this library ❤️
-  * `setup.cfg`, `setup.py`, `MANIFEST.in` - packaging configuration to publish [a package on Pypi](https://pypi.org/project/fpdf2/)
-  * `mkdocs.yml` - configuration for [MkDocs](https://www.mkdocs.org/)
-  * `tox.ini` - configuration for [Tox](https://tox.readthedocs.io/en/latest/)
-  * `.banditrc.yml` - configuration for [bandit](https://pypi.org/project/bandit/)
-  * `.pylintrc` - configuration for [Pylint](http://pylint.pycqa.org/en/latest/)
+* `.github/` - GitHub Actions configuration
+* `docs/` - documentation folder
+* `fpdf/` - library sources
+* `scripts/` - utilities to validate PDF files & publish the package on Pypi
+* `test/` - non-regression tests
+* `tutorial/` - tutorials (see also [Tutorial](Tutorial.md))
+* `README.md` - Github and PyPI ReadMe
+* `CHANGELOG.md` - details of each release content
+* `LICENSE` - code license information
+* `CODEOWNERS` - define individuals or teams responsible for code in this repository
+* `CONTRIBUTORS.md` - the people who helped build this library ❤️
+* `setup.cfg`, `setup.py`, `MANIFEST.in` - packaging configuration to publish [a package on Pypi](https://pypi.org/project/fpdf2/)
+* `mkdocs.yml` - configuration for [MkDocs](https://www.mkdocs.org/)
+* `tox.ini` - configuration for [Tox](https://tox.readthedocs.io/en/latest/)
+* `.banditrc.yml` - configuration for [bandit](https://pypi.org/project/bandit/)
+* `.pylintrc` - configuration for [Pylint](http://pylint.pycqa.org/en/latest/)
 
 ## Installing fpdf2 from a local git repository
 ```
@@ -43,6 +43,11 @@ black .  # inside fpdf2 root directory
 ## Linting
 We use [pylint](https://github.com/PyCQA/pylint/) as a static code analyzer
 to detect potential issues in the code.
+You can install & execute it by running those commands:
+```
+pip install pylint
+pylint fpdf/ test/
+```
 
 In case of special "false positive" cases,
 checks can be disabled locally with `#pylint disable=XXX` code comments,
@@ -125,21 +130,15 @@ check the output in case of a failed test.
 In order to generate a "reference" PDF file, simply call `assert_pdf_equal`
 once with `generate=True`.
 
+```python
+def test_some_feature(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.rect(10, 10, 60, 80)
+    assert_pdf_equal(pdf, HERE / "some_feature.pdf", tmp_path, generate=True)
 ```
-import fpdf
 
-svg = fpdf.svg.SVGObject.from_file("path/to/file.svg")
-pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
-pdf.add_page()
-svg.draw_to_page(pdf)
-
-assert_pdf_equal(
-    pdf,  
-    "path/for/pdf/output.pdf",
-    "path/for/pdf/",
-    generate=True
-)
-```
+Next you can invoke `pytest path/to/test.py` to generate the file `some_feature.pdf`.
 
 ### Visually comparing all PDF reference files modified on a branch
 This script will build an serve a single HTML page containing
@@ -212,48 +211,52 @@ Ask maintainers through comments if some errors in the pipeline seem obscure to 
 ### Release checklist
 1. complete `CHANGELOG.md` and add the version & date of the new release
 2. bump `FPDF_VERSION` in `fpdf/fpdf.py`.
-Also (optionnal, once every year), update `contributors/contributors-map-small.png` based on <https://py-pdf.github.io/fpdf2/contributors.html>
+Also (optional, once every year), update `contributors/contributors-map-small.png` based on <https://py-pdf.github.io/fpdf2/contributors.html>
 3. update the `announce` block in `docs/overrides/main.html` to mention the new release
 4. `git commit` & `git push` (if editing in a fork: submit and merge a PR)
 5. check that [the GitHub Actions succeed](https://github.com/py-pdf/fpdf2/actions), and that [a new release appears on Pypi](https://pypi.org/project/fpdf2/#history)
 6. perform a [GitHub release](https://github.com/py-pdf/fpdf2/releases), taking the description from the `CHANGELOG.md`.
 It will create a new `git` tag.
-7. Announce the release on [r/pythonnews](https://www.reddit.com/r/pythonnews/),
-   and add an announcement to the documentation website: [docs/overrides/main.html](https://github.com/py-pdf/fpdf2/blob/master/docs/overrides/main.html)
+7. (optional) add a comment mentioning that the feature/fix has been released in all the GitHub issues mentioned in the `CHANGELOG.md`
 
 ## Documentation
-The standalone documentation is in the `docs` subfolder,
-written in [Markdown](https://daringfireball.net/projects/markdown/).
-Building instructions are contained in the configuration file `mkdocs.yml`
-and also in `.github/workflows/continuous-integration-workflow.yml`.
+The standalone documentation is in the `docs/` subfolder, written in Markdown.
 
-Additional documentation is generated from inline comments, and is available
-in the project [home page](https://py-pdf.github.io/fpdf2/fpdf/).
-
-After being committed to the master branch, code documentation is automatically uploaded to
+After being committed to the master branch, documentation is automatically uploaded to
 [GitHub Pages](https://py-pdf.github.io/fpdf2/).
+
+Building instructions are contained in [`.github/workflows/continuous-integration-workflow.yml`](https://github.com/py-pdf/fpdf2/blob/master/.github/workflows/continuous-integration-workflow.yml).
+
+### Main documentation using mkdoc
+Configuration file: [`mkdocs.yml`](https://github.com/py-pdf/fpdf2/blob/master/mkdocs.yml)
+
+To preview the documentation, launch a local rendering server with:
+
+    mkdocs serve --open
+
+### API documentation using pdoc3
+Configuration file: [`docs/pdoc/config.mako`](https://github.com/py-pdf/fpdf2/blob/master/docs/pdoc/config.mako)
+
+It is generated from inline comments, and is available on the [API page](https://py-pdf.github.io/fpdf2/fpdf/).
 
 There is a useful one-page example Python module with docstrings illustrating how to document code:
 [pdoc3 example_pkg](https://github.com/pdoc3/pdoc/blob/master/pdoc/test/example_pkg/__init__.py).
 
-To preview the Markdown documentation, launch a local rendering server with:
-
-    mkdocs serve
-
 To preview the API documentation, launch a local rendering server with:
 
-    pdoc --html -o public/ fpdf --http :
+    pdoc --html -o public/ fpdf --template-dir docs/pdoc --http :
 
 ## PDF spec & new features
 The **PDF 1.7 spec** is available on Adobe website:
 [PDF32000_2008.pdf](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf).
 
-The **PDF 2.0 spec** is available on the [Adobe website](https://developer.adobe.com/document-services/docs/assets/5b15559b96303194340b99820d3a70fa/PDF_ISO_32000-2.pdf) or on the [PDF Association website](https://www.pdfa.org/sponsored-standards)
+The **PDF 2.0 spec** is available on the [Adobe website](https://developer.adobe.com/document-services/docs/assets/5b15559b96303194340b99820d3a70fa/PDF_ISO_32000-2.pdf) or on the [PDF Association website](https://www.pdfa.org/sponsored-standards).
 
 It may be intimidating at first, but while technical, it is usually quite clear and understandable.
 
 It is also a great place to look for new features for `fpdf2`:
 there are still many PDF features that this library does not support.
+
 
 ## Useful tools to manipulate PDFs
 
@@ -269,13 +272,17 @@ qpdf --qdf doc.pdf doc-qdf.pdf
 
 This is extremely useful to peek into the PDF document structure.
 
-### set_pdf_xref.py
+### pdfly
 
-[set_pdf_xref.py](https://github.com/Lucas-C/dotfiles_and_notes/blob/master/languages/python/set_pdf_xref.py) is a small Python script that can **rebuild a PDF xref table**.
+`pdfly` is a very handy CLI tool to manipulate PDF files: [py-pdf/pdfly](https://github.com/py-pdf/pdfly?tab=readme-ov-file#usage).
 
-This is very useful, as a PDF with an invalid xref cannot be opened.
-An xref table is basically an index of the document internal sections.
+Those are some very useful commands:
+
+* `cat`: concatenate pages from PDF files into a single PDF file
+* `meta`: show metadata of a PDF file
+* `x2pdf`: convert one or more files to PDF. Each file is a page.
+* `update-offsets`: rebuild a PDF xref table. This is allows to manually edit a PDF file in a text editor, and then fix its xref table so that a PDF viewer will be able to open it.
+
+A **xref table** is basically an index of the document internal sections.
 When manually modifying a PDF file (for example one produced by `qpdf --qdf`),
 if the characters count in any of its sections changes, the xref table must be rebuilt.
-
-With `set_pdf_xref.py doc.pdf --inplace`, you can change some values inside any PDF file, and then quickly make it valid again to be viewed in a PDF viewer.

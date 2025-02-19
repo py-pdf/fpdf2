@@ -6,13 +6,16 @@ About the original `PyFPDF` lib:
 
 > This project started as a Python fork of the [FPDF](http://fpdf.org/) PHP library,
 > ported to Python by Max Pat in 2006: <http://www.fpdf.org/dl.php?id=94>.
-> Later, code for native reading TTF fonts was added.
-> The project aim is to keep the library up to date, to fulfill the goals of its
-> [original roadmap](https://github.com/reingart/pyfpdf/wiki/Roadmap) and provide
-> a general overhaul of the codebase to address technical debt keeping features from being added and bugs to be eradicated.
-> Until 2015 the code was developed at [Google Code](https://code.google.com/p/pyfpdf/):
-> you can still access the [old issues](https://github.com/reingart/pyfpdf_googlecode/issues),
-> and [old wiki](https://github.com/reingart/pyfpdf_googlecode/tree/wiki).
+> The original FPDF library was developed in PHP several years ago,
+> and has been ported to many programming languages: <http://www.fpdf.org>.
+> Later, in the Python FPDF library, code for native reading TTF fonts was added.
+> In 2008 it was moved from a SVN repository to git on [Google Code](https://code.google.com/p/pyfpdf/)
+> by Mariano Reingart, who became the maintainer of FPDF.
+> In 2013, it was migrated to GitHub: <https://github.com/reingart/pyfpdf>.
+> You can still access the [old issues](https://github.com/reingart/pyfpdf_googlecode/issues),
+> and [old wiki](https://github.com/reingart/pyfpdf_googlecode/tree/wiki),
+> that were moved to a dedicated repository.
+> The original roadmap can also still be found there: <https://github.com/reingart/pyfpdf/wiki/Roadmap>
 
 ## How fpdf2 came to be ##
 
@@ -34,7 +37,7 @@ The same month, Georg Mischler ([@gmischler](https://github.com/gmischler)) and 
 
 The notable exceptions are:
 
-* for the [`cell()` method](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell), the default value of `h` has changed. It used to be `0` and is now set to the current value of `FPDF.font_size`
+* for the [`cell()` method](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell), the default value of `h` has changed. It used to be `0` and is now set to the current value of `FPDF.font_size`
 * the font caching mechanism, that used the `pickle` module, has been **removed**, for security reasons, and because it provided little performance gain, and only for specific use cases - _cf._ [issue #345](https://github.com/py-pdf/fpdf2/issues/345).
 * [Template](https://py-pdf.github.io/fpdf2/fpdf/template.html#fpdf.template.Template) elements now have a **transparent background** by default, instead of white
 

@@ -20,9 +20,6 @@ e.g. Fixes #0 <!-- This will automatically close issue #0 once the PR is merged:
 <!-- To check an item, place an "x" in the box like so: "- [x] Item description"
      Add "N/A" to the end of each line that's irrelevant to your changes -->
 
-- [ ] The GitHub pipeline is OK (green), <!-- The maintainers will trigger it if this is your 1st contribution -->
-      meaning that both `pylint` (static code analyzer) and `black` (code formatter) are happy with the changes of this PR.
-
 - [ ] A unit test is covering the code added / modified by this PR
 
 - [ ] This PR is ready to be merged <!-- In your opinion, can this be merged as soon as it's reviewed? Else, this can be turned into a Draft PR -->

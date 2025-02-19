@@ -5,7 +5,7 @@
 ![Graphics produced by Rough.js](RoughJS.png)
 
 [Rough.js](https://roughjs.com/) is able to produce SVG files
-that can then be embedded by `fpdf2`.
+that can then be embedded by `fpdf2` ([with some limitations regarding SVG support](https://py-pdf.github.io/fpdf2/SVG.html#currently-unsupported-notable-svg-features)).
 
 This documentation page will guide you on how to do so.
 

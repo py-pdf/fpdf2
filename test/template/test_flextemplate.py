@@ -219,7 +219,7 @@ def test_flextemplate_rotation(tmp_path):
     ]
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("courier", "", 10)
+    pdf.set_font("courier", size=10)
     templ = FlexTemplate(pdf, elements)
     templ["qrcode"] = qrcode.make("Test 0").get_image()
     templ.render(offsetx=100, offsety=100, rotate=5)
@@ -489,7 +489,7 @@ def test_flextemplate_leak(tmp_path):  # issue #570
     # rendering a template should not change the current graphics context.
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("helvetica", "", 10)
+    pdf.set_font("helvetica", size=10)
     pdf.cell(text="before", new_x="LEFT", new_y="NEXT")
     tmpldata = [
         {
@@ -516,7 +516,7 @@ def test_flextemplate_wrapmode(tmp_path):
 
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("courier", "", 10)
+    pdf.set_font("courier", size=10)
     templ = FlexTemplate(pdf, charwrap_elements)
     templ.render()
     assert_pdf_equal(pdf, HERE / "flextemplate_wrapmode.pdf", tmp_path)

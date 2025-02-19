@@ -19,7 +19,7 @@ class CoerciveEnum(Enum):
     "An enumeration that provides a helper to coerce strings into enumeration members."
 
     @classmethod
-    def coerce(cls, value):
+    def coerce(cls, value, case_sensitive=False):
         """
         Attempt to coerce `value` into a member of this enumeration.
 
@@ -48,7 +48,7 @@ class CoerciveEnum(Enum):
             except ValueError:
                 pass
             try:
-                return cls[value.upper()]
+                return cls[value] if case_sensitive else cls[value.upper()]
             except KeyError:
                 pass
 
@@ -149,6 +149,7 @@ class CoerciveIntFlag(IntFlag):
 
 class WrapMode(CoerciveEnum):
     "Defines how to break and wrap lines in multi-line text."
+
     WORD = intern("WORD")
     "Wrap by word"
 
@@ -158,6 +159,7 @@ class WrapMode(CoerciveEnum):
 
 class CharVPos(CoerciveEnum):
     "Defines the vertical position of text relative to the line."
+
     SUP = intern("SUP")
     "Superscript"
 
@@ -192,10 +194,13 @@ class Align(CoerciveEnum):
     J = intern("JUSTIFY")
     "Justify text"
 
+    # pylint: disable=arguments-differ
     @classmethod
     def coerce(cls, value):
         if value == "":
             return cls.L
+        if isinstance(value, str):
+            value = value.upper()
         return super(cls, cls).coerce(value)
 
 
@@ -212,6 +217,7 @@ class VAlign(CoerciveEnum):
     B = intern("BOTTOM")
     "Place text at the bottom of the cell, but obey the cells padding"
 
+    # pylint: disable=arguments-differ
     @classmethod
     def coerce(cls, value):
         if value == "":
@@ -239,6 +245,9 @@ class TextEmphasis(CoerciveIntFlag):
     U = 4
     "Underline"
 
+    S = 8
+    "Strikethrough"
+
     @property
     def style(self):
         return "".join(
@@ -264,6 +273,8 @@ class TextEmphasis(CoerciveIntFlag):
                 return cls.I
             if value.upper() == "UNDERLINE":
                 return cls.U
+            if value.upper() == "STRIKETHROUGH":
+                return cls.S
         return super(cls, cls).coerce(value)
 
 
@@ -310,6 +321,74 @@ class TableBordersLayout(CoerciveEnum):
     "Draw only the top horizontal border, below the headings"
 
 
+class CellBordersLayout(CoerciveIntFlag):
+    """Defines how to render cell borders in table
+
+    The integer value of `border` determines which borders are applied. Below are some common examples:
+
+    - border=1 (LEFT): Only the left border is enabled.
+    - border=3 (LEFT | RIGHT): Both the left and right borders are enabled.
+    - border=5 (LEFT | TOP): The left and top borders are enabled.
+    - border=12 (TOP | BOTTOM): The top and bottom borders are enabled.
+    - border=15 (ALL): All borders (left, right, top, bottom) are enabled.
+    - border=16 (INHERIT): Inherit the border settings from the parent element.
+
+    Using `border=3` will combine LEFT and RIGHT borders, as it represents the
+    bitwise OR of `LEFT (1)` and `RIGHT (2)`.
+    """
+
+    NONE = 0
+    "Draw no border on any side of cell"
+
+    LEFT = 1
+    "Draw border on the left side of the cell"
+
+    RIGHT = 2
+    "Draw border on the right side of the cell"
+
+    TOP = 4
+    "Draw border on the top side of the cell"
+
+    BOTTOM = 8
+    "Draw border on the bottom side of the cell"
+
+    ALL = LEFT | RIGHT | TOP | BOTTOM
+    "Draw border on all side of the cell"
+
+    INHERIT = 16
+    "Inherits the border layout from the table borders layout"
+
+    @classmethod
+    def coerce(cls, value):
+        if isinstance(value, int) and value > 16:
+            raise ValueError("INHERIT cannot be combined with other values")
+        return super().coerce(value)
+
+    def __and__(self, value):
+        value = super().__and__(value)
+        if value > 16:
+            raise ValueError("INHERIT cannot be combined with other values")
+        return value
+
+    def __or__(self, value):
+        value = super().__or__(value)
+        if value > 16:
+            raise ValueError("INHERIT cannot be combined with other values")
+        return value
+
+    def __str__(self):
+        border_str = []
+        if self & CellBordersLayout.LEFT:
+            border_str.append("L")
+        if self & CellBordersLayout.RIGHT:
+            border_str.append("R")
+        if self & CellBordersLayout.TOP:
+            border_str.append("T")
+        if self & CellBordersLayout.BOTTOM:
+            border_str.append("B")
+        return "".join(border_str) if border_str else "NONE"
+
+
 class TableCellFillMode(CoerciveEnum):
     "Defines which table cells to fill"
 
@@ -331,6 +410,7 @@ class TableCellFillMode(CoerciveEnum):
     EVEN_COLUMNS = intern("EVEN_COLUMNS")
     "Fill only table cells in even columns"
 
+    # pylint: disable=arguments-differ
     @classmethod
     def coerce(cls, value):
         "Any class that has a .should_fill_cell() method is considered a valid 'TableCellFillMode' (duck-typing)"
@@ -403,6 +483,7 @@ class RenderStyle(CoerciveEnum):
     def is_fill(self):
         return self in (self.F, self.DF)
 
+    # pylint: disable=arguments-differ
     @classmethod
     def coerce(cls, value):
         if not value:
@@ -414,6 +495,7 @@ class RenderStyle(CoerciveEnum):
 
 class TextMode(CoerciveIntEnum):
     "Values described in PDF spec section 'Text Rendering Mode'"
+
     FILL = 0
     STROKE = 1
     FILL_STROKE = 2
@@ -473,6 +555,7 @@ class YPos(CoerciveEnum):
 
 class Angle(CoerciveIntEnum):
     "Direction values used for mirror transformations specifying the angle of mirror line"
+
     NORTH = 90
     EAST = 0
     SOUTH = 270
@@ -927,6 +1010,7 @@ class EncryptionMethod(Enum):
 
 class TextDirection(CoerciveEnum):
     "Text rendering direction for text shaping"
+
     LTR = intern("LTR")
     "left to right"
 
@@ -939,7 +1023,7 @@ class TextDirection(CoerciveEnum):
     BTT = intern("BTT")
     "bottom to top"
 
-
+    
 class OutputIntentSubType(CoerciveEnum):
     "Definition for Output intents"
     PDFX = Name("GTS_PDFX")
@@ -950,3 +1034,70 @@ class OutputIntentSubType(CoerciveEnum):
 
     ISOPDF = Name("ISO_PDFE1")
     "ISO_PDFE1 PDF/E standards (ISO 24517, all parts)"
+
+    
+class PageLabelStyle(CoerciveEnum):
+    "Style of the page label"
+
+    NUMBER = intern("D")
+    "decimal arabic numerals"
+
+    UPPER_ROMAN = intern("R")
+    "uppercase roman numerals"
+
+    LOWER_ROMAN = intern("r")
+    "lowercase roman numerals"
+
+    UPPER_LETTER = intern("A")
+    "uppercase letters A to Z, AA to ZZ, AAA to ZZZ and so on"
+
+    LOWER_LETTER = intern("a")
+    "uppercase letters a to z, aa to zz, aaa to zzz and so on"
+
+    NONE = None
+    "no label"
+
+
+class Duplex(CoerciveEnum):
+    "The paper handling option that shall be used when printing the file from the print dialog."
+
+    SIMPLEX = Name("Simplex")
+    "Print single-sided"
+
+    DUPLEX_FLIP_SHORT_EDGE = Name("DuplexFlipShortEdge")
+    "Duplex and flip on the short edge of the sheet"
+
+    DUPLEX_FLIP_LONG_EDGE = Name("DuplexFlipLongEdge")
+    "Duplex and flip on the long edge of the sheet"
+
+
+class PageBoundaries(CoerciveEnum):
+    ART_BOX = Name("ArtBox")
+    BLEED_BOX = Name("BleedBox")
+    CROP_BOX = Name("CropBox")
+    MEDIA_BOX = Name("MediaBox")
+    TRIM_BOX = Name("TrimBox")
+
+
+class PageOrientation(CoerciveEnum):
+    PORTRAIT = intern("P")
+    LANDSCAPE = intern("L")
+
+    # pylint: disable=arguments-differ
+    @classmethod
+    def coerce(cls, value):
+        if isinstance(value, str):
+            value = value.upper()
+        return super(cls, cls).coerce(value)
+
+
+class PDFResourceType(Enum):
+    EXT_G_STATE = intern("ExtGState")
+    COLOR_SPACE = intern("ColorSpece")
+    PATTERN = intern("Pattern")
+    SHADDING = intern("Shading")
+    X_OBJECT = intern("XObject")
+    FONT = intern("Font")
+    PROC_SET = intern("ProcSet")
+    PROPERTIES = intern("Properties")
+

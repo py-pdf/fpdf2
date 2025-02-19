@@ -1,6 +1,6 @@
 # Introduction #
 
-Templates are predefined documents (like invoices, tax forms, etc.), or parts of such documents, where each element (text, lines, barcodes, etc.) has a fixed position (x1, y1, x2, y2), style (font, size, etc.) and a default text.
+Templates are a `fpdf2` feature that define predefined documents (like invoices, tax forms, etc.), or parts of such documents, where each element (text, lines, barcodes, etc.) has a fixed position (x1, y1, x2, y2), style (font, size, etc.) and a default text.
 
 These elements can act as placeholders, so the program can change the default text "filling in" the document.
 
@@ -265,7 +265,7 @@ f.render("./template.pdf")
 See template.py or [Web2Py] (Web2Py.md) for a complete example.
 
 # Example - Elements defined in JSON file #
-_New in [:octicons-tag-24: 2.7.10](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.8.0](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 The JSON file must consist of an array of objects.
 Each object with its name/value pairs define a template element:

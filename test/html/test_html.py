@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import pytest
@@ -191,6 +192,16 @@ def test_html_bold_italic_underline(tmp_path):
            <b><i><u>all at once!</u></i></b>"""
     )
     assert_pdf_equal(pdf, HERE / "html_bold_italic_underline.pdf", tmp_path)
+
+
+def test_html_strikethrough(tmp_path):
+    pdf = FPDF()
+    pdf.add_font(fname=HERE / "../fonts/DejaVuSans.ttf")
+    pdf.set_font_size(30)
+    pdf.add_page()
+    pdf.write_html("<s>strikethrough</s>")
+    pdf.write_html('<font face="DejaVuSans"><s>strikethrough</s></font>')
+    assert_pdf_equal(pdf, HERE / "html_strikethrough.pdf", tmp_path)
 
 
 def test_html_customize_ul(tmp_path):
@@ -720,6 +731,20 @@ def test_html_and_section_title_styles_with_deprecated_TitleStyle():
         )
 
 
+def test_html_link_underline(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        '<a href="https://py-pdf.github.io/fpdf2/">inside link</a> - outside link'
+    )
+    pdf.write_html(
+        '<a href="https://www.flickr.com/photos/ryzom/14726336322/in/album-72157645935788203/">Tryker</a>'
+        " - Ryzom"
+        ' - <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>'
+    )
+    assert_pdf_equal(pdf, HERE / "html_link_underline.pdf", tmp_path)
+
+
 def test_html_link_style(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -1006,7 +1031,7 @@ def test_bulleted_paragraphs():
             "bullet_r_margin": -3,
         },
     ]
-    pdf.set_font("helvetica", "B", 16)
+    pdf.set_font("helvetica", style="B", size=16)
     for case in cases:
         try:
             text_columns.paragraph(
@@ -1151,7 +1176,6 @@ def test_html_footer_with_call_to_write_html_ko(tmp_path):  # issue-1222
 
 
 def test_html_footer_with_call_to_write_html_ok(tmp_path):  # issue-1222
-
     class MyPDF(FPDF):
         def footer(self):
             self.set_y(-30)
@@ -1188,3 +1212,51 @@ def test_html_font_tag(tmp_path):
         Text in Times 4""",
     )
     assert_pdf_equal(pdf, HERE / "html_font_tag.pdf", tmp_path)
+
+
+def test_html_title(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<head>
+            <title>Document title</title>
+        </head>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_title.pdf", tmp_path)
+
+
+def test_html_title_with_render_title_tag(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<head>
+            <title>Document title</title>
+        </head>""",
+        render_title_tag=True,
+    )
+    assert_pdf_equal(pdf, HERE / "html_title_with_render_title_tag.pdf", tmp_path)
+
+
+def test_html_title_in_body(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<body>
+            <title>Document title</title>
+        </body>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_title_in_body.pdf", tmp_path)
+
+
+def test_html_title_duplicated(caplog, tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    with caplog.at_level(logging.WARN):
+        pdf.write_html(
+            """<head>
+                <title>Hello</title>
+                <title>World</title>
+            </head>"""
+        )
+    assert 'Ignoring repeated <title> "World"' in caplog.text
+    assert_pdf_equal(pdf, HERE / "html_title_duplicated.pdf", tmp_path)

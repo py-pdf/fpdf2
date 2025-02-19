@@ -133,7 +133,7 @@ However, **Pull Request are welcome** to implement missing features!
 
 ### Default font
 
-_New in [:octicons-tag-24: 2.7.10](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.8.0](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 The default font used by [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html) is **Times**.
 
@@ -159,7 +159,7 @@ pdf.output("html_helvetica.pdf")
 * `<h1>` to `<h6>`: headings (and `align` attribute)
 * `<p>`: paragraphs (and `align`, `line-height` attributes)
 * `<br>` & `<hr>` tags
-* `<b>`, `<i>`, `<u>`: bold, italic, underline
+* `<b>`, `<i>`, `<s>`, `<u>`: bold, italic, strikethrough, underline
 * `<font>`: (and `face`, `size`, `color` attributes)
 * `<center>` for aligning
 * `<a>`: links (and `href` attribute) to a file, URL, or page number.
@@ -168,7 +168,7 @@ pdf.output("html_helvetica.pdf")
 * `<ol>`, `<ul>`, `<li>`: ordered, unordered and list items (can be nested)
 * `<dl>`, `<dt>`, `<dd>`: description list, title, details (can be nested)
 * `<sup>`, `<sub>`: superscript and subscript text
-* `<table>`: (with `align`, `border`, `width`, `cellpadding`, `cellspacing` attributes)
+* `<table>`: (with `align`, `border`, `width`, `cellpadding`, `cellspacing` attributes) those tags are rendered using [fpdf2 Tables layout](https://py-pdf.github.io/fpdf2/Tables.html) and the following sub-tags are supported:
     + `<thead>`: optional tag, wraps the table header row
     + `<tfoot>`: optional tag, wraps the table footer row
     + `<tbody>`: optional tag, wraps the table rows with actual content
@@ -178,7 +178,7 @@ pdf.output("html_helvetica.pdf")
 
 ### Page breaks
 
-_New in [:octicons-tag-24: 2.7.10](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+_New in [:octicons-tag-24: 2.8.0](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 Page breaks can be triggered explicitly using the [break-before](https://developer.mozilla.org/en-US/docs/Web/CSS/break-before) or [break-after](https://developer.mozilla.org/en-US/docs/Web/CSS/break-after) CSS properties.
 For exemple you can use:
@@ -205,4 +205,4 @@ You can also check the currently open GitHub issues with the tag `html`:
 
 ## Using Markdown
 
-Check [Combine with mistletoe to use Markdown](CombineWithMistletoeoToUseMarkdown.md)
+Check the dedicated page: [Combine with Markdown](CombineWithMarkdown.md)

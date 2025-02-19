@@ -13,7 +13,7 @@ TABLE_DATA = (
     ("Jules", "Smith", "34", "San Juan"),
     ("Mary", "Ramos", "45", "Orlando"),
     ("Carlson", "Banks", "19", "Los Angeles"),
-    ("Lucas", "Cimon", "31", "Saint-Mathurin-sur-Loire"),
+    ("Lucas", "Cimon", "31", "Angers"),
 )
 pdf = FPDF()
 pdf.add_page()
@@ -38,12 +38,18 @@ Result:
 * control over borders: color, width & where they are drawn
 * handle splitting a table over page breaks, with headings repeated
 * control over cell background color
+* control over cell borders
 * control table width & position
 * control over text alignment in cells, globally or per row
 * allow to embed images in cells
 * merge cells across columns and rows
 
 ## Setting table & column widths
+The `col_widths` optional parameter can be provided to configure this.
+
+If a **single number** is provided as `col_widths`, it is interpreted as a **fixed column width in document units**.
+
+If an **array of numbers** is provided as `col_widths`, the values are considered to be **fractions of the full effective page width**, meaning that `col_widths=(1, 1, 2)` is strictly equivalent to `col_widths=(25, 25, 50)`.
 
 ```python
 ...
@@ -114,22 +120,35 @@ left and right is supplied then c_margin is ignored.
 
 _New in [:octicons-tag-24: 2.7.6](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
 
-Can be set globally or per cell.
-Works the same way as padding, but with the `v_align` parameter.
-
+Can be set globally, per row or per cell, by passing a string or a [VAlign](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.VAlign) enum value as `v_align`:
 ```python
-
+...
 with pdf.table(v_align=VAlign.M) as table:
     ...
-    row.cell(f"custom v-align", v_align=VAlign.T)  # <-- align to top
+    row.cell(f"custom v-align", v_align="TOP")
 ```
 
 ## Setting row height
-
+First, `line_height` can be provided to set the height of every individual line of text:
 ```python
 ...
 with pdf.table(line_height=2.5 * pdf.font_size) as table:
     ...
+```
+
+_New in [:octicons-tag-24: 2.8.3](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+Second, a global `min_row_height` can be set,
+or configured per row as `min_height`:
+```python
+...
+with pdf.table(min_row_height=30) as table:
+    row = table.row()
+    row.cell("A")
+    row.cell("B")
+    row = table.row(min_height=50)
+    row.cell("C")
+    row.cell("D")
 ```
 
 ## Disable table headings
@@ -276,6 +295,68 @@ Result:
 
 All the possible layout values are described
 there: [`TableBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.TableBordersLayout).
+
+## Set cell borders
+
+_New in [:octicons-tag-24: 2.8.2](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Times", size=16)
+with pdf.table() as table:
+    for data_row in TABLE_DATA:
+        row = table.row()
+        for datum in data_row:
+            row.cell(datum, border="LEFT")
+pdf.output('table.pdf')
+```
+
+Result:
+
+![](table_with_cell_border_left.jpg)
+
+```python
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Times", size=16)
+with pdf.table() as table:
+    for data_row in TABLE_DATA:
+        row = table.row()
+        for datum in data_row:
+            row.cell(datum, border="TOP")
+pdf.output('table.pdf')
+```
+
+Result:
+
+![](table_with_cell_border_top.jpg)
+
+```python
+from fpdf import FPDF
+from fpdf.enums import CellBordersLayout
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Times", size=16)
+with pdf.table() as table:
+    for data_row in TABLE_DATA:
+        row = table.row()
+        for datum in data_row:
+            row.cell(datum, border=CellBordersLayout.TOP | CellBordersLayout.LEFT)
+pdf.output('table.pdf')
+```
+
+Result:
+
+![](table_with_cell_border_left_top.jpg)
+
+All the possible borders values are described there: [`CellBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.CellBordersLayout).
+
 
 ## Insert images
 
@@ -479,9 +560,11 @@ Result:
 
 ![](table_with_multiple_headings.png)
 
-## Table from pandas DataFrame
+## Table from pandas DataFrame or spreadsheet files
+We have dedicated pages about those topics:
 
-_cf._ [Maths documentation page](Maths.md#using-pandas)
+* [Maths documentation page](Maths.md#using-pandas)
+* [Rendering spreadsheets as PDF tables](RenderingSpreadsheetsAsPDFTables.md)
 
 ## Using write_html
 

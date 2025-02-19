@@ -1,10 +1,10 @@
-""" Tests related to positioning self.x and self.y on the page.
-    implemented:
-    * ln()
-    to be implemented:
-    * set_x()
-    * set_y()
-    * set_xy()
+"""Tests related to positioning self.x and self.y on the page.
+implemented:
+* ln()
+to be implemented:
+* set_x()
+* set_y()
+* set_xy()
 """
 
 from pathlib import Path

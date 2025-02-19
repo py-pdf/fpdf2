@@ -1,7 +1,7 @@
 # Line breaks #
 
-When using [multi_cell()](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) or
-[write()](fpdf/fpdf.html#fpdf.fpdf.FPDF.write), each time a line reaches the
+When using [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) or
+[write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write), each time a line reaches the
 right extremity of the cell or a carriage return character (`\n`) is met, a
 line break is issued and a new line automatically created under the current
 one.

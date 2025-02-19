@@ -36,6 +36,7 @@ class GraphicsStateMixin:
                 fill_color=self.DEFAULT_FILL_COLOR,
                 text_color=self.DEFAULT_TEXT_COLOR,
                 underline=False,
+                strikethrough=False,
                 font_style="",
                 font_stretching=100,
                 char_spacing=0,
@@ -60,15 +61,18 @@ class GraphicsStateMixin:
         super().__init__(*args, **kwargs)
 
     def _push_local_stack(self, new=None):
-        if new:
-            self.__statestack.append(new)
-        else:
-            self.__statestack.append(self._get_current_graphics_state())
+        "Push a graphics state on the stack"
+        if not new:
+            new = self._get_current_graphics_state()
+        self.__statestack.append(new)
+        return new
 
     def _pop_local_stack(self):
+        "Pop the last graphics state on the stack"
         return self.__statestack.pop()
 
     def _get_current_graphics_state(self):
+        "Retrieve the current graphics state"
         # "current_font" must be shallow copied
         # "text_shaping" must be deep copied (different fragments may have different languages/direction)
         # Doing a whole copy and then creating a copy of text_shaping to achieve this result
@@ -77,6 +81,7 @@ class GraphicsStateMixin:
         return gs
 
     def _is_current_graphics_state_nested(self):
+        "Indicate if the stack contains items (else it is empty)"
         return len(self.__statestack) > 1
 
     @property
@@ -110,6 +115,14 @@ class GraphicsStateMixin:
     @underline.setter
     def underline(self, v):
         self.__statestack[-1]["underline"] = v
+
+    @property
+    def strikethrough(self):
+        return self.__statestack[-1]["strikethrough"]
+
+    @strikethrough.setter
+    def strikethrough(self, v):
+        self.__statestack[-1]["strikethrough"] = v
 
     @property
     def font_style(self):
@@ -341,8 +354,7 @@ class GraphicsStateMixin:
 
     @text_shaping.setter
     def text_shaping(self, v):
-        if v:
-            self.__statestack[-1]["text_shaping"] = v
+        self.__statestack[-1]["text_shaping"] = v
 
     def font_face(self):
         """
@@ -360,3 +372,11 @@ class GraphicsStateMixin:
                 self.fill_color if self.fill_color != self.DEFAULT_FILL_COLOR else None
             ),
         )
+
+
+__pdoc__ = {
+    "GraphicsStateMixin._push_local_stack": True,
+    "GraphicsStateMixin._pop_local_stack": True,
+    "GraphicsStateMixin._get_current_graphics_state": True,
+    "GraphicsStateMixin._is_current_graphics_state_nested": True,
+}

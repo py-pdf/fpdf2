@@ -10,7 +10,7 @@ for more information about what to look out for.
 
 ## Basic usage ##
 
-SVG files can be directly inserted inside a PDF file using the [image()](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method:
+SVG files can be directly inserted inside a PDF file using the [image()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method:
 
 ```python
 from fpdf import FPDF
@@ -183,7 +183,7 @@ Additionally, `cairosvg` offers various options for optimizing the rendering per
 
 ## Warning logs ##
 
-The `fpdf.svg` module produces `WARNING` log messages for **unsupported** SVG tags & attributes.
+The `fpdf.svg` module produces `WARNING` log messages for some **unsupported** SVG tags & attributes.
 If need be, you can suppress those logs:
 
 ```python
@@ -209,11 +209,9 @@ Everything not listed as supported is unsupported, which is a lot. SVG is a
 very complex format that has become increasingly complex as it absorbs
 more of the entire browser rendering stack into its specification.
 
-However,
-there are some pretty commonly used features that are unsupported that may
-cause unexpected results (up to and including a normal-looking SVG rendering as
-a completely blank PDF). It is very likely that off-the-shelf SVGs will not be
-converted fully correctly without some preprocessing.
+However, there are some pretty commonly used features that are unsupported
+and may cause unexpected results, up to and including a normal-looking SVG
+rendering as a completely blank PDF.
 
 There are some common SVG features that are currently **unsupported**, but that `fpdf2` could end up supporting with the help of contributors :
 

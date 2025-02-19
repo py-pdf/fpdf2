@@ -3,6 +3,8 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF, FPDFException
+from fpdf.enums import MethodReturnValue, YPos
+
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
 
@@ -18,6 +20,15 @@ TABLE_DATA = (
     ("Mary", "Ramos", "45", "Orlando"),
     ("Carlson", "Banks", "19", "Los Angeles"),
     ("Lucas", "Cimon", "31", "Angers"),
+)
+
+LONG_TEXT = (
+    "\nProfessor: (Eric Idle) It's an entirely new strain of sheep, a killer sheep that can not only hold a rifle but is also a first-class shot.\n"
+    "Assistant: But where are they coming from, professor?\n"
+    "Professor: That I don't know. I just don't know. I really just don't know. I'm afraid I really just don't know. I'm afraid even I really just"
+    " don't know. I have to tell you I'm afraid even I really just don't know. I'm afraid I have to tell you... (she hands him a glass of water"
+    " which she had been busy getting as soon as he started into this speech) ... thank you ... (resuming normal breezy voice) ... I don't know."
+    " Our only clue is this portion of wolf's clothing which the killer sheep ..."
 )
 
 
@@ -326,17 +337,17 @@ def test_multi_cell_font_leakage(tmp_path):  # Issue #359
     pdf.add_page()
     pdf.add_font("Roboto", fname=FONTS_DIR / "Roboto-Regular.ttf")
     pdf.add_font("Roboto", style="B", fname=FONTS_DIR / "Roboto-Bold.ttf")
-    pdf.set_font("Roboto", "", 12)
+    pdf.set_font("Roboto", size=12)
 
     pdf.multi_cell(0, text="xyz **abcde**", markdown=True)
     pdf.ln()
-    pdf.set_font("Roboto", "", 12)
+    pdf.set_font("Roboto", size=12)
     pdf.multi_cell(0, text="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
     pdf.ln()
     pdf.ln()
     pdf.multi_cell(0, text="xyz **abcde** ", markdown=True)
     pdf.ln()
-    pdf.set_font("Roboto", "", 12)
+    pdf.set_font("Roboto", size=12)
     pdf.multi_cell(0, text="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
     assert_pdf_equal(pdf, HERE / "multi_cell_font_leakage.pdf", tmp_path)
 
@@ -344,7 +355,7 @@ def test_multi_cell_font_leakage(tmp_path):  # Issue #359
 def test_multi_cell_with_zero_horizontal_space():  # issue #389
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 10)
+    pdf.set_font("Helvetica", size=10)
     pdf.multi_cell(w=0, h=5, text="test")
     with pytest.raises(FPDFException):
         pdf.multi_cell(w=0, h=5, text="test")
@@ -353,7 +364,7 @@ def test_multi_cell_with_zero_horizontal_space():  # issue #389
 def test_multi_cell_with_limited_horizontal_space():  # issue #389
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 10)
+    pdf.set_font("Helvetica", size=10)
     pdf.multi_cell(w=pdf.epw - 2 * pdf.c_margin - 1, h=5, text="test")
     assert pdf.x == pdf.l_margin + pdf.epw - 2 * pdf.c_margin - 1
     with pytest.raises(FPDFException):
@@ -379,7 +390,7 @@ def test_multi_cell_font_stretching(tmp_path):  # issue #478
     pdf = FPDF()
     pdf.add_page()
     # built-in font
-    pdf.set_font("Helvetica", "", 8)
+    pdf.set_font("Helvetica", size=8)
     pdf.set_fill_color(255, 255, 0)
     pdf.multi_cell(w=50, text=LOREM_IPSUM[:100], new_x="LEFT", fill=True)
     pdf.ln()
@@ -402,7 +413,7 @@ def test_multi_cell_char_spacing(tmp_path):  # issue #489
     pdf = FPDF()
     pdf.add_page()
     # built-in font
-    pdf.set_font("Helvetica", "", 8)
+    pdf.set_font("Helvetica", size=8)
     pdf.set_fill_color(255, 255, 0)
     pdf.multi_cell(w=150, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
     pdf.ln()
@@ -424,7 +435,7 @@ def test_multi_cell_char_spacing(tmp_path):  # issue #489
 def test_multi_cell_char_wrap(tmp_path):  # issue #649
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", "", 10)
+    pdf.set_font("Helvetica", size=10)
     pdf.set_fill_color(255, 255, 0)
     pdf.multi_cell(w=50, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True)
     pdf.ln()
@@ -432,7 +443,7 @@ def test_multi_cell_char_wrap(tmp_path):  # issue #649
         w=50, text=LOREM_IPSUM[:200], new_x="LEFT", fill=True, wrapmode="CHAR"
     )
     pdf.ln()
-    pdf.set_font("Courier", "", 10)
+    pdf.set_font("Courier", size=10)
     txt = "     " + "abcdefghijklmnopqrstuvwxyz" * 3
     pdf.multi_cell(w=50, text=txt, new_x="LEFT", fill=True, align="L")
     pdf.ln()
@@ -514,3 +525,87 @@ def test_multi_cell_align_with_padding(tmp_path):
     create_boxes("START", "NEXT", "LEFT")
     create_boxes("END", "NEXT", "RIGHT")
     assert_pdf_equal(pdf, HERE / "multi_cell_align_with_padding.pdf", tmp_path)
+
+
+def test_multi_cell_with_padding(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    pdf.multi_cell(0, 5, LONG_TEXT, border=1, padding=(10, 20, 30, 40))
+
+    assert_pdf_equal(pdf, HERE / "multi_cell_with_padding.pdf", tmp_path)
+
+
+def test_multi_cell_with_padding_check_input():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+
+    with pytest.raises(ValueError):
+        pdf.multi_cell(0, 5, LONG_TEXT, border=1, padding=(5, 5, 5, 5, 5, 5))
+
+
+def test_multi_cell_return_value(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+
+    pdf.x = 5
+
+    out = pdf.multi_cell(
+        0,
+        5,
+        "Monty Python\nKiller Sheep",
+        border=1,
+        padding=0,
+        output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
+    )
+    height_without_padding = out[1]
+
+    pdf.x = 5
+    # pdf.y += 50
+
+    # try again
+    out = pdf.multi_cell(
+        0,
+        5,
+        "Monty Python\nKiller Sheep",
+        border=1,
+        padding=0,
+        output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
+    )
+
+    height_without_padding2 = out[1]
+
+    pdf.x = 5
+    # pdf.y += 50
+
+    # try again
+    out = pdf.multi_cell(
+        0,
+        5,
+        "Monty Python\nKiller Sheep",
+        border=1,
+        padding=10,
+        output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
+    )
+
+    height_with_padding = out[1]
+
+    assert height_without_padding == height_without_padding2
+    assert height_without_padding + 20 == height_with_padding
+
+    pdf.x = 5
+    pdf.y += 10
+
+    out = pdf.multi_cell(
+        0,
+        5,
+        "Monty Python\nKiller Sheep",
+        border=1,
+        padding=10,
+        output=MethodReturnValue.PAGE_BREAK | MethodReturnValue.HEIGHT,
+        new_y=YPos.NEXT,
+    )
+
+    assert_pdf_equal(pdf, HERE / "multi_cell_return_value.pdf", tmp_path)

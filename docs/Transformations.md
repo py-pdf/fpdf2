@@ -2,7 +2,7 @@
 
 ## Rotation ##
 
-The [`rotation()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.rotation) context-manager
+The [`rotation()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.rotation) context-manager
 will apply a rotation to all objects inserted in its indented block:
 ```python
 from fpdf import FPDF

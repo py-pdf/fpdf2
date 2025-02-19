@@ -137,12 +137,9 @@ class Name(str):
 
 
 class PDFObject:
-    """
-    Main features of this class:
-    * delay ID assignement
-    * implement serializing
-    """
-
+    # Main features of this class:
+    # * delay ID assignement
+    # * implement serializing
     # Note: several child classes use __slots__ to save up some memory
 
     def __init__(self):
@@ -315,7 +312,7 @@ class PDFDate:
         if self.with_tz:
             assert self.date.tzinfo
             if self.date.tzinfo == timezone.utc:
-                out_str = f"D:{self.date:%Y%m%d%H%M%SZ%H'%M'}"
+                out_str = f"D:{self.date:%Y%m%d%H%M%SZ}"
             else:
                 out_str = f"D:{self.date:%Y%m%d%H%M%S%z}"
                 out_str = out_str[:-2] + "'" + out_str[-2:] + "'"
@@ -331,7 +328,7 @@ class PDFArray(list):
     def serialize(self, _security_handler=None, _obj_id=None):
         if all(isinstance(elem, str) for elem in self):
             serialized_elems = " ".join(self)
-        elif all(isinstance(elem, int) for elem in self):
+        elif all(isinstance(elem, (int, float)) for elem in self):
             serialized_elems = " ".join(str(elem) for elem in self)
         else:
             serialized_elems = "\n".join(

@@ -12,7 +12,7 @@ FONTS_DIR = HERE.parent / "fonts"
 def test_multi_cell_markdown(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.set_font("Times", "", 32)
+    pdf.set_font("Times", size=32)
     text = (  # Some text where styling occur over line breaks:
         "Lorem ipsum dolor amet, **consectetur adipiscing** elit,"
         " sed do eiusmod __tempor incididunt__ ut labore et dolore --magna aliqua--."
@@ -25,10 +25,18 @@ def test_multi_cell_markdown(tmp_path):
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown.pdf", tmp_path)
 
 
+def test_multi_cell_markdown_strikethrough(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=32)
+    pdf.multi_cell(w=pdf.epw, text="~~strikethrough~~", markdown=True)
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_strikethrough.pdf", tmp_path)
+
+
 def test_multi_cell_markdown_escaped(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.set_font("Times", "", 32)
+    pdf.set_font("Times", size=32)
     text = (  # Some text where styling occur over line breaks:
         "Lorem ipsum \\ dolor amet, \\**consectetur adipiscing\\** elit,"
         " sed do eiusmod \\\\__tempor incididunt\\\\__ ut labore et dolore --magna aliqua--."

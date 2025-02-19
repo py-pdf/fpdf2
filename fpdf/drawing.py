@@ -8,6 +8,7 @@ in non-backward-compatible ways.
 
 import copy, decimal, math, re
 from collections import OrderedDict
+
 from collections.abc import Sequence
 from contextlib import contextmanager
 from typing import Optional, NamedTuple, Union

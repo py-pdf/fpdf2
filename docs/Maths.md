@@ -17,7 +17,7 @@ Result:
 
 ![](matplotlib.png)
 
-You can also embed a figure as [SVG](SVG.md):
+You can also embed a figure as [SVG](SVG.md) ([but there may be some limitations](https://py-pdf.github.io/fpdf2/SVG.html#currently-unsupported-notable-svg-features)):
 
 ```python
 from fpdf import FPDF
@@ -82,7 +82,7 @@ Result:
 
 ![](plotly_png.png)
 
-You can also embed a figure as [SVG](SVG.md) but this is not recommended because the text data such as the x and y axis bars might not show as illustrated in the result image because plotly places this data in a svg text tag which is currently [not supported](https://github.com/py-pdf/fpdf2/issues/537) by FPDF2.
+While you can also embed a figure as [SVG](SVG.md), this is not recommended as text data - such as the x and y axis bars - might not be displayed, because `plotly` places this data in a SVG text tag which is currently [not supported by `fpdf2`](https://github.com/py-pdf/fpdf2/issues/537).
 
 Before running this example, please install the required dependencies:
 
@@ -107,7 +107,7 @@ You can install it using: `pip install pygal`
 The full list of supported & unsupported SVG features can be found there: [SVG page](SVG.md#supported-svg-features).
 
 You can find documentation on how to convert vector images (SVG) to raster images (PNG, JPG), with a practical example of embedding PyGal charts, there:
-[SVG page](SVG.md#converting-vector-graphics-to-raster-graphics).
+[SVG page > Converting vector graphics to raster graphics](SVG.md#converting-vector-graphics-to-raster-graphics).
 
 
 ## Mathematical formulas ##

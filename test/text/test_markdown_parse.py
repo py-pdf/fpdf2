@@ -8,6 +8,8 @@ GSTATE_B = GSTATE.copy()
 GSTATE_B["font_style"] = "B"
 GSTATE_I = GSTATE.copy()
 GSTATE_I["font_style"] = "I"
+GSTATE_S = GSTATE.copy()
+GSTATE_S["strikethrough"] = True
 GSTATE_U = GSTATE.copy()
 GSTATE_U["underline"] = True
 GSTATE_BI = GSTATE.copy()
@@ -15,11 +17,17 @@ GSTATE_BI["font_style"] = "BI"
 
 
 def test_markdown_parse_simple_ok():
-    frags = tuple(FPDF()._parse_chars("**bold**, __italics__ and --underlined--", True))
+    frags = tuple(
+        FPDF()._parse_chars(
+            "**bold**, __italics__, ~~strikethrough~~ and --underlined--", True
+        )
+    )
     expected = (
         Fragment("bold", GSTATE_B, k=PDF.k),
         Fragment(", ", GSTATE, k=PDF.k),
         Fragment("italics", GSTATE_I, k=PDF.k),
+        Fragment(", ", GSTATE, k=PDF.k),
+        Fragment("strikethrough", GSTATE_S, k=PDF.k),
         Fragment(" and ", GSTATE, k=PDF.k),
         Fragment("underlined", GSTATE_U, k=PDF.k),
     )

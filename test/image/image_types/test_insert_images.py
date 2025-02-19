@@ -25,6 +25,10 @@ def test_insert_jpg(tmp_path):
     sys.platform in ("cygwin", "win32"),
     reason="Required system libraries to generate JPEG2000 images are a PITA to install under Windows",
 )
+@pytest.mark.skipif(
+    sys.version_info < (3, 9),
+    reason="JPEG2000 changes were done on pillow 11.1.0 which is not available for python 3.8",
+)
 def test_insert_jpg_jpxdecode(tmp_path):
     pdf = fpdf.FPDF()
     pdf.compress = False
@@ -48,6 +52,24 @@ def test_insert_jpg_flatedecode(tmp_path):
         )
     else:
         assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_flatedecode.pdf", tmp_path)
+
+
+@pytest.mark.skipif(
+    sys.version_info.minor != 13,
+    reason="LZWDecode is currently VERY slow, so we want to only execute it ONCE among all Python versions in the test pipeline",
+)
+def test_insert_jpg_lzwdecode(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.compress = False
+    pdf.set_image_filter("LZWDecode")
+    pdf.add_page()
+    pdf.image(HERE / "insert_images_insert_jpg.jpg", x=15, y=15, h=140)
+    if sys.platform in ("cygwin", "win32"):
+        assert_pdf_equal(
+            pdf, HERE / "image_types_insert_jpg_lzwdecode_windows.pdf", tmp_path
+        )
+    else:
+        assert_pdf_equal(pdf, HERE / "image_types_insert_jpg_lzwdecode.pdf", tmp_path)
 
 
 def test_insert_jpg_cmyk(tmp_path):
