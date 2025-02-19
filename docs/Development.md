@@ -208,6 +208,15 @@ static code analysis with `pylint`, unit tests...
 _Pull Requests_ submitted must pass all those checks in order to be approved.
 Ask maintainers through comments if some errors in the pipeline seem obscure to you.
 
+### typos
+[typos](https://github.com/crate-ci/typos) is a handy CLI tool to detect & auto-fix [typos](https://en.wikipedia.org/wiki/Typographical_error) in source files.
+Installation is relatively straightfoward ([read the docs](https://github.com/crate-ci/typos?tab=readme-ov-file#install)).
+
+This tool is invoked in our CI pipeline.
+If it fails, you should either:
+* auto-fix the errors detected by invoking `typos --write-changes`
+* add an exclusion rule to `.typos.toml`
+
 ### Release checklist
 1. complete `CHANGELOG.md` and add the version & date of the new release
 2. bump `FPDF_VERSION` in `fpdf/fpdf.py`.
@@ -261,7 +270,6 @@ there are still many PDF features that this library does not support.
 ## Useful tools to manipulate PDFs
 
 ### qpdf
-
 [qpdf](https://qpdf.sourceforge.io/) is a very powerful tool to analyze PDF documents.
 
 One of it most useful features is the [QDF mode](https://qpdf.readthedocs.io/en/stable/qdf.html) that can convert any PDF file to a human-readable, decompressed & annotated new PDF document:
@@ -273,7 +281,6 @@ qpdf --qdf doc.pdf doc-qdf.pdf
 This is extremely useful to peek into the PDF document structure.
 
 ### pdfly
-
 `pdfly` is a very handy CLI tool to manipulate PDF files: [py-pdf/pdfly](https://github.com/py-pdf/pdfly?tab=readme-ov-file#usage).
 
 Those are some very useful commands:

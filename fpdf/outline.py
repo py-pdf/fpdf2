@@ -198,7 +198,7 @@ class TableOfContents:
             )
 
     def render_toc(self, pdf: "FPDF", outline: List[OutlineSection]):
-        "This method can be overriden by subclasses to customize the Table of Contents style."
+        "This method can be overridden by subclasses to customize the Table of Contents style."
         for section in outline:
             if (
                 self.ignore_pages_before_toc

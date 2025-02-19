@@ -112,7 +112,7 @@ You can find documentation on how to convert vector images (SVG) to raster image
 
 ## Mathematical formulas ##
 `fpdf2` can only insert mathematical formula in the form of **images**.
-The following sections will explaing how to generate and embed such images.
+The following sections will explain how to generate and embed such images.
 
 ### Using Google Charts API ###
 Official documentation: [Google Charts Infographics - Mathematical Formulas](https://developers.google.com/chart/infographics/docs/formulas).

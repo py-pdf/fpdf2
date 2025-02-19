@@ -670,7 +670,7 @@ def test_html_ln_outside_p(tmp_path):
     pdf.add_page()
     pdf.set_font("times", size=18)
     pdf.write_html(
-        "<p>someting in paragraph</p><li>causing _ln() outside paragraph</li>"
+        "<p>something in paragraph</p><li>causing _ln() outside paragraph</li>"
     )
     assert_pdf_equal(pdf, HERE / "html_ln_outside_p.pdf", tmp_path)
 

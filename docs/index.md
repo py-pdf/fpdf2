@@ -81,7 +81,7 @@ To get the latest, unreleased, development version straight from the development
 pip install git+https://github.com/py-pdf/fpdf2.git@master
 ```
 
-**Developement**: check the [dedicated documentation page](Development.md).
+**Development**: check the [dedicated documentation page](Development.md).
 
 ### Verifying provenance
 [`pypi-attestations`](https://pypi.org/project/pypi-attestations/) can be used to check the provenance of a `fpdf2-2.X.Y.tar.gz` or `fpdf2-2.X.Y-py2.py3-none-any.whl` package (_cf._ [PyPI now supports digital attestations](https://blog.pypi.org/posts/2024-11-14-pypi-now-supports-digital-attestations/)).
@@ -146,7 +146,7 @@ Online classes & open source projects:
   We have some documentations about combining `fpdf2` with [`borb`](CombineWithBorb.md) & [`pypdf`](CombineWithPypdf.md).
 * [Create PDFs with Python](https://www.youtube.com/playlist?list=PLjNQtX45f0dR9K2sMJ5ad9wVjqslNBIC0) : a series of tutorial videos by bvalgard
 * [GitHub gist providing borders around any fpdf2 area](https://gist.github.com/hyperstown/88a44b28313549a43255f590f4915b1a), by [@hyperstown](https://github.com/hyperstown)
-* [digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2](https://github.com/digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2) : scripts ported from PHP to add transpareny to elements of the page or part of an image, allow to write circular text,
+* [digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2](https://github.com/digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2) : scripts ported from PHP to add transparency to elements of the page or part of an image, allow to write circular text,
    draw pie charts and bar diagrams, embed JavaScript, draw rectangles with rounded corners, draw a star shape,
    restrict the rendering of some elements to screen or printout, paint linear / radial / multi-color gradients gradients, add stamps & watermarks, write sheared text...
 

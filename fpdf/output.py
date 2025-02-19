@@ -506,7 +506,7 @@ class OutputProducer:
             # get the file_id and generate passwords needed to encrypt streams and strings
             file_id = fpdf.file_id()
             if file_id == -1:
-                # no custom file id - use default file id so enryption passwords can be generated
+                # no custom file id - use default file id so encryption passwords can be generated
                 file_id = fpdf._default_file_id(bytearray(0x00))
             fpdf._security_handler.generate_passwords(file_id)
 
@@ -715,7 +715,7 @@ class OutputProducer:
                     "GDEF",  # Glyph Definition table = various glyph properties used in OpenType layout processing
                     "GPOS",  # Glyph Positioning table = precise control over glyph placement
                     #          for sophisticated text layout and rendering in each script and language system
-                    "GSUB",  # Glyph Substitution table = data for substition of glyphs for appropriate rendering of scripts
+                    "GSUB",  # Glyph Substitution table = data for substitution of glyphs for appropriate rendering of scripts
                     "MATH",  # Mathematical typesetting table = specific information necessary for math formula layout
                     "hdmx",  # Horizontal Device Metrics table, stores integer advance widths scaled to particular pixel sizes
                     #          for OpenType™ fonts with TrueType outlines

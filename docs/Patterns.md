@@ -119,9 +119,9 @@ Both linear and radial gradients support **multiple colors**. If you pass, for e
 For **linear gradients** or **radial gradients**, passing `bounds=[0.2, 0.4, 0.7, ...]` (values between 0 and 1) fine-tunes where each color transition occurs. For instance, if you have 5 colors, you can specify 3 boundary values that partition the color progression among them.
 
 For example, taking a gradient with 5 colors and `bounds=[0.1, 0.8, 0.9]`:
-- The transition from color 1 to color 2 start at the beggining (0%) and ends at 10%
-- The transition from color 2 to color 3 start at 10% and ends at 80%
-- The transition from color 3 to color 4 start at 80% and ends at 90%
-- The transition from color 4 to color 5 start at 90% and goes to the end (100%)
+- The transition from color 1 to color 2 starts at the beginning (0%) and ends at 10%
+- The transition from color 2 to color 3 starts at 10% and ends at 80%
+- The transition from color 3 to color 4 starts at 80% and ends at 90%
+- The transition from color 4 to color 5 starts at 90% and goes to the end (100%)
 
 In other words, each boundary value dictates where the color transitions will occur along the total gradient length.

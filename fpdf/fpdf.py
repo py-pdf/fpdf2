@@ -340,7 +340,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.dash_pattern = dict(dash=0, gap=0, phase=0)
         self.line_width = 0.567 / self.k  # line width (0.2 mm)
         self.text_mode = TextMode.FILL
-        # end of grapics state variables
+        # end of graphics state variables
 
         self.dw_pt, self.dh_pt = get_page_format(format, self.k)
         self._set_orientation(orientation, self.dw_pt, self.dh_pt)
@@ -432,7 +432,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 font to use for `<pre>` & `<code>` blocks - Set `tag_styles` instead
             warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags. Defaults to `True`.
             tag_indents (dict): [**DEPRECATED since v2.8.0**]
-                mapping of HTML tag names to numeric values representing their horizontal left identation. - Set `tag_styles` instead
+                mapping of HTML tag names to numeric values representing their horizontal left indentation. - Set `tag_styles` instead
             tag_styles (dict[str, fpdf.fonts.TextStyle]): mapping of HTML tag names to `fpdf.TextStyle` or `fpdf.FontFace` instances
         """
         html2pdf = self.HTML2FPDF_CLASS(self, *args, **kwargs)
@@ -501,7 +501,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def set_margins(self, left, top, right=-1):
         """
-        Sets the document left, top & optionaly right margins to the same value.
+        Sets the document left, top & optionally right margins to the same value.
         By default, they equal 1 cm.
         Also sets the current FPDF.y on the page to this minimum vertical position.
 
@@ -645,7 +645,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             ) from exc
 
         #
-        # Features must be a dictionary contaning opentype features and a boolean flag
+        # Features must be a dictionary containing opentype features and a boolean flag
         # stating whether the feature should be enabled or disabled.
         #
         # e.g. features={"liga": True, "kern": False}
@@ -1197,7 +1197,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         Args:
             background: either a string representing a file path or URL to an image,
-                an io.BytesIO containg an image as bytes, an instance of `PIL.Image.Image`, drawing.DeviceRGB
+                an io.BytesIO containing an image as bytes, an instance of `PIL.Image.Image`, drawing.DeviceRGB
                 or a RGB tuple representing a color to fill the background with or `None` to remove the background
         """
 
@@ -2915,7 +2915,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Font size can be specified in document units with `font_size` or in points with `font_size_pt`.
 
         Args:
-            **kwargs: key-values settings to set at the beggining of this context.
+            **kwargs: key-values settings to set at the beginning of this context.
         """
         if self._in_unbreakable:
             raise FPDFException(
@@ -3244,7 +3244,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         elif text_line.align == Align.X:
             self.x -= w / 2
 
-        max_font_size = 0  # how much height we need to accomodate.
+        max_font_size = 0  # how much height we need to accommodate.
         # currently all font sizes within a line are vertically aligned on the baseline.
         fragments = text_line.get_ordered_fragments()
         for frag in fragments:
@@ -3549,7 +3549,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def get_fallback_font(self, char, style=""):
         """
         Returns which fallback font has the requested glyph.
-        This method can be overriden to provide more control than the `select_mode` parameter
+        This method can be overridden to provide more control than the `select_mode` parameter
         of `FPDF.set_fallback_fonts()` provides.
         """
         emphasis = TextEmphasis.coerce(style)
@@ -4664,7 +4664,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._out(f"/P <</MCID {mcid}>> BDC")
         yield struct_elem
         if self.page != start_page:
-            raise FPDFException("A page jump occured inside a marked sequence")
+            raise FPDFException("A page jump occurred inside a marked sequence")
         self._out("EMC")
 
     def _add_marked_content(self, **kwargs):
@@ -4879,7 +4879,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             error_msg += f"ToC ended on page {self.page} while it was expected to span exactly {tocp.pages} pages"
             raise FPDFException(error_msg)
         if self._toc_inserted_pages:
-            # Generating final page footer afer more pages were inserted:
+            # Generating final page footer after more pages were inserted:
             self.in_footer = True
             self.footer()
             self.in_footer = False

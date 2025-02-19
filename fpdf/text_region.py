@@ -661,7 +661,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
         if self.balance:
             # Column balancing is currently very simplistic, and only works reliably when
             # line height doesn't change much within the text block.
-            # The "correct" solution would require an exact precalculation of the hight of
+            # The "correct" solution would require an exact precalculation of the height of
             # each column with the specific line heights and iterative regrouping of lines,
             # which seems excessive at this point.
             # Contribution of a more reliable but still reasonably simple algorithm welcome.

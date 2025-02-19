@@ -287,7 +287,7 @@ class MethodReturnValue(CoerciveIntFlag):
     """
 
     PAGE_BREAK = 1
-    "The method will return a boolean indicating if a page break occured"
+    "The method will return a boolean indicating if a page break occurred"
 
     LINES = 2
     "The method will return a multi-lines array of strings, after performing word-wrapping"
@@ -1081,7 +1081,7 @@ class PageOrientation(CoerciveEnum):
 
 class PDFResourceType(Enum):
     EXT_G_STATE = intern("ExtGState")
-    COLOR_SPACE = intern("ColorSpece")
+    COLOR_SPACE = intern("ColorSpace")
     PATTERN = intern("Pattern")
     SHADDING = intern("Shading")
     X_OBJECT = intern("XObject")

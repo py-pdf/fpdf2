@@ -138,7 +138,7 @@ class Name(str):
 
 class PDFObject:
     # Main features of this class:
-    # * delay ID assignement
+    # * delay ID assignment
     # * implement serializing
     # Note: several child classes use __slots__ to save up some memory
 

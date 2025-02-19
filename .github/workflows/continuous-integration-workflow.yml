@@ -71,6 +71,8 @@ jobs:
           guarddog pypi verify docs/requirements.txt
           guarddog pypi verify test/linters-requirements.txt
           guarddog pypi verify test/requirements.txt
+      - name: Spell Check Repo ✍️
+        uses: crate-ci/typos@v1.29.7
   test:
     strategy:
       matrix:
