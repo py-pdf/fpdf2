@@ -65,10 +65,8 @@ def test_bidi_conformance():
             for (indx, char) in enumerate(reordered_characters)
         )
 
-    #  to avoid urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired
-    context = ssl._create_unverified_context()  # pylint: disable=protected-access
     with urlopen(
-        "https://www.unicode.org/Public/15.1.0/ucd/BidiTest.txt", context=context
+        "https://www.unicode.org/Public/15.1.0/ucd/BidiTest.txt"
     ) as url_file:  # nosec B310
         data = url_file.read().decode("utf-8").split("\n")
 
@@ -112,11 +110,8 @@ def test_bidi_character():
     There are 91,707 tests on this file
     """
 
-    #  to avoid urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired
-    context = ssl._create_unverified_context()  # pylint: disable=protected-access
     with urlopen(
-        "https://www.unicode.org/Public/15.1.0/ucd/BidiCharacterTest.txt",
-        context=context,
+        "https://www.unicode.org/Public/15.1.0/ucd/BidiCharacterTest.txt"
     ) as url_file:  # nosec B310
         data = url_file.read().decode("utf-8").split("\n")
 

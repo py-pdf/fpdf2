@@ -921,6 +921,7 @@ class TextDirection(CoerciveEnum):
     BTT = intern("BTT")
     "bottom to top"
 
+
 class OutputIntentSubType(CoerciveEnum):
     "Definition for Output intents"
     PDFX = Name("GTS_PDFX")

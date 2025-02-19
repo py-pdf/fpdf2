@@ -8,6 +8,7 @@ from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
 
+
 def test_output_intents_properties():
     """
     Make sure the properties in PDF return the correct
@@ -68,7 +69,8 @@ def test_output_intents(tmp_path):
         "sRGB",
         'IEC 61966-2-1:1999',
         "http://www.color.org",
-        FPDF.dest_output_profile(fn=HERE / "sRGB2014.icc", N=3, alternate="DeviceRGB"),
+        FPDF.dest_output_profile(fn=HERE / "sRGB2014.icc", N=3,
+                                 alternate="DeviceRGB"),
         "sRGB2014 (v2)",
     )
     # doc.set_output_intents(OutputIntentSubType.PDFX)
@@ -86,4 +88,5 @@ def test_output_intents(tmp_path):
     ):
         doc.set_text_color(*color)
         doc.text(20, 20 + 10 * i, f"{color}")
-    assert_pdf_equal(doc, HERE / "text_color_with_one_output_intent.pdf", tmp_path, generate=False)
+    assert_pdf_equal(doc, HERE / "text_color_with_one_output_intent.pdf",
+                     tmp_path, generate=False)
