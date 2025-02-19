@@ -8,7 +8,8 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-from typing import List, NamedTuple, Optional, TYPE_CHECKING
+from dataclasses import dataclass
+from typing import List, Optional, TYPE_CHECKING
 
 from .enums import Align, XPos, YPos
 from .fonts import TextStyle
@@ -19,12 +20,23 @@ if TYPE_CHECKING:
     from .fpdf import FPDF
 
 
-class OutlineSection(NamedTuple):
+@dataclass
+class OutlineSection:
+    # RAM usage optimization
+    __slots__ = ("name", "level", "page_number", "dest", "struct_elem")
     name: str
     level: int
     page_number: int
     dest: Destination
-    struct_elem: Optional[StructElem] = None
+    struct_elem: Optional[StructElem]
+
+    # With __slots__ used, we need an __init__ method in order to define default values:
+    def __init__(self, name, level, page_number, dest, struct_elem=None):
+        self.name = name
+        self.level = level
+        self.page_number = page_number
+        self.dest = dest
+        self.struct_elem = struct_elem
 
 
 class OutlineItemDictionary(PDFObject):
@@ -58,6 +70,9 @@ class OutlineItemDictionary(PDFObject):
         self.dest = dest
         self.struct_elem = struct_elem
 
+    def __str__(self):
+        return f"OutlineItemDictionary(title={self.title}, dest={self.dest})"
+
 
 class OutlineDictionary(PDFObject):
     __slots__ = ("_id", "type", "first", "last", "count")  # RAM usage optimization
@@ -68,6 +83,9 @@ class OutlineDictionary(PDFObject):
         self.first = None
         self.last = None
         self.count = 0
+
+    def __str__(self):
+        return f"OutlineDictionary(count={self.count})"
 
 
 def build_outline_objs(sections):

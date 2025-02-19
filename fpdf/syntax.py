@@ -377,3 +377,14 @@ class DestinationXYZ(Destination):
         top = round(self.top, 2) if isinstance(self.top, float) else self.top
         assert self.page_ref
         return f"[{self.page_ref} /XYZ {left} {top} {self.zoom}]"
+
+    def replace(self, page=None, top=None, left=None, zoom=None):
+        assert (
+            not self.page_ref
+        ), "DestinationXYZ should not be copied after serialization"
+        return DestinationXYZ(
+            page=self.page_number if page is None else page,
+            top=self.top if top is None else top,
+            left=self.left if left is None else left,
+            zoom=self.zoom if zoom is None else zoom,
+        )

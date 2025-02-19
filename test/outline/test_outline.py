@@ -707,12 +707,32 @@ def test_page_label():
     assert pdf.get_page_label() == "Sec-ab"
 
 
-def test_not_reset_page_indices():  # cf. issue 1343
-    pdf = FPDF()
+def test_toc_no_reset_page_indices(tmp_path):  # cf. issue 1343
+    class CustomFPDF(FPDF):
+        def footer(self):
+            self.set_y(-15)
+            # The page number inserted below is incorrect there :(
+            p(pdf, "Page %s of {nb}" % self.get_page_label(), align="C")
+
+    pdf = CustomFPDF()
+    pdf.set_font("Helvetica", size=12)
+    pdf.set_section_title_styles(TextStyle())
     pdf.add_page()
     pdf.set_page_label(label_style="R")
-    pdf.insert_toc_placeholder(TableOfContents().render_toc, reset_page_indices=False)
+    p(pdf, "**Document title**", align="C", markdown=True)
+    pdf.add_page()
+    pdf.start_section("Table of Content")
+    pdf.insert_toc_placeholder(
+        TableOfContents().render_toc, allow_extra_pages=True, reset_page_indices=False
+    )
     pdf.set_page_label(label_style="D")
-    assert pdf.pages_count == 2
+    assert pdf.pages_count == 3
     page_label = pdf.pages[pdf.page].get_page_label()
-    assert page_label.get_start() == 2
+    assert page_label.get_start() == 3
+
+    for i in range(1, 100):
+        if i > 1:
+            pdf.add_page()
+        pdf.start_section(f"Section {i}")
+
+    assert_pdf_equal(pdf, HERE / "toc_no_reset_page_indices.pdf", tmp_path)

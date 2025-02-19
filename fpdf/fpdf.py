@@ -4896,6 +4896,44 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.in_footer = True
             self.footer()
             self.in_footer = False
+            # We need to reorder the pages, because some new pages have been inserted in the ToC,
+            # but they have been inserted at the end of self.pages:
+            new_pages = [
+                self.pages.pop(len(self.pages)) for _ in range(self._toc_inserted_pages)
+            ]
+            new_pages = list(reversed(new_pages))
+            indices_remap = {}
+            for page_index in range(
+                tocp.start_page + 1, self.pages_count + len(new_pages) + 1
+            ):
+                if page_index in self.pages:
+                    new_pages.append(self.pages.pop(page_index))
+                page = self.pages[page_index] = new_pages.pop(0)
+                # Fix page indices:
+                indices_remap[page.index()] = page_index
+                page.set_index(page_index)
+                # Fix page labels:
+                if tocp.reset_page_indices is False:
+                    page.get_page_label().st = page_index
+            assert len(new_pages) == 0, f"#new_pages: {len(new_pages)}"
+            # Fix outline:
+            for section in self._outline:
+                new_index = indices_remap.get(section.page_number)
+                if new_index is not None:
+                    section.dest = section.dest.replace(page=new_index)
+                    section.page_number = new_index
+                    if section.struct_elem:
+                        # pylint: disable=protected-access
+                        section.struct_elem._page_number = new_index
+            # Fix resource catalog:
+            new_resources_per_page = defaultdict(set)
+            for (
+                page_number,
+                resource_type,
+            ), resource in self._resource_catalog.resources_per_page.items():
+                key = (indices_remap.get(page_number, page_number), resource_type)
+                new_resources_per_page[key] = resource
+            self._resource_catalog.resources_per_page = new_resources_per_page
         self.page, self.y = prev_page, prev_y
 
     def file_id(self):  # pylint: disable=no-self-use
@@ -5287,6 +5325,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             name (str): section name
             level (int): section level in the document outline. 0 means top-level.
+            strict (bool): whether to raise an exception if levels increase incorrectly,
+                for example with a level-3 section following a level-1 section.
         """
         if level < 0:
             raise ValueError('"level" mut be equal or greater than zero')

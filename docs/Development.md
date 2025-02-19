@@ -212,8 +212,9 @@ Ask maintainers through comments if some errors in the pipeline seem obscure to 
 [typos](https://github.com/crate-ci/typos) is a handy CLI tool to detect & auto-fix [typos](https://en.wikipedia.org/wiki/Typographical_error) in source files.
 Installation is relatively straightforward ([read the docs](https://github.com/crate-ci/typos?tab=readme-ov-file#install)).
 
-This tool is invoked in our CI pipeline.
+This tool is invoked in the [pre-commit hooks](#pre-commit-hook) and in our CI pipeline.
 If it fails, you should either:
+
 * auto-fix the errors detected by invoking `typos --write-changes`
 * add an exclusion rule to `.typos.toml`
 
