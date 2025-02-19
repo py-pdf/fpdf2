@@ -32,3 +32,35 @@ def test_image_fit_in_rect(tmp_path):
     )
 
     assert_pdf_equal(pdf, HERE / "image_fit_in_rect.pdf", tmp_path)
+
+
+def test_image_fit_in_rect_with_c_align_center(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.image(
+        HERE / "png_images/6c853ed9dacd5716bc54eb59cec30889.png",
+        w=72,
+        h=102,
+        x="C",
+        keep_aspect_ratio=True,
+    )
+    assert_pdf_equal(pdf, HERE / "image_fit_in_rect_with_c_align_center.pdf", tmp_path)
+
+
+def test_image_fit_in_rect_with_c_align_center_with_downscale(tmp_path):
+    pdf = FPDF()
+    pdf.oversized_images = "DOWNSCALE"
+    pdf.add_page()
+    pdf.image(
+        HERE / "png_images/6c853ed9dacd5716bc54eb59cec30889.png",
+        w=72,
+        h=102,
+        x="C",
+        keep_aspect_ratio=True,
+    )
+    reference_pdf_path = (
+        HERE / "image_fit_in_rect_with_c_align_center_with_downscale.pdf"
+    )
+    assert_pdf_equal(pdf, reference_pdf_path, tmp_path)
+    pdf_with_full_img_path = HERE / "image_fit_in_rect_with_c_align_center.pdf"
+    assert reference_pdf_path.stat().st_size < pdf_with_full_img_path.stat().st_size

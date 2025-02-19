@@ -4,6 +4,7 @@ import qrcode
 from fpdf.fpdf import FPDF
 from fpdf.template import FlexTemplate
 from ..conftest import assert_pdf_equal
+from test.template.charwrap_test_elements import elements as charwrap_elements
 
 HERE = Path(__file__).resolve().parent
 
@@ -508,3 +509,14 @@ def test_flextemplate_leak(tmp_path):  # issue #570
     pdf.ln()
     pdf.cell(text="after", new_x="LEFT", new_y="NEXT")
     assert_pdf_equal(pdf, HERE / "flextemplate_leak.pdf", tmp_path)
+
+
+def test_flextemplate_wrapmode(tmp_path):
+    """Test that wrap mode can optionally be used to set wrapping using characters instead of words"""
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("courier", "", 10)
+    templ = FlexTemplate(pdf, charwrap_elements)
+    templ.render()
+    assert_pdf_equal(pdf, HERE / "flextemplate_wrapmode.pdf", tmp_path)

@@ -88,7 +88,10 @@ def preload_image(image_cache: ImageCache, name, dims=None):
     """
     # Identify and load SVG data:
     if str(name).endswith(".svg"):
-        return get_svg_info(name, load_image(str(name)), image_cache=image_cache)
+        try:
+            return get_svg_info(name, load_image(str(name)), image_cache=image_cache)
+        except Exception as error:
+            raise ValueError(f"Could not parse file: {name}") from error
     if isinstance(name, bytes) and _is_svg(name.strip()):
         return get_svg_info(name, io.BytesIO(name), image_cache=image_cache)
     if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
@@ -269,8 +272,10 @@ def get_img_info(filename, img=None, image_filter="AUTO", dims=None):
             elif img.mode == "CMYK":
                 dpn, bpc, colspace = 4, 8, "DeviceCMYK"
                 jpeg_inverted = True
-            if img.mode == "L":
+            elif img.mode == "L":
                 dpn, bpc, colspace = 1, 8, "DeviceGray"
+            else:
+                raise ValueError(f"Unsupported image mode: {img.mode}")
             img_raw_data.seek(0)
             info.update(
                 {

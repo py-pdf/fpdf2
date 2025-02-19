@@ -352,6 +352,33 @@ def test_table_with_single_top_line_layout_and_page_break(tmp_path):  # PR #912
     )
 
 
+def test_table_with_page_break_and_headings_repeated(tmp_path):  # issue 1151
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=16)
+    pdf.cell(text="repeat_headings=1:", new_y="NEXT")
+    with pdf.table(
+        MULTILINE_TABLE_DATA,
+        repeat_headings=1,
+    ):
+        pass
+    pdf.cell(text='repeat_headings="NONE":', new_y="NEXT")
+    with pdf.table(
+        MULTILINE_TABLE_DATA,
+        repeat_headings="NONE",
+    ):
+        pass
+    pdf.cell(text='repeat_headings="ON_TOP_OF_EVERY_PAGE":', new_y="NEXT")
+    with pdf.table(
+        MULTILINE_TABLE_DATA,
+        repeat_headings="ON_TOP_OF_EVERY_PAGE",
+    ):
+        pass
+    assert_pdf_equal(
+        pdf, HERE / "table_with_page_break_and_headings_repeated.pdf", tmp_path
+    )
+
+
 def test_table_align(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -775,3 +802,30 @@ def test_table_cell_fill_mode(tmp_path):
             pass
         pdf.ln()
     assert_pdf_equal(pdf, HERE / "table_cell_fill_mode.pdf", tmp_path)
+
+
+def test_table_with_very_long_text():
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica")
+    with pytest.raises(ValueError) as error:
+        with pdf.table() as table:
+            row = table.row()
+            row.cell(LOREM_IPSUM)
+            # Adding columns to have the content of the 1st cell to overflow:
+            row.cell("")
+            row.cell("")
+    assert (
+        str(error.value)
+        == "The row with index 0 is too high and cannot be rendered on a single page"
+    )
+    with pytest.raises(ValueError) as error:
+        with pdf.table() as table:
+            row = table.row()
+            row.cell("")
+            row.cell("")
+            row.cell(LOREM_IPSUM)
+    assert (
+        str(error.value)
+        == "The row with index 0 is too high and cannot be rendered on a single page"
+    )

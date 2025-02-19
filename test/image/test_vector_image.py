@@ -31,7 +31,7 @@ def test_svg_image_fixed_dimensions(tmp_path):
 
 
 def test_svg_image_no_dimensions(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = fpdf.FPDF(format=(350, 350))
     pdf.add_page()
     # This image has a 300x300 viewbox but no width/height:
     pdf.image(SVG_SRCDIR / "SVG_logo_no_dimensions.svg")
@@ -115,13 +115,21 @@ def test_svg_image_with_custom_size_and_no_viewbox(tmp_path):
 def test_svg_image_no_viewbox_nor_width_and_height():
     pdf = fpdf.FPDF()
     pdf.add_page()
-    with pytest.raises(ValueError):
-        pdf.image(SVG_SRCDIR / "simple_rect_no_viewbox_nor_width_and_height.svg")
-    with pytest.raises(ValueError):
-        pdf.image(
-            SVG_SRCDIR / "simple_rect_no_viewbox_nor_width_and_height.svg",
-            w=60,
-        )
+    fname = "simple_rect_no_viewbox_nor_width_and_height.svg"
+    with pytest.raises(ValueError) as error:
+        pdf.image(SVG_SRCDIR / fname)
+    assert fname in str(error.value)
+    with pytest.raises(ValueError) as error:
+        pdf.image(SVG_SRCDIR / fname, w=60)
+
+
+def test_svg_image_with_unsupported_color():
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    fname = "unsupported-color.svg"
+    with pytest.raises(ValueError) as error:
+        pdf.image(SVG_SRCDIR / fname)
+    assert fname in str(error.value)
 
 
 def test_svg_image_style_inherited_from_fpdf(tmp_path):

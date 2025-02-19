@@ -141,6 +141,14 @@ assert_pdf_equal(
 )
 ```
 
+### Visually comparing all PDF reference files modified on a branch
+This script will build an serve a single HTML page containing
+all PDF references file modified on your current `git` branch,
+and render them side by side with the PDF file from the `master` branch,
+so that you can quickly scroll and check for visible differences:
+
+    scripts/compare-changed-pdfs.py
+
 ## Testing performances
 
 ### Code speed & profiling
@@ -239,6 +247,8 @@ To preview the API documentation, launch a local rendering server with:
 ## PDF spec & new features
 The **PDF 1.7 spec** is available on Adobe website:
 [PDF32000_2008.pdf](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf).
+
+The **PDF 2.0 spec** is available on the [Adobe website](https://developer.adobe.com/document-services/docs/assets/5b15559b96303194340b99820d3a70fa/PDF_ISO_32000-2.pdf) or on the [PDF Association website](https://www.pdfa.org/sponsored-standards)
 
 It may be intimidating at first, but while technical, it is usually quite clear and understandable.
 

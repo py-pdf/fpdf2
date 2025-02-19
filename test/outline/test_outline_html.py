@@ -18,24 +18,24 @@ def test_html_toc(tmp_path):
         <u>Table of content:</u>
         <br>
         <toc></toc>
-        <section><h2>Subtitle 1</h2><br>
+        <section><h2>Subtitle 1</h2>
             <section><h3>Subtitle 1.1</h3>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit,
             sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
             </section>
             <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-            <section><h3>Subtitle 1.2</h3><br>
+            <section><h3>Subtitle 1.2</h3>
             Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
             </section>
         </section>
         <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
         <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
         <section><h2>Subtitle 2</h2><br>
-            <section><h3>Subtitle 2.1</h3><br>
+            <section><h3>Subtitle 2.1</h3>
             Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
             </section>
             <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-            <section><h3>Subtitle 2.2</h3><br>
+            <section><h3>Subtitle 2.2</h3>
             Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
             </section>
         </section>
@@ -251,7 +251,7 @@ class CustomHTML2FPDF(HTML2FPDF):
             )
 
 
-def test_custom_HTML2FPDF(tmp_path):  # issue 240 & 670
+def test_html_toc_with_custom_rendering(tmp_path):  # issue 240 & 670
     class PDF(FPDF):
         HTML2FPDF_CLASS = CustomHTML2FPDF
 
@@ -271,4 +271,4 @@ def test_custom_HTML2FPDF(tmp_path):  # issue 240 & 670
         <h6>Level 6</h6>
         <p>paragraph</p>"""
         )
-    assert_pdf_equal(pdf, HERE / "custom_HTML2FPDF.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "html_toc_with_custom_rendering.pdf", tmp_path)

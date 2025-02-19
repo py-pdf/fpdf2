@@ -779,6 +779,10 @@ test_svg_sources = (
         svgfile("issue-1076.svg"),
         id="<clipPath> containing a <path>",
     ),
+    pytest.param(
+        svgfile("path_clippingpath.svg"),
+        id="<clipPath> containing a <path> used in a group with color - issue #1147",
+    ),
 )
 
 svg_path_edge_cases = (

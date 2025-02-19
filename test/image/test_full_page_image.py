@@ -31,7 +31,7 @@ def test_full_pdf_width_image(tmp_path):  # issue-528
     pdf = FPDF()
     pdf.set_margin(0)
     pdf.add_page()
-    pdf.image(HERE / "png_images/51a4d21670dc8dfa8ffc9e54afd62f5f.png", w=pdf.epw)
+    pdf.image(HERE / "png_images/ba2b2b6e72ca0e4683bb640e2d5572f8.png", w=pdf.epw)
     assert_pdf_equal(pdf, HERE / "full_pdf_width_image.pdf", tmp_path)
 
 

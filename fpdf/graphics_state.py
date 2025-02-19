@@ -55,7 +55,7 @@ class GraphicsStateMixin:
                 nom_lift=0.2,
                 denom_lift=0.0,
                 text_shaping=None,
-            ),
+            )
         ]
         super().__init__(*args, **kwargs)
 
@@ -75,6 +75,9 @@ class GraphicsStateMixin:
         gs = copy(self.__statestack[-1])
         gs["text_shaping"] = copy(gs["text_shaping"])
         return gs
+
+    def _is_current_graphics_state_nested(self):
+        return len(self.__statestack) > 1
 
     @property
     def draw_color(self):

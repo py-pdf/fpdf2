@@ -13,6 +13,8 @@ from typing import NamedTuple
 from fontTools.svgLib.path import parse_path
 from fontTools.pens.basePen import BasePen
 
+from .enums import PathPaintRule
+
 try:
     from defusedxml.ElementTree import fromstring as parse_xml_str
 except ImportError:
@@ -299,38 +301,19 @@ svg_attr_map = {
 
 
 @force_nodocument
-def parse_style(svg_element):
-    """Parse `style="..."` making it's key-value pairs element's attributes"""
-    try:
-        style = svg_element.attrib["style"]
-    except KeyError:
-        pass
-    else:
-        for element in style.split(";"):
-            if not element:
-                continue
-
-            pair = element.split(":")
-            if len(pair) == 2 and pair[0] and pair[1]:
-                attr, value = pair
-
-                svg_element.attrib[attr.strip()] = value.strip()
-
-
-@force_nodocument
 def apply_styles(stylable, svg_element):
     """Apply the known styles from `svg_element` to the pdf path/group `stylable`."""
-    parse_style(svg_element)
+    style = html.parse_css_style(svg_element.attrib.get("style", ""))
 
     stylable.style.auto_close = False
 
     for attr_name, converter in svg_attr_map.items():
-        value = svg_element.attrib.get(attr_name)
+        value = style.get(attr_name, svg_element.attrib.get(attr_name))
         if value:
             setattr(stylable.style, *converter(value))
 
     # handle this separately for now
-    opacity = svg_element.attrib.get("opacity")
+    opacity = style.get("opacity", svg_element.attrib.get("opacity"))
     if opacity:
         opacity = float(opacity)
         stylable.style.fill_opacity = opacity
@@ -982,6 +965,7 @@ class SVGObject:
         elif shape.tag in xmlns_lookup("svg", "path"):
             clipping_path_shape = PaintedPath()
             apply_styles(clipping_path_shape, shape)
+            clipping_path_shape.paint_rule = PathPaintRule.DONT_PAINT
             svg_path = shape.attrib.get("d")
             if svg_path is not None:
                 svg_path_converter(clipping_path_shape, svg_path)

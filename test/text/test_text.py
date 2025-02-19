@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF, FPDFException
+from fpdf.drawing import DeviceCMYK
 from test.conftest import assert_pdf_equal
 
 TEXT_SIZE, SPACING = 36, 1.15
@@ -88,6 +89,10 @@ def test_text_color(tmp_path):
     ):
         doc.set_text_color(*color)
         doc.text(20, 20 + 10 * i, f"{color}")
+    color = DeviceCMYK(0.32, 0, 0.1, 0.59)
+    doc.set_text_color(color)
+    i += 1
+    doc.text(20, 20 + 10 * i, f"{color}")
     assert_pdf_equal(doc, HERE / "text_color.pdf", tmp_path)
 
 

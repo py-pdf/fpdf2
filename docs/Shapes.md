@@ -43,10 +43,12 @@ pdf.add_page()
 pdf.set_line_width(2)
 pdf.set_draw_color(240)
 pdf.set_fill_color(r=230, g=30, b=180)
-pdf.circle(x=50, y=50, r=50, style="FD")
+pdf.circle(x=50, y=50, radius=50, style="FD")
 pdf.output("circle.pdf")
 ```
 ![](circle.png)
+
+!!! warning "This method changed parameters in [release 2.8.0](https://github.com/py-pdf/fpdf2/releases/tag/2.8.0)"
 
 ## Ellipse ##
 
@@ -160,6 +162,30 @@ pdf.solid_arc(x=135, y=75, a=25, b=25, start_angle=0, end_angle=130, style="FD")
 pdf.output("solid_arc.pdf")
 ```
 ![](solid_arc.png)
+
+## Bezier Curve ##
+_New in [:octicons-tag-24: 2.7.10](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+Using [`bezier()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.bezier) to create a cubic Bézier curve:
+```python
+from fpdf import FPDF
+pdf = FPDF()
+pdf.add_page()
+pdf.set_fill_color(r=255, g=0, b=255)
+pdf.bezier([(20, 80), (40, 20), (60, 80)], style="DF")
+pdf.output("bezier.pdf")
+```
+
+![](bezier.png)
+
+One of the nice properties of Bézier curves is that they can be chained:
+
+![](bezier-chaining.png)
+
+Note that, for smooth joining cubic Bézier curves, neighbor control points around the joining point must mirror each other
+(_cf._ [Wikipedia](https://en.wikipedia.org/wiki/Composite_B%C3%A9zier_curve#Smooth_joining)).
+
+Source code: [test_bezier_chaining() in test_bezier.py](https://github.com/py-pdf/fpdf2/blob/master/test/shapes/test_bezier.py)
 
 ## Regular Polygon ##
 

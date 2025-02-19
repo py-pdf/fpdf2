@@ -245,6 +245,14 @@ class TextEmphasis(CoerciveIntFlag):
             name for name, value in self.__class__.__members__.items() if value & self
         )
 
+    def add(self, value: "TextEmphasis"):
+        return self | value
+
+    def remove(self, value: "TextEmphasis"):
+        return TextEmphasis.coerce(
+            "".join(s for s in self.style if s not in value.style)
+        )
+
     @classmethod
     def coerce(cls, value):
         if isinstance(value, str):
@@ -352,6 +360,16 @@ class TableSpan(CoerciveEnum):
 
     COL = intern("COL")
     "Mark this cell as a continuation of the previous column"
+
+
+class TableHeadingsDisplay(CoerciveIntEnum):
+    "Defines how the table headings should be displayed"
+
+    NONE = 0
+    "0: Only render the table headings at the beginning of the table"
+
+    ON_TOP_OF_EVERY_PAGE = 1
+    "1: When a page break occurs, repeat the table headings at the top of every table fragment"
 
 
 class RenderStyle(CoerciveEnum):
