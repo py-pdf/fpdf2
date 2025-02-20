@@ -1049,16 +1049,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def _render_footer(self):
         self.in_footer = True
-        should_protect_graphics_state = (
-            self.toc_placeholder and self.toc_placeholder.start_page == self.page
-        )
-        if should_protect_graphics_state:
+        if self.toc_placeholder:
             # The ToC is rendered AFTER the footer,
             # so we must ensure there is no "style leak":
             self._push_local_stack()
             self._start_local_context()
         self.footer()
-        if should_protect_graphics_state:
+        if self.toc_placeholder:
             self._end_local_context()
             self._pop_local_stack()
         self.in_footer = False

@@ -746,9 +746,12 @@ def test_footer_leaking_style_on_toc(tmp_path):
             self.cell(w=0, text="FOOTER", align="C")
 
     pdf = CustomFPDF()
-    pdf.set_font("Helvetica", size=12)
+    pdf.set_font("Helvetica", size=16)
     pdf.set_section_title_styles(TextStyle())  # Use default style
     pdf.add_page()
     pdf.insert_toc_placeholder(TableOfContents().render_toc, allow_extra_pages=True)
-    pdf.start_section("Section 1")
+    for i in range(1, 100):
+        if i > 1:
+            pdf.add_page()
+        pdf.start_section(f"Section {i}")
     assert_pdf_equal(pdf, HERE / "footer_leaking_style_on_toc.pdf", tmp_path)
