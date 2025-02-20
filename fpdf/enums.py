@@ -1023,7 +1023,19 @@ class TextDirection(CoerciveEnum):
     BTT = intern("BTT")
     "bottom to top"
 
+    
+class OutputIntentSubType(CoerciveEnum):
+    "Definition for Output intents"
+    PDFX = Name("GTS_PDFX")
+    "PDF/X-1a which is based upon CMYK processing"
 
+    PDFA = Name("GTS_PDFA1")
+    "PDF/A (ISO 19005) standard to produce RGB output"
+
+    ISOPDF = Name("ISO_PDFE1")
+    "ISO_PDFE1 PDF/E standards (ISO 24517, all parts)"
+
+    
 class PageLabelStyle(CoerciveEnum):
     "Style of the page label"
 
@@ -1088,3 +1100,4 @@ class PDFResourceType(Enum):
     FONT = intern("Font")
     PROC_SET = intern("ProcSet")
     PROPERTIES = intern("Properties")
+

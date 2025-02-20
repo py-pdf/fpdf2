@@ -94,6 +94,7 @@ from .enums import (
     WrapMode,
     XPos,
     YPos,
+    OutputIntentSubType,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
 from .fonts import CoreFont, CORE_FONTS, FontFace, TextStyle, TitleStyle, TTFFont
@@ -301,6 +302,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.oversized_images = None
         self.oversized_images_ratio = 2  # number of pixels per UserSpace point
         self.struct_builder = StructureTreeBuilder()
+
         self.toc_placeholder = None  # optional ToCPlaceholder instance
         self._outline: list[OutlineSection] = []  # list of OutlineSection
         # flag set true while rendering the table of contents
@@ -308,6 +310,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # allow page insertion when writing the table of contents
         self._toc_allow_page_insertion = False
         self._toc_inserted_pages = 0  # number of pages inserted
+        self._output_intents = None  # optional list of Output Intents
+
         self._sign_key = None
         self.title = None
         self.section_title_styles = {}  # level -> TextStyle
@@ -468,6 +472,65 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self._set_min_pdf_version("1.6")
         elif self._page_mode == PageMode.USE_OC:
             self._set_min_pdf_version("1.5")
+
+    @property
+    def output_intents(self):
+        return self._output_intents
+
+    @staticmethod
+    def dest_output_profile(fn: str =None, N: int = None, alternate: str = None):
+        """
+        returns dict for dest_output_profile:
+            fn=Path to ICC Profile,
+            N=[1|3|4], # depends on the numbers for colors 1=Gray, 3=RGB, 4=CMYK,
+            alternate=['DeviceGray'|'DeviceRGB'|'DeviceCMYK']
+        """
+        return dict(fn=fn, N=N, alternate=alternate)
+
+    # @output_intents.setter
+    def set_output_intents(
+        self,
+        subtype: OutputIntentSubType,
+        output_condition_identifier: str = None,
+        output_condition: str = None,
+        registry_name: str = None,
+        dest_output_profile: dict = None,
+        info: str = None,
+    ):
+        """
+        Adds Desired Output Intent to the Output Intents Array:
+
+        Allowed Args:
+        subtype (required) : PDFA, PDFX or ISOPDF
+        output_condition_identifier (required): see the Name in https://www.color.org/registry.xalter
+        output_condition (optional): see the Definition in https://www.color.org/registry.xalter
+        registry_name (optional): https://www.color.org
+        info (required/optional see dest_output_profile): String
+        dest_output_profile:
+          (required if output_condition_identifier
+            does not specify a standard production condition; optional otherwise): None |
+            FPDF.dest_output_profile(
+                fn=Path to ICC Profile,
+                N=[1|3|4], # depends on the numbers for colors 1=Gray, 3=RGB, 4=CMYK
+                alternate=['DeviceGray'|'DeviceRGB'|'DeviceCMYK'])
+        """
+        if self.output_intents is None:
+            self._output_intents = []
+            self._set_min_pdf_version("1.4")
+        subtypes_in_arr = [
+            _["subtype"].value for _ in self.output_intents
+        ]  # list(map(lambda item: item["subtype"].value, self.output_intents))
+        if subtype.value not in subtypes_in_arr:
+            self._output_intents.append(
+                {
+                    "subtype": OutputIntentSubType.coerce(subtype),
+                    "output_condition_identifier": output_condition_identifier,
+                    "output_condition": output_condition,
+                    "dest_output_profile": dest_output_profile,
+                    "info": info,
+                    "registry_name": registry_name,
+                }
+            )
 
     @property
     def epw(self):
