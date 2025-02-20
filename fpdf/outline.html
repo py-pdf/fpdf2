@@ -60,7 +60,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L73-L109" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L91-L127" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def build_outline_objs(sections):
     &#34;&#34;&#34;
@@ -116,7 +116,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L62-L70" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L77-L88" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineDictionary(PDFObject):
     __slots__ = (&#34;_id&#34;, &#34;type&#34;, &#34;first&#34;, &#34;last&#34;, &#34;count&#34;)  # RAM usage optimization
@@ -126,7 +126,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.type = &#34;/Outlines&#34;
         self.first = None
         self.last = None
-        self.count = 0</code></pre>
+        self.count = 0
+
+    def __str__(self):
+        return f&#34;OutlineDictionary(count={self.count})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 <h3>Ancestors</h3>
@@ -140,7 +143,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L62-L70" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L77-L88" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineDictionary(PDFObject):
     __slots__ = (&#34;_id&#34;, &#34;type&#34;, &#34;first&#34;, &#34;last&#34;, &#34;count&#34;)  # RAM usage optimization
@@ -150,7 +153,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.type = &#34;/Outlines&#34;
         self.first = None
         self.last = None
-        self.count = 0</code></pre>
+        self.count = 0
+
+    def __str__(self):
+        return f&#34;OutlineDictionary(count={self.count})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -159,7 +165,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L62-L70" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L77-L88" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineDictionary(PDFObject):
     __slots__ = (&#34;_id&#34;, &#34;type&#34;, &#34;first&#34;, &#34;last&#34;, &#34;count&#34;)  # RAM usage optimization
@@ -169,7 +175,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.type = &#34;/Outlines&#34;
         self.first = None
         self.last = None
-        self.count = 0</code></pre>
+        self.count = 0
+
+    def __str__(self):
+        return f&#34;OutlineDictionary(count={self.count})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -178,7 +187,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L62-L70" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L77-L88" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineDictionary(PDFObject):
     __slots__ = (&#34;_id&#34;, &#34;type&#34;, &#34;first&#34;, &#34;last&#34;, &#34;count&#34;)  # RAM usage optimization
@@ -188,7 +197,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.type = &#34;/Outlines&#34;
         self.first = None
         self.last = None
-        self.count = 0</code></pre>
+        self.count = 0
+
+    def __str__(self):
+        return f&#34;OutlineDictionary(count={self.count})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -197,7 +209,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L62-L70" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L77-L88" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineDictionary(PDFObject):
     __slots__ = (&#34;_id&#34;, &#34;type&#34;, &#34;first&#34;, &#34;last&#34;, &#34;count&#34;)  # RAM usage optimization
@@ -207,7 +219,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.type = &#34;/Outlines&#34;
         self.first = None
         self.last = None
-        self.count = 0</code></pre>
+        self.count = 0
+
+    def __str__(self):
+        return f&#34;OutlineDictionary(count={self.count})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -244,7 +259,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L30-L59" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L42-L74" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineItemDictionary(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -275,7 +290,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.last = None
         self.count = 0
         self.dest = dest
-        self.struct_elem = struct_elem</code></pre>
+        self.struct_elem = struct_elem
+
+    def __str__(self):
+        return f&#34;OutlineItemDictionary(title={self.title}, dest={self.dest})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 <h3>Ancestors</h3>
@@ -289,7 +307,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L30-L59" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L42-L74" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineItemDictionary(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -320,7 +338,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.last = None
         self.count = 0
         self.dest = dest
-        self.struct_elem = struct_elem</code></pre>
+        self.struct_elem = struct_elem
+
+    def __str__(self):
+        return f&#34;OutlineItemDictionary(title={self.title}, dest={self.dest})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -329,7 +350,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L30-L59" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L42-L74" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineItemDictionary(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -360,7 +381,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.last = None
         self.count = 0
         self.dest = dest
-        self.struct_elem = struct_elem</code></pre>
+        self.struct_elem = struct_elem
+
+    def __str__(self):
+        return f&#34;OutlineItemDictionary(title={self.title}, dest={self.dest})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -369,7 +393,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L30-L59" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L42-L74" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineItemDictionary(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -400,7 +424,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.last = None
         self.count = 0
         self.dest = dest
-        self.struct_elem = struct_elem</code></pre>
+        self.struct_elem = struct_elem
+
+    def __str__(self):
+        return f&#34;OutlineItemDictionary(title={self.title}, dest={self.dest})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -409,7 +436,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L30-L59" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L42-L74" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineItemDictionary(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -440,7 +467,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.last = None
         self.count = 0
         self.dest = dest
-        self.struct_elem = struct_elem</code></pre>
+        self.struct_elem = struct_elem
+
+    def __str__(self):
+        return f&#34;OutlineItemDictionary(title={self.title}, dest={self.dest})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -449,7 +479,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L30-L59" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L42-L74" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineItemDictionary(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -480,7 +510,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.last = None
         self.count = 0
         self.dest = dest
-        self.struct_elem = struct_elem</code></pre>
+        self.struct_elem = struct_elem
+
+    def __str__(self):
+        return f&#34;OutlineItemDictionary(title={self.title}, dest={self.dest})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -489,7 +522,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L30-L59" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L42-L74" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineItemDictionary(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -520,7 +553,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.last = None
         self.count = 0
         self.dest = dest
-        self.struct_elem = struct_elem</code></pre>
+        self.struct_elem = struct_elem
+
+    def __str__(self):
+        return f&#34;OutlineItemDictionary(title={self.title}, dest={self.dest})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -529,7 +565,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L30-L59" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L42-L74" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineItemDictionary(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -560,7 +596,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.last = None
         self.count = 0
         self.dest = dest
-        self.struct_elem = struct_elem</code></pre>
+        self.struct_elem = struct_elem
+
+    def __str__(self):
+        return f&#34;OutlineItemDictionary(title={self.title}, dest={self.dest})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -569,7 +608,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L30-L59" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L42-L74" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineItemDictionary(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -600,7 +639,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.last = None
         self.count = 0
         self.dest = dest
-        self.struct_elem = struct_elem</code></pre>
+        self.struct_elem = struct_elem
+
+    def __str__(self):
+        return f&#34;OutlineItemDictionary(title={self.title}, dest={self.dest})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -609,7 +651,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L30-L59" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L42-L74" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutlineItemDictionary(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -640,7 +682,10 @@ and yield them one by one, starting with the outline dictionary</p></div>
         self.last = None
         self.count = 0
         self.dest = dest
-        self.struct_elem = struct_elem</code></pre>
+        self.struct_elem = struct_elem
+
+    def __str__(self):
+        return f&#34;OutlineItemDictionary(title={self.title}, dest={self.dest})&#34;</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -671,26 +716,33 @@ and yield them one by one, starting with the outline dictionary</p></div>
 </dd>
 <dt id="fpdf.outline.OutlineSection"><code class="flex name class">
 <span>class <span class="ident">OutlineSection</span></span>
-<span>(</span><span>name: str,<br>level: int,<br>page_number: int,<br>dest: <a title="fpdf.syntax.Destination" href="syntax.html#fpdf.syntax.Destination">Destination</a>,<br>struct_elem: <a title="fpdf.structure_tree.StructElem" href="structure_tree.html#fpdf.structure_tree.StructElem">StructElem</a> | None = None)</span>
+<span>(</span><span>name, level, page_number, dest, struct_elem=None)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L22-L27" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L23-L39" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class OutlineSection(NamedTuple):
+<pre><code class="python">@dataclass
+class OutlineSection:
+    # RAM usage optimization
+    __slots__ = (&#34;name&#34;, &#34;level&#34;, &#34;page_number&#34;, &#34;dest&#34;, &#34;struct_elem&#34;)
     name: str
     level: int
     page_number: int
     dest: Destination
-    struct_elem: Optional[StructElem] = None</code></pre>
+    struct_elem: Optional[StructElem]
+
+    # With __slots__ used, we need an __init__ method in order to define default values:
+    def __init__(self, name, level, page_number, dest, struct_elem=None):
+        self.name = name
+        self.level = level
+        self.page_number = page_number
+        self.dest = dest
+        self.struct_elem = struct_elem</code></pre>
 </details>
-<div class="desc"><p>OutlineSection(name, level, page_number, dest, struct_elem)</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>builtins.tuple</li>
-</ul>
+<div class="desc"><p>OutlineSection(name, level, page_number, dest, struct_elem=None)</p></div>
 <h3>Instance variables</h3>
 <dl>
 <dt id="fpdf.outline.OutlineSection.dest"><code class="name">var <span class="ident">dest</span> : <a title="fpdf.syntax.Destination" href="syntax.html#fpdf.syntax.Destination">Destination</a></code></dt>
@@ -698,80 +750,135 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L22-L27" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L23-L39" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class OutlineSection(NamedTuple):
+<pre><code class="python">@dataclass
+class OutlineSection:
+    # RAM usage optimization
+    __slots__ = (&#34;name&#34;, &#34;level&#34;, &#34;page_number&#34;, &#34;dest&#34;, &#34;struct_elem&#34;)
     name: str
     level: int
     page_number: int
     dest: Destination
-    struct_elem: Optional[StructElem] = None</code></pre>
+    struct_elem: Optional[StructElem]
+
+    # With __slots__ used, we need an __init__ method in order to define default values:
+    def __init__(self, name, level, page_number, dest, struct_elem=None):
+        self.name = name
+        self.level = level
+        self.page_number = page_number
+        self.dest = dest
+        self.struct_elem = struct_elem</code></pre>
 </details>
-<div class="desc"><p>Alias for field number 3</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="fpdf.outline.OutlineSection.level"><code class="name">var <span class="ident">level</span> : int</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L22-L27" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L23-L39" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class OutlineSection(NamedTuple):
+<pre><code class="python">@dataclass
+class OutlineSection:
+    # RAM usage optimization
+    __slots__ = (&#34;name&#34;, &#34;level&#34;, &#34;page_number&#34;, &#34;dest&#34;, &#34;struct_elem&#34;)
     name: str
     level: int
     page_number: int
     dest: Destination
-    struct_elem: Optional[StructElem] = None</code></pre>
+    struct_elem: Optional[StructElem]
+
+    # With __slots__ used, we need an __init__ method in order to define default values:
+    def __init__(self, name, level, page_number, dest, struct_elem=None):
+        self.name = name
+        self.level = level
+        self.page_number = page_number
+        self.dest = dest
+        self.struct_elem = struct_elem</code></pre>
 </details>
-<div class="desc"><p>Alias for field number 1</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="fpdf.outline.OutlineSection.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L22-L27" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L23-L39" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class OutlineSection(NamedTuple):
+<pre><code class="python">@dataclass
+class OutlineSection:
+    # RAM usage optimization
+    __slots__ = (&#34;name&#34;, &#34;level&#34;, &#34;page_number&#34;, &#34;dest&#34;, &#34;struct_elem&#34;)
     name: str
     level: int
     page_number: int
     dest: Destination
-    struct_elem: Optional[StructElem] = None</code></pre>
+    struct_elem: Optional[StructElem]
+
+    # With __slots__ used, we need an __init__ method in order to define default values:
+    def __init__(self, name, level, page_number, dest, struct_elem=None):
+        self.name = name
+        self.level = level
+        self.page_number = page_number
+        self.dest = dest
+        self.struct_elem = struct_elem</code></pre>
 </details>
-<div class="desc"><p>Alias for field number 0</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="fpdf.outline.OutlineSection.page_number"><code class="name">var <span class="ident">page_number</span> : int</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L22-L27" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L23-L39" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class OutlineSection(NamedTuple):
+<pre><code class="python">@dataclass
+class OutlineSection:
+    # RAM usage optimization
+    __slots__ = (&#34;name&#34;, &#34;level&#34;, &#34;page_number&#34;, &#34;dest&#34;, &#34;struct_elem&#34;)
     name: str
     level: int
     page_number: int
     dest: Destination
-    struct_elem: Optional[StructElem] = None</code></pre>
+    struct_elem: Optional[StructElem]
+
+    # With __slots__ used, we need an __init__ method in order to define default values:
+    def __init__(self, name, level, page_number, dest, struct_elem=None):
+        self.name = name
+        self.level = level
+        self.page_number = page_number
+        self.dest = dest
+        self.struct_elem = struct_elem</code></pre>
 </details>
-<div class="desc"><p>Alias for field number 2</p></div>
+<div class="desc"></div>
 </dd>
 <dt id="fpdf.outline.OutlineSection.struct_elem"><code class="name">var <span class="ident">struct_elem</span> : <a title="fpdf.structure_tree.StructElem" href="structure_tree.html#fpdf.structure_tree.StructElem">StructElem</a> | None</code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L22-L27" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L23-L39" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class OutlineSection(NamedTuple):
+<pre><code class="python">@dataclass
+class OutlineSection:
+    # RAM usage optimization
+    __slots__ = (&#34;name&#34;, &#34;level&#34;, &#34;page_number&#34;, &#34;dest&#34;, &#34;struct_elem&#34;)
     name: str
     level: int
     page_number: int
     dest: Destination
-    struct_elem: Optional[StructElem] = None</code></pre>
+    struct_elem: Optional[StructElem]
+
+    # With __slots__ used, we need an __init__ method in order to define default values:
+    def __init__(self, name, level, page_number, dest, struct_elem=None):
+        self.name = name
+        self.level = level
+        self.page_number = page_number
+        self.dest = dest
+        self.struct_elem = struct_elem</code></pre>
 </details>
-<div class="desc"><p>Alias for field number 4</p></div>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -783,7 +890,7 @@ and yield them one by one, starting with the outline dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L112-L208" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L130-L226" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class TableOfContents:
     &#34;&#34;&#34;
@@ -897,7 +1004,7 @@ to <code>FPDF.insert_toc_placeholder()</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L136-L143" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L154-L161" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_text_style(self, pdf: &#34;FPDF&#34;, item: OutlineSection):
     if self.use_section_title_styles and pdf.section_title_styles[item.level]:
@@ -917,7 +1024,7 @@ to <code>FPDF.insert_toc_placeholder()</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L200-L208" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L218-L226" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render_toc(self, pdf: &#34;FPDF&#34;, outline: List[OutlineSection]):
     &#34;This method can be overridden by subclasses to customize the Table of Contents style.&#34;
@@ -938,7 +1045,7 @@ to <code>FPDF.insert_toc_placeholder()</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/293941ba4cf3edf624ea0abdd23eaddfdcdfc6f1/fpdf/outline.py#L145-L198" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/4bc7513af3a4ceb4143365d272e18b762dbc2609/fpdf/outline.py#L163-L216" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render_toc_item(self, pdf: &#34;FPDF&#34;, item: OutlineSection):
     link = pdf.add_link(page=item.page_number)
