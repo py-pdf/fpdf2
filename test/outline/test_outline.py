@@ -716,7 +716,7 @@ def test_toc_no_reset_page_indices(tmp_path):  # cf. issue 1343
 
     pdf = CustomFPDF()
     pdf.set_font("Helvetica", size=12)
-    pdf.set_section_title_styles(TextStyle())
+    pdf.set_section_title_styles(TextStyle())  # Use default style
     pdf.add_page()
     pdf.set_page_label(label_style="R")
     p(pdf, "**Document title**", align="C", markdown=True)
@@ -736,3 +736,19 @@ def test_toc_no_reset_page_indices(tmp_path):  # cf. issue 1343
         pdf.start_section(f"Section {i}")
 
     assert_pdf_equal(pdf, HERE / "toc_no_reset_page_indices.pdf", tmp_path)
+
+
+def test_footer_leaking_style_on_toc(tmp_path):
+    class CustomFPDF(FPDF):
+        def footer(self):
+            self.set_y(-15)
+            self.set_font("Helvetica", size=8)
+            self.cell(w=0, text="FOOTER", align="C")
+
+    pdf = CustomFPDF()
+    pdf.set_font("Helvetica", size=12)
+    pdf.set_section_title_styles(TextStyle())  # Use default style
+    pdf.add_page()
+    pdf.insert_toc_placeholder(TableOfContents().render_toc, allow_extra_pages=True)
+    pdf.start_section("Section 1")
+    assert_pdf_equal(pdf, HERE / "footer_leaking_style_on_toc.pdf", tmp_path)

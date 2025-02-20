@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import fpdf
+from fpdf import FPDF
 from test.conftest import assert_pdf_equal
 from fpdf.drawing import DeviceGray
 
@@ -9,7 +9,7 @@ HERE = Path(__file__).resolve().parent
 
 
 def test_add_page_format(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.set_font("Helvetica")
     for i in range(9):
         pdf.add_page(format=(210 * (1 - i / 10), 297 * (1 - i / 10)))
@@ -20,7 +20,7 @@ def test_add_page_format(tmp_path):
 
 
 def test_add_page_duration(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.set_font("Helvetica", size=120)
     pdf.add_page(duration=3)
     pdf.cell(text="Page 1")
@@ -33,7 +33,7 @@ def test_add_page_duration(tmp_path):
 
 
 def test_break_or_add_page(tmp_path):
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=0)
     pdf.add_page()
     pdf.set_font("Helvetica", size=16)
@@ -49,7 +49,7 @@ def test_break_or_add_page(tmp_path):
 
 
 def test_break_or_add_page_with_different_draw_and_fill_color(tmp_path):
-    class CustomHeader(fpdf.FPDF):
+    class CustomHeader(FPDF):
         def header(self):
             self.line_width = 0
             self.draw_color = DeviceGray(0.2)
@@ -76,7 +76,7 @@ def test_new_page_graphics_state(tmp_path):
     # Make sure that on a page break, all graphics state items are
     # carried over correctly.
     # issue #992 - dash patterns were not handled correctly.
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=False)
     pdf.set_font("Courier", style="IU", size=16)
@@ -109,3 +109,17 @@ def test_new_page_graphics_state(tmp_path):
     pdf.add_page()
     draw_stuff()
     assert_pdf_equal(pdf, HERE / "new_page_graphics_state.pdf", tmp_path)
+
+
+def test_header_altering_text_start_pos_on_page(tmp_path):
+    class CustomFPDF(FPDF):
+        def header(self):
+            self.set_y(5)
+            self.set_font("Helvetica", size=8)
+            self.cell(w=0, text="HEADER", align="C")
+
+    pdf = CustomFPDF()
+    pdf.set_font("Helvetica", size=12)
+    pdf.add_page()
+    pdf.cell(w=0, text="Lorem ipsum")
+    assert_pdf_equal(pdf, HERE / "header_altering_text_start_pos_on_page.pdf", tmp_path)
