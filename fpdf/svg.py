@@ -13,8 +13,6 @@ from typing import NamedTuple
 from fontTools.svgLib.path import parse_path
 from fontTools.pens.basePen import BasePen
 
-from .enums import PathPaintRule
-
 try:
     from defusedxml.ElementTree import fromstring as parse_xml_str
 except ImportError:
@@ -34,8 +32,10 @@ from .drawing import (
     ClippingPath,
     Transform,
 )
+from .enums import PathPaintRule
 from .image_datastructures import ImageCache, VectorImageInfo
 from .output import stream_content_for_raster_image
+from .text_renderer import TextRendererMixin
 
 LOGGER = logging.getLogger(__name__)
 
@@ -636,7 +636,13 @@ class SVGObject:
         with open(filename, "r", encoding=encoding) as svgfile:
             return cls(svgfile.read(), *args, **kwargs)
 
-    def __init__(self, svg_text, image_cache: ImageCache = None):
+    def __init__(
+        self,
+        svg_text,
+        font_mgr: TextRendererMixin = None,
+        image_cache: ImageCache = None,
+    ):
+        self.font_mgr = font_mgr  # Needed to render text
         self.image_cache = image_cache  # Needed to render images
         self.cross_references = {}
 
@@ -826,6 +832,7 @@ class SVGObject:
             debug_stream (io.TextIO): the stream to which rendering debug info will be
                 written.
         """
+        self.font_mgr = pdf  # Needed to render text
         self.image_cache = pdf.image_cache  # Needed to render images
         _, _, path = self.transform_to_page_viewport(pdf)
 
@@ -852,6 +859,10 @@ class SVGObject:
                 self.build_path(child)
             elif child.tag in xmlns_lookup("svg", "image"):
                 self.build_image(child)
+            # pylint: disable=fixme
+            # TODO: enable this
+            # elif child.tag in xmlns_lookup("svg", "text"):
+            #     self.build_text(child)
             elif child.tag in shape_tags:
                 self.build_shape(child)
             elif child.tag in xmlns_lookup("svg", "clipPath"):
@@ -917,15 +928,19 @@ class SVGObject:
             if child.tag in xmlns_lookup("svg", "defs"):
                 self.handle_defs(child)
             elif child.tag in xmlns_lookup("svg", "g"):
-                pdf_group.add_item(self.build_group(child), False)
+                pdf_group.add_item(self.build_group(child), clone=False)
             elif child.tag in xmlns_lookup("svg", "path"):
-                pdf_group.add_item(self.build_path(child), False)
+                pdf_group.add_item(self.build_path(child), clone=False)
             elif child.tag in shape_tags:
-                pdf_group.add_item(self.build_shape(child), False)
+                pdf_group.add_item(self.build_shape(child), clone=False)
             elif child.tag in xmlns_lookup("svg", "use"):
-                pdf_group.add_item(self.build_xref(child), False)
+                pdf_group.add_item(self.build_xref(child), clone=False)
             elif child.tag in xmlns_lookup("svg", "image"):
-                pdf_group.add_item(self.build_image(child), False)
+                pdf_group.add_item(self.build_image(child), clone=False)
+            # pylint: disable=fixme
+            # TODO: enable this
+            # elif child.tag in xmlns_lookup("svg", "text"):
+            #     pdf_group.add_item(self.build_text(child), clone=False)
             else:
                 LOGGER.warning(
                     "Ignoring unsupported SVG tag: <%s> (contributions are welcome to add support for it)",
@@ -985,6 +1000,43 @@ class SVGObject:
             stylable.clipping_path = self.cross_references[clipping_path_id[1]]
 
     @force_nodocument
+    def build_text(self, text):
+        if "dx" in text.attrib or "dy" in text.attrib:
+            raise NotImplementedError(
+                '"dx" / "dy" defined on <text> is currently not supported (but contributions are welcome!)'
+            )
+        if "lengthAdjust" in text.attrib:
+            raise NotImplementedError(
+                '"lengthAdjust" defined on <text> is currently not supported (but contributions are welcome!)'
+            )
+        if "rotate" in text.attrib:
+            raise NotImplementedError(
+                '"rotate" defined on <text> is currently not supported (but contributions are welcome!)'
+            )
+        if "style" in text.attrib:
+            raise NotImplementedError(
+                '"style" defined on <text> is currently not supported (but contributions are welcome!)'
+            )
+        if "textLength" in text.attrib:
+            raise NotImplementedError(
+                '"textLength" defined on <text> is currently not supported (but contributions are welcome!)'
+            )
+        if "transform" in text.attrib:
+            raise NotImplementedError(
+                '"transform" defined on <text> is currently not supported (but contributions are welcome!)'
+            )
+        svg_text = SVGText(
+            text=text.text,
+            x=float(text.attrib.get("x", "0")),
+            y=float(text.attrib.get("y", "0")),
+            font_family=text.attrib.get("font-family"),
+            font_size=text.attrib.get("font-size"),
+            svg_obj=self,
+        )
+        self.update_xref(text.attrib.get("id"), svg_text)
+        return svg_text
+
+    @force_nodocument
     def build_image(self, image):
         href = None
         for key in xmlns_lookup("xlink", "href"):
@@ -1020,6 +1072,47 @@ class SVGObject:
         return svg_image
 
 
+class SVGText(NamedTuple):
+    text: str
+    x: Number
+    y: Number
+    font_family: str
+    font_size: Number
+    svg_obj: SVGObject
+
+    def __deepcopy__(self, _memo):
+        # Defining this method is required to avoid the .svg_obj reference to be cloned:
+        return SVGText(
+            text=self.text,
+            x=self.x,
+            y=self.y,
+            font_family=self.font_family,
+            font_size=self.font_size,
+            svg_obj=self.svg_obj,
+        )
+
+    @force_nodocument
+    def render(self, _gsd_registry, _style, last_item, initial_point):
+        font_mgr = self.svg_obj and self.svg_obj.font_mgr
+        if not font_mgr:
+            raise AssertionError(
+                "fpdf2 bug - Cannot render a raster image without a SVGObject.font_mgr"
+            )
+        # pylint: disable=fixme
+        # TODO:
+        # * handle font_family & font_size
+        # * invoke current_font.encode_text(self.text)
+        # * set default font to Times/16 if not font set
+        # * support textLength -> .font_stretching
+        # We need to perform a mirror transform AND invert the Y-axis coordinates,
+        # so that the text is not horizontally mirrored,
+        # due to the transformation made by DrawingContext._setup_render_prereqs():
+        stream_content = (
+            f"q 1 0 0 -1 0 0 cm BT {self.x:.2f} {-self.y:.2f} Td ({self.text}) Tj ET Q"
+        )
+        return stream_content, last_item, initial_point
+
+
 class SVGImage(NamedTuple):
     href: str
     x: Number
@@ -1051,7 +1144,7 @@ class SVGImage(NamedTuple):
         # pylint: disable=cyclic-import,import-outside-toplevel
         from .image_parsing import preload_image
 
-        _, _, info = preload_image(image_cache, self.href)
+        _, _, info = preload_image(self.href, image_cache)
         if isinstance(info, VectorImageInfo):
             LOGGER.warning(
                 "Inserting .svg vector graphics in <image> tags is currently not supported (contributions are welcome to add support for it)"
