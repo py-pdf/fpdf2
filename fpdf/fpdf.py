@@ -285,7 +285,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.links = {}  # array of Destination objects starting at index 1
         self.embedded_files = []  # array of PDFEmbeddedFile
         self.image_cache = ImageCache()
-        self._in_header_or_footer = False  # flag set while rendering header or footer
+        self.in_footer = False  # flag set while rendering footer
         # indicates that we are inside an .unbreakable() code block:
         self._in_unbreakable = False
         self._lasth = 0  # height of last cell printed
@@ -489,14 +489,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Returns the total pages of the document.
         """
         return len(self.pages)
-
-    @property
-    def in_footer(self):
-        """
-        .. deprecated:: 2.8.3
-            This is now an internal (private) attribute.
-        """
-        return self._in_header_or_footer
 
     def set_margin(self, margin):
         """
@@ -1028,7 +1020,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         # BEGIN Page header
         if (not self.in_toc_rendering) or self._toc_allow_page_insertion:
-            self._render_header()
+            self.header()
 
         if self.line_width != lw:  # Restore line width
             self.line_width = lw
@@ -1055,15 +1047,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             )
         # END Page header
 
-    def _render_header(self):
-        prev_x, prev_y = self.x, self.y
-        self._in_header_or_footer = True
-        self.header()
-        self._in_header_or_footer = False
-        self.x, self.y = prev_x, prev_y
-
     def _render_footer(self):
-        self._in_header_or_footer = True
+        self.in_footer = True
         should_protect_graphics_state = (
             self.toc_placeholder and self.toc_placeholder.start_page == self.page
         )
@@ -1076,7 +1061,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if should_protect_graphics_state:
             self._end_local_context()
             self._pop_local_stack()
-        self._in_header_or_footer = False
+        self.in_footer = False
 
     def _beginpage(
         self, orientation, format, same, duration, transition, new_page=True
@@ -1126,6 +1111,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         and should not be called directly by the user application.
         The default implementation performs nothing: you have to override this method
         in a subclass to implement your own rendering logic.
+
+        Note that header rendering can have an impact on the initial
+        (x,y) position when starting to render the page content.
         """
 
     def footer(self):
@@ -3797,7 +3785,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         return (
             self.y + height > self.page_break_trigger
-            and not self._in_header_or_footer
+            and not self.in_footer
             and self.accept_page_break
         )
 
@@ -3816,7 +3804,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def _perform_page_break(self):
         # Defensive check, this should have tested by a previous call to .will_page_break():
-        if not self.accept_page_break or self._in_header_or_footer:
+        if not self.accept_page_break or self.in_footer:
             return
         x = self.x
         # If we are in a .local_context(), we need to temporarily leave it,
