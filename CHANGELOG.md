@@ -737,3 +737,5 @@ prevented strings passed first to the text-rendering methods to be displayed.
 * turned `accept_page_break` into a property
 * unit tests now use the standard `unittest` lib
 * massive code cleanup using `flake8`
+### Added
+- Added Slovenian translation of the tutorial (docs/Tutorial-sl.md)

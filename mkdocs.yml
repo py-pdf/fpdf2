@@ -94,6 +94,7 @@ plugins:
         - 'Tutorial-ru'
         - 'Tutorial-tr'
         - 'Tutorial-zh'
+        - 'Tutorial-sl'
       #cover: false
       #back_cover: true
       #custom_template_path: TEMPLATES PATH
