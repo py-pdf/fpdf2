@@ -1401,6 +1401,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "DeepBlackHole",
+      "name": "Black-Hole",
+      "avatar_url": "https://avatars.githubusercontent.com/u/110691847?v=4",
+      "profile": "https://github.com/DeepBlackHole",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
