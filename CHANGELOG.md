@@ -738,4 +738,4 @@ prevented strings passed first to the text-rendering methods to be displayed.
 * unit tests now use the standard `unittest` lib
 * massive code cleanup using `flake8`
 ### Added
-- Added Slovenian translation of the tutorial (docs/Tutorial-sl.md)
+- Added Slovenian translation of the tutorial: [Vodič](https://py-pdf.github.io/fpdf2/Tutorial-sl.html)
