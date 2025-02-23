@@ -311,6 +311,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://trmm.net/"><img src="https://avatars.githubusercontent.com/u/3068843?v=4?s=100" width="100px;" alt="Trammell Hudson"/><br /><sub><b>Trammell Hudson</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=osresearch" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/petri-lipponen-movesense"><img src="https://avatars.githubusercontent.com/u/95341815?v=4?s=100" width="100px;" alt="petri-lipponen-movesense"/><br /><sub><b>petri-lipponen-movesense</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=petri-lipponen-movesense" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/spacegaori"><img src="https://avatars.githubusercontent.com/u/110320149?v=4?s=100" width="100px;" alt="Soomin Choi"/><br /><sub><b>Soomin Choi</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=spacegaori" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/DeepBlackHole"><img src="https://avatars.githubusercontent.com/u/110691847?v=4?s=100" width="100px;" alt="Black-Hole"/><br /><sub><b>Black-Hole</b></sub></a><br /><a href="#translation-DeepBlackHole" title="Translation">🌍</a></td>
     </tr>
   </tbody>
 </table>
