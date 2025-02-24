@@ -17,6 +17,7 @@ from fontTools import subset as ftsubset
 
 from .annotations import PDFAnnotation
 from .enums import PDFResourceType, PageLabelStyle, SignatureFlag
+from .enums import OutputIntentSubType
 from .errors import FPDFException
 from .line_break import TotalPagesSubstitutionFragment
 from .image_datastructures import RasterImageInfo
@@ -215,7 +216,7 @@ class PDFXObject(PDFContentStream):
         self.s_mask = None
 
 
-class PDFICCPObject(PDFContentStream):
+class PDFICCProfileObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
         "_id",
         "_contents",
@@ -435,13 +436,28 @@ class PDFXrefAndTrailer(ContentWithoutID):
         return "\n".join(out)
 
 
-class OutputIntentDictionary(ContentWithoutID):
+class ICCProfileStreamDict():
 
-    class ICCDict():
-        def __init__(self, fn=None, N=None, alternate=None):
-            self.fn = fn
-            self.N = N
-            self.alternate = alternate
+    __slots__ = (  # RAM usage optimization
+        "fn",
+        "N",
+        "alternate",
+    )
+
+    def __init__(self, fn=None, N=None, alternate=None):
+        """hold values from input for dest_output_profile
+
+        Args:
+            fn (str): Path to ICC Profile,
+            N (int): [1|3|4], # the numbers for colors 1=Gray, 3=RGB, 4=CMYK
+            alternate (str): ['DeviceGray'|'DeviceRGB'|'DeviceCMYK']
+        """
+        self.fn = fn
+        self.N = N
+        self.alternate = alternate
+
+
+class OutputIntentDictionary(ContentWithoutID):
 
     __slots__ = (  # RAM usage optimization
         "type",
@@ -455,16 +471,16 @@ class OutputIntentDictionary(ContentWithoutID):
 
     def __init__(
         self,
-        subtype: str,
+        subtype: OutputIntentSubType | str,
         output_condition_identifier: str,
         output_condition: str = None,
         registry_name: str = None,
-        dest_output_profile: ICCDict = None,
+        dest_output_profile: ICCProfileStreamDict | PDFICCProfileObject = None,
         info: str = None,
     ):
         # super().__init__()
         self.type = Name("OutputIntent")
-        self.subtype = Name(subtype)
+        self.subtype = Name(OutputIntentSubType.coerce(subtype).value)
         self.output_condition_identifier = (
             PDFString(output_condition_identifier)
             if output_condition_identifier
@@ -473,15 +489,19 @@ class OutputIntentDictionary(ContentWithoutID):
         self.output_condition = (
             PDFString(output_condition) if output_condition else None
         )
-        self.registry_name = PDFString(registry_name) if registry_name else None
-        if dest_output_profile:
-            with open(dest_output_profile["fn"], "rb") as file:
+        self.registry_name = PDFString(registry_name)\
+            if registry_name else None
+        if dest_output_profile and\
+                type(dest_output_profile) is ICCProfileStreamDict:
+            with open(dest_output_profile.fn, "rb") as file:
                 file_contents = file.read()
-                self.dest_output_profile = PDFICCPObject(
+                self.dest_output_profile = PDFICCProfileObject(
                     contents=file_contents,
-                    n=dest_output_profile["N"],
-                    alternate=dest_output_profile["alternate"],
+                    n=dest_output_profile.N,
+                    alternate=dest_output_profile.alternate,
                 )
+        else:
+            self.dest_output_profile = None
         self.info = PDFString(info) if info else None
 
     # method override
@@ -491,21 +511,31 @@ class OutputIntentDictionary(ContentWithoutID):
         out.append(f"/Type {self.type.serialize(_security_handler)}")
         out.append(f"/S {self.subtype.serialize(_security_handler)}")
         if self.output_condition:
-            out.append(f"/OutputCondition {self.output_condition.serialize(_security_handler)}")
+            out.append(
+                "/OutputCondition "
+                + self.output_condition.serialize(_security_handler)
+            )
         if self.output_condition_identifier:
             out.append(
-                f"/OutputConditionIdentifier {self.output_condition_identifier.serialize(_security_handler)}"
+                "/OutputConditionIdentifier "
+                + self.output_condition_identifier.serialize(_security_handler)
             )
         if self.registry_name:
-            out.append(f"/RegistryName {self.registry_name.serialize(_security_handler)}")
+            out.append(
+                "/RegistryName "
+                + self.registry_name.serialize(_security_handler)
+            )
         if self.info:
             out.append(f"/Info {self.info.serialize(_security_handler)}")
         if self.dest_output_profile:
-            out.append(f"/DestOutputProfile {str(self.dest_output_profile.id)} 0 R")
+            out.append(
+                "/DestOutputProfile "
+                + str(self.dest_output_profile.id) + " 0 R"
+            )
         out.append(">>")
         return "\n".join(out)
 
-  
+
 class ResourceCatalog:
     "Manage the indexing of resources and association to the pages they are used"
 
@@ -950,7 +980,7 @@ class OutputProducer:
                 break
         assert iccp_content is not None
         # Note: n should be 4 if the profile ColorSpace is CMYK
-        iccp_obj = PDFICCPObject(
+        iccp_obj = PDFICCProfileObject(
             contents=iccp_content, n=img_info["dpn"], alternate=img_info["cs"]
         )
         iccp_pdf_i = self._add_pdf_obj(iccp_obj, "iccp")

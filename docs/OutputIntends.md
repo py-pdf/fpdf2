@@ -1,39 +1,35 @@
-# OutputIntends #
+# Output Intends #
 
-## Embedded OutputIntends
+> Output Intends [allow] the contents of referenced icc profiles to be embedded directly within the body of the PDF file. This makes the PDF file a self-contained unit that can be stored or transmitted as a single entity.
 
-> Embedded OutputIntends [allow] the contents of referenced icc profiles to be embedded directly within the body of the PDF file. This makes the PDF file a self-contained unit that can be stored or transmitted as a single entity.
+## Add Desired Output Intent to the Output Intents Array ##
+`fpdf2` gives access to this feature through the method [`set_output_intent()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_output_intent):
 
-`fpdf2` gives access to this feature through the method `set_output_intents()`:
+### Specify ICCProfile Stream ###
+[`ICCProfileStreamDict`](https://py-pdf.github.io/fpdf2/fpdf/output.html#fpdf.output.output.ICCProfileStreamDict) Class is needed to specify the file object of the referenced icc profile.
 
-Adds Desired Output Intent to the Output Intents Array:
-
-Allowed Args:
-- subtype (required) : PDFA, PDFX or ISOPDF
-- output_condition_identifier (required): see the Name in https://www.color.org/registry.xalter
-- output_condition (optional): see the Definition in https://www.color.org/registry.xalter
-- registry_name (optional): https://www.color.org info (required/optional see dest_output_profile): String
-- dest_output_profile: (required if output_condition_identifier does not specify a standard production condition; optional otherwise): None | FPDF.dest_output_profile(
-    - fn=Path to ICC Profile,
-    - N=[1|3|4], # depends on the numbers for colors 1=Gray, 3=RGB, 4=CMYK
-    - alternate=['DeviceGray'|'DeviceRGB'|'DeviceCMYK']
-    )
 
 ```python
 from pathlib import Path
 from fpdf import FPDF
 from fpdf.enums import OutputIntentSubType
+from fpdf.output import ICCProfileStreamDict
 
 HERE = Path(__file__).resolve().parent
 
 pdf = FPDF()
-pdf.set_output_intents(
+
+dest_output_profile = ICCProfileStreamDict(
+        fn=HERE / "sRGB2014.icc",
+        N=3,
+        alternate="DeviceRGB")
+
+pdf.set_output_intent(
         OutputIntentSubType.PDFA,
         "sRGB",
         'IEC 61966-2-1:1999',
         "http://www.color.org",
-        FPDF.dest_output_profile(fn=HERE / "sRGB2014.icc", N=3,
-                                 alternate="DeviceRGB"),
+        dest_output_profile,
         "sRGB2014 (v2)",
     )
 ```

@@ -127,6 +127,7 @@ from .output import (
     PDFPageLabel,
     ResourceCatalog,
     stream_content_for_raster_image,
+    ICCProfileStreamDict,
 )
 from .recorder import FPDFRecorder
 from .sign import Signature
@@ -309,7 +310,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # allow page insertion when writing the table of contents
         self._toc_allow_page_insertion = False
         self._toc_inserted_pages = 0  # number of pages inserted
-        self._output_intents = None  # optional list of Output Intents
+        self._output_intents = []  # optional list of Output Intents
 
         self._sign_key = None
         self.title = None
@@ -476,45 +477,29 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def output_intents(self):
         return self._output_intents
 
-    @staticmethod
-    def dest_output_profile(fn: str =None, N: int = None, alternate: str = None):
-        """
-        returns dict for dest_output_profile:
-            fn=Path to ICC Profile,
-            N=[1|3|4], # depends on the numbers for colors 1=Gray, 3=RGB, 4=CMYK,
-            alternate=['DeviceGray'|'DeviceRGB'|'DeviceCMYK']
-        """
-        return dict(fn=fn, N=N, alternate=alternate)
-
     # @output_intents.setter
-    def set_output_intents(
+    def set_output_intent(
         self,
         subtype: OutputIntentSubType,
         output_condition_identifier: str = None,
         output_condition: str = None,
         registry_name: str = None,
-        dest_output_profile: dict = None,
+        dest_output_profile: ICCProfileStreamDict = None,
         info: str = None,
     ):
         """
-        Adds Desired Output Intent to the Output Intents Array:
+        Adds desired Output Intent to the Output Intents array:
 
-        Allowed Args:
-        subtype (required) : PDFA, PDFX or ISOPDF
-        output_condition_identifier (required): see the Name in https://www.color.org/registry.xalter
-        output_condition (optional): see the Definition in https://www.color.org/registry.xalter
-        registry_name (optional): https://www.color.org
-        info (required/optional see dest_output_profile): String
-        dest_output_profile:
-          (required if output_condition_identifier
-            does not specify a standard production condition; optional otherwise): None |
-            FPDF.dest_output_profile(
-                fn=Path to ICC Profile,
-                N=[1|3|4], # depends on the numbers for colors 1=Gray, 3=RGB, 4=CMYK
-                alternate=['DeviceGray'|'DeviceRGB'|'DeviceCMYK'])
+        Args:
+            subtype (OutputIntentSubType, required): PDFA, PDFX or ISOPDF
+            output_condition_identifier (str, required): see the Name in https://www.color.org/registry.xalter
+            output_condition (str, optional): see the Definition in https://www.color.org/registry.xalter
+            registry_name (str, optional): "https://www.color.org"
+            dest_output_profile (dict, required if output_condition_identifier does not specify a standard production condition; optional otherwise):
+                ICCProfileStreamDict | None
+            info (str, required/optional see dest_output_profile): human readable description of profile
         """
-        if self.output_intents is None:
-            self._output_intents = []
+        if self.output_intents:
             self._set_min_pdf_version("1.4")
         subtypes_in_arr = [
             _["subtype"].value for _ in self.output_intents
@@ -530,6 +515,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     "registry_name": registry_name,
                 }
             )
+        else:
+            raise ValueError("set_output_intent: subtype '" + subtype.value + "' already exists.")
 
     @property
     def epw(self):
