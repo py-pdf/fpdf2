@@ -1,21 +1,21 @@
 from dataclasses import dataclass, replace
 from numbers import Number
-from typing import Optional, Union, Tuple, Sequence, Protocol
+from typing import Optional, Protocol, Sequence, Tuple, Union
 
+from .drawing import DeviceGray, DeviceRGB
 from .enums import (
     Align,
+    CellBordersLayout,
     MethodReturnValue,
     TableCellFillMode,
     TableHeadingsDisplay,
-    WrapMode,
-    VAlign,
     TableSpan,
-    CellBordersLayout,
+    VAlign,
+    WrapMode,
 )
 from .errors import FPDFException
 from .fonts import CORE_FONTS, FontFace
 from .util import Padding
-from .drawing import DeviceGray, DeviceRGB
 
 DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
 
@@ -187,71 +187,107 @@ class TableCellStyle:
         x2 *= scale
         y2 *= scale
 
-        draw_commands = []
-        needs_wrap = False
         common_border_style = self._get_common_border_style()
-        if common_border_style is None:
-            # some borders are different from others, draw them individually
-            if fill_color is not None:
-                # draw fill with no box
-                if fill_color != pdf.fill_color:
-                    needs_wrap = True
-                    draw_commands.extend(self.get_change_fill_color_command(fill_color))
-                draw_commands.append(
-                    f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re f"
-                )
-            # draw the individual borders
-            draw_commands.extend(
-                TableBorderStyle.from_bool(self.left).get_draw_commands(
-                    pdf, x1, y2, x1, y1
-                )
-                + TableBorderStyle.from_bool(self.bottom).get_draw_commands(
-                    pdf, x1, y2, x2, y2
-                )
-                + TableBorderStyle.from_bool(self.right).get_draw_commands(
-                    pdf, x2, y2, x2, y1
-                )
-                + TableBorderStyle.from_bool(self.top).get_draw_commands(
-                    pdf, x1, y1, x2, y1
-                )
+        draw_commands, needs_wrap = (
+            self._draw_when_no_common_style(x1, y1, x2, y2, pdf, fill_color)
+            if common_border_style is None
+            else self._draw_with_no_border(x1, y1, x2, y2, pdf, fill_color)
+            if common_border_style is False
+            else self._draw_all_borders_the_same(
+                x1, y1, x2, y2, pdf, fill_color, scale, common_border_style
             )
-        elif common_border_style is False:
-            # don't draw border
-            if fill_color is not None:
-                # draw fill with no box
-                if fill_color != pdf.fill_color:
-                    needs_wrap = True
-                    draw_commands.extend(self.get_change_fill_color_command(fill_color))
-                draw_commands.append(
-                    f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re f"
-                )
-        else:
-            # all borders are the same
-            if isinstance(
-                common_border_style, TableBorderStyle
-            ) and common_border_style.changes_stroke(pdf):
-                # the border styles aren't default, so
-                draw_commands.extend(
-                    common_border_style.get_change_stroke_commands(scale)
-                )
-                needs_wrap = True
-            if fill_color is not None:
-                # draw filled rectangle
-                if fill_color != pdf.fill_color:
-                    needs_wrap = True
-                    draw_commands.extend(self.get_change_fill_color_command(fill_color))
-                draw_commands.append(
-                    f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re B"
-                )
-            else:
-                # draw empty rectangle
-                draw_commands.append(
-                    f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re S"
-                )
+        )
 
         if needs_wrap:
             draw_commands = wrap_in_local_context(draw_commands)
         return draw_commands
+
+    def _draw_when_no_common_style(self, x1, y1, x2, y2, pdf, fill_color):
+        """Get draw commands for case when some of the borders have different styles"""
+        needs_wrap = False
+        draw_commands = []
+        if fill_color is not None:
+            # draw fill with no box
+            if fill_color != pdf.fill_color:
+                needs_wrap = True
+                draw_commands.extend(self.get_change_fill_color_command(fill_color))
+            draw_commands.append(
+                f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re f"
+            )
+        # draw the individual borders
+        draw_commands.extend(
+            TableBorderStyle.from_bool(self.left).get_draw_commands(pdf, x1, y2, x1, y1)
+            + TableBorderStyle.from_bool(self.bottom).get_draw_commands(
+                pdf, x1, y2, x2, y2
+            )
+            + TableBorderStyle.from_bool(self.right).get_draw_commands(
+                pdf, x2, y2, x2, y1
+            )
+            + TableBorderStyle.from_bool(self.top).get_draw_commands(
+                pdf, x1, y1, x2, y1
+            )
+        )
+        return draw_commands, needs_wrap
+
+    def _draw_with_no_border(self, x1, y1, x2, y2, pdf, fill_color):
+        """Get draw commands for case when all of the borders are off / not drawn"""
+        needs_wrap = False
+        draw_commands = []
+        if fill_color is not None:
+            # draw fill with no box
+            if fill_color != pdf.fill_color:
+                needs_wrap = True
+                draw_commands.extend(self.get_change_fill_color_command(fill_color))
+            draw_commands.append(
+                f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re f"
+            )
+        return draw_commands, needs_wrap
+
+    def _draw_all_borders_the_same(
+        self, x1, y1, x2, y2, pdf, fill_color, scale, common_border_style
+    ):
+        """Get draw commands for case when all the borders have the same style"""
+        needs_wrap = False
+        draw_commands = []
+        # all borders are the same
+        if isinstance(
+            common_border_style, TableBorderStyle
+        ) and common_border_style.changes_stroke(pdf):
+            # the border styles aren't default, so
+            draw_commands.extend(common_border_style.get_change_stroke_commands(scale))
+            needs_wrap = True
+        if fill_color is not None:
+            # draw filled rectangle
+            if fill_color != pdf.fill_color:
+                needs_wrap = False
+                draw_commands.append(
+                    self.get_change_fill_color_command(fill_color)[0] + ","
+                )
+            draw_commands.append(
+                f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re B,"
+            )
+            draw_commands.extend(
+                self.get_change_fill_color_command(pdf.fill_color)[0] + ","
+            )
+        else:
+            # draw empty rectangle
+            draw_commands.append(
+                f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re S"
+            )
+        return draw_commands, needs_wrap
+
+    def override_cell_border(self, cell_border: CellBordersLayout):
+        """Allow override by CellBordersLayout mechanism"""
+        return (
+            self
+            if cell_border == CellBordersLayout.INHERIT
+            else TableCellStyle(  # translate cell_border into equivalent TableCellStyle
+                left=bool(cell_border & CellBordersLayout.LEFT),
+                bottom=bool(cell_border & CellBordersLayout.BOTTOM),
+                right=bool(cell_border & CellBordersLayout.RIGHT),
+                top=bool(cell_border & CellBordersLayout.TOP),
+            )
+        )
 
     def draw_cell_border(self, pdf, x1, y1, x2, y2, fill_color=None):
         """
@@ -262,7 +298,7 @@ class TableCellStyle:
         )
 
 
-class CallStyleGetter(Protocol):
+class CellStyleGetter(Protocol):
     def __call__(
         self,
         row_num: int,
@@ -296,7 +332,7 @@ class TableBordersLayout:
             the headings
     """
 
-    cell_style_getter: CallStyleGetter
+    cell_style_getter: CellStyleGetter
 
     @classmethod
     def coerce(cls, value):
@@ -386,63 +422,6 @@ TableBordersLayout.SINGLE_TOP_LINE = TableBordersLayout(
         top=False,
     )
 )
-
-
-def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
-    """Draws a box using the provided style - private helper used by table for drawing the cell and table borders.
-    Difference between this and rect() is that border can be defined as "L,R,T,B" to draw only some of the four borders;
-    compatible with get_border(i,k)
-
-    See Also: rect()"""
-
-    if fill_color:
-        prev_fill_color = pdf.fill_color
-        if isinstance(fill_color, (int, float)):
-            fill_color = [fill_color]
-        pdf.set_fill_color(*fill_color)
-
-    sl = []
-
-    k = pdf.k
-
-    # y top to bottom instead of bottom to top
-    y1 = pdf.h - y1
-    y2 = pdf.h - y2
-
-    # scale
-    x1 *= k
-    x2 *= k
-    y2 *= k
-    y1 *= k
-
-    if fill_color:
-        op = "B" if border == 1 else "f"
-        sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re {op}")
-    elif border == 1:
-        sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re S")
-
-    if isinstance(border, str):
-        if "L" in border:
-            sl.append(f"{x1:.2f} {y2:.2f} m " f"{x1:.2f} {y1:.2f} l S")
-        if "B" in border:
-            sl.append(f"{x1:.2f} {y2:.2f} m " f"{x2:.2f} {y2:.2f} l S")
-        if "R" in border:
-            sl.append(f"{x2:.2f} {y2:.2f} m " f"{x2:.2f} {y1:.2f} l S")
-        if "T" in border:
-            sl.append(f"{x1:.2f} {y1:.2f} m " f"{x2:.2f} {y1:.2f} l S")
-
-    s = " ".join(sl)
-    pdf._out(s)  # pylint: disable=protected-access
-
-    if fill_color:
-        pdf.set_fill_color(prev_fill_color)
-
-
-@dataclass(frozen=True)
-class RowLayoutInfo:
-    height: float
-    triggers_page_jump: bool
-    rendered_height: dict
 
 
 class Table:
@@ -689,64 +668,6 @@ class Table:
         self._fpdf.l_margin = prev_l_margin
         self._fpdf.x = self._fpdf.l_margin
 
-    # pylint: disable=too-many-return-statements
-    def get_cell_border(self, i, j, cell):
-        """
-        Defines which cell borders should be drawn.
-        Returns a string containing some or all of the letters L/R/T/B,
-        to be passed to `fpdf.FPDF.multi_cell()`.
-        Can be overridden to customize this logic
-        """
-
-        if cell.border != CellBordersLayout.INHERIT:
-            return str(cell.border)
-
-        if self._borders_layout == TableBordersLayout.ALL:
-            return 1
-        if self._borders_layout == TableBordersLayout.NONE:
-            return 0
-
-        is_rightmost_column = j + cell.colspan == len(self.rows[i].cells)
-        rows_count = len(self.rows)
-        is_bottom_row = i + cell.rowspan == rows_count
-        border = list("LRTB")
-        if self._borders_layout == TableBordersLayout.INTERNAL:
-            if i == 0:
-                border.remove("T")
-            if is_bottom_row:
-                border.remove("B")
-            if j == 0:
-                border.remove("L")
-            if is_rightmost_column:
-                border.remove("R")
-        if self._borders_layout == TableBordersLayout.MINIMAL:
-            if i == 0 or i > self._num_heading_rows or rows_count == 1:
-                border.remove("T")
-            if i > self._num_heading_rows - 1:
-                border.remove("B")
-            if j == 0:
-                border.remove("L")
-            if is_rightmost_column:
-                border.remove("R")
-        if self._borders_layout == TableBordersLayout.NO_HORIZONTAL_LINES:
-            if i > self._num_heading_rows:
-                border.remove("T")
-            if not is_bottom_row:
-                border.remove("B")
-        if self._borders_layout == TableBordersLayout.HORIZONTAL_LINES:
-            if rows_count == 1:
-                return 0
-            border = list("TB")
-            if i == 0 and "T" in border:
-                border.remove("T")
-            elif is_bottom_row:
-                border.remove("B")
-        if self._borders_layout == TableBordersLayout.SINGLE_TOP_LINE:
-            if rows_count == 1:
-                return 0
-            return "B" if i < self._num_heading_rows else 0
-        return "".join(border)
-
     def _render_table_row(self, i, row_layout_info, cell_x_positions, **kwargs):
         row = self.rows[i]
         y = self._fpdf.y  # remember current y position, reset after each cell
@@ -850,20 +771,23 @@ class Table:
             )  # already includes gutter for cells spanning multiple columns
             y2 = y1 + cell_height
 
-            self._borders_layout.cell_style_getter(
-                row_num=i,
-                col_num=j,
-                num_heading_rows=self._num_heading_rows,
-                num_rows=len(self.rows),
-                num_cols=self.rows[i].column_indices[-1] + 1,
-            ).draw_cell_border(
-                self._fpdf,
-                x1,
-                y1,
-                x2,
-                y2,
-                border=self.get_cell_border(i, j, cell),
-                fill_color=style.fill_color if style else None,
+            (
+                self._borders_layout.cell_style_getter(
+                    row_num=i,
+                    col_num=j,
+                    num_heading_rows=self._num_heading_rows,
+                    num_rows=len(self.rows),
+                    num_cols=self.rows[i].cols_count,
+                )
+                .override_cell_border(cell.border)
+                .draw_cell_border(
+                    self._fpdf,
+                    x1,
+                    y1,
+                    x2,
+                    y2,
+                    fill_color=style.fill_color if style else None,
+                )
             )
 
             # draw outer box if needed:
@@ -1334,54 +1258,3 @@ class RowSpanLayoutInfo:
 
     def row_range(self):
         return range(self.start, self.start + self.length)
-
-
-def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
-    """Draws a box using the provided style - private helper used by table for drawing the cell and table borders.
-    Difference between this and rect() is that border can be defined as "L,R,T,B" to draw only some of the four borders;
-    compatible with get_border(i,k)
-
-    See Also: rect()"""
-
-    if fill_color:
-        prev_fill_color = pdf.fill_color
-        pdf.set_fill_color(fill_color)
-
-    sl = []
-
-    k = pdf.k
-
-    # y top to bottom instead of bottom to top
-    y1 = pdf.h - y1
-    y2 = pdf.h - y2
-
-    # scale
-    x1 *= k
-    x2 *= k
-    y2 *= k
-    y1 *= k
-
-    if isinstance(border, str) and set(border).issuperset("LTRB"):
-        border = 1
-
-    if fill_color:
-        op = "B" if border == 1 else "f"
-        sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re {op}")
-    elif border == 1:
-        sl.append(f"{x1:.2f} {y2:.2f} " f"{x2 - x1:.2f} {y1 - y2:.2f} re S")
-
-    if isinstance(border, str):
-        if "L" in border:
-            sl.append(f"{x1:.2f} {y2:.2f} m " f"{x1:.2f} {y1:.2f} l S")
-        if "B" in border:
-            sl.append(f"{x1:.2f} {y2:.2f} m " f"{x2:.2f} {y2:.2f} l S")
-        if "R" in border:
-            sl.append(f"{x2:.2f} {y2:.2f} m " f"{x2:.2f} {y1:.2f} l S")
-        if "T" in border:
-            sl.append(f"{x1:.2f} {y1:.2f} m " f"{x2:.2f} {y1:.2f} l S")
-
-    s = " ".join(sl)
-    pdf._out(s)  # pylint: disable=protected-access
-
-    if fill_color:
-        pdf.set_fill_color(prev_fill_color)
