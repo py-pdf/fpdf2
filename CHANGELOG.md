@@ -29,6 +29,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * documentation on [verifying provenance of `fpdf2` releases](https://py-pdf.github.io/fpdf2/#verifying-provenance)
 * documentation on [`fpdf2` internals](https://py-pdf.github.io/fpdf2/Internals.html)
 * added Slovenian translation of the tutorial: [Vodič](https://py-pdf.github.io/fpdf2/Tutorial-sl.html) - thanks to @DeepBlackHole
+* support for adding TrueType fonts that are missing the `.notdef` glyph - [issue #1161](https://github.com/py-pdf/fpdf2/issues/1161) - thanks to @spacegaori
 * improved SVG image speed by 50% to 70% - thanks to @petri-lipponen-movesense - [PR #1350](https://github.com/py-pdf/fpdf2/pull/1350)
 * [`TableBordersLayout`](https://py-pdf.github.io/fpdf2/fpdf/table.html#fpdf.table.TableBordersLayout) is now a non-enum class that supports customizable layouts. The members of the old enum class are now static members of the class and thus can be used as standard options using the same syntax as previously. 
 ### Fixed
