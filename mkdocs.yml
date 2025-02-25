@@ -177,7 +177,6 @@ nav:
   - 'Encryption':                     'Encryption.md'
   - 'Signing':                        'Signing.md'
   - 'File attachments':               'FileAttachments.md'
-  - 'OutputIntends':                  'OutputIntends.md'
 - 'Mixing other libs':
   - 'Combine with pypdf':             'CombineWithPypdf.md'
   - 'Combine with Markdown':          'CombineWithMarkdown.md'

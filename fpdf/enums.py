@@ -1025,7 +1025,8 @@ class TextDirection(CoerciveEnum):
 
 
 class OutputIntentSubType(CoerciveEnum):
-    "Definition for Output intents"
+    "Definition for Output Intent Subtypes"
+
     PDFX = Name("GTS_PDFX")
     "PDF/X-1a which is based upon CMYK processing"
 

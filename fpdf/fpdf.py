@@ -127,7 +127,7 @@ from .output import (
     PDFPageLabel,
     ResourceCatalog,
     stream_content_for_raster_image,
-    ICCProfileStreamDict,
+    PDFICCProfileObject,
 )
 from .recorder import FPDFRecorder
 from .sign import Signature
@@ -484,7 +484,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         output_condition_identifier: str = None,
         output_condition: str = None,
         registry_name: str = None,
-        dest_output_profile: ICCProfileStreamDict = None,
+        dest_output_profile: PDFICCProfileObject = None,
         info: str = None,
     ):
         """
@@ -492,18 +492,21 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         Args:
             subtype (OutputIntentSubType, required): PDFA, PDFX or ISOPDF
-            output_condition_identifier (str, required): see the Name in https://www.color.org/registry.xalter
-            output_condition (str, optional): see the Definition in https://www.color.org/registry.xalter
+            output_condition_identifier (str, required): see the Name in
+                https://www.color.org/registry.xalter
+            output_condition (str, optional): see the Definition in
+                https://www.color.org/registry.xalter
             registry_name (str, optional): "https://www.color.org"
-            dest_output_profile (dict, required if output_condition_identifier does not specify a standard production condition; optional otherwise):
-                ICCProfileStreamDict | None
-            info (str, required/optional see dest_output_profile): human readable description of profile
+            dest_output_profile (PDFICCProfileObject, required/optional):
+                PDFICCProfileObject | None # (required  if
+                output_condition_identifier does not specify a standard
+                production condition; optional otherwise)
+            info (str, required/optional see dest_output_profile): human
+                readable description of profile
         """
-        if self.output_intents:
-            self._set_min_pdf_version("1.4")
         subtypes_in_arr = [
             _["subtype"].value for _ in self.output_intents
-        ]  # list(map(lambda item: item["subtype"].value, self.output_intents))
+        ]
         if subtype.value not in subtypes_in_arr:
             self._output_intents.append(
                 {
@@ -516,7 +519,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 }
             )
         else:
-            raise ValueError("set_output_intent: subtype '" + subtype.value + "' already exists.")
+            raise ValueError("set_output_intent: subtype '"
+                             + subtype.value
+                             + "' already exists.")
+        if self.output_intents:
+            self._set_min_pdf_version("1.4")
 
     @property
     def epw(self):

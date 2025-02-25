@@ -217,6 +217,13 @@ class PDFXObject(PDFContentStream):
 
 
 class PDFICCProfileObject(PDFContentStream):
+    """holds values for ICC Profile Stream
+    Args:
+        contents (str): stream content
+        n (int): [1|3|4], # the numbers for colors 1=Gray, 3=RGB, 4=CMYK
+        alternate (str): ['DeviceGray'|'DeviceRGB'|'DeviceCMYK']
+    """
+
     __slots__ = (  # RAM usage optimization
         "_id",
         "_contents",
@@ -436,32 +443,30 @@ class PDFXrefAndTrailer(ContentWithoutID):
         return "\n".join(out)
 
 
-class ICCProfileStreamDict():
+class OutputIntentDictionary:
+    """The optional OutputIntents (PDF 1.4) entry in the document
+    catalog dictionary holds an array of output intent dictionaries,
+    each describing the colour reproduction characteristics of a possible
+    output device.
 
-    __slots__ = (  # RAM usage optimization
-        "fn",
-        "N",
-        "alternate",
-    )
-
-    def __init__(self, fn=None, N=None, alternate=None):
-        """hold values from input for dest_output_profile
-
-        Args:
-            fn (str): Path to ICC Profile,
-            N (int): [1|3|4], # the numbers for colors 1=Gray, 3=RGB, 4=CMYK
-            alternate (str): ['DeviceGray'|'DeviceRGB'|'DeviceCMYK']
+    Args:
+        subtype (OutputIntentSubType, required): PDFA, PDFX or ISOPDF
+        output_condition_identifier (str, required): see the Name in
+            https://www.color.org/registry.xalter
+        output_condition (str, optional): see the Definition in
+            https://www.color.org/registry.xalter
+        registry_name (str, optional): "https://www.color.org"
+        dest_output_profile (PDFICCProfileObject, required/optional):
+            PDFICCProfileObject | None # (required if
+            output_condition_identifier does not specify a standard
+            production condition; optional otherwise)
+        info (str, required/optional see dest_output_profile): human
+            readable description of profile
         """
-        self.fn = fn
-        self.N = N
-        self.alternate = alternate
-
-
-class OutputIntentDictionary(ContentWithoutID):
 
     __slots__ = (  # RAM usage optimization
         "type",
-        "subtype",
+        "s",
         "output_condition_identifier",
         "output_condition",
         "registry_name",
@@ -475,12 +480,11 @@ class OutputIntentDictionary(ContentWithoutID):
         output_condition_identifier: str,
         output_condition: str = None,
         registry_name: str = None,
-        dest_output_profile: ICCProfileStreamDict | PDFICCProfileObject = None,
+        dest_output_profile: PDFICCProfileObject = None,
         info: str = None,
     ):
-        # super().__init__()
         self.type = Name("OutputIntent")
-        self.subtype = Name(OutputIntentSubType.coerce(subtype).value)
+        self.s = Name(OutputIntentSubType.coerce(subtype).value)
         self.output_condition_identifier = (
             PDFString(output_condition_identifier)
             if output_condition_identifier
@@ -491,49 +495,21 @@ class OutputIntentDictionary(ContentWithoutID):
         )
         self.registry_name = PDFString(registry_name)\
             if registry_name else None
-        if dest_output_profile and\
-                type(dest_output_profile) is ICCProfileStreamDict:
-            with open(dest_output_profile.fn, "rb") as file:
-                file_contents = file.read()
-                self.dest_output_profile = PDFICCProfileObject(
-                    contents=file_contents,
-                    n=dest_output_profile.N,
-                    alternate=dest_output_profile.alternate,
-                )
-        else:
-            self.dest_output_profile = None
+        self.dest_output_profile = (
+            dest_output_profile
+            if dest_output_profile and type(dest_output_profile) is
+            PDFICCProfileObject else None
+        )
         self.info = PDFString(info) if info else None
 
     # method override
     def serialize(self, _security_handler=None, _obj_id=None):
-        out = []
-        out.append("<<")
-        out.append(f"/Type {self.type.serialize(_security_handler)}")
-        out.append(f"/S {self.subtype.serialize(_security_handler)}")
-        if self.output_condition:
-            out.append(
-                "/OutputCondition "
-                + self.output_condition.serialize(_security_handler)
-            )
-        if self.output_condition_identifier:
-            out.append(
-                "/OutputConditionIdentifier "
-                + self.output_condition_identifier.serialize(_security_handler)
-            )
-        if self.registry_name:
-            out.append(
-                "/RegistryName "
-                + self.registry_name.serialize(_security_handler)
-            )
-        if self.info:
-            out.append(f"/Info {self.info.serialize(_security_handler)}")
-        if self.dest_output_profile:
-            out.append(
-                "/DestOutputProfile "
-                + str(self.dest_output_profile.id) + " 0 R"
-            )
-        out.append(">>")
-        return "\n".join(out)
+        obj_dict = build_obj_dict(
+            {key: getattr(self, key) for key in dir(self)},
+            _security_handler = _security_handler,
+            _obj_id = _obj_id,
+        )
+        return pdf_dict(obj_dict)
 
 
 class ResourceCatalog:

@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.3] - Not released yet
 ### Added
+* support for [Output Intends](https://py-pdf.github.io/fpdf2/Images.html#output-intends) on document level
 * support for [shading patterns (gradients)](https://py-pdf.github.io/fpdf2/Patterns.html) 
 * improved SVG image speed by 50% to 70% - thanks to @petri-lipponen-movesense - [PR #1350](https://github.com/py-pdf/fpdf2/pull/1350)
 * support for <s>strikethrough text</s>

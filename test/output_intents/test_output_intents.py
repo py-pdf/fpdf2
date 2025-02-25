@@ -2,7 +2,7 @@ from pathlib import Path
 
 from fpdf import FPDF
 from fpdf.enums import OutputIntentSubType
-from fpdf.output import ICCProfileStreamDict
+from fpdf.output import PDFICCProfileObject
 
 import pytest
 from test.conftest import assert_pdf_equal
@@ -11,6 +11,10 @@ HERE = Path(__file__).resolve().parent
 
 
 def test_output_intents_coerce():
+    """
+    make sure that the coerce function returns expected subtype,
+    or raises ValueError on not expected input
+    """
     assert OutputIntentSubType.coerce("PDFA") == OutputIntentSubType.PDFA
     assert OutputIntentSubType.coerce("pdfa") == OutputIntentSubType.PDFA
     assert OutputIntentSubType.coerce("PDFX") == OutputIntentSubType.PDFX
@@ -74,17 +78,19 @@ def test_output_intents(tmp_path):
     Make sure the Output Intents is set in PDF.
     """
     doc = FPDF()
-    dest_output_profile = ICCProfileStreamDict(
-        fn=HERE / "sRGB2014.icc",
-        N=3,
-        alternate="DeviceRGB"
-    )
+    with open(HERE / "sRGB2014.icc", "rb") as iccp_file:
+        icc_profile = PDFICCProfileObject(
+            contents=iccp_file.read(),
+            n=3,
+            alternate="DeviceRGB"
+        )
+
     doc.set_output_intent(
         OutputIntentSubType.PDFA,
         "sRGB",
         'IEC 61966-2-1:1999',
         "http://www.color.org",
-        dest_output_profile,
+        icc_profile,
         "sRGB2014 (v2)",
     )
     # doc.set_output_intents(OutputIntentSubType.PDFX)
@@ -142,16 +148,18 @@ def test_two_output_intents(tmp_path):
     Make sure the Output Intents is set in PDF.
     """
     doc = FPDF()
-    dest_output_profile = ICCProfileStreamDict(
-        fn=HERE / "sRGB2014.icc",
-        N=3,
-        alternate="DeviceRGB")
+    with open(HERE / "sRGB2014.icc", "rb") as iccp_file:
+        icc_profile = PDFICCProfileObject(
+            contents=iccp_file.read(),
+            n=3,
+            alternate="DeviceRGB"
+        )
     doc.set_output_intent(
         OutputIntentSubType.PDFA,
         "sRGB",
         'IEC 61966-2-1:1999',
         "http://www.color.org",
-        dest_output_profile,
+        icc_profile,
         "sRGB2014 (v2)",
     )
     doc.set_output_intent(
@@ -184,20 +192,22 @@ def test_two_equal_output_intents_raises(tmp_path):
     Make sure the second Output Intent raises ValueError.
     """
     doc = FPDF()
-    dest_output_profile = ICCProfileStreamDict(
-        fn=HERE / "sRGB2014.icc",
-        N=3,
-        alternate="DeviceRGB")
+    with open(HERE / "sRGB2014.icc", "rb") as iccp_file:
+        icc_profile = PDFICCProfileObject(
+            contents=iccp_file.read(),
+            n=3,
+            alternate="DeviceRGB"
+        )
     doc.set_output_intent(
         OutputIntentSubType.PDFA,
         "sRGB",
         'IEC 61966-2-1:1999',
         "http://www.color.org",
-        dest_output_profile,
+        icc_profile,
         "sRGB2014 (v2)",
     )
     with pytest.raises(ValueError):
         assert doc.set_output_intent(
             OutputIntentSubType.PDFA,
-            "somethingStrange",
+            "somethingStrange"
         )
