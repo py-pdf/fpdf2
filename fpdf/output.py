@@ -504,8 +504,8 @@ class OutputIntentDictionary:
             if registry_name else None
         self.dest_output_profile = (
             dest_output_profile
-            if dest_output_profile and type(dest_output_profile) is
-            PDFICCProfileObject else None
+            if dest_output_profile
+            and isinstance(dest_output_profile, PDFICCProfileObject) else None
         )
         self.info = PDFString(info) if info else None
 
@@ -1023,8 +1023,8 @@ class OutputProducer:
 
         return img_obj
 
-    def _add_icc_objs_from_output_intents(self):
-        self.fpdf.catalog
+    # def _add_icc_objs_from_output_intents(self):
+    #     self.fpdf.catalog
 
     def _add_gfxstates(self):
         gfxstate_objs_per_name = OrderedDict()
