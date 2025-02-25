@@ -61,7 +61,7 @@ if sys.platform not in ("cygwin", "win32"):
         _test_camelot_parse(HERE / filename, "lattice", 4, 5, table_count=2)
 
     @pytest.mark.xfail(
-        reason="camelot does not successfully parse tables splitted on several pages"
+        reason="camelot does not successfully parse tables split on several pages"
     )
     @pytest.mark.parametrize("flavor", ("lattice", "stream"))
     def test_camelot_extract_two_pages_table(flavor):
@@ -114,7 +114,7 @@ def test_tabula_extract_two_tables(filename):
 
 
 @pytest.mark.xfail(
-    reason="tabula does not successfully parse tables splitted on several pages"
+    reason="tabula does not successfully parse tables split on several pages"
 )
 def test_tabula_extract_two_pages_table():
     dataframes = tabula.read_pdf(HERE / "table_with_multiline_cells.pdf", pages="all")

@@ -35,7 +35,7 @@ def test_change_settings():
     """
     Make sure all the the set_xxx() methods stored in the graphics context
     do the right thing, both when changing something or using the same value
-    again (the latter will often execute a seperate, shortened code path).
+    again (the latter will often execute a separate, shortened code path).
     """
     red = (255, 0, 0)
     blue = (0, 255, 0)

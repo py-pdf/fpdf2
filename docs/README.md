@@ -1,7 +1,7 @@
 This documentation is published online at https://py-pdf.github.io/fpdf2/
 
 Docs generation & publication on GitHub Pages is performed for every new commit on the `master` branch
-throught the GitHub Actions pipeline.
+through the GitHub Actions pipeline.
 
 Please refer to the [development manual](https://py-pdf.github.io/fpdf2/Development.html#documentation)
 for more information.

@@ -42,7 +42,7 @@ def test_bidi_conformance():
     """
     The file BidiTest.txt comprises exhaustive test sequences of bidirectional types
     https://www.unicode.org/reports/tr41/tr41-32.html#Tests9
-    This file contais 770,241 tests
+    This file contains 770,241 tests
     """
 
     def check_result(string, base_direction, levels, reorder):

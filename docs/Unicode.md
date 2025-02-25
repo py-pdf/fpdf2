@@ -5,7 +5,7 @@ Besides the limited set of latin fonts built into the PDF format, `fpdf2` offers
 To make use of that functionality, you have to install at least one Unicode font, either in the system font folder or in some other location accessible to your program.
 For professional work, many designers prefer commercial fonts, suitable to their specific needs. There are also many sources of free TTF fonts that can be downloaded online and used free of cost (some of them may have restrictions on commercial redistribution, such as server installations or including them in a software project).
 
-  * [Font Library](https://fontlibrary.org/) - A collection of fonts for many languates with an open source type license.
+  * [Font Library](https://fontlibrary.org/) - A collection of fonts for many languages with an open source type license.
 
   * [Google Fonts](https://fonts.google.com/) - A collection of free to use fonts for many languages.
 
@@ -214,5 +214,5 @@ When a glyph cannot be rendered uing the current font,
 By default, if it does not find such matching font, the character will not be rendered using any fallback font. This behaviour can be relaxed by passing `exact_match=False` to [`set_fallback_fonts()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fallback_fonts).
 
 Moreover, for more control over font fallback election logic,
-the [`get_fallback_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.get_fallback_font) can be overriden.
+the [`get_fallback_font()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.get_fallback_font) can be overridden.
 An example of this can be found in [test/fonts/test_font_fallback.py](https://github.com/py-pdf/fpdf2/blob/master/test/fonts/test_font_fallback.py).

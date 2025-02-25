@@ -93,7 +93,7 @@ def test_round_corners_rect(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()
 
-    # no fill diferent sizes test
+    # no fill different sizes test
     y = 10
     pdf.rect(10, y, 15, 20, round_corners=True, style="D")
     pdf.rect(30, y, 20, 15, round_corners=True, style="D")
@@ -131,7 +131,7 @@ def test_round_corners_rect(tmp_path):
     )
     pdf.rect(160, y, 10, 10, round_corners=("TOP_LEFT", "BOTTOM_LEFT"), style="D")
 
-    # fill color diferent sizes test
+    # fill color different sizes test
     pdf.set_fill_color(0, 255, 0)
     y += 35
     pdf.rect(10, y, 15, 20, round_corners=True, style="DF")

@@ -26,9 +26,10 @@ jobs:
           find . -name '*.pdf' | xargs -n 1 sh -c 'qpdf --check --password=fpdf2 $0 || exit 255'
           export PYTHONPATH=$PWD
           # Using VeraPDF:
-          scripts/install-verapdf.sh
-          scripts/verapdf.py --process-all-test-pdf-files
-          scripts/verapdf.py --print-aggregated-report
+          # -- VeraPDF download is broken - disabling for now --
+          #scripts/install-verapdf.sh
+          #scripts/verapdf.py --process-all-test-pdf-files
+          #scripts/verapdf.py --print-aggregated-report
           # Using Datalogics PDF Checker:
           scripts/install-pdfchecker.sh
           scripts/pdfchecker.py --process-all-test-pdf-files
@@ -71,6 +72,8 @@ jobs:
           guarddog pypi verify docs/requirements.txt
           guarddog pypi verify test/linters-requirements.txt
           guarddog pypi verify test/requirements.txt
+      - name: Spell Check Repo ✍️
+        uses: crate-ci/typos@v1.29.7
   test:
     strategy:
       matrix:

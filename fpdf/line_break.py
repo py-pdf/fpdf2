@@ -483,9 +483,9 @@ class CurrentLine:
         #     class attributes (`width`, `fragments`)
         #     is used for this purpose
         # 2 - position of last inserted space
-        #     SpaceHint is used fo this purpose.
+        #     SpaceHint is used for this purpose.
         # 3 - position of last inserted soft-hyphen
-        #     HyphenHint is used fo this purpose.
+        #     HyphenHint is used for this purpose.
         # The purpose of multiple positions tracking - to have an ability
         # to break in multiple places, depending on condition.
         self.space_break_hint = None

@@ -32,7 +32,7 @@
 		"priority": 2
 	},
 	{
-		"name": "multline_text",
+		"name": "multiline_text",
 		"type": "T",
 		"x1": 20,
 		"y1": 100,
