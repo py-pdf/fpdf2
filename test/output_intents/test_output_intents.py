@@ -33,22 +33,18 @@ def test_output_intents_properties():
     assert pdf.output_intents == []
 
     pdf.set_output_intent(
-        OutputIntentSubType.PDFA, 'sRGB'
+        OutputIntentSubType.PDFA, "sRGB"
     )  # should create the array and add PDFA
-    pdf.set_output_intent(
-        OutputIntentSubType.PDFX, 'AdobeRGB'
-    )  # should add PDFX
+    pdf.set_output_intent(OutputIntentSubType.PDFX, "AdobeRGB")  # should add PDFX
     # pdf.set_output_intent(
     #     OutputIntentSubType.PDFA, 'AdobeRGB'
     # )  # should be discarded
-    pdf.set_output_intent(
-        OutputIntentSubType.ISOPDF, 'AdobeRGB'
-    )  # should add ISOPDF
+    pdf.set_output_intent(OutputIntentSubType.ISOPDF, "AdobeRGB")  # should add ISOPDF
 
     assert pdf.output_intents == [
         {
             "subtype": OutputIntentSubType.PDFA,
-            "output_condition_identifier": 'sRGB',
+            "output_condition_identifier": "sRGB",
             "dest_output_profile": None,
             "info": None,
             "output_condition": None,
@@ -56,7 +52,7 @@ def test_output_intents_properties():
         },
         {
             "subtype": OutputIntentSubType.PDFX,
-            "output_condition_identifier": 'AdobeRGB',
+            "output_condition_identifier": "AdobeRGB",
             "dest_output_profile": None,
             "info": None,
             "output_condition": None,
@@ -64,7 +60,7 @@ def test_output_intents_properties():
         },
         {
             "subtype": OutputIntentSubType.ISOPDF,
-            "output_condition_identifier": 'AdobeRGB',
+            "output_condition_identifier": "AdobeRGB",
             "dest_output_profile": None,
             "info": None,
             "output_condition": None,
@@ -80,15 +76,13 @@ def test_output_intents(tmp_path):
     doc = FPDF()
     with open(HERE / "sRGB2014.icc", "rb") as iccp_file:
         icc_profile = PDFICCProfileObject(
-            contents=iccp_file.read(),
-            n=3,
-            alternate="DeviceRGB"
+            contents=iccp_file.read(), n=3, alternate="DeviceRGB"
         )
 
     doc.set_output_intent(
         OutputIntentSubType.PDFA,
         "sRGB",
-        'IEC 61966-2-1:1999',
+        "IEC 61966-2-1:1999",
         "http://www.color.org",
         icc_profile,
         "sRGB2014 (v2)",
@@ -108,8 +102,7 @@ def test_output_intents(tmp_path):
     ):
         doc.set_text_color(*color)
         doc.text(20, 20 + 10 * i, f"{color}")
-    assert_pdf_equal(doc, HERE / "text_color_with_one_output_intent.pdf",
-                     tmp_path)
+    assert_pdf_equal(doc, HERE / "text_color_with_one_output_intent.pdf", tmp_path)
 
 
 def test_output_intents_without_optionals(tmp_path):
@@ -137,9 +130,7 @@ def test_output_intents_without_optionals(tmp_path):
         doc.set_text_color(*color)
         doc.text(20, 20 + 10 * i, f"{color}")
     assert_pdf_equal(
-        doc,
-        HERE / "text_color_with_one_output_intent_without_optionals.pdf",
-        tmp_path
+        doc, HERE / "text_color_with_one_output_intent_without_optionals.pdf", tmp_path
     )
 
 
@@ -150,14 +141,12 @@ def test_two_output_intents(tmp_path):
     doc = FPDF()
     with open(HERE / "sRGB2014.icc", "rb") as iccp_file:
         icc_profile = PDFICCProfileObject(
-            contents=iccp_file.read(),
-            n=3,
-            alternate="DeviceRGB"
+            contents=iccp_file.read(), n=3, alternate="DeviceRGB"
         )
     doc.set_output_intent(
         OutputIntentSubType.PDFA,
         "sRGB",
-        'IEC 61966-2-1:1999',
+        "IEC 61966-2-1:1999",
         "http://www.color.org",
         icc_profile,
         "sRGB2014 (v2)",
@@ -180,11 +169,7 @@ def test_two_output_intents(tmp_path):
     ):
         doc.set_text_color(*color)
         doc.text(20, 20 + 10 * i, f"{color}")
-    assert_pdf_equal(
-        doc,
-        HERE / "text_color_with_two_output_intents.pdf",
-        tmp_path
-    )
+    assert_pdf_equal(doc, HERE / "text_color_with_two_output_intents.pdf", tmp_path)
 
 
 def test_two_equal_output_intents_raises(tmp_path):
@@ -194,20 +179,15 @@ def test_two_equal_output_intents_raises(tmp_path):
     doc = FPDF()
     with open(HERE / "sRGB2014.icc", "rb") as iccp_file:
         icc_profile = PDFICCProfileObject(
-            contents=iccp_file.read(),
-            n=3,
-            alternate="DeviceRGB"
+            contents=iccp_file.read(), n=3, alternate="DeviceRGB"
         )
     doc.set_output_intent(
         OutputIntentSubType.PDFA,
         "sRGB",
-        'IEC 61966-2-1:1999',
+        "IEC 61966-2-1:1999",
         "http://www.color.org",
         icc_profile,
         "sRGB2014 (v2)",
     )
     with pytest.raises(ValueError):
-        assert doc.set_output_intent(
-            OutputIntentSubType.PDFA,
-            "somethingStrange"
-        )
+        assert doc.set_output_intent(OutputIntentSubType.PDFA, "somethingStrange")

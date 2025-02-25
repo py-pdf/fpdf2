@@ -469,7 +469,7 @@ class OutputIntentDictionary:
             production condition; optional otherwise)
         info (str, required/optional see dest_output_profile): human
             readable description of profile
-        """
+    """
 
     __slots__ = (  # RAM usage optimization
         "type",
@@ -483,7 +483,7 @@ class OutputIntentDictionary:
 
     def __init__(
         self,
-        subtype: OutputIntentSubType | str,
+        subtype: "OutputIntentSubType | str",
         output_condition_identifier: str,
         output_condition: str = None,
         registry_name: str = None,
@@ -500,12 +500,12 @@ class OutputIntentDictionary:
         self.output_condition = (
             PDFString(output_condition) if output_condition else None
         )
-        self.registry_name = PDFString(registry_name)\
-            if registry_name else None
+        self.registry_name = PDFString(registry_name) if registry_name else None
         self.dest_output_profile = (
             dest_output_profile
             if dest_output_profile
-            and isinstance(dest_output_profile, PDFICCProfileObject) else None
+            and isinstance(dest_output_profile, PDFICCProfileObject)
+            else None
         )
         self.info = PDFString(info) if info else None
 
@@ -513,8 +513,8 @@ class OutputIntentDictionary:
     def serialize(self, _security_handler=None, _obj_id=None):
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
-            _security_handler = _security_handler,
-            _obj_id = _obj_id,
+            _security_handler=_security_handler,
+            _obj_id=_obj_id,
         )
         return pdf_dict(obj_dict)
 

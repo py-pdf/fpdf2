@@ -1101,4 +1101,3 @@ class PDFResourceType(Enum):
     FONT = intern("Font")
     PROC_SET = intern("ProcSet")
     PROPERTIES = intern("Properties")
-

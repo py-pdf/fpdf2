@@ -505,9 +505,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             info (str, required/optional see dest_output_profile): human
                 readable description of profile
         """
-        subtypes_in_arr = [
-            _["subtype"].value for _ in self.output_intents
-        ]
+        subtypes_in_arr = [_["subtype"].value for _ in self.output_intents]
         if subtype.value not in subtypes_in_arr:
             self._output_intents.append(
                 {
@@ -520,9 +518,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 }
             )
         else:
-            raise ValueError("set_output_intent: subtype '"
-                             + subtype.value
-                             + "' already exists.")
+            raise ValueError(
+                "set_output_intent: subtype '" + subtype.value + "' already exists."
+            )
         if self.output_intents:
             self._set_min_pdf_version("1.4")
 
