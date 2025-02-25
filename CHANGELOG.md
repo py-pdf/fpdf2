@@ -18,6 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.3] - Not released yet
 ### Added
+* support for [Output Intends](https://py-pdf.github.io/fpdf2/Images.html#output-intends) on document level
 * support for [shading patterns (gradients)](https://py-pdf.github.io/fpdf2/Patterns.html) - thanks to @andersonhc - [PR #1334](https://github.com/py-pdf/fpdf2/pull/1334)
 * support for [setting a minimal row height in tables](https://py-pdf.github.io/fpdf2/Tables.html#setting-row-height)
 * support for [`v_align` at the row level in tables](https://py-pdf.github.io/fpdf2/Tables.html#setting-vertical-alignment-of-text-in-cells)
