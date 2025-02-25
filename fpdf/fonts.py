@@ -392,19 +392,19 @@ class TTFFont:
         self.ttfont.close()
         self.hbfont = None
 
-    def get_text_width(self, text, font_size_pt, text_shaping_parms):
-        if text_shaping_parms:
-            return self.shaped_text_width(text, font_size_pt, text_shaping_parms)
+    def get_text_width(self, text, font_size_pt, text_shaping_params):
+        if text_shaping_params:
+            return self.shaped_text_width(text, font_size_pt, text_shaping_params)
         return (len(text), sum(self.cw[ord(c)] for c in text) * font_size_pt * 0.001)
 
-    def shaped_text_width(self, text, font_size_pt, text_shaping_parms):
+    def shaped_text_width(self, text, font_size_pt, text_shaping_params):
         """
         When texts are shaped, the length of a string is not always the sum of all individual character widths
         This method will invoke harfbuzz to perform the text shaping and return the sum of "x_advance"
         and "x_offset" for each glyph. This method works for "left to right" or "right to left" texts.
         """
         _, glyph_positions = self.perform_harfbuzz_shaping(
-            text, font_size_pt, text_shaping_parms
+            text, font_size_pt, text_shaping_params
         )
 
         # If there is nothing to render (harfbuzz returns None), we return 0 text width
@@ -420,7 +420,7 @@ class TTFFont:
 
     # Disabling this check - looks like cython confuses pylint:
     # pylint: disable=no-member
-    def perform_harfbuzz_shaping(self, text, font_size_pt, text_shaping_parms):
+    def perform_harfbuzz_shaping(self, text, font_size_pt, text_shaping_params):
         """
         This method invokes Harfbuzz to perform text shaping of the input string
         """
@@ -431,13 +431,13 @@ class TTFFont:
         buf.cluster_level = 1
         buf.add_str("".join(text))
         buf.guess_segment_properties()
-        features = text_shaping_parms["features"]
-        if text_shaping_parms["fragment_direction"]:
-            buf.direction = text_shaping_parms["fragment_direction"].value
-        if text_shaping_parms["script"]:
-            buf.script = text_shaping_parms["script"]
-        if text_shaping_parms["language"]:
-            buf.language = text_shaping_parms["language"]
+        features = text_shaping_params["features"]
+        if text_shaping_params["fragment_direction"]:
+            buf.direction = text_shaping_params["fragment_direction"].value
+        if text_shaping_params["script"]:
+            buf.script = text_shaping_params["script"]
+        if text_shaping_params["language"]:
+            buf.language = text_shaping_params["language"]
         hb.shape(self.hbfont, buf, features)
         return buf.glyph_infos, buf.glyph_positions
 
@@ -450,7 +450,7 @@ class TTFFont:
             txt_mapped += chr(self.subset.pick(uni))
         return f'({escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))}) Tj'
 
-    def shape_text(self, text, font_size_pt, text_shaping_parms):
+    def shape_text(self, text, font_size_pt, text_shaping_params):
         """
         This method will invoke harfbuzz for text shaping, include the mapping code
         of the glyphs on the subset and map input characters to the cluster codes
@@ -458,7 +458,7 @@ class TTFFont:
         if len(text) == 0:
             return []
         glyph_infos, glyph_positions = self.perform_harfbuzz_shaping(
-            text, font_size_pt, text_shaping_parms
+            text, font_size_pt, text_shaping_params
         )
         text_info = []
 
@@ -569,7 +569,7 @@ class SubsetMap:
     Holds a mapping of used characters and their position in the font's subset
 
     Characters that must be mapped on their actual unicode must be part of the
-    `identities` list during object instanciation. These non-negative values should
+    `identities` list during object instantiation. These non-negative values should
     only appear once in the list. `pick()` can be used to get the characters
     corresponding position in the subset. If it's not yet part of the object, a new
     position is acquired automatically. This implementation always tries to return

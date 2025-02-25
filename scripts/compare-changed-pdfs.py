@@ -40,10 +40,8 @@ changed_pdf_files = [
     if line.startswith(f"M\t{target_dir}") and line.endswith(".pdf")
 ]
 
-TMP_DIR.mkdir(exist_ok=True)
-for dir in scantree_dirs(REPO_DIR / target_dir):
-    (TMP_DIR / dir).mkdir(exist_ok=True)
 for changed_pdf_file in changed_pdf_files:
+    (TMP_DIR / Path(changed_pdf_file)).parent.mkdir(exist_ok=True, parents=True)
     command = f"git show master:{changed_pdf_file} > {TMP_DIR}/{changed_pdf_file}"
     print(command)
     check_output(command, shell=True)

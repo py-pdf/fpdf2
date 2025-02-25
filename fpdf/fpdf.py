@@ -169,6 +169,7 @@ class ToCPlaceholder(NamedTuple):
     y: int
     page_orientation: str
     pages: int = 1
+    reset_page_indices: bool = True
 
 
 # Disabling this check due to the "format" parameter below:
@@ -345,7 +346,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.dash_pattern = dict(dash=0, gap=0, phase=0)
         self.line_width = 0.567 / self.k  # line width (0.2 mm)
         self.text_mode = TextMode.FILL
-        # end of grapics state variables
+        # end of graphics state variables
 
         self.dw_pt, self.dh_pt = get_page_format(format, self.k)
         self._set_orientation(orientation, self.dw_pt, self.dh_pt)
@@ -437,7 +438,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 font to use for `<pre>` & `<code>` blocks - Set `tag_styles` instead
             warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags. Defaults to `True`.
             tag_indents (dict): [**DEPRECATED since v2.8.0**]
-                mapping of HTML tag names to numeric values representing their horizontal left identation. - Set `tag_styles` instead
+                mapping of HTML tag names to numeric values representing their horizontal left indentation. - Set `tag_styles` instead
             tag_styles (dict[str, fpdf.fonts.TextStyle]): mapping of HTML tag names to `fpdf.TextStyle` or `fpdf.FontFace` instances
         """
         html2pdf = self.HTML2FPDF_CLASS(self, *args, **kwargs)
@@ -551,7 +552,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def set_margins(self, left, top, right=-1):
         """
-        Sets the document left, top & optionaly right margins to the same value.
+        Sets the document left, top & optionally right margins to the same value.
         By default, they equal 1 cm.
         Also sets the current FPDF.y on the page to this minimum vertical position.
 
@@ -695,7 +696,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             ) from exc
 
         #
-        # Features must be a dictionary contaning opentype features and a boolean flag
+        # Features must be a dictionary containing opentype features and a boolean flag
         # stating whether the feature should be enabled or disabled.
         #
         # e.g. features={"liga": True, "kern": False}
@@ -920,17 +921,29 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         self.str_alias_nb_pages = alias
 
+    @check_page
     def set_page_label(
         self,
         label_style: Union[str, PageLabelStyle] = None,
         label_prefix: str = None,
         label_start: int = None,
     ):
-        current_page_label = (
-            None if self.page == 1 else self.pages[self.page - 1].get_page_label()
-        )
+        current_page_label = None
+        if self.page in self.pages:
+            current_page_label = self.pages[self.page].get_page_label()
+        elif self.page > 1:
+            current_page_label = self.pages[self.page - 1].get_page_label()
         new_page_label = None
         if label_style or label_prefix or label_start:
+            if current_page_label:
+                if label_style is None:
+                    label_style = current_page_label.get_style()
+                if label_prefix is None:
+                    label_prefix = current_page_label.get_prefix()
+                if label_start is None and not (
+                    self.toc_placeholder and self.toc_placeholder.reset_page_indices
+                ):
+                    label_start = current_page_label.get_start()
             label_style = (
                 PageLabelStyle.coerce(label_style, case_sensitive=True)
                 if label_style
@@ -1004,9 +1017,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
         if self.page > 0 and (not self.in_toc_rendering or in_toc_extra_page):
             # Page footer
-            self.in_footer = True
-            self.footer()
-            self.in_footer = False
+            self._render_footer()
 
         current_page_label = (
             None if self.page == 0 else self.pages[self.page].get_page_label()
@@ -1086,6 +1097,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             )
         # END Page header
 
+    def _render_footer(self):
+        self.in_footer = True
+        if self.toc_placeholder:
+            # The ToC is rendered AFTER the footer,
+            # so we must ensure there is no "style leak":
+            self._push_local_stack()
+            self._start_local_context()
+        self.footer()
+        if self.toc_placeholder:
+            self._end_local_context()
+            self._pop_local_stack()
+        self.in_footer = False
+
     def _beginpage(
         self, orientation, format, same, duration, transition, new_page=True
     ):
@@ -1134,6 +1158,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         and should not be called directly by the user application.
         The default implementation performs nothing: you have to override this method
         in a subclass to implement your own rendering logic.
+
+        Note that header rendering can have an impact on the initial
+        (x,y) position when starting to render the page content.
         """
 
     def footer(self):
@@ -1247,7 +1274,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         Args:
             background: either a string representing a file path or URL to an image,
-                an io.BytesIO containg an image as bytes, an instance of `PIL.Image.Image`, drawing.DeviceRGB
+                an io.BytesIO containing an image as bytes, an instance of `PIL.Image.Image`, drawing.DeviceRGB
                 or a RGB tuple representing a color to fill the background with or `None` to remove the background
         """
 
@@ -2965,7 +2992,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Font size can be specified in document units with `font_size` or in points with `font_size_pt`.
 
         Args:
-            **kwargs: key-values settings to set at the beggining of this context.
+            **kwargs: key-values settings to set at the beginning of this context.
         """
         if self._in_unbreakable:
             raise FPDFException(
@@ -3294,7 +3321,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         elif text_line.align == Align.X:
             self.x -= w / 2
 
-        max_font_size = 0  # how much height we need to accomodate.
+        max_font_size = 0  # how much height we need to accommodate.
         # currently all font sizes within a line are vertically aligned on the baseline.
         fragments = text_line.get_ordered_fragments()
         for frag in fragments:
@@ -3599,7 +3626,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     def get_fallback_font(self, char, style=""):
         """
         Returns which fallback font has the requested glyph.
-        This method can be overriden to provide more control than the `select_mode` parameter
+        This method can be overridden to provide more control than the `select_mode` parameter
         of `FPDF.set_fallback_fonts()` provides.
         """
         emphasis = TextEmphasis.coerce(style)
@@ -4714,7 +4741,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._out(f"/P <</MCID {mcid}>> BDC")
         yield struct_elem
         if self.page != start_page:
-            raise FPDFException("A page jump occured inside a marked sequence")
+            raise FPDFException("A page jump occurred inside a marked sequence")
         self._out("EMC")
 
     def _add_marked_content(self, **kwargs):
@@ -4929,10 +4956,46 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             error_msg += f"ToC ended on page {self.page} while it was expected to span exactly {tocp.pages} pages"
             raise FPDFException(error_msg)
         if self._toc_inserted_pages:
-            # Generating final page footer afer more pages were inserted:
-            self.in_footer = True
-            self.footer()
-            self.in_footer = False
+            # Generating final page footer after more pages were inserted:
+            self._render_footer()
+            # We need to reorder the pages, because some new pages have been inserted in the ToC,
+            # but they have been inserted at the end of self.pages:
+            new_pages = [
+                self.pages.pop(len(self.pages)) for _ in range(self._toc_inserted_pages)
+            ]
+            new_pages = list(reversed(new_pages))
+            indices_remap = {}
+            for page_index in range(
+                tocp.start_page + 1, self.pages_count + len(new_pages) + 1
+            ):
+                if page_index in self.pages:
+                    new_pages.append(self.pages.pop(page_index))
+                page = self.pages[page_index] = new_pages.pop(0)
+                # Fix page indices:
+                indices_remap[page.index()] = page_index
+                page.set_index(page_index)
+                # Fix page labels:
+                if tocp.reset_page_indices is False:
+                    page.get_page_label().st = page_index
+            assert len(new_pages) == 0, f"#new_pages: {len(new_pages)}"
+            # Fix outline:
+            for section in self._outline:
+                new_index = indices_remap.get(section.page_number)
+                if new_index is not None:
+                    section.dest = section.dest.replace(page=new_index)
+                    section.page_number = new_index
+                    if section.struct_elem:
+                        # pylint: disable=protected-access
+                        section.struct_elem._page_number = new_index
+            # Fix resource catalog:
+            new_resources_per_page = defaultdict(set)
+            for (
+                page_number,
+                resource_type,
+            ), resource in self._resource_catalog.resources_per_page.items():
+                key = (indices_remap.get(page_number, page_number), resource_type)
+                new_resources_per_page[key] = resource
+            self._resource_catalog.resources_per_page = new_resources_per_page
         self.page, self.y = prev_page, prev_y
 
     def file_id(self):  # pylint: disable=no-self-use
@@ -5236,10 +5299,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         render_toc_function: Callable,
         pages: int = 1,
         allow_extra_pages: bool = False,
+        reset_page_indices: bool = True,
     ):
         """
         Configure Table Of Contents rendering at the end of the document generation,
         and reserve some vertical space right now in order to insert it.
+        At least one page break is triggered by this method.
 
         Args:
             render_toc_function (function): a function that will be invoked to render the ToC.
@@ -5252,7 +5317,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 extra pages in the ToC, which may cause discrepancies with pre-rendered
                 page numbers. For consistent numbering, using page labels to create a
                 separate numbering style for the ToC is recommended.
+            reset_page_indices (bool): Whether to reset the pages indixes after the ToC. Default to True.
         """
+        if pages < 1:
+            raise ValueError(
+                f"'pages' parameter must be equal or greater than 1: {pages}"
+            )
         if not callable(render_toc_function):
             raise TypeError(
                 f"The first argument must be a callable, got: {type(render_toc_function)}"
@@ -5263,7 +5333,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f" on page {self.toc_placeholder.start_page}"
             )
         self.toc_placeholder = ToCPlaceholder(
-            render_toc_function, self.page, self.y, self.cur_orientation, pages
+            render_toc_function,
+            self.page,
+            self.y,
+            self.cur_orientation,
+            pages,
+            reset_page_indices,
         )
         self._toc_allow_page_insertion = allow_extra_pages
         for _ in range(pages):
@@ -5317,6 +5392,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Args:
             name (str): section name
             level (int): section level in the document outline. 0 means top-level.
+            strict (bool): whether to raise an exception if levels increase incorrectly,
+                for example with a level-3 section following a level-1 section.
         """
         if level < 0:
             raise ValueError('"level" mut be equal or greater than zero')
@@ -5515,9 +5592,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             if self.page == 0:
                 self.add_page()
             # Generating final page footer:
-            self.in_footer = True
-            self.footer()
-            self.in_footer = False
+            self._render_footer()
             # Generating .buffer based on .pages:
             if self.toc_placeholder:
                 self._insert_table_of_contents()

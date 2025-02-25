@@ -195,7 +195,7 @@ class FlexTemplate:
 
             infile (string or path-like object): The filepath of the CSV file.
 
-            delimiter (single character): The character that seperates the fields in the CSV file:
+            delimiter (single character): The character that separates the fields in the CSV file:
                 Usually a comma, semicolon, or tab.
 
             decimal_sep (single character): The decimal separator used in the file.
@@ -206,7 +206,7 @@ class FlexTemplate:
         """
 
         def _varsep_float(s, default="0"):
-            """Convert to float with given decimal seperator"""
+            """Convert to float with given decimal separator"""
             # glad to have nonlocal scoping...
             return float((s.strip() or default).replace(decimal_sep, "."))
 

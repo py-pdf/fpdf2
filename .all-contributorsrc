@@ -1376,15 +1376,6 @@
       ]
     },
     {
-      "login": "osresearch",
-      "name": "Trammell Hudson",
-      "avatar_url": "https://avatars.githubusercontent.com/u/3068843?v=4",
-      "profile": "https://trmm.net/",
-      "contributions": [
-        "code"
-      ]
-    },
-    {
       "login": "petri-lipponen-movesense",
       "name": "petri-lipponen-movesense",
       "avatar_url": "https://avatars.githubusercontent.com/u/95341815?v=4",
@@ -1400,6 +1391,15 @@
       "profile": "https://github.com/spacegaori",
       "contributions": [
         "code"
+      ]
+    },
+    {
+      "login": "DeepBlackHole",
+      "name": "Black-Hole",
+      "avatar_url": "https://avatars.githubusercontent.com/u/110691847?v=4",
+      "profile": "https://github.com/DeepBlackHole",
+      "contributions": [
+        "translation"
       ]
     }
   ],

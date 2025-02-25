@@ -270,7 +270,7 @@ class Table:
         Defines which cell borders should be drawn.
         Returns a string containing some or all of the letters L/R/T/B,
         to be passed to `fpdf.FPDF.multi_cell()`.
-        Can be overriden to customize this logic
+        Can be overridden to customize this logic
         """
 
         if cell.border != CellBordersLayout.INHERIT:
@@ -442,7 +442,7 @@ class Table:
 
                 # draw the outer box separated by the gutter dimensions
                 # the top and bottom borders are one continuous line
-                # whereas the left and right borders are segments beause of possible pagebreaks
+                # whereas the left and right borders are segments because of possible pagebreaks
                 x1 = self._fpdf.l_margin
                 x2 = x1 + self._width
                 y1 = y1 - self._outer_border_margin[1]
@@ -685,7 +685,7 @@ class Table:
             if assigned_height + assigned_padding < span.contents_height:
                 # when there are overlapping rowspans, can we stretch the cells to be evenly padded?
                 if span.contents_height > assigned_height + span.length * max_padding:
-                    # stretch all cells to have the same padding, for asthetic reasons
+                    # stretch all cells to have the same padding, for aesthetic reasons
                     padding = (span.contents_height - assigned_height) / span.length
                     for i in span.row_range():
                         row_span_padding[i] = padding

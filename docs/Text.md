@@ -30,7 +30,7 @@ With supporting Unicode fonts, `fpdf2` should handle the following text shaping 
 There are a few advanced typesetting features that `fpdf2` doesn't currently support:
 
 * Contextual forms - In some writing systems (eg. Arabic, Mongolian, etc.), characters may take a different shape, depending on whether they appear at the beginning, in the middle, or at the end of a word, or isolated. Fpdf will always use the same standard shape in those cases.
-* Vertical writing - Some writing systems are meant to be written vertically. Doing so is not directly supported. In cases where this just means to stack characters on top of each other (eg. Chinese, Japanese, etc.), client software can implement this by placing each character individuall at the correct location. In cases where the characters are connected with each other (eg. Mongolian), this may be more difficult, if possible at all.
+* Vertical writing - Some writing systems are meant to be written vertically. Doing so is not directly supported. In cases where this just means to stack characters on top of each other (eg. Chinese, Japanese, etc.), client software can implement this by placing each character individually at the correct location. In cases where the characters are connected with each other (eg. Mongolian), this may be more difficult, if possible at all.
 
 ### Character or Word Based Line Wrapping
 By default, `multi_cell()` and `write()` will wrap lines based on words, using space characters and soft hyphens as separators.

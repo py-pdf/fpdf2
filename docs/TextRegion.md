@@ -58,7 +58,7 @@ All types of text regions have the following constructor parameters in common:
 * `image` (str or PIL.Image.Image or io.BytesIO, optional) - An image to add to the region. This is a convenience parameter for cases when no further text or images need to be added to the paragraph. If both `text` and `image` arguments are present, the text will be inserted first. (Default: None)
 * `image_fill_width` (bool, optional) - Indicates whether to increase the size of the image to fill the width of the column. Larger images will always be reduced to column width. (Default: False)
 
-All of those values can be overriden for each individual paragraph.
+All of those values can be overridden for each individual paragraph.
 
 
 ### Common Methods ###

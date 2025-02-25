@@ -345,7 +345,7 @@ class HTML2FPDF(HTMLParser):
                 font to use for `<pre>` & `<code>` blocks - Set `tag_styles` instead
             warn_on_tags_not_matching (bool): control warnings production for unmatched HTML tags. Defaults to `True`.
             tag_indents (dict): [**DEPRECATED since v2.8.0**]
-                mapping of HTML tag names to numeric values representing their horizontal left identation. - Set `tag_styles` instead
+                mapping of HTML tag names to numeric values representing their horizontal left indentation. - Set `tag_styles` instead
             tag_styles (dict[str, fpdf.fonts.TextStyle]): mapping of HTML tag names to `fpdf.TextStyle` or `fpdf.FontFace` instances
             font_family (str): optional font family. Default to Times.
             render_title_tag (bool): Render the document <title> at the beginning of the PDF. Default to False.
@@ -517,7 +517,7 @@ class HTML2FPDF(HTMLParser):
         self._end_paragraph()
         self.align = align or ""
         if isinstance(indent, Align):
-            # Explicit alignement takes priority over alignement provided as TextStyle.l_margin:
+            # Explicit alignment takes priority over alignment provided as TextStyle.l_margin:
             if not self.align:
                 self.align = indent
             indent = 0
@@ -635,7 +635,7 @@ class HTML2FPDF(HTMLParser):
             # ignore anything else than td inside a table
             pass
         elif self._pre_formatted:  # pre blocks
-            # If we want to mimick the exact HTML semantics about newlines at the
+            # If we want to mimic the exact HTML semantics about newlines at the
             # beginning and end of the block, then this needs some more thought.
             if data.startswith("\n") and self._pre_started:
                 if data.endswith("\n"):
@@ -1170,7 +1170,7 @@ class HTML2FPDF(HTMLParser):
 
     # pylint: disable=no-self-use
     def render_toc(self, pdf, outline):
-        "This method can be overriden by subclasses to customize the Table of Contents style."
+        "This method can be overridden by subclasses to customize the Table of Contents style."
         pdf.ln()
         for section in outline:
             link = pdf.add_link(page=section.page_number)

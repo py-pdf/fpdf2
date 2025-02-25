@@ -419,7 +419,7 @@ with pdf.table() as table:
             row.cell(datum)
 ```
 
-Can be shortened to the followng code,
+Can be shortened to the following code,
 by passing lists of strings as the `cells` optional argument of `.row()`:
 
 ```python

@@ -19,6 +19,10 @@ repos:
     rev: 23.3.0
     hooks:
       - id: black
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.29.8
+    hooks:
+      - id: typos
   - repo: local
     hooks:
     -   id: no-print-in-sources
