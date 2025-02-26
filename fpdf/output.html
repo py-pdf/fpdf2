@@ -57,7 +57,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L1243-L1265" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L1332-L1354" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def stream_content_for_raster_image(
     info: RasterImageInfo,
@@ -98,7 +98,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L117-L128" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L118-L129" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class AcroForm:
     def __init__(self, fields, sig_flags):
@@ -123,7 +123,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L122-L128" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L123-L129" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
     obj_dict = build_obj_dict(
@@ -144,7 +144,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L88-L93" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L89-L94" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CIDSystemInfo(PDFObject):
     def __init__(self):
@@ -189,7 +189,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L58-L60" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L59-L61" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ContentWithoutID:
     def serialize(self, _security_handler=None):
@@ -211,10 +211,668 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L59-L60" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L60-L61" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self, _security_handler=None):
     pass</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="fpdf.output.OutputIntentDictionary"><code class="flex name class">
+<span>class <span class="ident">OutputIntentDictionary</span></span>
+<span>(</span><span>subtype: OutputIntentSubType | str,<br>output_condition_identifier: str,<br>output_condition: str = None,<br>registry_name: str = None,<br>dest_output_profile: <a title="fpdf.output.PDFICCProfileObject" href="#fpdf.output.PDFICCProfileObject">PDFICCProfileObject</a> = None,<br>info: str = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L453-L518" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class OutputIntentDictionary:
+    &#34;&#34;&#34;The optional OutputIntents (PDF 1.4) entry in the document
+    catalog dictionary holds an array of output intent dictionaries,
+    each describing the colour reproduction characteristics of a possible
+    output device.
+
+    Args:
+        subtype (OutputIntentSubType, required): PDFA, PDFX or ISOPDF
+        output_condition_identifier (str, required): see the Name in
+            https://www.color.org/registry.xalter
+        output_condition (str, optional): see the Definition in
+            https://www.color.org/registry.xalter
+        registry_name (str, optional): &#34;https://www.color.org&#34;
+        dest_output_profile (PDFICCProfileObject, required/optional):
+            PDFICCProfileObject | None # (required if
+            output_condition_identifier does not specify a standard
+            production condition; optional otherwise)
+        info (str, required/optional see dest_output_profile): human
+            readable description of profile
+    &#34;&#34;&#34;
+
+    __slots__ = (  # RAM usage optimization
+        &#34;type&#34;,
+        &#34;s&#34;,
+        &#34;output_condition_identifier&#34;,
+        &#34;output_condition&#34;,
+        &#34;registry_name&#34;,
+        &#34;dest_output_profile&#34;,
+        &#34;info&#34;,
+    )
+
+    def __init__(
+        self,
+        subtype: &#34;OutputIntentSubType | str&#34;,
+        output_condition_identifier: str,
+        output_condition: str = None,
+        registry_name: str = None,
+        dest_output_profile: PDFICCProfileObject = None,
+        info: str = None,
+    ):
+        self.type = Name(&#34;OutputIntent&#34;)
+        self.s = Name(OutputIntentSubType.coerce(subtype).value)
+        self.output_condition_identifier = (
+            PDFString(output_condition_identifier)
+            if output_condition_identifier
+            else None
+        )
+        self.output_condition = (
+            PDFString(output_condition) if output_condition else None
+        )
+        self.registry_name = PDFString(registry_name) if registry_name else None
+        self.dest_output_profile = (
+            dest_output_profile
+            if dest_output_profile
+            and isinstance(dest_output_profile, PDFICCProfileObject)
+            else None
+        )
+        self.info = PDFString(info) if info else None
+
+    def serialize(self, _security_handler=None, _obj_id=None):
+        obj_dict = build_obj_dict(
+            {key: getattr(self, key) for key in dir(self)},
+            _security_handler=_security_handler,
+            _obj_id=_obj_id,
+        )
+        return pdf_dict(obj_dict)</code></pre>
+</details>
+<div class="desc"><p>The optional OutputIntents (PDF 1.4) entry in the document
+catalog dictionary holds an array of output intent dictionaries,
+each describing the colour reproduction characteristics of a possible
+output device.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>subtype</code></strong> :&ensp;<code>OutputIntentSubType, required</code></dt>
+<dd>PDFA, PDFX or ISOPDF</dd>
+<dt><strong><code>output_condition_identifier</code></strong> :&ensp;<code>str, required</code></dt>
+<dd>see the Name in
+<a href="https://www.color.org/registry.xalter">https://www.color.org/registry.xalter</a></dd>
+<dt><strong><code>output_condition</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>see the Definition in
+<a href="https://www.color.org/registry.xalter">https://www.color.org/registry.xalter</a></dd>
+<dt><strong><code>registry_name</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>"https://www.color.org"</dd>
+</dl>
+<p>dest_output_profile (PDFICCProfileObject, required/optional):
+PDFICCProfileObject | None # (required if
+output_condition_identifier does not specify a standard
+production condition; optional otherwise)
+info (str, required/optional see dest_output_profile): human
+readable description of profile</p></div>
+<h3>Instance variables</h3>
+<dl>
+<dt id="fpdf.output.OutputIntentDictionary.dest_output_profile"><code class="name">var <span class="ident">dest_output_profile</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L453-L518" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class OutputIntentDictionary:
+    &#34;&#34;&#34;The optional OutputIntents (PDF 1.4) entry in the document
+    catalog dictionary holds an array of output intent dictionaries,
+    each describing the colour reproduction characteristics of a possible
+    output device.
+
+    Args:
+        subtype (OutputIntentSubType, required): PDFA, PDFX or ISOPDF
+        output_condition_identifier (str, required): see the Name in
+            https://www.color.org/registry.xalter
+        output_condition (str, optional): see the Definition in
+            https://www.color.org/registry.xalter
+        registry_name (str, optional): &#34;https://www.color.org&#34;
+        dest_output_profile (PDFICCProfileObject, required/optional):
+            PDFICCProfileObject | None # (required if
+            output_condition_identifier does not specify a standard
+            production condition; optional otherwise)
+        info (str, required/optional see dest_output_profile): human
+            readable description of profile
+    &#34;&#34;&#34;
+
+    __slots__ = (  # RAM usage optimization
+        &#34;type&#34;,
+        &#34;s&#34;,
+        &#34;output_condition_identifier&#34;,
+        &#34;output_condition&#34;,
+        &#34;registry_name&#34;,
+        &#34;dest_output_profile&#34;,
+        &#34;info&#34;,
+    )
+
+    def __init__(
+        self,
+        subtype: &#34;OutputIntentSubType | str&#34;,
+        output_condition_identifier: str,
+        output_condition: str = None,
+        registry_name: str = None,
+        dest_output_profile: PDFICCProfileObject = None,
+        info: str = None,
+    ):
+        self.type = Name(&#34;OutputIntent&#34;)
+        self.s = Name(OutputIntentSubType.coerce(subtype).value)
+        self.output_condition_identifier = (
+            PDFString(output_condition_identifier)
+            if output_condition_identifier
+            else None
+        )
+        self.output_condition = (
+            PDFString(output_condition) if output_condition else None
+        )
+        self.registry_name = PDFString(registry_name) if registry_name else None
+        self.dest_output_profile = (
+            dest_output_profile
+            if dest_output_profile
+            and isinstance(dest_output_profile, PDFICCProfileObject)
+            else None
+        )
+        self.info = PDFString(info) if info else None
+
+    def serialize(self, _security_handler=None, _obj_id=None):
+        obj_dict = build_obj_dict(
+            {key: getattr(self, key) for key in dir(self)},
+            _security_handler=_security_handler,
+            _obj_id=_obj_id,
+        )
+        return pdf_dict(obj_dict)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.output.OutputIntentDictionary.info"><code class="name">var <span class="ident">info</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L453-L518" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class OutputIntentDictionary:
+    &#34;&#34;&#34;The optional OutputIntents (PDF 1.4) entry in the document
+    catalog dictionary holds an array of output intent dictionaries,
+    each describing the colour reproduction characteristics of a possible
+    output device.
+
+    Args:
+        subtype (OutputIntentSubType, required): PDFA, PDFX or ISOPDF
+        output_condition_identifier (str, required): see the Name in
+            https://www.color.org/registry.xalter
+        output_condition (str, optional): see the Definition in
+            https://www.color.org/registry.xalter
+        registry_name (str, optional): &#34;https://www.color.org&#34;
+        dest_output_profile (PDFICCProfileObject, required/optional):
+            PDFICCProfileObject | None # (required if
+            output_condition_identifier does not specify a standard
+            production condition; optional otherwise)
+        info (str, required/optional see dest_output_profile): human
+            readable description of profile
+    &#34;&#34;&#34;
+
+    __slots__ = (  # RAM usage optimization
+        &#34;type&#34;,
+        &#34;s&#34;,
+        &#34;output_condition_identifier&#34;,
+        &#34;output_condition&#34;,
+        &#34;registry_name&#34;,
+        &#34;dest_output_profile&#34;,
+        &#34;info&#34;,
+    )
+
+    def __init__(
+        self,
+        subtype: &#34;OutputIntentSubType | str&#34;,
+        output_condition_identifier: str,
+        output_condition: str = None,
+        registry_name: str = None,
+        dest_output_profile: PDFICCProfileObject = None,
+        info: str = None,
+    ):
+        self.type = Name(&#34;OutputIntent&#34;)
+        self.s = Name(OutputIntentSubType.coerce(subtype).value)
+        self.output_condition_identifier = (
+            PDFString(output_condition_identifier)
+            if output_condition_identifier
+            else None
+        )
+        self.output_condition = (
+            PDFString(output_condition) if output_condition else None
+        )
+        self.registry_name = PDFString(registry_name) if registry_name else None
+        self.dest_output_profile = (
+            dest_output_profile
+            if dest_output_profile
+            and isinstance(dest_output_profile, PDFICCProfileObject)
+            else None
+        )
+        self.info = PDFString(info) if info else None
+
+    def serialize(self, _security_handler=None, _obj_id=None):
+        obj_dict = build_obj_dict(
+            {key: getattr(self, key) for key in dir(self)},
+            _security_handler=_security_handler,
+            _obj_id=_obj_id,
+        )
+        return pdf_dict(obj_dict)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.output.OutputIntentDictionary.output_condition"><code class="name">var <span class="ident">output_condition</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L453-L518" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class OutputIntentDictionary:
+    &#34;&#34;&#34;The optional OutputIntents (PDF 1.4) entry in the document
+    catalog dictionary holds an array of output intent dictionaries,
+    each describing the colour reproduction characteristics of a possible
+    output device.
+
+    Args:
+        subtype (OutputIntentSubType, required): PDFA, PDFX or ISOPDF
+        output_condition_identifier (str, required): see the Name in
+            https://www.color.org/registry.xalter
+        output_condition (str, optional): see the Definition in
+            https://www.color.org/registry.xalter
+        registry_name (str, optional): &#34;https://www.color.org&#34;
+        dest_output_profile (PDFICCProfileObject, required/optional):
+            PDFICCProfileObject | None # (required if
+            output_condition_identifier does not specify a standard
+            production condition; optional otherwise)
+        info (str, required/optional see dest_output_profile): human
+            readable description of profile
+    &#34;&#34;&#34;
+
+    __slots__ = (  # RAM usage optimization
+        &#34;type&#34;,
+        &#34;s&#34;,
+        &#34;output_condition_identifier&#34;,
+        &#34;output_condition&#34;,
+        &#34;registry_name&#34;,
+        &#34;dest_output_profile&#34;,
+        &#34;info&#34;,
+    )
+
+    def __init__(
+        self,
+        subtype: &#34;OutputIntentSubType | str&#34;,
+        output_condition_identifier: str,
+        output_condition: str = None,
+        registry_name: str = None,
+        dest_output_profile: PDFICCProfileObject = None,
+        info: str = None,
+    ):
+        self.type = Name(&#34;OutputIntent&#34;)
+        self.s = Name(OutputIntentSubType.coerce(subtype).value)
+        self.output_condition_identifier = (
+            PDFString(output_condition_identifier)
+            if output_condition_identifier
+            else None
+        )
+        self.output_condition = (
+            PDFString(output_condition) if output_condition else None
+        )
+        self.registry_name = PDFString(registry_name) if registry_name else None
+        self.dest_output_profile = (
+            dest_output_profile
+            if dest_output_profile
+            and isinstance(dest_output_profile, PDFICCProfileObject)
+            else None
+        )
+        self.info = PDFString(info) if info else None
+
+    def serialize(self, _security_handler=None, _obj_id=None):
+        obj_dict = build_obj_dict(
+            {key: getattr(self, key) for key in dir(self)},
+            _security_handler=_security_handler,
+            _obj_id=_obj_id,
+        )
+        return pdf_dict(obj_dict)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.output.OutputIntentDictionary.output_condition_identifier"><code class="name">var <span class="ident">output_condition_identifier</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L453-L518" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class OutputIntentDictionary:
+    &#34;&#34;&#34;The optional OutputIntents (PDF 1.4) entry in the document
+    catalog dictionary holds an array of output intent dictionaries,
+    each describing the colour reproduction characteristics of a possible
+    output device.
+
+    Args:
+        subtype (OutputIntentSubType, required): PDFA, PDFX or ISOPDF
+        output_condition_identifier (str, required): see the Name in
+            https://www.color.org/registry.xalter
+        output_condition (str, optional): see the Definition in
+            https://www.color.org/registry.xalter
+        registry_name (str, optional): &#34;https://www.color.org&#34;
+        dest_output_profile (PDFICCProfileObject, required/optional):
+            PDFICCProfileObject | None # (required if
+            output_condition_identifier does not specify a standard
+            production condition; optional otherwise)
+        info (str, required/optional see dest_output_profile): human
+            readable description of profile
+    &#34;&#34;&#34;
+
+    __slots__ = (  # RAM usage optimization
+        &#34;type&#34;,
+        &#34;s&#34;,
+        &#34;output_condition_identifier&#34;,
+        &#34;output_condition&#34;,
+        &#34;registry_name&#34;,
+        &#34;dest_output_profile&#34;,
+        &#34;info&#34;,
+    )
+
+    def __init__(
+        self,
+        subtype: &#34;OutputIntentSubType | str&#34;,
+        output_condition_identifier: str,
+        output_condition: str = None,
+        registry_name: str = None,
+        dest_output_profile: PDFICCProfileObject = None,
+        info: str = None,
+    ):
+        self.type = Name(&#34;OutputIntent&#34;)
+        self.s = Name(OutputIntentSubType.coerce(subtype).value)
+        self.output_condition_identifier = (
+            PDFString(output_condition_identifier)
+            if output_condition_identifier
+            else None
+        )
+        self.output_condition = (
+            PDFString(output_condition) if output_condition else None
+        )
+        self.registry_name = PDFString(registry_name) if registry_name else None
+        self.dest_output_profile = (
+            dest_output_profile
+            if dest_output_profile
+            and isinstance(dest_output_profile, PDFICCProfileObject)
+            else None
+        )
+        self.info = PDFString(info) if info else None
+
+    def serialize(self, _security_handler=None, _obj_id=None):
+        obj_dict = build_obj_dict(
+            {key: getattr(self, key) for key in dir(self)},
+            _security_handler=_security_handler,
+            _obj_id=_obj_id,
+        )
+        return pdf_dict(obj_dict)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.output.OutputIntentDictionary.registry_name"><code class="name">var <span class="ident">registry_name</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L453-L518" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class OutputIntentDictionary:
+    &#34;&#34;&#34;The optional OutputIntents (PDF 1.4) entry in the document
+    catalog dictionary holds an array of output intent dictionaries,
+    each describing the colour reproduction characteristics of a possible
+    output device.
+
+    Args:
+        subtype (OutputIntentSubType, required): PDFA, PDFX or ISOPDF
+        output_condition_identifier (str, required): see the Name in
+            https://www.color.org/registry.xalter
+        output_condition (str, optional): see the Definition in
+            https://www.color.org/registry.xalter
+        registry_name (str, optional): &#34;https://www.color.org&#34;
+        dest_output_profile (PDFICCProfileObject, required/optional):
+            PDFICCProfileObject | None # (required if
+            output_condition_identifier does not specify a standard
+            production condition; optional otherwise)
+        info (str, required/optional see dest_output_profile): human
+            readable description of profile
+    &#34;&#34;&#34;
+
+    __slots__ = (  # RAM usage optimization
+        &#34;type&#34;,
+        &#34;s&#34;,
+        &#34;output_condition_identifier&#34;,
+        &#34;output_condition&#34;,
+        &#34;registry_name&#34;,
+        &#34;dest_output_profile&#34;,
+        &#34;info&#34;,
+    )
+
+    def __init__(
+        self,
+        subtype: &#34;OutputIntentSubType | str&#34;,
+        output_condition_identifier: str,
+        output_condition: str = None,
+        registry_name: str = None,
+        dest_output_profile: PDFICCProfileObject = None,
+        info: str = None,
+    ):
+        self.type = Name(&#34;OutputIntent&#34;)
+        self.s = Name(OutputIntentSubType.coerce(subtype).value)
+        self.output_condition_identifier = (
+            PDFString(output_condition_identifier)
+            if output_condition_identifier
+            else None
+        )
+        self.output_condition = (
+            PDFString(output_condition) if output_condition else None
+        )
+        self.registry_name = PDFString(registry_name) if registry_name else None
+        self.dest_output_profile = (
+            dest_output_profile
+            if dest_output_profile
+            and isinstance(dest_output_profile, PDFICCProfileObject)
+            else None
+        )
+        self.info = PDFString(info) if info else None
+
+    def serialize(self, _security_handler=None, _obj_id=None):
+        obj_dict = build_obj_dict(
+            {key: getattr(self, key) for key in dir(self)},
+            _security_handler=_security_handler,
+            _obj_id=_obj_id,
+        )
+        return pdf_dict(obj_dict)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.output.OutputIntentDictionary.s"><code class="name">var <span class="ident">s</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L453-L518" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class OutputIntentDictionary:
+    &#34;&#34;&#34;The optional OutputIntents (PDF 1.4) entry in the document
+    catalog dictionary holds an array of output intent dictionaries,
+    each describing the colour reproduction characteristics of a possible
+    output device.
+
+    Args:
+        subtype (OutputIntentSubType, required): PDFA, PDFX or ISOPDF
+        output_condition_identifier (str, required): see the Name in
+            https://www.color.org/registry.xalter
+        output_condition (str, optional): see the Definition in
+            https://www.color.org/registry.xalter
+        registry_name (str, optional): &#34;https://www.color.org&#34;
+        dest_output_profile (PDFICCProfileObject, required/optional):
+            PDFICCProfileObject | None # (required if
+            output_condition_identifier does not specify a standard
+            production condition; optional otherwise)
+        info (str, required/optional see dest_output_profile): human
+            readable description of profile
+    &#34;&#34;&#34;
+
+    __slots__ = (  # RAM usage optimization
+        &#34;type&#34;,
+        &#34;s&#34;,
+        &#34;output_condition_identifier&#34;,
+        &#34;output_condition&#34;,
+        &#34;registry_name&#34;,
+        &#34;dest_output_profile&#34;,
+        &#34;info&#34;,
+    )
+
+    def __init__(
+        self,
+        subtype: &#34;OutputIntentSubType | str&#34;,
+        output_condition_identifier: str,
+        output_condition: str = None,
+        registry_name: str = None,
+        dest_output_profile: PDFICCProfileObject = None,
+        info: str = None,
+    ):
+        self.type = Name(&#34;OutputIntent&#34;)
+        self.s = Name(OutputIntentSubType.coerce(subtype).value)
+        self.output_condition_identifier = (
+            PDFString(output_condition_identifier)
+            if output_condition_identifier
+            else None
+        )
+        self.output_condition = (
+            PDFString(output_condition) if output_condition else None
+        )
+        self.registry_name = PDFString(registry_name) if registry_name else None
+        self.dest_output_profile = (
+            dest_output_profile
+            if dest_output_profile
+            and isinstance(dest_output_profile, PDFICCProfileObject)
+            else None
+        )
+        self.info = PDFString(info) if info else None
+
+    def serialize(self, _security_handler=None, _obj_id=None):
+        obj_dict = build_obj_dict(
+            {key: getattr(self, key) for key in dir(self)},
+            _security_handler=_security_handler,
+            _obj_id=_obj_id,
+        )
+        return pdf_dict(obj_dict)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.output.OutputIntentDictionary.type"><code class="name">var <span class="ident">type</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L453-L518" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class OutputIntentDictionary:
+    &#34;&#34;&#34;The optional OutputIntents (PDF 1.4) entry in the document
+    catalog dictionary holds an array of output intent dictionaries,
+    each describing the colour reproduction characteristics of a possible
+    output device.
+
+    Args:
+        subtype (OutputIntentSubType, required): PDFA, PDFX or ISOPDF
+        output_condition_identifier (str, required): see the Name in
+            https://www.color.org/registry.xalter
+        output_condition (str, optional): see the Definition in
+            https://www.color.org/registry.xalter
+        registry_name (str, optional): &#34;https://www.color.org&#34;
+        dest_output_profile (PDFICCProfileObject, required/optional):
+            PDFICCProfileObject | None # (required if
+            output_condition_identifier does not specify a standard
+            production condition; optional otherwise)
+        info (str, required/optional see dest_output_profile): human
+            readable description of profile
+    &#34;&#34;&#34;
+
+    __slots__ = (  # RAM usage optimization
+        &#34;type&#34;,
+        &#34;s&#34;,
+        &#34;output_condition_identifier&#34;,
+        &#34;output_condition&#34;,
+        &#34;registry_name&#34;,
+        &#34;dest_output_profile&#34;,
+        &#34;info&#34;,
+    )
+
+    def __init__(
+        self,
+        subtype: &#34;OutputIntentSubType | str&#34;,
+        output_condition_identifier: str,
+        output_condition: str = None,
+        registry_name: str = None,
+        dest_output_profile: PDFICCProfileObject = None,
+        info: str = None,
+    ):
+        self.type = Name(&#34;OutputIntent&#34;)
+        self.s = Name(OutputIntentSubType.coerce(subtype).value)
+        self.output_condition_identifier = (
+            PDFString(output_condition_identifier)
+            if output_condition_identifier
+            else None
+        )
+        self.output_condition = (
+            PDFString(output_condition) if output_condition else None
+        )
+        self.registry_name = PDFString(registry_name) if registry_name else None
+        self.dest_output_profile = (
+            dest_output_profile
+            if dest_output_profile
+            and isinstance(dest_output_profile, PDFICCProfileObject)
+            else None
+        )
+        self.info = PDFString(info) if info else None
+
+    def serialize(self, _security_handler=None, _obj_id=None):
+        obj_dict = build_obj_dict(
+            {key: getattr(self, key) for key in dir(self)},
+            _security_handler=_security_handler,
+            _obj_id=_obj_id,
+        )
+        return pdf_dict(obj_dict)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.output.OutputIntentDictionary.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L512-L518" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
+    obj_dict = build_obj_dict(
+        {key: getattr(self, key) for key in dir(self)},
+        _security_handler=_security_handler,
+        _obj_id=_obj_id,
+    )
+    return pdf_dict(obj_dict)</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -228,7 +886,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L487-L1240" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L564-L1329" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class OutputProducer:
     &#34;Generates the final bytearray representing the PDF document, based on a FPDF instance.&#34;
@@ -276,6 +934,7 @@ in non-backward-compatible ways.</p>
         xmp_metadata_obj = self._add_xmp_metadata()
         info_obj = self._add_info()
         encryption_obj = self._add_encryption()
+
         xref = PDFXrefAndTrailer(self)
         self.pdf_objs.append(xref)
 
@@ -629,7 +1288,7 @@ in non-backward-compatible ways.</p>
                 break
         assert iccp_content is not None
         # Note: n should be 4 if the profile ColorSpace is CMYK
-        iccp_obj = PDFICCPObject(
+        iccp_obj = PDFICCProfileObject(
             contents=iccp_content, n=img_info[&#34;dpn&#34;], alternate=img_info[&#34;cs&#34;]
         )
         iccp_pdf_i = self._add_pdf_obj(iccp_obj, &#34;iccp&#34;)
@@ -905,6 +1564,15 @@ in non-backward-compatible ways.</p>
             return pdf_obj
         return None
 
+    def _add_output_intents(self):
+        &#34;&#34;&#34;should be added in _add_catalog&#34;&#34;&#34;
+        if not self.fpdf.output_intents:
+            return None
+        for item in self.fpdf.output_intents:
+            if item.dest_output_profile:
+                self._add_pdf_obj(item.dest_output_profile)
+        return PDFArray(self.fpdf.output_intents)
+
     def _add_catalog(self):
         fpdf = self.fpdf
         catalog_obj = PDFCatalog(
@@ -913,6 +1581,8 @@ in non-backward-compatible ways.</p>
             page_mode=fpdf.page_mode,
             viewer_preferences=fpdf.viewer_preferences,
         )
+        catalog_obj.output_intents = self._add_output_intents()
+
         self._add_pdf_obj(catalog_obj)
         return catalog_obj
 
@@ -999,7 +1669,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L501-L610" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L578-L688" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def bufferize(self):
     &#34;&#34;&#34;
@@ -1033,6 +1703,7 @@ in non-backward-compatible ways.</p>
     xmp_metadata_obj = self._add_xmp_metadata()
     info_obj = self._add_info()
     encryption_obj = self._add_encryption()
+
     xref = PDFXrefAndTrailer(self)
     self.pdf_objs.append(xref)
 
@@ -1126,7 +1797,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L131-L148" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L132-L150" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFCatalog(PDFObject):
     def __init__(
@@ -1145,6 +1816,7 @@ plus a few other properties on PDFPage instances</p></div>
         self.metadata = None
         self.names = None
         self.outlines = None
+        self.output_intents = None
         self.struct_tree_root = None</code></pre>
 </details>
 <div class="desc"></div>
@@ -1184,7 +1856,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L392-L399" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L401-L408" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFExtGState(PDFObject):
     def __init__(self, dict_as_str):
@@ -1223,7 +1895,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L398-L399" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L407-L408" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self, obj_dict=None, _security_handler=None):
     return f&#34;{self.id} 0 obj\n{self._dict_as_str}\nendobj&#34;</code></pre>
@@ -1240,7 +1912,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L72-L85" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L73-L86" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFFont(PDFObject):
     def __init__(self, subtype, base_font, encoding=None, d_w=None, w=None):
@@ -1294,7 +1966,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L162-L165" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L164-L167" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFFontStream(PDFContentStream):
     def __init__(self, contents):
@@ -1339,7 +2011,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L63-L69" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L64-L70" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFHeader(ContentWithoutID):
     def __init__(self, pdf_version):
@@ -1363,7 +2035,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L68-L69" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L69-L70" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self, _security_handler=None):
     return f&#34;%PDF-{self.pdf_version}&#34;</code></pre>
@@ -1372,17 +2044,24 @@ plus a few other properties on PDFPage instances</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="fpdf.output.PDFICCPObject"><code class="flex name class">
-<span>class <span class="ident">PDFICCPObject</span></span>
+<dt id="fpdf.output.PDFICCProfileObject"><code class="flex name class">
+<span>class <span class="ident">PDFICCProfileObject</span></span>
 <span>(</span><span>contents, n, alternate)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L217-L235" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L219-L244" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class PDFICCPObject(PDFContentStream):
+<pre><code class="python">class PDFICCProfileObject(PDFContentStream):
+    &#34;&#34;&#34;holds values for ICC Profile Stream
+    Args:
+        contents (str): stream content
+        n (int): [1|3|4], # the numbers for colors 1=Gray, 3=RGB, 4=CMYK
+        alternate (str): [&#39;DeviceGray&#39;|&#39;DeviceRGB&#39;|&#39;DeviceCMYK&#39;]
+    &#34;&#34;&#34;
+
     __slots__ = (  # RAM usage optimization
         &#34;_id&#34;,
         &#34;_contents&#34;,
@@ -1402,7 +2081,16 @@ plus a few other properties on PDFPage instances</p></div>
         self.n = n
         self.alternate = Name(alternate)</code></pre>
 </details>
-<div class="desc"></div>
+<div class="desc"><p>holds values for ICC Profile Stream</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>contents</code></strong> :&ensp;<code>str</code></dt>
+<dd>stream content</dd>
+<dt><strong><code>n</code></strong> :&ensp;<code>int</code></dt>
+<dd>[1|3|4], # the numbers for colors 1=Gray, 3=RGB, 4=CMYK</dd>
+<dt><strong><code>alternate</code></strong> :&ensp;<code>str</code></dt>
+<dd>['DeviceGray'|'DeviceRGB'|'DeviceCMYK']</dd>
+</dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="fpdf.syntax.PDFContentStream" href="syntax.html#fpdf.syntax.PDFContentStream">PDFContentStream</a></li>
@@ -1410,14 +2098,21 @@ plus a few other properties on PDFPage instances</p></div>
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="fpdf.output.PDFICCPObject.alternate"><code class="name">var <span class="ident">alternate</span></code></dt>
+<dt id="fpdf.output.PDFICCProfileObject.alternate"><code class="name">var <span class="ident">alternate</span></code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L217-L235" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L219-L244" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class PDFICCPObject(PDFContentStream):
+<pre><code class="python">class PDFICCProfileObject(PDFContentStream):
+    &#34;&#34;&#34;holds values for ICC Profile Stream
+    Args:
+        contents (str): stream content
+        n (int): [1|3|4], # the numbers for colors 1=Gray, 3=RGB, 4=CMYK
+        alternate (str): [&#39;DeviceGray&#39;|&#39;DeviceRGB&#39;|&#39;DeviceCMYK&#39;]
+    &#34;&#34;&#34;
+
     __slots__ = (  # RAM usage optimization
         &#34;_id&#34;,
         &#34;_contents&#34;,
@@ -1439,14 +2134,21 @@ plus a few other properties on PDFPage instances</p></div>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.output.PDFICCPObject.filter"><code class="name">var <span class="ident">filter</span></code></dt>
+<dt id="fpdf.output.PDFICCProfileObject.filter"><code class="name">var <span class="ident">filter</span></code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L217-L235" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L219-L244" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class PDFICCPObject(PDFContentStream):
+<pre><code class="python">class PDFICCProfileObject(PDFContentStream):
+    &#34;&#34;&#34;holds values for ICC Profile Stream
+    Args:
+        contents (str): stream content
+        n (int): [1|3|4], # the numbers for colors 1=Gray, 3=RGB, 4=CMYK
+        alternate (str): [&#39;DeviceGray&#39;|&#39;DeviceRGB&#39;|&#39;DeviceCMYK&#39;]
+    &#34;&#34;&#34;
+
     __slots__ = (  # RAM usage optimization
         &#34;_id&#34;,
         &#34;_contents&#34;,
@@ -1468,14 +2170,21 @@ plus a few other properties on PDFPage instances</p></div>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.output.PDFICCPObject.length"><code class="name">var <span class="ident">length</span></code></dt>
+<dt id="fpdf.output.PDFICCProfileObject.length"><code class="name">var <span class="ident">length</span></code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L217-L235" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L219-L244" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class PDFICCPObject(PDFContentStream):
+<pre><code class="python">class PDFICCProfileObject(PDFContentStream):
+    &#34;&#34;&#34;holds values for ICC Profile Stream
+    Args:
+        contents (str): stream content
+        n (int): [1|3|4], # the numbers for colors 1=Gray, 3=RGB, 4=CMYK
+        alternate (str): [&#39;DeviceGray&#39;|&#39;DeviceRGB&#39;|&#39;DeviceCMYK&#39;]
+    &#34;&#34;&#34;
+
     __slots__ = (  # RAM usage optimization
         &#34;_id&#34;,
         &#34;_contents&#34;,
@@ -1497,14 +2206,21 @@ plus a few other properties on PDFPage instances</p></div>
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="fpdf.output.PDFICCPObject.n"><code class="name">var <span class="ident">n</span></code></dt>
+<dt id="fpdf.output.PDFICCProfileObject.n"><code class="name">var <span class="ident">n</span></code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L217-L235" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L219-L244" class="git-link" target="_blank">Browse git</a>
 </summary>
-<pre><code class="python">class PDFICCPObject(PDFContentStream):
+<pre><code class="python">class PDFICCProfileObject(PDFContentStream):
+    &#34;&#34;&#34;holds values for ICC Profile Stream
+    Args:
+        contents (str): stream content
+        n (int): [1|3|4], # the numbers for colors 1=Gray, 3=RGB, 4=CMYK
+        alternate (str): [&#39;DeviceGray&#39;|&#39;DeviceRGB&#39;|&#39;DeviceCMYK&#39;]
+    &#34;&#34;&#34;
+
     __slots__ = (  # RAM usage optimization
         &#34;_id&#34;,
         &#34;_contents&#34;,
@@ -1529,7 +2245,7 @@ plus a few other properties on PDFPage instances</p></div>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="fpdf.output.PDFICCPObject.content_stream"><code class="name flex">
+<dt id="fpdf.output.PDFICCProfileObject.content_stream"><code class="name flex">
 <span>def <span class="ident">content_stream</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1539,7 +2255,7 @@ plus a few other properties on PDFPage instances</p></div>
 </p>
 <div class="desc inherited"><p>Subclasses can override this method to indicate the presence of a content stream</p></div>
 </dd>
-<dt id="fpdf.output.PDFICCPObject.serialize"><code class="name flex">
+<dt id="fpdf.output.PDFICCProfileObject.serialize"><code class="name flex">
 <span>def <span class="ident">serialize</span></span>(<span>self, obj_dict=None)</span>
 </code></dt>
 <dd>
@@ -1559,7 +2275,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L96-L114" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L97-L115" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFInfo(PDFObject):
     def __init__(
@@ -1618,7 +2334,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L287-L380" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L296-L389" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -1727,7 +2443,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L287-L380" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L296-L389" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -1831,7 +2547,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L287-L380" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L296-L389" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -1935,7 +2651,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L287-L380" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L296-L389" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -2039,7 +2755,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L287-L380" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L296-L389" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -2143,7 +2859,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L287-L380" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L296-L389" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -2247,7 +2963,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L287-L380" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L296-L389" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -2351,7 +3067,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L287-L380" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L296-L389" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -2455,7 +3171,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L287-L380" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L296-L389" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -2559,7 +3275,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L287-L380" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L296-L389" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -2663,7 +3379,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L287-L380" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L296-L389" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPage(PDFObject):
     __slots__ = (  # RAM usage optimization
@@ -2772,7 +3488,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L379-L380" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L388-L389" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add_text_substitution(self, fragment):
     self._text_substitution_fragments.append(fragment)</code></pre>
@@ -2796,7 +3512,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L337-L339" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L346-L348" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def dimensions(self):
     &#34;Return a pair (width, height) in the unit specified to FPDF constructor&#34;
@@ -2811,7 +3527,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L373-L374" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L382-L383" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_label(self) -&gt; str:
     return str(self.index()) if not self._page_label else str(self._page_label)</code></pre>
@@ -2825,7 +3541,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L370-L371" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L379-L380" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_page_label(self) -&gt; PDFPageLabel:
     return self._page_label</code></pre>
@@ -2839,7 +3555,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L376-L377" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L385-L386" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_text_substitutions(self):
     return self._text_substitution_fragments</code></pre>
@@ -2853,7 +3569,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L331-L332" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L340-L341" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def index(self):
     return self._index</code></pre>
@@ -2877,7 +3593,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L341-L343" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L350-L352" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_dimensions(self, width_pt, height_pt):
     &#34;Accepts a pair (width, height) in the unit specified to FPDF constructor&#34;
@@ -2892,7 +3608,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L334-L335" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L343-L344" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_index(self, i):
     self._index = i</code></pre>
@@ -2906,7 +3622,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L345-L368" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L354-L377" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def set_page_label(
     self, previous_page_label: PDFPageLabel, page_label: PDFPageLabel
@@ -2945,7 +3661,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L238-L284" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L247-L293" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPageLabel:
     __slots__ = (&#34;_style&#34;, &#34;_prefix&#34;, &#34;st&#34;)  # RAM usage optimization
@@ -3003,7 +3719,7 @@ plus a few other properties on PDFPage instances</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L252-L254" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L261-L263" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def p(self) -&gt; PDFString:
@@ -3016,7 +3732,7 @@ def p(self) -&gt; PDFString:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L248-L250" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L257-L259" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def s(self) -&gt; Name:
@@ -3029,7 +3745,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L238-L284" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L247-L293" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPageLabel:
     __slots__ = (&#34;_style&#34;, &#34;_prefix&#34;, &#34;st&#34;)  # RAM usage optimization
@@ -3091,7 +3807,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L280-L281" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L289-L290" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_prefix(self) -&gt; str:
     return self._prefix</code></pre>
@@ -3105,7 +3821,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L283-L284" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L292-L293" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_start(self) -&gt; int:
     return self.st</code></pre>
@@ -3119,7 +3835,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L277-L278" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L286-L287" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_style(self) -&gt; PageLabelStyle:
     return self._style</code></pre>
@@ -3133,7 +3849,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L274-L275" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L283-L284" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self) -&gt; dict:
     return build_obj_dict({key: getattr(self, key) for key in dir(self)})</code></pre>
@@ -3150,7 +3866,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L383-L389" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L392-L398" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFPagesRoot(PDFObject):
     def __init__(self, count, media_box):
@@ -3197,7 +3913,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L151-L159" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L153-L161" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFResources(PDFObject):
     def __init__(self, proc_set, font, x_object, ext_g_state, shading, pattern):
@@ -3246,7 +3962,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L175-L214" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L177-L216" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -3302,7 +4018,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L175-L214" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L177-L216" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -3352,7 +4068,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L175-L214" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L177-L216" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -3402,7 +4118,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L175-L214" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L177-L216" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -3452,7 +4168,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L175-L214" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L177-L216" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -3502,7 +4218,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L175-L214" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L177-L216" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -3552,7 +4268,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L175-L214" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L177-L216" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -3602,7 +4318,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L175-L214" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L177-L216" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -3652,7 +4368,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L175-L214" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L177-L216" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -3702,7 +4418,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L175-L214" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L177-L216" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -3752,7 +4468,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L175-L214" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L177-L216" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -3802,7 +4518,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L175-L214" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L177-L216" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXObject(PDFContentStream):
     __slots__ = (  # RAM usage optimization
@@ -3880,7 +4596,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L168-L172" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L170-L174" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXmpMetadata(PDFContentStream):
     def __init__(self, contents):
@@ -3926,7 +4642,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L402-L441" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L411-L450" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PDFXrefAndTrailer(ContentWithoutID):
     &#34;Cross-reference table &amp; file trailer&#34;
@@ -3983,7 +4699,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L413-L441" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L422-L450" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self, _security_handler=None):
     builder = self.output_builder
@@ -4026,7 +4742,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L444-L484" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L521-L561" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ResourceCatalog:
     &#34;Manage the indexing of resources and association to the pages they are used&#34;
@@ -4080,7 +4796,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L451-L463" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L528-L540" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add(self, resource_type: PDFResourceType, resource, page_number: int):
     if resource_type in (PDFResourceType.PATTERN, PDFResourceType.SHADDING):
@@ -4105,7 +4821,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L465-L466" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L542-L543" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_items(self, resource_type: PDFResourceType):
     return self.resources[resource_type].items()</code></pre>
@@ -4119,7 +4835,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L468-L469" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L545-L546" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_resources_per_page(self, page_number: int, resource_type: PDFResourceType):
     return self.resources_per_page[(page_number, resource_type)]</code></pre>
@@ -4133,7 +4849,7 @@ def s(self) -&gt; Name:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/3fb6d9e572cd4d3108f4b807a2ee069cbce1ca70/fpdf/output.py#L471-L476" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/dfcc43830d1b80fc4b878fccb0e7bcaa4309dc2a/fpdf/output.py#L548-L553" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_used_resources(self, resource_type: PDFResourceType):
     unique = set()
@@ -4186,6 +4902,19 @@ def s(self) -&gt; Name:
 </ul>
 </li>
 <li>
+<h4><code><a title="fpdf.output.OutputIntentDictionary" href="#fpdf.output.OutputIntentDictionary">OutputIntentDictionary</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.output.OutputIntentDictionary.dest_output_profile" href="#fpdf.output.OutputIntentDictionary.dest_output_profile">dest_output_profile</a></code></li>
+<li><code><a title="fpdf.output.OutputIntentDictionary.info" href="#fpdf.output.OutputIntentDictionary.info">info</a></code></li>
+<li><code><a title="fpdf.output.OutputIntentDictionary.output_condition" href="#fpdf.output.OutputIntentDictionary.output_condition">output_condition</a></code></li>
+<li><code><a title="fpdf.output.OutputIntentDictionary.output_condition_identifier" href="#fpdf.output.OutputIntentDictionary.output_condition_identifier">output_condition_identifier</a></code></li>
+<li><code><a title="fpdf.output.OutputIntentDictionary.registry_name" href="#fpdf.output.OutputIntentDictionary.registry_name">registry_name</a></code></li>
+<li><code><a title="fpdf.output.OutputIntentDictionary.s" href="#fpdf.output.OutputIntentDictionary.s">s</a></code></li>
+<li><code><a title="fpdf.output.OutputIntentDictionary.serialize" href="#fpdf.output.OutputIntentDictionary.serialize">serialize</a></code></li>
+<li><code><a title="fpdf.output.OutputIntentDictionary.type" href="#fpdf.output.OutputIntentDictionary.type">type</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="fpdf.output.OutputProducer" href="#fpdf.output.OutputProducer">OutputProducer</a></code></h4>
 <ul class="">
 <li><code><a title="fpdf.output.OutputProducer.bufferize" href="#fpdf.output.OutputProducer.bufferize">bufferize</a></code></li>
@@ -4226,14 +4955,14 @@ def s(self) -&gt; Name:
 </ul>
 </li>
 <li>
-<h4><code><a title="fpdf.output.PDFICCPObject" href="#fpdf.output.PDFICCPObject">PDFICCPObject</a></code></h4>
+<h4><code><a title="fpdf.output.PDFICCProfileObject" href="#fpdf.output.PDFICCProfileObject">PDFICCProfileObject</a></code></h4>
 <ul class="two-column">
-<li><code><a title="fpdf.output.PDFICCPObject.alternate" href="#fpdf.output.PDFICCPObject.alternate">alternate</a></code></li>
-<li><code><a title="fpdf.output.PDFICCPObject.content_stream" href="syntax.html#fpdf.output.PDFICCPObject.content_stream">content_stream</a></code></li>
-<li><code><a title="fpdf.output.PDFICCPObject.filter" href="#fpdf.output.PDFICCPObject.filter">filter</a></code></li>
-<li><code><a title="fpdf.output.PDFICCPObject.length" href="#fpdf.output.PDFICCPObject.length">length</a></code></li>
-<li><code><a title="fpdf.output.PDFICCPObject.n" href="#fpdf.output.PDFICCPObject.n">n</a></code></li>
-<li><code><a title="fpdf.output.PDFICCPObject.serialize" href="syntax.html#fpdf.output.PDFICCPObject.serialize">serialize</a></code></li>
+<li><code><a title="fpdf.output.PDFICCProfileObject.alternate" href="#fpdf.output.PDFICCProfileObject.alternate">alternate</a></code></li>
+<li><code><a title="fpdf.output.PDFICCProfileObject.content_stream" href="syntax.html#fpdf.output.PDFICCProfileObject.content_stream">content_stream</a></code></li>
+<li><code><a title="fpdf.output.PDFICCProfileObject.filter" href="#fpdf.output.PDFICCProfileObject.filter">filter</a></code></li>
+<li><code><a title="fpdf.output.PDFICCProfileObject.length" href="#fpdf.output.PDFICCProfileObject.length">length</a></code></li>
+<li><code><a title="fpdf.output.PDFICCProfileObject.n" href="#fpdf.output.PDFICCProfileObject.n">n</a></code></li>
+<li><code><a title="fpdf.output.PDFICCProfileObject.serialize" href="syntax.html#fpdf.output.PDFICCProfileObject.serialize">serialize</a></code></li>
 </ul>
 </li>
 <li>
