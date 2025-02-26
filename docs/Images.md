@@ -180,28 +180,28 @@ The allowed `image_filter` values are listed in the [image_parsing]( https://git
 #### Specify ICCProfile Stream ####
 [`ICCProfileStreamDict`](https://py-pdf.github.io/fpdf2/fpdf/output.html#fpdf.output.output.ICCProfileStreamDict) Class is needed to specify the file object of the referenced icc profile.
 
-
+#### Example: ####
 ```python
 from pathlib import Path
 from fpdf import FPDF
 from fpdf.enums import OutputIntentSubType
-from fpdf.output import ICCProfileStreamDict
+from fpdf.output import PDFICCProfileObject
 
 HERE = Path(__file__).resolve().parent
 
 pdf = FPDF()
 
-dest_output_profile = ICCProfileStreamDict(
-        fn=HERE / "sRGB2014.icc",
-        N=3,
-        alternate="DeviceRGB")
+with open(HERE / "sRGB2014.icc", "rb") as iccp_file:
+        icc_profile = PDFICCProfileObject(
+            contents=iccp_file.read(), n=3, alternate="DeviceRGB"
+        )
 
 pdf.set_output_intent(
         OutputIntentSubType.PDFA,
         "sRGB",
         'IEC 61966-2-1:1999',
         "http://www.color.org",
-        dest_output_profile,
+        iccp_file,
         "sRGB2014 (v2)",
     )
 ```
