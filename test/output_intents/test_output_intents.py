@@ -169,7 +169,7 @@ def test_two_output_intents(tmp_path):
     ):
         doc.set_text_color(*color)
         doc.text(20, 20 + 10 * i, f"{color}")
-    assert_pdf_equal(doc, HERE / "text_color_with_two_output_intents.pdf", tmp_path=tmp_path)
+    assert_pdf_equal(doc, HERE / "text_color_with_two_output_intents.pdf", tmp_path)
 
 
 def test_two_equal_output_intents_raises():
@@ -191,3 +191,25 @@ def test_two_equal_output_intents_raises():
     )
     with pytest.raises(ValueError):
         assert doc.set_output_intent(OutputIntentSubType.PDFA, "somethingStrange")
+
+
+def test_without_output_intents(tmp_path):
+    """
+    Make sure the Output Intents is not set in PDF.
+    """
+    doc = FPDF()
+    doc.set_lang("de")
+    doc.add_page()
+    doc.set_font("Helvetica", size=20)
+    for i, color in enumerate(
+        (
+            (255, 100, 100),
+            (255, 255, 100),
+            (255, 100, 255),
+            (250, 250, 250),
+            (0, 0, 0),
+        )
+    ):
+        doc.set_text_color(*color)
+        doc.text(20, 20 + 10 * i, f"{color}")
+    assert_pdf_equal(doc, HERE / "text_color_without_output_intent.pdf", tmp_path)

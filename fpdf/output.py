@@ -1237,6 +1237,25 @@ class OutputProducer:
             return pdf_obj
         return None
 
+    def _add_output_intents(self):
+        """should be added in _add_catalog"""
+        if not self.fpdf.output_intents:
+            return None
+        arr = []
+        for item in self.fpdf.output_intents:
+            thedict = OutputIntentDictionary(
+                item["subtype"].value,
+                item["output_condition_identifier"],
+                item["output_condition"],
+                item["registry_name"],
+                item["dest_output_profile"],
+                item["info"],
+            )
+            arr.append(thedict)
+            if thedict.dest_output_profile:
+                self._add_pdf_obj(thedict.dest_output_profile)
+        return PDFArray(arr)
+
     def _add_catalog(self):
         fpdf = self.fpdf
         catalog_obj = PDFCatalog(
@@ -1245,21 +1264,7 @@ class OutputProducer:
             page_mode=fpdf.page_mode,
             viewer_preferences=fpdf.viewer_preferences,
         )
-        if fpdf.output_intents is not None:
-            arr = []
-            for item in fpdf.output_intents:
-                thedict = OutputIntentDictionary(
-                    item["subtype"].value,
-                    item["output_condition_identifier"],
-                    item["output_condition"],
-                    item["registry_name"],
-                    item["dest_output_profile"],
-                    item["info"],
-                )
-                arr.append(thedict)
-                if thedict.dest_output_profile:
-                    self._add_pdf_obj(thedict.dest_output_profile)
-            catalog_obj.output_intents = PDFArray(arr)
+        catalog_obj.output_intents = self._add_output_intents()
 
         self._add_pdf_obj(catalog_obj)
         return catalog_obj

@@ -192,18 +192,18 @@ HERE = Path(__file__).resolve().parent
 pdf = FPDF()
 
 with open(HERE / "sRGB2014.icc", "rb") as iccp_file:
-        icc_profile = PDFICCProfileObject(
-            contents=iccp_file.read(), n=3, alternate="DeviceRGB"
-        )
+    icc_profile = PDFICCProfileObject(
+        contents=iccp_file.read(), n=3, alternate="DeviceRGB"
+    )
 
 pdf.set_output_intent(
-        OutputIntentSubType.PDFA,
-        "sRGB",
-        'IEC 61966-2-1:1999',
-        "http://www.color.org",
-        iccp_file,
-        "sRGB2014 (v2)",
-    )
+    OutputIntentSubType.PDFA,
+    "sRGB",
+    'IEC 61966-2-1:1999',
+    "http://www.color.org",
+    iccp_file,
+    "sRGB2014 (v2)",
+)
 ```
 
 The needed profiles and descriptions can be found at [International Color Consortium](https://color.org/).
