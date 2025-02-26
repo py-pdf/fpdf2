@@ -30,7 +30,7 @@ def test_output_intents_properties():
     """
     pdf = FPDF()
 
-    assert pdf.output_intents == []
+    assert not pdf.output_intents
 
     pdf.set_output_intent(
         OutputIntentSubType.PDFA, "sRGB"
@@ -169,10 +169,10 @@ def test_two_output_intents(tmp_path):
     ):
         doc.set_text_color(*color)
         doc.text(20, 20 + 10 * i, f"{color}")
-    assert_pdf_equal(doc, HERE / "text_color_with_two_output_intents.pdf", tmp_path)
+    assert_pdf_equal(doc, HERE / "text_color_with_two_output_intents.pdf", tmp_path=tmp_path)
 
 
-def test_two_equal_output_intents_raises(tmp_path):
+def test_two_equal_output_intents_raises():
     """
     Make sure the second Output Intent raises ValueError.
     """

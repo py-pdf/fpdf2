@@ -509,7 +509,6 @@ class OutputIntentDictionary:
         )
         self.info = PDFString(info) if info else None
 
-    # method override
     def serialize(self, _security_handler=None, _obj_id=None):
         obj_dict = build_obj_dict(
             {key: getattr(self, key) for key in dir(self)},
@@ -1022,9 +1021,6 @@ class OutputProducer:
             img_obj.color_space.append(pdf_ref(pal_cs_obj.id))
 
         return img_obj
-
-    # def _add_icc_objs_from_output_intents(self):
-    #     self.fpdf.catalog
 
     def _add_gfxstates(self):
         gfxstate_objs_per_name = OrderedDict()
