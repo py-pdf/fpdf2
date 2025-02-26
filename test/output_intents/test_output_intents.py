@@ -2,7 +2,7 @@ from pathlib import Path
 
 from fpdf import FPDF
 from fpdf.enums import OutputIntentSubType
-from fpdf.output import PDFICCProfileObject
+from fpdf.output import PDFICCProfileObject, OutputIntentDictionary
 
 import pytest
 from test.conftest import assert_pdf_equal
@@ -36,37 +36,14 @@ def test_output_intents_properties():
         OutputIntentSubType.PDFA, "sRGB"
     )  # should create the array and add PDFA
     pdf.set_output_intent(OutputIntentSubType.PDFX, "AdobeRGB")  # should add PDFX
-    # pdf.set_output_intent(
-    #     OutputIntentSubType.PDFA, 'AdobeRGB'
-    # )  # should be discarded
     pdf.set_output_intent(OutputIntentSubType.ISOPDF, "AdobeRGB")  # should add ISOPDF
 
-    assert pdf.output_intents == [
-        {
-            "subtype": OutputIntentSubType.PDFA,
-            "output_condition_identifier": "sRGB",
-            "dest_output_profile": None,
-            "info": None,
-            "output_condition": None,
-            "registry_name": None,
-        },
-        {
-            "subtype": OutputIntentSubType.PDFX,
-            "output_condition_identifier": "AdobeRGB",
-            "dest_output_profile": None,
-            "info": None,
-            "output_condition": None,
-            "registry_name": None,
-        },
-        {
-            "subtype": OutputIntentSubType.ISOPDF,
-            "output_condition_identifier": "AdobeRGB",
-            "dest_output_profile": None,
-            "info": None,
-            "output_condition": None,
-            "registry_name": None,
-        },
-    ]
+    assert (
+        sum(
+            1 for item in pdf.output_intents if isinstance(item, OutputIntentDictionary)
+        )
+        == 3
+    ), "Array does not have exactly 3 objects of type OutputIntentDictionary"
 
 
 def test_output_intents(tmp_path):

@@ -128,6 +128,7 @@ from .output import (
     ResourceCatalog,
     stream_content_for_raster_image,
     PDFICCProfileObject,
+    OutputIntentDictionary,
 )
 from .recorder import FPDFRecorder
 from .sign import Signature
@@ -505,18 +506,17 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             info (str, required/optional see dest_output_profile): human
                 readable description of profile
         """
-        subtypes_in_arr = [_["subtype"].value for _ in self.output_intents]
+        subtypes_in_arr = [_.s for _ in self.output_intents]
         if subtype.value not in subtypes_in_arr:
-            self._output_intents.append(
-                {
-                    "subtype": OutputIntentSubType.coerce(subtype),
-                    "output_condition_identifier": output_condition_identifier,
-                    "output_condition": output_condition,
-                    "dest_output_profile": dest_output_profile,
-                    "info": info,
-                    "registry_name": registry_name,
-                }
+            outputIntent = OutputIntentDictionary(
+                subtype,
+                output_condition_identifier,
+                output_condition,
+                registry_name,
+                dest_output_profile,
+                info,
             )
+            self._output_intents.append(outputIntent)
         else:
             raise ValueError(
                 "set_output_intent: subtype '" + subtype.value + "' already exists."

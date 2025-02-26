@@ -1241,20 +1241,10 @@ class OutputProducer:
         """should be added in _add_catalog"""
         if not self.fpdf.output_intents:
             return None
-        arr = []
         for item in self.fpdf.output_intents:
-            thedict = OutputIntentDictionary(
-                item["subtype"].value,
-                item["output_condition_identifier"],
-                item["output_condition"],
-                item["registry_name"],
-                item["dest_output_profile"],
-                item["info"],
-            )
-            arr.append(thedict)
-            if thedict.dest_output_profile:
-                self._add_pdf_obj(thedict.dest_output_profile)
-        return PDFArray(arr)
+            if item.dest_output_profile:
+                self._add_pdf_obj(item.dest_output_profile)
+        return PDFArray(self.fpdf.output_intents)
 
     def _add_catalog(self):
         fpdf = self.fpdf
