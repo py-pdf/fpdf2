@@ -594,7 +594,13 @@ class OutputProducer:
                 file_id = fpdf._default_file_id(bytearray(0x00))
             fpdf._security_handler.generate_passwords(file_id)
 
-        self.pdf_objs.append(PDFHeader(fpdf.pdf_version))
+        pdf_version = fpdf.pdf_version
+        if (
+            fpdf.viewer_preferences
+            and fpdf.viewer_preferences._min_pdf_version > pdf_version
+        ):
+            pdf_version = fpdf.viewer_preferences._min_pdf_version
+        self.pdf_objs.append(PDFHeader(pdf_version))
         pages_root_obj = self._add_pages_root()
         catalog_obj = self._add_catalog()
         page_objs = self._add_pages()
