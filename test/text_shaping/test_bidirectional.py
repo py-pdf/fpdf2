@@ -7,6 +7,7 @@ from fpdf.enums import TextDirection
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
+FONTS_DIR = HERE / ".." / "fonts"
 
 # The BidiTest.txt file lists the input string as a list of character classes.
 # CHAR_MAPPING is mapping one character of each class so we can test the algorithm with a string.
@@ -175,7 +176,7 @@ def test_bidi_lorem_ipsum(tmp_path):
     pdf = FPDF()
     pdf.add_page()
     pdf.add_font(family="NotoArabic", fname=HERE / "NotoNaskhArabic-Regular.ttf")
-    pdf.add_font(family="NotoSans", fname=HERE / "NotoSans-Regular.ttf")
+    pdf.add_font(family="NotoSans", fname=FONTS_DIR / "NotoSans-Regular.ttf")
     pdf.set_fallback_fonts(["NotoSans"])
     pdf.set_font("NotoArabic", size=20)
     pdf.set_text_shaping(True)
