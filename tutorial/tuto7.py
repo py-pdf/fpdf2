@@ -4,7 +4,7 @@ from fpdf.enums import OutputIntentSubType
 from fpdf.output import PDFICCProfileObject
 from fpdf import FPDF_VERSION
 from datetime import datetime, timezone
-import pikepdf  # pylint: disable=E0401
+import pikepdf  # pylint: disable=import-error
 
 
 class PDF(FPDF):
