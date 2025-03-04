@@ -312,7 +312,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         # allow page insertion when writing the table of contents
         self._toc_allow_page_insertion = False
         self._toc_inserted_pages = 0  # number of pages inserted
-        self._output_intents = []  # optional list of Output Intents
+        # dict of Output Intents, with keys beings their subtypes:
+        self._output_intents = {}
 
         self._sign_key = None
         self.title = None
@@ -477,10 +478,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @property
     def output_intents(self):
-        return self._output_intents
+        return self._output_intents.values()
 
     # @output_intents.setter
-    def set_output_intent(
+    def add_output_intent(
         self,
         subtype: OutputIntentSubType,
         output_condition_identifier: str = None,
@@ -506,23 +507,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             info (str, required/optional see dest_output_profile): human
                 readable description of profile
         """
-        subtypes_in_arr = [_.s for _ in self.output_intents]
-        if subtype.value not in subtypes_in_arr:
-            outputIntent = OutputIntentDictionary(
-                subtype,
-                output_condition_identifier,
-                output_condition,
-                registry_name,
-                dest_output_profile,
-                info,
-            )
-            self._output_intents.append(outputIntent)
-        else:
+        if subtype.value in self._output_intents:
             raise ValueError(
-                "set_output_intent: subtype '" + subtype.value + "' already exists."
+                "add_output_intent: subtype '" + subtype.value + "' already exists."
             )
-        if self.output_intents:
-            self._set_min_pdf_version("1.4")
+        self._output_intents[subtype.value] = OutputIntentDictionary(
+            subtype,
+            output_condition_identifier,
+            output_condition,
+            registry_name,
+            dest_output_profile,
+            info,
+        )
+        self._set_min_pdf_version("1.4")
 
     @property
     def epw(self):

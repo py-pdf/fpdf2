@@ -12,7 +12,7 @@ HERE = Path(__file__).resolve().parent
 
 def test_output_intents_coerce():
     """
-    make sure that the coerce function returns expected subtype,
+    Make sure that the coerce function returns expected subtype,
     or raises ValueError on not expected input
     """
     assert OutputIntentSubType.coerce("PDFA") == OutputIntentSubType.PDFA
@@ -32,11 +32,9 @@ def test_output_intents_properties():
 
     assert not pdf.output_intents
 
-    pdf.set_output_intent(
-        OutputIntentSubType.PDFA, "sRGB"
-    )  # should create the array and add PDFA
-    pdf.set_output_intent(OutputIntentSubType.PDFX, "AdobeRGB")  # should add PDFX
-    pdf.set_output_intent(OutputIntentSubType.ISOPDF, "AdobeRGB")  # should add ISOPDF
+    pdf.add_output_intent(OutputIntentSubType.PDFA, "sRGB")  # should add PDFA
+    pdf.add_output_intent(OutputIntentSubType.PDFX, "AdobeRGB")  # should add PDFX
+    pdf.add_output_intent(OutputIntentSubType.ISOPDF, "AdobeRGB")  # should add ISOPDF
 
     assert (
         sum(
@@ -56,7 +54,7 @@ def test_output_intents(tmp_path):
             contents=iccp_file.read(), n=3, alternate="DeviceRGB"
         )
 
-    doc.set_output_intent(
+    doc.add_output_intent(
         OutputIntentSubType.PDFA,
         "sRGB",
         "IEC 61966-2-1:1999",
@@ -64,7 +62,6 @@ def test_output_intents(tmp_path):
         icc_profile,
         "sRGB2014 (v2)",
     )
-    # doc.set_output_intents(OutputIntentSubType.PDFX)
     doc.set_lang("de")
     doc.add_page()
     doc.set_font("Helvetica", size=20)
@@ -87,11 +84,7 @@ def test_output_intents_without_optionals(tmp_path):
     Make sure the Output Intent is set in PDF.
     """
     doc = FPDF()
-    doc.set_output_intent(
-        OutputIntentSubType.PDFA,
-        "somethingStrange",
-    )
-    # doc.set_output_intents(OutputIntentSubType.PDFX)
+    doc.add_output_intent(OutputIntentSubType.PDFA, "somethingStrange")
     doc.set_lang("de")
     doc.add_page()
     doc.set_font("Helvetica", size=20)
@@ -120,7 +113,7 @@ def test_two_output_intents(tmp_path):
         icc_profile = PDFICCProfileObject(
             contents=iccp_file.read(), n=3, alternate="DeviceRGB"
         )
-    doc.set_output_intent(
+    doc.add_output_intent(
         OutputIntentSubType.PDFA,
         "sRGB",
         "IEC 61966-2-1:1999",
@@ -128,7 +121,7 @@ def test_two_output_intents(tmp_path):
         icc_profile,
         "sRGB2014 (v2)",
     )
-    doc.set_output_intent(
+    doc.add_output_intent(
         OutputIntentSubType.ISOPDF,
         "somethingStrange",
     )
@@ -158,7 +151,7 @@ def test_two_equal_output_intents_raises():
         icc_profile = PDFICCProfileObject(
             contents=iccp_file.read(), n=3, alternate="DeviceRGB"
         )
-    doc.set_output_intent(
+    doc.add_output_intent(
         OutputIntentSubType.PDFA,
         "sRGB",
         "IEC 61966-2-1:1999",
@@ -167,7 +160,7 @@ def test_two_equal_output_intents_raises():
         "sRGB2014 (v2)",
     )
     with pytest.raises(ValueError):
-        assert doc.set_output_intent(OutputIntentSubType.PDFA, "somethingStrange")
+        assert doc.add_output_intent(OutputIntentSubType.PDFA, "somethingStrange")
 
 
 def test_without_output_intents(tmp_path):

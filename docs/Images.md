@@ -170,17 +170,16 @@ Beware that "flattening" images into JPEGs this way will fill transparent areas 
 The allowed `image_filter` values are listed in the [image_parsing]( https://github.com/py-pdf/fpdf2/blob/master/fpdf/image_parsing.py) module and are currently:
 `FlateDecode` (lossless zlib/deflate compression), `DCTDecode` (lossy compression with JPEG) and `JPXDecode` (lossy compression with JPEG2000).
 
-## Output Intends ##
+## Output Intents ##
+_New in [:octicons-tag-24: 2.8.3](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
-> Output Intends [allow] the contents of referenced icc profiles to be embedded directly within the body of the PDF file. This makes the PDF file a self-contained unit that can be stored or transmitted as a single entity.
+> Output Intents [allow] the contents of referenced icc profiles to be embedded directly within the body of the PDF file. This makes the PDF file a self-contained unit that can be stored or transmitted as a single entity.
 
-### Add Desired Output Intent to the Output Intents Array ###
-`fpdf2` gives access to this feature through the method [`set_output_intent()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_output_intent):
+The dedicated method for adding output intent to a PDF is [`add_output_intent()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_output_intent).
 
-#### Specify ICCProfile Stream ####
-[`ICCProfileStreamDict`](https://py-pdf.github.io/fpdf2/fpdf/output.html#fpdf.output.output.ICCProfileStreamDict) Class is needed to specify the file object of the referenced icc profile.
+You can optionally provide a [`PDFICCProfileObject`](https://py-pdf.github.io/fpdf2/fpdf/output.html#fpdf.output.PDFICCProfileObject) as `icc_profile`.
 
-#### Example: ####
+Example:
 ```python
 from pathlib import Path
 from fpdf import FPDF
@@ -196,12 +195,12 @@ with open(HERE / "sRGB2014.icc", "rb") as iccp_file:
         contents=iccp_file.read(), n=3, alternate="DeviceRGB"
     )
 
-pdf.set_output_intent(
+pdf.add_output_intent(
     OutputIntentSubType.PDFA,
     "sRGB",
     'IEC 61966-2-1:1999',
     "http://www.color.org",
-    iccp_file,
+    icc_file,
     "sRGB2014 (v2)",
 )
 ```
@@ -211,6 +210,9 @@ The needed profiles and descriptions can be found at [International Color Consor
 ## ICC Profiles
 
 The ICC profile of the included images are read through the PIL function `Image.info.get("icc_profile)"` and are included in the PDF as objects.
+
+An ICC profile can also be added by using the [`.add_output_intent()` method](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_output_intent),
+as described in the previous section.
 
 ## Oversized images detection & downscaling ##
 

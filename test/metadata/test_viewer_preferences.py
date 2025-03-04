@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF, ViewerPreferences
+from fpdf.syntax import Name
 from test.conftest import assert_pdf_equal
 
 
@@ -30,6 +31,7 @@ def test_custom_viewer_preferences(tmp_path):
         center_window=True,
         display_doc_title=True,
         non_full_screen_page_mode="USE_OUTLINES",
+        print_scaling=Name("None"),
     )
     pdf.set_font("helvetica", size=30)
     pdf.add_page()
