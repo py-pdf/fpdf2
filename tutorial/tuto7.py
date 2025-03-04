@@ -8,16 +8,15 @@ import pikepdf
 
 
 class PDF(FPDF):
-    """class for my pdf inherited from FPDF
-    """
+    """class for my pdf inherited from FPDF"""
+
     def __init__(self):
         super().__init__()
         """
         import and embed TTF Font to use in text
         """
         self.add_font(
-            "dejavu-sans", style="",
-            fname="./assets/Fonts/DejaVuSansCondensed.ttf"
+            "dejavu-sans", style="", fname="./assets/Fonts/DejaVuSansCondensed.ttf"
         )
         self.add_font(
             "dejavu-sans",
@@ -35,12 +34,9 @@ class PDF(FPDF):
             fname="./assets/Fonts/DejaVuSansCondensed-BoldOblique.ttf",
         )
         # set Output Intents
-        with open(os.path.join("assets", "sRGB2014.icc"), "rb") as\
-                iccp_file:
+        with open(os.path.join("assets", "sRGB2014.icc"), "rb") as iccp_file:
             icc_profile = PDFICCProfileObject(
-                contents=iccp_file.read(),
-                n=3,
-                alternate="DeviceRGB"
+                contents=iccp_file.read(), n=3, alternate="DeviceRGB"
             )
         self.add_output_intent(
             OutputIntentSubType.PDFA,
@@ -51,15 +47,16 @@ class PDF(FPDF):
             "sRGB2014 (v2)",
         )
 
-    def create_pdf_with_metadata(self,
-                                 filename: str,
-                                 language: str = None,
-                                 title: str = None,
-                                 subject: str = None,
-                                 creator: list = None,
-                                 description: str = None,
-                                 keywords: str = None,
-                                 ):
+    def create_pdf_with_metadata(
+        self,
+        filename: str,
+        language: str = None,
+        title: str = None,
+        subject: str = None,
+        creator: list = None,
+        description: str = None,
+        keywords: str = None,
+    ):
         # don't set metadata with this
         # pdf.set_title("Tutorial 7")
         # pdf.set_author("John Doe")
@@ -123,5 +120,5 @@ pdf.create_pdf_with_metadata(
     subject="Example for PDFA",
     creator=["John Dow", "Jane Dow"],
     description="this is my description of this file",
-    keywords="Example Tutorial7"
+    keywords="Example Tutorial7",
 )
