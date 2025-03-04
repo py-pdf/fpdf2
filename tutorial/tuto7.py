@@ -12,9 +12,7 @@ class PDF(FPDF):
 
     def __init__(self):
         super().__init__()
-        """
-        import and embed TTF Font to use in text
-        """
+        # import and embed TTF Font to use in text
         self.add_font(
             "dejavu-sans", style="", fname="./assets/Fonts/DejaVuSansCondensed.ttf"
         )
@@ -70,8 +68,8 @@ class PDF(FPDF):
         # create pdf
         self.output(filename)
 
-        with pikepdf.open(filename, allow_overwriting_input=True) as pdf:
-            with pdf.open_metadata(set_pikepdf_as_editor=False) as meta:
+        with pikepdf.open(filename, allow_overwriting_input=True) as inner_pdf:
+            with inner_pdf.open_metadata(set_pikepdf_as_editor=False) as meta:
                 if title:
                     meta["dc:title"] = title
                 # meta["dc:language"] = "en-US"
@@ -89,7 +87,7 @@ class PDF(FPDF):
                 meta["xmp:CreateDate"] = datetime.now(timezone.utc).isoformat()
                 meta["pdfaid:part"] = "3"
                 meta["pdfaid:conformance"] = "B"
-            pdf.save()
+            inner_pdf.save()
 
 
 pdf = PDF()
