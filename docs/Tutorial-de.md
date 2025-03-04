@@ -188,3 +188,58 @@ Um einen internen Link hinzuzufügen, der auf die zweite Seite verweist, nutzen 
 Um einen externen Link mit Hilfe eines Bildes zu erstellen, verwenden wir [`image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image). Es besteht die Möglichkeit, der Methode ein Linkziel als eines ihrer Argumente zu übergeben. Der Link kann sowohl einer interner als auch ein externer sein.
 
 Eine weitere Möglichkeit, den Schriftstil zu ändern und Links hinzuzufügen, stellt die Verwendung der Methode `write_html()` dar. Sie ist ein HTML-Parser, der das Hinzufügen von Text, Änderung des Schriftstils und Erstellen von Links mittels HTML ermöglicht.
+
+## Tuto 7 - Ein PDF/A Dokument erstellen ##
+
+### PDF/A Standards ###
+
+<b>PDF/A-1</b> basiert auf der PDF-Version 1.4. Alle Ressourcen (Bilder, Grafiken, Fonts) müssen im Document eingebettet werden. Erforderlich sind präzise und Plattform unabhängig kodierte Farbangaben mittels ICC-Profilen sowie die Verwendung von XMP für die Dokument-Metadata.
+
+<b>PDF/A-2</b> basiert auf PDF-Version 1.7. Es erlaubt die Kompression mit JPEG2000, transparente Elemente, OpenType Fonts and digitale Signaturen.
+
+Die einzige Erweiterung für <b>PDF/A-3</b> besteht aus der Möglichkeit, beliebige Dateien einzubetten.
+
+### Conformance Classes ###
+
+Stufe A (Zugänglichkeit) umfasst sämtliche Anforderungen des Standards inklusive Abbildung der inhaltlichen Struktur und korrekter Lesereihenfolge des Dokumentinhalts. Textinhalte müssen extrahierbar sein und die Struktur muss die natürliche Leseabfolge abbilden.
+
+Stufe B (Basic) garantiert eine eindeutige visuelle Reproduzierbarkeit der Inhalte. Stufe B lässt sich meist einfacher generieren als Stufe A, gewährleistet aber nicht zu 100 Prozent Textextraktion oder -durchsuchbarkeit. Eine problemlose Wiederverwendung des Inhalts ist nicht unbedingt gegeben.
+
+Hier ein kleines Beispiel um das zu erreichen:
+
+```python
+{% include "../tutorial/tuto7.py" %}
+```
+
+[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto7.pdf) -
+[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+
+
+```python
+pdf = PDF()
+```
+
+Die Klasse PDF fügt die benötigten Fonts mit Hilfe der Funktion
+[add_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font)
+in das Dokument ein.
+
+Dann fügt es ein ICC Profil ein und erstellt mit Hilfe der Funktion
+[add_output_intent()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.output_intent)
+das Output Intents Verzeichnis.
+
+Nachdem wir eine erste Seite einegfüllt, den eingebetteten Font ausgewählt, und etwas Text erzeugt haben, erstellen wir das PDF mit der Funktion:
+```python
+pdf.create_pdf_with_metadata(
+    filename="tuto7.pdf",
+    language="en-US",
+    title="Tutorial7",
+    subject="Example for PDFA",
+    creator=["John Dow", "Jane Dow"],
+    description="this is my description of this file",
+    keywords="Example Tutorial7"
+    )
+```
+
+Dabei benutzen wir pikepdf um die nötigen Metadata zu erzeugen und den Typen auf PDF/A-3B zu setzen.
+
+Bitte benutzen Sie ein Programm, wie z.B. verapdf, um die Konformität des erstellten PDF zu sicherzustellen.
