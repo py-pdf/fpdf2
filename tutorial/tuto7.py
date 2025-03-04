@@ -4,7 +4,7 @@ from fpdf.enums import OutputIntentSubType
 from fpdf.output import PDFICCProfileObject
 from fpdf import FPDF_VERSION
 from datetime import datetime, timezone
-import pikepdf
+import pikepdf  # flake8: noqa
 
 
 class PDF(FPDF):
