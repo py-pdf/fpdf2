@@ -264,15 +264,15 @@ To achieve this, here a little example:
 pdf = PDF()
 ```
 
-The class PDF adds the needed embedded fonts using the
+First, we add the needed embedded fonts using the
 [add_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font)
 method for each style.
 
-Then it adds the ICC profile object to the output intents array using the
-[add_output_intent()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.output_intent)
+Then, we add the ICC profile object to the output intents array using the
+[add_output_intent()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_output_intent)
 method.
 
-After adding first page, using the embedded font, writing some text, we create the pdf:
+After adding first page, using the embedded font, writing some text, we'll create the pdf:
 ```python
 pdf.create_pdf_with_metadata(
     filename="tuto7.pdf",
@@ -285,8 +285,8 @@ pdf.create_pdf_with_metadata(
     )
 ```
 
-Here we use pikepdf to create the needed metadata and set the type to PDF/A-3B.
+Here, we use pikepdf to create the necessary metadata and set the type to PDF/A-3B.
 
-In the function `create_pdf_with_metadata` we need to set 'language' and 'subject' outside the metadata before we use pikepdf to achieve conformance.
+In the function `create_pdf_with_metadata`, we need to set 'language' and 'subject' outside the metadata before using `pikepdf` to achieve conformance.
 
 Please use something like verapdf to check conformance of resulting PDF.

@@ -189,23 +189,23 @@ Um einen externen Link mit Hilfe eines Bildes zu erstellen, verwenden wir [`imag
 
 Eine weitere Möglichkeit, den Schriftstil zu ändern und Links hinzuzufügen, stellt die Verwendung der Methode `write_html()` dar. Sie ist ein HTML-Parser, der das Hinzufügen von Text, Änderung des Schriftstils und Erstellen von Links mittels HTML ermöglicht.
 
-## Tuto 7 - Ein PDF/A Dokument erstellen ##
+## Lektion 7 - Ein PDF/A Dokument erstellen ##
 
 ### PDF/A Standards ###
 
-<b>PDF/A-1</b> basiert auf der PDF-Version 1.4. Alle Ressourcen (Bilder, Grafiken, Fonts) müssen im Document eingebettet werden. Erforderlich sind präzise und Plattform unabhängig kodierte Farbangaben mittels ICC-Profilen sowie die Verwendung von XMP für die Dokument-Metadata.
+<b>PDF/A-1</b> basiert auf der PDF-Version 1.4. Alle Ressourcen (Bilder, Grafiken, Fonts) müssen im Document eingebettet werden. Erforderlich sind präzise und Plattform unabhängig kodierte Farbangaben mittels ICC-Profilen sowie die Verwendung von XMP für die Dokumenten-Metadaten.
 
-<b>PDF/A-2</b> basiert auf PDF-Version 1.7. Es erlaubt die Kompression mit JPEG2000, transparente Elemente, OpenType Fonts and digitale Signaturen.
+<b>PDF/A-2</b> basiert auf PDF-Version 1.7. Es erlaubt die Komprimierung mit JPEG2000, transparente Elemente, OpenType Fonts and digitale Signaturen.
 
 Die einzige Erweiterung für <b>PDF/A-3</b> besteht aus der Möglichkeit, beliebige Dateien einzubetten.
 
 ### Conformance Classes ###
 
-Stufe A (Zugänglichkeit) umfasst sämtliche Anforderungen des Standards inklusive Abbildung der inhaltlichen Struktur und korrekter Lesereihenfolge des Dokumentinhalts. Textinhalte müssen extrahierbar sein und die Struktur muss die natürliche Leseabfolge abbilden.
+Stufe A (Zugänglichkeit) umfasst sämtliche Anforderungen des Standards inklusive der Abbildung der inhaltlichen Struktur und korrekter Lesereihenfolge des Dokumenteninhalts. Textinhalte müssen extrahierbar sein und die Struktur muss die natürliche Leseabfolge abbilden.
 
-Stufe B (Basic) garantiert eine eindeutige visuelle Reproduzierbarkeit der Inhalte. Stufe B lässt sich meist einfacher generieren als Stufe A, gewährleistet aber nicht zu 100 Prozent Textextraktion oder -durchsuchbarkeit. Eine problemlose Wiederverwendung des Inhalts ist nicht unbedingt gegeben.
+Stufe B (Basic) garantiert eine eindeutige visuelle Reproduzierbarkeit der Inhalte. Stufe B lässt sich meist einfacher generieren als Stufe A, gewährleistet aber nicht zu 100 Prozent Textextraktion oder -Durchsuchbarkeit. Eine problemlose Wiederverwendung des Inhalts ist nicht unbedingt gegeben.
 
-Hier ein kleines Beispiel um das zu erreichen:
+Hier ein Beispiel um das zu erreichen:
 
 ```python
 {% include "../tutorial/tuto7.py" %}
@@ -219,15 +219,15 @@ Hier ein kleines Beispiel um das zu erreichen:
 pdf = PDF()
 ```
 
-Die Klasse PDF fügt die benötigten Fonts mit Hilfe der Funktion
-[add_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font)
+Wir fügen die benötigten Fonts mit Hilfe der Funktion
+[add_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_output_intent)
 in das Dokument ein.
 
-Dann fügt es ein ICC Profil ein und erstellt mit Hilfe der Funktion
+Dann fügen wir ein ICC Profil ein und erstellen mit Hilfe der Funktion
 [add_output_intent()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.output_intent)
 das Output Intents Verzeichnis.
 
-Nachdem wir eine erste Seite einegfüllt, den eingebetteten Font ausgewählt, und etwas Text erzeugt haben, erstellen wir das PDF mit der Funktion:
+Nachdem wir eine erste Seite erstellt, den eingebetteten Font ausgewählt, und etwas Text erzeugt haben, generieren wir das PDF mit der Funktion:
 ```python
 pdf.create_pdf_with_metadata(
     filename="tuto7.pdf",
