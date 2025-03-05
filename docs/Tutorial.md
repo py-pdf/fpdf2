@@ -287,4 +287,6 @@ pdf.create_pdf_with_metadata(
 
 Here we use pikepdf to create the needed metadata and set the type to PDF/A-3B.
 
+In the function `create_pdf_with_metadata` we need to set 'language' and 'subject' outside the metadata before we use pikepdf to achieve conformance.
+
 Please use something like verapdf to check conformance of resulting PDF.

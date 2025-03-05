@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from fpdf import FPDF
 from fpdf.enums import OutputIntentSubType
@@ -53,17 +52,21 @@ class PDF(FPDF):
 pdf = PDF()
 
 # import and embed TTF Font to use in text
+pdf.add_font("dejavu-sans", style="", fname=FONT_DIR / "DejaVuSans.ttf")
 pdf.add_font(
-    "dejavu-sans", style="", fname=FONT_DIR / "DejaVuSans.ttf"
+    "dejavu-sans",
+    style="b",
+    fname=FONT_DIR / "DejaVuSans-Bold.ttf",
 )
 pdf.add_font(
-    "dejavu-sans", style="b", fname=FONT_DIR / "DejaVuSans-Bold.ttf",
+    "dejavu-sans",
+    style="i",
+    fname=FONT_DIR / "DejaVuSans-Oblique.ttf",
 )
 pdf.add_font(
-    "dejavu-sans", style="i", fname=FONT_DIR / "DejaVuSans-Oblique.ttf",
-)
-pdf.add_font(
-    "dejavu-sans", style="bi", fname=FONT_DIR / "DejaVuSans-BoldOblique.ttf",
+    "dejavu-sans",
+    style="bi",
+    fname=FONT_DIR / "DejaVuSans-BoldOblique.ttf",
 )
 # set Output Intents
 with open(DIR / "sRGB2014.icc", "rb") as iccp_file:
