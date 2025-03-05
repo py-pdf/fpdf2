@@ -257,12 +257,6 @@ To achieve this, here a little example:
 ```
 
 [Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto7.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
-
-
-```python
-pdf = PDF()
-```
 
 First, we add the needed embedded fonts using the
 [add_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font)
@@ -289,4 +283,4 @@ Here, we use pikepdf to create the necessary metadata and set the type to PDF/A-
 
 In the function `create_pdf_with_metadata`, we need to set 'language' and 'subject' outside the metadata before using `pikepdf` to achieve conformance.
 
-Please use something like [verapdf](https://verapdf.org/) to check conformance of resulting PDF.
+Please use something like verapdf to check conformance of resulting PDF.

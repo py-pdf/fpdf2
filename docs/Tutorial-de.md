@@ -212,12 +212,6 @@ Hier ein Beispiel um das zu erreichen:
 ```
 
 [Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto7.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
-
-
-```python
-pdf = PDF()
-```
 
 Wir fügen die benötigten Fonts mit Hilfe der Funktion
 [add_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_output_intent)
