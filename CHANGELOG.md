@@ -18,7 +18,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.3] - Not released yet
 ### Added
-* added tutorial "tuto7" (english and german) with documentation to create PDF/A files with fpdf2
+* added tutorial "tuto7" (in [English](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-7-creating-pdfa-documents) and [German](https://py-pdf.github.io/fpdf2/Tutorial-de.html#tuto-7-ein-pdfa-dokument-erstellen)) with documentation to create PDF/A files with fpdf2
 * support for [Output Intents](https://py-pdf.github.io/fpdf2/Images.html#output-intents) on document level
 * support for [shading patterns (gradients)](https://py-pdf.github.io/fpdf2/Patterns.html) - thanks to @andersonhc - [PR #1334](https://github.com/py-pdf/fpdf2/pull/1334)
 * support for [setting a minimal row height in tables](https://py-pdf.github.io/fpdf2/Tables.html#setting-row-height)
