@@ -96,6 +96,33 @@ class PDF(FPDF):
 
 
 pdf = PDF()
+
+# import and embed TTF Font to use in text
+pdf.add_font(
+    "dejavu-sans", style="", fname=FONT_DIR / "DejaVuSans.ttf"
+)
+pdf.add_font(
+    "dejavu-sans", style="b", fname=FONT_DIR / "DejaVuSans-Bold.ttf",
+)
+pdf.add_font(
+    "dejavu-sans", style="i", fname=FONT_DIR / "DejaVuSans-Oblique.ttf",
+)
+pdf.add_font(
+    "dejavu-sans", style="bi", fname=FONT_DIR / "DejaVuSans-BoldOblique.ttf",
+)
+# set Output Intents
+with open(DIR / "sRGB2014.icc", "rb") as iccp_file:
+    icc_profile = PDFICCProfileObject(
+        contents=iccp_file.read(), n=3, alternate="DeviceRGB"
+    )
+pdf.add_output_intent(
+    OutputIntentSubType.PDFA,
+    "sRGB",
+    "IEC 61966-2-1:1999",
+    "http://www.color.org",
+    icc_profile,
+    "sRGB2014 (v2)",
+)
 # First page:
 pdf.add_page()
 # use the font imported
