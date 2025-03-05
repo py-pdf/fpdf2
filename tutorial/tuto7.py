@@ -13,42 +13,6 @@ FONT_DIR = DIR / ".." / "test" / "fonts"
 
 
 class PDF(FPDF):
-    """class for my pdf inherited from FPDF"""
-
-    def __init__(self):
-        super().__init__()
-        # import and embed TTF Font to use in text
-        self.add_font(
-            "dejavu-sans", style="", fname="./assets/Fonts/DejaVuSansCondensed.ttf"
-        )
-        self.add_font(
-            "dejavu-sans",
-            style="b",
-            fname="./assets/Fonts/DejaVuSansCondensed-Bold.ttf",
-        )
-        self.add_font(
-            "dejavu-sans",
-            style="i",
-            fname="./assets/Fonts/DejaVuSansCondensed-Oblique.ttf",
-        )
-        self.add_font(
-            "dejavu-sans",
-            style="bi",
-            fname="./assets/Fonts/DejaVuSansCondensed-BoldOblique.ttf",
-        )
-        # set Output Intents
-        with open(os.path.join("assets", "sRGB2014.icc"), "rb") as iccp_file:
-            icc_profile = PDFICCProfileObject(
-                contents=iccp_file.read(), n=3, alternate="DeviceRGB"
-            )
-        self.add_output_intent(
-            OutputIntentSubType.PDFA,
-            "sRGB",
-            "IEC 61966-2-1:1999",
-            "http://www.color.org",
-            icc_profile,
-            "sRGB2014 (v2)",
-        )
 
     def create_pdf_with_metadata(
         self,
