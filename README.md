@@ -311,9 +311,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/petri-lipponen-movesense"><img src="https://avatars.githubusercontent.com/u/95341815?v=4?s=100" width="100px;" alt="petri-lipponen-movesense"/><br /><sub><b>petri-lipponen-movesense</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=petri-lipponen-movesense" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/spacegaori"><img src="https://avatars.githubusercontent.com/u/110320149?v=4?s=100" width="100px;" alt="Soomin Choi"/><br /><sub><b>Soomin Choi</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=spacegaori" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/DeepBlackHole"><img src="https://avatars.githubusercontent.com/u/110691847?v=4?s=100" width="100px;" alt="Black-Hole"/><br /><sub><b>Black-Hole</b></sub></a><br /><a href="#translation-DeepBlackHole" title="Translation">🌍</a></td>
-    </tr>
-    <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/lka"><img src="https://avatars.githubusercontent.com/u/3001100?v=4?s=100" width="100px;" alt="lka"/><br /><sub><b>lka</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=lka" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/lka"><img src="https://avatars.githubusercontent.com/u/3001100?v=4?s=100" width="100px;" alt="lka"/><br /><sub><b>lka</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=lka" title="Code">💻</a> <a href="https://github.com/py-pdf/fpdf2/commits?author=lka" title="Documentation">📖</a> <a href="#ideas-lka" title="Ideas, Planning, & Feedback">🤔</a> <a href="#tutorial-lka" title="Tutorials">✅</a></td>
     </tr>
   </tbody>
 </table>
