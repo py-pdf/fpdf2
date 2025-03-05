@@ -1,10 +1,15 @@
 import os
+from pathlib import Path
 from fpdf import FPDF
 from fpdf.enums import OutputIntentSubType
 from fpdf.output import PDFICCProfileObject
 from fpdf import FPDF_VERSION
 from datetime import datetime, timezone
 import pikepdf  # pylint: disable=import-error
+
+
+DIR = Path(__file__).parent
+FONT_DIR = DIR / ".." / "test" / "fonts"
 
 
 class PDF(FPDF):
