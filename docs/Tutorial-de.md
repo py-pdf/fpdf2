@@ -211,7 +211,7 @@ Hier ein Beispiel um das zu erreichen:
 {% include "../tutorial/tuto7.py" %}
 ```
 
-[Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto7.pdf) -
+[Resulting PDF: tuto7.pdf](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto7.pdf)
 
 Wir fügen die benötigten Fonts mit Hilfe der Funktion
 [add_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_output_intent)
@@ -231,11 +231,11 @@ pdf.create_pdf_with_metadata(
     creator=["John Dow", "Jane Dow"],
     description="this is my description of this file",
     keywords="Example Tutorial7"
-    )
+)
 ```
 
 Dabei benutzen wir pikepdf um die nötigen Metadata zu erzeugen und den Typen auf PDF/A-3B zu setzen.
 
 In der Funktion `create_pdf_with_metadata` setzen wir 'language' und 'subject' ausserhalb der Metadata bevor wir pikepdf aufrufen um, die Konformität zu erreichen.
 
-Bitte benutzen Sie ein Programm, wie z.B. verapdf, um die Konformität des erstellten PDF zu sicherzustellen.
+Bitte benutzen Sie ein Programm, wie z.B. [VeraPDF](https://verapdf.org/), um die Konformität des erstellten PDF zu sicherzustellen.

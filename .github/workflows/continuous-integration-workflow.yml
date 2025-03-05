@@ -30,6 +30,7 @@ jobs:
           #scripts/install-verapdf.sh
           #scripts/verapdf.py --process-all-test-pdf-files
           #scripts/verapdf.py --print-aggregated-report
+          #scripts/check-PDF-A-with-verapdf.sh
           # Using Datalogics PDF Checker:
           # -- PDF Checker download is broken - disabling for now --
           #scripts/install-pdfchecker.sh
