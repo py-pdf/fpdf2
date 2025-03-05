@@ -282,7 +282,7 @@ pdf.create_pdf_with_metadata(
     creator=["John Dow", "Jane Dow"],
     description="this is my description of this file",
     keywords="Example Tutorial7"
-    )
+)
 ```
 
 Here, we use pikepdf to create the necessary metadata and set the type to PDF/A-3B.
