@@ -24,11 +24,6 @@ class PDF(FPDF):
         description: str = None,
         keywords: str = None,
     ):
-        # don't set metadata with this
-        # pdf.set_title("Tutorial 7")
-        # pdf.set_author("John Doe")
-        # pdf.set_producer(f"py-pdf/fpdf{FPDF_VERSION}")
-        # except:
         if language:
             self.set_lang(language)
         if subject:
@@ -41,14 +36,10 @@ class PDF(FPDF):
             with inner_pdf.open_metadata(set_pikepdf_as_editor=False) as meta:
                 if title:
                     meta["dc:title"] = title
-                # meta["dc:language"] = "en-US"
-                #   not compliant to PDFA-3B
                 if creator:
                     meta["dc:creator"] = creator
                 if description:
                     meta["dc:description"] = description
-                # meta["dc:subject"] = "Example for PDFA"
-                #   not compliant to PDFA-3B
                 if keywords:
                     meta["pdf:Keywords"] = keywords
                 meta["pdf:Producer"] = f"py-pdf/fpdf{FPDF_VERSION}"
