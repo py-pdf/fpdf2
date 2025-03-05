@@ -1408,7 +1408,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/3001100?v=4",
       "profile": "https://github.com/lka",
       "contributions": [
-        "code"
+        "code",
+        "doc",
+        "ideas",
+        "tutorial"
       ]
     }
   ],
