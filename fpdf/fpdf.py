@@ -335,6 +335,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.font_family = ""  # current font family
         # current font style (BOLD/ITALICS - does not handle UNDERLINE nor STRIKETHROUGH):
         self.font_style = ""
+        self._font_size_set_for_page = False  # current font and size are already added to current page contents with _out
         self.underline = False
         self.strikethrough = False
         self.font_size_pt = 12  # current font size in points
@@ -1001,6 +1002,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             raise FPDFException(
                 "A page cannot be added on a closed document, after calling output()"
             )
+
+        self._font_size_set_for_page = False
+
         family = self.font_family
         emphasis = self.emphasis
         size = self.font_size_pt
@@ -2234,11 +2238,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.font_style = style
         self.font_size_pt = size
         self.current_font = self.fonts[fontkey]
-        if self.page > 0:
-            self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
-            self._resource_catalog.add(
-                PDFResourceType.FONT, self.current_font.i, self.page
-            )
+        self._font_size_set_for_page = False
 
     def set_font_size(self, size):
         """
@@ -2250,15 +2250,18 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if isclose(self.font_size_pt, size):
             return
         self.font_size_pt = size
-        if self.page > 0:
-            if not self.current_font:
-                raise FPDFException(
-                    "Cannot set font size: a font must be selected first"
-                )
+        self._font_size_set_for_page = False
+
+    def _set_font_size_for_page(self):
+        """
+        Set font and size for current page. This step is needed before adding text into page and not needed in set_font and set_font_size.
+        """
+        if self.page > 0 and self.current_font and not self._font_size_set_for_page:
             self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
             self._resource_catalog.add(
                 PDFResourceType.FONT, self.current_font.i, self.page
             )
+            self._font_size_set_for_page = True
 
     def set_char_spacing(self, spacing):
         """
@@ -2571,6 +2574,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
+        self._set_font_size_for_page()
         if x is None:
             x = self.x
         if y is None:
@@ -2773,6 +2777,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
+        self._set_font_size_for_page()
         text = self.normalize_text(text)
         sl = [f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td"]
         if self.text_mode != TextMode.FILL:
@@ -3066,6 +3071,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "text_mode",
                 "text_shaping",
                 "underline",
+                "_font_size_set_for_page",
             ):
                 setattr(self, key, value)
             else:
@@ -3427,6 +3433,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         self._resource_catalog.add(
                             PDFResourceType.FONT, current_font.i, self.page
                         )
+                else:
+                    self._set_font_size_for_page()
                 lift = frag.lift
                 if lift != current_lift:
                     # Use text rise operator:
@@ -3867,12 +3875,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             # (which is what FPDF.local_context() does):
             self._end_local_context()
         # Using a temporary GS to render header & footer:
+        self._font_size_set_for_page = False
         self._push_local_stack()
         self.add_page(same=True)
-        for prev_gs in reversed(gs_stack):
-            self._start_local_context(**prev_gs)
-            self._push_local_stack()
         self._pop_local_stack()
+        for prev_gs in reversed(gs_stack):
+            self._push_local_stack()
+            prev_gs["_font_size_set_for_page"] = False
+            self._start_local_context(**prev_gs)
         self.x = x  # restore x but not y after drawing header
 
     def _has_next_page(self):
@@ -5505,6 +5515,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             ),
             font_face.size_pt or self.font_size_pt,
         )
+        self._font_size_set_for_page = False
         prev_text_color = self.text_color
         if font_face.color is not None and font_face.color != self.text_color:
             self.set_text_color(font_face.color)
