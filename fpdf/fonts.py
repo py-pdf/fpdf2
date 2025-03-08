@@ -35,7 +35,7 @@ except ImportError:
 
 from .deprecation import get_stack_level
 from .drawing import convert_to_device_color, DeviceGray, DeviceRGB
-from .enums import FontDescriptorFlags, TextEmphasis, Align
+from .enums import Align, FontDescriptorFlags, TextEmphasis
 from .syntax import Name, PDFObject
 from .util import escape_parens
 
@@ -220,8 +220,8 @@ class CoreFont:
         "emphasis",
     )
 
-    def __init__(self, fpdf, fontkey, style):
-        self.i = len(fpdf.fonts) + 1
+    def __init__(self, i, fontkey, style):
+        self.i = i
         self.type = "core"
         self.name = CORE_FONTS[fontkey]
         self.sp = 250  # strikethrough horizontal position
