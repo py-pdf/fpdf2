@@ -8,6 +8,8 @@ from fpdf import FPDF_VERSION
 import pikepdf
 
 import pytest
+
+# pylint: disable=import-error,no-name-in-module
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
@@ -34,6 +36,7 @@ class PDF(FPDF):
             self.set_subject(self.subject)
         super().output(name, *args, **kwargs)
         if hasattr(name, "name"):  # => io.BufferedWriter
+            name.close()  # closing buffer before opening file with pikepdf (required on Windows)
             name = name.name
         with pikepdf.open(name, allow_overwriting_input=True) as pdf:
             with pdf.open_metadata(set_pikepdf_as_editor=False) as meta:
@@ -50,13 +53,13 @@ class PDF(FPDF):
                 # meta["xmp:CreateDate"] = already done by assert_pdf_equal()
                 meta["pdfaid:part"] = "3"
                 meta["pdfaid:conformance"] = "B"
-            pdf.save()
+            assert meta.pdfa_status == "3B"
+            pdf.save(deterministic_id=True)
 
 
 @pytest.mark.skipif(
-    sys.platform in ("cygwin", "win32") or sys.version_info < (3, 9),
-    reason="Fails on Python 3.8 because the metadata ordering changes,"
-    " and on Windows due to: PermissionError: [WinError 5] Access is denied",
+    sys.version_info < (3, 9),
+    reason="Fails on Python 3.8 because the PDFFontStream contents change",
 )
 def test_basic_pdfa(tmp_path):
     pdf = PDF(

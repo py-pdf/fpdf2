@@ -7,6 +7,16 @@
     </style>
 </head>
 <body>
+    {% if is_shrunk %}
+    <blockquote>
+        ⚠️ Too many PDF files changed ({{ changes_pdf_files_count }}).
+        <br>
+        Only PDF files in {{ VIEW_SLICE }} are displayed.
+        <br>
+        Change the value of <code>VIEW_SLICE</code> to display the other documents.
+    </blockquote>
+    {% endif %}
+    <br>
     <b>LEFT:</b> Version from <code>master</code> branch
     -
     <b>RIGHT:</b> Version from current branch

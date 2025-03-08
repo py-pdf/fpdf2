@@ -20,6 +20,7 @@ TEMPLATE_FILENAME = "changed_pdfs_comparison.html"
 SCRIPTS_DIR = Path(__file__).parent
 REPO_DIR = SCRIPTS_DIR.parent
 TMP_DIR = REPO_DIR / "master-checkouts"
+VIEW_SLICE = slice(0, 50)
 
 
 def scantree_dirs(path):
@@ -39,6 +40,9 @@ changed_pdf_files = [
     for line in stdout.decode("utf-8").splitlines()
     if line.startswith(f"M\t{target_dir}") and line.endswith(".pdf")
 ]
+changes_pdf_files_count = len(changed_pdf_files)
+changed_pdf_files = changed_pdf_files[VIEW_SLICE]
+is_shrunk = len(changed_pdf_files) < changes_pdf_files_count
 
 for changed_pdf_file in changed_pdf_files:
     (TMP_DIR / Path(changed_pdf_file)).parent.mkdir(exist_ok=True, parents=True)
@@ -54,7 +58,12 @@ env = Environment(
 )
 template = env.get_template(TEMPLATE_FILENAME)
 (REPO_DIR / TEMPLATE_FILENAME).write_text(
-    template.render(changed_pdf_files=changed_pdf_files)
+    template.render(
+        changed_pdf_files=changed_pdf_files,
+        is_shrunk=is_shrunk,
+        changes_pdf_files_count=changes_pdf_files_count,
+        VIEW_SLICE=VIEW_SLICE,
+    )
 )
 
 httpd = HTTPServer(
