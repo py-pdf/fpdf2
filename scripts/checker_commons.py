@@ -1,3 +1,7 @@
+"""
+Code used both in pdfchecker.py & verapdf.py
+"""
+
 import json, os, sys
 from collections import defaultdict
 from multiprocessing import cpu_count, Pool
@@ -48,7 +52,12 @@ def process_all_test_pdf_files(checker_name, analyze_pdf_file):
             reports_per_pdf_filepath[pdf_filepath] = raise_on_error(report)
     agg_report = aggregate(checker_name, reports_per_pdf_filepath)
     print(
-        "Failures:", len(agg_report["failures"]), "Errors:", len(agg_report["errors"])
+        f"{checker_name} analysis succeeded - Failures:",
+        len(agg_report["failures"]),
+        "- Warnings:",
+        len(agg_report["warnings"]),
+        "- Errors:",
+        len(agg_report["errors"]),
     )
 
 
@@ -109,12 +118,10 @@ def aggregate(checker_name, reports_per_pdf_filepath):
 
 def print_aggregated_report(checker_name, checks_details_url):
     aggregated_report_filepath = f"{checker_name}-aggregated.json"
-    ignore_whitelist_filepath = f"scripts/{checker_name}-ignore.json"
     with open(aggregated_report_filepath, encoding="utf8") as agg_file:
         agg_report = json.load(agg_file)
     if "version" in agg_report:
         print(agg_report["version"])
-    print("Documentation on the checks:", checks_details_url)
     print("# AGGREGATED REPORT #")
     if agg_report["failures"]:
         print("Failures:")
@@ -133,18 +140,37 @@ def print_aggregated_report(checker_name, checks_details_url):
         for error, pdf_filepaths in sorted(
             sorted(agg_report["errors"].items(), key=lambda error: -len(error[1]))
         ):
-            print(f"* {error} ({len(pdf_filepaths)}): {', '.join(pdf_filepaths)}")
-    fail_on_unexpected_check_failure(agg_report, ignore_whitelist_filepath)
+            print(
+                f"* {error}: x{len(pdf_filepaths)} - First 3 files: {', '.join(pdf_filepaths[:3])}"
+            )
+    print("\nDocumentation on the checks:", checks_details_url)
+    fail_on_unexpected_check_failure(checker_name, agg_report)
 
 
-def fail_on_unexpected_check_failure(agg_report, ignore_whitelist_filepath):
+def fail_on_unexpected_check_failure(checker_name, agg_report):
     "exit(1) if there is any non-passing & non-whitelisted error remaining"
+    ignore_whitelist_filepath = f"scripts/{checker_name}-ignore.json"
     with open(ignore_whitelist_filepath, encoding="utf8") as ignore_file:
-        ignore = json.load(ignore_file)
-    errors = set(agg_report["errors"].keys()) - set(ignore["errors"].keys())
-    if agg_report["failures"] or errors:
+        ignored_error_codes = set(json.load(ignore_file)["errors"].keys())
+    report_error_codes = set(agg_report["errors"].keys())
+    non_whitelisted_errors = report_error_codes - ignored_error_codes
+    if agg_report["failures"] or non_whitelisted_errors:
         print(
             "Non-whitelisted issues found:",
-            ", ".join(sorted(agg_report["failures"].keys()) + sorted(errors)),
+            ", ".join(
+                sorted(agg_report["failures"].keys()) + sorted(non_whitelisted_errors)
+            ),
+        )
+        sys.exit(1)
+    non_matching_ignored_codes = ignored_error_codes - report_error_codes
+    if non_matching_ignored_codes:
+        print(
+            "Those whitelisted error codes are not reported anymore:",
+            ", ".join(non_matching_ignored_codes),
+        )
+        print(f"This is probably due to a {checker_name} version upgrade")
+        print(
+            "Those whitelisted error codes should me removed from:",
+            ignore_whitelist_filepath,
         )
         sys.exit(1)
