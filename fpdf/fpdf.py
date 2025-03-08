@@ -2234,11 +2234,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.font_style = style
         self.font_size_pt = size
         self.current_font = self.fonts[fontkey]
-        if self.page > 0:
-            self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
-            self._resource_catalog.add(
-                PDFResourceType.FONT, self.current_font.i, self.page
-            )
 
     def set_font_size(self, size):
         """
@@ -2250,15 +2245,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if isclose(self.font_size_pt, size):
             return
         self.font_size_pt = size
-        if self.page > 0:
-            if not self.current_font:
-                raise FPDFException(
-                    "Cannot set font size: a font must be selected first"
-                )
-            self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
-            self._resource_catalog.add(
-                PDFResourceType.FONT, self.current_font.i, self.page
-            )
 
     def set_char_spacing(self, spacing):
         """
@@ -3376,6 +3362,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         current_char_spacing = self.char_spacing
         fill_color_changed = False
         last_used_color = self.fill_color
+        current_font_is_added = False
         if fragments:
             if text_line.align == Align.R:
                 dx = w - l_c_margin - styled_txt_width
@@ -3413,7 +3400,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     current_char_spacing = frag.char_spacing
                     sl.append(f"{frag.char_spacing:.2f} Tc")
                 if (
-                    current_font != frag.font
+                    not current_font_is_added
+                    or current_font != frag.font
                     or current_font_size_pt != frag.font_size_pt
                     or current_char_vpos != frag.char_vpos
                 ):
@@ -3427,6 +3415,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         self._resource_catalog.add(
                             PDFResourceType.FONT, current_font.i, self.page
                         )
+                    current_font_is_added = True
                 lift = frag.lift
                 if lift != current_lift:
                     # Use text rise operator:
