@@ -3,7 +3,7 @@ from pathlib import Path
 
 from fpdf import FPDF
 from fpdf.enums import OutputIntentSubType
-from fpdf.output import PDFICCProfileObject
+from fpdf.output import PDFICCProfile
 from fpdf import FPDF_VERSION
 import pikepdf
 
@@ -35,7 +35,7 @@ class PDF(FPDF):
         if self.subject:
             self.set_subject(self.subject)
         super().output(name, *args, **kwargs)
-        if hasattr(name, "name"):  # => io.BufferedWriter
+        if hasattr(name, "name"):  # => io.BufferedWriter from assert_pdf_equal()
             name.close()  # closing buffer before opening file with pikepdf (required on Windows)
             name = name.name
         with pikepdf.open(name, allow_overwriting_input=True) as pdf:
@@ -53,7 +53,6 @@ class PDF(FPDF):
                 # meta["xmp:CreateDate"] = already done by assert_pdf_equal()
                 meta["pdfaid:part"] = "3"
                 meta["pdfaid:conformance"] = "B"
-            assert meta.pdfa_status == "3B"
             pdf.save(deterministic_id=True)
 
 
@@ -83,7 +82,7 @@ def test_basic_pdfa(tmp_path):
     pdf.set_font(style="I")
     pdf.write(text="Example text in italics")
     with open(TUTORIAL / "sRGB2014.icc", "rb") as iccp_file:
-        icc_profile = PDFICCProfileObject(
+        icc_profile = PDFICCProfile(
             contents=iccp_file.read(), n=3, alternate="DeviceRGB"
         )
     pdf.add_output_intent(

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from fpdf import FPDF
 from fpdf.enums import OutputIntentSubType
-from fpdf.output import PDFICCProfileObject, OutputIntentDictionary
+from fpdf.output import PDFICCProfile, OutputIntentDictionary
 
 import pytest
 from test.conftest import assert_pdf_equal
@@ -50,7 +50,7 @@ def test_output_intents(tmp_path):
     """
     doc = FPDF()
     with open(HERE / "sRGB2014.icc", "rb") as iccp_file:
-        icc_profile = PDFICCProfileObject(
+        icc_profile = PDFICCProfile(
             contents=iccp_file.read(), n=3, alternate="DeviceRGB"
         )
 
@@ -110,7 +110,7 @@ def test_two_output_intents(tmp_path):
     """
     doc = FPDF()
     with open(HERE / "sRGB2014.icc", "rb") as iccp_file:
-        icc_profile = PDFICCProfileObject(
+        icc_profile = PDFICCProfile(
             contents=iccp_file.read(), n=3, alternate="DeviceRGB"
         )
     doc.add_output_intent(
@@ -148,7 +148,7 @@ def test_two_equal_output_intents_raises():
     """
     doc = FPDF()
     with open(HERE / "sRGB2014.icc", "rb") as iccp_file:
-        icc_profile = PDFICCProfileObject(
+        icc_profile = PDFICCProfile(
             contents=iccp_file.read(), n=3, alternate="DeviceRGB"
         )
     doc.add_output_intent(

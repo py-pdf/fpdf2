@@ -18,8 +18,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.3] - Not released yet
 ### Added
-* added tutorial "tuto7" (in [English](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-7-creating-pdfa-documents) and [German](https://py-pdf.github.io/fpdf2/Tutorial-de.html#tuto-7-ein-pdfa-dokument-erstellen)) with documentation to create PDF/A files with fpdf2
-* support for [Output Intents](https://py-pdf.github.io/fpdf2/Images.html#output-intents) on document level
+* added tutorial "tuto7" (in [English](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-7-creating-pdfa-documents) and [German](https://py-pdf.github.io/fpdf2/Tutorial-de.html#tuto-7-ein-pdfa-dokument-erstellen)) with documentation to create PDF/A files with fpdf2 - thanks to @lka
+* support for [Output Intents](https://py-pdf.github.io/fpdf2/Images.html#output-intents) on document level - thanks to @lka
 * support for [shading patterns (gradients)](https://py-pdf.github.io/fpdf2/Patterns.html) - thanks to @andersonhc - [PR #1334](https://github.com/py-pdf/fpdf2/pull/1334)
 * support for [setting a minimal row height in tables](https://py-pdf.github.io/fpdf2/Tables.html#setting-row-height)
 * support for [`v_align` at the row level in tables](https://py-pdf.github.io/fpdf2/Tables.html#setting-vertical-alignment-of-text-in-cells)
@@ -27,7 +27,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support for <s>strikethrough text</s>
 * new [ViewerPreferences.print_scaling](https://py-pdf.github.io/fpdf2/fpdf/prefs.html#fpdf.prefs.ViewerPreferences.print_scaling)
 * documentation on [verifying provenance of `fpdf2` releases](https://py-pdf.github.io/fpdf2/#verifying-provenance)
-* documentation on [`fpdf2` internals](https://py-pdf.github.io/fpdf2/Internals.html)### Added
+* documentation on [`fpdf2` internals](https://py-pdf.github.io/fpdf2/Internals.html)
 * added Slovenian translation of the tutorial: [Vodič](https://py-pdf.github.io/fpdf2/Tutorial-sl.html) - thanks to @DeepBlackHole
 * support for adding TrueType fonts that are missing the `.notdef` glyph - [issue #1161](https://github.com/py-pdf/fpdf2/issues/1161) - thanks to @spacegaori
 * improved SVG image speed by 50% to 70% - thanks to @petri-lipponen-movesense - [PR #1350](https://github.com/py-pdf/fpdf2/pull/1350)

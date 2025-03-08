@@ -266,22 +266,12 @@ Then, we add the ICC profile object to the output intents array using the
 [add_output_intent()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_output_intent)
 method.
 
-After adding first page, using the embedded font, writing some text, we'll create the pdf:
-```python
-pdf.create_pdf_with_metadata(
-    filename="tuto7.pdf",
-    language="en-US",
-    title="Tutorial7",
-    subject="Example for PDFA",
-    creator=["John Dow", "Jane Dow"],
-    description="this is my description of this file",
-    keywords="Example Tutorial7"
-)
-```
+After adding some pages, using the embedded fonts, and writing some text,
+we create the pdf by calling `create_pdf_with_metadata()`,
+that uses [pikepdf](https://pypi.org/project/pikepdf/)
+to create the necessary metadata and set the type to PDF/A-3B.
 
-Here we use [pikepdf](https://pypi.org/project/pikepdf/) to create the necessary metadata and set the type to PDF/A-3B.
-
-In the function `create_pdf_with_metadata` we need to set 'language' and 'subject' outside the metadata before we use `pikepdf` to achieve conformance.
+For information on PDF metadata, check the dedicated documentation page: [Metadata](Metadata.md).
 
 Note that instead of using a function, you could also subclass `FPDF.output()` to ensure that all your documents are PDF-A compliant, as done in [test/pdf-a/test_pdf_a.py](https://github.com/py-pdf/fpdf2/blob/master/test/pdf-a/test_pdf_a.py).
 

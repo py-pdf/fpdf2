@@ -216,7 +216,7 @@ class PDFXObject(PDFContentStream):
         self.s_mask = None
 
 
-class PDFICCProfileObject(PDFContentStream):
+class PDFICCProfile(PDFContentStream):
     """holds values for ICC Profile Stream
     Args:
         contents (str): stream content
@@ -463,8 +463,8 @@ class OutputIntentDictionary:
         output_condition (str, optional): see the Definition in
             https://www.color.org/registry.xalter
         registry_name (str, optional): "https://www.color.org"
-        dest_output_profile (PDFICCProfileObject, required/optional):
-            PDFICCProfileObject | None # (required if
+        dest_output_profile (PDFICCProfile, required/optional):
+            PDFICCProfile | None # (required if
             output_condition_identifier does not specify a standard
             production condition; optional otherwise)
         info (str, required/optional see dest_output_profile): human
@@ -487,7 +487,7 @@ class OutputIntentDictionary:
         output_condition_identifier: str,
         output_condition: str = None,
         registry_name: str = None,
-        dest_output_profile: PDFICCProfileObject = None,
+        dest_output_profile: PDFICCProfile = None,
         info: str = None,
     ):
         self.type = Name("OutputIntent")
@@ -503,8 +503,7 @@ class OutputIntentDictionary:
         self.registry_name = PDFString(registry_name) if registry_name else None
         self.dest_output_profile = (
             dest_output_profile
-            if dest_output_profile
-            and isinstance(dest_output_profile, PDFICCProfileObject)
+            if dest_output_profile and isinstance(dest_output_profile, PDFICCProfile)
             else None
         )
         self.info = PDFString(info) if info else None
@@ -967,7 +966,7 @@ class OutputProducer:
                 break
         assert iccp_content is not None
         # Note: n should be 4 if the profile ColorSpace is CMYK
-        iccp_obj = PDFICCProfileObject(
+        iccp_obj = PDFICCProfile(
             contents=iccp_content, n=img_info["dpn"], alternate=img_info["cs"]
         )
         iccp_pdf_i = self._add_pdf_obj(iccp_obj, "iccp")

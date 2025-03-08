@@ -127,7 +127,7 @@ from .output import (
     PDFPageLabel,
     ResourceCatalog,
     stream_content_for_raster_image,
-    PDFICCProfileObject,
+    PDFICCProfile,
     OutputIntentDictionary,
 )
 from .recorder import FPDFRecorder
@@ -487,7 +487,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         output_condition_identifier: str = None,
         output_condition: str = None,
         registry_name: str = None,
-        dest_output_profile: PDFICCProfileObject = None,
+        dest_output_profile: PDFICCProfile = None,
         info: str = None,
     ):
         """
@@ -500,8 +500,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             output_condition (str, optional): see the Definition in
                 https://www.color.org/registry.xalter
             registry_name (str, optional): "https://www.color.org"
-            dest_output_profile (PDFICCProfileObject, required/optional):
-                PDFICCProfileObject | None # (required  if
+            dest_output_profile (PDFICCProfile, required/optional):
+                PDFICCProfile | None # (required  if
                 output_condition_identifier does not specify a standard
                 production condition; optional otherwise)
             info (str, required/optional see dest_output_profile): human

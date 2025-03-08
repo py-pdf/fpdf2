@@ -3,7 +3,7 @@ from pathlib import Path
 
 from fpdf import FPDF
 from fpdf.enums import OutputIntentSubType
-from fpdf.output import PDFICCProfileObject
+from fpdf.output import PDFICCProfile
 from fpdf import FPDF_VERSION
 import pikepdf
 
@@ -43,7 +43,7 @@ def create_pdf_with_metadata(
             meta["xmp:CreateDate"] = datetime.now(timezone.utc).isoformat()
             meta["pdfaid:part"] = "3"
             meta["pdfaid:conformance"] = "B"
-        pike_pdf.save()
+        pike_pdf.save(deterministic_id=True)
 
 
 pdf = FPDF()
@@ -62,9 +62,7 @@ pdf.write(text="Example text in italics")
 
 # set Output Intents
 with open(DIR / "sRGB2014.icc", "rb") as iccp_file:
-    icc_profile = PDFICCProfileObject(
-        contents=iccp_file.read(), n=3, alternate="DeviceRGB"
-    )
+    icc_profile = PDFICCProfile(contents=iccp_file.read(), n=3, alternate="DeviceRGB")
 pdf.add_output_intent(
     OutputIntentSubType.PDFA,
     "sRGB",
