@@ -8,7 +8,7 @@
 import sys, webbrowser
 from functools import partial
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-from os import makedirs, scandir
+from os import scandir
 from pathlib import Path
 from subprocess import check_output
 

@@ -4,11 +4,10 @@ from multiprocessing import cpu_count, Pool
 
 try:  # optional dependency to display a progress bar
     from tqdm import tqdm
-
-    HIDE_STDERR = True
 except ImportError:
     tqdm = lambda _, total: _
-    HIDE_STDERR = False
+
+MULTIPROC_PARALLELISM = True
 
 
 def main(checker_name, analyze_pdf_file, argv, checks_details_url):
@@ -35,17 +34,37 @@ def process_all_test_pdf_files(checker_name, analyze_pdf_file):
     print(
         f"Starting parallel execution of {checker_name} on {len(pdf_filepaths)} PDF files with {cpu_count()} CPUs"
     )
-    with Pool(cpu_count()) as pool:
-        reports_per_pdf_filepath = {}
-        for pdf_filepath, report in tqdm(
-            pool.imap_unordered(analyze_pdf_file, pdf_filepaths),
-            total=len(pdf_filepaths),
-        ):
-            reports_per_pdf_filepath[pdf_filepath] = report
+    reports_per_pdf_filepath = {}
+    if MULTIPROC_PARALLELISM:
+        with Pool(cpu_count()) as pool:
+            for pdf_filepath, report in tqdm(
+                pool.imap_unordered(analyze_pdf_file, pdf_filepaths),
+                total=len(pdf_filepaths),
+            ):
+                reports_per_pdf_filepath[pdf_filepath] = raise_on_error(report)
+    else:
+        for pdf_filepath in tqdm(pdf_filepaths, total=len(pdf_filepaths)):
+            report = analyze_pdf_file(pdf_filepath)[1]
+            reports_per_pdf_filepath[pdf_filepath] = raise_on_error(report)
     agg_report = aggregate(checker_name, reports_per_pdf_filepath)
     print(
         "Failures:", len(agg_report["failures"]), "Errors:", len(agg_report["errors"])
     )
+
+
+def raise_on_error(report_or_error):
+    """
+    This error handling may seems strange or useless,
+    but optionally returning an error from analyze_pdf_file()
+    is good way to "bubble up" errors raised in this function
+    that would otherwise be "hidden" by multiprocessing.Pool.imap_unordered
+    """
+    if isinstance(report_or_error, BaseException):
+        print(
+            "ERROR: re-running this script with MULTIPROC_PARALLELISM=False can improve the stacktrace"
+        )
+        raise report_or_error
+    return report_or_error
 
 
 def scantree(path):
@@ -61,12 +80,14 @@ def aggregate(checker_name, reports_per_pdf_filepath):
     aggregated_report_filepath = f"{checker_name}-aggregated.json"
     agg_report = {
         "failures": defaultdict(list),
+        "warnings": defaultdict(list),
         "errors": defaultdict(list),
     }
     try:
         with open(aggregated_report_filepath, encoding="utf8") as agg_file:
             prev_agg_report = json.load(agg_file)
         agg_report["failures"].update(prev_agg_report["failures"])
+        agg_report["warnings"].update(prev_agg_report["warnings"])
         agg_report["errors"].update(prev_agg_report["errors"])
     except FileNotFoundError:
         print("Initializing a new JSON file for the aggregated report")
@@ -74,8 +95,10 @@ def aggregate(checker_name, reports_per_pdf_filepath):
         if "version" in report:
             agg_report["version"] = report.pop("version")
     for pdf_filepath, report in reports_per_pdf_filepath.items():
-        if "failure" in report:
+        if report.get("failure"):
             agg_report["failures"][report["failure"]].append(pdf_filepath)
+        elif report.get("warning"):
+            agg_report["warnings"][report["warning"]].append(pdf_filepath)
         else:
             for error in report.get("errors", ()):
                 agg_report["errors"][error].append(pdf_filepath)
@@ -96,12 +119,21 @@ def print_aggregated_report(checker_name, checks_details_url):
     if agg_report["failures"]:
         print("Failures:")
         for failure, pdf_filepaths in sorted(agg_report["failures"].items()):
-            print(f"- {failure} ({len(pdf_filepaths)}): {', '.join(pdf_filepaths)}")
-    print("Errors:")
-    for error, pdf_filepaths in sorted(
-        sorted(agg_report["errors"].items(), key=lambda error: -len(error[1]))
-    ):
-        print(f"- {error} ({len(pdf_filepaths)}): {', '.join(pdf_filepaths)}")
+            print(
+                f"* {failure}: x{len(pdf_filepaths)} - First 3 files: {', '.join(pdf_filepaths[:3])}"
+            )
+    if agg_report["warnings"]:
+        print("Warnings:")
+        for warning, pdf_filepaths in sorted(agg_report["warnings"].items()):
+            print(
+                f"* {warning}: x{len(pdf_filepaths)} - First 3 files: {', '.join(pdf_filepaths[:3])}"
+            )
+    if agg_report["errors"]:
+        print("Errors:")
+        for error, pdf_filepaths in sorted(
+            sorted(agg_report["errors"].items(), key=lambda error: -len(error[1]))
+        ):
+            print(f"* {error} ({len(pdf_filepaths)}): {', '.join(pdf_filepaths)}")
     fail_on_unexpected_check_failure(agg_report, ignore_whitelist_filepath)
 
 

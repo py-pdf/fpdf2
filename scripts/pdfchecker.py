@@ -23,19 +23,23 @@ CHECKER_SUMMARY_END_LINE = "<<=CHECKER_SUMMARY_END=>>"
 
 
 def analyze_pdf_file(pdf_filepath):
-    command = [
-        "PDF_Checker/pdfchecker",
-        "--profile",
-        "PDF_Checker/CheckerProfiles/everything.json",
-        "--input",
-        pdf_filepath,
-        "--password",
-        "fpdf2",
-    ]
-    # print(" ".join(command))
-    output = check_output(command).decode()
-    # print(output)
-    return pdf_filepath, parse_output(command, output)
+    try:
+        command = [
+            "PDF_Checker/pdfchecker",
+            "--profile",
+            "PDF_Checker/CheckerProfiles/everything.json",
+            "--input",
+            pdf_filepath,
+            "--password",
+            "fpdf2",
+        ]
+        # print(" ".join(command))
+        output = check_output(command).decode()
+        # print(output)
+        return pdf_filepath, parse_output(command, output)
+    # pylint: disable=broad-exception-caught
+    except BaseException as error:
+        return pdf_filepath, error
 
 
 def parse_output(command, output):
