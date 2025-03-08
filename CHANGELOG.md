@@ -34,7 +34,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Fixed
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): Fixed rendering of content following `<a>` tags; now correctly resets emphasis style post `</a>` tag: hyperlink styling contained within the tag authority. - [Issue #1311](https://github.com/py-pdf/fpdf2/issues/1311)
 * [FPDF.footer()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) does not "leak" its text style to the [table of contents](https://py-pdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html#table-of-contents) anymore
-* Font Optimization: Only include fonts effectively used in the final PDF document. Fonts added via set_font() or add_page() but not actually used in the document are no longer included in the final output. This reduces file size and improves performance, especially for documents with many fallback fonts. - Issue #1382
+* Font Optimization: Only include fonts effectively used in the final PDF document. Fonts added via set_font() or add_page() but not actually used in the document are no longer included in the final output. This reduces file size and improves performance, especially for documents with many fallback fonts. - [Issue #1382](https://github.com/py-pdf/fpdf2/issues/1382)
 
 ## [2.8.2] - 2024-12-16
 ### Added
