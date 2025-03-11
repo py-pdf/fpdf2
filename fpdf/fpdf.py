@@ -3092,7 +3092,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 font_style or self.font_style,
                 font_size_pt or self.font_size_pt,
             )
-        self.font_size_set_for_page = False
         if line_width is not None:
             self.set_line_width(line_width)
         if draw_color is not None:
@@ -3875,6 +3874,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             # (which is what FPDF.local_context() does):
             self._end_local_context()
         # Using a temporary GS to render header & footer:
+        self.font_size_set_for_page = False
         self._push_local_stack()
         self.add_page(same=True)
         for prev_gs in reversed(gs_stack):
@@ -5513,6 +5513,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             ),
             font_face.size_pt or self.font_size_pt,
         )
+        self.font_size_set_for_page = False
         prev_text_color = self.text_color
         if font_face.color is not None and font_face.color != self.text_color:
             self.set_text_color(font_face.color)
