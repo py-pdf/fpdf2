@@ -335,7 +335,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.font_family = ""  # current font family
         # current font style (BOLD/ITALICS - does not handle UNDERLINE nor STRIKETHROUGH):
         self.font_style = ""
-        self.font_size_set_for_page = False # current font and size are already added to current page contents with _out
+        self.font_size_set_for_page = False  # current font and size are already added to current page contents with _out
         self.underline = False
         self.strikethrough = False
         self.font_size_pt = 12  # current font size in points
@@ -2254,7 +2254,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def set_font_size_for_page(self):
         """
-        Set font and size for current page. This step is needed before adding text into page and not needed in set_font and set_font_size. 
+        Set font and size for current page. This step is needed before adding text into page and not needed in set_font and set_font_size.
         """
         if self.page > 0 and self.current_font and not self.font_size_set_for_page:
             self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
@@ -3092,6 +3092,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 font_style or self.font_style,
                 font_size_pt or self.font_size_pt,
             )
+        self.font_size_set_for_page = False
         if line_width is not None:
             self.set_line_width(line_width)
         if draw_color is not None:
@@ -3381,7 +3382,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         current_char_spacing = self.char_spacing
         fill_color_changed = False
         last_used_color = self.fill_color
-        current_font_is_added = False
         if fragments:
             if text_line.align == Align.R:
                 dx = w - l_c_margin - styled_txt_width
