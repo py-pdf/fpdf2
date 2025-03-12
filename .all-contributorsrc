@@ -1414,6 +1414,15 @@
         "ideas",
         "tutorial"
       ]
+    },
+    {
+      "login": "andreaswimmer",
+      "name": "andreaswimmer",
+      "avatar_url": "https://avatars.githubusercontent.com/u/53872150?v=4",
+      "profile": "https://github.com/andreaswimmer",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
