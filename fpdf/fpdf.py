@@ -3881,8 +3881,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._pop_local_stack()
         for prev_gs in reversed(gs_stack):
             self._push_local_stack()
+            prev_gs["font_size_set_for_page"] = False
             self._start_local_context(**prev_gs)
-            self.font_size_set_for_page = False
         self.x = x  # restore x but not y after drawing header
 
     def _has_next_page(self):
