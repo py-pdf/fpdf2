@@ -296,31 +296,6 @@ class MethodReturnValue(CoerciveIntFlag):
     "The method will return how much vertical space was used"
 
 
-class TableBordersLayout(CoerciveEnum):
-    "Defines how to render table borders"
-
-    ALL = intern("ALL")
-    "Draw all table cells borders"
-
-    NONE = intern("NONE")
-    "Draw zero cells border"
-
-    INTERNAL = intern("INTERNAL")
-    "Draw only internal horizontal & vertical borders"
-
-    MINIMAL = intern("MINIMAL")
-    "Draw only the top horizontal border, below the headings, and internal vertical borders"
-
-    HORIZONTAL_LINES = intern("HORIZONTAL_LINES")
-    "Draw only horizontal lines"
-
-    NO_HORIZONTAL_LINES = intern("NO_HORIZONTAL_LINES")
-    "Draw all cells border except horizontal lines, after the headings"
-
-    SINGLE_TOP_LINE = intern("SINGLE_TOP_LINE")
-    "Draw only the top horizontal border, below the headings"
-
-
 class CellBordersLayout(CoerciveIntFlag):
     """Defines how to render cell borders in table
 
