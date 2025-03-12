@@ -3071,6 +3071,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "text_mode",
                 "text_shaping",
                 "underline",
+                "font_size_set_for_page",
             ):
                 setattr(self, key, value)
             else:
@@ -3877,10 +3878,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.font_size_set_for_page = False
         self._push_local_stack()
         self.add_page(same=True)
-        for prev_gs in reversed(gs_stack):
-            self._start_local_context(**prev_gs)
-            self._push_local_stack()
         self._pop_local_stack()
+        for prev_gs in reversed(gs_stack):
+            self._push_local_stack()
+            self._start_local_context(**prev_gs)
+            self.font_size_set_for_page = False
         self.x = x  # restore x but not y after drawing header
 
     def _has_next_page(self):
