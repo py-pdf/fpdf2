@@ -34,6 +34,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Fixed
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): Fixed rendering of content following `<a>` tags; now correctly resets emphasis style post `</a>` tag: hyperlink styling contained within the tag authority. - [Issue #1311](https://github.com/py-pdf/fpdf2/issues/1311)
 * [FPDF.footer()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) does not "leak" its text style to the [table of contents](https://py-pdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html#table-of-contents) anymore
+* [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): Fixed heading styles containing underline failing to render.
 
 ## [2.8.2] - 2024-12-16
 ### Added
