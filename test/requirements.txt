@@ -9,4 +9,3 @@ pytest-cov
 qrcode
 tabula-py
 uharfbuzz
-fonttools
