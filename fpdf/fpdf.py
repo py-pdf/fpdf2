@@ -4146,7 +4146,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         page_break_triggered = False
 
         for text_line_index, text_line in enumerate(text_lines):
-            if self._perform_page_break_if_need_be(h + padding.bottom):
+            if self._perform_page_break_if_need_be(h):
                 page_break_triggered = True
                 self.y += padding.top
 

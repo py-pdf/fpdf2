@@ -545,6 +545,16 @@ def test_multi_cell_with_padding_check_input():
         pdf.multi_cell(0, 5, LONG_TEXT, border=1, padding=(5, 5, 5, 5, 5, 5))
 
 
+def test_multi_cell_with_padding_and_page_break(tmp_path):  # issue #1395
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica")
+    pdf.multi_cell(
+        w=0, text="Hello, this is a sample PDF!" * 300, padding=[0, 0, 50, 0]
+    )
+    assert_pdf_equal(pdf, HERE / "multi_cell_with_padding_and_page_break.pdf", tmp_path)
+
+
 def test_multi_cell_return_value(tmp_path):
     pdf = FPDF()
     pdf.add_page()
