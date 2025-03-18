@@ -24,12 +24,12 @@ from .fonts import FontFace, TextStyle
 from .fpdf import (
     FPDF,
     TitleStyle,
-    FPDF_FONT_DIR as _FPDF_FONT_DIR,
     FPDF_VERSION as _FPDF_VERSION,
 )
 from .html import HTMLMixin, HTML2FPDF
 from .prefs import ViewerPreferences
 from .template import Template, FlexTemplate
+from .text_renderer import FPDF_FONT_DIR as _FPDF_FONT_DIR
 from .util import get_scale_factor
 
 try:

@@ -23,6 +23,7 @@ except ImportError:
 from .errors import FPDFException
 from .image_datastructures import ImageCache, RasterImageInfo, VectorImageInfo
 from .svg import SVGObject
+from .text_renderer import TextRendererMixin
 
 
 @dataclass
@@ -72,7 +73,9 @@ LZW_INITIAL_BITS_PER_CODE = 9  # Initial code bit width
 LZW_MAX_BITS_PER_CODE = 12  # Maximum code bit width
 
 
-def preload_image(image_cache: ImageCache, name, dims=None):
+def preload_image(
+    name, image_cache: ImageCache, dims=None, font_mgr: TextRendererMixin = None
+):
     """
     Read an image and load it into memory.
 
@@ -94,13 +97,19 @@ def preload_image(image_cache: ImageCache, name, dims=None):
     # Identify and load SVG data:
     if str(name).endswith(".svg"):
         try:
-            return get_svg_info(name, load_image(str(name)), image_cache=image_cache)
+            return get_svg_info(
+                name, load_image(str(name)), font_mgr=font_mgr, image_cache=image_cache
+            )
         except Exception as error:
             raise ValueError(f"Could not parse file: {name}") from error
     if isinstance(name, bytes) and _is_svg(name.strip()):
-        return get_svg_info(name, io.BytesIO(name), image_cache=image_cache)
+        return get_svg_info(
+            name, io.BytesIO(name), font_mgr=font_mgr, image_cache=image_cache
+        )
     if isinstance(name, io.BytesIO) and _is_svg(name.getvalue().strip()):
-        return get_svg_info("vector_image", name, image_cache=image_cache)
+        return get_svg_info(
+            "vector_image", name, font_mgr=font_mgr, image_cache=image_cache
+        )
 
     # Load raster data.
     if isinstance(name, str):
@@ -198,8 +207,8 @@ def is_iccp_valid(iccp, filename):
     return True
 
 
-def get_svg_info(filename, img, image_cache):
-    svg = SVGObject(img.getvalue(), image_cache=image_cache)
+def get_svg_info(filename, img, font_mgr: TextRendererMixin, image_cache: ImageCache):
+    svg = SVGObject(img.getvalue(), font_mgr=font_mgr, image_cache=image_cache)
     if svg.viewbox:
         _, _, w, h = svg.viewbox
     else:
