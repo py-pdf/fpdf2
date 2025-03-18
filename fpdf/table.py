@@ -195,7 +195,7 @@ class Table:
             emphasis = self._headings_style.emphasis
             if emphasis is not None:
                 family = self._headings_style.family or self._fpdf.font_family
-                font_key = family.lower() + emphasis.style
+                font_key = family.lower() + emphasis.style.replace("U", "")
                 if font_key not in CORE_FONTS and font_key not in self._fpdf.fonts:
                     # Raising a more explicit error than the one from set_font():
                     raise FPDFException(

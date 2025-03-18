@@ -48,7 +48,7 @@ def parse_output(output):
     warning = ""
     line_iterator = iter(output.splitlines())
     for line in line_iterator:
-        if line.startswith("PASS ") or " PM org.verapdf" in line:
+        if line.startswith("PASS ") or "M org.verapdf." in line:
             continue  # 1st line of every message logged by VeraPDF, containing the current time
         if line.startswith("  FAIL "):
             errors.append(line[len("  FAIL ") :])

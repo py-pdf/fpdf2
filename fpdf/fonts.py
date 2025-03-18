@@ -354,6 +354,10 @@ class TTFFont:
         # saving only the keys we have a tuple with
         # the unicode characters available on the font
         self.cmap = self.ttfont.getBestCmap()
+        if not self.cmap:
+            raise NotImplementedError(
+                "Font not supported as it does not have a unicode cmap table - cf. issue #1396"
+            )
 
         # saving a list of glyph ids to char to allow
         # subset by unicode (regular) and by glyph

@@ -7,6 +7,7 @@ from fpdf import FPDF, FPDFException
 from fpdf.drawing import DeviceRGB
 from fpdf.fonts import FontFace
 from fpdf.table import TableCellFillMode
+from fpdf.enums import TextEmphasis
 
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
@@ -245,7 +246,9 @@ def test_table_with_headings_styled(tmp_path):
     pdf.set_font("Times", size=16)
     blue = DeviceRGB(r=0, g=0, b=1)
     grey = 128
-    headings_style = FontFace(emphasis="ITALICS", color=blue, fill_color=grey)
+    headings_style = FontFace(
+        emphasis=TextEmphasis.I | TextEmphasis.U, color=blue, fill_color=grey
+    )
     with pdf.table(TABLE_DATA, headings_style=headings_style):
         pass
     assert_pdf_equal(pdf, HERE / "table_with_headings_styled.pdf", tmp_path)
