@@ -125,3 +125,74 @@ def test_multiple_pages_font_usage(tmp_path):
     assert list(page1_fonts.keys()) == ["/F1"], "Page 1 should only have F1"
     assert list(page2_fonts.keys()) == ["/F2"], "Page 2 should only have F2"
     # pylint: enable=no-member
+
+
+def test_nested_context_font_usage_after_page_break(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.add_font("Roboto-Regular", style="", fname=HERE / "Roboto-Regular.ttf")
+    pdf.add_font("Roboto-BoldItalic", style="", fname=HERE / "Roboto-BoldItalic.TTF")
+    pdf.add_font("DejaVuSans", style="", fname=HERE / "DejaVuSans.ttf")
+    pdf.add_font("Garuda", style="", fname=HERE / "Garuda.ttf")
+
+    # Outer context A
+    with pdf.local_context():
+        pdf.set_font("Roboto-Regular", size=12)
+        pdf.write(text="A1 Roboto-Regular\n")
+
+        # Context B
+        with pdf.local_context():
+            pdf.set_font("Roboto-BoldItalic", size=14)
+            pdf.write(text="B1 Roboto-BoldItalic\n")
+
+            # Context C
+            with pdf.local_context():
+                pdf.set_font("DejaVuSans", size=16)
+                pdf.write(text="C1 DejaVuSans\n")
+
+                # Context D - will trigger page break
+                with pdf.local_context():
+                    pdf.set_font("Garuda", size=18)
+                    # Generate enough text to force page break
+                    long_text = "D1 " + "D2Garuda " * 250  # ~100 words
+                    pdf.multi_cell(w=pdf.epw, text=long_text)  # This will break page
+
+                # After break: C context resumes but writes nothing
+
+            # After break: B context resumes but writes nothing
+
+        # After break: A context resumes
+        pdf.write(text="A2 ")  # Should use Roboto again
+
+    pdf.output(tmp_path / "test_nested_context_font_usage_after_page_break.pdf")
+
+    reader = pypdf.PdfReader(
+        tmp_path / "test_nested_context_font_usage_after_page_break.pdf"
+    )
+    assert len(reader.pages) == 2, "There should be 2 pages"
+
+    font_mapping = {
+        1: "Roboto-Regular",
+        2: "Roboto-BoldItalic",
+        3: "DejaVuSans",
+        4: "Garuda",
+    }
+
+    page1 = reader.pages[0]
+    page1_used_fonts = get_used_fonts_in_page(page1)
+    print("Fonts used in page 1:", [font_mapping[f] for f in page1_used_fonts])
+
+    page2 = reader.pages[1]
+    page2_used_fonts = get_used_fonts_in_page(page2)
+    print("Fonts used in page 2:", [font_mapping[f] for f in page2_used_fonts])
+
+    assert page2_used_fonts == {1, 4}, "page 2 should only use font 1 and 4"
+
+    # pylint: disable=no-member
+    page2_resources = page2["/Resources"].get("/Font", {})
+    # pylint: enable=no-member
+    for font_key in page2_resources:
+        font_id = int(font_key[2:])  # convert /F1 -> 1
+        assert (
+            font_id in page2_used_fonts
+        ), f"page 2 resource includes unused font：{font_mapping[font_id]}（F{font_id}）"
