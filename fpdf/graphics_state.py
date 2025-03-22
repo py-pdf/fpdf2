@@ -56,7 +56,7 @@ class GraphicsStateMixin:
                 nom_lift=0.2,
                 denom_lift=0.0,
                 text_shaping=None,
-                font_size_set_for_page=False,
+                _font_size_set_for_page=False,
             )
         ]
         super().__init__(*args, **kwargs)
@@ -174,12 +174,12 @@ class GraphicsStateMixin:
         self.__statestack[-1]["font_size_pt"] = v * self.k
 
     @property
-    def font_size_set_for_page(self):
-        return self.__statestack[-1]["font_size_set_for_page"]
+    def _font_size_set_for_page(self):
+        return self.__statestack[-1]["_font_size_set_for_page"]
 
-    @font_size_set_for_page.setter
-    def font_size_set_for_page(self, v):
-        self.__statestack[-1]["font_size_set_for_page"] = v
+    @_font_size_set_for_page.setter
+    def _font_size_set_for_page(self, v):
+        self.__statestack[-1]["_font_size_set_for_page"] = v
 
     @property
     def current_font(self):
