@@ -2,7 +2,7 @@
 exclude: ^(\.[^/]*cache(__)?/.*|(.*/)?\.coverage)$
 repos:
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.4
+    rev: v1.5.5
     hooks:
       - id: remove-crlf
       - id: remove-tabs
@@ -10,17 +10,17 @@ repos:
         args: ['644']
         exclude: (^(contributors|docs|scripts|tutorial)/.*\.py|\.sh)$
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v5.0.0
     hooks:
       - id: check-merge-conflict
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
   - repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: 25.1.0
     hooks:
       - id: black
   - repo: https://github.com/crate-ci/typos
-    rev: v1.29.8
+    rev: v1.30.2
     hooks:
       - id: typos
   - repo: local

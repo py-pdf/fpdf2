@@ -341,6 +341,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.font_stretching = 100  # current font stretching
         self.char_spacing = 0  # current character spacing
         self.current_font = None  # None or an instance of CoreFont or TTFFont
+        self.current_font_is_set_on_page = False  # current font and size are already added to current page contents with _out
         self.draw_color = self.DEFAULT_DRAW_COLOR
         self.fill_color = self.DEFAULT_FILL_COLOR
         self.text_color = self.DEFAULT_TEXT_COLOR
@@ -1001,6 +1002,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             raise FPDFException(
                 "A page cannot be added on a closed document, after calling output()"
             )
+
+        self.current_font_is_set_on_page = False
+
         family = self.font_family
         emphasis = self.emphasis
         size = self.font_size_pt
@@ -2234,11 +2238,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.font_style = style
         self.font_size_pt = size
         self.current_font = self.fonts[fontkey]
-        if self.page > 0:
-            self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
-            self._resource_catalog.add(
-                PDFResourceType.FONT, self.current_font.i, self.page
-            )
+        self.current_font_is_set_on_page = False
 
     def set_font_size(self, size):
         """
@@ -2250,15 +2250,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if isclose(self.font_size_pt, size):
             return
         self.font_size_pt = size
-        if self.page > 0:
-            if not self.current_font:
-                raise FPDFException(
-                    "Cannot set font size: a font must be selected first"
-                )
-            self._out(f"BT /F{self.current_font.i} {self.font_size_pt:.2f} Tf ET")
-            self._resource_catalog.add(
-                PDFResourceType.FONT, self.current_font.i, self.page
-            )
+        self.current_font_is_set_on_page = False
+
+    def _set_font_for_page(self, font, font_size_pt, wrap_in_text_object=True):
+        """
+        Set font and size for current page.
+        This step is needed before adding text into page and not needed in set_font and set_font_size.
+        """
+        sl = f"/F{font.i} {font_size_pt:.2f} Tf"
+        if wrap_in_text_object:
+            sl = f"BT {sl} ET"
+        self._resource_catalog.add(PDFResourceType.FONT, font.i, self.page)
+        self.current_font_is_set_on_page = True
+        return sl
 
     def set_char_spacing(self, spacing):
         """
@@ -2571,6 +2575,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
+        if not self.current_font_is_set_on_page:
+            self._out(self._set_font_for_page(self.current_font, self.font_size_pt))
         if x is None:
             x = self.x
         if y is None:
@@ -2590,7 +2596,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             default_appearance=f"({self.draw_color.serialize()} /F{self.current_font.i} {self.font_size_pt:.2f} Tf)",
             **kwargs,
         )
-        self._resource_catalog.add(PDFResourceType.FONT, self.current_font.i, self.page)
         self.pages[self.page].annots.append(annotation)
         return annotation
 
@@ -2774,11 +2779,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
         text = self.normalize_text(text)
+        if not self.current_font_is_set_on_page:
+            self._out(self._set_font_for_page(self.current_font, self.font_size_pt))
         sl = [f"BT {x * self.k:.2f} {(self.h - y) * self.k:.2f} Td"]
         if self.text_mode != TextMode.FILL:
             sl.append(f" {self.text_mode} Tr {self.line_width:.2f} w")
         sl.append(f"{self.current_font.encode_text(text)} ET")
-        self._resource_catalog.add(PDFResourceType.FONT, self.current_font.i, self.page)
         if (
             text != "" and (self.underline or self.strikethrough)
         ) or self._record_text_quad_points:
@@ -3066,6 +3072,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 "text_mode",
                 "text_shaping",
                 "underline",
+                "current_font_is_set_on_page",
             ):
                 setattr(self, key, value)
             else:
@@ -3084,7 +3091,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         ):
             self.set_font(
                 font_family or self.font_family,
-                font_style or self.font_style,
+                # Beware: font_style='' must be handled distinctly from font_style=None
+                self.font_style if font_style is None else font_style,
                 font_size_pt or self.font_size_pt,
             )
         if line_width is not None:
@@ -3412,21 +3420,36 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 if current_char_spacing != frag.char_spacing:
                     current_char_spacing = frag.char_spacing
                     sl.append(f"{frag.char_spacing:.2f} Tc")
-                if (
+                if not self.current_font_is_set_on_page:
+                    # This is "global" to the page,
+                    # as it is rendered in the content stream
+                    # BEFORE the text_lines /fragments,
+                    # wrapped into BT / ET operators:
+                    current_font = frag.font
+                    current_font_size_pt = frag.font_size_pt
+                    current_char_vpos = frag.char_vpos
+                    self._out(
+                        self._set_font_for_page(
+                            current_font,
+                            current_font_size_pt,
+                        )
+                    )
+                elif (
                     current_font != frag.font
                     or current_font_size_pt != frag.font_size_pt
                     or current_char_vpos != frag.char_vpos
                 ):
-                    if current_char_vpos != frag.char_vpos:
-                        current_char_vpos = frag.char_vpos
-                    if current_font_size_pt != frag.font_size_pt:
-                        current_font_size_pt = frag.font_size_pt
+                    # This is "local" to the current BT / ET context:
                     current_font = frag.font
-                    sl.append(f"/F{frag.font.i} {frag.font_size_pt:.2f} Tf")
-                    if self.page > 0:
-                        self._resource_catalog.add(
-                            PDFResourceType.FONT, current_font.i, self.page
+                    current_font_size_pt = frag.font_size_pt
+                    current_char_vpos = frag.char_vpos
+                    sl.append(
+                        self._set_font_for_page(
+                            current_font,
+                            current_font_size_pt,
+                            wrap_in_text_object=False,
                         )
+                    )
                 lift = frag.lift
                 if lift != current_lift:
                     # Use text rise operator:
@@ -3867,12 +3890,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             # (which is what FPDF.local_context() does):
             self._end_local_context()
         # Using a temporary GS to render header & footer:
+        self.current_font_is_set_on_page = False
         self._push_local_stack()
         self.add_page(same=True)
-        for prev_gs in reversed(gs_stack):
-            self._start_local_context(**prev_gs)
-            self._push_local_stack()
         self._pop_local_stack()
+        for prev_gs in reversed(gs_stack):
+            self._push_local_stack()
+            prev_gs["current_font_is_set_on_page"] = False
+            self._start_local_context(**prev_gs)
         self.x = x  # restore x but not y after drawing header
 
     def _has_next_page(self):
@@ -5505,6 +5530,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             ),
             font_face.size_pt or self.font_size_pt,
         )
+        self.current_font_is_set_on_page = False
         prev_text_color = self.text_color
         if font_face.color is not None and font_face.color != self.text_color:
             self.set_text_color(font_face.color)
