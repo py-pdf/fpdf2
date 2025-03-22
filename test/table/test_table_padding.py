@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import pytest
-
 from fpdf import FPDF
 from fpdf.enums import TableCellFillMode, VAlign
 from fpdf.fonts import FontFace
@@ -195,7 +193,7 @@ def test_table_valign_per_row(tmp_path):
     pdf.add_page()
     pdf.set_font("Times", size=12)
     with pdf.table(first_row_as_headings=False, padding=2) as table:
-        for irow, v_align in enumerate(VAlign):
+        for _irow, v_align in enumerate(VAlign):
             row = table.row(v_align=v_align)
             for icol in range(5):
                 datum = icol * "Circus\n"
@@ -221,13 +219,11 @@ def test_table_valign_per_cell(tmp_path):
             row = table.row()
             for icol in range(5):
                 datum = icol * "Circus\n"
-
-                if irow == 2:
-                    v_align = VAlign.T
-                elif irow == 3:
-                    v_align = VAlign.B
-
                 if irow in (2, 3):
+                    if irow == 2:
+                        v_align = VAlign.T
+                    else:
+                        v_align = VAlign.B
                     row.cell(
                         f"{datum}: custom v-align {v_align}",
                         style=deathstyle,

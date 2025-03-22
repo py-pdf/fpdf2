@@ -1,10 +1,10 @@
+# pylint: disable=no-member
 import re
 from pathlib import Path
 import pypdf
 from fpdf import FPDF
 
 HERE = Path(__file__).resolve().parent
-FONT_DIR = HERE.parent / "fonts"
 
 
 def get_used_fonts_in_page(page):
@@ -19,9 +19,10 @@ def get_used_fonts_in_page(page):
 
 def test_unused_fonts_not_included(tmp_path):
     pdf = FPDF()
-    pdf.add_font("Roboto", fname=FONT_DIR / "Roboto-Regular.ttf")  # F1
-    pdf.add_font("Roboto", style="B", fname=FONT_DIR / "Roboto-Bold.ttf")  # F2
-    pdf.add_font("Roboto", style="I", fname=FONT_DIR / "Roboto-Italic.ttf")  # F3
+    pdf.add_font("Roboto", fname=HERE / "Roboto-Regular.ttf")  # F1
+    pdf.add_font("Roboto", fname=HERE / "Roboto-Bold.ttf", style="B")  # F2
+    pdf.add_font("Roboto", fname=HERE / "Roboto-Italic.ttf", style="I")  # F3
+    pdf.add_font("Roboto", fname=HERE / "Roboto-BoldItalic.TTF", style="BI")  # F4
     pdf.set_font("Roboto", size=12)
 
     pdf.add_page()
@@ -37,7 +38,7 @@ def test_unused_fonts_not_included(tmp_path):
         markdown=True,
     )  # use F1, F2, F3
 
-    output_path = tmp_path / "test.pdf"
+    output_path = tmp_path / "throwaway.pdf"
     pdf.output(output_path)
 
     reader = pypdf.PdfReader(output_path)
@@ -63,14 +64,14 @@ def test_unused_fonts_not_included(tmp_path):
 
 def test_unused_added_font_not_included(tmp_path):
     pdf = FPDF()
-    pdf.add_font("Roboto", fname=FONT_DIR / "Roboto-Regular.ttf")  # F1
-    pdf.add_font("Roboto-Bold", fname=FONT_DIR / "Roboto-Bold.ttf")  # F2
+    pdf.add_font("Roboto", fname=HERE / "Roboto-Regular.ttf")  # F1
+    pdf.add_font("Roboto", fname=HERE / "Roboto-Bold.ttf", style="B")  # F2
 
     pdf.add_page()
     pdf.set_font("Roboto")
     pdf.cell(text="Hello")
 
-    output_path = tmp_path / "test.pdf"
+    output_path = tmp_path / "throwaway.pdf"
     pdf.output(output_path)
 
     reader = pypdf.PdfReader(output_path)
@@ -80,29 +81,27 @@ def test_unused_added_font_not_included(tmp_path):
 
 def test_font_set_but_not_used(tmp_path):
     pdf = FPDF()
-    pdf.add_font("Roboto", fname=FONT_DIR / "Roboto-Regular.ttf")  # F1
+    pdf.add_font("Roboto", fname=HERE / "Roboto-Regular.ttf")  # F1
     pdf.add_page()
     pdf.set_font("Roboto")
     pdf.add_page()
     pdf.set_font("Helvetica")
     pdf.cell(text="Hello")
 
-    output_path = tmp_path / "test.pdf"
+    output_path = tmp_path / "throwaway.pdf"
     pdf.output(output_path)
 
     reader = pypdf.PdfReader(output_path)
     page = reader.pages[0]
-    # pylint: disable=no-member
     resources = page.get("/Resources", {})
-    # pylint: enable=no-member
     page1_fonts = resources.get("/Font", {}) if isinstance(resources, dict) else {}
     assert not page1_fonts, "Page 1 should have no fonts as none were used"
 
 
 def test_multiple_pages_font_usage(tmp_path):
     pdf = FPDF()
-    pdf.add_font("Roboto", fname=FONT_DIR / "Roboto-Regular.ttf")  # F1
-    pdf.add_font("Roboto-Bold", fname=FONT_DIR / "Roboto-Bold.ttf")  # F2
+    pdf.add_font("Roboto", fname=HERE / "Roboto-Regular.ttf")  # F1
+    pdf.add_font("Roboto", fname=HERE / "Roboto-Bold.ttf", style="B")  # F2
 
     # Page 1: Use F1
     pdf.add_page()
@@ -111,43 +110,47 @@ def test_multiple_pages_font_usage(tmp_path):
 
     # Page 2: Use F2
     pdf.add_page()
-    pdf.set_font("Roboto-Bold")
+    pdf.set_font(style="B")
     pdf.cell(text="Page 2")
 
-    output_path = tmp_path / "test.pdf"
+    output_path = tmp_path / "throwaway.pdf"
     pdf.output(output_path)
 
     reader = pypdf.PdfReader(output_path)
     page1_fonts = reader.pages[0]["/Resources"]["/Font"]
     page2_fonts = reader.pages[1]["/Resources"]["/Font"]
 
-    # pylint: disable=no-member
     assert list(page1_fonts.keys()) == ["/F1"], "Page 1 should only have F1"
     assert list(page2_fonts.keys()) == ["/F2"], "Page 2 should only have F2"
-    # pylint: enable=no-member
 
 
 def test_nested_context_font_usage_after_page_break(tmp_path):
     pdf = FPDF()
     pdf.add_page()
-    pdf.add_font("Roboto-Regular", style="", fname=HERE / "Roboto-Regular.ttf")
-    pdf.add_font("Roboto-BoldItalic", style="", fname=HERE / "Roboto-BoldItalic.TTF")
-    pdf.add_font("DejaVuSans", style="", fname=HERE / "DejaVuSans.ttf")
-    pdf.add_font("Garuda", style="", fname=HERE / "Garuda.ttf")
+    pdf.add_font("Roboto", fname=HERE / "Roboto-Regular.ttf")  # F1
+    pdf.add_font("Roboto", fname=HERE / "Roboto-BoldItalic.TTF", style="BI")  # F2
+    pdf.add_font(fname=HERE / "DejaVuSans.ttf")  # F3
+    pdf.add_font(fname=HERE / "Garuda.ttf")  # F4
+    font_mapping = {
+        1: "Roboto-Regular",
+        2: "Roboto-BoldItalic",
+        3: "DejaVuSans",
+        4: "Garuda",
+    }
 
     # Outer context A
     with pdf.local_context():
-        pdf.set_font("Roboto-Regular", size=12)
+        pdf.set_font("Roboto", size=12)
         pdf.write(text="A1 Roboto-Regular\n")
 
         # Context B
         with pdf.local_context():
-            pdf.set_font("Roboto-BoldItalic", size=14)
+            pdf.set_font(style="BI", size=14)
             pdf.write(text="B1 Roboto-BoldItalic\n")
 
             # Context C
             with pdf.local_context():
-                pdf.set_font("DejaVuSans", size=16)
+                pdf.set_font("DejaVuSans", style="", size=16)
                 pdf.write(text="C1 DejaVuSans\n")
 
                 # Context D - will trigger page break
@@ -155,11 +158,12 @@ def test_nested_context_font_usage_after_page_break(tmp_path):
                     pdf.set_font("Garuda", size=18)
                     # Generate enough text to force page break
                     long_text = "D1 " + "D2Garuda " * 250  # ~100 words
-                    pdf.multi_cell(w=pdf.epw, text=long_text)  # This will break page
+                    pdf.multi_cell(w=pdf.epw, text=long_text)  # page break
 
                 # After break: C context resumes but writes nothing
 
-            # After break: B context resumes but writes nothing
+            # After break: B context resumes
+            pdf.write(text="B2 ")  # Should use Roboto-BoldItalic again
 
         # After break: A context resumes
         pdf.write(text="A2 ")  # Should use Roboto again
@@ -169,30 +173,26 @@ def test_nested_context_font_usage_after_page_break(tmp_path):
     reader = pypdf.PdfReader(
         tmp_path / "test_nested_context_font_usage_after_page_break.pdf"
     )
-    assert len(reader.pages) == 2, "There should be 2 pages"
-
-    font_mapping = {
-        1: "Roboto-Regular",
-        2: "Roboto-BoldItalic",
-        3: "DejaVuSans",
-        4: "Garuda",
-    }
+    assert len(reader.pages) == 2, "The PDF produced should have 2 pages"
 
     page1 = reader.pages[0]
-    page1_used_fonts = get_used_fonts_in_page(page1)
-    print("Fonts used in page 1:", [font_mapping[f] for f in page1_used_fonts])
+    page1_used_fonts = set(font_mapping[f] for f in get_used_fonts_in_page(page1))
+    page1_used_fonts_str = "Fonts used: " + ", ".join(page1_used_fonts)
+    assert len(page1_used_fonts) == 4, (
+        "Page 1 should use all fonts - " + page1_used_fonts_str
+    )
 
     page2 = reader.pages[1]
-    page2_used_fonts = get_used_fonts_in_page(page2)
-    print("Fonts used in page 2:", [font_mapping[f] for f in page2_used_fonts])
+    page2_used_fonts = set(font_mapping[f] for f in get_used_fonts_in_page(page2))
+    page2_used_fonts_str = "Fonts used: " + ", ".join(page2_used_fonts)
+    assert page2_used_fonts == {"Roboto-Regular", "Roboto-BoldItalic", "Garuda"}, (
+        "Page 2 should use 3 fonts - " + page2_used_fonts_str
+    )
 
-    assert page2_used_fonts == {1, 4}, "page 2 should only use font 1 and 4"
-
-    # pylint: disable=no-member
     page2_resources = page2["/Resources"].get("/Font", {})
-    # pylint: enable=no-member
     for font_key in page2_resources:
         font_id = int(font_key[2:])  # convert /F1 -> 1
+        font_name = font_mapping[font_id]
         assert (
-            font_id in page2_used_fonts
-        ), f"page 2 resource includes unused font：{font_mapping[font_id]}（F{font_id}）"
+            font_name in page2_used_fonts
+        ), f"page 2 resource includes unused font：{font_name}（F{font_id}）"
