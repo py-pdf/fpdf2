@@ -1046,6 +1046,6 @@ def test_table_min_row_height(tmp_path):
     pdf.add_page()
     pdf.set_font("Times", size=20)
     with pdf.table(min_row_height=30) as table:
-        row = table.row(("A", "B"))
-        row = table.row(("C", "D"), min_height=50)
+        table.row(("A", "B"))
+        table.row(("C", "D"), min_height=50)
     assert_pdf_equal(pdf, HERE / "table_min_row_height.pdf", tmp_path)

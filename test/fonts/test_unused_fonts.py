@@ -1,3 +1,4 @@
+# pylint: disable=no-member
 import re
 from pathlib import Path
 import pypdf
@@ -92,9 +93,7 @@ def test_font_set_but_not_used(tmp_path):
 
     reader = pypdf.PdfReader(output_path)
     page = reader.pages[0]
-    # pylint: disable=no-member
     resources = page.get("/Resources", {})
-    # pylint: enable=no-member
     page1_fonts = resources.get("/Font", {}) if isinstance(resources, dict) else {}
     assert not page1_fonts, "Page 1 should have no fonts as none were used"
 
@@ -121,10 +120,8 @@ def test_multiple_pages_font_usage(tmp_path):
     page1_fonts = reader.pages[0]["/Resources"]["/Font"]
     page2_fonts = reader.pages[1]["/Resources"]["/Font"]
 
-    # pylint: disable=no-member
     assert list(page1_fonts.keys()) == ["/F1"], "Page 1 should only have F1"
     assert list(page2_fonts.keys()) == ["/F2"], "Page 2 should only have F2"
-    # pylint: enable=no-member
 
 
 def test_nested_context_font_usage_after_page_break(tmp_path):
@@ -181,14 +178,17 @@ def test_nested_context_font_usage_after_page_break(tmp_path):
     page1 = reader.pages[0]
     page1_used_fonts = set(font_mapping[f] for f in get_used_fonts_in_page(page1))
     page1_used_fonts_str = "Fonts used: " + ", ".join(page1_used_fonts)
-    assert len(page1_used_fonts) == 4, "Page 1 should use all fonts - " + page1_used_fonts_str
+    assert len(page1_used_fonts) == 4, (
+        "Page 1 should use all fonts - " + page1_used_fonts_str
+    )
 
     page2 = reader.pages[1]
     page2_used_fonts = set(font_mapping[f] for f in get_used_fonts_in_page(page2))
     page2_used_fonts_str = "Fonts used: " + ", ".join(page2_used_fonts)
-    assert page2_used_fonts == {"Roboto-Regular", "Roboto-BoldItalic", "Garuda"}, "Page 2 should use 3 fonts - " + page2_used_fonts_str
+    assert page2_used_fonts == {"Roboto-Regular", "Roboto-BoldItalic", "Garuda"}, (
+        "Page 2 should use 3 fonts - " + page2_used_fonts_str
+    )
 
-    # pylint-next: disable=no-member
     page2_resources = page2["/Resources"].get("/Font", {})
     for font_key in page2_resources:
         font_id = int(font_key[2:])  # convert /F1 -> 1
