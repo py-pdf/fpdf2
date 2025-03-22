@@ -335,7 +335,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.font_family = ""  # current font family
         # current font style (BOLD/ITALICS - does not handle UNDERLINE nor STRIKETHROUGH):
         self.font_style = ""
-        self.font_size_set_for_page = False  # current font and size are already added to current page contents with _out
+        self._font_size_set_for_page = False  # current font and size are already added to current page contents with _out
         self.underline = False
         self.strikethrough = False
         self.font_size_pt = 12  # current font size in points
