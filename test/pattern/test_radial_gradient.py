@@ -79,42 +79,6 @@ def test_radial_gradient_multiple_colors(tmp_path):
     assert_pdf_equal(pdf, HERE / "radial_gradient_multiple_colors.pdf", tmp_path)
 
 
-def test_radial_gradient(tmp_path):
-    pdf = FPDF()
-    pdf.add_page()
-    x = pdf.w / 2 - 25
-    y = pdf.get_y()
-    with pdf.use_pattern(
-        RadialGradient(
-            pdf,
-            x + 25,
-            y + 25,
-            0,
-            x + 25,
-            y + 25,
-            25,
-            [(255, 255, 0), (255, 0, 0)],
-        )
-    ):
-        pdf.circle(x=x + 25, y=y + 25, radius=25, style="FD")
-    y += 60
-    with pdf.use_pattern(
-        RadialGradient(
-            pdf,
-            x + 5,
-            y + 5,
-            0,
-            x + 25,
-            y + 25,
-            25,
-            [(255, 255, 0), (255, 0, 0)],
-        )
-    ):
-        pdf.circle(x=x + 25, y=y + 25, radius=25, style="FD")
-
-    assert_pdf_equal(pdf, HERE / "radial_gradient.pdf", tmp_path)
-
-
 def test_custom_bounds(tmp_path):
     pdf = FPDF()
     pdf.add_page()

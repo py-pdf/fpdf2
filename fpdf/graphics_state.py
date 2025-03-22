@@ -43,6 +43,7 @@ class GraphicsStateMixin:
                 font_family="",
                 font_size_pt=0,
                 current_font={},
+                current_font_is_set_on_page=False,
                 dash_pattern=dict(dash=0, gap=0, phase=0),
                 line_width=0,
                 text_mode=TextMode.FILL,
@@ -56,7 +57,6 @@ class GraphicsStateMixin:
                 nom_lift=0.2,
                 denom_lift=0.0,
                 text_shaping=None,
-                _font_size_set_for_page=False,
             )
         ]
         super().__init__(*args, **kwargs)
@@ -174,20 +174,20 @@ class GraphicsStateMixin:
         self.__statestack[-1]["font_size_pt"] = v * self.k
 
     @property
-    def _font_size_set_for_page(self):
-        return self.__statestack[-1]["_font_size_set_for_page"]
-
-    @_font_size_set_for_page.setter
-    def _font_size_set_for_page(self, v):
-        self.__statestack[-1]["_font_size_set_for_page"] = v
-
-    @property
     def current_font(self):
         return self.__statestack[-1]["current_font"]
 
     @current_font.setter
     def current_font(self, v):
         self.__statestack[-1]["current_font"] = v
+
+    @property
+    def current_font_is_set_on_page(self):
+        return self.__statestack[-1]["current_font_is_set_on_page"]
+
+    @current_font_is_set_on_page.setter
+    def current_font_is_set_on_page(self, v):
+        self.__statestack[-1]["current_font_is_set_on_page"] = v
 
     @property
     def dash_pattern(self):

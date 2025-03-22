@@ -9,7 +9,6 @@ import pikepdf
 
 import pytest
 
-# pylint: disable=import-error,no-name-in-module
 from test.conftest import assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent

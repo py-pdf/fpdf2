@@ -1,20 +1,20 @@
 [
-	{
-		"name": "multiline_text",
-		"type": "T",
-		"x1": 20,
-		"y1": 100,
-		"x2": 40,
-		"y2": 105,
-		"font": "helvetica",
-		"size": 12,
-		"bold": false,
-		"italic": false,
-		"underline": false,
-		"foreground": 0,
-		"background": "hello",
-		"text": "Lorem ipsum dolor sit amet, consectetur adipisici elit",
-		"priority": 2,
-		"multiline": true
-	}
+    {
+        "name": "multiline_text",
+        "type": "T",
+        "x1": 20,
+        "y1": 100,
+        "x2": 40,
+        "y2": 105,
+        "font": "helvetica",
+        "size": 12,
+        "bold": false,
+        "italic": false,
+        "underline": false,
+        "foreground": 0,
+        "background": "hello",
+        "text": "Lorem ipsum dolor sit amet, consectetur adipisici elit",
+        "priority": 2,
+        "multiline": true
+    }
 ]

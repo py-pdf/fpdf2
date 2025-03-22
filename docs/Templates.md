@@ -272,19 +272,19 @@ Each object with its name/value pairs define a template element:
 
 ```json
 [
-	{
-		"name": "employee_name",
-		"type": "T",
-		"x1": 20,
-		"y1": 75,
-		"x2": 118,
-		"y2": 90,
-		"font": "helvetica",
-		"size": 12,
-		"bold": true,
-		"underline": true,
-		"text": ""
-	}
+    {
+        "name": "employee_name",
+        "type": "T",
+        "x1": 20,
+        "y1": 75,
+        "x2": 118,
+        "y2": 90,
+        "font": "helvetica",
+        "size": 12,
+        "bold": true,
+        "underline": true,
+        "text": ""
+    }
 ]
 ```
 
