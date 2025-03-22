@@ -2252,7 +2252,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.font_size_pt = size
         self.font_size_set_for_page = False
 
-    def set_font_size_for_page(self):
+    def _set_font_size_for_page(self):
         """
         Set font and size for current page. This step is needed before adding text into page and not needed in set_font and set_font_size.
         """
