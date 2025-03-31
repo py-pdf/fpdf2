@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.5">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>fpdf.image_datastructures API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
@@ -54,7 +54,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ee485020408a8b770a1b6c7aadfd028a2c2cd05f/fpdf/image_datastructures.py#L72-L83" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/443ee830336d1bbf28c17842f6faa1f2068d7798/fpdf/image_datastructures.py#L72-L83" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass
 class ImageCache:
@@ -70,7 +70,7 @@ class ImageCache:
             img[&#34;usages&#34;] = 0</code></pre>
 </details>
 <div class="desc"><p>ImageCache(images: Dict[str, dict] = <factory>, icc_profiles: Dict[bytes, int] = <factory>, image_filter: str = 'AUTO')</p></div>
-<h3>Class variables</h3>
+<h3>Instance variables</h3>
 <dl>
 <dt id="fpdf.image_datastructures.ImageCache.icc_profiles"><code class="name">var <span class="ident">icc_profiles</span> : Dict[bytes, int]</code></dt>
 <dd>
@@ -94,7 +94,7 @@ class ImageCache:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ee485020408a8b770a1b6c7aadfd028a2c2cd05f/fpdf/image_datastructures.py#L81-L83" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/443ee830336d1bbf28c17842f6faa1f2068d7798/fpdf/image_datastructures.py#L81-L83" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def reset_usages(self):
     for img in self.images.values():
@@ -112,7 +112,7 @@ class ImageCache:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ee485020408a8b770a1b6c7aadfd028a2c2cd05f/fpdf/image_datastructures.py#L5-L49" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/443ee830336d1bbf28c17842f6faa1f2068d7798/fpdf/image_datastructures.py#L5-L49" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ImageInfo(dict):
     &#34;&#34;&#34;Information about an image used in the PDF document (base class).
@@ -178,7 +178,7 @@ We subclass this to distinguish between raster and vector images.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ee485020408a8b770a1b6c7aadfd028a2c2cd05f/fpdf/image_datastructures.py#L14-L17" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/443ee830336d1bbf28c17842f6faa1f2068d7798/fpdf/image_datastructures.py#L14-L17" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def height(self):
@@ -192,7 +192,7 @@ def height(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ee485020408a8b770a1b6c7aadfd028a2c2cd05f/fpdf/image_datastructures.py#L24-L27" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/443ee830336d1bbf28c17842f6faa1f2068d7798/fpdf/image_datastructures.py#L24-L27" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def rendered_height(self):
@@ -206,7 +206,7 @@ def rendered_height(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ee485020408a8b770a1b6c7aadfd028a2c2cd05f/fpdf/image_datastructures.py#L19-L22" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/443ee830336d1bbf28c17842f6faa1f2068d7798/fpdf/image_datastructures.py#L19-L22" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def rendered_width(self):
@@ -220,7 +220,7 @@ def rendered_width(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ee485020408a8b770a1b6c7aadfd028a2c2cd05f/fpdf/image_datastructures.py#L9-L12" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/443ee830336d1bbf28c17842f6faa1f2068d7798/fpdf/image_datastructures.py#L9-L12" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def width(self):
@@ -239,7 +239,7 @@ def width(self):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ee485020408a8b770a1b6c7aadfd028a2c2cd05f/fpdf/image_datastructures.py#L35-L49" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/443ee830336d1bbf28c17842f6faa1f2068d7798/fpdf/image_datastructures.py#L35-L49" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def scale_inside_box(self, x, y, w, h):
     &#34;&#34;&#34;
@@ -270,7 +270,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ee485020408a8b770a1b6c7aadfd028a2c2cd05f/fpdf/image_datastructures.py#L52-L63" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/443ee830336d1bbf28c17842f6faa1f2068d7798/fpdf/image_datastructures.py#L52-L63" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class RasterImageInfo(ImageInfo):
     &#34;Information about a raster image used in the PDF document&#34;
@@ -346,7 +346,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ee485020408a8b770a1b6c7aadfd028a2c2cd05f/fpdf/image_datastructures.py#L55-L63" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/443ee830336d1bbf28c17842f6faa1f2068d7798/fpdf/image_datastructures.py#L55-L63" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def size_in_document_units(self, w, h, scale=1):
     if w == 0 and h == 0:  # Put image at 72 dpi
@@ -370,7 +370,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/ee485020408a8b770a1b6c7aadfd028a2c2cd05f/fpdf/image_datastructures.py#L66-L69" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/443ee830336d1bbf28c17842f6faa1f2068d7798/fpdf/image_datastructures.py#L66-L69" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class VectorImageInfo(ImageInfo):
     &#34;Information about a vector image used in the PDF document&#34;
@@ -494,7 +494,7 @@ In the reduced dimension it will be centered within the available space.</p></di
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>
