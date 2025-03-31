@@ -126,6 +126,7 @@ class Table:
                     "outer_border_width is only allowed when borders_layout is ALL or NO_HORIZONTAL_LINES"
                 )
             self._outer_border_width = 0
+        # _outer_border_margin : vertical spacing around table
         if self._outer_border_width:
             self._outer_border_margin = (
                 (gutter_width + outer_border_width / 2),
@@ -232,6 +233,15 @@ class Table:
             self._repeat_headings is TableHeadingsDisplay.ON_TOP_OF_EVERY_PAGE
         )
         self._fpdf.y += self._outer_border_margin[1]
+        if len(self.rows) > self._num_heading_rows > 0:
+            # We avoid having the heading rows alone on a page - issue #1391
+            # pylint: disable=protected-access
+            self._fpdf._perform_page_break_if_need_be(
+                sum(
+                    rows_info[i].pagebreak_height
+                    for i in range(self._num_heading_rows + 1)
+                )
+            )
         for i in range(len(self.rows)):
             pagebreak_height = rows_info[i].pagebreak_height
             # pylint: disable=protected-access
