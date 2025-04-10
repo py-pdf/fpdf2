@@ -609,3 +609,31 @@ def test_multi_cell_return_value(tmp_path):
     )
 
     assert_pdf_equal(pdf, HERE / "multi_cell_return_value.pdf", tmp_path)
+
+
+def test_multi_cell_markdown_bleeding(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=60)
+    pdf.multi_cell(
+        w=0, text="**Lorem Ipsum dolor**", markdown=True, new_x="LMARGIN", new_y="NEXT"
+    )
+    assert pdf.font_style == ""
+    pdf.multi_cell(
+        w=0, text="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT"
+    )
+    pdf.multi_cell(
+        w=0, text="--Lorem Ipsum dolor--", markdown=True, new_x="LMARGIN", new_y="NEXT"
+    )
+    assert pdf.font_style == ""
+    pdf.multi_cell(
+        w=0, text="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT"
+    )
+    pdf.multi_cell(
+        w=0, text="__Lorem Ipsum dolor__", markdown=True, new_x="LMARGIN", new_y="NEXT"
+    )
+    assert pdf.font_style == ""
+    pdf.multi_cell(
+        w=0, text="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT"
+    )
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_bleeding.pdf", tmp_path)
