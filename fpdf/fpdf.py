@@ -3248,6 +3248,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             fill=fill,
             link=link,
             center=center,
+            prevent_font_change=markdown,
         )
 
     def _render_styled_text_line(
@@ -3261,6 +3262,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         link: str = "",
         center: bool = False,
         padding: Padding = None,
+        prevent_font_change=False,
     ):
         """
         Prints a cell (rectangular area) with optional borders, background color and
@@ -3291,6 +3293,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             center (bool): center the cell horizontally on the page.
             padding (Padding or None): optional padding to apply to the cell content.
                 If padding for left and right is non-zero then c_margin is ignored.
+            prevent_font_change (bool): ensure no font settings (family / size / style)
+                change during this call.
 
         Returns: a boolean indicating if page break was triggered
         """
@@ -3379,6 +3383,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         current_char_vpos = CharVPos.LINE
         current_font = self.current_font
         current_font_size_pt = self.font_size_pt
+        current_font_style = self.font_style
         current_text_mode = self.text_mode
         current_font_stretching = self.font_stretching
         current_char_spacing = self.char_spacing
@@ -3421,28 +3426,41 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     current_char_spacing = frag.char_spacing
                     sl.append(f"{frag.char_spacing:.2f} Tc")
                 if not self.current_font_is_set_on_page:
-                    # This is "global" to the page,
-                    # as it is rendered in the content stream
-                    # BEFORE the text_lines /fragments,
-                    # wrapped into BT / ET operators:
-                    current_font = frag.font
-                    current_font_size_pt = frag.font_size_pt
-                    current_char_vpos = frag.char_vpos
-                    self._out(
-                        self._set_font_for_page(
-                            current_font,
-                            current_font_size_pt,
+                    if prevent_font_change:
+                        # This is "local" to the current BT / ET context:
+                        current_font = frag.font
+                        current_font_size_pt = frag.font_size_pt
+                        current_font_style = frag.font_style
+                        sl.append(f"/F{current_font.i} {current_font_size_pt:.2f} Tf")
+                        self._resource_catalog.add(
+                            PDFResourceType.FONT, current_font.i, self.page
                         )
-                    )
+                        current_char_vpos = frag.char_vpos
+                    else:
+                        # This is "global" to the page,
+                        # as it is rendered in the content stream
+                        # BEFORE the text_lines /fragments,
+                        # wrapped into BT / ET operators:
+                        current_font = self.current_font = frag.font
+                        current_font_size_pt = self.font_size_pt = frag.font_size_pt
+                        current_font_style = self.font_style = frag.font_style
+                        self._out(
+                            self._set_font_for_page(
+                                current_font,
+                                current_font_size_pt,
+                            )
+                        )
+                        current_char_vpos = frag.char_vpos
                 elif (
                     current_font != frag.font
                     or current_font_size_pt != frag.font_size_pt
+                    or current_font_style != frag.font_style
                     or current_char_vpos != frag.char_vpos
                 ):
                     # This is "local" to the current BT / ET context:
                     current_font = frag.font
                     current_font_size_pt = frag.font_size_pt
-                    current_char_vpos = frag.char_vpos
+                    current_font_style = frag.font_style
                     sl.append(
                         self._set_font_for_page(
                             current_font,
@@ -3450,6 +3468,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                             wrap_in_text_object=False,
                         )
                     )
+                    current_char_vpos = frag.char_vpos
                 lift = frag.lift
                 if lift != current_lift:
                     # Use text rise operator:
@@ -3527,6 +3546,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 or current_char_vpos != CharVPos.LINE
                 or current_font != self.current_font
                 or current_font_size_pt != self.font_size_pt
+                or current_font_style != self.font_style
                 or current_text_mode != self.text_mode
                 or fill_color_changed
                 or current_font_stretching != self.font_stretching
@@ -4132,7 +4152,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             else self._preload_font_styles(normalized_string, markdown)
         )
 
-        prev_font_style, prev_underline = self.font_style, self.underline
+        prev_current_font = self.current_font
+        prev_font_style = self.font_style
+        prev_underline = self.underline
         total_height = 0
 
         text_lines = []
@@ -4206,6 +4228,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 fill=False,  # already rendered
                 link=link,
                 padding=Padding(0, padding.right, 0, padding.left),
+                prevent_font_change=markdown,
             )
             total_height += line_height
             if not is_last_line and align == Align.X:
@@ -4235,9 +4258,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.y += padding.bottom
 
         if markdown:
-            if self.font_style != prev_font_style:
-                self.font_style = prev_font_style
-                self.current_font = self.fonts[self.font_family + self.font_style]
+            self.font_style = prev_font_style
+            self.current_font = prev_current_font
             self.underline = prev_underline
 
         if new_x == XPos.RIGHT:  # move right by right padding to align outer RHS edge
@@ -5344,7 +5366,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 extra pages in the ToC, which may cause discrepancies with pre-rendered
                 page numbers. For consistent numbering, using page labels to create a
                 separate numbering style for the ToC is recommended.
-            reset_page_indices (bool): Whether to reset the pages indixes after the ToC. Default to True.
+            reset_page_indices (bool): Whether to reset the pages indices after the ToC. Default to True.
         """
         if pages < 1:
             raise ValueError(

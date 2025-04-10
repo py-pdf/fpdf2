@@ -17,14 +17,14 @@
     </blockquote>
     {% endif %}
     <br>
-    <b>LEFT:</b> Version from <code>master</code> branch
+    <b>LEFT:</b> Version from git ref: <code>{{ GIT_REF }}</code>
     -
-    <b>RIGHT:</b> Version from current branch
+    <b>RIGHT:</b> Version from current repository folder
     <br><br>
     {% for changed_pdf_file in changed_pdf_files %}
     <span class="filename">{{ changed_pdf_file }}</span>
     <div class="side-by-side">
-        <embed src="master-checkouts/{{ changed_pdf_file }}" width="500px" height="707px" />
+        <embed src="{{ GIT_REF }}-checkouts/{{ changed_pdf_file }}" width="500px" height="707px" />
         <embed src="{{ changed_pdf_file }}" width="500px" height="707px" />
     </div>
     {% endfor %}
