@@ -2176,7 +2176,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if isinstance(style, TextEmphasis):
             style = style.style
         style = "".join(sorted(style.upper()))
-        if any(letter not in "BISU" for letter in style):
+        if any(letter.lower() not in "bisu" for letter in style): # tur-ium [2025-04-14]: Make style lower, consistent with family on line 2175
             raise ValueError(
                 f"Unknown style provided (only B/I/S/U letters are allowed): {style}"
             )
@@ -2219,7 +2219,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             return
 
         # Test if used for the first time
-        fontkey = family + style
+        fontkey = family.lower() + style.lower()
         if fontkey not in self.fonts:
             if fontkey not in CORE_FONTS:
                 raise FPDFException(

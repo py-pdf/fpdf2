@@ -6,6 +6,7 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
+# Suggest changing the module name to html_fpdf to avoid confusion with the python built-in module `html`
 from html.parser import HTMLParser
 from string import ascii_lowercase, ascii_uppercase
 import logging, re, warnings
