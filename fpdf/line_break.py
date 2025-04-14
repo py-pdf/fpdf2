@@ -416,6 +416,7 @@ class TextLine(NamedTuple):
     max_width: float
     trailing_nl: bool = False
     trailing_form_feed: bool = False
+    indent: float = 0
 
     def get_ordered_fragments(self):
         if not self.fragments:
@@ -464,7 +465,7 @@ class HyphenHint(NamedTuple):
 
 
 class CurrentLine:
-    def __init__(self, max_width: float, print_sh: bool = False):
+    def __init__(self, max_width: float, print_sh: bool = False, indent: float = 0):
         """
         Per-line text fragment management for use by MultiLineBreak.
             Args:
@@ -473,6 +474,7 @@ class CurrentLine:
         """
         self.max_width = max_width
         self.print_sh = print_sh
+        self.indent = indent
         self.fragments: List[Fragment] = []
         self.height = 0
         self.number_of_spaces = 0
@@ -601,9 +603,10 @@ class CurrentLine:
             number_of_spaces=self.number_of_spaces,
             align=align,
             height=self.height,
-            max_width=self.max_width,
+            max_width=self.max_width - self.indent,
             trailing_nl=trailing_nl,
             trailing_form_feed=trailing_form_feed,
+            indent=self.indent,
         )
 
     def automatic_break_possible(self):
@@ -648,6 +651,7 @@ class MultiLineBreak:
         wrapmode: WrapMode = WrapMode.WORD,
         line_height: float = 1.0,
         skip_leading_spaces: bool = False,
+        first_line_indent: float = 0,
     ):
         """Accept text as Fragments, to be split into individual lines depending
         on line width and text height.
@@ -669,6 +673,7 @@ class MultiLineBreak:
                 size changing the vertical space occupied by a line of text. Default 1.0.
             skip_leading_spaces (bool, optional): On each line, any space characters
                 at the beginning will be skipped. Default value: False.
+            first_line_indent (float, optional): left spacing before first line of text in paragraph.
         """
 
         self.fragments = fragments
@@ -685,6 +690,8 @@ class MultiLineBreak:
         self.fragment_index = 0
         self.character_index = 0
         self.idx_last_forced_break = None
+        self.first_line_indent = first_line_indent
+        self._is_first_line = True
 
     # pylint: disable=too-many-return-statements
     def get_line(self):
@@ -699,10 +706,16 @@ class MultiLineBreak:
 
         max_width = self.get_width(current_font_height)
         # The full max width will be passed on via TextLine to FPDF._render_styled_text_line().
-        current_line = CurrentLine(max_width=max_width, print_sh=self.print_sh)
+        current_line = CurrentLine(
+            max_width=max_width,
+            print_sh=self.print_sh,
+            indent=self.first_line_indent if self._is_first_line else 0,
+        )
         # For line wrapping we need to use the reduced width.
         for margin in self.margins:
             max_width -= margin
+        if self._is_first_line:
+            max_width -= self.first_line_indent
 
         if self.skip_leading_spaces:
             # write_html() with TextColumns uses this, since it can't know in
@@ -731,11 +744,12 @@ class MultiLineBreak:
                 current_line.max_width = max_width
                 for margin in self.margins:
                     max_width -= margin
+                if self._is_first_line:
+                    max_width -= self.first_line_indent
 
             if self.character_index >= len(current_fragment.characters):
                 self.character_index = 0
                 self.fragment_index += 1
-
                 continue
 
             character = current_fragment.characters[self.character_index]
@@ -748,12 +762,14 @@ class MultiLineBreak:
                 self.character_index += 1
                 if not current_line.fragments:
                     current_line.height = current_font_height * self.line_height
+                self._is_first_line = False
                 return current_line.manual_break(
                     Align.L if self.align == Align.J else self.align,
                     trailing_nl=character == NEWLINE,
                     trailing_form_feed=character == FORM_FEED,
                 )
             if current_line.width + character_width > max_width:
+                self._is_first_line = False
                 if (
                     character in BREAKING_SPACE_SYMBOLS_STR
                 ):  # must come first, always drop a current space.
@@ -778,7 +794,7 @@ class MultiLineBreak:
                     )
                 self.idx_last_forced_break = self.character_index
                 return current_line.manual_break(
-                    Align.L if self.align == Align.J else self.align
+                    Align.L if self.align == Align.J else self.align,
                 )
 
             current_line.add_character(
@@ -794,7 +810,8 @@ class MultiLineBreak:
             self.character_index += 1
 
         if current_line.width:
+            self._is_first_line = False
             return current_line.manual_break(
-                Align.L if self.align == Align.J else self.align
+                Align.L if self.align == Align.J else self.align,
             )
         return None

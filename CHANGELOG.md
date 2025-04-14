@@ -25,6 +25,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support for [`v_align` at the row level in tables](https://py-pdf.github.io/fpdf2/Tables.html#setting-vertical-alignment-of-text-in-cells)
 * new optional `reset_page_indices` parameter for [`insert_toc_placeholder()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.insert_toc_placeholder)
 * support for <s>strikethrough text</s>
+* support for `first_line_indent` in [`text_region.Paragraph`](https://py-pdf.github.io/fpdf2/fpdf/text_region.html#fpdf.text_region.Paragraph)
 * new [ViewerPreferences.print_scaling](https://py-pdf.github.io/fpdf2/fpdf/prefs.html#fpdf.prefs.ViewerPreferences.print_scaling)
 * documentation on [verifying provenance of `fpdf2` releases](https://py-pdf.github.io/fpdf2/#verifying-provenance)
 * documentation on [`fpdf2` internals](https://py-pdf.github.io/fpdf2/Internals.html)

@@ -347,3 +347,13 @@ def test_paragraph_emphasis(tmp_path):
     column.end_paragraph()
     column.render()
     assert_pdf_equal(pdf, HERE / "paragraph_emphasis.pdf", tmp_path)
+
+
+def test_paragraph_first_line_indent(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=12)
+    with pdf.text_columns() as cols:
+        with cols.paragraph(first_line_indent=10, text_align="J") as paragraph:
+            paragraph.write(text=LOREM_IPSUM)
+    assert_pdf_equal(pdf, HERE / "paragraph_first_line_indent.pdf", tmp_path)
