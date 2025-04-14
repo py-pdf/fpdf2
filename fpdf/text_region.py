@@ -657,6 +657,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
         return self
 
     def new_column(self):
+        "End the current column and continue at the top of the next one."
         if self._paragraphs:
             self._paragraphs[-1].write(FORM_FEED)
         else:
