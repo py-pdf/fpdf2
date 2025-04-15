@@ -19,7 +19,8 @@ TEMPLATE_FILENAME = "changed_pdfs_comparison.html"
 
 SCRIPTS_DIR = Path(__file__).parent
 REPO_DIR = SCRIPTS_DIR.parent
-TMP_DIR = REPO_DIR / "master-checkouts"
+GIT_REF = "master"
+TMP_DIR = REPO_DIR / f"{GIT_REF}-checkouts"
 VIEW_SLICE = slice(0, 50)
 
 
@@ -34,7 +35,7 @@ def scantree_dirs(path):
 target_dir = sys.argv[1] if len(sys.argv) > 1 else "test/"
 print(f"Processing all PDF reference files in directory {target_dir}")
 
-stdout = check_output("git diff --name-status master", shell=True)
+stdout = check_output(f"git diff --name-status {GIT_REF}", shell=True)
 changed_pdf_files = [
     line[1:].strip()
     for line in stdout.decode("utf-8").splitlines()
@@ -46,7 +47,7 @@ is_shrunk = len(changed_pdf_files) < changes_pdf_files_count
 
 for changed_pdf_file in changed_pdf_files:
     (TMP_DIR / Path(changed_pdf_file)).parent.mkdir(exist_ok=True, parents=True)
-    command = f"git show master:{changed_pdf_file} > {TMP_DIR}/{changed_pdf_file}"
+    command = f"git show {GIT_REF}:{changed_pdf_file} > {TMP_DIR}/{changed_pdf_file}"
     print(command)
     check_output(command, shell=True)
 
@@ -62,6 +63,7 @@ template = env.get_template(TEMPLATE_FILENAME)
         changed_pdf_files=changed_pdf_files,
         is_shrunk=is_shrunk,
         changes_pdf_files_count=changes_pdf_files_count,
+        GIT_REF=GIT_REF,
         VIEW_SLICE=VIEW_SLICE,
     )
 )

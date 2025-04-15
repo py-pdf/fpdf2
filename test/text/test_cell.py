@@ -235,11 +235,14 @@ def test_cell_markdown_bleeding(tmp_path):  # issue 241
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Times", size=60)
-    pdf.cell(text="--Lorem Ipsum dolor--", markdown=True, new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(text="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT")
     pdf.cell(text="**Lorem Ipsum dolor**", markdown=True, new_x="LMARGIN", new_y="NEXT")
+    assert pdf.font_style == ""
+    pdf.cell(text="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(text="--Lorem Ipsum dolor--", markdown=True, new_x="LMARGIN", new_y="NEXT")
+    assert pdf.font_style == ""
     pdf.cell(text="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT")
     pdf.cell(text="__Lorem Ipsum dolor__", markdown=True, new_x="LMARGIN", new_y="NEXT")
+    assert pdf.font_style == ""
     pdf.cell(text="No Markdown", markdown=False, new_x="LMARGIN", new_y="NEXT")
     assert_pdf_equal(pdf, HERE / "cell_markdown_bleeding.pdf", tmp_path)
 
