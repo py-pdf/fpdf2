@@ -1424,6 +1424,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "Mercuron",
+      "name": "Mercuron",
+      "avatar_url": "https://avatars.githubusercontent.com/u/45468521?v=4",
+      "profile": "https://github.com/Mercuron",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
