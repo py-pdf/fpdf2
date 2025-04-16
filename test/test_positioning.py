@@ -112,3 +112,16 @@ def test_ln_by_lasth():
     assert (
         pdf.x == pdf.l_margin
     ), f"ln() after cell() didn't move x to l_margin ({pdf.x} vs. {pdf.l_margin})."
+
+def test_ln_with_zero_h():
+    pdf = FPDF()
+    pdf.add_page()
+
+    prev_y = pdf.y
+    #Passing 0(zero) as h
+    pdf.ln(0)
+    assert math.isclose(
+        pdf.y,prev_y
+    ), f"ln() after call with 0 (zero) h parameter moves by y axis ({pdf.y} vs.{prev_y})"
+
+    
