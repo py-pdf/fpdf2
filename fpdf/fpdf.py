@@ -4772,7 +4772,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 the document, then the current font height is used.
         """
         self.x = self.l_margin
-        if h:
+        if h is not None:
             self.y += h
         elif self._lasth:
             self.y += self._lasth
