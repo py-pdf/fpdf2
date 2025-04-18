@@ -96,6 +96,19 @@ The code above could be added to the FPDF class as an extension method in the fo
 {% include "../tutorial/datamatrix_method.py" %}
 ```
 
+## Aztec Code ##
+
+`fpdf2` can be combined with the [`aztec_code_generator`](https://pypi.org/project/aztec-code-generator/) Pypi library to generate [Aztec codes](https://en.wikipedia.org/wiki/Aztec_Code).
+It can be installed by running `pip install aztec_code_generator`:
+
+```python
+{% include "../tutorial/aztec_code.py" %}
+```
+
+Output preview:
+
+<img alt="Aztec code" src="./AztecCode.png" style="width: 15rem; image-rendering: optimizeSpeed">
+
 ## Code128 ##
 
 Here is an example on how to generate a [Code 128](https://en.wikipedia.org/wiki/Code_128) barcode
