@@ -34,11 +34,12 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support for adding TrueType fonts that are missing the `.notdef` glyph - [issue #1161](https://github.com/py-pdf/fpdf2/issues/1161) - thanks to @spacegaori
 * improved SVG image parsing speed by 50% to 70% - thanks to @petri-lipponen-movesense - [PR #1350](https://github.com/py-pdf/fpdf2/pull/1350)
 ### Fixed
-* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): Fixed rendering of content following `<a>` tags; now correctly resets emphasis style post `</a>` tag: hyperlink styling contained within the tag authority. - [Issue #1311](https://github.com/py-pdf/fpdf2/issues/1311)
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): Fixed rendering of content following `<a>` tags; now correctly resets emphasis style post `</a>` tag: hyperlink styling contained within the tag authority. - [issue #1311](https://github.com/py-pdf/fpdf2/issues/1311)
 * [FPDF.footer()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) does not "leak" its text style to the [table of contents](https://py-pdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html#table-of-contents) anymore
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): Fixed heading styles containing underline failing to render.
 * [`FPDF.ln()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ln): the method now allows a value of `0` to be provided for `h`.
 * font optimization: only include fonts effectively used in the final PDF document. Fonts added via `set_font()` or `add_page()` but not actually used in the document are no longer included in the final output. This reduces file size and improves performance, especially for documents with many fallback fonts. - [issue #1382](https://github.com/py-pdf/fpdf2/issues/1382)
+* a `KeyError` was raised in some specific cases when [auto-downscaling images](https://py-pdf.github.io/fpdf2/Images.html#oversized-images-detection-downscaling) - [issue #1409](https://github.com/py-pdf/fpdf2/issues/1409)
 ### Changed
 * heading rows of [tables](https://py-pdf.github.io/fpdf2/Tables.html) are never rendered "alone" on a page anymore
 

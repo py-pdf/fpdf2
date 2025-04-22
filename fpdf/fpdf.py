@@ -4675,7 +4675,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         images = self.image_cache.images
         width_in_pt, height_in_pt = w * scale, h * scale
         lowres_name = f"lowres-{name}"
-        lowres_info = images.get(lowres_name)
         if (
             info["w"] > width_in_pt * self.oversized_images_ratio
             and info["h"] > height_in_pt * self.oversized_images_ratio
@@ -4704,12 +4703,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 )
                 info["usages"] -= 1  # no need to embed the high-resolution image
                 if info["usages"] == 0:
-                    for (
-                        _,
-                        rtype,
-                    ), resource in self._resource_catalog.resources_per_page.items():
+                    resources_per_page = self._resource_catalog.resources_per_page
+                    for (_, rtype), resource in resources_per_page.items():
                         if rtype == PDFResourceType.X_OBJECT and info["i"] in resource:
                             resource.remove(info["i"])
+                lowres_info = images.get(lowres_name)
                 if lowres_info:  # Great, we've already done the job!
                     info = lowres_info
                     if info["w"] * info["h"] < dims[0] * dims[1]:
@@ -4751,11 +4749,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 raise ValueError(
                     f"Invalid value for attribute .oversized_images: {self.oversized_images}"
                 )
-        elif lowres_info:
-            # Embedding the same image in high-res after inserting it in low-res:
-            lowres_info.update(info)
-            del images[name]
-            info = lowres_info
         return info
 
     def preload_image(self, name, dims=None):
@@ -5037,11 +5030,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         # pylint: disable=protected-access
                         section.struct_elem._page_number = new_index
             # Fix resource catalog:
+            resources_per_page = self._resource_catalog.resources_per_page
             new_resources_per_page = defaultdict(set)
-            for (
-                page_number,
-                resource_type,
-            ), resource in self._resource_catalog.resources_per_page.items():
+            for (page_number, resource_type), resource in resources_per_page.items():
                 key = (indices_remap.get(page_number, page_number), resource_type)
                 new_resources_per_page[key] = resource
             self._resource_catalog.resources_per_page = new_resources_per_page
