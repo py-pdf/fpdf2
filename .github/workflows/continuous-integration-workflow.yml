@@ -166,7 +166,7 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          persist-credentials: false
+          persist-credentials: true  # required to deploy doc, by pushing commits to branch gh-pages
           # Required for mkdocs git-revision-date-localized plugin:
           fetch-depth: 0
       - name: Set up Python 3.13 🔧

@@ -57,8 +57,7 @@ _HANDY_NAMESPACES = {
 
 NUMBER_SPLIT = re.compile(r"(?:\s+,\s+|\s+,|,\s+|\s+|,)")
 TRANSFORM_GETTER = re.compile(
-    r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)"
-    r"\(((?:\s*(?:[-+]?[\d\.]+,?)+\s*)+)\)"
+    r"(matrix|rotate|scale|scaleX|scaleY|skew|skewX|skewY|translate|translateX|translateY)\(([\d\.,\s+-]+)\)"
 )
 
 
@@ -465,6 +464,7 @@ def convert_transforms(tfstr):
     # pylint: disable=redefined-loop-name
     transform = Transform.identity()
     for tf_type, args in parsed:
+        args = args.strip()
         if tf_type == "matrix":
             a, b, c, d, e, f = tuple(float(n) for n in NUMBER_SPLIT.split(args))
             transform = Transform(a, b, c, d, e, f) @ transform
