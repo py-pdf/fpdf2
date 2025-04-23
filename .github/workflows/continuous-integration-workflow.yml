@@ -11,11 +11,14 @@ on:  # cf. https://github.community/t/how-to-trigger-an-action-on-push-or-pull-r
 jobs:
   check-reference-pdf-files:
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Set up Python 3.13 🔧
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
         with:
           python-version: 3.13
       - name: Install system dependencies ⚙️
@@ -38,11 +41,15 @@ jobs:
     # Note: there is currently an issue with ubuntu-latest==ubuntu-24.04 / OpenSSL 3.0.13 / oscrypto:
     # https://github.com/py-pdf/fpdf2/issues/1333
     runs-on: ubuntu-22.04
+    permissions:
+      security-events: write  # for zizmor
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Set up Python 3.13 🔧
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
         with:
           python-version: 3.13
       - name: Install Python dependencies ⚙️
@@ -56,7 +63,7 @@ jobs:
           bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
           semgrep scan --config auto --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
       - name: Scan project with grype 🔎
-        uses: anchore/scan-action@v3
+        uses: anchore/scan-action@3343887d815d7b07465f6fdcd395bd66508d486a # v3.6.4
         with:
           path: "."
           fail-build: true
@@ -73,18 +80,30 @@ jobs:
           guarddog pypi verify test/linters-requirements.txt
           guarddog pypi verify test/requirements.txt
       - name: Spell Check Repo ✍️
-        uses: crate-ci/typos@v1.31.1
+        uses: crate-ci/typos@b1a1ef3893ff35ade0cfa71523852a49bfd05d19 # v1.31.1
+      - name: Run zizmor 🌈
+        run: zizmor --format=sarif . > results.sarif
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@28deaeda66b76a05916b6923827895f2b14ab387 # v3.28.16
+        with:
+          sarif_file: results.sarif
+          category: zizmor
   test:
     strategy:
       matrix:
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
         platform: [ubuntu-22.04, windows-latest]
     runs-on: ${{ matrix.platform }}
+    permissions: {}
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }} 🔧
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies ⚙️
@@ -122,11 +141,12 @@ jobs:
           pytest -vv test/barcodes test/drawing test/errors test/image/test_load_image.py test/metadata test/shapes test/signing test/text_region test/utils
   doc:
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@v2
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
         with:
           egress-policy: block
           allowed-endpoints:
@@ -144,12 +164,13 @@ jobs:
             unpkg.com:443
           # Starting from api.star-history.com, the endpoints whitelist reason is the mkdocs privacy plugin
       - name: Checkout 🛎️
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          persist-credentials: false
           # Required for mkdocs git-revision-date-localized plugin:
           fetch-depth: 0
       - name: Set up Python 3.13 🔧
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
         with:
           python-version: 3.13
       - name: Install Python dependencies ⚙️
@@ -176,7 +197,7 @@ jobs:
           cp -t ../public/ contributors.html contributors-map-small.png
       - name: Deploy documentation 🚀
         if: github.ref == 'refs/heads/master'
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@373f7f263a76c20808c831209c920827a82a2847 # v3.9.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: public/
@@ -193,7 +214,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@v2
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
         with:
           egress-policy: block
           allowed-endpoints:
@@ -205,9 +226,11 @@ jobs:
             *.sigstore.dev:443
             upload.pypi.org:443
       - name: Checkout 🛎️
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Set up Python 3.13 🔧
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
         with:
           python-version: '3.13'
       - name: Build distributions for Pypi 🏗️

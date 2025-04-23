@@ -208,6 +208,10 @@ static code analysis with `pylint`, unit tests...
 _Pull Requests_ submitted must pass all those checks in order to be approved.
 Ask maintainers through comments if some errors in the pipeline seem obscure to you.
 
+### GitHub Actions & security
+We use [pinact](https://github.com/suzuki-shunsuke/pinact) to pin versions of Actions and Reusable Workflows,
+and [zizmor](https://woodruffw.github.io/zizmor/) to perform static analysis on our pipeline definition files.
+
 ### typos
 [typos](https://github.com/crate-ci/typos) is a handy CLI tool to detect & auto-fix [typos](https://en.wikipedia.org/wiki/Typographical_error) in source files.
 Installation is relatively straightforward ([read the docs](https://github.com/crate-ci/typos?tab=readme-ov-file#install)).
