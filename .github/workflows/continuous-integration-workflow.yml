@@ -40,7 +40,7 @@ jobs:
   lint:
     # Note: there is currently an issue with ubuntu-latest==ubuntu-24.04 / OpenSSL 3.0.13 / oscrypto:
     # https://github.com/py-pdf/fpdf2/issues/1333
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write  # for zizmor
     steps:
