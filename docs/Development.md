@@ -209,7 +209,7 @@ _Pull Requests_ submitted must pass all those checks in order to be approved.
 Ask maintainers through comments if some errors in the pipeline seem obscure to you.
 
 ### GitHub Actions & security
-We use [pinact](https://github.com/suzuki-shunsuke/pinact) to pin versions of Actions and Reusable Workflows,
+We use [pinact](https://github.com/suzuki-shunsuke/pinact) & [Renovate](https://github.com/apps/renovate) to pin versions of Actions and Reusable Workflows,
 and [zizmor](https://woodruffw.github.io/zizmor/) to perform static analysis on our pipeline definition files.
 
 ### typos

@@ -18,7 +18,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Python 3.13 🔧
-        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: 3.13
       - name: Install system dependencies ⚙️
@@ -38,9 +38,7 @@ jobs:
           scripts/verapdf.py --print-aggregated-report
           scripts/check-PDF-A-with-verapdf.sh
   lint:
-    # Note: there is currently an issue with ubuntu-latest==ubuntu-24.04 / OpenSSL 3.0.13 / oscrypto:
-    # https://github.com/py-pdf/fpdf2/issues/1333
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write  # for zizmor
     steps:
@@ -49,7 +47,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Python 3.13 🔧
-        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: 3.13
       - name: Install Python dependencies ⚙️
@@ -63,7 +61,7 @@ jobs:
           bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
           semgrep scan --config auto --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
       - name: Scan project with grype 🔎
-        uses: anchore/scan-action@3343887d815d7b07465f6fdcd395bd66508d486a # v3.6.4
+        uses: anchore/scan-action@7c05671ae9be166aeb155bad2d7df9121823df32 # v6.1.0
         with:
           path: "."
           fail-build: true
@@ -103,7 +101,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }} 🔧
-        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies ⚙️
@@ -141,7 +139,10 @@ jobs:
           pytest -vv test/barcodes test/drawing test/errors test/image/test_load_image.py test/metadata test/shapes test/signing test/text_region test/utils
   doc:
     runs-on: ubuntu-latest
-    permissions: {}
+    permissions:
+      # required to deploy doc, by pushing commits to branch gh-pages:
+      contents: write
+      pages: write
     steps:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
@@ -170,7 +171,7 @@ jobs:
           # Required for mkdocs git-revision-date-localized plugin:
           fetch-depth: 0
       - name: Set up Python 3.13 🔧
-        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: 3.13
       - name: Install Python dependencies ⚙️
@@ -197,7 +198,7 @@ jobs:
           cp -t ../public/ contributors.html contributors-map-small.png
       - name: Deploy documentation 🚀
         if: github.ref == 'refs/heads/master'
-        uses: peaceiris/actions-gh-pages@373f7f263a76c20808c831209c920827a82a2847 # v3.9.3
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: public/
@@ -230,7 +231,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Python 3.13 🔧
-        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.13'
       - name: Build distributions for Pypi 🏗️
@@ -243,7 +244,7 @@ jobs:
           if ! curl -Ls 'https://pypi.org/pypi/fpdf2/json' | jq -r '.releases|keys[]' | grep "^$(python setup.py -V)\$"; then echo publish=yes >> "$GITHUB_OUTPUT"; python setup.py sdist bdist_wheel; twine check dist/*; fi
       - name: Publish package distributions to PyPI 🚀
         if: steps.build.outputs.publish == 'yes'
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
         # Doc: https://github.com/marketplace/actions/pypi-publish
         with:
           print-hash: true
