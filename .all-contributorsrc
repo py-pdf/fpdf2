@@ -1442,6 +1442,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "biermanr",
+      "name": "Rob",
+      "avatar_url": "https://avatars.githubusercontent.com/u/129201865?v=4",
+      "profile": "https://github.com/biermanr",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
