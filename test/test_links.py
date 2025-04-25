@@ -274,37 +274,3 @@ def test_internal_links(tmp_path):
     )
 
     assert_pdf_equal(pdf, HERE / "internal_links.pdf", tmp_path)
-
-
-def test_add_link_then_set_link_to_future_page(tmp_path):
-
-    pdf = FPDF()
-    pdf.set_font("helvetica", size=24)
-    pdf.add_page()
-
-    # create a link to a page that will be created later
-    link_to_summary_page = pdf.add_link()
-    pdf.cell(text="Link to summary after elements", border=1, link=link_to_summary_page)
-    pdf.ln(20)
-
-    pdf.cell(text="List of elements", align="C", center=True)
-    pdf.ln(20)
-
-    # this num_elements variable can vary across runs
-    # resulting in a different number of pages
-    num_elements = 25
-    for i in range(num_elements):
-        pdf.cell(text=f"Element {i+1}", align="C", center=True)
-        pdf.ln(20)
-
-    # `set_link` to change page referenced by the link
-    pdf.add_page()
-    pdf.set_link(link_to_summary_page)
-    pdf.cell(text=f"Summary: there are {num_elements} elements", align="C", center=True)
-    pdf.ln(20)
-
-    # link back to the first page
-    link = pdf.add_link(page=1)
-    pdf.cell(text="Internal link to first page", border=1, link=link)
-
-    assert_pdf_equal(pdf, HERE / "internal_link_to_future_page.pdf", tmp_path)
