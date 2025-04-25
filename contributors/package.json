@@ -8,7 +8,7 @@
     "url": "git+ssh://git@github.com/py-pdf/fpdf2.git"
   },
   "dependencies": {
-    "leaflet": "1.7.1",
-    "leaflet-control-geocoder": "2.4.0"
+    "leaflet": "1.9.4",
+    "leaflet-control-geocoder": "~2.4.0"
   }
 }

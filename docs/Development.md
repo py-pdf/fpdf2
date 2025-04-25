@@ -208,9 +208,19 @@ static code analysis with `pylint`, unit tests...
 _Pull Requests_ submitted must pass all those checks in order to be approved.
 Ask maintainers through comments if some errors in the pipeline seem obscure to you.
 
-### GitHub Actions & security
-We use [pinact](https://github.com/suzuki-shunsuke/pinact) & [Renovate](https://github.com/apps/renovate) to pin versions of Actions and Reusable Workflows,
-and [zizmor](https://woodruffw.github.io/zizmor/) to perform static analysis on our pipeline definition files.
+### Renovate, GitHub Actions & security
+We use [Renovate](https://github.com/apps/renovate) to detect dependency updates & create PRs
+for the Python dependencies / GitHub Actions / NPM dependencies that we use.
+
+Its configuration file is [renovate.json](https://github.com/py-pdf/fpdf2/blob/master/renovate.json),
+and the full tool documentation is there: [docs.renovatebot.com](https://docs.renovatebot.com/).
+
+We also use [zizmor](https://woodruffw.github.io/zizmor/) as a GitHub Action
+to perform static analysis on our pipeline definition files.
+
+In order to use `zizmor` locally:
+
+    zizmor .github/workflows/*.yml
 
 ### typos
 [typos](https://github.com/crate-ci/typos) is a handy CLI tool to detect & auto-fix [typos](https://en.wikipedia.org/wiki/Typographical_error) in source files.
