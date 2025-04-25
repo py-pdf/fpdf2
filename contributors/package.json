@@ -1,0 +1,14 @@
+{
+  "name": "fpdf2-contributors",
+  "version": "2.8.3",
+  "description": "Rendering an interactive map of fpdf2 project contributors",
+  "homepage": "https://py-pdf.github.io/fpdf2/contributors.html",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/py-pdf/fpdf2.git"
+  },
+  "dependencies": {
+    "leaflet": "1.7.1",
+    "leaflet-control-geocoder": "2.4.0"
+  }
+}

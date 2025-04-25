@@ -156,6 +156,7 @@ jobs:
             *.githubusercontent.com:443
             pypi.org:443
             files.pythonhosted.org:443
+            registry.npmjs.org:443
             api.star-history.com:443
             cdnjs.cloudflare.com:443
             colab.research.google.com:443
@@ -193,8 +194,11 @@ jobs:
         env:
           # Needed by contributors/build_contributors_html_page.py:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONUNBUFFERED: 1
         run: |
-          cd contributors/ && PYTHONUNBUFFERED=1 ./build_contributors_html_page.py py-pdf/fpdf2
+          cd contributors/
+          npm ci
+          ./build_contributors_html_page.py py-pdf/fpdf2
           cp -t ../public/ contributors.html contributors-map-small.png
       - name: Deploy documentation 🚀
         if: github.ref == 'refs/heads/master'
