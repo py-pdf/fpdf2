@@ -54,6 +54,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
           pip install --upgrade . -r test/linters-requirements.txt -r test/requirements.txt
+      # Running zizmor 1st, because it is blocking PR merge
+      - name: Run zizmor 🌈
+        run: zizmor --format=sarif . > results.sarif
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@28deaeda66b76a05916b6923827895f2b14ab387 # v3.28.16
+        with:
+          sarif_file: results.sarif
+          category: zizmor
       - name: Run linters 🔎
         run: |
           black --check .
@@ -79,15 +89,6 @@ jobs:
           guarddog pypi verify test/requirements.txt
       - name: Spell Check Repo ✍️
         uses: crate-ci/typos@b1a1ef3893ff35ade0cfa71523852a49bfd05d19 # v1.31.1
-      - name: Run zizmor 🌈
-        run: zizmor --format=sarif . > results.sarif
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@28deaeda66b76a05916b6923827895f2b14ab387 # v3.28.16
-        with:
-          sarif_file: results.sarif
-          category: zizmor
   test:
     strategy:
       matrix:
@@ -156,6 +157,7 @@ jobs:
             *.githubusercontent.com:443
             pypi.org:443
             files.pythonhosted.org:443
+            registry.npmjs.org:443
             api.star-history.com:443
             cdnjs.cloudflare.com:443
             colab.research.google.com:443
@@ -193,8 +195,11 @@ jobs:
         env:
           # Needed by contributors/build_contributors_html_page.py:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONUNBUFFERED: 1
         run: |
-          cd contributors/ && PYTHONUNBUFFERED=1 ./build_contributors_html_page.py py-pdf/fpdf2
+          cd contributors/
+          npm ci
+          ./build_contributors_html_page.py py-pdf/fpdf2
           cp -t ../public/ contributors.html contributors-map-small.png
       - name: Deploy documentation 🚀
         if: github.ref == 'refs/heads/master'
