@@ -142,9 +142,6 @@ pdf.cell(text="Internal link to first page", border=1, link=link)
 
 pdf.output("internal_link_unknown_pages.pdf")
 ```
-
-
-
 Other methods can also insert internal links:
 
 * [FPDF.multi_cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) using `link=` **or** `markdown=True` and this syntax: `[link text](page number)`
