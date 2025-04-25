@@ -317,6 +317,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/andreaswimmer"><img src="https://avatars.githubusercontent.com/u/53872150?v=4?s=100" width="100px;" alt="andreaswimmer"/><br /><sub><b>andreaswimmer</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Aandreaswimmer" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Mercuron"><img src="https://avatars.githubusercontent.com/u/45468521?v=4?s=100" width="100px;" alt="Mercuron"/><br /><sub><b>Mercuron</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=Mercuron" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/yuyiz67"><img src="https://avatars.githubusercontent.com/u/116842527?v=4?s=100" width="100px;" alt="yuyiz67"/><br /><sub><b>yuyiz67</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=yuyiz67" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/biermanr"><img src="https://avatars.githubusercontent.com/u/129201865?v=4?s=100" width="100px;" alt="Rob"/><br /><sub><b>Rob</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=biermanr" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
