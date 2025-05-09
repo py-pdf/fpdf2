@@ -43,7 +43,7 @@ def hello_world():
     pdf.add_page()
     pdf.set_font("Helvetica", size=24)
     pdf.cell(text="hello world")
-    response = make_response(pdf.output())
+    response = make_response(bytes(pdf.output()))
     response.headers["Content-Type"] = "application/pdf"
     return response
 ```

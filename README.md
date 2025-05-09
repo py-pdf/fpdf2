@@ -5,7 +5,7 @@
 [![build status](https://github.com/py-pdf/fpdf2/workflows/build/badge.svg)](https://github.com/py-pdf/fpdf2/actions?query=branch%3Amaster)
 [![codecov](https://codecov.io/gh/py-pdf/fpdf2/branch/master/graph/badge.svg)](https://codecov.io/gh/py-pdf/fpdf2)
 [![Pypi Trusted Publisher: enabled](https://img.shields.io/badge/Pypi%20Trusted%20Publisher-enabled-green.svg)](https://blog.pypi.org/posts/2023-04-20-introducing-trusted-publishers/)
-[![checks: bandit, grype, guarddog, pylint, semgrep](https://img.shields.io/badge/checks-bandit,grype,guarddog,pylint,semgrep-green.svg)](https://github.com/py-pdf/fpdf2/actions/workflows/continuous-integration-workflow.yml)
+[![checks: bandit, grype, guarddog, pylint, semgrep, zizmor](https://img.shields.io/badge/checks-bandit,grype,guarddog,pylint,semgrep-green.svg)](https://github.com/py-pdf/fpdf2/actions/workflows/continuous-integration-workflow.yml)
 
 [![Dependents](https://img.shields.io/librariesio/dependents/pypi/fpdf2)](https://libraries.io/pypi/fpdf2/dependents)
 [![Downloads per month](https://pepy.tech/badge/fpdf2/month)](https://pepy.tech/project/fpdf2)
