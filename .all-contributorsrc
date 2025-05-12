@@ -1451,6 +1451,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "weltkante",
+      "name": "Tobias Käs",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5845814?v=4",
+      "profile": "https://github.com/weltkante",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
