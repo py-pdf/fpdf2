@@ -424,7 +424,7 @@ class TextLine(NamedTuple):
         directional_runs = []
         direction = None
         for fragment in self.fragments:
-            if fragment.fragment_direction == direction:
+            if direction is not None and fragment.fragment_direction == direction:
                 directional_runs[-1].append(fragment)
             else:
                 directional_runs.append([fragment])

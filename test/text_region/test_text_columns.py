@@ -357,3 +357,15 @@ def test_paragraph_first_line_indent(tmp_path):
         with cols.paragraph(first_line_indent=10, text_align="J") as paragraph:
             paragraph.write(text=LOREM_IPSUM)
     assert_pdf_equal(pdf, HERE / "paragraph_first_line_indent.pdf", tmp_path)
+
+
+def test_text_columns_with_text_shaping(tmp_path):  # issue 1439
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_text_shaping(True)
+    pdf.set_font("Times", "", 14)
+    with pdf.text_columns(ncols=2) as cols:
+        cols.write("Lorem ipsum dolor sit amet")
+        cols.new_column()
+        cols.write("Lorem ipsum dolor sit amet")
+    assert_pdf_equal(pdf, HERE / "text_columns_with_text_shaping.pdf", tmp_path)
