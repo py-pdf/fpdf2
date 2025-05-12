@@ -17,9 +17,11 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.8.4] - Not released yet
-### Fixed
-* minor regular-expression optimization in the SVG parsing module, nullifying any risk of ReDOS attack
+### Added
 * documentation on [internal linking with variable page numbers](https://py-pdf.github.io/fpdf2/Links.html#internal-links)
+### Fixed
+* an `IndexError` was raised in some cases when using [text_columns()](https://py-pdf.github.io/fpdf2/TextColumns.html) with [text shaping enabled](https://py-pdf.github.io/fpdf2/TextShaping.html) - _cf._ [issue #1439](https://github.com/py-pdf/fpdf2/issues/1439)
+* minor regular-expression optimization in the SVG parsing module, nullifying any risk of ReDOS attack
 
 ## [2.8.3] - 2025-04-22
 ### Added
@@ -94,7 +96,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * line size calculation for fragments when [text shaping](https://py-pdf.github.io/fpdf2/TextShaping.html) is used
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): fixed incoherent indentation of long `<ul>` list entries - _cf._ [issue #1073](https://github.com/py-pdf/fpdf2/issues/1073) - thanks to @lcgeneralprojects
 * default values for `top_margin` and `bottom_margin` in `HTML2FPDF._new_paragraph()` calls are now correctly converted into chosen document units.
-* In [text_columns()](https://py-pdf.github.io/fpdf2/extColumns.html), paragraph top/bottom margins didn't correctly trigger column breaks; [issue #1214](https://github.com/py-pdf/fpdf2/issues/1214)
+* In [text_columns()](https://py-pdf.github.io/fpdf2/TextColumns.html), paragraph top/bottom margins didn't correctly trigger column breaks; [issue #1214](https://github.com/py-pdf/fpdf2/issues/1214)
 * [`fpdf.drawing.color_from_hex_string`](https://py-pdf.github.io/fpdf2/fpdf/drawing.html#fpdf.drawing.color_from_hex_string) did not test or mention accepting lowercase hex values.
 * handling of bidirectional text on `FPDF.get_string_width()` [issue #1231]
 * new translation of the tutorial in [Indonesian](https://py-pdf.github.io/fpdf2/Tutorial-id.html) - thanks to @odhyp
