@@ -369,3 +369,25 @@ def test_text_columns_with_text_shaping(tmp_path):  # issue 1439
         cols.new_column()
         cols.write("Lorem ipsum dolor sit amet")
     assert_pdf_equal(pdf, HERE / "text_columns_with_text_shaping.pdf", tmp_path)
+
+
+def test_text_columns_with_shorter_2nd_column(tmp_path):  # issue 1442
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_text_shaping(True)
+    pdf.set_font("Times", size=14)
+    pdf.write(text="Headline")
+    pdf.ln()
+    pdf.ln()
+    with pdf.text_columns(ncols=2) as cols:
+        cols.write(
+            "Lorem ipsum dolor sit amet, consetetur sadipscing elitr,"
+            " sed diam nonumy eirmod tempor invidunt ut labore"
+            " et dolore magna aliquyam erat, sed diam voluptua."
+        )
+        cols.new_column()
+        cols.write("Lorem ipsum dolor sit amet")
+    pdf.ln()
+    pdf.write(text="More text after columns.")
+    pdf.ln()
+    assert_pdf_equal(pdf, HERE / "text_columns_with_shorter_2nd_column.pdf", tmp_path)

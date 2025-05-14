@@ -21,6 +21,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * documentation on [internal linking with variable page numbers](https://py-pdf.github.io/fpdf2/Links.html#internal-links)
 ### Fixed
 * an `IndexError` was raised in some cases when using [text_columns()](https://py-pdf.github.io/fpdf2/TextColumns.html) with [text shaping enabled](https://py-pdf.github.io/fpdf2/TextShaping.html) - _cf._ [issue #1439](https://github.com/py-pdf/fpdf2/issues/1439)
+* handled case of a smaller last column when using [text_columns()](https://py-pdf.github.io/fpdf2/TextColumns.html) - _cf._ [issue #1442](https://github.com/py-pdf/fpdf2/issues/1442)
 * minor regular-expression optimization in the SVG parsing module, nullifying any risk of ReDOS attack
 
 ## [2.8.3] - 2025-04-22
