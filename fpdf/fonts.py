@@ -8,6 +8,7 @@ in non-backward-compatible ways.
 """
 
 import re, warnings
+from copy import deepcopy
 import logging
 
 from bisect import bisect_left
@@ -391,6 +392,37 @@ class TTFFont:
 
     def __repr__(self):
         return f"TTFFont(i={self.i}, fontkey={self.fontkey})"
+
+    def __deepcopy__(self, memo):
+        """
+        The aim here is that FPDFRecorder.__init__() does NOT deepcopy all fonts attributes
+        but instead share references to immutable objects
+        between the original FPDF instance and the FPDFRecorder instances
+        to avoid performances issues as spotted in issue #1444.
+        """
+        copy = TTFFont.__new__(TTFFont)
+        # Immutable attributes:
+        copy.i = self.i
+        copy.type = "TTF"
+        copy.ttffile = self.ttffile
+        copy.fontkey = self.fontkey
+        copy.scale = self.scale
+        copy.name = self.name
+        copy.up = self.up
+        copy.ut = self.ut
+        copy.sp = self.sp
+        copy.ss = self.ss
+        copy.emphasis = self.emphasis
+        # Attributes shared, to improve FPDFRecorder performances:
+        copy.ttfont = self.ttfont
+        copy.cmap = self.cmap
+        copy.desc = self.desc
+        # Attributes deepcopied:
+        copy.cw = deepcopy(self.cw, memo)
+        copy.glyph_ids = deepcopy(self.glyph_ids, memo)
+        copy.missing_glyphs = deepcopy(self.missing_glyphs, memo)
+        copy.subset = deepcopy(self.subset, memo)
+        return copy
 
     def close(self):
         self.ttfont.close()
