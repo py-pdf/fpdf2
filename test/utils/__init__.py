@@ -1,1 +1,1 @@
-"""This package tests auxiliary and utility funtions"""
+"""This package tests auxiliary and utility functions"""

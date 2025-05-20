@@ -17,10 +17,10 @@ For example, there is how a document outline looks like in [Sumatra PDF Reader](
 
 ![Document Outline Example](document-outline.png)
 
-Since `fpdf2.3.3`, you can use the [`start_section`](fpdf/fpdf.html#fpdf.fpdf.FPDF.start_section) method to add entries in the internal "outline" table, which is used to render both the outline and ToC.
+Since `fpdf2.3.3`, you can use the [`start_section`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.start_section) method to add entries in the internal "outline" table, which is used to render both the outline and ToC.
 
 Note that by default, calling `start_section` only records the current position in the PDF and renders nothing.
-However, you can configure **global title styles** by calling [`set_section_title_styles`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_section_title_styles), after which calls to `start_section` will render titles visually using the styles defined.
+However, you can configure **global title styles** by calling [`set_section_title_styles`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_section_title_styles), after which calls to `start_section` will render titles visually using the styles defined.
 
 To provide a document outline to the PDF you generate, you just have to call the `start_section` method for every hierarchical section you want to define.
 
@@ -39,7 +39,7 @@ Quoting [Wikipedia](https://en.wikipedia.org/wiki/Table_of_contents), a **table 
 > a list, usually found on a page before the start of a written work, of its chapter or section titles or brief descriptions with their commencing page numbers.
 
 ### Inserting a Table of Contents
-Use the [`insert_toc_placeholder`](fpdf/fpdf.html#fpdf.fpdf.FPDF.insert_toc_placeholder) method to define a placeholder for the ToC. A page break is triggered after inserting the ToC.
+Use the [`insert_toc_placeholder`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.insert_toc_placeholder) method to define a placeholder for the ToC. A page break is triggered after inserting the ToC.
 
 Parameters:
 

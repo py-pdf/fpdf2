@@ -1,7 +1,7 @@
 # Usage in web APIs #
 
 Note that `FPDF` instance objects are not designed to be reusable:
-**content cannot be added** once [`output()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.output) has been called.
+**content cannot be added** once [`output()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.output) has been called.
 
 Hence, even if the `FPDF` class should be thread-safe, we recommend that you either **create an instance for every request**,
 or if you want to use a global / shared object, to only store the bytes returned from `output()`.
@@ -43,7 +43,7 @@ def hello_world():
     pdf.add_page()
     pdf.set_font("Helvetica", size=24)
     pdf.cell(text="hello world")
-    response = make_response(pdf.output())
+    response = make_response(bytes(pdf.output()))
     response.headers["Content-Type"] = "application/pdf"
     return response
 ```

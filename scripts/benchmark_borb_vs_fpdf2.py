@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Speed benchmark: how much time each lib takes to generate a 10 thousands pages PDF with ~180 distinct images?
-  (disclaimer: the author of this benchmark is fpdf2 current maintainer)"""
+(disclaimer: the author of this benchmark is fpdf2 current maintainer)"""
 # Script used in this article: https://chezsoi.org/lucas/blog/fpdf2-5-2-svg-support-and-borb.html
 import resource
 from decimal import Decimal

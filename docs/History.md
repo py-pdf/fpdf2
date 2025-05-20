@@ -37,7 +37,7 @@ The same month, Georg Mischler ([@gmischler](https://github.com/gmischler)) and 
 
 The notable exceptions are:
 
-* for the [`cell()` method](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell), the default value of `h` has changed. It used to be `0` and is now set to the current value of `FPDF.font_size`
+* for the [`cell()` method](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell), the default value of `h` has changed. It used to be `0` and is now set to the current value of `FPDF.font_size`
 * the font caching mechanism, that used the `pickle` module, has been **removed**, for security reasons, and because it provided little performance gain, and only for specific use cases - _cf._ [issue #345](https://github.com/py-pdf/fpdf2/issues/345).
 * [Template](https://py-pdf.github.io/fpdf2/fpdf/template.html#fpdf.template.Template) elements now have a **transparent background** by default, instead of white
 

@@ -116,7 +116,7 @@ def test_unsupported_image_filter_error():
     assert str(error.value) == f'Unsupported image filter: "{image_filter}"'
 
 
-def test_incorrent_number_of_pages_toc():
+def test_incorrect_number_of_pages_toc():
     pdf = fpdf.FPDF()
     pdf.add_page()
     pdf.insert_toc_placeholder(lambda a, b: None, 10)
@@ -135,7 +135,7 @@ def test_invalid_page_background():
     assert str(error.value) == msg
 
 
-def test_intantiating_fpdf_module():  # issue 683
+def test_instantiating_fpdf_module():  # issue 683
     # pylint: disable=import-outside-toplevel,not-callable,redefined-outer-name
     from fpdf import fpdf
 

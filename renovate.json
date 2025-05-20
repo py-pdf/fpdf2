@@ -1,0 +1,12 @@
+{
+  "extends": ["config:best-practices"],
+  "osvVulnerabilityAlerts": true,
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ],
+  "vulnerabilityAlerts": {"enabled": true}
+}

@@ -181,7 +181,7 @@ pdf.output("html_helvetica.pdf")
 _New in [:octicons-tag-24: 2.8.0](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
 
 Page breaks can be triggered explicitly using the [break-before](https://developer.mozilla.org/en-US/docs/Web/CSS/break-before) or [break-after](https://developer.mozilla.org/en-US/docs/Web/CSS/break-after) CSS properties.
-For exemple you can use:
+For example you can use:
 ```html
 <br style="break-after: page">
 ```
@@ -205,4 +205,4 @@ You can also check the currently open GitHub issues with the tag `html`:
 
 ## Using Markdown
 
-Check [Combine with mistletoe to use Markdown](CombineWithMistletoeoToUseMarkdown.md)
+Check the dedicated page: [Combine with Markdown](CombineWithMarkdown.md)

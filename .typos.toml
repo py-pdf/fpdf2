@@ -1,0 +1,23 @@
+[default]
+extend-ignore-identifiers-re = [
+    "1fpt",         # FPDF._downscale_image()
+    ".+_2nd",
+    "BUI",
+    "decode_parms",
+    "odf",          # odf.opendocument / odf.table
+    "parameter_ot",
+    "sur", "Sur",
+    "ue", "UE",
+    "FlateDecode",
+    "VAI",
+]
+extend-ignore-re = [
+    "loca subsetting",
+    "np.arange",
+]
+
+[files]
+extend-exclude = [
+    "*.pdf",
+    "docs/Tutorial-*.md",
+]

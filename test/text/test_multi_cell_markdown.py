@@ -25,6 +25,14 @@ def test_multi_cell_markdown(tmp_path):
     assert_pdf_equal(pdf, HERE / "multi_cell_markdown.pdf", tmp_path)
 
 
+def test_multi_cell_markdown_strikethrough(tmp_path):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=32)
+    pdf.multi_cell(w=pdf.epw, text="~~strikethrough~~", markdown=True)
+    assert_pdf_equal(pdf, HERE / "multi_cell_markdown_strikethrough.pdf", tmp_path)
+
+
 def test_multi_cell_markdown_escaped(tmp_path):
     pdf = fpdf.FPDF()
     pdf.add_page()

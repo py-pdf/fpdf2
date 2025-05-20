@@ -17,6 +17,7 @@ from fontTools import subset as ftsubset
 
 from .annotations import PDFAnnotation
 from .enums import PDFResourceType, PageLabelStyle, SignatureFlag
+from .enums import OutputIntentSubType
 from .errors import FPDFException
 from .font_type_3 import Type3Font
 from .line_break import TotalPagesSubstitutionFragment
@@ -225,6 +226,7 @@ class PDFCatalog(PDFObject):
         self.metadata = None
         self.names = None
         self.outlines = None
+        self.output_intents = None
         self.struct_tree_root = None
 
 
@@ -294,7 +296,14 @@ class PDFXObject(PDFContentStream):
         self.s_mask = None
 
 
-class PDFICCPObject(PDFContentStream):
+class PDFICCProfile(PDFContentStream):
+    """holds values for ICC Profile Stream
+    Args:
+        contents (str): stream content
+        n (int): [1|3|4], # the numbers for colors 1=Gray, 3=RGB, 4=CMYK
+        alternate (str): ['DeviceGray'|'DeviceRGB'|'DeviceCMYK']
+    """
+
     __slots__ = (  # RAM usage optimization
         "_id",
         "_contents",
@@ -316,7 +325,7 @@ class PDFICCPObject(PDFContentStream):
 
 
 class PDFPageLabel:
-    __slots__ = ["_style", "_prefix", "st"]
+    __slots__ = ("_style", "_prefix", "st")  # RAM usage optimization
 
     def __init__(
         self, label_style: PageLabelStyle, label_prefix: str, label_start: int
@@ -334,6 +343,9 @@ class PDFPageLabel:
         return PDFString(self._prefix) if self._prefix else None
 
     def __repr__(self):
+        return f"PDFPageLabel({self._style}, {self._prefix}, {self.st})"
+
+    def __str__(self):
         ret = self._prefix if self._prefix else ""
         if self._style:
             if self._style == PageLabelStyle.NUMBER:
@@ -346,7 +358,7 @@ class PDFPageLabel:
                 ret += int_to_letters(self.st - 1)
             elif self._style == PageLabelStyle.LOWER_LETTER:
                 ret += int_to_letters(self.st - 1).lower()
-        return None if ret == "" else ret
+        return ret
 
     def serialize(self) -> dict:
         return build_obj_dict({key: getattr(self, key) for key in dir(self)})
@@ -399,6 +411,7 @@ class PDFPage(PDFObject):
         self.struct_parents = None
         self.resources = None  # must always be set before calling .serialize()
         self.parent = None  # must always be set before calling .serialize()
+        # Useful properties that will not be serialized in the final PDF document:
         self._index = index
         self._width_pt, self._height_pt = None, None
         self._page_label: PDFPageLabel = None
@@ -406,6 +419,9 @@ class PDFPage(PDFObject):
 
     def index(self):
         return self._index
+
+    def set_index(self, i):
+        self._index = i
 
     def dimensions(self):
         "Return a pair (width, height) in the unit specified to FPDF constructor"
@@ -473,6 +489,8 @@ class PDFExtGState(PDFObject):
 
 
 class PDFXrefAndTrailer(ContentWithoutID):
+    "Cross-reference table & file trailer"
+
     def __init__(self, output_builder):
         self.output_builder = output_builder
         self.count = output_builder.obj_id + 1
@@ -510,6 +528,73 @@ class PDFXrefAndTrailer(ContentWithoutID):
         out.append(startxref)
         out.append("%%EOF")
         return "\n".join(out)
+
+
+class OutputIntentDictionary:
+    """The optional OutputIntents (PDF 1.4) entry in the document
+    catalog dictionary holds an array of output intent dictionaries,
+    each describing the colour reproduction characteristics of a possible
+    output device.
+
+    Args:
+        subtype (OutputIntentSubType, required): PDFA, PDFX or ISOPDF
+        output_condition_identifier (str, required): see the Name in
+            https://www.color.org/registry.xalter
+        output_condition (str, optional): see the Definition in
+            https://www.color.org/registry.xalter
+        registry_name (str, optional): "https://www.color.org"
+        dest_output_profile (PDFICCProfile, required/optional):
+            PDFICCProfile | None # (required if
+            output_condition_identifier does not specify a standard
+            production condition; optional otherwise)
+        info (str, required/optional see dest_output_profile): human
+            readable description of profile
+    """
+
+    __slots__ = (  # RAM usage optimization
+        "type",
+        "s",
+        "output_condition_identifier",
+        "output_condition",
+        "registry_name",
+        "dest_output_profile",
+        "info",
+    )
+
+    def __init__(
+        self,
+        subtype: "OutputIntentSubType | str",
+        output_condition_identifier: str,
+        output_condition: str = None,
+        registry_name: str = None,
+        dest_output_profile: PDFICCProfile = None,
+        info: str = None,
+    ):
+        self.type = Name("OutputIntent")
+        self.s = Name(OutputIntentSubType.coerce(subtype).value)
+        self.output_condition_identifier = (
+            PDFString(output_condition_identifier)
+            if output_condition_identifier
+            else None
+        )
+        self.output_condition = (
+            PDFString(output_condition) if output_condition else None
+        )
+        self.registry_name = PDFString(registry_name) if registry_name else None
+        self.dest_output_profile = (
+            dest_output_profile
+            if dest_output_profile and isinstance(dest_output_profile, PDFICCProfile)
+            else None
+        )
+        self.info = PDFString(info) if info else None
+
+    def serialize(self, _security_handler=None, _obj_id=None):
+        obj_dict = build_obj_dict(
+            {key: getattr(self, key) for key in dir(self)},
+            _security_handler=_security_handler,
+            _obj_id=_obj_id,
+        )
+        return pdf_dict(obj_dict)
 
 
 class ResourceCatalog:
@@ -584,11 +669,17 @@ class OutputProducer:
             # get the file_id and generate passwords needed to encrypt streams and strings
             file_id = fpdf.file_id()
             if file_id == -1:
-                # no custom file id - use default file id so enryption passwords can be generated
+                # no custom file id - use default file id so encryption passwords can be generated
                 file_id = fpdf._default_file_id(bytearray(0x00))
             fpdf._security_handler.generate_passwords(file_id)
 
-        self.pdf_objs.append(PDFHeader(fpdf.pdf_version))
+        pdf_version = fpdf.pdf_version
+        if (
+            fpdf.viewer_preferences
+            and fpdf.viewer_preferences._min_pdf_version > pdf_version
+        ):
+            pdf_version = fpdf.viewer_preferences._min_pdf_version
+        self.pdf_objs.append(PDFHeader(pdf_version))
         pages_root_obj = self._add_pages_root()
         catalog_obj = self._add_catalog()
         page_objs = self._add_pages()
@@ -601,11 +692,12 @@ class OutputProducer:
         xmp_metadata_obj = self._add_xmp_metadata()
         info_obj = self._add_info()
         encryption_obj = self._add_encryption()
+
         xref = PDFXrefAndTrailer(self)
         self.pdf_objs.append(xref)
 
         # 2. Plumbing - Inject all PDF object references required:
-        pages_root_obj.kids = PDFArray(self._reorder_page_objects(page_objs))
+        pages_root_obj.kids = PDFArray(page_objs)
         self._finalize_catalog(
             catalog_obj,
             pages_root_obj=pages_root_obj,
@@ -705,10 +797,19 @@ class OutputProducer:
         self._add_pdf_obj(pages_root_obj)
         return pages_root_obj
 
+    def _iter_pages_in_order(self):
+        for page_index in range(1, self.fpdf.pages_count + 1):
+            page_obj = self.fpdf.pages[page_index]
+            # Defensive check:
+            assert (
+                page_obj.index() == page_index
+            ), f"{page_obj.index()=} != {page_index=}"
+            yield page_obj
+
     def _add_pages(self, _slice=slice(0, None)):
         fpdf = self.fpdf
         page_objs = []
-        for page_obj in list(fpdf.pages.values())[_slice]:
+        for page_obj in list(self._iter_pages_in_order())[_slice]:
             if fpdf.pdf_version > "1.3":
                 page_obj.group = pdf_dict(
                     {"/Type": "/Group", "/S": "/Transparency", "/CS": "/DeviceRGB"},
@@ -727,16 +828,6 @@ class OutputProducer:
             page_obj.contents = cs_obj
 
         return page_objs
-
-    def _reorder_page_objects(self, page_objs: list):
-        "Reorder page objects to move any Table of Contents pages generated at the end of the document to follow the ToC placeholder."
-        if not self.fpdf._toc_inserted_pages:
-            return page_objs
-        reordered = page_objs.copy()
-        for _ in range(self.fpdf._toc_inserted_pages):
-            last_page = reordered.pop()
-            reordered.insert(self.fpdf.toc_placeholder.start_page, last_page)
-        return reordered
 
     def _add_annotations_as_objects(self):
         sig_annotation_obj = None
@@ -849,11 +940,21 @@ class OutputProducer:
                     "GDEF",  # Glyph Definition table = various glyph properties used in OpenType layout processing
                     "GPOS",  # Glyph Positioning table = precise control over glyph placement
                     #          for sophisticated text layout and rendering in each script and language system
-                    "GSUB",  # Glyph Substitution table = data for substition of glyphs for appropriate rendering of scripts
+                    "GSUB",  # Glyph Substitution table = data for substitution of glyphs for appropriate rendering of scripts
                     "MATH",  # Mathematical typesetting table = specific information necessary for math formula layout
                     "hdmx",  # Horizontal Device Metrics table, stores integer advance widths scaled to particular pixel sizes
                     #          for OpenType™ fonts with TrueType outlines
                     "meta",  # metadata table
+                    "sbix",  # Apple's SBIX table, used for color bitmap glyphs
+                    "CBDT",  # Color Bitmap Data Table
+                    "CBLC",  # Color Bitmap Location Table
+                    "EBDT",  # Embedded Bitmap Data Table
+                    "EBLC",  # Embedded Bitmap Location Table
+                    "EBSC",  # Embedded Bitmap Scaling Table
+                    "SVG ",  # SVG table
+                    "CPAL",  # Color Palette table
+                    "COLR",  # Color table
+                    "fvar",  # Font Variations table
                 ]
                 subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)
@@ -1001,7 +1102,7 @@ class OutputProducer:
                 break
         assert iccp_content is not None
         # Note: n should be 4 if the profile ColorSpace is CMYK
-        iccp_obj = PDFICCPObject(
+        iccp_obj = PDFICCProfile(
             contents=iccp_content, n=img_info["dpn"], alternate=img_info["cs"]
         )
         iccp_pdf_i = self._add_pdf_obj(iccp_obj, "iccp")
@@ -1279,6 +1380,16 @@ class OutputProducer:
             return pdf_obj
         return None
 
+    def _add_output_intents(self):
+        """should be added in _add_catalog"""
+        output_intents = self.fpdf.output_intents
+        if not output_intents:
+            return None
+        for output_intent in output_intents:
+            if output_intent.dest_output_profile:
+                self._add_pdf_obj(output_intent.dest_output_profile)
+        return PDFArray(output_intents)
+
     def _add_catalog(self):
         fpdf = self.fpdf
         catalog_obj = PDFCatalog(
@@ -1287,6 +1398,8 @@ class OutputProducer:
             page_mode=fpdf.page_mode,
             viewer_preferences=fpdf.viewer_preferences,
         )
+        catalog_obj.output_intents = self._add_output_intents()
+
         self._add_pdf_obj(catalog_obj)
         return catalog_obj
 
@@ -1335,14 +1448,10 @@ class OutputProducer:
             catalog_obj.names = pdf_dict(
                 {"/EmbeddedFiles": pdf_dict({"/Names": pdf_list(file_spec_names)})}
             )
-        ordered_pages = list(fpdf.pages.items())
-        for _ in range(self.fpdf._toc_inserted_pages):
-            last_page = ordered_pages.pop()
-            ordered_pages.insert(self.fpdf.toc_placeholder.start_page, last_page)
         page_labels = [
-            f"{seq} {pdf_dict(page[1].get_page_label().serialize())}"
-            for (seq, page) in enumerate(ordered_pages)
-            if page[1].get_page_label()
+            f"{i} {pdf_dict(page.get_page_label().serialize())}"
+            for i, page in enumerate(self._iter_pages_in_order())
+            if page.get_page_label()
         ]
         if page_labels and not fpdf.pages[1].get_page_label():
             # If page labels are used, an entry for sequence 0 is mandatory

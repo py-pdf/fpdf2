@@ -78,6 +78,8 @@ pdf.set_page_label(
 
 If you need to get the current page label, for example, to display it in a header or footer, you can use the `get_page_label()` method.
 
+!!! warning "In case of a [table of contents](DocumentOutlineAndTableOfContents.md) spanning **more than one page**, the page number returned by `get_page_label()` will be **incorrect**.<br>_cf._ [GitHub issue #1343](https://github.com/py-pdf/fpdf2/issues/1343)"
+
 ---
 
 ## Example Usage

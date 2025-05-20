@@ -149,6 +149,7 @@ class CoerciveIntFlag(IntFlag):
 
 class WrapMode(CoerciveEnum):
     "Defines how to break and wrap lines in multi-line text."
+
     WORD = intern("WORD")
     "Wrap by word"
 
@@ -158,6 +159,7 @@ class WrapMode(CoerciveEnum):
 
 class CharVPos(CoerciveEnum):
     "Defines the vertical position of text relative to the line."
+
     SUP = intern("SUP")
     "Superscript"
 
@@ -285,7 +287,7 @@ class MethodReturnValue(CoerciveIntFlag):
     """
 
     PAGE_BREAK = 1
-    "The method will return a boolean indicating if a page break occured"
+    "The method will return a boolean indicating if a page break occurred"
 
     LINES = 2
     "The method will return a multi-lines array of strings, after performing word-wrapping"
@@ -493,6 +495,7 @@ class RenderStyle(CoerciveEnum):
 
 class TextMode(CoerciveIntEnum):
     "Values described in PDF spec section 'Text Rendering Mode'"
+
     FILL = 0
     STROKE = 1
     FILL_STROKE = 2
@@ -552,6 +555,7 @@ class YPos(CoerciveEnum):
 
 class Angle(CoerciveIntEnum):
     "Direction values used for mirror transformations specifying the angle of mirror line"
+
     NORTH = 90
     EAST = 0
     SOUTH = 270
@@ -1020,6 +1024,19 @@ class TextDirection(CoerciveEnum):
     "bottom to top"
 
 
+class OutputIntentSubType(CoerciveEnum):
+    "Definition for Output Intent Subtypes"
+
+    PDFX = Name("GTS_PDFX")
+    "PDF/X-1a which is based upon CMYK processing"
+
+    PDFA = Name("GTS_PDFA1")
+    "PDF/A (ISO 19005) standard to produce RGB output"
+
+    ISOPDF = Name("ISO_PDFE1")
+    "ISO_PDFE1 PDF/E standards (ISO 24517, all parts)"
+
+
 class PageLabelStyle(CoerciveEnum):
     "Style of the page label"
 
@@ -1077,7 +1094,7 @@ class PageOrientation(CoerciveEnum):
 
 class PDFResourceType(Enum):
     EXT_G_STATE = intern("ExtGState")
-    COLOR_SPACE = intern("ColorSpece")
+    COLOR_SPACE = intern("ColorSpace")
     PATTERN = intern("Pattern")
     SHADDING = intern("Shading")
     X_OBJECT = intern("XObject")

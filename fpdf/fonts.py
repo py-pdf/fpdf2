@@ -8,14 +8,16 @@ in non-backward-compatible ways.
 """
 
 import re, warnings
+import logging
 
 from bisect import bisect_left
 from collections import defaultdict
 from dataclasses import dataclass, replace
 from functools import lru_cache
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
 from fontTools import ttLib
+from fontTools.pens.ttGlyphPen import TTGlyphPen
 
 try:
     import uharfbuzz as hb
@@ -37,6 +39,8 @@ from .enums import FontDescriptorFlags, TextEmphasis, Align
 from .syntax import Name, PDFObject
 from .font_type_3 import get_color_font_object
 from .util import escape_parens
+
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -74,6 +78,10 @@ class FontFace:
         )
 
     replace = replace
+    """
+    Create a new FontFace instance, with new values for some attributes.
+    Same as `dataclasses.replace()`
+    """
 
     @staticmethod
     def _override(current_value, override_value):
@@ -153,6 +161,7 @@ class TextStyle(FontFace):
             + f", t_margin={self.t_margin}, l_margin={self.l_margin}, b_margin={self.b_margin})"
         )
 
+    # override parent method
     def replace(
         self,
         /,
@@ -165,6 +174,10 @@ class TextStyle(FontFace):
         l_margin=None,
         b_margin=None,
     ):
+        """
+        Create a new TextStyle instance, with new values for some attributes.
+        Same as `dataclasses.replace()`
+        """
         return TextStyle(
             font_family=font_family or self.family,
             font_style=self.emphasis if emphasis is None else emphasis.style,
@@ -271,6 +284,40 @@ class TTFFont:
         )
 
         self.scale = 1000 / self.ttfont["head"].unitsPerEm
+
+        # check if the font is a TrueType and missing a .notdef glyph
+        # if it is missing, provide a fallback glyph
+        if "glyf" in self.ttfont and ".notdef" not in self.ttfont["glyf"]:
+            LOGGER.warning(
+                (
+                    "TrueType Font '%s' is missing the '.notdef' glyph. "
+                    "Fallback glyph will be provided."
+                ),
+                self.fontkey,
+            )
+            # draw a diagonal cross .notdef glyph
+            (xMin, xMax, yMin, yMax) = (
+                self.ttfont["head"].xMin,
+                self.ttfont["head"].xMax,
+                self.ttfont["head"].yMin,
+                self.ttfont["head"].yMax,
+            )
+            pen = TTGlyphPen(self.ttfont["glyf"])
+            pen.moveTo((xMin, yMin))
+            pen.lineTo((xMax, yMin))
+            pen.lineTo((xMax, yMax))
+            pen.lineTo((xMin, yMax))
+            pen.closePath()
+            pen.moveTo((xMin, yMin))
+            pen.lineTo((xMax, yMax))
+            pen.closePath()
+            pen.moveTo((xMax, yMin))
+            pen.lineTo((xMin, yMax))
+            pen.closePath()
+
+            self.ttfont["glyf"][".notdef"] = pen.glyph()
+            self.ttfont["hmtx"][".notdef"] = (xMax - xMin, yMax - yMin)
+
         default_width = round(self.scale * self.ttfont["hmtx"].metrics[".notdef"][0])
 
         os2_table = self.ttfont["OS/2"]
@@ -311,6 +358,10 @@ class TTFFont:
         # saving only the keys we have a tuple with
         # the unicode characters available on the font
         self.cmap = self.ttfont.getBestCmap()
+        if not self.cmap:
+            raise NotImplementedError(
+                "Font not supported as it does not have a unicode cmap table - cf. issue #1396"
+            )
 
         # saving a list of glyph ids to char to allow
         # subset by unicode (regular) and by glyph
@@ -334,20 +385,13 @@ class TTFFont:
 
         self.missing_glyphs = []
 
-        # include numbers in the subset! (if alias present)
-        # ensure that alias is mapped 1-by-1 additionally (must be replaceable)
-        sbarr = "\x00 \r\n"
-        if fpdf.str_alias_nb_pages:
-            sbarr += "0123456789"
-            sbarr += fpdf.str_alias_nb_pages
-
         self.name = re.sub("[ ()]", "", self.ttfont["name"].getBestFullName())
         self.up = round(post_table.underlinePosition * self.scale)
         self.ut = round(post_table.underlineThickness * self.scale)
         self.sp = round(os2_table.yStrikeoutPosition * self.scale)
         self.ss = round(os2_table.yStrikeoutSize * self.scale)
         self.emphasis = TextEmphasis.coerce(style)
-        self.subset = SubsetMap(self, [ord(char) for char in sbarr])
+        self.subset = SubsetMap(self)
         self.biggest_size_pt = 0
         self.color_font = get_color_font_object(fpdf, self)
 
@@ -371,21 +415,21 @@ class TTFFont:
             return escape_parens(encoded.decode("latin-1", errors="ignore"))
         return escape_parens(text.encode("utf-16-be").decode("latin-1"))
 
-    def get_text_width(self, text, font_size_pt, text_shaping_parms):
+    def get_text_width(self, text, font_size_pt, text_shaping_params):
         if font_size_pt > self.biggest_size_pt:
             self.biggest_size_pt = font_size_pt
-        if text_shaping_parms:
-            return self.shaped_text_width(text, font_size_pt, text_shaping_parms)
+        if text_shaping_params:
+            return self.shaped_text_width(text, font_size_pt, text_shaping_params)
         return (len(text), sum(self.cw[ord(c)] for c in text) * font_size_pt * 0.001)
 
-    def shaped_text_width(self, text, font_size_pt, text_shaping_parms):
+    def shaped_text_width(self, text, font_size_pt, text_shaping_params):
         """
         When texts are shaped, the length of a string is not always the sum of all individual character widths
         This method will invoke harfbuzz to perform the text shaping and return the sum of "x_advance"
         and "x_offset" for each glyph. This method works for "left to right" or "right to left" texts.
         """
         _, glyph_positions = self.perform_harfbuzz_shaping(
-            text, font_size_pt, text_shaping_parms
+            text, font_size_pt, text_shaping_params
         )
 
         # If there is nothing to render (harfbuzz returns None), we return 0 text width
@@ -401,7 +445,7 @@ class TTFFont:
 
     # Disabling this check - looks like cython confuses pylint:
     # pylint: disable=no-member
-    def perform_harfbuzz_shaping(self, text, font_size_pt, text_shaping_parms):
+    def perform_harfbuzz_shaping(self, text, font_size_pt, text_shaping_params):
         """
         This method invokes Harfbuzz to perform text shaping of the input string
         """
@@ -410,13 +454,13 @@ class TTFFont:
         buf.cluster_level = 1
         buf.add_str("".join(text))
         buf.guess_segment_properties()
-        features = text_shaping_parms["features"]
-        if text_shaping_parms["fragment_direction"]:
-            buf.direction = text_shaping_parms["fragment_direction"].value
-        if text_shaping_parms["script"]:
-            buf.script = text_shaping_parms["script"]
-        if text_shaping_parms["language"]:
-            buf.language = text_shaping_parms["language"]
+        features = text_shaping_params["features"]
+        if text_shaping_params["fragment_direction"]:
+            buf.direction = text_shaping_params["fragment_direction"].value
+        if text_shaping_params["script"]:
+            buf.script = text_shaping_params["script"]
+        if text_shaping_params["language"]:
+            buf.language = text_shaping_params["language"]
         hb.shape(self.hbfont, buf, features)
         return buf.glyph_infos, buf.glyph_positions
 
@@ -429,7 +473,7 @@ class TTFFont:
             txt_mapped += chr(self.subset.pick(uni))
         return f"({self.escape_text(txt_mapped)}) Tj"
 
-    def shape_text(self, text, font_size_pt, text_shaping_parms):
+    def shape_text(self, text, font_size_pt, text_shaping_params):
         """
         This method will invoke harfbuzz for text shaping, include the mapping code
         of the glyphs on the subset and map input characters to the cluster codes
@@ -437,7 +481,7 @@ class TTFFont:
         if len(text) == 0:
             return []
         glyph_infos, glyph_positions = self.perform_harfbuzz_shaping(
-            text, font_size_pt, text_shaping_parms
+            text, font_size_pt, text_shaping_params
         )
         text_info = []
 
@@ -548,21 +592,20 @@ class SubsetMap:
     Holds a mapping of used characters and their position in the font's subset
 
     Characters that must be mapped on their actual unicode must be part of the
-    `identities` list during object instanciation. These non-negative values should
+    `identities` list during object instantiation. These non-negative values should
     only appear once in the list. `pick()` can be used to get the characters
     corresponding position in the subset. If it's not yet part of the object, a new
     position is acquired automatically. This implementation always tries to return
     the lowest possible representation.
     """
 
-    def __init__(self, font: TTFFont, identities: List[int]):
+    def __init__(self, font: TTFFont):
         super().__init__()
         self.font = font
         self._next = 0
 
-        # sort list to ease deletion once _next
-        # becomes higher than first reservation
-        self._reserved = sorted(identities)
+        # 0x00 ".notdef" and 0x20 "space" are reserved
+        self._reserved = [0x00, 0x20]
 
         # Maps Glyph instances to character IDs (integers):
         self._char_id_per_glyph = {}

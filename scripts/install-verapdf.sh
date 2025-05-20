@@ -6,12 +6,12 @@
 
 set -o pipefail -o errexit -o nounset -o xtrace
 
-VERSION=1.27.96
+VERSION=1.29.15
 PUB_KEY_FINGERPRINT=13DD102B4DD69354D12DE5A83184863278B17FE7
 FILENAME=verapdf-greenfield-${VERSION}-installer.zip
 ZIP_URL=https://software.verapdf.org/dev/${VERSION%.*}/${FILENAME}
 
-rm -rf verapdf-*
+rm -rf verapdf*
 wget --quiet ${ZIP_URL}
 wget --quiet ${ZIP_URL}.asc
 gpg --keyserver keyserver.ubuntu.com --recv ${PUB_KEY_FINGERPRINT}

@@ -75,4 +75,4 @@ For reference, it was built using this script: [zapfdingbats.py](zapfdingbats.py
 
 ## Fallback fonts ##
 
-If you need to mix special characters and emojis within normal text, it is possible to specify alternative fonts for FPDF to use as fallback fonts. See an exemple of use [Here](Unicode.md#fallback-fonts)
+If you need to mix special characters and emojis within normal text, it is possible to specify alternative fonts for FPDF to use as fallback fonts. See an example of use [Here](Unicode.md#fallback-fonts)

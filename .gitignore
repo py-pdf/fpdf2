@@ -1,10 +1,10 @@
-# my files
 .env
 .DS_Store
 
 # codecov.io
 coverage.xml
 
+__pycache__
 htmlcov
 public
 tutorial/invoice.pdf

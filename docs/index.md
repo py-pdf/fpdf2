@@ -1,7 +1,7 @@
 # fpdf2 #
 
 `fpdf2` is a library for simple & fast PDF document generation in Python.
-It is a fork and the successor of `PyFPDF` (_cf._ [history](https://py-pdf.github.io/fpdf2/History.html)).
+It is a fork and the successor of `PyFPDF` (_cf._ [history](History.md)).
 
 **Latest Released Version:** [![Pypi latest version](https://img.shields.io/pypi/v/fpdf2.svg)](https://pypi.python.org/pypi/fpdf2)
 
@@ -39,12 +39,12 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * [Presentation mode](Presentations.md) with control over page display duration & transitions
 * Optional basic Markdown-like styling: `**bold**, __italics__`
 * It has very few dependencies: [Pillow](https://pillow.readthedocs.io/en/stable/), [defusedxml](https://pypi.org/project/defusedxml/), & [fonttools](https://pypi.org/project/fonttools/)
-* Can render [mathematical equations & charts](https://py-pdf.github.io/fpdf2/Maths.html)
+* Can render [mathematical equations & charts](./Maths.md)
 * Many example scripts available throughout this documentation, including usage examples with [Django](https://www.djangoproject.com/), [Flask](https://flask.palletsprojects.com), [FastAPI](https://fastapi.tiangolo.com/), [streamlit](https://streamlit.io/), AWS lambdas... : [Usage in web APIs](UsageInWebAPI.md)
 * more than 1300 unit tests with `qpdf`-based PDF diffing, and PDF samples validation using 3 different checkers:
 
 [![QPDF logo](qpdf-logo.svg)](https://github.com/qpdf/qpdf)
-[![PDF Checker logo](pdfchecker-logo.png)](https://www.datalogics.com/products/pdf-tools/pdf-checker/)
+[![PDF Checker logo](pdfchecker-logo.png)](https://www.datalogics.com/repair-pdf-files)
 [![VeraPDF logo](vera-logo.jpg)](https://verapdf.org)
 
 ## Tutorials ##
@@ -67,6 +67,8 @@ Go try it **now** online in a Jupyter notebook: [![Open In Colab](https://colab.
 * [Polski](Tutorial-pl.md)
 * [Türkçe](Tutorial-tr.md)
 * [Indonesian](Tutorial-id.md)
+* [Slovenščina](Tutorial-sl.md)
+
 
 ## Installation ##
 
@@ -81,7 +83,22 @@ To get the latest, unreleased, development version straight from the development
 pip install git+https://github.com/py-pdf/fpdf2.git@master
 ```
 
-**Developement**: check the [dedicated documentation page](Development.md).
+**Development**: check the [dedicated documentation page](Development.md).
+
+### Verifying provenance
+[`pypi-attestations`](https://pypi.org/project/pypi-attestations/) can be used to check the provenance of a `fpdf2-2.X.Y.tar.gz` or `fpdf2-2.X.Y-py2.py3-none-any.whl` package (_cf._ [PyPI now supports digital attestations](https://blog.pypi.org/posts/2024-11-14-pypi-now-supports-digital-attestations/)).
+
+Example to check that the [`fpdf2-2.8.2.tar.gz` package on Pypi](https://pypi.org/project/fpdf2/#fpdf2-2.8.2.tar.gz) has been published from the [py-pdf/fpdf2](https://github.com/py-pdf/fpdf2) GitHub repository:
+
+```shell
+$ pip install pypi-attestations
+
+$ pypi-attestations verify pypi
+ --repository https://github.com/py-pdf/fpdf2 https://files.pythonhosted.org/packages/eb/46/7aae9cb2584dcac217e662ab6d4670ef4e447b73d624b6210f7155322411/fpdf2-2.8.2-py2.py3-none-any.whl
+OK: fpdf2-2.8.2-py2.py3-none-any.whl
+```
+
+The file URL can be retrieved from the [pypi.org/simple/fpdf2 page](https://pypi.org/simple/fpdf2/).
 
 ### Displaying deprecation warnings
 `DeprecationWarning`s are not displayed by Python by default.
@@ -131,7 +148,7 @@ Online classes & open source projects:
   We have some documentations about combining `fpdf2` with [`borb`](CombineWithBorb.md) & [`pypdf`](CombineWithPypdf.md).
 * [Create PDFs with Python](https://www.youtube.com/playlist?list=PLjNQtX45f0dR9K2sMJ5ad9wVjqslNBIC0) : a series of tutorial videos by bvalgard
 * [GitHub gist providing borders around any fpdf2 area](https://gist.github.com/hyperstown/88a44b28313549a43255f590f4915b1a), by [@hyperstown](https://github.com/hyperstown)
-* [digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2](https://github.com/digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2) : scripts ported from PHP to add transpareny to elements of the page or part of an image, allow to write circular text,
+* [digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2](https://github.com/digidigital/Extensions-and-Scripts-for-pyFPDF-fpdf2) : scripts ported from PHP to add transparency to elements of the page or part of an image, allow to write circular text,
    draw pie charts and bar diagrams, embed JavaScript, draw rectangles with rounded corners, draw a star shape,
    restrict the rendering of some elements to screen or printout, paint linear / radial / multi-color gradients gradients, add stamps & watermarks, write sheared text...
 
@@ -140,4 +157,4 @@ Online classes & open source projects:
 * Release notes for every versions of `fpdf2`: [CHANGELOG.md](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)
 * This library could only exist thanks to the dedication of many volunteers around the world:
   [list & map of contributors](https://github.com/py-pdf/fpdf2/blob/master/README.md#contributors-)
-* You can download an offline PDF version of this manual: [fpdf2-manual.pdf](fpdf2-manual.pdf)
+* You can download an offline PDF version of this manual: [fpdf2-manual.pdf](https://py-pdf.github.io/fpdf2/fpdf2-manual.pdf)

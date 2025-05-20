@@ -98,6 +98,50 @@ pdf.cell(text="Internal link to first page", border=1, link=link)
 pdf.output("internal_link.pdf")
 ```
 
+There are some situations where a user wants to create
+an internal link to another page in the PDF document, but
+the page number is not known at the time of link creation.
+In this case, the link can be created using `pdf.add_link()`
+as before, and then later re-reference to a specific page using 
+`pdf.set_link()`. In this example our goal is to link to a
+page that occurs after a section with a variable
+amount of text, potentially occupying multiple pages:
+
+```python
+from fpdf import FPDF
+import random
+
+pdf = FPDF()
+pdf.set_font("helvetica", size=24)
+pdf.add_page()
+
+# create a link to a page that will be created later
+link_to_summary_page = pdf.add_link()
+pdf.cell(text="Link to summary after elements", border=1, link=link_to_summary_page)
+pdf.ln(20)
+
+pdf.cell(text="List of elements", align="C", center=True)
+pdf.ln(20)
+
+# this num_elements variable can vary across runs
+# resulting in a different number of pages
+num_elements = random.randint(10,30)
+for i in range(num_elements):
+    pdf.cell(text=f"Element {i+1}", align="C", center=True)
+    pdf.ln(20)
+
+# `set_link` to change page referenced by the link
+pdf.add_page()
+pdf.set_link(link_to_summary_page)
+pdf.cell(text=f"Summary: there are {num_elements} elements", align="C", center=True)
+pdf.ln(20)
+
+# link back to the first page
+link = pdf.add_link(page=1)
+pdf.cell(text="Internal link to first page", border=1, link=link)
+
+pdf.output("internal_link_unknown_pages.pdf")
+```
 Other methods can also insert internal links:
 
 * [FPDF.multi_cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) using `link=` **or** `markdown=True` and this syntax: `[link text](page number)`

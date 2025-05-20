@@ -371,7 +371,7 @@ def test_trailing_soft_hyphen():
     """
     fit one word and trailing soft-hyphen into the line with extremely large width.
     expected behavior ->
-        - first call to `get_line` cointains the word.
+        - first call to `get_line` contains the word.
           soft hyphen is not included in the line.
         - second call to `get_line` is None because there is no
             text left.
@@ -411,7 +411,7 @@ def test_trailing_whitespace():
     """
     fit one word and trailing whitespace into the line with extremely large width.
     expected behavior ->
-        - first call to `get_line` cointains the word and the space.
+        - first call to `get_line` contains the word and the space.
         - second call to `get_line` is None because there is no
             text left.
     """
@@ -450,7 +450,7 @@ def test_two_words_one_line():
     """
     fit two words into the line with extremely large width.
     expected behavior ->
-        - first call to `get_line` cointains all words.
+        - first call to `get_line` contains all words.
         - second call to `get_line` is None because there is no
             text left.
     """
@@ -489,7 +489,7 @@ def test_two_words_one_line_justify():
     """
     fit two words into the line with extremely large width.
     expected behavior ->
-        - first call to `get_line` cointains all words.
+        - first call to `get_line` contains all words.
             this line is expected to be unjustified, because it is the last
             line.
         - second call to `get_line` is None because there is no
@@ -530,8 +530,8 @@ def test_two_words_two_lines_break_by_space():
     """
     fit two words into the line that can fit only one word.
     expected behavior:
-        - first call to `get_line` cointains the first word.
-        - second call to `get_line` cointains the second word.
+        - first call to `get_line` contains the first word.
+        - second call to `get_line` contains the second word.
         - third call to `get_line` is None because there is no
             text left.
     """
@@ -580,10 +580,10 @@ def test_two_words_two_lines_break_by_space_justify():
     """
     fit two words into the line that can fit only one word.
     expected behavior:
-        - first call to `get_line` cointains the first word.
+        - first call to `get_line` contains the first word.
             Line is expected to be unjustified, because there are no spaces in
             the line.
-        - second call to `get_line` cointains the second word.
+        - second call to `get_line` contains the second word.
             Line is expected to be unjustified, because it is the last line.
         - third call to `get_line` is None because there is no
             text left.
@@ -630,8 +630,8 @@ def test_four_words_two_lines_break_by_space():
     """
     fit two words into the line that can fit only one word.
     expected behavior:
-        - first call to `get_line` cointains the first two words.
-        - second call to `get_line` cointains the second two words.
+        - first call to `get_line` contains the first two words.
+        - second call to `get_line` contains the second two words.
         - third call to `get_line` is None because there is no
             text left.
     """
@@ -679,9 +679,9 @@ def test_four_words_two_lines_break_by_space_justify():
     """
     fit two words into the line that can fit only one word.
     expected behavior:
-        - first call to `get_line` cointains the first two words.
+        - first call to `get_line` contains the first two words.
             Line is expected to be justified.
-        - second call to `get_line` cointains the second two words.
+        - second call to `get_line` contains the second two words.
             Line is expected to be unjustified, because it is the last line.
         - third call to `get_line` is None because there is no
             text left.

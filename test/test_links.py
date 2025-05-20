@@ -137,7 +137,7 @@ def test_inserting_same_page_link_twice(tmp_path):
     assert_pdf_equal(pdf, HERE / "inserting_same_page_link_twice.pdf", tmp_path)
 
 
-def test_inserting_link_to_non_exising_page():
+def test_inserting_link_to_non_existing_page():
     pdf = FPDF()
     pdf.add_page()
     pdf.link(

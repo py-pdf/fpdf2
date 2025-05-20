@@ -62,7 +62,7 @@ def assert_pdf_equal(
     generate=False,
     ignore_id_changes=False,
     ignore_original_obj_ids=False,
-    ignore_xref_offets=False,
+    ignore_xref_offsets=False,
 ):
     """
     This compare the output of a `FPDF` instance (or `Template` instance),
@@ -125,9 +125,9 @@ def assert_pdf_equal(
         if ignore_original_obj_ids:
             actual_lines = filter_out_original_obj_ids(actual_lines)
             expected_lines = filter_out_original_obj_ids(expected_lines)
-        if ignore_xref_offets:
-            actual_lines = filter_out_xref_offets(actual_lines)
-            expected_lines = filter_out_xref_offets(expected_lines)
+        if ignore_xref_offsets:
+            actual_lines = filter_out_xref_offsets(actual_lines)
+            expected_lines = filter_out_xref_offsets(expected_lines)
         if actual_lines != expected_lines:
             # It is important to reduce the size of both list of bytes here,
             # to avoid .assertSequenceEqual to take forever to finish, that itself calls difflib.ndiff,
@@ -152,7 +152,7 @@ def filter_out_original_obj_ids(lines):
     return [line for line in lines if not line.startswith(b"%% Original object ID: ")]
 
 
-def filter_out_xref_offets(lines):
+def filter_out_xref_offsets(lines):
     return [line for line in lines if not line.endswith(b" 00000 n ")]
 
 

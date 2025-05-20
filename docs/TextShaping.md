@@ -7,7 +7,7 @@ _New in [:octicons-tag-24: 2.7.5](https://github.com/py-pdf/fpdf2/blob/master/CH
 ## What is text shaping? ##
 Text shaping is a fundamental process in typography and computer typesetting that influences the aesthetics and readability of text in various languages and scripts. It involves the transformation of Unicode text into glyphs, which are then positioned for display or print. 
 
-For texts in latin script, text shaping can improve the aesthetics by replacing characters that would colide or overlap by a single glyph specially crafted to look harmonious.
+For texts in latin script, text shaping can improve the aesthetics by replacing characters that would collide or overlap by a single glyph specially crafted to look harmonious.
 
 ![](text-shaping-ligatures.png)
 

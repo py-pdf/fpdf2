@@ -88,7 +88,7 @@ def test_set_font_aliases_as_font():
 
         # Test if font family is set correctly
         assert pdf.font_family == alternative
-    # Test if the fonts were added in this order and without duplicats:
+    # Test if the fonts were added in this order and without duplicates:
     # helvetica, courier, times
     assert [*pdf.fonts] == ["helvetica", "courier", "times"]
 

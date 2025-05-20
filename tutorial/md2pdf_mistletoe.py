@@ -13,6 +13,8 @@ Subtitle (setext)
 
 _Text in italics_
 
+~~Strikethrough~~
+
 [This is a link](https://github.com/PyFPDF/fpdf2)
 
 <https://py-pdf.github.io/fpdf2/>
@@ -58,4 +60,4 @@ from fpdf import FPDF
 pdf = FPDF()
 pdf.add_page()
 pdf.write_html(html)
-pdf.output("pdf-from-markdown.pdf")
+pdf.output("pdf-from-markdown-with-mistletoe.pdf")

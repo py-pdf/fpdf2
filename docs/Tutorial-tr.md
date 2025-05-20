@@ -15,7 +15,7 @@ Hadi klasik bir örnekle başlayalım:
 [Sonuç PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto1.pdf)
 
 Kütüphaneyi dahil ettikten sonra, `FPDF` objesi oluşturuyoruz. 
-[FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF) oluşturucusu buradaki varsayılan değerleri kullanır: 
+[FPDF](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF) oluşturucusu buradaki varsayılan değerleri kullanır: 
 sayfalar dikey A4 formatında ve milimetre cinsinden ölçülüdür.
 Ayrıca bu şekilde açıkça da belirtilebilir:
 
@@ -27,12 +27,12 @@ Diğer sayfa formatları (`Letter` ve `Legal` gibi) ve ölçü birimleri (`pt`, 
 kullanılabilir.
 
 Şu an için bir sayfamız yok, bu yüzden bir tane eklememiz gerekiyor 
-[add_page](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page). Başlangıç noktası sol üst köşededir ve
+[add_page](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page). Başlangıç noktası sol üst köşededir ve
 geçerli konum varsayılan olarak sınırlardan 1 cm uzağa yerleştirilir; kenar boşlukları
-[set_margins](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins) ile değiştirilebilir.
+[set_margins](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins) ile değiştirilebilir.
 
 Metni yazdırmadan önce, aşağıdaki özelliklere sahip bir yazı tipi seçmek zorunludur 
-[set_font](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), aksi takdirde belge geçersiz olur.
+[set_font](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), aksi takdirde belge geçersiz olur.
 Helvetica bold 16'yı seçiyoruz:
 
 ```python
@@ -44,7 +44,7 @@ veya düz bir yazı tipiyle boş bir dizeyle (veya herhangi bir kombinasyonla) b
 Yazı tipi boyutu puan cinsinden belirtilir, milimetre (veya başka bir kullanıcı birimi) 
 değil; bu tek istisnadır. Diğer yerleşik yazı tipleri `Times`, `Courier`, `Symbol` ve `ZapfDingbats`'tir.
 
-Artık bir hücreyi [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) ile yazdırabiliriz. Hücre,
+Artık bir hücreyi [cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell) ile yazdırabiliriz. Hücre,
 muhtemelen çerçeveli, metin içeren bir dikdörtgen alanıdır. Hücre geçerli konumda
 oluşturulur. Boyutlarını, metnini (merkezlenmiş veya hizalanmış), çerçevelerinin çizilip
 çizilmeyeceğini ve sonrasında nereye gidileceğini (sağa, aşağıya veya bir sonraki satırın başına) belirtiriz. 
@@ -60,11 +60,11 @@ Yanına merkezlenmiş metin eklemek ve bir sonraki satıra gitmek için, şunu y
 pdf.cell(60, 10, 'FPDF tarafından oluşturuldu.', new_x="LMARGIN", new_y="NEXT", align='C')
 ```
 
-**Not**: Satır sonu ayrıca [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln) ile de yapılabilir. Bu
+**Not**: Satır sonu ayrıca [ln](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ln) ile de yapılabilir. Bu
 metot ayrıca, satır aralığını belirtmeye de olanak tanır.
 
 Son olarak, belge kapatılır ve verilen dosya yoluna kaydedilir.
-[output](fpdf/fpdf.html#fpdf.fpdf.FPDF.output). Herhangi bir parametre sağlanmadığında, `output()`
+[output](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.output). Herhangi bir parametre sağlanmadığında, `output()`
 PDF `bytearray` buffer değerini döndürür.
 
 ## Öğretici 2 - Başlık, altbilgi, sayfa sonu ve resim
@@ -77,20 +77,20 @@ PDF `bytearray` buffer değerini döndürür.
 
 [Sonuç PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
 
-Bu örnek, sayfa başlıklarını ve altbilgilerini işlemek için [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) ve
-[footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) metodlarını kullanır. Bunlar otomatik olarak çağrılır.
+Bu örnek, sayfa başlıklarını ve altbilgilerini işlemek için [header](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.header) ve
+[footer](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) metodlarını kullanır. Bunlar otomatik olarak çağrılır.
 Bu özellikler FPDF sınıfında zaten mevcuttur ancak varsayılan olduklarından boşturlar, bu yüzden sınıfı 
 genişletmeli ve içeriklerini doldurarak onları özelleştirmeliyiz.
 
-Logo, [image](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) metoduyla üst sol köşesini ve genişliğini belirterek yazdırılır.
+Logo, [image](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) metoduyla üst sol köşesini ve genişliğini belirterek yazdırılır.
 Yükseklik otomatik olarak hesaplanır ve resmin oranlarını korumak için kullanılır.
 
 Sayfa numarasını yazdırmak için, hücre genişliği olarak null bir değer geçilir. 
 Bu, metnin sağ kenarına kadar uzanması gerektiği anlamına gelir; metni ortalamak için kullanışlıdır. 
-Geçerli sayfa numarası [page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) metodu ile alınır; 
+Geçerli sayfa numarası [page_no](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) metodu ile alınır; 
 toplam sayfa sayısı ise belge kapatıldığında `{nb}` ile değiştirilecek özel bir değerle alınır 
-(bu özel değer [alias_nb_pages()](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages) ile değiştirilebilir). 
-Not olarak, [set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) metodu, sayfanın üstünden veya altından 
+(bu özel değer [alias_nb_pages()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages) ile değiştirilebilir). 
+Not olarak, [set_y](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) metodu, sayfanın üstünden veya altından 
 başlayarak mutlak bir konum belirlemeye izin verir.
 
 Burada kullanılan başka ilginç bir özellik de otomatik sayfa sınırlandırmalarıdır. Bir hücre sayfanın bir sınırını
@@ -98,7 +98,7 @@ geçeceği anda (varsayılan olarak alttan 2 cm uzakta) bir kesme gerçekleştir
 Başlık ve altbilgi kendi yazı tipini (`helvetica`) seçerken, gövde `Times` ile devam eder.
 Bu otomatik geri yükleme mekanizması, renkler ve çizgi kalınlığı için de geçerlidir.
 Sayfa kesimlerini tetikleyen sınır,
-[set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break) ile ayarlanabilir.
+[set_auto_page_break](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break) ile ayarlanabilir.
 
 ## Öğretici 3 - Satır sonları ve renkler
 
@@ -112,17 +112,17 @@ Sayfa kesimlerini tetikleyen sınır,
 
 [Jules Verne metni](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-[get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) metodu, 
+[get_string_width](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) metodu, 
 kullanılan yazı tipindeki bir dizenin uzunluğunu belirlemeye olanak tanır. Bu, başlığı çevreleyen kısmın
 konumunu ve genişliğini hesaplamak için kullanılır. Ardından renkler ayarlanır
-([set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color),
-[set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) ve
-[set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) ve çizgi kalınlığı
+([set_draw_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color),
+[set_fill_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) ve
+[set_text_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) ve çizgi kalınlığı
 varsayılan 0.2 mm'ye karşı 1 mm'ye ayarlanır
-[set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Son olarak, hücre çıktısı yapılır
+[set_line_width](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Son olarak, hücre çıktısı yapılır
 (arka planın doldurulması gerektiğini belirten son parametre true'dur).
 
-Paragrafları yazdırmak için kullanılan yöntem [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) metotudur.
+Paragrafları yazdırmak için kullanılan yöntem [multi_cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) metotudur.
 Metin varsayılan olarak hizalanır. Her bir satır sağ sınırı hücrenin sağ kenarına ulaştığında veya 
 bir satır sonu karakteri (`\n`) karşılaşıldığında, bir satır sonu verilir ve yeni bir hücre 
 otomatik olarak mevcut hücrenin altına oluşturulur. Otomatik bir kesme, en yakın boşluğa veya 
@@ -131,8 +131,8 @@ Bir satır sonu tetiklendiğinde, bir yumuşak kısa çizgi normal bir kısa çi
 ve aksi takdirde yoksayılır.
 
 İki belge özelliği tanımlanmıştır: başlık 
-([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) ve yazar 
-([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Özellikler iki şekilde görülebilir.
+([set_title](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) ve yazar 
+([set_author](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Özellikler iki şekilde görülebilir.
 İlk olarak, belgeyi doğrudan Acrobat Reader ile açarak, Dosya menüsüne gidin ve Belge Özellikleri seçeneğini seçin.
 İkincisi, eklentiden de mevcut olan, belge özelliklerini sağ tıklayarak seçmek.
 
@@ -150,7 +150,7 @@ ve aksi takdirde yoksayılır.
 [Jules Verne metni](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 Önceki öğreticiyle ana fark, 
-[`text_columns`](fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column) metodunun kullanılmasıdır.
+[`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column) metodunun kullanılmasıdır.
 Metni toplar ve istenen sütun sayısına dağıtır, gerekirse otomatik olarak sayfa kesmeleri ekler.
 `TextColumns` örneği bir bağlam yöneticisi olarak etkin olduğunda, metin stilleri ve diğer yazı tipi özellikleri değiştirilebilir.
 Bu değişiklikler bağlamla sınırlı olacaktır. Kapatıldığında önceki ayarlar yeniden yüklenecektir.

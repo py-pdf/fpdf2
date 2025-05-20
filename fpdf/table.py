@@ -50,6 +50,7 @@ class Table:
         outer_border_width=None,
         num_heading_rows=1,
         repeat_headings=1,
+        min_row_height=None,
     ):
         """
         Args:
@@ -74,7 +75,7 @@ class Table:
             line_height (number): optional. Defines how much vertical space a line of text will occupy
             markdown (bool): optional, default to False. Enable markdown interpretation of cells textual content
             text_align (str, fpdf.enums.Align, tuple): optional, default to JUSTIFY. Control text alignment inside cells.
-            v_align (str, fpdf.enums.AlignV): optional, default to CENTER. Control vertical alignment of cells content
+            v_align (str, fpdf.enums.VAlign): optional, default to CENTER. Control vertical alignment of cells content
             width (number): optional. Sets the table width
             wrapmode (fpdf.enums.WrapMode): "WORD" for word based line wrapping (default),
                 "CHAR" for character based line wrapping.
@@ -106,6 +107,7 @@ class Table:
         self._wrapmode = wrapmode
         self._num_heading_rows = num_heading_rows
         self._repeat_headings = TableHeadingsDisplay.coerce(repeat_headings)
+        self._min_row_height = min_row_height
         self._initial_style = None
         self.rows = []
 
@@ -124,6 +126,7 @@ class Table:
                     "outer_border_width is only allowed when borders_layout is ALL or NO_HORIZONTAL_LINES"
                 )
             self._outer_border_width = 0
+        # _outer_border_margin : vertical spacing around table
         if self._outer_border_width:
             self._outer_border_margin = (
                 (gutter_width + outer_border_width / 2),
@@ -150,11 +153,11 @@ class Table:
         for row in rows:
             self.row(row)
 
-    def row(self, cells=(), style=None):
+    def row(self, cells=(), style=None, v_align=None, min_height=None):
         "Adds a row to the table. Returns a `Row` object."
         if self._initial_style is None:
             self._initial_style = self._fpdf.font_face()
-        row = Row(self, style=style)
+        row = Row(self, style=style, v_align=v_align, min_height=min_height)
         self.rows.append(row)
         for cell in cells:
             if isinstance(cell, dict):
@@ -193,7 +196,7 @@ class Table:
             emphasis = self._headings_style.emphasis
             if emphasis is not None:
                 family = self._headings_style.family or self._fpdf.font_family
-                font_key = family.lower() + emphasis.style
+                font_key = family.lower() + emphasis.style.replace("U", "")
                 if font_key not in CORE_FONTS and font_key not in self._fpdf.fonts:
                     # Raising a more explicit error than the one from set_font():
                     raise FPDFException(
@@ -223,15 +226,24 @@ class Table:
                 cell_x_positions.append(xx)
 
         # Process any rowspans
-        row_info = list(self._process_rowpans_entries())
+        rows_info = list(self._compute_rows_info())
 
         # actually render the cells
         repeat_headings = (
             self._repeat_headings is TableHeadingsDisplay.ON_TOP_OF_EVERY_PAGE
         )
         self._fpdf.y += self._outer_border_margin[1]
+        if len(self.rows) > self._num_heading_rows > 0:
+            # We avoid having the heading rows alone on a page - issue #1391
+            # pylint: disable=protected-access
+            self._fpdf._perform_page_break_if_need_be(
+                sum(
+                    rows_info[i].pagebreak_height
+                    for i in range(self._num_heading_rows + 1)
+                )
+            )
         for i in range(len(self.rows)):
-            pagebreak_height = row_info[i].pagebreak_height
+            pagebreak_height = rows_info[i].pagebreak_height
             # pylint: disable=protected-access
             page_break = self._fpdf._perform_page_break_if_need_be(pagebreak_height)
             if (
@@ -251,12 +263,12 @@ class Table:
                 for row_idx in range(self._num_heading_rows):
                     self._render_table_row(
                         row_idx,
-                        row_info[row_idx],
+                        rows_info[row_idx],
                         cell_x_positions=cell_x_positions,
                     )
             if i > 0:
                 self._fpdf.y += self._gutter_height
-            self._render_table_row(i, row_info[i], cell_x_positions)
+            self._render_table_row(i, rows_info[i], cell_x_positions)
 
         # Restoring altered FPDF settings:
         self._fpdf.l_margin = prev_l_margin
@@ -268,7 +280,7 @@ class Table:
         Defines which cell borders should be drawn.
         Returns a string containing some or all of the letters L/R/T/B,
         to be passed to `fpdf.FPDF.multi_cell()`.
-        Can be overriden to customize this logic
+        Can be overridden to customize this logic
         """
 
         if cell.border != CellBordersLayout.INHERIT:
@@ -390,7 +402,11 @@ class Table:
 
         padding = Padding.new(cell.padding) if cell.padding else self._padding
 
-        v_align = cell.v_align if cell.v_align else self._v_align
+        v_align = cell.v_align
+        if not v_align:
+            v_align = row.v_align
+        if not v_align:
+            v_align = self._v_align
 
         # We can not rely on the actual x position of the cell. Notably in case of
         # empty cells or cells with an image only the actual x position is incorrect.
@@ -406,13 +422,11 @@ class Table:
         self._fpdf.set_x(cell_x)
 
         # render cell border and background
-
         # if cell_height is defined, that means that we already know the size at which the cell will be rendered
         # so we can draw the borders now
         #
         # If cell_height is None then we're still in the phase of calculating the height of the cell meaning that
         # we do not need to set fonts & draw borders yet.
-
         if not height_query_only:
             x1 = self._fpdf.x
             y1 = self._fpdf.y
@@ -431,15 +445,14 @@ class Table:
                 fill_color=style.fill_color if style else None,
             )
 
-            # draw outer box if needed
-
+            # draw outer box if needed:
             if self._outer_border_width:
                 _remember_linewidth = self._fpdf.line_width
                 self._fpdf.set_line_width(self._outer_border_width)
 
                 # draw the outer box separated by the gutter dimensions
                 # the top and bottom borders are one continuous line
-                # whereas the left and right borders are segments beause of possible pagebreaks
+                # whereas the left and right borders are segments because of possible pagebreaks
                 x1 = self._fpdf.l_margin
                 x2 = x1 + self._width
                 y1 = y1 - self._outer_border_margin[1]
@@ -460,8 +473,7 @@ class Table:
 
                 self._fpdf.set_line_width(_remember_linewidth)
 
-        # render image
-
+        # render image:
         if cell.img:
             x, y = self._fpdf.x, self._fpdf.y
 
@@ -571,7 +583,7 @@ class Table:
                 col_width += self._gutter_width
         return col_width
 
-    def _process_rowpans_entries(self):
+    def _compute_rows_info(self):
         # First pass: Regularise the table by processing the rowspan and colspan entries
         active_rowspans = {}
         prev_row_in_col = {}
@@ -654,6 +666,12 @@ class Table:
                         min_height = max(img_heights)
                 if min_height == 0:
                     min_height = self._line_height
+                if row.min_height:
+                    if min_height < row.min_height:
+                        min_height = row.min_height
+                elif self._min_row_height:
+                    if min_height < self._min_row_height:
+                        min_height = self._min_row_height
 
                 row_min_heights.append(min_height)
                 row_span_max.append(row.max_rowspan)
@@ -677,7 +695,7 @@ class Table:
             if assigned_height + assigned_padding < span.contents_height:
                 # when there are overlapping rowspans, can we stretch the cells to be evenly padded?
                 if span.contents_height > assigned_height + span.length * max_padding:
-                    # stretch all cells to have the same padding, for asthetic reasons
+                    # stretch all cells to have the same padding, for aesthetic reasons
                     padding = (span.contents_height - assigned_height) / span.length
                     for i in span.row_range():
                         row_span_padding[i] = padding
@@ -721,10 +739,12 @@ class Table:
 class Row:
     "Object that `Table.row()` yields, used to build a row in a table"
 
-    def __init__(self, table, style=None):
+    def __init__(self, table, style=None, v_align=None, min_height=None):
         self._table = table
         self.cells = []
         self.style = style
+        self.v_align = VAlign.coerce(v_align) if v_align else v_align
+        self.min_height = min_height
 
     @property
     def cols_count(self):
@@ -794,7 +814,7 @@ class Row:
             text (str): string content, can contain several lines.
                 In that case, the row height will grow proportionally.
             align (str, fpdf.enums.Align): optional text alignment.
-            v_align (str, fpdf.enums.AlignV): optional vertical text alignment.
+            v_align (str, fpdf.enums.VAlign): optional vertical text alignment.
             style (fpdf.fonts.FontFace): optional text style.
             img: optional. Either a string representing a file path to an image,
                 an URL to an image, an io.BytesIO, or a instance of `PIL.Image.Image`.
@@ -828,7 +848,7 @@ class Row:
         cell = Cell(
             text,
             align,
-            v_align,
+            VAlign.coerce(v_align) if v_align else v_align,
             style,
             img,
             img_fill_width,
@@ -845,6 +865,7 @@ class Row:
 @dataclass(frozen=True)
 class Cell:
     "Internal representation of a table cell"
+
     __slots__ = (  # RAM usage optimization
         "text",
         "align",

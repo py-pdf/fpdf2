@@ -97,6 +97,7 @@ Following the CCS standard the padding can be specified using 1,2 3 or 4 values.
 
 ```python
     ...
+red = (255, 0, 0)
 style = FontFace(color=black, fill_color=red)
 with pdf.table(line_height=pdf.font_size, padding=2) as table:
     for irow in range(5):
@@ -120,22 +121,35 @@ left and right is supplied then c_margin is ignored.
 
 _New in [:octicons-tag-24: 2.7.6](https://github.com/PyFPDF/fpdf2/blob/master/CHANGELOG.md)_
 
-Can be set globally or per cell.
-Works the same way as padding, but with the `v_align` parameter.
-
+Can be set globally, per row or per cell, by passing a string or a [VAlign](https://py-pdf.github.io/fpdf2/fpdf/enums.html#fpdf.enums.VAlign) enum value as `v_align`:
 ```python
-
+...
 with pdf.table(v_align=VAlign.M) as table:
     ...
-    row.cell(f"custom v-align", v_align=VAlign.T)  # <-- align to top
+    row.cell(f"custom v-align", v_align="TOP")
 ```
 
 ## Setting row height
-
+First, `line_height` can be provided to set the height of every individual line of text:
 ```python
 ...
 with pdf.table(line_height=2.5 * pdf.font_size) as table:
     ...
+```
+
+_New in [:octicons-tag-24: 2.8.3](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+Second, a global `min_row_height` can be set,
+or configured per row as `min_height`:
+```python
+...
+with pdf.table(min_row_height=30) as table:
+    row = table.row()
+    row.cell("A")
+    row.cell("B")
+    row = table.row(min_height=50)
+    row.cell("C")
+    row.cell("D")
 ```
 
 ## Disable table headings
@@ -406,7 +420,7 @@ with pdf.table() as table:
             row.cell(datum)
 ```
 
-Can be shortened to the followng code,
+Can be shortened to the following code,
 by passing lists of strings as the `cells` optional argument of `.row()`:
 
 ```python

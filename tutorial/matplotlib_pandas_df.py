@@ -6,7 +6,7 @@ DF = pd.DataFrame(
         "First name": ["Jules", "Mary", "Carlson", "Lucas"],
         "Last name": ["Smith", "Ramos", "Banks", "Cimon"],
         "Age": [34, 45, 19, 31],
-        "City": ["San Juan", "Orlando", "Los Angeles", "Saint-Mahturin-sur-Loire"],
+        "City": ["San Juan", "Orlando", "Los Angeles", "Saint-Mathurin-sur-Loire"],
     }
     # Convert all data inside dataframe into string type:
 ).applymap(str)

@@ -124,7 +124,7 @@ def test_fallback_font_ignore_style(tmp_path):
     )
 
 
-def test_fallback_font_with_overriden_get_fallback_font(tmp_path):
+def test_fallback_font_with_overridden_get_fallback_font(tmp_path):
     class PDF(FPDF):
         def get_fallback_font(self, char, style=""):
             fonts_with_char = [
@@ -166,7 +166,7 @@ def test_fallback_font_with_overriden_get_fallback_font(tmp_path):
     )
     assert_pdf_equal(
         pdf,
-        HERE / "fallback_font_with_overriden_get_fallback_font.pdf",
+        HERE / "fallback_font_with_overridden_get_fallback_font.pdf",
         tmp_path,
     )
 

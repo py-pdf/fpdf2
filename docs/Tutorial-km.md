@@ -15,7 +15,7 @@
 [លទ្ធផល PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto1.pdf)
 
 បន្ទាប់ពីបញ្ចូលឯកសារដើម្បីប្រើក្នុងបណ្ណាល័យ, យើងបង្កើតទំរង់ `FPDF` មួយ។ 
-[FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF) ទំរង់នៃតម្លៃដើមដែលត្រូវបានប្រើទីនេះគឺ: 
+[FPDF](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF) ទំរង់នៃតម្លៃដើមដែលត្រូវបានប្រើទីនេះគឺ: 
 ខ្នាតនៃទំព័រទាំងអស់ជា A4 រាងបញ្ឃរ ហើយមានរង្វាស់ខ្នាតគិតជាមីលីម៉ែត្រ។
 វាត្រូវបានសំគាល់យ៉ាងច្បាស់ដូចកូដមួយបន្ទាត់ខាងក្រោមនេះ:
 
@@ -27,11 +27,11 @@ pdf = FPDF(orientation="P", unit="mm", format="A4")
 (ទំរង់លិតស្នាម `Letter` និង ទំរង់ផ្លូវច្បាប់ `Legal`) ហើយខ្នាតរង្វាស់អាចគិតជា (`pt`, `cm`, `in`)។
 
 មុននេះយើងមិនបាននិយាយអំពីទំព័រទេ ដូច្នេះយើងអាចអាចបង្កើតវាដោយប្រើ 
-[add_page](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page)។ ទីតាំងជ្រុងខាងលើខាងឆ្វេង និងទីតាំងដែលកំពុងស្ថិតនៅគឺកំណត់ដោយតម្លៃដើម 1 សង់ទីម៉ែត្រពីស៊ុបនៃបន្ទាត់ ការតម្រឹមអាចផ្លាស់ប្តូរបានដោយប្រើ
-[set_margins](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins).
+[add_page](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page)។ ទីតាំងជ្រុងខាងលើខាងឆ្វេង និងទីតាំងដែលកំពុងស្ថិតនៅគឺកំណត់ដោយតម្លៃដើម 1 សង់ទីម៉ែត្រពីស៊ុបនៃបន្ទាត់ ការតម្រឹមអាចផ្លាស់ប្តូរបានដោយប្រើ
+[set_margins](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins).
 
 មុនយើងអាចបោះពុម្ភអត្ថបទបាន កាតព្វកិច្ចរបស់យើងគឺរើសពុម្ភអក្សរជាមុនសិនដោយប្រើ
-[set_font](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) មិនដូចនោះទេអត្ថបទរបស់យើងនឹងមានបញ្ហា។
+[set_font](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font) មិនដូចនោះទេអត្ថបទរបស់យើងនឹងមានបញ្ហា។
 យើងអាចរើសយកពុម្ភអក្សរ Helvetica ដាក់ bold ទំហំ 16 តាមវិធីដូចខាងក្រោមជាគំរូ:
 
 ```python
@@ -41,7 +41,7 @@ pdf.set_font('Helvetica', style='B', size=16)
 យើងអាចកំណត់ជាទំរង់អក្សរទ្រេតដោយប្រើ `I` និង ទំរង់មានបន្ទាត់រត់ពីក្រោយដោយប្រើ `U` ឬ មិនចាំបាច់ប្រើពួកវា វានឹងបង្ហាញទំរង់ធម្មតាជាមួយនិងការប្រើអក្សរទទេ (empty string) មានន័យ (ឬ ការរួមបញ្ចូលគ្នាផ្សេងទៀត)។ ត្រូវចាំថាទំហំអក្សរត្រូវតែអោយតម្លៃខ្នាតគិតជាចុច(points)  មិនមែនគិតជាមីលីម៉ែត្រ (ឬជាខ្នាតណាមួយផ្សេងទេ) នេះជាករណីលើកលេងក្នុងការប្រើប្រាស។
 ពុម្ភអក្សរដែលបានបញ្ចូលរួចស្រេចរួមមាន `Times`, `Courier`, `Symbol` និង `ZapfDingbats` ។
 
-ឥលូវយើងអាចបោះពុម្ភសាកល្បងជាមួយការប្រើ [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell)។ មួយក្រឡា (cell) គឹមួយចតុកោណផ្ទៃគិតចាប់ពីផ្តើមបន្ទាត់ រហូតចប់នៃបន្ទាត់ផ្តេក ជាមួយស៊ុបដែលដែលអាចសរសេរអត្ថបទបាន។ វាបញ្ចេញទៅលើទីតាំងដែលកំពុងស្ថិនៅ។ យើងអាចកំណត់វិមាត្រ និង អត្ថបទ (ចំកណ្តាល ឬ ដោយការតម្រឹមស្រេចបាន) ប្រសិនបើមានការកំណត់ព្រំដែនវាអាចបង្ហាញផងដែរ ហើយនិងបង្ហាញចេញបន្ទាប់ពីទីតាំងដែលកំពុងនៅ (ដាក់ទៅខាងស្តាំ ឬ
+ឥលូវយើងអាចបោះពុម្ភសាកល្បងជាមួយការប្រើ [cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell)។ មួយក្រឡា (cell) គឹមួយចតុកោណផ្ទៃគិតចាប់ពីផ្តើមបន្ទាត់ រហូតចប់នៃបន្ទាត់ផ្តេក ជាមួយស៊ុបដែលដែលអាចសរសេរអត្ថបទបាន។ វាបញ្ចេញទៅលើទីតាំងដែលកំពុងស្ថិនៅ។ យើងអាចកំណត់វិមាត្រ និង អត្ថបទ (ចំកណ្តាល ឬ ដោយការតម្រឹមស្រេចបាន) ប្រសិនបើមានការកំណត់ព្រំដែនវាអាចបង្ហាញផងដែរ ហើយនិងបង្ហាញចេញបន្ទាប់ពីទីតាំងដែលកំពុងនៅ (ដាក់ទៅខាងស្តាំ ឬ
 ដាក់ពីក្រោម ឬ ដាក់បន្ទាប់ពីចុះបន្ទាត់)។ ដើម្បីដាក់ស៊ុមជាបន្ទាត់ជុំវិញយើងប្រើ:
 
 ```python
@@ -54,9 +54,9 @@ pdf.cell(40, 10, 'Hello World!', 1)
 pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 ```
 
-**ចំណាំ**: ការចុះបន្ទាត់អាចធ្វើបានដោយប្រើ [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). វិធីសាស្រ្តនេះជាការបញ្ជាក់បន្ថែមលើការបញ្ចប់កថាខ័ណ្ឌតាមរយៈគម្លាតកម្ពស់នៃបន្ទាត់។
+**ចំណាំ**: ការចុះបន្ទាត់អាចធ្វើបានដោយប្រើ [ln](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ln). វិធីសាស្រ្តនេះជាការបញ្ជាក់បន្ថែមលើការបញ្ចប់កថាខ័ណ្ឌតាមរយៈគម្លាតកម្ពស់នៃបន្ទាត់។
 
-ជាចុងក្រោយ ក្នុងការបញ្ចប់នៃការបង្កើត យើងត្រូវផ្តល់នូវផ្លូវរបស់ទីតាំងដែលយើងត្រូវរក្សារឯកសារទុកដោយប្រើ [output](fpdf/fpdf.html#fpdf.fpdf.FPDF.output) ដោយមិនចាំបាច់ផ្តល់ប៉ារ៉ាម៉ែត `output()` បញ្ចូនត្រលប់វិញជាស្រទាប់ PDF `bytearray`។
+ជាចុងក្រោយ ក្នុងការបញ្ចប់នៃការបង្កើត យើងត្រូវផ្តល់នូវផ្លូវរបស់ទីតាំងដែលយើងត្រូវរក្សារឯកសារទុកដោយប្រើ [output](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.output) ដោយមិនចាំបាច់ផ្តល់ប៉ារ៉ាម៉ែត `output()` បញ្ចូនត្រលប់វិញជាស្រទាប់ PDF `bytearray`។
 
 ## មេរៀនទី 2 - ក្បាលទំព័រ បាតកថា បំនែកទំពរ និង រូបភាព ##
 
@@ -68,19 +68,19 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [លទ្ធផលចេញជាឯកសារ PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
 
-ឯកសារនេះបង្កើតដោយប្រើ [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) និង 
-[footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) ជារបៀបនៃដំណើរបង្កើតនៃក្បាលទំព័រ និង បាតកថាទំព័រ។ ពួកវានឹងចេញមកដោយស្វ័យប្រវត្តិ។ វាមានស្រាប់មកជាមួយ FPDF ត្រាន់តែវាបង្ហាញចេញជាចន្លោះទំនេរដែលធ្វើអោយយើងមើលមិនដឹង។
+ឯកសារនេះបង្កើតដោយប្រើ [header](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.header) និង 
+[footer](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) ជារបៀបនៃដំណើរបង្កើតនៃក្បាលទំព័រ និង បាតកថាទំព័រ។ ពួកវានឹងចេញមកដោយស្វ័យប្រវត្តិ។ វាមានស្រាប់មកជាមួយ FPDF ត្រាន់តែវាបង្ហាញចេញជាចន្លោះទំនេរដែលធ្វើអោយយើងមើលមិនដឹង។
 ដូច្នេះយើងគ្រាន់តែតែបន្ថែមបន្ថយវាជាការស្រេច។
 
-រូបភាពនៃយីហោបានបង្ហាញ [image](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) តាមរយៈការកំណត់ប្រវែងទទឹងដាក់វាលើជ្រុងខាងលើនៃផ្នែកខាងឆ្វេង។ កម្ពស់គឺគណនាដោយស្វ័យប្រវត្តិផ្អែកតាមច្បាប់សមាមាត្រ។
+រូបភាពនៃយីហោបានបង្ហាញ [image](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) តាមរយៈការកំណត់ប្រវែងទទឹងដាក់វាលើជ្រុងខាងលើនៃផ្នែកខាងឆ្វេង។ កម្ពស់គឺគណនាដោយស្វ័យប្រវត្តិផ្អែកតាមច្បាប់សមាមាត្រ។
 
 ចំពោះការបង្ហាញលេខទំព័រវាបង្ហាញតម្លៃទទេរនៃប្រវែងទទឹងរបស់ក្រឡាផ្ទៃបន្ទាត់ (cell)។ វាមានន័យថាក្រឡាផ្ទៃត្រូវពង្រីកទៅផ្នែកនៃការកំណត់ចន្លោះទំនេរ(margin) ផ្នែកខាងស្តាំវាតម្រឹមចេញពីកណ្តាលនៃអត្ថបទមក។
-លេខទំព័រដែលយើងកំពុងស្ថិតនៅនឹងបង្ហាញតម្លៃដោយប្រើ [page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) ទៅតាមចំនួនសរុបនៃទំព័រជាញឹកញ៉ាប់គឺប្រើតម្លៃពិសេសបែបនេះ  `{nb}` ដែលជំនួសដោយចំនួនសរុបនៃទំព័រ (តម្លៃពិសេសនេះអាចប្តូរបានដោយ [alias_nb_pages()](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages))។
-ចំណាំនៃរបៀបប្រើប្រាស [set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) ដែលអោយយើងកំណត់ទីតាំងអក្សឈរ ពីលើមកក្រោម។
+លេខទំព័រដែលយើងកំពុងស្ថិតនៅនឹងបង្ហាញតម្លៃដោយប្រើ [page_no](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no) ទៅតាមចំនួនសរុបនៃទំព័រជាញឹកញ៉ាប់គឺប្រើតម្លៃពិសេសបែបនេះ  `{nb}` ដែលជំនួសដោយចំនួនសរុបនៃទំព័រ (តម្លៃពិសេសនេះអាចប្តូរបានដោយ [alias_nb_pages()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages))។
+ចំណាំនៃរបៀបប្រើប្រាស [set_y](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) ដែលអោយយើងកំណត់ទីតាំងអក្សឈរ ពីលើមកក្រោម។
 
 មានមុខងារពិសេសមួយផ្សេងទៀតដែលអាចប្រើបាន: គឺការចុះបន្ទាត់ទៅទំព័រថ្មីដោយស្វ័យប្រវត្តិខណៈពេលវាទៅដល់ចំនុចទាល់នៃទំព័រ (នៅចំនុច 2 សង់ទីម៉ែតគម្លាតពីក្រោមមក) ពេលចុះបន្ទាត់វារក្សាពុម្ភអក្សរដដែល។ ថ្វីបើក្បាលទំព័រ និង បាតកថាទំព័រមានពុម្ភអក្សរផ្ទាល់គឺ (`helvetica`)តែតួរអត្ថបទនៅតែជាពុម្ភ `Times`។
 យន្តការនៃការស្តារដោយស្វ័យប្រវត្តិនេះក៏អនុវត្តចំពោះពណ៌ និងទទឹងបន្ទាត់ផងដែរ។
-ដែនកំណត់ដែលមានការញែកទំព័រអាចត្រូវបានកំណត់ជាមួយពាក្យថា  [set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break)។
+ដែនកំណត់ដែលមានការញែកទំព័រអាចត្រូវបានកំណត់ជាមួយពាក្យថា  [set_auto_page_break](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break)។
 
 
 ## មេរៀនទី 3 - ចុះបន្ទាត់ និង ដាក់ពណ៌ ##
@@ -95,20 +95,20 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [អត្ថបទ Jules Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-ប្រើ [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) ប្រវែងនៃខ្សែពុម្ភអក្សរលើពុម្ភអក្សរកំពុងប្រើ ដែលប្រើដើម្បីគណនាទីតាំងជុំវិញចំណងជើង។ ហើយដាក់ពណ៌ដោយប្រើ (via [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color) 
-[set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) និង 
-[set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) ហើយកំណត់កំរ៉ាស់បន្ទាត់ 1 មីលីម៉ែត (ដោយតម្លៃដើម 0.2) និងប្រើ
-[set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width)។ ចុងក្រោយ យើងទទួលបាន (ដាក់ប៉ារ៉ាម៉ែតចុងក្រោយដោយពាក្យថា “True” នោះបានន័យថាពណ៌ផ្ទៃក្រោយបានដាក់)។
+ប្រើ [get_string_width](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) ប្រវែងនៃខ្សែពុម្ភអក្សរលើពុម្ភអក្សរកំពុងប្រើ ដែលប្រើដើម្បីគណនាទីតាំងជុំវិញចំណងជើង។ ហើយដាក់ពណ៌ដោយប្រើ (via [set_draw_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color) 
+[set_fill_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) និង 
+[set_text_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) ហើយកំណត់កំរ៉ាស់បន្ទាត់ 1 មីលីម៉ែត (ដោយតម្លៃដើម 0.2) និងប្រើ
+[set_line_width](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width)។ ចុងក្រោយ យើងទទួលបាន (ដាក់ប៉ារ៉ាម៉ែតចុងក្រោយដោយពាក្យថា “True” នោះបានន័យថាពណ៌ផ្ទៃក្រោយបានដាក់)។
 
-វិធីសាស្រ្តក្នុងការបោះពុម្ភកថាខ័ណ្ឌពហុបន្ទាត់គឺ [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). អត្ថបទរក្សាទំរង់ដើមយ៉ាងប្រក្រតី។
+វិធីសាស្រ្តក្នុងការបោះពុម្ភកថាខ័ណ្ឌពហុបន្ទាត់គឺ [multi_cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). អត្ថបទរក្សាទំរង់ដើមយ៉ាងប្រក្រតី។
 រាល់បន្ទាត់ដែលដល់ចុងខាងស្តាំ ឬ ចង់ចុះបន្ទាត់ត្រូវប្រើ (`\n`)
 ពេលយើងចុះបន្ទាត់ផ្ទៃថ្មីត្រូវបានបង្កើតដោយស្វ័យប្រវត្តិពីក្រោមបន្ទាត់កំពុងប្រើ។
 ការចុះបន្ទាត់ដោយស្វ័យប្រវត្តិនិងប្រព្រឹត្តទៅនៅខាងចុងបំផុតនៃចន្លោះ ឬ soft-hyphen (`\u00ad`) នៅមុខអក្សរដែលត្រូវចុះ។
 សញ្ញាត្រេជាអក្សរ និងត្រូវជំនួសដោយសញ្ញាត្រេធម្មតានៅពេលដែលវាភ្ជាប់ជាមួយបន្ទាត់ត្រូវចុះ មិនចឹងទេយើងរំលងវាចោលបាន។
 
 មានកន្លែងពីរដែលអាចកំណត់លើឯកសារបានថាជាសម្បត្តិរបស់យើងបានគឺ: ចំណងជើង 
-([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) និង អ្នកសរសេរ
-([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). ទាំងអស់នេះអាចបង្ហាញជាពីរអត្ថន័យ។
+([set_title](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) និង អ្នកសរសេរ
+([set_author](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). ទាំងអស់នេះអាចបង្ហាញជាពីរអត្ថន័យ។
 ទីមួយពេលបើកឯកសារជាមួយកម្មវិធី Acrobat Reader ចុចលើ File ពីមីនុយ
 ហើយរើសយក Document Properties។ ទីពីរអាចរកវាឃើញពី plug-in ដោយប្រើ Right-Click ហើយរើសយកពាក្យ Document Properties។
 

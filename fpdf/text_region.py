@@ -83,6 +83,7 @@ class Paragraph:  # pylint: disable=function-redefined
         bullet_string: str = "",
         skip_leading_spaces: bool = False,
         wrapmode: WrapMode = None,
+        first_line_indent: float = 0,
     ):
         self._region = region
         self.pdf = region.pdf
@@ -117,6 +118,7 @@ class Paragraph:  # pylint: disable=function-redefined
             )
         else:
             self.bullet = None
+        self.first_line_indent = first_line_indent
 
     def __str__(self):
         return (
@@ -183,6 +185,7 @@ class Paragraph:  # pylint: disable=function-redefined
             self._text_fragments,
             max_width=self._region.get_width,
             margins=(self.pdf.c_margin + self.indent, self.pdf.c_margin),
+            first_line_indent=self.first_line_indent,
             align=self.text_align or self._region.text_align or Align.L,
             print_sh=print_sh,
             wrapmode=self.wrapmode,
@@ -393,6 +396,7 @@ class ParagraphCollectorMixin:
         bullet_string="",
         bullet_r_margin=None,
         wrapmode: WrapMode = None,
+        first_line_indent=0,
     ):
         """
         Args:
@@ -408,6 +412,7 @@ class ParagraphCollectorMixin:
             bullet_r_margin (float, optional): determines the spacing between the bullet and the bulleted line
             skip_leading_spaces (float, optional): removes all space characters at the beginning of each line. (Default: False)
             wrapmode (WrapMode): determines the way text wrapping is handled. (Default: None)
+            first_line_indent (float, optional): left spacing before first line of text in paragraph.
         """
         if self._active_paragraph == "EXPLICIT":
             raise FPDFException("Unable to nest paragraphs.")
@@ -420,6 +425,7 @@ class ParagraphCollectorMixin:
             top_margin=top_margin,
             bottom_margin=bottom_margin,
             indent=indent,
+            first_line_indent=first_line_indent,
             bullet_string=bullet_string,
             bullet_r_margin=bullet_r_margin,
         )
@@ -550,6 +556,7 @@ class TextRegion(ParagraphCollectorMixin):
                     cur_bullet.rendered_flag = True
                     self.pdf.x += bullet_indent_shift
                 # Don't check the return, we never render past the bottom here.
+                self.pdf.x += text_line.indent
                 self.pdf._render_styled_text_line(
                     text_line,
                     h=text_line.height,
@@ -558,6 +565,7 @@ class TextRegion(ParagraphCollectorMixin):
                     new_y=YPos.NEXT,
                     fill=False,
                 )
+                self.pdf.x -= text_line.indent
                 self.pdf.x -= cur_paragraph.indent
                 if tl_wrapper.last_line:
                     margin = cur_paragraph.bottom_margin
@@ -649,6 +657,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
         return self
 
     def new_column(self):
+        "End the current column and continue at the top of the next one."
         if self._paragraphs:
             self._paragraphs[-1].write(FORM_FEED)
         else:
@@ -661,7 +670,7 @@ class TextColumns(TextRegion, TextColumnarMixin):
         if self.balance:
             # Column balancing is currently very simplistic, and only works reliably when
             # line height doesn't change much within the text block.
-            # The "correct" solution would require an exact precalculation of the hight of
+            # The "correct" solution would require an exact precalculation of the height of
             # each column with the specific line heights and iterative regrouping of lines,
             # which seems excessive at this point.
             # Contribution of a more reliable but still reasonably simple algorithm welcome.
@@ -695,13 +704,10 @@ class TextColumns(TextRegion, TextColumnarMixin):
             if balancing and c == (self._ncols - 1):
                 # Give the last column more space in case the balancing is out of whack.
                 bottom = self.pdf.h - self.pdf.b_margin
-            last_line_height = self._render_column_lines(text_lines, top, bottom)
-            if balancing:
-                new_y = self.pdf.y + last_line_height
-                if new_y > next_y:
-                    next_y = new_y
-        if balancing:
-            self.pdf.y = next_y
+            self._render_column_lines(text_lines, top, bottom)
+            if self.pdf.y > next_y:
+                next_y = self.pdf.y
+        self.pdf.y = next_y
 
     def render(self):
         if not self._paragraphs:

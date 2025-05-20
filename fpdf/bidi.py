@@ -561,7 +561,7 @@ class BidiParagraph:
         return self.split_bidi_fragments()
 
     def get_bidi_characters(self) -> List[BidiCharacter]:
-        # Explicit leves and directions. Rule X1
+        # Explicit levels and directions. Rule X1
 
         stack: List[DirectionalStatus] = deque()
         current_status = DirectionalStatus(

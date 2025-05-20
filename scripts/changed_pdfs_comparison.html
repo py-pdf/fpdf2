@@ -7,14 +7,24 @@
     </style>
 </head>
 <body>
-    <b>LEFT:</b> Version from <code>master</code> branch
+    {% if is_shrunk %}
+    <blockquote>
+        ⚠️ Too many PDF files changed ({{ changes_pdf_files_count }}).
+        <br>
+        Only PDF files in {{ VIEW_SLICE }} are displayed.
+        <br>
+        Change the value of <code>VIEW_SLICE</code> to display the other documents.
+    </blockquote>
+    {% endif %}
+    <br>
+    <b>LEFT:</b> Version from git ref: <code>{{ GIT_REF }}</code>
     -
-    <b>RIGHT:</b> Version from current branch
+    <b>RIGHT:</b> Version from current repository folder
     <br><br>
     {% for changed_pdf_file in changed_pdf_files %}
     <span class="filename">{{ changed_pdf_file }}</span>
     <div class="side-by-side">
-        <embed src="master-checkouts/{{ changed_pdf_file }}" width="500px" height="707px" />
+        <embed src="{{ GIT_REF }}-checkouts/{{ changed_pdf_file }}" width="500px" height="707px" />
         <embed src="{{ changed_pdf_file }}" width="500px" height="707px" />
     </div>
     {% endfor %}

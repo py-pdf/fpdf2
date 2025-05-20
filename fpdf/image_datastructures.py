@@ -65,6 +65,7 @@ class RasterImageInfo(ImageInfo):
 
 class VectorImageInfo(ImageInfo):
     "Information about a vector image used in the PDF document"
+
     # pass
 
 

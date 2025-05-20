@@ -15,7 +15,7 @@ Mari kita mulai dengan contoh sederhana:
 [Hasil PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto1.pdf)
 
 Setelah menyertakan file library tersebut, kita buat objek `FPDF`. 
-Konstruktor [FPDF](fpdf/fpdf.html#fpdf.fpdf.FPDF) yang digunakan ini mempunyai nilai bawaan: 
+Konstruktor [FPDF](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF) yang digunakan ini mempunyai nilai bawaan: 
 halaman dalam format kertas A4 portrait dan satuan pengukuran dalam milimeter.
 Ini juga dapat ditentukan secara eksplisit dengan:
 
@@ -27,12 +27,12 @@ Kita juga dapat mengatur PDF dalam mode _landscape_ (`L`) atau menggunakan forma
 (seperti `Letter` dan `Legal`) dan satuan ukuran (`pt`, `cm`, `in`).
 
 Karena saat ini tidak ada halaman, kita harus menambahkannya dengan 
-[add_page](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page). Titik awal kursor berada di pojok kiri atas dan
+[add_page](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page). Titik awal kursor berada di pojok kiri atas dan
 posisi yang sekarang ditempatkan 1 cm dari margin secara default; margin dapat
-diubah dengan [set_margins](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins).
+diubah dengan [set_margins](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_margins).
 
 Sebelum kita dapat mencetak teks, penting untuk memilih font dengan
-[set_font](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), jika tidak, dokumen akan menjadi tidak valid.
+[set_font](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_font), jika tidak, dokumen akan menjadi tidak valid.
 Kita pilih font Helvetica dengan ketebalan 16:
 
 ```python
@@ -44,7 +44,7 @@ dengan _string_ kosong (atau kombinasi lain). Perlu dicatat bahwa ukuran font di
 satuan poin, bukan milimeter (atau satuan lainnya); ini adalah satu-satunya pengecualian. 
 Font bawaan lainnya adalah `Times`, `Courier`, `Symbol`, dan `ZapfDingbats`.
 
-Sekarang kita dapat mencetak _cell_ dengan [cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.cell). Sebuah _cell_ adalah area berbentuk persegi panjang 
+Sekarang kita dapat mencetak _cell_ dengan [cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.cell). Sebuah _cell_ adalah area berbentuk persegi panjang 
 yang berisi beberapa teks. _Cell_ tersebut dirender pada posisi kursor saat ini. 
 Kita tentukan dimensinya, teksnya (di tengah atau rata kiri/kanan), apakah garis batas 
 akan digambar, dan di mana posisi kursor bergerak setelahnya (ke kanan, 
@@ -61,11 +61,11 @@ kita bisa:
 pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 ```
 
-**_Komentar_**: _line break_ atau menambah baris baru sekarang bisa dilakukan dengan [ln](fpdf/fpdf.html#fpdf.fpdf.FPDF.ln).
+**_Komentar_**: _line break_ atau menambah baris baru sekarang bisa dilakukan dengan [ln](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ln).
 _Method_ ini dapat menentukan tinggi dari baris baru tersebut.
 
 Terakhir, dokumen di atas ditutup dan disimpan dalam _file path_ yang ditentukan menggunakan
-[output](fpdf/fpdf.html#fpdf.fpdf.FPDF.output). Tanpa adanya _parameter_, `output()`
+[output](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.output). Tanpa adanya _parameter_, `output()`
 akan menghasilkan PDF `bytearray` buffer.
 
 ## Panduan 2 - Header, footer, page break dan gambar
@@ -78,23 +78,23 @@ Berikut adalah contoh dua halaman dengan header, footer dan logo:
 
 [Hasil PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto2.pdf)
 
-Contoh di atas menggunakan _method_ [header](fpdf/fpdf.html#fpdf.fpdf.FPDF.header) dan 
-[footer](fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) untuk memproses header dan footer halaman. Keduanya
+Contoh di atas menggunakan _method_ [header](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.header) dan 
+[footer](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) untuk memproses header dan footer halaman. Keduanya
 dipanggil secara otomatis. Keduanya sebenarnya sudah ada dalam _class_ FPDF namun tidak melakukan apapun,
 sehingga kita harus meng-_extend_ _class_ tersebut dan menimpanya dengan preferensi kita.
 
-Logo halaman dicetak dengan _method_ [image](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) dan dengan menentukan 
+Logo halaman dicetak dengan _method_ [image](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) dan dengan menentukan 
 sudut kiri atas dan lebarnya. Tinggi gambar akan dihitung secara otomatis untuk
 menjaga proporsi gambarnya.
 
 Untuk mencetak nomor halaman, nilai kosong atau _null_ akan di-_passing_ sebagai lebar _cell_. Yang artinya, 
 _cell_ harus memanjang hingga margin kanan halaman; hal ini berguna agar teks rata tengah.
 Nomor halaman yang ada sekarang, dihasilkan oleh 
-_method_ [page_no](fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no); sedangkan untuk 
+_method_ [page_no](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.page_no); sedangkan untuk 
 jumlah total halaman, dapat diperoleh dengan nilai khusus yaitu `{nb}`
 yang akan diganti saat dokumen ditutup (nilai khusus tersebut dapat diubah dengan 
-[alias_nb_pages()](fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages)).
-Perhatikan penggunaan _method_ [set_y](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) yang dapat mengatur 
+[alias_nb_pages()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.alias_nb_pages)).
+Perhatikan penggunaan _method_ [set_y](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_y) yang dapat mengatur 
 posisi dengan lokasi yang absolut dalam halaman, mulai dari atas atau
 bawah.
 
@@ -104,7 +104,7 @@ _page break_ dilakukan dan font dikembalikan. Meskipun header dan
 footer memilih _font_ mereka sendiri (`helvetica`), _body_ halaman tetap menggunakan `Times`.
 Mekanisme pemulihan otomatis ini juga berlaku untuk warna dan lebar garis.
 Batas yang memicu _page break_ dapat diatur dengan
-[set_auto_page_break](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
+[set_auto_page_break](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_auto_page_break).
 
 
 ## Panduan 3 - Line breaks dan warna
@@ -120,25 +120,25 @@ Contoh ini juga akan mengilustrasikan penggunaan warna.
 
 [Contoh teks Jules Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-_Method_ [get_string_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) dapat menentukan 
+_Method_ [get_string_width](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.get_string_width) dapat menentukan 
 panjang _string_ dalam sebuah font, yang digunakan untuk menghitung 
 posisi dan lebar frame yang mengelilingi judul. Kemudian, warna dapat ditetapkan 
-(melalui [set_draw_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color),
-[set_fill_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) dan 
-[set_text_color](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) dan ketebalan garis dapat ditetapkan
+(melalui [set_draw_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_draw_color),
+[set_fill_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_fill_color) dan 
+[set_text_color](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_text_color)) dan ketebalan garis dapat ditetapkan
 ke 1 mm (dibandingkan 0,2 secara default) dengan
-[set_line_width](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Terakhir, kita output _cell_ 
+[set_line_width](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_line_width). Terakhir, kita output _cell_ 
 (parameter terakhir bernilai _True_ menunjukkan bahwa background harus diisi).
 
-_Method_ yang digunakan untuk mencetak paragraf adalah [multi_cell](fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). Teks akan rata kiri dan kanan secara default.
+_Method_ yang digunakan untuk mencetak paragraf adalah [multi_cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). Teks akan rata kiri dan kanan secara default.
 Setiap kali baris mencapai ujung kanan _cell_ atau terdapat karakter _carriage return_ (`\n`),
 akan dimunculkan _line break_ dan _cell_ baru akan otomatis dibuat di bawah _cell_ tersebut.
 Pembatasan otomatis dilakukan di lokasi spasi terdekat atau karakter _soft-hyphen_ (`\u00ad`) sebelum batas kanan halaman.
 _Soft-hyphen_ akan diganti dengan tanda hubung biasa saat ada _line break_, dan diabaikan jika tidak.
 
 Dua properti dokumen ditetapkan: judul
-([set_title](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) dan penulis 
-([set_author](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Properti tersebut dapat dilihat dengan dua cara.
+([set_title](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_title)) dan penulis 
+([set_author](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_author)). Properti tersebut dapat dilihat dengan dua cara.
 Pertama adalah dengan membuka dokumen secara langsung dengan Acrobat Reader, masuk ke menu File 
 dan pilih opsi Document Properties. Yang kedua, juga tersedia dari 
 plug-in, adalah klik kanan dan pilih Document Properties.
@@ -156,7 +156,7 @@ Contoh berikut adalah varian dari contoh sebelumnya, yang menunjukkan cara melet
 [Contoh teks Jules Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
 Perbedaan utama dari tutorial sebelumnya adalah penggunaan 
-_method_ [`text_columns`](fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column).
+_method_ [`text_columns`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.text_column).
 _Method_ tersebut mengumpulkan semua teks secara bertahap dan mendistribusikan ke sejumlah kolom yang diminta, secara otomatis memasukkan _page break_ jika diperlukan. Perlu diperhatikan bahwa saat _instance_ `TextColumns` aktif sebagai _context manager_, gaya teks dan properti font lainnya dapat diubah. Perubahan tersebut akan dibatasi sesuai pada _context_ dalam _context manager_. Setelah ditutup, pengaturan sebelumnya akan dikembalikan.
 
 

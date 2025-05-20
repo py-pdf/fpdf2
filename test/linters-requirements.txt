@@ -3,3 +3,4 @@ black
 pre-commit
 pylint
 semgrep
+zizmor

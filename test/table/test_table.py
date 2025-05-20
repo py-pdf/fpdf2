@@ -7,6 +7,7 @@ from fpdf import FPDF, FPDFException
 from fpdf.drawing import DeviceRGB
 from fpdf.fonts import FontFace
 from fpdf.table import TableCellFillMode
+from fpdf.enums import TextEmphasis
 
 from test.conftest import assert_pdf_equal, LOREM_IPSUM
 
@@ -245,7 +246,9 @@ def test_table_with_headings_styled(tmp_path):
     pdf.set_font("Times", size=16)
     blue = DeviceRGB(r=0, g=0, b=1)
     grey = 128
-    headings_style = FontFace(emphasis="ITALICS", color=blue, fill_color=grey)
+    headings_style = FontFace(
+        emphasis=TextEmphasis.I | TextEmphasis.U, color=blue, fill_color=grey
+    )
     with pdf.table(TABLE_DATA, headings_style=headings_style):
         pass
     assert_pdf_equal(pdf, HERE / "table_with_headings_styled.pdf", tmp_path)
@@ -1036,3 +1039,13 @@ def test_table_cell_border_inherit(tmp_path):
             for datum in data_row:
                 row.cell(datum, border="inherit")
     assert_pdf_equal(pdf, HERE / "test_table_cell_border_inherit.pdf", tmp_path)
+
+
+def test_table_min_row_height(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Times", size=20)
+    with pdf.table(min_row_height=30) as table:
+        table.row(("A", "B"))
+        table.row(("C", "D"), min_height=50)
+    assert_pdf_equal(pdf, HERE / "table_min_row_height.pdf", tmp_path)

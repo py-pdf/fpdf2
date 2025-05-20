@@ -1,5 +1,5 @@
 from .enums import TextDirection, Duplex, PageBoundaries, PageMode
-from .syntax import build_obj_dict, create_dictionary_string
+from .syntax import build_obj_dict, create_dictionary_string, Name
 
 
 class ViewerPreferences:
@@ -22,7 +22,9 @@ class ViewerPreferences:
         view_clip=None,
         print_area=None,
         print_clip=None,
+        print_scaling=None,
     ):
+        self._min_pdf_version = "1.3"
         self.hide_toolbar = hide_toolbar
         """
         (`bool`)
@@ -61,13 +63,6 @@ class ViewerPreferences:
         (`fpdf.enums.PageMode`)
         The document’s page mode, specifying how to display the document on exiting full-screen mode
         """
-        if self.non_full_screen_page_mode in (
-            PageMode.FULL_SCREEN,
-            PageMode.USE_ATTACHMENTS,
-        ):
-            raise ValueError(
-                f"{self.non_full_screen_page_mode} is not a supported value for NonFullScreenPageMode"
-            )
         self.num_copies = num_copies
         """
         (`int`)
@@ -116,6 +111,19 @@ class ViewerPreferences:
         The name of the page boundary to which the contents of a page shall be clipped when printing the document.
         Default value: CropBox.
         """
+        self.print_scaling = print_scaling
+        """
+        The page scaling option that shall be selected when a print dialogue is displayed for this document.
+        Valid values are:
+
+        * `"None"`, which indicates no page scaling
+        * `"AppDefault"`, which indicates the interactive PDF processor’s default print scaling
+
+        If this entry is not specified or has an unrecognised value, `AppDefault` shall be used.
+        """
+
+    def _set_min_pdf_version(self, version):
+        self._min_pdf_version = max(self._min_pdf_version, version)
 
     @property
     def non_full_screen_page_mode(self):
@@ -126,6 +134,33 @@ class ViewerPreferences:
         self._non_full_screen_page_mode = (
             None if page_mode is None else PageMode.coerce(page_mode)
         )
+        if self._non_full_screen_page_mode in (
+            PageMode.FULL_SCREEN,
+            PageMode.USE_ATTACHMENTS,
+        ):
+            raise ValueError(
+                f"{self.non_full_screen_page_mode} is not a supported value for NonFullScreenPageMode"
+            )
+
+    @property
+    def num_copies(self):
+        return self._num_copies
+
+    @num_copies.setter
+    def num_copies(self, num_copies):
+        if num_copies is not None:
+            self._set_min_pdf_version("1.7")
+        self._num_copies = num_copies
+
+    @property
+    def print_page_range(self):
+        return self._print_page_range
+
+    @print_page_range.setter
+    def print_page_range(self, print_page_range):
+        if print_page_range is not None:
+            self._set_min_pdf_version("1.7")
+        self._print_page_range = print_page_range
 
     @property
     def direction(self):
@@ -136,11 +171,23 @@ class ViewerPreferences:
         self._direction = None if direction is None else TextDirection.coerce(direction)
 
     @property
+    def display_doc_title(self):
+        return self._display_doc_title
+
+    @display_doc_title.setter
+    def display_doc_title(self, display_doc_title):
+        if display_doc_title:
+            self._set_min_pdf_version("1.4")
+        self._display_doc_title = display_doc_title
+
+    @property
     def duplex(self):
         return self._duplex
 
     @duplex.setter
     def duplex(self, duplex):
+        if duplex is not None:
+            self._set_min_pdf_version("1.7")
         self._duplex = None if duplex is None else Duplex.coerce(duplex)
 
     @property
@@ -149,6 +196,8 @@ class ViewerPreferences:
 
     @view_area.setter
     def view_area(self, view_area):
+        if view_area is not None:
+            self._set_min_pdf_version("1.4")
         self._view_area = (
             None if view_area is None else PageBoundaries.coerce(view_area)
         )
@@ -159,6 +208,8 @@ class ViewerPreferences:
 
     @view_clip.setter
     def view_clip(self, view_clip):
+        if view_clip is not None:
+            self._set_min_pdf_version("1.4")
         self._view_clip = (
             None if view_clip is None else PageBoundaries.coerce(view_clip)
         )
@@ -169,6 +220,8 @@ class ViewerPreferences:
 
     @print_area.setter
     def print_area(self, print_area):
+        if print_area is not None:
+            self._set_min_pdf_version("1.4")
         self._print_area = (
             None if print_area is None else PageBoundaries.coerce(print_area)
         )
@@ -179,9 +232,25 @@ class ViewerPreferences:
 
     @print_clip.setter
     def print_clip(self, print_clip):
+        if print_clip is not None:
+            self._set_min_pdf_version("1.4")
         self._print_clip = (
             None if print_clip is None else PageBoundaries.coerce(print_clip)
         )
+
+    @property
+    def print_scaling(self):
+        return self._print_scaling
+
+    @print_scaling.setter
+    def print_scaling(self, print_scaling):
+        if print_scaling is None:
+            self._print_scaling = None
+            return
+        self._set_min_pdf_version("1.6")
+        if print_scaling not in ("None", "AppDefault"):
+            raise ValueError(f"Invalid {print_scaling=} value provided")
+        self._print_scaling = Name(print_scaling)
 
     def serialize(self, _security_handler=None, _obj_id=None):
         obj_dict = build_obj_dict(

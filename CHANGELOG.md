@@ -16,12 +16,40 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.8.3] - Not released yet
+## [2.8.4] - Not released yet
 ### Added
-* support for [shading patterns (gradients)](https://py-pdf.github.io/fpdf2/Patterns.html) 
-* support for strikethrough text
+* documentation on [internal linking with variable page numbers](https://py-pdf.github.io/fpdf2/Links.html#internal-links)
 ### Fixed
-* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): Fixed rendering of content following `<a>` tags; now correctly resets emphasis style post `</a>` tag: hyperlink styling contained within the tag authority. - [Issue #1311](https://github.com/py-pdf/fpdf2/issues/1311)
+* an `IndexError` was raised in some cases when using [text_columns()](https://py-pdf.github.io/fpdf2/TextColumns.html) with [text shaping enabled](https://py-pdf.github.io/fpdf2/TextShaping.html) - _cf._ [issue #1439](https://github.com/py-pdf/fpdf2/issues/1439)
+* handled case of a smaller last column when using [text_columns()](https://py-pdf.github.io/fpdf2/TextColumns.html) - _cf._ [issue #1442](https://github.com/py-pdf/fpdf2/issues/1442)
+* minor regular-expression optimization in the SVG parsing module, nullifying any risk of ReDOS attack
+
+## [2.8.3] - 2025-04-22
+### Added
+* added tutorial "tuto7" (in [English](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-7-creating-pdfa-documents) and [German](https://py-pdf.github.io/fpdf2/Tutorial-de.html#tuto-7-ein-pdfa-dokument-erstellen)) with documentation to create PDF/A files with fpdf2 - thanks to @lka
+* support for [Output Intents](https://py-pdf.github.io/fpdf2/Images.html#output-intents) on document level - thanks to @lka
+* support for [shading patterns (gradients)](https://py-pdf.github.io/fpdf2/Patterns.html) - thanks to @andersonhc - [PR #1334](https://github.com/py-pdf/fpdf2/pull/1334)
+* support for [setting a minimal row height in tables](https://py-pdf.github.io/fpdf2/Tables.html#setting-row-height)
+* support for [`v_align` at the row level in tables](https://py-pdf.github.io/fpdf2/Tables.html#setting-vertical-alignment-of-text-in-cells)
+* new optional `reset_page_indices` parameter for [`insert_toc_placeholder()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.insert_toc_placeholder)
+* support for <s>strikethrough text</s>
+* support for `first_line_indent` in [`text_region.Paragraph`](https://py-pdf.github.io/fpdf2/fpdf/text_region.html#fpdf.text_region.Paragraph)
+* new [ViewerPreferences.print_scaling](https://py-pdf.github.io/fpdf2/fpdf/prefs.html#fpdf.prefs.ViewerPreferences.print_scaling)
+* documentation on [verifying provenance of `fpdf2` releases](https://py-pdf.github.io/fpdf2/#verifying-provenance)
+* documentation on [`fpdf2` internals](https://py-pdf.github.io/fpdf2/Internals.html)
+* documentation on [generating Aztec Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#aztec-code)
+* added Slovenian translation of the tutorial: [Vodič](https://py-pdf.github.io/fpdf2/Tutorial-sl.html) - thanks to @DeepBlackHole
+* support for adding TrueType fonts that are missing the `.notdef` glyph - [issue #1161](https://github.com/py-pdf/fpdf2/issues/1161) - thanks to @spacegaori
+* improved SVG image parsing speed by 50% to 70% - thanks to @petri-lipponen-movesense - [PR #1350](https://github.com/py-pdf/fpdf2/pull/1350)
+### Fixed
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): Fixed rendering of content following `<a>` tags; now correctly resets emphasis style post `</a>` tag: hyperlink styling contained within the tag authority. - [issue #1311](https://github.com/py-pdf/fpdf2/issues/1311)
+* [FPDF.footer()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.footer) does not "leak" its text style to the [table of contents](https://py-pdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html#table-of-contents) anymore
+* [`FPDF.table()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.table): Fixed heading styles containing underline failing to render.
+* [`FPDF.ln()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.ln): the method now allows a value of `0` to be provided for `h`.
+* font optimization: only include fonts effectively used in the final PDF document. Fonts added via `set_font()` or `add_page()` but not actually used in the document are no longer included in the final output. This reduces file size and improves performance, especially for documents with many fallback fonts. - [issue #1382](https://github.com/py-pdf/fpdf2/issues/1382)
+* a `KeyError` was raised in some specific cases when [auto-downscaling images](https://py-pdf.github.io/fpdf2/Images.html#oversized-images-detection-downscaling) - [issue #1409](https://github.com/py-pdf/fpdf2/issues/1409)
+### Changed
+* heading rows of [tables](https://py-pdf.github.io/fpdf2/Tables.html) are never rendered "alone" on a page anymore
 
 ## [2.8.2] - 2024-12-16
 ### Added
@@ -69,7 +97,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * line size calculation for fragments when [text shaping](https://py-pdf.github.io/fpdf2/TextShaping.html) is used
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): fixed incoherent indentation of long `<ul>` list entries - _cf._ [issue #1073](https://github.com/py-pdf/fpdf2/issues/1073) - thanks to @lcgeneralprojects
 * default values for `top_margin` and `bottom_margin` in `HTML2FPDF._new_paragraph()` calls are now correctly converted into chosen document units.
-* In [text_columns()](https://py-pdf.github.io/fpdf2/extColumns.html), paragraph top/bottom margins didn't correctly trigger column breaks; [issue #1214](https://github.com/py-pdf/fpdf2/issues/1214)
+* In [text_columns()](https://py-pdf.github.io/fpdf2/TextColumns.html), paragraph top/bottom margins didn't correctly trigger column breaks; [issue #1214](https://github.com/py-pdf/fpdf2/issues/1214)
 * [`fpdf.drawing.color_from_hex_string`](https://py-pdf.github.io/fpdf2/fpdf/drawing.html#fpdf.drawing.color_from_hex_string) did not test or mention accepting lowercase hex values.
 * handling of bidirectional text on `FPDF.get_string_width()` [issue #1231]
 * new translation of the tutorial in [Indonesian](https://py-pdf.github.io/fpdf2/Tutorial-id.html) - thanks to @odhyp
@@ -82,7 +110,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): `tag_indents` introduced in the last version - Now the indentation can be provided through the `tag_styles` parameter, using the `.l_margin` of `TextStyle` instances
 ### Changed
 * [`FPDF.local_context()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.local_context) used to treat `font_size` as a value in points. Now this is the role of `font_size_pt`, whereas `font_size` allows to set the font size into chosen document units (specified with `FPDF(unit=)`) - MR: [#1207](https://github.com/py-pdf/fpdf2/pulls/1207)
-* [`FPDF.circle()`](https://py-pdf.github.io/fpdf2/fpdf.html#fpdf.fpdf.FPDF.circle) : the previous `r` parameter, that in fact defined the diameter, has been replaced by a new `radius` paremeter. The `x` & `y` parameters now define the circle **center**, instead of its top-left corner as it used to be - [issue #1245](https://github.com/py-pdf/fpdf2/issues/1245)
+* [`FPDF.circle()`](https://py-pdf.github.io/fpdf2/fpdf.html#fpdf.fpdf.FPDF.circle) : the previous `r` parameter, that in fact defined the diameter, has been replaced by a new `radius` parameter. The `x` & `y` parameters now define the circle **center**, instead of its top-left corner as it used to be - [issue #1245](https://github.com/py-pdf/fpdf2/issues/1245)
 * [`FPDF.table()`](https://py-pdf.github.io/fpdf2/Tables.html) now raises an error when a single row is too high to be rendered on a single page
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): indentation of HTML elements can now be non-integer (float), and is now independent of font size and bullet strings.
 * improved performance of font glyph selection by using functools cache
@@ -566,8 +594,8 @@ This has been fixed, and a warning is now triggered by the [`FPDF.code39`](https
 - [`FPDF.circle`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.circle): new method added, thanks to @viraj-shah18 !
 - `write_html`: support setting HTML font colors by name and short hex codes
 - [`FPDF.will_page_break`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.will_page_break)
-utility method to let users know in advance when adding an elemnt will trigger a page break.
-This can be useful to repeat table headers on each page for exemple,
+utility method to let users know in advance when adding an element will trigger a page break.
+This can be useful to repeat table headers on each page for example,
 _cf._ [documentation on Tables](https://py-pdf.github.io/fpdf2/Tables.html#repeat-table-header-on-each-page).
 - [`FPDF.set_link`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_link) now support a new optional `x` parameter to set the horizontal position after following the link
 ### Fixed
@@ -575,14 +603,14 @@ _cf._ [documentation on Tables](https://py-pdf.github.io/fpdf2/Tables.html#repea
 
 ## [2.4.1] - 2021-06-12
 ### Fixed
-- erroneous page breaks occured for full-width / full-height images
-- rendering issue of non-ASCII characaters with unicode fonts
+- erroneous page breaks occurred for full-width / full-height images
+- rendering issue of non-ASCII characters with unicode fonts
 
 ## [2.4.0] - 2021-06-11
 ### Changed
 - now `fpdf2` uses the newly supported `DCTDecode` image filter for JPEG images,
   instead of `FlateDecode` before, in order to improve the compression ratio without any image quality loss.
-  On test images, this reduced the size of embeded JPEG images by 90%.
+  On test images, this reduced the size of embedded JPEG images by 90%.
 - `FPDF.cell`: the `w` (width) parameter becomes optional, with a default value of `None`, meaning to generate a cell with the size of the text content provided
 - the `h` (height) parameter of the `cell`, `multi_cell` & `write` methods gets a default value change, `None`, meaning to use the current font size
 - removed the useless `w` & `h` parameters of the `FPDF.text_annotation()` method
@@ -706,7 +734,7 @@ prevented strings passed first to the text-rendering methods to be displayed.
 ## [2.0.4] - 2020-03-26
 ### Fixed
 * images centering - thanks `cgfrost`!
-* added missing import statment for `urlopen` in `image_parsing` module
+* added missing import statement for `urlopen` in `image_parsing` module
 * changed urlopen import from `six` library to maintain python2 compatibility
 
 ## [2.0.3] - 2020-01-03

@@ -22,7 +22,7 @@ pdf.output("pdf-with-image.pdf")
 ```
 
 By default an image is rendered with a resolution of 72 dpi,
-but you can control its dimension on the page using the `w=` & `h=` parameters of the [`image()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method.
+but you can control its dimension on the page using the `w=` & `h=` parameters of the [`image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method.
 
 
 ## Alpha / transparency ##
@@ -54,7 +54,7 @@ pdf.output("side-by-side.pdf")
 
 When you want to scale an image to fill a rectangle, while keeping its aspect ratio,
 and ensuring it does **not** overflow the rectangle width nor height in the process,
-you can set `w` / `h` and also provide `keep_aspect_ratio=True` to the [`image()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method.
+you can set `w` / `h` and also provide `keep_aspect_ratio=True` to the [`image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method.
 
 The following unit tests illustrate that:
 
@@ -87,13 +87,13 @@ Demo of all color blend modes: [blending_images.pdf](https://github.com/py-pdf/f
 
 You can select only a portion of the image to render using clipping methods:
 
-* [`rect_clip()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.rect_clip):
+* [`rect_clip()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.rect_clip):
     - [example code](https://github.com/py-pdf/fpdf2/blob/master/test/image/test_image_clipping.py#L10)
     - [resulting PDF](https://github.com/py-pdf/fpdf2/blob/master/test/image/rect_clip.pdf)
-* [`round_clip()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.round_clip):
+* [`round_clip()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.round_clip):
     - [example code](https://github.com/py-pdf/fpdf2/blob/master/test/image/test_image_clipping.py#L33)
     - [resulting PDF](https://github.com/py-pdf/fpdf2/blob/master/test/image/round_clip.pdf)
-* [`elliptic_clip()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.elliptic_clip):
+* [`elliptic_clip()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.elliptic_clip):
     - [example code](https://github.com/py-pdf/fpdf2/blob/master/test/image/test_image_clipping.py#L56)
     - [resulting PDF](https://github.com/py-pdf/fpdf2/blob/master/test/image/elliptic_clip.pdf)
 
@@ -127,7 +127,7 @@ pdf.output("pdf-with-image.pdf")
 
 ## SVG images ##
 
-SVG images passed to the [`image()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method
+SVG images passed to the [`image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method
 will be embedded as [PDF paths](SVG.md):
 ```python
 from fpdf import FPDF
@@ -141,7 +141,7 @@ pdf.output("pdf-with-vector-image.pdf")
 
 ## Retrieve images from URLs ##
 
-URLs to images can be directly passed to the [`image()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method:
+URLs to images can be directly passed to the [`image()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.image) method:
 
 ```python
 pdf.image("https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png")
@@ -153,7 +153,7 @@ pdf.image("https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png")
 By default, `fpdf2` will avoid altering or recompressing your images: when possible, the original bytes from the JPG or TIFF file will be used directly. Bitonal images are by default compressed as TIFF Group4.
 
 However, you can easily tell `fpdf2` to embed all images as JPEGs in order to reduce your PDF size,
-using [`set_image_filter()`](fpdf/fpdf.html#fpdf.fpdf.FPDF.set_image_filter):
+using [`set_image_filter()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_image_filter):
 
 ```python
 from fpdf import FPDF
@@ -170,9 +170,49 @@ Beware that "flattening" images into JPEGs this way will fill transparent areas 
 The allowed `image_filter` values are listed in the [image_parsing]( https://github.com/py-pdf/fpdf2/blob/master/fpdf/image_parsing.py) module and are currently:
 `FlateDecode` (lossless zlib/deflate compression), `DCTDecode` (lossy compression with JPEG) and `JPXDecode` (lossy compression with JPEG2000).
 
+## Output Intents ##
+_New in [:octicons-tag-24: 2.8.3](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+> Output Intents [allow] the contents of referenced icc profiles to be embedded directly within the body of the PDF file. This makes the PDF file a self-contained unit that can be stored or transmitted as a single entity.
+
+The dedicated method for adding output intent to a PDF is [`add_output_intent()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_output_intent).
+
+You can optionally provide a [`PDFICCProfileObject`](https://py-pdf.github.io/fpdf2/fpdf/output.html#fpdf.output.PDFICCProfileObject) as `icc_profile`.
+
+Example:
+```python
+from pathlib import Path
+from fpdf import FPDF
+from fpdf.enums import OutputIntentSubType
+from fpdf.output import PDFICCProfileObject
+
+HERE = Path(__file__).resolve().parent
+
+pdf = FPDF()
+
+with open(HERE / "sRGB2014.icc", "rb") as iccp_file:
+    icc_profile = PDFICCProfileObject(
+        contents=iccp_file.read(), n=3, alternate="DeviceRGB"
+    )
+
+pdf.add_output_intent(
+    OutputIntentSubType.PDFA,
+    "sRGB",
+    'IEC 61966-2-1:1999',
+    "http://www.color.org",
+    icc_file,
+    "sRGB2014 (v2)",
+)
+```
+
+The needed profiles and descriptions can be found at [International Color Consortium](https://color.org/).
+
 ## ICC Profiles
 
 The ICC profile of the included images are read through the PIL function `Image.info.get("icc_profile)"` and are included in the PDF as objects.
+
+An ICC profile can also be added by using the [`.add_output_intent()` method](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_output_intent),
+as described in the previous section.
 
 ## Oversized images detection & downscaling ##
 

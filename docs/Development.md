@@ -208,6 +208,30 @@ static code analysis with `pylint`, unit tests...
 _Pull Requests_ submitted must pass all those checks in order to be approved.
 Ask maintainers through comments if some errors in the pipeline seem obscure to you.
 
+### Renovate, GitHub Actions & security
+We use [Renovate](https://github.com/apps/renovate) to detect dependency updates & create PRs
+for the Python dependencies / GitHub Actions / NPM dependencies that we use.
+
+Its configuration file is [renovate.json](https://github.com/py-pdf/fpdf2/blob/master/renovate.json),
+and the full tool documentation is there: [docs.renovatebot.com](https://docs.renovatebot.com/).
+
+We also use [zizmor](https://woodruffw.github.io/zizmor/) as a GitHub Action
+to perform static analysis on our pipeline definition files.
+
+In order to use `zizmor` locally:
+
+    zizmor .github/workflows/*.yml
+
+### typos
+[typos](https://github.com/crate-ci/typos) is a handy CLI tool to detect & auto-fix [typos](https://en.wikipedia.org/wiki/Typographical_error) in source files.
+Installation is relatively straightforward ([read the docs](https://github.com/crate-ci/typos?tab=readme-ov-file#install)).
+
+This tool is invoked in the [pre-commit hooks](#pre-commit-hook) and in our CI pipeline.
+If it fails, you should either:
+
+* auto-fix the errors detected by invoking `typos --write-changes`
+* add an exclusion rule to `.typos.toml`
+
 ### Release checklist
 1. complete `CHANGELOG.md` and add the version & date of the new release
 2. bump `FPDF_VERSION` in `fpdf/fpdf.py`.
@@ -220,27 +244,31 @@ It will create a new `git` tag.
 7. (optional) add a comment mentioning that the feature/fix has been released in all the GitHub issues mentioned in the `CHANGELOG.md`
 
 ## Documentation
-The standalone documentation is in the `docs` subfolder,
-written in [Markdown](https://daringfireball.net/projects/markdown/).
-Building instructions are contained in the configuration file `mkdocs.yml`
-and also in `.github/workflows/continuous-integration-workflow.yml`.
+The standalone documentation is in the `docs/` subfolder, written in Markdown.
 
-Additional documentation is generated from inline comments, and is available
-in the project [home page](https://py-pdf.github.io/fpdf2/fpdf/).
-
-After being committed to the master branch, code documentation is automatically uploaded to
+After being committed to the master branch, documentation is automatically uploaded to
 [GitHub Pages](https://py-pdf.github.io/fpdf2/).
+
+Building instructions are contained in [`.github/workflows/continuous-integration-workflow.yml`](https://github.com/py-pdf/fpdf2/blob/master/.github/workflows/continuous-integration-workflow.yml).
+
+### Main documentation using mkdoc
+Configuration file: [`mkdocs.yml`](https://github.com/py-pdf/fpdf2/blob/master/mkdocs.yml)
+
+To preview the documentation, launch a local rendering server with:
+
+    mkdocs serve --open
+
+### API documentation using pdoc3
+Configuration file: [`docs/pdoc/config.mako`](https://github.com/py-pdf/fpdf2/blob/master/docs/pdoc/config.mako)
+
+It is generated from inline comments, and is available on the [API page](https://py-pdf.github.io/fpdf2/fpdf/).
 
 There is a useful one-page example Python module with docstrings illustrating how to document code:
 [pdoc3 example_pkg](https://github.com/pdoc3/pdoc/blob/master/pdoc/test/example_pkg/__init__.py).
 
-To preview the Markdown documentation, launch a local rendering server with:
-
-    mkdocs serve --open
-
 To preview the API documentation, launch a local rendering server with:
 
-    pdoc --html -o public/ fpdf --http :
+    pdoc --html -o public/ fpdf --template-dir docs/pdoc --http :
 
 ## PDF spec & new features
 The **PDF 1.7 spec** is available on Adobe website:
@@ -257,7 +285,6 @@ there are still many PDF features that this library does not support.
 ## Useful tools to manipulate PDFs
 
 ### qpdf
-
 [qpdf](https://qpdf.sourceforge.io/) is a very powerful tool to analyze PDF documents.
 
 One of it most useful features is the [QDF mode](https://qpdf.readthedocs.io/en/stable/qdf.html) that can convert any PDF file to a human-readable, decompressed & annotated new PDF document:
@@ -269,7 +296,6 @@ qpdf --qdf doc.pdf doc-qdf.pdf
 This is extremely useful to peek into the PDF document structure.
 
 ### pdfly
-
 `pdfly` is a very handy CLI tool to manipulate PDF files: [py-pdf/pdfly](https://github.com/py-pdf/pdfly?tab=readme-ov-file#usage).
 
 Those are some very useful commands:

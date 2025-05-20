@@ -45,7 +45,7 @@ def test_template_nominal_hardcoded(tmp_path):
             # multiline is optional, so we test some items without it.
         },
         {
-            "name": "multline_text",
+            "name": "multiline_text",
             "type": "T",
             "x1": 20,
             "y1": 100,
@@ -579,7 +579,7 @@ def test_template_justify(tmp_path):  # issue-207
 def test_template_split_multicell():
     elements = [
         {
-            "name": "multline_text",
+            "name": "multiline_text",
             "type": "T",
             "x1": 20,
             "y1": 100,
@@ -607,7 +607,7 @@ def test_template_split_multicell():
         "diam voluptua.",
     ]
     tmpl = Template(format="A4", unit="pt", elements=elements)
-    res = tmpl.split_multicell(text, "multline_text")
+    res = tmpl.split_multicell(text, "multiline_text")
     assert res == expected
 
 

@@ -12,7 +12,7 @@ Currently supported formats are `a3`, `a4`, `a5`, `letter`, `legal` or a tuple `
 Additional standard formats are welcome and can be suggested through pull requests.
 
 ## Per-page format, orientation and background
-`.set_page_background()` lets you set a background for all pages following this call until the background is removed.
+[`.set_page_background()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_page_background) lets you set a background for all pages following this call until the background is removed.
 The value must be of type `str`, `io.BytesIO`, `PIL.Image.Image`, `drawing.DeviceRGB`, `tuple` or `None`
 
 The following code snippet illustrates how to configure different page formats for specific pages as well as setting different backgrounds and then removing it:
@@ -34,11 +34,11 @@ pdf.cell(text="9")
 pdf.output("varying_format.pdf")
 ```
 
-Similarly, an `orientation` parameter can be provided to the [`add_page`](fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page) method.
+Similarly, an `orientation` parameter can be provided to the [`add_page`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_page) method.
 
 ## Page layout & zoom level ##
 
-[`set_display_mode()`](fpdf/fpdf.html#fpdf.FPDF.set_display_mode) allows to set the **zoom level**:
+[`set_display_mode()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.FPDF.set_display_mode) allows to set the **zoom level**:
 pages can be displayed entirely on screen, occupy the full width of the window, use the real size,
 be scaled by a specific zooming factor or use the viewer default (configured in its _Preferences_ menu).
 
