@@ -182,7 +182,7 @@ class COLRFont(Type3Font):
             img = self.draw_glyph_colrv0(glyph_layers)
         else:
             img = self.draw_glyph_colrv1(glyph.glyph_name)
-        img.transform = img.transform @ Transform.scaling(self.scale, -self.scale)
+        img.transform = Transform.scaling(self.scale, -self.scale)
         output_stream = self.fpdf.draw_vector_glyph(img, self)
         glyph.glyph = (
             f"{w * self.scale / self.upem} 0 d0\n" "q\n" f"{output_stream}\n" "Q"
@@ -232,6 +232,15 @@ class COLRFont(Type3Font):
             for stop in paint.ColorLine.ColorStop:
                 print("Stop: ", stop.StopOffset, " color: ", stop.PaletteIndex)
                 print("x0: ", paint.x0, " y0: ", paint.y0, " x1: ", paint.x1, " y1: ", paint.y1)
+        elif paint.Format == PaintFormat.PaintRadialGradient: #6
+            print("[PaintRadialGradient] ColorLine: ")
+            for stop in paint.ColorLine.ColorStop:
+                print("Stop: ", stop.StopOffset, " color: ", stop.PaletteIndex)
+                print("x0: ", paint.x0, " y0: ", paint.y0, " x1: ", paint.x1, " y1: ", paint.y1)
+            color = self.get_color(paint.ColorLine.ColorStop[0].PaletteIndex, paint.ColorLine.ColorStop[0].Alpha)
+            path: PaintedPath = gc.path_items[-1]
+            path.style.fill_color = color
+            path.style.stroke_color = color
         elif paint.Format == PaintFormat.PaintGlyph: #10
             path = PaintedPath()
             glyph_set = self.base_font.ttfont.getGlyphSet()
@@ -240,6 +249,24 @@ class COLRFont(Type3Font):
             glyph.draw(pen)
             gc.add_item(path)
             self.draw_colrv1_paint(paint.Paint, gc)
+        elif paint.Format == PaintFormat.PaintTransform: #12
+            self.draw_colrv1_paint(paint.Paint, gc)
+            path: PaintedPath = gc.path_items[-1]
+            path.transform = Transform(
+                paint.Transform.xx,
+                paint.Transform.yx,
+                paint.Transform.xy,
+                paint.Transform.yy,
+                paint.Transform.dx,
+                paint.Transform.dy,
+            )
+            print("end of paintTransform")
+            
+        elif paint.Format == PaintFormat.PaintScale: #16
+            self.draw_colrv1_paint(paint.Paint, gc)
+            path: PaintedPath = gc.path_items[-1]
+            path.transform = Transform.scaling(paint.scaleX, paint.scaleY)
+            print("end of scale transform")
         else:
             print("Unknown PaintFormat: ", paint.Format)
 
