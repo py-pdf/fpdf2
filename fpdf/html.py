@@ -388,7 +388,7 @@ class HTML2FPDF(HTMLParser):
         self.align = ""
         self.indent = 0
         self.line_height_stack = []
-        self.ol_type = []  # when inside a <ol> tag, can be "a", "A", "i", "I" or "1"
+        self.ol_type = {}  # when inside a <ol> tag, can be "a", "A", "i", "I" or "1"
         self.bullet = []
         self.heading_level = None
         self._tags_stack = []
@@ -855,7 +855,7 @@ class HTML2FPDF(HTMLParser):
             self.indent += 1
             start = int(attrs["start"]) if "start" in attrs else 1
             self.bullet.append(start - 1)
-            self.ol_type.append(attrs.get("type", "1"))
+            self.ol_type[self.indent] = attrs.get("type", "1")
             line_height = css_style.get("line-height", attrs.get("line-height"))
             # "line-height" attributes are not valid in HTML,
             # but we support it for backward compatibility,
@@ -889,7 +889,7 @@ class HTML2FPDF(HTMLParser):
             if not isinstance(bullet, str):
                 bullet += 1
                 self.bullet[self.indent - 1] = bullet
-                ol_type = self.ol_type[self.indent - 1]
+                ol_type = self.ol_type[self.indent]
                 bullet = f"{ol_prefix(ol_type, bullet)}."
             tag_style = self.tag_styles[tag]
             self._ln(tag_style.t_margin)
@@ -1099,9 +1099,9 @@ class HTML2FPDF(HTMLParser):
                 self._end_paragraph()
         if tag in ("ul", "ol"):
             self._end_paragraph()
-            self.indent -= 1
             if tag == "ol":
-                self.ol_type.pop()
+                self.ol_type.pop(self.indent)
+            self.indent -= 1
             self.line_height_stack.pop()
             self.bullet.pop()
         if tag == "table":
