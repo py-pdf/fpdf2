@@ -19,6 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.8.4] - Not released yet
 ### Added
 * documentation on [internal linking with variable page numbers](https://py-pdf.github.io/fpdf2/Links.html#internal-links)
+* documentation on [generating rMQR Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#rmqr-code)
 ### Fixed
 * an `IndexError` was raised in some cases when rendering HTML with nested lists - _cf._ [issue #1358](https://github.com/py-pdf/fpdf2/issues/1358)
 * an `IndexError` was raised in some cases when using [text_columns()](https://py-pdf.github.io/fpdf2/TextColumns.html) with [text shaping enabled](https://py-pdf.github.io/fpdf2/TextShaping.html) - _cf._ [issue #1439](https://github.com/py-pdf/fpdf2/issues/1439)
