@@ -2,8 +2,6 @@
 
 Documentación completa de los métodos: [Documentación de la API de `fpdf.FPDF`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## Tutorial 1 - Ejemplo básico ##
 
 Empecemos con el ejemplo clásico: 
@@ -193,7 +191,7 @@ También mostrará muchas formas en que podemos usar los diferentes estilos de t
 ```
 
 [PDF resultante](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[Logo de fpdf2](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[Logo de fpdf2](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 El nuevo método mostrado aquí para imprimir texto es
  [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)

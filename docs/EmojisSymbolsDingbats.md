@@ -1,7 +1,5 @@
 # Emojis, Symbols & Dingbats #
 
-[TOC]
-
 ## Emojis ##
 
 Displaying emojis requires the use of a [Unicode](Unicode.md) font file.

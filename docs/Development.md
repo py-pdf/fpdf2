@@ -2,8 +2,6 @@
 
 This page has summary information about developing the fpdf2 library.
 
-[TOC]
-
 ## Repository structure
 
 * `.github/` - GitHub Actions configuration

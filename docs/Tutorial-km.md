@@ -2,8 +2,6 @@
 
 ឯកសារទាំងស្រុងនៃវិធីប្រើ: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## មេរៀនទី 1 - គំរូខ្លី ##
 
 តោះចាប់ផ្តើមជាមួយឧទាហរណ៍ងាយៗ:
@@ -162,7 +160,7 @@ English versions:
 ```
 
 [លទ្ធផលសម្រេច PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 របៀបថ្មីមួយទៀតក្នុងការបង្ហាញអត្ថបទដើម្បីបោះពុម្ភ
  [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)។ វាមានភាពស្រដៀងទៅនឹង

@@ -2,8 +2,6 @@
 
 Methods full documentation: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## Tuto 1 - Exemplo Mínimo ##
 
 Vamos começar com um exemplo clássico:
@@ -151,7 +149,7 @@ Também mostrará várias maneiras de usar diferentes estilos de texto, (negrito
 ```
 
 [PDF resultante](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 
 

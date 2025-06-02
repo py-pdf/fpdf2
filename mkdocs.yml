@@ -66,10 +66,11 @@ plugins:
       redirect_maps:
         'CombineWithChartingLibs.md': 'Maths.md'
         'CombineWithMistletoeoToUseMarkdown.md': 'CombineWithMarkdown.md'
-  - git-revision-date-localized
+  - check_toc
   #- git-committers:
   #    repository: py-pdf/fpdf2
   #    branch: master
+  - git-revision-date-localized
   - with-pdf:  # https://github.com/orzih/mkdocs-with-pdf
       output_path: fpdf2-manual.pdf
       cover_title: fpdf2 manual

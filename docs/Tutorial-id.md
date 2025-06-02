@@ -2,8 +2,6 @@
 
 Dokumentasi secara lengkap: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## Panduan 1 - Contoh Sederhana
 
 Mari kita mulai dengan contoh sederhana:
@@ -193,7 +191,7 @@ Panduan ini juga akan menunjukkan beberapa cara untuk menggunakan gaya teks yang
 ```
 
 [Hasil PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[Logo fpdf2](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[Logo fpdf2](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 _Method_ baru yang ditunjukkan disini untuk mencetak teks adalah 
 [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)

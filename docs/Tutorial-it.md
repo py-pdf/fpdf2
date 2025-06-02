@@ -2,8 +2,6 @@
 
 Documentazione completa dei metodi: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## Tuto 1 - Esempio base ##
 
 Iniziamo con un esempio comune:
@@ -156,7 +154,7 @@ Saranno mostrati anche molti modi di utilizzare diversi stili di testo (grassett
 ```
 
 [Risultato PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 Il nuovo metodo qui utilizzato per stampare testo è
  [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)

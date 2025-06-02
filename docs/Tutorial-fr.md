@@ -2,8 +2,6 @@
 
 Documentation complète des méthodes : [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## Tuto 1 - Exemple minimal ##
 
 Commençons par un exemple classique :
@@ -138,7 +136,7 @@ Il montrera également plusieurs façons d'utiliser différents styles de texte 
 ```
 
 [PDF créé dans ce tutoriel](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 La nouvelle méthode présentée ici pour imprimer du texte est [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). Elle est très similaire à [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell). Les principales différences sont les suivantes :
 

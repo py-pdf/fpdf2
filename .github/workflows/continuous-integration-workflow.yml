@@ -179,14 +179,14 @@ jobs:
       - name: Install Python dependencies ⚙️
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install --upgrade -r docs/requirements.txt -r contributors/requirements.txt
+          pip install --upgrade . -r docs/requirements.txt -r contributors/requirements.txt
       - name: Generate HTML documentation 🏗️
         run: |
           mkdir -p public/
           # Setting PDF manual version:
           sed -i "s/author:.*/author: v$(python setup.py -V 2>/dev/null)/" mkdocs.yml
           cp tutorial/notebook.ipynb docs/
-          mkdocs build
+          python -m mkdocs build
           pdoc --html -o public/ fpdf --template-dir docs/pdoc
           scripts/add_pdoc_to_search_index.py
       - name: Build contributors map 🗺️
