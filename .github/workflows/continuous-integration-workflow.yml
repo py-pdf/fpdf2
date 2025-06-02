@@ -76,17 +76,19 @@ jobs:
           path: "."
           fail-build: true
       - name: Scan project dependencies with guarddog 🐶
+        # GuardDog is very slow, we only execute it on the master branch:
+        if: github.ref == 'refs/heads/master'
         run: |
           pip install guarddog
           # Scanning direct dependencies:
-          guarddog pypi scan defusedxml
-          guarddog pypi scan Pillow
-          guarddog pypi scan fonttools
+          time guarddog pypi scan defusedxml
+          time guarddog pypi scan Pillow
+          time guarddog pypi scan fonttools
           # Scanning dev dependencies:
-          guarddog pypi verify contributors/requirements.txt
-          guarddog pypi verify docs/requirements.txt
-          guarddog pypi verify test/linters-requirements.txt
-          guarddog pypi verify test/requirements.txt
+          time guarddog pypi verify contributors/requirements.txt
+          time guarddog pypi verify docs/requirements.txt
+          time guarddog pypi verify test/linters-requirements.txt
+          time guarddog pypi verify test/requirements.txt
       - name: Spell Check Repo ✍️
         uses: crate-ci/typos@0f0ccba9ed1df83948f0c15026e4f5ccfce46109 # v1.32.0
   test:
@@ -165,6 +167,7 @@ jobs:
             fonts.gstatic.com:443
             img.shields.io:443
             unpkg.com:443
+            borbpdf.com:443
           # Starting from api.star-history.com, the endpoints whitelist reason is the mkdocs privacy plugin
       - name: Checkout 🛎️
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2

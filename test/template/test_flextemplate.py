@@ -120,9 +120,21 @@ def test_flextemplate_multipage(tmp_path):
     tmpl_0["label"] = "Offset: 120 / 120 mm"
     tmpl_0.render(offsetx=120, offsety=120, rotate=30.0)
     tmpl_1 = FlexTemplate(pdf)
-    tmpl_1.parse_csv(HERE / "mycsvfile.csv", delimiter=";")
+    tmpl_1.parse_csv(HERE / "template_definition.csv", delimiter=";")
     tmpl_1.render()
     assert_pdf_equal(pdf, HERE / "flextemplate_multipage.pdf", tmp_path)
+
+
+def test_flextemplate_multipage_parse_json(tmp_path):
+    pdf = FPDF()
+    tmpl = FlexTemplate(pdf)
+    tmpl.parse_json(HERE / "template_definition.json")
+    # Repeat on 5 pages, changing a single setting for each page:
+    for n in range(1, 6):
+        pdf.add_page()
+        tmpl["numeric_text"] = f"{n:03d}"
+        tmpl.render()
+    assert_pdf_equal(pdf, HERE / "flextemplate_multipage_parse_json.pdf", tmp_path)
 
 
 def test_flextemplate_rotation(tmp_path):

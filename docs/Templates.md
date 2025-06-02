@@ -1,5 +1,4 @@
 # Templates
-
 Templates are a `fpdf2` feature that define predefined documents (like invoices, tax forms, etc.), or parts of such documents, where each element (text, lines, barcodes, etc.) has a fixed position (x1, y1, x2, y2), style (font, size, etc.) and a default text.
 
 These elements can act as placeholders, so the program can change the default text "filling in" the document.
@@ -12,7 +11,6 @@ There are two approaches to using templates:
 
 
 ## Using Template
-
 The traditional approach is to use the `Template` class, This class accepts one template definition, and can apply it to each page of a document. The usage pattern here is:
 
 ```python
@@ -40,6 +38,8 @@ The `Template` class will create and manage its own `FPDF` instance, so you don'
 
 For the method signatures, see [py-pdf.github.io: class Template](https://py-pdf.github.io/fpdf2/fpdf/template.html#fpdf.template.Template).
 
+You can also check [test/template/test_template.py](https://github.com/py-pdf/fpdf2/blob/master/test/template/test_template.py) for usage examples of `Template`.
+
 Setting text values for specific template items is done by treating the class as a dict, with the name of the item as the key:
 
 ```python
@@ -48,11 +48,12 @@ Template["company_name"] = "Sample Company"
 
 
 ## Using FlexTemplate
-
 When more flexibility is desired, then the `FlexTemplate` class comes into play.
 In this case, you first need to create your own `FPDF` instance. You can then pass this to the constructor of one or several `FlexTemplate` instances, and have each of them load a template definition. For any page of the document, you can set text values on a template, and then render it on that page. After rendering, the template will be reset to its default values.
  
 ```python
+from fpdf import FlexTemplate, FPDF
+
 pdf = FPDF()
 pdf.add_page()
 # One template for the first page
@@ -104,7 +105,7 @@ f_tmpl.render() # add footer items to third page
 pdf.rect(x, y, w, h, style=None)
 
 # possibly more pages
-pdf.next_page()
+pdf.add_page()
 ...
 ...
 
@@ -119,15 +120,16 @@ Of course, you can just as well use a set of full-page templates, possibly diffe
 And here's how you can use a template several times on one page (and by extension, several times on several pages). When rendering with an `offsetx` and/or `offsety` argument, the contents of the template will end up in a different place on the page. A `rotate` argument will change its orientation, rotated around the origin of the template. The pivot of the rotation is the offset location. And finally, a `scale` argument allows you to insert the template larger or smaller than it was defined.
 
 ```python
-elements = [
+from fpdf import FlexTemplate, FPDF
+
+pdf = FPDF()
+pdf.add_page()
+templ = FlexTemplate(pdf, [
     {"name":"box", "type":"B", "x1":0, "y1":0, "x2":50, "y2":50,},
     {"name":"d1", "type":"L", "x1":0, "y1":0, "x2":50, "y2":50,},
     {"name":"d2", "type":"L", "x1":0, "y1":50, "x2":50, "y2":0,},
     {"name":"label", "type":"T", "x1":0, "y1":52, "x2":50, "y2":57, "text":"Label",},
-]
-pdf = FPDF()
-pdf.add_page()
-templ = FlexTemplate(pdf, elements)
+])
 templ["label"] = "Offset: 50 / 50 mm"
 templ.render(offsetx=50, offsety=50)
 templ["label"] = "Offset: 50 / 120 mm"
@@ -141,6 +143,8 @@ pdf.output("example.pdf")
 
 For the method signatures, see [py-pdf.github.io: class FlexTemplate](https://py-pdf.github.io/fpdf2/fpdf/template.html#fpdf.template.FlexTemplate).
 
+You can also check [test/template/test_flextemplate.py](https://github.com/py-pdf/fpdf2/blob/master/test/template/test_flextemplate.py) for usage examples of `FlexTemplate`.
+
 The dict syntax for setting text values is the same as above:
 
 ```python
@@ -149,7 +153,6 @@ FlexTemplate["company_name"] = "Sample Company"
 
 
 ## Details - Template definition
-
 A template definition consists of a number of elements, which have the
 following properties (columns in a CSV, items in a dict, name/value pairs in a
 JSON object, fields in a database). Dimensions (except font size, which always
@@ -219,7 +222,6 @@ Fields that are not relevant to a specific element type will be ignored there, b
 
 
 ## How to create a template
-
 A template can be created in several ways:
 
   * By defining everything directly as a Python dictionary
@@ -229,9 +231,7 @@ A template can be created in several ways:
 
 
 ### Example - Python dict
-
 ```python
-
 from fpdf import Template
 
 #this will define the ELEMENTS that will compose the template. 
@@ -297,8 +297,8 @@ def test_template():
 ```
 
 ### Example - Elements defined in CSV file
-You define your elements in a CSV file "mycsvfile.csv"
-that will look like:
+You can define template elements in a CSV file `template_definition.csv`.
+It can look like this:
 ```
 line0;L;20.0;12.0;190.0;12.0;times;0.5;0;0;0;0;16777215;C;;0;0;0.0
 line1;L;20.0;36.0;190.0;36.0;times;0.5;0;0;0;0;16777215;C;;0;0;0.0
@@ -320,7 +320,7 @@ Then you can use the file like this:
 def test_template():
     f = Template(format="A4",
                  title="Sample Invoice")
-    f.parse_csv("mycsvfile.csv", delimiter=";")
+    f.parse_csv("template_definition.csv", delimiter=";")
     f.add_page()
     f["name0"] = "Joe Doe"
     return f.render("./template.pdf")
