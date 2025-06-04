@@ -322,6 +322,9 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/chigkim"><img src="https://avatars.githubusercontent.com/u/22120994?v=4?s=100" width="100px;" alt="Chi Kim"/><br /><sub><b>Chi Kim</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Achigkim" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/petsuter"><img src="https://avatars.githubusercontent.com/u/8830354?v=4?s=100" width="100px;" alt="Peter Suter"/><br /><sub><b>Peter Suter</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Apetsuter" title="Bug reports">🐛</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/slkoo-core"><img src="https://avatars.githubusercontent.com/u/201556645?v=4?s=100" width="100px;" alt="slkoo-core"/><br /><sub><b>slkoo-core</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Aslkoo-core" title="Bug reports">🐛</a></td>
+    </tr>
   </tbody>
 </table>
 
