@@ -1,3 +1,5 @@
+# Context: https://github.com/squidfunk/mkdocs-material/discussions/8252
+
 from mkdocs.plugins import BasePlugin
 
 

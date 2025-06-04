@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fpdf import FPDF, FPDFException
+from fpdf import FPDF, FPDFException, TextStyle
 from test.conftest import assert_pdf_equal
 from test.table.test_table import MULTILINE_TABLE_DATA
 
@@ -402,3 +402,30 @@ def test_html_table_with_null_text_in_span_cell(tmp_path):
         HERE / "html_table_with_null_text_in_span_cell.pdf",
         tmp_path,
     )
+
+
+def test_html_table_inside_paragraph(tmp_path):  # issue 1453
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """
+<h1>This is a &lt;h1&gt;</h1>
+<p>This is a &lt;p&gt;</p>
+Table outside paragraph:
+<table>
+ <tr><th>th1</th><th>th2</th></tr>
+ <tr align="C"><td>td1</td><td>td2</td></tr>
+</table>
+<p>
+  Table inside paragraph:
+  <table>
+   <tr><th>th1</th><th>th2</th></tr>
+   <tr align="C"><td>td1</td><td>td2</td></tr>
+  </table>
+</p>""",
+        tag_styles={
+            "h1": TextStyle(font_size_pt=32),
+            "p": TextStyle(font_size_pt=16),
+        },
+    )
+    assert_pdf_equal(pdf, HERE / "html_table_inside_paragraph.pdf", tmp_path)

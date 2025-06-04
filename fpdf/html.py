@@ -618,10 +618,22 @@ class HTML2FPDF(HTMLParser):
                 emphasis |= TextEmphasis.I
             if self.td_th.get("U"):
                 emphasis |= TextEmphasis.U
+            font_family = (
+                self.font_family if self.font_family != self.pdf.font_family else None
+            )
+            font_size_pt = (
+                self.font_size_pt
+                if self.font_size_pt != self.pdf.font_size_pt
+                else None
+            )
             font_style = None
-            if bgcolor or emphasis:
+            if font_family or emphasis or font_size_pt or bgcolor:
                 font_style = FontFace(
-                    emphasis=emphasis, fill_color=bgcolor, color=self.pdf.text_color
+                    family=font_family,
+                    emphasis=emphasis,
+                    size_pt=font_size_pt,
+                    color=self.pdf.text_color,
+                    fill_color=bgcolor,
                 )
             self.table_row.cell(
                 text=data,
@@ -731,6 +743,14 @@ class HTML2FPDF(HTMLParser):
                 except ValueError:
                     line_height = None
             tag_style = self.tag_styles[tag]
+            if tag_style.color is not None and tag_style.color != self.font_color:
+                self.font_color = tag_style.color
+            if tag_style.family is not None and tag_style.family != self.font_family:
+                self.font_family = tag_style.family
+            if tag_style.size_pt is not None and tag_style.size_pt != self.font_size_pt:
+                self.font_size_pt = tag_style.size_pt
+            if tag_style.emphasis:
+                self.font_emphasis |= tag_style.emphasis
             self._new_paragraph(
                 align=align,
                 line_height=line_height,
@@ -768,10 +788,12 @@ class HTML2FPDF(HTMLParser):
                 # "color" attributes are not valid in HTML,
                 # but we support it for backward compatibility:
                 self.font_color = color_as_decimal(attrs["color"])
-            elif tag_style.color:
+            elif tag_style.color is not None and tag_style.color != self.font_color:
                 self.font_color = tag_style.color
-            self.font_family = tag_style.family or self.font_family
-            self.font_size_pt = tag_style.size_pt or self.font_size_pt
+            if tag_style.family is not None and tag_style.family != self.font_family:
+                self.font_family = tag_style.family
+            if tag_style.size_pt is not None and tag_style.size_pt != self.font_size_pt:
+                self.font_size_pt = tag_style.size_pt
             if tag_style.emphasis:
                 self.font_emphasis |= tag_style.emphasis
         if tag in (
@@ -920,6 +942,7 @@ class HTML2FPDF(HTMLParser):
             if "face" in attrs:
                 self.font_family = attrs.get("face").lower()
         if tag == "table":
+            self._end_paragraph()
             width = css_style.get("width", attrs.get("width"))
             if width:
                 if width[-1] == "%":
@@ -945,7 +968,7 @@ class HTML2FPDF(HTMLParser):
                 self.pdf,
                 align=align,
                 borders_layout=borders_layout,
-                line_height=self.h * self.TABLE_LINE_HEIGHT,
+                line_height=self.font_size_pt / self.pdf.k * self.TABLE_LINE_HEIGHT,
                 width=width,
                 padding=padding,
                 gutter_width=spacing,

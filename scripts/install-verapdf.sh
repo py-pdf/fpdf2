@@ -12,8 +12,9 @@ FILENAME=verapdf-greenfield-${VERSION}-installer.zip
 ZIP_URL=https://software.verapdf.org/dev/${VERSION%.*}/${FILENAME}
 
 rm -rf verapdf*
-wget --quiet ${ZIP_URL}
-wget --quiet ${ZIP_URL}.asc
+# VeraPDF website certificates expired on June 4th 2025:
+wget --no-check-certificate --quiet ${ZIP_URL}
+wget --no-check-certificate --quiet ${ZIP_URL}.asc
 gpg --keyserver keyserver.ubuntu.com --recv ${PUB_KEY_FINGERPRINT}
 gpg --verify ${FILENAME}.asc
 unzip verapdf*installer.zip
