@@ -1467,6 +1467,60 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             dstr = "[] 0 d"
         self._out(dstr)
 
+    @contextmanager
+    def glyph_drawing_context(self):
+        """
+        Create a context for drawing paths for type 3 font glyphs, without writing on the current page.
+        """
+
+        if self._current_draw_context is not None:
+            raise FPDFException(
+                "cannot create a drawing context while one is already open"
+            )
+
+        context = DrawingContext()
+        self._current_draw_context = context
+        try:
+            yield context
+        finally:
+            self._current_draw_context = None
+
+        self._set_min_pdf_version("1.4")
+
+    def draw_vector_glyph(self, path, font):
+        """
+        Add a pre-constructed path to the document.
+
+        Args:
+            path (drawing.PaintedPath): the path to be drawn.
+            debug_stream (TextIO): print a pretty tree of all items to be rendered
+                to the provided stream. To store the output in a string, use
+                `io.StringIO`.
+        """
+        output_stream = None
+        with self.glyph_drawing_context() as ctxt:
+            ctxt.add_item(path)
+
+            starting_style = GraphicsStyle()
+            render_args = (
+                self._drawing_graphics_state_registry,
+                Point(0, 0),
+                1,
+                0,
+                starting_style,
+            )
+
+            output_stream = ctxt.render(*render_args)
+            # Registering raster images embedded in the vector graphics:
+            font.images_used.update(
+                int(match.group(1)) for match in self._IMG_REGEX.finditer(output_stream)
+            )
+            font.graphics_style_used.update(
+                match.group(1) for match in self._GS_REGEX.finditer(output_stream)
+            )
+
+        return output_stream
+
     @check_page
     def line(self, x1, y1, x2, y2):
         """
@@ -5648,6 +5702,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                                 str(self.pages_count)
                             ).encode("latin-1"),
                         )
+            for _, font in self.fonts.items():
+                if font.type == "TTF" and font.color_font:
+                    font.color_font.load_glyphs()
             if linearize:
                 output_producer_class = LinearizedOutputProducer
             output_producer = output_producer_class(self)
