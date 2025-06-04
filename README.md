@@ -320,6 +320,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/biermanr"><img src="https://avatars.githubusercontent.com/u/129201865?v=4?s=100" width="100px;" alt="Rob"/><br /><sub><b>Rob</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=biermanr" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/weltkante"><img src="https://avatars.githubusercontent.com/u/5845814?v=4?s=100" width="100px;" alt="Tobias Käs"/><br /><sub><b>Tobias Käs</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Aweltkante" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/chigkim"><img src="https://avatars.githubusercontent.com/u/22120994?v=4?s=100" width="100px;" alt="Chi Kim"/><br /><sub><b>Chi Kim</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Achigkim" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/petsuter"><img src="https://avatars.githubusercontent.com/u/8830354?v=4?s=100" width="100px;" alt="Peter Suter"/><br /><sub><b>Peter Suter</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Apetsuter" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
