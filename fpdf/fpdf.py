@@ -3406,6 +3406,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 f"BT {(self.x + dx) * k:.2f} "
                 f"{(self.h - self.y - 0.5 * h - 0.3 * max_font_size) * k:.2f} Td"
             )
+            underlines, strikethroughs = [], []
             for i, frag in enumerate(fragments):
                 if isinstance(frag, TotalPagesSubstitutionFragment):
                     self.pages[self.page].add_text_substitution(frag)
@@ -3496,22 +3497,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     initial_cs=i != 0
                 ) + word_spacing * frag.characters.count(" ")
                 if frag.underline:
-                    sl.append(
-                        self._do_underline(
-                            self.x + dx + s_width,
-                            self.y + (0.5 * h) + (0.3 * frag.font_size),
-                            frag_width,
-                            frag.font,
-                        )
+                    underlines.append(
+                        (self.x + dx + s_width, frag_width, frag.font, frag.font_size)
                     )
                 if frag.strikethrough:
-                    sl.append(
-                        self._do_strikethrough(
-                            self.x + dx + s_width,
-                            self.y + (0.5 * h) + (0.3 * frag.font_size),
-                            frag_width,
-                            frag.font,
-                        )
+                    strikethroughs.append(
+                        (self.x + dx + s_width, frag_width, frag.font, frag.font_size)
                     )
                 if frag.link:
                     self.link(
@@ -3527,6 +3518,22 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
             sl.append("ET")
 
+            # Underlines & strikethrough must be rendred OUTSIDE BT/ET contexts,
+            # cf. https://github.com/py-pdf/fpdf2/issues/1456
+            if underlines:
+                for start_x, width, font, font_size in underlines:
+                    sl.append(
+                        self._do_underline(
+                            start_x, self.y + (0.5 * h) + (0.3 * font_size), width, font
+                        )
+                    )
+            if strikethroughs:
+                for start_x, width, font, font_size in strikethroughs:
+                    sl.append(
+                        self._do_strikethrough(
+                            start_x, self.y + (0.5 * h) + (0.3 * font_size), width, font
+                        )
+                    )
             if link:
                 self.link(
                     self.x + dx,
