@@ -62,19 +62,24 @@ Here is an example on how to generate a [QR Code](https://en.wikipedia.org/wiki/
 using the [`python-qrcode`](https://github.com/lincolnloop/python-qrcode) lib:
 
 ```python
-from fpdf import FPDF
-import qrcode
-
-pdf = FPDF()
-pdf.add_page()
-img = qrcode.make("fpdf2")
-pdf.image(img.get_image(), x=50, y=50)
-pdf.output("qrcode.pdf")
+{% include "../tutorial/qrcode_demo.py" %}
 ```
 
 Output preview:
 
-![](qrcode.png)
+![QCode embedded with fpdf2](qrcode.png)
+
+
+## rMQR Code ##
+rMQR Codes, aka Rectangular Micro QR Codes, can be inserted in PDF documents using `fpdf2` and the [`rmqrcode`](https://github.com/OUDON/rmqrcode-python) library:
+
+```python
+{% include "../tutorial/rmqrcode_demo.py" %}
+```
+
+Output preview:
+
+![rMQR code embedded with fpdf2](rmqrcode.png)
 
 
 ## DataMatrix ##
