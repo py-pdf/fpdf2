@@ -20,9 +20,13 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 * documentation on [internal linking with variable page numbers](https://py-pdf.github.io/fpdf2/Links.html#internal-links)
 ### Fixed
+* [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): Fixed custom styling of `<p>` & tables - [issue #1453](https://github.com/py-pdf/fpdf2/issues/1453)
+* an `IndexError` was raised in some cases when rendering HTML with nested lists - _cf._ [issue #1358](https://github.com/py-pdf/fpdf2/issues/1358)
 * an `IndexError` was raised in some cases when using [text_columns()](https://py-pdf.github.io/fpdf2/TextColumns.html) with [text shaping enabled](https://py-pdf.github.io/fpdf2/TextShaping.html) - _cf._ [issue #1439](https://github.com/py-pdf/fpdf2/issues/1439)
 * handled case of a smaller last column when using [text_columns()](https://py-pdf.github.io/fpdf2/TextColumns.html) - _cf._ [issue #1442](https://github.com/py-pdf/fpdf2/issues/1442)
 * minor regular-expression optimization in the SVG parsing module, nullifying any risk of ReDOS attack
+* a performance issue when using `FPDF.offset_rendering()` or `FPDF.unbreakable()` with large fonts - _cf._ [issue #1444](https://github.com/py-pdf/fpdf2/issues/1444)
+* slightly invalid PDF files were produced since v2.8.3, due to path construction commands being inserted inside `BT/ET` contexts when using underline or strikethrough text
 
 ## [2.8.3] - 2025-04-22
 ### Added
@@ -35,7 +39,6 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * support for <s>strikethrough text</s>
 * support for `first_line_indent` in [`text_region.Paragraph`](https://py-pdf.github.io/fpdf2/fpdf/text_region.html#fpdf.text_region.Paragraph)
 * new [ViewerPreferences.print_scaling](https://py-pdf.github.io/fpdf2/fpdf/prefs.html#fpdf.prefs.ViewerPreferences.print_scaling)
-* documentation on [verifying provenance of `fpdf2` releases](https://py-pdf.github.io/fpdf2/#verifying-provenance)
 * documentation on [`fpdf2` internals](https://py-pdf.github.io/fpdf2/Internals.html)
 * documentation on [generating Aztec Codes](https://py-pdf.github.io/fpdf2/Barcodes.html#aztec-code)
 * added Slovenian translation of the tutorial: [Vodič](https://py-pdf.github.io/fpdf2/Tutorial-sl.html) - thanks to @DeepBlackHole

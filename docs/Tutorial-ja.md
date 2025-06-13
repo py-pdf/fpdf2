@@ -2,8 +2,6 @@
 
 Methods full documentation: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## Tuto 1 - 簡単な使用例 ##
 
 まずは、単純な使用例から始めましょう。
@@ -171,7 +169,7 @@ English versions:
 ```
 
 [生成されるPDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 ここではテキストを表示するための新しい方法として、 [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) を使っています。
 このメソッドは [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) と非常によく似ており、重要な違いとしては次があります。

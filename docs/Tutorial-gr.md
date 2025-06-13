@@ -2,8 +2,6 @@
 
 Πλήρης τεκμηρίωση των μεθόδων:  [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## Μάθημα 1 - Απλό Παράδειγμα ##
 
 Ας ξεκινήσουμε με ένα κλασσικό παράδειγμα:
@@ -136,7 +134,7 @@ English versions:
 ```
 
 [Παραγόμενο PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 Παρατηρούμε μία νέα μέθοδο για την εκτύπωση κειμένου, την
  [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)

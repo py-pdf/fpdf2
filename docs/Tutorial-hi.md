@@ -1,8 +1,8 @@
+# Tutorial #
+
 विभिन्न उदाहरण जल्दी से दिखाते हैं कि fpdf2 का उपयोग कैसे करें। आपको सभी मुख्य विशेषताओं की व्याख्या मिल जाएगी।
 
 Methods full documentation / तरीके पूर्ण प्रलेखन: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
-
-[TOC]
 
 ## Tuto 1 - मूल उदाहरण ##
 
@@ -178,7 +178,7 @@ English versions:
 ```
 
 [Resulting PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 टेक्स्ट प्रिंट करने के लिए यहां दिखाया गया नया तरीका [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write) है। यह बहुत हद तक [multi_cell()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell) के समान है, मुख्य अंतर यह है:
 - पंक्ति का अंत दाएं हाशिये पर है और अगली पंक्ति बाएं हाशिये पर शुरू होती है।

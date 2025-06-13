@@ -1260,3 +1260,18 @@ def test_html_title_duplicated(caplog, tmp_path):
         )
     assert 'Ignoring repeated <title> "World"' in caplog.text
     assert_pdf_equal(pdf, HERE / "html_title_duplicated.pdf", tmp_path)
+
+
+def test_html_ol_nested_in_ul(tmp_path):  # cf. issue #1358
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.write_html(
+        """<ul>
+          <li>item
+          <ol>
+            <li>sub-item</li>
+          </ol>
+          </li>
+        </ul>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_ol_nested_in_ul.pdf", tmp_path)

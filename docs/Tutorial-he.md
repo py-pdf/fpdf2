@@ -4,8 +4,6 @@
 
 תיעוד מלא: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## 1 - דוגמא מינימלית ##
 
 נתחיל בדוגמא קלאסית:
@@ -152,7 +150,7 @@ English versions:
 ```
 
 [תוצר](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 המתודה החדשה שמשומשת כאן כדי להדפיס טקסט היא  [()write](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). דומה מאוד ל[()multi_cell](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.multi_cell), כאשר ההבדלים העיקריים הם:
 

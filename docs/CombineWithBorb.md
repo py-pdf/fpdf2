@@ -1,6 +1,6 @@
 # borb #
 
-![](https://raw.githubusercontent.com/jorisschellekens/borb/master/logo/borb_64.png)
+![](https://borbpdf.com/assets/graphics/borb.svg)
 
 Joris Schellekens made another excellent pure-Python library dedicated to reading & write PDF: [borb](https://github.com/jorisschellekens/borb/).
 He even wrote a very detailed e-book about it, available publicly there: [borb-examples](https://github.com/jorisschellekens/borb-examples/).

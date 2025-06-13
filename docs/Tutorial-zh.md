@@ -3,8 +3,6 @@
 完整说明文件：
 [`fpdf.FPDF` API 文档](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## 教程一 - 简单的示例 ##
 
 一个经典的示例：
@@ -191,7 +189,7 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 ```
 
 [生成的 PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2 图标](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2 图标](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 此处显示的打印文本的新方法是
 [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)

@@ -60,7 +60,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@ff0a06e83cb2de871e5a09832bc6a81e7276941f # v3.28.18
+        uses: github/codeql-action/upload-sarif@ce28f5bb42b7a9f2c824e633a3f6ee835bab6858 # v3.29.0
         with:
           sarif_file: results.sarif
           category: zizmor
@@ -76,19 +76,21 @@ jobs:
           path: "."
           fail-build: true
       - name: Scan project dependencies with guarddog 🐶
+        # GuardDog is very slow, we only execute it on the master branch:
+        if: github.ref == 'refs/heads/master'
         run: |
           pip install guarddog
           # Scanning direct dependencies:
-          guarddog pypi scan defusedxml
-          guarddog pypi scan Pillow
-          guarddog pypi scan fonttools
+          time guarddog pypi scan defusedxml
+          time guarddog pypi scan Pillow
+          time guarddog pypi scan fonttools
           # Scanning dev dependencies:
-          guarddog pypi verify contributors/requirements.txt
-          guarddog pypi verify docs/requirements.txt
-          guarddog pypi verify test/linters-requirements.txt
-          guarddog pypi verify test/requirements.txt
+          time guarddog pypi verify contributors/requirements.txt
+          time guarddog pypi verify docs/requirements.txt
+          time guarddog pypi verify test/linters-requirements.txt
+          time guarddog pypi verify test/requirements.txt
       - name: Spell Check Repo ✍️
-        uses: crate-ci/typos@0f0ccba9ed1df83948f0c15026e4f5ccfce46109 # v1.32.0
+        uses: crate-ci/typos@b1ae8d918b6e85bd611117d3d9a3be4f903ee5e4 # v1.33.1
   test:
     strategy:
       matrix:
@@ -148,7 +150,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        uses: step-security/harden-runner@002fdce3c6a235733a90a27c80493a3241e56863 # v2.12.1
         with:
           egress-policy: block
           allowed-endpoints:
@@ -165,6 +167,7 @@ jobs:
             fonts.gstatic.com:443
             img.shields.io:443
             unpkg.com:443
+            borbpdf.com:443
           # Starting from api.star-history.com, the endpoints whitelist reason is the mkdocs privacy plugin
       - name: Checkout 🛎️
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -179,14 +182,14 @@ jobs:
       - name: Install Python dependencies ⚙️
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install --upgrade -r docs/requirements.txt -r contributors/requirements.txt
+          pip install --upgrade . -r docs/requirements.txt -r contributors/requirements.txt
       - name: Generate HTML documentation 🏗️
         run: |
           mkdir -p public/
           # Setting PDF manual version:
           sed -i "s/author:.*/author: v$(python setup.py -V 2>/dev/null)/" mkdocs.yml
           cp tutorial/notebook.ipynb docs/
-          mkdocs build
+          python -m mkdocs build
           pdoc --html -o public/ fpdf --template-dir docs/pdoc
           scripts/add_pdoc_to_search_index.py
       - name: Build contributors map 🗺️
@@ -220,7 +223,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        uses: step-security/harden-runner@002fdce3c6a235733a90a27c80493a3241e56863 # v2.12.1
         with:
           egress-policy: block
           allowed-endpoints:

@@ -2,8 +2,6 @@
 
 ឯកសារទាំងស្រុងនៃវិធីប្រើ: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## មេរៀនទី 1 - គំរូខ្លី ##
 
 តោះចាប់ផ្តើមជាមួយឧទាហរណ៍ងាយៗ:
@@ -124,13 +122,8 @@ pdf.cell(60, 10, 'Powered by FPDF.', new_x="LMARGIN", new_y="NEXT", align='C')
 
 [អត្ថបទ Jules Verne](https://github.com/py-pdf/fpdf2/raw/master/tutorial/20k_c1.txt)
 
-_⚠️ This section has changed a lot and requires a new translation: <https://github.com/py-pdf/fpdf2/issues/267>_
-
-English versions:
-
-* [Tuto 4 - Multi Columns](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-4-multi-columns)
-* [Documentation on TextColumns](https://py-pdf.github.io/fpdf2/TextColumns.html
-
+ចំនុចចំបងដែលខុសពីមេរៀនមុនគឺ ការប្រើប្រាស់មុខងារ <strong>text_columns</strong>​ ។ រាល់អក្សរទាំងអស់​ អាចជាបន្ថែមបន្ត ហើយពង្រាយវាទៅតាមជួរឈរ​ វាបង្កើតបំនែកទំព័រដោយស្វ័យប្រវត្តិពេលចាំបាច់។ <br>
+<strong>ចំណាំ</strong> ពេលដែល TextColumns ដាក់អោយដើរតួជាប្រធានបរិបទ (context manager) រចនាបទរបស់អត្ថបទ និង ទម្រង់ពុំអក្សរផ្សេងៗក៏ត្រូវបានប្តូរផងដែរ។ ការផ្លាស់ប្តូរទាំងនេះគឺផ្អែកលើបន្ទុករបស់បរិបទ។ នៅពេលដែលវាបានបិទ ការកំណត់ពីមុននឹងត្រូវបានស្តារឡើងវិញ។
 
 ## មេរៀនទី 5 - បង្កើតតារាង ##
 
@@ -162,7 +155,7 @@ English versions:
 ```
 
 [លទ្ធផលសម្រេច PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 របៀបថ្មីមួយទៀតក្នុងការបង្ហាញអត្ថបទដើម្បីបោះពុម្ភ
  [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)។ វាមានភាពស្រដៀងទៅនឹង

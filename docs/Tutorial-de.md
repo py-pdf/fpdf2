@@ -2,8 +2,6 @@
 
 Vollständige Dokumentation der Methoden: [`fpdf.FPDF` API doc](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## Lektion 1 - Minimalbeispiel ##
 
 Beginnen wir mit dem Klassiker:
@@ -163,7 +161,7 @@ Es wird auch gezeigt, wie man verschiedene Textstile (fett, kursiv, unterstriche
 ```
 
 [Erzeugtes PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 Die hier gezeigte neue Methode zur Einbindung von Text lautet
  [`write()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write). Sie ähnelt der bereits bekannten

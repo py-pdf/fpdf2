@@ -85,6 +85,7 @@ pip install git+https://github.com/py-pdf/fpdf2.git@master
 
 **Development**: check the [dedicated documentation page](Development.md).
 
+<!-- Not documenting pypi-attributions for now, as recommended by @woodruffw: https://github.com/trailofbits/pypi-attestations/issues/85#issuecomment-2779481313
 ### Verifying provenance
 [`pypi-attestations`](https://pypi.org/project/pypi-attestations/) can be used to check the provenance of a `fpdf2-2.X.Y.tar.gz` or `fpdf2-2.X.Y-py2.py3-none-any.whl` package (_cf._ [PyPI now supports digital attestations](https://blog.pypi.org/posts/2024-11-14-pypi-now-supports-digital-attestations/)).
 
@@ -99,6 +100,7 @@ OK: fpdf2-2.8.2-py2.py3-none-any.whl
 ```
 
 The file URL can be retrieved from the [pypi.org/simple/fpdf2 page](https://pypi.org/simple/fpdf2/).
+-->
 
 ### Displaying deprecation warnings
 `DeprecationWarning`s are not displayed by Python by default.

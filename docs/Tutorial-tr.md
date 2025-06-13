@@ -2,8 +2,6 @@
 
 Metodların tam dökümantasyonu: [`fpdf.FPDF` API dökümanı](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF)
 
-[TOC]
-
 ## Öğretici 1 - Minimal Örnek
 
 Hadi klasik bir örnekle başlayalım:
@@ -187,7 +185,7 @@ Bu öğretici, bir pdf belgesi içine bağlantılar eklemenin birkaç yolunu aç
 ```
 
 [Sonuç PDF](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto6.pdf) -
-[fpdf2-logo](https://raw.githubusercontent.com/py-pdf/fpdf2/master/docs/fpdf2-logo.png)
+[fpdf2-logo](https://py-pdf.github.io/fpdf2/fpdf2-logo.png)
 
 Bu öğreticide, metin yazdırmak için gösterilen yeni yöntem
  [write()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write)

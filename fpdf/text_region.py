@@ -527,6 +527,7 @@ class TextRegion(ParagraphCollectorMixin):
                     and tl_wrapper.first_line
                     and not cur_bullet
                     and cur_paragraph.top_margin
+                    # Do not render margin on top of page:
                     and self.pdf.y > self.pdf.t_margin
                 ):
                     self.pdf.y += cur_paragraph.top_margin
