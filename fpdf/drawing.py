@@ -14,6 +14,8 @@ from collections.abc import Sequence
 from contextlib import contextmanager
 from typing import Optional, NamedTuple, Union
 
+from fontTools.pens.basePen import BasePen
+
 from .enums import (
     BlendMode,
     ClippingPathIntersectionRule,
@@ -3788,6 +3790,11 @@ class PaintedPath:
             self._close_context = self._graphics_context
             self._closed = True
 
+    def linear_gradient_fill(self, x1, y1, x2, y2, stops):
+        gradient = LinearGradient(fpdf=None, from_x=x1, from_y=y1, to_x=x2, to_ys=y2, colors=[stop[1] for stop in stops])
+        gradient.coords = list(map(str, [x1, x2, y1, y2]))
+        self.gradient=gradient
+
     def render(
         self, gsd_registry, style, last_item, initial_point, debug_stream=None, pfx=None
     ):
@@ -4220,3 +4227,58 @@ class GraphicsContext:
             pfx,
             _push_stack=_push_stack,
         )
+
+
+class PathPen(BasePen):
+    def __init__(self, pdf_path, *args, **kwargs):
+        self.pdf_path = pdf_path
+        self.last_was_line_to = False
+        self.first_is_move = None
+        super().__init__(*args, **kwargs)
+
+    def _moveTo(self, pt):
+        self.pdf_path.move_to(*pt)
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = True
+
+    def _lineTo(self, pt):
+        self.pdf_path.line_to(*pt)
+        self.last_was_line_to = True
+        if self.first_is_move is None:
+            self.first_is_move = False
+
+    def _curveToOne(self, pt1, pt2, pt3):
+        self.pdf_path.curve_to(
+            x1=pt1[0], y1=pt1[1], x2=pt2[0], y2=pt2[1], x3=pt3[0], y3=pt3[1]
+        )
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = False
+
+    def _qCurveToOne(self, pt1, pt2):
+        self.pdf_path.quadratic_curve_to(x1=pt1[0], y1=pt1[1], x2=pt2[0], y2=pt2[1])
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = False
+
+    def arcTo(self, rx, ry, rotation, arc, sweep, end):
+        self.pdf_path.arc_to(
+            rx=rx,
+            ry=ry,
+            rotation=rotation,
+            large_arc=arc,
+            positive_sweep=sweep,
+            x=end[0],
+            y=end[1],
+        )
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = False
+
+    def _closePath(self):
+        # The fonttools parser inserts an unnecessary explicit line back to the start
+        # point of the path before actually closing it. Let's get rid of that again.
+        # if self.last_was_line_to:
+        #    self.pdf_path.remove_last_path_element()
+        self.pdf_path.close()
