@@ -145,6 +145,13 @@ class SVGColorFont(Type3Font):
         )
         glyph.glyph_width = w
 
+class CustomGraphicsContextItem:
+    def __init__(self, item):
+        self._item = item
+    
+    def render(self, gsd_registry, style, last_item, first_point):
+        return self._item, None, None
+
 
 class COLRFont(Type3Font):
 
@@ -196,7 +203,6 @@ class COLRFont(Type3Font):
 
     def draw_glyph_colrv0(self, layers):
         gc = GraphicsContext()
-        gc.transform = Transform.identity()
         for layer in layers:
             path = PaintedPath()
             glyph_set = self.base_font.ttfont.getGlyphSet()
@@ -210,37 +216,52 @@ class COLRFont(Type3Font):
     
     def draw_glyph_colrv1(self, glyph_name):
         gc = GraphicsContext()
-        gc.transform = Transform.identity()
         glyph = self.colrv1_glyphs[glyph_name]
         self.draw_colrv1_paint(glyph.Paint, gc)
         return gc
 
     def draw_colrv1_paint(self, paint: Paint, gc: GraphicsContext):
-        print(paint.getFormatName())
         if paint.Format == PaintFormat.PaintColrLayers: #1
-            print("[PaintColrLayers] FirstLayerIndex: ", paint.FirstLayerIndex, " NumLayers: ", paint.NumLayers)
+            #print("[PaintColrLayers] FirstLayerIndex: ", paint.FirstLayerIndex, " NumLayers: ", paint.NumLayers)
             layer_list = self.base_font.ttfont["COLR"].table.LayerList
             for layer in range(paint.FirstLayerIndex, paint.FirstLayerIndex + paint.NumLayers):
                 self.draw_colrv1_paint(layer_list.Paint[layer], gc)
         elif paint.Format == PaintFormat.PaintSolid: #2
             color = self.get_color(paint.PaletteIndex, paint.Alpha)
-            path: PaintedPath = gc.path_items[-1]
+            path = get_last_painted_path(gc)
             path.style.fill_color = color
             path.style.stroke_color = color
+        elif paint.Format == PaintFormat.PaintVarSolid: # 3
+            raise NotImplementedError('Support for variable fonts not implemented yet.')
         elif paint.Format == PaintFormat.PaintLinearGradient: #4
-            print("[PaintLinearGradient] ColorLine: ")
-            for stop in paint.ColorLine.ColorStop:
-                print("Stop: ", stop.StopOffset, " color: ", stop.PaletteIndex)
-                print("x0: ", paint.x0, " y0: ", paint.y0, " x1: ", paint.x1, " y1: ", paint.y1)
-        elif paint.Format == PaintFormat.PaintRadialGradient: #6
-            print("[PaintRadialGradient] ColorLine: ")
-            for stop in paint.ColorLine.ColorStop:
-                print("Stop: ", stop.StopOffset, " color: ", stop.PaletteIndex)
-                print("x0: ", paint.x0, " y0: ", paint.y0, " x1: ", paint.x1, " y1: ", paint.y1)
+            #print("[PaintLinearGradient] ColorLine: ")
+            #for stop in paint.ColorLine.ColorStop:
+            #    print("Stop: ", stop.StopOffset, " color: ", stop.PaletteIndex)
+            #    print("x0: ", paint.x0, " y0: ", paint.y0, " x1: ", paint.x1, " y1: ", paint.y1)
             color = self.get_color(paint.ColorLine.ColorStop[0].PaletteIndex, paint.ColorLine.ColorStop[0].Alpha)
-            path: PaintedPath = gc.path_items[-1]
+            path = get_last_painted_path(gc)
             path.style.fill_color = color
             path.style.stroke_color = color
+        elif paint.Format == PaintFormat.PaintVarLinearGradient: # 5
+            raise NotImplementedError('Support for variable fonts not implemented yet.')
+        elif paint.Format == PaintFormat.PaintRadialGradient: #6
+            #print("[PaintRadialGradient] ColorLine: ")
+            #for stop in paint.ColorLine.ColorStop:
+            #    print("Stop: ", stop.StopOffset, " color: ", stop.PaletteIndex)
+            #    print("x0: ", paint.x0, " y0: ", paint.y0, " x1: ", paint.x1, " y1: ", paint.y1)
+            color = self.get_color(paint.ColorLine.ColorStop[0].PaletteIndex, paint.ColorLine.ColorStop[0].Alpha)
+            path = get_last_painted_path(gc)
+            path.style.fill_color = color
+            path.style.stroke_color = color
+        elif paint.Format == PaintFormat.PaintVarRadialGradient: # 7
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintSweepGradient: # 8
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintVarSweepGradient: # 9            
+            print(paint.Format)
+            raise NotImplementedError
         elif paint.Format == PaintFormat.PaintGlyph: #10
             path = PaintedPath()
             glyph_set = self.base_font.ttfont.getGlyphSet()
@@ -249,10 +270,12 @@ class COLRFont(Type3Font):
             glyph.draw(pen)
             gc.add_item(path)
             self.draw_colrv1_paint(paint.Paint, gc)
+        elif paint.Format == PaintFormat.PaintColrGlyph: # 11
+            print(paint.Format)
+            raise NotImplementedError
         elif paint.Format == PaintFormat.PaintTransform: #12
-            self.draw_colrv1_paint(paint.Paint, gc)
-            path: PaintedPath = gc.path_items[-1]
-            path.transform = Transform(
+            path = PaintedPath()
+            transform = Transform(
                 paint.Transform.xx,
                 paint.Transform.yx,
                 paint.Transform.xy,
@@ -260,15 +283,78 @@ class COLRFont(Type3Font):
                 paint.Transform.dx,
                 paint.Transform.dy,
             )
-            print("end of paintTransform")
-            
-        elif paint.Format == PaintFormat.PaintScale: #16
+            gc.add_item(CustomGraphicsContextItem(f"q {transform.render(None)[0]} "))
             self.draw_colrv1_paint(paint.Paint, gc)
-            path: PaintedPath = gc.path_items[-1]
-            path.transform = Transform.scaling(paint.scaleX, paint.scaleY)
-            print("end of scale transform")
+            gc.add_item(CustomGraphicsContextItem(f"Q "))
+        elif paint.Format == PaintFormat.PaintVarTransform: # 13
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintTranslate: # 14
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintVarTranslate: # 15    
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintScale: #16
+            transform = Transform.scaling(paint.scaleX, paint.scaleY)
+            gc.add_item(CustomGraphicsContextItem(f"q {transform.render(None)[0]} "))
+            self.draw_colrv1_paint(paint.Paint, gc)
+            gc.add_item(CustomGraphicsContextItem(f"Q "))
+        elif paint.Format == PaintFormat.PaintVarScale: # 17
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintScaleAroundCenter: # 18
+            print(paint.centerX, paint.centerY, paint.scaleX, paint.scaleY)
+            transform = Transform.translation(paint.centerX, -paint.centerY).scale(paint.scaleX, paint.scaleY).translate(-paint.centerX, paint.centerY)
+            gc.add_item(CustomGraphicsContextItem(f"q {transform.render(None)[0]} "))
+            self.draw_colrv1_paint(paint.Paint, gc)
+            gc.add_item(CustomGraphicsContextItem(f"Q "))
+        elif paint.Format == PaintFormat.PaintVarScaleAroundCenter: # 19
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintScaleUniform: # 20
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintVarScaleUniform: # 21
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintScaleUniformAroundCenter: # 22
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintVarScaleUniformAroundCenter: # 23
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintRotate: # 24
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintVarRotate: # 25
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintRotateAroundCenter: # 26
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintVarRotateAroundCenter: # 27
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintSkew: # 28
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintVarSkew: # 29
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintSkewAroundCenter: # 30
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintVarSkewAroundCenter: # 31
+            print(paint.Format)
+            raise NotImplementedError
+        elif paint.Format == PaintFormat.PaintComposite: # 32
+            print(paint.Format)
+            raise NotImplementedError
         else:
             print("Unknown PaintFormat: ", paint.Format)
+            print(paint.Format)
+            raise NotImplementedError
 
         
         
@@ -395,3 +481,10 @@ def get_color_font_object(fpdf: "FPDF", base_font: "TTFFont") -> Type3Font:
         LOGGER.warning("Font %s is a SBIX color font", base_font.name)
         return SBIXColorFont(fpdf, base_font)
     return None
+
+def get_last_painted_path(gc: GraphicsContext) -> PaintedPath:
+    """ Utilitary method to return the last painted path added to a graphics context """
+    for item in reversed(gc.path_items):
+        if isinstance(item, PaintedPath):
+            return item
+    raise ValueError("Invalid glyph")
