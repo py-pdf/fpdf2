@@ -4209,11 +4209,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         page_break_triggered = False
 
         for text_line_index, text_line in enumerate(text_lines):
-            if self._perform_page_break_if_need_be(h + padding.bottom):
+            start_of_new_page = self._perform_page_break_if_need_be(h + padding.bottom)
+            if start_of_new_page:
                 page_break_triggered = True
                 self.y += padding.top
 
-            if box_required and (text_line_index == 0 or page_break_triggered):
+            if box_required and (text_line_index == 0 or start_of_new_page):
                 # estimate how many cells can fit on this page
                 top_gap = self.y + padding.top
                 bottom_gap = padding.bottom + self.b_margin
