@@ -94,7 +94,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13t']
         platform: [ubuntu-22.04, windows-latest]
     runs-on: ${{ matrix.platform }}
     permissions: {}
@@ -113,7 +113,7 @@ jobs:
         run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install ghostscript
       - name: Install qpdf ⚙️
         # We run the unit tests WITHOUT qpdf for a single parallel execution / Python version:
-        if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version != '3.13' }}
+        if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version != '3.13t' }}
         run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install qpdf
       - name: Install Python dependencies ⚙️
         run: |
@@ -122,7 +122,7 @@ jobs:
       - name: Run tests ☑
         env:
           CHECK_EXEC_TIME: ${{ matrix.python-version == '3.9' && 'test-enabled' || '' }}
-          CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.13' && 'test-enabled' || '' }}
+          CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.13t' && 'test-enabled' || '' }}
         run: |
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
@@ -130,7 +130,7 @@ jobs:
           pytest -vv --trace-memory-usage
       - name: Upload coverage report to codecov.io ☑
         # We only upload coverage ONCE, for a single parallel execution / Python version:
-        if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.13' }}
+        if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.13t' }}
         run: bash <(curl -s https://codecov.io/bash)
       - name: Run tests with the minimal versions of fpdf2 direct dependencies ☑
         if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.8' }}
