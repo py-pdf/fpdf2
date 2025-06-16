@@ -4216,7 +4216,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
             if box_required and (text_line_index == 0 or start_of_new_page):
                 # estimate how many cells can fit on this page
-                top_gap = self.y + padding.top
+                top_gap = self.y # Top padding has already been added
                 bottom_gap = padding.bottom + self.b_margin
                 lines_before_break = int((self.h - top_gap - bottom_gap) // line_height)
                 # check how many cells should be rendered
