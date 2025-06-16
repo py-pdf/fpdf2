@@ -276,7 +276,7 @@ class Fragment:
                 mapped_text += chr(mapped_char)
         if word_spacing:
             # do this once in advance
-            u_space = escape_parens(" ".encode("utf-16-be").decode("latin-1"))
+            u_space = self.font.escape_text(" ")
 
             # According to the PDF reference, word spacing shall be applied to every
             # occurrence of the single-byte character code 32 in a string when using
@@ -291,7 +291,7 @@ class Fragment:
             words_strl = []
             for word_i, word in enumerate(words):
                 # pylint: disable=redefined-loop-name
-                word = escape_parens(word.encode("utf-16-be").decode("latin-1"))
+                word = self.font.escape_text(word)
                 if word_i == 0:
                     words_strl.append(f"({word})")
                 else:
@@ -300,9 +300,7 @@ class Fragment:
             escaped_text = " ".join(words_strl)
             ret += f"[{escaped_text}] TJ"
         else:
-            escaped_text = escape_parens(
-                mapped_text.encode("utf-16-be").decode("latin-1")
-            )
+            escaped_text = self.font.escape_text(mapped_text)
             ret += f"({escaped_text}) Tj"
         return ret
 
@@ -327,10 +325,10 @@ class Fragment:
         ):
             if ti["mapped_char"] is None:  # Missing glyph
                 continue
-            char = chr(ti["mapped_char"]).encode("utf-16-be").decode("latin-1")
+            char = self.font.escape_text(chr(ti["mapped_char"]))
             if ti["x_offset"] != 0 or ti["y_offset"] != 0:
                 if text:
-                    ret += f"({escape_parens(text)}) Tj "
+                    ret += f"({text}) Tj "
                     text = ""
                 offsetx = pos_x + adjust_pos(ti["x_offset"])
                 offsety = pos_y - adjust_pos(ti["y_offset"])
@@ -348,12 +346,12 @@ class Fragment:
                 word_spacing and ti["mapped_char"] == space_mapped_code
             ):
                 if text:
-                    ret += f"({escape_parens(text)}) Tj "
+                    ret += f"({text}) Tj "
                     text = ""
                 ret += f"1 0 0 1 {(pos_x) * self.k:.2f} {(h - pos_y) * self.k:.2f} Tm "
 
         if text:
-            ret += f"({escape_parens(text)}) Tj"
+            ret += f"({text}) Tj"
         return ret
 
     def render_pdf_text_core(self, frag_ws, current_ws):

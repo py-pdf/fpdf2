@@ -54,6 +54,8 @@ from .pattern import Gradient, Pattern
 from .syntax import Name, Raw
 from .util import escape_parens
 
+from fontTools.pens.basePen import BasePen
+
 if TYPE_CHECKING:
     from .output import ResourceCatalog
 
@@ -122,17 +124,19 @@ def render_pdf_primitive(primitive):
 class GradientPaint:
     """Fill/stroke paint using a gradient"""
 
-    __slots__ = ("gradient", "units", "gradient_transform")
+    __slots__ = ("gradient", "units", "gradient_transform", "apply_page_ctm")
 
     def __init__(
         self,
         gradient: "Gradient",
         units: Union[GradientUnits, str] = GradientUnits.USER_SPACE_ON_USE,
         gradient_transform: Optional["Transform"] = None,
+        apply_page_ctm: bool = True,
     ):
         self.gradient = gradient
         self.units = GradientUnits.coerce(units)
         self.gradient_transform = gradient_transform or Transform.identity()
+        self.apply_page_ctm = apply_page_ctm
 
     def _matrix_for(self, bbox: Optional["BoundingBox"]) -> "Transform":
         """Return the final /Matrix for this gradient, given an optional bbox."""
@@ -153,19 +157,52 @@ class GradientPaint:
         """Create a Pattern with the given matrix, register shading+pattern, return pattern name."""
         resource_catalog.add(PDFResourceType.SHADING, self.gradient, None)
         pattern = Pattern(self.gradient).set_matrix(matrix)
+        pattern.set_apply_page_ctm(self.apply_page_ctm)
         return resource_catalog.add(PDFResourceType.PATTERN, pattern, None)
 
     def emit_fill(self, resource_catalog, bbox: Optional["BoundingBox"] = None) -> str:
         matrix = self._matrix_for(bbox)
-        pname = self._register_pattern(resource_catalog, matrix)
-        return f"/Pattern cs /{pname} scn"
+        pattern_name = self._register_pattern(resource_catalog, matrix)
+        return f"/Pattern cs /{pattern_name} scn"
 
     def emit_stroke(
         self, resource_catalog, bbox: Optional["BoundingBox"] = None
     ) -> str:
         matrix = self._matrix_for(bbox)
-        pname = self._register_pattern(resource_catalog, matrix)
-        return f"/Pattern CS /{pname} SCN"
+        pattern_name = self._register_pattern(resource_catalog, matrix)
+        return f"/Pattern CS /{pattern_name} SCN"
+
+    def has_alpha(self) -> bool:
+        return self.gradient and self.gradient.has_alpha()
+
+    def _register_alpha_pattern(self, resource_catalog, matrix: "Transform") -> str:
+        alpha_shading = self.gradient.get_alpha_shading_object()
+        if alpha_shading is None:
+            raise RuntimeError("Alpha gradient requested but no alpha ramp found")
+        # Register the shading and wrap it into a Pattern using the same matrix
+        resource_catalog.add(PDFResourceType.SHADING, alpha_shading, None)
+        alpha_pattern = Pattern(alpha_shading).set_matrix(matrix)
+        alpha_pattern.set_apply_page_ctm(self.apply_page_ctm)
+        alpha_pattern.set_apply_page_ctm(False)
+        return resource_catalog.add(PDFResourceType.PATTERN, alpha_pattern, None)
+
+
+class _AlphaGradientPaint(GradientPaint):
+
+    def emit_fill(self, resource_catalog, bbox: Optional["BoundingBox"] = None) -> str:
+        matrix = self._matrix_for(bbox)
+        pattern_name = self._register_alpha_pattern(resource_catalog, matrix)
+        return f"/Pattern cs /{pattern_name} scn"
+
+    def emit_stroke(
+        self, resource_catalog, bbox: Optional["BoundingBox"] = None
+    ) -> str:
+        matrix = self._matrix_for(bbox)
+        pattern_name = self._register_alpha_pattern(resource_catalog, matrix)
+        return f"/Pattern CS /{pattern_name} SCN"
+
+    def has_alpha(self) -> bool:
+        return False  # already on the alpha gradient, can't alpha the alpha
 
 
 @dataclass(frozen=True, eq=False)
@@ -3027,6 +3064,9 @@ class PaintedPath:
     def clipping_path(self, new_clipath):
         self._root_graphics_context.clipping_path = new_clipath
 
+    def get_graphics_context(self):
+        return self._graphics_context
+
     @contextmanager
     def _new_graphics_context(self, _attach=True):
         old_graphics_context = self._graphics_context
@@ -3817,6 +3857,68 @@ class GraphicsContext:
                 emit_style.soft_mask.object_id = resource_registry.register_soft_mask(
                     emit_style.soft_mask
                 )
+            # ---- If fill/stroke use a GradientPaint with alpha, synthesize a soft mask now
+            # Compute bbox once so mask and color share the same mapping
+            bbox_for_units = self.bounding_box(
+                initial_point, style=self.style, expand_for_stroke=False
+            )[0]
+
+            def _attach_alpha_mask_if_needed(paint_obj: GradientPaint):
+                if not isinstance(paint_obj, GradientPaint):
+                    return
+                if not paint_obj.has_alpha():
+                    return
+                # bbox in content space (shared by color & mask)
+                bbox_for_units = self.bounding_box(
+                    initial_point,
+                    style=self.style,
+                    expand_for_stroke=False,
+                    transformed=False,
+                )[0]
+                # rectangular mask covering the painted area
+                mask_rect = PaintedPath()
+                mask_rect.rectangle(
+                    bbox_for_units.x0,
+                    bbox_for_units.y0,
+                    bbox_for_units.width,
+                    bbox_for_units.height,
+                )
+                # paint that rectangle with the grayscale alpha gradient
+                alpha_paint = _AlphaGradientPaint(
+                    paint_obj.gradient,
+                    paint_obj.units,
+                    gradient_transform=paint_obj.gradient_transform,
+                )
+                alpha_paint.apply_page_ctm = paint_obj.apply_page_ctm
+                mask_rect.style.fill_color = alpha_paint
+                mask_rect.style.stroke_color = None
+                mask_rect.transform = Transform.identity()
+                mask_rect.style.paint_rule = PathPaintRule.FILL_NONZERO
+                # use luminosity so gray intensity drives coverage
+                sm = PaintSoftMask(
+                    mask_rect,
+                    invert=False,
+                    use_luminosity=True,
+                    matrix=paint_obj.gradient_transform,
+                )
+
+                nonlocal emit_style
+                if emit_style is self.style:
+                    emit_style = deepcopy(self.style)
+                emit_style.soft_mask = sm
+                emit_style.soft_mask.object_id = resource_registry.register_soft_mask(
+                    emit_style.soft_mask
+                )
+                if emit_style.allow_transparency is GraphicsStyle.INHERIT:
+                    emit_style.allow_transparency = True
+
+            # Decide whether to attach a soft mask from fill or stroke gradient alpha.
+            # Priority: fill first (most common), otherwise stroke.
+            if isinstance(self.style.fill_color, GradientPaint):
+                _attach_alpha_mask_if_needed(self.style.fill_color)
+            elif isinstance(self.style.stroke_color, GradientPaint):
+                _attach_alpha_mask_if_needed(self.style.stroke_color)
+
             style_dict_name = resource_registry.register_graphics_style(emit_style)
 
             if style_dict_name is not None:
@@ -3830,12 +3932,7 @@ class GraphicsContext:
             if fill_color not in NO_EMIT_SET:
                 if isinstance(fill_color, GradientPaint):
                     render_list.append(
-                        fill_color.emit_fill(
-                            resource_registry,
-                            self.bounding_box(
-                                initial_point, style=self.style, expand_for_stroke=False
-                            )[0],
-                        )
+                        fill_color.emit_fill(resource_registry, bbox_for_units)
                     )
                 else:
                     render_list.append(fill_color.serialize().lower())
@@ -3843,12 +3940,7 @@ class GraphicsContext:
             if stroke_color not in NO_EMIT_SET:
                 if isinstance(stroke_color, GradientPaint):
                     render_list.append(
-                        stroke_color.emit_stroke(
-                            resource_registry,
-                            self.bounding_box(
-                                initial_point, style=self.style, expand_for_stroke=False
-                            )[0],
-                        )
+                        stroke_color.emit_stroke(resource_registry, bbox_for_units)
                     )
                 else:
                     render_list.append(stroke_color.serialize().upper())
@@ -3930,7 +4022,8 @@ class GraphicsContext:
         self,
         start: Point,
         style: Optional[GraphicsStyle] = None,
-        expand_for_stroke=True,
+        expand_for_stroke: bool = True,
+        transformed: bool = True,
     ) -> tuple[BoundingBox, Point]:
         """
         Compute bbox of all path items. We:
@@ -3938,7 +4031,7 @@ class GraphicsContext:
         2) merge child bboxes already transformed to this level,
         3) at the end, expand once for stroke using the worst-case CTM row norms.
         """
-        I = Transform.identity()
+        identity = Transform.identity()
 
         def walk(
             ctx: "GraphicsContext",
@@ -3947,7 +4040,9 @@ class GraphicsContext:
             accum_tf: Transform,
         ) -> tuple[BoundingBox, Point, float, float]:
             bbox = BoundingBox.empty()
-            tf = accum_tf @ (ctx.transform or I)
+            tf = accum_tf @ (ctx.transform or identity)
+            if not transformed:
+                tf = identity
 
             merged_style = (
                 ambient_style.__class__.merge(ambient_style, ctx.style)
@@ -3974,7 +4069,7 @@ class GraphicsContext:
             return bbox, current_point, max_nx, max_ny
 
         # 1) geometric + collect CTM scales
-        geom_bbox, end_pt, nx, ny = walk(self, start, style, I)
+        geom_bbox, end_pt, nx, ny = walk(self, start, style, identity)
 
         final_bbox = geom_bbox
 
@@ -4041,34 +4136,40 @@ class PaintSoftMask:
     rendering, the mask’s content stream is generated and its resource
     dictionary is collected so it can be embedded as a Form XObject and
     referenced from an ExtGState.
-
-    Notes:
-    - This implementation is currently hard-coded to use **/S /Alpha**
-      (alpha soft mask). **/S /Luminosity** is not implemented; support can
-      be added in the future by switching the `/S` key and adjusting how the
-      mask content is prepared.
-    - The mask’s style is intentionally overridden to a solid white fill
-      with full opacity so the path shape itself defines coverage.
     """
 
-    __slots__ = ("mask_path", "invert", "resources", "object_id")
+    __slots__ = (
+        "mask_path",
+        "invert",
+        "resources",
+        "use_luminosity",
+        "object_id",
+        "matrix",
+    )
 
     def __init__(
         self,
-        mask_path: PaintedPath,
+        mask_path: Union[PaintedPath, GraphicsContext],
         invert: bool = False,
+        use_luminosity=False,
+        matrix=Transform.identity(),
     ):
         self.mask_path = deepcopy(mask_path)
-
-        # Force opaque grayscale style
-        self.mask_path.style.paint_rule = PathPaintRule.FILL_NONZERO
-        self.mask_path.style.fill_opacity = 1
-        self.mask_path.style.fill_color = "#ffffff"
-        self.mask_path.style.allow_transparency = False
-
         self.invert = invert
+        self.use_luminosity = use_luminosity
         self.resources = []
         self.object_id = 0
+        self.matrix = matrix
+
+        if not self.use_luminosity:
+            # Pure alpha mask -> force opaque white so shape defines coverage
+            self.mask_path.style.paint_rule = PathPaintRule.FILL_NONZERO
+            self.mask_path.style.fill_opacity = 1
+            self.mask_path.style.fill_color = "#ffffff"
+            self.mask_path.style.allow_transparency = False
+        else:
+            # Luminosity mask -> caller provided grayscale content (e.g., gray gradient)
+            self.mask_path.style.allow_transparency = False
 
     def serialize(self):
         tr = (
@@ -4076,36 +4177,50 @@ class PaintSoftMask:
             if self.invert
             else ""
         )
-        return f"<</S /Alpha /G {self.object_id} 0 R{tr}>>"
+        mask_type = "/Luminosity" if self.use_luminosity else "/Alpha"
+        return f"<</S {mask_type} /G {self.object_id} 0 R{tr}>>"
 
     def get_bounding_box(self) -> tuple[float, float, float, float]:
         bounding_box, _ = self.mask_path.bounding_box(Point(0, 0))
         return bounding_box.to_tuple()
 
-    def get_resource_dictionary(self, gfxstate_objs_per_name):
-        """Get the resource dictionary for this soft mask."""
-        resource_dict = {}
+    def get_resource_dictionary(self, gfxstate_objs_per_name, pattern_objs_per_name):
+        """Build the resource dictionary for this soft mask, resolving GS & Pattern ids."""
+        resources_registered: dict[str, list] = {}
         for resource_type, resource_id in self.resources:
-            if resource_type.value not in resource_dict:
-                resource_dict[resource_type.value] = {}
-            resource_dict[resource_type.value][resource_id] = f"{resource_id} 0 R"
-        ret = ""
-        for key, resources in resource_dict.items():
-            ret += (
-                Name(key).serialize()
+            resources_registered.setdefault(resource_type.value, []).append(resource_id)
+
+        parts: list[str] = []
+
+        # ExtGState
+        if "ExtGState" in resources_registered and resources_registered["ExtGState"]:
+            parts.append(
+                Name("ExtGState").serialize()
                 + "<<"
                 + "".join(
-                    f"{Name(resource_id).serialize()} {gfxstate_objs_per_name[resource_id]} 0 R"
-                    for resource_id in resources
+                    f"{Name(gs_name).serialize()} {gfxstate_objs_per_name[gs_name].id} 0 R"
+                    for gs_name in resources_registered["ExtGState"]
                 )
                 + ">>"
             )
-        return "<<" + ret + ">>"
+
+        # Pattern
+        if "Pattern" in resources_registered and resources_registered["Pattern"]:
+            parts.append(
+                Name("Pattern").serialize()
+                + "<<"
+                + "".join(
+                    f"{Name(pat_name).serialize()} {pattern_objs_per_name[pat_name].id} 0 R"
+                    for pat_name in resources_registered["Pattern"]
+                )
+                + ">>"
+            )
+        return "<<" + "".join(parts) + ">>"
 
     def render(self, resource_registry):
         stream, _, _ = self.mask_path.render(
             resource_registry,
-            style=self.mask_path.style,
+            style=GraphicsStyle(),
             last_item=None,
             initial_point=Point(0, 0),
         )
@@ -4150,11 +4265,32 @@ class PaintComposite:
     }
 
     def __init__(self, backdrop, source, operation: CompositingOperation):
-        if not isinstance(backdrop, PaintedPath) or not isinstance(source, PaintedPath):
+        if not isinstance(backdrop, (PaintedPath, GraphicsContext)) or not isinstance(
+            source, (PaintedPath, GraphicsContext)
+        ):
             raise TypeError("PaintComposite requires two PaintedPath instances.")
         self.backdrop = backdrop
         self.source = source
         self.mode = operation
+        backdrop_bbox, _ = self.backdrop.bounding_box(Point(0, 0))
+        if not backdrop_bbox.is_valid():
+            # backdrop has no items, checking if it's a "flood" fill
+            source_bbox, _ = self.source.bounding_box(Point(0, 0))
+            if not source_bbox.is_valid():
+                raise RuntimeError(
+                    "Can't render PaintComposite if source has no geometry."
+                )
+            rectangle = Rectangle(
+                org=Point(source_bbox.x0, source_bbox.y0),
+                size=Point(source_bbox.width, source_bbox.height),
+            )
+            if isinstance(self.backdrop, PaintedPath):
+                self.backdrop.add_path_element(rectangle)
+            else:
+                self.backdrop.add_item(rectangle)
+            assert self.backdrop.bounding_box(Point(0, 0))[0].is_valid()
+            assert self.backdrop.bounding_box(Point(0, 0))[0] == source_bbox
+
         if self.mode not in self._MODES:
             raise NotImplementedError(
                 f"Compositing mode '{self.mode.value}' is not yet supported."
@@ -4162,13 +4298,16 @@ class PaintComposite:
 
     @classmethod
     def _with_mask(
-        cls, path: PaintedPath, mask_from: PaintedPath, invert: bool
-    ) -> PaintedPath:
+        cls,
+        path: Union[PaintedPath, GraphicsContext],
+        mask_from: Union[PaintedPath, GraphicsContext],
+        invert: bool,
+    ) -> Union[PaintedPath, GraphicsContext]:
         p = deepcopy(path)
         p.style.soft_mask = PaintSoftMask(mask_from, invert=invert)
         return p
 
-    def _pick(self, which: str) -> PaintedPath:
+    def _pick(self, which: str) -> Union[PaintedPath, GraphicsContext]:
         return self.source if which == "source" else self.backdrop
 
     def render(
@@ -4202,3 +4341,70 @@ class PaintComposite:
         return self.render(
             resource_registry, style, last_item, initial_point, debug_stream, pfx
         )
+
+
+class PathPen(BasePen):
+    def __init__(self, pdf_path, *args, **kwargs):
+        self.pdf_path = pdf_path
+        self.last_was_line_to = False
+        self.first_is_move = None
+        super().__init__(*args, **kwargs)
+
+    def _moveTo(self, pt):
+        self.pdf_path.move_to(*pt)
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = True
+
+    def _lineTo(self, pt):
+        self.pdf_path.line_to(*pt)
+        self.last_was_line_to = True
+        if self.first_is_move is None:
+            self.first_is_move = False
+
+    def _curveToOne(self, pt1, pt2, pt3):
+        self.pdf_path.curve_to(
+            x1=pt1[0], y1=pt1[1], x2=pt2[0], y2=pt2[1], x3=pt3[0], y3=pt3[1]
+        )
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = False
+
+    def _qCurveToOne(self, pt1, pt2):
+        self.pdf_path.quadratic_curve_to(x1=pt1[0], y1=pt1[1], x2=pt2[0], y2=pt2[1])
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = False
+
+    def arcTo(self, rx, ry, rotation, arc, sweep, end):
+        self.pdf_path.arc_to(
+            rx=rx,
+            ry=ry,
+            rotation=rotation,
+            large_arc=arc,
+            positive_sweep=sweep,
+            x=end[0],
+            y=end[1],
+        )
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = False
+
+    def _closePath(self):
+        # The fonttools parser inserts an unnecessary explicit line back to the start
+        # point of the path before actually closing it. Let's get rid of that again.
+        if self.last_was_line_to:
+            self.pdf_path.remove_last_path_element()
+        self.pdf_path.close()
+
+
+class GlyphPathPen(PathPen):
+    """A pen that can be used to draw glyphs into a `PaintedPath`."""
+
+    def _closePath(self):
+        """
+        The difference between GlyphPathPen and PathPen is that GlyphPathPen does not
+        remove the last path element before closing the path.
+        This last line back to start point is necessary for correctly rendering glyphs.
+        """
+        self.pdf_path.close()

@@ -838,6 +838,29 @@ class Transform(NamedTuple):
         """
         return self @ Transform.rotation(theta)
 
+    def inverse(self) -> "Transform":
+        """
+        Produce a transform that is the inverse of this transform.
+
+        Returns:
+            A Transform representing the inverse of this transform.
+
+        Raises:
+            ValueError: if the transform is not invertible.
+        """
+        det = self.a * self.d - self.b * self.c
+        if det == 0:
+            raise ValueError("Transform is not invertible")
+
+        return Transform(
+            a=self.d / det,
+            b=-self.b / det,
+            c=-self.c / det,
+            d=self.a / det,
+            e=(self.c * self.f - self.d * self.e) / det,
+            f=(self.b * self.e - self.a * self.f) / det,
+        )
+
     def rotate_d(self, theta_d: Number) -> "Transform":
         """
         Produce a transform by composing the current transform with a rotation

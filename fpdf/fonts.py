@@ -40,6 +40,7 @@ from .deprecation import get_stack_level
 from .drawing_primitives import convert_to_device_color, DeviceGray, DeviceRGB
 from .enums import FontDescriptorFlags, TextEmphasis, Align
 from .syntax import Name, PDFObject
+from .font_type_3 import get_color_font_object
 from .util import escape_parens
 
 LOGGER = logging.getLogger(__name__)
@@ -254,7 +255,7 @@ class TTFFont:
         "name",
         "desc",
         "glyph_ids",
-        "hbfont",
+        "_hbfont",
         "sp",
         "ss",
         "up",
@@ -268,13 +269,17 @@ class TTFFont:
         "cmap",
         "ttfont",
         "missing_glyphs",
+        "biggest_size_pt",
+        "color_font",
     )
 
     def __init__(self, fpdf, font_file_path, fontkey, style):
         self.i = len(fpdf.fonts) + 1
         self.type = "TTF"
         self.ttffile = font_file_path
+        self._hbfont = None
         self.fontkey = fontkey
+        self.biggest_size_pt = 0
 
         # recalcTimestamp=False means that it doesn't modify the "modified" timestamp in head table
         # if we leave recalcTimestamp=True the tests will break every time
@@ -391,6 +396,16 @@ class TTFFont:
         self.ss = round(os2_table.yStrikeoutSize * self.scale)
         self.emphasis = TextEmphasis.coerce(style)
         self.subset = SubsetMap(self)
+        self.color_font = (
+            get_color_font_object(fpdf, self) if fpdf.render_color_fonts else None
+        )
+
+    # pylint: disable=no-member
+    @property
+    def hbfont(self):
+        if not self._hbfont:
+            self._hbfont = HarfBuzzFont(hb.Face(hb.Blob.from_file_path(self.ttffile)))
+        return self._hbfont
 
     def __repr__(self):
         return f"TTFFont(i={self.i}, fontkey={self.fontkey})"
@@ -424,13 +439,24 @@ class TTFFont:
         copy.glyph_ids = deepcopy(self.glyph_ids, memo)
         copy.missing_glyphs = deepcopy(self.missing_glyphs, memo)
         copy.subset = deepcopy(self.subset, memo)
+        copy.biggest_size_pt = self.biggest_size_pt
+        copy._hbfont = self._hbfont
+        copy.color_font = self.color_font
         return copy
 
     def close(self):
         self.ttfont.close()
-        self.hbfont = None
+        self._hbfont = None
+
+    def escape_text(self, text):
+        if self.color_font:
+            encoded = text.encode("latin-1", errors="replace")
+            return escape_parens(encoded.decode("latin-1", errors="ignore"))
+        return escape_parens(text.encode("utf-16-be").decode("latin-1"))
 
     def get_text_width(self, text, font_size_pt, text_shaping_params):
+        if font_size_pt > self.biggest_size_pt:
+            self.biggest_size_pt = font_size_pt
         if text_shaping_params:
             return self.shaped_text_width(text, font_size_pt, text_shaping_params)
         return (len(text), sum(self.cw[ord(c)] for c in text) * font_size_pt * 0.001)
@@ -462,8 +488,6 @@ class TTFFont:
         """
         This method invokes Harfbuzz to perform text shaping of the input string
         """
-        if not hasattr(self, "hbfont"):
-            self.hbfont = HarfBuzzFont(hb.Face(hb.Blob.from_file_path(self.ttffile)))
         self.hbfont.ptem = font_size_pt
         buf = hb.Buffer()
         buf.cluster_level = 1
@@ -486,7 +510,7 @@ class TTFFont:
             # Instead of adding the actual character to the stream its code is
             # mapped to a position in the font's subset
             txt_mapped += chr(self.subset.pick(uni))
-        return f'({escape_parens(txt_mapped.encode("utf-16-be").decode("latin-1"))}) Tj'
+        return f"({self.escape_text(txt_mapped)}) Tj"
 
     def shape_text(self, text, font_size_pt, text_shaping_params):
         """
@@ -680,6 +704,9 @@ class SubsetMap:
         if unicode == 0x00:
             glyph_id = next(iter(self.font.cmap))
             return Glyph(glyph_id, (0x00,), ".notdef", 0)
+        if unicode == 0x20:
+            glyph_id = next(iter(self.font.cmap))
+            return Glyph(glyph_id, (0x20,), "space", self.font.cw[0x20])
         return None
 
     def get_all_glyph_names(self):
