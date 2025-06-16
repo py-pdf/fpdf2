@@ -94,7 +94,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13t']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
         platform: [ubuntu-22.04, windows-latest]
     runs-on: ${{ matrix.platform }}
     permissions: {}
@@ -103,17 +103,26 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
+      - name: Set effective Python version
+        id: set-python-version
+        run: |
+          if [ "${{ matrix.platform }}" = "windows-latest" ] && [ "${{ matrix.python-version }}" = "3.13" ]; then
+            echo "version=3.13t" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${{ matrix.python-version }}" >> "$GITHUB_OUTPUT"
+          fi
+        shell: bash
       - name: Set up Python ${{ matrix.python-version }} 🔧
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ steps.set-python-version.outputs.version }}
       - name: Install system dependencies ⚙️
         if: ${{ startsWith(matrix.platform, 'ubuntu') }}
         # Ghostscript is needed for test/table/test_table_extraction.py
         run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install ghostscript
       - name: Install qpdf ⚙️
         # We run the unit tests WITHOUT qpdf for a single parallel execution / Python version:
-        if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version != '3.13t' }}
+        if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version != '3.13' }}
         run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install qpdf
       - name: Install Python dependencies ⚙️
         run: |
@@ -122,7 +131,7 @@ jobs:
       - name: Run tests ☑
         env:
           CHECK_EXEC_TIME: ${{ matrix.python-version == '3.9' && 'test-enabled' || '' }}
-          CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.13t' && 'test-enabled' || '' }}
+          CHECK_RSS_MEMORY: ${{ matrix.python-version == '3.13' && 'test-enabled' || '' }}
         run: |
           # Ensuring there is no `generate=True` left remaining in calls to assert_pdf_equal:
           grep -IRF generate=True test/ && exit 1
@@ -130,7 +139,7 @@ jobs:
           pytest -vv --trace-memory-usage
       - name: Upload coverage report to codecov.io ☑
         # We only upload coverage ONCE, for a single parallel execution / Python version:
-        if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.13t' }}
+        if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.13' }}
         run: bash <(curl -s https://codecov.io/bash)
       - name: Run tests with the minimal versions of fpdf2 direct dependencies ☑
         if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.8' }}
