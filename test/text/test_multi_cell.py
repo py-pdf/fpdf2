@@ -31,6 +31,7 @@ LONG_TEXT = (
     " Our only clue is this portion of wolf's clothing which the killer sheep ..."
 )
 
+
 def test_multi_cell_page_break_with_fill(tmp_path):
     # Tests condition from issue #1471
     pdf = FPDF()
@@ -47,6 +48,7 @@ def test_multi_cell_page_break_with_fill(tmp_path):
 
     assert pdf.page_no() > 1, "Must be more than one page to test page break"
     assert_pdf_equal(pdf, HERE / "multi_cell_page_break_with_fill.pdf", tmp_path)
+
 
 def test_multi_cell_without_any_font_set():
     pdf = FPDF()
