@@ -602,6 +602,15 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         self.r_margin = margin
 
+    def set_bottom_margin(self, margin):
+        """
+        Sets the document bottom margin.
+
+        Args:
+            margin (float): margin in the unit specified to FPDF constructor
+        """
+        self.b_margin = margin
+
     def set_auto_page_break(self, auto, margin=0):
         """
         Set auto page break mode and triggering bottom margin.
