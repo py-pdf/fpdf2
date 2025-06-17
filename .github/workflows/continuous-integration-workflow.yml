@@ -107,7 +107,7 @@ jobs:
         id: set-python-version
         run: |
           if [ "${{ matrix.platform }}" = "windows-latest" ] && [ "${{ matrix.python-version }}" = "3.13" ]; then
-            echo "version=3.13t" >> "$GITHUB_OUTPUT"
+            echo "version=3.13.4" >> "$GITHUB_OUTPUT"
           else
             echo "version=${{ matrix.python-version }}" >> "$GITHUB_OUTPUT"
           fi
