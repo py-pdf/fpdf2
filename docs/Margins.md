@@ -18,6 +18,6 @@ Several methods can be used to set margins:
 * [set_left_margin](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.FPDF.set_left_margin)
 * [set_right_margin](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.FPDF.set_right_margin)
 * [set_top_margin](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.FPDF.set_top_margin)
-* [set_bottom_margin](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.FPDF.set_top_margin)
+* [set_bottom_margin](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.FPDF.set_bottom_margin)
 * [set_margins](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.FPDF.set_margins)
 * [set_auto_page_break](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.FPDF.set_auto_page_break)
