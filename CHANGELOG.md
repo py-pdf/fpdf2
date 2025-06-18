@@ -19,6 +19,8 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.8.4] - Not released yet
 ### Added
 * documentation on [internal linking with variable page numbers](https://py-pdf.github.io/fpdf2/Links.html#internal-links)
+* [`set_bottom_margin()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_bottom_margin)
+
 ### Fixed
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): Fixed custom styling of `<p>` & tables - [issue #1453](https://github.com/py-pdf/fpdf2/issues/1453)
 * an `IndexError` was raised in some cases when rendering HTML with nested lists - _cf._ [issue #1358](https://github.com/py-pdf/fpdf2/issues/1358)
