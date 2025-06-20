@@ -25,7 +25,16 @@ from math import isclose
 from numbers import Number
 from os.path import splitext
 from pathlib import Path
-from typing import Callable, Dict, Iterator, NamedTuple, Optional, Union
+from typing import (
+    Any,
+    Callable,
+    ContextManager,
+    Dict,
+    Iterator,
+    NamedTuple,
+    Optional,
+    Union,
+)
 
 try:
     from cryptography.hazmat.primitives.serialization import pkcs12
@@ -372,6 +381,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._security_handler = None
         self._fallback_font_ids = []
         self._fallback_font_exact_match = False
+        self.render_color_fonts = True
 
         self._current_draw_context = None
         self._drawing_graphics_state_registry = GraphicsStateDictRegistry()
@@ -5629,7 +5639,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     @check_page
     @contextmanager
-    def table(self, *args, **kwargs):
+    def table(self, *args: Any, **kwargs: Any) -> ContextManager[Table]:
         """
         Inserts a table, that can be built using the `fpdf.table.Table` object yield.
         Detailed usage documentation: https://py-pdf.github.io/fpdf2/Tables.html

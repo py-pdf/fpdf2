@@ -854,6 +854,11 @@ class OutputProducer:
 
             # type 3 font
             if font.type == "TTF" and font.color_font:
+                if font.subset._next > 0xFF:
+                    raise FPDFException(
+                        "Type 3 fonts with color glyphs are not supported is more than 255 glyphs are rendered. "
+                        "Set FPDF.render_color_fonts=False or use less color glyphs."
+                    )
                 for glyph in font.color_font.glyphs:
                     glyph.obj_id = self._add_pdf_obj(
                         PDFContentStream(contents=glyph.glyph, compress=False), "fonts"

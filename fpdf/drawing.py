@@ -4274,6 +4274,21 @@ class PathPen(BasePen):
     def _closePath(self):
         # The fonttools parser inserts an unnecessary explicit line back to the start
         # point of the path before actually closing it. Let's get rid of that again.
-        # if self.last_was_line_to:
-        #    self.pdf_path.remove_last_path_element()
+        if self.last_was_line_to:
+            self.pdf_path.remove_last_path_element()
+        self.pdf_path.close()
+
+
+class GlyphPathPen(PathPen):
+    """A pen that can be used to draw glyphs into a `PaintedPath`."""
+
+    def __init__(self, pdf_path, *args, **kwargs):
+        super().__init__(pdf_path, *args, **kwargs)
+
+    def _closePath(self):
+        """
+        The difference between GlyphPathPen and PathPen is that GlyphPathPen does not
+        remove the last path element before closing the path.
+        This last line back to start point is necessary for correcly rendering glyphs.
+        """
         self.pdf_path.close()

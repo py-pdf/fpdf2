@@ -394,7 +394,9 @@ class TTFFont:
         self.ss = round(os2_table.yStrikeoutSize * self.scale)
         self.emphasis = TextEmphasis.coerce(style)
         self.subset = SubsetMap(self)
-        self.color_font = get_color_font_object(fpdf, self)
+        self.color_font = (
+            get_color_font_object(fpdf, self) if fpdf.render_color_fonts else None
+        )
 
     # pylint: disable=no-member
     @property

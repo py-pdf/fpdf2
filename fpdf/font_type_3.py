@@ -1,12 +1,25 @@
+"""
+This module provides support for embedding and rendering various color font formats
+in PDF documents using Type 3 fonts. It defines classes and utilities to handle
+different color font technologies, including:
+
+- COLRv0 and COLRv1 (OpenType color vector fonts)
+- CBDT/CBLC (bitmap color fonts)
+- SBIX (Apple bitmap color fonts)
+- SVG (fonts with embedded SVG glyphs)
+
+Intended for internal use by the library.
+"""
+
 import logging
 
-from typing import List, Tuple, TYPE_CHECKING
+from typing import List, Tuple, TYPE_CHECKING, Union
 from io import BytesIO
 from fontTools.ttLib.tables.BitmapGlyphMetrics import BigGlyphMetrics, SmallGlyphMetrics
 from fontTools.ttLib.tables.C_O_L_R_ import table_C_O_L_R_
 from fontTools.ttLib.tables.otTables import Paint, PaintFormat
 
-from .drawing import DeviceRGB, GraphicsContext, Transform, PathPen, PaintedPath
+from .drawing import DeviceRGB, GraphicsContext, Transform, GlyphPathPen, PaintedPath
 
 
 if TYPE_CHECKING:
@@ -87,7 +100,6 @@ class Type3Font:
         for glyph, char_id in self.base_font.subset.items():
             if not self.glyph_exists(glyph.glyph_name):
                 if char_id == 0x20 or glyph.glyph_name == "space":
-                    print("is space")
                     self.glyphs.append(self.get_space_glyph(char_id))
                     continue
                 if self.glyph_exists(".notdef"):
@@ -123,14 +135,14 @@ class Type3Font:
 
 class SVGColorFont(Type3Font):
 
-    def glyph_exists(self, glyph_name):
+    def glyph_exists(self, glyph_name: str) -> bool:
         glyph_id = self.base_font.ttfont.getGlyphID(glyph_name)
         return any(
             svg_doc.startGlyphID <= glyph_id <= svg_doc.endGlyphID
             for svg_doc in self.base_font.ttfont["SVG "].docList
         )
 
-    def load_glyph_image(self, glyph: Type3FontGlyph):
+    def load_glyph_image(self, glyph: Type3FontGlyph) -> None:
         glyph_id = self.base_font.ttfont.getGlyphID(glyph.glyph_name)
         glyph_svg_data = None
         for svg_doc in self.base_font.ttfont["SVG "].docList:
@@ -141,7 +153,6 @@ class SVGColorFont(Type3Font):
         bio.seek(0)
         _, img, _ = self.fpdf.preload_image(bio, None)
         w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
-        # img.base_group.transform = Transform.identity()
         img.base_group.transform = Transform.scaling(self.scale, self.scale)
         output_stream = self.fpdf.draw_vector_glyph(img.base_group, self)
         glyph.glyph = (
@@ -151,6 +162,8 @@ class SVGColorFont(Type3Font):
 
 
 class CustomGraphicsContextItem:
+    """A custom graphics context item that renders a string command in the PDF context."""
+
     def __init__(self, item):
         self._item = item
 
@@ -192,10 +205,10 @@ class COLRFont(Type3Font):
                 for color in palette
             ]
 
-    def glyph_exists(self, glyph_name):
+    def glyph_exists(self, glyph_name: str) -> bool:
         return glyph_name in self.colrv0_glyphs or glyph_name in self.colrv1_glyphs
 
-    def load_glyph_image(self, glyph: Type3FontGlyph):
+    def load_glyph_image(self, glyph: Type3FontGlyph) -> None:
         w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
         # print(glyph.glyph_name, glyph.unicode)
         if glyph.glyph_name in self.colrv0_glyphs:
@@ -210,7 +223,7 @@ class COLRFont(Type3Font):
         )
         glyph.glyph_width = w
 
-    def get_color(self, color_index, alpha=1):
+    def get_color(self, color_index: int, alpha=1) -> DeviceRGB:
         r, g, b, a = self.palette[color_index]
         a *= alpha
         return DeviceRGB(r, g, b, a)
@@ -220,7 +233,7 @@ class COLRFont(Type3Font):
         for layer in layers:
             path = PaintedPath()
             glyph_set = self.base_font.ttfont.getGlyphSet()
-            pen = PathPen(path, glyphSet=glyph_set)
+            pen = GlyphPathPen(path, glyphSet=glyph_set)
             glyph = glyph_set[layer.name]
             glyph.draw(pen)
             path.style.fill_color = self.get_color(layer.colorID)
@@ -250,7 +263,7 @@ class COLRFont(Type3Font):
                 path.style.fill_color = color
                 path.style.stroke_color = color
         elif paint.Format == PaintFormat.PaintVarSolid:  # 3
-            raise NotImplementedError("Support for variable fonts not implemented yet.")
+            raise NotImplementedError("Veriable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintLinearGradient:  # 4
             # print("[PaintLinearGradient] ColorLine: ")
             # for stop in paint.ColorLine.ColorStop:
@@ -264,7 +277,7 @@ class COLRFont(Type3Font):
             path.style.fill_color = color
             path.style.stroke_color = color
         elif paint.Format == PaintFormat.PaintVarLinearGradient:  # 5
-            raise NotImplementedError("Support for variable fonts not implemented yet.")
+            raise NotImplementedError("Veriable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintRadialGradient:  # 6
             # print("[PaintRadialGradient] ColorLine: ")
             # for stop in paint.ColorLine.ColorStop:
@@ -278,18 +291,16 @@ class COLRFont(Type3Font):
             path.style.fill_color = color
             path.style.stroke_color = color
         elif paint.Format == PaintFormat.PaintVarRadialGradient:  # 7
-            print(paint.Format)
-            raise NotImplementedError
+            raise NotImplementedError("Veriable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintSweepGradient:  # 8
             print(paint.Format)
             raise NotImplementedError
         elif paint.Format == PaintFormat.PaintVarSweepGradient:  # 9
-            print(paint.Format)
-            raise NotImplementedError
+            raise NotImplementedError("Veriable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintGlyph:  # 10
             path = PaintedPath()
             glyph_set = self.base_font.ttfont.getGlyphSet()
-            pen = PathPen(path, glyphSet=glyph_set)
+            pen = GlyphPathPen(path, glyphSet=glyph_set)
             glyph = glyph_set[paint.Glyph]
             glyph.draw(pen)
             gc.add_item(path)
@@ -311,24 +322,21 @@ class COLRFont(Type3Font):
             self.draw_colrv1_paint(paint.Paint, gc)
             gc.add_item(CustomGraphicsContextItem("Q "))
         elif paint.Format == PaintFormat.PaintVarTransform:  # 13
-            print(paint.Format)
-            raise NotImplementedError
+            raise NotImplementedError("Veriable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintTranslate:  # 14
             transform = Transform.translation(paint.dx, paint.dy)
             gc.add_item(CustomGraphicsContextItem(f"q {transform.render(None)[0]} "))
             self.draw_colrv1_paint(paint.Paint, gc)
             gc.add_item(CustomGraphicsContextItem("Q "))
         elif paint.Format == PaintFormat.PaintVarTranslate:  # 15
-            print(paint.Format)
-            raise NotImplementedError
+            raise NotImplementedError("Veriable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintScale:  # 16
             transform = Transform.scaling(paint.scaleX, paint.scaleY)
             gc.add_item(CustomGraphicsContextItem(f"q {transform.render(None)[0]} "))
             self.draw_colrv1_paint(paint.Paint, gc)
             gc.add_item(CustomGraphicsContextItem("Q "))
         elif paint.Format == PaintFormat.PaintVarScale:  # 17
-            print(paint.Format)
-            raise NotImplementedError
+            raise NotImplementedError("Veriable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintScaleAroundCenter:  # 18
             print(paint.centerX, paint.centerY, paint.scaleX, paint.scaleY)
             transform = (
@@ -340,44 +348,37 @@ class COLRFont(Type3Font):
             self.draw_colrv1_paint(paint.Paint, gc)
             gc.add_item(CustomGraphicsContextItem("Q "))
         elif paint.Format == PaintFormat.PaintVarScaleAroundCenter:  # 19
-            print(paint.Format)
-            raise NotImplementedError
+            raise NotImplementedError("Veriable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintScaleUniform:  # 20
             print(paint.Format)
             raise NotImplementedError
         elif paint.Format == PaintFormat.PaintVarScaleUniform:  # 21
-            print(paint.Format)
-            raise NotImplementedError
+            raise NotImplementedError("Veriable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintScaleUniformAroundCenter:  # 22
             print(paint.Format)
             raise NotImplementedError
         elif paint.Format == PaintFormat.PaintVarScaleUniformAroundCenter:  # 23
-            print(paint.Format)
-            raise NotImplementedError
+            raise NotImplementedError("Veriable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintRotate:  # 24
             print(paint.Format)
             raise NotImplementedError
         elif paint.Format == PaintFormat.PaintVarRotate:  # 25
-            print(paint.Format)
-            raise NotImplementedError
+            raise NotImplementedError("Veriable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintRotateAroundCenter:  # 26
             print(paint.Format)
             raise NotImplementedError
         elif paint.Format == PaintFormat.PaintVarRotateAroundCenter:  # 27
-            print(paint.Format)
-            raise NotImplementedError
+            raise NotImplementedError("Veriable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintSkew:  # 28
             print(paint.Format)
             raise NotImplementedError
         elif paint.Format == PaintFormat.PaintVarSkew:  # 29
-            print(paint.Format)
-            raise NotImplementedError
+            raise NotImplementedError("Veriable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintSkewAroundCenter:  # 30
             print(paint.Format)
             raise NotImplementedError
         elif paint.Format == PaintFormat.PaintVarSkewAroundCenter:  # 31
-            print(paint.Format)
-            raise NotImplementedError
+            raise NotImplementedError("Veriable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintComposite:  # 32
             # Composite has 2 elements to drawn:
             # - Brackdrop paint is the "background" - the element to draw first. it has by default
@@ -390,19 +391,15 @@ class COLRFont(Type3Font):
                 paint.SourcePaint, gc
             )  # blend mode paint.CompositeMode
         else:
-            print("Unknown PaintFormat: ", paint.Format)
-            print(paint.Format)
-            raise NotImplementedError
+            raise NotImplementedError(f"Unknown PaintFormat: {paint.Format}")
 
 
 class CBDTColorFont(Type3Font):
-
     # Only looking at the first strike - Need to look all strikes available on the CBLC table first?
-
-    def glyph_exists(self, glyph_name):
+    def glyph_exists(self, glyph_name: str) -> bool:
         return glyph_name in self.base_font.ttfont["CBDT"].strikeData[0]
 
-    def load_glyph_image(self, glyph: Type3FontGlyph):
+    def load_glyph_image(self, glyph: Type3FontGlyph) -> None:
         ppem = self.base_font.ttfont["CBLC"].strikes[0].bitmapSizeTable.ppemX
         g = self.base_font.ttfont["CBDT"].strikeData[0][glyph.glyph_name]
         glyph_bitmap = g.data[9:]
@@ -439,7 +436,7 @@ class CBDTColorFont(Type3Font):
 
 class SBIXColorFont(Type3Font):
 
-    def glyph_exists(self, glyph_name):
+    def glyph_exists(self, glyph_name: str) -> bool:
         glyph = (
             self.base_font.ttfont["sbix"]
             .strikes[self.get_strike_index()]
@@ -447,7 +444,7 @@ class SBIXColorFont(Type3Font):
         )
         return glyph and glyph.graphicType
 
-    def get_strike_index(self):
+    def get_strike_index(self) -> int:
         target_ppem = self.get_target_ppem(self.base_font.biggest_size_pt)
         ppem_list = [
             ppem
@@ -458,7 +455,7 @@ class SBIXColorFont(Type3Font):
             return max(list(self.base_font.ttfont["sbix"].strikes.keys()))
         return min(ppem_list)
 
-    def load_glyph_image(self, glyph: Type3FontGlyph):
+    def load_glyph_image(self, glyph: Type3FontGlyph) -> None:
         ppem = self.get_strike_index()
         sbix_glyph = (
             self.base_font.ttfont["sbix"].strikes[ppem].glyphs.get(glyph.glyph_name)
@@ -496,13 +493,14 @@ class SBIXColorFont(Type3Font):
         glyph.glyph_width = w
 
 
-def get_color_font_object(fpdf: "FPDF", base_font: "TTFFont") -> Type3Font:
+def get_color_font_object(fpdf: "FPDF", base_font: "TTFFont") -> Union[Type3Font, None]:
     if "CBDT" in base_font.ttfont:
         LOGGER.warning("Font %s is a CBLC+CBDT color font", base_font.name)
         return CBDTColorFont(fpdf, base_font)
     if "EBDT" in base_font.ttfont:
-        LOGGER.warning("%s - EBLC+EBDT color font is not supported yet", base_font.name)
-        return None
+        raise NotImplementedError(
+            "%s - EBLC+EBDT color font is not supported yet", base_font.name
+        )
     if "COLR" in base_font.ttfont:
         if base_font.ttfont["COLR"].version == 0:
             LOGGER.warning("Font %s is a COLRv0 color font", base_font.name)
@@ -523,5 +521,4 @@ def get_last_painted_path(gc: GraphicsContext) -> PaintedPath:
     for item in reversed(gc.path_items):
         if isinstance(item, PaintedPath):
             return item
-    return None
-    # raise ValueError("Invalid glyph")
+    return None  # raise ValueError("Invalid glyph")
