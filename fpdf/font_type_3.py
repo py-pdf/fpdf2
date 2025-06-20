@@ -5,26 +5,24 @@ different color font technologies, including:
 
 - COLRv0 and COLRv1 (OpenType color vector fonts)
 - CBDT/CBLC (bitmap color fonts)
-- SBIX (Apple bitmap color fonts)
+- SBIX (bitmap color fonts)
 - SVG (fonts with embedded SVG glyphs)
-
-Intended for internal use by the library.
 """
 
 import logging
-
-from typing import List, Tuple, TYPE_CHECKING, Union
 from io import BytesIO
+from typing import TYPE_CHECKING, List, Tuple, Union
+
 from fontTools.ttLib.tables.BitmapGlyphMetrics import BigGlyphMetrics, SmallGlyphMetrics
 from fontTools.ttLib.tables.C_O_L_R_ import table_C_O_L_R_
-from fontTools.ttLib.tables.otTables import Paint, PaintFormat
+from fontTools.ttLib.tables.otTables import CompositeMode, Paint, PaintFormat
 
-from .drawing import DeviceRGB, GraphicsContext, Transform, GlyphPathPen, PaintedPath
-
+from .drawing import DeviceRGB, GlyphPathPen, GraphicsContext, PaintedPath, Transform
+from .enums import BlendMode
 
 if TYPE_CHECKING:
-    from .fpdf import FPDF
     from .fonts import TTFFont
+    from .fpdf import FPDF
 
 
 LOGGER = logging.getLogger(__name__)
@@ -134,6 +132,7 @@ class Type3Font:
 
 
 class SVGColorFont(Type3Font):
+    """Support for SVG OpenType vector color fonts."""
 
     def glyph_exists(self, glyph_name: str) -> bool:
         glyph_id = self.base_font.ttfont.getGlyphID(glyph_name)
@@ -173,6 +172,7 @@ class CustomGraphicsContextItem:
 
 
 class COLRFont(Type3Font):
+    """Support for COLRv0 and COLRv1 OpenType color vector fonts."""
 
     def __init__(self, fpdf: "FPDF", base_font: "TTFFont"):
         super().__init__(fpdf, base_font)
@@ -248,9 +248,7 @@ class COLRFont(Type3Font):
         return gc
 
     def draw_colrv1_paint(self, paint: Paint, gc: GraphicsContext):
-        # print("Paint format: ", paint.Format)
         if paint.Format == PaintFormat.PaintColrLayers:  # 1
-            # print("[PaintColrLayers] FirstLayerIndex: ", paint.FirstLayerIndex, " NumLayers: ", paint.NumLayers)
             layer_list = self.base_font.ttfont["COLR"].table.LayerList
             for layer in range(
                 paint.FirstLayerIndex, paint.FirstLayerIndex + paint.NumLayers
@@ -263,12 +261,10 @@ class COLRFont(Type3Font):
                 path.style.fill_color = color
                 path.style.stroke_color = color
         elif paint.Format == PaintFormat.PaintVarSolid:  # 3
-            raise NotImplementedError("Veriable fonts are not yet supported.")
+            raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintLinearGradient:  # 4
-            # print("[PaintLinearGradient] ColorLine: ")
-            # for stop in paint.ColorLine.ColorStop:
-            #    print("Stop: ", stop.StopOffset, " color: ", stop.PaletteIndex)
-            #    print("x0: ", paint.x0, " y0: ", paint.y0, " x1: ", paint.x1, " y1: ", paint.y1)
+            # TODO: add linear gradient support after adding it on the drawing api.
+            # In the meantime, we will render the first color stop only.
             color = self.get_color(
                 paint.ColorLine.ColorStop[0].PaletteIndex,
                 paint.ColorLine.ColorStop[0].Alpha,
@@ -277,12 +273,10 @@ class COLRFont(Type3Font):
             path.style.fill_color = color
             path.style.stroke_color = color
         elif paint.Format == PaintFormat.PaintVarLinearGradient:  # 5
-            raise NotImplementedError("Veriable fonts are not yet supported.")
+            raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintRadialGradient:  # 6
-            # print("[PaintRadialGradient] ColorLine: ")
-            # for stop in paint.ColorLine.ColorStop:
-            #    print("Stop: ", stop.StopOffset, " color: ", stop.PaletteIndex)
-            #    print("x0: ", paint.x0, " y0: ", paint.y0, " x1: ", paint.x1, " y1: ", paint.y1)
+            # TODO: add radial gradient support after adding it on the drawing api.
+            # In the meantime, we will render the first color stop only.
             color = self.get_color(
                 paint.ColorLine.ColorStop[0].PaletteIndex,
                 paint.ColorLine.ColorStop[0].Alpha,
@@ -291,12 +285,12 @@ class COLRFont(Type3Font):
             path.style.fill_color = color
             path.style.stroke_color = color
         elif paint.Format == PaintFormat.PaintVarRadialGradient:  # 7
-            raise NotImplementedError("Veriable fonts are not yet supported.")
+            raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintSweepGradient:  # 8
             print(paint.Format)
             raise NotImplementedError
         elif paint.Format == PaintFormat.PaintVarSweepGradient:  # 9
-            raise NotImplementedError("Veriable fonts are not yet supported.")
+            raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintGlyph:  # 10
             path = PaintedPath()
             glyph_set = self.base_font.ttfont.getGlyphSet()
@@ -322,21 +316,21 @@ class COLRFont(Type3Font):
             self.draw_colrv1_paint(paint.Paint, gc)
             gc.add_item(CustomGraphicsContextItem("Q "))
         elif paint.Format == PaintFormat.PaintVarTransform:  # 13
-            raise NotImplementedError("Veriable fonts are not yet supported.")
+            raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintTranslate:  # 14
             transform = Transform.translation(paint.dx, paint.dy)
             gc.add_item(CustomGraphicsContextItem(f"q {transform.render(None)[0]} "))
             self.draw_colrv1_paint(paint.Paint, gc)
             gc.add_item(CustomGraphicsContextItem("Q "))
         elif paint.Format == PaintFormat.PaintVarTranslate:  # 15
-            raise NotImplementedError("Veriable fonts are not yet supported.")
+            raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintScale:  # 16
             transform = Transform.scaling(paint.scaleX, paint.scaleY)
             gc.add_item(CustomGraphicsContextItem(f"q {transform.render(None)[0]} "))
             self.draw_colrv1_paint(paint.Paint, gc)
             gc.add_item(CustomGraphicsContextItem("Q "))
         elif paint.Format == PaintFormat.PaintVarScale:  # 17
-            raise NotImplementedError("Veriable fonts are not yet supported.")
+            raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintScaleAroundCenter:  # 18
             print(paint.centerX, paint.centerY, paint.scaleX, paint.scaleY)
             transform = (
@@ -348,38 +342,40 @@ class COLRFont(Type3Font):
             self.draw_colrv1_paint(paint.Paint, gc)
             gc.add_item(CustomGraphicsContextItem("Q "))
         elif paint.Format == PaintFormat.PaintVarScaleAroundCenter:  # 19
-            raise NotImplementedError("Veriable fonts are not yet supported.")
+            raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintScaleUniform:  # 20
             print(paint.Format)
             raise NotImplementedError
         elif paint.Format == PaintFormat.PaintVarScaleUniform:  # 21
-            raise NotImplementedError("Veriable fonts are not yet supported.")
+            raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintScaleUniformAroundCenter:  # 22
             print(paint.Format)
             raise NotImplementedError
         elif paint.Format == PaintFormat.PaintVarScaleUniformAroundCenter:  # 23
-            raise NotImplementedError("Veriable fonts are not yet supported.")
+            raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintRotate:  # 24
             print(paint.Format)
             raise NotImplementedError
         elif paint.Format == PaintFormat.PaintVarRotate:  # 25
-            raise NotImplementedError("Veriable fonts are not yet supported.")
+            raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintRotateAroundCenter:  # 26
             print(paint.Format)
             raise NotImplementedError
         elif paint.Format == PaintFormat.PaintVarRotateAroundCenter:  # 27
-            raise NotImplementedError("Veriable fonts are not yet supported.")
+            raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintSkew:  # 28
             print(paint.Format)
             raise NotImplementedError
         elif paint.Format == PaintFormat.PaintVarSkew:  # 29
-            raise NotImplementedError("Veriable fonts are not yet supported.")
+            raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintSkewAroundCenter:  # 30
             print(paint.Format)
             raise NotImplementedError
         elif paint.Format == PaintFormat.PaintVarSkewAroundCenter:  # 31
-            raise NotImplementedError("Veriable fonts are not yet supported.")
+            raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintComposite:  # 32
+            # blend_mode = get_blend_mode(paint.CompositeMode)
+            # TODO: complete implementation of the composite paint.
             # Composite has 2 elements to drawn:
             # - Brackdrop paint is the "background" - the element to draw first. it has by default
             #   composite mode "SRC_OVER" (no compositing with other elements - just draw)
@@ -387,14 +383,15 @@ class COLRFont(Type3Font):
             #   The composite operators are on fontTools.ttLib.tables.otTables.CompositeMode
             #   https://www.w3.org/TR/compositing-1/
             self.draw_colrv1_paint(paint.BackdropPaint, gc)
-            self.draw_colrv1_paint(
-                paint.SourcePaint, gc
-            )  # blend mode paint.CompositeMode
+            self.draw_colrv1_paint(paint.SourcePaint, gc)
+            # gc.style.blend_mode = blend_mode
         else:
             raise NotImplementedError(f"Unknown PaintFormat: {paint.Format}")
 
 
 class CBDTColorFont(Type3Font):
+    """Support for CBDT+CBLC bitmap color fonts."""
+
     # Only looking at the first strike - Need to look all strikes available on the CBLC table first?
     def glyph_exists(self, glyph_name: str) -> bool:
         return glyph_name in self.base_font.ttfont["CBDT"].strikeData[0]
@@ -435,6 +432,7 @@ class CBDTColorFont(Type3Font):
 
 
 class SBIXColorFont(Type3Font):
+    """Support for SBIX bitmap color fonts."""
 
     def glyph_exists(self, glyph_name: str) -> bool:
         glyph = (
@@ -495,23 +493,23 @@ class SBIXColorFont(Type3Font):
 
 def get_color_font_object(fpdf: "FPDF", base_font: "TTFFont") -> Union[Type3Font, None]:
     if "CBDT" in base_font.ttfont:
-        LOGGER.warning("Font %s is a CBLC+CBDT color font", base_font.name)
+        LOGGER.debug("Font %s is a CBLC+CBDT color font", base_font.name)
         return CBDTColorFont(fpdf, base_font)
     if "EBDT" in base_font.ttfont:
         raise NotImplementedError(
-            "%s - EBLC+EBDT color font is not supported yet", base_font.name
+            f"{base_font.name} - EBLC+EBDT color font is not supported yet"
         )
     if "COLR" in base_font.ttfont:
         if base_font.ttfont["COLR"].version == 0:
-            LOGGER.warning("Font %s is a COLRv0 color font", base_font.name)
+            LOGGER.debug("Font %s is a COLRv0 color font", base_font.name)
         else:
-            LOGGER.warning("Font %s is a COLRv1 color font", base_font.name)
+            LOGGER.debug("Font %s is a COLRv1 color font", base_font.name)
         return COLRFont(fpdf, base_font)
     if "SVG " in base_font.ttfont:
-        LOGGER.warning("Font %s is a SVG color font", base_font.name)
+        LOGGER.debug("Font %s is a SVG color font", base_font.name)
         return SVGColorFont(fpdf, base_font)
     if "sbix" in base_font.ttfont:
-        LOGGER.warning("Font %s is a SBIX color font", base_font.name)
+        LOGGER.debug("Font %s is a SBIX color font", base_font.name)
         return SBIXColorFont(fpdf, base_font)
     return None
 
@@ -522,3 +520,44 @@ def get_last_painted_path(gc: GraphicsContext) -> PaintedPath:
         if isinstance(item, PaintedPath):
             return item
     return None  # raise ValueError("Invalid glyph")
+
+
+def get_blend_mode(composite_mode: CompositeMode) -> BlendMode:
+    """Get the FPDF BlendMode for a given CompositeMode."""
+
+    # TODO: Need to add support for the following CompositeMode:
+    # CLEAR = 0
+    # SRC = 1
+    # DEST = 2
+    # SRC_OVER = 3
+    # DEST_OVER = 4
+    # SRC_IN = 5
+    # DEST_IN = 6
+    # SRC_OUT = 7
+    # DEST_OUT = 8
+    # SRC_ATOP = 9
+    # DEST_ATOP = 10
+    # XOR = 11
+    # PLUS = 12
+
+    mode_map = {
+        CompositeMode.SCREEN: BlendMode.SCREEN,
+        CompositeMode.OVERLAY: BlendMode.OVERLAY,
+        CompositeMode.DARKEN: BlendMode.DARKEN,
+        CompositeMode.LIGHTEN: BlendMode.LIGHTEN,
+        CompositeMode.COLOR_DODGE: BlendMode.COLOR_DODGE,
+        CompositeMode.COLOR_BURN: BlendMode.COLOR_BURN,
+        CompositeMode.HARD_LIGHT: BlendMode.HARD_LIGHT,
+        CompositeMode.SOFT_LIGHT: BlendMode.SOFT_LIGHT,
+        CompositeMode.DIFFERENCE: BlendMode.DIFFERENCE,
+        CompositeMode.EXCLUSION: BlendMode.EXCLUSION,
+        CompositeMode.MULTIPLY: BlendMode.MULTIPLY,
+        CompositeMode.HSL_HUE: BlendMode.HUE,
+        CompositeMode.HSL_SATURATION: BlendMode.SATURATION,
+        CompositeMode.HSL_COLOR: BlendMode.COLOR,
+        CompositeMode.HSL_LUMINOSITY: BlendMode.LUMINOSITY,
+    }
+    blend_mode = mode_map.get(composite_mode, None)
+    if not blend_mode:
+        raise NotImplementedError(f"Unknown composite mode: {composite_mode}")
+    return blend_mode

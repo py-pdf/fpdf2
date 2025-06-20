@@ -6,13 +6,14 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-import decimal, math, re
-from copy import deepcopy
+import decimal
+import math
+import re
 from collections import OrderedDict
-
 from collections.abc import Sequence
 from contextlib import contextmanager
-from typing import Optional, NamedTuple, Union
+from copy import deepcopy
+from typing import NamedTuple, Optional, Union
 
 from fontTools.pens.basePen import BasePen
 
@@ -21,9 +22,9 @@ from .enums import (
     ClippingPathIntersectionRule,
     IntersectionRule,
     PathPaintRule,
+    PDFStyleKeys,
     StrokeCapStyle,
     StrokeJoinStyle,
-    PDFStyleKeys,
 )
 from .syntax import Name, Raw
 from .util import escape_parens
@@ -4281,9 +4282,6 @@ class PathPen(BasePen):
 
 class GlyphPathPen(PathPen):
     """A pen that can be used to draw glyphs into a `PaintedPath`."""
-
-    def __init__(self, pdf_path, *args, **kwargs):
-        super().__init__(pdf_path, *args, **kwargs)
 
     def _closePath(self):
         """
