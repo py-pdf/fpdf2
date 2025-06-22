@@ -17,7 +17,14 @@ from fontTools.ttLib.tables.BitmapGlyphMetrics import BigGlyphMetrics, SmallGlyp
 from fontTools.ttLib.tables.C_O_L_R_ import table_C_O_L_R_
 from fontTools.ttLib.tables.otTables import CompositeMode, Paint, PaintFormat
 
-from .drawing import DeviceRGB, GlyphPathPen, GraphicsContext, PaintedPath, Transform
+from .drawing import (
+    DeviceRGB,
+    GlyphPathPen,
+    GraphicsContext,
+    GraphicsStyle,
+    PaintedPath,
+    Transform,
+)
 from .enums import BlendMode
 
 if TYPE_CHECKING:
@@ -77,7 +84,7 @@ class Type3Font:
             if self.base_font.cw[0x00]
             else self.base_font.ttfont["hmtx"].metrics[".notdef"][0]
         )
-        notdef.glyph = f"{notdef.glyph_width} 0 d0"
+        notdef.glyph = f"{round(notdef.glyph_width * self.scale + 0.001)} 0 d0"
         return notdef
 
     def get_space_glyph(self, glyph_id) -> Type3FontGlyph:
@@ -85,13 +92,12 @@ class Type3Font:
         space.glyph_id = glyph_id
         space.unicode = 0x20
         space.glyph_name = "space"
-        space_width = (
+        space.glyph_width = (
             self.base_font.cw[0x20]
             if self.base_font.cw[0x20]
             else self.base_font.ttfont["hmtx"].metrics[".notdef"][0]
         )
-        space.glyph_width = space_width
-        space.glyph = f"{space.glyph_width} 0 d0"
+        space.glyph = f"{round(space.glyph_width * self.scale + 0.001)} 0 d0"
         return space
 
     def load_glyphs(self):
@@ -154,9 +160,7 @@ class SVGColorFont(Type3Font):
         w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
         img.base_group.transform = Transform.scaling(self.scale, self.scale)
         output_stream = self.fpdf.draw_vector_glyph(img.base_group, self)
-        glyph.glyph = (
-            f"{w * self.scale / self.upem} 0 d0\n" "q\n" f"{output_stream}\n" "Q"
-        )
+        glyph.glyph = f"{round(w * self.scale)} 0 d0\n" "q\n" f"{output_stream}\n" "Q"
         glyph.glyph_width = w
 
 
@@ -218,12 +222,13 @@ class COLRFont(Type3Font):
             img = self.draw_glyph_colrv1(glyph.glyph_name)
         img.transform = Transform.scaling(self.scale, -self.scale)
         output_stream = self.fpdf.draw_vector_glyph(img, self)
-        glyph.glyph = (
-            f"{w * self.scale / self.upem} 0 d0\n" "q\n" f"{output_stream}\n" "Q"
-        )
+        glyph.glyph = f"{round(w * self.scale)} 0 d0\n" "q\n" f"{output_stream}\n" "Q"
         glyph.glyph_width = w
 
     def get_color(self, color_index: int, alpha=1) -> DeviceRGB:
+        # TO DO : A palette entry index value of 0xFFFF is a special case indicating
+        # that the text foreground color (defined by the application) should be used,
+        # and must not be treated as an actual index into the CPAL ColorRecord array.
         r, g, b, a = self.palette[color_index]
         a *= alpha
         return DeviceRGB(r, g, b, a)
@@ -263,7 +268,7 @@ class COLRFont(Type3Font):
         elif paint.Format == PaintFormat.PaintVarSolid:  # 3
             raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintLinearGradient:  # 4
-            # TODO: add linear gradient support after adding it on the drawing api.
+            # TO DO: add linear gradient support after adding it on the drawing api.
             # In the meantime, we will render the first color stop only.
             color = self.get_color(
                 paint.ColorLine.ColorStop[0].PaletteIndex,
@@ -275,7 +280,7 @@ class COLRFont(Type3Font):
         elif paint.Format == PaintFormat.PaintVarLinearGradient:  # 5
             raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintRadialGradient:  # 6
-            # TODO: add radial gradient support after adding it on the drawing api.
+            # TO DO: add radial gradient support after adding it on the drawing api.
             # In the meantime, we will render the first color stop only.
             color = self.get_color(
                 paint.ColorLine.ColorStop[0].PaletteIndex,
@@ -374,8 +379,9 @@ class COLRFont(Type3Font):
         elif paint.Format == PaintFormat.PaintVarSkewAroundCenter:  # 31
             raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintComposite:  # 32
+            print(paint.CompositeMode)
             # blend_mode = get_blend_mode(paint.CompositeMode)
-            # TODO: complete implementation of the composite paint.
+            # TO DO: complete implementation of the composite paint.
             # Composite has 2 elements to drawn:
             # - Brackdrop paint is the "background" - the element to draw first. it has by default
             #   composite mode "SRC_OVER" (no compositing with other elements - just draw)
@@ -383,7 +389,10 @@ class COLRFont(Type3Font):
             #   The composite operators are on fontTools.ttLib.tables.otTables.CompositeMode
             #   https://www.w3.org/TR/compositing-1/
             self.draw_colrv1_paint(paint.BackdropPaint, gc)
+            # path = get_last_painted_path(gc)
+            # path.style.blend_mode = get_blend_mode(CompositeMode.SRC_OVER)
             self.draw_colrv1_paint(paint.SourcePaint, gc)
+            # path.style.blend_mode = get_blend_mode(paint.CompositeMode)
             # gc.style.blend_mode = blend_mode
         else:
             raise NotImplementedError(f"Unknown PaintFormat: {paint.Format}")
@@ -422,7 +431,7 @@ class CBDTColorFont(Type3Font):
         _, _, info = self.fpdf.preload_image(bio, None)
         w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
         glyph.glyph = (
-            f"{w / self.scale} 0 d0\n"
+            f"{round(w * self.scale)} 0 d0\n"
             "q\n"
             f"{(x_max - x_min)* self.scale} 0 0 {(-y_min + y_max)*self.scale} {x_min*self.scale} {y_min*self.scale} cm\n"
             f"/I{info['i']} Do\nQ"
@@ -482,7 +491,7 @@ class SBIXColorFont(Type3Font):
         y_max = glyf_metrics.yMax + sbix_glyph.originOffsetY
 
         glyph.glyph = (
-            f"{(x_max - x_min) * self.scale} 0 d0\n"
+            f"{round(w * self.scale)} 0 d0\n"
             "q\n"
             f"{(x_max - x_min) * self.scale} 0 0 {(-y_min + y_max) * self.scale} {x_min * self.scale} {y_min * self.scale} cm\n"
             f"/I{info['i']} Do\nQ"
@@ -522,10 +531,10 @@ def get_last_painted_path(gc: GraphicsContext) -> PaintedPath:
     return None  # raise ValueError("Invalid glyph")
 
 
-def get_blend_mode(composite_mode: CompositeMode) -> BlendMode:
+def get_blend_mode(composite_mode: CompositeMode) -> GraphicsStyle:
     """Get the FPDF BlendMode for a given CompositeMode."""
 
-    # TODO: Need to add support for the following CompositeMode:
+    # TO DO: Need to add support for the following CompositeMode:
     # CLEAR = 0
     # SRC = 1
     # DEST = 2
@@ -541,6 +550,8 @@ def get_blend_mode(composite_mode: CompositeMode) -> BlendMode:
     # PLUS = 12
 
     mode_map = {
+        CompositeMode.SRC_IN: BlendMode.NORMAL,  # temporary
+        CompositeMode.SRC_OVER: BlendMode.NORMAL,
         CompositeMode.SCREEN: BlendMode.SCREEN,
         CompositeMode.OVERLAY: BlendMode.OVERLAY,
         CompositeMode.DARKEN: BlendMode.DARKEN,
@@ -560,4 +571,6 @@ def get_blend_mode(composite_mode: CompositeMode) -> BlendMode:
     blend_mode = mode_map.get(composite_mode, None)
     if not blend_mode:
         raise NotImplementedError(f"Unknown composite mode: {composite_mode}")
+    # gs = GraphicsStyle()
+    # gs.blend_mode = blend_mode
     return blend_mode
