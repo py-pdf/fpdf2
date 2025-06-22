@@ -4287,6 +4287,6 @@ class GlyphPathPen(PathPen):
         """
         The difference between GlyphPathPen and PathPen is that GlyphPathPen does not
         remove the last path element before closing the path.
-        This last line back to start point is necessary for correcly rendering glyphs.
+        This last line back to start point is necessary for correctly rendering glyphs.
         """
         self.pdf_path.close()

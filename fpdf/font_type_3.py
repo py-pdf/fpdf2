@@ -422,7 +422,7 @@ class CBDTColorFont(Type3Font):
             y_max = round(metrics.horiBearingY * self.upem / ppem)
         else:  # fallback scenario: use font bounding box
             x_min = self.base_font.ttfont["head"].xMin
-            y_min = self.base_font.ttfont["head"].yNin
+            y_min = self.base_font.ttfont["head"].yMin
             x_max = self.base_font.ttfont["head"].xMax
             y_max = self.base_font.ttfont["head"].yMax
 
