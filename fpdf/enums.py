@@ -458,15 +458,14 @@ class TableBorderStyle:
 
     def _get_change_dash_command(self, scale, pdf=None):
         dash_dict = self.dash_dict if pdf is None else pdf.dash_pattern
-        match dash_dict["dash"], dash_dict["gap"], dash_dict["phase"]:
-            case None, _, _:
-                return []
-            case dash, gap, _ if dash <= 0:
-                return ["[] 0 d"]
-            case dash, gap, phase if gap <= 0:
-                return [f"[{dash * scale:.3f}] {phase * scale:.3f} d"]
-            case dash, gap, phase:
-                return [f"[{dash * scale:.3f} {gap * scale:.3f}] {phase * scale:.3f} d"]
+        dash, gap, phase = dash_dict["dash"], dash_dict["gap"], dash_dict["phase"]
+        if dash is None:
+            return []
+        if dash <= 0:
+            return ["[] 0 d"]
+        if gap <= 0:
+            return [f"[{dash * scale:.3f}] {phase * scale:.3f} d"]
+        return [f"[{dash * scale:.3f} {gap * scale:.3f}] {phase * scale:.3f} d"]
 
     def get_change_stroke_commands(self, scale):
         return (
