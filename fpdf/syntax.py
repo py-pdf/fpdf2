@@ -118,10 +118,10 @@ def create_stream(stream, encryption_handler=None, obj_id=None):
     return "\n".join(["stream", stream, "endstream"])
 
 
-def wrap_in_local_context(draw_commands: list[str]):
+def wrap_in_local_context(draw_commands):
     """
-    Wrap a series of draw commands in a local context marker, so that changes to draw style only
-    apply to these commands.
+    Wrap a series of draw commands (list of strings) in a local context marker, so that changes to
+    draw style only apply to these commands.
     """
     return ["q"] + draw_commands + ["Q"]
 
