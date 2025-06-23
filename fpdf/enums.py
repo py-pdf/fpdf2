@@ -387,7 +387,7 @@ class CellBordersLayout(CoerciveIntFlag):
         return "".join(border_str) if border_str else "NONE"
 
 
-@dataclass(slots=True)
+@dataclass
 class TableBorderStyle:
     """
     A helper class for drawing one border of a table
@@ -495,7 +495,7 @@ class TableBorderStyle:
         return self.get_line_command(x1, y1, x2, y2)
 
 
-@dataclass(slots=True)
+@dataclass
 class TableCellStyle:
     left: Union[bool, TableBorderStyle] = False
     bottom: Union[bool, TableBorderStyle] = False
