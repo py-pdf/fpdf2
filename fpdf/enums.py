@@ -443,7 +443,7 @@ class TableBorderStyle:
         return [] if thickness is None else [f"{thickness * scale:.2f} w"]
 
     def _get_change_line_color_command(self, pdf=None):
-        # pylint: disable=import-outside-toplevel
+        # pylint: disable=import-outside-toplevel,cyclic-import
         from .drawing import convert_to_device_color
 
         if pdf is None:
@@ -524,7 +524,7 @@ class TableCellStyle:
 
     @staticmethod
     def get_change_fill_color_command(color):
-        # pylint: disable=import-outside-toplevel
+        # pylint: disable=import-outside-toplevel,cyclic-import
         from .drawing import convert_to_device_color
 
         return (
