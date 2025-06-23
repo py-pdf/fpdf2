@@ -69,10 +69,10 @@ This makes it straightforward to use Ibis with `fpdf2`: simply execute your Ibis
 
 Before running the following example, please install the required dependencies:
 ```
-pip install fpdf2 ibis-framework pandas duckdb
+pip install "ibis-framework[duckdb]" fpdf2 pandas
 ```
 
-Example: Render an Ibis table as a PDF table
+Example: Render an Ibis table as [a table in a PDF document](Tables.md):
 
 ```python
 from fpdf import FPDF
@@ -82,7 +82,7 @@ import pandas as pd
 # Connect to a DuckDB in-memory database (as an example backend)
 con = ibis.duckdb.connect()
 
-# Create a sample table in DuckDB
+# Create a sample table in DuckDB with a SQL INSERT command:
 con.raw_sql("""
 CREATE TABLE people (
     first_name VARCHAR,
@@ -106,10 +106,9 @@ expr = t  # or: t.filter(t.age > 30)
 # Execute the Ibis expression to get a pandas DataFrame
 df = expr.execute()
 
-# Convert all data to string for PDF rendering
-DF = df.applymap(str)
-COLUMNS = [list(DF)]  # column headers
-ROWS = DF.values.tolist()  # data rows
+# Extract column headers and row data for PDF rendering
+COLUMNS = [list(df)]  # column headers
+ROWS = df.values.tolist()  # data rows
 DATA = COLUMNS + ROWS
 
 pdf = FPDF()
@@ -134,7 +133,7 @@ This approach works with any Ibis backend (DuckDB, pandas, BigQuery, etc.)—jus
 
 **References:**
 - [Ibis documentation](https://ibis-project.org/docs/)
-- [fpdf2 documentation: Using Pandas](https://py-pdf.github.io/fpdf2/Maths.html#using-pandas)
+- [fpdf2 documentation: Using Pandas](Maths.md#using-pandas)
 
 ### Using Plotly ###
 
