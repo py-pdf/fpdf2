@@ -28,7 +28,6 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * a performance issue when using `FPDF.offset_rendering()` or `FPDF.unbreakable()` with large fonts - _cf._ [issue #1444](https://github.com/py-pdf/fpdf2/issues/1444)
 * slightly invalid PDF files were produced since v2.8.3, due to path construction commands being inserted inside `BT/ET` contexts when using underline or strikethrough text
 * `multi_cell()` text clipping bug - [issue #1471](https://github.com/py-pdf/fpdf2/issues/1471)
-* clarified documentation in [Maths.md](https://py-pdf.github.io/fpdf2/Maths.html) regarding DataFrame string conversion for PDF rendering
 
 ## [2.8.3] - 2025-04-22
 ### Added
