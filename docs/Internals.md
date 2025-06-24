@@ -19,7 +19,7 @@ The [syntax.py](https://github.com/py-pdf/fpdf2/blob/master/fpdf/syntax.py) pack
 Classes inherit from the [PDFObject](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.syntax.PDFObject) class, that has the following properties:
 
 * every PDF object has an `.id`, that is assigned during the document serialization by the [OutputProducer](#outputproducer)
-* the `.serialize()` method renders the PDF object as an `obj<</>>endobj` text block. It can be overridden by child classes.
+* the `.serialize()` method renders the PDF object as an `obj<<...>>endobj` text block. It can be overridden by child classes
 * the `.content_stream()` method must return non empty bytes if the PDF Object has a _content stream_
 
 Other notable core classes are:

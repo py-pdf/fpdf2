@@ -132,6 +132,7 @@ pdf.output("table_from_ibis.pdf")
 This approach works with any Ibis backend (DuckDB, pandas, BigQuery, etc.)—just use `.execute()` to get a DataFrame, then render as shown above.
 
 **References:**
+
 - [Ibis documentation](https://ibis-project.org/docs/)
 - [fpdf2 documentation: Using Pandas](Maths.md#using-pandas)
 
