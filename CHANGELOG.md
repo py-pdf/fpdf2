@@ -19,7 +19,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.8.4] - Not released yet
 ### Added
 * documentation on [internal linking with variable page numbers](https://py-pdf.github.io/fpdf2/Links.html#internal-links)
-* documentation on [using the Ibis library](https://py-pdf.github.io/fpdf2/Links.html#using-ibis)
+* documentation on [using the Ibis library](https://py-pdf.github.io/fpdf2/Maths.html#using-ibis)
 
 ### Fixed
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): Fixed custom styling of `<p>` & tables - [issue #1453](https://github.com/py-pdf/fpdf2/issues/1453)
@@ -28,7 +28,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * handled case of a smaller last column when using [text_columns()](https://py-pdf.github.io/fpdf2/TextColumns.html) - _cf._ [issue #1442](https://github.com/py-pdf/fpdf2/issues/1442)
 * minor regular-expression optimization in the SVG parsing module, nullifying any risk of ReDOS attack
 * a performance issue when using `FPDF.offset_rendering()` or `FPDF.unbreakable()` with large fonts - _cf._ [issue #1444](https://github.com/py-pdf/fpdf2/issues/1444)
-* slightly invalid PDF files were produced since v2.8.3, due to path construction commands being inserted inside `BT/ET` contexts when using underline or strikethrough text
+* slightly invalid PDF files were produced since v2.8.3, due to path construction commands being inserted inside `BT/ET` contexts when using underline or strikethrough text - _cf._ [issue #1456](https://github.com/py-pdf/fpdf2/issues/1456)
 * `multi_cell()` text clipping bug - [issue #1471](https://github.com/py-pdf/fpdf2/issues/1471)
 * clarified documentation in [Maths.md](https://py-pdf.github.io/fpdf2/Maths.html) regarding DataFrame string conversion for PDF rendering
 
