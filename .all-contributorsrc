@@ -1487,6 +1487,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "eshentials",
+      "name": "Eshani",
+      "avatar_url": "https://avatars.githubusercontent.com/u/144895187?v=4",
+      "profile": "https://github.com/eshentials",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
