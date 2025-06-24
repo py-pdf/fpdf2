@@ -324,6 +324,7 @@ This library could only exist thanks to the dedication of many volunteers around
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/slkoo-core"><img src="https://avatars.githubusercontent.com/u/201556645?v=4?s=100" width="100px;" alt="slkoo-core"/><br /><sub><b>slkoo-core</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/issues?q=author%3Aslkoo-core" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/eshentials"><img src="https://avatars.githubusercontent.com/u/144895187?v=4?s=100" width="100px;" alt="Eshani"/><br /><sub><b>Eshani</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=eshentials" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
