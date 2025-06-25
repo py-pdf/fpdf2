@@ -154,6 +154,10 @@ class SVGColorFont(Type3Font):
             if svg_doc.startGlyphID <= glyph_id <= svg_doc.endGlyphID:
                 glyph_svg_data = svg_doc.data.encode("utf-8")
                 break
+        if not glyph_svg_data:
+            raise ValueError(
+                f"Glyph {glyph.glyph_name} (ID: {glyph_id}) not found in SVG font."
+            )
         bio = BytesIO(glyph_svg_data)
         bio.seek(0)
         _, img, _ = self.fpdf.preload_image(bio, None)
@@ -176,7 +180,25 @@ class CustomGraphicsContextItem:
 
 
 class COLRFont(Type3Font):
-    """Support for COLRv0 and COLRv1 OpenType color vector fonts."""
+    """
+    Support for COLRv0 and COLRv1 OpenType color vector fonts.
+    https://learn.microsoft.com/en-us/typography/opentype/spec/colr
+
+    COLRv0 is a sequence of glyphs layers with color specification
+    and they are built one on top of the other.
+
+    COLRv1 allows for more complex color glyphs by including gradients,
+    transformations, and composite operations.
+
+    This class handles both versions of the COLR table by using the
+    drawing API to render the glyphs as vector graphics.
+
+    Current limitations:
+    - COLRv1 variable fonts are not supported yet.
+    - Gradients (linear and radial) are not yet supported by the drawing API,
+      so we render only the first color stop of the gradient.
+    - Composite paint is not yet implemented.
+    """
 
     def __init__(self, fpdf: "FPDF", base_font: "TTFFont"):
         super().__init__(fpdf, base_font)
@@ -380,6 +402,9 @@ class COLRFont(Type3Font):
             raise NotImplementedError("Variable fonts are not yet supported.")
         elif paint.Format == PaintFormat.PaintComposite:  # 32
             print(paint.CompositeMode)
+
+            # DEST_OVER = Source paint is drawn over the backdrop paint (Inverted SRC_OVER)
+
             # blend_mode = get_blend_mode(paint.CompositeMode)
             # TO DO: complete implementation of the composite paint.
             # Composite has 2 elements to drawn:
