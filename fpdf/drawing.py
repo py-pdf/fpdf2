@@ -6,22 +6,25 @@ They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
 """
 
-import decimal, math, re
-from copy import deepcopy
+import decimal
+import math
+import re
 from collections import OrderedDict
-
 from collections.abc import Sequence
 from contextlib import contextmanager
-from typing import Optional, NamedTuple, Union
+from copy import deepcopy
+from typing import NamedTuple, Optional, Union
+
+from fontTools.pens.basePen import BasePen
 
 from .enums import (
     BlendMode,
     ClippingPathIntersectionRule,
     IntersectionRule,
     PathPaintRule,
+    PDFStyleKeys,
     StrokeCapStyle,
     StrokeJoinStyle,
-    PDFStyleKeys,
 )
 from .syntax import Name, Raw
 from .util import escape_parens
@@ -4220,3 +4223,70 @@ class GraphicsContext:
             pfx,
             _push_stack=_push_stack,
         )
+
+
+class PathPen(BasePen):
+    def __init__(self, pdf_path, *args, **kwargs):
+        self.pdf_path = pdf_path
+        self.last_was_line_to = False
+        self.first_is_move = None
+        super().__init__(*args, **kwargs)
+
+    def _moveTo(self, pt):
+        self.pdf_path.move_to(*pt)
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = True
+
+    def _lineTo(self, pt):
+        self.pdf_path.line_to(*pt)
+        self.last_was_line_to = True
+        if self.first_is_move is None:
+            self.first_is_move = False
+
+    def _curveToOne(self, pt1, pt2, pt3):
+        self.pdf_path.curve_to(
+            x1=pt1[0], y1=pt1[1], x2=pt2[0], y2=pt2[1], x3=pt3[0], y3=pt3[1]
+        )
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = False
+
+    def _qCurveToOne(self, pt1, pt2):
+        self.pdf_path.quadratic_curve_to(x1=pt1[0], y1=pt1[1], x2=pt2[0], y2=pt2[1])
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = False
+
+    def arcTo(self, rx, ry, rotation, arc, sweep, end):
+        self.pdf_path.arc_to(
+            rx=rx,
+            ry=ry,
+            rotation=rotation,
+            large_arc=arc,
+            positive_sweep=sweep,
+            x=end[0],
+            y=end[1],
+        )
+        self.last_was_line_to = False
+        if self.first_is_move is None:
+            self.first_is_move = False
+
+    def _closePath(self):
+        # The fonttools parser inserts an unnecessary explicit line back to the start
+        # point of the path before actually closing it. Let's get rid of that again.
+        if self.last_was_line_to:
+            self.pdf_path.remove_last_path_element()
+        self.pdf_path.close()
+
+
+class GlyphPathPen(PathPen):
+    """A pen that can be used to draw glyphs into a `PaintedPath`."""
+
+    def _closePath(self):
+        """
+        The difference between GlyphPathPen and PathPen is that GlyphPathPen does not
+        remove the last path element before closing the path.
+        This last line back to start point is necessary for correctly rendering glyphs.
+        """
+        self.pdf_path.close()
