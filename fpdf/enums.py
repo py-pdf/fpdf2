@@ -299,26 +299,6 @@ class MethodReturnValue(CoerciveIntFlag):
     "The method will return how much vertical space was used"
 
 
-def _join_draw_commands(draw_commands):
-    _last = draw_commands[0]
-    _concat = _last
-    for _current in draw_commands[1:]:
-        if _is_line_command(_last) and _is_line_command(_current):
-            _concat += f" {_current}"
-        else:
-            _concat += f"\n{_current}"
-        _last = _current
-    return [_concat]
-
-
-def _is_line_command(draw_command):
-    return (
-        draw_command.endswith("l S")
-        or draw_command.endswith("re B")
-        or draw_command.endswith("re f")
-    )
-
-
 class CellBordersLayout(CoerciveIntFlag):
     """Defines how to render cell borders in table
 
@@ -389,8 +369,7 @@ class CellBordersLayout(CoerciveIntFlag):
 
 @dataclass
 class TableBorderStyle:
-    """
-    A helper class for drawing one border of a table
+    """A helper class for drawing one border of a table
 
     Attributes:
         thickness: The thickness of the border. If None use default. If <= 0 don't draw the border.
@@ -405,6 +384,9 @@ class TableBorderStyle:
 
     @staticmethod
     def from_bool(should_draw):
+        """
+        From boolean or TableBorderStyle input, convert to definite TableBorderStyle class object
+        """
         if isinstance(should_draw, TableBorderStyle):
             return should_draw  # don't change specified TableBorderStyle
         if should_draw:
@@ -412,6 +394,7 @@ class TableBorderStyle:
         return TableBorderStyle(thickness=0.0)  # don't draw the border
 
     def _changes_thickness(self, pdf):
+        """Return True if this style changes the thickness of the draw command, False otherwise"""
         return (
             self.thickness is not None
             and self.thickness > 0.0
@@ -419,16 +402,20 @@ class TableBorderStyle:
         )
 
     def _changes_color(self, pdf):
+        """Return True if this style changes the color of the draw command, False otherwise"""
         return self.color is not None and self.color != pdf.draw_color
 
     @property
     def dash_dict(self):
+        """Return dict object specifying dash in the same format as the pdf object"""
         return {"dash": self.dash, "gap": self.gap, "phase": self.phase}
 
     def _changes_dash(self, pdf):
+        """Return True if this style changes the dash of the draw command, False otherwise"""
         return self.dash is not None and self.dash_dict != pdf.dash_pattern
 
     def changes_stroke(self, pdf):
+        """Return True if this style changes the any aspect of the draw command, False otherwise"""
         return self.should_render() and (
             self._changes_color(pdf)
             or self._changes_thickness(pdf)
@@ -436,13 +423,16 @@ class TableBorderStyle:
         )
 
     def should_render(self):
+        """Return True if this style produces a visible stroke, False otherwise"""
         return self.thickness is None or self.thickness > 0.0
 
     def _get_change_thickness_command(self, scale, pdf=None):
+        """Return list with string for the draw command to change thickness (empty if no change)"""
         thickness = self.thickness if pdf is None else pdf.line_width
         return [] if thickness is None else [f"{thickness * scale:.2f} w"]
 
     def _get_change_line_color_command(self, pdf=None):
+        """Return list with string for the draw command to change color (empty if no change)"""
         # pylint: disable=import-outside-toplevel,cyclic-import
         from .drawing import convert_to_device_color
 
@@ -457,6 +447,7 @@ class TableBorderStyle:
         )
 
     def _get_change_dash_command(self, scale, pdf=None):
+        """Return list with string for the draw command to change dash (empty if no change)"""
         dash_dict = self.dash_dict if pdf is None else pdf.dash_pattern
         dash, gap, phase = dash_dict["dash"], dash_dict["gap"], dash_dict["phase"]
         if dash is None:
@@ -468,6 +459,7 @@ class TableBorderStyle:
         return [f"[{dash * scale:.3f} {gap * scale:.3f}] {phase * scale:.3f} d"]
 
     def get_change_stroke_commands(self, scale):
+        """Return list of strings for the draw command to change stroke (empty if no change)"""
         return (
             self._get_change_dash_command(scale)
             + self._get_change_line_color_command()
@@ -476,6 +468,7 @@ class TableBorderStyle:
 
     @staticmethod
     def get_line_command(x1, y1, x2, y2):
+        """Return list with string for the command to draw a line at the specified endpoints"""
         return [f"{x1:.2f} {y1:.2f} m {x2:.2f} {y2:.2f} l S"]
 
     def get_draw_commands(self, pdf, x1, y1, x2, y2):
@@ -497,12 +490,22 @@ class TableBorderStyle:
 
 @dataclass
 class TableCellStyle:
+    """A helper class for drawing all the borders of one cell in a table
+
+    Attributes:
+        left: bool or TableBorderStyle specifying the style of the cell's left border
+        bottom: bool or TableBorderStyle specifying the style of the cell's bottom border
+        right: bool or TableBorderStyle specifying the style of the cell's right border
+        top: bool or TableBorderStyle specifying the style of the cell's top border
+    """
+
     left: Union[bool, TableBorderStyle] = False
     bottom: Union[bool, TableBorderStyle] = False
     right: Union[bool, TableBorderStyle] = False
     top: Union[bool, TableBorderStyle] = False
 
     def _get_common_border_style(self):
+        """Return bool or TableBorderStyle if all borders have the same style, otherwise None"""
         if all(
             isinstance(border, bool)
             for border in [self.left, self.bottom, self.right, self.top]
@@ -524,6 +527,7 @@ class TableCellStyle:
 
     @staticmethod
     def get_change_fill_color_command(color):
+        """Return list with string for command to change device color (empty list if no color)"""
         # pylint: disable=import-outside-toplevel,cyclic-import
         from .drawing import convert_to_device_color
 
