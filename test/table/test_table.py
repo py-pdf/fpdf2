@@ -5,12 +5,15 @@ import pytest
 
 from fpdf import FPDF, FPDFException
 from fpdf.drawing import DeviceRGB
+from fpdf.enums import (
+    TableBordersLayout,
+    TableBorderStyle,
+    TableCellFillMode,
+    TableCellStyle,
+    TextEmphasis,
+)
 from fpdf.fonts import FontFace
-from fpdf.table import TableCellFillMode
-from fpdf.enums import TextEmphasis
-
-from test.conftest import assert_pdf_equal, LOREM_IPSUM
-
+from test.conftest import LOREM_IPSUM, assert_pdf_equal
 
 HERE = Path(__file__).resolve().parent
 
@@ -381,6 +384,55 @@ def test_table_with_page_break_and_headings_repeated(tmp_path):  # issue 1151
     )
 
 
+def test_table_with_custom_border_layout(tmp_path):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font(family="helvetica", size=11)
+
+    # generate a custom layout with most of the available features: changes in thickness, color,
+    # and dash
+    class CustomLayout(TableBordersLayout):
+        def cell_style_getter(
+            self,
+            row_idx,
+            col_idx,
+            col_pos,
+            num_heading_rows,
+            num_rows,
+            num_col_idx,
+            num_col_pos,
+        ):
+            return TableCellStyle(
+                left=(
+                    TableBorderStyle(thickness=2)
+                    if col_idx == 0
+                    else TableBorderStyle(thickness=1.0, color=(0, 255, 125))
+                ),
+                bottom=(
+                    TableBorderStyle(thickness=2) if row_idx == num_rows - 1 else False
+                ),
+                right=(
+                    TableBorderStyle(thickness=2)
+                    if col_idx == num_col_idx - 1
+                    else False
+                ),
+                top=(
+                    TableBorderStyle(thickness=2)
+                    if row_idx in (0, num_heading_rows)
+                    else (
+                        True
+                        if (row_idx - num_heading_rows) % 2 == 0
+                        else TableBorderStyle(color=(255, 0, 0), dash=2)
+                    )
+                ),
+            )
+
+    with pdf.table(rows=TABLE_DATA, borders_layout=CustomLayout()):
+        pass
+
+    assert_pdf_equal(pdf, HERE / "table_with_custom_layout.pdf", tmp_path)
+
+
 def test_table_align(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -627,10 +679,7 @@ def test_table_with_minimal_layout_and_multiple_headings(tmp_path):
     pdf.add_page()
     pdf.set_draw_color(100)  # dark grey
     pdf.set_line_width(1)
-    with pdf.table(
-        borders_layout="MINIMAL",
-        num_heading_rows=2,
-    ) as table:
+    with pdf.table(borders_layout="MINIMAL", num_heading_rows=2) as table:
         for j, rowdata in enumerate(MULTI_HEADING_TABLE_DATA):
             if j == 0:
                 # row with colspan
@@ -640,9 +689,7 @@ def test_table_with_minimal_layout_and_multiple_headings(tmp_path):
             else:
                 table.row(cells=rowdata)
     assert_pdf_equal(
-        pdf,
-        HERE / "table_with_minimal_layout_and_multiple_headings.pdf",
-        tmp_path,
+        pdf, HERE / "table_with_minimal_layout_and_multiple_headings.pdf", tmp_path
     )
 
 
@@ -720,11 +767,7 @@ def test_table_with_set_fill_color(tmp_path):  # issue 963
         pdf.set_fill_color(200)
         pdf.set_fill_color(200, 200, 200)
         row.cell("Hello")
-    assert_pdf_equal(
-        pdf,
-        HERE / "table_with_set_fill_color.pdf",
-        tmp_path,
-    )
+    assert_pdf_equal(pdf, HERE / "table_with_set_fill_color.pdf", tmp_path)
 
 
 def test_table_with_fill_color_set_beforehand(tmp_path):  # issue 932

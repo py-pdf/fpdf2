@@ -4,14 +4,14 @@ from typing import Optional, Union
 
 from .enums import (
     Align,
+    CellBordersLayout,
     MethodReturnValue,
     TableBordersLayout,
     TableCellFillMode,
     TableHeadingsDisplay,
-    WrapMode,
-    VAlign,
     TableSpan,
-    CellBordersLayout,
+    VAlign,
+    WrapMode,
 )
 from .errors import FPDFException
 from .fonts import CORE_FONTS, FontFace
@@ -274,64 +274,6 @@ class Table:
         self._fpdf.l_margin = prev_l_margin
         self._fpdf.x = self._fpdf.l_margin
 
-    # pylint: disable=too-many-return-statements
-    def get_cell_border(self, i, j, cell):
-        """
-        Defines which cell borders should be drawn.
-        Returns a string containing some or all of the letters L/R/T/B,
-        to be passed to `fpdf.FPDF.multi_cell()`.
-        Can be overridden to customize this logic
-        """
-
-        if cell.border != CellBordersLayout.INHERIT:
-            return str(cell.border)
-
-        if self._borders_layout == TableBordersLayout.ALL:
-            return 1
-        if self._borders_layout == TableBordersLayout.NONE:
-            return 0
-
-        is_rightmost_column = j + cell.colspan == len(self.rows[i].cells)
-        rows_count = len(self.rows)
-        is_bottom_row = i + cell.rowspan == rows_count
-        border = list("LRTB")
-        if self._borders_layout == TableBordersLayout.INTERNAL:
-            if i == 0:
-                border.remove("T")
-            if is_bottom_row:
-                border.remove("B")
-            if j == 0:
-                border.remove("L")
-            if is_rightmost_column:
-                border.remove("R")
-        if self._borders_layout == TableBordersLayout.MINIMAL:
-            if i == 0 or i > self._num_heading_rows or rows_count == 1:
-                border.remove("T")
-            if i > self._num_heading_rows - 1:
-                border.remove("B")
-            if j == 0:
-                border.remove("L")
-            if is_rightmost_column:
-                border.remove("R")
-        if self._borders_layout == TableBordersLayout.NO_HORIZONTAL_LINES:
-            if i > self._num_heading_rows:
-                border.remove("T")
-            if not is_bottom_row:
-                border.remove("B")
-        if self._borders_layout == TableBordersLayout.HORIZONTAL_LINES:
-            if rows_count == 1:
-                return 0
-            border = list("TB")
-            if i == 0 and "T" in border:
-                border.remove("T")
-            elif is_bottom_row:
-                border.remove("B")
-        if self._borders_layout == TableBordersLayout.SINGLE_TOP_LINE:
-            if rows_count == 1:
-                return 0
-            return "B" if i < self._num_heading_rows else 0
-        return "".join(border)
-
     def _render_table_row(self, i, row_layout_info, cell_x_positions, **kwargs):
         row = self.rows[i]
         y = self._fpdf.y  # remember current y position, reset after each cell
@@ -435,14 +377,26 @@ class Table:
             )  # already includes gutter for cells spanning multiple columns
             y2 = y1 + cell_height
 
-            draw_box_borders(
-                self._fpdf,
-                x1,
-                y1,
-                x2,
-                y2,
-                border=self.get_cell_border(i, j, cell),
-                fill_color=style.fill_color if style else None,
+            cell_idx = row.cells.index(cell)
+            (
+                self._borders_layout.cell_style_getter(
+                    row_idx=i,
+                    col_idx=sum(1 for cell in row.cells[:cell_idx] if cell is not None),
+                    col_pos=j,
+                    num_heading_rows=self._num_heading_rows,
+                    num_rows=len(self.rows),
+                    num_col_idx=sum(1 for cell in row.cells if cell is not None),
+                    num_col_pos=row.cols_count,
+                )
+                .override_cell_border(cell.border)
+                .draw_cell_border(
+                    self._fpdf,
+                    x1,
+                    y1,
+                    x2,
+                    y2,
+                    fill_color=style.fill_color if style else None,
+                )
             )
 
             # draw outer box if needed:
@@ -473,7 +427,6 @@ class Table:
 
                 self._fpdf.set_line_width(_remember_linewidth)
 
-        # render image:
         if cell.img:
             x, y = self._fpdf.x, self._fpdf.y
 
@@ -922,7 +875,6 @@ def draw_box_borders(pdf, x1, y1, x2, y2, border, fill_color=None):
     compatible with get_border(i,k)
 
     See Also: rect()"""
-
     if fill_color:
         prev_fill_color = pdf.fill_color
         pdf.set_fill_color(fill_color)
