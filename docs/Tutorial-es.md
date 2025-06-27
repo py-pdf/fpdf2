@@ -231,3 +231,53 @@ Para crear un enlace externo usando una imagen, usamos
 Como alternativa, otra opción para cambiar el estilo de fuente y agregar enlaces es
  usar el método `write_html()`. Este es un analizador de html que permite agregar texto,
  cambiar el estilo de fuente y agregar enlaces usando html.
+
+## Tutorial 7 - Creando documentos PDF/A ##
+
+_Nuevo en [:octicons-tag-24: 2.8.3](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
+
+### Estándares PDF/A ###
+
+<b>PDF/A-1</b> usa PDF versión 1.4. Todos los recursos (imágenes, gráficos, fuentes) deben ser incrustados en el documento. El manejo del color debe ser preciso y especificado de forma independiente de la plataforma con perfiles ICC y los metadatos del documento deben darse con metadatos XMP.
+
+<b>PDF/A-2</b> usa PDF versión 1.7. Permite compresión con JPEG2000, elementos transparentes, fuentes open type y firmas digitales.
+
+La única adición en <b>PDF/A-3</b> es la posibilidad de incrustar cualquier archivo posible.
+
+### Clases de Conformidad ###
+
+El nivel A (accesible) incluye todos los requerimientos del estándar, incluidos el mapeo de la estructura de contenido y el orden correcto de lectura del contenido del documento. El contenido de texto debe ser extraíble, y la estructura debe reflejar la secuencia de lectura natural.
+
+El nivel B (básico) garantiza una reproducibilidad visual clara del contenido. El nivel B es generalmente más fácil de generar que el nivel A, pero no asegura en un ciento por ciento la extracción del texto o la buscabilidad. El reúso sin complicaciones del contenido no está necesariamente garantizado.
+
+Para lograr esto, aquí hay un pequeño ejemplo:
+
+```python
+{% include "../tutorial/tuto7.py" %}
+```
+
+[PDF resultante: tuto7.pdf](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto7.pdf)
+
+Primero, agregamos las fuentes incrustadas necesarias usando el método
+[add_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_font)
+para cada estilo.
+
+Luego, agregamos el objeto con el perfil ICC al vector de intenciones de salida usando el método
+[add_output_intent()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_output_intent).
+
+Tras agregar algunas páginas, utilizando las fuentes incrustadas y escribiendo algo de texto,
+creamos el pdf llamando `create_pdf_with_metadata()`,
+que usa [pikepdf](https://pypi.org/project/pikepdf/)
+para crear los metadatos necesarios y establecer el tipo a PDF/A-3B.
+
+Para mayor información acerca de los metadatos de un PDF, revisa la página de documentación: [Metadata](Metadata.md).
+
+Nota que, en lugar de usar una función, podrías también crear una subclase de `FPDF.output()` para asegurarte de que todos tus documentos son compatibles con PDF-A, como se hizo en [test/pdf-a/test_pdf_a.py](https://github.com/py-pdf/fpdf2/blob/master/test/pdf-a/test_pdf_a.py).
+
+Herramientas como [VeraPDF](https://verapdf.org/) pueden verificar la conformidad de los documentos PDF producidos:
+
+    verapdf --format text -v tutorial/tuto7.pdf
+
+Produce:
+
+    PASS fpdf2/tutorial/tuto7.pdf 3b
