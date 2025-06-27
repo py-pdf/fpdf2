@@ -55,7 +55,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L559-L562" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L559-L562" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def int32(n: int) -&gt; int:
     &#34;&#34;&#34;convert long to signed 32 bit integer&#34;&#34;&#34;
@@ -71,7 +71,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L553-L556" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L553-L556" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def md5(data: Union[bytes, bytearray]) -&gt; bytes:
     h = hashlib.new(&#34;md5&#34;, usedforsecurity=False)
@@ -92,7 +92,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L38-L76" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L38-L76" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ARC4:
     &#34;&#34;&#34;
@@ -157,7 +157,7 @@ encryption functions without additional dependencies</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L52-L59" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L52-L59" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def KSA(self, key: bytes) -&gt; list:
     key_length = len(key)
@@ -177,7 +177,7 @@ encryption functions without additional dependencies</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L61-L69" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L61-L69" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def PRGA(self, S: list) -&gt; Iterable[int]:
     i = 0
@@ -198,7 +198,7 @@ encryption functions without additional dependencies</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L71-L76" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L71-L76" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def encrypt(self, key: bytes, text: Union[bytes, bytearray]) -&gt; list:
     keystream = self.PRGA(self.KSA(key))
@@ -219,7 +219,7 @@ encryption functions without additional dependencies</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L79-L90" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L79-L90" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CryptFilter:
     &#34;&#34;&#34;Represents one crypt filter, listed under CF inside the encryption dictionary&#34;&#34;&#34;
@@ -244,7 +244,7 @@ encryption functions without additional dependencies</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L88-L90" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L88-L90" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self) -&gt; str:
     obj_dict = build_obj_dict({key: getattr(self, key) for key in dir(self)})
@@ -262,7 +262,7 @@ encryption functions without additional dependencies</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L93-L122" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L93-L122" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class EncryptionDictionary(PDFObject):
     &#34;&#34;&#34;
@@ -334,7 +334,7 @@ The PDF trailer must reference this object (/Encrypt)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L125-L550" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L125-L550" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class StandardSecurityHandler:
     &#34;&#34;&#34;
@@ -813,7 +813,7 @@ first 127 bytes if the string is longer than 127 bytes</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L210-L219" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L210-L219" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def encrypt(
     self, text: Union[str, bytearray, bytes], obj_id: int
@@ -835,7 +835,7 @@ first 127 bytes if the string is longer than 127 bytes</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L264-L278" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L264-L278" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def encrypt_AES_cryptography(self, key: bytes, data: bytes) -&gt; bytes:
     &#34;&#34;&#34;Encrypts an array of bytes using AES algorithms (AES 128 or AES 256)&#34;&#34;&#34;
@@ -862,7 +862,7 @@ first 127 bytes if the string is longer than 127 bytes</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L242-L262" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L242-L262" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def encrypt_bytes(self, data: bytes, obj_id: int):
     &#34;&#34;&#34;
@@ -897,7 +897,7 @@ Generation ID is fixed as 0. Will need to revisit if the application start chang
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L231-L234" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L231-L234" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def encrypt_stream(self, stream: bytes, obj_id: int) -&gt; bytes:
     if self.encryption_method == EncryptionMethod.NO_ENCRYPTION:
@@ -913,7 +913,7 @@ Generation ID is fixed as 0. Will need to revisit if the application start chang
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L221-L229" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L221-L229" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def encrypt_string(self, string: str, obj_id: int) -&gt; str:
     if self.encryption_method == EncryptionMethod.NO_ENCRYPTION:
@@ -934,7 +934,7 @@ Generation ID is fixed as 0. Will need to revisit if the application start chang
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L531-L550" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L531-L550" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def generate_encryption_key(self) -&gt; bytes:
     &#34;&#34;&#34;
@@ -967,7 +967,7 @@ Algorithm 2: Computing an encryption key</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L382-L397" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L382-L397" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def generate_owner_password(self) -&gt; str:
     &#34;&#34;&#34;
@@ -996,7 +996,7 @@ The security handler is only using revision 3 or 4, so the legacy r2 version is 
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L479-L510" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L479-L510" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def generate_owner_password_rev6(self) -&gt; None:
     &#34;&#34;&#34;
@@ -1042,7 +1042,7 @@ Algorithm 9 - Section 7.6.4.4.8 of the ISO 32000-2:2020</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L192-L204" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L192-L204" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def generate_passwords(self, file_id: str) -&gt; None:
     &#34;&#34;&#34;File_id is the first hash of the PDF file id&#34;&#34;&#34;
@@ -1067,7 +1067,7 @@ Algorithm 9 - Section 7.6.4.4.8 of the ISO 32000-2:2020</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L512-L529" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L512-L529" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def generate_perms_rev6(self) -&gt; None:
     &#34;&#34;&#34;
@@ -1098,7 +1098,7 @@ Algorithm 9 - Section 7.6.4.4.8 of the ISO 32000-2:2020</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L399-L417" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L399-L417" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def generate_user_password(self) -&gt; str:
     &#34;&#34;&#34;
@@ -1130,7 +1130,7 @@ The security handler is only using revision 3 or 4, so the legacy r2 version is 
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L455-L477" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L455-L477" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def generate_user_password_rev6(self) -&gt; None:
     &#34;&#34;&#34;
@@ -1167,7 +1167,7 @@ Algorithm 8 - Section 7.6.4.4.7 of the ISO 32000-2:2020</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L206-L208" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L206-L208" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_encryption_obj(self) -&gt; EncryptionDictionary:
     &#34;&#34;&#34;Return an encryption dictionary&#34;&#34;&#34;
@@ -1182,7 +1182,7 @@ Algorithm 8 - Section 7.6.4.4.7 of the ISO 32000-2:2020</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L236-L240" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L236-L240" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def is_aes_algorithm(self) -&gt; bool:
     return self.encryption_method in (
@@ -1199,7 +1199,7 @@ Algorithm 8 - Section 7.6.4.4.7 of the ISO 32000-2:2020</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/fb1f21079a457c6053abdc349d1fc72123ecfebb/fpdf/encryption.py#L371-L380" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/ca728f7cc6afd7ab35a7da6b6fcdd7a022c2ca92/fpdf/encryption.py#L371-L380" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def padded_password(self, password: str) -&gt; bytearray:
     &#34;&#34;&#34;
