@@ -610,6 +610,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             margin (float): margin in the unit specified to FPDF constructor
         """
         self.b_margin = margin
+        self.page_break_trigger = self.h - self.b_margin
 
     def set_auto_page_break(self, auto, margin=0):
         """
