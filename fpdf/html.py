@@ -9,6 +9,7 @@ in non-backward-compatible ways.
 from html.parser import HTMLParser
 from string import ascii_lowercase, ascii_uppercase
 import logging, re, warnings
+from typing import Optional, Union
 
 from .deprecation import get_stack_level
 from .drawing import color_from_hex_string, convert_to_device_color
@@ -40,7 +41,7 @@ DEFAULT_TAG_STYLES = {
     "u": FontFace(emphasis="UNDERLINE"),
     # Block tags are TextStyle instances :
     "blockquote": TextStyle(color="#64002d", t_margin=3, b_margin=3),
-    "center": TextStyle(t_margin=4 + 7 / 30),
+    "center": TextStyle(t_margin=4 + 7 / 30, l_margin=Align.C),
     "dd": TextStyle(l_margin=10),
     "dt": TextStyle(font_style="B", t_margin=4 + 7 / 30),
     "title": TextStyle(  # Only rendered if render_title_tag=True
@@ -377,23 +378,25 @@ class HTML2FPDF(HTMLParser):
             style=self.font_emphasis.style,
         )
         self.style_stack = []  # list of FontFace
-        self.h = pdf.font_size_pt / pdf.k
         self._page_break_after_paragraph = False
-        self._pre_formatted = False  # preserve whitespace while True.
-        # nothing written yet to <pre>, remove one initial nl:
-        self._pre_started = False
         self.follows_trailing_space = False  # The last write has ended with a space.
         self.follows_heading = False  # We don't want extra space below a heading.
-        self.href = ""
-        self.align = ""
-        self.indent = 0
-        self.line_height_stack = []
-        self.ol_type = {}  # when inside a <ol> tag, can be "a", "A", "i", "I" or "1"
-        self.bullet = []
+        self.align: Optional[Union[float, Align]] = None
         self.heading_level = None
         self._tags_stack = []
         self._column = self.pdf.text_columns(skip_leading_spaces=True)
         self._paragraph = self._column.paragraph()
+        # <pre>-related properties:
+        self._pre_formatted = False  # preserve whitespace while True.
+        # nothing written yet to <pre>, remove one initial nl:
+        self._pre_started = False
+        # <a>-related properties:
+        self.href = ""
+        # <ul>/<ol>-related properties:
+        self.indent = 0
+        self.line_height_stack = []
+        self.ol_type = {}  # when inside a <ol> tag, can be "a", "A", "i", "I" or "1"
+        self.bullet = []
         # <title>-related properties:
         self.render_title_tag = render_title_tag
         self._in_title = False
@@ -505,7 +508,7 @@ class HTML2FPDF(HTMLParser):
 
     def _new_paragraph(
         self,
-        align=None,
+        align: Optional[Union[float, Align]] = None,
         line_height=1.0,
         top_margin=0,
         bottom_margin=0,
@@ -515,7 +518,7 @@ class HTML2FPDF(HTMLParser):
         # Note that currently top_margin is ignored if bullet is also provided,
         # due to the behaviour of TextRegion._render_column_lines()
         self._end_paragraph()
-        self.align = align or ""
+        self.align = align
         if isinstance(indent, Align):
             # Explicit alignment takes priority over alignment provided as TextStyle.l_margin:
             if not self.align:
@@ -536,7 +539,7 @@ class HTML2FPDF(HTMLParser):
         self.follows_heading = False
 
     def _end_paragraph(self):
-        self.align = ""
+        self.align = None
         if not self._paragraph:
             return
         self._column.end_paragraph()
@@ -837,7 +840,6 @@ class HTML2FPDF(HTMLParser):
                     # cf. https://github.com/py-pdf/fpdf2/pull/1217#discussion_r1666643777
                     self.follows_heading = True
                 self._new_paragraph(
-                    align="C" if tag == "center" else None,
                     line_height=(
                         self.line_height_stack[-1] if self.line_height_stack else None
                     ),
@@ -1030,8 +1032,8 @@ class HTML2FPDF(HTMLParser):
                 self.td_th["inserted"] = True
                 return
             x = self.pdf.get_x()
-            if self.align and self.align[0].upper() == "C":
-                x = Align.C
+            if self.align:
+                x = self.align
             self.pdf.image(
                 self.image_map(attrs["src"]), x=x, w=width, h=height, link=self.href
             )
@@ -1084,7 +1086,7 @@ class HTML2FPDF(HTMLParser):
                 self.font_emphasis = font_face.emphasis
                 self.font_color = font_face.color
             self._end_paragraph()
-            self.align = ""
+            self.align = None
         if tag in HEADING_TAGS:
             self.heading_level = None
             if self.style_stack:
@@ -1130,7 +1132,7 @@ class HTML2FPDF(HTMLParser):
         if tag == "table":
             self.table.render()
             self.table = None
-            self._ln(self.h)
+            self._ln()
         if tag == "tr":
             self.tr = None
             self.table_row = None
