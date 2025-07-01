@@ -688,26 +688,27 @@ class TableBordersLayout(abc.ABC):
         num_rows,
         num_col_idx,
         num_col_pos,
-    ) -> TableCellStyle: ...
+    ) -> TableCellStyle:
+        """Specify the desired TableCellStyle for the given position in the table
 
-    # Specify the desired TableCellStyle for the given position in the table
-    #
-    # Args:
-    #     row_idx: the 0-based index of the row in the table
-    #     col_idx: the 0-based logical index of the cell in the row. If colspan > 1, this indexes
-    #         into non-null cells. e.g. if there are two cells with colspan = 3, then col_idx will
-    #         be 0 or 1
-    #     col_pos: the 0-based physical position of the cell in the row. If colspan > 1, this
-    #         indexes into all cells including null ones. e.g. e.g. if there are two cells with
-    #         colspan = 3, then col_pos will be 0 or 3
-    #     num_heading_rows: the number of rows in the table heading
-    #     num_rows: the total number of rows in the table
-    #     num_col_idx: the number of non-null cells. e.g. if there are two cells with colspan = 3,
-    #         then num_col_idx = 2
-    #     num_col_pos: the full width of the table in physical cells. e.g. if there are two cells
-    #         with colspan = 3, then num_col_pos = 6
-    # Returns:
-    #     TableCellStyle for the given position in the table
+        Args:
+            row_idx: the 0-based index of the row in the table
+            col_idx: the 0-based logical index of the cell in the row. If colspan > 1, this indexes
+                into non-null cells. e.g. if there are two cells with colspan = 3, then col_idx will
+                be 0 or 1
+            col_pos: the 0-based physical position of the cell in the row. If colspan > 1, this
+                indexes into all cells including null ones. e.g. e.g. if there are two cells with
+                colspan = 3, then col_pos will be 0 or 3
+            num_heading_rows: the number of rows in the table heading
+            num_rows: the total number of rows in the table
+            num_col_idx: the number of non-null cells. e.g. if there are two cells with colspan = 3,
+                then num_col_idx = 2
+            num_col_pos: the full width of the table in physical cells. e.g. if there are two cells
+                with colspan = 3, then num_col_pos = 6
+        Returns:
+            TableCellStyle for the given position in the table
+        """
+        raise NotImplementedError
 
     @classmethod
     def coerce(cls, value):
