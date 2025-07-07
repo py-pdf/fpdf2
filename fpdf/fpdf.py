@@ -1854,14 +1854,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         It can be drawn (border only), filled (with no border) or both.
 
         Args:
-            a (float): Semi-major axis diameter.
-            b (float): Semi-minor axis diameter, if None, equals to a (default: None).
+            x (float): Abscissa of upper-left corner of the bounding box of the full ellipse.
+            y (float): Ordinate of upper-left corner of the bounding box of the full ellipse.
+            a (float): Major axis diameter (width of bounding box).
+            b (float): Minor axis diameter (height of bounding box), if None, equals to a (default: None).
             start_angle (float): Start angle of the arc (in degrees).
             end_angle (float): End angle of the arc (in degrees).
             inclination (float): Inclination of the arc in respect of the x-axis (default: 0).
             clockwise (bool): Way of drawing the arc (True: clockwise, False: counterclockwise) (default: False).
-            start_from_center (bool): Start drawing from the center of the circle (default: False).
-            end_at_center (bool): End drawing at the center of the circle (default: False).
+            start_from_center (bool): Start drawing from the center of the ellipse (default: False).
+            end_at_center (bool): End drawing at the center of the ellipse (default: False).
             style (fpdf.enums.RenderStyle, str): Optional style of rendering. Allowed values are:
 
             * `D` or None: draw border. This is the default value.
