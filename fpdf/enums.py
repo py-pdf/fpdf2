@@ -1,7 +1,10 @@
-from enum import Enum, IntEnum, Flag, IntFlag
+import abc
+from dataclasses import dataclass
+from enum import Enum, Flag, IntEnum, IntFlag
 from sys import intern
+from typing import Optional, Tuple, Union
 
-from .syntax import Name
+from .syntax import Name, wrap_in_local_context
 
 
 class SignatureFlag(IntEnum):
@@ -296,31 +299,6 @@ class MethodReturnValue(CoerciveIntFlag):
     "The method will return how much vertical space was used"
 
 
-class TableBordersLayout(CoerciveEnum):
-    "Defines how to render table borders"
-
-    ALL = intern("ALL")
-    "Draw all table cells borders"
-
-    NONE = intern("NONE")
-    "Draw zero cells border"
-
-    INTERNAL = intern("INTERNAL")
-    "Draw only internal horizontal & vertical borders"
-
-    MINIMAL = intern("MINIMAL")
-    "Draw only the top horizontal border, below the headings, and internal vertical borders"
-
-    HORIZONTAL_LINES = intern("HORIZONTAL_LINES")
-    "Draw only horizontal lines"
-
-    NO_HORIZONTAL_LINES = intern("NO_HORIZONTAL_LINES")
-    "Draw all cells border except horizontal lines, after the headings"
-
-    SINGLE_TOP_LINE = intern("SINGLE_TOP_LINE")
-    "Draw only the top horizontal border, below the headings"
-
-
 class CellBordersLayout(CoerciveIntFlag):
     """Defines how to render cell borders in table
 
@@ -387,6 +365,548 @@ class CellBordersLayout(CoerciveIntFlag):
         if self & CellBordersLayout.BOTTOM:
             border_str.append("B")
         return "".join(border_str) if border_str else "NONE"
+
+
+@dataclass
+class TableBorderStyle:
+    """A helper class for drawing one border of a table
+
+    Attributes:
+        thickness: The thickness of the border. If None use default. If <= 0 don't draw the border.
+        color: The color of the border. If None use default.
+    """
+
+    thickness: Optional[float] = None
+    color: Union[int, Tuple[int, int, int]] = None
+    dash: Optional[float] = None
+    gap: float = 0.0
+    phase: float = 0.0
+
+    @staticmethod
+    def from_bool(should_draw):
+        """
+        From boolean or TableBorderStyle input, convert to definite TableBorderStyle class object
+        """
+        if isinstance(should_draw, TableBorderStyle):
+            return should_draw  # don't change specified TableBorderStyle
+        if should_draw:
+            return TableBorderStyle()  # keep default stroke
+        return TableBorderStyle(thickness=0.0)  # don't draw the border
+
+    def _changes_thickness(self, pdf):
+        """Return True if this style changes the thickness of the draw command, False otherwise"""
+        return (
+            self.thickness is not None
+            and self.thickness > 0.0
+            and self.thickness != pdf.line_width
+        )
+
+    def _changes_color(self, pdf):
+        """Return True if this style changes the color of the draw command, False otherwise"""
+        return self.color is not None and self.color != pdf.draw_color
+
+    @property
+    def dash_dict(self):
+        """Return dict object specifying dash in the same format as the pdf object"""
+        return {"dash": self.dash, "gap": self.gap, "phase": self.phase}
+
+    def _changes_dash(self, pdf):
+        """Return True if this style changes the dash of the draw command, False otherwise"""
+        return self.dash is not None and self.dash_dict != pdf.dash_pattern
+
+    def changes_stroke(self, pdf):
+        """Return True if this style changes the any aspect of the draw command, False otherwise"""
+        return self.should_render() and (
+            self._changes_color(pdf)
+            or self._changes_thickness(pdf)
+            or self._changes_dash(pdf)
+        )
+
+    def should_render(self):
+        """Return True if this style produces a visible stroke, False otherwise"""
+        return self.thickness is None or self.thickness > 0.0
+
+    def _get_change_thickness_command(self, scale, pdf=None):
+        """Return list with string for the draw command to change thickness (empty if no change)"""
+        thickness = self.thickness if pdf is None else pdf.line_width
+        return [] if thickness is None else [f"{thickness * scale:.2f} w"]
+
+    def _get_change_line_color_command(self, pdf=None):
+        """Return list with string for the draw command to change color (empty if no change)"""
+        # pylint: disable=import-outside-toplevel,cyclic-import
+        from .drawing import convert_to_device_color
+
+        if pdf is None:
+            color = self.color
+        else:
+            color = pdf.draw_color
+        return (
+            []
+            if color is None
+            else [convert_to_device_color(color).serialize().upper()]
+        )
+
+    def _get_change_dash_command(self, scale, pdf=None):
+        """Return list with string for the draw command to change dash (empty if no change)"""
+        dash_dict = self.dash_dict if pdf is None else pdf.dash_pattern
+        dash, gap, phase = dash_dict["dash"], dash_dict["gap"], dash_dict["phase"]
+        if dash is None:
+            return []
+        if dash <= 0:
+            return ["[] 0 d"]
+        if gap <= 0:
+            return [f"[{dash * scale:.3f}] {phase * scale:.3f} d"]
+        return [f"[{dash * scale:.3f} {gap * scale:.3f}] {phase * scale:.3f} d"]
+
+    def get_change_stroke_commands(self, scale):
+        """Return list of strings for the draw command to change stroke (empty if no change)"""
+        return (
+            self._get_change_dash_command(scale)
+            + self._get_change_line_color_command()
+            + self._get_change_thickness_command(scale)
+        )
+
+    @staticmethod
+    def get_line_command(x1, y1, x2, y2):
+        """Return list with string for the command to draw a line at the specified endpoints"""
+        return [f"{x1:.2f} {y1:.2f} m {x2:.2f} {y2:.2f} l S"]
+
+    def get_draw_commands(self, pdf, x1, y1, x2, y2):
+        """
+        Get draw commands for this section of a cell border. x and y are presumed to be already
+        shifted and scaled.
+        """
+        if not self.should_render():
+            return []
+
+        if self.changes_stroke(pdf):
+            draw_commands = self.get_change_stroke_commands(
+                scale=pdf.k
+            ) + self.get_line_command(x1, y1, x2, y2)
+            # wrap in local context to prevent stroke changes from affecting later rendering
+            return wrap_in_local_context(draw_commands)
+        return self.get_line_command(x1, y1, x2, y2)
+
+
+@dataclass
+class TableCellStyle:
+    """A helper class for drawing all the borders of one cell in a table
+
+    Attributes:
+        left: bool or TableBorderStyle specifying the style of the cell's left border
+        bottom: bool or TableBorderStyle specifying the style of the cell's bottom border
+        right: bool or TableBorderStyle specifying the style of the cell's right border
+        top: bool or TableBorderStyle specifying the style of the cell's top border
+    """
+
+    left: Union[bool, TableBorderStyle] = False
+    bottom: Union[bool, TableBorderStyle] = False
+    right: Union[bool, TableBorderStyle] = False
+    top: Union[bool, TableBorderStyle] = False
+
+    def _get_common_border_style(self):
+        """Return bool or TableBorderStyle if all borders have the same style, otherwise None"""
+        if all(
+            isinstance(border, bool)
+            for border in [self.left, self.bottom, self.right, self.top]
+        ):
+            if all(border for border in [self.left, self.bottom, self.right, self.top]):
+                return True
+            if all(
+                not border for border in [self.left, self.bottom, self.right, self.top]
+            ):
+                return False
+        elif all(
+            isinstance(border, TableBorderStyle)
+            for border in [self.left, self.bottom, self.right, self.top]
+        ):
+            common = self.left
+            if all(border == common for border in [self.bottom, self.right, self.top]):
+                return common
+        return None
+
+    @staticmethod
+    def get_change_fill_color_command(color):
+        """Return list with string for command to change device color (empty list if no color)"""
+        # pylint: disable=import-outside-toplevel,cyclic-import
+        from .drawing import convert_to_device_color
+
+        return (
+            []
+            if color is None
+            else [convert_to_device_color(color).serialize().lower()]
+        )
+
+    def get_draw_commands(self, pdf, x1, y1, x2, y2, fill_color=None):
+        """
+        Get list of primitive commands to draw the cell border for this cell, and fill it with the
+        given fill color.
+        """
+        # y top to bottom instead of bottom to top
+        y1 = pdf.h - y1
+        y2 = pdf.h - y2
+        # scale coordinates and thickness
+        scale = pdf.k
+        x1 *= scale
+        y1 *= scale
+        x2 *= scale
+        y2 *= scale
+
+        common_border_style = self._get_common_border_style()
+        draw_commands, needs_wrap = (
+            self._draw_when_no_common_style(x1, y1, x2, y2, pdf, fill_color)
+            if common_border_style is None
+            else (
+                self._draw_with_no_border(x1, y1, x2, y2, pdf, fill_color)
+                if common_border_style is False
+                else self._draw_all_borders_the_same(
+                    x1, y1, x2, y2, pdf, fill_color, scale, common_border_style
+                )
+            )
+        )
+
+        if needs_wrap:
+            draw_commands = wrap_in_local_context(draw_commands)
+
+        return draw_commands
+
+    def _draw_when_no_common_style(self, x1, y1, x2, y2, pdf, fill_color):
+        """Get draw commands for case when some of the borders have different styles"""
+        needs_wrap = False
+        draw_commands = []
+        if fill_color is not None:
+            # draw fill with no box
+            if fill_color != pdf.fill_color:
+                needs_wrap = True
+                draw_commands.extend(self.get_change_fill_color_command(fill_color))
+            draw_commands.append(f"{x1:.2f} {y2:.2f} {x2 - x1:.2f} {y1 - y2:.2f} re f")
+        # draw the individual borders
+        draw_commands.extend(
+            TableBorderStyle.from_bool(self.left).get_draw_commands(pdf, x1, y2, x1, y1)
+            + TableBorderStyle.from_bool(self.bottom).get_draw_commands(
+                pdf, x1, y2, x2, y2
+            )
+            + TableBorderStyle.from_bool(self.right).get_draw_commands(
+                pdf, x2, y2, x2, y1
+            )
+            + TableBorderStyle.from_bool(self.top).get_draw_commands(
+                pdf, x1, y1, x2, y1
+            )
+        )
+        return draw_commands, needs_wrap
+
+    def _draw_with_no_border(self, x1, y1, x2, y2, pdf, fill_color):
+        """Get draw commands for case when all of the borders are off / not drawn"""
+        needs_wrap = False
+        draw_commands = []
+        if fill_color is not None:
+            # draw fill with no box
+            if fill_color != pdf.fill_color:
+                needs_wrap = True
+                draw_commands.extend(self.get_change_fill_color_command(fill_color))
+            draw_commands.append(f"{x1:.2f} {y2:.2f} {x2 - x1:.2f} {y1 - y2:.2f} re f")
+        return draw_commands, needs_wrap
+
+    def _draw_all_borders_the_same(
+        self, x1, y1, x2, y2, pdf, fill_color, scale, common_border_style
+    ):
+        """Get draw commands for case when all the borders have the same style"""
+        needs_wrap = False
+        draw_commands = []
+        # all borders are the same
+        if isinstance(
+            common_border_style, TableBorderStyle
+        ) and common_border_style.changes_stroke(pdf):
+            # the border styles aren't default, so
+            draw_commands.extend(common_border_style.get_change_stroke_commands(scale))
+            needs_wrap = True
+        if fill_color is not None:
+            # draw filled rectangle
+            if fill_color != pdf.fill_color:
+                needs_wrap = True
+                draw_commands.extend(self.get_change_fill_color_command(fill_color))
+            draw_commands.append(f"{x1:.2f} {y2:.2f} {x2 - x1:.2f} {y1 - y2:.2f} re B")
+        else:
+            # draw empty rectangle
+            draw_commands.append(f"{x1:.2f} {y2:.2f} {x2 - x1:.2f} {y1 - y2:.2f} re S")
+        return draw_commands, needs_wrap
+
+    def override_cell_border(self, cell_border: CellBordersLayout):
+        """Allow override by CellBordersLayout mechanism"""
+        return (
+            self
+            if cell_border == CellBordersLayout.INHERIT
+            else TableCellStyle(  # translate cell_border into equivalent TableCellStyle
+                left=bool(cell_border & CellBordersLayout.LEFT),
+                bottom=bool(cell_border & CellBordersLayout.BOTTOM),
+                right=bool(cell_border & CellBordersLayout.RIGHT),
+                top=bool(cell_border & CellBordersLayout.TOP),
+            )
+        )
+
+    def draw_cell_border(self, pdf, x1, y1, x2, y2, fill_color=None):
+        """
+        Draw the cell border for this cell, and fill it with the given fill color.
+        """
+        pdf._out(  # pylint: disable=protected-access
+            " ".join(self.get_draw_commands(pdf, x1, y1, x2, y2, fill_color=fill_color))
+        )
+
+
+class TableBordersLayout(abc.ABC):
+    """
+    Customizable class for setting the drawing style of cell borders for the whole table.
+    cell_style_getter is an abstract method that derived classes must implement. All current classes
+    do not use self, but it is available in case a very complicated derived class needs to refer to
+    stored internal data.
+
+    Standard TableBordersLayouts are available as static members of this class
+
+    Attributes:
+        cell_style_getter: a callable that takes row_num, column_num,
+            num_heading_rows, num_rows, num_columns; and returns the drawing style of
+            the cell border (as a TableCellStyle object)
+        ALL: static TableBordersLayout that draws all table cells borders
+        NONE: static TableBordersLayout that draws no table cells borders
+        INTERNAL: static TableBordersLayout that draws only internal horizontal & vertical borders
+        MINIMAL: static TableBordersLayout that draws only the top horizontal border, below the
+            headings, and internal vertical borders
+        HORIZONTAL_LINES: static TableBordersLayout that draws only horizontal lines
+        NO_HORIZONTAL_LINES: static TableBordersLayout that draws all cells border except interior
+            horizontal lines after the headings
+        SINGLE_TOP_LINE: static TableBordersLayout that draws only the top horizontal border, below
+            the headings
+    """
+
+    @abc.abstractmethod
+    def cell_style_getter(
+        self,
+        row_idx,
+        col_idx,
+        col_pos,
+        num_heading_rows,
+        num_rows,
+        num_col_idx,
+        num_col_pos,
+    ) -> TableCellStyle:
+        """Specify the desired TableCellStyle for the given position in the table
+
+        Args:
+            row_idx: the 0-based index of the row in the table
+            col_idx: the 0-based logical index of the cell in the row. If colspan > 1, this indexes
+                into non-null cells. e.g. if there are two cells with colspan = 3, then col_idx will
+                be 0 or 1
+            col_pos: the 0-based physical position of the cell in the row. If colspan > 1, this
+                indexes into all cells including null ones. e.g. e.g. if there are two cells with
+                colspan = 3, then col_pos will be 0 or 3
+            num_heading_rows: the number of rows in the table heading
+            num_rows: the total number of rows in the table
+            num_col_idx: the number of non-null cells. e.g. if there are two cells with colspan = 3,
+                then num_col_idx = 2
+            num_col_pos: the full width of the table in physical cells. e.g. if there are two cells
+                with colspan = 3, then num_col_pos = 6
+        Returns:
+            TableCellStyle for the given position in the table
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def coerce(cls, value):
+        """
+        Attempt to coerce `value` into a member of this class.
+
+        If value is already a member of this enumeration it is returned unchanged.
+        Otherwise, if it is a string, attempt to convert it as an enumeration value. If
+        that fails, attempt to convert it (case insensitively, by upcasing) as an
+        enumeration name.
+
+        If all different conversion attempts fail, an exception is raised.
+
+        Args:
+            value (Enum, str): the value to be coerced.
+
+        Raises:
+            ValueError: if `value` is a string but neither a member by name nor value.
+            TypeError: if `value`'s type is neither a member of the enumeration nor a
+                string.
+        """
+
+        if isinstance(value, cls):
+            return value
+
+        if isinstance(value, str):
+            try:
+                coerced_value = getattr(cls, value.upper())
+                if isinstance(coerced_value, cls):
+                    return coerced_value
+            except ValueError:
+                pass
+
+        raise ValueError(f"{value} is not a valid {cls.__name__}")
+
+
+class TableBordersLayoutAll(TableBordersLayout):
+    """Class for drawing all cell borders"""
+
+    def cell_style_getter(
+        self,
+        row_idx,
+        col_idx,
+        col_pos,
+        num_heading_rows,
+        num_rows,
+        num_col_idx,
+        num_col_pos,
+    ):
+        return TableCellStyle(left=True, bottom=True, right=True, top=True)
+
+
+# add as static member of base TableBordersLayout class
+TableBordersLayout.ALL = TableBordersLayoutAll()
+
+
+class TableBordersLayoutNone(TableBordersLayout):
+    """Class for drawing zero cell borders"""
+
+    def cell_style_getter(
+        self,
+        row_idx,
+        col_idx,
+        col_pos,
+        num_heading_rows,
+        num_rows,
+        num_col_idx,
+        num_col_pos,
+    ):
+        return TableCellStyle(left=False, bottom=False, right=False, top=False)
+
+
+# add as static member of base TableBordersLayout class
+TableBordersLayout.NONE = TableBordersLayoutNone()
+
+
+class TableBordersLayoutInternal(TableBordersLayout):
+    """Class to draw only internal horizontal & vertical borders"""
+
+    def cell_style_getter(
+        self,
+        row_idx,
+        col_idx,
+        col_pos,
+        num_heading_rows,
+        num_rows,
+        num_col_idx,
+        num_col_pos,
+    ):
+        return TableCellStyle(
+            left=col_idx > 0,
+            bottom=row_idx < num_rows - 1,
+            right=col_idx < num_col_idx - 1,
+            top=row_idx > 0,
+        )
+
+
+# add as static member of base TableBordersLayout class
+TableBordersLayout.INTERNAL = TableBordersLayoutInternal()
+
+
+class TableBordersLayoutMinimal(TableBordersLayout):
+    """
+    Class to draw only the top horizontal border, below the headings, and internal vertical borders
+    """
+
+    def cell_style_getter(
+        self,
+        row_idx,
+        col_idx,
+        col_pos,
+        num_heading_rows,
+        num_rows,
+        num_col_idx,
+        num_col_pos,
+    ):
+        return TableCellStyle(
+            left=col_idx > 0,
+            bottom=row_idx < num_heading_rows,
+            right=col_idx < num_col_idx - 1,
+            top=0 < row_idx <= num_heading_rows,
+        )
+
+
+# add as static member of base TableBordersLayout class
+TableBordersLayout.MINIMAL = TableBordersLayoutMinimal()
+
+
+class TableBordersLayoutHorizontalLines(TableBordersLayout):
+    """Class to draw only horizontal lines"""
+
+    def cell_style_getter(
+        self,
+        row_idx,
+        col_idx,
+        col_pos,
+        num_heading_rows,
+        num_rows,
+        num_col_idx,
+        num_col_pos,
+    ):
+        return TableCellStyle(
+            left=False,
+            bottom=row_idx < num_rows - 1,
+            right=False,
+            top=row_idx > 0,
+        )
+
+
+# add as static member of base TableBordersLayout class
+TableBordersLayout.HORIZONTAL_LINES = TableBordersLayoutHorizontalLines()
+
+
+class TableBordersLayoutNoHorizontalLines(TableBordersLayout):
+    """Class to draw all cells border except interior horizontal lines after the headings"""
+
+    def cell_style_getter(
+        self,
+        row_idx,
+        col_idx,
+        col_pos,
+        num_heading_rows,
+        num_rows,
+        num_col_idx,
+        num_col_pos,
+    ):
+        return TableCellStyle(
+            left=True,
+            bottom=row_idx == num_rows - 1,
+            right=True,
+            top=row_idx <= num_heading_rows,
+        )
+
+
+# add as static member of base TableBordersLayout class
+TableBordersLayout.NO_HORIZONTAL_LINES = TableBordersLayoutNoHorizontalLines()
+
+
+class TableBordersLayoutSingleTopLine(TableBordersLayout):
+    """Class to draw a single top line"""
+
+    def cell_style_getter(
+        self,
+        row_idx,
+        col_idx,
+        col_pos,
+        num_heading_rows,
+        num_rows,
+        num_col_idx,
+        num_col_pos,
+    ):
+        return TableCellStyle(
+            left=False, bottom=row_idx <= num_heading_rows - 1, right=False, top=False
+        )
+
+
+# add as static member of base TableBordersLayout class
+TableBordersLayout.SINGLE_TOP_LINE = TableBordersLayoutSingleTopLine()
 
 
 class TableCellFillMode(CoerciveEnum):
