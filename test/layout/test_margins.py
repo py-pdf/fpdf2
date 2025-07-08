@@ -13,6 +13,7 @@ def test_set_no_margin(tmp_path):
     pdf.image(HERE / "../image/image_types/insert_images_insert_png.png", w=pdf.epw)
     assert_pdf_equal(pdf, HERE / "set_no_margin.pdf", tmp_path)
 
+
 def test_set_margins_individually(tmp_path):
     pdf = FPDF()
     pdf.add_page()
@@ -21,4 +22,4 @@ def test_set_margins_individually(tmp_path):
     pdf.set_right_margin(0)
     pdf.set_bottom_margin(0)
     pdf.image(HERE / "../image/image_types/insert_images_insert_png.png", w=pdf.epw)
-    assert_pdf_equal(pdf, HERE / "set_margins_individually.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "set_no_margin.pdf", tmp_path)
