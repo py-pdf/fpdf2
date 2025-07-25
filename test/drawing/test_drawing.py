@@ -92,12 +92,12 @@ class TestUtilities:
 class TestGraphicsStateDictRegistry:
     @pytest.fixture
     def new_style_registry(self):
-        return fpdf.drawing.GraphicsStateDictRegistry()
+        return fpdf.output.ResourceCatalog()
 
     def test_empty_style(self, new_style_registry):
         style = fpdf.drawing.GraphicsStyle()
 
-        result = new_style_registry.register_style(style)
+        result = new_style_registry.register_graphics_style(style)
 
         assert result is None
 
@@ -108,8 +108,8 @@ class TestGraphicsStateDictRegistry:
         first.stroke_width = 1
         second.stroke_width = 2
 
-        first_name = new_style_registry.register_style(first)
-        second_name = new_style_registry.register_style(second)
+        first_name = new_style_registry.register_graphics_style(first)
+        second_name = new_style_registry.register_graphics_style(second)
 
         assert isinstance(first_name, fpdf.drawing.Name)
         assert isinstance(second_name, fpdf.drawing.Name)
@@ -125,8 +125,8 @@ class TestGraphicsStateDictRegistry:
         first.stroke_width = 1
         second.stroke_width = 1
 
-        first_name = new_style_registry.register_style(first)
-        second_name = new_style_registry.register_style(second)
+        first_name = new_style_registry.register_graphics_style(first)
+        second_name = new_style_registry.register_graphics_style(second)
 
         assert isinstance(first_name, fpdf.drawing.Name)
         assert isinstance(second_name, fpdf.drawing.Name)
@@ -567,7 +567,7 @@ class TestDrawingContext:
         ctx = fpdf.drawing.DrawingContext()
         ctx.add_item(fpdf.drawing.GraphicsContext())
 
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        gsdr = fpdf.output.ResourceCatalog()
         start = fpdf.drawing.Point(0, 0)
         style = fpdf.drawing.GraphicsStyle()
 
@@ -579,7 +579,7 @@ class TestDrawingContext:
         ctx = fpdf.drawing.DrawingContext()
         ctx.add_item(fpdf.drawing.PaintedPath().line_to(10, 10))
 
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        gsdr = fpdf.output.ResourceCatalog()
         start = fpdf.drawing.Point(0, 0)
         style = fpdf.drawing.GraphicsStyle()
 
@@ -591,7 +591,7 @@ class TestDrawingContext:
         ctx = fpdf.drawing.DrawingContext()
         ctx.add_item(fpdf.drawing.GraphicsContext())
 
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        gsdr = fpdf.output.ResourceCatalog()
         start = fpdf.drawing.Point(0, 0)
         style = fpdf.drawing.GraphicsStyle()
         dbg = io.StringIO()
@@ -707,7 +707,7 @@ class CommonPathTests:
 
         assert pth._root_graphics_context.clipping_path == clp
 
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        gsdr = fpdf.output.ResourceCatalog()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
 
@@ -722,7 +722,7 @@ class CommonPathTests:
         # parameterized this way, this test has a lot of overlap with
         # TestPathElements.test_render, so if one breaks probably the other will. Maybe
         # it's good enough to just check a single render case instead.
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        gsdr = fpdf.output.ResourceCatalog()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
 
@@ -740,7 +740,7 @@ class CommonPathTests:
         # works correctly through rendering.
         point = fpdf.drawing.Point(0, 0)
         start = fpdf.drawing.Move(point)
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        gsdr = fpdf.output.ResourceCatalog()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
 
@@ -764,7 +764,7 @@ class CommonPathTests:
         "method_calls, elements, rendered", parameters.painted_path_elements
     )
     def test_render_debug(self, method_calls, elements, rendered):
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        gsdr = fpdf.output.ResourceCatalog()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
         point = fpdf.drawing.Point(0, 0)
@@ -819,7 +819,7 @@ class TestGraphicsContext:
     def test_copy(self):
         point = fpdf.drawing.Point(0, 0)
         start = fpdf.drawing.Move(point)
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        gsdr = fpdf.output.ResourceCatalog()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
 
@@ -866,7 +866,7 @@ class TestGraphicsContext:
 
         point = fpdf.drawing.Point(0, 0)
         start = fpdf.drawing.Move(point)
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        gsdr = fpdf.output.ResourceCatalog()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
 
@@ -876,7 +876,7 @@ class TestGraphicsContext:
     def test_empty_render(self):
         point = fpdf.drawing.Point(0, 0)
         start = fpdf.drawing.Move(point)
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        gsdr = fpdf.output.ResourceCatalog()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
 
@@ -917,7 +917,7 @@ class TestGraphicsContext:
     def test_build_render_list(self):
         point = fpdf.drawing.Point(0, 0)
         start = fpdf.drawing.Move(point)
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        gsdr = fpdf.output.ResourceCatalog()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
 
@@ -938,7 +938,7 @@ class TestGraphicsContext:
     def test_render(self):
         point = fpdf.drawing.Point(0, 0)
         start = fpdf.drawing.Move(point)
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        gsdr = fpdf.output.ResourceCatalog()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
 
@@ -957,7 +957,7 @@ class TestGraphicsContext:
     def test_render_debug(self):
         point = fpdf.drawing.Point(0, 0)
         start = fpdf.drawing.Move(point)
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        gsdr = fpdf.output.ResourceCatalog()
         style = fpdf.drawing.GraphicsStyle()
         style.paint_rule = "auto"
         dbg = io.StringIO()

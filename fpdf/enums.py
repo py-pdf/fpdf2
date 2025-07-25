@@ -1217,6 +1217,40 @@ class BlendMode(CoerciveEnum):
     """
 
 
+class CompositingOperation(CoerciveEnum):
+    "An enumeration of Porter-Duff compositing operations."
+
+    CLEAR = Name("Clear")
+    """ Draw nothing """
+
+    SOURCE_OVER = Name("SourceOver")
+    """The source is drawn over the destination (backdrop)."""
+
+    DESTINATION_OVER = Name("DestinationOver")
+    """The destination (backdrop) is drawn over the source."""
+
+    SOURCE_IN = Name("SourceIn")
+    """Only the part of the source that overlaps with the destination is drawn. The rest is discarded."""
+
+    DESTINATION_IN = Name("DestinationIn")
+    """Only the part of the destination that overlaps with the source is drawn. The rest is discarded."""
+
+    SOURCE_OUT = Name("SourceOut")
+    """Only the part of the source that does not overlap the destination is drawn."""
+
+    DESTINATION_OUT = Name("DestinationOut")
+    """Only the part of the destination that does not overlap the source is drawn."""
+
+    SOURCE_ATOP = Name("SourceAtop")
+    """The part of the source that overlaps the destination is drawn over the destination. The rest of the source is discarded."""
+
+    DESTINATION_ATOP = Name("DestinationAtop")
+    """The part of the destination that overlaps the source is drawn over the source. The rest of the destination is discarded."""
+
+    XOR = Name("XOR")
+    """Only the parts of the source and destination that do not overlap are drawn."""
+
+
 class AnnotationFlag(CoerciveIntEnum):
     INVISIBLE = 1
     """
@@ -1439,6 +1473,7 @@ class PDFStyleKeys(Enum):
     STROKE_JOIN_STYLE = Name("LJ")
     STROKE_MITER_LIMIT = Name("ML")
     STROKE_DASH_PATTERN = Name("D")  # array of array, number, e.g. [[1 1] 0]
+    SOFT_MASK = Name("SMask")
 
 
 class Corner(CoerciveEnum):

@@ -17,6 +17,9 @@ in order to get warned about deprecated features used in your code.
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
 ## [2.8.5] - Not released yet
+### Added
+* Porter–Duff compositing operations and bounding box support to the drawing API
+
 ### Fixed
 * preserving font table `fvar` to keep compatibility with variable fonts - _cf._ [issue #1528](https://github.com/py-pdf/fpdf2/issues/1528)
 * Basic support for SVG `currentColor` color value - _cf._ [PR #1531](https://github.com/py-pdf/fpdf2/pull/1531)

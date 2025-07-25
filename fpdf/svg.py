@@ -1056,7 +1056,7 @@ class SVGImage(NamedTuple):
         )
 
     @force_nodocument
-    def render(self, _gsd_registry, _style, last_item, initial_point):
+    def render(self, _resource_registry, _style, last_item, initial_point):
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -1086,10 +1086,10 @@ class SVGImage(NamedTuple):
 
     @force_nodocument
     def render_debug(
-        self, gsd_registry, style, last_item, initial_point, debug_stream, _pfx
+        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
     ):
         stream_content, last_item, initial_point = self.render(
-            gsd_registry, style, last_item, initial_point
+            resource_registry, style, last_item, initial_point
         )
         debug_stream.write(f"{self.href} rendered as: {stream_content}\n")
         return stream_content, last_item, initial_point

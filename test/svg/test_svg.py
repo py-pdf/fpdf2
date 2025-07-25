@@ -118,7 +118,7 @@ class TestSVGPathParsing:
 
         fpdf.svg.svg_path_converter(pdf_path, path)
 
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        gsdr = fpdf.output.ResourceCatalog()
         style = fpdf.drawing.GraphicsStyle()
         first_point = fpdf.drawing.Point(0, 0)
         start = fpdf.drawing.Move(first_point)

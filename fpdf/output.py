@@ -9,6 +9,7 @@ in non-backward-compatible ways.
 
 # pylint: disable=protected-access
 import logging
+import re
 from collections import OrderedDict, defaultdict
 from contextlib import contextmanager
 from io import BytesIO
@@ -16,6 +17,7 @@ from io import BytesIO
 from fontTools import subset as ftsubset
 
 from .annotations import PDFAnnotation
+from .drawing import PaintSoftMask
 from .enums import PDFResourceType, PageLabelStyle, SignatureFlag
 from .enums import OutputIntentSubType
 from .errors import FPDFException
@@ -526,9 +528,15 @@ class OutputIntentDictionary:
 class ResourceCatalog:
     "Manage the indexing of resources and association to the pages they are used"
 
+    GS_REGEX = re.compile(r"/(GS\d+) gs")
+    IMG_REGEX = re.compile(r"/I(\d+) Do")
+
     def __init__(self):
         self.resources = defaultdict(dict)
         self.resources_per_page = defaultdict(set)
+        self.graphics_styles = OrderedDict()
+        self.soft_mask_xobjects = []
+        self.last_reserved_object_id = 0
 
     def add(self, resource_type: PDFResourceType, resource, page_number: int):
         if resource_type in (PDFResourceType.PATTERN, PDFResourceType.SHADDING):
@@ -543,6 +551,54 @@ class ResourceCatalog:
             return registry[resource]
         self.resources_per_page[(page_number, resource_type)].add(resource)
         return None
+
+    def register_graphics_style(self, style):
+        """
+        Graphics style can be added without associating to a page number right away,
+        like when rendering a svg image.
+        The method that adds image to the page will call the add method for the page association.
+        """
+        style_dict = style.serialize()
+        if not style_dict:  # empty style does not need an entry
+            return None
+
+        if style_dict not in self.graphics_styles:
+            name = Name(
+                f"{self._get_prefix(PDFResourceType.EXT_G_STATE)}{len(self.graphics_styles)}"
+            )
+            self.graphics_styles[style_dict] = name
+
+        return self.graphics_styles[style_dict]
+
+    def register_soft_mask(self, soft_mask: PaintSoftMask):
+        """Register a soft mask xobject and return its object id"""
+        self.last_reserved_object_id += 1
+        xobject = soft_mask_path_to_xobject(soft_mask, self)
+        xobject.id = self.last_reserved_object_id
+        self.soft_mask_xobjects.append(xobject)
+        return xobject.id
+
+    def scan_stream(self, rendered: str) -> list[tuple[PDFResourceType, str]]:
+        """Parse a content stream and return discovered resources"""
+        found = []
+
+        for m in self.GS_REGEX.finditer(rendered):
+            found.append((PDFResourceType.EXT_G_STATE, m.group(1)))
+
+        for m in self.IMG_REGEX.finditer(rendered):
+            found.append((PDFResourceType.X_OBJECT, int(m.group(1))))
+
+        return found
+
+    def index_stream_resources(self, rendered: str, page_number: int) -> None:
+        """
+        Scan a rendered content stream and register resources used on the given page.
+        Currently indexes:
+          - ExtGState invocations: '/GSn gs'
+          - Image XObjects: '/In Do'
+        """
+        for resource_type, resource in self.scan_stream(rendered):
+            self.add(resource_type, resource, page_number)
 
     def get_items(self, resource_type: PDFResourceType):
         return self.resources[resource_type].items()
@@ -559,6 +615,8 @@ class ResourceCatalog:
 
     @classmethod
     def _get_prefix(cls, resource_type: PDFResourceType):
+        if resource_type == PDFResourceType.EXT_G_STATE:
+            return "GS"
         if resource_type == PDFResourceType.PATTERN:
             return "P"
         if resource_type == PDFResourceType.SHADDING:
@@ -573,7 +631,9 @@ class OutputProducer:
         self.fpdf = fpdf
         self.pdf_objs = []
         self.iccp_i_to_pdf_i = {}
-        self.obj_id = 0  # current PDF object number
+        self.obj_id = (
+            fpdf._resource_catalog.last_reserved_object_id
+        )  # current PDF object number
         # array of PDF object offsets in self.buffer, used to build the xref table:
         self.offsets = {}
         self.trace_labels_per_obj_id = {}
@@ -1034,10 +1094,16 @@ class OutputProducer:
 
     def _add_gfxstates(self):
         gfxstate_objs_per_name = OrderedDict()
-        for state_dict, name in self.fpdf._drawing_graphics_state_registry.items():
+        for state_dict, name in self.fpdf._resource_catalog.graphics_styles.items():
             gfxstate_obj = PDFExtGState(state_dict)
             self._add_pdf_obj(gfxstate_obj, "gfxstate")
             gfxstate_objs_per_name[name] = gfxstate_obj
+
+        for soft_mask in self.fpdf._resource_catalog.soft_mask_xobjects:
+            soft_mask.resources = soft_mask._path.get_resource_dictionary(
+                gfxstate_objs_per_name
+            )
+            self.pdf_objs.append(soft_mask)
         return gfxstate_objs_per_name
 
     def _add_shadings(self):
@@ -1445,3 +1511,14 @@ def _sizeof_fmt(num, suffix="B"):
             return f"{num:3.1f}{unit}{suffix}"
         num /= 1024
     return f"{num:.1f}Yi{suffix}"
+
+
+def soft_mask_path_to_xobject(path, resource_catalog: ResourceCatalog):
+    """Converts a PaintedSoftMask into a PDF XObject Form suitable for use as a soft mask."""
+    xobject = PDFContentStream(contents=path.render(resource_catalog))
+    xobject._path = path
+    xobject.type = Name("XObject")
+    xobject.subtype = Name("Form")
+    xobject.b_box = PDFArray(path.get_bounding_box())
+    xobject.group = "<</S /Transparency /CS /DeviceGray /I true /K false>>"
+    return xobject
