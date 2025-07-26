@@ -51,7 +51,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e1be8d767bb40fa129e0a6ee0237d95c8c418100/fpdf/image_parsing.py#L468-L489" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/image_parsing.py#L468-L489" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def ccitt_payload_location_from_pil(img):
     &#34;&#34;&#34;
@@ -85,7 +85,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e1be8d767bb40fa129e0a6ee0237d95c8c418100/fpdf/image_parsing.py#L646-L656" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/image_parsing.py#L646-L656" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def clear_table():
     &#34;&#34;&#34;
@@ -108,7 +108,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e1be8d767bb40fa129e0a6ee0237d95c8c418100/fpdf/image_parsing.py#L220-L441" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/image_parsing.py#L220-L441" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_img_info(filename, img=None, image_filter=&#34;AUTO&#34;, dims=None):
     &#34;&#34;&#34;
@@ -350,7 +350,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e1be8d767bb40fa129e0a6ee0237d95c8c418100/fpdf/image_parsing.py#L206-L217" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/image_parsing.py#L206-L217" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_svg_info(filename, img, image_cache):
     svg = SVGObject(img.getvalue(), image_cache=image_cache)
@@ -374,7 +374,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e1be8d767bb40fa129e0a6ee0237d95c8c418100/fpdf/image_parsing.py#L188-L203" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/image_parsing.py#L188-L203" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def is_iccp_valid(iccp, filename):
     &#34;Checks the validity of an ICC profile&#34;
@@ -402,12 +402,12 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e1be8d767bb40fa129e0a6ee0237d95c8c418100/fpdf/image_parsing.py#L155-L175" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/image_parsing.py#L155-L175" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_image(filename):
     &#34;&#34;&#34;
     This method is used to load external resources, such as images.
-    It is automatically called when resource added to document by `fpdf.FPDF.image()`.
+    It is automatically called when resource added to document by `fpdf.fpdf.FPDF.image()`.
     It always return a BytesIO buffer.
     &#34;&#34;&#34;
     # if a bytesio instance is passed in, use it as is.
@@ -427,7 +427,7 @@ el.replaceWith(d);
         return BytesIO(local_file.read())</code></pre>
 </details>
 <div class="desc"><p>This method is used to load external resources, such as images.
-It is automatically called when resource added to document by <code>fpdf.FPDF.image()</code>.
+It is automatically called when resource added to document by <code><a title="fpdf.fpdf.FPDF.image" href="fpdf.html#fpdf.fpdf.FPDF.image">FPDF.image()</a></code>.
 It always return a BytesIO buffer.</p></div>
 </dd>
 <dt id="fpdf.image_parsing.pack_codes_into_bytes"><code class="name flex">
@@ -437,7 +437,7 @@ It always return a BytesIO buffer.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e1be8d767bb40fa129e0a6ee0237d95c8c418100/fpdf/image_parsing.py#L605-L643" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/image_parsing.py#L605-L643" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def pack_codes_into_bytes(codes):
     &#34;&#34;&#34;
@@ -489,14 +489,14 @@ The bit-width starts at 9 bits and expands as needed.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e1be8d767bb40fa129e0a6ee0237d95c8c418100/fpdf/image_parsing.py#L80-L148" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/image_parsing.py#L80-L148" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def preload_image(image_cache: ImageCache, name, dims=None):
     &#34;&#34;&#34;
     Read an image and load it into memory.
 
     For raster images: following this call, the image is inserted in `image_cache.images`,
-    and following calls to `FPDF.image()` will re-use the same cached values, without re-reading the image.
+    and following calls to `fpdf.fpdf.FPDF.image()` will re-use the same cached values, without re-reading the image.
 
     For vector images: the data is loaded and the metadata extracted.
 
@@ -563,7 +563,7 @@ The bit-width starts at 9 bits and expands as needed.</p></div>
 </details>
 <div class="desc"><p>Read an image and load it into memory.</p>
 <p>For raster images: following this call, the image is inserted in <code>image_cache.images</code>,
-and following calls to <code>FPDF.image()</code> will re-use the same cached values, without re-reading the image.</p>
+and following calls to <code><a title="fpdf.fpdf.FPDF.image" href="fpdf.html#fpdf.fpdf.FPDF.image">FPDF.image()</a></code> will re-use the same cached values, without re-reading the image.</p>
 <p>For vector images: the data is loaded and the metadata extracted.</p>
 <h2 id="args">Args</h2>
 <dl>
@@ -586,7 +586,7 @@ and an instance of a subclass of <code>ImageInfo</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e1be8d767bb40fa129e0a6ee0237d95c8c418100/fpdf/image_parsing.py#L492-L542" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/image_parsing.py#L492-L542" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def transcode_monochrome(img):
     &#34;&#34;&#34;
@@ -655,7 +655,7 @@ and an instance of a subclass of <code>ImageInfo</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e1be8d767bb40fa129e0a6ee0237d95c8c418100/fpdf/image_parsing.py#L33-L36" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/image_parsing.py#L33-L36" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@dataclass
 class ImageSettings:
@@ -679,7 +679,7 @@ class ImageSettings:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/e1be8d767bb40fa129e0a6ee0237d95c8c418100/fpdf/image_parsing.py#L444-L465" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/image_parsing.py#L444-L465" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class temp_attr:
     &#34;&#34;&#34;
