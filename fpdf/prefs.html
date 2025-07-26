@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.6">
 <title>fpdf.prefs API documentation</title>
-<meta name="description" content="">
+<meta name="description" content="Usage documentation at: &lt;https://py-pdf.github.io/fpdf2/PageFormatAndOrientation.html#viewer-preferences&gt;">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
@@ -36,6 +36,7 @@ el.replaceWith(d);
 <h1 class="title">Module <code>fpdf.prefs</code></h1>
 </header>
 <section id="section-intro">
+<p>Usage documentation at: <a href="https://py-pdf.github.io/fpdf2/PageFormatAndOrientation.html#viewer-preferences">https://py-pdf.github.io/fpdf2/PageFormatAndOrientation.html#viewer-preferences</a></p>
 </section>
 <section>
 </section>
@@ -54,7 +55,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/prefs.py#L5-L261" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/prefs.py#L8-L264" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class ViewerPreferences:
     &#34;Specifies the way the document shall be displayed on the screen&#34;
@@ -327,7 +328,7 @@ A flag specifying whether to position the document’s window in the center of t
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/prefs.py#L165-L167" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/prefs.py#L168-L170" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def direction(self):
@@ -341,7 +342,7 @@ The predominant reading order for text.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/prefs.py#L173-L175" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/prefs.py#L176-L178" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def display_doc_title(self):
@@ -357,7 +358,7 @@ If false, the title bar should instead display the name of the PDF file containi
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/prefs.py#L183-L185" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/prefs.py#L186-L188" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def duplex(self):
@@ -392,7 +393,7 @@ A flag specifying whether to hide user interface elements in the document’s wi
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/prefs.py#L128-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/prefs.py#L131-L133" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def non_full_screen_page_mode(self):
@@ -406,7 +407,7 @@ The document’s page mode, specifying how to display the document on exiting fu
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/prefs.py#L145-L147" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/prefs.py#L148-L150" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def num_copies(self):
@@ -421,7 +422,7 @@ Values outside this range shall be ignored. Default value: as defined by the con
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/prefs.py#L217-L219" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/prefs.py#L220-L222" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def print_area(self):
@@ -436,7 +437,7 @@ Default value: CropBox.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/prefs.py#L229-L231" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/prefs.py#L232-L234" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def print_clip(self):
@@ -451,7 +452,7 @@ Default value: CropBox.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/prefs.py#L155-L157" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/prefs.py#L158-L160" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def print_page_range(self):
@@ -468,7 +469,7 @@ The first page of the PDF file shall be denoted by 1.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/prefs.py#L241-L243" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/prefs.py#L244-L246" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def print_scaling(self):
@@ -487,7 +488,7 @@ Valid values are:</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/prefs.py#L193-L195" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/prefs.py#L196-L198" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def view_area(self):
@@ -502,7 +503,7 @@ Default value: CropBox.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/prefs.py#L205-L207" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/prefs.py#L208-L210" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@property
 def view_clip(self):
@@ -522,7 +523,7 @@ Default value: CropBox.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/prefs.py#L255-L261" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/prefs.py#L258-L264" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
     obj_dict = build_obj_dict(

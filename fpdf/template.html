@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.6">
 <title>fpdf.template API documentation</title>
-<meta name="description" content="PDF Template Helpers for fpdf.py">
+<meta name="description" content="PDF template helpers for fpdf2 …">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
@@ -36,7 +36,8 @@ el.replaceWith(d);
 <h1 class="title">Module <code>fpdf.template</code></h1>
 </header>
 <section id="section-intro">
-<p>PDF Template Helpers for fpdf.py</p>
+<p>PDF template helpers for fpdf2.</p>
+<p>Usage documentation at: <a href="https://py-pdf.github.io/fpdf2/Templates.html">https://py-pdf.github.io/fpdf2/Templates.html</a></p>
 </section>
 <section>
 </section>
@@ -55,7 +56,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/template.py#L25-L608" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/template.py#L29-L614" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FlexTemplate:
     &#34;&#34;&#34;
@@ -63,6 +64,8 @@ el.replaceWith(d);
 
     Allows to apply one or several template definitions to any page of
     a document in any combination.
+
+    Usage documentation at: &lt;https://py-pdf.github.io/fpdf2/Templates.html&gt;
     &#34;&#34;&#34;
 
     def __init__(self, pdf, elements=None):
@@ -645,6 +648,7 @@ el.replaceWith(d);
 <div class="desc"><p>A flexible templating class.</p>
 <p>Allows to apply one or several template definitions to any page of
 a document in any combination.</p>
+<p>Usage documentation at: <a href="https://py-pdf.github.io/fpdf2/Templates.html">https://py-pdf.github.io/fpdf2/Templates.html</a></p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>pdf</code></strong> :&ensp;<code><a title="fpdf.fpdf.FPDF" href="fpdf.html#fpdf.fpdf.FPDF">FPDF</a></code></dt>
@@ -667,7 +671,7 @@ or parse_csv() before doing anything else.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/template.py#L59-L130" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/template.py#L65-L136" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_elements(self, elements):
     &#34;&#34;&#34;
@@ -756,7 +760,7 @@ or parse_csv() before doing anything else.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/template.py#L181-L254" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/template.py#L187-L260" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_csv(
     self,
@@ -856,7 +860,7 @@ Default is the system default encoding.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/template.py#L150-L179" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/template.py#L156-L185" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_json(self, infile: os.PathLike, encoding: str = &#34;utf-8&#34;):
     &#34;&#34;&#34;
@@ -907,7 +911,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/template.py#L568-L608" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/template.py#L574-L614" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(self, offsetx=0.0, offsety=0.0, rotate=0.0, scale=1.0):
     &#34;&#34;&#34;
@@ -968,7 +972,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/template.py#L256-L263" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/template.py#L262-L269" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def __setitem__(self, name, value):
     assert isinstance(
@@ -988,7 +992,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/template.py#L289-L326" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/template.py#L295-L332" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def split_multicell(self, text, element_name):
     &#34;&#34;&#34;
@@ -1052,13 +1056,15 @@ when rendered in the element font style and size.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/template.py#L611-L702" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/template.py#L617-L710" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Template(FlexTemplate):
     &#34;&#34;&#34;
     A simple templating class.
 
     Allows to apply a single template definition to all pages of a document.
+
+    Usage documentation at: &lt;https://py-pdf.github.io/fpdf2/Templates.html&gt;
     &#34;&#34;&#34;
 
     # Disabling this check due to the &#34;format&#34; parameter below:
@@ -1149,6 +1155,7 @@ when rendered in the element font style and size.</p></div>
 </details>
 <div class="desc"><p>A simple templating class.</p>
 <p>Allows to apply a single template definition to all pages of a document.</p>
+<p>Usage documentation at: <a href="https://py-pdf.github.io/fpdf2/Templates.html">https://py-pdf.github.io/fpdf2/Templates.html</a></p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>infile</code></strong> :&ensp;<code>str</code></dt>
@@ -1187,7 +1194,7 @@ One of "mm", "cm", "in", "pt", or a number for points per unit.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/template.py#L676-L680" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/template.py#L684-L688" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add_page(self):
     &#34;&#34;&#34;Finish the current page, and proceed to the next one.&#34;&#34;&#34;
@@ -1236,7 +1243,7 @@ equivalent to what …</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/template.py#L683-L702" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/template.py#L691-L710" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(self, outfile=None, dest=None):
     &#34;&#34;&#34;

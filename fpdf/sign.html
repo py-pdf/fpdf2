@@ -40,6 +40,7 @@ el.replaceWith(d);
 <p>The contents of this module are internal to fpdf2, and not part of the public API.
 They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.</p>
+<p>Usage documentation at: <a href="https://py-pdf.github.io/fpdf2/Signing.html">https://py-pdf.github.io/fpdf2/Signing.html</a></p>
 </section>
 <section>
 </section>
@@ -55,7 +56,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/sign.py#L43-L88" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/sign.py#L45-L90" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def sign_content(signer, buffer, key, cert, extra_certs, hashalgo, sign_time):
     &#34;&#34;&#34;
@@ -120,7 +121,7 @@ The signing operation does not alter the buffer size</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/sign.py#L18-L40" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/sign.py#L20-L42" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Signature:
     def __init__(self, contact_info=None, location=None, m=None, reason=None):
@@ -175,7 +176,7 @@ The signing operation does not alter the buffer size</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/785c7f3530ecb0372a8123121902c9dd71dfc2ab/fpdf/sign.py#L34-L40" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/f7ab5b3de15ee79b436ff1c3afe2c862394e936a/fpdf/sign.py#L36-L42" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def serialize(self, _security_handler=None, _obj_id=None):
     obj_dict = build_obj_dict(
