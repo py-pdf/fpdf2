@@ -102,8 +102,8 @@ def convert_unit(
 
      Args:
         to_convert (float, int, Iterable): The number / list of numbers, or points, to convert
-        old_unit (str, float, int): A unit accepted by fpdf.FPDF or a number
-        new_unit (str, float, int): A unit accepted by fpdf.FPDF or a number
+        old_unit (str, float, int): A unit accepted by `fpdf.fpdf.FPDF` or a number
+        new_unit (str, float, int): A unit accepted by `fpdf.fpdf.FPDF` or a number
     Returns:
         (float, tuple): to_convert converted from old_unit to new_unit or a tuple of the same
     """

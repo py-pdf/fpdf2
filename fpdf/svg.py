@@ -719,7 +719,7 @@ class SVGObject:
         If the SVG document size is specified in absolute units, then it is not scaled.
 
         Args:
-            pdf (fpdf.FPDF): the pdf to use the page size of.
+            pdf (fpdf.fpdf.FPDF): the pdf to use the page size of.
             align_viewbox (bool): if True, mimic some of the SVG alignment rules if the
                 viewbox aspect ratio does not match that of the viewport.
 
@@ -820,7 +820,7 @@ class SVGObject:
         The page viewport is used for sizing the SVG.
 
         Args:
-            pdf (fpdf.FPDF): the document to which the converted SVG is rendered.
+            pdf (fpdf.fpdf.FPDF): the document to which the converted SVG is rendered.
             x (Number): abscissa of the converted SVG's top-left corner.
             y (Number): ordinate of the converted SVG's top-left corner.
             debug_stream (io.TextIO): the stream to which rendering debug info will be

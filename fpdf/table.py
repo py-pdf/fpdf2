@@ -22,7 +22,7 @@ DEFAULT_HEADINGS_STYLE = FontFace(emphasis="BOLD")
 
 class Table:
     """
-    Object that `fpdf.FPDF.table()` yields, used to build a table in the document.
+    Object that `fpdf.fpdf.FPDF.table()` yields, used to build a table in the document.
     Detailed usage documentation: https://py-pdf.github.io/fpdf2/Tables.html
     """
 

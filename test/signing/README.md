@@ -8,3 +8,7 @@ Display PEM certificate details:
 
     python $opt/endesive/examples/cert-info-pem.py demo2_ca.crt.pem 1234
     openssl x509 -text -dates -noout -in demo2_ca.crt.pem
+
+Regenerate certificates:
+
+    scripts/create-endesive-certificates.sh
