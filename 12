@@ -1,0 +1,43 @@
+from fpdf import FPDF
+from datetime import datetime
+
+# إعداد بيانات الوثيقة
+email = "gv5003727@gmail.com"
+transaction_type = "تصديق"
+location = "إسطنبول"
+today_date = datetime.now().strftime("%Y-%m-%d")
+
+# إنشاء ملف PDF باستخدام خطوط تدعم العربية
+pdf = FPDF()
+pdf.add_page()
+pdf.add_font('ArialUnicode', '', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', uni=True)
+pdf.set_font('ArialUnicode', '', 12)
+
+text = f"""
+إلى من يهمّه الأمر،
+
+أود إعلامكم بأنني قد قمت باستخدام نظام حجز ذكي يعمل بشكل تلقائي على مدار الساعة، يقوم بتسجيل الدخول إلى الموقع الرسمي لمركز القنصلية السورية في إسطنبول (https://ecsc-expat.sy) ويقوم برصد المواعيد بشكل آلي.
+
+بمجرد توفر موعد مناسب، يقوم النظام تلقائيًا بحجز الموعد دون تدخّل يدوي، وذلك من أجل ضمان عدم تفويت أي فرصة للحجز في ظل الضغط الكبير على النظام.
+
+وقد تم تفعيل هذا النظام بالحساب التالي:
+- البريد الإلكتروني: {email}
+- نوع المعاملة: {transaction_type}
+- المركز: {location}
+
+تم تنفيذ الحجز بشكل رسمي عبر النظام، وأرفق نسخة من تأكيد الحجز إذا لزم الأمر.
+
+مع جزيل الشكر والتقدير،
+
+[الاسم الكامل]
+[رقم الهاتف إن أردت]
+بتاريخ: {today_date}
+"""
+
+pdf.multi_cell(0, 10, text)
+
+# حفظ الملف
+pdf_path = "/mnt/data/توثيق_الحجز_التلقائي.pdf"
+pdf.output(pdf_path)
+
+pdf_path
