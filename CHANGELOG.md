@@ -21,6 +21,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * documentation on [internal linking with variable page numbers](https://py-pdf.github.io/fpdf2/Links.html#internal-links)
 * documentation on [using the Ibis library](https://py-pdf.github.io/fpdf2/Maths.html#using-ibis)
 * clarified docstring for `arc()` method to document `x` and `y` arguments ([#1473](https://github.com/py-pdf/fpdf2/issues/1473))
+* macOS is now included in the GitHub Actions CI pipeline to ensure cross-platform test coverage
 
 ### Fixed
 * [`FPDF.write_html()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.write_html): Fixed custom styling of `<p>` & tables - [issue #1453](https://github.com/py-pdf/fpdf2/issues/1453)
