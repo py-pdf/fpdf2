@@ -11,7 +11,7 @@ There are two approaches to using templates:
 
 
 ## Using Template
-The traditional approach is to use the `Template` class, This class accepts one template definition, and can apply it to each page of a document. The usage pattern here is:
+The traditional approach is to use the [`Template`](https://py-pdf.github.io/fpdf2/fpdf/template.html#fpdf.template.Template) class, This class accepts one template definition, and can apply it to each page of a document. The usage pattern here is:
 
 ```python
 tmpl = Template(elements=elements)
@@ -48,8 +48,8 @@ Template["company_name"] = "Sample Company"
 
 
 ## Using FlexTemplate
-When more flexibility is desired, then the `FlexTemplate` class comes into play.
-In this case, you first need to create your own `FPDF` instance. You can then pass this to the constructor of one or several `FlexTemplate` instances, and have each of them load a template definition. For any page of the document, you can set text values on a template, and then render it on that page. After rendering, the template will be reset to its default values.
+When more flexibility is desired, then the [`FlexTemplate`](https://py-pdf.github.io/fpdf2/fpdf/template.html#fpdf.template.FlexTemplate) class comes into play.
+In this case, you first need to create your own [`FPDF`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF) instance. You can then pass this to the constructor of one or several `FlexTemplate` instances, and have each of them load a template definition. For any page of the document, you can set text values on a template, and then render it on that page. After rendering, the template will be reset to its default values.
  
 ```python
 from fpdf import FlexTemplate, FPDF

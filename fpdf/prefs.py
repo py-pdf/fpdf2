@@ -1,3 +1,7 @@
+"""
+Usage documentation at: <https://py-pdf.github.io/fpdf2/PageFormatAndOrientation.html#viewer-preferences>
+"""
+
 from .enums import TextDirection, Duplex, PageBoundaries, PageMode
 from .syntax import build_obj_dict, create_dictionary_string, Name
 

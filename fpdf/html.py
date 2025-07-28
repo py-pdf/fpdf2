@@ -4,6 +4,8 @@ HTML renderer
 The contents of this module are internal to fpdf2, and not part of the public API.
 They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
+
+Usage documentation at: <https://py-pdf.github.io/fpdf2/HTML.html>
 """
 
 from html.parser import HTMLParser
@@ -329,7 +331,7 @@ class HTML2FPDF(HTMLParser):
     ):
         """
         Args:
-            pdf (FPDF): an instance of `fpdf.FPDF`
+            pdf (fpdf.fpdf.FPDF): an instance of `FPDF`
             image_map (function): an optional one-argument function that map `<img>` "src" to new image URLs
             li_tag_indent (int): [**DEPRECATED since v2.7.9**]
                 numeric indentation of `<li>` elements - Set `tag_styles` instead

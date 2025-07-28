@@ -20,6 +20,11 @@ try:
 except ImportError:
     Image = None
 
+try:
+    import numpy as np
+except ImportError:
+    np = None
+
 from .errors import FPDFException
 from .image_datastructures import ImageCache, RasterImageInfo, VectorImageInfo
 from .svg import SVGObject
@@ -77,7 +82,7 @@ def preload_image(image_cache: ImageCache, name, dims=None):
     Read an image and load it into memory.
 
     For raster images: following this call, the image is inserted in `image_cache.images`,
-    and following calls to `FPDF.image()` will re-use the same cached values, without re-reading the image.
+    and following calls to `fpdf.fpdf.FPDF.image()` will re-use the same cached values, without re-reading the image.
 
     For vector images: the data is loaded and the metadata extracted.
 
@@ -150,7 +155,7 @@ def _is_svg(bytes_):
 def load_image(filename):
     """
     This method is used to load external resources, such as images.
-    It is automatically called when resource added to document by `fpdf.FPDF.image()`.
+    It is automatically called when resource added to document by `fpdf.fpdf.FPDF.image()`.
     It always return a BytesIO buffer.
     """
     # if a bytesio instance is passed in, use it as is.
@@ -614,6 +619,8 @@ def pack_codes_into_bytes(codes):
     bits_in_buffer = 0
     output = bytearray()
 
+    if np is not None:
+        codes = np.array(codes, dtype=np.uint32)
     for code in codes:
         buffer = (buffer << bits_per_code) | code
         bits_in_buffer += bits_per_code

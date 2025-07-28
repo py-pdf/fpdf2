@@ -4,6 +4,8 @@ Vector drawing: managing colors, graphics states, paths, transforms...
 The contents of this module are internal to fpdf2, and not part of the public API.
 They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
+
+Usage documentation at: <https://py-pdf.github.io/fpdf2/Drawing.html>
 """
 
 import decimal, math, re

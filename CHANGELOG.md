@@ -32,6 +32,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * slightly invalid PDF files were produced since v2.8.3, due to path construction commands being inserted inside `BT/ET` contexts when using underline or strikethrough text - _cf._ [issue #1456](https://github.com/py-pdf/fpdf2/issues/1456)
 * `multi_cell()` text clipping bug - [issue #1471](https://github.com/py-pdf/fpdf2/issues/1471)
 * clarified documentation in [Maths.md](https://py-pdf.github.io/fpdf2/Maths.html) regarding DataFrame string conversion for PDF rendering
+* make `numpy` an optional dependency to improve the performance of `pack_codes_into_bytes()` - _cf._ [issue #1380](https://github.com/py-pdf/fpdf2/issues/1380)
 
 
 ## [2.8.3] - 2025-04-22

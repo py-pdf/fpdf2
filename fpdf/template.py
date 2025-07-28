@@ -1,4 +1,8 @@
-"""PDF Template Helpers for fpdf.py"""
+"""
+PDF template helpers for fpdf2.
+
+Usage documentation at: <https://py-pdf.github.io/fpdf2/Templates.html>
+"""
 
 __author__ = "Mariano Reingart <reingart@gmail.com>"
 __copyright__ = "Copyright (C) 2010 Mariano Reingart"
@@ -28,13 +32,15 @@ class FlexTemplate:
 
     Allows to apply one or several template definitions to any page of
     a document in any combination.
+
+    Usage documentation at: <https://py-pdf.github.io/fpdf2/Templates.html>
     """
 
     def __init__(self, pdf, elements=None):
         """
-        Arguments: pdf (fpdf.FPDF() instance): All content will be added to this object.
-
-            elements (list of dicts): A template definition in a list of dicts.
+        Args:
+            pdf (fpdf.fpdf.FPDF): All content will be added to this `FPDF` instance.
+            elements (list[dict]): A template definition in a list of dicts.
                 If you omit this, then you need to call either load_elements()
                 or parse_csv() before doing anything else.
         """
@@ -60,8 +66,7 @@ class FlexTemplate:
         """
         Load a template definition.
 
-        Arguments:
-
+        Args:
             elements (list of dicts): A template definition in a list of dicts
         """
         key_config = {
@@ -154,11 +159,9 @@ class FlexTemplate:
         The data must be structured as an array of objects, with names and values exactly
         equivalent to what would get supplied to load_elements(),
 
-        Arguments:
-
-            infile (string or path-like object): The filepath of the JSON file.
-
-            encoding (string): The character encoding of the file. Default is UTF-8.
+        Args:
+            infile (str, path-like object): The filepath of the JSON file.
+            encoding (str): The character encoding of the file. Default is UTF-8.
         """
         with open(infile, encoding=encoding) as f:
             data = json.load(f)
@@ -191,17 +194,13 @@ class FlexTemplate:
         """
         Load the template definition from a CSV file.
 
-        Arguments:
-
-            infile (string or path-like object): The filepath of the CSV file.
-
-            delimiter (single character): The character that separates the fields in the CSV file:
+        Args:
+            infile (str, path-like object): The filepath of the CSV file.
+            delimiter (str): The character that separates the fields in the CSV file:
                 Usually a comma, semicolon, or tab.
-
-            decimal_sep (single character): The decimal separator used in the file.
+            decimal_sep (str): The decimal separator used in the file.
                 Usually either a point or a comma.
-
-            encoding (string): The character encoding of the file.
+            encoding (str): The character encoding of the file.
                 Default is the system default encoding.
         """
 
@@ -298,11 +297,9 @@ class FlexTemplate:
         Split a string between words, for the parts to fit into a given element
         width. Additional splits will be made replacing any '\\n' characters.
 
-        Arguments:
-
-            text (string): The input text string.
-
-            element_name (string): The name of the template element to fit the text inside.
+        Args:
+            text (str): The input text string.
+            element_name (str): The name of the template element to fit the text inside.
 
         Returns:
             A list of substrings, each of which will fit into the element width
@@ -578,12 +575,9 @@ class FlexTemplate:
         """
         Add the contents of the template to the PDF document.
 
-        Arguments:
-
+        Args:
             offsetx, offsety (float): Place the template to move its origin to the given coordinates.
-
             rotate (float): Rotate the inserted template around its (offset) origin.
-
             scale (float): Scale the inserted template by this factor.
         """
         sorted_elements = sorted(self.elements, key=lambda x: x["priority"])
@@ -625,6 +619,8 @@ class Template(FlexTemplate):
     A simple templating class.
 
     Allows to apply a single template definition to all pages of a document.
+
+    Usage documentation at: <https://py-pdf.github.io/fpdf2/Templates.html>
     """
 
     # Disabling this check due to the "format" parameter below:
@@ -643,28 +639,19 @@ class Template(FlexTemplate):
         keywords="",
     ):
         """
-        Arguments:
-
+        Args:
             infile (str): [**DEPRECATED since 2.2.0**] unused, will be removed in a later version
-
-            elements (list of dicts): A template definition in a list of dicts.
+            elements (list[dict]): A template definition in a list of dicts.
                 If you omit this, then you need to call either load_elements()
                 or parse_csv() before doing anything else.
-
             format (str): The page format of the document (eg. "A4" or "letter").
-
             orientation (str): The orientation of the document.
                 Possible values are "portrait"/"P" or "landscape"/"L"
-
             unit (str): The units used in the template definition.
                 One of "mm", "cm", "in", "pt", or a number for points per unit.
-
             title (str): The title of the document.
-
             author (str): The author of the document.
-
             subject (str): The subject matter of the document.
-
             creator (str): The creator of the document.
         """
         if infile:
@@ -705,11 +692,9 @@ class Template(FlexTemplate):
         """
         Finish the document and process all pending data.
 
-        Arguments:
-
+        Args:
             outfile (str): If given, the PDF file will be written to this file name.
                 Alternatively, the `.pdf.output()` method can be manually called.
-
             dest (str): [**DEPRECATED since 2.2.0**] unused, will be removed in a later version.
         """
         if dest:

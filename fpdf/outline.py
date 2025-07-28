@@ -6,6 +6,8 @@ Quoting section 8.2.2 "Document Outline" of the 2006 PDF spec 1.7:
 The contents of this module are internal to fpdf2, and not part of the public API.
 They may change at any time without prior warning or any deprecation period,
 in non-backward-compatible ways.
+
+Usage documentation at: <https://py-pdf.github.io/fpdf2/DocumentOutlineAndTableOfContents.html>
 """
 
 from dataclasses import dataclass

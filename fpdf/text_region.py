@@ -1,3 +1,7 @@
+"""
+Usage documentation at: <https://py-pdf.github.io/fpdf2/TextRegion.html>
+"""
+
 import math
 from typing import NamedTuple, Sequence, List, NewType
 

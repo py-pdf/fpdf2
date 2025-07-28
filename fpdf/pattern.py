@@ -1,5 +1,7 @@
 """
 Handles the creation of patterns and gradients
+
+Usage documentation at: <https://py-pdf.github.io/fpdf2/Patterns.html>
 """
 
 from abc import ABC

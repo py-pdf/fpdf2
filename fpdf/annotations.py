@@ -1,3 +1,7 @@
+"""
+Usage documentation at: <https://py-pdf.github.io/fpdf2/Annotations.html>
+"""
+
 import hashlib
 from datetime import datetime
 from typing import NamedTuple, Tuple, Union
