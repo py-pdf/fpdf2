@@ -5,7 +5,7 @@ import pytest
 from fpdf import FPDF, FPDFException
 from fpdf.enums import MethodReturnValue, YPos
 
-from test.conftest import assert_pdf_equal, LOREM_IPSUM
+from test.conftest import assert_pdf_equal, LOREM_IPSUM, assert_same_file
 
 
 HERE = Path(__file__).resolve().parent
@@ -293,7 +293,7 @@ def test_multi_cell_split_only():  # discussion 314
             pdf.multi_cell(w=0, h=LINE_HEIGHT, text=text, split_only=True) == expected
         )
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
 
 def test_multi_cell_with_empty_contents(tmp_path):  # issue 349

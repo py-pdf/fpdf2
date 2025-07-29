@@ -6,7 +6,7 @@ import pytest
 from fpdf import FPDF, FontFace, HTMLMixin, TextStyle, TitleStyle
 from fpdf.drawing import DeviceRGB
 from fpdf.errors import FPDFException
-from test.conftest import assert_pdf_equal, LOREM_IPSUM
+from test.conftest import assert_pdf_equal, LOREM_IPSUM, assert_same_file
 
 
 HERE = Path(__file__).resolve().parent
@@ -486,7 +486,7 @@ def test_html_HTMLMixin_deprecation_warning(tmp_path):
         assert_pdf_equal(pdf, HERE / "html_description.pdf", tmp_path)
 
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
 
 def test_html_whitespace_handling(tmp_path):  # Issue 547

@@ -6,7 +6,7 @@ import pytest
 from fpdf import FPDF
 from fpdf.errors import FPDFException
 from fpdf.fonts import CORE_FONTS, CORE_FONTS_CHARWIDTHS
-from test.conftest import assert_pdf_equal
+from test.conftest import assert_pdf_equal, assert_same_file
 
 HERE = Path(__file__).resolve().parent
 
@@ -84,7 +84,7 @@ def test_set_font_aliases_as_font():
             pdf.set_font(alias)
 
         assert len(record) == 1
-        assert record[0].filename == __file__
+        assert_same_file(record[0].filename, __file__)
 
         # Test if font family is set correctly
         assert pdf.font_family == alternative
@@ -172,7 +172,7 @@ def test_set_font_zapfdingbats_symbol_with_style():
                     assert pdf.font_style == ""
 
                 assert len(record) == 1
-                assert record[0].filename == __file__
+                assert_same_file(record[0].filename, __file__)
 
                 # Test if underline is set correctly
                 assert pdf.underline == int("U" in style)

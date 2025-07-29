@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from fpdf import FPDF
-from test.conftest import assert_pdf_equal
+from test.conftest import assert_pdf_equal, assert_same_file
 
 HERE = Path(__file__).resolve().parent
 
@@ -33,22 +33,22 @@ def test_deprecation_warning_for_FPDF_CACHE_DIR_and_FPDF_CACHE_MODE():
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_DIR
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_DIR = "/tmp"
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_MODE
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_MODE = 1
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     fpdf.SOME = 1
     assert fpdf.SOME == 1
@@ -58,22 +58,22 @@ def test_deprecation_warning_for_FPDF_CACHE_DIR_and_FPDF_CACHE_MODE():
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_DIR
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_DIR = "/tmp"
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_MODE
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     with pytest.warns(DeprecationWarning) as record:
         fpdf.FPDF_CACHE_MODE = 1
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     fpdf.SOME = 1
     assert fpdf.SOME == 1
@@ -92,7 +92,7 @@ def test_add_font_with_str_fname_ok(tmp_path):
 
         for r in record:
             if r.category == DeprecationWarning:
-                assert r.filename == __file__
+                assert_same_file(r.filename, __file__)
 
 
 def test_add_core_fonts():
@@ -109,7 +109,7 @@ def test_add_core_fonts():
         assert not pdf.fonts  # No fonts added, as all of them are core fonts
 
     for r in record:
-        assert r.filename == __file__
+        assert_same_file(r.filename, __file__)
 
 
 def test_render_en_dash(tmp_path):  # issue-166

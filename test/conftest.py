@@ -53,6 +53,15 @@ LOREM_IPSUM = (
 )
 
 
+def assert_same_file(file1, file2):
+    """
+    Assert that two files are the same, by comparing their absolute paths.
+    """
+    assert os.path.normcase(os.path.abspath(file1)) == os.path.normcase(
+        os.path.abspath(file2)
+    )
+
+
 def assert_pdf_equal(
     actual,
     expected,

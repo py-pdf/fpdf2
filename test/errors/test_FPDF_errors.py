@@ -6,6 +6,8 @@ from fpdf.errors import FPDFException, FPDFUnicodeEncodingException
 from fpdf.image_parsing import get_img_info
 from PIL import Image
 
+from test.conftest import assert_same_file
+
 HERE = Path(__file__).resolve().parent
 
 
@@ -82,7 +84,7 @@ def test_doc_option_only_core_fonts_encoding():
         assert str(e.value) == msg
 
     for r in record:
-        assert r.filename == __file__
+        assert_same_file(r.filename, __file__)
 
 
 def test_adding_content_after_closing():

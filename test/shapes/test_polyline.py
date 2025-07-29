@@ -2,7 +2,7 @@ from pathlib import Path
 
 import fpdf
 from fpdf.errors import FPDFException
-from test.conftest import assert_pdf_equal
+from test.conftest import assert_pdf_equal, assert_same_file
 
 import pytest
 
@@ -35,7 +35,7 @@ def test_polyline_command_all_k(unit, factor):
         data.clear()
 
     assert len(record) == 1
-    assert record[0].filename == __file__
+    assert_same_file(record[0].filename, __file__)
 
     pdf.polyline(scale_points(POLYLINE_COORDINATES, factor), polygon=True)
     assert "".join(data) == "10.00 831.89 m40.00 831.89 l10.00 801.89 l h S"
