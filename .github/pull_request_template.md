@@ -22,11 +22,11 @@ e.g. Fixes #0 <!-- This will automatically close issue #0 once the PR is merged:
 
 - [ ] A unit test is covering the code added / modified by this PR
 
-- [ ] This PR is ready to be merged <!-- In your opinion, can this be merged as soon as it's reviewed? Else, this can be turned into a Draft PR -->
-
 - [ ] In case of a new feature, docstrings have been added, with also some documentation in the `docs/` folder
 
 - [ ] A mention of the change is present in `CHANGELOG.md`
+
+- [ ] This PR is ready to be merged <!-- In your opinion, can this be merged as soon as it's reviewed? Else, this can be turned into a Draft PR -->
 
 <!-- Feel free to add additional comments, and to ask questions if some of those guidelines are unclear to you! -->
 
