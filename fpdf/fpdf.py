@@ -604,7 +604,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def set_auto_page_break(self, auto, margin=0):
         """
-        Set auto page break mode and triggering bottom margin.
+        Set auto page break mode, and optionally the bottom margin that triggers it.
         By default, the mode is on and the bottom margin is 2 cm.
 
         Detailed documentation on page breaks: https://py-pdf.github.io/fpdf2/PageBreaks.html
@@ -891,7 +891,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 meaning to use the best image filter given the images provided.
                 Allowed values: `FlateDecode` (lossless zlib/deflate compression),
                 `DCTDecode` (lossy compression with JPEG)
+                `LZWDecode` (Lempel-Ziv-Welch aka LZW compression)
                 and `JPXDecode` (lossy compression with JPEG2000).
+
+        [**NEW in 2.8.4**] Note that, when using `LZWDecode`, having NumPy installed
+        will improve performances, reducing execution time.
         """
         if image_filter not in SUPPORTED_IMAGE_FILTERS:
             raise ValueError(
@@ -3128,10 +3132,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     @property
     def accept_page_break(self):
         """
-        Whenever a page break condition is met, this method is called,
+        Whenever a page break condition is met, this `@property` method is called,
         and the break is issued or not depending on the returned value.
 
-        The default implementation returns a value according to the mode selected by `FPDF.set_auto_page_break()`.
+        The default implementation returns `self.auto_page_break`,
+        a value according to the mode selected by `FPDF.set_auto_page_break()`.
+
         This method is called automatically and should not be called directly by the application.
 
         Detailed documentation on page breaks: https://py-pdf.github.io/fpdf2/PageBreaks.html
@@ -3919,9 +3925,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         return False
 
     def _perform_page_break(self):
-        # Defensive check, this should have tested by a previous call to .will_page_break():
-        if not self.accept_page_break or self.in_footer:
-            return
+        """
+        Performs a page break, taking care to preserve self.x
+        and a potential existing `fpdf.fpdf.FPDF.local_context()`.
+        A call to `fpdf.fpdf.FPDF.will_page_break()` should be performed beforehand.
+        """
         x = self.x
         # If we are in a .local_context(), we need to temporarily leave it,
         # by popping out every GraphicsState:
