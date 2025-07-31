@@ -21,9 +21,9 @@ except ImportError:
     Image = None
 
 try:
-    import numpy as np
+    import numpy
 except ImportError:
-    np = None
+    numpy = None
 
 from .errors import FPDFException
 from .image_datastructures import ImageCache, RasterImageInfo, VectorImageInfo
@@ -619,8 +619,10 @@ def pack_codes_into_bytes(codes):
     bits_in_buffer = 0
     output = bytearray()
 
-    if np is not None:
-        codes = np.array(codes, dtype=np.uint32)
+    if numpy is not None:
+        # Using numpy improves the performance significantly there
+        # _cf._ https://github.com/py-pdf/fpdf2/issues/1380
+        codes = numpy.array(codes, dtype=numpy.uint32)
     for code in codes:
         buffer = (buffer << bits_per_code) | code
         bits_in_buffer += bits_per_code

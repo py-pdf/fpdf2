@@ -165,10 +165,9 @@ pdf.image("docs/fpdf2-logo.png", x=20, y=60)
 pdf.output("pdf-with-image.pdf")
 ```
 
-Beware that "flattening" images into JPEGs this way will fill transparent areas of your images with color (usually black).
+The allowed `image_filter` values are listed in the [`set_image_filter()`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_image_filter) method documentation.
 
-The allowed `image_filter` values are listed in the [image_parsing]( https://github.com/py-pdf/fpdf2/blob/master/fpdf/image_parsing.py) module and are currently:
-`FlateDecode` (lossless zlib/deflate compression), `DCTDecode` (lossy compression with JPEG) and `JPXDecode` (lossy compression with JPEG2000).
+Beware that "flattening" images into JPEGs this way will fill transparent areas of your images with color (usually black).
 
 ## Output Intents ##
 _New in [:octicons-tag-24: 2.8.3](https://github.com/py-pdf/fpdf2/blob/master/CHANGELOG.md)_
