@@ -22,8 +22,10 @@ from .table import Table
 from .util import get_scale_factor, int2roman
 
 LOGGER = logging.getLogger(__name__)
-BULLET_WIN1252 = "\x95"  # BULLET character in Windows-1252 encoding
-DEGREE_WIN1252 = "\xb0"
+MESSAGE_WAITING_WIN1252 = "\x95"  # MESSAGE WAITING character in Windows-1252 encoding
+BULLET_UNICODE = "•"  # U+2022
+DEGREE_SIGN_WIN1252 = "\xb0"  # DEGREE SIGN character in Windows-1252 encoding
+RING_OPERATOR_UNICODE = "∘"  # U+2218
 HEADING_TAGS = ("title", "h1", "h2", "h3", "h4", "h5", "h6")
 # Some of the margin values below are fractions, in order to be fully backward-compatible,
 # and due to the _scale_units() conversion performed in HTML2FPDF constructor below.
@@ -319,7 +321,7 @@ class HTML2FPDF(HTMLParser):
         li_tag_indent=None,
         dd_tag_indent=None,
         table_line_separators=False,
-        ul_bullet_char=BULLET_WIN1252,
+        ul_bullet_char="disc",
         li_prefix_color=(190, 0, 0),
         heading_sizes=None,
         pre_code_font=None,
@@ -339,6 +341,7 @@ class HTML2FPDF(HTMLParser):
                 numeric indentation of `<dd>` elements - Set `tag_styles` instead
             table_line_separators (bool): enable horizontal line separators in `<table>`. Defaults to `False`.
             ul_bullet_char (str): bullet character preceding `<li>` items in `<ul>` lists.
+                You can also specify special bullet names like `"circle"` or `"disc"` (the default).
                 Can also be configured using the HTML `type` attribute of `<ul>` tags.
             li_prefix_color (tuple, str, fpdf.drawing.DeviceCMYK, fpdf.drawing.DeviceGray, fpdf.drawing.DeviceRGB): color for bullets
                 or numbers preceding `<li>` tags. This applies to both `<ul>` & `<ol>` lists.
@@ -851,9 +854,7 @@ class HTML2FPDF(HTMLParser):
                 )
         if tag == "ul":
             self.indent += 1
-            bullet_char = (
-                ul_prefix(attrs["type"]) if "type" in attrs else self.ul_bullet_char
-            )
+            bullet_char = attrs.get("type", self.ul_bullet_char)
             self.bullet.append(bullet_char)
             line_height = css_style.get("line-height", attrs.get("line-height"))
             # "line-height" attributes are not valid in HTML,
@@ -912,6 +913,8 @@ class HTML2FPDF(HTMLParser):
             else:
                 # Allow <li> to be used outside of <ul> or <ol>.
                 bullet = self.ul_bullet_char
+            if not isinstance(bullet, int):
+                bullet = ul_prefix(bullet, self.pdf.is_ttf_font)
             if not isinstance(bullet, str):
                 bullet += 1
                 self.bullet[self.indent - 1] = bullet
@@ -1236,11 +1239,11 @@ def _scale_units(pdf, in_tag_styles):
     return out_tag_styles
 
 
-def ul_prefix(ul_type):
-    if ul_type == "circle":
-        return DEGREE_WIN1252
+def ul_prefix(ul_type, is_ttf_font):
     if ul_type == "disc":
-        return BULLET_WIN1252
+        return BULLET_UNICODE if is_ttf_font else MESSAGE_WAITING_WIN1252
+    if ul_type == "circle":
+        return RING_OPERATOR_UNICODE if is_ttf_font else DEGREE_SIGN_WIN1252
     if len(ul_type) == 1:
         return ul_type
     raise NotImplementedError(f"Unsupported type: {ul_type}")
