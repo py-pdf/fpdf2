@@ -11,19 +11,6 @@ HERE = Path(__file__).resolve().parent
 TRUSTED_CERT_PEMS = (HERE / "signing-certificate.crt",)
 
 
-def test_endesive_debug():
-    import endesive
-
-    print("Endesive modules:", dir(endesive))
-    try:
-        from endesive import signer
-
-        print("endesive.signer imported successfully.")
-    except ImportError as e:
-        print("Failed to import endesive.signer:", e)
-        assert False, "endesive.signer failed to import"
-
-
 @mark.skipif(version_info[:2] == (3, 8), reason="Endesive doesn't support Python 3.8")
 def test_sign_pkcs12(tmp_path):
     pdf = FPDF()

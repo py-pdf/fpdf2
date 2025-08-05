@@ -7,5 +7,6 @@ pikepdf
 pytest
 pytest-cov
 qrcode
+requests # required by endesive.signer
 tabula-py
 uharfbuzz
