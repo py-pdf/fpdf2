@@ -1800,7 +1800,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 math.radians((360 / numSides) * i) + math.radians(rotateDegrees)
             )
             points.append(point)
-        # creates list of touples containing cordinate points of vertices
+        # creates list of touples containing coordinate points of vertices
 
         self.polygon(points, style=style)
         # passes points through polygon function
