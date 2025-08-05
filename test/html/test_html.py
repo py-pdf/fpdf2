@@ -10,6 +10,7 @@ from test.conftest import assert_pdf_equal, LOREM_IPSUM, assert_same_file
 
 
 HERE = Path(__file__).resolve().parent
+FONT_DIR = HERE / ".." / "fonts"
 
 
 def test_html_images(tmp_path):
@@ -196,7 +197,7 @@ def test_html_bold_italic_underline(tmp_path):
 
 def test_html_strikethrough(tmp_path):
     pdf = FPDF()
-    pdf.add_font(fname=HERE / "../fonts/DejaVuSans.ttf")
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
     pdf.set_font_size(30)
     pdf.add_page()
     pdf.write_html("<s>strikethrough</s>")
@@ -277,7 +278,7 @@ def test_html_ul_type(tmp_path):
         </ul>"""
     )
     pdf.ln()
-    pdf.add_font(fname=HERE / "../fonts/DejaVuSans.ttf")
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
     pdf.set_font("DejaVuSans")
     pdf.write_html(
         """
@@ -287,6 +288,26 @@ def test_html_ul_type(tmp_path):
         </ul>"""
     )
     assert_pdf_equal(pdf, HERE / "html_ul_type.pdf", tmp_path)
+
+
+def test_html_list_with_custom_font(caplog, tmp_path):  # cf. issue #1496
+    pdf = FPDF()
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
+    pdf.set_font("DejaVuSans")
+    pdf.add_page()
+    pdf.write_html(
+        """<ul>
+          <li>item</li>
+        </ul>
+        <ul type="circle">
+          <li>item</li>
+        </ul>
+        <ul type="disc">
+          <li>item</li>
+        </ul>"""
+    )
+    assert_pdf_equal(pdf, HERE / "html_list_with_custom_font.pdf", tmp_path)
+    assert "WARN" not in caplog.text
 
 
 def test_html_li_prefix_color(tmp_path):
@@ -333,7 +354,7 @@ def test_html_align_paragraph(tmp_path):
 
 def test_issue_156(tmp_path):
     pdf = FPDF()
-    pdf.add_font("Roboto", style="B", fname=HERE / "../fonts/Roboto-Bold.ttf")
+    pdf.add_font("Roboto", style="B", fname=FONT_DIR / "Roboto-Bold.ttf")
     pdf.set_font("Roboto", style="B")
     pdf.add_page()
     with pytest.raises(FPDFException) as error:
@@ -342,7 +363,7 @@ def test_issue_156(tmp_path):
         str(error.value)
         == "Undefined font: roboto - Use built-in fonts or FPDF.add_font() beforehand"
     )
-    pdf.add_font("Roboto", fname="test/fonts/Roboto-Regular.ttf")
+    pdf.add_font("Roboto", fname=FONT_DIR / "Roboto-Regular.ttf")
     pdf.write_html("Regular text<br><b>Bold text</b>")
     assert_pdf_equal(pdf, HERE / "issue_156.pdf", tmp_path)
 
@@ -363,7 +384,7 @@ def test_html_font_color_name(tmp_path):
 
 def test_html_heading_hebrew(tmp_path):
     pdf = FPDF()
-    pdf.add_font(fname=HERE / "../fonts/DejaVuSans.ttf")
+    pdf.add_font(fname=FONT_DIR / "DejaVuSans.ttf")
     pdf.set_font("DejaVuSans")
     pdf.add_page()
     pdf.write_html("<h1>Hebrew: שלום עולם</h1>")
@@ -598,7 +619,7 @@ def test_html_unorthodox_headings_hierarchy(tmp_path):  # issue 631
 
 def test_html_custom_pre_code_font(tmp_path):  # issue 770
     pdf = FPDF()
-    pdf.add_font(fname=HERE / "../fonts/DejaVuSansMono.ttf")
+    pdf.add_font(fname=FONT_DIR / "DejaVuSansMono.ttf")
     pdf.add_page()
     pdf.write_html(
         "<code> Cześć! </code>",
@@ -609,7 +630,7 @@ def test_html_custom_pre_code_font(tmp_path):  # issue 770
 
 def test_html_custom_pre_code_font_deprecated(tmp_path):  # issue 770
     pdf = FPDF()
-    pdf.add_font(fname=HERE / "../fonts/DejaVuSansMono.ttf")
+    pdf.add_font(fname=FONT_DIR / "DejaVuSansMono.ttf")
     pdf.add_page()
     with pytest.warns(DeprecationWarning):
         pdf.write_html("<code> Cześć! </code>", pre_code_font="DejaVuSansMono")
