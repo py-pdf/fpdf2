@@ -539,7 +539,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
     @property
     def pages_count(self):
         """
-        Returns the total pages of the document.
+        Returns the total pages of the document, at the time it is called.
+
+        Do not use this in `fpdf.fpdf.FPDF.header()` or `fpdf.fpdf.FPDF.footer()`,
+        as its value will not be the total page count.
+        Uses `{nb}` instead, _cf._ `fpdf.fpdf.FPDF.alias_nb_pages()`.
         """
         return len(self.pages)
 
@@ -917,7 +921,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         This substitution can be disabled for performances reasons, by calling `alias_nb_pages(None)`.
 
         Args:
-            alias (str): the alias. Defaults to "{nb}".
+            alias (str): the alias. Defaults to `"{nb}"`.
 
         Notes
         -----
