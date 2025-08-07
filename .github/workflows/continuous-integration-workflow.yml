@@ -94,7 +94,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
         platform: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.platform }}
     permissions: {}
@@ -133,7 +133,7 @@ jobs:
         if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.13' }}
         run: bash <(curl -s https://codecov.io/bash)
       - name: Run tests with the minimal versions of fpdf2 direct dependencies ☑
-        if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.8' }}
+        if: ${{ startsWith(matrix.platform, 'ubuntu') && matrix.python-version == '3.9' }}
         run: |
           # Ensuring that those minimal versions remain compatible:
           sed -i '/install_requires/,/\n/s/>=/==/' setup.cfg

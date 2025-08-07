@@ -39,6 +39,9 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Changed
 * [`accept_page_break`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) is now only called once per page break - _cf._ [issue #1489](https://github.com/py-pdf/fpdf2/issues/1489)
 
+### Removed
+* support for Python 3.8, that reached [end-of-life](https://devguide.python.org/versions/#supported-versions) in 2024
+
 ## [2.8.3] - 2025-04-22
 ### Added
 * added tutorial "tuto7" (in [English](https://py-pdf.github.io/fpdf2/Tutorial.html#tuto-7-creating-pdfa-documents) and [German](https://py-pdf.github.io/fpdf2/Tutorial-de.html#tuto-7-ein-pdfa-dokument-erstellen)) with documentation to create PDF/A files with fpdf2 - thanks to @lka

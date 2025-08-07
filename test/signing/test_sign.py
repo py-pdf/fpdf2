@@ -11,7 +11,6 @@ HERE = Path(__file__).resolve().parent
 TRUSTED_CERT_PEMS = (HERE / "signing-certificate.crt",)
 
 
-@mark.skipif(version_info[:2] == (3, 8), reason="Endesive doesn't support Python 3.8")
 def test_sign_pkcs12(tmp_path):
     pdf = FPDF()
     pdf.set_creation_date(EPOCH)
@@ -21,7 +20,6 @@ def test_sign_pkcs12(tmp_path):
     check_signature(pdf, TRUSTED_CERT_PEMS)
 
 
-@mark.skipif(version_info[:2] == (3, 8), reason="Endesive doesn't support Python 3.8")
 def test_sign_pkcs12_with_link(tmp_path):
     "This test ensures that Signature & Link annotations can be combined"
     pdf = FPDF()

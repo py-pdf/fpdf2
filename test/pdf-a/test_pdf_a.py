@@ -55,10 +55,6 @@ class PDF(FPDF):
             pdf.save(deterministic_id=True)
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 9),
-    reason="Fails on Python 3.8 because the PDFFontStream contents change",
-)
 def test_basic_pdfa(tmp_path):
     pdf = PDF(
         language="en-US",
