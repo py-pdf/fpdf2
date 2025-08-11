@@ -14,7 +14,7 @@ jobs:
     permissions: {}
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
       - name: Set up Python 3.13 🔧
@@ -43,7 +43,7 @@ jobs:
       security-events: write  # for zizmor
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
       - name: Set up Python 3.13 🔧
@@ -100,7 +100,7 @@ jobs:
     permissions: {}
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }} 🔧
@@ -170,7 +170,7 @@ jobs:
             borbpdf.com:443
           # Starting from api.star-history.com, the endpoints whitelist reason is the mkdocs privacy plugin
       - name: Checkout 🛎️
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
           # Required for mkdocs git-revision-date-localized plugin:
@@ -235,7 +235,7 @@ jobs:
             *.sigstore.dev:443
             upload.pypi.org:443
       - name: Checkout 🛎️
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
       - name: Set up Python 3.13 🔧
