@@ -35,6 +35,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `multi_cell()` text clipping bug - [issue #1471](https://github.com/py-pdf/fpdf2/issues/1471)
 * HTML lists bullets are now properly displayed when using unicode fonts - _cf._ [issue #1496](https://github.com/py-pdf/fpdf2/issues/1496)
 * clarified documentation in [Maths.md](https://py-pdf.github.io/fpdf2/Maths.html) regarding DataFrame string conversion for PDF rendering
+* children of `<a>` tags in SVGs are now correctly rendered - _cf._ [PR #1522](https://github.com/py-pdf/fpdf2/pull/1522)
 
 ### Changed
 * [`accept_page_break`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) is now only called once per page break - _cf._ [issue #1489](https://github.com/py-pdf/fpdf2/issues/1489)

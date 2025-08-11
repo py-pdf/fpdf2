@@ -850,6 +850,13 @@ class SVGObject:
         for child in defs:
             if child.tag in xmlns_lookup("svg", "g"):
                 self.build_group(child)
+            elif child.tag in xmlns_lookup("svg", "a"):
+                # <a> tags aren't supported but we need to recurse into them to
+                # render nested elements.
+                LOGGER.warning(
+                    "Ignoring unsupported SVG tag: <a> (contributions are welcome to add support for it)",
+                )
+                self.build_group(child)
             elif child.tag in xmlns_lookup("svg", "path"):
                 self.build_path(child)
             elif child.tag in xmlns_lookup("svg", "image"):
@@ -919,6 +926,13 @@ class SVGObject:
             if child.tag in xmlns_lookup("svg", "defs"):
                 self.handle_defs(child)
             elif child.tag in xmlns_lookup("svg", "g"):
+                pdf_group.add_item(self.build_group(child), False)
+            elif child.tag in xmlns_lookup("svg", "a"):
+                # <a> tags aren't supported but we need to recurse into them to
+                # render nested elements.
+                LOGGER.warning(
+                    "Ignoring unsupported SVG tag: <a> (contributions are welcome to add support for it)",
+                )
                 pdf_group.add_item(self.build_group(child), False)
             elif child.tag in xmlns_lookup("svg", "path"):
                 pdf_group.add_item(self.build_path(child), False)

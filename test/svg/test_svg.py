@@ -280,6 +280,20 @@ class TestSVGObject:
 
         assert_pdf_equal(pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path)
 
+    def test_svg_render_content_in_a_tag(self, tmp_path):
+        svg_file = parameters.svgfile("simple_rect_in_a_tag.svg")
+
+        svg = fpdf.svg.SVGObject.from_file(svg_file)
+
+        pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
+        pdf.set_margin(0)
+        pdf.allow_images_transparency = False
+        pdf.add_page()
+
+        svg.draw_to_page(pdf)
+
+        assert_pdf_equal(pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path)
+
     def test_svg_rendering_image_over_page_break(self, tmp_path):
         pdf = fpdf.FPDF()
         pdf.add_page()
