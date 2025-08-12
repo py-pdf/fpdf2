@@ -1133,3 +1133,20 @@ svg_shape_info_tests = (
         id="invalid viewbox",
     ),
 )
+
+svg_current_color = (
+    # if there's no color defined in the graphics context, we expect black
+    # (that's the behaviour when the SVG is opened in a browser)
+    pytest.param(
+        None,
+        None,
+        "_black_by_default",
+        id="red draw and",
+    ),
+    pytest.param(
+        (255, 0, 0),
+        (255, 0, 0),
+        "_red_fill_draw",
+        id="red fill and draw colors",
+    ),
+)

@@ -238,7 +238,7 @@ def clamp_float(min_val, max_val):
 
 @force_nodocument
 def inheritable(value, converter=lambda value: value):
-    if value == "inherit":
+    if value in ("inherit", "currentColor"):
         return GraphicsStyle.INHERIT
 
     return converter(value)
