@@ -824,7 +824,6 @@ class OutputProducer:
                     "SVG ",  # SVG table
                     "CPAL",  # Color Palette table
                     "COLR",  # Color table
-                    "fvar",  # Font Variations table
                 ]
                 subsetter = ftsubset.Subsetter(options)
                 subsetter.populate(glyphs=glyph_names)
