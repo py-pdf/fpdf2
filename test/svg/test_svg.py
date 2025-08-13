@@ -118,16 +118,18 @@ class TestSVGPathParsing:
 
         fpdf.svg.svg_path_converter(pdf_path, path)
 
-        gsdr = fpdf.output.ResourceCatalog()
+        resource_catalog = fpdf.output.ResourceCatalog()
         style = fpdf.drawing.GraphicsStyle()
         first_point = fpdf.drawing.Point(0, 0)
         start = fpdf.drawing.Move(first_point)
 
         if debug:
             dbg = io.StringIO()
-            result = pdf_path.render_debug(gsdr, style, start, first_point, dbg, "")[0]
+            result = pdf_path.render_debug(
+                resource_catalog, style, start, first_point, dbg, ""
+            )[0]
         else:
-            result = pdf_path.render(gsdr, style, start, first_point)[0]
+            result = pdf_path.render(resource_catalog, style, start, first_point)[0]
 
         assert result == expected
 
