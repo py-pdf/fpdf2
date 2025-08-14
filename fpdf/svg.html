@@ -59,7 +59,7 @@ in non-backward-compatible ways.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b63a9506624886aa553173511c55e3c84157daef/fpdf/svg.py#L556-L608" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/3183be1ab441b7876ac3b3fca47ee471ed77f651/fpdf/svg.py#L556-L608" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class PathPen(BasePen):
     def __init__(self, pdf_path, *args, **kwargs):
@@ -143,7 +143,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b63a9506624886aa553173511c55e3c84157daef/fpdf/svg.py#L589-L601" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/3183be1ab441b7876ac3b3fca47ee471ed77f651/fpdf/svg.py#L589-L601" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def arcTo(self, rx, ry, rotation, arc, sweep, end):
     self.pdf_path.arc_to(
@@ -171,7 +171,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b63a9506624886aa553173511c55e3c84157daef/fpdf/svg.py#L1039-L1095" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/3183be1ab441b7876ac3b3fca47ee471ed77f651/fpdf/svg.py#L1039-L1095" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -193,7 +193,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
         )
 
     @force_nodocument
-    def render(self, _gsd_registry, _style, last_item, initial_point):
+    def render(self, _resource_registry, _style, last_item, initial_point):
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -223,10 +223,10 @@ override the homonymous class attribute for a given pen instance.</p></div>
 
     @force_nodocument
     def render_debug(
-        self, gsd_registry, style, last_item, initial_point, debug_stream, _pfx
+        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
     ):
         stream_content, last_item, initial_point = self.render(
-            gsd_registry, style, last_item, initial_point
+            resource_registry, style, last_item, initial_point
         )
         debug_stream.write(f&#34;{self.href} rendered as: {stream_content}\n&#34;)
         return stream_content, last_item, initial_point</code></pre>
@@ -243,7 +243,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b63a9506624886aa553173511c55e3c84157daef/fpdf/svg.py#L1039-L1095" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/3183be1ab441b7876ac3b3fca47ee471ed77f651/fpdf/svg.py#L1039-L1095" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -265,7 +265,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
         )
 
     @force_nodocument
-    def render(self, _gsd_registry, _style, last_item, initial_point):
+    def render(self, _resource_registry, _style, last_item, initial_point):
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -295,10 +295,10 @@ override the homonymous class attribute for a given pen instance.</p></div>
 
     @force_nodocument
     def render_debug(
-        self, gsd_registry, style, last_item, initial_point, debug_stream, _pfx
+        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
     ):
         stream_content, last_item, initial_point = self.render(
-            gsd_registry, style, last_item, initial_point
+            resource_registry, style, last_item, initial_point
         )
         debug_stream.write(f&#34;{self.href} rendered as: {stream_content}\n&#34;)
         return stream_content, last_item, initial_point</code></pre>
@@ -310,7 +310,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b63a9506624886aa553173511c55e3c84157daef/fpdf/svg.py#L1039-L1095" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/3183be1ab441b7876ac3b3fca47ee471ed77f651/fpdf/svg.py#L1039-L1095" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -332,7 +332,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
         )
 
     @force_nodocument
-    def render(self, _gsd_registry, _style, last_item, initial_point):
+    def render(self, _resource_registry, _style, last_item, initial_point):
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -362,10 +362,10 @@ override the homonymous class attribute for a given pen instance.</p></div>
 
     @force_nodocument
     def render_debug(
-        self, gsd_registry, style, last_item, initial_point, debug_stream, _pfx
+        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
     ):
         stream_content, last_item, initial_point = self.render(
-            gsd_registry, style, last_item, initial_point
+            resource_registry, style, last_item, initial_point
         )
         debug_stream.write(f&#34;{self.href} rendered as: {stream_content}\n&#34;)
         return stream_content, last_item, initial_point</code></pre>
@@ -377,7 +377,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b63a9506624886aa553173511c55e3c84157daef/fpdf/svg.py#L1039-L1095" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/3183be1ab441b7876ac3b3fca47ee471ed77f651/fpdf/svg.py#L1039-L1095" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -399,7 +399,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
         )
 
     @force_nodocument
-    def render(self, _gsd_registry, _style, last_item, initial_point):
+    def render(self, _resource_registry, _style, last_item, initial_point):
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -429,10 +429,10 @@ override the homonymous class attribute for a given pen instance.</p></div>
 
     @force_nodocument
     def render_debug(
-        self, gsd_registry, style, last_item, initial_point, debug_stream, _pfx
+        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
     ):
         stream_content, last_item, initial_point = self.render(
-            gsd_registry, style, last_item, initial_point
+            resource_registry, style, last_item, initial_point
         )
         debug_stream.write(f&#34;{self.href} rendered as: {stream_content}\n&#34;)
         return stream_content, last_item, initial_point</code></pre>
@@ -444,7 +444,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b63a9506624886aa553173511c55e3c84157daef/fpdf/svg.py#L1039-L1095" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/3183be1ab441b7876ac3b3fca47ee471ed77f651/fpdf/svg.py#L1039-L1095" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -466,7 +466,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
         )
 
     @force_nodocument
-    def render(self, _gsd_registry, _style, last_item, initial_point):
+    def render(self, _resource_registry, _style, last_item, initial_point):
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -496,10 +496,10 @@ override the homonymous class attribute for a given pen instance.</p></div>
 
     @force_nodocument
     def render_debug(
-        self, gsd_registry, style, last_item, initial_point, debug_stream, _pfx
+        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
     ):
         stream_content, last_item, initial_point = self.render(
-            gsd_registry, style, last_item, initial_point
+            resource_registry, style, last_item, initial_point
         )
         debug_stream.write(f&#34;{self.href} rendered as: {stream_content}\n&#34;)
         return stream_content, last_item, initial_point</code></pre>
@@ -511,7 +511,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b63a9506624886aa553173511c55e3c84157daef/fpdf/svg.py#L1039-L1095" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/3183be1ab441b7876ac3b3fca47ee471ed77f651/fpdf/svg.py#L1039-L1095" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -533,7 +533,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
         )
 
     @force_nodocument
-    def render(self, _gsd_registry, _style, last_item, initial_point):
+    def render(self, _resource_registry, _style, last_item, initial_point):
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -563,10 +563,10 @@ override the homonymous class attribute for a given pen instance.</p></div>
 
     @force_nodocument
     def render_debug(
-        self, gsd_registry, style, last_item, initial_point, debug_stream, _pfx
+        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
     ):
         stream_content, last_item, initial_point = self.render(
-            gsd_registry, style, last_item, initial_point
+            resource_registry, style, last_item, initial_point
         )
         debug_stream.write(f&#34;{self.href} rendered as: {stream_content}\n&#34;)
         return stream_content, last_item, initial_point</code></pre>
@@ -578,7 +578,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b63a9506624886aa553173511c55e3c84157daef/fpdf/svg.py#L1039-L1095" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/3183be1ab441b7876ac3b3fca47ee471ed77f651/fpdf/svg.py#L1039-L1095" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -600,7 +600,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
         )
 
     @force_nodocument
-    def render(self, _gsd_registry, _style, last_item, initial_point):
+    def render(self, _resource_registry, _style, last_item, initial_point):
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -630,10 +630,10 @@ override the homonymous class attribute for a given pen instance.</p></div>
 
     @force_nodocument
     def render_debug(
-        self, gsd_registry, style, last_item, initial_point, debug_stream, _pfx
+        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
     ):
         stream_content, last_item, initial_point = self.render(
-            gsd_registry, style, last_item, initial_point
+            resource_registry, style, last_item, initial_point
         )
         debug_stream.write(f&#34;{self.href} rendered as: {stream_content}\n&#34;)
         return stream_content, last_item, initial_point</code></pre>
@@ -650,7 +650,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b63a9506624886aa553173511c55e3c84157daef/fpdf/svg.py#L619-L1036" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/3183be1ab441b7876ac3b3fca47ee471ed77f651/fpdf/svg.py#L619-L1036" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGObject:
     &#34;&#34;&#34;
@@ -1103,7 +1103,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b63a9506624886aa553173511c55e3c84157daef/fpdf/svg.py#L818-L843" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/3183be1ab441b7876ac3b3fca47ee471ed77f651/fpdf/svg.py#L818-L843" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def draw_to_page(self, pdf, x=None, y=None, debug_stream=None):
     &#34;&#34;&#34;
@@ -1154,7 +1154,7 @@ written.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b63a9506624886aa553173511c55e3c84157daef/fpdf/svg.py#L712-L732" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/3183be1ab441b7876ac3b3fca47ee471ed77f651/fpdf/svg.py#L712-L732" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def transform_to_page_viewport(self, pdf, align_viewbox=True):
     &#34;&#34;&#34;
@@ -1202,7 +1202,7 @@ viewbox aspect ratio does not match that of the viewport.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/b63a9506624886aa553173511c55e3c84157daef/fpdf/svg.py#L734-L816" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/3183be1ab441b7876ac3b3fca47ee471ed77f651/fpdf/svg.py#L734-L816" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def transform_to_rect_viewport(
     self, scale, width, height, align_viewbox=True, ignore_svg_top_attrs=False
