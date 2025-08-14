@@ -116,7 +116,13 @@ from .line_break import (
     Fragment,
     MultiLineBreak,
     TextLine,
-    TotalPagesSubstitutionFragment,
+    SubstitutionFragment,
+)
+from .substitution import (
+    Substitution,
+    TotalPagesSubstitution,
+    CurrentPageSubstitution,
+    ToCPageSubstitution,
 )
 from .outline import OutlineSection
 from .output import (
@@ -377,6 +383,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         # page number -> array of 8 × n numbers:
         self._text_quad_points = defaultdict(list)
+
+        self._substitution_fragments: list[SubstitutionFragment] = []
 
         # final buffer holding the PDF document in-memory - defined only after calling output():
         self.buffer = None
@@ -3153,6 +3161,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         markdown=False,
         new_x=XPos.RIGHT,
         new_y=YPos.TOP,
+        substitutions: Optional[list] = None,
     ):
         """
         Prints a cell (rectangular area) with optional borders, background color and
@@ -3164,6 +3173,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         If automatic page breaking is enabled and the cell goes beyond the limit, a
         page break is performed before outputting.
+
+        When you want to include a substitution in the text, convert the Substitution object to a string
+        with str(substitution) and place it in text. Then add the same object to the substitutions list.
 
         Args:
             w (float): Cell width. Default value: None, meaning to fit text width.
@@ -3191,6 +3203,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 of text as bold / italics / strikethrough / underlined.
                 Supports `\\` as escape character. Default to False.
             txt (str): [**DEPRECATED since v2.7.6**] String to print. Default value: empty string.
+            substitutions (list[Substitution], optional): A list of Substitution objects corresponding to the placeholders you inserted in text.
 
         Returns: a boolean indicating if page break was triggered
         """
@@ -3243,7 +3256,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         styled_txt_frags = (
             self._preload_bidirectional_text(text, markdown)
             if self.text_shaping
-            else self._preload_font_styles(text, markdown)
+            else self._preload_font_styles(text, markdown, substitutions=substitutions)
         )
         return self._render_styled_text_line(
             TextLine(
@@ -3422,8 +3435,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             )
             underlines, strikethroughs = [], []
             for i, frag in enumerate(fragments):
-                if isinstance(frag, TotalPagesSubstitutionFragment):
-                    self.pages[self.page].add_text_substitution(frag)
+                if isinstance(frag, SubstitutionFragment):
+                    frag.page = self.pages[self.page]
+                    self._substitution_fragments.append(frag)
                 if frag.graphics_state["text_color"] != last_used_color:
                     # allow to change color within the line of text.
                     last_used_color = frag.graphics_state["text_color"]
@@ -3626,12 +3640,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             ]
         )
 
-    def _preload_bidirectional_text(self, text, markdown):
+    def _preload_bidirectional_text(
+        self, text, markdown, substitutions: Optional[list[Substitution]] = None
+    ):
         """ "
         Break the text into bidirectional segments and preload font styles for each fragment
         """
         if not self.text_shaping:
-            return self._preload_font_styles(text, markdown)
+            return self._preload_font_styles(
+                text, markdown, substitutions=substitutions
+            )
         paragraph_direction = (
             self.text_shaping["direction"]
             if self.text_shaping["direction"]
@@ -3645,10 +3663,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         fragments = []
         for bidi_text, bidi_direction in directional_segments:
             self.text_shaping["fragment_direction"] = bidi_direction
-            fragments += self._preload_font_styles(bidi_text, markdown)
+            fragments += self._preload_font_styles(
+                bidi_text, markdown, substitutions=substitutions
+            )
         return tuple(fragments)
 
-    def _preload_font_styles(self, text, markdown):
+    def _preload_font_styles(
+        self, text, markdown, substitutions: Optional[list[Substitution]] = None
+    ):
         """
         When Markdown styling is enabled, we require secondary fonts
         to ender text in bold & italics.
@@ -3664,7 +3686,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             prev_font_style += "U"
         if self.strikethrough:
             prev_font_style += "S"
-        styled_txt_frags = tuple(self._parse_chars(text, markdown))
+        styled_txt_frags = tuple(
+            self._parse_chars(text, markdown, substitutions=substitutions)
+        )
         if markdown:
             page = self.page
             # We set the current to page to zero so that
@@ -3713,27 +3737,46 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             return None
         return fonts_with_char[0]
 
-    def _parse_chars(self, text: str, markdown: bool) -> Iterator[Fragment]:
+    def _parse_chars(
+        self,
+        text: str,
+        markdown: bool,
+        substitutions: Optional[list[Substitution]] = None,
+    ) -> Iterator[Fragment]:
         "Split text into fragments"
+
+        # For backwards compatibility.
+        if self.str_alias_nb_pages:
+            if not substitutions:
+                substitutions = []
+            substitutions.append(TotalPagesSubstitution(self.str_alias_nb_pages))
+
         if not markdown and not self.text_shaping and not self._fallback_font_ids:
-            if self.str_alias_nb_pages:
-                for seq, fragment_text in enumerate(
-                    text.split(self.str_alias_nb_pages)
-                ):
-                    if seq > 0:
-                        yield TotalPagesSubstitutionFragment(
-                            self.str_alias_nb_pages,
+            if substitutions:
+                placeholder_to_substitution = {str(x): x for x in substitutions}
+                piped_placeholders = "|".join(placeholder_to_substitution)
+                for subtext in re.split(f"({piped_placeholders})", text):
+                    if not subtext:
+                        continue
+
+                    substitution = placeholder_to_substitution.get(subtext)
+                    if substitution:
+                        yield SubstitutionFragment(
+                            substitution,
+                            subtext,
                             self._get_current_graphics_state(),
                             self.k,
                         )
-                    if fragment_text:
+                    else:
                         yield Fragment(
-                            fragment_text, self._get_current_graphics_state(), self.k
+                            subtext,
+                            self._get_current_graphics_state(),
+                            self.k,
                         )
-                return
-
-            yield Fragment(text, self._get_current_graphics_state(), self.k)
+            else:
+                yield Fragment(text, self._get_current_graphics_state(), self.k)
             return
+
         txt_frag, in_bold, in_italics, in_strikethrough, in_underline = (
             [],
             "B" in self.font_style,
@@ -3794,8 +3837,14 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     yield frag()
                 current_text_script = text_script
 
-            if self.str_alias_nb_pages:
-                if text[: len(self.str_alias_nb_pages)] == self.str_alias_nb_pages:
+            if substitutions:
+                substitution_fragment_created = False
+
+                for substitution in substitutions:
+                    placeholder = str(substitution)
+                    if text[: len(placeholder)] != placeholder:
+                        continue
+
                     if txt_frag:
                         yield frag()
                     gstate = self._get_current_graphics_state()
@@ -3804,12 +3853,17 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     )
                     gstate["strikethrough"] = in_strikethrough
                     gstate["underline"] = in_underline
-                    yield TotalPagesSubstitutionFragment(
-                        self.str_alias_nb_pages,
+                    yield SubstitutionFragment(
+                        substitution,
+                        placeholder,
                         gstate,
                         self.k,
                     )
-                    text = text[len(self.str_alias_nb_pages) :]
+                    text = text[len(placeholder) :]
+                    substitution_fragment_created = True
+                    break
+
+                if substitution_fragment_created:
                     continue
 
             # Check that previous & next characters are not identical to the marker:
@@ -4000,6 +4054,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         output=MethodReturnValue.PAGE_BREAK,
         center=False,
         padding=0,
+        substitutions: Optional[list[Substitution]] = None,
     ):
         """
         This method allows printing text with line breaks. They can be automatic
@@ -4009,6 +4064,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         Text can be aligned, centered or justified. The cell block can be framed and
         the background painted. A cell has an horizontal padding, on the left & right sides,
         defined by the.c_margin property.
+
+        When you want to include a substitution in the text, convert the Substitution object to a string
+        with str(substitution) and place it in text. Then add the same object to the substitutions list.
 
         Args:
             w (float): cell width. If 0, they extend up to the right margin of the page.
@@ -4053,6 +4111,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 the second to the right and left, the third to the bottom. When four values are specified,
                 the paddings apply to the top, right, bottom, and left in that order (clockwise)
                 If padding for left or right ends up being non-zero then respective c_margin is ignored.
+            substitutions (list[Substitution], optional): A list of Substitution objects corresponding to the placeholders you inserted in text.
 
         Center overrides values for horizontal padding
 
@@ -4096,6 +4155,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     output=MethodReturnValue.LINES if split_only else output,
                     center=center,
                     padding=padding,
+                    substitutions=substitutions,
                 )
         if not self.font_family:
             raise FPDFException("No font set, you need to call set_font() beforehand")
@@ -4172,9 +4232,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         text = self.normalize_text(text)
         normalized_string = text.replace("\r", "")
         styled_text_fragments = (
-            self._preload_bidirectional_text(normalized_string, markdown)
+            self._preload_bidirectional_text(
+                normalized_string, markdown, substitutions=substitutions
+            )
             if self.text_shaping
-            else self._preload_font_styles(normalized_string, markdown)
+            else self._preload_font_styles(
+                normalized_string, markdown, substitutions=substitutions
+            )
         )
 
         prev_current_font = self.current_font
@@ -5046,6 +5110,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 if tocp.reset_page_indices is False:
                     page.get_page_label().st = page_index
             assert len(new_pages) == 0, f"#new_pages: {len(new_pages)}"
+            # Fix links:
+            for dest in self.links.values():
+                new_index = indices_remap.get(dest.page_number)
+                if new_index is not None:
+                    dest.page_number = new_index
             # Fix outline:
             for section in self._outline:
                 new_index = indices_remap.get(section.page_number)
@@ -5665,17 +5734,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             # Generating .buffer based on .pages:
             if self.toc_placeholder:
                 self._insert_table_of_contents()
-            if self.str_alias_nb_pages:
-                for page in self.pages.values():
-                    for substitution_item in page.get_text_substitutions():
-                        page.contents = page.contents.replace(
-                            substitution_item.get_placeholder_string().encode(
-                                "latin-1"
-                            ),
-                            substitution_item.render_text_substitution(
-                                str(self.pages_count)
-                            ).encode("latin-1"),
-                        )
+            self._perform_substitutions()
             if linearize:
                 output_producer_class = LinearizedOutputProducer
             output_producer = output_producer_class(self)
@@ -5689,6 +5748,36 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 name.write(self.buffer)
             return None
         return self.buffer
+
+    def _perform_substitutions(self):
+        for fragment in self._substitution_fragments:
+            substitution = fragment.substitution
+
+            page = fragment.page
+            if page is None:
+                raise FPDFException(
+                    f"There is no associated page with a substitution which has the placeholder '{substitution}'."
+                )
+
+            if isinstance(substitution, TotalPagesSubstitution):
+                substitution.value = str(self.pages_count)
+            elif isinstance(substitution, CurrentPageSubstitution):
+                substitution.value = str(page.index())
+            elif isinstance(substitution, ToCPageSubstitution):
+                substitution.value = str(
+                    substitution.extra_data + self._toc_inserted_pages
+                )
+
+            value = substitution.value
+            if value is None:
+                raise FPDFException(
+                    f"There is no value to substitute the placeholder '{substitution}' on the {page.index()} page."
+                )
+
+            page.contents = page.contents.replace(
+                fragment.get_placeholder_string().encode("latin-1"),
+                fragment.render_text_substitution(value).encode("latin-1"),
+            )
 
 
 # Pattern from sir Guido Von Rossum: https://stackoverflow.com/a/72911884/636849

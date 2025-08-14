@@ -10,13 +10,17 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/LineBreaks.html>
 """
 
 from numbers import Number
-from typing import NamedTuple, Any, List, Optional, Union, Sequence
+from typing import NamedTuple, Any, List, Optional, Union, Sequence, TYPE_CHECKING
 from uuid import uuid4
 
 from .enums import Align, CharVPos, TextDirection, WrapMode
 from .errors import FPDFException
 from .fonts import CoreFont, TTFFont
 from .util import escape_parens
+from .substitution import Substitution
+
+if TYPE_CHECKING:
+    from .output import PDFPage
 
 SOFT_HYPHEN = "\u00ad"
 HYPHEN = "\u002d"
@@ -364,19 +368,33 @@ class Fragment:
         ret += f"({escaped_text}) Tj"
         return ret
 
+    def copy(self, **kwargs):
+        params = dict(
+            characters="",
+            graphics_state=self.graphics_state,
+            k=self.k,
+        )
+        params.update(kwargs)
+        return self.__class__(**params)
 
-class TotalPagesSubstitutionFragment(Fragment):
+
+class SubstitutionFragment(Fragment):
     """
-    A special type of text fragment that represents a placeholder for the total number of pages
-    in a PDF document.
+    A special type of text fragment that represents a placeholder
+    which is supposed to be replaced by something else in the result PDF document.
 
     A placeholder will be generated during the initial content rendering phase of a PDF document.
-    This placeholder is later replaced by the total number of pages in the document when the final
-    output is being produced.
+    This placeholder is later replaced by a value you provide calling render_text_substitution()
+    when the final output is being produced.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, substitution: Substitution, *args, **kwargs):
+        page = kwargs.pop("page", None)
         super().__init__(*args, **kwargs)
+
+        self.substitution = substitution
+        self.page: Optional[PDFPage] = page
+
         self.uuid = uuid4()
 
     def get_placeholder_string(self):
@@ -407,6 +425,11 @@ class TotalPagesSubstitutionFragment(Fragment):
         """
         self.characters = list(replacement_text)
         return super().render_pdf_text(*self._render_args, **self._render_kwargs)
+
+    def copy(self, **kwargs):
+        kwargs.setdefault("substitution", self.substitution)
+        kwargs.setdefault("page", self.page)
+        return super().copy(**kwargs)
 
 
 class TextLine(NamedTuple):
@@ -515,29 +538,14 @@ class CurrentLine:
         assert character != NEWLINE
         self.height = height
         if not self.fragments:
-            self.fragments.append(
-                original_fragment.__class__(
-                    characters="",
-                    graphics_state=original_fragment.graphics_state,
-                    k=original_fragment.k,
-                    link=url,
-                )
-            )
-
+            self.fragments.append(original_fragment.copy(link=url))
         # characters are expected to be grouped into fragments by font and
         # character attributes. If the last existing fragment doesn't match
         # the properties of the pending character -> add a new fragment.
         elif isinstance(
             original_fragment, Fragment
         ) and not original_fragment.has_same_style(self.fragments[-1]):
-            self.fragments.append(
-                original_fragment.__class__(
-                    characters="",
-                    graphics_state=original_fragment.graphics_state,
-                    k=original_fragment.k,
-                    link=url,
-                )
-            )
+            self.fragments.append(original_fragment.copy(link=url))
         active_fragment = self.fragments[-1]
 
         if character in BREAKING_SPACE_SYMBOLS_STR:
