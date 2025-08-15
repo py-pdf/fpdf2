@@ -17,12 +17,11 @@ from io import BytesIO
 from fontTools import subset as ftsubset
 
 from .annotations import PDFAnnotation
-from .drawing import PaintSoftMask
-from .enums import PDFResourceType, PageLabelStyle, SignatureFlag
-from .enums import OutputIntentSubType
+from .drawing import PaintSoftMask, Transform
+from .enums import OutputIntentSubType, PageLabelStyle, PDFResourceType, SignatureFlag
 from .errors import FPDFException
-from .line_break import TotalPagesSubstitutionFragment
 from .image_datastructures import RasterImageInfo
+from .line_break import TotalPagesSubstitutionFragment
 from .outline import build_outline_objs
 from .sign import Signature, sign_content
 from .syntax import (
@@ -44,7 +43,7 @@ try:
 except ImportError:
     signer = None
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from .fpdf import FPDF
@@ -530,6 +529,8 @@ class ResourceCatalog:
 
     GS_REGEX = re.compile(r"/(GS\d+) gs")
     IMG_REGEX = re.compile(r"/I(\d+) Do")
+    PATTERN_FILL_REGEX = re.compile(r"/(P\d+)\s+scn")
+    PATTERN_STROKE_REGEX = re.compile(r"/(P\d+)\s+SCN")
 
     def __init__(self):
         self.resources = defaultdict(dict)
@@ -538,17 +539,19 @@ class ResourceCatalog:
         self.soft_mask_xobjects = []
         self.last_reserved_object_id = 0
 
-    def add(self, resource_type: PDFResourceType, resource, page_number: int):
-        if resource_type in (PDFResourceType.PATTERN, PDFResourceType.SHADDING):
+    def add(self, resource_type: PDFResourceType, resource, page_number: Optional[int]):
+        if resource_type in (PDFResourceType.PATTERN, PDFResourceType.SHADING):
             registry = self.resources[resource_type]
+            prefix = self._get_prefix(resource_type)
+
             if resource not in registry:
-                registry[resource] = (
-                    f"{self._get_prefix(resource_type)}{len(registry) + 1}"
+                registry[resource] = f"{prefix}{len(registry) + 1}"
+            if page_number is not None:
+                self.resources_per_page[(page_number, resource_type)].add(
+                    registry[resource]
                 )
-            self.resources_per_page[(page_number, resource_type)].add(
-                registry[resource]
-            )
             return registry[resource]
+
         self.resources_per_page[(page_number, resource_type)].add(resource)
         return None
 
@@ -588,6 +591,12 @@ class ResourceCatalog:
         for m in self.IMG_REGEX.finditer(rendered):
             found.append((PDFResourceType.X_OBJECT, int(m.group(1))))
 
+        for m in self.PATTERN_FILL_REGEX.finditer(rendered):
+            found.append((PDFResourceType.PATTERN, m.group(1)))
+
+        for m in self.PATTERN_STROKE_REGEX.finditer(rendered):
+            found.append((PDFResourceType.PATTERN, m.group(1)))
+
         return found
 
     def index_stream_resources(self, rendered: str, page_number: int) -> None:
@@ -598,7 +607,12 @@ class ResourceCatalog:
           - Image XObjects: '/In Do'
         """
         for resource_type, resource in self.scan_stream(rendered):
-            self.add(resource_type, resource, page_number)
+            if resource_type == PDFResourceType.PATTERN:
+                self.resources_per_page[(page_number, PDFResourceType.PATTERN)].add(
+                    resource
+                )
+            else:
+                self.add(resource_type, resource, page_number)
 
     def get_items(self, resource_type: PDFResourceType):
         return self.resources[resource_type].items()
@@ -619,7 +633,7 @@ class ResourceCatalog:
             return "GS"
         if resource_type == PDFResourceType.PATTERN:
             return "P"
-        if resource_type == PDFResourceType.SHADDING:
+        if resource_type == PDFResourceType.SHADING:
             return "Sh"
         raise ValueError(f"No prefix for resource type {resource_type}")
 
@@ -1109,7 +1123,7 @@ class OutputProducer:
     def _add_shadings(self):
         shading_objs_per_name = OrderedDict()
         for shading, name in self.fpdf._resource_catalog.get_items(
-            PDFResourceType.SHADDING
+            PDFResourceType.SHADING
         ):
             for function in shading.functions:
                 self._add_pdf_obj(function, "function")
@@ -1125,6 +1139,13 @@ class OutputProducer:
         ):
             self._add_pdf_obj(pattern, "pattern")
             pattern_objs_per_name[name] = pattern
+            pattern.set_matrix(
+                pattern.get_matrix()
+                @ Transform.translation(0, -self.fpdf.h)
+                .scale(x=1, y=-1)
+                .scale(self.fpdf.k)
+            )
+
         return pattern_objs_per_name
 
     def _insert_resources(self, page_objs):
@@ -1169,7 +1190,7 @@ class OutputProducer:
                 page_shading_objs_per_name = {
                     shading_name: shading_objs_per_name[shading_name]
                     for shading_name in self.fpdf._resource_catalog.get_resources_per_page(
-                        page_number, PDFResourceType.SHADDING
+                        page_number, PDFResourceType.SHADING
                     )
                 }
                 page_pattern_objs_per_name = {

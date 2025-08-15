@@ -6,8 +6,44 @@ import math
 from pathlib import Path
 import re
 
-import fpdf
+from fpdf.enums import (
+    BlendMode,
+    IntersectionRule,
+    PathPaintRule,
+    StrokeCapStyle,
+    StrokeJoinStyle,
+)
+from fpdf.errors import FPDFException
+from fpdf.fpdf import FPDF
+from fpdf.output import ResourceCatalog
+from fpdf.syntax import Name
 from test.conftest import assert_pdf_equal
+from fpdf.drawing import (
+    ClippingPath,
+    DrawingContext,
+    GraphicsContext,
+    GraphicsStyle,
+    ImplicitClose,
+    Line,
+    Move,
+    PaintedPath,
+    RelativeLine,
+    render_pdf_primitive,
+)
+from fpdf.drawing_primitives import (
+    DeviceCMYK,
+    DeviceGray,
+    DeviceRGB,
+    Point,
+    Transform,
+    check_range,
+    cmyk8,
+    color_from_hex_string,
+    color_from_rgb_string,
+    gray8,
+    number_to_str,
+    rgb8,
+)
 
 import pytest
 
@@ -20,7 +56,7 @@ bad_path_chars = re.compile(r"[\[\]=#, ]")
 
 @pytest.fixture(scope="function")
 def auto_pdf(request):
-    pdf = fpdf.FPDF(unit="mm", format=(10, 10))
+    pdf = FPDF(unit="mm", format=(10, 10))
     pdf.add_page()
 
     yield pdf
@@ -39,7 +75,7 @@ def auto_pdf_cmp(request, tmp_path, auto_pdf):
 
 @pytest.fixture
 def open_path_drawing():
-    path = fpdf.drawing.PaintedPath()
+    path = PaintedPath()
     path.move_to(2, 2)
     path.curve_to(4, 3, 6, 3, 8, 2)
     path.line_to(8, 8)
@@ -57,8 +93,8 @@ def open_path_drawing():
 
 @pytest.fixture
 def prepared_blend_path(open_path_drawing):
-    open_path_drawing.style.fill_color = fpdf.drawing.rgb8(100, 120, 200)
-    open_path_drawing.style.stroke_color = fpdf.drawing.rgb8(200, 120, 100)
+    open_path_drawing.style.fill_color = rgb8(100, 120, 200)
+    open_path_drawing.style.stroke_color = rgb8(200, 120, 100)
     open_path_drawing.style.fill_opacity = 0.8
     open_path_drawing.style.stroke_opacity = 0.8
 
@@ -68,42 +104,42 @@ def prepared_blend_path(open_path_drawing):
 class TestUtilities:
     def test_range_check(self):
         with pytest.raises(ValueError):
-            fpdf.drawing._check_range(-1, minimum=0.0, maximum=0.0)
+            check_range(-1, minimum=0.0, maximum=0.0)
 
-        fpdf.drawing._check_range(0, minimum=0.0, maximum=1.0)
-        fpdf.drawing._check_range(1, minimum=0.0, maximum=1.0)
+        check_range(0, minimum=0.0, maximum=1.0)
+        check_range(1, minimum=0.0, maximum=1.0)
 
     @pytest.mark.parametrize("number, converted", parameters.numbers)
     def test_number_to_str(self, number, converted):
-        assert fpdf.drawing.number_to_str(number) == converted
+        assert number_to_str(number) == converted
 
     @pytest.mark.parametrize("primitive, result", parameters.pdf_primitives)
     def test_render_primitive(self, primitive, result):
-        assert fpdf.drawing.render_pdf_primitive(primitive) == result
+        assert render_pdf_primitive(primitive) == result
 
     # Add check for bad primitives: class without serialize, dict with non-Name
     # keys. Check for proper escaping of Name and string edge cases
     @pytest.mark.parametrize("primitive, error_type", parameters.pdf_bad_primitives)
     def test_error_on_bad_primitive(self, primitive, error_type):
         with pytest.raises(error_type):
-            fpdf.drawing.render_pdf_primitive(primitive)
+            render_pdf_primitive(primitive)
 
 
 class TestGraphicsStateDictRegistry:
     @pytest.fixture
     def new_style_registry(self):
-        return fpdf.output.ResourceCatalog()
+        return ResourceCatalog()
 
     def test_empty_style(self, new_style_registry):
-        style = fpdf.drawing.GraphicsStyle()
+        style = GraphicsStyle()
 
         result = new_style_registry.register_graphics_style(style)
 
         assert result is None
 
     def test_adding_styles(self, new_style_registry):
-        first = fpdf.drawing.GraphicsStyle()
-        second = fpdf.drawing.GraphicsStyle()
+        first = GraphicsStyle()
+        second = GraphicsStyle()
 
         first.stroke_width = 1
         second.stroke_width = 2
@@ -111,16 +147,16 @@ class TestGraphicsStateDictRegistry:
         first_name = new_style_registry.register_graphics_style(first)
         second_name = new_style_registry.register_graphics_style(second)
 
-        assert isinstance(first_name, fpdf.drawing.Name)
-        assert isinstance(second_name, fpdf.drawing.Name)
+        assert isinstance(first_name, Name)
+        assert isinstance(second_name, Name)
         assert first_name != second_name
         # I don't think it's necessary to check that first_name is actually e.g. "GS1", since
         # the naming pattern is an implementation detail that can change without
         # affecting anything.
 
     def test_style_deduplication(self, new_style_registry):
-        first = fpdf.drawing.GraphicsStyle()
-        second = fpdf.drawing.GraphicsStyle()
+        first = GraphicsStyle()
+        second = GraphicsStyle()
 
         first.stroke_width = 1
         second.stroke_width = 1
@@ -128,35 +164,35 @@ class TestGraphicsStateDictRegistry:
         first_name = new_style_registry.register_graphics_style(first)
         second_name = new_style_registry.register_graphics_style(second)
 
-        assert isinstance(first_name, fpdf.drawing.Name)
-        assert isinstance(second_name, fpdf.drawing.Name)
+        assert isinstance(first_name, Name)
+        assert isinstance(second_name, Name)
         assert first_name == second_name
 
 
 class TestColors:
     def test_device_rgb(self):
-        rgb = fpdf.drawing.DeviceRGB(r=1, g=0.5, b=0.25)
-        rgba = fpdf.drawing.DeviceRGB(r=1, g=0.5, b=0.25, a=0.75)
+        rgb = DeviceRGB(r=1, g=0.5, b=0.25)
+        rgba = DeviceRGB(r=1, g=0.5, b=0.25, a=0.75)
 
         assert rgb.colors == (1, 0.5, 0.25)
         assert rgba.colors == (1, 0.5, 0.25)
 
         with pytest.raises(ValueError):
-            fpdf.drawing.DeviceRGB(r=2, g=1, b=0)
+            DeviceRGB(r=2, g=1, b=0)
 
     def test_device_gray(self):
-        gray = fpdf.drawing.DeviceGray(g=0.5)
-        gray_a = fpdf.drawing.DeviceGray(g=0.5, a=0.75)
+        gray = DeviceGray(g=0.5)
+        gray_a = DeviceGray(g=0.5, a=0.75)
 
         assert gray.colors == (0.5, 0.5, 0.5)
         assert gray_a.colors == (0.5, 0.5, 0.5)
 
         with pytest.raises(ValueError):
-            fpdf.drawing.DeviceGray(g=2)
+            DeviceGray(g=2)
 
     def test_device_cmyk(self):
-        cmyk = fpdf.drawing.DeviceCMYK(c=1, m=1, y=1, k=0)
-        cmyk_a = fpdf.drawing.DeviceCMYK(c=1, m=1, y=1, k=0, a=0.5)
+        cmyk = DeviceCMYK(c=1, m=1, y=1, k=0)
+        cmyk_a = DeviceCMYK(c=1, m=1, y=1, k=0, a=0.5)
 
         assert cmyk.colors == (1, 1, 1, 0)
         assert cmyk_a.colors == (1, 1, 1, 0)
@@ -165,32 +201,28 @@ class TestColors:
         assert cmyk_a.serialize() == "1 1 1 0 k"
 
         with pytest.raises(ValueError):
-            fpdf.drawing.DeviceCMYK(c=2, m=1, y=1, k=0)
+            DeviceCMYK(c=2, m=1, y=1, k=0)
 
     def test_rgb8(self):
-        rgb = fpdf.drawing.rgb8(255, 254, 253)
-        rgba = fpdf.drawing.rgb8(r=255, g=254, b=253, a=252)
+        rgb = rgb8(255, 254, 253)
+        rgba = rgb8(r=255, g=254, b=253, a=252)
 
-        assert rgb == fpdf.drawing.DeviceRGB(r=1.0, g=254 / 255, b=253 / 255)
-        assert rgba == fpdf.drawing.DeviceRGB(
-            r=1.0, g=254 / 255, b=253 / 255, a=252 / 255
-        )
+        assert rgb == DeviceRGB(r=1.0, g=254 / 255, b=253 / 255)
+        assert rgba == DeviceRGB(r=1.0, g=254 / 255, b=253 / 255, a=252 / 255)
 
     def test_gray8(self):
-        gray = fpdf.drawing.gray8(255)
-        gray_a = fpdf.drawing.gray8(g=255, a=254)
+        gray = gray8(255)
+        gray_a = gray8(g=255, a=254)
 
-        assert gray == fpdf.drawing.DeviceGray(g=1.0)
-        assert gray_a == fpdf.drawing.DeviceGray(g=1.0, a=254 / 255)
+        assert gray == DeviceGray(g=1.0)
+        assert gray_a == DeviceGray(g=1.0, a=254 / 255)
 
     def test_cmyk8(self):
-        cmyk = fpdf.drawing.cmyk8(255, 254, 253, 252)
-        cmyk_a = fpdf.drawing.cmyk8(c=255, m=254, y=253, k=252, a=251)
+        cmyk = cmyk8(255, 254, 253, 252)
+        cmyk_a = cmyk8(c=255, m=254, y=253, k=252, a=251)
 
-        assert cmyk == fpdf.drawing.DeviceCMYK(
-            c=1.0, m=254 / 255, y=253 / 255, k=252 / 255
-        )
-        assert cmyk_a == fpdf.drawing.DeviceCMYK(
+        assert cmyk == DeviceCMYK(c=1.0, m=254 / 255, y=253 / 255, k=252 / 255)
+        assert cmyk_a == DeviceCMYK(
             c=1.0, m=254 / 255, y=253 / 255, k=252 / 255, a=251 / 255
         )
 
@@ -198,28 +230,28 @@ class TestColors:
     def test_hex_string_parser(self, hex_string, result):
         if isinstance(result, type) and issubclass(result, Exception):
             with pytest.raises(result):
-                fpdf.drawing.color_from_hex_string(hex_string)
+                color_from_hex_string(hex_string)
         else:
-            assert fpdf.drawing.color_from_hex_string(hex_string) == result
+            assert color_from_hex_string(hex_string) == result
 
     @pytest.mark.parametrize("rgb_string, result", parameters.rgb_colors)
     def test_rgb_string_parser(self, rgb_string, result):
         if isinstance(result, type) and issubclass(result, Exception):
             with pytest.raises(result):
-                fpdf.drawing.color_from_rgb_string(rgb_string)
+                color_from_rgb_string(rgb_string)
         else:
-            assert fpdf.drawing.color_from_rgb_string(rgb_string) == result
+            assert color_from_rgb_string(rgb_string) == result
 
 
 class TestPoint:
     def test_render(self):
-        pt = fpdf.drawing.Point(1, 1)
+        pt = Point(1, 1)
 
         assert pt.render() == "1 1"
 
     def test_dot(self):
-        pt1 = fpdf.drawing.Point(1, 2)
-        pt2 = fpdf.drawing.Point(3, 4)
+        pt1 = Point(1, 2)
+        pt2 = Point(3, 4)
 
         assert pt1.dot(pt2) == 11
         assert pt2.dot(pt1) == 11
@@ -228,8 +260,8 @@ class TestPoint:
             pt1.dot(1)
 
     def test_angle(self):
-        pt1 = fpdf.drawing.Point(1, 0)
-        pt2 = fpdf.drawing.Point(0, 1)
+        pt1 = Point(1, 0)
+        pt2 = Point(0, 1)
 
         assert pt1.angle(pt2) == pytest.approx(math.pi / 2)
         assert pt2.angle(pt1) == pytest.approx(-(math.pi / 2))
@@ -238,49 +270,49 @@ class TestPoint:
             pt1.angle(1)
 
     def test_magnitude(self):
-        pt1 = fpdf.drawing.Point(2, 0)
+        pt1 = Point(2, 0)
 
         assert pt1.mag() == 2.0
 
     def test_add(self):
-        pt1 = fpdf.drawing.Point(1, 0)
-        pt2 = fpdf.drawing.Point(0, 1)
+        pt1 = Point(1, 0)
+        pt2 = Point(0, 1)
 
-        assert pt1 + pt2 == fpdf.drawing.Point(1, 1)
-        assert pt2 + pt1 == fpdf.drawing.Point(1, 1)
+        assert pt1 + pt2 == Point(1, 1)
+        assert pt2 + pt1 == Point(1, 1)
 
         with pytest.raises(TypeError):
             _ = pt1 + 2
 
     def test_sub(self):
-        pt1 = fpdf.drawing.Point(1, 0)
-        pt2 = fpdf.drawing.Point(0, 1)
+        pt1 = Point(1, 0)
+        pt2 = Point(0, 1)
 
-        assert pt1 - pt2 == fpdf.drawing.Point(1, -1)
-        assert pt2 - pt1 == fpdf.drawing.Point(-1, 1)
+        assert pt1 - pt2 == Point(1, -1)
+        assert pt2 - pt1 == Point(-1, 1)
 
         with pytest.raises(TypeError):
             _ = pt1 - 2
 
     def test_neg(self):
-        pt = fpdf.drawing.Point(1, 2)
+        pt = Point(1, 2)
 
-        assert -pt == fpdf.drawing.Point(-1, -2)
+        assert -pt == Point(-1, -2)
 
     def test_mul(self):
-        pt = fpdf.drawing.Point(1, 2)
+        pt = Point(1, 2)
 
-        assert pt * 2 == fpdf.drawing.Point(2, 4)
-        assert 2 * pt == fpdf.drawing.Point(2, 4)
+        assert pt * 2 == Point(2, 4)
+        assert 2 * pt == Point(2, 4)
 
         with pytest.raises(TypeError):
             _ = pt * pt
 
     def test_div(self):
-        pt = fpdf.drawing.Point(1, 2)
+        pt = Point(1, 2)
 
-        assert (pt / 2) == fpdf.drawing.Point(0.5, 1.0)
-        assert (pt // 2) == fpdf.drawing.Point(0, 1)
+        assert (pt / 2) == Point(0.5, 1.0)
+        assert (pt // 2) == Point(0, 1)
 
         with pytest.raises(TypeError):
             _ = 2 / pt
@@ -295,10 +327,10 @@ class TestPoint:
             _ = pt // pt
 
     def test_matmul(self):
-        pt = fpdf.drawing.Point(2, 4)
-        tf = fpdf.drawing.Transform.translation(2, 2)
+        pt = Point(2, 4)
+        tf = Transform.translation(2, 2)
 
-        assert pt @ tf == fpdf.drawing.Point(4, 6)
+        assert pt @ tf == Point(4, 6)
 
         with pytest.raises(TypeError):
             _ = tf @ pt
@@ -307,7 +339,7 @@ class TestPoint:
             _ = pt @ pt
 
     def test_str(self):
-        pt = fpdf.drawing.Point(2, 4)
+        pt = Point(2, 4)
 
         assert str(pt) == "(x=2, y=4)"
 
@@ -315,20 +347,14 @@ class TestPoint:
 class TestTransform:
     @pytest.mark.parametrize("tf, pt, result", parameters.transforms)
     def test_constructors(self, tf, pt, result):
-        # use of pytest.approx here works because fpdf.drawing.Point is a NamedTuple
+        # use of pytest.approx here works because Point is a NamedTuple
         # (approx supports tuples) and wouldn't work if it were a normal object
         assert pt @ tf == pytest.approx(result)
 
     def test_chaining(self):
-        tf = (
-            fpdf.drawing.Transform.identity()
-            .translate(1, 1)
-            .scale(2, 1)
-            .rotate(0.3)
-            .shear(0, 0.5)
-        )
+        tf = Transform.identity().translate(1, 1).scale(2, 1).rotate(0.3).shear(0, 0.5)
         assert tf == pytest.approx(
-            fpdf.drawing.Transform(
+            Transform(
                 a=1.910672978251212,
                 b=1.546376902448285,
                 c=-0.29552020666133955,
@@ -339,44 +365,39 @@ class TestTransform:
         )
 
     def test_about(self):
-        tf = fpdf.drawing.Transform.scaling(2).about(10, 10)
+        tf = Transform.scaling(2).about(10, 10)
 
-        assert tf == fpdf.drawing.Transform(a=2, b=0, c=0, d=2, e=-10, f=-10)
-        assert tf == fpdf.drawing.Transform.translation(-10, -10).scale(2).translate(
-            10, 10
-        )
+        assert tf == Transform(a=2, b=0, c=0, d=2, e=-10, f=-10)
+        assert tf == Transform.translation(-10, -10).scale(2).translate(10, 10)
 
     def test_mul(self):
-        tf = fpdf.drawing.Transform(1, 2, 3, 4, 5, 6)
+        tf = Transform(1, 2, 3, 4, 5, 6)
 
-        assert tf * 6 == fpdf.drawing.Transform(6, 12, 18, 24, 30, 36)
-        assert 6 * tf == fpdf.drawing.Transform(6, 12, 18, 24, 30, 36)
+        assert tf * 6 == Transform(6, 12, 18, 24, 30, 36)
+        assert 6 * tf == Transform(6, 12, 18, 24, 30, 36)
 
         with pytest.raises(TypeError):
             _ = tf * "abc"
 
     def test_matmul(self):
-        tf1 = fpdf.drawing.Transform(1, 2, 3, 4, 5, 6)
-        tf2 = fpdf.drawing.Transform(6, 5, 4, 3, 2, 1)
+        tf1 = Transform(1, 2, 3, 4, 5, 6)
+        tf2 = Transform(6, 5, 4, 3, 2, 1)
 
-        assert tf1 @ tf2 == fpdf.drawing.Transform(a=14, b=11, c=34, d=27, e=56, f=44)
-        assert tf2 @ tf1 == fpdf.drawing.Transform(a=21, b=32, c=13, d=20, e=10, f=14)
+        assert tf1 @ tf2 == Transform(a=14, b=11, c=34, d=27, e=56, f=44)
+        assert tf2 @ tf1 == Transform(a=21, b=32, c=13, d=20, e=10, f=14)
 
         with pytest.raises(TypeError):
             _ = tf1 @ 123
 
     def test_render(self):
-        tf = fpdf.drawing.Transform(1, 2, 3, 4, 5, 6)
+        tf = Transform(1, 2, 3, 4, 5, 6)
 
-        assert (
-            tf.render(fpdf.drawing.Move(fpdf.drawing.Point(0, 0)))[0]
-            == "1 2 3 4 5 6 cm"
-        )
+        assert tf.render(Move(Point(0, 0)))[0] == "1 2 3 4 5 6 cm"
 
     def test_str(self):
         # don't actually assert the output looks like something in particular, just make
         # sure it doesn't raise, I guess.
-        str(fpdf.drawing.Transform(1, 2, 3, 4, 5, 6))
+        str(Transform(1, 2, 3, 4, 5, 6))
 
 
 class TestStyleEnums:
@@ -421,7 +442,7 @@ class TestStyles:
         auto_pdf_cmp.draw_path(open_path_drawing)
 
     def test_serialize_to_pdf_dict(self):
-        style = fpdf.drawing.GraphicsStyle()
+        style = GraphicsStyle()
 
         style.fill_opacity = 0.5
         style.stroke_opacity = 0.75
@@ -437,12 +458,12 @@ class TestStyles:
 
     @pytest.mark.parametrize("style_name, value, exception", parameters.invalid_styles)
     def test_bad_style_parameters(self, style_name, value, exception):
-        style = fpdf.drawing.GraphicsStyle()
+        style = GraphicsStyle()
         with pytest.raises(exception):
             setattr(style, style_name, value)
 
     def test_merge(self):
-        style = fpdf.drawing.GraphicsStyle()
+        style = GraphicsStyle()
 
         style.fill_opacity = 0.5
         style.stroke_opacity = 0.75
@@ -451,53 +472,47 @@ class TestStyles:
         style.stroke_join_style = "round"
         style.stroke_cap_style = "butt"
 
-        override = fpdf.drawing.GraphicsStyle()
+        override = GraphicsStyle()
 
         override.fill_opacity = 0.25
         override.stroke_opacity = 0.1
         override.blend_mode = "hue"
 
-        merged = fpdf.drawing.GraphicsStyle.merge(style, override)
+        merged = GraphicsStyle.merge(style, override)
 
         assert merged.fill_opacity == 0.25
         assert merged.stroke_opacity == 0.1
-        assert merged.blend_mode == fpdf.drawing.BlendMode.HUE.value
+        assert merged.blend_mode == BlendMode.HUE.value
         assert merged.stroke_width == 2
-        assert merged.stroke_join_style == fpdf.drawing.StrokeJoinStyle.ROUND.value
-        assert merged.stroke_cap_style == fpdf.drawing.StrokeCapStyle.BUTT.value
+        assert merged.stroke_join_style == StrokeJoinStyle.ROUND.value
+        assert merged.stroke_cap_style == StrokeCapStyle.BUTT.value
 
     @pytest.mark.parametrize("paint_rule, expected", parameters.paint_rules)
     def test_paint_rule(self, paint_rule, expected):
-        style = fpdf.drawing.GraphicsStyle()
+        style = GraphicsStyle()
         style.paint_rule = paint_rule
         assert style.paint_rule is expected
 
     def test_paint_rule_resolution(self):
-        style = fpdf.drawing.GraphicsStyle()
+        style = GraphicsStyle()
 
         style.paint_rule = "auto"
 
-        assert (
-            style.resolve_paint_rule() is fpdf.drawing.PathPaintRule.STROKE_FILL_NONZERO
-        )
+        assert style.resolve_paint_rule() is PathPaintRule.STROKE_FILL_NONZERO
 
         style.stroke_width = 2
         style.stroke_color = "#000"
         style.fill_color = None
-        assert style.resolve_paint_rule() is fpdf.drawing.PathPaintRule.STROKE
+        assert style.resolve_paint_rule() is PathPaintRule.STROKE
 
         style.fill_color = "#123"
-        assert (
-            style.resolve_paint_rule() is fpdf.drawing.PathPaintRule.STROKE_FILL_NONZERO
-        )
+        assert style.resolve_paint_rule() is PathPaintRule.STROKE_FILL_NONZERO
 
-        style.intersection_rule = fpdf.drawing.IntersectionRule.EVENODD
-        assert (
-            style.resolve_paint_rule() is fpdf.drawing.PathPaintRule.STROKE_FILL_EVENODD
-        )
+        style.intersection_rule = IntersectionRule.EVENODD
+        assert style.resolve_paint_rule() is PathPaintRule.STROKE_FILL_EVENODD
 
     def test_copy(self):
-        style = fpdf.drawing.GraphicsStyle()
+        style = GraphicsStyle()
 
         style.fill_opacity = 0.5
 
@@ -514,15 +529,15 @@ def test_path_start_relative():
     Test starting a path with a relative move.
     The parametrized series below can't cover that case.
     """
-    point = fpdf.drawing.Point(1, 2)
-    start = fpdf.drawing.Move(point)
-    element = fpdf.drawing.RelativeLine(fpdf.drawing.Point(3, 4))
+    point = Point(1, 2)
+    start = Move(point)
+    element = RelativeLine(Point(3, 4))
     expected = "4 6 l"
-    style = fpdf.drawing.GraphicsStyle()
+    style = GraphicsStyle()
     style.auto_close = False
     rendered, last_item, _ = element.render({}, style, start, point)
     assert rendered == expected
-    assert isinstance(last_item, fpdf.drawing.Line)
+    assert isinstance(last_item, Line)
 
 
 class TestPathElements:
@@ -530,8 +545,8 @@ class TestPathElements:
         "point, element, expected, end_point, end_class", parameters.path_elements
     )
     def test_render(self, point, element, expected, end_point, end_class):
-        start = fpdf.drawing.Move(point)
-        style = fpdf.drawing.GraphicsStyle()
+        start = Move(point)
+        style = GraphicsStyle()
         style.auto_close = False
         rendered, last_item, _ = element.render({}, style, start, point)
 
@@ -543,9 +558,9 @@ class TestPathElements:
         "point, element, expected, end_point, end_class", parameters.path_elements
     )
     def test_render_debug(self, point, element, expected, end_point, end_class):
-        start = fpdf.drawing.Move(point)
+        start = Move(point)
         dbg = io.StringIO()
-        style = fpdf.drawing.GraphicsStyle()
+        style = GraphicsStyle()
         style.auto_close = False
         rendered, last_item, _ = element.render_debug({}, style, start, point, dbg, "")
 
@@ -556,44 +571,44 @@ class TestPathElements:
 
 class TestDrawingContext:
     def test_add_item(self):
-        ctx = fpdf.drawing.DrawingContext()
+        ctx = DrawingContext()
 
-        ctx.add_item(fpdf.drawing.GraphicsContext())
+        ctx.add_item(GraphicsContext())
 
         with pytest.raises(TypeError):
-            ctx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(1, 2)))
+            ctx.add_item(Move(Point(1, 2)))
 
     def test_empty_render(self):
-        ctx = fpdf.drawing.DrawingContext()
-        ctx.add_item(fpdf.drawing.GraphicsContext())
+        ctx = DrawingContext()
+        ctx.add_item(GraphicsContext())
 
-        resource_catalog = fpdf.output.ResourceCatalog()
-        start = fpdf.drawing.Point(0, 0)
-        style = fpdf.drawing.GraphicsStyle()
+        resource_catalog = ResourceCatalog()
+        start = Point(0, 0)
+        style = GraphicsStyle()
 
         result = ctx.render(resource_catalog, start, 1, 10, style)
 
         assert result == ""
 
     def test_render(self):
-        ctx = fpdf.drawing.DrawingContext()
-        ctx.add_item(fpdf.drawing.PaintedPath().line_to(10, 10))
+        ctx = DrawingContext()
+        ctx.add_item(PaintedPath().line_to(10, 10))
 
-        resource_catalog = fpdf.output.ResourceCatalog()
-        start = fpdf.drawing.Point(0, 0)
-        style = fpdf.drawing.GraphicsStyle()
+        resource_catalog = ResourceCatalog()
+        start = Point(0, 0)
+        style = GraphicsStyle()
 
         result = ctx.render(resource_catalog, start, 1, 10, style)
 
         assert result == "q 1 0 0 -1 0 10 cm q 0 0 m 10 10 l h B Q Q"
 
     def test_empty_render_debug(self):
-        ctx = fpdf.drawing.DrawingContext()
-        ctx.add_item(fpdf.drawing.GraphicsContext())
+        ctx = DrawingContext()
+        ctx.add_item(GraphicsContext())
 
-        resource_catalog = fpdf.output.ResourceCatalog()
-        start = fpdf.drawing.Point(0, 0)
-        style = fpdf.drawing.GraphicsStyle()
+        resource_catalog = ResourceCatalog()
+        start = Point(0, 0)
+        style = GraphicsStyle()
         dbg = io.StringIO()
 
         result = ctx.render_debug(resource_catalog, start, 1, 10, style, dbg)
@@ -604,7 +619,7 @@ class TestDrawingContext:
         dbg = io.StringIO()
 
         with auto_pdf.drawing_context(debug_stream=dbg) as ctx:
-            ctx.add_item(fpdf.drawing.PaintedPath().line_to(10, 10))
+            ctx.add_item(PaintedPath().line_to(10, 10))
 
         assert dbg.getvalue() == (
             "ROOT\n"
@@ -624,14 +639,14 @@ class TestDrawingContext:
 
     def test_concurrent_drawing_context(self, auto_pdf):
         with auto_pdf.drawing_context() as _:
-            with pytest.raises(fpdf.FPDFException):
+            with pytest.raises(FPDFException):
                 with auto_pdf.drawing_context() as _:
                     pass
 
 
 # this is named so it doesn't get picked up by pytest implicitly.
 class CommonPathTests:
-    path_class = fpdf.drawing.PaintedPath
+    path_class = PaintedPath
     comp_index = 0
 
     @pytest.mark.parametrize(
@@ -653,26 +668,26 @@ class CommonPathTests:
         pth.move_to(2, 2)
 
         assert pth._closed is True
-        assert pth._starter_move == fpdf.drawing.Move(fpdf.drawing.Point(2, 2))
-        assert pth._graphics_context.path_items[-1] == fpdf.drawing.ImplicitClose()
+        assert pth._starter_move == Move(Point(2, 2))
+        assert pth._graphics_context.path_items[-1] == ImplicitClose()
 
     def test_style_property(self):
         pth = self.path_class()
         pth.style.fill_color = "#010203"
-        assert pth._graphics_context.style.fill_color == fpdf.drawing.rgb8(1, 2, 3)
+        assert pth._graphics_context.style.fill_color == rgb8(1, 2, 3)
 
     def test_transform_property(self):
         pth = self.path_class()
 
-        tf = fpdf.drawing.Transform.translation(5, 10)
+        tf = Transform.translation(5, 10)
         pth.transform = tf
 
         assert pth._graphics_context.transform == tf
 
     def test_transform_group(self):
         pth = self.path_class()
-        tf = fpdf.drawing.Transform.translation(1, 2)
-        with pth.transform_group(fpdf.drawing.Transform.translation(1, 2)):
+        tf = Transform.translation(1, 2)
+        with pth.transform_group(Transform.translation(1, 2)):
             assert pth._root_graphics_context != pth._graphics_context
             assert pth._graphics_context.transform == tf
 
@@ -684,15 +699,12 @@ class CommonPathTests:
     def test_paint_rule(self):
         pth = self.path_class()
         pth.paint_rule = "auto"
-        assert (
-            pth._root_graphics_context.style.paint_rule
-            is fpdf.drawing.PathPaintRule.AUTO
-        )
+        assert pth._root_graphics_context.style.paint_rule is PathPaintRule.AUTO
 
     @pytest.mark.parametrize("rendered", parameters.clipping_path_result)
     def test_clipping_path(self, rendered):
         pth = self.path_class()
-        clp = fpdf.drawing.ClippingPath()
+        clp = ClippingPath()
 
         clp.move_to(1, 1).horizontal_line_to(9).vertical_line_to(9).horizontal_line_to(
             1
@@ -707,14 +719,12 @@ class CommonPathTests:
 
         assert pth._root_graphics_context.clipping_path == clp
 
-        resource_catalog = fpdf.output.ResourceCatalog()
-        style = fpdf.drawing.GraphicsStyle()
+        resource_catalog = ResourceCatalog()
+        style = GraphicsStyle()
         style.paint_rule = "auto"
 
-        point = fpdf.drawing.Point(0, 0)
-        rend, _, __ = pth.render(
-            resource_catalog, style, fpdf.drawing.Move(point), point
-        )
+        point = Point(0, 0)
+        rend, _, __ = pth.render(resource_catalog, style, Move(point), point)
         assert rend == rendered[self.comp_index]
 
     @pytest.mark.parametrize(
@@ -724,8 +734,8 @@ class CommonPathTests:
         # parameterized this way, this test has a lot of overlap with
         # TestPathElements.test_render, so if one breaks probably the other will. Maybe
         # it's good enough to just check a single render case instead.
-        resource_catalog = fpdf.output.ResourceCatalog()
-        style = fpdf.drawing.GraphicsStyle()
+        resource_catalog = ResourceCatalog()
+        style = GraphicsStyle()
         style.paint_rule = "auto"
 
         pth = self.path_class()
@@ -733,19 +743,17 @@ class CommonPathTests:
         for method, args in method_calls:
             method(pth, *args)
 
-        point = fpdf.drawing.Point(0, 0)
-        rend, _, __ = pth.render(
-            resource_catalog, style, fpdf.drawing.Move(point), point
-        )
+        point = Point(0, 0)
+        rend, _, __ = pth.render(resource_catalog, style, Move(point), point)
         assert rend == rendered[self.comp_index]
 
     def test_copy(self):
         # this is a pretty clunky way to test this, but it does make sure that copying
         # works correctly through rendering.
-        point = fpdf.drawing.Point(0, 0)
-        start = fpdf.drawing.Move(point)
-        resource_catalog = fpdf.output.ResourceCatalog()
-        style = fpdf.drawing.GraphicsStyle()
+        point = Point(0, 0)
+        start = Move(point)
+        resource_catalog = ResourceCatalog()
+        style = GraphicsStyle()
         style.paint_rule = "auto"
 
         pth = self.path_class()
@@ -768,11 +776,11 @@ class CommonPathTests:
         "method_calls, elements, rendered", parameters.painted_path_elements
     )
     def test_render_debug(self, method_calls, elements, rendered):
-        resource_catalog = fpdf.output.ResourceCatalog()
-        style = fpdf.drawing.GraphicsStyle()
+        resource_catalog = ResourceCatalog()
+        style = GraphicsStyle()
         style.paint_rule = "auto"
-        point = fpdf.drawing.Point(0, 0)
-        start = fpdf.drawing.Move(point)
+        point = Point(0, 0)
+        start = Move(point)
         dbg = io.StringIO()
 
         pth = self.path_class()
@@ -796,12 +804,12 @@ class TestPaintedPath(CommonPathTests):
         auto_pdf_cmp.rect(1, 1, 8, 2, style="DF")
 
         with auto_pdf_cmp.new_path() as path:
-            path.style.paint_rule = fpdf.drawing.PathPaintRule.STROKE_FILL_NONZERO
+            path.style.paint_rule = PathPaintRule.STROKE_FILL_NONZERO
 
             path.rectangle(1, 4, 8, 2)
 
         with auto_pdf_cmp.new_path() as path:
-            path.style.paint_rule = fpdf.drawing.PathPaintRule.STROKE_FILL_NONZERO
+            path.style.paint_rule = PathPaintRule.STROKE_FILL_NONZERO
             path.style.stroke_width = 0.25
             path.style.stroke_dash_pattern = (0.25, 0.5)
             path.style.stroke_dash_phase = 0.2
@@ -812,7 +820,7 @@ class TestPaintedPath(CommonPathTests):
 # This class inherits all of the tests from the PaintedPath test class, just like it
 # inherits all of its functionality.
 class TestClippingPath(CommonPathTests):
-    path_class = fpdf.drawing.ClippingPath
+    path_class = ClippingPath
     comp_index = 1
 
 
@@ -821,21 +829,21 @@ class TestClippingPath(CommonPathTests):
 # regression occurs, if one does.
 class TestGraphicsContext:
     def test_copy(self):
-        point = fpdf.drawing.Point(0, 0)
-        start = fpdf.drawing.Move(point)
-        resource_catalog = fpdf.output.ResourceCatalog()
-        style = fpdf.drawing.GraphicsStyle()
+        point = Point(0, 0)
+        start = Move(point)
+        resource_catalog = ResourceCatalog()
+        style = GraphicsStyle()
         style.paint_rule = "auto"
 
-        gfx = fpdf.drawing.GraphicsContext()
-        gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(1, 2)))
+        gfx = GraphicsContext()
+        gfx.add_item(Move(Point(1, 2)))
 
         gfx2 = copy.deepcopy(gfx)
 
         rend1, _, __ = gfx.render(resource_catalog, style, start, point)
         rend2, _, __ = gfx2.render(resource_catalog, style, start, point)
 
-        gfx2.add_item(fpdf.drawing.Line(fpdf.drawing.Point(3, 4)))
+        gfx2.add_item(Line(Point(3, 4)))
 
         rend3, _, __ = gfx.render(resource_catalog, style, start, point)
         rend4, _, __ = gfx2.render(resource_catalog, style, start, point)
@@ -847,51 +855,51 @@ class TestGraphicsContext:
         assert rend4 == "q 1 2 m 3 4 l Q"
 
     def test_transform_property(self):
-        gfx = fpdf.drawing.GraphicsContext()
+        gfx = GraphicsContext()
 
-        tf = fpdf.drawing.Transform.translation(5, 10)
+        tf = Transform.translation(5, 10)
         gfx.transform = tf
 
         assert gfx.transform == tf
 
     def test_clipping_path_property(self):
-        gfx = fpdf.drawing.GraphicsContext()
-        clp = fpdf.drawing.ClippingPath()
+        gfx = GraphicsContext()
+        clp = ClippingPath()
 
         clp.move_to(1, 1).horizontal_line_to(9).vertical_line_to(9).horizontal_line_to(
             1
         ).close()
 
         gfx.clipping_path = clp
-        gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(1, 2)))
-        gfx.add_item(fpdf.drawing.Line(fpdf.drawing.Point(3, 4)))
+        gfx.add_item(Move(Point(1, 2)))
+        gfx.add_item(Line(Point(3, 4)))
 
         assert gfx.clipping_path == clp
 
-        point = fpdf.drawing.Point(0, 0)
-        start = fpdf.drawing.Move(point)
-        resource_catalog = fpdf.output.ResourceCatalog()
-        style = fpdf.drawing.GraphicsStyle()
+        point = Point(0, 0)
+        start = Move(point)
+        resource_catalog = ResourceCatalog()
+        style = GraphicsStyle()
         style.paint_rule = "auto"
 
         rend, _, __ = gfx.render(resource_catalog, style, start, point)
         assert rend == "q 1 1 m 9 1 l 9 9 l 1 9 l h W n 1 2 m 3 4 l Q"
 
     def test_empty_render(self):
-        point = fpdf.drawing.Point(0, 0)
-        start = fpdf.drawing.Move(point)
-        resource_catalog = fpdf.output.ResourceCatalog()
-        style = fpdf.drawing.GraphicsStyle()
+        point = Point(0, 0)
+        start = Move(point)
+        resource_catalog = ResourceCatalog()
+        style = GraphicsStyle()
         style.paint_rule = "auto"
 
-        tf = fpdf.drawing.Transform.translation(5, 10)
-        clp = fpdf.drawing.ClippingPath()
+        tf = Transform.translation(5, 10)
+        clp = ClippingPath()
 
         clp.move_to(1, 1).horizontal_line_to(9).vertical_line_to(9).horizontal_line_to(
             1
         ).close()
 
-        gfx = fpdf.drawing.GraphicsContext()
+        gfx = GraphicsContext()
         gfx.clipping_path = clp
         gfx.transform = tf
 
@@ -899,35 +907,35 @@ class TestGraphicsContext:
         assert rend == ""
 
     def test_add_item(self):
-        gfx = fpdf.drawing.GraphicsContext()
-        gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(10, 0)))
+        gfx = GraphicsContext()
+        gfx.add_item(Move(Point(10, 0)))
 
-        assert gfx.path_items == [fpdf.drawing.Move(fpdf.drawing.Point(10, 0))]
+        assert gfx.path_items == [Move(Point(10, 0))]
 
     def test_merge(self):
-        gfx1 = fpdf.drawing.GraphicsContext()
-        gfx1.add_item(fpdf.drawing.Move(fpdf.drawing.Point(10, 0)))
+        gfx1 = GraphicsContext()
+        gfx1.add_item(Move(Point(10, 0)))
 
-        gfx2 = fpdf.drawing.GraphicsContext()
-        gfx2.add_item(fpdf.drawing.Line(fpdf.drawing.Point(2, 2)))
+        gfx2 = GraphicsContext()
+        gfx2.add_item(Line(Point(2, 2)))
 
         gfx1.merge(gfx2)
 
         assert gfx1.path_items == [
-            fpdf.drawing.Move(fpdf.drawing.Point(10, 0)),
-            fpdf.drawing.Line(fpdf.drawing.Point(2, 2)),
+            Move(Point(10, 0)),
+            Line(Point(2, 2)),
         ]
 
     def test_build_render_list(self):
-        point = fpdf.drawing.Point(0, 0)
-        start = fpdf.drawing.Move(point)
-        resource_catalog = fpdf.output.ResourceCatalog()
-        style = fpdf.drawing.GraphicsStyle()
+        point = Point(0, 0)
+        start = Move(point)
+        resource_catalog = ResourceCatalog()
+        style = GraphicsStyle()
         style.paint_rule = "auto"
 
-        gfx = fpdf.drawing.GraphicsContext()
-        gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(1, 2)))
-        gfx.add_item(fpdf.drawing.Line(fpdf.drawing.Point(3, 4)))
+        gfx = GraphicsContext()
+        gfx.add_item(Move(Point(1, 2)))
+        gfx.add_item(Line(Point(3, 4)))
 
         rend_list1, _, __ = gfx.build_render_list(resource_catalog, style, start, point)
 
@@ -940,15 +948,15 @@ class TestGraphicsContext:
         assert rend_list2 == ["1 2 m", "3 4 l"]
 
     def test_render(self):
-        point = fpdf.drawing.Point(0, 0)
-        start = fpdf.drawing.Move(point)
-        resource_catalog = fpdf.output.ResourceCatalog()
-        style = fpdf.drawing.GraphicsStyle()
+        point = Point(0, 0)
+        start = Move(point)
+        resource_catalog = ResourceCatalog()
+        style = GraphicsStyle()
         style.paint_rule = "auto"
 
-        gfx = fpdf.drawing.GraphicsContext()
-        gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(1, 2)))
-        gfx.add_item(fpdf.drawing.Line(fpdf.drawing.Point(3, 4)))
+        gfx = GraphicsContext()
+        gfx.add_item(Move(Point(1, 2)))
+        gfx.add_item(Line(Point(3, 4)))
 
         rend1, _, __ = gfx.render(resource_catalog, style, start, point)
 
@@ -961,16 +969,16 @@ class TestGraphicsContext:
         assert rend2 == "1 2 m 3 4 l"
 
     def test_render_debug(self):
-        point = fpdf.drawing.Point(0, 0)
-        start = fpdf.drawing.Move(point)
-        resource_catalog = fpdf.output.ResourceCatalog()
-        style = fpdf.drawing.GraphicsStyle()
+        point = Point(0, 0)
+        start = Move(point)
+        resource_catalog = ResourceCatalog()
+        style = GraphicsStyle()
         style.paint_rule = "auto"
         dbg = io.StringIO()
 
-        gfx = fpdf.drawing.GraphicsContext()
-        gfx.add_item(fpdf.drawing.Move(fpdf.drawing.Point(1, 2)))
-        gfx.add_item(fpdf.drawing.Line(fpdf.drawing.Point(3, 4)))
+        gfx = GraphicsContext()
+        gfx.add_item(Move(Point(1, 2)))
+        gfx.add_item(Line(Point(3, 4)))
 
         rend1, _, __ = gfx.render_debug(resource_catalog, style, start, point, dbg, "")
 
@@ -984,9 +992,9 @@ class TestGraphicsContext:
 
 
 def test_check_page():
-    pdf = fpdf.FPDF(unit="pt")
+    pdf = FPDF(unit="pt")
 
-    with pytest.raises(fpdf.FPDFException) as no_page_err:
+    with pytest.raises(FPDFException) as no_page_err:
         with pdf.new_path() as _:
             pass
 
@@ -995,11 +1003,11 @@ def test_check_page():
 
 
 def test_blending_images(tmp_path):
-    pdf = fpdf.FPDF(format=(112, 1112))
+    pdf = FPDF(format=(112, 1112))
     pdf.set_margin(0)
     pdf.set_font("Helvetica", size=24)
     pdf.add_page()
-    for i, blend_mode in enumerate(fpdf.drawing.BlendMode):
+    for i, blend_mode in enumerate(BlendMode):
         pdf.image(HERE / "../image/png_test_suite/f04n2c08.png", y=70 * i, h=64)
         with pdf.local_context(blend_mode=blend_mode):
             pdf.image(HERE / "../image/png_test_suite/pp0n6a08.png", y=70 * i, h=64)
@@ -1008,7 +1016,7 @@ def test_blending_images(tmp_path):
 
 
 def test_invalid_blend_mode():
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
     pdf.add_page()
     with pytest.raises(ValueError):
         with pdf.local_context(blend_mode="INVALID_VALUE"):

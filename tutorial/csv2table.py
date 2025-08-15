@@ -2,7 +2,7 @@
 # USAGE: ./csv2table.py color_srgb.csv
 import csv, sys
 from fpdf import FPDF, FontFace
-from fpdf.drawing import color_from_hex_string
+from fpdf.drawing_primitives import color_from_hex_string
 
 pdf = FPDF()
 pdf.add_page()

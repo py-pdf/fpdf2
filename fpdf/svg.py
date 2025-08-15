@@ -27,14 +27,13 @@ except ImportError:
     from xml.etree.ElementTree import fromstring as parse_xml_str  # nosec
 
 from . import html
+from .drawing_primitives import color_from_hex_string, color_from_rgb_string, Transform
+
 from .drawing import (
-    color_from_hex_string,
-    color_from_rgb_string,
     GraphicsContext,
     GraphicsStyle,
     PaintedPath,
     ClippingPath,
-    Transform,
 )
 from .image_datastructures import ImageCache, VectorImageInfo
 from .output import stream_content_for_raster_image

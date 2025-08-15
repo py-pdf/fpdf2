@@ -8,13 +8,15 @@ in non-backward-compatible ways.
 Usage documentation at: <https://py-pdf.github.io/fpdf2/HTML.html>
 """
 
+import logging
+import re
+import warnings
 from html.parser import HTMLParser
 from string import ascii_lowercase, ascii_uppercase
-import logging, re, warnings
 from typing import Optional, Union
 
 from .deprecation import get_stack_level
-from .drawing import color_from_hex_string, convert_to_device_color
+from .drawing_primitives import color_from_hex_string, convert_to_device_color
 from .enums import Align, TextEmphasis, XPos, YPos
 from .errors import FPDFException
 from .fonts import FontFace, TextStyle

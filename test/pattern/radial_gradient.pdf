@@ -34,8 +34,8 @@ endstream
 endobj
 5 0 obj
 <<
-/C0 [1.00 1.00 0.00]
-/C1 [1.00 0.00 0.00]
+/C0 [1 1 0]
+/C1 [1 0 0]
 /Domain [0 1]
 /FunctionType 2
 /N 1
@@ -43,8 +43,9 @@ endobj
 endobj
 6 0 obj
 <<
+/AntiAlias true
 /ColorSpace /DeviceRGB
-/Coords [297.64 742.68 0.00 297.64 742.68 70.87]
+/Coords [105.00077777777776 35.0 0 105.00077777777776 35.0 25]
 /Extend [false false]
 /Function 5 0 R
 /ShadingType 3
@@ -52,8 +53,8 @@ endobj
 endobj
 7 0 obj
 <<
-/C0 [1.00 1.00 0.00]
-/C1 [1.00 0.00 0.00]
+/C0 [1 1 0]
+/C1 [1 0 0]
 /Domain [0 1]
 /FunctionType 2
 /N 1
@@ -61,8 +62,9 @@ endobj
 endobj
 8 0 obj
 <<
+/AntiAlias true
 /ColorSpace /DeviceRGB
-/Coords [240.95 629.29 0.00 297.64 572.60 70.87]
+/Coords [85.00077777777776 75.0 0 105.00077777777776 95.0 25]
 /Extend [false false]
 /Function 7 0 R
 /ShadingType 3
@@ -70,6 +72,7 @@ endobj
 endobj
 9 0 obj
 <<
+/Matrix [2.83464567 0 0 -2.83464567 0 841.89]
 /PatternType 2
 /Shading 6 0 R
 /Type /Pattern
@@ -77,6 +80,7 @@ endobj
 endobj
 10 0 obj
 <<
+/Matrix [2.83464567 0 0 -2.83464567 0 841.89]
 /PatternType 2
 /Shading 8 0 R
 /Type /Pattern
@@ -104,20 +108,20 @@ xref
 0000000199 00000 n 
 0000000280 00000 n 
 0000000533 00000 n 
-0000000631 00000 n 
-0000000777 00000 n 
-0000000875 00000 n 
-0000001021 00000 n 
-0000001087 00000 n 
-0000001154 00000 n 
-0000001291 00000 n 
+0000000613 00000 n 
+0000000789 00000 n 
+0000000869 00000 n 
+0000001044 00000 n 
+0000001156 00000 n 
+0000001269 00000 n 
+0000001406 00000 n 
 trailer
 <<
 /Size 13
 /Root 2 0 R
 /Info 12 0 R
-/ID [<8994F8F8558999F835E46DBDD0BC911A><8994F8F8558999F835E46DBDD0BC911A>]
+/ID [<2A5E3575B9DEDB205291CD4F8F6FD2FC><2A5E3575B9DEDB205291CD4F8F6FD2FC>]
 >>
 startxref
-1347
+1462
 %%EOF

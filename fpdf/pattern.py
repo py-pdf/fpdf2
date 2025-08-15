@@ -5,13 +5,37 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/Patterns.html>
 """
 
 from abc import ABC
-from typing import List, Optional, TYPE_CHECKING, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Tuple, TypeAlias, Union
 
-from .drawing import DeviceCMYK, DeviceGray, DeviceRGB, convert_to_device_color
+from .drawing_primitives import (
+    DeviceCMYK,
+    DeviceGray,
+    DeviceRGB,
+    Transform,
+    convert_to_device_color,
+)
 from .syntax import Name, PDFArray, PDFObject
 
 if TYPE_CHECKING:
     from .fpdf import FPDF
+
+Color: TypeAlias = Union[DeviceRGB, DeviceGray, DeviceCMYK]
+
+
+def format_number(x: float, digits: int = 8) -> str:
+    # snap tiny values to zero to avoid "-0" and scientific notation
+    if abs(x) < 1e-12:
+        x = 0.0
+    s = f"{x:.{digits}f}"
+    if "." in s:
+        s = s.rstrip("0").rstrip(".")
+    if s == "-0":
+        s = "0"
+    if s.startswith("."):
+        s = "0" + s
+    if s.startswith("-."):
+        s = s.replace("-.", "-0.", 1)
+    return s
 
 
 class Pattern(PDFObject):
@@ -23,16 +47,32 @@ class Pattern(PDFObject):
     are not yet implemented.
     """
 
-    def __init__(self, shading: Union["LinearGradient", "RadialGradient"]):
+    def __init__(self, shading: "Gradient"):
         super().__init__()
         self.type = Name("Pattern")
         # 1 for a tiling pattern or type 2 for a shading pattern:
         self.pattern_type = 2
         self._shading = shading
+        self._matrix = Transform.identity()
 
     @property
-    def shading(self):
+    def shading(self) -> str:
         return f"{self._shading.get_shading_object().id} 0 R"
+
+    @property
+    def matrix(self) -> str:
+        return (
+            f"[{format_number(self._matrix.a)} {format_number(self._matrix.b)} "
+            f"{format_number(self._matrix.c)} {format_number(self._matrix.d)} "
+            f"{format_number(self._matrix.e)} {format_number(self._matrix.f)}]"
+        )
+
+    def set_matrix(self, matrix) -> "Pattern":
+        self._matrix = matrix
+        return self
+
+    def get_matrix(self) -> Transform:
+        return self._matrix
 
 
 class Type2Function(PDFObject):
@@ -43,9 +83,19 @@ class Type2Function(PDFObject):
         # 0: Sampled function; 2: Exponential interpolation function; 3: Stitching function; 4: PostScript calculator function
         self.function_type = 2
         self.domain = "[0 1]"
-        self.c0 = f'[{" ".join(f"{c:.2f}" for c in color_1.colors)}]'
-        self.c1 = f'[{" ".join(f"{c:.2f}" for c in color_2.colors)}]'
+        c1 = self._get_color_components(color_1)
+        c2 = self._get_color_components(color_2)
+        if len(c1) != len(c2):
+            raise ValueError("Type2Function endpoints must have same component count")
+        self.c0 = f'[{" ".join(format_number(c) for c in c1)}]'
+        self.c1 = f'[{" ".join(format_number(c) for c in c2)}]'
         self.n = 1
+
+    @classmethod
+    def _get_color_components(cls, color):
+        if isinstance(color, DeviceGray):
+            return [color.g]
+        return color.colors
 
 
 class Type3Function(PDFObject):
@@ -58,9 +108,8 @@ class Type3Function(PDFObject):
         self.function_type = 3
         self.domain = "[0 1]"
         self._functions = functions
-        self.bounds = f"[{' '.join(f'{bound:.2f}' for bound in bounds)}]"
+        self.bounds = f"[{' '.join(format_number(bound) for bound in bounds)}]"
         self.encode = f"[{' '.join('0 1' for _ in functions)}]"
-        self.n = 1
 
     @property
     def functions(self):
@@ -71,24 +120,34 @@ class Shading(PDFObject):
     def __init__(
         self,
         shading_type: int,  # 2 for axial shading, 3 for radial shading
-        background: Optional[Union[DeviceRGB, DeviceGray, DeviceCMYK]],
+        background: Optional[Color],
         color_space: str,
-        coords: List[int],
-        function: Union[Type2Function, Type3Function],
+        coords: List[float],
+        functions: List[Union[Type2Function, Type3Function]],
         extend_before: bool,
         extend_after: bool,
     ):
         super().__init__()
         self.shading_type = shading_type
         self.background = (
-            f'[{" ".join(f"{c:.2f}" for c in background.colors)}]'
+            f'[{" ".join(format_number(c) for c in background.colors)}]'
             if background
             else None
         )
         self.color_space = Name(color_space)
         self.coords = coords
-        self.function = f"{function.id} 0 R"
+        self._functions = functions
         self.extend = f'[{"true" if extend_before else "false"} {"true" if extend_after else "false"}]'
+        self.anti_alias = True
+
+    @property
+    def function(self) -> str:
+        """Reference to the *top-level* function object for the shading dictionary."""
+        return f"{self._functions[-1].id} 0 R"
+
+    def get_functions(self):
+        """All function objects used by this shading (Type2 segments + final Type3)."""
+        return self._functions
 
 
 class Gradient(ABC):
@@ -96,15 +155,23 @@ class Gradient(ABC):
         self.color_space, self.colors = self._convert_colors(colors)
         self.background = None
         if background:
-            self.background = (
+            bg = (
                 convert_to_device_color(background)
                 if isinstance(background, (str, DeviceGray, DeviceRGB, DeviceCMYK))
                 else convert_to_device_color(*background)
             )
-        if self.background and self.background.__class__.__name__ != self.color_space:
-            raise ValueError(
-                "The background color must be of the same color space as the gradient"
-            )
+            # Re-map background to the chosen palette colorspace
+            if self.color_space == "DeviceGray":
+                if isinstance(bg, DeviceRGB):
+                    bg = bg.to_gray()
+                elif isinstance(bg, DeviceCMYK):
+                    raise ValueError("Can't mix CMYK background with non-CMYK gradient")
+            elif self.color_space == "DeviceRGB":
+                if isinstance(bg, DeviceGray):
+                    bg = DeviceRGB(bg.g, bg.g, bg.g)
+                elif isinstance(bg, DeviceCMYK):
+                    raise ValueError("Can't mix CMYK background with non-CMYK gradient")
+            self.background = bg
         self.extend_before = extend_before
         self.extend_after = extend_after
         self.bounds = (
@@ -124,30 +191,52 @@ class Gradient(ABC):
 
     @classmethod
     def _convert_colors(cls, colors) -> Tuple[str, List]:
-        color_list = []
+        """Normalize a list of input colors to a single device colorspace."""
         if len(colors) < 2:
             raise ValueError("A gradient must have at least two colors")
-        color_spaces = set()
+
+        # 1) Convert everything to Device* instances
+        palette = []
+        spaces = set()
         for color in colors:
-            current_color = (
+            dc = (
                 convert_to_device_color(color)
                 if isinstance(color, (str, DeviceGray, DeviceRGB, DeviceCMYK))
                 else convert_to_device_color(*color)
             )
-            color_list.append(current_color)
-            color_spaces.add(type(current_color).__name__)
-        if len(color_spaces) == 1:
-            return color_spaces.pop(), color_list
-        if "DeviceCMYK" in color_spaces:
+            palette.append(dc)
+            spaces.add(type(dc).__name__)
+
+        # 2) Disallow any CMYK mixture with others
+        if "DeviceCMYK" in spaces and len(spaces) > 1:
             raise ValueError("Can't mix CMYK with other color spaces.")
-        # mix of DeviceGray and DeviceRGB
-        converted = []
-        for color in color_list:
-            if isinstance(color, DeviceGray):
-                converted.append(DeviceRGB(color.g, color.g, color.g))
-            else:
-                converted.append(color)
-        return "DeviceRGB", converted
+
+        # 3) If we ended up with plain CMYK, we're done
+        if spaces == {"DeviceCMYK"}:
+            return "DeviceCMYK", palette
+
+        # 4) Promote mix of Gray+RGB to RGB
+        if spaces == {"DeviceGray", "DeviceRGB"}:
+            promoted = []
+            for c in palette:
+                if isinstance(c, DeviceGray):
+                    promoted.append(DeviceRGB(c.g, c.g, c.g))
+                else:
+                    promoted.append(c)
+            return "DeviceRGB", promoted
+
+        # 5) All Gray: stay Gray
+        if spaces == {"DeviceGray"}:
+            return "DeviceGray", palette
+
+        # 6) All RGB: optionally downcast to Gray if all are achromatic
+        if spaces == {"DeviceRGB"}:
+            if all(c.is_achromatic() for c in palette):
+                return "DeviceGray", [c.to_gray() for c in palette]
+            return "DeviceRGB", palette
+
+        # Fallback: default to RGB
+        return "DeviceRGB", palette
 
     def _generate_functions(self):
         if len(self.colors) < 2:
@@ -168,7 +257,7 @@ class Gradient(ABC):
                 background=self.background,
                 color_space=self.color_space,
                 coords=PDFArray(self.coords),
-                function=self.functions[-1],
+                functions=self.functions,
                 extend_before=self.extend_before,
                 extend_after=self.extend_after,
             )
@@ -181,16 +270,15 @@ class Gradient(ABC):
 class LinearGradient(Gradient):
     def __init__(
         self,
-        fpdf: "FPDF",
-        from_x: int,
-        from_y: int,
-        to_x: int,
-        to_y: int,
+        from_x: float,
+        from_y: float,
+        to_x: float,
+        to_y: float,
         colors: List,
         background=None,
         extend_before: bool = False,
         extend_after: bool = False,
-        bounds: List[int] = None,
+        bounds: Optional[List[float]] = None,
     ):
         """
         A shading pattern that creates a linear (axial) gradient in a PDF.
@@ -226,26 +314,24 @@ class LinearGradient(Gradient):
                 Defaults to None, which evenly distributes color stops.
         """
         super().__init__(colors, background, extend_before, extend_after, bounds)
-        coords = [from_x, fpdf.h - from_y, to_x, fpdf.h - to_y]
-        self.coords = [f"{fpdf.k * c:.2f}" for c in coords]
+        self.coords = [from_x, from_y, to_x, to_y]
         self.shading_type = 2
 
 
 class RadialGradient(Gradient):
     def __init__(
         self,
-        fpdf: "FPDF",
-        start_circle_x: int,
-        start_circle_y: int,
-        start_circle_radius: int,
-        end_circle_x: int,
-        end_circle_y: int,
-        end_circle_radius: int,
+        start_circle_x: float,
+        start_circle_y: float,
+        start_circle_radius: float,
+        end_circle_x: float,
+        end_circle_y: float,
+        end_circle_radius: float,
         colors: List,
         background=None,
         extend_before: bool = False,
         extend_after: bool = False,
-        bounds: List[int] = None,
+        bounds: Optional[List[float]] = None,
     ):
         """
         A shading pattern that creates a radial (or circular/elliptical) gradient in a PDF.
@@ -283,13 +369,12 @@ class RadialGradient(Gradient):
                 which evenly distributes color stops.
         """
         super().__init__(colors, background, extend_before, extend_after, bounds)
-        coords = [
+        self.coords = [
             start_circle_x,
-            fpdf.h - start_circle_y,
+            start_circle_y,
             start_circle_radius,
             end_circle_x,
-            fpdf.h - end_circle_y,
+            end_circle_y,
             end_circle_radius,
         ]
-        self.coords = [f"{fpdf.k * c:.2f}" for c in coords]
         self.shading_type = 3

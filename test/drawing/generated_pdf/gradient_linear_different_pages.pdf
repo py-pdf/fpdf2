@@ -1,0 +1,143 @@
+%PDF-1.4
+1 0 obj
+<<
+/Count 2
+/Kids [3 0 R
+5 0 R]
+/MediaBox [0 0 595.28 841.89]
+/Type /Pages
+>>
+endobj
+2 0 obj
+<<
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+/Pages 1 0 R
+/Type /Catalog
+>>
+endobj
+3 0 obj
+<<
+/Contents 4 0 R
+/Group <</Type /Group /S /Transparency /CS /DeviceRGB>>
+/Parent 1 0 R
+/Resources 12 0 R
+/Type /Page
+>>
+endobj
+4 0 obj
+<<
+/Length 100
+>>
+stream
+2 J
+0.57 w
+q 1 0 0 -1 0 841.89 cm /GS0 gs [] 0 d q /Pattern cs /P1 scn 0 0 m 60 100 220 70 re f Q Q
+
+endstream
+endobj
+5 0 obj
+<<
+/Contents 6 0 R
+/Group <</Type /Group /S /Transparency /CS /DeviceRGB>>
+/Parent 1 0 R
+/Resources 13 0 R
+/Type /Page
+>>
+endobj
+6 0 obj
+<<
+/Length 100
+>>
+stream
+2 J
+0.57 w
+q 1 0 0 -1 0 841.89 cm /GS0 gs [] 0 d q /Pattern cs /P2 scn 0 0 m 60 100 220 70 re f Q Q
+
+endstream
+endobj
+7 0 obj
+<< /Type /ExtGState
+/LW 0.567 >>
+endobj
+8 0 obj
+<<
+/C0 [0.13333333]
+/C1 [0.93333333]
+/Domain [0 1]
+/FunctionType 2
+/N 1
+>>
+endobj
+9 0 obj
+<<
+/AntiAlias true
+/ColorSpace /DeviceGray
+/Coords [0 0 1 0]
+/Extend [false false]
+/Function 8 0 R
+/ShadingType 2
+>>
+endobj
+10 0 obj
+<<
+/Matrix [220 0 0 -70 60 741.89]
+/PatternType 2
+/Shading 9 0 R
+/Type /Pattern
+>>
+endobj
+11 0 obj
+<<
+/Matrix [220 0 0 -70 60 741.89]
+/PatternType 2
+/Shading 9 0 R
+/Type /Pattern
+>>
+endobj
+12 0 obj
+<<
+/ExtGState <</GS0 7 0 R>>
+/Pattern <</P1 10 0 R>>
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+>>
+endobj
+13 0 obj
+<<
+/ExtGState <</GS0 7 0 R>>
+/Pattern <</P2 11 0 R>>
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+>>
+endobj
+14 0 obj
+<<
+/CreationDate (D:19691231190000Z)
+>>
+endobj
+xref
+0 15
+0000000000 65535 f 
+0000000009 00000 n 
+0000000102 00000 n 
+0000000205 00000 n 
+0000000342 00000 n 
+0000000493 00000 n 
+0000000630 00000 n 
+0000000781 00000 n 
+0000000829 00000 n 
+0000000919 00000 n 
+0000001051 00000 n 
+0000001150 00000 n 
+0000001249 00000 n 
+0000001367 00000 n 
+0000001485 00000 n 
+trailer
+<<
+/Size 15
+/Root 2 0 R
+/Info 14 0 R
+/ID [<B45C3C0E55881633BAAD3C53DBA0E988><B45C3C0E55881633BAAD3C53DBA0E988>]
+>>
+startxref
+1541
+%%EOF

@@ -13,7 +13,6 @@ def test_radial_gradient(tmp_path):
     y = pdf.get_y()
     with pdf.use_pattern(
         RadialGradient(
-            pdf,
             x + 25,
             y + 25,
             0,
@@ -27,7 +26,6 @@ def test_radial_gradient(tmp_path):
     y += 60
     with pdf.use_pattern(
         RadialGradient(
-            pdf,
             x + 5,
             y + 5,
             0,
@@ -49,7 +47,6 @@ def test_radial_gradient_multiple_colors(tmp_path):
     y = pdf.get_y()
     with pdf.use_pattern(
         RadialGradient(
-            pdf,
             (pdf.epw + pdf.l_margin) / 2,
             y + 50,
             20,
@@ -64,7 +61,6 @@ def test_radial_gradient_multiple_colors(tmp_path):
 
     with pdf.use_pattern(
         RadialGradient(
-            pdf,
             pdf.w / 2,
             y + 50,
             0,
@@ -84,7 +80,6 @@ def test_custom_bounds(tmp_path):
     pdf.add_page()
     with pdf.use_pattern(
         RadialGradient(
-            pdf,
             pdf.w / 2,
             pdf.h / 2,
             20,

@@ -4,6 +4,8 @@ from enum import Enum, Flag, IntEnum, IntFlag
 from sys import intern
 from typing import Optional, Tuple, Union
 
+from fpdf.drawing_primitives import convert_to_device_color
+
 from .syntax import Name, wrap_in_local_context
 
 
@@ -433,9 +435,6 @@ class TableBorderStyle:
 
     def _get_change_line_color_command(self, pdf=None):
         """Return list with string for the draw command to change color (empty if no change)"""
-        # pylint: disable=import-outside-toplevel,cyclic-import
-        from .drawing import convert_to_device_color
-
         if pdf is None:
             color = self.color
         else:
@@ -528,9 +527,6 @@ class TableCellStyle:
     @staticmethod
     def get_change_fill_color_command(color):
         """Return list with string for command to change device color (empty list if no color)"""
-        # pylint: disable=import-outside-toplevel,cyclic-import
-        from .drawing import convert_to_device_color
-
         return (
             []
             if color is None
@@ -1651,8 +1647,18 @@ class PDFResourceType(Enum):
     EXT_G_STATE = intern("ExtGState")
     COLOR_SPACE = intern("ColorSpace")
     PATTERN = intern("Pattern")
-    SHADDING = intern("Shading")
+    SHADING = intern("Shading")
     X_OBJECT = intern("XObject")
     FONT = intern("Font")
     PROC_SET = intern("ProcSet")
     PROPERTIES = intern("Properties")
+
+
+class GradientUnits(CoerciveEnum):
+    "Specifies the coordinate system for gradients."
+
+    OBJECT_BOUNDING_BOX = "objectBoundingBox"
+    " Coordinates are expressed as fractions of the painted object's bounding box (0..1 in each axis)."
+
+    USER_SPACE_ON_USE = "userSpaceOnUse"
+    " Coordinates are in the current page space."

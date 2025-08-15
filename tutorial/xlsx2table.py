@@ -4,7 +4,7 @@
 # USAGE: ./xlsx2table.py color_srgb.xlsx
 import sys
 from fpdf import FPDF, FontFace
-from fpdf.drawing import color_from_hex_string
+from fpdf.drawing_primitives import color_from_hex_string
 from openpyxl import load_workbook
 
 pdf = FPDF()

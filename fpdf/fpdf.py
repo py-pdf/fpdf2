@@ -58,14 +58,11 @@ from .deprecation import (
     get_stack_level,
     support_deprecated_txt_arg,
 )
+from .drawing_primitives import DeviceRGB, Point, Transform, convert_to_device_color
 from .drawing import (
-    DeviceRGB,
     DrawingContext,
     GraphicsStyle,
     PaintedPath,
-    Point,
-    Transform,
-    convert_to_device_color,
 )
 from .encryption import StandardSecurityHandler
 from .enums import (
@@ -79,6 +76,7 @@ from .enums import (
     EncryptionMethod,
     FileAttachmentAnnotationName,
     MethodReturnValue,
+    OutputIntentSubType,
     PageLabelStyle,
     PageLayout,
     PageMode,
@@ -93,10 +91,9 @@ from .enums import (
     WrapMode,
     XPos,
     YPos,
-    OutputIntentSubType,
 )
 from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
-from .fonts import CoreFont, CORE_FONTS, FontFace, TextStyle, TitleStyle, TTFFont
+from .fonts import CORE_FONTS, CoreFont, FontFace, TextStyle, TitleStyle, TTFFont
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
 from .image_datastructures import (
@@ -111,23 +108,23 @@ from .image_parsing import (
     load_image,
     preload_image,
 )
-from .linearization import LinearizedOutputProducer
 from .line_break import (
     Fragment,
     MultiLineBreak,
     TextLine,
     TotalPagesSubstitutionFragment,
 )
+from .linearization import LinearizedOutputProducer
 from .outline import OutlineSection
 from .output import (
     ZOOM_CONFIGS,
+    OutputIntentDictionary,
     OutputProducer,
+    PDFICCProfile,
     PDFPage,
     PDFPageLabel,
     ResourceCatalog,
     stream_content_for_raster_image,
-    PDFICCProfile,
-    OutputIntentDictionary,
 )
 from .recorder import FPDFRecorder
 from .sign import Signature
@@ -135,10 +132,10 @@ from .structure_tree import StructureTreeBuilder
 from .svg import Percent, SVGObject
 from .syntax import DestinationXYZ, PDFArray, PDFDate
 from .table import Table, draw_box_borders
-from .text_region import TextRegionMixin, TextColumns
+from .text_region import TextColumns, TextRegionMixin
 from .transitions import Transition
 from .unicode_script import UnicodeScript, get_unicode_script
-from .util import get_scale_factor, Padding
+from .util import Padding, get_scale_factor
 
 # Public global variables:
 FPDF_VERSION = "2.8.4"
@@ -1368,7 +1365,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         """
         Create a context for using a shading pattern on the current page.
         """
-        self._resource_catalog.add(PDFResourceType.SHADDING, shading, self.page)
+        self._resource_catalog.add(PDFResourceType.SHADING, shading, self.page)
         pattern = shading.get_pattern()
         pattern_name = self._resource_catalog.add(
             PDFResourceType.PATTERN, pattern, self.page
