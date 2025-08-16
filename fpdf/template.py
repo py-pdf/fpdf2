@@ -90,6 +90,7 @@ class FlexTemplate:
             "multiline": (bool, type(None)),
             "rotate": (int, float),
             "wrapmode": (str, type(None)),
+            "dash_pattern": (dict, type(None)),
         }
 
         self.elements = elements
@@ -123,6 +124,17 @@ class FlexTemplate:
             if not "size" in e and e["type"] == "C39":
                 if "w" in e:
                     e["size"] = e["w"]
+            if "dash_pattern" in e:
+                for k in e["dash_pattern"].keys():
+                    if k not in ("dash", "gap", "phase"):
+                        raise KeyError(f"Invalid key '{k}' in dash_pattern")
+                if "dash" not in e["dash_pattern"]:
+                    e["dash_pattern"]["dash"] = 0
+                if "gap" not in e["dash_pattern"]:
+                    e["dash_pattern"]["gap"] = e["dash_pattern"]["dash"]
+                if "phase" not in e["dash_pattern"]:
+                    e["dash_pattern"]["phase"] = 0
+
             for k, t in key_config.items():
                 if k in e and not isinstance(e[k], t):
                     ttype = (
@@ -413,12 +425,19 @@ class FlexTemplate:
         size=0,
         scale=1.0,
         foreground=0,
+        dash_pattern=None,
         **__,
     ):
         if self.pdf.draw_color.serialize().lower() != _rgb_as_str(foreground):
             self.pdf.set_draw_color(*_rgb(foreground))
         self.pdf.set_line_width(size * scale)
+        if dash_pattern is not None:
+            # Save dash_pattern to restore after this line
+            restore_dash_pattern = self.pdf.dash_pattern
+            self.pdf.set_dash_pattern(**dash_pattern)
         self.pdf.line(x1, y1, x2, y2)
+        if dash_pattern is not None:
+            self.pdf.set_dash_pattern(**restore_dash_pattern)
 
     def _rect(
         self,
@@ -431,6 +450,7 @@ class FlexTemplate:
         scale=1.0,
         foreground=0,
         background=None,
+        dash_pattern=None,
         **__,
     ):
         pdf = self.pdf
@@ -443,7 +463,13 @@ class FlexTemplate:
             if pdf.fill_color != _rgb_as_str(background):
                 pdf.set_fill_color(*_rgb(background))
         pdf.set_line_width(size * scale)
+        if dash_pattern is not None:
+            # Save dash_pattern to restore after this rect
+            restore_dash_pattern = self.pdf.dash_pattern
+            pdf.set_dash_pattern(**dash_pattern)
         pdf.rect(x1, y1, x2 - x1, y2 - y1, style=style)
+        if dash_pattern is not None:
+            self.pdf.set_dash_pattern(**restore_dash_pattern)
 
     def _ellipse(
         self,
@@ -456,6 +482,7 @@ class FlexTemplate:
         scale=1.0,
         foreground=0,
         background=None,
+        dash_pattern=None,
         **__,
     ):
         pdf = self.pdf
@@ -468,7 +495,13 @@ class FlexTemplate:
             if pdf.fill_color != _rgb_as_str(background):
                 pdf.set_fill_color(*_rgb(background))
         pdf.set_line_width(size * scale)
+        if dash_pattern is not None:
+            # Save dash_pattern to restore after this ellipse
+            restore_dash_pattern = self.pdf.dash_pattern
+            pdf.set_dash_pattern(**dash_pattern)
         pdf.ellipse(x1, y1, x2 - x1, y2 - y1, style=style)
+        if dash_pattern is not None:
+            self.pdf.set_dash_pattern(**restore_dash_pattern)
 
     def _image(self, *_, x1=0, y1=0, x2=0, y2=0, text="", **__):
         if text:
