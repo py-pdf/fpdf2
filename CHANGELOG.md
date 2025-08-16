@@ -20,6 +20,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 * Basic support for SVG `currentColor` color value - _cf._ [PR #1531](https://github.com/py-pdf/fpdf2/pull/1531)
 * Porter–Duff compositing operations and bounding box support to the drawing API
+* support for dashed lines in FlexTemplate elemnents - _cf._ [issue #1503](https://github.com/py-pdf/fpdf2/issues/1503)
 
 ### Fixed
 * preserving font table `fvar` to keep compatibility with variable fonts - _cf._ [issue #1528](https://github.com/py-pdf/fpdf2/issues/1528)
