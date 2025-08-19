@@ -187,6 +187,37 @@ pdf.output("drawing-demo.pdf")
 <p align="center"><img src="drawing/demo-4.webp"/></p>
 <p align="center"><a href="drawing/demo-4.pdf">view as PDF</a></p>
 
+## Compositing operations
+
+The drawing API also supports compositing operations, which control how a path blends with another.
+These are based on the [Porter–Duff compositing model](https://en.wikipedia.org/wiki/Alpha_compositing) and the blend modes defined in PDF 1.4.
+
+You can set a compositing operation via the PaintComposite class:
+```python
+from fpdf import FPDF
+from fpdf.drawing import PaintedPath, PaintComposite
+from fpdf.enums import CompositingOperation
+
+from pathlib import Path
+
+pdf = FPDF()
+pdf.add_page()
+
+with pdf.drawing_context() as gc:
+    blue_square = PaintedPath()
+    blue_square.rectangle(10, 10, 50, 50)
+    blue_square.style.fill_color = "#0000ff"
+
+    red_square = PaintedPath()
+    red_square.rectangle(35, 35, 50, 50)
+    red_square.style.fill_color = "#ff0000"
+
+    composite = PaintComposite(backdrop=red_square, source=blue_square, operation=CompositingOperation.DESTINATION_ATOP)
+    gc.add_item(composite)
+
+pdf.output('compositing-demo.pdf')
+```
+
 ## Next Steps
 
 The presented API style is designed to make it simple to produce shapes

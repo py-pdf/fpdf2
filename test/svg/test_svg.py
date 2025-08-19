@@ -118,16 +118,18 @@ class TestSVGPathParsing:
 
         fpdf.svg.svg_path_converter(pdf_path, path)
 
-        gsdr = fpdf.drawing.GraphicsStateDictRegistry()
+        resource_catalog = fpdf.output.ResourceCatalog()
         style = fpdf.drawing.GraphicsStyle()
         first_point = fpdf.drawing.Point(0, 0)
         start = fpdf.drawing.Move(first_point)
 
         if debug:
             dbg = io.StringIO()
-            result = pdf_path.render_debug(gsdr, style, start, first_point, dbg, "")[0]
+            result = pdf_path.render_debug(
+                resource_catalog, style, start, first_point, dbg, ""
+            )[0]
         else:
-            result = pdf_path.render(gsdr, style, start, first_point)[0]
+            result = pdf_path.render(resource_catalog, style, start, first_point)[0]
 
         assert result == expected
 
@@ -268,6 +270,43 @@ class TestSVGObject:
 
     def test_svg_conversion_priority_styles(self, tmp_path):
         svg_file = parameters.svgfile("simple_rect.svg")
+
+        svg = fpdf.svg.SVGObject.from_file(svg_file)
+
+        pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
+        pdf.set_margin(0)
+        pdf.allow_images_transparency = False
+        pdf.add_page()
+
+        svg.draw_to_page(pdf)
+
+        assert_pdf_equal(pdf, GENERATED_PDF_DIR / f"{svg_file.stem}.pdf", tmp_path)
+
+    @pytest.mark.parametrize(
+        "fill_color, stroke_color, file_suffix", parameters.svg_current_color
+    )
+    def test_svg_current_color(self, tmp_path, fill_color, stroke_color, file_suffix):
+        svg_file = parameters.svgfile("simple_rect_current_color.svg")
+
+        svg = fpdf.svg.SVGObject.from_file(svg_file)
+
+        pdf = fpdf.FPDF(unit="pt", format=(svg.width, svg.height))
+        pdf.set_margin(0)
+        pdf.allow_images_transparency = False
+        pdf.add_page()
+
+        if fill_color is not None:
+            pdf.set_fill_color(fill_color[0], fill_color[1], fill_color[2])
+        if stroke_color is not None:
+            pdf.set_draw_color(stroke_color[0], stroke_color[1], stroke_color[2])
+        svg.draw_to_page(pdf)
+
+        assert_pdf_equal(
+            pdf, GENERATED_PDF_DIR / f"{svg_file.stem}{file_suffix}.pdf", tmp_path
+        )
+
+    def test_svg_render_content_in_a_tag(self, tmp_path):
+        svg_file = parameters.svgfile("simple_rect_in_a_tag.svg")
 
         svg = fpdf.svg.SVGObject.from_file(svg_file)
 

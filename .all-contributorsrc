@@ -1505,6 +1505,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "dlespiau",
+      "name": "Damien",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7986?v=4",
+      "profile": "https://github.com/dlespiau",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

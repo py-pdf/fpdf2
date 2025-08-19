@@ -16,7 +16,15 @@ in order to get warned about deprecated features used in your code.
 
 This can also be enabled programmatically with `warnings.simplefilter('default', DeprecationWarning)`.
 
-## [2.8.4] - Not released yet
+## [2.8.5] - Not released yet
+### Added
+* Basic support for SVG `currentColor` color value - _cf._ [PR #1531](https://github.com/py-pdf/fpdf2/pull/1531)
+* Porter–Duff compositing operations and bounding box support to the drawing API
+
+### Fixed
+* preserving font table `fvar` to keep compatibility with variable fonts - _cf._ [issue #1528](https://github.com/py-pdf/fpdf2/issues/1528)
+
+## [2.8.4] - 2025-08-11
 ### Added
 * documentation on [internal linking with variable page numbers](https://py-pdf.github.io/fpdf2/Links.html#internal-links)
 * documentation on [using the Ibis library](https://py-pdf.github.io/fpdf2/Maths.html#using-ibis)
@@ -35,6 +43,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 * `multi_cell()` text clipping bug - [issue #1471](https://github.com/py-pdf/fpdf2/issues/1471)
 * HTML lists bullets are now properly displayed when using unicode fonts - _cf._ [issue #1496](https://github.com/py-pdf/fpdf2/issues/1496)
 * clarified documentation in [Maths.md](https://py-pdf.github.io/fpdf2/Maths.html) regarding DataFrame string conversion for PDF rendering
+* children of `<a>` tags in SVGs are now correctly rendered - _cf._ [PR #1522](https://github.com/py-pdf/fpdf2/pull/1522)
 
 ### Changed
 * [`accept_page_break`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.accept_page_break) is now only called once per page break - _cf._ [issue #1489](https://github.com/py-pdf/fpdf2/issues/1489)

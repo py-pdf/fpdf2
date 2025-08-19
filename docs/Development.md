@@ -235,7 +235,7 @@ If it fails, you should either:
 * auto-fix the errors detected by invoking `typos --write-changes`
 * add an exclusion rule to `.typos.toml`
 
-### Release checklist
+## Release checklist
 1. complete `CHANGELOG.md` and add the version & date of the new release
 2. bump `FPDF_VERSION` in `fpdf/fpdf.py`.
 Also (optional, once every year), update `contributors/contributors-map-small.png` based on <https://py-pdf.github.io/fpdf2/contributors.html>

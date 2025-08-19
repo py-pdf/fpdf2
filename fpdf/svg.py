@@ -238,7 +238,7 @@ def clamp_float(min_val, max_val):
 
 @force_nodocument
 def inheritable(value, converter=lambda value: value):
-    if value == "inherit":
+    if value in ("inherit", "currentColor"):
         return GraphicsStyle.INHERIT
 
     return converter(value)
@@ -850,6 +850,13 @@ class SVGObject:
         for child in defs:
             if child.tag in xmlns_lookup("svg", "g"):
                 self.build_group(child)
+            elif child.tag in xmlns_lookup("svg", "a"):
+                # <a> tags aren't supported but we need to recurse into them to
+                # render nested elements.
+                LOGGER.warning(
+                    "Ignoring unsupported SVG tag: <a> (contributions are welcome to add support for it)",
+                )
+                self.build_group(child)
             elif child.tag in xmlns_lookup("svg", "path"):
                 self.build_path(child)
             elif child.tag in xmlns_lookup("svg", "image"):
@@ -919,6 +926,13 @@ class SVGObject:
             if child.tag in xmlns_lookup("svg", "defs"):
                 self.handle_defs(child)
             elif child.tag in xmlns_lookup("svg", "g"):
+                pdf_group.add_item(self.build_group(child), False)
+            elif child.tag in xmlns_lookup("svg", "a"):
+                # <a> tags aren't supported but we need to recurse into them to
+                # render nested elements.
+                LOGGER.warning(
+                    "Ignoring unsupported SVG tag: <a> (contributions are welcome to add support for it)",
+                )
                 pdf_group.add_item(self.build_group(child), False)
             elif child.tag in xmlns_lookup("svg", "path"):
                 pdf_group.add_item(self.build_path(child), False)
@@ -1042,7 +1056,7 @@ class SVGImage(NamedTuple):
         )
 
     @force_nodocument
-    def render(self, _gsd_registry, _style, last_item, initial_point):
+    def render(self, _resource_registry, _style, last_item, initial_point):
         image_cache = self.svg_obj and self.svg_obj.image_cache
         if not image_cache:
             raise AssertionError(
@@ -1072,10 +1086,10 @@ class SVGImage(NamedTuple):
 
     @force_nodocument
     def render_debug(
-        self, gsd_registry, style, last_item, initial_point, debug_stream, _pfx
+        self, resource_registry, style, last_item, initial_point, debug_stream, _pfx
     ):
         stream_content, last_item, initial_point = self.render(
-            gsd_registry, style, last_item, initial_point
+            resource_registry, style, last_item, initial_point
         )
         debug_stream.write(f"{self.href} rendered as: {stream_content}\n")
         return stream_content, last_item, initial_point
