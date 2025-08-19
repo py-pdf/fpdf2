@@ -5,7 +5,7 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/Patterns.html>
 """
 
 from abc import ABC
-from typing import TYPE_CHECKING, List, Optional, Tuple, TypeAlias, Union
+from typing import List, Optional, Tuple, Union
 
 from .drawing_primitives import (
     DeviceCMYK,
@@ -16,10 +16,7 @@ from .drawing_primitives import (
 )
 from .syntax import Name, PDFArray, PDFObject
 
-if TYPE_CHECKING:
-    from .fpdf import FPDF
-
-Color: TypeAlias = Union[DeviceRGB, DeviceGray, DeviceCMYK]
+Color = Union[DeviceRGB, DeviceGray, DeviceCMYK]
 
 
 def format_number(x: float, digits: int = 8) -> str:
@@ -378,3 +375,133 @@ class RadialGradient(Gradient):
             end_circle_radius,
         ]
         self.shading_type = 3
+
+
+def shape_linear_gradient(
+    x1: float,
+    y1: float,
+    x2: float,
+    y2: float,
+    stops: List[Tuple[float, Union[Color, str]]],
+) -> LinearGradient:
+    """Create a linear gradient for a shape with SVG-like stops (offset in [0,1])."""
+    if not stops:
+        raise ValueError("At least one stop is required")
+
+    TOLERANCE = 1e-9
+
+    # 1) Normalize offsets, clamp, sort
+    normalized = []
+    for off, color in stops:
+        offset = 0.0 if off < 0.0 else 1.0 if off > 1.0 else float(off)
+        normalized.append((offset, color))
+    normalized.sort(key=lambda t: t[0])
+
+    # 2) Merge duplicates (or near-duplicates): keep the *last* color for same offset
+    merged = []
+    for o, c in normalized:
+        if merged and abs(merged[-1][0] - o) <= TOLERANCE:
+            merged[-1] = (o, c)
+        else:
+            merged.append((o, c))
+
+    # 3) Single-stop: synthesize flat gradient
+    if len(merged) == 1:
+        o, c = merged[0]
+        merged = [(0.0, c), (1.0, c)]
+
+    # 4) Ensure first at 0 and last at 1 (with tolerance)
+    if abs(merged[0][0] - 0.0) > TOLERANCE:
+        merged.insert(0, (0.0, merged[0][1]))
+
+    if abs(merged[-1][0] - 1.0) > TOLERANCE:
+        merged.append((1.0, merged[-1][1]))
+
+    colors = [color for _, color in merged]
+    bounds = [offset for offset, _ in merged[1:-1]]
+
+    return LinearGradient(
+        from_x=x1,
+        from_y=y1,
+        to_x=x2,
+        to_y=y2,
+        colors=colors,
+        bounds=bounds,
+        extend_before=True,
+        extend_after=True,
+    )
+
+
+def shape_radial_gradient(
+    cx: float,
+    cy: float,
+    r: float,
+    stops: List[Tuple[float, Union[Color, str]]],
+    fx: Optional[float] = None,
+    fy: Optional[float] = None,
+    fr: float = 0.0,
+) -> RadialGradient:
+    """
+    Create a radial gradient for a shape with SVG-like stops (offset in [0,1]).
+    - (cx, cy, r): outer circle
+    - (fx, fy, fr): focal/inner circle (defaults to center with radius 0)
+    """
+    if not stops:
+        raise ValueError("At least one stop is required")
+
+    TOLERANCE = 1e-9
+
+    # 1) Normalize, clamp, sort
+    normalized = []
+    for off, color in stops:
+        offset = 0.0 if off < 0.0 else 1.0 if off > 1.0 else float(off)
+        normalized.append((offset, color))
+    normalized.sort(key=lambda t: t[0])
+
+    # 2) Merge duplicate/near-duplicate offsets (last wins)
+    merged = []
+    for offset, color in normalized:
+        if merged and abs(merged[-1][0] - offset) <= TOLERANCE:
+            merged[-1] = (offset, color)
+        else:
+            merged.append((offset, color))
+
+    # 3) Single-stop: flat gradient
+    if len(merged) == 1:
+        _, c = merged[0]
+        merged = [(0.0, c), (1.0, c)]
+
+    # 4) Ensure first at 0 and last at 1 (with tolerance)
+    if abs(merged[0][0] - 0.0) > TOLERANCE:
+        merged.insert(0, (0.0, merged[0][1]))
+
+    if abs(merged[-1][0] - 1.0) > TOLERANCE:
+        merged.append((1.0, merged[-1][1]))
+
+    colors = [color for _, color in merged]
+    bounds = [offset for offset, _ in merged[1:-1]]
+
+    if r < 0:
+        raise ValueError("Outer radius r must be >= 0")
+    if fr < 0:
+        fr = 0.0
+    if fx is None:
+        fx = cx
+    if fy is None:
+        fy = cy
+    # If inner radius exceeds outer, clamp
+    if fr > r:
+        fr = r
+
+    return RadialGradient(
+        start_circle_x=fx,
+        start_circle_y=fy,
+        start_circle_radius=fr,
+        end_circle_x=cx,
+        end_circle_y=cy,
+        end_circle_radius=r,
+        colors=colors,
+        bounds=bounds,
+        extend_before=True,
+        extend_after=True,
+    )

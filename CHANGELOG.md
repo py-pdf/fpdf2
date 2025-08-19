@@ -20,9 +20,11 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Added
 * Basic support for SVG `currentColor` color value - _cf._ [PR #1531](https://github.com/py-pdf/fpdf2/pull/1531)
 * Porter–Duff compositing operations and bounding box support to the drawing API
+* Support gradients as fill or stroke colors in the drawing API
 
 ### Fixed
 * preserving font table `fvar` to keep compatibility with variable fonts - _cf._ [issue #1528](https://github.com/py-pdf/fpdf2/issues/1528)
+* issue with markdown when fallback fonts containing non-alphanumeric characters are used - _cf._ [issue #1535](https://github.com/py-pdf/fpdf2/issues/1535)
 
 ## [2.8.4] - 2025-08-11
 ### Added

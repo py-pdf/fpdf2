@@ -303,11 +303,7 @@ def convert_to_device_color(r, g=-1, b=-1):
     if isinstance(r, Sequence):
         r, g, b = r
     if (r, g, b) == (0, 0, 0) or g == -1:
-        assert isinstance(r, Number)
         return DeviceGray(r / 255)
-    assert isinstance(r, Number)
-    assert isinstance(g, Number)
-    assert isinstance(b, Number)
     return DeviceRGB(r / 255, g / 255, b / 255)
 
 
