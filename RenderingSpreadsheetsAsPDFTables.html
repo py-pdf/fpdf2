@@ -2,7 +2,7 @@
 <span class=c1># USAGE: ./csv2table.py color_srgb.csv</span>
 <span class=kn>import</span><span class=w> </span><span class=nn>csv</span><span class=o>,</span><span class=w> </span><span class=nn>sys</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span><span class=p>,</span> <span class=n>FontFace</span>
-<span class=kn>from</span><span class=w> </span><span class=nn>fpdf.drawing</span><span class=w> </span><span class=kn>import</span> <span class=n>color_from_hex_string</span>
+<span class=kn>from</span><span class=w> </span><span class=nn>fpdf.drawing_primitives</span><span class=w> </span><span class=kn>import</span> <span class=n>color_from_hex_string</span>
 
 <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
 <span class=n>pdf</span><span class=o>.</span><span class=n>add_page</span><span class=p>()</span>
@@ -23,7 +23,7 @@
 <span class=c1># USAGE: ./xlsx2table.py color_srgb.xlsx</span>
 <span class=kn>import</span><span class=w> </span><span class=nn>sys</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span><span class=p>,</span> <span class=n>FontFace</span>
-<span class=kn>from</span><span class=w> </span><span class=nn>fpdf.drawing</span><span class=w> </span><span class=kn>import</span> <span class=n>color_from_hex_string</span>
+<span class=kn>from</span><span class=w> </span><span class=nn>fpdf.drawing_primitives</span><span class=w> </span><span class=kn>import</span> <span class=n>color_from_hex_string</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>openpyxl</span><span class=w> </span><span class=kn>import</span> <span class=n>load_workbook</span>
 
 <span class=n>pdf</span> <span class=o>=</span> <span class=n>FPDF</span><span class=p>()</span>
@@ -45,7 +45,7 @@
 <span class=c1># USAGE: ./ods2table.py color_srgb.ods</span>
 <span class=kn>import</span><span class=w> </span><span class=nn>sys</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>fpdf</span><span class=w> </span><span class=kn>import</span> <span class=n>FPDF</span><span class=p>,</span> <span class=n>FontFace</span>
-<span class=kn>from</span><span class=w> </span><span class=nn>fpdf.drawing</span><span class=w> </span><span class=kn>import</span> <span class=n>color_from_hex_string</span>
+<span class=kn>from</span><span class=w> </span><span class=nn>fpdf.drawing_primitives</span><span class=w> </span><span class=kn>import</span> <span class=n>color_from_hex_string</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>odf.opendocument</span><span class=w> </span><span class=kn>import</span> <span class=n>load</span>
 <span class=kn>from</span><span class=w> </span><span class=nn>odf.table</span><span class=w> </span><span class=kn>import</span> <span class=n>Table</span><span class=p>,</span> <span class=n>TableCell</span><span class=p>,</span> <span class=n>TableRow</span>
 

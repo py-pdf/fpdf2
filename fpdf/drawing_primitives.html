@@ -1,0 +1,2847 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>fpdf.drawing_primitives API documentation</title>
+<meta name="description" content="Core drawing primitives for fpdf2 …">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>fpdf.drawing_primitives</code></h1>
+</header>
+<section id="section-intro">
+<p>Core drawing primitives for fpdf2.</p>
+<p>This module defines the fundamental data structures used throughout the
+drawing API, including:</p>
+<ul>
+<li>Color models: <code><a title="fpdf.drawing_primitives.DeviceRGB" href="#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a></code>, <code><a title="fpdf.drawing_primitives.DeviceGray" href="#fpdf.drawing_primitives.DeviceGray">DeviceGray</a></code>, <code><a title="fpdf.drawing_primitives.DeviceCMYK" href="#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a></code></li>
+<li>Geometric primitives: <code><a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></code></li>
+<li>Transformation matrices: <code><a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></code></li>
+</ul>
+<p>These classes are intentionally lightweight and self-contained so they can be
+safely imported from any other drawing-related module without creating circular
+dependencies.</p>
+<p>All higher-level drawing features (paths, patterns, gradients, etc.) build on
+top of these primitives.</p>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="fpdf.drawing_primitives.check_range"><code class="name flex">
+<span>def <span class="ident">check_range</span></span>(<span>value, minimum=0.0, maximum=1.0)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L46-L50" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def check_range(value, minimum=0.0, maximum=1.0):
+    if not minimum &lt;= value &lt;= maximum:
+        raise ValueError(f&#34;{value} not in range [{minimum}, {maximum}]&#34;)
+
+    return value</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.drawing_primitives.cmyk8"><code class="name flex">
+<span>def <span class="ident">cmyk8</span></span>(<span>c, m, y, k, a=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L310-L331" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def cmyk8(c, m, y, k, a=None):
+    &#34;&#34;&#34;
+    Produce a DeviceCMYK color from the given 8-bit CMYK values.
+
+    Args:
+        c (Number): red color component. Must be in the interval [0, 255].
+        m (Number): green color component. Must be in the interval [0, 255].
+        y (Number): blue color component. Must be in the interval [0, 255].
+        k (Number): blue color component. Must be in the interval [0, 255].
+        a (Optional[Number]): alpha component. Must be `None` or in the interval
+            [0, 255]. 0 is fully transparent, 255 is fully opaque
+
+    Returns:
+        DeviceCMYK color representation.
+
+    Raises:
+        ValueError: if any components are not in their valid interval.
+    &#34;&#34;&#34;
+    if a is not None:
+        a /= 255.0
+
+    return DeviceCMYK(c / 255.0, m / 255.0, y / 255.0, k / 255.0, a)</code></pre>
+</details>
+<div class="desc"><p>Produce a DeviceCMYK color from the given 8-bit CMYK values.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>c</code></strong> :&ensp;<code>Number</code></dt>
+<dd>red color component. Must be in the interval [0, 255].</dd>
+<dt><strong><code>m</code></strong> :&ensp;<code>Number</code></dt>
+<dd>green color component. Must be in the interval [0, 255].</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>Number</code></dt>
+<dd>blue color component. Must be in the interval [0, 255].</dd>
+<dt><strong><code>k</code></strong> :&ensp;<code>Number</code></dt>
+<dd>blue color component. Must be in the interval [0, 255].</dd>
+<dt><strong><code>a</code></strong> :&ensp;<code>Optional[Number]</code></dt>
+<dd>alpha component. Must be <code>None</code> or in the interval
+[0, 255]. 0 is fully transparent, 255 is fully opaque</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>DeviceCMYK color representation.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>if any components are not in their valid interval.</dd>
+</dl></div>
+</dd>
+<dt id="fpdf.drawing_primitives.color_from_hex_string"><code class="name flex">
+<span>def <span class="ident">color_from_hex_string</span></span>(<span>hexstr)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L334-L371" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def color_from_hex_string(hexstr):
+    &#34;&#34;&#34;
+    Parse an RGB color from a css-style 8-bit hexadecimal color string.
+
+    Args:
+        hexstr (str): of the form `#RGB`, `#RGBA`, `#RRGGBB`, or `#RRGGBBAA` (case
+            insensitive). Must include the leading octothorp. Forms omitting the alpha
+            field are interpreted as not specifying the opacity, so it will not be
+            explicitly set.
+
+            An alpha value of `00` is fully transparent and `FF` is fully opaque.
+
+    Returns:
+        DeviceRGB representation of the color.
+    &#34;&#34;&#34;
+    if not isinstance(hexstr, str):
+        raise TypeError(f&#34;{hexstr} is not of type str&#34;)
+
+    if not hexstr.startswith(&#34;#&#34;):
+        raise ValueError(f&#34;{hexstr} does not start with #&#34;)
+
+    hlen = len(hexstr)
+
+    if hlen == 4:
+        return rgb8(*[int(char * 2, base=16) for char in hexstr[1:]], a=None)
+
+    if hlen == 5:
+        return rgb8(*[int(char * 2, base=16) for char in hexstr[1:]])
+
+    if hlen == 7:
+        return rgb8(
+            *[int(hexstr[idx : idx + 2], base=16) for idx in range(1, hlen, 2)], a=None
+        )
+
+    if hlen == 9:
+        return rgb8(*[int(hexstr[idx : idx + 2], base=16) for idx in range(1, hlen, 2)])
+
+    raise ValueError(f&#34;{hexstr} could not be interpreted as a RGB(A) hex string&#34;)</code></pre>
+</details>
+<div class="desc"><p>Parse an RGB color from a css-style 8-bit hexadecimal color string.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>hexstr</code></strong> :&ensp;<code>str</code></dt>
+<dd>
+<p>of the form <code>#RGB</code>, <code>#RGBA</code>, <code>#RRGGBB</code>, or <code>#RRGGBBAA</code> (case
+insensitive). Must include the leading octothorp. Forms omitting the alpha
+field are interpreted as not specifying the opacity, so it will not be
+explicitly set.</p>
+<p>An alpha value of <code>00</code> is fully transparent and <code>FF</code> is fully opaque.</p>
+</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>DeviceRGB representation of the color.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.color_from_rgb_string"><code class="name flex">
+<span>def <span class="ident">color_from_rgb_string</span></span>(<span>rgbstr)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L374-L401" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def color_from_rgb_string(rgbstr):
+    &#34;&#34;&#34;
+    Parse an RGB color from a css-style rgb(R, G, B, A) color string.
+
+    Args:
+        rgbstr (str): of the form `rgb(R, G, B)` or `rgb(R, G, B, A)`.
+
+    Returns:
+        DeviceRGB representation of the color.
+    &#34;&#34;&#34;
+    if not isinstance(rgbstr, str):
+        raise TypeError(f&#34;{rgbstr} is not of type str&#34;)
+
+    rgbstr = rgbstr.replace(&#34; &#34;, &#34;&#34;)
+
+    if not rgbstr.startswith(&#34;rgb(&#34;) or not rgbstr.endswith(&#34;)&#34;):
+        raise ValueError(f&#34;{rgbstr} does not follow the expected rgb(...) format&#34;)
+
+    rgbstr = rgbstr[4:-1]
+    colors = rgbstr.split(&#34;,&#34;)
+
+    if len(colors) == 3:
+        return rgb8(*[int(c) for c in colors], a=None)
+
+    if len(colors) == 4:
+        return rgb8(*[int(c) for c in colors])
+
+    raise ValueError(f&#34;{rgbstr} could not be interpreted as a rgb(R, G, B[, A]) color&#34;)</code></pre>
+</details>
+<div class="desc"><p>Parse an RGB color from a css-style rgb(R, G, B, A) color string.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>rgbstr</code></strong> :&ensp;<code>str</code></dt>
+<dd>of the form <code>rgb(R, G, B)</code> or <code>rgb(R, G, B, A)</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>DeviceRGB representation of the color.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.convert_to_device_color"><code class="name flex">
+<span>def <span class="ident">convert_to_device_color</span></span>(<span>r, g=-1, b=-1)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L297-L307" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def convert_to_device_color(r, g=-1, b=-1):
+    if isinstance(r, (DeviceCMYK, DeviceGray, DeviceRGB)):
+        # Note: in this case, r is also a Sequence
+        return r
+    if isinstance(r, str) and r.startswith(&#34;#&#34;):
+        return color_from_hex_string(r)
+    if isinstance(r, Sequence):
+        r, g, b = r
+    if (r, g, b) == (0, 0, 0) or g == -1:
+        return DeviceGray(r / 255)
+    return DeviceRGB(r / 255, g / 255, b / 255)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.drawing_primitives.gray8"><code class="name flex">
+<span>def <span class="ident">gray8</span></span>(<span>g, a=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L275-L294" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def gray8(g, a=None):
+    &#34;&#34;&#34;
+    Produce a DeviceGray color from the given 8-bit gray value.
+
+    Args:
+        g (Number): gray color component. Must be in the interval [0, 255]. 0 is black,
+            255 is white.
+        a (Optional[Number]): alpha component. Must be `None` or in the interval
+            [0, 255]. 0 is fully transparent, 255 is fully opaque
+
+    Returns:
+        DeviceGray color representation.
+
+    Raises:
+        ValueError: if any components are not in their valid interval.
+    &#34;&#34;&#34;
+    if a is not None:
+        a /= 255.0
+
+    return DeviceGray(g / 255.0, a)</code></pre>
+</details>
+<div class="desc"><p>Produce a DeviceGray color from the given 8-bit gray value.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>g</code></strong> :&ensp;<code>Number</code></dt>
+<dd>gray color component. Must be in the interval [0, 255]. 0 is black,
+255 is white.</dd>
+<dt><strong><code>a</code></strong> :&ensp;<code>Optional[Number]</code></dt>
+<dd>alpha component. Must be <code>None</code> or in the interval
+[0, 255]. 0 is fully transparent, 255 is fully opaque</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>DeviceGray color representation.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>if any components are not in their valid interval.</dd>
+</dl></div>
+</dd>
+<dt id="fpdf.drawing_primitives.number_to_str"><code class="name flex">
+<span>def <span class="ident">number_to_str</span></span>(<span>number)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L53-L65" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def number_to_str(number):
+    &#34;&#34;&#34;
+    Convert a decimal number to a minimal string representation (no trailing 0 or .).
+
+    Args:
+        number (Number): the number to be converted to a string.
+
+    Returns:
+        The number&#39;s string representation.
+    &#34;&#34;&#34;
+    # this approach tries to produce minimal representations of floating point numbers
+    # but can also produce &#34;-0&#34;.
+    return f&#34;{number:.4f}&#34;.rstrip(&#34;0&#34;).rstrip(&#34;.&#34;)</code></pre>
+</details>
+<div class="desc"><p>Convert a decimal number to a minimal string representation (no trailing 0 or .).</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>number</code></strong> :&ensp;<code>Number</code></dt>
+<dd>the number to be converted to a string.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The number's string representation.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.rgb8"><code class="name flex">
+<span>def <span class="ident">rgb8</span></span>(<span>r, g, b, a=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L249-L272" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def rgb8(r, g, b, a=None):
+    &#34;&#34;&#34;
+    Produce a DeviceRGB color from the given 8-bit RGB values.
+
+    Args:
+        r (Number): red color component. Must be in the interval [0, 255].
+        g (Number): green color component. Must be in the interval [0, 255].
+        b (Number): blue color component. Must be in the interval [0, 255].
+        a (Optional[Number]): alpha component. Must be `None` or in the interval
+            [0, 255]. 0 is fully transparent, 255 is fully opaque
+
+    Returns:
+        DeviceRGB color representation.
+
+    Raises:
+        ValueError: if any components are not in their valid interval.
+    &#34;&#34;&#34;
+    if a is None:
+        if r == g == b:
+            return DeviceGray(r / 255.0)
+    else:
+        a /= 255.0
+
+    return DeviceRGB(r / 255.0, g / 255.0, b / 255.0, a)</code></pre>
+</details>
+<div class="desc"><p>Produce a DeviceRGB color from the given 8-bit RGB values.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>r</code></strong> :&ensp;<code>Number</code></dt>
+<dd>red color component. Must be in the interval [0, 255].</dd>
+<dt><strong><code>g</code></strong> :&ensp;<code>Number</code></dt>
+<dd>green color component. Must be in the interval [0, 255].</dd>
+<dt><strong><code>b</code></strong> :&ensp;<code>Number</code></dt>
+<dd>blue color component. Must be in the interval [0, 255].</dd>
+<dt><strong><code>a</code></strong> :&ensp;<code>Optional[Number]</code></dt>
+<dd>alpha component. Must be <code>None</code> or in the interval
+[0, 255]. 0 is fully transparent, 255 is fully opaque</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>DeviceRGB color representation.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>if any components are not in their valid interval.</dd>
+</dl></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="fpdf.drawing_primitives.DeviceCMYK"><code class="flex name class">
+<span>class <span class="ident">DeviceCMYK</span></span>
+<span>(</span><span>c, m, y, k, a=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L197-L228" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class DeviceCMYK(
+    NamedTuple(
+        &#34;DeviceCMYK&#34;,
+        [
+            (&#34;c&#34;, Number),
+            (&#34;m&#34;, Number),
+            (&#34;y&#34;, Number),
+            (&#34;k&#34;, Number),
+            (&#34;a&#34;, Optional[Number]),
+        ],
+    )
+):
+    &#34;&#34;&#34;A class representing a PDF DeviceCMYK color.&#34;&#34;&#34;
+
+    OPERATOR = &#34;k&#34;
+    &#34;&#34;&#34;The PDF drawing operator used to specify this type of color.&#34;&#34;&#34;
+
+    def __new__(cls, c, m, y, k, a=None):
+        if a is not None:
+            check_range(a)
+
+        return super().__new__(
+            cls, check_range(c), check_range(m), check_range(y), check_range(k), a
+        )
+
+    @property
+    def colors(self):
+        &#34;The color components as a tuple in order (c, m, y, k) with alpha omitted, in range 0-1.&#34;
+        return self[:-1]
+
+    def serialize(self) -&gt; str:
+        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.OPERATOR}&#34;</code></pre>
+</details>
+<div class="desc"><p>A class representing a PDF DeviceCMYK color.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.tuple</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="fpdf.drawing_primitives.DeviceCMYK.colors"><code class="name">prop <span class="ident">colors</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L222-L225" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@property
+def colors(self):
+    &#34;The color components as a tuple in order (c, m, y, k) with alpha omitted, in range 0-1.&#34;
+    return self[:-1]</code></pre>
+</details>
+<div class="desc"><p>The color components as a tuple in order (c, m, y, k) with alpha omitted, in range 0-1.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.drawing_primitives.DeviceCMYK.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L227-L228" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self) -&gt; str:
+    return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.OPERATOR}&#34;</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceGray"><code class="flex name class">
+<span>class <span class="ident">DeviceGray</span></span>
+<span>(</span><span>g, a=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L145-L173" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class DeviceGray(
+    NamedTuple(
+        &#34;DeviceGray&#34;,
+        [(&#34;g&#34;, Number), (&#34;a&#34;, Optional[Number])],
+    )
+):
+    &#34;&#34;&#34;A class representing a PDF DeviceGray color.&#34;&#34;&#34;
+
+    OPERATOR = &#34;g&#34;
+    &#34;&#34;&#34;The PDF drawing operator used to specify this type of color.&#34;&#34;&#34;
+
+    def __new__(cls, g, a=None):
+        if a is not None:
+            check_range(a)
+
+        return super().__new__(cls, check_range(g), a)
+
+    @property
+    def colors(self):
+        &#34;The color components as a tuple in order (r, g, b) with alpha omitted, in range 0-1.&#34;
+        return self.g, self.g, self.g
+
+    @property
+    def colors255(self):
+        &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255.&#34;
+        return tuple(255 * v for v in self.colors)
+
+    def serialize(self) -&gt; str:
+        return f&#34;{number_to_str(self.g)} {self.OPERATOR}&#34;</code></pre>
+</details>
+<div class="desc"><p>A class representing a PDF DeviceGray color.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.tuple</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="fpdf.drawing_primitives.DeviceGray.colors"><code class="name">prop <span class="ident">colors</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L162-L165" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@property
+def colors(self):
+    &#34;The color components as a tuple in order (r, g, b) with alpha omitted, in range 0-1.&#34;
+    return self.g, self.g, self.g</code></pre>
+</details>
+<div class="desc"><p>The color components as a tuple in order (r, g, b) with alpha omitted, in range 0-1.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceGray.colors255"><code class="name">prop <span class="ident">colors255</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L167-L170" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@property
+def colors255(self):
+    &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255.&#34;
+    return tuple(255 * v for v in self.colors)</code></pre>
+</details>
+<div class="desc"><p>The color components as a tuple in order <code>(r, g, b)</code> with alpha omitted, in range 0-255.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.drawing_primitives.DeviceGray.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L172-L173" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self) -&gt; str:
+    return f&#34;{number_to_str(self.g)} {self.OPERATOR}&#34;</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceRGB"><code class="flex name class">
+<span>class <span class="ident">DeviceRGB</span></span>
+<span>(</span><span>r, g, b, a=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L75-L125" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class DeviceRGB(
+    NamedTuple(
+        &#34;DeviceRGB&#34;,
+        [(&#34;r&#34;, Number), (&#34;g&#34;, Number), (&#34;b&#34;, Number), (&#34;a&#34;, Optional[Number])],
+    )
+):
+    &#34;&#34;&#34;A class representing a PDF DeviceRGB color.&#34;&#34;&#34;
+
+    # This follows a common PDF drawing operator convention where the operand is upcased
+    # to apply to stroke and downcased to apply to fill.
+
+    # This could be more manually specified by  `CS`/`cs` to set the color space(e.g. to
+    # `/DeviceRGB`) and `SC`/`sc` to set the color parameters. The documentation isn&#39;t
+    # perfectly clear on this front, but it appears that these cannot be set in the
+    # current graphics state dictionary and instead is set in the current page resource
+    # dictionary. fpdf appears to only generate a single resource dictionary for the
+    # entire document, and even if it created one per page, it would still be a lot
+    # clunkier to try to use that.
+
+    # Because PDF hates me, personally, the opacity of the drawing HAS to be specified
+    # in the current graphics state dictionary and does not exist as a standalone
+    # directive.
+    OPERATOR = &#34;rg&#34;
+    &#34;&#34;&#34;The PDF drawing operator used to specify this type of color.&#34;&#34;&#34;
+
+    def __new__(cls, r, g, b, a=None):
+        if a is not None:
+            check_range(a)
+
+        return super().__new__(cls, check_range(r), check_range(g), check_range(b), a)
+
+    @property
+    def colors(self):
+        &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-1.&#34;
+        return self[:-1]
+
+    @property
+    def colors255(self):
+        &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255.&#34;
+        return tuple(255 * v for v in self.colors)
+
+    def serialize(self) -&gt; str:
+        return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.OPERATOR}&#34;
+
+    def is_achromatic(self) -&gt; bool:
+        # Treat tiny diffs as equal to avoid float noise
+        return abs(self.r - self.g) &lt; 1e-9 and abs(self.g - self.b) &lt; 1e-9
+
+    def to_gray(self) -&gt; &#34;DeviceGray&#34;:
+        # sRGB luminance
+        return DeviceGray(0.2126 * self.r + 0.7152 * self.g + 0.0722 * self.b)</code></pre>
+</details>
+<div class="desc"><p>A class representing a PDF DeviceRGB color.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.tuple</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="fpdf.drawing_primitives.DeviceRGB.colors"><code class="name">prop <span class="ident">colors</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L106-L109" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@property
+def colors(self):
+    &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-1.&#34;
+    return self[:-1]</code></pre>
+</details>
+<div class="desc"><p>The color components as a tuple in order <code>(r, g, b)</code> with alpha omitted, in range 0-1.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceRGB.colors255"><code class="name">prop <span class="ident">colors255</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L111-L114" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@property
+def colors255(self):
+    &#34;The color components as a tuple in order `(r, g, b)` with alpha omitted, in range 0-255.&#34;
+    return tuple(255 * v for v in self.colors)</code></pre>
+</details>
+<div class="desc"><p>The color components as a tuple in order <code>(r, g, b)</code> with alpha omitted, in range 0-255.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.drawing_primitives.DeviceRGB.is_achromatic"><code class="name flex">
+<span>def <span class="ident">is_achromatic</span></span>(<span>self) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L119-L121" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def is_achromatic(self) -&gt; bool:
+    # Treat tiny diffs as equal to avoid float noise
+    return abs(self.r - self.g) &lt; 1e-9 and abs(self.g - self.b) &lt; 1e-9</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceRGB.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L116-L117" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def serialize(self) -&gt; str:
+    return &#34; &#34;.join(number_to_str(val) for val in self.colors) + f&#34; {self.OPERATOR}&#34;</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="fpdf.drawing_primitives.DeviceRGB.to_gray"><code class="name flex">
+<span>def <span class="ident">to_gray</span></span>(<span>self) ‑> <a title="fpdf.drawing_primitives.DeviceGray" href="#fpdf.drawing_primitives.DeviceGray">DeviceGray</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L123-L125" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def to_gray(self) -&gt; &#34;DeviceGray&#34;:
+    # sRGB luminance
+    return DeviceGray(0.2126 * self.r + 0.7152 * self.g + 0.0722 * self.b)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="fpdf.drawing_primitives.Point"><code class="flex name class">
+<span>class <span class="ident">Point</span></span>
+<span>(</span><span>x: float, y: float)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L404-L618" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class Point(NamedTuple):
+    &#34;&#34;&#34;
+    An x-y coordinate pair within the two-dimensional coordinate frame.
+    &#34;&#34;&#34;
+
+    x: float
+    &#34;&#34;&#34;The abscissa of the point.&#34;&#34;&#34;
+
+    y: float
+    &#34;&#34;&#34;The ordinate of the point.&#34;&#34;&#34;
+
+    def render(self) -&gt; str:
+        &#34;&#34;&#34;Render the point to the string `&#34;x y&#34;` for emitting to a PDF.&#34;&#34;&#34;
+
+        return f&#34;{number_to_str(self.x)} {number_to_str(self.y)}&#34;
+
+    def dot(self, other: &#34;Point&#34;) -&gt; float:
+        &#34;&#34;&#34;
+        Compute the dot product of two points.
+
+        Args:
+            other (Point): the point with which to compute the dot product.
+
+        Returns:
+            The scalar result of the dot product computation.
+
+        Raises:
+            TypeError: if `other` is not a `Point`.
+        &#34;&#34;&#34;
+        if not isinstance(other, Point):
+            raise TypeError(f&#34;cannot dot with {other!r}&#34;)
+
+        return self.x * other.x + self.y * other.y
+
+    def angle(self, other: &#34;Point&#34;) -&gt; float:
+        &#34;&#34;&#34;
+        Compute the angle between two points (interpreted as vectors from the origin).
+
+        The return value is in the interval (-pi, pi]. Sign is dependent on ordering,
+        with clockwise angle travel considered to be positive due to the orientation of
+        the coordinate frame basis vectors (i.e. the angle between `(1, 0)` and `(0, 1)`
+        is `+pi/2`, the angle between `(1, 0)` and `(0, -1)` is `-pi/2`, and the angle
+        between `(0, -1)` and `(1, 0)` is `+pi/2`).
+
+        Args:
+            other (Point): the point to compute the angle sweep toward.
+
+        Returns:
+            The scalar angle between the two points **in radians**.
+
+        Raises:
+            TypeError: if `other` is not a `Point`.
+        &#34;&#34;&#34;
+
+        if not isinstance(other, Point):
+            raise TypeError(f&#34;cannot compute angle with {other!r}&#34;)
+
+        signifier = (self.x * other.y) - (self.y * other.x)
+        sign = (signifier &gt;= 0) - (signifier &lt; 0)
+        if self.mag() * other.mag() == 0:  # Prevent division by 0
+            return 0.0
+        return sign * math.acos(round(self.dot(other) / (self.mag() * other.mag()), 8))
+
+    def mag(self) -&gt; float:
+        &#34;&#34;&#34;
+        Compute the Cartesian distance from this point to the origin
+
+        This is the same as computing the magnitude of the vector represented by this
+        point.
+
+        Returns:
+            The scalar result of the distance computation.
+        &#34;&#34;&#34;
+
+        return (self.x**2 + self.y**2) ** 0.5
+
+    @force_document
+    def __add__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Produce the sum of two points.
+
+        Adding two points is the same as translating the source point by interpreting
+        the other point&#39;s x and y coordinates as distances.
+
+        Args:
+            other (Point): right-hand side of the infix addition operation
+
+        Returns:
+            A Point which is the sum of the two source points.
+        &#34;&#34;&#34;
+        if isinstance(other, Point):
+            return Point(x=self.x + other.x, y=self.y + other.y)
+
+        return NotImplemented
+
+    @force_document
+    def __sub__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Produce the difference between two points.
+
+        Unlike addition, this is not a commutative operation!
+
+        Args:
+            other (Point): right-hand side of the infix subtraction operation
+
+        Returns:
+            A Point which is the difference of the two source points.
+        &#34;&#34;&#34;
+        if isinstance(other, Point):
+            return Point(x=self.x - other.x, y=self.y - other.y)
+
+        return NotImplemented
+
+    @force_document
+    def __neg__(self) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Produce a point by negating this point&#39;s coordinates.
+
+        Returns:
+            A Point whose coordinates are this points coordinates negated.
+        &#34;&#34;&#34;
+        return Point(x=-self.x, y=-self.y)
+
+    @force_document
+    def __mul__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Multiply a point by a scalar value.
+
+        Args:
+            other (Number): the scalar value by which to multiply the point&#39;s
+                coordinates.
+
+        Returns:
+            A Point whose coordinates are the result of the multiplication.
+        &#34;&#34;&#34;
+        if isinstance(other, NumberClass):
+            return Point(self.x * other, self.y * other)
+
+        return NotImplemented
+
+    __rmul__ = __mul__
+
+    @force_document
+    def __truediv__(self, other: Number) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Divide a point by a scalar value.
+
+        .. note::
+
+            Because division is not commutative, `Point / scalar` is implemented, but
+            `scalar / Point` is nonsensical and not implemented.
+
+        Args:
+            other (Number): the scalar value by which to divide the point&#39;s coordinates.
+
+        Returns:
+            A Point whose coordinates are the result of the division.
+        &#34;&#34;&#34;
+        if isinstance(other, NumberClass):
+            return Point(self.x / float(other), self.y / float(other))
+
+        return NotImplemented
+
+    @force_document
+    def __floordiv__(self, other: Number) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Divide a point by a scalar value using integer division.
+
+        .. note::
+
+            Because division is not commutative, `Point // scalar` is implemented, but
+            `scalar // Point` is nonsensical and not implemented.
+
+        Args:
+            other (Number): the scalar value by which to divide the point&#39;s coordinates.
+
+        Returns:
+            A Point whose coordinates are the result of the division.
+        &#34;&#34;&#34;
+        if isinstance(other, NumberClass):
+            return Point(self.x // float(other), self.y // float(other))
+
+        return NotImplemented
+
+    # no __r(true|floor)div__ because division is not commutative!
+
+    @force_document
+    def __matmul__(self, other: &#34;Transform&#34;) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Transform a point with the given transform matrix.
+
+        .. note::
+            This operator is only implemented for Transforms. This transform is not
+            commutative, so `Point @ Transform` is implemented, but `Transform @ Point`
+            is not implemented (technically speaking, the current implementation is
+            commutative because of the way points and transforms are represented, but
+            if that representation were to change this operation could stop being
+            commutative)
+
+        Args:
+            other (Transform): the transform to apply to the point
+
+        Returns:
+            A Point whose coordinates are the result of applying the transform.
+        &#34;&#34;&#34;
+        if isinstance(other, Transform):
+            return Point(
+                x=other.a * self.x + other.c * self.y + other.e,
+                y=other.b * self.x + other.d * self.y + other.f,
+            )
+
+        return NotImplemented
+
+    def __str__(self) -&gt; str:
+        return f&#34;(x={number_to_str(self.x)}, y={number_to_str(self.y)})&#34;</code></pre>
+</details>
+<div class="desc"><p>An x-y coordinate pair within the two-dimensional coordinate frame.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.tuple</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="fpdf.drawing_primitives.Point.x"><code class="name">var <span class="ident">x</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L404-L618" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class Point(NamedTuple):
+    &#34;&#34;&#34;
+    An x-y coordinate pair within the two-dimensional coordinate frame.
+    &#34;&#34;&#34;
+
+    x: float
+    &#34;&#34;&#34;The abscissa of the point.&#34;&#34;&#34;
+
+    y: float
+    &#34;&#34;&#34;The ordinate of the point.&#34;&#34;&#34;
+
+    def render(self) -&gt; str:
+        &#34;&#34;&#34;Render the point to the string `&#34;x y&#34;` for emitting to a PDF.&#34;&#34;&#34;
+
+        return f&#34;{number_to_str(self.x)} {number_to_str(self.y)}&#34;
+
+    def dot(self, other: &#34;Point&#34;) -&gt; float:
+        &#34;&#34;&#34;
+        Compute the dot product of two points.
+
+        Args:
+            other (Point): the point with which to compute the dot product.
+
+        Returns:
+            The scalar result of the dot product computation.
+
+        Raises:
+            TypeError: if `other` is not a `Point`.
+        &#34;&#34;&#34;
+        if not isinstance(other, Point):
+            raise TypeError(f&#34;cannot dot with {other!r}&#34;)
+
+        return self.x * other.x + self.y * other.y
+
+    def angle(self, other: &#34;Point&#34;) -&gt; float:
+        &#34;&#34;&#34;
+        Compute the angle between two points (interpreted as vectors from the origin).
+
+        The return value is in the interval (-pi, pi]. Sign is dependent on ordering,
+        with clockwise angle travel considered to be positive due to the orientation of
+        the coordinate frame basis vectors (i.e. the angle between `(1, 0)` and `(0, 1)`
+        is `+pi/2`, the angle between `(1, 0)` and `(0, -1)` is `-pi/2`, and the angle
+        between `(0, -1)` and `(1, 0)` is `+pi/2`).
+
+        Args:
+            other (Point): the point to compute the angle sweep toward.
+
+        Returns:
+            The scalar angle between the two points **in radians**.
+
+        Raises:
+            TypeError: if `other` is not a `Point`.
+        &#34;&#34;&#34;
+
+        if not isinstance(other, Point):
+            raise TypeError(f&#34;cannot compute angle with {other!r}&#34;)
+
+        signifier = (self.x * other.y) - (self.y * other.x)
+        sign = (signifier &gt;= 0) - (signifier &lt; 0)
+        if self.mag() * other.mag() == 0:  # Prevent division by 0
+            return 0.0
+        return sign * math.acos(round(self.dot(other) / (self.mag() * other.mag()), 8))
+
+    def mag(self) -&gt; float:
+        &#34;&#34;&#34;
+        Compute the Cartesian distance from this point to the origin
+
+        This is the same as computing the magnitude of the vector represented by this
+        point.
+
+        Returns:
+            The scalar result of the distance computation.
+        &#34;&#34;&#34;
+
+        return (self.x**2 + self.y**2) ** 0.5
+
+    @force_document
+    def __add__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Produce the sum of two points.
+
+        Adding two points is the same as translating the source point by interpreting
+        the other point&#39;s x and y coordinates as distances.
+
+        Args:
+            other (Point): right-hand side of the infix addition operation
+
+        Returns:
+            A Point which is the sum of the two source points.
+        &#34;&#34;&#34;
+        if isinstance(other, Point):
+            return Point(x=self.x + other.x, y=self.y + other.y)
+
+        return NotImplemented
+
+    @force_document
+    def __sub__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Produce the difference between two points.
+
+        Unlike addition, this is not a commutative operation!
+
+        Args:
+            other (Point): right-hand side of the infix subtraction operation
+
+        Returns:
+            A Point which is the difference of the two source points.
+        &#34;&#34;&#34;
+        if isinstance(other, Point):
+            return Point(x=self.x - other.x, y=self.y - other.y)
+
+        return NotImplemented
+
+    @force_document
+    def __neg__(self) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Produce a point by negating this point&#39;s coordinates.
+
+        Returns:
+            A Point whose coordinates are this points coordinates negated.
+        &#34;&#34;&#34;
+        return Point(x=-self.x, y=-self.y)
+
+    @force_document
+    def __mul__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Multiply a point by a scalar value.
+
+        Args:
+            other (Number): the scalar value by which to multiply the point&#39;s
+                coordinates.
+
+        Returns:
+            A Point whose coordinates are the result of the multiplication.
+        &#34;&#34;&#34;
+        if isinstance(other, NumberClass):
+            return Point(self.x * other, self.y * other)
+
+        return NotImplemented
+
+    __rmul__ = __mul__
+
+    @force_document
+    def __truediv__(self, other: Number) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Divide a point by a scalar value.
+
+        .. note::
+
+            Because division is not commutative, `Point / scalar` is implemented, but
+            `scalar / Point` is nonsensical and not implemented.
+
+        Args:
+            other (Number): the scalar value by which to divide the point&#39;s coordinates.
+
+        Returns:
+            A Point whose coordinates are the result of the division.
+        &#34;&#34;&#34;
+        if isinstance(other, NumberClass):
+            return Point(self.x / float(other), self.y / float(other))
+
+        return NotImplemented
+
+    @force_document
+    def __floordiv__(self, other: Number) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Divide a point by a scalar value using integer division.
+
+        .. note::
+
+            Because division is not commutative, `Point // scalar` is implemented, but
+            `scalar // Point` is nonsensical and not implemented.
+
+        Args:
+            other (Number): the scalar value by which to divide the point&#39;s coordinates.
+
+        Returns:
+            A Point whose coordinates are the result of the division.
+        &#34;&#34;&#34;
+        if isinstance(other, NumberClass):
+            return Point(self.x // float(other), self.y // float(other))
+
+        return NotImplemented
+
+    # no __r(true|floor)div__ because division is not commutative!
+
+    @force_document
+    def __matmul__(self, other: &#34;Transform&#34;) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Transform a point with the given transform matrix.
+
+        .. note::
+            This operator is only implemented for Transforms. This transform is not
+            commutative, so `Point @ Transform` is implemented, but `Transform @ Point`
+            is not implemented (technically speaking, the current implementation is
+            commutative because of the way points and transforms are represented, but
+            if that representation were to change this operation could stop being
+            commutative)
+
+        Args:
+            other (Transform): the transform to apply to the point
+
+        Returns:
+            A Point whose coordinates are the result of applying the transform.
+        &#34;&#34;&#34;
+        if isinstance(other, Transform):
+            return Point(
+                x=other.a * self.x + other.c * self.y + other.e,
+                y=other.b * self.x + other.d * self.y + other.f,
+            )
+
+        return NotImplemented
+
+    def __str__(self) -&gt; str:
+        return f&#34;(x={number_to_str(self.x)}, y={number_to_str(self.y)})&#34;</code></pre>
+</details>
+<div class="desc"><p>The abscissa of the point.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Point.y"><code class="name">var <span class="ident">y</span> : float</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L404-L618" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class Point(NamedTuple):
+    &#34;&#34;&#34;
+    An x-y coordinate pair within the two-dimensional coordinate frame.
+    &#34;&#34;&#34;
+
+    x: float
+    &#34;&#34;&#34;The abscissa of the point.&#34;&#34;&#34;
+
+    y: float
+    &#34;&#34;&#34;The ordinate of the point.&#34;&#34;&#34;
+
+    def render(self) -&gt; str:
+        &#34;&#34;&#34;Render the point to the string `&#34;x y&#34;` for emitting to a PDF.&#34;&#34;&#34;
+
+        return f&#34;{number_to_str(self.x)} {number_to_str(self.y)}&#34;
+
+    def dot(self, other: &#34;Point&#34;) -&gt; float:
+        &#34;&#34;&#34;
+        Compute the dot product of two points.
+
+        Args:
+            other (Point): the point with which to compute the dot product.
+
+        Returns:
+            The scalar result of the dot product computation.
+
+        Raises:
+            TypeError: if `other` is not a `Point`.
+        &#34;&#34;&#34;
+        if not isinstance(other, Point):
+            raise TypeError(f&#34;cannot dot with {other!r}&#34;)
+
+        return self.x * other.x + self.y * other.y
+
+    def angle(self, other: &#34;Point&#34;) -&gt; float:
+        &#34;&#34;&#34;
+        Compute the angle between two points (interpreted as vectors from the origin).
+
+        The return value is in the interval (-pi, pi]. Sign is dependent on ordering,
+        with clockwise angle travel considered to be positive due to the orientation of
+        the coordinate frame basis vectors (i.e. the angle between `(1, 0)` and `(0, 1)`
+        is `+pi/2`, the angle between `(1, 0)` and `(0, -1)` is `-pi/2`, and the angle
+        between `(0, -1)` and `(1, 0)` is `+pi/2`).
+
+        Args:
+            other (Point): the point to compute the angle sweep toward.
+
+        Returns:
+            The scalar angle between the two points **in radians**.
+
+        Raises:
+            TypeError: if `other` is not a `Point`.
+        &#34;&#34;&#34;
+
+        if not isinstance(other, Point):
+            raise TypeError(f&#34;cannot compute angle with {other!r}&#34;)
+
+        signifier = (self.x * other.y) - (self.y * other.x)
+        sign = (signifier &gt;= 0) - (signifier &lt; 0)
+        if self.mag() * other.mag() == 0:  # Prevent division by 0
+            return 0.0
+        return sign * math.acos(round(self.dot(other) / (self.mag() * other.mag()), 8))
+
+    def mag(self) -&gt; float:
+        &#34;&#34;&#34;
+        Compute the Cartesian distance from this point to the origin
+
+        This is the same as computing the magnitude of the vector represented by this
+        point.
+
+        Returns:
+            The scalar result of the distance computation.
+        &#34;&#34;&#34;
+
+        return (self.x**2 + self.y**2) ** 0.5
+
+    @force_document
+    def __add__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Produce the sum of two points.
+
+        Adding two points is the same as translating the source point by interpreting
+        the other point&#39;s x and y coordinates as distances.
+
+        Args:
+            other (Point): right-hand side of the infix addition operation
+
+        Returns:
+            A Point which is the sum of the two source points.
+        &#34;&#34;&#34;
+        if isinstance(other, Point):
+            return Point(x=self.x + other.x, y=self.y + other.y)
+
+        return NotImplemented
+
+    @force_document
+    def __sub__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Produce the difference between two points.
+
+        Unlike addition, this is not a commutative operation!
+
+        Args:
+            other (Point): right-hand side of the infix subtraction operation
+
+        Returns:
+            A Point which is the difference of the two source points.
+        &#34;&#34;&#34;
+        if isinstance(other, Point):
+            return Point(x=self.x - other.x, y=self.y - other.y)
+
+        return NotImplemented
+
+    @force_document
+    def __neg__(self) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Produce a point by negating this point&#39;s coordinates.
+
+        Returns:
+            A Point whose coordinates are this points coordinates negated.
+        &#34;&#34;&#34;
+        return Point(x=-self.x, y=-self.y)
+
+    @force_document
+    def __mul__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Multiply a point by a scalar value.
+
+        Args:
+            other (Number): the scalar value by which to multiply the point&#39;s
+                coordinates.
+
+        Returns:
+            A Point whose coordinates are the result of the multiplication.
+        &#34;&#34;&#34;
+        if isinstance(other, NumberClass):
+            return Point(self.x * other, self.y * other)
+
+        return NotImplemented
+
+    __rmul__ = __mul__
+
+    @force_document
+    def __truediv__(self, other: Number) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Divide a point by a scalar value.
+
+        .. note::
+
+            Because division is not commutative, `Point / scalar` is implemented, but
+            `scalar / Point` is nonsensical and not implemented.
+
+        Args:
+            other (Number): the scalar value by which to divide the point&#39;s coordinates.
+
+        Returns:
+            A Point whose coordinates are the result of the division.
+        &#34;&#34;&#34;
+        if isinstance(other, NumberClass):
+            return Point(self.x / float(other), self.y / float(other))
+
+        return NotImplemented
+
+    @force_document
+    def __floordiv__(self, other: Number) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Divide a point by a scalar value using integer division.
+
+        .. note::
+
+            Because division is not commutative, `Point // scalar` is implemented, but
+            `scalar // Point` is nonsensical and not implemented.
+
+        Args:
+            other (Number): the scalar value by which to divide the point&#39;s coordinates.
+
+        Returns:
+            A Point whose coordinates are the result of the division.
+        &#34;&#34;&#34;
+        if isinstance(other, NumberClass):
+            return Point(self.x // float(other), self.y // float(other))
+
+        return NotImplemented
+
+    # no __r(true|floor)div__ because division is not commutative!
+
+    @force_document
+    def __matmul__(self, other: &#34;Transform&#34;) -&gt; &#34;Point&#34;:
+        &#34;&#34;&#34;
+        Transform a point with the given transform matrix.
+
+        .. note::
+            This operator is only implemented for Transforms. This transform is not
+            commutative, so `Point @ Transform` is implemented, but `Transform @ Point`
+            is not implemented (technically speaking, the current implementation is
+            commutative because of the way points and transforms are represented, but
+            if that representation were to change this operation could stop being
+            commutative)
+
+        Args:
+            other (Transform): the transform to apply to the point
+
+        Returns:
+            A Point whose coordinates are the result of applying the transform.
+        &#34;&#34;&#34;
+        if isinstance(other, Transform):
+            return Point(
+                x=other.a * self.x + other.c * self.y + other.e,
+                y=other.b * self.x + other.d * self.y + other.f,
+            )
+
+        return NotImplemented
+
+    def __str__(self) -&gt; str:
+        return f&#34;(x={number_to_str(self.x)}, y={number_to_str(self.y)})&#34;</code></pre>
+</details>
+<div class="desc"><p>The ordinate of the point.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.drawing_primitives.Point.__add__"><code class="name flex">
+<span>def <span class="ident">__add__</span></span>(<span>self,<br>other: <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a>) ‑> <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L480-L497" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_document
+def __add__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+    &#34;&#34;&#34;
+    Produce the sum of two points.
+
+    Adding two points is the same as translating the source point by interpreting
+    the other point&#39;s x and y coordinates as distances.
+
+    Args:
+        other (Point): right-hand side of the infix addition operation
+
+    Returns:
+        A Point which is the sum of the two source points.
+    &#34;&#34;&#34;
+    if isinstance(other, Point):
+        return Point(x=self.x + other.x, y=self.y + other.y)
+
+    return NotImplemented</code></pre>
+</details>
+<div class="desc"><p>Produce the sum of two points.</p>
+<p>Adding two points is the same as translating the source point by interpreting
+the other point's x and y coordinates as distances.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>other</code></strong> :&ensp;<code><a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></code></dt>
+<dd>right-hand side of the infix addition operation</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Point which is the sum of the two source points.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Point.__floordiv__"><code class="name flex">
+<span>def <span class="ident">__floordiv__</span></span>(<span>self, other: int | float | decimal.Decimal) ‑> <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L567-L586" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_document
+def __floordiv__(self, other: Number) -&gt; &#34;Point&#34;:
+    &#34;&#34;&#34;
+    Divide a point by a scalar value using integer division.
+
+    .. note::
+
+        Because division is not commutative, `Point // scalar` is implemented, but
+        `scalar // Point` is nonsensical and not implemented.
+
+    Args:
+        other (Number): the scalar value by which to divide the point&#39;s coordinates.
+
+    Returns:
+        A Point whose coordinates are the result of the division.
+    &#34;&#34;&#34;
+    if isinstance(other, NumberClass):
+        return Point(self.x // float(other), self.y // float(other))
+
+    return NotImplemented</code></pre>
+</details>
+<div class="desc"><p>Divide a point by a scalar value using integer division.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Because division is not commutative, <code>Point // scalar</code> is implemented, but
+<code>scalar // Point</code> is nonsensical and not implemented.</p>
+</div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>other</code></strong> :&ensp;<code>Number</code></dt>
+<dd>the scalar value by which to divide the point's coordinates.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Point whose coordinates are the result of the division.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Point.__matmul__"><code class="name flex">
+<span>def <span class="ident">__matmul__</span></span>(<span>self,<br>other: <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a>) ‑> <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L590-L615" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_document
+def __matmul__(self, other: &#34;Transform&#34;) -&gt; &#34;Point&#34;:
+    &#34;&#34;&#34;
+    Transform a point with the given transform matrix.
+
+    .. note::
+        This operator is only implemented for Transforms. This transform is not
+        commutative, so `Point @ Transform` is implemented, but `Transform @ Point`
+        is not implemented (technically speaking, the current implementation is
+        commutative because of the way points and transforms are represented, but
+        if that representation were to change this operation could stop being
+        commutative)
+
+    Args:
+        other (Transform): the transform to apply to the point
+
+    Returns:
+        A Point whose coordinates are the result of applying the transform.
+    &#34;&#34;&#34;
+    if isinstance(other, Transform):
+        return Point(
+            x=other.a * self.x + other.c * self.y + other.e,
+            y=other.b * self.x + other.d * self.y + other.f,
+        )
+
+    return NotImplemented</code></pre>
+</details>
+<div class="desc"><p>Transform a point with the given transform matrix.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This operator is only implemented for Transforms. This transform is not
+commutative, so <code>Point @ Transform</code> is implemented, but <code>Transform @ Point</code>
+is not implemented (technically speaking, the current implementation is
+commutative because of the way points and transforms are represented, but
+if that representation were to change this operation could stop being
+commutative)</p>
+</div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>other</code></strong> :&ensp;<code><a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></code></dt>
+<dd>the transform to apply to the point</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Point whose coordinates are the result of applying the transform.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Point.__mul__"><code class="name flex">
+<span>def <span class="ident">__mul__</span></span>(<span>self,<br>other: <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a>) ‑> <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L527-L542" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_document
+def __mul__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+    &#34;&#34;&#34;
+    Multiply a point by a scalar value.
+
+    Args:
+        other (Number): the scalar value by which to multiply the point&#39;s
+            coordinates.
+
+    Returns:
+        A Point whose coordinates are the result of the multiplication.
+    &#34;&#34;&#34;
+    if isinstance(other, NumberClass):
+        return Point(self.x * other, self.y * other)
+
+    return NotImplemented</code></pre>
+</details>
+<div class="desc"><p>Multiply a point by a scalar value.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>other</code></strong> :&ensp;<code>Number</code></dt>
+<dd>the scalar value by which to multiply the point's
+coordinates.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Point whose coordinates are the result of the multiplication.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Point.__neg__"><code class="name flex">
+<span>def <span class="ident">__neg__</span></span>(<span>self) ‑> <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L517-L525" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_document
+def __neg__(self) -&gt; &#34;Point&#34;:
+    &#34;&#34;&#34;
+    Produce a point by negating this point&#39;s coordinates.
+
+    Returns:
+        A Point whose coordinates are this points coordinates negated.
+    &#34;&#34;&#34;
+    return Point(x=-self.x, y=-self.y)</code></pre>
+</details>
+<div class="desc"><p>Produce a point by negating this point's coordinates.</p>
+<h2 id="returns">Returns</h2>
+<p>A Point whose coordinates are this points coordinates negated.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Point.__sub__"><code class="name flex">
+<span>def <span class="ident">__sub__</span></span>(<span>self,<br>other: <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a>) ‑> <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L499-L515" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_document
+def __sub__(self, other: &#34;Point&#34;) -&gt; &#34;Point&#34;:
+    &#34;&#34;&#34;
+    Produce the difference between two points.
+
+    Unlike addition, this is not a commutative operation!
+
+    Args:
+        other (Point): right-hand side of the infix subtraction operation
+
+    Returns:
+        A Point which is the difference of the two source points.
+    &#34;&#34;&#34;
+    if isinstance(other, Point):
+        return Point(x=self.x - other.x, y=self.y - other.y)
+
+    return NotImplemented</code></pre>
+</details>
+<div class="desc"><p>Produce the difference between two points.</p>
+<p>Unlike addition, this is not a commutative operation!</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>other</code></strong> :&ensp;<code><a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></code></dt>
+<dd>right-hand side of the infix subtraction operation</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Point which is the difference of the two source points.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Point.__truediv__"><code class="name flex">
+<span>def <span class="ident">__truediv__</span></span>(<span>self, other: int | float | decimal.Decimal) ‑> <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L546-L565" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_document
+def __truediv__(self, other: Number) -&gt; &#34;Point&#34;:
+    &#34;&#34;&#34;
+    Divide a point by a scalar value.
+
+    .. note::
+
+        Because division is not commutative, `Point / scalar` is implemented, but
+        `scalar / Point` is nonsensical and not implemented.
+
+    Args:
+        other (Number): the scalar value by which to divide the point&#39;s coordinates.
+
+    Returns:
+        A Point whose coordinates are the result of the division.
+    &#34;&#34;&#34;
+    if isinstance(other, NumberClass):
+        return Point(self.x / float(other), self.y / float(other))
+
+    return NotImplemented</code></pre>
+</details>
+<div class="desc"><p>Divide a point by a scalar value.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Because division is not commutative, <code>Point / scalar</code> is implemented, but
+<code>scalar / Point</code> is nonsensical and not implemented.</p>
+</div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>other</code></strong> :&ensp;<code>Number</code></dt>
+<dd>the scalar value by which to divide the point's coordinates.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Point whose coordinates are the result of the division.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Point.angle"><code class="name flex">
+<span>def <span class="ident">angle</span></span>(<span>self,<br>other: <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a>) ‑> float</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L438-L465" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def angle(self, other: &#34;Point&#34;) -&gt; float:
+    &#34;&#34;&#34;
+    Compute the angle between two points (interpreted as vectors from the origin).
+
+    The return value is in the interval (-pi, pi]. Sign is dependent on ordering,
+    with clockwise angle travel considered to be positive due to the orientation of
+    the coordinate frame basis vectors (i.e. the angle between `(1, 0)` and `(0, 1)`
+    is `+pi/2`, the angle between `(1, 0)` and `(0, -1)` is `-pi/2`, and the angle
+    between `(0, -1)` and `(1, 0)` is `+pi/2`).
+
+    Args:
+        other (Point): the point to compute the angle sweep toward.
+
+    Returns:
+        The scalar angle between the two points **in radians**.
+
+    Raises:
+        TypeError: if `other` is not a `Point`.
+    &#34;&#34;&#34;
+
+    if not isinstance(other, Point):
+        raise TypeError(f&#34;cannot compute angle with {other!r}&#34;)
+
+    signifier = (self.x * other.y) - (self.y * other.x)
+    sign = (signifier &gt;= 0) - (signifier &lt; 0)
+    if self.mag() * other.mag() == 0:  # Prevent division by 0
+        return 0.0
+    return sign * math.acos(round(self.dot(other) / (self.mag() * other.mag()), 8))</code></pre>
+</details>
+<div class="desc"><p>Compute the angle between two points (interpreted as vectors from the origin).</p>
+<p>The return value is in the interval (-pi, pi]. Sign is dependent on ordering,
+with clockwise angle travel considered to be positive due to the orientation of
+the coordinate frame basis vectors (i.e. the angle between <code>(1, 0)</code> and <code>(0, 1)</code>
+is <code>+pi/2</code>, the angle between <code>(1, 0)</code> and <code>(0, -1)</code> is <code>-pi/2</code>, and the angle
+between <code>(0, -1)</code> and <code>(1, 0)</code> is <code>+pi/2</code>).</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>other</code></strong> :&ensp;<code><a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></code></dt>
+<dd>the point to compute the angle sweep toward.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The scalar angle between the two points <strong>in radians</strong>.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>TypeError</code></dt>
+<dd>if <code>other</code> is not a <code><a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></code>.</dd>
+</dl></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Point.dot"><code class="name flex">
+<span>def <span class="ident">dot</span></span>(<span>self,<br>other: <a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a>) ‑> float</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L420-L436" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def dot(self, other: &#34;Point&#34;) -&gt; float:
+    &#34;&#34;&#34;
+    Compute the dot product of two points.
+
+    Args:
+        other (Point): the point with which to compute the dot product.
+
+    Returns:
+        The scalar result of the dot product computation.
+
+    Raises:
+        TypeError: if `other` is not a `Point`.
+    &#34;&#34;&#34;
+    if not isinstance(other, Point):
+        raise TypeError(f&#34;cannot dot with {other!r}&#34;)
+
+    return self.x * other.x + self.y * other.y</code></pre>
+</details>
+<div class="desc"><p>Compute the dot product of two points.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>other</code></strong> :&ensp;<code><a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></code></dt>
+<dd>the point with which to compute the dot product.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The scalar result of the dot product computation.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>TypeError</code></dt>
+<dd>if <code>other</code> is not a <code><a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></code>.</dd>
+</dl></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Point.mag"><code class="name flex">
+<span>def <span class="ident">mag</span></span>(<span>self) ‑> float</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L467-L478" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def mag(self) -&gt; float:
+    &#34;&#34;&#34;
+    Compute the Cartesian distance from this point to the origin
+
+    This is the same as computing the magnitude of the vector represented by this
+    point.
+
+    Returns:
+        The scalar result of the distance computation.
+    &#34;&#34;&#34;
+
+    return (self.x**2 + self.y**2) ** 0.5</code></pre>
+</details>
+<div class="desc"><p>Compute the Cartesian distance from this point to the origin</p>
+<p>This is the same as computing the magnitude of the vector represented by this
+point.</p>
+<h2 id="returns">Returns</h2>
+<p>The scalar result of the distance computation.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Point.render"><code class="name flex">
+<span>def <span class="ident">render</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L415-L418" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def render(self) -&gt; str:
+    &#34;&#34;&#34;Render the point to the string `&#34;x y&#34;` for emitting to a PDF.&#34;&#34;&#34;
+
+    return f&#34;{number_to_str(self.x)} {number_to_str(self.y)}&#34;</code></pre>
+</details>
+<div class="desc"><p>Render the point to the string <code>"x y"</code> for emitting to a PDF.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform"><code class="flex name class">
+<span>class <span class="ident">Transform</span></span>
+<span>(</span><span>a: float, b: float, c: float, d: float, e: float, f: float)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L621-L980" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">class Transform(NamedTuple):
+    &#34;&#34;&#34;
+    A representation of an affine transformation matrix for 2D shapes.
+
+    The actual matrix is:
+
+    ```
+                        [ a b 0 ]
+    [x&#39; y&#39; 1] = [x y 1] [ c d 0 ]
+                        [ e f 1 ]
+    ```
+
+    Complex transformation operations can be composed via a sequence of simple
+    transformations by performing successive matrix multiplication of the simple
+    transformations.
+
+    For example, scaling a set of points around a specific center point can be
+    represented by a translation-scale-translation sequence, where the first
+    translation translates the center to the origin, the scale transform scales the
+    points relative to the origin, and the second translation translates the points
+    back to the specified center point. Transform multiplication is performed using
+    python&#39;s dedicated matrix multiplication operator, `@`
+
+    The semantics of this representation mean composed transformations are specified
+    left-to-right in order of application (some other systems provide transposed
+    representations, in which case the application order is right-to-left).
+
+    For example, to rotate the square `(1,1) (1,3) (3,3) (3,1)` 45 degrees clockwise
+    about its center point (which is `(2,2)`) , the translate-rotate-translate
+    process described above may be applied:
+
+    ```python
+    rotate_centered = (
+        Transform.translation(-2, -2)
+        @ Transform.rotation_d(45)
+        @ Transform.translation(2, 2)
+    )
+    ```
+
+    Instances of this class provide a chaining API, so the above transform could also be
+    constructed as follows:
+
+    ```python
+    rotate_centered = Transform.translation(-2, -2).rotate_d(45).translate(2, 2)
+    ```
+
+    Or, because the particular operation of performing some transformations about a
+    specific point is pretty common,
+
+    ```python
+    rotate_centered = Transform.rotation_d(45).about(2, 2)
+    ```
+
+    By convention, this class provides class method constructors following noun-ish
+    naming (`translation`, `scaling`, `rotation`, `shearing`) and instance method
+    manipulations following verb-ish naming (`translate`, `scale`, `rotate`, `shear`).
+    &#34;&#34;&#34;
+
+    a: float
+    b: float
+    c: float
+    d: float
+    e: float
+    f: float
+
+    # compact representation of an affine transformation matrix for 2D shapes.
+    # The actual matrix is:
+    #                     [ A B 0 ]
+    # [x&#39; y&#39; 1] = [x y 1] [ C D 0 ]
+    #                     [ E F 1 ]
+    # The identity transform is 1 0 0 1 0 0
+
+    @classmethod
+    def identity(cls) -&gt; &#34;Transform&#34;:
+        &#34;&#34;&#34;
+        Create a transform representing the identity transform.
+
+        The identity transform is a no-op.
+        &#34;&#34;&#34;
+        return cls(1, 0, 0, 1, 0, 0)
+
+    @classmethod
+    def translation(cls, x: Number, y: Number) -&gt; &#34;Transform&#34;:
+        &#34;&#34;&#34;
+        Create a transform that performs translation.
+
+        Args:
+            x (Number): distance to translate points along the x (horizontal) axis.
+            y (Number): distance to translate points along the y (vertical) axis.
+
+        Returns:
+            A Transform representing the specified translation.
+        &#34;&#34;&#34;
+
+        return cls(1, 0, 0, 1, float(x), float(y))
+
+    @classmethod
+    def scaling(cls, x: Number, y: Optional[Number] = None) -&gt; &#34;Transform&#34;:
+        &#34;&#34;&#34;
+        Create a transform that performs scaling.
+
+        Args:
+            x (Number): scaling ratio in the x (horizontal) axis. A value of 1
+                results in no scale change in the x axis.
+            y (Number): optional scaling ratio in the y (vertical) axis. A value of 1
+                results in no scale change in the y axis. If this value is omitted, it
+                defaults to the value provided to the `x` argument.
+
+        Returns:
+            A Transform representing the specified scaling.
+        &#34;&#34;&#34;
+        if y is None:
+            y = x
+
+        return cls(float(x), 0, 0, float(y), 0, 0)
+
+    @classmethod
+    def rotation(cls, theta: Number) -&gt; &#34;Transform&#34;:
+        &#34;&#34;&#34;
+        Create a transform that performs rotation.
+
+        Args:
+            theta (Number): the angle **in radians** by which to rotate. Positive
+                values represent clockwise rotations.
+
+        Returns:
+            A Transform representing the specified rotation.
+
+        &#34;&#34;&#34;
+        return cls(
+            math.cos(theta), math.sin(theta), -math.sin(theta), math.cos(theta), 0, 0
+        )
+
+    @classmethod
+    def rotation_d(cls, theta_d: Number) -&gt; &#34;Transform&#34;:
+        &#34;&#34;&#34;
+        Create a transform that performs rotation **in degrees**.
+
+        Args:
+            theta_d (Number): the angle **in degrees** by which to rotate. Positive
+                values represent clockwise rotations.
+
+        Returns:
+            A Transform representing the specified rotation.
+
+        &#34;&#34;&#34;
+        return cls.rotation(math.radians(theta_d))
+
+    @classmethod
+    def shearing(cls, x: Number, y: Optional[Number] = None) -&gt; &#34;Transform&#34;:
+        &#34;&#34;&#34;
+        Create a transform that performs shearing (not of sheep).
+
+        Args:
+            x (Number): The amount to shear along the x (horizontal) axis.
+            y (Number): Optional amount to shear along the y (vertical) axis. If omitted,
+                this defaults to the value provided to the `x` argument.
+
+        Returns:
+            A Transform representing the specified shearing.
+
+        &#34;&#34;&#34;
+        if y is None:
+            y = x
+        return cls(1, float(y), float(x), 1, 0, 0)
+
+    def translate(self, x: Number, y: Number) -&gt; &#34;Transform&#34;:
+        &#34;&#34;&#34;
+        Produce a transform by composing the current transform with a translation.
+
+        .. note::
+            Transforms are immutable, so this returns a new transform rather than
+            mutating self.
+
+        Args:
+            x (Number): distance to translate points along the x (horizontal) axis.
+            y (Number): distance to translate points along the y (vertical) axis.
+
+        Returns:
+            A Transform representing the composed transform.
+        &#34;&#34;&#34;
+        return self @ Transform.translation(x, y)
+
+    def scale(self, x: Number, y: Optional[Number] = None) -&gt; &#34;Transform&#34;:
+        &#34;&#34;&#34;
+        Produce a transform by composing the current transform with a scaling.
+
+        .. note::
+            Transforms are immutable, so this returns a new transform rather than
+            mutating self.
+
+        Args:
+            x (Number): scaling ratio in the x (horizontal) axis. A value of 1
+                results in no scale change in the x axis.
+            y (Number): optional scaling ratio in the y (vertical) axis. A value of 1
+                results in no scale change in the y axis. If this value is omitted, it
+                defaults to the value provided to the `x` argument.
+
+        Returns:
+            A Transform representing the composed transform.
+        &#34;&#34;&#34;
+        return self @ Transform.scaling(x, y)
+
+    def rotate(self, theta: Number) -&gt; &#34;Transform&#34;:
+        &#34;&#34;&#34;
+        Produce a transform by composing the current transform with a rotation.
+
+        .. note::
+            Transforms are immutable, so this returns a new transform rather than
+            mutating self.
+
+        Args:
+            theta (Number): the angle **in radians** by which to rotate. Positive
+                values represent clockwise rotations.
+
+        Returns:
+            A Transform representing the composed transform.
+        &#34;&#34;&#34;
+        return self @ Transform.rotation(theta)
+
+    def rotate_d(self, theta_d: Number) -&gt; &#34;Transform&#34;:
+        &#34;&#34;&#34;
+        Produce a transform by composing the current transform with a rotation
+        **in degrees**.
+
+        .. note::
+            Transforms are immutable, so this returns a new transform rather than
+            mutating self.
+
+        Args:
+            theta_d (Number): the angle **in degrees** by which to rotate. Positive
+                values represent clockwise rotations.
+
+        Returns:
+            A Transform representing the composed transform.
+        &#34;&#34;&#34;
+        return self @ Transform.rotation_d(theta_d)
+
+    def shear(self, x: Number, y: Optional[Number] = None) -&gt; &#34;Transform&#34;:
+        &#34;&#34;&#34;
+        Produce a transform by composing the current transform with a shearing.
+
+        .. note::
+            Transforms are immutable, so this returns a new transform rather than
+            mutating self.
+
+        Args:
+            x (Number): The amount to shear along the x (horizontal) axis.
+            y (Number): Optional amount to shear along the y (vertical) axis. If omitted,
+                this defaults to the value provided to the `x` argument.
+
+        Returns:
+            A Transform representing the composed transform.
+        &#34;&#34;&#34;
+        return self @ Transform.shearing(x, y)
+
+    def about(self, x: Number, y: Number) -&gt; &#34;Transform&#34;:
+        &#34;&#34;&#34;
+        Bracket the given transform in a pair of translations to make it appear about a
+        point that isn&#39;t the origin.
+
+        This is a useful shorthand for performing a transform like a rotation around the
+        center point of an object that isn&#39;t centered at the origin.
+
+        .. note::
+            Transforms are immutable, so this returns a new transform rather than
+            mutating self.
+
+        Args:
+            x (Number): the point along the x (horizontal) axis about which to transform.
+            y (Number): the point along the y (vertical) axis about which to transform.
+
+        Returns:
+            A Transform representing the composed transform.
+        &#34;&#34;&#34;
+        return Transform.translation(-x, -y) @ self @ Transform.translation(x, y)
+
+    @force_document
+    def __mul__(self, other: Number) -&gt; &#34;Transform&#34;:
+        &#34;&#34;&#34;
+        Multiply the individual transform parameters by a scalar value.
+
+        Args:
+            other (Number): the scalar value by which to multiply the parameters
+
+        Returns:
+            A Transform with the modified parameters.
+        &#34;&#34;&#34;
+        if isinstance(other, NumberClass):
+            other = float(other)
+            return Transform(
+                a=self.a * other,
+                b=self.b * other,
+                c=self.c * other,
+                d=self.d * other,
+                e=self.e * other,
+                f=self.f * other,
+            )
+
+        return NotImplemented
+
+    # scalar multiplication is commutative
+    __rmul__ = __mul__
+
+    @force_document
+    def __matmul__(self, other: &#34;Transform&#34;) -&gt; &#34;Transform&#34;:
+        &#34;&#34;&#34;
+        Compose two transforms into a single transform.
+
+        Args:
+            other (Transform): the right-hand side transform of the infix operator.
+
+        Returns:
+            A Transform representing the composed transform.
+        &#34;&#34;&#34;
+        if isinstance(other, Transform):
+            return self.__class__(
+                a=self.a * other.a + self.b * other.c,
+                b=self.a * other.b + self.b * other.d,
+                c=self.c * other.a + self.d * other.c,
+                d=self.c * other.b + self.d * other.d,
+                e=self.e * other.a + self.f * other.c + other.e,
+                f=self.e * other.b + self.f * other.d + other.f,
+            )
+
+        return NotImplemented
+
+    def render(self, last_item: &#34;Renderable&#34;) -&gt; tuple[str, &#34;Renderable&#34;]:
+        &#34;&#34;&#34;
+        Render the transform to its PDF output representation.
+
+        Args:
+            last_item: the last path element this transform applies to
+
+        Returns:
+            A tuple of `(str, last_item)`. `last_item` is returned unchanged.
+        &#34;&#34;&#34;
+        return (
+            f&#34;{number_to_str(self.a)} {number_to_str(self.b)} &#34;
+            f&#34;{number_to_str(self.c)} {number_to_str(self.d)} &#34;
+            f&#34;{number_to_str(self.e)} {number_to_str(self.f)} cm&#34;,
+            last_item,
+        )
+
+    def __str__(self) -&gt; str:
+        return (
+            f&#34;transform: [&#34;
+            f&#34;{number_to_str(self.a)} {number_to_str(self.b)} 0; &#34;
+            f&#34;{number_to_str(self.c)} {number_to_str(self.d)} 0; &#34;
+            f&#34;{number_to_str(self.e)} {number_to_str(self.f)} 1]&#34;
+        )
+
+    def row_norms(self) -&gt; tuple[float, float]:
+        &#34;&#34;&#34;
+        Returns (sqrt(a² + c²), sqrt(b² + d²)), i.e. the Euclidean norms of
+        those rows. These values bound how much the transform can stretch geometry along the
+        device X and Y axes, respectively, and are useful for inflating axis-aligned
+        bounding boxes to account for stroke width under the CTM.
+        &#34;&#34;&#34;
+        return (math.hypot(self.a, self.c), math.hypot(self.b, self.d))</code></pre>
+</details>
+<div class="desc"><p>A representation of an affine transformation matrix for 2D shapes.</p>
+<p>The actual matrix is:</p>
+<pre><code>                    [ a b 0 ]
+[x' y' 1] = [x y 1] [ c d 0 ]
+                    [ e f 1 ]
+</code></pre>
+<p>Complex transformation operations can be composed via a sequence of simple
+transformations by performing successive matrix multiplication of the simple
+transformations.</p>
+<p>For example, scaling a set of points around a specific center point can be
+represented by a translation-scale-translation sequence, where the first
+translation translates the center to the origin, the scale transform scales the
+points relative to the origin, and the second translation translates the points
+back to the specified center point. Transform multiplication is performed using
+python's dedicated matrix multiplication operator, <code>@</code></p>
+<p>The semantics of this representation mean composed transformations are specified
+left-to-right in order of application (some other systems provide transposed
+representations, in which case the application order is right-to-left).</p>
+<p>For example, to rotate the square <code>(1,1) (1,3) (3,3) (3,1)</code> 45 degrees clockwise
+about its center point (which is <code>(2,2)</code>) , the translate-rotate-translate
+process described above may be applied:</p>
+<pre><code class="language-python">rotate_centered = (
+    Transform.translation(-2, -2)
+    @ Transform.rotation_d(45)
+    @ Transform.translation(2, 2)
+)
+</code></pre>
+<p>Instances of this class provide a chaining API, so the above transform could also be
+constructed as follows:</p>
+<pre><code class="language-python">rotate_centered = Transform.translation(-2, -2).rotate_d(45).translate(2, 2)
+</code></pre>
+<p>Or, because the particular operation of performing some transformations about a
+specific point is pretty common,</p>
+<pre><code class="language-python">rotate_centered = Transform.rotation_d(45).about(2, 2)
+</code></pre>
+<p>By convention, this class provides class method constructors following noun-ish
+naming (<code>translation</code>, <code>scaling</code>, <code>rotation</code>, <code>shearing</code>) and instance method
+manipulations following verb-ish naming (<code>translate</code>, <code>scale</code>, <code>rotate</code>, <code>shear</code>).</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.tuple</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="fpdf.drawing_primitives.Transform.identity"><code class="name flex">
+<span>def <span class="ident">identity</span></span>(<span>) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a transform representing the identity transform.</p>
+<p>The identity transform is a no-op.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform.rotation"><code class="name flex">
+<span>def <span class="ident">rotation</span></span>(<span>theta: int | float | decimal.Decimal) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a transform that performs rotation.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>theta</code></strong> :&ensp;<code>Number</code></dt>
+<dd>the angle <strong>in radians</strong> by which to rotate. Positive
+values represent clockwise rotations.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Transform representing the specified rotation.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform.rotation_d"><code class="name flex">
+<span>def <span class="ident">rotation_d</span></span>(<span>theta_d: int | float | decimal.Decimal) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a transform that performs rotation <strong>in degrees</strong>.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>theta_d</code></strong> :&ensp;<code>Number</code></dt>
+<dd>the angle <strong>in degrees</strong> by which to rotate. Positive
+values represent clockwise rotations.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Transform representing the specified rotation.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform.scaling"><code class="name flex">
+<span>def <span class="ident">scaling</span></span>(<span>x: int | float | decimal.Decimal,<br>y: int | float | decimal.Decimal | None = None) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a transform that performs scaling.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>Number</code></dt>
+<dd>scaling ratio in the x (horizontal) axis. A value of 1
+results in no scale change in the x axis.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>Number</code></dt>
+<dd>optional scaling ratio in the y (vertical) axis. A value of 1
+results in no scale change in the y axis. If this value is omitted, it
+defaults to the value provided to the <code>x</code> argument.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Transform representing the specified scaling.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform.shearing"><code class="name flex">
+<span>def <span class="ident">shearing</span></span>(<span>x: int | float | decimal.Decimal,<br>y: int | float | decimal.Decimal | None = None) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a transform that performs shearing (not of sheep).</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>Number</code></dt>
+<dd>The amount to shear along the x (horizontal) axis.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>Number</code></dt>
+<dd>Optional amount to shear along the y (vertical) axis. If omitted,
+this defaults to the value provided to the <code>x</code> argument.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Transform representing the specified shearing.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform.translation"><code class="name flex">
+<span>def <span class="ident">translation</span></span>(<span>x: int | float | decimal.Decimal, y: int | float | decimal.Decimal) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a transform that performs translation.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>Number</code></dt>
+<dd>distance to translate points along the x (horizontal) axis.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>Number</code></dt>
+<dd>distance to translate points along the y (vertical) axis.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Transform representing the specified translation.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="fpdf.drawing_primitives.Transform.__matmul__"><code class="name flex">
+<span>def <span class="ident">__matmul__</span></span>(<span>self,<br>other: <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a>) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L925-L946" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_document
+def __matmul__(self, other: &#34;Transform&#34;) -&gt; &#34;Transform&#34;:
+    &#34;&#34;&#34;
+    Compose two transforms into a single transform.
+
+    Args:
+        other (Transform): the right-hand side transform of the infix operator.
+
+    Returns:
+        A Transform representing the composed transform.
+    &#34;&#34;&#34;
+    if isinstance(other, Transform):
+        return self.__class__(
+            a=self.a * other.a + self.b * other.c,
+            b=self.a * other.b + self.b * other.d,
+            c=self.c * other.a + self.d * other.c,
+            d=self.c * other.b + self.d * other.d,
+            e=self.e * other.a + self.f * other.c + other.e,
+            f=self.e * other.b + self.f * other.d + other.f,
+        )
+
+    return NotImplemented</code></pre>
+</details>
+<div class="desc"><p>Compose two transforms into a single transform.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>other</code></strong> :&ensp;<code><a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></code></dt>
+<dd>the right-hand side transform of the infix operator.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Transform representing the composed transform.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform.__mul__"><code class="name flex">
+<span>def <span class="ident">__mul__</span></span>(<span>self, other: int | float | decimal.Decimal) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L898-L920" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">@force_document
+def __mul__(self, other: Number) -&gt; &#34;Transform&#34;:
+    &#34;&#34;&#34;
+    Multiply the individual transform parameters by a scalar value.
+
+    Args:
+        other (Number): the scalar value by which to multiply the parameters
+
+    Returns:
+        A Transform with the modified parameters.
+    &#34;&#34;&#34;
+    if isinstance(other, NumberClass):
+        other = float(other)
+        return Transform(
+            a=self.a * other,
+            b=self.b * other,
+            c=self.c * other,
+            d=self.d * other,
+            e=self.e * other,
+            f=self.f * other,
+        )
+
+    return NotImplemented</code></pre>
+</details>
+<div class="desc"><p>Multiply the individual transform parameters by a scalar value.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>other</code></strong> :&ensp;<code>Number</code></dt>
+<dd>the scalar value by which to multiply the parameters</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Transform with the modified parameters.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform.about"><code class="name flex">
+<span>def <span class="ident">about</span></span>(<span>self, x: int | float | decimal.Decimal, y: int | float | decimal.Decimal) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L877-L896" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def about(self, x: Number, y: Number) -&gt; &#34;Transform&#34;:
+    &#34;&#34;&#34;
+    Bracket the given transform in a pair of translations to make it appear about a
+    point that isn&#39;t the origin.
+
+    This is a useful shorthand for performing a transform like a rotation around the
+    center point of an object that isn&#39;t centered at the origin.
+
+    .. note::
+        Transforms are immutable, so this returns a new transform rather than
+        mutating self.
+
+    Args:
+        x (Number): the point along the x (horizontal) axis about which to transform.
+        y (Number): the point along the y (vertical) axis about which to transform.
+
+    Returns:
+        A Transform representing the composed transform.
+    &#34;&#34;&#34;
+    return Transform.translation(-x, -y) @ self @ Transform.translation(x, y)</code></pre>
+</details>
+<div class="desc"><p>Bracket the given transform in a pair of translations to make it appear about a
+point that isn't the origin.</p>
+<p>This is a useful shorthand for performing a transform like a rotation around the
+center point of an object that isn't centered at the origin.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Transforms are immutable, so this returns a new transform rather than
+mutating self.</p>
+</div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>Number</code></dt>
+<dd>the point along the x (horizontal) axis about which to transform.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>Number</code></dt>
+<dd>the point along the y (vertical) axis about which to transform.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Transform representing the composed transform.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform.render"><code class="name flex">
+<span>def <span class="ident">render</span></span>(<span>self, last_item: Renderable) ‑> tuple[str, 'Renderable']</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L948-L963" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def render(self, last_item: &#34;Renderable&#34;) -&gt; tuple[str, &#34;Renderable&#34;]:
+    &#34;&#34;&#34;
+    Render the transform to its PDF output representation.
+
+    Args:
+        last_item: the last path element this transform applies to
+
+    Returns:
+        A tuple of `(str, last_item)`. `last_item` is returned unchanged.
+    &#34;&#34;&#34;
+    return (
+        f&#34;{number_to_str(self.a)} {number_to_str(self.b)} &#34;
+        f&#34;{number_to_str(self.c)} {number_to_str(self.d)} &#34;
+        f&#34;{number_to_str(self.e)} {number_to_str(self.f)} cm&#34;,
+        last_item,
+    )</code></pre>
+</details>
+<div class="desc"><p>Render the transform to its PDF output representation.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>last_item</code></strong></dt>
+<dd>the last path element this transform applies to</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A tuple of <code>(str, last_item)</code>. <code>last_item</code> is returned unchanged.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform.rotate"><code class="name flex">
+<span>def <span class="ident">rotate</span></span>(<span>self, theta: int | float | decimal.Decimal) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L824-L839" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def rotate(self, theta: Number) -&gt; &#34;Transform&#34;:
+    &#34;&#34;&#34;
+    Produce a transform by composing the current transform with a rotation.
+
+    .. note::
+        Transforms are immutable, so this returns a new transform rather than
+        mutating self.
+
+    Args:
+        theta (Number): the angle **in radians** by which to rotate. Positive
+            values represent clockwise rotations.
+
+    Returns:
+        A Transform representing the composed transform.
+    &#34;&#34;&#34;
+    return self @ Transform.rotation(theta)</code></pre>
+</details>
+<div class="desc"><p>Produce a transform by composing the current transform with a rotation.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Transforms are immutable, so this returns a new transform rather than
+mutating self.</p>
+</div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>theta</code></strong> :&ensp;<code>Number</code></dt>
+<dd>the angle <strong>in radians</strong> by which to rotate. Positive
+values represent clockwise rotations.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Transform representing the composed transform.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform.rotate_d"><code class="name flex">
+<span>def <span class="ident">rotate_d</span></span>(<span>self, theta_d: int | float | decimal.Decimal) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L841-L857" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def rotate_d(self, theta_d: Number) -&gt; &#34;Transform&#34;:
+    &#34;&#34;&#34;
+    Produce a transform by composing the current transform with a rotation
+    **in degrees**.
+
+    .. note::
+        Transforms are immutable, so this returns a new transform rather than
+        mutating self.
+
+    Args:
+        theta_d (Number): the angle **in degrees** by which to rotate. Positive
+            values represent clockwise rotations.
+
+    Returns:
+        A Transform representing the composed transform.
+    &#34;&#34;&#34;
+    return self @ Transform.rotation_d(theta_d)</code></pre>
+</details>
+<div class="desc"><p>Produce a transform by composing the current transform with a rotation
+<strong>in degrees</strong>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Transforms are immutable, so this returns a new transform rather than
+mutating self.</p>
+</div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>theta_d</code></strong> :&ensp;<code>Number</code></dt>
+<dd>the angle <strong>in degrees</strong> by which to rotate. Positive
+values represent clockwise rotations.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Transform representing the composed transform.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform.row_norms"><code class="name flex">
+<span>def <span class="ident">row_norms</span></span>(<span>self) ‑> tuple[float, float]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L973-L980" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def row_norms(self) -&gt; tuple[float, float]:
+    &#34;&#34;&#34;
+    Returns (sqrt(a² + c²), sqrt(b² + d²)), i.e. the Euclidean norms of
+    those rows. These values bound how much the transform can stretch geometry along the
+    device X and Y axes, respectively, and are useful for inflating axis-aligned
+    bounding boxes to account for stroke width under the CTM.
+    &#34;&#34;&#34;
+    return (math.hypot(self.a, self.c), math.hypot(self.b, self.d))</code></pre>
+</details>
+<div class="desc"><p>Returns (sqrt(a² + c²), sqrt(b² + d²)), i.e. the Euclidean norms of
+those rows. These values bound how much the transform can stretch geometry along the
+device X and Y axes, respectively, and are useful for inflating axis-aligned
+bounding boxes to account for stroke width under the CTM.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform.scale"><code class="name flex">
+<span>def <span class="ident">scale</span></span>(<span>self,<br>x: int | float | decimal.Decimal,<br>y: int | float | decimal.Decimal | None = None) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L804-L822" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def scale(self, x: Number, y: Optional[Number] = None) -&gt; &#34;Transform&#34;:
+    &#34;&#34;&#34;
+    Produce a transform by composing the current transform with a scaling.
+
+    .. note::
+        Transforms are immutable, so this returns a new transform rather than
+        mutating self.
+
+    Args:
+        x (Number): scaling ratio in the x (horizontal) axis. A value of 1
+            results in no scale change in the x axis.
+        y (Number): optional scaling ratio in the y (vertical) axis. A value of 1
+            results in no scale change in the y axis. If this value is omitted, it
+            defaults to the value provided to the `x` argument.
+
+    Returns:
+        A Transform representing the composed transform.
+    &#34;&#34;&#34;
+    return self @ Transform.scaling(x, y)</code></pre>
+</details>
+<div class="desc"><p>Produce a transform by composing the current transform with a scaling.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Transforms are immutable, so this returns a new transform rather than
+mutating self.</p>
+</div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>Number</code></dt>
+<dd>scaling ratio in the x (horizontal) axis. A value of 1
+results in no scale change in the x axis.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>Number</code></dt>
+<dd>optional scaling ratio in the y (vertical) axis. A value of 1
+results in no scale change in the y axis. If this value is omitted, it
+defaults to the value provided to the <code>x</code> argument.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Transform representing the composed transform.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform.shear"><code class="name flex">
+<span>def <span class="ident">shear</span></span>(<span>self,<br>x: int | float | decimal.Decimal,<br>y: int | float | decimal.Decimal | None = None) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L859-L875" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def shear(self, x: Number, y: Optional[Number] = None) -&gt; &#34;Transform&#34;:
+    &#34;&#34;&#34;
+    Produce a transform by composing the current transform with a shearing.
+
+    .. note::
+        Transforms are immutable, so this returns a new transform rather than
+        mutating self.
+
+    Args:
+        x (Number): The amount to shear along the x (horizontal) axis.
+        y (Number): Optional amount to shear along the y (vertical) axis. If omitted,
+            this defaults to the value provided to the `x` argument.
+
+    Returns:
+        A Transform representing the composed transform.
+    &#34;&#34;&#34;
+    return self @ Transform.shearing(x, y)</code></pre>
+</details>
+<div class="desc"><p>Produce a transform by composing the current transform with a shearing.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Transforms are immutable, so this returns a new transform rather than
+mutating self.</p>
+</div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>Number</code></dt>
+<dd>The amount to shear along the x (horizontal) axis.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>Number</code></dt>
+<dd>Optional amount to shear along the y (vertical) axis. If omitted,
+this defaults to the value provided to the <code>x</code> argument.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Transform representing the composed transform.</p></div>
+</dd>
+<dt id="fpdf.drawing_primitives.Transform.translate"><code class="name flex">
+<span>def <span class="ident">translate</span></span>(<span>self, x: int | float | decimal.Decimal, y: int | float | decimal.Decimal) ‑> <a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/py-pdf/fpdf2/blob/8cef7e9d279700343d0f14fe0620699c095e1aea/fpdf/drawing_primitives.py#L787-L802" class="git-link" target="_blank">Browse git</a>
+</summary>
+<pre><code class="python">def translate(self, x: Number, y: Number) -&gt; &#34;Transform&#34;:
+    &#34;&#34;&#34;
+    Produce a transform by composing the current transform with a translation.
+
+    .. note::
+        Transforms are immutable, so this returns a new transform rather than
+        mutating self.
+
+    Args:
+        x (Number): distance to translate points along the x (horizontal) axis.
+        y (Number): distance to translate points along the y (vertical) axis.
+
+    Returns:
+        A Transform representing the composed transform.
+    &#34;&#34;&#34;
+    return self @ Transform.translation(x, y)</code></pre>
+</details>
+<div class="desc"><p>Produce a transform by composing the current transform with a translation.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Transforms are immutable, so this returns a new transform rather than
+mutating self.</p>
+</div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>Number</code></dt>
+<dd>distance to translate points along the x (horizontal) axis.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>Number</code></dt>
+<dd>distance to translate points along the y (vertical) axis.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A Transform representing the composed transform.</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="fpdf" href="index.html">fpdf</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="fpdf.drawing_primitives.check_range" href="#fpdf.drawing_primitives.check_range">check_range</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.cmyk8" href="#fpdf.drawing_primitives.cmyk8">cmyk8</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.color_from_hex_string" href="#fpdf.drawing_primitives.color_from_hex_string">color_from_hex_string</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.color_from_rgb_string" href="#fpdf.drawing_primitives.color_from_rgb_string">color_from_rgb_string</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.convert_to_device_color" href="#fpdf.drawing_primitives.convert_to_device_color">convert_to_device_color</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.gray8" href="#fpdf.drawing_primitives.gray8">gray8</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.number_to_str" href="#fpdf.drawing_primitives.number_to_str">number_to_str</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.rgb8" href="#fpdf.drawing_primitives.rgb8">rgb8</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="fpdf.drawing_primitives.DeviceCMYK" href="#fpdf.drawing_primitives.DeviceCMYK">DeviceCMYK</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.drawing_primitives.DeviceCMYK.colors" href="#fpdf.drawing_primitives.DeviceCMYK.colors">colors</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceCMYK.serialize" href="#fpdf.drawing_primitives.DeviceCMYK.serialize">serialize</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="fpdf.drawing_primitives.DeviceGray" href="#fpdf.drawing_primitives.DeviceGray">DeviceGray</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.drawing_primitives.DeviceGray.colors" href="#fpdf.drawing_primitives.DeviceGray.colors">colors</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceGray.colors255" href="#fpdf.drawing_primitives.DeviceGray.colors255">colors255</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceGray.serialize" href="#fpdf.drawing_primitives.DeviceGray.serialize">serialize</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="fpdf.drawing_primitives.DeviceRGB" href="#fpdf.drawing_primitives.DeviceRGB">DeviceRGB</a></code></h4>
+<ul class="">
+<li><code><a title="fpdf.drawing_primitives.DeviceRGB.colors" href="#fpdf.drawing_primitives.DeviceRGB.colors">colors</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceRGB.colors255" href="#fpdf.drawing_primitives.DeviceRGB.colors255">colors255</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceRGB.is_achromatic" href="#fpdf.drawing_primitives.DeviceRGB.is_achromatic">is_achromatic</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceRGB.serialize" href="#fpdf.drawing_primitives.DeviceRGB.serialize">serialize</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.DeviceRGB.to_gray" href="#fpdf.drawing_primitives.DeviceRGB.to_gray">to_gray</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="fpdf.drawing_primitives.Point" href="#fpdf.drawing_primitives.Point">Point</a></code></h4>
+<ul class="two-column">
+<li><code><a title="fpdf.drawing_primitives.Point.__add__" href="#fpdf.drawing_primitives.Point.__add__">__add__</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Point.__floordiv__" href="#fpdf.drawing_primitives.Point.__floordiv__">__floordiv__</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Point.__matmul__" href="#fpdf.drawing_primitives.Point.__matmul__">__matmul__</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Point.__mul__" href="#fpdf.drawing_primitives.Point.__mul__">__mul__</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Point.__neg__" href="#fpdf.drawing_primitives.Point.__neg__">__neg__</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Point.__sub__" href="#fpdf.drawing_primitives.Point.__sub__">__sub__</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Point.__truediv__" href="#fpdf.drawing_primitives.Point.__truediv__">__truediv__</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Point.angle" href="#fpdf.drawing_primitives.Point.angle">angle</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Point.dot" href="#fpdf.drawing_primitives.Point.dot">dot</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Point.mag" href="#fpdf.drawing_primitives.Point.mag">mag</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Point.render" href="#fpdf.drawing_primitives.Point.render">render</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Point.x" href="#fpdf.drawing_primitives.Point.x">x</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Point.y" href="#fpdf.drawing_primitives.Point.y">y</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="fpdf.drawing_primitives.Transform" href="#fpdf.drawing_primitives.Transform">Transform</a></code></h4>
+<ul class="two-column">
+<li><code><a title="fpdf.drawing_primitives.Transform.__matmul__" href="#fpdf.drawing_primitives.Transform.__matmul__">__matmul__</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.__mul__" href="#fpdf.drawing_primitives.Transform.__mul__">__mul__</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.about" href="#fpdf.drawing_primitives.Transform.about">about</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.identity" href="#fpdf.drawing_primitives.Transform.identity">identity</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.render" href="#fpdf.drawing_primitives.Transform.render">render</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.rotate" href="#fpdf.drawing_primitives.Transform.rotate">rotate</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.rotate_d" href="#fpdf.drawing_primitives.Transform.rotate_d">rotate_d</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.rotation" href="#fpdf.drawing_primitives.Transform.rotation">rotation</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.rotation_d" href="#fpdf.drawing_primitives.Transform.rotation_d">rotation_d</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.row_norms" href="#fpdf.drawing_primitives.Transform.row_norms">row_norms</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.scale" href="#fpdf.drawing_primitives.Transform.scale">scale</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.scaling" href="#fpdf.drawing_primitives.Transform.scaling">scaling</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.shear" href="#fpdf.drawing_primitives.Transform.shear">shear</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.shearing" href="#fpdf.drawing_primitives.Transform.shearing">shearing</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.translate" href="#fpdf.drawing_primitives.Transform.translate">translate</a></code></li>
+<li><code><a title="fpdf.drawing_primitives.Transform.translation" href="#fpdf.drawing_primitives.Transform.translation">translation</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>
