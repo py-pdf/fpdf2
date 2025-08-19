@@ -3753,12 +3753,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             gstate["strikethrough"] = in_strikethrough
             gstate["underline"] = in_underline
             if current_fallback_font:
-                gstate["font_family"] = "".join(
-                    c for c in current_fallback_font if c.islower()
-                )
-                gstate["font_style"] = "".join(
-                    c for c in current_fallback_font if c.isupper()
-                )
+                style = "".join(c for c in current_fallback_font if c in ("BI"))
+                family = current_fallback_font.replace("B", "").replace("I", "")
+                gstate["font_family"] = family
+                gstate["font_style"] = style
                 gstate["current_font"] = self.fonts[current_fallback_font]
                 current_fallback_font = None
                 current_text_script = None
