@@ -327,6 +327,7 @@ This library could only exist thanks to the dedication of many volunteers around
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/eshentials"><img src="https://avatars.githubusercontent.com/u/144895187?v=4?s=100" width="100px;" alt="Eshani"/><br /><sub><b>Eshani</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=eshentials" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/pratstick"><img src="https://avatars.githubusercontent.com/u/116508117?v=4?s=100" width="100px;" alt="Pratyush "/><br /><sub><b>Pratyush </b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=pratstick" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/dlespiau"><img src="https://avatars.githubusercontent.com/u/7986?v=4?s=100" width="100px;" alt="Damien"/><br /><sub><b>Damien</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=dlespiau" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://www.dabell.ca"><img src="https://avatars.githubusercontent.com/u/8835326?v=4?s=100" width="100px;" alt="David A. Bell"/><br /><sub><b>David A. Bell</b></sub></a><br /><a href="https://github.com/py-pdf/fpdf2/commits?author=dabell-cc" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
