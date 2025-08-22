@@ -280,7 +280,7 @@ class COLRFont(Type3Font):
         # print(f"Drawing COLRv1 paint: {paint.Format} - {paint}")
         ctm = ctm or Transform.identity()
 
-        if paint.Format == PaintFormat.PaintColrLayers:  # 1
+        if paint.Format == PaintFormat.PaintColrLayers:
             node = GraphicsContext()
             layer_list = self.base_font.ttfont["COLR"].table.LayerList
             for layer in range(
@@ -293,7 +293,7 @@ class COLRFont(Type3Font):
         if paint.Format in (
             PaintFormat.PaintSolid,
             PaintFormat.PaintVarSolid,
-        ):  # 2, 3
+        ):
             color = self.get_color(paint.PaletteIndex, paint.Alpha)
             if target_path is not None:
                 target_path.style.fill_color = color
@@ -301,7 +301,7 @@ class COLRFont(Type3Font):
                 target_path.style.paint_rule = PathPaintRule.FILL_NONZERO
             return parent, target_path
 
-        if paint.Format == PaintFormat.PaintLinearGradient:  # 4
+        if paint.Format == PaintFormat.PaintLinearGradient:
             stops = [
                 (stop.StopOffset, self.get_color(stop.PaletteIndex, stop.Alpha))
                 for stop in paint.ColorLine.ColorStop
@@ -319,10 +319,7 @@ class COLRFont(Type3Font):
                 target_path.style.stroke_color = None
             return parent, target_path
 
-        if paint.Format == PaintFormat.PaintVarLinearGradient:  # 5
-            raise NotImplementedError("Variable fonts are not yet supported.")
-
-        if paint.Format == PaintFormat.PaintRadialGradient:  # 6
+        if paint.Format == PaintFormat.PaintRadialGradient:
             raw = [
                 (cs.StopOffset, self.get_color(cs.PaletteIndex, cs.Alpha))
                 for cs in paint.ColorLine.ColorStop
@@ -350,15 +347,11 @@ class COLRFont(Type3Font):
                 target_path.style.paint_rule = PathPaintRule.FILL_NONZERO
             return parent, target_path
 
-        if paint.Format == PaintFormat.PaintVarRadialGradient:  # 7
-            raise NotImplementedError("Variable fonts are not yet supported.")
         if paint.Format == PaintFormat.PaintSweepGradient:  # 8
             print(paint.Format)
             raise NotImplementedError
-        if paint.Format == PaintFormat.PaintVarSweepGradient:  # 9
-            raise NotImplementedError("Variable fonts are not yet supported.")
 
-        if paint.Format == PaintFormat.PaintGlyph:  # 10
+        if paint.Format == PaintFormat.PaintGlyph:
             path = PaintedPath()
             glyph_set = self.base_font.ttfont.getGlyphSet()
             glyph_set[paint.Glyph].draw(GlyphPathPen(path, glyphSet=glyph_set))
@@ -376,10 +369,25 @@ class COLRFont(Type3Font):
 
         if paint.Format in (
             PaintFormat.PaintTransform,  # 12
+            PaintFormat.PaintVarTransform,  # 13
             PaintFormat.PaintTranslate,  # 14
+            PaintFormat.PaintVarTranslate,  # 15
             PaintFormat.PaintScale,  # 16
+            PaintFormat.PaintVarScale,  # 17
             PaintFormat.PaintScaleAroundCenter,  # 18
-            # PaintFormat.PaintScaleUniform, PaintFormat.PaintScaleUniformAroundCenter, ...
+            PaintFormat.PaintVarScaleAroundCenter,  # 19
+            PaintFormat.PaintScaleUniform,  # 20
+            PaintFormat.PaintVarScaleUniform,  # 21
+            PaintFormat.PaintScaleUniformAroundCenter,  # 22
+            PaintFormat.PaintVarScaleUniformAroundCenter,  # 23
+            PaintFormat.PaintRotate,  # 24
+            PaintFormat.PaintVarRotate,  # 25
+            PaintFormat.PaintRotateAroundCenter,  # 26
+            PaintFormat.PaintVarRotateAroundCenter,  # 27
+            PaintFormat.PaintSkew,  # 28
+            PaintFormat.PaintVarSkew,  # 29
+            PaintFormat.PaintSkewAroundCenter,  # 30
+            PaintFormat.PaintVarSkewAroundCenter,  # 31
         ):
             Tx = self._transform_from_paint(paint)
             new_ctm = ctm @ Tx
@@ -387,44 +395,13 @@ class COLRFont(Type3Font):
                 paint.Paint, parent=parent, target_path=target_path, ctm=new_ctm
             )
 
-        if paint.Format == PaintFormat.PaintVarTransform:  # 13
+        if paint.Format in (
+            PaintFormat.PaintVarLinearGradient,  # 5
+            PaintFormat.PaintVarRadialGradient,  # 7
+            PaintFormat.PaintVarSweepGradient,
+        ):  # 9
             raise NotImplementedError("Variable fonts are not yet supported.")
-        if paint.Format == PaintFormat.PaintVarTranslate:  # 15
-            raise NotImplementedError("Variable fonts are not yet supported.")
-        if paint.Format == PaintFormat.PaintVarScale:  # 17
-            raise NotImplementedError("Variable fonts are not yet supported.")
-        if paint.Format == PaintFormat.PaintVarScaleAroundCenter:  # 19
-            raise NotImplementedError("Variable fonts are not yet supported.")
-        if paint.Format == PaintFormat.PaintScaleUniform:  # 20
-            print(paint.Format)
-            raise NotImplementedError
-        if paint.Format == PaintFormat.PaintVarScaleUniform:  # 21
-            raise NotImplementedError("Variable fonts are not yet supported.")
-        if paint.Format == PaintFormat.PaintScaleUniformAroundCenter:  # 22
-            print(paint.Format)
-            raise NotImplementedError
-        if paint.Format == PaintFormat.PaintVarScaleUniformAroundCenter:  # 23
-            raise NotImplementedError("Variable fonts are not yet supported.")
-        if paint.Format == PaintFormat.PaintRotate:  # 24
-            print(paint.Format)
-            raise NotImplementedError
-        if paint.Format == PaintFormat.PaintVarRotate:  # 25
-            raise NotImplementedError("Variable fonts are not yet supported.")
-        if paint.Format == PaintFormat.PaintRotateAroundCenter:  # 26
-            print(paint.Format)
-            raise NotImplementedError
-        if paint.Format == PaintFormat.PaintVarRotateAroundCenter:  # 27
-            raise NotImplementedError("Variable fonts are not yet supported.")
-        if paint.Format == PaintFormat.PaintSkew:  # 28
-            print(paint.Format)
-            raise NotImplementedError
-        if paint.Format == PaintFormat.PaintVarSkew:  # 29
-            raise NotImplementedError("Variable fonts are not yet supported.")
-        if paint.Format == PaintFormat.PaintSkewAroundCenter:  # 30
-            print(paint.Format)
-            raise NotImplementedError
-        if paint.Format == PaintFormat.PaintVarSkewAroundCenter:  # 31
-            raise NotImplementedError("Variable fonts are not yet supported.")
+
         if paint.Format == PaintFormat.PaintComposite:  # 32
             backdrop_path = PaintedPath()
             self.draw_colrv1_paint(
@@ -458,7 +435,7 @@ class COLRFont(Type3Font):
     @classmethod
     def _transform_from_paint(cls, paint: Paint) -> Transform:
         paint_format = paint.Format
-        if paint_format == PaintFormat.PaintTransform:
+        if paint_format in (PaintFormat.PaintTransform, PaintFormat.PaintVarTransform):
             transform = paint.Transform
             return Transform(
                 transform.xx,
@@ -468,18 +445,57 @@ class COLRFont(Type3Font):
                 transform.dx,
                 transform.dy,
             )
-        if paint_format == PaintFormat.PaintTranslate:
+        if paint_format in (PaintFormat.PaintTranslate, PaintFormat.PaintVarTranslate):
             return Transform.translation(paint.dx, paint.dy)
-        if paint_format == PaintFormat.PaintScale:
+        if paint_format in (PaintFormat.PaintScale, PaintFormat.PaintVarScale):
             return Transform.scaling(paint.scaleX, paint.scaleY)
-        if paint_format == PaintFormat.PaintScaleAroundCenter:
+        if paint_format in (
+            PaintFormat.PaintScaleAroundCenter,
+            PaintFormat.PaintVarScaleAroundCenter,
+        ):
             cx, cy = paint.centerX, paint.centerY
             return (
                 Transform.translation(cx, -cy)
                 .scale(paint.scaleX, paint.scaleY)
                 .translate(-cx, cy)
             )
-        # (Add rotate/skew variants.)
+        if paint_format in (
+            PaintFormat.PaintScaleUniform,
+            PaintFormat.PaintVarScaleUniform,
+        ):
+            return Transform.scaling(paint.scale, paint.scale)
+        if paint_format in (
+            PaintFormat.PaintScaleUniformAroundCenter,
+            PaintFormat.PaintVarScaleUniformAroundCenter,
+        ):
+            cx, cy = paint.centerX, paint.centerY
+            return (
+                Transform.translation(cx, -cy)
+                .scale(paint.scale, paint.scale)
+                .translate(-cx, cy)
+            )
+        if paint_format in (PaintFormat.PaintRotate, PaintFormat.PaintVarRotate):
+            return Transform.rotation_d(paint.angle)
+        if paint_format in (
+            PaintFormat.PaintRotateAroundCenter,
+            PaintFormat.PaintVarRotateAroundCenter,
+        ):
+            cx, cy = paint.centerX, paint.centerY
+            return (
+                Transform.translation(cx, -cy).rotate_d(paint.angle).translate(-cx, cy)
+            )
+        if paint_format in (PaintFormat.PaintSkew, PaintFormat.PaintVarSkew):
+            return Transform.skewing_d(paint.angleX, paint.angleY)
+        if paint_format in (
+            PaintFormat.PaintSkewAroundCenter,
+            PaintFormat.PaintVarSkewAroundCenter,
+        ):
+            cx, cy = paint.centerX, paint.centerY
+            return (
+                Transform.translation(cx, -cy)
+                .skew_d(paint.angleX, paint.angleY)
+                .translate(-cx, cy)
+            )
         raise NotImplementedError(f"Transform not implemented for {format}")
 
     @classmethod
