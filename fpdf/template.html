@@ -56,7 +56,7 @@ el.replaceWith(d);
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/811939a6de86983cc0fd6366413bb17470b7b1ca/fpdf/template.py#L29-L614" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/template.py#L29-L647" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class FlexTemplate:
     &#34;&#34;&#34;
@@ -122,6 +122,7 @@ el.replaceWith(d);
             &#34;multiline&#34;: (bool, type(None)),
             &#34;rotate&#34;: (int, float),
             &#34;wrapmode&#34;: (str, type(None)),
+            &#34;dash_pattern&#34;: (dict, type(None)),
         }
 
         self.elements = elements
@@ -155,6 +156,17 @@ el.replaceWith(d);
             if not &#34;size&#34; in e and e[&#34;type&#34;] == &#34;C39&#34;:
                 if &#34;w&#34; in e:
                     e[&#34;size&#34;] = e[&#34;w&#34;]
+            if &#34;dash_pattern&#34; in e:
+                for k in e[&#34;dash_pattern&#34;].keys():
+                    if k not in (&#34;dash&#34;, &#34;gap&#34;, &#34;phase&#34;):
+                        raise KeyError(f&#34;Invalid key &#39;{k}&#39; in dash_pattern&#34;)
+                if &#34;dash&#34; not in e[&#34;dash_pattern&#34;]:
+                    e[&#34;dash_pattern&#34;][&#34;dash&#34;] = 0
+                if &#34;gap&#34; not in e[&#34;dash_pattern&#34;]:
+                    e[&#34;dash_pattern&#34;][&#34;gap&#34;] = e[&#34;dash_pattern&#34;][&#34;dash&#34;]
+                if &#34;phase&#34; not in e[&#34;dash_pattern&#34;]:
+                    e[&#34;dash_pattern&#34;][&#34;phase&#34;] = 0
+
             for k, t in key_config.items():
                 if k in e and not isinstance(e[k], t):
                     ttype = (
@@ -445,12 +457,19 @@ el.replaceWith(d);
         size=0,
         scale=1.0,
         foreground=0,
+        dash_pattern=None,
         **__,
     ):
         if self.pdf.draw_color.serialize().lower() != _rgb_as_str(foreground):
             self.pdf.set_draw_color(*_rgb(foreground))
         self.pdf.set_line_width(size * scale)
+        if dash_pattern is not None:
+            # Save dash_pattern to restore after this line
+            restore_dash_pattern = self.pdf.dash_pattern
+            self.pdf.set_dash_pattern(**dash_pattern)
         self.pdf.line(x1, y1, x2, y2)
+        if dash_pattern is not None:
+            self.pdf.set_dash_pattern(**restore_dash_pattern)
 
     def _rect(
         self,
@@ -463,6 +482,7 @@ el.replaceWith(d);
         scale=1.0,
         foreground=0,
         background=None,
+        dash_pattern=None,
         **__,
     ):
         pdf = self.pdf
@@ -475,7 +495,13 @@ el.replaceWith(d);
             if pdf.fill_color != _rgb_as_str(background):
                 pdf.set_fill_color(*_rgb(background))
         pdf.set_line_width(size * scale)
+        if dash_pattern is not None:
+            # Save dash_pattern to restore after this rect
+            restore_dash_pattern = self.pdf.dash_pattern
+            pdf.set_dash_pattern(**dash_pattern)
         pdf.rect(x1, y1, x2 - x1, y2 - y1, style=style)
+        if dash_pattern is not None:
+            self.pdf.set_dash_pattern(**restore_dash_pattern)
 
     def _ellipse(
         self,
@@ -488,6 +514,7 @@ el.replaceWith(d);
         scale=1.0,
         foreground=0,
         background=None,
+        dash_pattern=None,
         **__,
     ):
         pdf = self.pdf
@@ -500,7 +527,13 @@ el.replaceWith(d);
             if pdf.fill_color != _rgb_as_str(background):
                 pdf.set_fill_color(*_rgb(background))
         pdf.set_line_width(size * scale)
+        if dash_pattern is not None:
+            # Save dash_pattern to restore after this ellipse
+            restore_dash_pattern = self.pdf.dash_pattern
+            pdf.set_dash_pattern(**dash_pattern)
         pdf.ellipse(x1, y1, x2 - x1, y2 - y1, style=style)
+        if dash_pattern is not None:
+            self.pdf.set_dash_pattern(**restore_dash_pattern)
 
     def _image(self, *_, x1=0, y1=0, x2=0, y2=0, text=&#34;&#34;, **__):
         if text:
@@ -671,7 +704,7 @@ or parse_csv() before doing anything else.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/811939a6de86983cc0fd6366413bb17470b7b1ca/fpdf/template.py#L65-L136" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/template.py#L65-L148" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_elements(self, elements):
     &#34;&#34;&#34;
@@ -701,6 +734,7 @@ or parse_csv() before doing anything else.</dd>
         &#34;multiline&#34;: (bool, type(None)),
         &#34;rotate&#34;: (int, float),
         &#34;wrapmode&#34;: (str, type(None)),
+        &#34;dash_pattern&#34;: (dict, type(None)),
     }
 
     self.elements = elements
@@ -734,6 +768,17 @@ or parse_csv() before doing anything else.</dd>
         if not &#34;size&#34; in e and e[&#34;type&#34;] == &#34;C39&#34;:
             if &#34;w&#34; in e:
                 e[&#34;size&#34;] = e[&#34;w&#34;]
+        if &#34;dash_pattern&#34; in e:
+            for k in e[&#34;dash_pattern&#34;].keys():
+                if k not in (&#34;dash&#34;, &#34;gap&#34;, &#34;phase&#34;):
+                    raise KeyError(f&#34;Invalid key &#39;{k}&#39; in dash_pattern&#34;)
+            if &#34;dash&#34; not in e[&#34;dash_pattern&#34;]:
+                e[&#34;dash_pattern&#34;][&#34;dash&#34;] = 0
+            if &#34;gap&#34; not in e[&#34;dash_pattern&#34;]:
+                e[&#34;dash_pattern&#34;][&#34;gap&#34;] = e[&#34;dash_pattern&#34;][&#34;dash&#34;]
+            if &#34;phase&#34; not in e[&#34;dash_pattern&#34;]:
+                e[&#34;dash_pattern&#34;][&#34;phase&#34;] = 0
+
         for k, t in key_config.items():
             if k in e and not isinstance(e[k], t):
                 ttype = (
@@ -760,7 +805,7 @@ or parse_csv() before doing anything else.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/811939a6de86983cc0fd6366413bb17470b7b1ca/fpdf/template.py#L187-L260" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/template.py#L199-L272" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_csv(
     self,
@@ -860,7 +905,7 @@ Default is the system default encoding.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/811939a6de86983cc0fd6366413bb17470b7b1ca/fpdf/template.py#L156-L185" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/template.py#L168-L197" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def parse_json(self, infile: os.PathLike, encoding: str = &#34;utf-8&#34;):
     &#34;&#34;&#34;
@@ -911,7 +956,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/811939a6de86983cc0fd6366413bb17470b7b1ca/fpdf/template.py#L574-L614" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/template.py#L607-L647" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(self, offsetx=0.0, offsety=0.0, rotate=0.0, scale=1.0):
     &#34;&#34;&#34;
@@ -972,7 +1017,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/811939a6de86983cc0fd6366413bb17470b7b1ca/fpdf/template.py#L262-L269" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/template.py#L274-L281" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def __setitem__(self, name, value):
     assert isinstance(
@@ -992,7 +1037,7 @@ equivalent to what would get supplied to load_elements(),</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/811939a6de86983cc0fd6366413bb17470b7b1ca/fpdf/template.py#L295-L332" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/template.py#L307-L344" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def split_multicell(self, text, element_name):
     &#34;&#34;&#34;
@@ -1056,7 +1101,7 @@ when rendered in the element font style and size.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/811939a6de86983cc0fd6366413bb17470b7b1ca/fpdf/template.py#L617-L710" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/template.py#L650-L743" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Template(FlexTemplate):
     &#34;&#34;&#34;
@@ -1194,7 +1239,7 @@ One of "mm", "cm", "in", "pt", or a number for points per unit.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/811939a6de86983cc0fd6366413bb17470b7b1ca/fpdf/template.py#L684-L688" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/template.py#L717-L721" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add_page(self):
     &#34;&#34;&#34;Finish the current page, and proceed to the next one.&#34;&#34;&#34;
@@ -1243,7 +1288,7 @@ equivalent to what …</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/811939a6de86983cc0fd6366413bb17470b7b1ca/fpdf/template.py#L691-L710" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/template.py#L724-L743" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def render(self, outfile=None, dest=None):
     &#34;&#34;&#34;
