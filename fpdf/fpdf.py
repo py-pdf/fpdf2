@@ -280,6 +280,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
         # map page numbers to a set of font indices:
         self.links = {}  # array of Destination objects starting at index 1
+        self.named_destinations = {}  # dictionary of named destinations
         self.embedded_files = []  # array of PDFEmbeddedFile
         self.image_cache = ImageCache()
         self.in_footer = False  # flag set while rendering footer
@@ -2329,13 +2330,22 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._fallback_font_ids = tuple(fallback_font_ids)
         self._fallback_font_exact_match = exact_match
 
-    def add_link(self, y=0, x=0, page=-1, zoom="null"):
+    def add_link(self, y=0, x=0, page=-1, zoom="null", name=None):
         """
         Creates a new internal link and returns its identifier.
         An internal link is a clickable area which directs to another place within the document.
 
         The identifier can then be passed to the `FPDF.cell()`, `FPDF.write()`, `FPDF.image()`
         or `FPDF.link()` methods.
+
+        If a name is provided, creates a named destination that can be referenced later.
+
+        Args:
+            y (int): Y position of destination page
+            x (int): X position of destination page
+            page (int): Destination page number (-1 means current page)
+            zoom (str): Zoom factor (null [default] or a number)
+            name (str, optional): Name for the destination. Must be non-empty if provided.
 
         Args:
             y (float): optional ordinate of target position.
@@ -2347,12 +2357,24 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             zoom (float): optional new zoom level after following the link.
                 Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
         """
+        # Handle named destinations
+        if name is not None:
+            if not name or name.isspace():
+                raise ValueError("Destination name cannot be empty or whitespace")
+
+        # Create destination
         link = DestinationXYZ(
             self.page if page == -1 else page,
             top=self.h_pt - y * self.k,
             left=x * self.k,
             zoom=zoom,
         )
+
+        # Store named destination if provided
+        if name:
+            self.named_destinations[name] = link
+
+        # Store link and return index
         link_index = len(self.links) + 1
         self.links[link_index] = link
         return link_index
