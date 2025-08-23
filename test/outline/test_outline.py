@@ -5,6 +5,7 @@ import pytest
 from fpdf import FPDF, TextStyle, TitleStyle, errors
 from fpdf.enums import Align
 from fpdf.outline import TableOfContents
+from fpdf.substitution import CurrentPageSubstitution, TotalPagesSubstitution
 
 from test.conftest import LOREM_IPSUM, assert_pdf_equal
 
@@ -23,6 +24,34 @@ def test_simple_outline(tmp_path):
     pdf.insert_toc_placeholder(render_toc)
     insert_test_content(pdf)
     assert_pdf_equal(pdf, HERE / "simple_outline.pdf", tmp_path)
+
+
+def test_default_outline_which_spans_multiple_pages(tmp_path):
+    class CustomFPDF(FPDF):
+        def footer(self):
+            self.set_y(-15)
+            page_no = CurrentPageSubstitution(":pno:")
+            page_total = TotalPagesSubstitution(":ptot:")
+            self.cell(
+                w=0,
+                text=f"{page_no} / {page_total}",
+                align="C",
+                substitutions=[page_no, page_total],
+            )
+
+    pdf = CustomFPDF()
+    pdf.set_font("Helvetica", size=16)
+
+    pdf.add_page()
+    pdf.insert_toc_placeholder(TableOfContents().render_toc, allow_extra_pages=True)
+
+    for i in range(1, 100):
+        if i > 1:
+            pdf.add_page()
+        pdf.start_section(f"Section {i}")
+        p(pdf, f"Section {i}")
+
+    assert_pdf_equal(pdf, HERE / "default_outline_multiple_pages.pdf", tmp_path)
 
 
 def render_toc(pdf, outline):
@@ -707,6 +736,7 @@ def test_page_label():
     assert pdf.get_page_label() == "Sec-ab"
 
 
+@pytest.mark.skip(reason="No need for this workaround anymore.")
 def test_toc_no_reset_page_indices(tmp_path):  # cf. issue 1343
     class CustomFPDF(FPDF):
         def footer(self):

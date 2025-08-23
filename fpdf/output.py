@@ -316,7 +316,6 @@ class PDFPage(PDFObject):
         "_width_pt",
         "_height_pt",
         "_page_label",
-        "_text_substitution_fragments",
     )
 
     def __init__(
@@ -341,7 +340,6 @@ class PDFPage(PDFObject):
         self._index = index
         self._width_pt, self._height_pt = None, None
         self._page_label: PDFPageLabel = None
-        self._text_substitution_fragments: list[TotalPagesSubstitutionFragment] = []
 
     def index(self):
         return self._index
@@ -387,12 +385,6 @@ class PDFPage(PDFObject):
 
     def get_label(self) -> str:
         return str(self.index()) if not self._page_label else str(self._page_label)
-
-    def get_text_substitutions(self):
-        return self._text_substitution_fragments
-
-    def add_text_substitution(self, fragment):
-        self._text_substitution_fragments.append(fragment)
 
 
 class PDFPagesRoot(PDFObject):
