@@ -163,11 +163,15 @@ class LinearizedOutputProducer(OutputProducer):
         # = resources, that are referenced from more than one page but [not] from the first page
         pages_root_obj = self._add_pages_root()
         sig_annotation_obj = self._add_annotations_as_objects()
-        font_objs_per_index = self._add_fonts()
         img_objs_per_index = self._add_images()
         gfxstate_objs_per_name = self._add_gfxstates()
         shading_objs_per_name = self._add_shadings()
         pattern_objs_per_name = self._add_patterns()
+        font_objs_per_index = self._add_fonts(
+            img_objs_per_index,
+            gfxstate_objs_per_name,
+            pattern_objs_per_name,
+        )
         resources_dict_obj = self._add_resources_dict(
             font_objs_per_index,
             img_objs_per_index,

@@ -784,6 +784,50 @@ class Transform(NamedTuple):
             y = x
         return cls(1, float(y), float(x), 1, 0, 0)
 
+    @classmethod
+    def skewing(cls, ax: Number = 0, ay: Optional[Number] = None) -> "Transform":
+        """
+        Create a skew (shear) transform using angles **in radians**.
+
+        Args:
+            ax (Number): skew angle along the X axis (radians).
+                Positive ax produces x' = x + tan(ax) * y
+            ay (Number): optional skew angle along the Y axis (radians).
+                Positive ay produces y' = y + tan(ay) * x
+                If omitted, defaults to the value of `ax`.
+
+        Returns:
+            A Transform representing the specified skew.
+        """
+        if ay is None:
+            ay = ax
+        return cls(1, math.tan(float(ay)), math.tan(float(ax)), 1, 0, 0)
+
+    @classmethod
+    def skewing_d(cls, ax_d: Number = 0, ay_d: Optional[Number] = None) -> "Transform":
+        """
+        Create a skew (shear) transform using angles **in degrees**.
+
+        Args:
+            ax_d (Number): skew angle along X in degrees.
+            ay_d (Number): optional skew angle along Y in degrees. If omitted, defaults to ax_d.
+
+        Returns:
+            A Transform representing the specified skew.
+
+        Raises:
+            ValueError: if an angle is too close to 90° + k·180° (infinite shear).
+        """
+        if ay_d is None:
+            ay_d = ax_d
+        ax = math.radians(float(ax_d))
+        ay = math.radians(float(ay_d))
+        # Guard against tan() blow-ups near ±90° (+ k·180°)
+        eps = 1e-12
+        if abs(math.cos(ax)) < eps or abs(math.cos(ay)) < eps:
+            raise ValueError("Skew angle produces infinite shear (near 90° + k·180°).")
+        return cls.skewing(ax, ay)
+
     def translate(self, x: Number, y: Number) -> "Transform":
         """
         Produce a transform by composing the current transform with a translation.
@@ -874,6 +918,14 @@ class Transform(NamedTuple):
         """
         return self @ Transform.shearing(x, y)
 
+    def skew(self, ax: Number = 0, ay: Optional[Number] = None) -> "Transform":
+        """Compose with a skew (radians)."""
+        return self @ Transform.skewing(ax, ay)
+
+    def skew_d(self, ax_d: Number = 0, ay_d: Optional[Number] = None) -> "Transform":
+        """Compose with a skew (degrees)."""
+        return self @ Transform.skewing_d(ax_d, ay_d)
+
     def about(self, x: Number, y: Number) -> "Transform":
         """
         Bracket the given transform in a pair of translations to make it appear about a
@@ -894,6 +946,29 @@ class Transform(NamedTuple):
             A Transform representing the composed transform.
         """
         return Transform.translation(-x, -y) @ self @ Transform.translation(x, y)
+
+    def inverse(self) -> "Transform":
+        """
+        Produce a transform that is the inverse of this transform.
+
+        Returns:
+            A Transform representing the inverse of this transform.
+
+        Raises:
+            ValueError: if the transform is not invertible.
+        """
+        det = self.a * self.d - self.b * self.c
+        if det == 0:
+            raise ValueError("Transform is not invertible")
+
+        return Transform(
+            a=self.d / det,
+            b=-self.b / det,
+            c=-self.c / det,
+            d=self.a / det,
+            e=(self.c * self.f - self.d * self.e) / det,
+            f=(self.b * self.e - self.a * self.f) / det,
+        )
 
     @force_document
     def __mul__(self, other: Number) -> "Transform":

@@ -9,6 +9,7 @@ from fpdf.pattern import (
     shape_linear_gradient,
     shape_radial_gradient,
 )
+from fpdf.drawing_primitives import DeviceRGB
 from fpdf.drawing import PaintedPath, Transform, GradientPaint
 
 from test.conftest import assert_pdf_equal
@@ -391,4 +392,51 @@ def test_gradient_shape_radial(tmp_path: Path):
         pdf,
         HERE / "generated_pdf" / "gradient_shape_radial.pdf",
         tmp_path,
+    )
+
+
+def test_gradient_alpha_variance(tmp_path: Path):
+    pdf = _new_pdf()
+
+    gradient = LinearGradient(
+        0,
+        0,
+        1,
+        0,
+        colors=[DeviceRGB(r=0, g=0, b=0, a=1), DeviceRGB(r=0, g=0, b=0, a=0)],
+    )
+    path1 = _rect(40, 40, 100, 40)
+    path1.style.fill_color = GradientPaint(gradient, units="objectBoundingBox")
+
+    path2 = _rect(160, 40, 100, 40)
+
+    # Different gradient transform but same LinearGradient object
+    path2.style.fill_color = GradientPaint(
+        gradient,
+        units="objectBoundingBox",
+        gradient_transform=Transform.translation(-0.5, -0.5)
+        .rotate(math.radians(180))
+        .translate(0.5, 0.5),
+    )
+
+    path3 = _circle(130, 200, 50)
+    gradient3 = RadialGradient(
+        0.5,
+        0.5,
+        0.0,
+        0.5,
+        0.5,
+        0.5,
+        colors=[DeviceRGB(r=0, g=0, b=0, a=1), DeviceRGB(r=0, g=0, b=1, a=0)],
+    )
+    path3.style.fill_color = GradientPaint(gradient3, units="objectBoundingBox")
+    path3.style.stroke_color = None
+
+    with pdf.drawing_context() as dc:
+        dc.add_item(path1)
+        dc.add_item(path2)
+        dc.add_item(path3)
+
+    assert_pdf_equal(
+        pdf, HERE / "generated_pdf" / "gradient_alpha_variance.pdf", tmp_path
     )

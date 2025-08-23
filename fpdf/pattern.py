@@ -51,6 +51,9 @@ class Pattern(PDFObject):
         self.pattern_type = 2
         self._shading = shading
         self._matrix = Transform.identity()
+        # If True (default), OutputProducer will bake the page CTM into this pattern.
+        # For patterns used inside Form XObjects (e.g., soft masks), set to False.
+        self._apply_page_ctm = True
 
     @property
     def shading(self) -> str:
@@ -70,6 +73,12 @@ class Pattern(PDFObject):
 
     def get_matrix(self) -> Transform:
         return self._matrix
+
+    def set_apply_page_ctm(self, apply: bool) -> None:
+        self._apply_page_ctm = apply
+
+    def get_apply_page_ctm(self) -> bool:
+        return self._apply_page_ctm
 
 
 class Type2Function(PDFObject):
@@ -93,6 +102,18 @@ class Type2Function(PDFObject):
         if isinstance(color, DeviceGray):
             return [color.g]
         return color.colors
+
+
+class Type2FunctionGray(PDFObject):
+    """1‑channel exponential interpolation for alpha/luminance ramps."""
+
+    def __init__(self, g0: float, g1: float):
+        super().__init__()
+        self.function_type = 2
+        self.domain = "[0 1]"
+        self.c0 = f"[{format_number(g0)}]"
+        self.c1 = f"[{format_number(g1)}]"
+        self.n = 1
 
 
 class Type3Function(PDFObject):
@@ -146,10 +167,14 @@ class Shading(PDFObject):
         """All function objects used by this shading (Type2 segments + final Type3)."""
         return self._functions
 
+    def get_shading_object(self) -> "Shading":
+        """Return self, as this is already a shading object."""
+        return self
+
 
 class Gradient(ABC):
     def __init__(self, colors, background, extend_before, extend_after, bounds):
-        self.color_space, self.colors = self._convert_colors(colors)
+        self.color_space, self.colors, self._alphas = self._convert_colors(colors)
         self.background = None
         if background:
             bg = (
@@ -183,18 +208,20 @@ class Gradient(ABC):
         self.functions = self._generate_functions()
         self.pattern = Pattern(self)
         self._shading_object = None
+        self._alpha_shading_object = None
         self.coords = None
         self.shading_type = 0
 
     @classmethod
-    def _convert_colors(cls, colors) -> Tuple[str, List]:
-        """Normalize a list of input colors to a single device colorspace."""
+    def _convert_colors(cls, colors) -> Tuple[str, List, List[float]]:
+        """Normalize colors to a single device colorspace and capture per-stop alpha (default 1.0)."""
         if len(colors) < 2:
             raise ValueError("A gradient must have at least two colors")
 
         # 1) Convert everything to Device* instances
         palette = []
         spaces = set()
+        alphas = []
         for color in colors:
             dc = (
                 convert_to_device_color(color)
@@ -203,6 +230,8 @@ class Gradient(ABC):
             )
             palette.append(dc)
             spaces.add(type(dc).__name__)
+            a = getattr(dc, "a", None)
+            alphas.append(float(a) if a is not None else 1.0)
 
         # 2) Disallow any CMYK mixture with others
         if "DeviceCMYK" in spaces and len(spaces) > 1:
@@ -210,7 +239,7 @@ class Gradient(ABC):
 
         # 3) If we ended up with plain CMYK, we're done
         if spaces == {"DeviceCMYK"}:
-            return "DeviceCMYK", palette
+            return "DeviceCMYK", palette, alphas
 
         # 4) Promote mix of Gray+RGB to RGB
         if spaces == {"DeviceGray", "DeviceRGB"}:
@@ -220,20 +249,20 @@ class Gradient(ABC):
                     promoted.append(DeviceRGB(c.g, c.g, c.g))
                 else:
                     promoted.append(c)
-            return "DeviceRGB", promoted
+            return "DeviceRGB", promoted, alphas
 
         # 5) All Gray: stay Gray
         if spaces == {"DeviceGray"}:
-            return "DeviceGray", palette
+            return "DeviceGray", palette, alphas
 
         # 6) All RGB: optionally downcast to Gray if all are achromatic
         if spaces == {"DeviceRGB"}:
             if all(c.is_achromatic() for c in palette):
-                return "DeviceGray", [c.to_gray() for c in palette]
-            return "DeviceRGB", palette
+                return "DeviceGray", [c.to_gray() for c in palette], alphas
+            return "DeviceRGB", palette, alphas
 
         # Fallback: default to RGB
-        return "DeviceRGB", palette
+        return "DeviceRGB", palette, alphas
 
     def _generate_functions(self):
         if len(self.colors) < 2:
@@ -246,6 +275,9 @@ class Gradient(ABC):
             functions.append(Type2Function(self.colors[i], self.colors[i + 1]))
         functions.append(Type3Function(functions[:], self.bounds))
         return functions
+
+    def get_functions(self):
+        return self.functions
 
     def get_shading_object(self):
         if not self._shading_object:
@@ -262,6 +294,38 @@ class Gradient(ABC):
 
     def get_pattern(self):
         return self.pattern
+
+    def has_alpha(self) -> bool:
+        """True if any stop carries alpha != 1.0."""
+        return any(abs(a - 1.0) > 1e-9 for a in self._alphas)
+
+    def _generate_alpha_functions(self):
+        """Stitched Type2 gray functions mirroring the color ramp bounds."""
+        if len(self._alphas) < 2:
+            raise ValueError("Alpha ramp requires at least two stops")
+        if len(self._alphas) == 2:
+            return [Type2FunctionGray(self._alphas[0], self._alphas[1])]
+        functions = []
+        for i in range(len(self._alphas) - 1):
+            functions.append(Type2FunctionGray(self._alphas[i], self._alphas[i + 1]))
+        functions.append(Type3Function(functions[:], self.bounds))
+        return functions
+
+    def get_alpha_shading_object(self):
+        """Grayscale Shading object representing the alpha ramp (for a soft mask)."""
+        if not self.has_alpha():
+            return None
+        if not self._alpha_shading_object:
+            self._alpha_shading_object = Shading(
+                shading_type=self.shading_type,
+                background=None,  # mask content should be pure coverage, no bg
+                color_space="DeviceGray",
+                coords=PDFArray(self.coords),
+                functions=self._generate_alpha_functions(),
+                extend_before=False,
+                extend_after=False,
+            )
+        return self._alpha_shading_object
 
 
 class LinearGradient(Gradient):
