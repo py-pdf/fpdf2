@@ -4272,24 +4272,6 @@ class PaintComposite:
         self.backdrop = backdrop
         self.source = source
         self.mode = operation
-        backdrop_bbox, _ = self.backdrop.bounding_box(Point(0, 0))
-        if not backdrop_bbox.is_valid():
-            # backdrop has no items, checking if it's a "flood" fill
-            source_bbox, _ = self.source.bounding_box(Point(0, 0))
-            if not source_bbox.is_valid():
-                raise RuntimeError(
-                    "Can't render PaintComposite if source has no geometry."
-                )
-            rectangle = Rectangle(
-                org=Point(source_bbox.x0, source_bbox.y0),
-                size=Point(source_bbox.width, source_bbox.height),
-            )
-            if isinstance(self.backdrop, PaintedPath):
-                self.backdrop.add_path_element(rectangle)
-            else:
-                self.backdrop.add_item(rectangle)
-            assert self.backdrop.bounding_box(Point(0, 0))[0].is_valid()
-            assert self.backdrop.bounding_box(Point(0, 0))[0] == source_bbox
 
         if self.mode not in self._MODES:
             raise NotImplementedError(

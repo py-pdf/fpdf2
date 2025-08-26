@@ -458,6 +458,13 @@ class COLRFont(Type3Font):
 
         if paint.Format == PaintFormat.PaintComposite:  # 32
             backdrop_path = PaintedPath()
+            surface_bbox = self.metric_bbox()  # .transformed(ctm)
+            backdrop_path.rectangle(
+                x=surface_bbox.x0,
+                y=surface_bbox.y0,
+                w=surface_bbox.width,
+                h=surface_bbox.height,
+            )
             self.draw_colrv1_paint(
                 paint=paint.BackdropPaint,
                 parent=backdrop_path.get_graphics_context(),
