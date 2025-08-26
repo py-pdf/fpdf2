@@ -19,6 +19,8 @@ from fontTools.ttLib.tables.otTables import CompositeMode, Paint, PaintFormat
 
 from .drawing_primitives import DeviceRGB, Transform
 from .drawing import (
+    BoundingBox,
+    ClippingPath,
     GlyphPathPen,
     GradientPaint,
     GraphicsContext,
@@ -227,6 +229,14 @@ class COLRFont(Type3Font):
                 for color in palette
             ]
 
+    def metric_bbox(self) -> BoundingBox:
+        return BoundingBox(
+            self.base_font.ttfont["head"].xMin,
+            self.base_font.ttfont["head"].yMin,
+            self.base_font.ttfont["head"].xMax,
+            self.base_font.ttfont["head"].yMax,
+        )
+
     def glyph_exists(self, glyph_name: str) -> bool:
         return glyph_name in self.colrv0_glyphs or glyph_name in self.colrv1_glyphs
 
@@ -243,14 +253,17 @@ class COLRFont(Type3Font):
         glyph.glyph_width = w
 
     def get_color(self, color_index: int, alpha=1) -> DeviceRGB:
-        # TO DO : A palette entry index value of 0xFFFF is a special case indicating
-        # that the text foreground color (defined by the application) should be used,
-        # and must not be treated as an actual index into the CPAL ColorRecord array.
+        if color_index == 0xFFFF:
+            # A palette entry index value of 0xFFFF is a special case indicating
+            # that the text foreground color (defined by the application) should be used,
+            # and must not be treated as an actual index into the CPAL ColorRecord array.
+            # For now, hardcoding to black.
+            return DeviceRGB(0, 0, 0, 1)
+
         r, g, b, a = self.palette[color_index]
         a *= alpha
         return DeviceRGB(r, g, b, a)
 
-    # pylint: disable=too-many-return-statements
     def draw_glyph_colrv0(self, layers):
         gc = GraphicsContext()
         for layer in layers:
@@ -270,6 +283,7 @@ class COLRFont(Type3Font):
         self.draw_colrv1_paint(glyph.Paint, gc, None, Transform.identity())
         return gc
 
+    # pylint: disable=too-many-return-statements
     def draw_colrv1_paint(
         self,
         paint: Paint,
@@ -277,28 +291,37 @@ class COLRFont(Type3Font):
         target_path: Optional[PaintedPath] = None,
         ctm: Optional[Transform] = None,
     ) -> Tuple[GraphicsContext, Optional[PaintedPath]]:
-        # print(f"Drawing COLRv1 paint: {paint.Format} - {paint}")
-        ctm = ctm or Transform.identity()
+        """
+        Draw a COLRv1 Paint object into the given GraphicsContext.
+        This is an implementation of the COLR version 1 rendering algorithm:
+        https://learn.microsoft.com/en-us/typography/opentype/spec/colr#colr-version-1-rendering-algorithm
+        """
+        ctm: Transform = ctm or Transform.identity()
 
         if paint.Format == PaintFormat.PaintColrLayers:
-            node = GraphicsContext()
             layer_list = self.base_font.ttfont["COLR"].table.LayerList
+            group = GraphicsContext()
             for layer in range(
                 paint.FirstLayerIndex, paint.FirstLayerIndex + paint.NumLayers
             ):
-                self.draw_colrv1_paint(layer_list.Paint[layer], node, ctm)
-            parent.add_item(node)
-            return node, target_path
+                self.draw_colrv1_paint(
+                    paint=layer_list.Paint[layer],
+                    parent=group,
+                    ctm=ctm,
+                )
+            parent.add_item(group)
+            return parent, target_path
 
         if paint.Format in (
             PaintFormat.PaintSolid,
             PaintFormat.PaintVarSolid,
         ):
-            color = self.get_color(paint.PaletteIndex, paint.Alpha)
-            if target_path is not None:
-                target_path.style.fill_color = color
-                target_path.style.stroke_color = color
-                target_path.style.paint_rule = PathPaintRule.FILL_NONZERO
+            assert target_path
+            target_path.style.fill_color = self.get_color(
+                color_index=paint.PaletteIndex, alpha=paint.Alpha
+            )
+            target_path.style.stroke_color = None
+            target_path.style.paint_rule = PathPaintRule.FILL_NONZERO
             return parent, target_path
 
         if paint.Format == PaintFormat.PaintLinearGradient:
@@ -309,14 +332,15 @@ class COLRFont(Type3Font):
             gradient = shape_linear_gradient(
                 paint.x0, paint.y0, paint.x1, paint.y1, stops
             )
-            if target_path is not None:
-                target_path.style.fill_color = GradientPaint(
-                    gradient=gradient,
-                    units=GradientUnits.USER_SPACE_ON_USE,
-                    gradient_transform=ctm,
-                    apply_page_ctm=False,
-                )
-                target_path.style.stroke_color = None
+            assert target_path
+            target_path.style.fill_color = GradientPaint(
+                gradient=gradient,
+                units=GradientUnits.USER_SPACE_ON_USE,
+                gradient_transform=ctm,
+                apply_page_ctm=False,
+            )
+            target_path.style.stroke_color = None
+            target_path.style.paint_rule = PathPaintRule.FILL_NONZERO
             return parent, target_path
 
         if paint.Format == PaintFormat.PaintRadialGradient:
@@ -336,36 +360,66 @@ class COLRFont(Type3Font):
             gradient = shape_radial_gradient(
                 cx=cx, cy=cy, r=r, fx=fx, fy=fy, fr=fr, stops=norm_stops
             )
-            if target_path is not None:
-                target_path.style.fill_color = GradientPaint(
-                    gradient=gradient,
-                    units=GradientUnits.USER_SPACE_ON_USE,
-                    gradient_transform=ctm,
-                    apply_page_ctm=False,
-                )
-                target_path.style.stroke_color = None
-                target_path.style.paint_rule = PathPaintRule.FILL_NONZERO
+            assert target_path
+            target_path.style.fill_color = GradientPaint(
+                gradient=gradient,
+                units=GradientUnits.USER_SPACE_ON_USE,
+                gradient_transform=ctm,
+                apply_page_ctm=False,
+            )
+            target_path.style.stroke_color = None
+            target_path.style.paint_rule = PathPaintRule.FILL_NONZERO
             return parent, target_path
 
         if paint.Format == PaintFormat.PaintSweepGradient:  # 8
-            print(paint.Format)
-            raise NotImplementedError
+            raise NotImplementedError("Sweep gradients are not yet supported.")
 
         if paint.Format == PaintFormat.PaintGlyph:
-            path = PaintedPath()
             glyph_set = self.base_font.ttfont.getGlyphSet()
-            glyph_set[paint.Glyph].draw(GlyphPathPen(path, glyphSet=glyph_set))
-            path.transform = (path.transform or Transform.identity()) @ ctm
-            if getattr(paint, "Paint", None) is not None:
-                self.draw_colrv1_paint(
-                    paint=paint.Paint, parent=parent, target_path=path, ctm=ctm
-                )
-            parent.add_item(path)
-            return parent, path
+            clipping_path = ClippingPath()
+            glyph_set[paint.Glyph].draw(GlyphPathPen(clipping_path, glyphSet=glyph_set))
+            clipping_path.transform = (
+                clipping_path.transform or Transform.identity()
+            ) @ ctm
 
-        if paint.Format == PaintFormat.PaintColrGlyph:  # 11
-            print(paint.Format)
-            raise NotImplementedError
+            if getattr(paint, "Paint", None) is None:
+                return parent, None
+
+            group = GraphicsContext()
+            group.clipping_path = clipping_path
+
+            paint_surface = PaintedPath()
+            surface_bbox = self.metric_bbox()  # .transformed(ctm)
+            paint_surface.rectangle(
+                x=surface_bbox.x0,
+                y=surface_bbox.y0,
+                w=surface_bbox.width,
+                h=surface_bbox.height,
+            )
+            self.draw_colrv1_paint(
+                paint=paint.Paint,
+                parent=group,
+                target_path=paint_surface,
+                ctm=Transform.identity(),
+            )
+            group.add_item(paint_surface)
+            parent.add_item(group)  # SRC_OVER
+            return parent, None
+
+        if paint.Format == PaintFormat.PaintColrGlyph:
+            ref = getattr(paint, "Glyph", None) or getattr(paint, "GlyphID", None)
+            if isinstance(ref, int):
+                ref_name = self.base_font.ttfont.getGlyphName(ref)
+            else:
+                ref_name = ref
+            rec = self.colrv1_glyphs.get(ref_name)
+            if rec is None or getattr(rec, "Paint", None) is None:
+                return parent, target_path  # nothing to draw
+            # Render that base glyph’s paint tree here
+            group = GraphicsContext()
+            self.draw_colrv1_paint(paint=rec.Paint, parent=group, ctm=ctm)
+            parent.add_item(group)  # SRC_OVER
+            return parent, target_path
 
         if paint.Format in (
             PaintFormat.PaintTransform,  # 12
@@ -389,10 +443,10 @@ class COLRFont(Type3Font):
             PaintFormat.PaintSkewAroundCenter,  # 30
             PaintFormat.PaintVarSkewAroundCenter,  # 31
         ):
-            Tx = self._transform_from_paint(paint)
-            new_ctm = ctm @ Tx
+            transform = self._transform_from_paint(paint)
+            new_ctm = ctm @ transform
             return self.draw_colrv1_paint(
-                paint.Paint, parent=parent, target_path=target_path, ctm=new_ctm
+                paint=paint.Paint, parent=parent, target_path=target_path, ctm=new_ctm
             )
 
         if paint.Format in (
@@ -405,11 +459,17 @@ class COLRFont(Type3Font):
         if paint.Format == PaintFormat.PaintComposite:  # 32
             backdrop_path = PaintedPath()
             self.draw_colrv1_paint(
-                paint.BackdropPaint, backdrop_path.get_graphics_context(), backdrop_path
+                paint=paint.BackdropPaint,
+                parent=backdrop_path.get_graphics_context(),
+                target_path=backdrop_path,
+                ctm=ctm,
             )
             source_path = PaintedPath()
             self.draw_colrv1_paint(
-                paint.SourcePaint, source_path.get_graphics_context(), source_path
+                paint=paint.SourcePaint,
+                parent=source_path.get_graphics_context(),
+                target_path=source_path,
+                ctm=ctm,
             )
             composite_type, composite_mode = self.get_composite_mode(
                 paint.CompositeMode
@@ -455,9 +515,9 @@ class COLRFont(Type3Font):
         ):
             cx, cy = paint.centerX, paint.centerY
             return (
-                Transform.translation(cx, -cy)
+                Transform.translation(cx, cy)
                 .scale(paint.scaleX, paint.scaleY)
-                .translate(-cx, cy)
+                .translate(-cx, -cy)
             )
         if paint_format in (
             PaintFormat.PaintScaleUniform,
@@ -470,9 +530,9 @@ class COLRFont(Type3Font):
         ):
             cx, cy = paint.centerX, paint.centerY
             return (
-                Transform.translation(cx, -cy)
+                Transform.translation(cx, cy)
                 .scale(paint.scale, paint.scale)
-                .translate(-cx, cy)
+                .translate(-cx, -cy)
             )
         if paint_format in (PaintFormat.PaintRotate, PaintFormat.PaintVarRotate):
             return Transform.rotation_d(paint.angle)
@@ -482,7 +542,7 @@ class COLRFont(Type3Font):
         ):
             cx, cy = paint.centerX, paint.centerY
             return (
-                Transform.translation(cx, -cy).rotate_d(paint.angle).translate(-cx, cy)
+                Transform.translation(cx, cy).rotate_d(paint.angle).translate(-cx, -cy)
             )
         if paint_format in (PaintFormat.PaintSkew, PaintFormat.PaintVarSkew):
             return Transform.skewing_d(paint.angleX, paint.angleY)
@@ -492,9 +552,9 @@ class COLRFont(Type3Font):
         ):
             cx, cy = paint.centerX, paint.centerY
             return (
-                Transform.translation(cx, -cy)
+                Transform.translation(cx, cy)
                 .skew_d(paint.angleX, paint.angleY)
-                .translate(-cx, cy)
+                .translate(-cx, -cy)
             )
         raise NotImplementedError(f"Transform not implemented for {format}")
 
@@ -700,11 +760,3 @@ def _normalize_color_line(stops):
     scale = 1.0 / (t_max - t_min)
     renorm = [((t - t_min) * scale, c) for (t, c) in out]
     return t_min, t_max, renorm
-
-
-def get_last_painted_path(gc: GraphicsContext) -> PaintedPath:
-    """Utilitary method to return the last painted path added to a graphics context"""
-    for item in reversed(gc.path_items):
-        if isinstance(item, PaintedPath):
-            return item
-    return None  # raise ValueError("Invalid glyph")
