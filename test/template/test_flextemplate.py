@@ -532,3 +532,128 @@ def test_flextemplate_wrapmode(tmp_path):
     templ = FlexTemplate(pdf, charwrap_elements)
     templ.render()
     assert_pdf_equal(pdf, HERE / "flextemplate_wrapmode.pdf", tmp_path)
+
+
+def test_flextemplate_dashed_elements(tmp_path):
+    """Test that elements can be created with dashed lines and that the dash pattern does not leak."""
+
+    elements = [
+        {
+            "name": "solid-line1",
+            "type": "L",
+            "x1": 10,
+            "y1": 5,
+            "x2": 100,
+            "y2": 5,
+            "size": 1,
+        },
+        {
+            "name": "dashed-line",
+            "type": "L",
+            "x1": 10,
+            "y1": 10,
+            "x2": 100,
+            "y2": 10,
+            "size": 1,
+            "dash_pattern": {"dash": 2, "gap": 4, "phase": 0.5},
+        },
+        {
+            "name": "solid-line2",
+            "type": "L",
+            "x1": 10,
+            "y1": 15,
+            "x2": 100,
+            "y2": 15,
+            "size": 1,
+        },
+        {
+            "name": "solid-rect1",
+            "type": "B",
+            "x1": 5,
+            "y1": 25,
+            "x2": 105,
+            "y2": 55,
+            "size": 1.5,
+        },
+        {
+            "name": "dashed-rect",
+            "type": "B",
+            "x1": 10,
+            "y1": 30,
+            "x2": 100,
+            "y2": 50,
+            "size": 0.5,
+            "dash_pattern": {"dash": 2},
+        },
+        {
+            "name": "solid-rect2",
+            "type": "B",
+            "x1": 15,
+            "y1": 35,
+            "x2": 95,
+            "y2": 45,
+            "size": 0.5,
+        },
+        {
+            "name": "solid-ellipse1",
+            "type": "E",
+            "x1": 15,
+            "y1": 85,
+            "x2": 95,
+            "y2": 95,
+            "size": 0.5,
+        },
+        {
+            "name": "dashed-ellipse",
+            "type": "E",
+            "x1": 10,
+            "y1": 80,
+            "x2": 100,
+            "y2": 100,
+            "size": 0.5,
+            "dash_pattern": {"dash": 2, "gap": 1},
+        },
+        {
+            "name": "solid-ellipse2",
+            "type": "E",
+            "x1": 5,
+            "y1": 75,
+            "x2": 105,
+            "y2": 105,
+            "size": 0.5,
+        },
+    ]
+
+    pdf = FPDF()
+    template = FlexTemplate(pdf, elements)
+
+    # First page has a solid dash_pattern before rendering the template.
+    pdf.add_page()
+    pdf.set_dash_pattern()
+    template.render()
+
+    # Second page has a dash_pattern applied prior to rendering the template.
+    pdf.add_page()
+    pdf.set_dash_pattern(5, 5, 1)
+    template.render()
+
+    assert_pdf_equal(pdf, HERE / "flextemplate_dashed_elements.pdf", tmp_path)
+
+
+def test_flextemplate_dash_pattern_badinput():
+    elements = [
+        {
+            "name": "bad-line",
+            "type": "L",
+            "x1": 100,
+            "y1": 100,
+            "x2": 200,
+            "y2": 150,
+            "dash_pattern": {"dash": 5, "bad_key": 6},
+        }
+    ]
+
+    pdf = FPDF()
+    with raises(KeyError):
+        template = FlexTemplate(pdf, elements)
+        template.render()

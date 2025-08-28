@@ -186,6 +186,12 @@ or a [`FPDF`](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF) inst
     * for the barcode types, the width of one bar 
     * _optional_
     * default: `10` for text, `2` for `BC`, `1.5` for `C39`
+* **`__dash_pattern__(__dash__, __gap__, __phase__)`**: a dict of the line dash pattern for the element
+    * _optional_
+    * for line, box, ellipse follows the parameters of [set_dash_pattern()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.set_dash_pattern) 
+    * Only supported in dict/JSON
+    * `__dash__`,`__gap__`, and `__phase__` keys are possible, at least dash must be present. 
+    * default: dash=0 (solid lines)
 * **`bold, italic, underline`**: text style properties
     * in dict/JSON, enabled with True/true or equivalent value
     * in CSV, only int values, 0 as false, non-0 as true
