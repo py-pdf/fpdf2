@@ -211,8 +211,7 @@ class _AlphaGradientPaint(GradientPaint):
         return False  # already on the alpha gradient, can't alpha the alpha
 
 
-@dataclass(frozen=True, eq=False)
-class BoundingBox:
+class BoundingBox(NamedTuple):
     """Represents a bounding box, with utility methods for creating and manipulating them."""
 
     x0: float
@@ -466,11 +465,15 @@ class GraphicsStyle:
         self.soft_mask = self.INHERIT
 
     def __deepcopy__(self, memo):
-        copied = self.__class__()
-        for prop in self.MERGE_PROPERTIES:
-            setattr(copied, prop, getattr(self, prop))
-
-        return copied
+        cls = self.__class__
+        new = cls.__new__(cls)  # bypass __init__
+        # copy private slots directly
+        for s in cls._PRIVATE_SLOTS:
+            object.__setattr__(new, s, getattr(self, s, cls.INHERIT))
+        # copy PDF-exposed slots (BM, ca, CA, etc.)
+        for key in cls.PDF_STYLE_KEYS:
+            object.__setattr__(new, key, getattr(self, key, cls.INHERIT))
+        return new
 
     def __setattr__(self, name, value):
         if not hasattr(self.__class__, name):
@@ -4280,7 +4283,7 @@ class PaintSoftMask:
                     child.style.soft_mask = GraphicsStyle.INHERIT
                     child.style.allow_transparency = True
 
-        new_node = deepcopy(node)
+        new_node = clone_structure(node)
         gc = (
             new_node
             if isinstance(new_node, GraphicsContext)
@@ -4427,6 +4430,34 @@ def _disable_auto_alpha(node: Union[PaintedPath, GraphicsContext]) -> None:
                     # decide from the gradient, not col.has_alpha() (which checks skip_alpha)
                     if col.gradient and col.gradient.has_alpha():
                         col.skip_alpha = True
+
+
+# pylint: disable=protected-access
+def clone_structure(node):
+    if isinstance(node, GraphicsContext):
+        new = GraphicsContext()
+        new.style = deepcopy(node.style)
+        new.transform = node.transform
+        new.clipping_path = node.clipping_path
+        new.path_items = [
+            (
+                clone_structure(ch)
+                if isinstance(ch, (GraphicsContext, PaintedPath))
+                else ch
+            )
+            for ch in node.path_items
+        ]
+        return new
+    if isinstance(node, PaintedPath):
+        new = PaintedPath.__new__(PaintedPath)
+        root = clone_structure(node.get_graphics_context())
+        object.__setattr__(new, "_root_graphics_context", root)
+        object.__setattr__(new, "_graphics_context", root)
+        object.__setattr__(new, "_closed", node._closed)
+        object.__setattr__(new, "_close_context", root)
+        object.__setattr__(new, "_starter_move", node._starter_move)
+        return new
+    return node
 
 
 class PaintComposite:

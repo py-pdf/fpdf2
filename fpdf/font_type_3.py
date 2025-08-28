@@ -184,7 +184,7 @@ class SVGColorFont(Type3Font):
             )
         bio = BytesIO(glyph_svg_data)
         bio.seek(0)
-        _, img, _ = self.fpdf.preload_image(bio, None)
+        _, img, _ = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
         w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
         img.base_group.transform = Transform.scaling(self.scale, self.scale)
         output_stream = self.fpdf.draw_vector_glyph(img.base_group, self)
@@ -283,7 +283,7 @@ class COLRFont(Type3Font):
             glyph.draw(pen)
             path.style.fill_color = self.get_color(layer.colorID)
             path.style.stroke_color = self.get_color(layer.colorID)
-            gc.add_item(path)
+            gc.add_item(item=path, _copy=False)
         return gc
 
     def draw_glyph_colrv1(self, glyph_name):
@@ -318,7 +318,7 @@ class COLRFont(Type3Font):
                     parent=group,
                     ctm=ctm,
                 )
-            parent.add_item(group)
+            parent.add_item(item=group, _copy=False)
             return parent, target_path
 
         if paint.Format in (
@@ -403,8 +403,8 @@ class COLRFont(Type3Font):
                 ctm=Transform.identity(),
             )
             if surface_path is not None:
-                group.add_item(surface_path)
-            parent.add_item(group)  # SRC_OVER
+                group.add_item(item=surface_path, _copy=False)
+            parent.add_item(item=group, _copy=False)
             return parent, None
 
         if paint.Format == PaintFormat.PaintColrGlyph:
@@ -416,10 +416,10 @@ class COLRFont(Type3Font):
             rec = self.colrv1_glyphs.get(ref_name)
             if rec is None or getattr(rec, "Paint", None) is None:
                 return parent, target_path  # nothing to draw
-            # Render that base glyph’s paint tree here
+
             group = GraphicsContext()
             self.draw_colrv1_paint(paint=rec.Paint, parent=group, ctm=ctm)
-            parent.add_item(group)  # SRC_OVER
+            parent.add_item(item=group, _copy=False)
             return parent, target_path
 
         if paint.Format in (
@@ -465,7 +465,7 @@ class COLRFont(Type3Font):
                 ctm=ctm,
             )
             if backdrop_path is not None:
-                backdrop_node.add_item(backdrop_path)
+                backdrop_node.add_item(item=backdrop_path, _copy=False)
 
             source_node = GraphicsContext()
             _, source_path = self.draw_colrv1_paint(
@@ -474,20 +474,20 @@ class COLRFont(Type3Font):
                 ctm=ctm,
             )
             if source_path is not None:
-                source_node.add_item(source_path)
+                source_node.add_item(item=source_path, _copy=False)
 
             composite_type, composite_mode = self.get_composite_mode(
                 paint.CompositeMode
             )
             if composite_type == "Blend":
                 source_node.style.blend_mode = composite_mode
-                parent.add_item(backdrop_node)
-                parent.add_item(source_node)
+                parent.add_item(item=backdrop_node, _copy=False)
+                parent.add_item(item=source_node, _copy=False)
             elif composite_type == "Compositing":
                 composite_node = PaintComposite(
                     backdrop=backdrop_node, source=source_node, operation=composite_mode
                 )
-                parent.add_item(composite_node)
+                parent.add_item(item=composite_node, _copy=False)
             else:
                 raise ValueError(""" Composite operation not supported """)
             return parent, None
@@ -653,7 +653,7 @@ class CBDTColorFont(Type3Font):
 
         bio = BytesIO(glyph_bitmap)
         bio.seek(0)
-        _, _, info = self.fpdf.preload_image(bio, None)
+        _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
         w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
         glyph.glyph = (
             f"{round(w * self.scale)} 0 d0\n"
@@ -707,7 +707,7 @@ class SBIXColorFont(Type3Font):
 
         bio = BytesIO(sbix_glyph.imageData)
         bio.seek(0)
-        _, _, info = self.fpdf.preload_image(bio, None)
+        _, _, info = self.fpdf.preload_glyph_image(glyph_image_bytes=bio)
         w = round(self.base_font.ttfont["hmtx"].metrics[glyph.glyph_name][0] + 0.001)
         glyf_metrics = self.base_font.ttfont["glyf"].get(glyph.glyph_name)
         x_min = glyf_metrics.xMin + sbix_glyph.originOffsetX

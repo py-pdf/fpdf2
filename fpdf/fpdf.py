@@ -4857,6 +4857,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         )
         return preload_image(self.image_cache, name, dims)
 
+    def preload_glyph_image(self, glyph_image_bytes):
+        return preload_image(
+            image_cache=self.image_cache, name=glyph_image_bytes, dims=None
+        )
+
     @contextmanager
     def _marked_sequence(self, **kwargs):
         """
