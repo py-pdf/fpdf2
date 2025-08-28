@@ -22,7 +22,7 @@ def test_sbix_compyx(tmp_path):
     pdf.ln()
     pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM.lower(), align="J")
 
-    assert_pdf_equal(pdf, HERE / "sbix_compyx.pdf", tmp_path)
+    assert_pdf_equal(pdf, HERE / "sbix_compyx.pdf", tmp_path, generate=True)
 
 
 def test_sbix_bungee(tmp_path):

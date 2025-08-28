@@ -124,7 +124,13 @@ def render_pdf_primitive(primitive):
 class GradientPaint:
     """Fill/stroke paint using a gradient"""
 
-    __slots__ = ("gradient", "units", "gradient_transform", "apply_page_ctm")
+    __slots__ = (
+        "gradient",
+        "units",
+        "gradient_transform",
+        "apply_page_ctm",
+        "skip_alpha",
+    )
 
     def __init__(
         self,
@@ -137,6 +143,7 @@ class GradientPaint:
         self.units = GradientUnits.coerce(units)
         self.gradient_transform = gradient_transform or Transform.identity()
         self.apply_page_ctm = apply_page_ctm
+        self.skip_alpha = False
 
     def _matrix_for(self, bbox: Optional["BoundingBox"]) -> "Transform":
         """Return the final /Matrix for this gradient, given an optional bbox."""
@@ -173,7 +180,7 @@ class GradientPaint:
         return f"/Pattern CS /{pattern_name} SCN"
 
     def has_alpha(self) -> bool:
-        return self.gradient and self.gradient.has_alpha()
+        return self.gradient and self.gradient.has_alpha() and not self.skip_alpha
 
     def _register_alpha_pattern(self, resource_catalog, matrix: "Transform") -> str:
         alpha_shading = self.gradient.get_alpha_shading_object()
@@ -182,7 +189,6 @@ class GradientPaint:
         # Register the shading and wrap it into a Pattern using the same matrix
         resource_catalog.add(PDFResourceType.SHADING, alpha_shading, None)
         alpha_pattern = Pattern(alpha_shading).set_matrix(matrix)
-        alpha_pattern.set_apply_page_ctm(self.apply_page_ctm)
         alpha_pattern.set_apply_page_ctm(False)
         return resource_catalog.add(PDFResourceType.PATTERN, alpha_pattern, None)
 
@@ -3517,9 +3523,13 @@ class PaintedPath:
             self._close_context = self._graphics_context
             self._closed = True
 
-    def bounding_box(self, start: Point) -> tuple[BoundingBox, Point]:
+    def bounding_box(
+        self, start: Point, expand_for_stroke=True
+    ) -> tuple[BoundingBox, Point]:
         """Compute the bounding box of this painted path, including nested contexts and transformations."""
-        return self._root_graphics_context.bounding_box(start, self.style)
+        return self._root_graphics_context.bounding_box(
+            start, self.style, expand_for_stroke=expand_for_stroke
+        )
 
     def render(
         self,
@@ -3914,9 +3924,13 @@ class GraphicsContext:
 
             # Decide whether to attach a soft mask from fill or stroke gradient alpha.
             # Priority: fill first (most common), otherwise stroke.
-            if isinstance(self.style.fill_color, GradientPaint):
+            if isinstance(emit_style.fill_color, GradientPaint) and (
+                emit_style.soft_mask in (None, GraphicsStyle.INHERIT)
+            ):
                 _attach_alpha_mask_if_needed(self.style.fill_color)
-            elif isinstance(self.style.stroke_color, GradientPaint):
+            elif isinstance(emit_style.stroke_color, GradientPaint) and (
+                emit_style.soft_mask in (None, GraphicsStyle.INHERIT)
+            ):
                 _attach_alpha_mask_if_needed(self.style.stroke_color)
 
             style_dict_name = resource_registry.register_graphics_style(emit_style)
@@ -4157,7 +4171,7 @@ class PaintSoftMask:
         self.mask_path = deepcopy(mask_path)
         self.invert = invert
         self.use_luminosity = use_luminosity
-        self.resources = []
+        self.resources = set()
         self.object_id = 0
         self.matrix = matrix
 
@@ -4188,7 +4202,7 @@ class PaintSoftMask:
         """Build the resource dictionary for this soft mask, resolving GS & Pattern ids."""
         resources_registered: dict[str, list] = {}
         for resource_type, resource_id in self.resources:
-            resources_registered.setdefault(resource_type.value, []).append(resource_id)
+            resources_registered.setdefault(resource_type.value, set()).add(resource_id)
 
         parts: list[str] = []
 
@@ -4199,7 +4213,7 @@ class PaintSoftMask:
                 + "<<"
                 + "".join(
                     f"{Name(gs_name).serialize()} {gfxstate_objs_per_name[gs_name].id} 0 R"
-                    for gs_name in resources_registered["ExtGState"]
+                    for gs_name in sorted(resources_registered["ExtGState"])
                 )
                 + ">>"
             )
@@ -4211,7 +4225,7 @@ class PaintSoftMask:
                 + "<<"
                 + "".join(
                     f"{Name(pat_name).serialize()} {pattern_objs_per_name[pat_name].id} 0 R"
-                    for pat_name in resources_registered["Pattern"]
+                    for pat_name in sorted(resources_registered["Pattern"])
                 )
                 + ">>"
             )
@@ -4227,6 +4241,193 @@ class PaintSoftMask:
         self.resources = resource_registry.scan_stream(stream)
         return stream
 
+    @staticmethod
+    def coverage_white(
+        node: Union[PaintedPath, GraphicsContext],
+    ) -> Union[PaintedPath, GraphicsContext]:
+        """
+        Return a deep-copied version of *node* whose appearance encodes only its
+        geometric coverage: every shape is converted to an **opaque white fill**
+        (nonzero rule), with **no stroke**, no soft mask, and inherited blend mode.
+
+        The transform/clipping/structure of the original node is preserved; only
+        paint-related attributes are normalized. This is intended for building the
+        “B” term of soft-mask expressions (coverage), where inside = 1 and
+        outside = 0.
+        """
+
+        def _force_white(gc: GraphicsContext):
+            # normalize the GC's own style
+            gc.style.paint_rule = PathPaintRule.FILL_NONZERO
+            gc.style.fill_color = "#ffffff"
+            gc.style.fill_opacity = 1
+            gc.style.stroke_color = None
+            gc.style.blend_mode = GraphicsStyle.INHERIT
+            gc.style.soft_mask = GraphicsStyle.INHERIT
+            # allow blending if we’ll invert via DIFFERENCE
+            gc.style.allow_transparency = True
+
+            # recurse into children
+            for child in gc.path_items:
+                if isinstance(child, GraphicsContext):
+                    _force_white(child)
+                elif isinstance(child, PaintedPath):
+                    child.style.paint_rule = PathPaintRule.FILL_NONZERO
+                    child.style.fill_color = "#ffffff"
+                    child.style.fill_opacity = 1
+                    child.style.stroke_color = None
+                    child.style.blend_mode = GraphicsStyle.INHERIT
+                    child.style.soft_mask = GraphicsStyle.INHERIT
+                    child.style.allow_transparency = True
+
+        new_node = deepcopy(node)
+        gc = (
+            new_node
+            if isinstance(new_node, GraphicsContext)
+            else new_node.get_graphics_context()
+        )
+        _force_white(gc)
+        return new_node
+
+    @staticmethod
+    def alpha_layers_from(node) -> Optional[GraphicsContext]:
+        """
+        Build a GraphicsContext that encodes the *alpha ramps* contributed by any
+        `GradientPaint` used by *node*. Each contributing PaintedPath yields one
+        rectangle covering its content-space bounding box; that rectangle is filled
+        with an `_AlphaGradientPaint` (the gradient’s *alpha channel only*).
+        Rectangles are stacked with `BM=Multiply` so multiple alpha sources
+        combine multiplicatively.
+        """
+        layers = []
+        for n in _iter_nodes(node):
+            if isinstance(n, PaintedPath):
+                for paint in (n.style.fill_color, n.style.stroke_color):
+                    if isinstance(paint, GradientPaint) and paint.has_alpha():
+                        bb = n.bounding_box(Point(0, 0), expand_for_stroke=False)[0]
+                        if bb.width <= 0 or bb.height <= 0:
+                            continue
+                        rect = PaintedPath()
+                        rect.rectangle(bb.x0, bb.y0, bb.width, bb.height)
+                        alpha_paint = _AlphaGradientPaint(
+                            gradient=paint.gradient,
+                            units=paint.units,
+                            gradient_transform=paint.gradient_transform,
+                            apply_page_ctm=paint.apply_page_ctm,
+                        )
+                        rect.style.fill_color = alpha_paint
+                        rect.style.stroke_color = None
+                        rect.style.paint_rule = PathPaintRule.FILL_NONZERO
+                        rect.style.allow_transparency = True
+                        layers.append(rect)
+
+        if not layers:
+            return None
+
+        A = GraphicsContext()
+        for layer in layers:
+            # If multiple alpha layers exist, multiply them together
+            layer.style.allow_transparency = True
+            layer.style.blend_mode = BlendMode.MULTIPLY
+            A.add_item(layer)
+        return A
+
+    @classmethod
+    def from_AB(
+        cls,
+        A: Optional[GraphicsContext],
+        B: Union[PaintedPath, GraphicsContext],
+        invert: bool,
+        registry,
+        region_bbox: Optional["BoundingBox"] = None,
+    ) -> "PaintSoftMask":
+        """
+        Construct a **luminosity soft mask** from two ingredients:
+
+        - **A**: Optional GraphicsContext encoding alpha ramps (e.g., the result of
+        :meth:`alpha_layers_from`). If ``None``, the effective alpha is 1.
+        - **B**: Coverage term (e.g., the result of :meth:`coverage_white`).
+
+        The mask luminance is:
+            - ``A × B``        when ``invert = False``
+            - ``A × (1 − B)``  when ``invert = True``
+
+        Implementation outline:
+        1. Compute the union bbox of A and B (no stroke expansion).
+        2. Paint a background rectangle: **black** for ``A×B`` or **white** for
+        ``A×(1−B)``.
+        3. Paint **B**; when ``invert=True``, set ``BM=Difference`` to obtain
+        ``1−B`` from the white background.
+        4. If A is present, paint it with ``BM=Multiply`` to apply the alpha ramp.
+        5. Wrap the result as a Form XObject and attach it as ``/SMask`` with
+        ``/S /Luminosity``.
+        """
+
+        # Decide the canvas/BBox for the soft mask
+        if region_bbox is not None:
+            union = region_bbox
+        else:
+            bb_A = (
+                A.bounding_box(Point(0, 0), expand_for_stroke=False)[0] if A else None
+            )
+            bb_B = B.bounding_box(Point(0, 0), expand_for_stroke=False)[0]
+            union = bb_B if bb_A is None else bb_A.merge(bb_B)
+
+        canvas = GraphicsContext()
+
+        # Background: black for A×B, white for A×(1−B)
+        bg = PaintedPath()
+        bg.rectangle(union.x0, union.y0, union.width, union.height)
+        bg.style.fill_color = "#000000" if not invert else "#ffffff"
+        bg.style.fill_opacity = 1
+        bg.style.stroke_color = None
+        bg.style.allow_transparency = True
+        canvas.add_item(bg)
+
+        # Paint B (optionally build 1−B using Difference on white bg)
+        if invert:
+            B.style.allow_transparency = True
+            B.style.blend_mode = BlendMode.DIFFERENCE
+        canvas.add_item(B)
+
+        # Multiply by A if present
+        if A is not None:
+            A.style.allow_transparency = True
+            A.style.blend_mode = BlendMode.MULTIPLY
+            canvas.add_item(A)
+
+        sm = cls(canvas, invert=False, use_luminosity=True)
+        sm.mask_path.style.allow_transparency = True
+        _ = sm.render(registry)
+        sm.object_id = registry.register_soft_mask(sm)
+        return sm
+
+
+def _iter_nodes(node):
+    # Yields all GraphicsContext/PaintedPath nodes recursively
+    if isinstance(node, PaintedPath):
+        yield node
+        root_gc = node.get_graphics_context()
+        for ch in root_gc.path_items:
+            if isinstance(ch, (GraphicsContext, PaintedPath)):
+                yield from _iter_nodes(ch)
+    elif isinstance(node, GraphicsContext):
+        yield node
+        for ch in node.path_items:
+            if isinstance(ch, (GraphicsContext, PaintedPath)):
+                yield from _iter_nodes(ch)
+
+
+def _disable_auto_alpha(node: Union[PaintedPath, GraphicsContext]) -> None:
+    for n in _iter_nodes(node):
+        if isinstance(n, PaintedPath):
+            for attr in ("fill_color", "stroke_color"):
+                col = getattr(n.style, attr)
+                if isinstance(col, GradientPaint):
+                    # decide from the gradient, not col.has_alpha() (which checks skip_alpha)
+                    if col.gradient and col.gradient.has_alpha():
+                        col.skip_alpha = True
+
 
 class PaintComposite:
 
@@ -4237,6 +4438,8 @@ class PaintComposite:
         invert: bool = False
 
     _MODES = {
+        CompositingOperation.SOURCE: (_Step("source", None),),
+        CompositingOperation.DESTINATION: (_Step("backdrop", None),),
         CompositingOperation.SOURCE_OVER: (
             _Step("backdrop", None),
             _Step("source", None),
@@ -4268,6 +4471,8 @@ class PaintComposite:
         if not isinstance(backdrop, (PaintedPath, GraphicsContext)) or not isinstance(
             source, (PaintedPath, GraphicsContext)
         ):
+            print(type(backdrop))
+            print(type(source))
             raise TypeError("PaintComposite requires two PaintedPath instances.")
         self.backdrop = backdrop
         self.source = source
@@ -4284,9 +4489,22 @@ class PaintComposite:
         path: Union[PaintedPath, GraphicsContext],
         mask_from: Union[PaintedPath, GraphicsContext],
         invert: bool,
+        resource_registry,
     ) -> Union[PaintedPath, GraphicsContext]:
         p = deepcopy(path)
-        p.style.soft_mask = PaintSoftMask(mask_from, invert=invert)
+
+        A = PaintSoftMask.alpha_layers_from(p)
+        B = PaintSoftMask.coverage_white(mask_from)
+
+        bb_p = p.bounding_box(Point(0, 0), expand_for_stroke=False)[0]
+        bb_B = B.bounding_box(Point(0, 0), expand_for_stroke=False)[0]
+        region_bbox = bb_p.merge(bb_B)
+
+        sm = PaintSoftMask.from_AB(
+            A, B, invert, resource_registry, region_bbox=region_bbox
+        )
+        p.style.soft_mask = sm
+        _disable_auto_alpha(p)
         return p
 
     def _pick(self, which: str) -> Union[PaintedPath, GraphicsContext]:
@@ -4307,10 +4525,12 @@ class PaintComposite:
 
         parts = []
         for st in steps:
-            path = self._pick(st.draw)
+            node = self._pick(st.draw)
             if st.mask_from is not None:
-                path = self._with_mask(path, self._pick(st.mask_from), st.invert)
-            s, last_item, initial_point = path.render(
+                node = self._with_mask(
+                    node, self._pick(st.mask_from), st.invert, resource_registry
+                )
+            s, last_item, initial_point = node.render(
                 resource_registry, style, last_item, initial_point, debug_stream, pfx
             )
             parts.append(s)

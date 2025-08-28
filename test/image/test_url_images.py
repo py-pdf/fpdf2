@@ -2,7 +2,7 @@ import socket
 import pytest
 
 from pathlib import Path
-from urllib.error import HTTPError, URLError
+from urllib.error import HTTPError
 
 import fpdf
 from test.conftest import assert_pdf_equal
@@ -16,6 +16,6 @@ def test_png_url(tmp_path):
     pdf.add_page()
     try:
         pdf.image(PNG_IMG_URL, x=15, y=15, w=30, h=25)
-    except (HTTPError, URLError, socket.timeout) as e:
+    except (HTTPError, socket.timeout) as e:
         pytest.skip(f"Network error: {e}")
     assert_pdf_equal(pdf, HERE / "image_png_url.pdf", tmp_path)

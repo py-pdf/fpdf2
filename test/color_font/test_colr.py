@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from fpdf import FPDF
-from test.conftest import assert_pdf_equal, EMOJI_TEST_TEXT
+from test.conftest import LOREM_IPSUM, assert_pdf_equal, EMOJI_TEST_TEXT
 
 HERE = Path(__file__).resolve().parent
 FONTS_DIR = HERE.parent / "fonts"
@@ -97,3 +97,36 @@ def test_noto_colrv1_text(tmp_path):
     pdf.add_page()
     pdf.multi_cell(w=pdf.epw, text=text)
     assert_pdf_equal(pdf, HERE / "colrv1-noto-color-emoji_text.pdf", tmp_path)
+
+
+def test_colrv1_bungee(tmp_path):
+    # Bungee Color - OFL license
+    # https://github.com/djrrb/Bungee
+
+    pdf = FPDF()
+    pdf.add_font("Bungee", "", HERE / "BungeeSpice-Regular-COLRv1.ttf")
+
+    pdf.add_page()
+    pdf.set_font("Bungee", size=16)
+    pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM.upper(), align="L")
+    pdf.ln()
+    pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM.upper(), align="R")
+    pdf.ln()
+    pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM.upper(), align="J")
+
+    assert_pdf_equal(pdf, HERE / "colrv1_bungee.pdf", tmp_path)
+
+
+def test_colrv1_nabla(tmp_path):
+    pdf = FPDF()
+    pdf.add_font("Nabla", "", HERE / "Nabla-Regular-COLRv1-VariableFont_EDPT,EHLT.ttf")
+
+    pdf.add_page()
+    pdf.set_font("Nabla", size=16)
+    pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM.upper(), align="L")
+    pdf.ln()
+    pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM.upper(), align="R")
+    pdf.ln()
+    pdf.multi_cell(w=pdf.epw, text=LOREM_IPSUM.upper(), align="J")
+
+    assert_pdf_equal(pdf, HERE / "colrv1_nabla.pdf", tmp_path)

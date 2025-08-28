@@ -673,19 +673,19 @@ class ResourceCatalog:
 
     def scan_stream(self, rendered: str) -> list[tuple[PDFResourceType, str]]:
         """Parse a content stream and return discovered resources"""
-        found = []
+        found = set()
 
         for m in self.GS_REGEX.finditer(rendered):
-            found.append((PDFResourceType.EXT_G_STATE, m.group(1)))
+            found.add((PDFResourceType.EXT_G_STATE, m.group(1)))
 
         for m in self.IMG_REGEX.finditer(rendered):
-            found.append((PDFResourceType.X_OBJECT, int(m.group(1))))
+            found.add((PDFResourceType.X_OBJECT, int(m.group(1))))
 
         for m in self.PATTERN_FILL_REGEX.finditer(rendered):
-            found.append((PDFResourceType.PATTERN, m.group(1)))
+            found.add((PDFResourceType.PATTERN, m.group(1)))
 
         for m in self.PATTERN_STROKE_REGEX.finditer(rendered):
-            found.append((PDFResourceType.PATTERN, m.group(1)))
+            found.add((PDFResourceType.PATTERN, m.group(1)))
 
         return found
 
@@ -1696,7 +1696,4 @@ def soft_mask_path_to_xobject(path, resource_catalog: ResourceCatalog):
     xobject.subtype = Name("Form")
     xobject.b_box = PDFArray(path.get_bounding_box())
     xobject.group = "<</S /Transparency /CS /DeviceGray /I true /K false>>"
-    # matrix = path.matrix
-    # xobject.matrix = f"[{matrix.a:.4f} {matrix.b:.4f} {matrix.c:.4f} {matrix.d:.4f} {matrix.e:.4f} {matrix.f:.4f}]"
-
     return xobject

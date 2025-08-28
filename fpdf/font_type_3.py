@@ -83,11 +83,7 @@ class Type3Font:
         notdef.glyph_id = glyph_id
         notdef.unicode = glyph_id
         notdef.glyph_name = ".notdef"
-        notdef.glyph_width = (
-            self.base_font.cw[0x00]
-            if self.base_font.cw[0x00]
-            else self.base_font.ttfont["hmtx"].metrics[".notdef"][0]
-        )
+        notdef.glyph_width = self.base_font.ttfont["hmtx"].metrics[".notdef"][0]
         notdef.glyph = f"{round(notdef.glyph_width * self.scale + 0.001)} 0 d0"
         return notdef
 
@@ -96,20 +92,44 @@ class Type3Font:
         space.glyph_id = glyph_id
         space.unicode = 0x20
         space.glyph_name = "space"
-        space.glyph_width = (
-            self.base_font.cw[0x20]
-            if self.base_font.cw[0x20]
+        w = (
+            self.base_font.ttfont["hmtx"].metrics["space"][0]
+            if "space" in self.base_font.ttfont["hmtx"].metrics
             else self.base_font.ttfont["hmtx"].metrics[".notdef"][0]
         )
+        space.glyph_width = round(w + 0.001)
         space.glyph = f"{round(space.glyph_width * self.scale + 0.001)} 0 d0"
         return space
 
     def load_glyphs(self):
+        WHITES = {
+            0x0009,
+            0x000A,
+            0x000C,
+            0x000D,
+            0x0020,
+            0x00A0,
+            0x1680,
+            0x2000,
+            0x2001,
+            0x2002,
+            0x2003,
+            0x2004,
+            0x2005,
+            0x2006,
+            0x2007,
+            0x2008,
+            0x2009,
+            0x200A,
+            0x202F,
+            0x205F,
+            0x3000,
+        }
         for glyph, char_id in self.base_font.subset.items():
+            if glyph.unicode in WHITES or glyph.glyph_name in ("space", "uni00A0"):
+                self.glyphs.append(self.get_space_glyph(char_id))
+                continue
             if not self.glyph_exists(glyph.glyph_name):
-                if char_id == 0x20 or glyph.glyph_name == "space":
-                    self.glyphs.append(self.get_space_glyph(char_id))
-                    continue
                 if self.glyph_exists(".notdef"):
                     self.add_glyph(".notdef", char_id)
                     continue
@@ -170,17 +190,6 @@ class SVGColorFont(Type3Font):
         output_stream = self.fpdf.draw_vector_glyph(img.base_group, self)
         glyph.glyph = f"{round(w * self.scale)} 0 d0\n" "q\n" f"{output_stream}\n" "Q"
         glyph.glyph_width = w
-
-
-class CustomGraphicsContextItem:
-    """A custom graphics context item that renders a string command in the PDF context."""
-
-    def __init__(self, item):
-        self._item = item
-
-    # pylint: disable=unused-argument
-    def render(self, gsd_registry, style, last_item, first_point):
-        return self._item, None, None
 
 
 class COLRFont(Type3Font):
@@ -316,7 +325,7 @@ class COLRFont(Type3Font):
             PaintFormat.PaintSolid,
             PaintFormat.PaintVarSolid,
         ):
-            assert target_path
+            target_path = target_path or self.get_paint_surface()
             target_path.style.fill_color = self.get_color(
                 color_index=paint.PaletteIndex, alpha=paint.Alpha
             )
@@ -332,7 +341,7 @@ class COLRFont(Type3Font):
             gradient = shape_linear_gradient(
                 paint.x0, paint.y0, paint.x1, paint.y1, stops
             )
-            assert target_path
+            target_path = target_path or self.get_paint_surface()
             target_path.style.fill_color = GradientPaint(
                 gradient=gradient,
                 units=GradientUnits.USER_SPACE_ON_USE,
@@ -360,7 +369,7 @@ class COLRFont(Type3Font):
             gradient = shape_radial_gradient(
                 cx=cx, cy=cy, r=r, fx=fx, fy=fy, fr=fr, stops=norm_stops
             )
-            assert target_path
+            target_path = target_path or self.get_paint_surface()
             target_path.style.fill_color = GradientPaint(
                 gradient=gradient,
                 units=GradientUnits.USER_SPACE_ON_USE,
@@ -388,21 +397,13 @@ class COLRFont(Type3Font):
             group = GraphicsContext()
             group.clipping_path = clipping_path
 
-            paint_surface = PaintedPath()
-            surface_bbox = self.metric_bbox()  # .transformed(ctm)
-            paint_surface.rectangle(
-                x=surface_bbox.x0,
-                y=surface_bbox.y0,
-                w=surface_bbox.width,
-                h=surface_bbox.height,
-            )
-            self.draw_colrv1_paint(
+            group, surface_path = self.draw_colrv1_paint(
                 paint=paint.Paint,
                 parent=group,
-                target_path=paint_surface,
                 ctm=Transform.identity(),
             )
-            group.add_item(paint_surface)
+            if surface_path is not None:
+                group.add_item(surface_path)
             parent.add_item(group)  # SRC_OVER
             return parent, None
 
@@ -457,44 +458,38 @@ class COLRFont(Type3Font):
             raise NotImplementedError("Variable fonts are not yet supported.")
 
         if paint.Format == PaintFormat.PaintComposite:  # 32
-            backdrop_path = PaintedPath()
-            surface_bbox = self.metric_bbox()  # .transformed(ctm)
-            backdrop_path.rectangle(
-                x=surface_bbox.x0,
-                y=surface_bbox.y0,
-                w=surface_bbox.width,
-                h=surface_bbox.height,
-            )
-            self.draw_colrv1_paint(
+            backdrop_node = GraphicsContext()
+            _, backdrop_path = self.draw_colrv1_paint(
                 paint=paint.BackdropPaint,
-                parent=backdrop_path.get_graphics_context(),
-                target_path=backdrop_path,
+                parent=backdrop_node,
                 ctm=ctm,
             )
-            source_path = PaintedPath()
-            self.draw_colrv1_paint(
+            if backdrop_path is not None:
+                backdrop_node.add_item(backdrop_path)
+
+            source_node = GraphicsContext()
+            _, source_path = self.draw_colrv1_paint(
                 paint=paint.SourcePaint,
-                parent=source_path.get_graphics_context(),
-                target_path=source_path,
+                parent=source_node,
                 ctm=ctm,
             )
+            if source_path is not None:
+                source_node.add_item(source_path)
+
             composite_type, composite_mode = self.get_composite_mode(
                 paint.CompositeMode
             )
-            if composite_type == "Single":
-                if composite_mode == "SRC_ONLY":
-                    parent.add_item(source_path)
-                elif composite_mode == "DEST_ONLY":
-                    parent.add_item(backdrop_path)
-            elif composite_type == "Blend":
-                source_path.style.blend_mode = composite_mode
-                parent.add_item(backdrop_path)
-                parent.add_item(source_path)
+            if composite_type == "Blend":
+                source_node.style.blend_mode = composite_mode
+                parent.add_item(backdrop_node)
+                parent.add_item(source_node)
             elif composite_type == "Compositing":
-                composite_path = PaintComposite(
-                    backdrop=backdrop_path, source=source_path, operation=composite_mode
+                composite_node = PaintComposite(
+                    backdrop=backdrop_node, source=source_node, operation=composite_mode
                 )
-                parent.add_item(composite_path)
+                parent.add_item(composite_node)
+            else:
+                raise ValueError(""" Composite operation not supported """)
             return parent, None
 
         raise NotImplementedError(f"Unknown PaintFormat: {paint.Format}")
@@ -565,17 +560,28 @@ class COLRFont(Type3Font):
             )
         raise NotImplementedError(f"Transform not implemented for {format}")
 
+    def get_paint_surface(self) -> PaintedPath:
+        """
+        Creates a surface representing the whole glyph area for actions that require
+        painting an infinite surface and clipping to a geometry path
+        """
+        paint_surface = PaintedPath()
+        surface_bbox = self.metric_bbox()
+        paint_surface.rectangle(
+            x=surface_bbox.x0,
+            y=surface_bbox.y0,
+            w=surface_bbox.width,
+            h=surface_bbox.height,
+        )
+        return paint_surface
+
     @classmethod
     def get_composite_mode(cls, composite_mode: CompositeMode):
         """Get the FPDF BlendMode for a given CompositeMode."""
 
-        if composite_mode == CompositeMode.SRC:
-            return ("Single", "SRC_ONLY")
-
-        if composite_mode == CompositeMode.DEST:
-            return ("Single", "DEST_ONLY")
-
         map_compositing_operation = {
+            CompositeMode.SRC: CompositingOperation.SOURCE,
+            CompositeMode.DEST: CompositingOperation.DESTINATION,
             CompositeMode.CLEAR: CompositingOperation.CLEAR,
             CompositeMode.SRC_OVER: CompositingOperation.SOURCE_OVER,
             CompositeMode.DEST_OVER: CompositingOperation.DESTINATION_OVER,
