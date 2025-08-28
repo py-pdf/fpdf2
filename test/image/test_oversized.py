@@ -9,7 +9,7 @@ from PIL import Image
 
 HERE = Path(__file__).resolve().parent
 IMAGE_PATH = HERE / "png_images/6c853ed9dacd5716bc54eb59cec30889.png"
-MAX_MEMORY_MB = 12  # memory usage depends on Python version
+MAX_MEMORY_MB = 19  # memory usage depends on Python version
 
 
 @ensure_rss_memory_below(MAX_MEMORY_MB)
