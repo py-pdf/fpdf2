@@ -51,118 +51,6 @@ in non-backward-compatible ways.</p>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="fpdf.svg.PathPen"><code class="flex name class">
-<span>class <span class="ident">PathPen</span></span>
-<span>(</span><span>pdf_path, *args, **kwargs)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/svg.py#L555-L607" class="git-link" target="_blank">Browse git</a>
-</summary>
-<pre><code class="python">class PathPen(BasePen):
-    def __init__(self, pdf_path, *args, **kwargs):
-        self.pdf_path = pdf_path
-        self.last_was_line_to = False
-        self.first_is_move = None
-        super().__init__(*args, **kwargs)
-
-    def _moveTo(self, pt):
-        self.pdf_path.move_to(*pt)
-        self.last_was_line_to = False
-        if self.first_is_move is None:
-            self.first_is_move = True
-
-    def _lineTo(self, pt):
-        self.pdf_path.line_to(*pt)
-        self.last_was_line_to = True
-        if self.first_is_move is None:
-            self.first_is_move = False
-
-    def _curveToOne(self, pt1, pt2, pt3):
-        self.pdf_path.curve_to(
-            x1=pt1[0], y1=pt1[1], x2=pt2[0], y2=pt2[1], x3=pt3[0], y3=pt3[1]
-        )
-        self.last_was_line_to = False
-        if self.first_is_move is None:
-            self.first_is_move = False
-
-    def _qCurveToOne(self, pt1, pt2):
-        self.pdf_path.quadratic_curve_to(x1=pt1[0], y1=pt1[1], x2=pt2[0], y2=pt2[1])
-        self.last_was_line_to = False
-        if self.first_is_move is None:
-            self.first_is_move = False
-
-    def arcTo(self, rx, ry, rotation, arc, sweep, end):
-        self.pdf_path.arc_to(
-            rx=rx,
-            ry=ry,
-            rotation=rotation,
-            large_arc=arc,
-            positive_sweep=sweep,
-            x=end[0],
-            y=end[1],
-        )
-        self.last_was_line_to = False
-        if self.first_is_move is None:
-            self.first_is_move = False
-
-    def _closePath(self):
-        # The fonttools parser inserts an unnecessary explicit line back to the start
-        # point of the path before actually closing it. Let&#39;s get rid of that again.
-        if self.last_was_line_to:
-            self.pdf_path.remove_last_path_element()
-        self.pdf_path.close()</code></pre>
-</details>
-<div class="desc"><p>Base class for drawing pens. You must override _moveTo, _lineTo and
-_curveToOne. You may additionally override _closePath, _endPath,
-addComponent, addVarComponent, and/or _qCurveToOne. You should not
-override any other methods.</p>
-<p>Takes a 'glyphSet' argument (dict), in which the glyphs that are referenced
-as components are looked up by their name.</p>
-<p>If the optional 'reverseFlipped' argument is True, components whose transformation
-matrix has a negative determinant will be decomposed with a reversed path direction
-to compensate for the flip.</p>
-<p>The optional 'skipMissingComponents' argument can be set to True/False to
-override the homonymous class attribute for a given pen instance.</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>fontTools.pens.basePen.BasePen</li>
-<li>fontTools.pens.basePen.DecomposingPen</li>
-<li>fontTools.pens.basePen.LoggingPen</li>
-<li>fontTools.misc.loggingTools.LogMixin</li>
-<li>fontTools.pens.basePen.AbstractPen</li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="fpdf.svg.PathPen.arcTo"><code class="name flex">
-<span>def <span class="ident">arcTo</span></span>(<span>self, rx, ry, rotation, arc, sweep, end)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/svg.py#L588-L600" class="git-link" target="_blank">Browse git</a>
-</summary>
-<pre><code class="python">def arcTo(self, rx, ry, rotation, arc, sweep, end):
-    self.pdf_path.arc_to(
-        rx=rx,
-        ry=ry,
-        rotation=rotation,
-        large_arc=arc,
-        positive_sweep=sweep,
-        x=end[0],
-        y=end[1],
-    )
-    self.last_was_line_to = False
-    if self.first_is_move is None:
-        self.first_is_move = False</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
-</dl>
-</dd>
 <dt id="fpdf.svg.SVGImage"><code class="flex name class">
 <span>class <span class="ident">SVGImage</span></span>
 <span>(</span><span>href: str,<br>x: numbers.Number,<br>y: numbers.Number,<br>width: numbers.Number,<br>height: numbers.Number,<br>svg_obj: <a title="fpdf.svg.SVGObject" href="#fpdf.svg.SVGObject">SVGObject</a>)</span>
@@ -171,7 +59,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/svg.py#L1038-L1094" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b74319661cb4a92ef9f450d183d786344aadfc1e/fpdf/svg.py#L983-L1039" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -243,7 +131,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/svg.py#L1038-L1094" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b74319661cb4a92ef9f450d183d786344aadfc1e/fpdf/svg.py#L983-L1039" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -310,7 +198,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/svg.py#L1038-L1094" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b74319661cb4a92ef9f450d183d786344aadfc1e/fpdf/svg.py#L983-L1039" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -377,7 +265,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/svg.py#L1038-L1094" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b74319661cb4a92ef9f450d183d786344aadfc1e/fpdf/svg.py#L983-L1039" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -444,7 +332,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/svg.py#L1038-L1094" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b74319661cb4a92ef9f450d183d786344aadfc1e/fpdf/svg.py#L983-L1039" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -511,7 +399,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/svg.py#L1038-L1094" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b74319661cb4a92ef9f450d183d786344aadfc1e/fpdf/svg.py#L983-L1039" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -578,7 +466,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/svg.py#L1038-L1094" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b74319661cb4a92ef9f450d183d786344aadfc1e/fpdf/svg.py#L983-L1039" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGImage(NamedTuple):
     href: str
@@ -650,7 +538,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/svg.py#L618-L1035" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b74319661cb4a92ef9f450d183d786344aadfc1e/fpdf/svg.py#L563-L980" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGObject:
     &#34;&#34;&#34;
@@ -726,7 +614,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
         if viewbox is None:
             self.viewbox = None
         else:
-            viewbox.strip()
+            viewbox = viewbox.strip()
             vx, vy, vw, vh = [float(num) for num in NUMBER_SPLIT.split(viewbox)]
             if (vw &lt; 0) or (vh &lt; 0):
                 raise ValueError(f&#34;invalid negative width/height in viewbox {viewbox}&#34;)
@@ -1103,7 +991,7 @@ override the homonymous class attribute for a given pen instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/svg.py#L817-L842" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b74319661cb4a92ef9f450d183d786344aadfc1e/fpdf/svg.py#L762-L787" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def draw_to_page(self, pdf, x=None, y=None, debug_stream=None):
     &#34;&#34;&#34;
@@ -1154,7 +1042,7 @@ written.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/svg.py#L711-L731" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b74319661cb4a92ef9f450d183d786344aadfc1e/fpdf/svg.py#L656-L676" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def transform_to_page_viewport(self, pdf, align_viewbox=True):
     &#34;&#34;&#34;
@@ -1202,7 +1090,7 @@ viewbox aspect ratio does not match that of the viewport.</dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/869327ac9716fe0079efaa35f434d17ca7e509f0/fpdf/svg.py#L733-L815" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/b74319661cb4a92ef9f450d183d786344aadfc1e/fpdf/svg.py#L678-L760" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def transform_to_rect_viewport(
     self, scale, width, height, align_viewbox=True, ignore_svg_top_attrs=False
@@ -1333,12 +1221,6 @@ converted from the SVG, scaled to the given viewport size.</p></div>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
-<li>
-<h4><code><a title="fpdf.svg.PathPen" href="#fpdf.svg.PathPen">PathPen</a></code></h4>
-<ul class="">
-<li><code><a title="fpdf.svg.PathPen.arcTo" href="#fpdf.svg.PathPen.arcTo">arcTo</a></code></li>
-</ul>
-</li>
 <li>
 <h4><code><a title="fpdf.svg.SVGImage" href="#fpdf.svg.SVGImage">SVGImage</a></code></h4>
 <ul class="two-column">
