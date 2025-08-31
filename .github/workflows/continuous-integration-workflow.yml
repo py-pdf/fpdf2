@@ -90,7 +90,7 @@ jobs:
           time guarddog pypi verify test/linters-requirements.txt
           time guarddog pypi verify test/requirements.txt
       - name: Spell Check Repo ✍️
-        uses: crate-ci/typos@87d57f0e994b0e73e3efb34a953ae275b86b5971 # v1.35.6
+        uses: crate-ci/typos@65f69f021b736bdbe548ce72200500752d42b40e # v1.35.7
   test:
     strategy:
       matrix:
