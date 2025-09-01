@@ -18,10 +18,11 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 
 ## [2.8.5] - Not released yet
 ### Added
-* Basic support for SVG `currentColor` color value - _cf._ [PR #1531](https://github.com/py-pdf/fpdf2/pull/1531)
+* basic support for SVG `currentColor` color value - _cf._ [PR #1531](https://github.com/py-pdf/fpdf2/pull/1531)
 * Porter–Duff compositing operations and bounding box support to the drawing API
-* Support gradients as fill or stroke colors in the drawing API
+* support gradients as fill or stroke colors in the drawing API
 * support for dashed lines in FlexTemplate elements - _cf._ [issue #1503](https://github.com/py-pdf/fpdf2/issues/1503)
+* support for rendering color font glyphs in different formats (SBIX, CBDT/CBLC, SVG, COLRv0 and COLRv1)
 
 ### Fixed
 * preserving font table `fvar` to keep compatibility with variable fonts - _cf._ [issue #1528](https://github.com/py-pdf/fpdf2/issues/1528)

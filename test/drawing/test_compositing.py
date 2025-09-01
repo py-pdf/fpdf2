@@ -43,6 +43,8 @@ def _generate_pdf(op: CompositingOperation):
     "op",
     [
         CompositingOperation.CLEAR,
+        CompositingOperation.SOURCE,
+        CompositingOperation.DESTINATION,
         CompositingOperation.SOURCE_OVER,
         CompositingOperation.DESTINATION_OVER,
         CompositingOperation.SOURCE_IN,

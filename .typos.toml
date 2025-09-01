@@ -16,6 +16,9 @@ extend-ignore-re = [
     "np.arange",
 ]
 
+[default.extend-identifiers]
+otTables = "otTables"
+
 [files]
 extend-exclude = [
     "*.pdf",

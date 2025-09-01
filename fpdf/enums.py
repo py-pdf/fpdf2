@@ -1219,6 +1219,12 @@ class CompositingOperation(CoerciveEnum):
     CLEAR = Name("Clear")
     """ Draw nothing """
 
+    SOURCE = Name("Source")
+    """ Draw the source only """
+
+    DESTINATION = Name("Destination")
+    """ Draw the destination only """
+
     SOURCE_OVER = Name("SourceOver")
     """The source is drawn over the destination (backdrop)."""
 
