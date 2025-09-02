@@ -12,6 +12,7 @@ import hashlib
 import io
 import logging
 import math
+import mimetypes
 import os
 import re
 import sys
@@ -80,8 +81,10 @@ from .enums import (
     Angle,
     AnnotationFlag,
     AnnotationName,
+    AssociatedFileRelationship,
     CharVPos,
     Corner,
+    DocumentCompliance,
     EncryptionMethod,
     FileAttachmentAnnotationName,
     MethodReturnValue,
@@ -101,7 +104,12 @@ from .enums import (
     XPos,
     YPos,
 )
-from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
+from .errors import (
+    FPDFException,
+    FPDFPageFormatException,
+    FPDFUnicodeEncodingException,
+    PDFAComplianceError,
+)
 from .fonts import CORE_FONTS, CoreFont, FontFace, TextStyle, TitleStyle, TTFFont
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
@@ -144,7 +152,7 @@ from .table import Table, draw_box_borders
 from .text_region import TextColumns, TextRegionMixin
 from .transitions import Transition
 from .unicode_script import UnicodeScript, get_unicode_script
-from .util import Padding, get_scale_factor
+from .util import Padding, get_scale_factor, builtin_srgb2014_bytes
 
 # Public global variables:
 FPDF_VERSION = "2.8.4"
@@ -244,10 +252,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def __init__(
         self,
-        orientation="portrait",
-        unit="mm",
-        format="A4",
+        orientation: Optional[Union[str, PageOrientation]] = PageOrientation.PORTRAIT,
+        unit: Union[str, float] = "mm",
+        format: Union[str, tuple[float, float]] = "A4",
         font_cache_dir="DEPRECATED",
+        *,
+        enforce_compliance: Optional[Union[str, DocumentCompliance]] = None,
     ):
         """
         Args:
@@ -377,6 +387,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._fallback_font_ids = []
         self._fallback_font_exact_match = False
         self.render_color_fonts = True
+        self._compliance = (
+            DocumentCompliance.coerce(enforce_compliance)
+            if enforce_compliance
+            else None
+        )
+        if self._compliance:
+            if self._compliance.profile == "PDFA" and self._compliance.part == 1:
+                self._set_min_pdf_version("1.4")
+                self.allow_images_transparency = False
+            if self._compliance.profile == "PDFA" and self._compliance.part in (2, 3):
+                self._set_min_pdf_version("1.7")
+            if self._compliance.profile == "PDFA" and self._compliance.part == 4:
+                self._set_min_pdf_version("2.0")
 
         self._current_draw_context = None
         # map page numbers to a set of GraphicsState names:
@@ -413,6 +436,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             encrypt_metadata (bool): whether to also encrypt document metadata (author, creation date, etc.).
                 Defaults to False.
         """
+        if self._compliance and self._compliance.profile == "PDFA":
+            raise PDFAComplianceError(
+                f"Encryption is now allowed for documents compliant with {self._compliance.label}"
+            )
+
         self._security_handler = StandardSecurityHandler(
             self,
             owner_password=owner_password,
@@ -2308,6 +2336,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     f"Use built-in fonts or FPDF.add_font() beforehand"
                 )
             # If it's one of the core fonts, add it to self.fonts
+            if self._compliance and self._compliance.profile == "PDFA":
+                raise PDFAComplianceError(
+                    f"Usage of base fonts is now allowed for documents compliant with {self._compliance.label}. Use add_font() to embed a font file"
+                )
+
             self.fonts[fontkey] = CoreFont(self, fontkey, style)
 
         # Select it
@@ -2582,14 +2615,17 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def embed_file(
         self,
-        file_path=None,
-        bytes=None,
-        basename=None,
-        modification_date=None,
+        file_path: Optional[Union[str, Path]] = None,
+        bytes: Optional[bytes] = None,
+        basename: Optional[str] = None,
+        modification_date: Optional[datetime] = None,
+        mime_type: Optional[str] = None,
+        associated_file_relationship: Optional[str] = None,
         **kwargs,
     ):
         """
-        Embed a file into the PDF document
+        Embed a file into the PDF as an attachment (and, for PDF/A-3 or PDF/A-4f, as an
+        Associated File).
 
         Args:
             file_path (str or Path): filesystem path to the existing file to embed
@@ -2598,6 +2634,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             creation_date (datetime): date and time when the file was created
             modification_date (datetime): date and time when the file was last modified
             desc (str): optional description of the file
+            mime_type: MIME type of the embedded content (e.g., "application/pdf", "text/csv", "image/png")
+            associated_file_relationship: For PDF/A-3/A-4f, the AF relationship to declare in the FileSpec
+                (e.g., "Data", "Source", "Alternative", "Supplement", or "Unspecified").
+
+            **kwargs:
+            desc (str): Optional human-readable description for the FileSpec.
+            creation_date (datetime): Original creation time of the file.
             compress (bool): enabled zlib compression of the file - False by default
             checksum (bool): insert a MD5 checksum of the file content - False by default
 
@@ -2622,15 +2665,51 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 raise ValueError(
                     "'basename' is required if 'file_path' is not provided"
                 )
+        if mime_type is None:
+            mime_type = mimetypes.guess_type(basename)[0] or "application/octet-stream"
+        mime_type = mime_type.lower()
+        if associated_file_relationship:
+            associated_file_relationship = AssociatedFileRelationship.coerce(
+                associated_file_relationship
+            )
         already_embedded_basenames = set(
             file.basename() for file in self.embedded_files
         )
         if basename in already_embedded_basenames:
             raise ValueError(f"{basename} has already been embedded in this file")
+
+        if self._compliance and self._compliance.profile == "PDFA":
+            if self._compliance.part == 1:
+                raise PDFAComplianceError(
+                    f"Embedding files is not allowed for documents compliant with {self._compliance.label}"
+                )
+            if self._compliance.part == 2 or (
+                self._compliance.part == 4 and self._compliance.conformance is None
+            ):
+                if (mime_type == "application/pdf") or basename.lower().endswith(
+                    ".pdf"
+                ):
+                    LOGGER.warning(
+                        "%s: ensure the embedded PDF '%s' is itself PDF/A to remain compliant.",
+                        self._compliance.label,
+                        basename,
+                    )
+                else:
+                    raise PDFAComplianceError(
+                        f"{self._compliance.label} permits embedding only PDF files, which must themselves be PDF/A."
+                    )
+            if self._compliance.part in (3, 4):
+                if not associated_file_relationship:
+                    associated_file_relationship = (
+                        AssociatedFileRelationship.UNSPECIFIED
+                    )
+
         embedded_file = PDFEmbeddedFile(
             basename=basename,
             contents=bytes,
             modification_date=modification_date,
+            mime_type=mime_type,
+            af_relationship=associated_file_relationship,
             **kwargs,
         )
         self.embedded_files.append(embedded_file)
@@ -5837,6 +5916,28 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             for _, font in self.fonts.items():
                 if font.type == "TTF" and font.color_font:
                     font.color_font.load_glyphs()
+            if self._compliance and self._compliance.profile == "PDFA":
+                if len(self._output_intents) == 0:
+                    self.add_output_intent(
+                        OutputIntentSubType.PDFA,
+                        output_condition_identifier="sRGB",
+                        output_condition="IEC 61966-2-1:1999",
+                        registry_name="http://www.color.org",
+                        dest_output_profile=PDFICCProfile(
+                            contents=builtin_srgb2014_bytes(),
+                            n=3,
+                            alternate="DeviceRGB",
+                        ),
+                        info="sRGB2014 (v2)",
+                    )
+                if (
+                    self._compliance.part == 4
+                    and self._compliance.conformance == "F"
+                    and len(self.embedded_files) == 0
+                ):
+                    raise PDFAComplianceError(
+                        f"{self._compliance.label} requires at least one embedded file"
+                    )
             if linearize:
                 output_producer_class = LinearizedOutputProducer
             output_producer = output_producer_class(self)

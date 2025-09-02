@@ -4,10 +4,15 @@ Usage documentation at: <https://py-pdf.github.io/fpdf2/Annotations.html>
 
 import hashlib
 from datetime import datetime
-from typing import NamedTuple, Tuple, Union
+from typing import Optional, Tuple, Union
 
 from .actions import Action
-from .enums import AnnotationFlag, AnnotationName, FileAttachmentAnnotationName
+from .enums import (
+    AnnotationFlag,
+    AnnotationName,
+    AssociatedFileRelationship,
+    FileAttachmentAnnotationName,
+)
 from .syntax import (
     build_obj_dict,
     Destination,
@@ -131,8 +136,10 @@ class PDFEmbeddedFile(PDFContentStream):
         basename: str,
         contents: bytes,
         desc: str = "",
-        creation_date: datetime = None,
-        modification_date: datetime = None,
+        creation_date: Optional[datetime] = None,
+        modification_date: Optional[datetime] = None,
+        mime_type: Optional[str] = None,
+        af_relationship: Optional[AssociatedFileRelationship] = None,
         compress: bool = False,
         checksum: bool = False,
     ):
@@ -148,10 +155,14 @@ class PDFEmbeddedFile(PDFContentStream):
             file_hash.update(self._contents)
             hash_hex = file_hash.hexdigest()
             params["/CheckSum"] = f"<{hash_hex}>"
+        if mime_type:
+            self.subtype = Name(mime_type)
         self.params = pdf_dict(params)
         self._basename = basename  # private so that it does not get serialized
         self._desc = desc  # private so that it does not get serialized
         self._globally_enclosed = True
+        self._af_relationship = af_relationship
+        self._file_spec = None
 
     def globally_enclosed(self):
         return self._globally_enclosed
@@ -163,20 +174,32 @@ class PDFEmbeddedFile(PDFContentStream):
         return self._basename
 
     def file_spec(self):
-        return FileSpec(self, self._basename, self._desc)
+        if not self._file_spec:
+            self._file_spec = FileSpec(
+                self, self._basename, self._desc, self._af_relationship
+            )
+        return self._file_spec
 
 
-class FileSpec(NamedTuple):
-    embedded_file: PDFEmbeddedFile
-    basename: str
-    desc: str
+class FileSpec(PDFObject):
 
-    def serialize(self, _security_handler=None, _obj_id=None):
-        obj_dict = {
-            "/Type": "/Filespec",
-            "/F": PDFString(self.basename).serialize(),
-            "/EF": pdf_dict({"/F": pdf_ref(self.embedded_file.id)}),
-        }
-        if self.desc:
-            obj_dict["/Desc"] = PDFString(self.desc).serialize()
-        return pdf_dict(obj_dict, field_join=" ")
+    def __init__(
+        self,
+        embedded_file: PDFEmbeddedFile,
+        basename: str,
+        desc: Optional[str] = None,
+        af_relationship: Optional[AssociatedFileRelationship] = None,
+    ):
+        super().__init__()
+        self.type = Name("Filespec")
+        self.f = PDFString(basename)
+        self.u_f = PDFString(basename)
+        if desc:
+            self.desc = PDFString(desc)
+        if af_relationship:
+            self.a_f_relationship = Name(af_relationship.value)
+        self._embedded_file = embedded_file
+
+    @property
+    def e_f(self):
+        return pdf_dict({"/F": pdf_ref(self._embedded_file.id)})

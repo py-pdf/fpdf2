@@ -213,29 +213,4 @@ Hier ein Beispiel um das zu erreichen:
 
 [Resulting PDF: tuto7.pdf](https://github.com/py-pdf/fpdf2/raw/master/tutorial/tuto7.pdf)
 
-Wir fügen die benötigten Fonts mit Hilfe der Funktion
-[add_font()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.add_output_intent)
-in das Dokument ein.
-
-Dann fügen wir ein ICC Profil ein und erstellen mit Hilfe der Funktion
-[add_output_intent()](https://py-pdf.github.io/fpdf2/fpdf/fpdf.html#fpdf.fpdf.FPDF.output_intent)
-das Output Intents Verzeichnis.
-
-Nachdem wir eine erste Seite erstellt, den eingebetteten Font ausgewählt, und etwas Text erzeugt haben, generieren wir das PDF mit der Funktion:
-```python
-pdf.create_pdf_with_metadata(
-    filename="tuto7.pdf",
-    language="en-US",
-    title="Tutorial7",
-    subject="Example for PDFA",
-    creator=["John Dow", "Jane Dow"],
-    description="this is my description of this file",
-    keywords="Example Tutorial7"
-)
-```
-
-Dabei benutzen wir pikepdf um die nötigen Metadata zu erzeugen und den Typen auf PDF/A-3B zu setzen.
-
-In der Funktion `create_pdf_with_metadata` setzen wir `language` und `subject` ausserhalb der Metadata bevor wir pikepdf aufrufen um, die Konformität zu erreichen.
-
 Bitte benutzen Sie ein Programm, wie z.B. [VeraPDF](https://verapdf.org/), um die Konformität des erstellten PDF zu sicherzustellen.

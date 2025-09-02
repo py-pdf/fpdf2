@@ -1668,3 +1668,98 @@ class GradientUnits(CoerciveEnum):
 
     USER_SPACE_ON_USE = "userSpaceOnUse"
     " Coordinates are in the current page space."
+
+
+class DocumentCompliance(Enum):
+    """
+    Type of compliance enforcement that can be applied to a document.
+    Limited to PDF/A at the moment, but extendable to other standards like:
+        - PDF/E (Engineering PDFs)
+        - PDF/UA (PDF Universal Accessibility)
+        - PDF/X (Graphics Exchange PDFs)
+    """
+
+    PDFA_1B = ("PDFA", 1, "B")
+    PDFA_2B = ("PDFA", 2, "B")
+    PDFA_2U = ("PDFA", 2, "U")
+    PDFA_3B = ("PDFA", 3, "B")
+    PDFA_3U = ("PDFA", 3, "U")
+    PDFA_4 = ("PDFA", 4, None)
+    PDFA_4E = ("PDFA", 4, "E")
+    PDFA_4F = ("PDFA", 4, "F")
+
+    @property
+    def profile(self):
+        return self.value[0]
+
+    @property
+    def part(self):
+        return self.value[1]
+
+    @property
+    def conformance(self):
+        return self.value[2]
+
+    @property
+    def label(self):
+        profile = "PDF/A" if self.profile == "PDFA" else self.profile
+        return f"{profile}-{self.part}{self.conformance if self.conformance else ''}"
+
+    def __str__(self):
+        return (
+            f"{self.profile}_{self.part}{self.conformance if self.conformance else ''}"
+        )
+
+    @classmethod
+    def coerce(cls, value):
+        if isinstance(value, cls):
+            return value
+        if isinstance(value, str):
+            key = value.upper()
+            for m in cls:
+                if m.name.upper() == key:  # PDFA_2U
+                    return m
+                if m.label.upper() == key:  # PDF/A-2U
+                    return m
+        raise ValueError(f"Cannot coerce {value!r} to {cls.__name__}")
+
+
+class AssociatedFileRelationship(CoerciveEnum):
+    """Represents the association between an embedded file and the content on the PDF"""
+
+    SOURCE = intern("Source")
+    "The file is the original source material of the content"
+
+    DATA = intern("Data")
+    """
+    The file has the information used to produce the associated object.
+    e.g.: the data used to produce a table or a graph
+    """
+
+    ALTERNATIVE = intern("Alternative")
+    "The file has an alternative representation of the content"
+
+    SUPPLEMENT = intern("Supplement")
+    """
+    The file has a supplemental representation of the original source
+    or data that may be more easily consumable
+    """
+
+    ENCRYPTED_PAYLOAD = intern("EncryptedPayload")
+    """
+    The file is an encrypted payload document that should be displayed
+    to the user if the PDF processor has the cryptographic filter
+    needed to decrypt the document
+    """
+
+    FORM_DATA = intern("FormData")
+    "The file has the data associated with the interactive form in this document"
+
+    SCHEMA = intern("Schema")
+    "The file is a schema definition for the associated object"
+
+    UNSPECIFIED = intern("Unspecified")
+    """
+    Shall be used when the relationship is not known
+    or cannot be described using one of the other values
+    """
