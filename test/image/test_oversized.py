@@ -1,4 +1,5 @@
 import logging
+from io import BytesIO
 from pathlib import Path
 
 from fpdf import FPDF
@@ -9,7 +10,7 @@ from PIL import Image
 
 HERE = Path(__file__).resolve().parent
 IMAGE_PATH = HERE / "png_images/6c853ed9dacd5716bc54eb59cec30889.png"
-MAX_MEMORY_MB = 19  # memory usage depends on Python version
+MAX_MEMORY_MB = 12  # memory usage depends on Python version
 
 
 @ensure_rss_memory_below(MAX_MEMORY_MB)
@@ -74,15 +75,19 @@ def test_oversized_images_highres_and_downscaled():
 
 @ensure_rss_memory_below(MAX_MEMORY_MB)
 def test_oversized_images_downscaled_with_ratio_5(tmp_path):  # issue 1409
-    image_a = Image.new("RGB", (1190, 1684), (228, 150, 150))
-    image_b = Image.new("RGB", (1190, 1684), (0, 150, 150))
+    def solid_png(rgb):
+        buf = BytesIO()
+        Image.new("RGB", (1190, 1684), rgb).save(buf, "PNG")
+        buf.seek(0)
+        return buf
+
     pdf = FPDF(format="A4", unit="pt")
     pdf.oversized_images_ratio = 5
     pdf.oversized_images = "DOWNSCALE"
     pdf.add_page()
-    pdf.image(image_a, x=0, y=0, w=85, h=120)
-    pdf.image(image_b, x=100, y=0, w=85, h=120)
-    pdf.image(image_a, x=0, y=200, w=254, h=360)
+    pdf.image(solid_png(((228, 150, 150))), x=0, y=0, w=85, h=120)
+    pdf.image(solid_png(((0, 150, 150))), x=100, y=0, w=85, h=120)
+    pdf.image(solid_png(((228, 150, 150))), x=0, y=200, w=254, h=360)
     assert_pdf_equal(
         pdf, HERE / "oversized_images_downscaled_with_ratio_5.pdf", tmp_path
     )
