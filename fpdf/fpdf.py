@@ -289,7 +289,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.fonts = {}  # map font string keys to an instance of CoreFont or TTFFont
         # map page numbers to a set of font indices:
         self.links = {}  # array of Destination objects starting at index 1
-        self.named_destinations = {}  # dictionary of named destinations
+        self.named_destinations = {}  # dictionary mapping names to Destination objects
         self.embedded_files = []  # array of PDFEmbeddedFile
         self.image_cache = ImageCache()
         self.in_footer = False  # flag set while rendering footer
@@ -2406,13 +2406,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         or `FPDF.link()` methods.
 
         If a name is provided, creates a named destination that can be referenced later.
-
-        Args:
-            y (int): Y position of destination page
-            x (int): X position of destination page
-            page (int): Destination page number (-1 means current page)
-            zoom (str): Zoom factor (null [default] or a number)
-            name (str, optional): Name for the destination. Must be non-empty if provided.
+        Named destinations are more stable than plain links when pages are added or removed.
 
         Args:
             y (float): optional ordinate of target position.
@@ -2423,6 +2417,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 -1 indicates the current page, which is the default value.
             zoom (float): optional new zoom level after following the link.
                 Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
+            name (str, optional): Name for the destination. If provided, creates a named
+                destination in the PDF that can be referenced from other parts of the document
+                or from external documents.
         """
         # Handle named destinations
         if name is not None:
@@ -2446,12 +2443,35 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self.links[link_index] = link
         return link_index
 
-    def set_link(self, link, y=0, x=0, page=-1, zoom="null"):
+    def get_named_destination(self, name):
+        """
+        Retrieves a named destination by its name and creates a link to it.
+        
+        Args:
+            name (str): The name of the destination to retrieve.
+            
+        Returns:
+            int: A link identifier that can be used with cell(), write(), image(), or link()
+            
+        Raises:
+            KeyError: If no destination exists with the given name
+        """
+        if name not in self.named_destinations:
+            raise KeyError(f"No destination named '{name}' exists")
+        
+        # Create a new link entry with the same destination
+        dest = self.named_destinations[name]
+        link_index = len(self.links) + 1
+        self.links[link_index] = dest
+        return link_index
+
+    def set_link(self, link=None, y=0, x=0, page=-1, zoom="null", name=None):
         """
         Defines the page and position a link points to.
 
         Args:
-            link (int): a link identifier returned by `FPDF.add_link()`.
+            link (int, optional): a link identifier returned by `FPDF.add_link()`.
+                If None and name is provided, will create or update a named destination.
             y (float): optional ordinate of target position.
                 The default value is 0 (top of page).
             x (float): optional abscissa of target position.
@@ -2460,7 +2480,25 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 -1 indicates the current page, which is the default value.
             zoom (float): optional new zoom level after following the link.
                 Currently ignored by Sumatra PDF Reader, but observed by Adobe Acrobat reader.
+            name (str, optional): Name for the destination. If provided, creates or updates a named
+                destination in the PDF that can be referenced from other parts of the document
+                or from external documents.
         """
+        # Handle named destination case
+        if name:
+            # Create the destination
+            dest = DestinationXYZ(
+                self.page if page == -1 else page,
+                top=self.h_pt - y * self.k,
+                left=x * self.k,
+                zoom=zoom,
+            )
+            # Store it in the named destinations dictionary
+            self.named_destinations[name] = dest
+            # Return the name for reference
+            return name
+        
+        # Regular link handling (backward compatibility)
         # We must take care to update the existing DestinationXYZ,
         # and NOT re-assign self.links[link] to a new instance,
         # as a reference to self.links[link] is kept in self.pages[].annots:
@@ -2469,6 +2507,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         link.top = self.h_pt - y * self.k
         link.left = x * self.k
         link.zoom = zoom
+        
+
 
     @check_page
     def link(self, x, y, w, h, link, alt_text=None, **kwargs):
@@ -2483,7 +2523,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             y (float): vertical position (from the top) to the bottom side of the link rectangle
             w (float): width of the link rectangle
             h (float): height of the link rectangle
-            link: either an URL or an integer returned by `FPDF.add_link`, defining an internal link to a page
+            link: can be one of the following:
+                - a URL string to create an external link
+                - an integer returned by `FPDF.add_link`, defining an internal link to a page
+                - a named destination string prefixed with '#' (e.g., '#chapter1')
             alt_text (str): optional textual description of the link, for accessibility purposes
             border_width (int): thickness of an optional black border surrounding the link.
                 Not all PDF readers honor this: Acrobat renders it but not Sumatra.
@@ -2491,7 +2534,16 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         action, dest = None, None
         if link:
             if isinstance(link, str):
-                action = URIAction(link)
+                # Check if this is a named destination (prefixed with '#')
+                if link.startswith('#'):
+                    dest_name = link[1:]  # Remove the '#' prefix
+                    if dest_name in self.named_destinations:
+                        dest = self.named_destinations[dest_name]
+                    else:
+                        raise KeyError(f"Named destination '{dest_name}' not found")
+                else:
+                    # Regular URL
+                    action = URIAction(link)
             else:  # Dest type ending of annotation entry
                 assert (
                     link in self.links
