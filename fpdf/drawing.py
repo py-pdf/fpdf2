@@ -3916,14 +3916,14 @@ class GraphicsContext:
                 )
 
                 nonlocal emit_style
+                if emit_style.allow_transparency is False:
+                    return
                 if emit_style is self.style:
                     emit_style = deepcopy(self.style)
                 emit_style.soft_mask = sm
                 emit_style.soft_mask.object_id = resource_registry.register_soft_mask(
                     emit_style.soft_mask
                 )
-                if emit_style.allow_transparency is GraphicsStyle.INHERIT:
-                    emit_style.allow_transparency = True
 
             # Decide whether to attach a soft mask from fill or stroke gradient alpha.
             # Priority: fill first (most common), otherwise stroke.
@@ -4183,10 +4183,6 @@ class PaintSoftMask:
             self.mask_path.style.paint_rule = PathPaintRule.FILL_NONZERO
             self.mask_path.style.fill_opacity = 1
             self.mask_path.style.fill_color = "#ffffff"
-            self.mask_path.style.allow_transparency = False
-        else:
-            # Luminosity mask -> caller provided grayscale content (e.g., gray gradient)
-            self.mask_path.style.allow_transparency = False
 
     def serialize(self):
         tr = (
@@ -4267,8 +4263,6 @@ class PaintSoftMask:
             gc.style.stroke_color = None
             gc.style.blend_mode = GraphicsStyle.INHERIT
             gc.style.soft_mask = GraphicsStyle.INHERIT
-            # allow blending if we’ll invert via DIFFERENCE
-            gc.style.allow_transparency = True
 
             # recurse into children
             for child in gc.path_items:
@@ -4281,7 +4275,6 @@ class PaintSoftMask:
                     child.style.stroke_color = None
                     child.style.blend_mode = GraphicsStyle.INHERIT
                     child.style.soft_mask = GraphicsStyle.INHERIT
-                    child.style.allow_transparency = True
 
         new_node = clone_structure(node)
         gc = (
@@ -4321,7 +4314,6 @@ class PaintSoftMask:
                         rect.style.fill_color = alpha_paint
                         rect.style.stroke_color = None
                         rect.style.paint_rule = PathPaintRule.FILL_NONZERO
-                        rect.style.allow_transparency = True
                         layers.append(rect)
 
         if not layers:
@@ -4330,7 +4322,6 @@ class PaintSoftMask:
         A = GraphicsContext()
         for layer in layers:
             # If multiple alpha layers exist, multiply them together
-            layer.style.allow_transparency = True
             layer.style.blend_mode = BlendMode.MULTIPLY
             A.add_item(layer)
         return A
@@ -4384,23 +4375,19 @@ class PaintSoftMask:
         bg.style.fill_color = "#000000" if not invert else "#ffffff"
         bg.style.fill_opacity = 1
         bg.style.stroke_color = None
-        bg.style.allow_transparency = True
         canvas.add_item(bg)
 
         # Paint B (optionally build 1−B using Difference on white bg)
         if invert:
-            B.style.allow_transparency = True
             B.style.blend_mode = BlendMode.DIFFERENCE
         canvas.add_item(B)
 
         # Multiply by A if present
         if A is not None:
-            A.style.allow_transparency = True
             A.style.blend_mode = BlendMode.MULTIPLY
             canvas.add_item(A)
 
         sm = cls(canvas, invert=False, use_luminosity=True)
-        sm.mask_path.style.allow_transparency = True
         _ = sm.render(registry)
         sm.object_id = registry.register_soft_mask(sm)
         return sm

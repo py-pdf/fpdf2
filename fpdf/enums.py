@@ -1668,3 +1668,49 @@ class GradientUnits(CoerciveEnum):
 
     USER_SPACE_ON_USE = "userSpaceOnUse"
     " Coordinates are in the current page space."
+
+
+class DocumentCompliance(Enum):
+    PDFA_1B = ("PDFA", 1, "B")
+    PDFA_2B = ("PDFA", 2, "B")
+    PDFA_2U = ("PDFA", 2, "U")
+    PDFA_3B = ("PDFA", 3, "B")
+    PDFA_3U = ("PDFA", 3, "U")
+    PDFA_4 = ("PDFA", 4, None)
+    PDFA_4E = ("PDFA", 4, "E")
+    PDFA_4F = ("PDFA", 4, "F")
+
+    @property
+    def profile(self):
+        return self.value[0]
+
+    @property
+    def part(self):
+        return self.value[1]
+
+    @property
+    def conformance(self):
+        return self.value[2]
+
+    @property
+    def label(self):
+        profile = "PDF/A" if self.profile == "PDFA" else self.profile
+        return f"{profile}-{self.part}{self.conformance if self.conformance else ''}"
+
+    def __str__(self):
+        return (
+            f"{self.profile}_{self.part}{self.conformance if self.conformance else ''}"
+        )
+
+    @classmethod
+    def coerce(cls, value):
+        if isinstance(value, cls):
+            return value
+        if isinstance(value, str):
+            key = value.upper()
+            for m in cls:
+                if m.name.upper() == key:  # PDFA_2U
+                    return m
+                if m.label.upper() == key:  # PDF/A-2U
+                    return m
+        raise ValueError(f"Cannot coerce {value!r} to {cls.__name__}")
