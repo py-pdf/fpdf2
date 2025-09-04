@@ -64,12 +64,22 @@ class ContentWithoutID:
 
 
 class PDFHeader(ContentWithoutID):
+    """
+    Emit the PDF file header as required by ISO 32000-1, §7.5.2 “File header”.
+
+    The header consists of:
+      1) A line starting with the literal "%PDF-" followed by the file version
+      2) If the file contains binary data an immediate second line that is a comment
+         starting with "%" and containing at least four bytes with values ≥ 128 (non-ASCII).
+         This helps file-transfer tools treat the content as binary rather than text.
+    """
+
     def __init__(self, pdf_version):
         self.pdf_version = pdf_version
 
     # method override
     def serialize(self, _security_handler=None):
-        return f"%PDF-{self.pdf_version}"
+        return f"%PDF-{self.pdf_version}\n%éëñ¿"
 
 
 class PDFFont(PDFObject):
