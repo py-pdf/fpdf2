@@ -139,7 +139,7 @@ from .recorder import FPDFRecorder
 from .sign import Signature
 from .structure_tree import StructureTreeBuilder
 from .svg import Percent, SVGObject
-from .syntax import DestinationXYZ, PDFArray, PDFDate
+from .syntax import DestinationXYZ, PDFArray, PDFDate, PDFString
 from .table import Table, draw_box_borders
 from .text_region import TextColumns, TextRegionMixin
 from .transitions import Transition
@@ -2451,7 +2451,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             name (str): The name of the destination to retrieve.
             
         Returns:
-            int: A link identifier that can be used with cell(), write(), image(), or link()
+            str: A string with format "#name" that can be used with cell(), write(), image(), or link()
             
         Raises:
             KeyError: If no destination exists with the given name
@@ -2459,12 +2459,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if name not in self.named_destinations:
             raise KeyError(f"No destination named '{name}' exists")
         
-        # Create a new link entry with the same destination
-        dest = self.named_destinations[name]
-        link_index = len(self.links) + 1
-        self.links[link_index] = dest
-        return link_index
-
+        # Return the name prefixed with # to indicate it's a named destination
+        # This way, the link() method will use the named destination string
+        dest_name = f"#{name}"
+        return dest_name
+        
     def set_link(self, link=None, y=0, x=0, page=-1, zoom="null", name=None):
         """
         Defines the page and position a link points to.
@@ -2497,7 +2496,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             self.named_destinations[name] = dest
             # Return the name for reference
             return name
-        
+
         # Regular link handling (backward compatibility)
         # We must take care to update the existing DestinationXYZ,
         # and NOT re-assign self.links[link] to a new instance,
@@ -2507,8 +2506,6 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         link.top = self.h_pt - y * self.k
         link.left = x * self.k
         link.zoom = zoom
-        
-
 
     @check_page
     def link(self, x, y, w, h, link, alt_text=None, **kwargs):
@@ -2535,10 +2532,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if link:
             if isinstance(link, str):
                 # Check if this is a named destination (prefixed with '#')
-                if link.startswith('#'):
+                if link.startswith("#"):
                     dest_name = link[1:]  # Remove the '#' prefix
                     if dest_name in self.named_destinations:
-                        dest = self.named_destinations[dest_name]
+                        # Use destination name instead of destination object for named destinations
+                        dest = PDFString(dest_name, encrypt=True)
                     else:
                         raise KeyError(f"Named destination '{dest_name}' not found")
                 else:
