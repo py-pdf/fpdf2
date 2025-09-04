@@ -1,0 +1,44 @@
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_auto_page_break(auto=True, margin=15)
+pdf.set_font("Arial", 'B', 14)
+pdf.multi_cell(0, 10, "Glands Present in the Human Alimentary Canal", align='C')
+pdf.ln(5)
+pdf.set_font("Arial", size=11)
+
+content = """
+Several glands assist in digestion by secreting enzymes and fluids. These glands are crucial for the breakdown, absorption, and processing of food in the alimentary canal.
+
+1. Salivary Glands
+- Location: In the mouth (parotid, submandibular, sublingual glands)
+- Structure: Acinar cells with ducts that open into the oral cavity.
+- Function: Secrete saliva containing salivary amylase to begin starch digestion and mucus for lubrication.
+
+2. Gastric Glands
+- Location: Lining of the stomach (fundus and body)
+- Structure: Chief cells (pepsinogen), parietal cells (HCl), mucous cells (mucus)
+- Function: Pepsin digests proteins; HCl activates enzymes; mucus protects stomach lining.
+
+3. Liver (with Gallbladder)
+- Location: Upper right abdominal cavity below diaphragm.
+- Structure: Made of hepatocytes arranged in lobules; bile ducts connect to gallbladder and intestine.
+- Function: Produces bile for fat emulsification and vitamin absorption.
+
+4. Pancreas
+- Location: Behind the stomach near the duodenum.
+- Structure: Acinar cells (exocrine); connected to intestine by pancreatic duct.
+- Function: Secretes enzymes (amylase, trypsin, lipase) and bicarbonate to neutralize acid.
+
+5. Intestinal Glands (Crypts of Lieberkühn)
+- Location: In the lining of the small intestine.
+- Structure: Tubular glands with enzyme and mucus-secreting cells.
+- Function: Secrete intestinal juice with enzymes (maltase, lactase, peptidase) for final digestion.
+
+Conclusion:
+These glands are essential for the digestion and absorption of food by secreting various enzymes and fluids tailored to break down carbohydrates, proteins, and fats.
+"""
+
+pdf.multi_cell(0, 10, content)
+pdf.output("Glands_in_Alimentary_Canal.pdf")
