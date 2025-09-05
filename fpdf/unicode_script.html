@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.6">
 <title>fpdf.unicode_script API documentation</title>
-<meta name="description" content="The hardcoded information on this module was loaded from the Unicode file Scripts-15.1.0.txt
+<meta name="description" content="The hardcoded information on this module was loaded from the Unicode file Scripts-16.0.0.txt
 https://www.unicode.org/Public/UNIDATA/Scripts.txt
 …">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
@@ -38,7 +38,7 @@ el.replaceWith(d);
 <h1 class="title">Module <code>fpdf.unicode_script</code></h1>
 </header>
 <section id="section-intro">
-<p>The hardcoded information on this module was loaded from the Unicode file Scripts-15.1.0.txt
+<p>The hardcoded information on this module was loaded from the Unicode file Scripts-16.0.0.txt
 <a href="https://www.unicode.org/Public/UNIDATA/Scripts.txt">https://www.unicode.org/Public/UNIDATA/Scripts.txt</a>
 Python's standard "unicodedata" library doesn't offer this table.</p>
 </section>
@@ -56,7 +56,7 @@ Python's standard "unicodedata" library doesn't offer this table.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/unicode_script.py#L2375-L2383" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/unicode_script.py#L1168-L1176" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">@lru_cache(maxsize=None)
 def get_unicode_script(char: str) -&gt; UnicodeScript:
@@ -83,7 +83,7 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/unicode_script.py#L11-L175" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/unicode_script.py#L11-L182" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class UnicodeScript(IntEnum):
     COMMON = 0
@@ -249,6 +249,13 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
     VITHKUQI = 160
     KAWI = 161
     NAG_MUNDARI = 162
+    GARAY = 163
+    GURUNG_KHEMA = 164
+    KIRAT_RAI = 165
+    OL_ONAL = 166
+    SUNUWAR = 167
+    TODHRI = 168
+    TULU_TIGALARI = 169
     UNKNOWN = 999</code></pre>
 </details>
 <div class="desc"><p>Enum where members are also (and must be) ints</p></div>
@@ -417,6 +424,10 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
+<dt id="fpdf.unicode_script.UnicodeScript.GARAY"><code class="name">var <span class="ident">GARAY</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
 <dt id="fpdf.unicode_script.UnicodeScript.GEORGIAN"><code class="name">var <span class="ident">GEORGIAN</span></code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
@@ -446,6 +457,10 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="fpdf.unicode_script.UnicodeScript.GURMUKHI"><code class="name">var <span class="ident">GURMUKHI</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="fpdf.unicode_script.UnicodeScript.GURUNG_KHEMA"><code class="name">var <span class="ident">GURUNG_KHEMA</span></code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
@@ -534,6 +549,10 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
 <dt id="fpdf.unicode_script.UnicodeScript.KHUDAWADI"><code class="name">var <span class="ident">KHUDAWADI</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="fpdf.unicode_script.UnicodeScript.KIRAT_RAI"><code class="name">var <span class="ident">KIRAT_RAI</span></code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
@@ -721,6 +740,10 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
+<dt id="fpdf.unicode_script.UnicodeScript.OL_ONAL"><code class="name">var <span class="ident">OL_ONAL</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
 <dt id="fpdf.unicode_script.UnicodeScript.ORIYA"><code class="name">var <span class="ident">ORIYA</span></code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
@@ -809,6 +832,10 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
+<dt id="fpdf.unicode_script.UnicodeScript.SUNUWAR"><code class="name">var <span class="ident">SUNUWAR</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
 <dt id="fpdf.unicode_script.UnicodeScript.SYLOTI_NAGRI"><code class="name">var <span class="ident">SYLOTI_NAGRI</span></code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
@@ -877,7 +904,15 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
+<dt id="fpdf.unicode_script.UnicodeScript.TODHRI"><code class="name">var <span class="ident">TODHRI</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
 <dt id="fpdf.unicode_script.UnicodeScript.TOTO"><code class="name">var <span class="ident">TOTO</span></code></dt>
+<dd>
+<div class="desc"><p>The type of the None singleton.</p></div>
+</dd>
+<dt id="fpdf.unicode_script.UnicodeScript.TULU_TIGALARI"><code class="name">var <span class="ident">TULU_TIGALARI</span></code></dt>
 <dd>
 <div class="desc"><p>The type of the None singleton.</p></div>
 </dd>
@@ -981,6 +1016,7 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
 <li><code><a title="fpdf.unicode_script.UnicodeScript.ELBASAN" href="#fpdf.unicode_script.UnicodeScript.ELBASAN">ELBASAN</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.ELYMAIC" href="#fpdf.unicode_script.UnicodeScript.ELYMAIC">ELYMAIC</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.ETHIOPIC" href="#fpdf.unicode_script.UnicodeScript.ETHIOPIC">ETHIOPIC</a></code></li>
+<li><code><a title="fpdf.unicode_script.UnicodeScript.GARAY" href="#fpdf.unicode_script.UnicodeScript.GARAY">GARAY</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.GEORGIAN" href="#fpdf.unicode_script.UnicodeScript.GEORGIAN">GEORGIAN</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.GLAGOLITIC" href="#fpdf.unicode_script.UnicodeScript.GLAGOLITIC">GLAGOLITIC</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.GOTHIC" href="#fpdf.unicode_script.UnicodeScript.GOTHIC">GOTHIC</a></code></li>
@@ -989,6 +1025,7 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
 <li><code><a title="fpdf.unicode_script.UnicodeScript.GUJARATI" href="#fpdf.unicode_script.UnicodeScript.GUJARATI">GUJARATI</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.GUNJALA_GONDI" href="#fpdf.unicode_script.UnicodeScript.GUNJALA_GONDI">GUNJALA_GONDI</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.GURMUKHI" href="#fpdf.unicode_script.UnicodeScript.GURMUKHI">GURMUKHI</a></code></li>
+<li><code><a title="fpdf.unicode_script.UnicodeScript.GURUNG_KHEMA" href="#fpdf.unicode_script.UnicodeScript.GURUNG_KHEMA">GURUNG_KHEMA</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.HAN" href="#fpdf.unicode_script.UnicodeScript.HAN">HAN</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.HANGUL" href="#fpdf.unicode_script.UnicodeScript.HANGUL">HANGUL</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.HANIFI_ROHINGYA" href="#fpdf.unicode_script.UnicodeScript.HANIFI_ROHINGYA">HANIFI_ROHINGYA</a></code></li>
@@ -1011,6 +1048,7 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
 <li><code><a title="fpdf.unicode_script.UnicodeScript.KHMER" href="#fpdf.unicode_script.UnicodeScript.KHMER">KHMER</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.KHOJKI" href="#fpdf.unicode_script.UnicodeScript.KHOJKI">KHOJKI</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.KHUDAWADI" href="#fpdf.unicode_script.UnicodeScript.KHUDAWADI">KHUDAWADI</a></code></li>
+<li><code><a title="fpdf.unicode_script.UnicodeScript.KIRAT_RAI" href="#fpdf.unicode_script.UnicodeScript.KIRAT_RAI">KIRAT_RAI</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.LAO" href="#fpdf.unicode_script.UnicodeScript.LAO">LAO</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.LATIN" href="#fpdf.unicode_script.UnicodeScript.LATIN">LATIN</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.LEPCHA" href="#fpdf.unicode_script.UnicodeScript.LEPCHA">LEPCHA</a></code></li>
@@ -1057,6 +1095,7 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
 <li><code><a title="fpdf.unicode_script.UnicodeScript.OLD_TURKIC" href="#fpdf.unicode_script.UnicodeScript.OLD_TURKIC">OLD_TURKIC</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.OLD_UYGHUR" href="#fpdf.unicode_script.UnicodeScript.OLD_UYGHUR">OLD_UYGHUR</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.OL_CHIKI" href="#fpdf.unicode_script.UnicodeScript.OL_CHIKI">OL_CHIKI</a></code></li>
+<li><code><a title="fpdf.unicode_script.UnicodeScript.OL_ONAL" href="#fpdf.unicode_script.UnicodeScript.OL_ONAL">OL_ONAL</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.ORIYA" href="#fpdf.unicode_script.UnicodeScript.ORIYA">ORIYA</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.OSAGE" href="#fpdf.unicode_script.UnicodeScript.OSAGE">OSAGE</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.OSMANYA" href="#fpdf.unicode_script.UnicodeScript.OSMANYA">OSMANYA</a></code></li>
@@ -1079,6 +1118,7 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
 <li><code><a title="fpdf.unicode_script.UnicodeScript.SORA_SOMPENG" href="#fpdf.unicode_script.UnicodeScript.SORA_SOMPENG">SORA_SOMPENG</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.SOYOMBO" href="#fpdf.unicode_script.UnicodeScript.SOYOMBO">SOYOMBO</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.SUNDANESE" href="#fpdf.unicode_script.UnicodeScript.SUNDANESE">SUNDANESE</a></code></li>
+<li><code><a title="fpdf.unicode_script.UnicodeScript.SUNUWAR" href="#fpdf.unicode_script.UnicodeScript.SUNUWAR">SUNUWAR</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.SYLOTI_NAGRI" href="#fpdf.unicode_script.UnicodeScript.SYLOTI_NAGRI">SYLOTI_NAGRI</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.SYRIAC" href="#fpdf.unicode_script.UnicodeScript.SYRIAC">SYRIAC</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.TAGALOG" href="#fpdf.unicode_script.UnicodeScript.TAGALOG">TAGALOG</a></code></li>
@@ -1096,7 +1136,9 @@ def get_unicode_script(char: str) -&gt; UnicodeScript:
 <li><code><a title="fpdf.unicode_script.UnicodeScript.TIBETAN" href="#fpdf.unicode_script.UnicodeScript.TIBETAN">TIBETAN</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.TIFINAGH" href="#fpdf.unicode_script.UnicodeScript.TIFINAGH">TIFINAGH</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.TIRHUTA" href="#fpdf.unicode_script.UnicodeScript.TIRHUTA">TIRHUTA</a></code></li>
+<li><code><a title="fpdf.unicode_script.UnicodeScript.TODHRI" href="#fpdf.unicode_script.UnicodeScript.TODHRI">TODHRI</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.TOTO" href="#fpdf.unicode_script.UnicodeScript.TOTO">TOTO</a></code></li>
+<li><code><a title="fpdf.unicode_script.UnicodeScript.TULU_TIGALARI" href="#fpdf.unicode_script.UnicodeScript.TULU_TIGALARI">TULU_TIGALARI</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.UGARITIC" href="#fpdf.unicode_script.UnicodeScript.UGARITIC">UGARITIC</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.UNKNOWN" href="#fpdf.unicode_script.UnicodeScript.UNKNOWN">UNKNOWN</a></code></li>
 <li><code><a title="fpdf.unicode_script.UnicodeScript.VAI" href="#fpdf.unicode_script.UnicodeScript.VAI">VAI</a></code></li>

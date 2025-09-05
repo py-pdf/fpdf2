@@ -61,7 +61,7 @@ different color font technologies, including:</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L728-L748" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L728-L748" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_color_font_object(fpdf: &#34;FPDF&#34;, base_font: &#34;TTFFont&#34;) -&gt; Union[Type3Font, None]:
     if &#34;CBDT&#34; in base_font.ttfont:
@@ -100,7 +100,7 @@ different color font technologies, including:</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L626-L665" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L626-L665" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class CBDTColorFont(Type3Font):
     &#34;&#34;&#34;Support for CBDT+CBLC bitmap color fonts.&#34;&#34;&#34;
@@ -157,7 +157,7 @@ different color font technologies, including:</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L630-L631" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L630-L631" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def glyph_exists(self, glyph_name: str) -&gt; bool:
     return glyph_name in self.base_font.ttfont[&#34;CBDT&#34;].strikeData[0]</code></pre>
@@ -171,7 +171,7 @@ different color font technologies, including:</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L633-L665" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L633-L665" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_glyph_image(self, glyph: Type3FontGlyph) -&gt; None:
     ppem = self.base_font.ttfont[&#34;CBLC&#34;].strikes[0].bitmapSizeTable.ppemX
@@ -219,7 +219,7 @@ different color font technologies, including:</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L195-L623" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L195-L623" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class COLRFont(Type3Font):
     &#34;&#34;&#34;
@@ -681,7 +681,7 @@ drawing API to render the glyphs as vector graphics.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L296-L495" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L296-L495" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def draw_colrv1_paint(
     self,
@@ -895,7 +895,7 @@ This is an implementation of the COLR version 1 rendering algorithm:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L276-L287" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L276-L287" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def draw_glyph_colrv0(self, layers):
     gc = GraphicsContext()
@@ -919,7 +919,7 @@ This is an implementation of the COLR version 1 rendering algorithm:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L289-L293" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L289-L293" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def draw_glyph_colrv1(self, glyph_name):
     gc = GraphicsContext()
@@ -936,7 +936,7 @@ This is an implementation of the COLR version 1 rendering algorithm:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L264-L274" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L264-L274" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_color(self, color_index: int, alpha=1) -&gt; DeviceRGB:
     if color_index == 0xFFFF:
@@ -959,7 +959,7 @@ This is an implementation of the COLR version 1 rendering algorithm:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L563-L576" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L563-L576" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_paint_surface(self) -&gt; PaintedPath:
     &#34;&#34;&#34;
@@ -986,7 +986,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L249-L250" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L249-L250" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def glyph_exists(self, glyph_name: str) -&gt; bool:
     return glyph_name in self.colrv0_glyphs or glyph_name in self.colrv1_glyphs</code></pre>
@@ -1000,7 +1000,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L252-L262" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L252-L262" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_glyph_image(self, glyph: Type3FontGlyph) -&gt; None:
     w = round(self.base_font.ttfont[&#34;hmtx&#34;].metrics[glyph.glyph_name][0] + 0.001)
@@ -1023,7 +1023,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L241-L247" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L241-L247" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def metric_bbox(self) -&gt; BoundingBox:
     return BoundingBox(
@@ -1045,7 +1045,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L668-L725" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L668-L725" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SBIXColorFont(Type3Font):
     &#34;&#34;&#34;Support for SBIX bitmap color fonts.&#34;&#34;&#34;
@@ -1120,7 +1120,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L679-L688" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L679-L688" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_strike_index(self) -&gt; int:
     target_ppem = self.get_target_ppem(self.base_font.biggest_size_pt)
@@ -1142,7 +1142,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L671-L677" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L671-L677" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def glyph_exists(self, glyph_name: str) -&gt; bool:
     glyph = (
@@ -1161,7 +1161,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L690-L725" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L690-L725" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_glyph_image(self, glyph: Type3FontGlyph) -&gt; None:
     ppem = self.get_strike_index()
@@ -1212,7 +1212,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L164-L192" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L164-L192" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class SVGColorFont(Type3Font):
     &#34;&#34;&#34;Support for SVG OpenType vector color fonts.&#34;&#34;&#34;
@@ -1258,7 +1258,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L167-L172" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L167-L172" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def glyph_exists(self, glyph_name: str) -&gt; bool:
     glyph_id = self.base_font.ttfont.getGlyphID(glyph_name)
@@ -1276,7 +1276,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L174-L192" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L174-L192" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_glyph_image(self, glyph: Type3FontGlyph) -&gt; None:
     glyph_id = self.base_font.ttfont.getGlyphID(glyph.glyph_name)
@@ -1310,7 +1310,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L67-L161" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L67-L161" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3Font:
 
@@ -1434,7 +1434,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L140-L146" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L140-L146" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def add_glyph(self, glyph_name, char_id):
     g = Type3FontGlyph()
@@ -1453,7 +1453,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L81-L88" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L81-L88" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_notdef_glyph(self, glyph_id) -&gt; Type3FontGlyph:
     notdef = Type3FontGlyph()
@@ -1473,7 +1473,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L90-L102" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L90-L102" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def get_space_glyph(self, glyph_id) -&gt; Type3FontGlyph:
     space = Type3FontGlyph()
@@ -1498,7 +1498,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L160-L161" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L160-L161" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def glyph_exists(self, glyph_name: str) -&gt; bool:
     raise NotImplementedError(&#34;Method must be implemented on child class&#34;)</code></pre>
@@ -1512,7 +1512,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L157-L158" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L157-L158" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_glyph_image(self, glyph: Type3FontGlyph):
     raise NotImplementedError(&#34;Method must be implemented on child class&#34;)</code></pre>
@@ -1526,7 +1526,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L104-L138" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L104-L138" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">def load_glyphs(self):
     WHITES = {
@@ -1575,7 +1575,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L41-L64" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L41-L64" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3FontGlyph:
     # RAM usage optimization:
@@ -1610,7 +1610,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L41-L64" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L41-L64" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3FontGlyph:
     # RAM usage optimization:
@@ -1644,7 +1644,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L41-L64" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L41-L64" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3FontGlyph:
     # RAM usage optimization:
@@ -1678,7 +1678,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L41-L64" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L41-L64" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3FontGlyph:
     # RAM usage optimization:
@@ -1712,7 +1712,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L41-L64" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L41-L64" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3FontGlyph:
     # RAM usage optimization:
@@ -1746,7 +1746,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L41-L64" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L41-L64" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3FontGlyph:
     # RAM usage optimization:
@@ -1780,7 +1780,7 @@ painting an infinite surface and clipping to a geometry path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/py-pdf/fpdf2/blob/849c2ab27c526d5642964513437f62b913b16362/fpdf/font_type_3.py#L41-L64" class="git-link" target="_blank">Browse git</a>
+<a href="https://github.com/py-pdf/fpdf2/blob/1420526651fa43577329d82d509ae71b59c6e96b/fpdf/font_type_3.py#L41-L64" class="git-link" target="_blank">Browse git</a>
 </summary>
 <pre><code class="python">class Type3FontGlyph:
     # RAM usage optimization:
