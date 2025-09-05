@@ -17,7 +17,7 @@ from .enums import Align, XPos, YPos
 from .fonts import TextStyle
 from .syntax import Destination, PDFObject, PDFString
 from .structure_tree import StructElem
-from .substitution import ToCPageSubstitution
+from .substitution import SubstitutionType
 
 if TYPE_CHECKING:
     from .fpdf import FPDF
@@ -170,13 +170,12 @@ class TableOfContents:
         page_label_obj = page.get_page_label()
         if page_label_obj:
             page_label = page.get_label()
-            substitutions = None
         else:
-            toc_page_substitution = ToCPageSubstitution(
-                ":tocp:", extra_data=item.page_number
+            toc_page_substitution = pdf.create_substitution(
+                stype=SubstitutionType.DEFAULT_TOC_PAGE,
+                extra_data=item.page_number,
             )
             page_label = str(toc_page_substitution)
-            substitutions = [toc_page_substitution]
 
         # render the text on the left
         with pdf.use_text_style(self.get_text_style(pdf, item)):
@@ -227,7 +226,6 @@ class TableOfContents:
                 link=link,
                 align=Align.R,
                 h=pdf.font_size * self.line_spacing,
-                substitutions=substitutions,
             )
 
     def render_toc(self, pdf: "FPDF", outline: List[OutlineSection]):

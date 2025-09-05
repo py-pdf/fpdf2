@@ -5,7 +5,7 @@ import pytest
 from fpdf import FPDF, TextStyle, TitleStyle, errors
 from fpdf.enums import Align
 from fpdf.outline import TableOfContents
-from fpdf.substitution import CurrentPageSubstitution, TotalPagesSubstitution
+from fpdf.substitution import SubstitutionType
 
 from test.conftest import LOREM_IPSUM, assert_pdf_equal
 
@@ -30,13 +30,14 @@ def test_default_outline_which_spans_multiple_pages(tmp_path):
     class CustomFPDF(FPDF):
         def footer(self):
             self.set_y(-15)
-            page_no = CurrentPageSubstitution(":pno:")
-            page_total = TotalPagesSubstitution(":ptot:")
+            page_no = self.create_substitution(stype=SubstitutionType.CURRENT_PAGE)
+            page_total = self.create_substitution(
+                stype=SubstitutionType.TOTAL_PAGES_NUM
+            )
             self.cell(
                 w=0,
                 text=f"{page_no} / {page_total}",
                 align="C",
-                substitutions=[page_no, page_total],
             )
 
     pdf = CustomFPDF()

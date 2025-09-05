@@ -1,4 +1,13 @@
+import enum
+from uuid import uuid4
 from typing import Any, Optional
+
+
+class SubstitutionType(enum.Enum):
+    GENERAL = enum.auto()
+    TOTAL_PAGES_NUM = enum.auto()
+    CURRENT_PAGE = enum.auto()
+    DEFAULT_TOC_PAGE = enum.auto()
 
 
 class Substitution:
@@ -11,19 +20,28 @@ class Substitution:
     You must assign a string to the property "value" before "outputting" the PDF,
     so the placeholder will be substituted with this string in the result file.
 
+    Substitution types can be used to differentiate substitutions, e.g. to set values automatically.
+
     You might need to store some related data to compute the substitution value later.
     The "extra_data" property can be used for this.
     """
 
-    __slots__ = ("_placeholder", "_value", "extra_data")
+    PREFIX = ":sub:"
+    STR_LENGTH = 37  # 5 chars of PREFIX + 32 chars of UUID.hex
 
-    def __init__(self, placeholder: str, extra_data: Optional[Any] = None):
-        self._placeholder = placeholder
+    __slots__ = ("_id", "stype", "value", "extra_data")
+
+    def __init__(self, stype: SubstitutionType, extra_data: Optional[Any] = None):
         self.value: Optional[str] = None
+        self.stype = stype
         self.extra_data = extra_data
+        self._id = uuid4()
 
     def __str__(self):
-        return self._placeholder
+        return self.PREFIX + self._id.hex
+
+    def __hash__(self):
+        return self._id.int
 
     def __setattr__(self, name, value):
         if name == "value" and not (value is None or isinstance(value, str)):
@@ -32,12 +50,3 @@ class Substitution:
             )
 
         return super().__setattr__(name, value)
-
-
-class TotalPagesSubstitution(Substitution): ...
-
-
-class CurrentPageSubstitution(Substitution): ...
-
-
-class ToCPageSubstitution(Substitution): ...
