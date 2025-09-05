@@ -384,10 +384,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._placeholder_to_substitution: dict[str, Substitution] = {}
         self._substitution_fragments: list[SubstitutionFragment] = []
 
-        self.alias_nb_pages()  # enable alias by default
         self._substitution_alias_nb_pages = Substitution(
-            stype=SubstitutionType.TOTAL_PAGES_NUM
+            stype=SubstitutionType.TOTAL_PAGES_NUM,
+            mask="a",  # A stub which is replaced when alias_nb_pages() is called (the next line).
         )
+        self.alias_nb_pages()  # enable alias by default
 
         # final buffer holding the PDF document in-memory - defined only after calling output():
         self.buffer = None
@@ -939,7 +940,9 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         not the length of the "actual number of pages" string,
         which can causes slight positioning differences.
         """
+        assert alias, "An empty string cannot be an alias."
         self.str_alias_nb_pages = alias
+        self._substitution_alias_nb_pages.mask = alias
 
     @check_page
     def set_page_label(
@@ -3522,6 +3525,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 frag_width = frag.get_width(
                     initial_cs=i != 0
                 ) + word_spacing * frag.characters.count(" ")
+
+                if isinstance(frag, SubstitutionFragment):
+                    # We move the cursor so the placeholder and the actual value always have the same length.
+                    sl.append(str((s_width + frag_width) * k) + " 0 Td")
+
                 if frag.underline:
                     underlines.append(
                         (self.x + dx + s_width, frag_width, frag.font, frag.font_size)
@@ -3754,7 +3762,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         if substitution:
                             fragment = SubstitutionFragment(
                                 substitution,
-                                placeholder,
+                                substitution.mask,
                                 self._get_current_graphics_state(),
                                 self.k,
                             )
@@ -3767,7 +3775,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                         if placeholder == self.str_alias_nb_pages:
                             fragment = SubstitutionFragment(
                                 self._substitution_alias_nb_pages,
-                                self.str_alias_nb_pages,
+                                self._substitution_alias_nb_pages.mask,
                                 self._get_current_graphics_state(),
                                 self.k,
                             )
@@ -3866,7 +3874,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     gstate["underline"] = in_underline
                     yield SubstitutionFragment(
                         self._substitution_alias_nb_pages,
-                        self.str_alias_nb_pages,
+                        self._substitution_alias_nb_pages.mask,
                         gstate,
                         self.k,
                     )
@@ -3889,7 +3897,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     gstate["underline"] = in_underline
                     yield SubstitutionFragment(
                         substitution,
-                        placeholder,
+                        substitution.mask,
                         gstate,
                         self.k,
                     )
@@ -5771,10 +5779,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def create_substitution(
         self,
+        mask: str,
         stype: SubstitutionType = SubstitutionType.GENERAL,
         extra_data=None,
     ):
-        substitution = Substitution(stype, extra_data=extra_data)
+        substitution = Substitution(stype, mask, extra_data=extra_data)
 
         placeholder = str(substitution)
         self._placeholder_to_substitution[placeholder] = substitution

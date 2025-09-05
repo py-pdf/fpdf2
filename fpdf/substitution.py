@@ -22,6 +22,10 @@ class Substitution:
 
     Substitution types can be used to differentiate substitutions, e.g. to set values automatically.
 
+    The mask defines the width of the result string.
+    If the actual string is shorter, there will be empty space.
+    If it is longer, part of it may be overlaid on other text.
+
     You might need to store some related data to compute the substitution value later.
     The "extra_data" property can be used for this.
     """
@@ -29,11 +33,18 @@ class Substitution:
     PREFIX = ":sub:"
     STR_LENGTH = 37  # 5 chars of PREFIX + 32 chars of UUID.hex
 
-    __slots__ = ("_id", "stype", "value", "extra_data")
+    __slots__ = ("_id", "stype", "mask", "value", "extra_data")
 
-    def __init__(self, stype: SubstitutionType, extra_data: Optional[Any] = None):
+    def __init__(
+        self,
+        stype: SubstitutionType,
+        mask: str,
+        extra_data: Optional[Any] = None,
+    ):
+        assert mask, "Mask must be a non-empty string."
         self.value: Optional[str] = None
         self.stype = stype
+        self.mask = mask
         self.extra_data = extra_data
         self._id = uuid4()
 

@@ -172,6 +172,9 @@ class TableOfContents:
             page_label = page.get_label()
         else:
             toc_page_substitution = pdf.create_substitution(
+                # We might need more digits to display the last page number if the ToC spans multiple pages.
+                # For example, a file with 99 pages without the ToC and two pages of the ToC.
+                "0" + str(pdf.pages_count),
                 stype=SubstitutionType.DEFAULT_TOC_PAGE,
                 extra_data=item.page_number,
             )

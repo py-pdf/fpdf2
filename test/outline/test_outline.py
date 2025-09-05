@@ -30,9 +30,11 @@ def test_default_outline_which_spans_multiple_pages(tmp_path):
     class CustomFPDF(FPDF):
         def footer(self):
             self.set_y(-15)
-            page_no = self.create_substitution(stype=SubstitutionType.CURRENT_PAGE)
+            page_no = self.create_substitution(
+                "000", stype=SubstitutionType.CURRENT_PAGE
+            )
             page_total = self.create_substitution(
-                stype=SubstitutionType.TOTAL_PAGES_NUM
+                "000", stype=SubstitutionType.TOTAL_PAGES_NUM
             )
             self.cell(
                 w=0,
