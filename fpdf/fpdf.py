@@ -82,6 +82,7 @@ from .enums import (
     AnnotationName,
     CharVPos,
     Corner,
+    DocumentCompliance,
     EncryptionMethod,
     FileAttachmentAnnotationName,
     MethodReturnValue,
@@ -101,7 +102,12 @@ from .enums import (
     XPos,
     YPos,
 )
-from .errors import FPDFException, FPDFPageFormatException, FPDFUnicodeEncodingException
+from .errors import (
+    FPDFException,
+    FPDFPageFormatException,
+    FPDFUnicodeEncodingException,
+    PDFAComplianceError,
+)
 from .fonts import CORE_FONTS, CoreFont, FontFace, TextStyle, TitleStyle, TTFFont
 from .graphics_state import GraphicsStateMixin
 from .html import HTML2FPDF
@@ -144,7 +150,7 @@ from .table import Table, draw_box_borders
 from .text_region import TextColumns, TextRegionMixin
 from .transitions import Transition
 from .unicode_script import UnicodeScript, get_unicode_script
-from .util import Padding, get_scale_factor
+from .util import Padding, get_scale_factor, _builtin_srgb2014_bytes
 
 # Public global variables:
 FPDF_VERSION = "2.8.4"
@@ -244,10 +250,12 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def __init__(
         self,
-        orientation="portrait",
-        unit="mm",
-        format="A4",
+        orientation: Optional[Union[str, PageOrientation]] = PageOrientation.PORTRAIT,
+        unit: Union[str, float] = "mm",
+        format: Union[str, tuple[float, float]] = "A4",
         font_cache_dir="DEPRECATED",
+        *,
+        enforce_compliance: Optional[Union[str, DocumentCompliance]] = None,
     ):
         """
         Args:
@@ -376,6 +384,19 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self._fallback_font_ids = []
         self._fallback_font_exact_match = False
         self.render_color_fonts = True
+        self._compliance = (
+            DocumentCompliance.coerce(enforce_compliance)
+            if enforce_compliance
+            else None
+        )
+        if self._compliance:
+            if self._compliance.profile == "PDFA" and self._compliance.part == 1:
+                self._set_min_pdf_version("1.4")
+                self.allow_images_transparency = False
+            if self._compliance.profile == "PDFA" and self._compliance.part in (2, 3):
+                self._set_min_pdf_version("1.7")
+            if self._compliance.profile == "PDFA" and self._compliance.part == 4:
+                self._set_min_pdf_version("2.0")
 
         self._current_draw_context = None
         # map page numbers to a set of GraphicsState names:
@@ -412,6 +433,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             encrypt_metadata (bool): whether to also encrypt document metadata (author, creation date, etc.).
                 Defaults to False.
         """
+        if self._compliance and self._compliance.profile == "PDFA":
+            raise PDFAComplianceError(
+                f"Encryption is now allowed for documents compliant with {self._compliance.label}"
+            )
+
         self._security_handler = StandardSecurityHandler(
             self,
             owner_password=owner_password,
@@ -2305,6 +2331,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     f"Use built-in fonts or FPDF.add_font() beforehand"
                 )
             # If it's one of the core fonts, add it to self.fonts
+            if self._compliance and self._compliance.profile == "PDFA":
+                raise PDFAComplianceError(
+                    f"Usage of base fonts is now allowed for documents compliant with {self._compliance.label}. Use add_font() to embed a font file"
+                )
+
             self.fonts[fontkey] = CoreFont(self, fontkey, style)
 
         # Select it
@@ -5746,6 +5777,21 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             for _, font in self.fonts.items():
                 if font.type == "TTF" and font.color_font:
                     font.color_font.load_glyphs()
+            if (
+                self._compliance
+                and self._compliance.profile == "PDFA"
+                and len(self._output_intents) == 0
+            ):
+                self.add_output_intent(
+                    OutputIntentSubType.PDFA,  # /S /GTS_PDFA1
+                    output_condition_identifier="sRGB",  # appears in Catalog
+                    output_condition="IEC 61966-2-1:1999",
+                    registry_name="http://www.color.org",
+                    dest_output_profile=PDFICCProfile(
+                        contents=_builtin_srgb2014_bytes(), n=3, alternate="DeviceRGB"
+                    ),
+                    info="sRGB2014 (v2)",
+                )
             if linearize:
                 output_producer_class = LinearizedOutputProducer
             output_producer = output_producer_class(self)

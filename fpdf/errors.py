@@ -50,3 +50,11 @@ class FPDFUnicodeEncodingException(FPDFException):
             f' supported by the font used: "{self.font_name}".'
             " Please consider using a Unicode font."
         )
+
+
+class ComplianceError(FPDFException):
+    """Base class for standards-compliance violations (PDF/A, PDF/X, etc.)."""
+
+
+class PDFAComplianceError(ComplianceError):
+    """Raised when an operation would produce a PDF that violates the selected PDF/A profile."""
