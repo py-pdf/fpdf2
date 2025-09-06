@@ -757,6 +757,16 @@ class MultiLineBreak:
                 if self._is_first_line:
                     max_width -= self.first_line_indent
 
+            if isinstance(current_fragment, SubstitutionFragment):
+                fragment_width = current_fragment.get_width()
+                if fragment_width > max_width:
+                    mask = "".join(current_fragment.characters)
+                    raise FPDFException(
+                        f"The substitution mask '{mask}' is too long to fit a line. You need a shorter mask or different styles."
+                    )
+                if current_line.width + fragment_width > max_width:
+                    return current_line.manual_break(self.align)
+
             if self.character_index >= len(current_fragment.characters):
                 self.character_index = 0
                 self.fragment_index += 1

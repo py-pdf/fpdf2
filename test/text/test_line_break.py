@@ -1,5 +1,14 @@
+import re
+
 from fpdf import FPDF, FPDFException, TextMode
-from fpdf.line_break import Fragment, MultiLineBreak, CurrentLine, TextLine
+from fpdf.line_break import (
+    Fragment,
+    MultiLineBreak,
+    CurrentLine,
+    TextLine,
+    SubstitutionFragment,
+)
+from fpdf.substitution import Substitution, SubstitutionType
 from fpdf.enums import Align, CharVPos
 
 import pytest
@@ -19,6 +28,10 @@ class FxFragment(Fragment):
         """Return the relevant width from "wdict"."""
         cw = self.wdict[self.font_style]
         return cw[character]
+
+
+class FxSubstitutionFragment(SubstitutionFragment, FxFragment):
+    pass
 
 
 class FxFont:
@@ -1428,3 +1441,100 @@ def test_line_break_no_initial_newline():  # issue-847
     multi_line_break = MultiLineBreak(fragments, 188, [0, 0])
     text_line = multi_line_break.get_line()
     assert text_line.fragments
+
+
+def test_substitution_fragment_chars_always_on_same_line():
+    """
+    Characters from substitution fragments should be one same line.
+
+    Expected behavior:
+        - First call to `get_line` contains only the first fragment chars because there is no enough space for all chars
+          from the following substitution fragment.
+        - Second call to `get_line` contains chars of other fragments - there is enough space for them.
+        - Third call to `get_line` is None because there is no text left.
+    """
+
+    five_chars = "hello"
+    four_chars_mask = "four"
+    four_chars = "then"
+
+    char_width = 6
+    eight_chars_width = 8 * char_width
+    substitution = Substitution(
+        stype=SubstitutionType.GENERAL,
+        mask=four_chars_mask,
+    )
+
+    alphabet = {
+        "normal": {},
+    }
+    for char in five_chars + four_chars_mask + four_chars:
+        alphabet["normal"][char] = char_width
+
+    graphics_state = gs_with_font(_gs_normal, alphabet["normal"])
+
+    fragment_before = FxFragment(five_chars, graphics_state, 1, None, alphabet)
+    substitution_fragment = FxSubstitutionFragment(
+        substitution, four_chars_mask, graphics_state, 1, None, alphabet
+    )
+    fragment_after = FxFragment(four_chars, graphics_state, 1, None, alphabet)
+
+    multi_line_break = MultiLineBreak(
+        [fragment_before, substitution_fragment, fragment_after],
+        eight_chars_width,
+        [0, 0],
+    )
+
+    assert multi_line_break.get_line() == TextLine(
+        fragments=[fragment_before],
+        text_width=len(five_chars) * char_width,
+        number_of_spaces=0,
+        align=Align.L,
+        height=12,
+        max_width=eight_chars_width,
+        trailing_nl=False,
+    )
+    assert multi_line_break.get_line() == TextLine(
+        fragments=[substitution_fragment, fragment_after],
+        text_width=len(four_chars_mask) * char_width + len(four_chars) * char_width,
+        number_of_spaces=0,
+        align=Align.L,
+        height=12,
+        max_width=eight_chars_width,
+        trailing_nl=False,
+    )
+    assert multi_line_break.get_line() is None
+
+
+def test_substitution_fragment_chars_must_fit_the_line():
+    """
+    Characters from substitution fragments must be one same line.
+
+    Expected behavior:
+        An exception being raised.
+    """
+    mask = "test_substitution_fragment_chars_must_fit_the_line"
+
+    char_width = 6
+    five_chars_width = 5 * char_width
+    substitution = Substitution(
+        stype=SubstitutionType.GENERAL,
+        mask=mask,
+    )
+
+    alphabet = {
+        "normal": {},
+    }
+    for char in mask:
+        alphabet["normal"][char] = char_width
+
+    graphics_state = gs_with_font(_gs_normal, alphabet["normal"])
+
+    fragment = FxSubstitutionFragment(
+        substitution, mask, graphics_state, 1, None, alphabet
+    )
+    multi_line_break = MultiLineBreak([fragment], five_chars_width, [0, 0])
+
+    error_msg = f"The substitution mask '{mask}' is too long to fit a line. You need a shorter mask or different styles."
+    with pytest.raises(FPDFException, match=re.escape(error_msg)):
+        multi_line_break.get_line()
