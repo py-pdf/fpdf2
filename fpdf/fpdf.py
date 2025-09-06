@@ -117,6 +117,10 @@ from .line_break import (
     MultiLineBreak,
     TextLine,
     SubstitutionFragment,
+    SPACE,
+    NEWLINE,
+    FORM_FEED,
+    BREAKING_SPACE_SYMBOLS_STR,
 )
 from .substitution import (
     Substitution,
@@ -939,8 +943,17 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         the width of the text rendered will take into account the alias length,
         not the length of the "actual number of pages" string,
         which can causes slight positioning differences.
+
+        Whitespace characters are not allowed in the alias. The engine may treat them in special ways,
+        which makes it difficult to compute the width of the result string.
         """
         assert alias, "An empty string cannot be an alias."
+
+        forbidden_chars = SPACE + NEWLINE + FORM_FEED + BREAKING_SPACE_SYMBOLS_STR
+        assert not (
+            set(alias) & set(forbidden_chars)
+        ), f"{tuple(forbidden_chars)} are not allowed in the alias."
+
         self.str_alias_nb_pages = alias
         self._substitution_alias_nb_pages.mask = alias
 
