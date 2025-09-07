@@ -17,7 +17,7 @@ from .enums import Align, XPos, YPos
 from .fonts import TextStyle
 from .syntax import Destination, PDFObject, PDFString
 from .structure_tree import StructElem
-from .substitution import SubstitutionType
+from .substitution import SubstitutionType, SubstitutionAlign
 
 if TYPE_CHECKING:
     from .fpdf import FPDF
@@ -176,6 +176,7 @@ class TableOfContents:
                 # For example, a file with 99 pages without the ToC and two pages of the ToC.
                 "0" + str(pdf.pages_count),
                 stype=SubstitutionType.DEFAULT_TOC_PAGE,
+                align=SubstitutionAlign.L,
                 extra_data=item.page_number,
             )
             page_label = str(toc_page_substitution)

@@ -8,7 +8,7 @@ from fpdf.line_break import (
     TextLine,
     SubstitutionFragment,
 )
-from fpdf.substitution import Substitution, SubstitutionType
+from fpdf.substitution import Substitution, SubstitutionType, SubstitutionAlign
 from fpdf.enums import Align, CharVPos
 
 import pytest
@@ -1462,6 +1462,7 @@ def test_substitution_fragment_chars_always_on_same_line():
     eight_chars_width = 8 * char_width
     substitution = Substitution(
         stype=SubstitutionType.GENERAL,
+        align=SubstitutionAlign.L,
         mask=four_chars_mask,
     )
 
@@ -1519,6 +1520,7 @@ def test_substitution_fragment_chars_must_fit_the_line():
     five_chars_width = 5 * char_width
     substitution = Substitution(
         stype=SubstitutionType.GENERAL,
+        align=SubstitutionAlign.L,
         mask=mask,
     )
 

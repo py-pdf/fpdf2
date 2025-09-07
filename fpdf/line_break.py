@@ -397,6 +397,10 @@ class SubstitutionFragment(Fragment):
 
         self.uuid = uuid4()
 
+        # (pos_x, initial_cs, k)
+        # Used to know where to move the cursor in order to align the value after substitution.
+        self.render_context = None
+
     def get_placeholder_string(self):
         """
         This method returns a placeholder string containing a universally unique identifier (UUID4),

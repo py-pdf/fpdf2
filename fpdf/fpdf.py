@@ -125,6 +125,7 @@ from .line_break import (
 from .substitution import (
     Substitution,
     SubstitutionType,
+    SubstitutionAlign,
 )
 from .outline import OutlineSection
 from .output import (
@@ -390,6 +391,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
         self._substitution_alias_nb_pages = Substitution(
             stype=SubstitutionType.TOTAL_PAGES_NUM,
+            align=SubstitutionAlign.C,
             mask="a",  # A stub which is replaced when alias_nb_pages() is called (the next line).
         )
         self.alias_nb_pages()  # enable alias by default
@@ -3540,8 +3542,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 ) + word_spacing * frag.characters.count(" ")
 
                 if isinstance(frag, SubstitutionFragment):
-                    # We move the cursor so the placeholder and the actual value always have the same length.
-                    sl.append(str((s_width + frag_width) * k) + " 0 Td")
+                    frag.render_context = (s_width, i != 0, k)
 
                 if frag.underline:
                     underlines.append(
@@ -5794,9 +5795,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         self,
         mask: str,
         stype: SubstitutionType = SubstitutionType.GENERAL,
+        align: SubstitutionAlign = SubstitutionAlign.C,
         extra_data=None,
     ):
-        substitution = Substitution(stype, mask, extra_data=extra_data)
+        substitution = Substitution(stype, align, mask, extra_data=extra_data)
 
         placeholder = str(substitution)
         self._placeholder_to_substitution[placeholder] = substitution
@@ -5828,9 +5830,43 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     f"There is no value to substitute the placeholder '{substitution}' on the {page.index()} page."
                 )
 
+            text = fragment.render_text_substitution(value)
+
+            # NOTE: IMPORTANT! It doesn't work properly if there is more than one Td command.
+            # In that case, we need to calculate the offset based on the last Td command, not on the start of the line
+            # from "render_context". This is a serious issue, because it may break other content.
+            pos_x, initial_cs, k = fragment.render_context
+            if substitution.align == SubstitutionAlign.L:
+                width_with_mask = fragment.get_width(
+                    chars=substitution.mask, initial_cs=initial_cs
+                )
+                replacement = f"{text} {(pos_x + width_with_mask) * k} 0 Td"
+            elif substitution.align == SubstitutionAlign.R:
+                width_with_mask = fragment.get_width(
+                    chars=substitution.mask, initial_cs=initial_cs
+                )
+                width_with_value = fragment.get_width(
+                    chars=value, initial_cs=initial_cs
+                )
+                replacement = (
+                    f"{(pos_x + width_with_mask - width_with_value) * k} 0 Td {text}"
+                )
+            elif substitution.align == SubstitutionAlign.C:
+                frag_width = fragment.get_width(
+                    chars=substitution.mask, initial_cs=initial_cs
+                )
+                width_with_value = fragment.get_width(
+                    chars=value, initial_cs=initial_cs
+                )
+                x1 = (pos_x + (frag_width - width_with_value) / 2) * k
+                x2 = (width_with_value + (frag_width - width_with_value) / 2) * k
+                replacement = f"{x1} 0 Td {text} {x2} 0 Td"
+            else:
+                raise FPDFException("Invalid substitution alignment.")
+
             page.contents = page.contents.replace(
                 fragment.get_placeholder_string().encode("latin-1"),
-                fragment.render_text_substitution(value).encode("latin-1"),
+                replacement.encode("latin-1"),
             )
 
 

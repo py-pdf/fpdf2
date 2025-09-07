@@ -10,6 +10,12 @@ class SubstitutionType(enum.Enum):
     DEFAULT_TOC_PAGE = enum.auto()
 
 
+class SubstitutionAlign(enum.Enum):
+    C = enum.auto()  # Center.
+    L = enum.auto()  # Left.
+    R = enum.auto()  # Right.
+
+
 class Substitution:
     """
     This class binds a placeholder to a specific value.
@@ -33,17 +39,19 @@ class Substitution:
     PREFIX = ":sub:"
     STR_LENGTH = 37  # 5 chars of PREFIX + 32 chars of UUID.hex
 
-    __slots__ = ("_id", "stype", "mask", "value", "extra_data")
+    __slots__ = ("_id", "stype", "align", "mask", "value", "extra_data")
 
     def __init__(
         self,
         stype: SubstitutionType,
+        align: SubstitutionAlign,
         mask: str,
         extra_data: Optional[Any] = None,
     ):
         assert mask, "Mask must be a non-empty string."
         self.value: Optional[str] = None
         self.stype = stype
+        self.align = align
         self.mask = mask
         self.extra_data = extra_data
         self._id = uuid4()
