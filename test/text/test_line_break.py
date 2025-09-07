@@ -1,5 +1,11 @@
 from fpdf import FPDF, FPDFException, TextMode
-from fpdf.line_break import Fragment, MultiLineBreak, CurrentLine, TextLine
+from fpdf.line_break import (
+    Fragment,
+    MultiLineBreak,
+    CurrentLine,
+    TextLine,
+    TotalPagesSubstitutionFragment,
+)
 from fpdf.enums import Align, CharVPos
 
 import pytest
@@ -19,6 +25,10 @@ class FxFragment(Fragment):
         """Return the relevant width from "wdict"."""
         cw = self.wdict[self.font_style]
         return cw[character]
+
+
+class FxTotalPagesSubstitutionFragment(FxFragment, TotalPagesSubstitutionFragment):
+    pass
 
 
 class FxFont:
@@ -1428,3 +1438,47 @@ def test_line_break_no_initial_newline():  # issue-847
     multi_line_break = MultiLineBreak(fragments, 188, [0, 0])
     text_line = multi_line_break.get_line()
     assert text_line.fragments
+
+
+def test_substitution_fragments_are_not_merged_with_base_fragments():
+    """
+    There are three fragments, all of which fit on a single line. Normally, they would be merged into one fragment.
+    However, a substitution fragment cannot be merged with a base fragment, otherwise,
+    characters from the base fragment would be lost after replacement.
+
+    Expected behavior:
+        The fragments are not merged.
+    """
+    pdf = FPDF()
+    assert pdf.str_alias_nb_pages
+    alias = pdf.str_alias_nb_pages
+
+    char_width = 6
+    line_width = 200 * char_width
+    text_before = "before"
+    text_after = "after"
+
+    alphabet = {
+        "normal": {},
+    }
+    for char in text_before + alias + text_after:
+        alphabet["normal"][char] = char_width
+
+    graphics_state = gs_with_font(_gs_normal, alphabet["normal"])
+
+    fragment_before = FxFragment(text_before, graphics_state, 1, None, alphabet)
+    fragment_after = FxFragment(text_after, graphics_state, 1, None, alphabet)
+    substitution_fragment = FxTotalPagesSubstitutionFragment(
+        alias, graphics_state, 1, None, alphabet
+    )
+
+    multi_line_break = MultiLineBreak(
+        [fragment_before, substitution_fragment, fragment_after],
+        line_width,
+        [0, 0],
+    )
+
+    line = multi_line_break.get_line()
+    assert line.fragments == [fragment_before, substitution_fragment, fragment_after]
+
+    assert multi_line_break.get_line() is None

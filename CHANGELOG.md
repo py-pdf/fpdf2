@@ -27,6 +27,7 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ### Fixed
 * preserving font table `fvar` to keep compatibility with variable fonts - _cf._ [issue #1528](https://github.com/py-pdf/fpdf2/issues/1528)
 * issue with markdown when fallback fonts containing non-alphanumeric characters are used - _cf._ [issue #1535](https://github.com/py-pdf/fpdf2/issues/1535)
+* a bug with merging fragments of different types
 
 ## [2.8.4] - 2025-08-11
 ### Added
