@@ -1445,13 +1445,18 @@ def test_line_break_no_initial_newline():  # issue-847
 
 def test_substitution_fragment_chars_always_on_same_line():
     """
-    Characters from substitution fragments should be one same line.
+    There are three fragments. The second one is a substitution fragment.
+    Normally, first characters of the second fragment would go on the first line,
+    and the rest on the second line, because there is not enough space on the first line.
+    However, all characters of a substitution fragment must stay on the same line.
 
     Expected behavior:
-        - First call to `get_line` contains only the first fragment chars because there is no enough space for all chars
-          from the following substitution fragment.
-        - Second call to `get_line` contains chars of other fragments - there is enough space for them.
-        - Third call to `get_line` is None because there is no text left.
+        All characters of the substitution fragment go on the second line.
+
+        - The first call to `get_line` returns only the characters of the first fragment,
+          because there is not enough space for the following substitution fragment.
+        - The second call to `get_line` returns the characters of the remaining fragments, since there is enough space for them.
+        - The third call to `get_line` returns None, because there is no text left.
     """
 
     five_chars = "hello"
@@ -1509,10 +1514,10 @@ def test_substitution_fragment_chars_always_on_same_line():
 
 def test_substitution_fragment_chars_must_fit_the_line():
     """
-    Characters from substitution fragments must be one same line.
+    There is one substitution fragment. It has more characters than a single line can hold.
 
     Expected behavior:
-        An exception being raised.
+        An exception is raised.
     """
     mask = "test_substitution_fragment_chars_must_fit_the_line"
 
