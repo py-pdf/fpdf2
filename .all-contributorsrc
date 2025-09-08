@@ -1523,6 +1523,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "woopzz",
+      "name": "Bohdan Kovtunovych",
+      "avatar_url": "https://avatars.githubusercontent.com/u/20585814?v=4",
+      "profile": "https://github.com/woopzz",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
