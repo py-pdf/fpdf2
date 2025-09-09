@@ -1,7 +1,3 @@
-Here’s a ready-to-drop **Markdown** doc you can paste into the fpdf2 docs (or a README section).
-
----
-
 # PDF/A with fpdf2
 
 ## What is PDF/A
