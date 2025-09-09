@@ -1274,6 +1274,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             normalized (bool): whether normalization needs to be performed on the input string.
             markdown (bool): indicates if basic markdown support is enabled
         """
+        if not self.font_family:
+            raise FPDFException("No font set, you need to call set_font() beforehand")
         # normalized is parameter for internal use
         s = s if normalized else self.normalize_text(s)
         w = 0

@@ -19,14 +19,15 @@ This can also be enabled programmatically with `warnings.simplefilter('default',
 ## [2.8.5] - Not released yet
 ### Added
 * basic support for SVG `currentColor` color value - _cf._ [PR #1531](https://github.com/py-pdf/fpdf2/pull/1531)
-* Porter–Duff compositing operations and bounding box support to the drawing API
-* support gradients as fill or stroke colors in the drawing API
+* Porter–Duff compositing operations and bounding box support to the drawing API - _cf._ [PR #1532](https://github.com/py-pdf/fpdf2/pull/1532)
+* support gradients as fill or stroke colors in the drawing API - _cf._ [PR #1539](https://github.com/py-pdf/fpdf2/pull/1539)
 * support for dashed lines in FlexTemplate elements - _cf._ [issue #1503](https://github.com/py-pdf/fpdf2/issues/1503)
-* support for rendering color font glyphs in different formats (SBIX, CBDT/CBLC, SVG, COLRv0 and COLRv1)
+* support for rendering color font glyphs in different formats (SBIX, CBDT/CBLC, SVG, COLRv0 and COLRv1) - _cf._ [PR #1305](https://github.com/py-pdf/fpdf2/pull/1305)
 
 ### Fixed
 * preserving font table `fvar` to keep compatibility with variable fonts - _cf._ [issue #1528](https://github.com/py-pdf/fpdf2/issues/1528)
 * issue with markdown when fallback fonts containing non-alphanumeric characters are used - _cf._ [issue #1535](https://github.com/py-pdf/fpdf2/issues/1535)
+* a bug with merging fragments of different types - _cf._ PR [#1567](https://github.com/py-pdf/fpdf2/pull/1567)
 * updated destination page numbers of internal links when the ToC renderer spans multiple pages - _cf._ PR [#1566](https://github.com/py-pdf/fpdf2/pull/1566)
 
 ## [2.8.4] - 2025-08-11

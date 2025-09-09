@@ -69,6 +69,7 @@ def app(environ, start_response):
 ```
 
 This script can then be served as a HTTP application using either:
+
 * the standard [`wsgiref`](https://docs.python.org/3/library/wsgiref.html) module
 * [`werkzeug.serving.run_simple`](https://werkzeug.palletsprojects.com/en/stable/serving/)
 * [Gunicorn](https://gunicorn.org/), using: `gunicorn --bind localhost:8000 fpdf2_app:app`
