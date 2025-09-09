@@ -743,13 +743,15 @@ def test_footer_leaking_style_on_toc(tmp_path):
         def footer(self):
             self.set_y(-15)
             self.set_font("Helvetica", size=8)
-            self.cell(w=0, text="FOOTER", align="C")
+            self.cell(w=0, text=f"PAGE {self.get_page_label()}", align="C")
 
     pdf = CustomFPDF()
     pdf.set_font("Helvetica", size=16)
     pdf.set_section_title_styles(TextStyle())  # Use default style
     pdf.add_page()
+    pdf.set_page_label(label_style="R")
     pdf.insert_toc_placeholder(TableOfContents().render_toc, allow_extra_pages=True)
+    pdf.set_page_label(label_style="D")
     for i in range(1, 100):
         if i > 1:
             pdf.add_page()
