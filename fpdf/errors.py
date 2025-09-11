@@ -35,18 +35,23 @@ class FPDFPageFormatException(FPDFException):
 class FPDFUnicodeEncodingException(FPDFException):
     """Error is thrown when a character that cannot be encoded by the chosen encoder is provided"""
 
-    def __init__(self, text_index, character, font_name):
+    def __init__(self, text_index, character, font_name, suggestion=None):
         super().__init__()
         self.text_index = text_index
         self.character = character
         self.font_name = font_name
+        self.suggestion = suggestion
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({repr(self.text_index), repr(self.character), repr(self.font_name)})"
+        return f"{self.__class__.__name__}({repr(self.text_index), repr(self.character), repr(self.font_name), repr(self.suggestion)})"
 
     def __str__(self):
-        return (
+        base_message = (
             f'Character "{self.character}" at index {self.text_index} in text is outside the range of characters'
             f' supported by the font used: "{self.font_name}".'
-            " Please consider using a Unicode font."
         )
+        
+        if self.suggestion:
+            return f"{base_message}\n\n{self.suggestion}"
+        else:
+            return f"{base_message} Please consider using a Unicode font."
