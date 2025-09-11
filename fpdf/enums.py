@@ -1714,3 +1714,44 @@ class DocumentCompliance(Enum):
                 if m.label.upper() == key:  # PDF/A-2U
                     return m
         raise ValueError(f"Cannot coerce {value!r} to {cls.__name__}")
+
+
+class AssociatedFileRelationship(CoerciveEnum):
+    """Represents the association between an embedded file and the content on the PDF"""
+
+    SOURCE = intern("Source")
+    "The file is the original source material of the content"
+
+    DATA = intern("Data")
+    """
+    The file has the information used to produce the associated object.
+    e.g.: the data used to produce a table or a graph
+    """
+
+    ALTERNATIVE = intern("Alternative")
+    "The file has an alternative representation of the content"
+
+    SUPPLEMENT = intern("Supplement")
+    """
+    The file has a supplemental representation of the original source
+    or data that may be more easily consumable
+    """
+
+    ENCRYPTED_PAYLOAD = intern("EncryptedPayload")
+    """
+    The file is an encrypted payload document that should be displayed
+    to the user if the PDF processor has the cryptographic filter
+    needed to decrypt the document
+    """
+
+    FORM_DATA = intern("FormData")
+    "The file has the data associated with the interactive form in this document"
+
+    SCHEMA = intern("Schema")
+    "The file is a schema definition for the associated object"
+
+    UNSPECIFIED = intern("Unspecified")
+    """
+    Shall be used when the relationship is not known
+    or cannot be described using one of the other values
+    """

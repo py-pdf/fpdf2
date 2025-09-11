@@ -81,6 +81,7 @@ from .enums import (
     Angle,
     AnnotationFlag,
     AnnotationName,
+    AssociatedFileRelationship,
     CharVPos,
     Corner,
     DocumentCompliance,
@@ -151,7 +152,7 @@ from .table import Table, draw_box_borders
 from .text_region import TextColumns, TextRegionMixin
 from .transitions import Transition
 from .unicode_script import UnicodeScript, get_unicode_script
-from .util import Padding, get_scale_factor, _builtin_srgb2014_bytes
+from .util import Padding, get_scale_factor, builtin_srgb2014_bytes
 
 # Public global variables:
 FPDF_VERSION = "2.8.4"
@@ -2584,6 +2585,10 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
         if mime_type is None:
             mime_type = mimetypes.guess_type(basename)[0] or "application/octet-stream"
         mime_type = mime_type.lower()
+        if associated_file_relationship:
+            associated_file_relationship = AssociatedFileRelationship.coerce(
+                associated_file_relationship
+            )
         already_embedded_basenames = set(
             file.basename() for file in self.embedded_files
         )
@@ -2609,30 +2614,20 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     raise PDFAComplianceError(
                         "PDF/A-2 permits embedding only PDF files, which must themselves be PDF/A."
                     )
-                associated_file_relationship = None
             if self._compliance.part == 3 or (
                 self._compliance.part == 4
                 and self._compliance.conformance in ("e", "f")
             ):
-                if (
-                    not associated_file_relationship
-                    or associated_file_relationship
-                    not in [
-                        "Data",
-                        "Source",
-                        "Alternative",
-                        "Supplement",
-                        "Unspecified",
-                    ]
-                ):
-                    associated_file_relationship = "Data"
+                if not associated_file_relationship:
+                    associated_file_relationship = (
+                        AssociatedFileRelationship.UNSPECIFIED
+                    )
 
         embedded_file = PDFEmbeddedFile(
             basename=basename,
             contents=bytes,
             modification_date=modification_date,
             mime_type=mime_type,
-            af_relationship=associated_file_relationship,
             **kwargs,
         )
         self.embedded_files.append(embedded_file)
@@ -5842,7 +5837,7 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                     output_condition="IEC 61966-2-1:1999",
                     registry_name="http://www.color.org",
                     dest_output_profile=PDFICCProfile(
-                        contents=_builtin_srgb2014_bytes(), n=3, alternate="DeviceRGB"
+                        contents=builtin_srgb2014_bytes(), n=3, alternate="DeviceRGB"
                     ),
                     info="sRGB2014 (v2)",
                 )

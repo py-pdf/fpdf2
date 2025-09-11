@@ -793,6 +793,7 @@ class OutputProducer:
         sig_annotation_obj = self._add_annotations_as_objects()
         for embedded_file in fpdf.embedded_files:
             self._add_pdf_obj(embedded_file, "embedded_files")
+            self._add_pdf_obj(embedded_file.file_spec(), "file_spec")
         self._insert_resources(page_objs)
         struct_tree_root_obj = self._add_structure_tree()
         outline_dict_obj, outline_items = self._add_document_outline()
@@ -1664,7 +1665,7 @@ class OutputProducer:
             catalog_obj.mark_info = pdf_dict({"/Marked": "true"})
         if fpdf.embedded_files:
             file_spec_names = [
-                f"{PDFString(embedded_file.basename()).serialize()} {embedded_file.file_spec().serialize()}"
+                f"{PDFString(embedded_file.basename()).serialize()} {embedded_file.file_spec().ref}"
                 for embedded_file in fpdf.embedded_files
                 if embedded_file.globally_enclosed
             ]
