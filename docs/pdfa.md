@@ -27,9 +27,8 @@
 
 ```python
 from fpdf import FPDF
-from fpdf.enums import DocumentCompliance  # wherever your enum lives
+from fpdf.enums import DocumentCompliance
 
-# Example:
 pdf = FPDF(enforce_compliance=DocumentCompliance.PDFA_4)
 ```
 

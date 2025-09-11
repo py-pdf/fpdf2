@@ -152,8 +152,8 @@ def int_to_letters(n: int) -> str:
     return chr(n + ord("A"))
 
 
-def _builtin_srgb2014_bytes() -> bytes:
-    pkg = "fpdf._data.color_profiles"
+def builtin_srgb2014_bytes() -> bytes:
+    pkg = "fpdf.data.color_profiles"
     return (resources.files(pkg) / "sRGB2014.icc").read_bytes()
 
 

@@ -12,6 +12,7 @@ import hashlib
 import io
 import logging
 import math
+import mimetypes
 import os
 import re
 import sys
@@ -2530,14 +2531,17 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
 
     def embed_file(
         self,
-        file_path=None,
-        bytes=None,
-        basename=None,
-        modification_date=None,
+        file_path: Optional[Union[str, Path]] = None,
+        bytes: Optional[bytes] = None,
+        basename: Optional[str] = None,
+        modification_date: Optional[datetime] = None,
+        mime_type: Optional[str] = None,
+        associated_file_relationship: Optional[str] = None,
         **kwargs,
     ):
         """
-        Embed a file into the PDF document
+        Embed a file into the PDF as an attachment (and, for PDF/A-3 or PDF/A-4f, as an
+        Associated File).
 
         Args:
             file_path (str or Path): filesystem path to the existing file to embed
@@ -2546,6 +2550,13 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             creation_date (datetime): date and time when the file was created
             modification_date (datetime): date and time when the file was last modified
             desc (str): optional description of the file
+            mime_type: MIME type of the embedded content (e.g., "application/pdf", "text/csv", "image/png")
+            associated_file_relationship: For PDF/A-3/A-4f, the AF relationship to declare in the FileSpec
+                (e.g., "Data", "Source", "Alternative", "Supplement", or "Unspecified").
+
+            **kwargs:
+            desc (str): Optional human-readable description for the FileSpec.
+            creation_date (datetime): Original creation time of the file.
             compress (bool): enabled zlib compression of the file - False by default
             checksum (bool): insert a MD5 checksum of the file content - False by default
 
@@ -2570,15 +2581,58 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 raise ValueError(
                     "'basename' is required if 'file_path' is not provided"
                 )
+        if mime_type is None:
+            mime_type = mimetypes.guess_type(basename)[0] or "application/octet-stream"
+        mime_type = mime_type.lower()
         already_embedded_basenames = set(
             file.basename() for file in self.embedded_files
         )
         if basename in already_embedded_basenames:
             raise ValueError(f"{basename} has already been embedded in this file")
+
+        if self._compliance and self._compliance.profile == "PDFA":
+            if self._compliance.part == 1 or (
+                self._compliance.part == 4 and self._compliance.conformance is None
+            ):
+                raise PDFAComplianceError(
+                    f"Embedding files is not allowed for documents compliant with {self._compliance.label}"
+                )
+            if self._compliance.part == 2:
+                if (mime_type == "application/pdf") or basename.lower().endswith(
+                    ".pdf"
+                ):
+                    LOGGER.warning(
+                        "PDF/A-2: ensure the embedded PDF '%s' is itself PDF/A (part 1 or 2) to remain compliant.",
+                        basename,
+                    )
+                else:
+                    raise PDFAComplianceError(
+                        "PDF/A-2 permits embedding only PDF files, which must themselves be PDF/A."
+                    )
+                associated_file_relationship = None
+            if self._compliance.part == 3 or (
+                self._compliance.part == 4
+                and self._compliance.conformance in ("e", "f")
+            ):
+                if (
+                    not associated_file_relationship
+                    or associated_file_relationship
+                    not in [
+                        "Data",
+                        "Source",
+                        "Alternative",
+                        "Supplement",
+                        "Unspecified",
+                    ]
+                ):
+                    associated_file_relationship = "Data"
+
         embedded_file = PDFEmbeddedFile(
             basename=basename,
             contents=bytes,
             modification_date=modification_date,
+            mime_type=mime_type,
+            af_relationship=associated_file_relationship,
             **kwargs,
         )
         self.embedded_files.append(embedded_file)
