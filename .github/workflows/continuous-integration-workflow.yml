@@ -60,7 +60,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@2d92b76c45b91eb80fc44c74ce3fce0ee94e8f9d # v3.30.0
+        uses: github/codeql-action/upload-sarif@192325c86100d080feab897ff886c34abd4c83a3 # v3.30.3
         with:
           sarif_file: results.sarif
           category: zizmor
@@ -71,7 +71,7 @@ jobs:
           bandit -c .banditrc.yml -r contributors/ fpdf/ tutorial/
           semgrep scan --config auto --error --strict --exclude-rule=python.lang.security.insecure-hash-function.insecure-hash-function fpdf
       - name: Scan project with grype 🔎
-        uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # v6.5.1
+        uses: anchore/scan-action@f6601287cdb1efc985d6b765bbf99cb4c0ac29d8 # v7.0.0
         with:
           path: "."
           fail-build: true
@@ -90,7 +90,7 @@ jobs:
           time guarddog pypi verify test/linters-requirements.txt
           time guarddog pypi verify test/requirements.txt
       - name: Spell Check Repo ✍️
-        uses: crate-ci/typos@b6297a6a5072df106aa9d94197f5d0533a9730bc # v1.36.1
+        uses: crate-ci/typos@85f62a8a84f939ae994ab3763f01a0296d61a7ee # v1.36.2
   test:
     strategy:
       matrix:
@@ -150,7 +150,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
         with:
           egress-policy: block
           allowed-endpoints:
@@ -223,7 +223,7 @@ jobs:
       - name: Harden Runner
         # Security hardening because this is a sensitive job,
         # where extra care should be taken NOT to leak any secret
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
         with:
           egress-policy: block
           allowed-endpoints:

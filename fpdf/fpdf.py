@@ -1275,6 +1275,8 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
             normalized (bool): whether normalization needs to be performed on the input string.
             markdown (bool): indicates if basic markdown support is enabled
         """
+        if not self.font_family:
+            raise FPDFException("No font set, you need to call set_font() beforehand")
         # normalized is parameter for internal use
         s = s if normalized else self.normalize_text(s)
         w = 0
@@ -5194,6 +5196,11 @@ class FPDF(GraphicsStateMixin, TextRegionMixin):
                 if tocp.reset_page_indices is False:
                     page.get_page_label().st = page_index
             assert len(new_pages) == 0, f"#new_pages: {len(new_pages)}"
+            # Fix links:
+            for dest in self.links.values():
+                new_index = indices_remap.get(dest.page_number)
+                if new_index is not None:
+                    dest.page_number = new_index
             # Fix outline:
             for section in self._outline:
                 new_index = indices_remap.get(section.page_number)
